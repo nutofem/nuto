@@ -196,6 +196,14 @@ public:
     //! @param rRadius...  nonlocal radius
     virtual void SetNonlocalRadius(double rRadius);
 
+    //! @brief ... get nonlocal radius parameter
+    //! @return ... nonlocal radius parameter
+    virtual double GetNonlocalRadiusParameter() const;
+
+    //! @brief ... set nonlocal radius parameter
+    //! @param rRadius...  nonlocal radius parameter
+    virtual void SetNonlocalRadiusParameter(double rRadiusParameter);
+
     //! @brief ... get tensile strength
     //! @return ... tensile strength
     virtual double GetTensileStrength() const;

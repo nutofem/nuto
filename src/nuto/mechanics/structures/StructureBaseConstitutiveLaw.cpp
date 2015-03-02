@@ -528,6 +528,38 @@ void NuTo::StructureBase::ConstitutiveLawSetNonlocalRadius(int rIdent, double rR
     }
 }
 
+//! @brief ... get nonlocal radius parameter
+//! @return ... nonlocal radius parameter
+double NuTo::StructureBase::ConstitutiveLawGetNonlocalRadiusParameter(int rIdent) const
+{
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        return ConstitutiveLawPtr->GetNonlocalRadiusParameter();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetNonlocalRadiusParameter] error getting nonlocal radius.");
+        throw e;
+    }
+}
+
+//! @brief ... set nonlocal radius parameter
+//! @param rRadius ...  nonlocal radius parameter
+void NuTo::StructureBase::ConstitutiveLawSetNonlocalRadiusParameter(int rIdent, double rRadiusParameter)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetNonlocalRadiusParameter(rRadiusParameter);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetNonlocalRadiusParameter] error setting nonlocal radius.");
+        throw e;
+    }
+}
+
 //! @brief ... get tensile strength
 //! @param rTensileStrength ...  tensile strength
 double NuTo::StructureBase::ConstitutiveLawGetTensileStrength(int rIdent)

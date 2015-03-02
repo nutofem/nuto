@@ -107,6 +107,14 @@ public:
     //! @param rRadius...  nonlocal radius
     void SetNonlocalRadius(double rNonlocalRadius);
 
+    //! @brief ... get nonlocal radius parameter
+    //! @return ... nonlocal radius parameter
+    double GetNonlocalRadiusParameter() const;
+
+    //! @brief ... set nonlocal radius parameter
+    //! @param rRadius...  nonlocal radius parameter
+    void SetNonlocalRadiusParameter(double rRadiusParameter);
+
     //! @brief ... get thermal expansion coefficient
     //! @return ... thermal expansion coefficient
     double GetThermalExpansionCoefficient() const override;
@@ -197,6 +205,9 @@ protected:
     //! @brief ... nonlocal radius
     double mNonlocalRadius;
 
+    //! @brief ... nonlocal radius parameter for non constant c-paramter
+    double mNonlocalRadiusParameter;
+
     //! @brief ... thermal expansion coefficient \f$ \alpha \f$
     double mThermalExpansionCoefficient;
 
@@ -227,6 +238,10 @@ protected:
     //! @brief ... check if nonlocal radius is positive
     //! @param rRadius ... nonlocal radius
     void CheckNonlocalRadius(double rNonlocalRadius) const;
+
+    //! @brief ... check if the nonlocal radius parameter is greater than 1
+    //! @param rRadiusParameter ... nonlocal radius parameter
+    void CheckNonlocalRadiusParameter(double rNonlocalRadiusParameter) const;
 
     //! @brief ... check thermal expansion coefficient
     //! @param rAlpha ... thermal expansion coefficient

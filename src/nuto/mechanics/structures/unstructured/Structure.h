@@ -411,21 +411,18 @@ public:
     //! @param r3NDofType dof type string of the 3N interpolated dof
     void ElementConvertTruss1D2NToTruss1D4NDisp3NX(int rGroupNumberElements, std::string r3NDofType);
 
-
-    //! @brief Applies boundary conditions to the boundary elements via linear constraints
-    //! @param rType type of boundary condition
-    void BoundaryElementsApplyConstraints(NuTo::BoundaryCondition::eType rType);
-
     //! @brief Create boundary elements defined by all boundary elements and the nodes characterizing the edges
     //! @param rElementType element type
     //! @param rGroupNumberElements group for elements on the real boundary
     //! @param rGroupNumberBoundaryNodes nodes on the boundary
+    //! @param rBoundaryConditionType
     //! @param rElementDataType Element data for the elements
     //! @param rIpDataType Integration point data for the elements
     void BoundaryElementsCreate (
             const std::string& rElementType,
     		int rGroupNumberElements,
     		int rGroupNumberBoundaryNodes,
+            NuTo::BoundaryCondition::eType rBoundaryConditionType,
     		const std::string& rElementDataType,
     		const std::string& rIpDataType);
 
@@ -433,14 +430,16 @@ public:
 
     //! @brief Create boundary elements defined by all boundary elements and the nodes characterizing the edges
     //! @param rElementType element type
-    //! @param rGroupElements group for elements on the real boundary
-    //! @param rGroupBoundaryNodes nodes on the boundary
+    //! @param rGroupNumberElements group for elements on the real boundary
+    //! @param rGroupNumberBoundaryNodes nodes on the boundary
+    //! @param rBoundaryConditionType
     //! @param rElementDataType Element data for the elements
     //! @param rIpDataType Integration point data for the elements
     void BoundaryElementsCreate (
             NuTo::Element::eElementType rType,
     		const Group<ElementBase>* rGroupElements,
     		const Group<NodeBase>* rGroupBoundaryNodes,
+            NuTo::BoundaryCondition::eType rBoundaryConditionType,
     		ElementData::eElementDataType rElementDataType,
     		IpData::eIpDataType rIpDataType);
 

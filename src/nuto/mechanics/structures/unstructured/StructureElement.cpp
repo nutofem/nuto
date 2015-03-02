@@ -149,41 +149,18 @@ int NuTo::Structure::ElementCreate (const std::string& rElementType,
 	return ElementCreate(rElementType,rNodeNumbers,std::string("CONSTITUTIVELAWIP"),std::string("NOIPDATA") );
 }
 
-//! @brief Applies boundary conditions to the boundary elements via linear constraints
-//! @param rType type of boundary condition
-void NuTo::Structure::BoundaryElementsApplyConstraints(BoundaryCondition::eType rType)
-{
-    int elemGroupBoundary = GroupCreate("Elements");
-    GroupAddElementFromType(elemGroupBoundary, "BoundaryGradientDamage1D");
-    int numBoundaryElements = GroupGetNumMembers(elemGroupBoundary);
-    for (int iElem = 0; iElem < numBoundaryElements; ++iElem)
-    {
-        int elemIndex = GroupGetMemberIds(elemGroupBoundary).GetValue(iElem);
-        ElementGetElementPtr(elemIndex)->AsBoundaryGradientDamage1D()->ApplyConstraints(rType, this);
-    }
-
-    if (numBoundaryElements == 0)
-    {
-        throw MechanicsException("[NuTo::StructureElement::BoundaryElementsApplyConstraints] Define boundary elements first! (NuTo::Structure::BoundaryElementsCreate())");
-    }
-    else
-    {
-        mLogger << "[NuTo::StructureElement::BoundaryElementsApplyConstraints] Applied BC to " << numBoundaryElements << " elements \n";
-    }
-
-
-}
-
 //! @brief Create boundary elements defined by all boundary elements and the nodes characterizing the edges
 //! @param rElementType element type
 //! @param rGroupNumberElements group for elements on the real boundary
 //! @param rGroupNumberBoundaryNodes nodes on the boundary
+//! @param rBoundaryConditionType
 //! @param rElementDataType Element data for the elements
 //! @param rIpDataType Integration point data for the elements
 void NuTo::Structure::BoundaryElementsCreate (
         const std::string& rElementType,
 		int rGroupNumberElements,
 		int rGroupNumberBoundaryNodes,
+		BoundaryCondition::eType rBoundaryConditionType,
 		const std::string& rElementDataType,
 		const std::string& rIpDataType)
 {
@@ -249,7 +226,7 @@ void NuTo::Structure::BoundaryElementsCreate (
 
     BoundaryElementsCreate(elementType,
     		itGroupElements->second->AsGroupElement(), itGroupBoundaryNodes->second->AsGroupNode(),
-    		elementDataType, ipDataType);
+    		rBoundaryConditionType, elementDataType, ipDataType);
 
 #ifdef SHOW_TIME
     end=clock();
@@ -262,12 +239,14 @@ void NuTo::Structure::BoundaryElementsCreate (
 //! @param rElementType element type
 //! @param rGroupElements group for elements on the real boundary
 //! @param rGroupBoundaryNodes nodes on the boundary
+//! @param rBoundaryConditionType
 //! @param rElementDataType Element data for the elements
 //! @param rIpDataType Integration point data for the elements
 void NuTo::Structure::BoundaryElementsCreate (
         Element::eElementType rType,
 		const Group<ElementBase>* rGroupElements,
 		const Group<NodeBase>* rGroupBoundaryNodes,
+        BoundaryCondition::eType rBoundaryConditionType,
 		ElementData::eElementDataType rElementDataType,
 		IpData::eIpDataType rIpDataType)
 {
@@ -310,6 +289,7 @@ void NuTo::Structure::BoundaryElementsCreate (
                         ElementBase* newElementPtr = new NuTo::BoundaryGradientDamage1D(
                                 this, itElement->second->AsTruss(),
                                 NodeGetNodePtr(nodeIds[iNode]),
+                                rBoundaryConditionType,
                                 NuTo::ElementData::CONSTITUTIVELAWIP,
                                 IntegrationType::IntegrationType0DBoundary,
                                 IpData::STATICDATA);

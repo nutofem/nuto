@@ -91,6 +91,16 @@ public:
     void CalculateKkk(const std::vector<double>& shapeFunctions,const std::vector<double>& derivativeShapeFunctions,double nonlocalGradientRadius,double factor,
     		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Kkk);
 
+    //! @brief calculates the Kkk matrix
+    //! @param rShapeFunctions of the ip for all shape functions
+    //! @param rDerivativeShapeFunctions of the ip for all shape functions
+    //! @param transient nonlocal gradient radius
+    //! @param factor multiplication factor (detJ area..)
+    //! @param Kkk return matrix with detJ * (Nt 1/ct N + BtB)
+    void CalculateKkkTransient(const std::vector<double>& rShapeFunctions,const std::vector<double>& rDerivativeShapeFunctions,double rTransientNonlocalRadius,double factor,
+            FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Kkk);
+
+
     //! @brief add Kkk*kappa+detJ*F (detJ is already included in Kkk)
     //! @param derivativeShapeFunctions of the ip for all shape functions
     //! @param tangentStressNonlocalEqPlasticStrain derivative of the stress with respect to the nonlocal eq plastic strain
@@ -130,7 +140,7 @@ public:
 
     //! @brief add detJ transpose N dOmega/depsilon B
     //! @param rShapeFunctions of the ip for all shape functions
-    //! @param rTangentLocalEqStrainStrain derivative of the local eq plastic strains with respect to the strain
+    //! @param rTangentLocalEqStrainStrain derivative of the local eq strains with respect to the strain
     //! @param rderivativeShapeFunctions of the ip for all shape functions
     //! @param rFactor factor including detJ and area
     //! @param rResult result
@@ -432,7 +442,6 @@ public:
     void AddDetJRnonlocalEqStrain(const std::vector<double>& rShapeFunctions,const LocalEqStrain& rLocalEqStrain, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKkk,
             const std::vector<double>& rNodeNonlocalEqStrain, double rFactor, int rRow, FullVector<double,Eigen::Dynamic>& rResult) const;
 
-    
     //! @brief transforms the local matrix to the global system
     //! relevant only for 2D and 3D truss elements
     virtual void BlowLocalMatrixToGlobal(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rFullCoefficientMatrix)const=0;

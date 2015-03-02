@@ -244,10 +244,25 @@ double NuTo::ConstitutiveBase::GetNonlocalRadius() const
 
 //! @brief ... set nonlocal radius
 //! @param rRadius ...  nonlocal radius
-void NuTo::ConstitutiveBase::SetNonlocalRadius(double rH)
+void NuTo::ConstitutiveBase::SetNonlocalRadius(double rRadius)
 {
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetNonlocalRadius] The constitutive relationship does not have a nonlocal radius.");
 }
+
+//! @brief ... get nonlocal radius parameter
+//! @return ... nonlocal radius parameter
+double NuTo::ConstitutiveBase::GetNonlocalRadiusParameter() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetNonlocalRadiusParameter] The constitutive relationship does not have a nonlocal radius parameter.");
+}
+
+//! @brief ... set nonlocal radius parameter
+//! @param rRadius ...  nonlocal radius parameter
+void NuTo::ConstitutiveBase::SetNonlocalRadiusParameter(double rRadiusParameter)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetNonlocalRadiusParameter] The constitutive relationship does not have a nonlocal radius parameter.");
+}
+
 //! @brief ... get tensile strength
 //! @return ... tensile strength
 double NuTo::ConstitutiveBase::GetTensileStrength() const

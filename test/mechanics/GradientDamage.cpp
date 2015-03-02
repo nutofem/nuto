@@ -72,12 +72,6 @@ void CheckDamageLaws()
     NuTo::FullVector<double, Eigen::Dynamic> myDamageLawHermite(1);
     myDamageLawHermite(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_CUBIC_HERMITE;
 
-//    NuTo::FullVector<double, Eigen::Dynamic> myDamageLawExponentialSmooth(4);
-//    myDamageLawExponentialSmooth(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_SMOOTH;
-//    myDamageLawExponentialSmooth(1) = 0;
-//    myDamageLawExponentialSmooth(2) = 10;
-//    myDamageLawExponentialSmooth(3) = 20;
-
 
     myConstitutiveLaw.SetDamageLaw(myDamageLawNoSoftening);
     if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
@@ -96,16 +90,12 @@ void CheckDamageLaws()
     if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
             throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_CUBIC_HERMITE: wrong damage derivatives");
 
-//    myConstitutiveLaw.SetDamageLaw(myDamageLawExponentialSmooth);
-//    if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
-//            throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_EXPONENTIAL_SOFTENING_SMOOTH: wrong damage derivatives");
-
 }
 
 
 int main()
 {
-//try {
+try {
 
     CheckDamageLaws();
 
@@ -126,11 +116,8 @@ int main()
         // 1D structure
         NuTo::Structure myStructure(1);
 
-        NuTo::FullVector<double, Eigen::Dynamic> myDamageLaw(4);
-        myDamageLaw(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_SMOOTH;
-        myDamageLaw(1) = 5;
-        myDamageLaw(2) = 10;
-        myDamageLaw(3) = 20;
+        NuTo::FullVector<double, Eigen::Dynamic> myDamageLaw(1);
+        myDamageLaw(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING;
         // create a damage law
         int myNumberConstitutiveLaw = myStructure.ConstitutiveLawCreate("GradientDamageEngineeringStress");
         myStructure.ConstitutiveLawSetDensity        (myNumberConstitutiveLaw, 1.0);
@@ -188,6 +175,16 @@ int main()
             myStructure.ElementSetSection(iElement,mySection);
             myStructure.ElementSetConstitutiveLaw(iElement,myNumberConstitutiveLaw);
         }
+
+        int nodeGroupBoundary = myStructure.GroupCreate("NODES");
+        myStructure.GroupAddNodeCoordinateRange(nodeGroupBoundary, 0,       -1.e-6,          1.e-6);
+        myStructure.GroupAddNodeCoordinateRange(nodeGroupBoundary, 0, length-1.e-6, length + 1.e-6);
+
+        int elemGroupBoundary = myStructure.GroupCreate("ELEMENTS");
+        myStructure.GroupAddElementsFromNodes(elemGroupBoundary, nodeGroupBoundary, false);
+
+        myStructure.BoundaryElementsCreate("BoundaryGradientDamage1D", elemGroupBoundary, nodeGroupBoundary, NuTo::BoundaryCondition::NEUMANN_HOMOGENEOUS ,"ConstitutiveLawIp","StaticData");
+
 
         //     Constraints: set derivatives of nonlocal eq strain = 0
         int constraintEqLeft = myStructure.ConstraintLinearEquationCreate(nodeLeft, "nonlocalEqStrain", 1., 0.);
@@ -290,6 +287,17 @@ int main()
 
         myStructure.ElementConvertTruss1D2NToTruss1D4NDisp3NX(elementGroup, "nonlocalEqStrain");
 
+        int nodeGroupBoundary = myStructure.GroupCreate("NODES");
+        myStructure.GroupAddNodeCoordinateRange(nodeGroupBoundary, 0,       -1.e-6,          1.e-6);
+        myStructure.GroupAddNodeCoordinateRange(nodeGroupBoundary, 0, length-1.e-6, length + 1.e-6);
+
+        int elemGroupBoundary = myStructure.GroupCreate("ELEMENTS");
+        myStructure.GroupAddElementsFromNodes(elemGroupBoundary, nodeGroupBoundary, false);
+
+        myStructure.BoundaryElementsCreate("BoundaryGradientDamage1D", elemGroupBoundary, nodeGroupBoundary, NuTo::BoundaryCondition::NEUMANN_HOMOGENEOUS ,"ConstitutiveLawIp","StaticData");
+
+
+
 
         //     Constraints: set derivatives of nonlocal eq strain = 0
         int constraintEqLeft = myStructure.ConstraintLinearEquationCreate(nodeLeft, "nonlocalEqStrain", 1., 0.);
@@ -313,11 +321,11 @@ int main()
 
 
 
-//} catch (NuTo::Exception& e) {
-//    std::cout << "Error executing GradientDamage "<< std::endl;
-//    std::cout << e.ErrorMessage() << std::endl;
-//    return -1;
-//}
+} catch (NuTo::Exception& e) {
+    std::cout << "Error executing GradientDamage "<< std::endl;
+    std::cout << e.ErrorMessage() << std::endl;
+    return -1;
+}
     std::cout << "GradientDamage terminated normally."<< std::endl;
     return 0;
 }

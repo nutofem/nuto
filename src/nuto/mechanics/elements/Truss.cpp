@@ -188,6 +188,10 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
         //allocate local eq strain output of constitutive relation
         LocalEqStrain localEqStrain;
 
+        //allocate transient nonlocal parameter
+        ConstitutiveTangentLocal<1,1> transientNonlocalParameter;
+
+
 		EngineeringStrain1D nonlocalTotalStrain;
 
 		EngineeringStrain1D localTotalStrain;
@@ -313,6 +317,8 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
                     if (numNonlocalEqStrainDofs>0)
                     {
                         constitutiveOutputList[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN] = &localEqStrain;
+                        constitutiveOutputList[NuTo::Constitutive::Output::VARIABLE_NONLOCAL_RADIUS] = &transientNonlocalParameter;
+
                     }
 				}
 			break;
@@ -349,6 +355,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
                     if (numNonlocalEqStrainDofs>0 && numDispDofs>0)
                     {
                         constitutiveOutputList[NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_D_STRAIN_1D] = &tangentLocalEqStrainStrain;
+                        constitutiveOutputList[NuTo::Constitutive::Output::VARIABLE_NONLOCAL_RADIUS] = &transientNonlocalParameter;
                     }
                     if (numRelativeHumidityDofs || numWaterPhaseFractionDofs)
                     {
@@ -595,9 +602,8 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				CalculateKkk(shapeFunctionsNonlocalTotalStrain,derivativeShapeFunctionsNonlocalTotalStrainLocal,constitutivePtr->GetNonlocalRadius(),factor,Kkk);
 			} else if (numNonlocalEqStrainDofs > 0)
             {
-                //calculate Kkk detJ*(cBtB+NtN)
-                //the nonlocal radius is in a gradient formulation is different from the nonlocal radius in an integral formulation
-                CalculateKkk(shapeFunctionsNonlocalEqStrain,derivativeShapeFunctionsNonlocalEqStrainLocal,constitutivePtr->GetNonlocalRadius(),factor,Kkk);
+                //calculate Kkk detJ*(BtB+Nt(1/ct)N)
+                CalculateKkkTransient(shapeFunctionsNonlocalEqStrain,derivativeShapeFunctionsNonlocalEqStrainLocal,transientNonlocalParameter[0],factor,Kkk);
             }
 
 			//calculate output
@@ -633,7 +639,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
                         if (numNonlocalEqStrainDofs>0)
                         {
                             //add Kkk*nonlocalEqStrain-detJ*F
-                            AddDetJRnonlocalEqStrain(shapeFunctionsNonlocalEqStrain,localEqStrain, Kkk, nodeNonlocalEqStrain, factor, numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs+numNonlocalTotalStrainDofs, it->second->GetFullVectorDouble());
+                            AddDetJRnonlocalEqStrain(shapeFunctionsNonlocalEqStrain,localEqStrain, Kkk, nodeNonlocalEqStrain, factor/transientNonlocalParameter[0], numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs+numNonlocalTotalStrainDofs, it->second->GetFullVectorDouble());
                         }
 					}
 				}
@@ -945,7 +951,7 @@ void NuTo::Truss::AddDetJNtdLocalEqPlasticStraindEpsilonB(const std::vector<doub
 
 //! @brief add detJ transpose N dOmega/depsilon B
 //! @param rShapeFunctions of the ip for all shape functions
-//! @param rTangentLocalEqStrain derivative of the local eq plastic strains with respect to the strain
+//! @param rTangentLocalEqStrain derivative of the local eq strains with respect to the strain
 //! @param rderivativeShapeFunctions of the ip for all shape functions
 //! @param rFactor factor including detJ and area
 //! @param rResult result
@@ -1183,6 +1189,29 @@ void NuTo::Truss::CalculateKkk(const std::vector<double>& shapeFunctions,const s
 					      nonlocalGradientRadius*derivativeShapeFunctions[count]*derivativeShapeFunctions[count2]);
 		}
 	}
+}
+
+//! @brief calculates the Kkk matrix
+//! @param rShapeFunctions of the ip for all shape functions
+//! @param rDerivativeShapeFunctions of the ip for all shape functions
+//! @param transient nonlocal gradient radius
+//! @param factor multiplication factor (detJ area..)
+//! @param Kkk return matrix with detJ * (Nt 1/ct N + BtB)
+void NuTo::Truss::CalculateKkkTransient(const std::vector<double>& rShapeFunctions,const std::vector<double>& rDerivativeShapeFunctions,double rTransientNonlocalRadius,double factor,
+        FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Kkk)
+{
+    //resize and set to zero
+    Kkk.Resize(rShapeFunctions.size(),rShapeFunctions.size());
+    //add NtN
+    for (unsigned int count=0; count<rShapeFunctions.size();count++)
+    {
+        for (unsigned int count2=0; count2<rShapeFunctions.size();count2++)
+        {
+            Kkk(count,count2)=factor*(
+                          rShapeFunctions[count]*rShapeFunctions[count2] / rTransientNonlocalRadius+
+                          rDerivativeShapeFunctions[count]*rDerivativeShapeFunctions[count2]);
+        }
+    }
 }
 
 //! @brief stores the temperatures of the nodes

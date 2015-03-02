@@ -44,11 +44,12 @@ enum eSolutionPhaseType
 
 enum eDamageLawType
 {
-    ISOTROPIC_NO_SOFTENING,             //!< constant post peak behaviour
-    ISOTROPIC_LINEAR_SOFTENING,         //!< linear
-    ISOTROPIC_EXPONENTIAL_SOFTENING,    //!< exponential
-    ISOTROPIC_EXPONENTIAL_SOFTENING_SMOOTH, //!< exponential with polynomial smoothing near peak
-    ISOTROPIC_CUBIC_HERMITE             //!< cubic hermite h00
+    ISOTROPIC_NO_SOFTENING,                         //!< constant post peak behaviour
+    ISOTROPIC_LINEAR_SOFTENING,                     //!< linear
+    ISOTROPIC_EXPONENTIAL_SOFTENING,                //!< exponential
+    ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD,       //!< exponential with residual loading capacity
+    ISOTROPIC_EXPONENTIAL_SOFTENING_SMOOTH,         //!< exponential with polynomial smoothing near peak
+    ISOTROPIC_CUBIC_HERMITE                         //!< cubic hermite h00
 };
 
 namespace Input
@@ -124,7 +125,7 @@ enum eOutput
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_3D,
     D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D,
     D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_1D,
-	D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D,
+    D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_1D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_2D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_3D,
@@ -144,7 +145,7 @@ enum eOutput
     LOCAL_EQ_STRAIN,
     D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D,
     D_LOCAL_EQ_STRAIN_D_STRAIN_1D,
-	ENGINEERING_STRESS_REAL_1D,
+    ENGINEERING_STRESS_REAL_1D,
 	ENGINEERING_STRAIN_VIRT_1D,
 	D_ENGINEERING_STRESS_REAL_D_ENGINEERING_STRAIN_REAL_1D,
 	D_ENGINEERING_STRESS_REAL_D_NONLOCAL_TOTAL_STRAIN_REAL_1D,
@@ -159,7 +160,8 @@ enum eOutput
     WATER_PHASE_DENSITY,
 	FATIGUE_SAVE_STATIC_DATA,
 	FATIGUE_RESTORE_STATIC_DATA,
-	FATIGUE_EXTRAPOLATE_STATIC_DATA
+	FATIGUE_EXTRAPOLATE_STATIC_DATA,
+	VARIABLE_NONLOCAL_RADIUS
 };
 }
 
@@ -207,7 +209,9 @@ static inline std::string OutputToString( const Output::eOutput& e )
                               (Output::D_ENGINEERING_STRAIN_VIRT_D_STRESS_REAL_1D,"D_ENGINEERING_STRAIN_VIRT_D_STRESS_REAL_1D")
                               (Output::D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D,"D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D")
                               (Output::VAPOR_PHASE_DIFFUSION_COEFFICIENT, "VAPOR_PHASE_DIFFUSION_COEFFICIENT")
-                              (Output::WATER_PHASE_DIFFUSION_COEFFICIENT, "WATER_PHASE_DIFFUSION_COEFFICIENT");
+                              (Output::WATER_PHASE_DIFFUSION_COEFFICIENT, "WATER_PHASE_DIFFUSION_COEFFICIENT")
+                              (Output::VARIABLE_NONLOCAL_RADIUS, "VARIABLE_NONLOCAL_RADIUS");
+
   std::map< Output::eOutput, std::string >::const_iterator it = lut.find( e );
   if ( lut.end() != it )
     return it->second;

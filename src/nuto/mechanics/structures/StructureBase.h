@@ -1336,8 +1336,17 @@ public:
     double ConstitutiveLawGetNonlocalRadius(int rIdent) const;
 
     //! @brief ... set nonlocal radius
-    //! @param rH ...  nonlocal radius
+    //! @param rRadius ...  nonlocal radius
     void ConstitutiveLawSetNonlocalRadius(int rIdent, double rRadius);
+
+    //! @brief ... get nonlocal radius parameter
+    //! @return ... nonlocal radius parameter
+    double ConstitutiveLawGetNonlocalRadiusParameter(int rIdent) const;
+
+    //! @brief ... set nonlocal radius parameter
+    //! @param rRadius ...  nonlocal radius parameter
+    void ConstitutiveLawSetNonlocalRadiusParameter(int rIdent, double rRadiusParameter);
+
 
     //! @brief ... get tensile strength
     //! @param rTensileStrength ...  tensile strength

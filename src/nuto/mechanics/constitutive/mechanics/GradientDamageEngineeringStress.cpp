@@ -45,9 +45,11 @@ NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress() : Const
     mE = 0.;
     mNu = 0.;
     mNonlocalRadius = 0.;
+    mNonlocalRadiusParameter = 0.;
     mThermalExpansionCoefficient = 0.;
     mTensileStrength = 0.;
     mFractureEnergy = 0.;
+
     mDamageLawType = Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING;
 
 
@@ -162,6 +164,9 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(ElementBas
         localEqStrainDerivative[0] = 1.;
 
 
+
+
+
         //set this to true, if update is in the map, perform the update after all other outputs have been calculated
         bool performUpdateAtEnd(false);
 
@@ -216,14 +221,31 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(ElementBas
                     // unloading
                     tangent(0,0) = 0.;
                 }
-
             }
             break;
             case NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_D_STRAIN_1D:
             {
                 ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
                 tangent.SetSymmetry(true);
-                tangent(0,0) = localEqStrainDerivative[0];
+
+                double xi = mNonlocalRadius;
+                double dXi = 0;
+
+                if (mNonlocalRadiusParameter != 0.)
+                {
+                    double e_xi = mTensileStrength / mE * mNonlocalRadiusParameter;
+                    if (localEqStrain[0] <= e_xi)
+                    {
+                        double c0 = 0.01;
+                        xi = c0 + (mNonlocalRadius - c0) * (localEqStrain[0] / e_xi);
+                        dXi = (mNonlocalRadius - c0)/ e_xi;
+                    }
+                }
+
+                double factor = 1./xi - (localEqStrain[0] - nonlocalEqStrain)/(xi*xi)*dXi;
+
+                tangent(0,0) = factor * localEqStrainDerivative[0];
+
             }
             break;
             case NuTo::Constitutive::Output::ENGINEERING_STRAIN_3D:
@@ -235,6 +257,21 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(ElementBas
                 engineeringStrain3D[3] = 0.;
                 engineeringStrain3D[4] = 0.;
                 engineeringStrain3D[5] = 0.;
+            }
+            break;
+            case NuTo::Constitutive::Output::VARIABLE_NONLOCAL_RADIUS:
+            {
+                ConstitutiveTangentLocal<1,1>& variableNonlocalRadius(itOutput->second->AsConstitutiveTangentLocal_1x1());
+                variableNonlocalRadius[0] = mNonlocalRadius;
+                if (mNonlocalRadiusParameter != 0.)
+                {
+                    double e_xi = mTensileStrength / mE * mNonlocalRadiusParameter;
+                    if (localEqStrain[0] <= e_xi)
+                    {
+                        double c0 = 0.01;
+                        variableNonlocalRadius[0] = c0 + (mNonlocalRadius - c0) * (localEqStrain[0] / e_xi);
+                    }
+                }
             }
             break;
             case NuTo::Constitutive::Output::DAMAGE:
@@ -392,6 +429,22 @@ void NuTo::GradientDamageEngineeringStress::SetNonlocalRadius(double rNonlocalRa
 {
     this->CheckNonlocalRadius(rNonlocalRadius);
     this->mNonlocalRadius = rNonlocalRadius;
+    this->SetParametersValid();
+}
+
+//! @brief ... get nonlocal radius parameter
+//! @return ... nonlocal radius parameter
+double NuTo::GradientDamageEngineeringStress::GetNonlocalRadiusParameter() const
+{
+    return mNonlocalRadiusParameter;
+}
+
+//! @brief ... set nonlocal radius parameter
+//! @param rRadius ...  nonlocal radius parameter
+void NuTo::GradientDamageEngineeringStress::SetNonlocalRadiusParameter(double rRadiusParameter)
+{
+    this->CheckNonlocalRadiusParameter(rRadiusParameter);
+    mNonlocalRadiusParameter = rRadiusParameter;
     this->SetParametersValid();
 }
 
@@ -557,6 +610,16 @@ void NuTo::GradientDamageEngineeringStress::CheckNonlocalRadius(double rRadius) 
     }
 }
 
+//! @brief ... check if the nonlocal radius parameter is greater than 1
+//! @param rRadius ... nonlocal radius
+void NuTo::GradientDamageEngineeringStress::CheckNonlocalRadiusParameter(double rRadiusParameter) const
+{
+    if (rRadiusParameter <= 1)
+    {
+        throw NuTo::MechanicsException("[NuTo::GradientDamageEngineeringStress::CheckNonlocalRadius] Nonlocal radius parameter must be greater than 1.");
+    }
+}
+
 
 //! @brief ... check thermal expansion coefficient
 //! @param rAlpha ... thermal expansion coefficient
@@ -598,6 +661,8 @@ void NuTo::GradientDamageEngineeringStress::CheckDamageLaw(
     case Constitutive::eDamageLawType::ISOTROPIC_LINEAR_SOFTENING:
         break;
     case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING:
+        break;
+    case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD:
         break;
     case Constitutive::eDamageLawType::ISOTROPIC_CUBIC_HERMITE:
         break;
@@ -684,6 +749,14 @@ double NuTo::GradientDamageEngineeringStress::CalculateDamage(double rKappa)cons
             }
             break;
         }
+        case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD:
+        {
+            if (rKappa > e_0)
+            {
+                omega = 1 - e_0 / rKappa *(1 - MAX_OMEGA + MAX_OMEGA* exp( (e_0 - rKappa) / e_f));
+            }
+            break;
+        }
         case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_SMOOTH:
         {
             double alpha = mDamageLawParameters[0];
@@ -765,7 +838,13 @@ double NuTo::GradientDamageEngineeringStress::CalculateDerivativeDamage(double r
         }
         case Constitutive::eDamageLawType::ISOTROPIC_LINEAR_SOFTENING:
         {
-            if (rKappa > e_0 && rKappa < e_c)
+            double termA = e_c / MAX_OMEGA / (e_c-e_0);
+            double kappa_max = termA*e_0 / (termA-1);
+
+            if (rKappa > kappa_max)
+                std::cout << CalculateDamage(kappa_max) << std::endl;
+
+            if (rKappa > e_0 && rKappa < kappa_max)
             {
                 DomegaDkappa = e_c * e_0 / (rKappa * rKappa * (e_c - e_0) );
             }
@@ -776,6 +855,14 @@ double NuTo::GradientDamageEngineeringStress::CalculateDerivativeDamage(double r
             if (rKappa > e_0)
             {
                 DomegaDkappa = e_0/rKappa*(1/rKappa + 1/e_f) * exp((e_0 - rKappa)/e_f);
+            }
+            break;
+        }
+        case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD:
+        {
+            if (rKappa > e_0)
+            {
+                DomegaDkappa = e_0/rKappa*((1/rKappa + 1/e_f) * MAX_OMEGA * exp((e_0 - rKappa)/e_f) + (1-MAX_OMEGA)/rKappa) ;
             }
             break;
         }

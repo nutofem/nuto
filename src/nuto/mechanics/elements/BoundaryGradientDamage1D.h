@@ -17,7 +17,8 @@ enum eType
     NEUMANN_HOMOGENEOUS,            // grad nonlocal eq strain * n = 0
     DIRICHLET_INHOMOGENEOUS,        // nonlocal eq strain = local eq strain
     ROBIN_INHOMOGENEOUS,            // l * grad nonlocal eq strain * n + nonlocal eq strain = local eq strain
-    ROBIN_HOMOGENEOUS               // l * grad nonlocal eq strain * n + nonlocal eq strain = 0
+    ROBIN_HOMOGENEOUS,              // l * grad nonlocal eq strain * n + nonlocal eq strain = 0
+    MACAULAY                        // l * grad nonlocal eq strain * n + (nonlocal eq strain - local eq strain)_- = 0
 };
 
 }  // namespace BoundaryCondition
@@ -41,6 +42,7 @@ public:
     BoundaryGradientDamage1D(const StructureBase* rStructure,
     		Truss* rRealBoundaryElement,
     		int rSurfaceEdge,
+    		BoundaryCondition::eType rBoundaryConditionType,
     		ElementData::eElementDataType rElementDataType,
     		IntegrationType::eIntegrationType rIntegrationType,
     		IpData::eIpDataType rIpDataType
@@ -49,6 +51,7 @@ public:
     BoundaryGradientDamage1D(const StructureBase* rStructure,
             Truss* rRealBoundaryElement,
             NodeBase* rSurfaceNode,
+            BoundaryCondition::eType rBoundaryConditionType,
             ElementData::eElementDataType rElementDataType,
             IntegrationType::eIntegrationType rIntegrationType,
             IpData::eIpDataType rIpDataType
@@ -91,7 +94,10 @@ public:
     //! @return pointer to the node
     NodeBase* GetNode(int rLocalNodeNumber)
     {
-        return GetNode(rLocalNodeNumber);
+        assert(rLocalNodeNumber==0);
+        std::vector<const NodeBase*> surfaceNodes(1);
+        mRealBoundaryElement->GetSurfaceNodes(mSurfaceEdge, surfaceNodes);
+        return const_cast<NodeBase*>(surfaceNodes[0]);
     }
 
     //! @brief returns a pointer to the i-th node of the element
