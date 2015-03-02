@@ -420,7 +420,7 @@ ENDIF(ENABLE_EXAMPLES)
 #if it is empty, there is just an empty include
 #it is used for adding working examples locally, which should not be exposed to the public
 IF(ENABLE_MY_EXAMPLES)
-  ADD_SUBDIRECTORY(myNutoExamplesTemp)
+  ADD_SUBDIRECTORY(myNutoExamples)
 ENDIF(ENABLE_MY_EXAMPLES)  
 
 
