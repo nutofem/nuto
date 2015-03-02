@@ -589,6 +589,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
     		return errorReturnMapping;
     }
 
+
     // calculate output
     for (std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>::iterator itOutput = rConstitutiveOutput.begin();
     		itOutput != rConstitutiveOutput.end(); itOutput++)
