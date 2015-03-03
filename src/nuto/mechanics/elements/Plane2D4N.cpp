@@ -37,11 +37,7 @@ NuTo::Plane2D4N::Plane2D4N(NuTo::StructureBase* rStructure, const std::vector<Nu
 //! @param shape functions for all the nodes
 void NuTo::Plane2D4N::CalculateShapeFunctionsGeometry(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
 {
-	assert(rShapeFunctions.size()==4);
-    rShapeFunctions[0] = 0.25*(1.-rNaturalCoordinates[0])*(1.-rNaturalCoordinates[1]);
-    rShapeFunctions[1] = 0.25*(1.+rNaturalCoordinates[0])*(1.-rNaturalCoordinates[1]);
-    rShapeFunctions[2] = 0.25*(1.+rNaturalCoordinates[0])*(1.+rNaturalCoordinates[1]);
-    rShapeFunctions[3] = 0.25*(1.-rNaturalCoordinates[0])*(1.+rNaturalCoordinates[1]);
+    ShapeFunctions2D::ShapeFunctions2D4N(rNaturalCoordinates, rShapeFunctions);
 }
 
 //! @brief calculates the shape functions
@@ -58,18 +54,7 @@ void NuTo::Plane2D4N::CalculateShapeFunctionsField(const double rNaturalCoordina
 //! first all the directions for a single node, and then for the next node
 void NuTo::Plane2D4N::CalculateDerivativeShapeFunctionsGeometryNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
 {
-	assert(rDerivativeShapeFunctions.size()==8);
-    rDerivativeShapeFunctions[0] = -0.25*(1.-rNaturalCoordinates[1]);
-    rDerivativeShapeFunctions[1] = -0.25*(1.-rNaturalCoordinates[0]);
-
-    rDerivativeShapeFunctions[2] = +0.25*(1.-rNaturalCoordinates[1]);
-    rDerivativeShapeFunctions[3] = -0.25*(1.+rNaturalCoordinates[0]);
-
-    rDerivativeShapeFunctions[4] = +0.25*(1.+rNaturalCoordinates[1]);
-    rDerivativeShapeFunctions[5] = +0.25*(1.+rNaturalCoordinates[0]);
-
-    rDerivativeShapeFunctions[6] = -0.25*(1.+rNaturalCoordinates[1]);
-    rDerivativeShapeFunctions[7] = +0.25*(1.-rNaturalCoordinates[0]);
+    ShapeFunctions2D::DerivativeShapeFunctions2D4N(rNaturalCoordinates, rDerivativeShapeFunctions);
 }
 
 //! @brief calculates the derivative of the shape functions
@@ -86,9 +71,7 @@ void NuTo::Plane2D4N::CalculateDerivativeShapeFunctionsFieldNatural(const double
 //! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
 void NuTo::Plane2D4N::CalculateShapeFunctionsSurface(double rNaturalCoordinates, std::vector<double>& rShapeFunctions)const
 {
-    assert(rShapeFunctions.size()==2);
-    rShapeFunctions[0] = 0.5*(1.-rNaturalCoordinates);
-    rShapeFunctions[1] = 0.5*(1.+rNaturalCoordinates);
+    ShapeFunctions1D::ShapeFunctions1D2N(rNaturalCoordinates, rShapeFunctions);
 }
 
 //! @brief calculates the derivative of the shape functions with respect to local coordinatesfor the surfaces (required for surface loads)
@@ -97,9 +80,7 @@ void NuTo::Plane2D4N::CalculateShapeFunctionsSurface(double rNaturalCoordinates,
 //! first all the directions for a single node, and then for the next node
 void NuTo::Plane2D4N::CalculateDerivativeShapeFunctionsLocalSurface(double rNaturalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
 {
-    assert(rDerivativeShapeFunctions.size()==2);
-    rDerivativeShapeFunctions[0] = -0.5;
-    rDerivativeShapeFunctions[1] = 0.5;
+    ShapeFunctions1D::DerivativeShapeFunctions1D2N(rNaturalCoordinates, rDerivativeShapeFunctions);
 }
 
 //! @brief returns the surface nodes

@@ -127,6 +127,17 @@ IF(ENABLE_C++_TESTS)
   ENDIF(MUMPS_FOUND)
   ADD_TEST(c::mechanics::Plane2D3N ${CMAKE_CURRENT_BUILD_DIR}/Plane2D3N)
 
+  # test surface load integration in 3D
+  ADD_EXECUTABLE(SurfaceLoad2D SurfaceLoad2D.cpp)
+  TARGET_LINK_LIBRARIES(SurfaceLoad2D NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )
+  IF (ENABLE_VISUALIZE)
+    TARGET_LINK_LIBRARIES(SurfaceLoad2D NuToVisualize)
+  ENDIF (ENABLE_VISUALIZE)
+  IF(MUMPS_FOUND)
+    TARGET_LINK_LIBRARIES(SurfaceLoad2D ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+  ENDIF(MUMPS_FOUND)
+  ADD_TEST(c::mechanics::SurfaceLoad2D ${CMAKE_CURRENT_BUILD_DIR}/SurfaceLoad2D)
+
   # test triangular 10 node element
   ADD_EXECUTABLE(Plane2D10N Plane2D10N.cpp)
   TARGET_LINK_LIBRARIES(Plane2D10N NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )
@@ -158,7 +169,6 @@ IF(ENABLE_C++_TESTS)
   ADD_TEST(c::mechanics::CoefficientChecks ${CMAKE_CURRENT_BUILD_DIR}/CoefficientChecks)
 
   # LobattoIntegration
-  # LobattoIntegration
   ADD_EXECUTABLE(LobattoIntegration LobattoIntegration.cpp)
   TARGET_LINK_LIBRARIES(LobattoIntegration NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )
   IF (ENABLE_VISUALIZE)
@@ -172,22 +182,8 @@ IF(ENABLE_C++_TESTS)
   ENDIF(MINGW)#
   ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoIntegration)
   
-
 ENDIF(ENABLE_C++_TESTS)
-
+  
 IF(ENABLE_C++_TESTS_WIP)  
-  # GradientDamage
-  ADD_EXECUTABLE(GradientDamage GradientDamage.cpp)
-  TARGET_LINK_LIBRARIES(GradientDamage NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-  IF (ENABLE_VISUALIZE)
-    TARGET_LINK_LIBRARIES(GradientDamage NuToVisualize)
-  ENDIF (ENABLE_VISUALIZE)
-  IF(MUMPS_FOUND)
-    TARGET_LINK_LIBRARIES(GradientDamage ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  ENDIF(MUMPS_FOUND)
-  IF(MINGW)
-    SET_TARGET_PROPERTIES(GradientDamage PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  ENDIF(MINGW)
-  ADD_TEST(c::mechanics::GradientDamage ${CMAKE_CURRENT_BUILD_DIR}/GradientDamage)
   
 ENDIF(ENABLE_C++_TESTS_WIP)
