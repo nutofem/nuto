@@ -768,6 +768,40 @@ void NuTo::Plane::AddDetJBtHeatFlux(const std::vector<double>& rDerivativeShapeF
 }
 
 
+//! @brief calculates the shape functions
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param shape functions for all the nodes
+void NuTo::Plane::CalculateShapeFunctionsField(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
+{
+    CalculateShapeFunctionsGeometry(rNaturalCoordinates,rShapeFunctions);
+}
+
+//! @brief calculates the shape functions
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param shape functions for the nonlocal eq strain nodes
+void NuTo::Plane::CalculateShapeFunctionsNonlocalEqStrain(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
+{
+    CalculateShapeFunctionsGeometry(rNaturalCoordinates,rShapeFunctions);
+}
+
+//! @brief calculates the derivative of the shape functions
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param derivative of the shape functions for all the nodes,
+//! first all the directions for a single node, and then for the next node
+void NuTo::Plane::CalculateDerivativeShapeFunctionsFieldNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
+{
+    CalculateDerivativeShapeFunctionsGeometryNatural(rNaturalCoordinates,rDerivativeShapeFunctions);
+}
+
+//! @brief calculates the derivative of the shape functions
+//! @param rLocalCoordinates local coordinates of the integration point
+//! @param derivative of the shape functions for all the nodes,
+//! first all the directions for a single node, and then for the next node
+void NuTo::Plane::CalculateDerivativeShapeFunctionsNonlocalEqStrainNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
+{
+    CalculateDerivativeShapeFunctionsGeometryNatural(rNaturalCoordinates,rDerivativeShapeFunctions);
+}
+
 //! @brief Calculates the the inverse of the Jacobian and its determinant
 //! @param rDerivativeShapeFunctions Derivatives of the shape functions (dN1dx, dN1dy, dN1dz, dN2dx, ..
 //! @param rNodeCoordinates Node coordinates (X1,Y1,Z1,X2,Y2,Z2,...
@@ -838,6 +872,52 @@ void NuTo::Plane::CalculateDerivativeShapeFunctionsLocal(const std::vector<doubl
             rDerivativeShapeFunctionsNatural[mul2count]     *rJacInv[1]+
             rDerivativeShapeFunctionsNatural[mul2countplus1]*rJacInv[3];
     }
+}
+
+//! @brief returns the number of nodes in this element(field interpolation)
+//! @return number of nodes
+int NuTo::Plane::GetNumNodesField()const
+{
+    return GetNumNodesGeometry();
+}
+
+//! @brief returns a pointer to the i-th node of the element
+//! @param local node number
+//! @return pointer to the node
+NuTo::NodeBase* NuTo::Plane::GetNodeField(int rLocalNodeNumber)
+{
+    return GetNode(rLocalNodeNumber);
+}
+
+//! @brief returns a pointer to the i-th node of the element
+//! @param local node number
+//! @return pointer to the node
+const NuTo::NodeBase* NuTo::Plane::GetNodeField(int rLocalNodeNumber)const
+{
+    return GetNode(rLocalNodeNumber);
+}
+
+//! @brief returns the number of nodes in this element(nonlocal eq strain interpolation)
+//! @return number of nodes
+int NuTo::Plane::GetNumNodesNonlocalEqStrain()const
+{
+    return GetNumNodesGeometry();
+}
+
+//! @brief returns a pointer to the i-th node of the element
+//! @param local node number
+//! @return pointer to the node
+NuTo::NodeBase* NuTo::Plane::GetNodeNonlocalEqStrain(int rLocalNodeNumber)
+{
+    return GetNode(rLocalNodeNumber);
+}
+
+//! @brief returns a pointer to the i-th node of the element
+//! @param local node number
+//! @return pointer to the node
+const NuTo::NodeBase* NuTo::Plane::GetNodeNonlocalEqStrain(int rLocalNodeNumber)const
+{
+    return GetNode(rLocalNodeNumber);
 }
 
 //! @brief calculates the deformation gradient in 2D

@@ -290,9 +290,9 @@ void NuTo::Structure::BoundaryElementsCreate (
                                 this, itElement->second->AsTruss(),
                                 NodeGetNodePtr(nodeIds[iNode]),
                                 rBoundaryConditionType,
-                                NuTo::ElementData::CONSTITUTIVELAWIP,
+                                rElementDataType,
                                 IntegrationType::IntegrationType0DBoundary,
-                                IpData::STATICDATA);
+                                rIpDataType);
 
                         //find unused integer id
                         int elementNumber(mElementMap.size());

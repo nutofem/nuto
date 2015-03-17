@@ -76,187 +76,6 @@ int NuTo::BoundaryGradientDamage1D::CalculateSurfaceEdge(const NodeBase* rNode) 
     throw MechanicsException("[NuTo::BoundaryGradientDamage1D::CalculateSurfaceEdge] The element does not contain this boundary node");
 }
 
-void NuTo::BoundaryGradientDamage1D::ApplyConstraints(BoundaryCondition::eType rType, StructureBase* rStructure)
-{
-    mBoundaryConditionType = rType;
-
-
-    // the boundary conditions are fulfilled in a weak sense, see Evaluate()
-    return;
-
-
-
-
-    // get integration point
-    std::vector<double> naturalSurfaceCoordinates(1);
-    mRealBoundaryElement->CalculateNaturalSurfaceCoordinates(mSurfaceEdge,0,naturalSurfaceCoordinates);
-    double ip = naturalSurfaceCoordinates[0];
-
-    // allocate misc stuff
-    std::vector<double> localNodeCoord(mRealBoundaryElement->GetNumNodesGeometry());
-    std::vector<double> nodeDisp(mRealBoundaryElement->GetNumNodesField());
-    std::vector<double> nodeNonlocalEqStrain(mRealBoundaryElement->GetNumShapeFunctionsNonlocalEqStrain());
-
-    std::vector<double> derivativeShapeFunctionsGeometryNatural(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumNodesGeometry());
-
-    std::vector<double> derivativeShapeFunctionsFieldNatural(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumNodesField());
-    std::vector<double> derivativeShapeFunctionsFieldLocal(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumNodesField());
-
-    std::vector<double> derivativeShapeFunctionsNonlocalEqStrainNatural(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumShapeFunctionsNonlocalEqStrain());
-    std::vector<double> derivativeShapeFunctionsNonlocalEqStrainLocal(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumShapeFunctionsNonlocalEqStrain());
-
-    // get nodal values
-    mRealBoundaryElement->CalculateLocalCoordinates(localNodeCoord);
-    mRealBoundaryElement->CalculateLocalDisplacements(0, nodeDisp);
-    mRealBoundaryElement->CalculateNodalNonlocalEqStrain(0, nodeNonlocalEqStrain);
-
-
-    // get natural derivative shape functions and calculate determinant of the Jacobian
-    mRealBoundaryElement->CalculateDerivativeShapeFunctionsGeometry(ip, derivativeShapeFunctionsGeometryNatural);
-    mRealBoundaryElement->CalculateDerivativeShapeFunctionsField(ip, derivativeShapeFunctionsFieldNatural);
-    mRealBoundaryElement->CalculateDerivativeShapeFunctionsNonlocalEqStrain(ip, derivativeShapeFunctionsNonlocalEqStrainNatural);
-
-    double detJ = mRealBoundaryElement->DetJacobian(derivativeShapeFunctionsGeometryNatural, localNodeCoord);
-
-
-    // get surface node
-    std::vector<const NodeBase*> surfaceNodePtr(1);
-    mRealBoundaryElement->GetSurfaceNodes(mSurfaceEdge, surfaceNodePtr);
-    int surfaceNode = mStructure->NodeGetId(surfaceNodePtr[0]);
-
-    double sqrtNonlocalParameterC = std::sqrt(GetConstitutiveLaw(0)->GetNonlocalRadius());
-
-
-    for (unsigned int i = 0; i < derivativeShapeFunctionsFieldNatural.size(); ++i)
-        derivativeShapeFunctionsFieldLocal[i] = derivativeShapeFunctionsFieldNatural[i] / detJ;
-
-    for (unsigned int i = 0; i < derivativeShapeFunctionsNonlocalEqStrainNatural.size(); ++i)
-        derivativeShapeFunctionsNonlocalEqStrainLocal[i] = derivativeShapeFunctionsNonlocalEqStrainNatural[i] / detJ;
-
-
-    switch (mBoundaryConditionType)
-    {
-        case BoundaryCondition::NEUMANN_HOMOGENEOUS:
-        {
-            // BC: grad nonlocalEqStrain * n = 0
-            // B*nonlocalEqStrain = 0
-
-            // create constraint with first term:
-            int nodeId = mStructure->NodeGetId(mRealBoundaryElement->GetNodeNonlocalEqStrain(0));
-            int constraint = rStructure->ConstraintLinearEquationCreate(nodeId, "nonlocalEqStrain", derivativeShapeFunctionsNonlocalEqStrainLocal[0], 0.);
-
-            // create other terms via loop:
-            for (int iEqStrainNode = 1; iEqStrainNode < mRealBoundaryElement->GetNumShapeFunctionsNonlocalEqStrain(); ++iEqStrainNode)
-            {
-                nodeId = mStructure->NodeGetId(mRealBoundaryElement->GetNodeNonlocalEqStrain(iEqStrainNode));
-                rStructure->ConstraintLinearEquationAddTerm(constraint, nodeId, "nonlocalEqStrain", derivativeShapeFunctionsNonlocalEqStrainLocal[iEqStrainNode]);
-            }
-        }
-        break;
-
-        case BoundaryCondition::DIRICHLET_INHOMOGENEOUS:
-        {
-            // BC: local eq strains - nonlocal eq strains = 0
-            // get surface node index
-
-
-             // add constraints
-            int constraint = rStructure->ConstraintLinearEquationCreate(surfaceNode, "nonlocalEqStrain", -1., 0);
-
-            for (int iNodeDisp = 0; iNodeDisp < mRealBoundaryElement->GetNumNodesField(); ++iNodeDisp)
-            {
-                const NodeBase* nodeDisp = mRealBoundaryElement->GetNodeField(iNodeDisp);
-                int nodeIndex = mStructure->NodeGetId(nodeDisp);
-                rStructure->ConstraintLinearEquationAddTerm(constraint, nodeIndex, "X_DISPLACEMENT", derivativeShapeFunctionsFieldLocal[iNodeDisp]);
-            }
-        }
-        break;
-
-        case BoundaryCondition::ROBIN_INHOMOGENEOUS:
-        {
-            // BC: l*grad nonlocal eq strain * n + nonlocal eq strain - eq strain = 0
-            // basically a combination of type 0 and 1
-
-
-            double normalVector = mSurfaceEdge == 0 ? -1 : 1;
-
-            // 0 = nonlocal eq strain ...
-            int constraint = rStructure->ConstraintLinearEquationCreate(surfaceNode, "nonlocalEqStrain", 1., 0);
-
-            // + n * B * nonlocal strain
-            for (int iEqStrainNode = 0; iEqStrainNode < mRealBoundaryElement->GetNumShapeFunctionsNonlocalEqStrain(); ++iEqStrainNode)
-            {
-                int nodeId = mStructure->NodeGetId(mRealBoundaryElement->GetNodeNonlocalEqStrain(iEqStrainNode));
-                rStructure->ConstraintLinearEquationAddTerm(constraint, nodeId, "nonlocalEqStrain", sqrtNonlocalParameterC*derivativeShapeFunctionsNonlocalEqStrainLocal[iEqStrainNode]*normalVector);
-            }
-
-            // - B * displacement
-            for (int iNodeDisp = 0; iNodeDisp < mRealBoundaryElement->GetNumNodesField(); ++iNodeDisp)
-            {
-                const NodeBase* nodeDisp = mRealBoundaryElement->GetNodeField(iNodeDisp);
-                int nodeIndex = mStructure->NodeGetId(nodeDisp);
-                rStructure->ConstraintLinearEquationAddTerm(constraint, nodeIndex, "X_DISPLACEMENT", -derivativeShapeFunctionsFieldLocal[iNodeDisp]);
-            }
-        }
-        break;
-        case BoundaryCondition::ROBIN_HOMOGENEOUS:
-        {
-            // BC: l*grad nonlocal eq strain * n + nonlocal eq strain  = 0
-
-            double normalVector = mSurfaceEdge == 0 ? -1 : 1;
-
-            // 0 = nonlocal eq strain ...
-            int constraint = rStructure->ConstraintLinearEquationCreate(surfaceNode, "nonlocalEqStrain", 1., 0);
-
-            // + n * B * nonlocal strain
-            for (int iEqStrainNode = 0; iEqStrainNode < mRealBoundaryElement->GetNumShapeFunctionsNonlocalEqStrain(); ++iEqStrainNode)
-            {
-                int nodeId = mStructure->NodeGetId(mRealBoundaryElement->GetNodeNonlocalEqStrain(iEqStrainNode));
-                rStructure->ConstraintLinearEquationAddTerm(constraint, nodeId, "nonlocalEqStrain", sqrtNonlocalParameterC*derivativeShapeFunctionsNonlocalEqStrainLocal[iEqStrainNode]*normalVector);
-            }
-
-        }
-        break;
-        case BoundaryCondition::MACAULAY:
-            // the boundary conditions are fulfilled by the system. TODO understand exactly why...
-            break;
-        default:
-            break;
-    }
-
-
-
-//    if(rType == 3)
-//    {
-//        // grad eq strain - grad nonlocal eq strain = 0
-//        std::vector<double> d2ShapeFunctions(3); // hardcode!
-//        d2ShapeFunctions[0] =  1 / detJ / detJ;
-//        d2ShapeFunctions[1] = -2. / detJ / detJ;
-//        d2ShapeFunctions[2] =  1 / detJ / detJ;
-//
-//        // create constraint with first term:
-//        int nodeId = mStructure->NodeGetId(mRealBoundaryElement->GetNodeNonlocalEqStrain(0));
-//        int constraint = rStructure->ConstraintLinearEquationCreate(nodeId, "nonlocalEqStrain", derivativeShapeFunctionsNonlocalEqStrainLocal[0], 0.);
-//
-//        // create other terms via loop:
-//        for (int iEqStrainNode = 1; iEqStrainNode < mRealBoundaryElement->GetNumShapeFunctionsNonlocalEqStrain(); ++iEqStrainNode)
-//        {
-//            nodeId = mStructure->NodeGetId(mRealBoundaryElement->GetNodeNonlocalEqStrain(iEqStrainNode));
-//            rStructure->ConstraintLinearEquationAddTerm(constraint, nodeId, "nonlocalEqStrain", derivativeShapeFunctionsNonlocalEqStrainLocal[iEqStrainNode]);
-//        }
-//
-//        for (int iNodeDisp = 0; iNodeDisp < mRealBoundaryElement->GetNumNodesField(); ++iNodeDisp)
-//        {
-//            const NodeBase* nodeDisp = mRealBoundaryElement->GetNodeField(iNodeDisp);
-//            int nodeIndex = mStructure->NodeGetId(nodeDisp);
-//            rStructure->ConstraintLinearEquationAddTerm(constraint, nodeIndex, "X_DISPLACEMENT", -d2ShapeFunctions[iNodeDisp]);
-//        }
-//
-//    }
-
-
-}
-
 
 //! @brief calculates output data fo the elmement
 //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
@@ -317,7 +136,7 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
         LocalEqStrain localEqStrain;
         ConstitutiveTangentLocal<1,1> tangentLocalEqStrainStrain;
         ConstitutiveTangentLocal<1,1> tangentStressNonlocalStrain;
-        ConstitutiveTangentLocal<1,1> variableNonlocalParameter;
+        ConstitutiveTangentLocal<1,1> nonlocalParameterXi;
         Damage omega;
 
         std::map< NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase* > constitutiveOutputList;
@@ -325,36 +144,28 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
         constitutiveOutputList[NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_D_STRAIN_1D] = &tangentLocalEqStrainStrain;
         constitutiveOutputList[NuTo::Constitutive::Output::DAMAGE] = &omega;
         constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_1D] = &tangentStressNonlocalStrain;
-        constitutiveOutputList[NuTo::Constitutive::Output::VARIABLE_NONLOCAL_RADIUS] = &variableNonlocalParameter;
+        constitutiveOutputList[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI] = &nonlocalParameterXi;
 
 
 
 
 
 		// for the B matrix in the equation
-		std::vector<double> derivativeShapeFunctionsNonlocalEqStrainNatural(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumShapeFunctionsNonlocalEqStrain());
-        std::vector<double> derivativeShapeFunctionsNonlocalEqStrainLocal(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumShapeFunctionsNonlocalEqStrain());
-
         std::vector<double> derivativeShapeFunctionsGeometryNatural(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumNodesGeometry());
-        std::vector<double> derivativeShapeFunctionsGeometryLocal(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumNodesGeometry());
 
         std::vector<double> derivativeShapeFunctionsFieldNatural(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumNodesField());
         std::vector<double> derivativeShapeFunctionsFieldLocal(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumNodesField());
 
 
-        // element has only one IP on the boundary
+        // Loop over IP element has only one IP on the boundary
 
         //the ip is located on the boundary of the real element
         std::vector<double> naturalSurfaceCoordinates(1);
-
         mRealBoundaryElement->CalculateNaturalSurfaceCoordinates(mSurfaceEdge, 0, naturalSurfaceCoordinates);
         //allocate space for local ip coordinates
         double naturalIPCoordinate = naturalSurfaceCoordinates[0];
 
-        mRealBoundaryElement->CalculateShapeFunctionsGeometry(naturalIPCoordinate, shapeFunctionsGeometry);
-        mRealBoundaryElement->CalculateShapeFunctionsNonlocalEqStrain(naturalIPCoordinate, shapeFunctionsNonlocalEqStrain);
         //derivative in natural coordinate system
-        mRealBoundaryElement->CalculateDerivativeShapeFunctionsNonlocalEqStrain(naturalIPCoordinate, derivativeShapeFunctionsNonlocalEqStrainNatural);
         mRealBoundaryElement->CalculateDerivativeShapeFunctionsGeometry(naturalIPCoordinate, derivativeShapeFunctionsGeometryNatural);
         mRealBoundaryElement->CalculateDerivativeShapeFunctionsField(naturalIPCoordinate, derivativeShapeFunctionsFieldNatural);
 
@@ -362,18 +173,12 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
         double detJReal = mRealBoundaryElement->DetJacobian(derivativeShapeFunctionsGeometryNatural,localNodeCoordReal);
 
         //derivative in local coordinate system
-        for (unsigned int count=0; count<derivativeShapeFunctionsNonlocalEqStrainNatural.size(); count++)
-            derivativeShapeFunctionsNonlocalEqStrainLocal[count] = derivativeShapeFunctionsNonlocalEqStrainNatural[count]/detJReal;
-
-        for (unsigned int count=0; count<derivativeShapeFunctionsGeometryNatural.size(); count++)
-            derivativeShapeFunctionsGeometryLocal[count] = derivativeShapeFunctionsGeometryNatural[count]/detJReal;
-
         for (unsigned int count=0; count<derivativeShapeFunctionsFieldNatural.size(); count++)
             derivativeShapeFunctionsFieldLocal[count] = derivativeShapeFunctionsFieldNatural[count]/detJReal;
 
 
         // deformation gradient
-        mRealBoundaryElement->CalculateDeformationGradient(derivativeShapeFunctionsGeometryLocal, nodalDisp, deformationGradient);
+        mRealBoundaryElement->CalculateDeformationGradient(derivativeShapeFunctionsFieldLocal, nodalDisp, deformationGradient);
         // nonlocal eq strain
         mRealBoundaryElement->CalculateNonlocalEqStrain(shapeFunctionsNonlocalEqStrain, nodalNonlocalEqStrain, nonlocalEqStrain);
 
@@ -384,15 +189,7 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
             return error;
 
 
-        double E = constitutivePtr->GetYoungsModulus();
-        EngineeringStrain1D strain1D;
-        deformationGradient.GetEngineeringStrain(strain1D);
-
-
-        double dOmega = - tangentStressNonlocalStrain[0] / (E * strain1D[0]);
-
         // calculate normal vector
-        double normalVector = mSurfaceEdge == 0 ? -1 : 1;
 
         // calculate local IP coordinates
         double localIPcoordinate = 0;
@@ -410,17 +207,11 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
         // quick and dirty solution for mcauley combined BCs:
         BoundaryCondition::eType currentBCType = mBoundaryConditionType;
 
-        double alpha = std::sqrt(variableNonlocalParameter(0,0));
-//        std::cout << variableNonlocalParameter[0] << std::endl;
-//        std::cout << variableNonlocalParameter(0,0) << std::endl;
-
-//        double alpha = 1;//std::sqrt(constitutivePtr->GetNonlocalRadius());
-
+        double alpha = std::sqrt(nonlocalParameterXi.GetValue(0));
 
         double e0 = constitutivePtr->GetTensileStrength() / constitutivePtr->GetYoungsModulus();
         if (mBoundaryConditionType == BoundaryCondition::MACAULAY)
         {
-
             // determine state ...
             bool switchToNeumann = (localEqStrain[0] > nonlocalEqStrain[0]) and (localEqStrain[0] > e0);
 
@@ -430,12 +221,9 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
                 currentBCType = BoundaryCondition::NEUMANN_HOMOGENEOUS;
                 std::cout << "Macaulay Culcin helps out in element " <<
                         mRealBoundaryElement->GetStructure()->ElementGetId(this) << std::endl;
-//                std::cout << localEqStrain[0] << "\t" << nonlocalEqStrain[0] << std::endl;
             }
             else
                 currentBCType = BoundaryCondition::ROBIN_INHOMOGENEOUS;
-
-
         }
 
 
@@ -453,16 +241,7 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
                 KkkMod.setZero();
             }
             break;
-            case BoundaryCondition::DIRICHLET_INHOMOGENEOUS:
-            {
-                CalculateKkkMod(
-                        shapeFunctionsNonlocalEqStrain,
-                        derivativeShapeFunctionsNonlocalEqStrainLocal,
-                        1, normalVector, -area, KkkMod);
-            }
-            break;
             case BoundaryCondition::ROBIN_INHOMOGENEOUS:
-            case BoundaryCondition::ROBIN_HOMOGENEOUS:
             {
                 CalculateKkkMod(
                         shapeFunctionsNonlocalEqStrain,
@@ -483,9 +262,6 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
             {
                 NuTo::FullVector<double, Eigen::Dynamic>& f = it->second->GetFullVectorDouble();
                 f.Resize(numDofs);
-
-
-
 
                 if(currentBCType == BoundaryCondition::ROBIN_INHOMOGENEOUS)
                 {
@@ -521,7 +297,6 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
                     it->second->GetFullMatrixDouble().AddBlock(numDispDofsReal, numDispDofsReal, KkkMod);
                     if(currentBCType == BoundaryCondition::ROBIN_INHOMOGENEOUS)
                     {
-                        tangentLocalEqStrainStrain[0] = 1; // TODO fix that!
                         mRealBoundaryElement->AddDetJNtdLocalEqStraindEpsilonB(
                                 shapeFunctionsNonlocalEqStrain,
                                 tangentLocalEqStrainStrain,
@@ -541,7 +316,6 @@ NuTo::Error::eError NuTo::BoundaryGradientDamage1D::Evaluate(boost::ptr_multimap
                 break;
             default:
 
-//                std::cout << "I want to calculate other stuff as well! " << std::endl;
                 break;
           }
         }

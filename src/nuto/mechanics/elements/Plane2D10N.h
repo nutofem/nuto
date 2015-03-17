@@ -88,31 +88,6 @@ public:
         return mNodes[rLocalNodeNumber];
     }
 
-    //! @brief returns the number of nodes in this element(geometry interpolation)
-    //! @return number of nodes
-    int GetNumNodesField()const
-    {
-    	return 10;
-    }
-
-    //! @brief returns a pointer to the i-th node of the element (geometry interpolation)
-    //! @param local node number
-    //! @return pointer to the node
-    const NodeBase* GetNodeField(int rLocalNodeNumber)const
-    {
-        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<10);
-        return mNodes[rLocalNodeNumber];
-    }
-
-    //! @brief returns a pointer to the i-th node of the element (field interpolation)
-    //! @param local node number
-    //! @return pointer to the node
-    NodeBase* GetNodeField(int rLocalNodeNumber)
-    {
-        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<10);
-        return mNodes[rLocalNodeNumber];
-    }
-
     //! @brief returns the enum (type of the element)
     //! @return enum
     NuTo::Element::eElementType GetEnumType()const
@@ -134,22 +109,11 @@ public:
     //! @param shape functions for all the nodes
     void CalculateShapeFunctionsGeometry(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const;
 
-    //! @brief calculates the shape functions
-    //! @param rNaturalCoordinates natural coordinates of the integration point
-    //! @param shape functions for all the nodes
-    void CalculateShapeFunctionsField(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const;
-
     //! @brief calculates the derivative of the shape functions
     //! @param rNaturalCoordinates natural coordinates (-1,1) of the integration point
     //! @param derivative of the shape functions for all the nodes,
     //! first all the directions for a single node, and then for the next node
     void CalculateDerivativeShapeFunctionsGeometryNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const;
-
-    //! @brief calculates the derivative of the shape functions
-    //! @param rNaturalCoordinates natural coordinates (-1,1) of the integration point
-    //! @param derivative of the shape functions for all the nodes,
-    //! first all the directions for a single node, and then for the next node
-    void CalculateDerivativeShapeFunctionsFieldNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const;
 
     //! @brief calculates the shape functions for the surfaces (required for surface loads)
     //! @param rLocalCoordinates local coordinates of the integration point (in the local surface coordinate system)

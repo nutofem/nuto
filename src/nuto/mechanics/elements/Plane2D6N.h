@@ -84,28 +84,28 @@ public:
         return mNodes[rLocalNodeNumber];
     }
 
-    //! @brief returns the number of nodes in this element(geometry interpolation)
+    //! @brief returns the number of nodes in this element(nonlocal eq strain interpolation)
     //! @return number of nodes
-    int GetNumNodesField()const
+    int GetNumNodesNonlocalEqStrain()const override
     {
-    	return 6;
+        return 3;
     }
 
-    //! @brief returns a pointer to the i-th node of the element (geometry interpolation)
+    //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @return pointer to the node
-    const NodeBase* GetNodeField(int rLocalNodeNumber)const
+    NodeBase* GetNodeNonlocalEqStrain(int rLocalNodeNumber) override
     {
-        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<6);
+        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<3);
         return mNodes[rLocalNodeNumber];
     }
 
-    //! @brief returns a pointer to the i-th node of the element (field interpolation)
+    //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @return pointer to the node
-    NodeBase* GetNodeField(int rLocalNodeNumber)
+    const NodeBase* GetNodeNonlocalEqStrain(int rLocalNodeNumber)const
     {
-        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<6);
+        assert(rLocalNodeNumber>=0 && rLocalNodeNumber<3);
         return mNodes[rLocalNodeNumber];
     }
 
@@ -131,9 +131,9 @@ public:
     void CalculateShapeFunctionsGeometry(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const;
 
     //! @brief calculates the shape functions
-    //! @param rNaturalCoordinates natural coordinates of the integration point
-    //! @param shape functions for all the nodes
-    void CalculateShapeFunctionsField(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const;
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param shape functions for the nonlocal eq strain nodes, size should already be correct, but can be checked with an assert
+    void CalculateShapeFunctionsNonlocalEqStrain(const double rLocalCoordinates[2], std::vector<double>& rShapeFunctions)const override;
 
     //! @brief calculates the derivative of the shape functions
     //! @param rNaturalCoordinates natural coordinates (-1,1) of the integration point
@@ -141,11 +141,11 @@ public:
     //! first all the directions for a single node, and then for the next node
     void CalculateDerivativeShapeFunctionsGeometryNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const;
 
-    //! @brief calculates the derivative of the shape functions
-    //! @param rNaturalCoordinates natural coordinates (-1,1) of the integration point
-    //! @param derivative of the shape functions for all the nodes,
+    //! @brief calculates the derivative of the shape functions with respect to local coordinates
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
     //! first all the directions for a single node, and then for the next node
-    void CalculateDerivativeShapeFunctionsFieldNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const;
+    void CalculateDerivativeShapeFunctionsNonlocalEqStrainNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const override;
 
     //! @brief calculates the shape functions for the surfaces (required for surface loads)
     //! @param rLocalCoordinates local coordinates of the integration point (in the local surface coordinate system)

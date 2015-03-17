@@ -41,10 +41,10 @@ void NuTo::Plane2D6N::CalculateShapeFunctionsGeometry(const double rNaturalCoord
 
 //! @brief calculates the shape functions
 //! @param rLocalCoordinates local coordinates of the integration point
-//! @param shape functions for all the nodes
-void NuTo::Plane2D6N::CalculateShapeFunctionsField(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
+//! @param shape functions for the nonlocal eq strain nodes
+void NuTo::Plane2D6N::CalculateShapeFunctionsNonlocalEqStrain(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
 {
-	CalculateShapeFunctionsGeometry(rNaturalCoordinates,rShapeFunctions);
+    NuTo::ShapeFunctions2D::ShapeFunctions2D3N(rNaturalCoordinates, rShapeFunctions);
 }
 
 //! @brief calculates the derivative of the shape functions
@@ -60,10 +60,11 @@ void NuTo::Plane2D6N::CalculateDerivativeShapeFunctionsGeometryNatural(const dou
 //! @param rLocalCoordinates local coordinates of the integration point
 //! @param derivative of the shape functions for all the nodes,
 //! first all the directions for a single node, and then for the next node
-void NuTo::Plane2D6N::CalculateDerivativeShapeFunctionsFieldNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
+void NuTo::Plane2D6N::CalculateDerivativeShapeFunctionsNonlocalEqStrainNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
 {
-	CalculateDerivativeShapeFunctionsGeometryNatural(rNaturalCoordinates,rDerivativeShapeFunctions);
+    NuTo::ShapeFunctions2D::DerivativeShapeFunctions2D3N(rNaturalCoordinates, rDerivativeShapeFunctions);
 }
+
 
 //! @brief calculate the natural coordinates in 2D of all nodes
 void NuTo::Plane2D6N::CalculateNaturalNodeCoordinates(std::vector< std::array<double,2> >& rNaturalNodeCoordinates)

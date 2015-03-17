@@ -466,13 +466,13 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh3D(std::string rOutputFile,
     mFile << "  l7 = newreg; Line Loop(l7) = {-c2,-c7,-c12};Ruled Surface(newreg) = {l7}; \n";
     mFile << "  l8 = newreg; Line Loop(l8) = {-c6,-c9,c2};  Ruled Surface(newreg) = {l8}; \n";
     mFile << "   \n";
-    mFile << "  theLoops[t] = newreg ; \n";
+    mFile << "  theLoops[t] = newreg; \n";
     mFile << " \n";
     mFile << "  Surface Loop(theLoops[t]) = {l8+1,l5+1,l1+1,l2+1,l3+1,l7+1,l6+1,l4+1}; \n";
     mFile << " \n";
-    mFile << "  thehole = newreg ; \n";
-    mFile << "  Volume(thehole) = theLoops[t] ; \n";
-    mFile << "  Physical Volume(t) = thehole ; \n";
+    mFile << "  thehole = newreg; \n";
+    mFile << "  Volume(thehole) = theLoops[t]; \n";
+    mFile << "  theAggregates[t] = thehole; \n";
     mFile << " \n";
     mFile << "Return \n";
     mFile << " \n";
@@ -555,6 +555,7 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh3D(std::string rOutputFile,
     mFile << "volNr = newreg; \n";
     mFile << "Volume(volNr) = {theLoops[]};\n";
     mFile << "Physical Volume(newreg) = volNr;\n";
+    mFile << "Physical Volume(newreg) = {theAggregates[]};\n";
     mFile.close();
 }
 
@@ -595,9 +596,9 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh2D(std::string rOutputFile,
     file << " \n";
     file << "  l1 = newreg; Line Loop(l1) = {c1,c2};\n";
     file << "  s1 = newreg; Plane Surface(s1) = {l1}; \n";
-    file << "  Physical Surface(newreg) = {s1}; \n";
     file << "   \n";
-    file << "  theLoops[t] = l1 ; \n";
+    file << "  theLoops[t] = l1; \n";
+    file << "  theAggregates[t] = s1; \n";
     file << " \n";
     file << "Return \n";
     file << " \n";
@@ -654,5 +655,6 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh2D(std::string rOutputFile,
     file << "volNr = newreg; \n";
     file << "Plane Surface(volNr) = {box, theLoops[]};\n";
     file << "Physical Surface(newreg) = volNr;\n";
+    file << "Physical Surface(newreg) = {theAggregates[]}; \n";
     file.close();
 }

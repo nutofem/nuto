@@ -94,10 +94,10 @@ public:
     //! @brief calculates the Kkk matrix
     //! @param rShapeFunctions of the ip for all shape functions
     //! @param rDerivativeShapeFunctions of the ip for all shape functions
-    //! @param transient nonlocal gradient radius
+    //! @param nonlocal gradient radius xi
     //! @param factor multiplication factor (detJ area..)
     //! @param Kkk return matrix with detJ * (Nt 1/ct N + BtB)
-    void CalculateKkkTransient(const std::vector<double>& rShapeFunctions,const std::vector<double>& rDerivativeShapeFunctions,double rTransientNonlocalRadius,double factor,
+    void CalculateKkkTransient(const std::vector<double>& rShapeFunctions,const std::vector<double>& rDerivativeShapeFunctions,double rNonlocalParameterXi,double factor,
             FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Kkk);
 
 

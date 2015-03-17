@@ -566,8 +566,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 	                nodePtr = new NuTo::NodeCoordinatesDof<1,0,1,0,0,0,0,1,0,0>();
 	                break;
 	            case 2:
-	                throw MechanicsException("[NuTo::Structure::NodeCreate] nonlocal eq strain not yet implemented for 2D.");
-	                //nodePtr = new NuTo::NodeCoordinatesDof<2,0,2,0,0,0,0,1,0,0>();
+	                nodePtr = new NuTo::NodeCoordinatesDof<2,0,2,0,0,0,0,1,0,0>();
 	                break;
 	            case 3:
                     throw MechanicsException("[NuTo::Structure::NodeCreate] nonlocal eq strain not yet implemented for 3D.");

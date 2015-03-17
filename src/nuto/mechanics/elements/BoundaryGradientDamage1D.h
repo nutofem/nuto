@@ -15,9 +15,7 @@ enum eType
 {
     NOT_SET,
     NEUMANN_HOMOGENEOUS,            // grad nonlocal eq strain * n = 0
-    DIRICHLET_INHOMOGENEOUS,        // nonlocal eq strain = local eq strain
     ROBIN_INHOMOGENEOUS,            // l * grad nonlocal eq strain * n + nonlocal eq strain = local eq strain
-    ROBIN_HOMOGENEOUS,              // l * grad nonlocal eq strain * n + nonlocal eq strain = 0
     MACAULAY                        // l * grad nonlocal eq strain * n + (nonlocal eq strain - local eq strain)_- = 0
 };
 
@@ -28,8 +26,8 @@ class StructureBase;
 class ConstitutiveTangentLocal1x1;
 template <int TNumRows, int TNumColumns> class ConstitutiveTangentLocal;
 
-//! @author Jörg F. Unger, ISM
-//! @date October 2009
+//! @author Thomas Titscher, BAM
+//! @date Jan 2015
 //! @brief ... boundary element for gradient models to ensure a more reasonable application of boundary conditions
 class BoundaryGradientDamage1D : public ElementBase
 {
@@ -236,11 +234,6 @@ public:
             double rNonlocalGradientRadius, double rfactor,
             FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKedMod) const;
 
-
-    //! @brief creates constraints according to the boundary condition type
-    //! @param rType type of boundary condition, see enum. This is for try out purposes only. If a nice BC type is found, remove this method
-    //! @param rStructure nonconst ptr to the structure to create the constraints
-    void ApplyConstraints(BoundaryCondition::eType rType, StructureBase* rStructure);
 
     //! @brief calculates output data fo the elmement
     //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)

@@ -194,6 +194,17 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(ElementBas
                 engineeringStress3D[5] = 0.;
             }
             break;
+            case NuTo::Constitutive::Output::ENGINEERING_STRAIN_3D:
+            {
+                EngineeringStrain3D& engineeringStrain3D(itOutput->second->GetEngineeringStrain3D());
+                engineeringStrain3D[0] = strain1D[0];
+                engineeringStrain3D[1] = -mNu*strain1D[0];
+                engineeringStrain3D[2] = -mNu*strain1D[0];
+                engineeringStrain3D[3] = 0.;
+                engineeringStrain3D[4] = 0.;
+                engineeringStrain3D[5] = 0.;
+            }
+            break;
             case NuTo::Constitutive::Output::LOCAL_EQ_STRAIN:
             {
                 LocalEqStrain& localEqStrainOut = itOutput->second->GetLocalEqStrain();
@@ -226,6 +237,12 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(ElementBas
             case NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_D_STRAIN_1D:
             {
                 ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
+                tangent(0,0) = localEqStrainDerivative[0];
+            }
+            break;
+            case NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_XI_D_STRAIN_1D:
+            {
+                ConstitutiveTangentLocal<1,1>& tangent(itOutput->second->AsConstitutiveTangentLocal_1x1());
                 tangent.SetSymmetry(true);
 
                 double xi = mNonlocalRadius;
@@ -245,21 +262,9 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(ElementBas
                 double factor = 1./xi - (localEqStrain[0] - nonlocalEqStrain)/(xi*xi)*dXi;
 
                 tangent(0,0) = factor * localEqStrainDerivative[0];
-
             }
             break;
-            case NuTo::Constitutive::Output::ENGINEERING_STRAIN_3D:
-            {
-                EngineeringStrain3D& engineeringStrain3D(itOutput->second->GetEngineeringStrain3D());
-                engineeringStrain3D[0] = strain1D[0];
-                engineeringStrain3D[1] = -mNu*strain1D[0];
-                engineeringStrain3D[2] = -mNu*strain1D[0];
-                engineeringStrain3D[3] = 0.;
-                engineeringStrain3D[4] = 0.;
-                engineeringStrain3D[5] = 0.;
-            }
-            break;
-            case NuTo::Constitutive::Output::VARIABLE_NONLOCAL_RADIUS:
+            case NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI:
             {
                 ConstitutiveTangentLocal<1,1>& variableNonlocalRadius(itOutput->second->AsConstitutiveTangentLocal_1x1());
                 variableNonlocalRadius[0] = mNonlocalRadius;

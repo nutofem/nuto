@@ -144,7 +144,12 @@ public:
     //! @brief calculates the shape functions
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
-    virtual void CalculateShapeFunctionsField(const double rLocalCoordinates[2], std::vector<double>& rShapeFunctions)const=0;
+    virtual void CalculateShapeFunctionsField(const double rLocalCoordinates[2], std::vector<double>& rShapeFunctions)const;
+
+    //! @brief calculates the shape functions
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param shape functions for the nonlocal eq strain nodes, size should already be correct, but can be checked with an assert
+    virtual void CalculateShapeFunctionsNonlocalEqStrain(const double rLocalCoordinates[2], std::vector<double>& rShapeFunctions)const;
 
     //! @brief calculates the derivative of the shape functions with respect to local coordinates
     //! @param rLocalCoordinates local coordinates of the integration point
@@ -156,7 +161,13 @@ public:
     //! @param rLocalCoordinates local coordinates of the integration point
     //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
     //! first all the directions for a single node, and then for the next node
-    virtual void CalculateDerivativeShapeFunctionsFieldNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const=0;
+    virtual void CalculateDerivativeShapeFunctionsFieldNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const;
+
+    //! @brief calculates the derivative of the shape functions with respect to local coordinates
+    //! @param rLocalCoordinates local coordinates of the integration point
+    //! @param derivative of the shape functions for all the nodes, size should already be correct, but can be checked with an assert
+    //! first all the directions for a single node, and then for the next node
+    virtual void CalculateDerivativeShapeFunctionsNonlocalEqStrainNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const;
 
     //! @brief calculates the derivative of the shape functions with respect to local coordinates (Jacobi transformation)
     //! @param std::vector<double>& rDerivativeShapeFunctions derivatives of the shape functions
@@ -165,6 +176,34 @@ public:
     //! size should already be correct, but can be checked with an assert
     //! first all the directions for a single node, and then for the next node
     virtual void CalculateDerivativeShapeFunctionsLocal(const std::vector<double>& rDerivativeShapeFunctionsNatural, const double rJacInv[4], std::vector<double>& rDerivativeShapeFunctionsLocal)const;
+
+    //! @brief returns the number of nodes in this element(field interpolation)
+    //! @return number of nodes
+    virtual int GetNumNodesField()const;
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @return pointer to the node
+    virtual NodeBase* GetNodeField(int rLocalNodeNumber);
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @return pointer to the node
+    virtual const NodeBase* GetNodeField(int rLocalNodeNumber)const;
+
+    //! @brief returns the number of nodes in this element(nonlocal eq strain interpolation)
+    //! @return number of nodes
+    virtual int GetNumNodesNonlocalEqStrain()const;
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @return pointer to the node
+    virtual NodeBase* GetNodeNonlocalEqStrain(int rLocalNodeNumber);
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @return pointer to the node
+    virtual const NodeBase* GetNodeNonlocalEqStrain(int rLocalNodeNumber)const;
 
     //! @brief adds to a matrix the product B^tCBnonlocal, where B contains the derivatives of the shape functions and C is the constitutive tangent and Bnonlocal is the nonlocal B matrix
     //! eventually include also area/width of an element
