@@ -43,6 +43,10 @@ public:
     //!@ brief reinterpret as nonlocal damage2d static data
     const ConstitutiveStaticDataGradientDamage1D* AsGradientDamage1D()const;
 
+    void SetKappa(double rKappa)
+    {
+        mKappa = rKappa;
+    }
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -51,6 +55,8 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
+
+
 
 protected:
     //! @brief maximal value of nonlocal eq strain

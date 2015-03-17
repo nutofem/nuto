@@ -112,6 +112,12 @@ NuTo::ConstitutiveTangentLocal<2,2>& NuTo::ConstitutiveOutputBase::AsConstitutiv
 }
 
 //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
+NuTo::ConstitutiveTangentLocal<3,1>& NuTo::ConstitutiveOutputBase::AsConstitutiveTangentLocal_3x1()
+{
+    throw MechanicsException("[ConstitutiveTangentBase::ConstitutiveTangentBase] matrix is not of type tangent local 3x1.");
+}
+
+//! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
 NuTo::ConstitutiveTangentLocal<3,3>& NuTo::ConstitutiveOutputBase::AsConstitutiveTangentLocal_3x3()
 {
     throw MechanicsException("[ConstitutiveTangentBase::ConstitutiveTangentBase] matrix is not of type tangent local 3x3.");

@@ -46,40 +46,68 @@ void NuTo::Plane2D::CalculateLocalCoordinates(std::vector<double>& rLocalCoordin
 void NuTo::Plane2D::CalculateLocalDisplacements(std::vector<double>& rLocalDisplacements)const
 {
 	assert((int)rLocalDisplacements.size()==2*GetNumNodesField());
-    for (int theNode=0; theNode<GetNumNodes(); theNode++)
+    for (int theNode=0; theNode<GetNumNodesField(); theNode++)
     {
         GetNodeField(theNode)->GetDisplacements2D(&(rLocalDisplacements[2*theNode]));
     }
 }
 
-// build global row dofs
-void NuTo::Plane2D::CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs, int numDispDofs, int numTempDofs) const
+//! @brief calculates the nonlocal eq strains of the nodes
+//! @param rNodeNonlocalEqStrains vector with already correct size allocated
+//! this can be checked with an assertation
+void NuTo::Plane2D::CalculateLocalNonlocalEqStrains(std::vector<double>& rNodeNonlocalEqStrains)const
 {
-    rGlobalRowDofs.resize(numDispDofs+numTempDofs);
-    for (int nodeCount = 0; nodeCount < this->GetNumNodesField(); nodeCount++)
+    assert((int)rNodeNonlocalEqStrains.size()==GetNumNodesNonlocalEqStrain());
+    for (int theNode=0; theNode<GetNumNodesNonlocalEqStrain(); theNode++)
     {
-        const NodeBase * nodePtr(GetNodeField(nodeCount));
-        if (nodePtr->GetNumDisplacements()>0 && numDispDofs>0)
+        if (GetNodeNonlocalEqStrain(theNode)->GetNumNonlocalEqStrain()!=1)
+            throw MechanicsException("[NuTo::Truss::CalculateNodalNonlocalEqStrain] Nonlocal eq strain is required as input to the constitutive model, but the node does not have this data.");
+        rNodeNonlocalEqStrains[theNode] = GetNodeNonlocalEqStrain(theNode)->GetNonlocalEqStrain();
+    }
+}
+
+// build global row dofs
+void NuTo::Plane2D::CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs, int rNumDispDofs, int rNumTempDofs, int rNumNonlocalEqStrainDofs) const
+{
+    rGlobalRowDofs.resize(rNumDispDofs+rNumTempDofs+rNumNonlocalEqStrainDofs);
+    int iGlobalDisp                    = 0;
+    int iGlobalTemp                    = 0;
+    int iGlobalNonlocalEqStrain        = 0;
+    for (int iNode = 0; iNode < this->GetNumNodes(); iNode++)
+    {
+        const NodeBase * nodePtr = GetNode(iNode);
+        if (nodePtr->GetNumDisplacements()>0 && rNumDispDofs>0)
         {
-            rGlobalRowDofs[2 * nodeCount    ] = nodePtr->GetDofDisplacement(0);
-            rGlobalRowDofs[2 * nodeCount + 1] = nodePtr->GetDofDisplacement(1);
+            rGlobalRowDofs[iGlobalDisp] = nodePtr->GetDofDisplacement(0);
+            iGlobalDisp++;
+            rGlobalRowDofs[iGlobalDisp] = nodePtr->GetDofDisplacement(1);
+            iGlobalDisp++;
         }
-        if (nodePtr->GetNumTemperatures()>0 && numTempDofs>0)
+        int iStartTemp = rNumDispDofs;
+        if (nodePtr->GetNumTemperatures()>0 && rNumTempDofs>0)
         {
-            rGlobalRowDofs[numDispDofs + nodeCount ] = nodePtr->GetDofTemperature();
+            rGlobalRowDofs[iStartTemp + iGlobalTemp] = nodePtr->GetDofTemperature();
+            iGlobalTemp++;
+        }
+
+        int iStartNonlocalEqStrain = iStartTemp + rNumTempDofs;
+        if (nodePtr->GetNumNonlocalEqStrain()>0 && rNumNonlocalEqStrainDofs>0)
+        {
+            rGlobalRowDofs[iStartNonlocalEqStrain + iGlobalNonlocalEqStrain] = nodePtr->GetDofNonlocalEqStrain();
+            iGlobalNonlocalEqStrain++;
         }
     }
 }
 
 // build global column dof
-void NuTo::Plane2D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs, int numDispDofs, int numTempDofs) const
+void NuTo::Plane2D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs, int rNumDispDofs, int rNumTempDofs, int rNumNonlocalEqStrainDofs) const
 {
     int NumNonlocalElements(GetNumNonlocalElements());
 	if (GetNumNonlocalElements()==0)
-	    this->CalculateGlobalRowDofs(rGlobalColumnDofs,numDispDofs,numTempDofs);
+	    this->CalculateGlobalRowDofs(rGlobalColumnDofs,rNumDispDofs,rNumTempDofs, rNumNonlocalEqStrainDofs);
     else
     {
-        rGlobalColumnDofs.resize(numDispDofs+numTempDofs);
+        rGlobalColumnDofs.resize(rNumDispDofs+rNumTempDofs);
 	    const std::vector<const ElementBase*>& nonlocalElements(GetNonlocalElements());
         int shift(0);
         for (int theNonlocalElement=0; theNonlocalElement<NumNonlocalElements; theNonlocalElement++)
@@ -88,7 +116,7 @@ void NuTo::Plane2D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDof
         	for (int nodeCount = 0; nodeCount < nonlocalElement->GetNumNodes(); nodeCount++)
             {
                 const NodeBase *nodePtr = nonlocalElement->GetNodeField(nodeCount);
-                if (nodePtr->GetNumDisplacements()>0 && numDispDofs>0)
+                if (nodePtr->GetNumDisplacements()>0 && rNumDispDofs>0)
                 {
 					rGlobalColumnDofs[shift + 2 * nodeCount    ] = nodePtr->GetDofDisplacement(0);
 					rGlobalColumnDofs[shift + 2 * nodeCount + 1] = nodePtr->GetDofDisplacement(1);
@@ -96,13 +124,13 @@ void NuTo::Plane2D::CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDof
             }
             shift+=2*nonlocalElement->GetNumNodesField();
         }
-        assert(shift==numDispDofs);
+        assert(shift==rNumDispDofs);
         for (int nodeCount = 0; nodeCount < this->GetNumNodesField(); nodeCount++)
         {
             const NodeBase * nodePtr(GetNodeField(nodeCount));
-            if (nodePtr->GetNumTemperatures()>0 && numTempDofs>0)
+            if (nodePtr->GetNumTemperatures()>0 && rNumTempDofs>0)
             {
-            	rGlobalColumnDofs[numDispDofs + nodeCount ] = nodePtr->GetDofTemperature();
+            	rGlobalColumnDofs[rNumDispDofs + nodeCount ] = nodePtr->GetDofTemperature();
             }
         }
     }

@@ -45,6 +45,11 @@ public:
     //! this can be checked with an assertation
     void CalculateLocalDisplacements(std::vector<double>& rLocalDisplacements)const;
 
+    //! @brief calculates the nonlocal eq strains of the nodes
+    //! @param rNodeNonlocalEqStrains vector with already correct size allocated
+    //! this can be checked with an assertation
+    void CalculateLocalNonlocalEqStrains(std::vector<double>& rNodeNonlocalEqStrains)const;
+
     //! @brief transforms the local matrix to the global system
     //! relevant only for 2D and 3D truss elements
     void BlowLocalMatrixToGlobal(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& FullrCoefficientMatrix)const
@@ -101,15 +106,17 @@ protected:
 
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
     //! @param rGlobalRowDofs ... vector of global row dofs
-    //! @param numDispDofs number of displacement dofs
-    //! @param numTempDofs number of temperature dofs
-    void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs, int numDispDofs, int numTempDofs) const override;
+    //! @param rNumDispDofs number of displacement dofs
+    //! @param rNumTempDofs number of temperature dofs
+    //! @param rNumNonlocalEqStrainDofs number of nonlocal eq strain dofs
+    void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs, int rNumDispDofs, int rNumTempDofs, int rNumNonlocalEqStrainDofs) const override;
 
     //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
     //! @param rGlobalColumnDofs ... vector of global column dofs
-    //! @param numDispDofs number of displacement dofs
-    //! @param numTempDofs number of temperature dofs
-    void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs, int numDispDofs, int numTempDofs) const override;
+    //! @param rNumDispDofs number of displacement dofs
+    //! @param rNumTempDofs number of temperature dofs
+    //! @param rNumNonlocalEqStrainDofs number of nonlocal eq strain dofs
+    void CalculateGlobalColumnDofs(std::vector<int>& rGlobalColumnDofs, int rNumDispDofs, int rNumTempDofs, int rNumNonlocalEqStrainDofs) const override;
 
 
 };

@@ -838,20 +838,24 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
         case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
-                double nonlocalEqStrain;
-                switch (dimension)
+                double nonlocalEqStrain = 0;
+                if (GetSection()->GetIsNonlocalEqStrainDof())
                 {
-                case 1:
-                    this->InterpolateNonlocalEqStrainFrom1D(VisualizationPointLocalCoordinates[PointCount], nonlocalEqStrain);
-                    break;
-                case 2:
-                    this->InterpolateNonlocalEqStrainFrom2D(&VisualizationPointLocalCoordinates[2*PointCount], nonlocalEqStrain);
-                    break;
-                case 3:
-                    this->InterpolateNonlocalEqStrainFrom3D(&VisualizationPointLocalCoordinates[3*PointCount], nonlocalEqStrain);
-                    break;
-                default:
-                    throw NuTo::MechanicsException("[NuTo::ElemenBase::Visualize] invalid dimension of local coordinates");
+                    // calculate only if element has nonlocal eq strain dofs
+                    switch (dimension)
+                    {
+                    case 1:
+                        this->InterpolateNonlocalEqStrainFrom1D(VisualizationPointLocalCoordinates[PointCount], nonlocalEqStrain);
+                        break;
+                    case 2:
+                        this->InterpolateNonlocalEqStrainFrom2D(&VisualizationPointLocalCoordinates[2*PointCount], nonlocalEqStrain);
+                        break;
+                    case 3:
+                        this->InterpolateNonlocalEqStrainFrom3D(&VisualizationPointLocalCoordinates[3*PointCount], nonlocalEqStrain);
+                        break;
+                    default:
+                        throw NuTo::MechanicsException("[NuTo::ElemenBase::Visualize] invalid dimension of local coordinates");
+                    }
                 }
                 unsigned int PointId = PointIdVec[PointCount];
                 rVisualize.SetPointDataScalar(PointId, WhatIter->GetComponentName(), nonlocalEqStrain);

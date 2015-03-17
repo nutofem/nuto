@@ -89,16 +89,16 @@ public:
     //! @param factor multiplication factor (detJ area..)
     //! @param Kkk return matrix with detJ * NtT+cBtB
     void CalculateKkk(const std::vector<double>& shapeFunctions,const std::vector<double>& derivativeShapeFunctions,double nonlocalGradientRadius,double factor,
-    		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Kkk);
+    		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Kkk) const;
 
     //! @brief calculates the Kkk matrix
     //! @param rShapeFunctions of the ip for all shape functions
     //! @param rDerivativeShapeFunctions of the ip for all shape functions
     //! @param nonlocal gradient radius xi
-    //! @param factor multiplication factor (detJ area..)
+    //! @param rFactor multiplication factor (detJ area..)
     //! @param Kkk return matrix with detJ * (Nt 1/ct N + BtB)
-    void CalculateKkkTransient(const std::vector<double>& rShapeFunctions,const std::vector<double>& rDerivativeShapeFunctions,double rNonlocalParameterXi,double factor,
-            FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Kkk);
+    void CalculateKkkXi(const std::vector<double>& rShapeFunctions,const std::vector<double>& rDerivativeShapeFunctions,double rNonlocalParameterXi,double rFactor,
+            FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Kkk) const;
 
 
     //! @brief add Kkk*kappa+detJ*F (detJ is already included in Kkk)
@@ -108,7 +108,7 @@ public:
     //! @param rFactor factor including detJ and area
     //! @param rResult result
     void AddDetJBtdSigmadNonlocalEqPlasticStrainN(const std::vector<double>& rDerivativeShapeFunctions, ConstitutiveTangentLocal<1,2>& rTangentStressNonlocalEqPlasticStrain,
-    		const std::vector<double>& rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
+    		const std::vector<double>& rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult) const;
 
     //! @brief add Kkk*kappa+detJ*F (detJ is already included in Kkk)
     //! @param derivativeShapeFunctions of the ip for all shape functions
@@ -117,7 +117,7 @@ public:
     //! @param rFactor factor including detJ and area
     //! @param rResult result
     void AddDetJBtdSigmadNonlocalTotalStrainN(const std::vector<double>& rDerivativeShapeFunctions, ConstitutiveTangentLocal<1,1>& rTangentStressNonlocalTotalStrain,
-    		const std::vector<double>& rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
+    		const std::vector<double>& rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult) const;
 
     //! @brief add detJ B.T dSigma/dnonlocalEqStrain N
     //! @param derivativeShapeFunctions of the ip for all shape functions
@@ -126,7 +126,7 @@ public:
     //! @param rFactor factor including detJ and area
     //! @param rResult result
     void AddDetJBtdSigmadNonlocalEqStrainN(const std::vector<double>& rDerivativeShapeFunctions, ConstitutiveTangentLocal<1,1>& rTangentStressNonlocalEqStrain,
-            const std::vector<double>& rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
+            const std::vector<double>& rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult) const;
 
 
     //! @brief add detJ transpose N dOmega/depsilon B
@@ -136,7 +136,7 @@ public:
     //! @param rFactor factor including detJ and area
     //! @param rResult result
     void AddDetJNtdLocalEqPlasticStraindEpsilonB(const std::vector<double>& rShapeFunctions, ConstitutiveTangentLocal<2,1>& rTangentLocalEqPlasticStrainStrain,
-    		const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
+    		const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult) const;
 
     //! @brief add detJ transpose N dOmega/depsilon B
     //! @param rShapeFunctions of the ip for all shape functions
@@ -156,7 +156,7 @@ public:
     //! @param rResult result
     void AddDetJNtB(const std::vector<double>& rShapeFunctions,
     		const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol,
-    		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult);
+    		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult) const;
 
     //! @brief adds to a matrix the product N^t C N, where N contains the the shape functions and C is the constitutive tangent
     //! eventually include also area/width of an element

@@ -87,6 +87,9 @@ public:
     virtual NuTo::ConstitutiveTangentLocal<2,2>& AsConstitutiveTangentLocal_2x2();
 
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
+    virtual NuTo::ConstitutiveTangentLocal<3,1>& AsConstitutiveTangentLocal_3x1();
+
+    //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception
     virtual NuTo::ConstitutiveTangentLocal<3,3>& AsConstitutiveTangentLocal_3x3();
 
     //! @brief reinterpret as ConstitutiveTangentDynamic, otherwise throw an exception

@@ -227,7 +227,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 		ConstitutiveTangentLocal<1,1> tangentHeatFluxTemperatureGradient;
 		ConstitutiveTangentLocal<1,1> tangentHeatFluxTemperatureRate;
 		ConstitutiveTangentLocal<2,1> tangentLocalEqPlasticStrainStrain;
-        ConstitutiveTangentLocal<1,1> tangentLocalEqStrainStrain;
+        ConstitutiveTangentLocal<1,1> tangentLocalEqStrainXiStrain;
 
         // allocate Moisture Transport Outputs
         ConstitutiveTangentLocal<1,1> tangentVaporPhaseDiffusionCoefficient;
@@ -266,7 +266,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 		{
 			constitutiveInputList[NuTo::Constitutive::Input::NONLOCAL_TOTAL_STRAIN_1D] = &nonlocalTotalStrain;
 		}
-        if (numNonlocalEqStrainDofs>0)
+        if (section->GetInputConstitutiveIsNonlocalEqStrain())
         {
             constitutiveInputList[NuTo::Constitutive::Input::NONLOCAL_EQ_STRAIN] = &nonlocalEqStrain;
         }
@@ -354,7 +354,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 
                     if (numNonlocalEqStrainDofs>0 && numDispDofs>0)
                     {
-                        constitutiveOutputList[NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_XI_D_STRAIN_1D] = &tangentLocalEqStrainStrain;
+                        constitutiveOutputList[NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_XI_D_STRAIN_1D] = &tangentLocalEqStrainXiStrain;
                         constitutiveOutputList[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI] = &nonlocalParameterXi;
                     }
                     if (numRelativeHumidityDofs || numWaterPhaseFractionDofs)
@@ -603,7 +603,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			} else if (numNonlocalEqStrainDofs > 0)
             {
                 //calculate Kkk detJ*(BtB+Nt(1/ct)N)
-                CalculateKkkTransient(shapeFunctionsNonlocalEqStrain,derivativeShapeFunctionsNonlocalEqStrainLocal,nonlocalParameterXi.GetValue(0),factor,Kkk);
+                CalculateKkkXi(shapeFunctionsNonlocalEqStrain,derivativeShapeFunctionsNonlocalEqStrainLocal,nonlocalParameterXi.GetValue(0),factor,Kkk);
             }
 
 			//calculate output
@@ -708,7 +708,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
                             //derivative of F(nonlocalEqStrain) with respect to all unknowns
                             if (numDispDofs > 0)
                             {
-                                AddDetJNtdLocalEqStraindEpsilonB(shapeFunctionsNonlocalEqStrain, tangentLocalEqStrainStrain, derivativeShapeFunctionsFieldLocal, factor, prevDofs, 0, it->second->GetFullMatrixDouble());
+                                AddDetJNtdLocalEqStraindEpsilonB(shapeFunctionsNonlocalEqStrain, tangentLocalEqStrainXiStrain, derivativeShapeFunctionsFieldLocal, factor, prevDofs, 0, it->second->GetFullMatrixDouble());
                             }
                             // add Kkk
                             it->second->GetFullMatrixDouble().AddBlock(prevDofs,prevDofs,Kkk);
@@ -931,7 +931,7 @@ void NuTo::Truss::CalculateNaturalSurfaceCoordinates(int rSurface, double rSurfa
 //! @param rFactor factor including detJ and area
 //! @param rResult result
 void NuTo::Truss::AddDetJNtdLocalEqPlasticStraindEpsilonB(const std::vector<double>& rShapeFunctions, ConstitutiveTangentLocal<2,1>& rTangentLocalEqPlasticStrainStrain,
-		const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)
+		const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult) const
 {
     assert(rShapeFunctions.size()==rDerivativeShapeFunctions.size());
     for (int countNonlocalEqPlasticStrain=0; countNonlocalEqPlasticStrain<2; countNonlocalEqPlasticStrain++ )
@@ -981,7 +981,7 @@ void NuTo::Truss::AddDetJNtdLocalEqStraindEpsilonB(const std::vector<double>& rS
 //! @param rResult result
 void NuTo::Truss::AddDetJNtB(const std::vector<double>& rShapeFunctions,
 		const std::vector<double>& rDerivativeShapeFunctions, double rFactor, int rRow, int rCol,
-		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)
+		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult) const
 {
     //assert(rShapeFunctions.size()==rDerivativeShapeFunctions.size());
 	//these for loops are not optimal, we might use a map to an eigenvector and perform the multiplication directly
@@ -1026,7 +1026,7 @@ void NuTo::Truss::AddDetJNtCN(const std::vector<double>& rShapeFunctions,
 //! @param rFactor factor including detJ and area
 //! @param rResult result
 void NuTo::Truss::AddDetJBtdSigmadNonlocalEqPlasticStrainN(const std::vector<double>& rDerivativeShapeFunctions, ConstitutiveTangentLocal<1,2>& rTangentStressNonlocalEqPlasticStrain,
-		const std::vector<double>& rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)
+		const std::vector<double>& rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult) const
 {
     assert(rShapeFunctions.size()==rDerivativeShapeFunctions.size());
 
@@ -1051,7 +1051,7 @@ void NuTo::Truss::AddDetJBtdSigmadNonlocalEqPlasticStrainN(const std::vector<dou
 //! @param rFactor factor including detJ and area
 //! @param rResult result
 void NuTo::Truss::AddDetJBtdSigmadNonlocalTotalStrainN(const std::vector<double>& rDerivativeShapeFunctions, ConstitutiveTangentLocal<1,1>& rTangentStressNonlocalTotalStrain,
-		const std::vector<double>& rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)
+		const std::vector<double>& rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult) const
 {
 	double tmpfactor = rTangentStressNonlocalTotalStrain(0,0)*rFactor;
 	//these tow for loops are not optimal, we might use a map to an eigenvector and perform the multiplication directly
@@ -1071,7 +1071,7 @@ void NuTo::Truss::AddDetJBtdSigmadNonlocalTotalStrainN(const std::vector<double>
 //! @param rFactor factor including detJ and area
 //! @param rResult result
 void NuTo::Truss::AddDetJBtdSigmadNonlocalEqStrainN(const std::vector<double>& rDerivativeShapeFunctions, ConstitutiveTangentLocal<1,1>& rTangentStressNonlocalEqStrain,
-        const std::vector<double>& rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)
+        const std::vector<double>& rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult) const
 {
     double tmpfactor = rTangentStressNonlocalEqStrain(0)*rFactor;
     //these tow for loops are not optimal, we might use a map to an eigenvector and perform the multiplication directly
@@ -1175,7 +1175,7 @@ void NuTo::Truss::AddDetJRnonlocalEqStrain(const std::vector<double>& rShapeFunc
 //! @param factor multiplication factor (detJ area..)
 //! @param Kkk return matrix with detJ * NtT+cBtB
 void NuTo::Truss::CalculateKkk(const std::vector<double>& shapeFunctions,const std::vector<double>& derivativeShapeFunctions,double nonlocalGradientRadius,double factor,
-		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Kkk)
+		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Kkk) const
 {
 	//resize and set to zero
 	Kkk.Resize(shapeFunctions.size(),shapeFunctions.size());
@@ -1197,8 +1197,8 @@ void NuTo::Truss::CalculateKkk(const std::vector<double>& shapeFunctions,const s
 //! @param transient nonlocal gradient radius
 //! @param factor multiplication factor (detJ area..)
 //! @param Kkk return matrix with detJ * (Nt 1/ct N + BtB)
-void NuTo::Truss::CalculateKkkTransient(const std::vector<double>& rShapeFunctions,const std::vector<double>& rDerivativeShapeFunctions,double rNonlocalParameterXi,double factor,
-        FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Kkk)
+void NuTo::Truss::CalculateKkkXi(const std::vector<double>& rShapeFunctions,const std::vector<double>& rDerivativeShapeFunctions,double rNonlocalParameterXi,double factor,
+        FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& Kkk) const
 {
     //resize and set to zero
     Kkk.Resize(rShapeFunctions.size(),rShapeFunctions.size());

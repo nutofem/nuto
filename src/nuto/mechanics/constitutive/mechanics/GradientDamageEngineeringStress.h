@@ -192,6 +192,24 @@ public:
     //! @return ... isotropic damage variable
     double CalculateDerivativeDamage(double rKappa) const;
 
+    //! @brief returns the local eq strain calculated from 2d strain
+    //! @param rStrain2D ... 2d strain
+    NuTo::LocalEqStrain CalculateLocalEqStrain2D(const NuTo::EngineeringStrain2D& rStrain2D) const;
+
+    //! @brief returns the local eq strain calculated from 3d strain
+    //! @param rStrain3D ... 3d strain
+    NuTo::LocalEqStrain CalculateLocalEqStrain3D(const NuTo::EngineeringStrain3D& rStrain3D) const;
+
+    //! @brief returns the derivative of the local eq strain with respect to the 2d strain
+    //! @param rStrain2D ... 2d strain
+    NuTo::ConstitutiveTangentLocal<3,1> CalculateLocalEqStrainTangent2D(const NuTo::EngineeringStrain2D& rStrain2D) const;
+
+    //! @brief returns the derivative of the local eq strain with respect to the 3d strain
+    //! @param rStrain3D ... 3d strain
+    NuTo::ConstitutiveTangentLocal<6,1> CalculateLocalEqStrainTangent3D(const NuTo::EngineeringStrain3D& rStrain3D) const;
+
+
+
 protected:
     //! @brief ... density
     double mRho;
