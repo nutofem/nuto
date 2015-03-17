@@ -22,8 +22,10 @@ enum eElementType
     TETRAHEDRON10N,             //!< three-dimensional tetrahedron element with 10 nodes
     TRUSS1D2N,                  //!< one-dimensional truss element with two nodes
     TRUSS1D3N,                  //!< one-dimensional truss element with three nodes
-    TRUSS1D4NDISP3NX            //!< one-dimensional truss element with four nodes for displacements, three for another dof
-
+    TRUSS1D4NDISP3NX,           //!< one-dimensional truss element with four nodes for displacements, three for another dof
+    TRUSS1D2NSPECTRALORDER2,    //!< one-dimensional truss element with two nodes for geometry and 3 for field interpolation
+    TRUSS1D2NSPECTRALORDER3,    //!< one-dimensional truss element with two nodes for geometry and 4 for field interpolation
+    TRUSS1D2NSPECTRALORDER4     //!< one-dimensional truss element with two nodes for geometry and 5 for field interpolation
 };
 
 enum eUpdateType

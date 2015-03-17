@@ -166,7 +166,7 @@ int NuTo::StructureBase::ConstraintLinearSetRotationNode(NodeBase* rNode, double
 }
 
 //! @brief adds a displacement constraint equation for a node
-//! @param rNode identifier for node
+//! @param rIdent identifier for node
 //! @param rComponent e.g. the first (count from zero) displacement component
 //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
 int  NuTo::StructureBase::ConstraintLinearSetDisplacementNode(int rIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)

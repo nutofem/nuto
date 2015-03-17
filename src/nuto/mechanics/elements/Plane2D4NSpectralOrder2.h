@@ -74,7 +74,7 @@ public:
     {
         assert(rLocalNodeNumber>=0 && rLocalNodeNumber<4);
         return mNodes[rLocalNodeNumber];
-    }
+    }dfdfddd
 
     //! @brief returns a pointer to the i-th node of the element (geometry interpolation)
     //! @param local node number

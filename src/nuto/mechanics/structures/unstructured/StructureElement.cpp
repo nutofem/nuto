@@ -484,6 +484,18 @@ NuTo::Element::eElementType NuTo::Structure::ElementTypeGetEnum(const std::strin
     {
         elementType = NuTo::Element::TRUSS1D4NDISP3NX;
     }
+    else if (upperCaseElementType=="TRUSS1D2NSPECTRALORDER2")
+    {
+        elementType = NuTo::Element::TRUSS1D2NSPECTRALORDER2;
+    }
+    else if (upperCaseElementType=="TRUSS1D2NSPECTRALORDER3")
+    {
+        elementType = NuTo::Element::TRUSS1D2NSPECTRALORDER3;
+    }
+    else if (upperCaseElementType=="TRUSS1D2NSPECTRALORDER4")
+    {
+        elementType = NuTo::Element::TRUSS1D2NSPECTRALORDER4;
+    }
 	else if (upperCaseElementType=="BRICK8N")
 	{
 		elementType = NuTo::Element::BRICK8N;
@@ -589,6 +601,21 @@ void NuTo::Structure::ElementCreate(int rElementNumber, Element::eElementType rT
             if (1!=mDimension)
                 throw MechanicsException("[NuTo::Structure::ElementCreate] TRUSS1D4NDisp3NEqStrain is only a 1D element, either change the dimension of the structure to one or use TRUSS3D4N.");
             ptrElement = new NuTo::Truss1D4NDisp3NX(this, rNodeVector, rElementDataType, rIpDataType);
+            break;
+        case NuTo::Element::TRUSS1D2NSPECTRALORDER2:
+            if (1!=mDimension)
+                throw MechanicsException("[NuTo::Structure::ElementCreate] TRUSS1D2NSPECTRALORDER2 is only a 1D element, either change the dimension of the structure to one or use TRUSS3D4N.");
+            ptrElement = new NuTo::Truss1D2NSpectral<2>(this, rNodeVector, rElementDataType, rIpDataType);
+            break;
+        case NuTo::Element::TRUSS1D2NSPECTRALORDER3:
+            if (1!=mDimension)
+                throw MechanicsException("[NuTo::Structure::ElementCreate] TRUSS1D2NSPECTRALORDER3 is only a 1D element, either change the dimension of the structure to one or use TRUSS3D4N.");
+            ptrElement = new NuTo::Truss1D2NSpectral<3>(this, rNodeVector, rElementDataType, rIpDataType);
+            break;
+        case NuTo::Element::TRUSS1D2NSPECTRALORDER4:
+            if (1!=mDimension)
+                throw MechanicsException("[NuTo::Structure::ElementCreate] TRUSS1D2NSPECTRALORDER4 is only a 1D element, either change the dimension of the structure to one or use TRUSS3D4N.");
+            ptrElement = new NuTo::Truss1D2NSpectral<4>(this, rNodeVector, rElementDataType, rIpDataType);
             break;
 		case NuTo::Element::BRICK8N:
 			if (this->mDimension != 3)

@@ -11,6 +11,7 @@
 #include <vector>
 #include "nuto/mechanics/elements/Plane2D.h"
 #include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/elements/Truss1D2NSpectral.h"
 
 namespace NuTo
 {
@@ -245,7 +246,20 @@ public:
 
     //! @brief returns the enum (type of the element)
     //! @return enum
-    NuTo::Element::eElementType GetEnumType()const;
+    NuTo::Element::eElementType GetEnumType()const
+    {
+        switch (TOrder) {
+        case 2:
+            return NuTo::Element::PLANE2D4NSPECTRALORDER2;
+        case 3:
+            return NuTo::Element::PLANE2D4NSPECTRALORDER3;
+        case 4:
+            return NuTo::Element::PLANE2D4NSPECTRALORDER4;
+        default:
+             throw MechanicsException("[NuTo::Truss2D4NSpectral] The specified order is not implemented yet.");
+            break;
+        }
+    }
 
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
     //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
@@ -268,11 +282,7 @@ public:
     //! @param shape functions for all the nodes
     void CalculateShapeFunctionsGeometry(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
     {
-		assert(rShapeFunctions.size()==4);
-		rShapeFunctions[0] = 0.25*(1.-rNaturalCoordinates[0])*(1.-rNaturalCoordinates[1]);
-		rShapeFunctions[1] = 0.25*(1.+rNaturalCoordinates[0])*(1.-rNaturalCoordinates[1]);
-		rShapeFunctions[2] = 0.25*(1.+rNaturalCoordinates[0])*(1.+rNaturalCoordinates[1]);
-		rShapeFunctions[3] = 0.25*(1.-rNaturalCoordinates[0])*(1.+rNaturalCoordinates[1]);
+        return NuTo::ShapeFunctions2D::ShapeFunctionsPlane2D4N(rNaturalCoordinates, rShapeFunctions);
     }
 
     //! @brief calculates the derivative of the shape functions
@@ -281,19 +291,7 @@ public:
     //! first all the directions for a single node, and then for the next node
     void CalculateDerivativeShapeFunctionsGeometryNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
     {
-    	assert(rDerivativeShapeFunctions.size()==8);
-        rDerivativeShapeFunctions[0] = -0.25*(1.-rNaturalCoordinates[1]);
-        rDerivativeShapeFunctions[1] = -0.25*(1.-rNaturalCoordinates[0]);
-
-        rDerivativeShapeFunctions[2] = +0.25*(1.-rNaturalCoordinates[1]);
-        rDerivativeShapeFunctions[3] = -0.25*(1.+rNaturalCoordinates[0]);
-
-        rDerivativeShapeFunctions[4] = +0.25*(1.+rNaturalCoordinates[1]);
-        rDerivativeShapeFunctions[5] = +0.25*(1.+rNaturalCoordinates[0]);
-
-        rDerivativeShapeFunctions[6] = -0.25*(1.+rNaturalCoordinates[1]);
-        rDerivativeShapeFunctions[7] = +0.25*(1.-rNaturalCoordinates[0]);
-
+        return NuTo::ShapeFunctions2D::DerivativeShapeFunctionsPlane2D4N(rNaturalCoordinates, rDerivativeShapeFunctions);
     }
 
     //! @brief calculates the shape functions
@@ -302,10 +300,26 @@ public:
     void CalculateShapeFunctionsField(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
     {
 		assert(((int)rShapeFunctions.size())==GetNumNodes());
-		std::vector<double> shapeFunctions1Dx(GetNumNodesField1D());
-		CalculateShapeFunctionsField1D(rNaturalCoordinates[0],shapeFunctions1Dx);
+
+        std::vector<double> shapeFunctions1Dx(GetNumNodesField1D());
 		std::vector<double> shapeFunctions1Dy(GetNumNodesField1D());
-		CalculateShapeFunctionsField1D(rNaturalCoordinates[1],shapeFunctions1Dy);
+
+        switch (TOrder) {
+        case 2:
+            NuTo::ShapeFunctions1D::ShapeFunctions1D3N(rNaturalCoordinates[0],shapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::ShapeFunctions1D3N(rNaturalCoordinates[1],shapeFunctions1Dy);
+            break;
+        case 3:
+            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder3(rNaturalCoordinates[0],shapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder3(rNaturalCoordinates[1],shapeFunctions1Dy);
+            break;
+        case 4:
+            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder4(rNaturalCoordinates[0],shapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder4(rNaturalCoordinates[1],shapeFunctions1Dy);
+            break;
+        default:
+            break;
+        }
 
 		int theShapeFunction(0);
 		for (int county=0; county<GetNumNodesField1D(); county++)
@@ -331,14 +345,35 @@ public:
     {
 		assert(((int)rDerivativeShapeFunctions.size())==GetNumNodes()*2);
 
+        //NuTo::Truss1D2NSpectral<2>::test(rNaturalCoordinates[0], rDerivativeShapeFunctions);
+
 		std::vector<double> shapeFunctions1Dx(GetNumNodesField1D());
-		CalculateShapeFunctionsField1D(rNaturalCoordinates[0],shapeFunctions1Dx);
-		std::vector<double> shapeFunctions1Dy(GetNumNodesField1D());
-		CalculateShapeFunctionsField1D(rNaturalCoordinates[1],shapeFunctions1Dy);
-		std::vector<double> derShapeFunctions1Dx(GetNumNodesField1D());
-		CalculateDerivativeShapeFunctionsFieldNatural1D(rNaturalCoordinates[0],derShapeFunctions1Dx);
+        std::vector<double> shapeFunctions1Dy(GetNumNodesField1D());
+        std::vector<double> derShapeFunctions1Dx(GetNumNodesField1D());
 		std::vector<double> derShapeFunctions1Dy(GetNumNodesField1D());
-		CalculateDerivativeShapeFunctionsFieldNatural1D(rNaturalCoordinates[1],derShapeFunctions1Dy);
+
+        switch (TOrder) {
+        case 2:
+            NuTo::ShapeFunctions1D::ShapeFunctions1D3N(rNaturalCoordinates[0],shapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::ShapeFunctions1D3N(rNaturalCoordinates[1],shapeFunctions1Dy);
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D3N(rNaturalCoordinates[0],derShapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D3N(rNaturalCoordinates[1],derShapeFunctions1Dy);
+            break;
+        case 3:
+            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder3(rNaturalCoordinates[0],shapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder3(rNaturalCoordinates[1],shapeFunctions1Dy);
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D2NSpectralOrder3(rNaturalCoordinates[0],derShapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D2NSpectralOrder3(rNaturalCoordinates[1],derShapeFunctions1Dy);
+            break;
+        case 4:
+            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder4(rNaturalCoordinates[0],shapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder4(rNaturalCoordinates[1],shapeFunctions1Dy);
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D2NSpectralOrder4(rNaturalCoordinates[0],derShapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D2NSpectralOrder4(rNaturalCoordinates[1],derShapeFunctions1Dy);
+            break;
+        default:
+            break;
+        }
 
 		int theDerShapeFunction(0);
 		for (int county=0; county<GetNumNodesField1D(); county++)
@@ -418,7 +453,7 @@ public:
 				for (int count=0; count<GetNumNodesField1D(); count++)
 				{
 					rSurfaceNodes[count] = mNodes[theNode];
-					theNode-=GetNumNodesField1D();
+                    theNode-=GetNumNodesField1D();
 				}
 			}
 			break;
@@ -441,11 +476,24 @@ public:
     }
 
     //! @brief returns the enum of the standard integration type for this element
-    NuTo::IntegrationType::eIntegrationType GetStandardIntegrationType();
+    NuTo::IntegrationType::eIntegrationType GetStandardIntegrationType()
+    {
+        switch (TOrder) {
+        case 2:
+            return NuTo::IntegrationType::IntegrationType2D4NLobatto9Ip;
+        case 3:
+            return NuTo::IntegrationType::IntegrationType2D4NLobatto16Ip;
+        case 4:
+            return NuTo::IntegrationType::IntegrationType2D4NLobatto25Ip;
+        default:
+            throw MechanicsException("[NuTo::Truss2D4NSpectral] The specified order is not implemented yet.");
+            break;
+        }
+    }
 
 protected:
     //! @brief ... just for serialization
-    Plane2D4NSpectral(){};
+    Plane2D4NSpectral(){}
     //! @brief ... reorder nodes such that the sign of the length of the element changes
     void ReorderNodes()
     {
@@ -458,6 +506,9 @@ protected:
 } //namespace nuto
 
 #ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Plane2D4NSpectral<2>)
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Plane2D4NSpectral<3>)
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Plane2D4NSpectral<4>)
 #ifndef SWIG
 BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::Plane2D4NSpectral<2>)))
 BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::Plane2D4NSpectral<3>)))

@@ -17,6 +17,7 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/elements/Plane2D4NSpectral.h"
+#include "nuto/mechanics/elements/Truss1D2NSpectral.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 
 //! @brief calculates the shape functions

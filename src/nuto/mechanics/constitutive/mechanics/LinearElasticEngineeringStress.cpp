@@ -744,6 +744,12 @@ bool NuTo::LinearElasticEngineeringStress::CheckElementCompatibility(NuTo::Eleme
         return true;
     case NuTo::Element::TRUSS1D2N:
         return true;
+    case NuTo::Element::TRUSS1D2NSPECTRALORDER2:
+        return true;
+    case NuTo::Element::TRUSS1D2NSPECTRALORDER3:
+        return true;
+    case NuTo::Element::TRUSS1D2NSPECTRALORDER4:
+        return true;
     case NuTo::Element::TRUSS1D3N:
         return true;
     default:

@@ -824,8 +824,8 @@ void NuTo::Plane::CalculateJacobian(const std::vector<double>& rDerivativeShapeF
 void NuTo::Plane::CalculateDerivativeShapeFunctionsLocal(const std::vector<double>& rDerivativeShapeFunctionsNatural, const double rJacInv[4], std::vector<double>& rDerivativeShapeFunctionsLocal)const
 {
     int numShapeFunctions = rDerivativeShapeFunctionsLocal.size()/2;
-    assert(rDerivativeShapeFunctionsLocal.size()==2*numShapeFunctions);
-    assert(rDerivativeShapeFunctionsNatural.size()==2*numShapeFunctions);
+    assert(rDerivativeShapeFunctionsLocal.size()==(size_t)2*numShapeFunctions);
+    assert(rDerivativeShapeFunctionsNatural.size()==(size_t)2*numShapeFunctions);
     for (int count=0; count<numShapeFunctions; count++)
     {
         int mul2count = 2*count;

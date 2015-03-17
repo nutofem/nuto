@@ -8,6 +8,7 @@ namespace NuTo
 namespace ShapeFunctions1D // interval -1 to 1
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     void ShapeFunctions1D2N(double rNaturalCoordinates, std::vector<double>& rShapeFunctions)
     {
         assert(rShapeFunctions.size()==2);
@@ -81,7 +82,6 @@ namespace ShapeFunctions1D // interval -1 to 1
 //        rDerivativeShapeFunctions[3] = -0.0625 + 1.125*r + 1.6875*r2;
     }
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     void ShapeFunctions1D5N(double rNaturalCoordinates, std::vector<double>& rShapeFunctions)
@@ -113,10 +113,87 @@ namespace ShapeFunctions1D // interval -1 to 1
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    void ShapeFunctions1D2NSpectralOrder3(double rLocalCoordinates, std::vector<double>& rShapeFunctions)
+    {
+        assert(((int)rShapeFunctions.size()) == 4);
+        double s2 = rLocalCoordinates*rLocalCoordinates;
+        double s3 = rLocalCoordinates*s2;
+        rShapeFunctions[0] = -0.125+0.125         *rLocalCoordinates      +0.625*s2-0.625*s3;
+        rShapeFunctions[1] =  0.625-1.3975424859373684*rLocalCoordinates-0.625*s2+1.3975424859373684*s3;
+        rShapeFunctions[2] =  0.625+1.3975424859373684*rLocalCoordinates-0.625*s2-1.3975424859373684*s3;
+        rShapeFunctions[3] = -0.125-0.125         *rLocalCoordinates      +0.625*s2+0.625*s3;
+    }
+
+    void DerivativeShapeFunctions1D2NSpectralOrder3(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)
+    {
+        assert(((int)rDerivativeShapeFunctions.size()) == 4);
+        double s2 = rLocalCoordinates*rLocalCoordinates;
+        rDerivativeShapeFunctions[0] =  0.125             +1.25*rLocalCoordinates-1.875*s2;
+        rDerivativeShapeFunctions[1] = -1.3975424859373684-1.25*rLocalCoordinates+4.192627457812105*s2;
+        rDerivativeShapeFunctions[2] =  1.3975424859373684-1.25*rLocalCoordinates-4.192627457812105*s2;
+        rDerivativeShapeFunctions[3] = -0.125             +1.25*rLocalCoordinates+1.875*s2;
+    }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    void ShapeFunctions1D2NSpectralOrder4(double rLocalCoordinates, std::vector<double>& rShapeFunctions)
+    {
+        assert(((int)rShapeFunctions.size())==5);
+        double s2 = rLocalCoordinates*rLocalCoordinates;
+        double s3 = rLocalCoordinates*s2;
+        double s4 = rLocalCoordinates*s3;
+        rShapeFunctions[0] =    +0.375            *rLocalCoordinates -0.375            *s2 -0.875*s3             + 0.875*s4;
+        rShapeFunctions[1] =    -1.336584577695453*rLocalCoordinates +2.041666666666666*s2 +1.336584577695453*s3 -2.041666666666666*s4;
+        rShapeFunctions[2] =  1.                                      -3.333333333333333*s2                       +2.333333333333333*s4;
+        rShapeFunctions[3] =    +1.336584577695453*rLocalCoordinates +2.041666666666666*s2 -1.336584577695453*s3 -2.041666666666666*s4;
+        rShapeFunctions[4] =    -0.375            *rLocalCoordinates -0.375            *s2 + 0.875*s3            +0.875*s4;
+    }
+
+    void DerivativeShapeFunctions1D2NSpectralOrder4(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)
+    {
+        assert(((int)rDerivativeShapeFunctions.size())==5);
+        double s2 = rLocalCoordinates*rLocalCoordinates;
+        double s3 = rLocalCoordinates*s2;
+        rDerivativeShapeFunctions[0] =  0.375             -0.75             *rLocalCoordinates-2.625               *s2+3.5*s3;
+        rDerivativeShapeFunctions[1] = -1.336584577695453 +4.083333333333333*rLocalCoordinates+4.009753733086359517*s2-8.16666666666666*s3;
+        rDerivativeShapeFunctions[2] =                    -6.666666666666666*rLocalCoordinates                        +9.33333333333333*s3;
+        rDerivativeShapeFunctions[3] =  1.336584577695453 +4.083333333333333*rLocalCoordinates-4.009753733086359517*s2-8.16666666666666*s3;
+        rDerivativeShapeFunctions[4] = -0.375             -0.75             *rLocalCoordinates+2.625               *s2+3.5*s3;
+    }
+
+
 }
 
 namespace ShapeFunctions2D
 {
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    void ShapeFunctionsPlane2D4N(const double rLocalCoordinates[2], std::vector<double>& rShapeFunctions)
+    {
+        assert(rShapeFunctions.size()==4);
+        rShapeFunctions[0] = 0.25*(1.-rLocalCoordinates[0])*(1.-rLocalCoordinates[1]);
+        rShapeFunctions[1] = 0.25*(1.+rLocalCoordinates[0])*(1.-rLocalCoordinates[1]);
+        rShapeFunctions[2] = 0.25*(1.+rLocalCoordinates[0])*(1.+rLocalCoordinates[1]);
+        rShapeFunctions[3] = 0.25*(1.-rLocalCoordinates[0])*(1.+rLocalCoordinates[1]);
+    }
+
+    void DerivativeShapeFunctionsPlane2D4N(const double rLocalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)
+    {
+        assert(rDerivativeShapeFunctions.size()==8);
+        rDerivativeShapeFunctions[0] = -0.25*(1.-rLocalCoordinates[1]);
+        rDerivativeShapeFunctions[1] = -0.25*(1.-rLocalCoordinates[0]);
+
+        rDerivativeShapeFunctions[2] = +0.25*(1.-rLocalCoordinates[1]);
+        rDerivativeShapeFunctions[3] = -0.25*(1.+rLocalCoordinates[0]);
+
+        rDerivativeShapeFunctions[4] = +0.25*(1.+rLocalCoordinates[1]);
+        rDerivativeShapeFunctions[5] = +0.25*(1.+rLocalCoordinates[0]);
+
+        rDerivativeShapeFunctions[6] = -0.25*(1.+rLocalCoordinates[1]);
+        rDerivativeShapeFunctions[7] = +0.25*(1.-rLocalCoordinates[0]);
+    }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     void ShapeFunctions2D3N(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)
     {
@@ -317,11 +394,7 @@ namespace ShapeFunctions2D
         rDerivativeShapeFunctions[28] = 0.;
         rDerivativeShapeFunctions[29] = -1.0 + 14.6666666667*s-48.0*s*s + 42.6666666667*s*s*s;
     }
-
- //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 }
-
 
 namespace ShapeFunctions3D
 {

@@ -280,7 +280,7 @@ public:
     //! @brief ...merge additional dof values
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! empty in the standard case, is used in StructureIp
-    virtual void NodeMergeAdditionalGlobalDofValues(int rTimeDerivative, const NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, const NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues){};
+    virtual void NodeMergeAdditionalGlobalDofValues(int rTimeDerivative, const NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, const NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues){}
 
     //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
@@ -294,7 +294,7 @@ public:
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
-    virtual void NodeExtractAdditionalGlobalDofValues(int rTimeDerivative, NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues) const{};
+    virtual void NodeExtractAdditionalGlobalDofValues(int rTimeDerivative, NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues) const{}
 
 #ifndef SWIG
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)

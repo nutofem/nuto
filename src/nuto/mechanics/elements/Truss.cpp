@@ -590,8 +590,8 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 //	            std::cout << coordsIP[0] << ": " << areaFactor << std::endl;
 			}
 
-			double factor = detJ * mSection->GetArea() * areaFactor *
-					       (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP));
+            double IPweight = mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP);
+            double factor = detJ * mSection->GetArea() * areaFactor * IPweight ;
 
 
 			FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Kkk;
@@ -1714,13 +1714,14 @@ void NuTo::Truss::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctio
                               FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const
 {
     rFactor *=rConstitutiveTangent(0,0);
-    for (int node1=0; node1<GetNumNodesGeometry(); node1++)
+    for (int node1=0; node1<GetNumNodesField(); node1++)
     {
-        for (int node2=0; node2<GetNumNodesGeometry(); node2++)
+        for (int node2=0; node2<GetNumNodesField(); node2++)
         {
             rCoefficientMatrix(rRow+node1,rCol+node2)+=rFactor*rDerivativeShapeFunctions[node1]*rDerivativeShapeFunctions[node2];
         }
     }
+    std::cout << rCoefficientMatrix << std::endl;
 }
 
 //! @brief adds to a matrix the product factor * H^tH, where H contains the shape functions

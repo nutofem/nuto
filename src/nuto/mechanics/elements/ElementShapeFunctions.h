@@ -35,10 +35,25 @@ namespace ShapeFunctions1D
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    void ShapeFunctions1D2NSpectralOrder3(double rLocalCoordinates, std::vector<double>& rShapeFunctions);
+
+    void DerivativeShapeFunctions1D2NSpectralOrder3(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    void ShapeFunctions1D2NSpectralOrder4(double rLocalCoordinates, std::vector<double>& rShapeFunctions);
+
+    void DerivativeShapeFunctions1D2NSpectralOrder4(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions);
 }
 
 namespace ShapeFunctions2D
 {
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void ShapeFunctionsPlane2D4N(const double rLocalCoordinates[2], std::vector<double>& rShapeFunctions);
+
+    void DerivativeShapeFunctionsPlane2D4N(const double rLocalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions);
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     void ShapeFunctions2D3N(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions);
 
@@ -67,9 +82,6 @@ namespace ShapeFunctions2D
     void ShapeFunctions2D15N(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions);
 
     void DerivativeShapeFunctions2D15N(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions);
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 }
 
 
