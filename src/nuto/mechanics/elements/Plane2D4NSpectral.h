@@ -345,8 +345,6 @@ public:
     {
 		assert(((int)rDerivativeShapeFunctions.size())==GetNumNodes()*2);
 
-        //NuTo::Truss1D2NSpectral<2>::test(rNaturalCoordinates[0], rDerivativeShapeFunctions);
-
 		std::vector<double> shapeFunctions1Dx(GetNumNodesField1D());
         std::vector<double> shapeFunctions1Dy(GetNumNodesField1D());
         std::vector<double> derShapeFunctions1Dx(GetNumNodesField1D());
@@ -399,7 +397,21 @@ public:
     //! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
     void CalculateShapeFunctionsSurface(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const override
     {
-    	CalculateShapeFunctionsField1D(rLocalCoordinates,rShapeFunctions);
+        assert(((int)rShapeFunctions.size())==GetNumNodesField1D());
+
+        switch (TOrder) {
+        case 2:
+            NuTo::ShapeFunctions1D::ShapeFunctions1D3N(rLocalCoordinates,rShapeFunctions);
+            break;
+        case 3:
+            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder3(rLocalCoordinates,rShapeFunctions);
+            break;
+        case 4:
+            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder4(rLocalCoordinates,rShapeFunctions);
+            break;
+        default:
+            break;
+        }
     }
 
     //! @brief calculates the derivative of the shape functions with respect to local coordinatesfor the surfaces (required for surface loads)
@@ -408,7 +420,21 @@ public:
     //! first all the directions for a single node, and then for the next node
     void CalculateDerivativeShapeFunctionsLocalSurface(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const override
     {
-    	CalculateDerivativeShapeFunctionsFieldNatural1D(rLocalCoordinates,rDerivativeShapeFunctions);
+        assert(((int)rDerivativeShapeFunctions.size())==GetNumNodesField1D());
+
+        switch (TOrder) {
+        case 2:
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D3N(rLocalCoordinates,rDerivativeShapeFunctions);
+            break;
+        case 3:
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D2NSpectralOrder3(rLocalCoordinates,rDerivativeShapeFunctions);
+            break;
+        case 4:
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D2NSpectralOrder4(rLocalCoordinates,rDerivativeShapeFunctions);
+            break;
+        default:
+            break;
+        }
     }
 
     //! @brief returns the surface nodes

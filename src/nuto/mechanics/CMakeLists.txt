@@ -128,9 +128,6 @@ elements/Plane2D10N.cpp
 elements/Plane2D15N.cpp
 elements/Plane2D3N.cpp
 elements/Plane2D4N.cpp
-elements/Plane2D4NSpectralOrder2.cpp
-elements/Plane2D4NSpectralOrder3.cpp
-elements/Plane2D4NSpectralOrder4.cpp
 elements/Plane2D6N.cpp
 elements/Solid.cpp
 elements/Tetrahedron10N.cpp
