@@ -28,9 +28,9 @@
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/math/SparseMatrixCSRSymmetric.h"
 
-//#include "nuto/mechanics/elements/ElementBase.h"  // delete me
-//#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h" // delete me
-//#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3D.h" // delete me
+#include "nuto/mechanics/elements/ElementBase.h"  // delete me
+#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h" // delete me
+#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3D.h" // delete me
 
 
 //! @brief constructor
@@ -272,9 +272,9 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             plotVector0.AppendColumns(reactionForce);
         }
 */
-//        std::ofstream DamageFile;
-//        DamageFile.open("Damage.txt", std::ios::app);
-//    	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(9)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl;
+//VK        std::ofstream DamageFile;
+//VK        DamageFile.open("Damage.txt", std::ios::app);
+//VK    	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // bulo ElementGetElementPtr(9);
 
         PostProcess(prevResidual_j, prevResidual_k);
 
@@ -885,7 +885,7 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
 				//perform Postprocessing
                 mStructure->GetLogger() << " *** PostProcess *** from NewMarkDirect \n";
 
-//            	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(9)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl;
+//VK            	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl;
 
                 PostProcess(prevResidual_j, prevResidual_k);
 
@@ -914,7 +914,7 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
                 }
             }
         }
-//        DamageFile.close();
+//VK        DamageFile.close();
     }
     catch (MechanicsException& e)
     {

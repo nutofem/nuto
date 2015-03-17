@@ -1039,7 +1039,7 @@ void NuTo::JumpDirect::CalculateGlobalModifiedStiffness(NuTo::SparseMatrixCSRVec
 	massMatrix_kk.Resize(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(),mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
 	mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::MASS,massMatrix_jj,massMatrix_jk,massMatrix_kj,massMatrix_kk);
 
-	if (rFourierMode > 0) {
+	if (rFourierMode > 0 && this->IsDynamic()) {
 		double frequency(mHarmonicConstraintFactor(0,1));
 		const double pi = boost::math::constants::pi<double>();
 		double factor(2*rFourierMode*pi*frequency);
@@ -1293,16 +1293,18 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
 	const double pi = boost::math::constants::pi<double>();
 	double factor(2*pi*frequency);
 
-	if (mUseLumpedMass)
-	{
-		residual_j -= lumped_massMatrix_j.asDiagonal()*(*rDisp_Ampl_j)*factor*factor;
-		residual_k -= lumped_massMatrix_k.asDiagonal()*(*rDisp_Ampl_k)*factor*factor;
-	}
-	else
-	{
-		//add mass terms
-		residual_j -= (massMatrix_jj*(*rDisp_Ampl_j)+massMatrix_jk*(*rDisp_Ampl_k))*factor*factor;
-		residual_k -= (massMatrix_kj*(*rDisp_Ampl_j)+massMatrix_kk*(*rDisp_Ampl_k))*factor*factor;
+	if (this->IsDynamic()) {
+		if (mUseLumpedMass)
+		{
+			residual_j -= lumped_massMatrix_j.asDiagonal()*(*rDisp_Ampl_j)*factor*factor;
+			residual_k -= lumped_massMatrix_k.asDiagonal()*(*rDisp_Ampl_k)*factor*factor;
+		}
+		else
+		{
+			//add mass terms
+			residual_j -= (massMatrix_jj*(*rDisp_Ampl_j)+massMatrix_jk*(*rDisp_Ampl_k))*factor*factor;
+			residual_k -= (massMatrix_kj*(*rDisp_Ampl_j)+massMatrix_kk*(*rDisp_Ampl_k))*factor*factor;
+		}
 	}
 
 	if (Cmat.GetNumEntries()>0)
@@ -1513,7 +1515,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
     if (rIncludePostProcess){
     	mTime = curTime;
     	NuTo::NewmarkDirect::PostProcess(prevResidual_j, prevResidual_k);
-    	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(9)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl;
+    	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // for Brick8N was ElementGetElementPtr(9)
 	}
 
     // iterate over the increments within the cycle
@@ -1615,7 +1617,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
 
         	std::cout << " Cyclic increment " << incr << std::endl;
         	NuTo::NewmarkDirect::PostProcess(prevResidual_j, prevResidual_k);
-        	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(9)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl;
+        	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // for Brick8N was ElementGetElementPtr(9)
 
             // update previous BC and displacements
         	bRHSprev = bRHSend;
