@@ -359,7 +359,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
                 //calculate new accelerations and velocities of independent dofs
                 acc_j = (lastConverged_vel_j+lastConverged_acc_j*(timeStep*(0.5-mBeta)))*(-1./(timeStep*mBeta));
-                vel_j = lastConverged_vel_j+lastConverged_acc_j*((1.-mGamma)*timeStep)+acc_j*(mGamma*timeStep);
+                vel_j =  lastConverged_vel_j+lastConverged_acc_j*((1.-mGamma)*timeStep)+acc_j*(mGamma*timeStep);
 
                 //calculate new accelerations and velocities of dependent dofs
                 acc_k = bRHSddot - (Cmat*acc_j);

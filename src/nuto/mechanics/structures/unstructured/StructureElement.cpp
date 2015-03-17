@@ -8,6 +8,7 @@
 #include "nuto/mechanics/elements/Truss1D3N.h"
 #include "nuto/mechanics/elements/Truss1D4NDisp3NX.h"
 #include "nuto/mechanics/elements/BoundaryGradientDamage1D.h"
+#include "nuto/mechanics/elements/BoundaryMoistureTransport1D.h"
 #include "nuto/mechanics/elements/Brick8N.h"
 #include "nuto/mechanics/elements/Plane2D10N.h"
 #include "nuto/mechanics/elements/Plane2D15N.h"
@@ -177,6 +178,10 @@ void NuTo::Structure::BoundaryElementsCreate (
     {
     	elementType = NuTo::Element::BOUNDARYGRADIENTDAMAGE1D;
     }
+    else if (upperCaseElementType=="BOUNDARYMOISTURETRANSPORT1D")
+    {
+        elementType = NuTo::Element::BOUNDARYMOISTURETRANSPORT1D;
+    }
     else
     {
     	throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Element type "+upperCaseElementType +" does not exist.");
@@ -285,14 +290,37 @@ void NuTo::Structure::BoundaryElementsCreate (
                 for (int iNode = 0; iNode < 2; ++iNode)
                 {
                     if (rGroupBoundaryNodes->Contain(nodeIds[iNode]))
-                    {
-                        ElementBase* newElementPtr = new NuTo::BoundaryGradientDamage1D(
-                                this, itElement->second->AsTruss(),
-                                NodeGetNodePtr(nodeIds[iNode]),
-                                rBoundaryConditionType,
-                                rElementDataType,
-                                IntegrationType::IntegrationType0DBoundary,
-                                rIpDataType);
+                    {                        
+                        ElementBase* newElementPtr = nullptr;
+                        switch(rType)
+                        {
+                        case NuTo::Element::eElementType::BOUNDARYGRADIENTDAMAGE1D:
+                        {
+                            newElementPtr = new NuTo::BoundaryGradientDamage1D(
+                                    this, itElement->second->AsTruss(),
+                                    NodeGetNodePtr(nodeIds[iNode]),
+                                    rBoundaryConditionType,
+                                    rElementDataType,
+                                    IntegrationType::IntegrationType0DBoundary,
+                                    rIpDataType);
+                            break;
+                        }
+                        case NuTo::Element::eElementType::BOUNDARYMOISTURETRANSPORT1D:
+                        {
+                            newElementPtr = new NuTo::BoundaryMoistureTransport1D(
+                                        this, itElement->second->AsTruss(),
+                                        NodeGetNodePtr(nodeIds[iNode]),
+                                        rBoundaryConditionType,
+                                        NuTo::ElementData::CONSTITUTIVELAWIP,
+                                        IntegrationType::IntegrationType0DBoundary,
+                                        IpData::STATICDATA);
+                            break;
+                        }
+                        default:
+                        {
+                            throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Selected boundary element not implemented yet.");
+                        }
+                        }
 
                         //find unused integer id
                         int elementNumber(mElementMap.size());

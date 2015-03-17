@@ -30,6 +30,10 @@ public:
     //! @param rAdsorptionCoefficients ... adsorption coefficients
     void                                            CheckAdsorptionCoefficients                                 (NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients) const;
 
+    //! @brief ... check the boundary surface moisture transport coefficient
+    //! @param ... boundary surface moisture transport coefficient
+    void                                            CheckBoundarySurfaceMoistureTransportCoefficient            (double rBeta) const;
+
     //! @brief ... check the number of desorption coefficients
     //! @param rDesorptionCoefficients ... desorption coefficients
     void                                            CheckDesorptionCoefficients                                 (NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients) const;
@@ -95,6 +99,10 @@ public:
     //! @brief ... get adsorption coefficients as vector
     //! @return ... adsorption coefficients as vector
     virtual NuTo::FullVector<double,Eigen::Dynamic> GetAdsorptionCoefficients                                   () const override;
+
+    //! @brief ... get boundary surface moisture transport coefficient
+    //! @return ... boundary surface moisture transport coefficient
+    virtual double                                  GetBoundarySurfaceMoistureTransportCoefficient              () const override;
 
     //! @brief ... get desorption coefficients as vector
     //! @return ... desorption coefficients as vector
@@ -164,6 +172,10 @@ public:
     //! @param ... adsorption coefficients as vector
     virtual void                                    SetAdsorptionCoefficients                                   (NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients) override;
 
+    //! @brief ... set boundary surface moisture transport coefficient
+    //! @param ... boundary surface moisture transport coefficient
+    virtual void                                    SetBoundarySurfaceMoistureTransportCoefficient              (double rBeta) override;
+
     //! @brief ... set desorption coefficients as vector
     //! @param ... desorption coefficients as vector
     virtual void                                    SetDesorptionCoefficients                                   (NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients) override;
@@ -212,13 +224,16 @@ public:
 protected:
 
     //! @brief ... Coefficients of the adsorption curve
-    FullVector<double,Eigen::Dynamic>    mAdsorptionCoeff       {{0.0, 0.0, 0.0}};
+    FullVector<double,Eigen::Dynamic>   mAdsorptionCoeff       {{0.0, 0.0, 0.0}};
 
     //! @brief ... Vapor phase diffusion exponent \f$ \alpha_V \f$
     double                              mAlphaV                 = 1.0;
 
     //! @brief ... Water phase diffusion exponent \f$ \alpha_W \f$
     double                              mAlphaW                 = 1.0;
+
+    //! @brief ... Boundary surface moisture transport coefficient
+    double                              mBeta                   = 1.0;
 
     //! @brief ... Coefficients of the desorption curve
     FullVector<double,Eigen::Dynamic>   mDesorptionCoeff        {{0.0, 0.0, 0.0}};

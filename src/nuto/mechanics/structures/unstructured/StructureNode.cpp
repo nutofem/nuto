@@ -658,7 +658,16 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
                     throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
                 }
             break;
-
+            case 2:
+                switch (mDimension)
+                {
+                case 1:
+                    nodePtr = new NuTo::NodeCoordinatesDof<1,2,1,0,0,0,0,0,1,1>();
+                    break;
+                default:
+                    throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+                }
+            break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Coordinates, Displacements and nonlocal eq strains only implemented for 0 time derivatives.");
             }
@@ -678,7 +687,16 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
                     throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
                 }
             break;
-
+            case 2:
+                switch (mDimension)
+                {
+                case 1:
+                    nodePtr = new NuTo::NodeCoordinatesDof<1,2,0,0,0,0,0,0,1,1>();
+                    break;
+                default:
+                    throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+                }
+            break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Coordinates, Displacements and nonlocal eq strains only implemented for 0 time derivatives.");
             }

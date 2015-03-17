@@ -37,31 +37,36 @@ void                                        NuTo::MoistureTransport::CalculateSo
     NuTo::FullVector<double,4>              ITDelta;
     NuTo::FullMatrix<double,4,4>            Jacobi;
 
+    // Initial Coeffs = Previous Coeffs
+    rStaticData->mActualSorptionCoeff(0)     = rStaticData-> mLastSorptionCoeff(0);
+    rStaticData->mActualSorptionCoeff(1)     = rStaticData-> mLastSorptionCoeff(1);
+    rStaticData->mActualSorptionCoeff(2)     = rStaticData-> mLastSorptionCoeff(2);
+    rStaticData->mActualJunctionPoint        = rStaticData-> mLastJunctionPoint;
+
+
     // Getting to the junction point
     // #############################
 
     // adsorption
-
-   if (rStaticData->mSorptionHistoryDesorption == false && rRelativeHumidity(0) > rStaticData->mJunctionPoint)
+   if (rStaticData->mSorptionHistoryDesorption == false && rRelativeHumidity(0) > rStaticData->mLastJunctionPoint)
    {
        rStaticData->mActualSorptionCoeff(0)     = mAdsorptionCoeff(0);
        rStaticData->mActualSorptionCoeff(1)     = mAdsorptionCoeff(1);
        rStaticData->mActualSorptionCoeff(2)     = mAdsorptionCoeff(2);
 
-       rStaticData->mJunctionPoint              = 1;
+       rStaticData->mActualJunctionPoint              = 1;
    }
 
-   // desorption
 
-   if (rStaticData->mSorptionHistoryDesorption == true && rRelativeHumidity(0) < rStaticData->mJunctionPoint)
+   // desorption
+   if (rStaticData->mSorptionHistoryDesorption == true && rRelativeHumidity(0) < rStaticData->mLastJunctionPoint)
    {
        rStaticData->mActualSorptionCoeff(0)     = mDesorptionCoeff(0);
        rStaticData->mActualSorptionCoeff(1)     = mDesorptionCoeff(1);
        rStaticData->mActualSorptionCoeff(2)     = mDesorptionCoeff(2);
 
-       rStaticData->mJunctionPoint              = 0;
+       rStaticData->mActualJunctionPoint              = 0;
    }
-
 
 
     // desorption to adsorption
@@ -142,7 +147,7 @@ void                                        NuTo::MoistureTransport::CalculateSo
         rStaticData->mActualSorptionCoeff(0)    = ITDofs(2);
         rStaticData->mActualSorptionCoeff(1)    = ITDofs(1);
         rStaticData->mActualSorptionCoeff(2)    = ITDofs(0);
-        rStaticData->mJunctionPoint             = ITDofs(3);
+        rStaticData->mActualJunctionPoint       = ITDofs(3);
     }
 
     // adsorption to desorption
@@ -224,13 +229,12 @@ void                                        NuTo::MoistureTransport::CalculateSo
         rStaticData->mActualSorptionCoeff(0)    = ITDofs(2);
         rStaticData->mActualSorptionCoeff(1)    = ITDofs(1);
         rStaticData->mActualSorptionCoeff(2)    = ITDofs(0);
-        rStaticData->mJunctionPoint             = ITDofs(3);
+        rStaticData->mActualJunctionPoint       = ITDofs(3);
 
         //if (rStaticData->mJunctionPoint < 0)
         //{
         //    throw NuTo::MechanicsException("[NuTo::MoistureTransport::CalculateSorptionCurveCoefficients] - Error calculating sorption curve - junction point < 0");
         //}
-
     }
 
 
@@ -243,6 +247,8 @@ bool                                        NuTo::MoistureTransport::CheckElemen
 {
     switch (rElementType)
     {
+    case NuTo::Element::BOUNDARYMOISTURETRANSPORT1D:
+        return true;
     case NuTo::Element::BRICK8N:
         return false;
     case NuTo::Element::PLANE2D10N:
@@ -287,6 +293,17 @@ void                                        NuTo::MoistureTransport::CheckAdsorp
         throw NuTo::MechanicsException("[NuTo::MoistureTransport::CheckAdsorptionCoefficients] The first adsorption coefficients (constant term) has to be zero");
     }
 }
+
+//! @brief ... check the boundary surface moisture transport coefficient
+//! @param ... boundary surface moisture transport coefficient
+void                                        NuTo::MoistureTransport::CheckBoundarySurfaceMoistureTransportCoefficient           (double rBeta) const
+{
+    if (rBeta < 0.0)
+    {
+        throw NuTo::MechanicsException("[NuTo::MoistureTransport::CheckBoundarySurfaceMoistureTransportCoefficient] The boundary surface moisture transport coefficient must have a non-negative value.");
+    }
+}
+
 
 //! @brief ... check the number of desorption coefficients
 //! @param rDesorptionCoefficients ... desorption coefficients
@@ -337,7 +354,10 @@ void                                        NuTo::MoistureTransport::CheckMassEx
 void                                        NuTo::MoistureTransport::CheckParameters                                            () const
 {
     CheckAdsorptionCoefficients(mAdsorptionCoeff);
+    CheckBoundarySurfaceMoistureTransportCoefficient(mBeta);
     CheckDesorptionCoefficients(mDesorptionCoeff);
+    CheckKa(mKa);
+    CheckKd(mKd);
     CheckMassExchangeRate(mR);
     CheckPorosity(mEpsP);
     CheckVaporPhaseDiffusionCoefficient(mDV);
@@ -518,6 +538,13 @@ NuTo::Error::eError                         NuTo::MoistureTransport::Evaluate1D 
             VaporPhaseSaturationDensityTimesRelativeHumidity.SetSymmetry(true);
             break;
         }
+        case NuTo::Constitutive::Output::BOUNDARY_SURFACE_MOISTURE_TRANSPORT_COEFFICIENT:
+        {
+            ConstitutiveTangentLocal<1,1>& BoundarySurfaceMoistureTransportCoefficient(itOutput->second->AsConstitutiveTangentLocal_1x1());
+            BoundarySurfaceMoistureTransportCoefficient(0,0) = mBeta;
+            BoundarySurfaceMoistureTransportCoefficient.SetSymmetry(true);
+            break;
+        }
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
         {
             if (StaticData->mLastRelHumValue > relativeHumidity(0))
@@ -530,7 +557,7 @@ NuTo::Error::eError                         NuTo::MoistureTransport::Evaluate1D 
             }
             StaticData->mLastRelHumValue = relativeHumidity(0);
             StaticData->mLastSorptionCoeff = StaticData->mActualSorptionCoeff;
-
+            StaticData->mLastJunctionPoint = StaticData->mActualJunctionPoint;
             // Test
             double Test[1];
             rElement->GetNode(0)->GetCoordinates1D(Test);
@@ -556,6 +583,13 @@ NuTo::Error::eError                         NuTo::MoistureTransport::Evaluate1D 
 NuTo::FullVector<double,Eigen::Dynamic>     NuTo::MoistureTransport::GetAdsorptionCoefficients                                  () const
 {
     return mAdsorptionCoeff;
+}
+
+//! @brief ... get boundary surface moisture transport coefficient
+//! @return ... boundary surface moisture transport coefficient
+double                                      NuTo::MoistureTransport::GetBoundarySurfaceMoistureTransportCoefficient             () const
+{
+    return mBeta;
 }
 
 //! @brief ... get desorption coefficients as vector
@@ -726,6 +760,15 @@ void                                        NuTo::MoistureTransport::SetAdsorpti
             break;
         }
     }
+    SetParametersValid();
+}
+
+//! @brief ... set boundary surface moisture transport coefficient
+//! @param ... boundary surface moisture transport coefficient
+void                                        NuTo::MoistureTransport::SetBoundarySurfaceMoistureTransportCoefficient             (double rBeta)
+{
+
+    mBeta = rBeta;
     SetParametersValid();
 }
 

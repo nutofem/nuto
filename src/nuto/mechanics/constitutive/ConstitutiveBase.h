@@ -324,6 +324,14 @@ public:
     //! @param ... adsorption coefficients as vector
     virtual void SetAdsorptionCoefficients(NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients);
 
+    //! @brief ... get boundary surface moisture transport coefficient
+    //! @return ... boundary surface moisture transport coefficient
+    virtual double GetBoundarySurfaceMoistureTransportCoefficient() const;
+
+    //! @brief ... set boundary surface moisture transport coefficient
+    //! @param ... boundary surface moisture transport coefficient
+    virtual void SetBoundarySurfaceMoistureTransportCoefficient(double rBeta);
+
     //! @brief ... get desorption coefficients as vector
     //! @return ... desorption coefficients as vector
     virtual NuTo::FullVector<double,Eigen::Dynamic> GetDesorptionCoefficients() const;

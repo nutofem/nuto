@@ -181,6 +181,12 @@ IF(ENABLE_C++_TESTS)
     SET_TARGET_PROPERTIES(LobattoIntegration PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)#
   ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoIntegration)
+
+  # MoistureTransport
+  ADD_EXECUTABLE(MoistureTransport1D MoistureTransport.cpp)
+  TARGET_LINK_LIBRARIES(MoistureTransport1D NuToMetamodel NuToMechanics NuToMath NuToBase)
+  ADD_TEST(c::mechanics::MoistureTransport1D ${CMAKE_CURRENT_BUILD_DIR}/MoistureTransport1D)
+
   
 ENDIF(ENABLE_C++_TESTS)
   

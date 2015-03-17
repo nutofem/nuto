@@ -402,7 +402,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			break;
 			case Element::HESSIAN_2_TIME_DERIVATIVE:
 			{
-				it->second->GetFullMatrixDouble().Resize(numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs+numNonlocalTotalStrainDofs,numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs+numNonlocalTotalStrainDofs);
+                it->second->GetFullMatrixDouble().Resize(numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs+numNonlocalTotalStrainDofs+numRelativeHumidityDofs+numWaterPhaseFractionDofs,numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs+numNonlocalTotalStrainDofs+numRelativeHumidityDofs+numWaterPhaseFractionDofs);
 				it->second->SetSymmetry(true);
 				it->second->SetConstant(true);
 				//there is only a constant mass part for the mechanics problem

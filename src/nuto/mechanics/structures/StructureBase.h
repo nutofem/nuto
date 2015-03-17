@@ -1481,6 +1481,16 @@ public:
     //! @param rAdsorptionCoefficients ... adsorption coefficients as vector
     void ConstitutiveLawSetAdsorptionCoefficients(int rIdent, NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients);
 
+    //! @brief ... get boundary surface moisture transport coefficient
+    //! @param rIdent ... constitutive law identifier
+    //! @return ... boundary surface moisture transport coefficient
+    double ConstitutiveLawGetBoundarySurfaceMoistureTransportCoefficient(int rIdent) const;
+
+    //! @brief ... set boundary surface moisture transport coefficient
+    //! @param rIdent ... constitutive law identifier
+    //! @param ... boundary surface moisture transport coefficient
+    void ConstitutiveLawSetBoundarySurfaceMoistureTransportCoefficient(int rIdent, double rBeta);
+
     //! @brief ... get desorption coefficients as vector
     //! @param rIdent ... constitutive law identifier
     //! @return ... desorption coefficients as vector

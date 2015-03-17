@@ -477,6 +477,20 @@ void NuTo::ConstitutiveBase::SetAdsorptionCoefficients(NuTo::FullVector<double,E
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetAdsorptionCoefficients] The constitutive relationship does not have this parameter.");
 }
 
+//! @brief ... get boundary surface moisture transport coefficient
+//! @return ... boundary surface moisture transport coefficient
+double NuTo::ConstitutiveBase::GetBoundarySurfaceMoistureTransportCoefficient() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetBoundarySurfaceMoistureTransportCoefficient] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set boundary surface moisture transport coefficient
+//! @param ... boundary surface moisture transport coefficient
+void NuTo::ConstitutiveBase::SetBoundarySurfaceMoistureTransportCoefficient(double rBeta)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetBoundarySurfaceMoistureTransportCoefficient] The constitutive relationship does not have this parameter.");
+}
+
 //! @brief ... get desorption coefficients as vector
 //! @return ... desorption coefficients as vector
 NuTo::FullVector<double,Eigen::Dynamic> NuTo::ConstitutiveBase::GetDesorptionCoefficients() const

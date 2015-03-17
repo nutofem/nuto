@@ -1072,6 +1072,43 @@ void NuTo::StructureBase::ConstitutiveLawSetAdsorptionCoefficients(int rIdent, N
     }
 }
 
+//! @brief ... get boundary surface moisture transport coefficient
+//! @param rIdent ... constitutive law identifier
+//! @return ... boundary surface moisture transport coefficient
+double NuTo::StructureBase::ConstitutiveLawGetBoundarySurfaceMoistureTransportCoefficient(int rIdent) const
+{
+    double beta;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        beta = ConstitutiveLawPtr->GetBoundarySurfaceMoistureTransportCoefficient();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetBoundarySurfaceMoistureTransportCoefficient] error getting boundary surface moisture transport coefficient.");
+        throw e;
+    }
+    return beta;
+}
+
+//! @brief ... set boundary surface moisture transport coefficient
+//! @param rIdent ... constitutive law identifier
+//! @param ... boundary surface moisture transport coefficient
+void NuTo::StructureBase::ConstitutiveLawSetBoundarySurfaceMoistureTransportCoefficient(int rIdent, double rBeta)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetBoundarySurfaceMoistureTransportCoefficient(rBeta);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetBoundarySurfaceMoistureTransportCoefficient] error setting adsorption coefficients.");
+        throw e;
+    }
+}
+
+
 //! @brief ... get desorption coefficients as vector
 //! @param rIdent ... constitutive law identifier
 //! @return ... desorption coefficients as vector
