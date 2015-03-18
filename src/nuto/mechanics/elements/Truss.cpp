@@ -1721,7 +1721,6 @@ void NuTo::Truss::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctio
             rCoefficientMatrix(rRow+node1,rCol+node2)+=rFactor*rDerivativeShapeFunctions[node1]*rDerivativeShapeFunctions[node2];
         }
     }
-    std::cout << rCoefficientMatrix << std::endl;
 }
 
 //! @brief adds to a matrix the product factor * H^tH, where H contains the shape functions
@@ -1730,9 +1729,9 @@ void NuTo::Truss::AddDetJBtCB(const std::vector<double>& rDerivativeShapeFunctio
 //! @param rCoefficientMatrix to be added to
 void NuTo::Truss::AddDetJHtH(const std::vector<double>& rShapeFunctions, double rFactor, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const
 {
-    for (int node1=0; node1<GetNumNodesGeometry(); node1++)
+    for (int node1=0; node1<GetNumNodesField(); node1++)
     {
-        for (int node2=0; node2<GetNumNodesGeometry(); node2++)
+        for (int node2=0; node2<GetNumNodesField(); node2++)
         {
             rCoefficientMatrix(node1,node2)+=rFactor*rShapeFunctions[node1]*rShapeFunctions[node2];
         }
