@@ -28,12 +28,35 @@ NuTo::SparseDirectSolverMUMPS::SparseDirectSolverMUMPS() : SparseDirectSolver()
 void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double,Eigen::Dynamic>& rRhs, NuTo::FullVector<double,Eigen::Dynamic>& rSolution)
 {
 #ifdef HAVE_MUMPS
+
+#ifdef SHOW_TIME
+#ifdef _OPENMP
+    double startWtimeGlobal = omp_get_wtime();
+#else
+    std::clock_t start,end;
+    start=clock();
+#endif
+#endif
+
     Factorization(rMatrix);
     Solution(rRhs, rSolution);
     CleanUp();
+
 #else // HAVE_MUMPS
     throw NuTo::MathException("[SparseDirectSolverMUMPS::SparseDirectSolverMUMPS] MUMPS-solver was not found on your system (check cmake)");
 #endif // HAVE_MUMPS
+
+#ifdef SHOW_TIME
+#ifdef _OPENMP
+    double endWtimeGlobal = omp_get_wtime();
+    if (mShowTime)
+        std::cout << "[NuTo::SparseDirectSolverMUMPS::solve] Overall time: "<<endWtimeGlobal-startWtimeGlobal<<"sec"<<std::endl;
+#else
+    end = clock();
+    if (mShowTime)
+        std::cout<< "[NuTo::SparseDirectSolverMUMPS::solve] Overall time: "<< difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+#endif
 }
 
 
@@ -44,8 +67,12 @@ void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& r
 void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<double>& rMatrix)
 {
 #ifdef SHOW_TIME
+#ifdef _OPENMP
+    double startWtime = omp_get_wtime();
+#else
     std::clock_t start,end;
     start=clock();
+#endif
 #endif
 	// check rMatrix
 	if (rMatrix.HasZeroBasedIndexing())
@@ -131,10 +158,17 @@ void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<do
 	}
 
 #ifdef SHOW_TIME
-	end = clock();
-	if (mShowTime)
-		std::cout<<"[NuTo::SparseDirectSolverMUMPS::Solve] reordering and symbolic factorization " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-	start = end;
+#ifdef _OPENMP
+    double endWtime = omp_get_wtime();
+    if (mShowTime)
+        std::cout<<"[NuTo::SparseDirectSolverMUMPS::Solve] reordering and symbolic factorization "<<endWtime - startWtime<<"sec"<<std::endl;
+    startWtime = omp_get_wtime();
+#else
+    end = clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::SparseDirectSolverMUMPS::Solve] reordering and symbolic factorization "<< difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+    start = end;
+#endif
 #endif
 
 	// Numerical factorization.
@@ -154,10 +188,17 @@ void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<do
 	}
 
 #ifdef SHOW_TIME
-	end = clock();
+#ifdef _OPENMP
+    endWtime = omp_get_wtime();
 	if (mShowTime)
-		std::cout<<"[NuTo::SparseDirectSolverMUMPS::Solve] numerical factorization " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-	start = end;
+        std::cout<<"[NuTo::SparseDirectSolverMUMPS::Solve] numerical factorization " <<endWtime - startWtime<< "sec" << std::endl;
+    startWtime = omp_get_wtime();
+#else
+    end = clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::SparseDirectSolverMUMPS::Solve] numerical factorization " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+    start = end;
+#endif
 #endif
 }
 
@@ -168,8 +209,12 @@ void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<do
 void NuTo::SparseDirectSolverMUMPS::Solution(const NuTo::FullVector<double,Eigen::Dynamic>& rRhs, NuTo::FullVector<double,Eigen::Dynamic>& rSolution)
 {
 #ifdef SHOW_TIME
+#ifdef _OPENMP
+    double startWtime = omp_get_wtime();
+#else
     std::clock_t start,end;
     start=clock();
+#endif
 #endif
 	// check right hand side
 	if (mSolver.n != rRhs.GetNumRows())
@@ -195,9 +240,15 @@ void NuTo::SparseDirectSolverMUMPS::Solution(const NuTo::FullVector<double,Eigen
 		}
 	}
 #ifdef SHOW_TIME
+#ifdef _OPENMP
+    double endWtime = omp_get_wtime();
+    if (mShowTime)
+        std::cout<<"[NuTo::SparseDirectSolverMUMPS::Solve] Solution " << endWtime - startWtime<< "sec" << std::endl;
+#else
     end = clock();
     if (mShowTime)
         std::cout<<"[NuTo::SparseDirectSolverMUMPS::Solve] Solution " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 #endif
 }
 
@@ -219,15 +270,16 @@ void NuTo::SparseDirectSolverMUMPS::CleanUp()
 
 #endif //HAVE_MUMPS
 
-
-
 void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, NuTo::FullVector<int, Eigen::Dynamic> rSchurIndices, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement)
 {
 #ifdef SHOW_TIME
+#ifdef _OPENMP
+    double startWtime = omp_get_wtime();
+#else
     std::clock_t start,end;
     start=clock();
 #endif
-
+#endif
     // check rMatrix
     if (rMatrix.HasZeroBasedIndexing())
     {
@@ -322,12 +374,18 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     }
 
 #ifdef SHOW_TIME
+#ifdef _OPENMP
+    double endWtime = omp_get_wtime();
+    if (mShowTime)
+        std::cout<<"[NuTo::SparseDirectSolverMUMPS::SchurComplement] reordering and symbolic factorization " << endWtime - startWtime << "sec" << std::endl;
+    startWtime = omp_get_wtime();
+#else
     end = clock();
     if (mShowTime)
         std::cout<<"[NuTo::SparseDirectSolverMUMPS::SchurComplement] reordering and symbolic factorization " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
     start = end;
 #endif
-
+#endif
     // Numerical factorization.
     mSolver.job = 2;
     dmumps_c(&mSolver);
@@ -338,10 +396,17 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     }
 
 #ifdef SHOW_TIME
+#ifdef _OPENMP
+    endWtime = omp_get_wtime();
+    if (mShowTime)
+        std::cout<<"[NuTo::SparseDirectSolverMUMPS::SchurComplement] numerical factorization " <<endWtime-startWtime<< "sec" << std::endl;
+    startWtime = omp_get_wtime();
+#else
     end = clock();
     if (mShowTime)
         std::cout<<"[NuTo::SparseDirectSolverMUMPS::SchurComplement] numerical factorization " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
     start = end;
+#endif
 #endif
 
     CleanUp();
@@ -349,9 +414,15 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     rSchurComplement = rSchurComplementTranspose.transpose();
 
 #ifdef SHOW_TIME
+#ifdef _OPENMP
+    endWtime = omp_get_wtime();
+    if (mShowTime)
+        std::cout<<"[NuTo::SparseDirectSolverMUMPS::SchurComplement] Solution " << endWtime - startWtime << "sec" << std::endl;
+#else
     end = clock();
     if (mShowTime)
         std::cout<<"[NuTo::SparseDirectSolverMUMPS::SchurComplement] Solution " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
 #endif
 }
 
