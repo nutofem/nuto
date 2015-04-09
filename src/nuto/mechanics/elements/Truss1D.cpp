@@ -113,6 +113,51 @@ void NuTo::Truss1D::InterpolateNonlocalEqStrainFrom1D(double rLocalCoordinates, 
     }
 }
 
+
+//! @brief ... interpolate three-dimensional global relative humidity from one-dimensional local point coordinates (element coordinates system)
+//! @param rLocalCoordinates ... one-dimensional local point coordinates
+//! @param rRelativeHumidity ... interpolated relative humidity
+void NuTo::Truss1D::InterpolateRelativeHumidityFrom1D(double rLocalCoordinates, double& rRelativeHumidity) const
+{
+    int numRelativeHumidity = this->GetNumShapeFunctionsMoistureTransport();
+
+    // calculate shape functions
+    std::vector<double> shapeFunctions(numRelativeHumidity);
+    this->CalculateShapeFunctionsMoistureTransport(rLocalCoordinates, shapeFunctions);
+
+    rRelativeHumidity = 0.;
+    for (int iNode = 0; iNode < numRelativeHumidity; ++iNode)
+    {
+        // get node nonlocal eq strain
+        double nodeRelativeHumidity = GetNodeField(iNode)->GetRelativeHumidity();
+
+        // interpolation
+        rRelativeHumidity += shapeFunctions[iNode] * nodeRelativeHumidity;
+    }
+}
+
+//! @brief ... interpolate three-dimensional global water volume fraction from one-dimensional local point coordinates (element coordinates system)
+//! @param rLocalCoordinates ... one-dimensional local point coordinates
+//! @param rWaterVolumeFraction ... interpolated water volume fraction
+void NuTo::Truss1D::InterpolateWaterVolumeFractionFrom1D(double rLocalCoordinates, double& rWaterVolumeFraction) const
+{
+    int numWaterVolumeFraction = this->GetNumShapeFunctionsMoistureTransport();
+
+    // calculate shape functions
+    std::vector<double> shapeFunctions(numWaterVolumeFraction);
+    this->CalculateShapeFunctionsMoistureTransport(rLocalCoordinates, shapeFunctions);
+
+    rWaterVolumeFraction = 0.;
+    for (int iNode = 0; iNode < numWaterVolumeFraction; ++iNode)
+    {
+        // get node nonlocal eq strain
+        double nodeWaterVolumeFraction = GetNodeField(iNode)->GetWaterPhaseFraction();
+
+        // interpolation
+        rWaterVolumeFraction += shapeFunctions[iNode] * nodeWaterVolumeFraction;
+    }
+}
+
 // build global row dofs
 void NuTo::Truss1D::CalculateGlobalRowDofs(
         std::vector<int>& rGlobalRowDofs,

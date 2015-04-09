@@ -113,7 +113,7 @@ protected:
     //damping coefficient for the mass (F^d = -mMuDampingMass*M*v)
 	double mMuDampingMass;
     //NewtonRaphson parameters
-	double mToleranceForce;
+    double mToleranceForce;
 	int mMaxNumIterations;
 	//Newmark parameters
 	double mBeta;
@@ -125,6 +125,7 @@ protected:
 
 	bool mIsDynamic;
 	bool mUseLumpedMass;
+    bool mUseDamping = true;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

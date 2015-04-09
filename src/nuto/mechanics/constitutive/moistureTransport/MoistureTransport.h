@@ -100,13 +100,26 @@ public:
     //! @return ... adsorption coefficients as vector
     virtual NuTo::FullVector<double,Eigen::Dynamic> GetAdsorptionCoefficients                                   () const override;
 
-    //! @brief ... get boundary surface moisture transport coefficient
-    //! @return ... boundary surface moisture transport coefficient
-    virtual double                                  GetBoundarySurfaceMoistureTransportCoefficient              () const override;
+    //! @brief ... get boundary surface relative humidity transport coefficient
+    //! @return ... boundary surface relative humidity transport coefficient
+    virtual double                                  GetBoundarySurfaceRelativeHumidityTransportCoefficient      () const override;
+
+    //! @brief ... get boundary surface water volume fraction transport coefficient
+    //! @return ... boundary surface water volume fraction transport coefficient
+    virtual double                                  GetBoundarySurfaceWaterVolumeFractionTransportCoefficient      () const override;
+
 
     //! @brief ... get desorption coefficients as vector
     //! @return ... desorption coefficients as vector
     virtual NuTo::FullVector<double,Eigen::Dynamic> GetDesorptionCoefficients                                   () const override;
+
+    //! @brief ... returns a bool that tells if modified tangential stiffnes is enabled
+    //! @return ... true or false
+    virtual bool                                    GetEnableModifiedTangentialStiffness                        () const override;
+
+    //! @brief ... returns a bool that tells if the sorption hysteresis model is enabled
+    //! @return ... true or false
+    virtual bool                                    GetEnableSorptionHysteresis                                 () const override;
 
     //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
     //! @param rRelativeHumidity ... relative humidity
@@ -114,7 +127,6 @@ public:
     //! @return ... equilibrium water volume fraction
     virtual double                                  GetEquilibriumWaterVolumeFraction                           (double rRelativeHumidity,
                                                                                                                  NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const override;
-
     //! @brief ... get the gradient correction when changing from desorption to adsorption
     //! @return ... gradient correction when changing from desorption to adsorption
     virtual double                                  GetKa                                                       () const override;
@@ -172,13 +184,25 @@ public:
     //! @param ... adsorption coefficients as vector
     virtual void                                    SetAdsorptionCoefficients                                   (NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients) override;
 
-    //! @brief ... set boundary surface moisture transport coefficient
-    //! @param ... boundary surface moisture transport coefficient
-    virtual void                                    SetBoundarySurfaceMoistureTransportCoefficient              (double rBeta) override;
+    //! @brief ... set boundary surface relative humidity transport coefficient
+    //! @param ... boundary surface relative humidity transport coefficient
+    virtual void                                    SetBoundarySurfaceRelativeHumidityTransportCoefficient      (double rBeta) override;
+
+    //! @brief ... set boundary surface water volume fraction transport coefficient
+    //! @param ... boundary surface water volume fraction transport coefficient
+    virtual void                                    SetBoundarySurfaceWaterVolumeFractionTransportCoefficient   (double rBeta) override;
 
     //! @brief ... set desorption coefficients as vector
     //! @param ... desorption coefficients as vector
     virtual void                                    SetDesorptionCoefficients                                   (NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients) override;
+
+    //! @brief ... Enables the use of a modified tangential stiffnes (hessian_0 in constitutive law)
+    //! @param ... true or false
+    virtual void                                    SetEnableModifiedTangentialStiffness                        (bool rEnableModifiedTangentialStiffness) override;
+
+    //! @brief ... Enables the use of the sorption hysteresis model
+    //! @param ... true or false
+    virtual void                                    SetEnableSorptionHysteresis                                 (bool rEnableSorptionHysteresis) override;
 
     //! @brief ... set the gradient correction when changing from desorption to adsorption
     //! @param ... gradient correction when changing from desorption to adsorption
@@ -224,43 +248,52 @@ public:
 protected:
 
     //! @brief ... Coefficients of the adsorption curve
-    FullVector<double,Eigen::Dynamic>   mAdsorptionCoeff       {{0.0, 0.0, 0.0}};
+    FullVector<double,Eigen::Dynamic>   mAdsorptionCoeff                    {{0.0, 0.0, 0.0}};
 
     //! @brief ... Vapor phase diffusion exponent \f$ \alpha_V \f$
-    double                              mAlphaV                 = 1.0;
+    double                              mAlphaV                             = 1.0;
 
     //! @brief ... Water phase diffusion exponent \f$ \alpha_W \f$
-    double                              mAlphaW                 = 1.0;
+    double                              mAlphaW                             = 1.0;
 
-    //! @brief ... Boundary surface moisture transport coefficient
-    double                              mBeta                   = 1.0;
+    //! @brief ... Boundary surface relative humidity transport coefficient
+    double                              mBetaRelHum                         = 1.0;
+
+    //! @brief ... Boundary surface water volume fraction transport coefficient
+    double                              mBetaWVFrac                         = 1.0;
 
     //! @brief ... Coefficients of the desorption curve
-    FullVector<double,Eigen::Dynamic>   mDesorptionCoeff        {{0.0, 0.0, 0.0}};
+    FullVector<double,Eigen::Dynamic>   mDesorptionCoeff                    {{0.0, 0.0, 0.0}};
 
     //! @brief ... Vapor phase diffusion coefficient \f$ D_v \f$
-    double                              mDV                     = 1.0;
+    double                              mDV                                 = 1.0;
 
     //! @brief ... Water phase diffusion coefficient \f$ D_w \f$
-    double                              mDW                     = 1.0;
+    double                              mDW                                 = 1.0;
+
+    //! @brief ... Controls if a modified tangential stiffness should be used during Newton iteration (less terms to calculate in Hessian_0)
+    bool                                mEnableModifiedTangentialStiffness  = false;
+
+    //! @brief ... Controls if the sorption hysteresis model should be used
+    bool                                mEnableSorptionHysteresis           = false;
 
     //! @brief ... Porosity of the specimen \f$ \Epsilon_p \f$
-    double                              mEpsP                   = 0.5;
+    double                              mEpsP                               = 0.5;
 
     //! @brief ... gradient correction when switching to adsorption
-    double                              mKa                     = 0.0;
+    double                              mKa                                 = 0.0;
 
     //! @brief ... gradient correction when switching to desorption
-    double                              mKd                     = 0.0;
+    double                              mKd                                 = 0.0;
 
     //! @brief ... Mass exchange rate between vapor phase and water phase \f$ R \f$
-    double                              mR                      = 1.0;
+    double                              mR                                  = 1.0;
 
     //! @brief ... Water phase density \f$ \rho_w \f$
-    double                              mRhoW                   = 1.0;
+    double                              mRhoW                               = 1.0;
 
     //! @brief ... Vapor phase saturation density \f$ \rho_v \f$
-    double                              mRhoVS                  = 1.0;
+    double                              mRhoVS                              = 1.0;
 
 };
 

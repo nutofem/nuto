@@ -572,6 +572,10 @@ NuTo::Element::eElementType NuTo::Structure::ElementTypeGetEnum(const std::strin
     {
         elementType = NuTo::Element::BOUNDARYGRADIENTDAMAGE1D;
     }
+    else if (upperCaseElementType=="BOUNDARYMOISTURETRANSPORT1D")
+    {
+        elementType = NuTo::Element::BOUNDARYMOISTURETRANSPORT1D;
+    }
 	else
 	{
 		throw MechanicsException("[NuTo::Structure::ElementCreate] Element type "+upperCaseElementType +" does not exist.");

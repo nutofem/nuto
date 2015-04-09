@@ -128,6 +128,16 @@ Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::Vis
 				rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), displacements3D);
 			}
         break;
+        case NuTo::VisualizeBase::RELATIVE_HUMIDITY:
+            {
+                rVisualize.SetPointDataScalar(PointId,WhatIter->GetComponentName(), this ->GetRelativeHumidity());
+            }
+        break;
+        case NuTo::VisualizeBase::WATER_VOLUME_FRACTION:
+            {
+                rVisualize.SetPointDataScalar(PointId,WhatIter->GetComponentName(), this ->GetWaterPhaseFraction());
+            }
+        break;
         default:
         break;
         }

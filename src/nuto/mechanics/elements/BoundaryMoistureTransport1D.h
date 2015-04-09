@@ -189,6 +189,22 @@ public:
     void GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const
     {}
 
+    //! @brief sets the water volume fraction at the boundary surface
+    //! @return water volume fraction at the boundary surface
+    virtual double GetBoundaryWaterVolumeFraction() const override;
+
+    //! @brief sets the water volume fraction at the boundary surface
+    //! @param water volume fraction at the boundary surface
+    virtual void SetBoundaryWaterVolumeFraction(double rBoundaryWaterVolumeFraction) override;
+
+    //! @brief sets the relative humidity at the boundary surface
+    //! @param relative humidity at the boundary surface
+    virtual double GetBoundaryRelativeHumidity() const override;
+
+    //! @brief sets the relative humidity at the boundary surface
+    //! @param relative humidity at the boundary surface
+    virtual void SetBoundaryRelativeHumidity(double rBoundaryRelativeHumidity) override;
+
     //! @brief calculates output data fo the elmement
     //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
     //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
@@ -205,6 +221,12 @@ protected:
     int mSurfaceEdge;
 
     BoundaryCondition::eType mBoundaryConditionType;
+
+    //! @brief ... water volume fraction at the boundary surface
+    double mBoundaryWaterVolumeFraction     = 0.0;
+
+    //! @brief ... relative humidity at the boundary surface
+    double mBoundaryRelativeHumidity        = 0.0;
 
 
     // build global row dofs

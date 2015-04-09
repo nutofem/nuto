@@ -224,6 +224,7 @@ void NuTo::ElementBase::InterpolateNonlocalEqStrainFrom1D(double rLocalCoordinat
     throw MechanicsException("[NuTo::ElementBase::InterpolateNonlocalEqStrainFrom1D] 1D nonlocal eq strain interpolation routine not implemented.");
 }
 
+
 //! @brief ... interpolate three-dimensional global nonlocal eq strain from two-dimensional local point coordinates (element coordinates system)
 //! @param rLocalCoordinates ... two-dimensional local point coordinates
 //! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
@@ -238,6 +239,22 @@ void NuTo::ElementBase::InterpolateNonlocalEqStrainFrom2D(double rLocalCoordinat
 void NuTo::ElementBase::InterpolateNonlocalEqStrainFrom3D(double rLocalCoordinates[3], double& rNonlocalEqStrain) const
 {
     throw MechanicsException("[NuTo::ElementBase::InterpolateNonlocalEqStrainFrom3D] 3D nonlocal eq strain interpolation routine not implemented.");
+}
+
+//! @brief ... interpolate three-dimensional global relative humidity from one-dimensional local point coordinates (element coordinates system)
+//! @param rLocalCoordinates ... one-dimensional local point coordinates
+//! @param rRelativeHumidity ... interpolated relative humidity
+void NuTo::ElementBase::InterpolateRelativeHumidityFrom1D(double rLocalCoordinates, double& rRelativeHumidity) const
+{
+    throw MechanicsException("[NuTo::ElementBase::InterpolateRelativeHumidityFrom1D] 1D relative humidity interpolation routine not implemented.");
+}
+
+//! @brief ... interpolate three-dimensional global water volume fraction from one-dimensional local point coordinates (element coordinates system)
+//! @param rLocalCoordinates ... one-dimensional local point coordinates
+//! @param rWaterVolumeFraction ... interpolated water volume fraction
+void NuTo::ElementBase::InterpolateWaterVolumeFractionFrom1D(double rLocalCoordinates, double& rWaterVolumeFraction) const
+{
+    throw MechanicsException("[NuTo::ElementBase::InterpolateWaterVolumeFractionFrom1D] 1D water volume fraction interpolation routine not implemented.");
 }
 
 //! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)
@@ -350,6 +367,34 @@ void NuTo::ElementBase::SetStaticData(int rIp, ConstitutiveStaticDataBase* rStat
 bool NuTo::ElementBase::GetLocalPointCoordinates(const double* rGlobCoords,  double* rLocCoords)const
 {
 	throw NuTo::MechanicsException("[NuTo::ElementBase::GetLocalPointCoordinates] not implemented for this element type.");
+}
+
+//! @brief sets the water volume fraction at the boundary surface
+//! @return water volume fraction at the boundary surface
+double NuTo::ElementBase::GetBoundaryWaterVolumeFraction() const
+{
+    throw NuTo::MechanicsException("[NuTo::ElementBase::GetBoundaryWaterVolumeFraction] not implemented for this element type.");
+}
+
+//! @brief sets the water volume fraction at the boundary surface
+//! @param water volume fraction at the boundary surface
+void NuTo::ElementBase::SetBoundaryWaterVolumeFraction(double rBoundaryWaterVolumeFraction)
+{
+    throw NuTo::MechanicsException("[NuTo::ElementBase::SetBoundaryWaterVolumeFraction] not implemented for this element type.");
+}
+
+//! @brief sets the relative humidity at the boundary surface
+//! @param relative humidity at the boundary surface
+double NuTo::ElementBase::GetBoundaryRelativeHumidity() const
+{
+    throw NuTo::MechanicsException("[NuTo::ElementBase::GetBoundaryRelativeHumidity] not implemented for this element type.");
+}
+
+//! @brief sets the relative humidity at the boundary surface
+//! @param relative humidity at the boundary surface
+void NuTo::ElementBase::SetBoundaryRelativeHumidity(double rBoundaryRelativeHumidity)
+{
+    throw NuTo::MechanicsException("[NuTo::ElementBase::SetBoundaryRelativeHumidity] not implemented for this element type.");
 }
 
 //! @brief checks if a node is inside of an element
@@ -558,7 +603,8 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
 		case NuTo::VisualizeBase::ANGULAR_VELOCITY:
 		case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
 		case NuTo::VisualizeBase::PARTICLE_RADIUS:
-
+        case NuTo::VisualizeBase::RELATIVE_HUMIDITY:
+        case NuTo::VisualizeBase::WATER_VOLUME_FRACTION:
 		default:
 			//do nothing
 			;
@@ -947,6 +993,47 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
 
                 unsigned int PointId = PointIdVec[PointCount];
                 rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), &temperature);
+            }
+            break;
+
+        case NuTo::VisualizeBase::RELATIVE_HUMIDITY:
+            for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
+            {
+                double relativeHumidity = 0;
+                if (GetSection()->GetIsRelativeHumidityDof())
+                {
+                    // calculate only if element has relative humidity dofs
+                    switch (dimension)
+                    {
+                    case 1:
+                        this->InterpolateRelativeHumidityFrom1D(VisualizationPointLocalCoordinates[PointCount], relativeHumidity);
+                        break;
+                    default:
+                        throw NuTo::MechanicsException("[NuTo::ElemenBase::Visualize] invalid dimension of local coordinates");
+                    }
+                }
+                unsigned int PointId = PointIdVec[PointCount];
+                rVisualize.SetPointDataScalar(PointId, WhatIter->GetComponentName(), relativeHumidity);
+            }
+            break;
+        case NuTo::VisualizeBase::WATER_VOLUME_FRACTION:
+            for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
+            {
+                double waterVolumeFraction = 0;
+                if (GetSection()->GetIsWaterPhaseFractionDof())
+                {
+                    // calculate only if element has water volume fraction dofs
+                    switch (dimension)
+                    {
+                    case 1:
+                        this->InterpolateWaterVolumeFractionFrom1D(VisualizationPointLocalCoordinates[PointCount], waterVolumeFraction);
+                        break;
+                    default:
+                        throw NuTo::MechanicsException("[NuTo::ElemenBase::Visualize] invalid dimension of local coordinates");
+                    }
+                }
+                unsigned int PointId = PointIdVec[PointCount];
+                rVisualize.SetPointDataScalar(PointId, WhatIter->GetComponentName(), waterVolumeFraction);
             }
             break;
 		default:

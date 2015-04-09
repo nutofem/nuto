@@ -171,6 +171,21 @@ public:
                      int rRow, int rCol,
                      FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const;
 
+    //! @brief adds to a matrix the product B^tCBDofsN, where B contains the derivatives of the shape functions, N the shape Functions, C the constitutive tangent and Dofs the nodal dof values
+    //! eventually include also area/width of an element
+    //! @param rShapeFunctions shape functions
+    //! @param rDerivativeShapeFunctions derivatives of the shape functions
+    //! @param ConstitutiveTangentBase constitutive tangent matrix
+    //! @param rDofs nodal dof values
+    //! @param rFactor factor including area, determinant of Jacobian and IP weight
+    //! @param rRow row, where to start to add the subvector
+    //! @param rResult result matrix
+    void AddDetJBtCBDofsN(const std::vector<double>& rShapeFunctions,
+                                  const std::vector<double>& rDerivativeShapeFunctions,
+                                  const ConstitutiveTangentLocal<1,1>& rConstitutiveTangent,
+                                  const std::vector<double>& rDofs, double rFactor, int rRow,int rCol,
+                                  FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const;
+
     //! @brief calculates the local coordinates of the nodes
     //! @param localCoordinates vector with already correct size allocated
     //! this can be checked with an assertation
@@ -441,6 +456,27 @@ public:
     //! @param rResult result
     void AddDetJRnonlocalEqStrain(const std::vector<double>& rShapeFunctions,const LocalEqStrain& rLocalEqStrain, const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKkk,
             const std::vector<double>& rNodeNonlocalEqStrain, double rFactor, int rRow, FullVector<double,Eigen::Dynamic>& rResult) const;
+
+    //! @brief adds up the constitutive Tangent times the Shape Functions
+    //! @param rShapeFunctions the shape functions
+    //! @param rConstitutiveTangent the result given by the constitutive law
+    //! @param factor factor including det Jacobian area and integration point weight
+    //! @param rRow start row in case of a multifield problem
+    //! @param rResult resforce vector
+    void AddDetJNtC(const std::vector<double>& rShapeFunctions, const ConstitutiveTangentLocal<1,1>& rConstitutiveTangent, double rFactor,
+            int rRow, FullVector<double,Eigen::Dynamic>& rResult)const;
+
+    //! @brief adds to a vector the product B^tCBDofs, where B contains the derivatives of the shape functions, C the constitutive tangent and Dofs the nodal dof values
+    //! eventually include also area/width of an element
+    //! @param rDerivativeShapeFunctions derivatives of the shape functions
+    //! @param ConstitutiveTangentBase constitutive tangent matrix
+    //! @param rDofs nodal dof values
+    //! @param rFactor factor including area, determinant of Jacobian and IP weight
+    //! @param rRow row, where to start to add the subvector
+    //! @param rResult result vector
+    void AddDetJBtCBDofs(const std::vector<double>& rDerivativeShapeFunctions, const ConstitutiveTangentLocal<1,1>& rConstitutiveTangent,
+            const std::vector<double>& rDofs, double rFactor, int rRow, FullVector<double,Eigen::Dynamic>& rResult)const;
+
 
     //! @brief transforms the local matrix to the global system
     //! relevant only for 2D and 3D truss elements

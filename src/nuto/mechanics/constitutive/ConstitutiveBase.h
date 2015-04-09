@@ -324,13 +324,21 @@ public:
     //! @param ... adsorption coefficients as vector
     virtual void SetAdsorptionCoefficients(NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients);
 
-    //! @brief ... get boundary surface moisture transport coefficient
-    //! @return ... boundary surface moisture transport coefficient
-    virtual double GetBoundarySurfaceMoistureTransportCoefficient() const;
+    //! @brief ... get boundary surface relative humidity transport coefficient
+    //! @return ... boundary surface relative humidity transport coefficient
+    virtual double GetBoundarySurfaceRelativeHumidityTransportCoefficient() const;
 
-    //! @brief ... set boundary surface moisture transport coefficient
-    //! @param ... boundary surface moisture transport coefficient
-    virtual void SetBoundarySurfaceMoistureTransportCoefficient(double rBeta);
+    //! @brief ... get boundary surface water volume fraction transport coefficient
+    //! @return ... boundary surface water volume fraction transport coefficient
+    virtual double GetBoundarySurfaceWaterVolumeFractionTransportCoefficient() const;
+
+    //! @brief ... set boundary surface relative humidity transport coefficient
+    //! @param ... boundary surface relative humidity transport coefficient
+    virtual void SetBoundarySurfaceRelativeHumidityTransportCoefficient(double rBeta);
+
+    //! @brief ... set boundary surface water volume fraction transport coefficient
+    //! @param ... boundary surface water volume fraction transport coefficient
+    virtual void SetBoundarySurfaceWaterVolumeFractionTransportCoefficient(double rBeta);
 
     //! @brief ... get desorption coefficients as vector
     //! @return ... desorption coefficients as vector
@@ -339,6 +347,22 @@ public:
     //! @brief ... set desorption coefficients as vector
     //! @param ... desorption coefficients as vector
     virtual void SetDesorptionCoefficients(NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients);
+
+    //! @brief ... returns a bool that tells if modified tangential stiffnes is enabled
+    //! @return ... true or false
+    virtual bool GetEnableModifiedTangentialStiffness() const;
+
+    //! @brief ... Enables the use of a modified tangential stiffnes (hessian_0 in constitutive law)
+    //! @param ... true or false
+    virtual void SetEnableModifiedTangentialStiffness (bool rEnableModifiedTangentialStiffness);
+
+    //! @brief ... returns a bool that tells if the sorption hysteresis model is enabled
+    //! @return ... true or false
+    virtual bool GetEnableSorptionHysteresis() const;
+
+    //! @brief ... Enables the use of the sorption hysteresis model
+    //! @param ... true or false
+    virtual void SetEnableSorptionHysteresis (bool rEnableSorptionHysteresis);
 
     //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
     //! @param rRelativeHumidity ... relative humidity

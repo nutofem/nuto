@@ -104,7 +104,8 @@ NuTo::Error::eError NuTo::BoundaryMoistureTransport1D::Evaluate(boost::ptr_multi
         std::vector<double> localNodeCoordReal(mRealBoundaryElement->GetNumNodesGeometry());
         std::vector<double> nodalRelativeHumidity(mRealBoundaryElement->GetNumShapeFunctionsMoistureTransport());
         std::vector<double> nodalWaterPhaseFraction(mRealBoundaryElement->GetNumShapeFunctionsMoistureTransport());
-
+        std::vector<double> nodalWaterPhaseFractionD1(mRealBoundaryElement->GetNumShapeFunctionsMoistureTransport());
+        std::vector<double> nodalRelativeHumidityD1(mRealBoundaryElement->GetNumShapeFunctionsMoistureTransport());
 
         mRealBoundaryElement->CalculateLocalCoordinates(localNodeCoordReal);
 
@@ -118,21 +119,31 @@ NuTo::Error::eError NuTo::BoundaryMoistureTransport1D::Evaluate(boost::ptr_multi
         {
             nodalWaterPhaseFraction.resize(numWaterPhaseFractionReal);
             mRealBoundaryElement->CalculateNodalWaterPhaseFraction(0,nodalWaterPhaseFraction);
+            nodalWaterPhaseFractionD1.resize(numWaterPhaseFractionReal);
+            mRealBoundaryElement->CalculateNodalWaterPhaseFraction(1,nodalWaterPhaseFractionD1);
         }
         if (numRelativeHumidityDofsReal>0 || sectionReal->GetInputConstitutiveIsRelativeHumidity())
         {
             nodalRelativeHumidity.resize(numRelativeHumidityReal);
             mRealBoundaryElement->CalculateNodalRelativeHumidity(0,nodalRelativeHumidity);
+            nodalRelativeHumidityD1.resize(numRelativeHumidityReal);
+            mRealBoundaryElement->CalculateNodalRelativeHumidity(1,nodalRelativeHumidityD1);
         }
 
         //allocate relative humidity
         RelativeHumidity relativeHumidity;
+        RelativeHumidity relativeHumidityD1;
+        RelativeHumidity relativeHumidityBoundary;
 
         //allocate water phase fraction
         WaterPhaseFraction waterPhaseFraction;
+        WaterPhaseFraction waterPhaseFractionD1;
+        WaterPhaseFraction waterPhaseFractionBoundary;
 
-        ConstitutiveTangentLocal<1,1> tangentSurfaceMoistureTransportCoefficient;
-
+        ConstitutiveTangentLocal<1,1> residualBoundarySurfaceWaterPhase;
+        ConstitutiveTangentLocal<1,1> residualBoundarySurfaceVaporPhase;
+        ConstitutiveTangentLocal<1,1> tangentSurfaceRelativeHumidityTransportCoefficient;
+        ConstitutiveTangentLocal<1,1> tangentSurfaceWaterVolumeFractionTransportCoefficient;
 
         //allocate space for local shape functions
         std::vector<double> shapeFunctionsGeometry(mRealBoundaryElement->GetNumNodesGeometry());
@@ -140,7 +151,7 @@ NuTo::Error::eError NuTo::BoundaryMoistureTransport1D::Evaluate(boost::ptr_multi
 
         //allocate space for local derivative shape functions
         std::vector<double> derivativeShapeFunctionsGeometryNatural(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumNodesGeometry());
-        std::vector<double> derivativeShapeFunctionsGeometryLocal(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumNodesGeometry());
+        //std::vector<double> derivativeShapeFunctionsGeometryLocal(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumNodesGeometry());
         std::vector<double> derivativeShapeFunctionsMoistureTransportNatural(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumShapeFunctionsMoistureTransport());
         std::vector<double> derivativeShapeFunctionsMoistureTransportLocal(mRealBoundaryElement->GetLocalDimension()*mRealBoundaryElement->GetNumShapeFunctionsMoistureTransport());
 
@@ -151,10 +162,14 @@ NuTo::Error::eError NuTo::BoundaryMoistureTransport1D::Evaluate(boost::ptr_multi
         if (numWaterPhaseFractionDofsReal>0)
         {
             constitutiveInputList[NuTo::Constitutive::Input::WATER_PHASE_FRACTION] = &waterPhaseFraction;
+            constitutiveInputList[NuTo::Constitutive::Input::WATER_PHASE_FRACTION_BOUNDARY] = &waterPhaseFractionBoundary;
+            constitutiveInputList[NuTo::Constitutive::Input::WATER_PHASE_FRACTION_D1] = &waterPhaseFractionD1;
         }
         if (numRelativeHumidityDofsReal>0)
         {
             constitutiveInputList[NuTo::Constitutive::Input::RELATIVE_HUMIDITY] = &relativeHumidity;
+            constitutiveInputList[NuTo::Constitutive::Input::RELATIVE_HUMIDITY_BOUNDARY] = &relativeHumidityBoundary;
+            constitutiveInputList[NuTo::Constitutive::Input::RELATIVE_HUMIDITY_D1] = &relativeHumidityD1;
         }
 
         int numDofsReal = numRelativeHumidityDofsReal
@@ -168,6 +183,23 @@ NuTo::Error::eError NuTo::BoundaryMoistureTransport1D::Evaluate(boost::ptr_multi
             {
             case Element::INTERNAL_GRADIENT:
             {
+                it->second->GetFullVectorDouble().Resize(numDofsReal);
+                //if the stiffness matrix is constant, the corresponding internal force is calculated via the Kd
+                //on the global level
+                if (mStructure->GetHessianConstant(0)==false)
+                {
+                    if (numRelativeHumidityDofsReal || numWaterPhaseFractionDofsReal)
+                    {
+                        if(numRelativeHumidityDofsReal != numWaterPhaseFractionDofsReal)
+                        {
+                            throw MechanicsException(std::string("[NuTo::BoundaryMoistureTransport1D::Evaluate] Number of relative humidity dofs must be equal to the number of water phase fraction dofs. Current number of dofs:\n")+
+                                                     std::string("Relative humidity dofs: ")+std::to_string(numRelativeHumidityDofsReal)+
+                                                     std::string("\nWater phase fraction dofs: ")+std::to_string(numWaterPhaseFractionDofsReal) + std::string("\n"));
+                        }
+                        constitutiveOutputList[NuTo::Constitutive::Output::BOUNDARY_SURFACE_WATER_PHASE_RESIDUAL]  = &residualBoundarySurfaceWaterPhase;
+                        constitutiveOutputList[NuTo::Constitutive::Output::BOUNDARY_SURFACE_VAPOR_PHASE_RESIDUAL]  = &residualBoundarySurfaceVaporPhase;
+                    }
+                }
                 break;
             }
             case Element::HESSIAN_0_TIME_DERIVATIVE:
@@ -183,7 +215,8 @@ NuTo::Error::eError NuTo::BoundaryMoistureTransport1D::Evaluate(boost::ptr_multi
                                                  std::string("Relative humidity dofs: ")+std::to_string(numRelativeHumidityDofsReal)+
                                                  std::string("\nWater phase fraction dofs: ")+std::to_string(numWaterPhaseFractionDofsReal) + std::string("\n"));
                     }
-                    constitutiveOutputList[NuTo::Constitutive::Output::BOUNDARY_SURFACE_MOISTURE_TRANSPORT_COEFFICIENT]  = &tangentSurfaceMoistureTransportCoefficient;
+                    constitutiveOutputList[NuTo::Constitutive::Output::BOUNDARY_SURFACE_RELATIVE_HUMIDIY_TRANSPORT_COEFFICIENT]  = &tangentSurfaceRelativeHumidityTransportCoefficient;
+                    constitutiveOutputList[NuTo::Constitutive::Output::BOUNDARY_SURFACE_WATER_VOLUME_FRACTION_TRANSPORT_COEFFICIENT]  = &tangentSurfaceWaterVolumeFractionTransportCoefficient;
                 }
             break;
             }
@@ -193,6 +226,7 @@ NuTo::Error::eError NuTo::BoundaryMoistureTransport1D::Evaluate(boost::ptr_multi
                 it->second->GetFullMatrixDouble().Resize(numDofsReal, numDofsReal);
                 it->second->SetSymmetry(true);
                 it->second->SetConstant(true);
+                /*
                 if (numRelativeHumidityDofsReal || numWaterPhaseFractionDofsReal)
                 {
                     if(numRelativeHumidityDofsReal != numWaterPhaseFractionDofsReal)
@@ -201,7 +235,7 @@ NuTo::Error::eError NuTo::BoundaryMoistureTransport1D::Evaluate(boost::ptr_multi
                                                  std::string("Relative humidity dofs: ")+std::to_string(numRelativeHumidityDofsReal)+
                                                  std::string("\nWater phase fraction dofs: ")+std::to_string(numWaterPhaseFractionDofsReal) + std::string("\n"));
                     }
-                }
+                }*/
                 break;
             }
             case Element::HESSIAN_2_TIME_DERIVATIVE:
@@ -252,12 +286,16 @@ NuTo::Error::eError NuTo::BoundaryMoistureTransport1D::Evaluate(boost::ptr_multi
             }
             mRealBoundaryElement->CalculateShapeFunctionsMoistureTransport(naturalIPCoordinate,shapeFunctionsMoistureTransport);
             mRealBoundaryElement->CalculateRelativeHumidity(shapeFunctionsMoistureTransport,nodalRelativeHumidity,relativeHumidity);
+            mRealBoundaryElement->CalculateRelativeHumidity(shapeFunctionsMoistureTransport,nodalRelativeHumidityD1,relativeHumidityD1);
             mRealBoundaryElement->CalculateWaterPhaseFraction(shapeFunctionsMoistureTransport,nodalWaterPhaseFraction,waterPhaseFraction);
+            mRealBoundaryElement->CalculateWaterPhaseFraction(shapeFunctionsMoistureTransport,nodalWaterPhaseFractionD1,waterPhaseFractionD1);
             mRealBoundaryElement->CalculateDerivativeShapeFunctionsMoistureTransport(naturalIPCoordinate,derivativeShapeFunctionsMoistureTransportNatural);
             for (unsigned int count=0; count<derivativeShapeFunctionsMoistureTransportNatural.size(); count++)
             {
                 derivativeShapeFunctionsMoistureTransportLocal[count] = derivativeShapeFunctionsMoistureTransportNatural[count]/detJReal;
             }
+            relativeHumidityBoundary(0) = mBoundaryRelativeHumidity;
+            waterPhaseFractionBoundary(0)  = mBoundaryWaterVolumeFraction;
 
         }
 
@@ -281,19 +319,30 @@ NuTo::Error::eError NuTo::BoundaryMoistureTransport1D::Evaluate(boost::ptr_multi
             {
             case Element::INTERNAL_GRADIENT:
             {
+                if (numWaterPhaseFractionDofsReal>0 || numRelativeHumidityDofsReal>0)
+                {
+                    mRealBoundaryElement->AddDetJNtC(shapeFunctionsMoistureTransport,residualBoundarySurfaceWaterPhase,area,0,it->second->GetFullVectorDouble());
+                    mRealBoundaryElement->AddDetJNtC(shapeFunctionsMoistureTransport,residualBoundarySurfaceVaporPhase,area,numWaterPhaseFractionDofsReal,it->second->GetFullVectorDouble());
+                    // Uncomment to check residual
+                    //it->second->GetFullVectorDouble().Info();         // Check Element Matrix if needed
+                    //NuTo::FullVector<double,Eigen::Dynamic> test = it->second->GetFullVectorDouble();
+                    //int a=0;
+                    //a++;
+                }
                 break;
             }
             case Element::HESSIAN_0_TIME_DERIVATIVE:
             {
                 if (numWaterPhaseFractionDofsReal>0 || numRelativeHumidityDofsReal>0)
                 {
-                    mRealBoundaryElement->AddDetJNtCN(shapeFunctionsMoistureTransport,tangentSurfaceMoistureTransportCoefficient,area,0,0,it->second->GetFullMatrixDouble());
-                    mRealBoundaryElement->AddDetJNtCN(shapeFunctionsMoistureTransport,tangentSurfaceMoistureTransportCoefficient,area,2,2,it->second->GetFullMatrixDouble());
+                    mRealBoundaryElement->AddDetJNtCN(shapeFunctionsMoistureTransport,tangentSurfaceWaterVolumeFractionTransportCoefficient,area,0,0,it->second->GetFullMatrixDouble());
+                    mRealBoundaryElement->AddDetJNtCN(shapeFunctionsMoistureTransport,tangentSurfaceRelativeHumidityTransportCoefficient,area,numWaterPhaseFractionDofsReal,numWaterPhaseFractionDofsReal,it->second->GetFullMatrixDouble());
                 }
+                // Uncomment to check stiffness
                 //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> test = it->second->GetFullMatrixDouble();
                 //it->second->GetFullMatrixDouble().Info();         // Check Element Matrix if needed
                 //int a=0;
-                break;
+                //break;
             }
             case Element::HESSIAN_2_TIME_DERIVATIVE:
             {
@@ -307,7 +356,7 @@ NuTo::Error::eError NuTo::BoundaryMoistureTransport1D::Evaluate(boost::ptr_multi
                 break;
             default:
 
-                std::cout << "I want to calculate other stuff as well! " << std::endl;
+                //std::cout << "I want to calculate other stuff as well! " << std::endl;
                 break;
           }
         }
@@ -361,6 +410,43 @@ void NuTo::BoundaryMoistureTransport1D::CalculateGlobalRowDofs(
     }
 
 }
+
+//! @brief sets the water volume fraction at the boundary surface
+//! @return water volume fraction at the boundary surface
+double NuTo::BoundaryMoistureTransport1D::GetBoundaryWaterVolumeFraction() const
+{
+    return mBoundaryWaterVolumeFraction;
+}
+
+//! @brief sets the water volume fraction at the boundary surface
+//! @param water volume fraction at the boundary surface
+void NuTo::BoundaryMoistureTransport1D::SetBoundaryWaterVolumeFraction(double rBoundaryWaterVolumeFraction)
+{
+    if (rBoundaryWaterVolumeFraction < 0 || rBoundaryWaterVolumeFraction > this->GetConstitutiveLaw(0)->GetPorosity())
+    {
+        throw MechanicsException("[NuTo::BoundaryMoistureTransport1D::SetBoundaryWaterVolumeFraction] boundary water volume fraction must be a value between 0 and the porosity value ("+std::to_string(this->GetConstitutiveLaw(0)->GetPorosity()) + ")");
+    }
+    mBoundaryWaterVolumeFraction = rBoundaryWaterVolumeFraction;
+}
+
+//! @brief sets the relative humidity at the boundary surface
+//! @param relative humidity at the boundary surface
+double NuTo::BoundaryMoistureTransport1D::GetBoundaryRelativeHumidity() const
+{
+    return mBoundaryRelativeHumidity;
+}
+
+//! @brief sets the relative humidity at the boundary surface
+//! @param relative humidity at the boundary surface
+void NuTo::BoundaryMoistureTransport1D::SetBoundaryRelativeHumidity(double rBoundaryRelativeHumidity)
+{
+    if (rBoundaryRelativeHumidity < 0 || rBoundaryRelativeHumidity > 1)
+    {
+        throw MechanicsException("[NuTo::BoundaryMoistureTransport1D::SetBoundaryRelativeHumidity] boundary relative humidity must be a value between 0 and 1");
+    }
+    mBoundaryRelativeHumidity = rBoundaryRelativeHumidity;
+}
+
 
 
 

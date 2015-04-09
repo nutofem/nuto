@@ -477,18 +477,32 @@ void NuTo::ConstitutiveBase::SetAdsorptionCoefficients(NuTo::FullVector<double,E
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetAdsorptionCoefficients] The constitutive relationship does not have this parameter.");
 }
 
-//! @brief ... get boundary surface moisture transport coefficient
-//! @return ... boundary surface moisture transport coefficient
-double NuTo::ConstitutiveBase::GetBoundarySurfaceMoistureTransportCoefficient() const
+//! @brief ... get boundary surface relative humidity transport coefficient
+//! @return ... boundary surface relative humidity transport coefficient
+double NuTo::ConstitutiveBase::GetBoundarySurfaceRelativeHumidityTransportCoefficient() const
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetBoundarySurfaceMoistureTransportCoefficient] The constitutive relationship does not have this parameter.");
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetBoundarySurfaceRelativeHumidityTransportCoefficient] The constitutive relationship does not have this parameter.");
 }
 
-//! @brief ... set boundary surface moisture transport coefficient
-//! @param ... boundary surface moisture transport coefficient
-void NuTo::ConstitutiveBase::SetBoundarySurfaceMoistureTransportCoefficient(double rBeta)
+//! @brief ... get boundary surface water volume fraction transport coefficient
+//! @return ... boundary surface water volume fraction transport coefficient
+double NuTo::ConstitutiveBase::GetBoundarySurfaceWaterVolumeFractionTransportCoefficient() const
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetBoundarySurfaceMoistureTransportCoefficient] The constitutive relationship does not have this parameter.");
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetBoundarySurfaceWaterVolumeFractionTransportCoefficient] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set boundary surface relative humidity transport coefficient
+//! @param ... boundary surface relative humidity transport coefficient
+void NuTo::ConstitutiveBase::SetBoundarySurfaceRelativeHumidityTransportCoefficient(double rBeta)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetBoundarySurfaceRelativeHumidityTransportCoefficient] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... set boundary surface water volume fraction transport coefficient
+//! @param ... boundary surface water volume fraction transport coefficient
+void NuTo::ConstitutiveBase::SetBoundarySurfaceWaterVolumeFractionTransportCoefficient(double rBeta)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetBoundarySurfaceWaterVolumeFractionTransportCoefficient] The constitutive relationship does not have this parameter.");
 }
 
 //! @brief ... get desorption coefficients as vector
@@ -510,6 +524,34 @@ void NuTo::ConstitutiveBase::SetDesorptionCoefficients(NuTo::FullVector<double,E
 double NuTo::ConstitutiveBase::GetKa() const
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetKa] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... returns a bool that tells if modified tangential stiffnes is enabled
+//! @return ... true or false
+bool NuTo::ConstitutiveBase::GetEnableModifiedTangentialStiffness() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetEnableModifiedTangentialStiffness] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... Enables the use of a modified tangential stiffnes (hessian_0 in constitutive law)
+//! @param ... true or false
+void NuTo::ConstitutiveBase::SetEnableModifiedTangentialStiffness (bool rEnableModifiedTangentialStiffness)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetEnableModifiedTangentialStiffness] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... returns a bool that tells if the sorption hysteresis model is enabled
+//! @return ... true or false
+bool NuTo::ConstitutiveBase::GetEnableSorptionHysteresis() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetEnableSorptionHysteresis] The constitutive relationship does not have this parameter.");
+}
+
+//! @brief ... Enables the use of the sorption hysteresis model
+//! @param ... true or false
+void NuTo::ConstitutiveBase::SetEnableSorptionHysteresis (bool rEnableSorptionHysteresis)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetEnableSorptionHysteresis] The constitutive relationship does not have this parameter.");
 }
 
 //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity

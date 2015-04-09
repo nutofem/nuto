@@ -44,7 +44,7 @@ ENDIF(ENABLE_PYTHON_TESTS)
 IF(ENABLE_C++_TESTS)
   # Test ConstraintsLagrange
   ADD_EXECUTABLE(ConstraintsLagrange2D ConstraintsLagrange2D.cpp)
-  TARGET_LINK_LIBRARIES(ConstraintsLagrange2D NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+  TARGET_LINK_LIBRARIES(ConstraintsLagrange2D NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${BLAS_LIBRARIES} ${ANN_LIBRARIES})
   IF (ENABLE_VISUALIZE)
     TARGET_LINK_LIBRARIES(ConstraintsLagrange2D NuToVisualize)
   ENDIF (ENABLE_VISUALIZE)
@@ -168,7 +168,7 @@ IF(ENABLE_C++_TESTS)
   TARGET_LINK_LIBRARIES(CoefficientChecks NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )
   ADD_TEST(c::mechanics::CoefficientChecks ${CMAKE_CURRENT_BUILD_DIR}/CoefficientChecks)
 
-  # LobattoIntegration
+  # ooIntegration
   ADD_EXECUTABLE(LobattoIntegration LobattoIntegration.cpp)
   TARGET_LINK_LIBRARIES(LobattoIntegration NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )
   IF (ENABLE_VISUALIZE)
@@ -183,9 +183,11 @@ IF(ENABLE_C++_TESTS)
   ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoIntegration)
 
   # MoistureTransport
-  ADD_EXECUTABLE(MoistureTransport1D MoistureTransport.cpp)
-  TARGET_LINK_LIBRARIES(MoistureTransport1D NuToMetamodel NuToMechanics NuToMath NuToBase)
-  ADD_TEST(c::mechanics::MoistureTransport1D ${CMAKE_CURRENT_BUILD_DIR}/MoistureTransport1D)
+  IF(ENABLE_METAMODEL)
+    ADD_EXECUTABLE(MoistureTransport1D MoistureTransport.cpp)
+    TARGET_LINK_LIBRARIES(MoistureTransport1D NuToMetamodel NuToMechanics NuToMath NuToBase)
+    ADD_TEST(c::mechanics::MoistureTransport1D ${CMAKE_CURRENT_BUILD_DIR}/MoistureTransport1D)
+  ENDIF(ENABLE_METAMODEL)
 
   
 ENDIF(ENABLE_C++_TESTS)

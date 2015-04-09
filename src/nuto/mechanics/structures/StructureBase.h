@@ -150,6 +150,12 @@ public:
     //! @brief ... Add visualization of nonlocal equivalent strain to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentNonlocalEqStrain();
 
+    //! @brief ... Add visualization of relative humidity to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentRelativeHumidity();
+
+    //! @brief ... Add visualization of water volume fraction to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentWaterVolumeFraction();
+
     //! @brief ... clear all visualization components
     void ClearVisualizationComponents();
 
@@ -1481,15 +1487,26 @@ public:
     //! @param rAdsorptionCoefficients ... adsorption coefficients as vector
     void ConstitutiveLawSetAdsorptionCoefficients(int rIdent, NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients);
 
-    //! @brief ... get boundary surface moisture transport coefficient
+    //! @brief ... get boundary surface relative humidity transport coefficient
     //! @param rIdent ... constitutive law identifier
-    //! @return ... boundary surface moisture transport coefficient
-    double ConstitutiveLawGetBoundarySurfaceMoistureTransportCoefficient(int rIdent) const;
+    //! @return ... boundary surface relative humidity transport coefficient
+    double ConstitutiveLawGetBoundarySurfaceRelativeHumidityTransportCoefficient(int rIdent) const;
 
-    //! @brief ... set boundary surface moisture transport coefficient
+    //! @brief ... set boundary surface relative humidity transport coefficient
     //! @param rIdent ... constitutive law identifier
-    //! @param ... boundary surface moisture transport coefficient
-    void ConstitutiveLawSetBoundarySurfaceMoistureTransportCoefficient(int rIdent, double rBeta);
+    //! @param ... boundary surface relative humidity transport coefficient
+    void ConstitutiveLawSetBoundarySurfaceRelativeHumidityTransportCoefficient(int rIdent, double rBeta);
+
+    //! @brief ... get boundary surface water volume fraction transport coefficient
+    //! @param rIdent ... constitutive law identifier
+    //! @return ... boundary surface water volume fraction transport coefficient
+    double ConstitutiveLawGetBoundarySurfaceWaterVolumeFractionTransportCoefficient(int rIdent) const;
+
+    //! @brief ... set boundary surface water volume fraction transport coefficient
+    //! @param rIdent ... constitutive law identifier
+    //! @param ... boundary surface water volume fraction transport coefficient
+    void ConstitutiveLawSetBoundarySurfaceWaterVolumeFractionTransportCoefficient(int rIdent, double rBeta);
+
 
     //! @brief ... get desorption coefficients as vector
     //! @param rIdent ... constitutive law identifier
@@ -1500,6 +1517,27 @@ public:
     //! @param rIdent ... constitutive law identifier
     //! @param rDesorptionCoefficients ... desorption coefficients as vector
     void ConstitutiveLawSetDesorptionCoefficients(int rIdent, NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients);
+
+    //! @brief ... returns a bool that tells if modified tangential stiffnes is enabled
+    //! @param rIdent ... constitutive law identifier
+    //! @return ... true or false
+    bool ConstitutiveLawGetEnableModifiedTangentialStiffness(int rIdent) const;
+
+    //! @brief ... Enables the use of a modified tangential stiffnes (hessian_0 in constitutive law)
+    //! @param rIdent ... constitutive law identifier
+    //! @param ... true or false
+    void ConstitutiveLawSetEnableModifiedTangentialStiffness(int rIdent, bool rEnableModifiedTangentialStiffness);
+
+
+    //! @brief ... returns a bool that tells if the sorption hysteresis model is enabled
+    //! @param rIdent ... constitutive law identifier
+    //! @return ... true or false
+    bool ConstitutiveLawGetEnableSorptionHysteresis(int rIdent) const;
+
+    //! @brief ... Enables the use of the sorption hysteresis model
+    //! @param rIdent ... constitutive law identifier
+    //! @param ... true or false
+    void ConstitutiveLawSetEnableSorptionHysteresis(int rIdent, bool rEnableSorptionHysteresis);
 
     //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
     //! @param rIdent ... constitutive law identifier

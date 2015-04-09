@@ -311,6 +311,16 @@ public:
     //! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
     virtual void InterpolateNonlocalEqStrainFrom3D(double rLocalCoordinates[3], double& rNonlocalEqStrain) const;
 
+    //! @brief ... interpolate three-dimensional global relative humidity from one-dimensional local point coordinates (element coordinates system)
+    //! @param rLocalCoordinates ... one-dimensional local point coordinates
+    //! @param rRelativeHumidity ... interpolated relative humidity
+    virtual void InterpolateRelativeHumidityFrom1D(double rLocalCoordinates, double& rRelativeHumidity) const;
+
+    //! @brief ... interpolate three-dimensional global water volume fraction from one-dimensional local point coordinates (element coordinates system)
+    //! @param rLocalCoordinates ... one-dimensional local point coordinates
+    //! @param rWaterVolumeFraction ... interpolated water volume fraction
+    virtual void InterpolateWaterVolumeFractionFrom1D(double rLocalCoordinates, double& rWaterVolumeFraction) const;
+
     //! @brief adds the nonlocal weight to an integration point
     //! @param rLocalIpNumber local Ip
     //! @param rNonlocalElement element of the nonlocal ip
@@ -355,6 +365,22 @@ public:
     //! @param rLocCoords (output) ... coordinates to be returned
     //! @return True if coordinates are within the element, False otherwise
     virtual bool GetLocalPointCoordinates(const double* rGlobCoords,  double* rLocCoords)const;
+
+    //! @brief sets the water volume fraction at the boundary surface
+    //! @return water volume fraction at the boundary surface
+    virtual double GetBoundaryWaterVolumeFraction() const;
+
+    //! @brief sets the water volume fraction at the boundary surface
+    //! @param water volume fraction at the boundary surface
+    virtual void SetBoundaryWaterVolumeFraction(double rBoundaryWaterVolumeFraction);
+
+    //! @brief sets the relative humidity at the boundary surface
+    //! @param relative humidity at the boundary surface
+    virtual double GetBoundaryRelativeHumidity() const;
+
+    //! @brief sets the relative humidity at the boundary surface
+    //! @param relative humidity at the boundary surface
+    virtual void SetBoundaryRelativeHumidity(double rBoundaryRelativeHumidity);
 
     //! @brief checks if a node is inside of an element
     //! implemented with an exception for all elements, reimplementation required for those elements

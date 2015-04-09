@@ -599,6 +599,10 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 	{
 		boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>( elementOutput )( Element::HESSIAN_0_TIME_DERIVATIVE );
 	}
+    else if (rType == NuTo::StructureBaseEnum::DAMPING)
+    {
+        boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>( elementOutput )( Element::HESSIAN_1_TIME_DERIVATIVE );
+    }
 	else if (rType == NuTo::StructureBaseEnum::MASS)
 	{
 		boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>( elementOutput )( Element::HESSIAN_2_TIME_DERIVATIVE );
@@ -797,9 +801,12 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 		}
 		else
 		{
-        	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
-        								elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second->GetFullMatrixDouble() :
-        								elementOutput.find(Element::HESSIAN_2_TIME_DERIVATIVE)->second->GetFullMatrixDouble();
+            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
+                                        elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second->GetFullMatrixDouble() :
+                                                                                     (rType == NuTo::StructureBaseEnum::DAMPING) ?
+                                        elementOutput.find(Element::HESSIAN_1_TIME_DERIVATIVE)->second->GetFullMatrixDouble() :
+                                        elementOutput.find(Element::HESSIAN_2_TIME_DERIVATIVE)->second->GetFullMatrixDouble();
+
 			std::vector<int>& elementVectorGlobalDofsRow(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
 			std::vector<int>& elementVectorGlobalDofsColumn(elementOutput.find(Element::GLOBAL_COLUMN_DOF)->second->GetVectorInt());
 

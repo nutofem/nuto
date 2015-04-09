@@ -25,6 +25,7 @@ SET(NuToVisualize_SOURCES
   VisualizeComponentLatticeStrain.cpp
   VisualizeComponentLatticeStress.cpp
   VisualizeComponentNonlocalEqStrain.cpp
+  VisualizeComponentRelativeHumidity.cpp
   VisualizeComponentNonlocalWeight.cpp
   VisualizeComponentParticleRadius.cpp
   VisualizeComponentPrincipalEngineeringStress.cpp
@@ -32,6 +33,7 @@ SET(NuToVisualize_SOURCES
   VisualizeComponentSection.cpp
   VisualizeComponentTemperature.cpp
   VisualizeComponentVelocity.cpp
+  VisualizeComponentWaterVolumeFraction.cpp
   VisualizeDataBase.cpp
   VisualizeDataField.cpp
   VisualizeDataScalar.cpp

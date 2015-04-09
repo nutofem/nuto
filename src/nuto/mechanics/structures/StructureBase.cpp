@@ -84,10 +84,12 @@ extern "C" {
 #include "nuto/visualize/VisualizeComponentNonlocalEqStrain.h"
 #include "nuto/visualize/VisualizeComponentParticleRadius.h"
 #include "nuto/visualize/VisualizeComponentPrincipalEngineeringStress.h"
+#include "nuto/visualize/VisualizeComponentRelativeHumidity.h"
 #include "nuto/visualize/VisualizeComponentRotation.h"
 #include "nuto/visualize/VisualizeComponentTemperature.h"
 #include "nuto/visualize/VisualizeComponentSection.h"
 #include "nuto/visualize/VisualizeComponentVelocity.h"
+#include "nuto/visualize/VisualizeComponentWaterVolumeFraction.h"
 #endif // ENABLE_VISUALIZE
 
 
@@ -611,6 +613,35 @@ void NuTo::StructureBase::AddVisualizationComponentHeatFlux()
 #endif
 }
 
+//! @brief ... Add visualization of relative humidity to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentRelativeHumidity()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentRelativeHumidity());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentRelativeHumidity] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+
+//! @brief ... Add visualization of water volume fraction to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentWaterVolumeFraction()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentWaterVolumeFraction());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentWaterVolumeFraction] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
 
 void NuTo::StructureBase::ClearVisualizationComponents()
 {
@@ -733,6 +764,9 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
         case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
             rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
             break;
+        case NuTo::VisualizeBase::RELATIVE_HUMIDITY:
+            rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
+            break;
         case NuTo::VisualizeBase::SECTION:
             rVisualize.DefineCellDataScalar(itWhat->GetComponentName());
             break;
@@ -762,6 +796,9 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
             break;
         case NuTo::VisualizeBase::VELOCITY:
             rVisualize.DefinePointDataVector(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::WATER_VOLUME_FRACTION:
+            rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
             break;
         case NuTo::VisualizeBase::ACCELERATION:
             rVisualize.DefinePointDataVector(itWhat->GetComponentName());
@@ -814,6 +851,12 @@ void NuTo::StructureBase::DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVi
             rVisualize.DefinePointDataVector(itWhat->GetComponentName());
             break;
         case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
+            rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::RELATIVE_HUMIDITY:
+            rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::WATER_VOLUME_FRACTION:
             rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
             break;
         default:

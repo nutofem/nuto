@@ -38,7 +38,9 @@ public:
         ACCELERATION,                   //!< visualize acceleration
         ANGULAR_ACCELERATION,           //!< visualize angular acceleration
         TEMPERATURE,                    //!< visualize temperature
-        HEAT_FLUX                       //!< visualize heat flux
+        HEAT_FLUX,                      //!< visualize heat flux
+        RELATIVE_HUMIDITY,              //!< visualize relative humidity
+        WATER_VOLUME_FRACTION           //!< visualize water volume fraction
     };
 
     //! @brief ... export to Vtk datafile

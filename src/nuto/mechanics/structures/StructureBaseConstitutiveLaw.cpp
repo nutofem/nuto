@@ -1072,42 +1072,78 @@ void NuTo::StructureBase::ConstitutiveLawSetAdsorptionCoefficients(int rIdent, N
     }
 }
 
-//! @brief ... get boundary surface moisture transport coefficient
+//! @brief ... get boundary surface relative humidity transport coefficient
 //! @param rIdent ... constitutive law identifier
-//! @return ... boundary surface moisture transport coefficient
-double NuTo::StructureBase::ConstitutiveLawGetBoundarySurfaceMoistureTransportCoefficient(int rIdent) const
+//! @return ... boundary surface relative humidity transport coefficient
+double NuTo::StructureBase::ConstitutiveLawGetBoundarySurfaceRelativeHumidityTransportCoefficient(int rIdent) const
 {
     double beta;
     try
     {
         const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        beta = ConstitutiveLawPtr->GetBoundarySurfaceMoistureTransportCoefficient();
+        beta = ConstitutiveLawPtr->GetBoundarySurfaceRelativeHumidityTransportCoefficient();
     }
     catch (NuTo::MechanicsException& e)
     {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetBoundarySurfaceMoistureTransportCoefficient] error getting boundary surface moisture transport coefficient.");
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetBoundarySurfaceRelativeHumidityTransportCoefficient] error getting boundary surface relative humidity transport coefficient.");
         throw e;
     }
     return beta;
 }
 
-//! @brief ... set boundary surface moisture transport coefficient
+//! @brief ... set boundary surface relative humidity transport coefficient
 //! @param rIdent ... constitutive law identifier
-//! @param ... boundary surface moisture transport coefficient
-void NuTo::StructureBase::ConstitutiveLawSetBoundarySurfaceMoistureTransportCoefficient(int rIdent, double rBeta)
+//! @param ... boundary surface relative humidity transport coefficient
+void NuTo::StructureBase::ConstitutiveLawSetBoundarySurfaceRelativeHumidityTransportCoefficient(int rIdent, double rBeta)
 {
     try
     {
         ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetBoundarySurfaceMoistureTransportCoefficient(rBeta);
+        ConstitutiveLawPtr->SetBoundarySurfaceRelativeHumidityTransportCoefficient(rBeta);
     }
     catch (NuTo::MechanicsException& e)
     {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetBoundarySurfaceMoistureTransportCoefficient] error setting adsorption coefficients.");
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetBoundarySurfaceRelativeHumidityTransportCoefficient] error setting boundary surface relative humidity transport coefficient.");
         throw e;
     }
 }
 
+
+//! @brief ... get boundary surface water volume fraction transport coefficient
+//! @param rIdent ... constitutive law identifier
+//! @return ... boundary surface water volume fraction transport coefficient
+double NuTo::StructureBase::ConstitutiveLawGetBoundarySurfaceWaterVolumeFractionTransportCoefficient(int rIdent) const
+{
+    double beta;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        beta = ConstitutiveLawPtr->GetBoundarySurfaceWaterVolumeFractionTransportCoefficient();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetBoundarySurfaceWaterVolumeFractionTransportCoefficient] error getting boundary surface water volume fraction transport coefficient.");
+        throw e;
+    }
+    return beta;
+}
+
+//! @brief ... set boundary surface water volume fraction transport coefficient
+//! @param rIdent ... constitutive law identifier
+//! @param ... boundary surface water volume fraction transport coefficient
+void NuTo::StructureBase::ConstitutiveLawSetBoundarySurfaceWaterVolumeFractionTransportCoefficient(int rIdent, double rBeta)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetBoundarySurfaceWaterVolumeFractionTransportCoefficient(rBeta);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetBoundarySurfaceWaterVolumeFractionTransportCoefficient] error setting boundary surface water volume fraction transport coefficient.");
+        throw e;
+    }
+}
 
 //! @brief ... get desorption coefficients as vector
 //! @param rIdent ... constitutive law identifier
@@ -1144,6 +1180,82 @@ void NuTo::StructureBase::ConstitutiveLawSetDesorptionCoefficients(int rIdent, N
         throw e;
     }
 }
+
+//! @brief ... returns a bool that tells if modified tangential stiffnes is enabled
+//! @param rIdent ... constitutive law identifier
+//! @return ... true or false
+bool NuTo::StructureBase::ConstitutiveLawGetEnableModifiedTangentialStiffness(int rIdent) const
+{
+    bool EnableModifiedTangentialStiffness;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        EnableModifiedTangentialStiffness = ConstitutiveLawPtr->GetEnableModifiedTangentialStiffness();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawEnableModifiedTangentialStiffness] error getting boolean value.");
+        throw e;
+    }
+    return EnableModifiedTangentialStiffness;
+}
+
+
+
+
+//! @brief ... Enables the use of a modified tangential stiffnes (hessian_0 in constitutive law)
+//! @param rIdent ... constitutive law identifier
+//! @param ... true or false
+void NuTo::StructureBase::ConstitutiveLawSetEnableModifiedTangentialStiffness(int rIdent, bool rEnableModifiedTangentialStiffness)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetEnableModifiedTangentialStiffness(rEnableModifiedTangentialStiffness);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetEnableModifiedTangentialStiffness] error enabling modified tangential stiffness.");
+        throw e;
+    }
+}
+
+//! @brief ... returns a bool that tells if the sorption hysteresis model is enabled
+//! @param rIdent ... constitutive law identifier
+//! @return ... true or false
+bool NuTo::StructureBase::ConstitutiveLawGetEnableSorptionHysteresis(int rIdent) const
+{
+    bool EnableSorptionHysteresis;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        EnableSorptionHysteresis = ConstitutiveLawPtr->GetEnableSorptionHysteresis();
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawEnableSorptionHysteresis] error getting boolean value.");
+        throw e;
+    }
+    return EnableSorptionHysteresis;
+}
+
+//! @brief ... Enables the use of the sorption hysteresis model
+//! @param rIdent ... constitutive law identifier
+//! @param ... true or false
+void NuTo::StructureBase::ConstitutiveLawSetEnableSorptionHysteresis(int rIdent, bool rEnableSorptionHysteresis)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetEnableSorptionHysteresis(rEnableSorptionHysteresis);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetEnableSorptionHysteresis] error enabling sorption hysteresis.");
+        throw e;
+    }
+}
+
 
 //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
 //! @param rIdent ... constitutive law identifier

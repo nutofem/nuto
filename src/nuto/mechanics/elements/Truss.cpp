@@ -97,6 +97,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 
 		// node values of the Dofs
         std::vector<double> localNodeDisp,nodeTemp,nodeNonlocalEqPlasticStrain,nodeNonlocalTotalStrain, nodeNonlocalEqStrain, nodeWaterPhaseFraction, nodeRelativeHumidity;
+        std::vector<double> nodeWaterPhaseFractionD1, nodeRelativeHumidityD1;
 
 		//calculate local displacements, velocities and accelerations
 		if (numDispDofs>0)
@@ -129,12 +130,15 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
         {
             nodeWaterPhaseFraction.resize(numWaterPhaseFraction);
             CalculateNodalWaterPhaseFraction(0,nodeWaterPhaseFraction);
-
+            nodeWaterPhaseFractionD1.resize(numWaterPhaseFraction);
+            CalculateNodalWaterPhaseFraction(1,nodeWaterPhaseFractionD1);
         }
         if (numRelativeHumidityDofs>0 || section->GetInputConstitutiveIsRelativeHumidity())
         {
             nodeRelativeHumidity.resize(numRelativeHumidity);
             CalculateNodalRelativeHumidity(0,nodeRelativeHumidity);
+            nodeRelativeHumidityD1.resize(numRelativeHumidity);
+            CalculateNodalRelativeHumidity(1,nodeRelativeHumidityD1);
         }
 
 		//allocate space for local ip coordinates
@@ -213,9 +217,12 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 
         //allocate relative humidity
         RelativeHumidity relativeHumidity;
+        RelativeHumidity relativeHumidityD1;
+
 
         //allocate water phase fraction
         WaterPhaseFraction waterPhaseFraction;
+        WaterPhaseFraction waterPhaseFractionD1;
 
 
 		//allocate tangents
@@ -230,13 +237,21 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
         ConstitutiveTangentLocal<1,1> tangentLocalEqStrainXiStrain;
 
         // allocate Moisture Transport Outputs
+        ConstitutiveTangentLocal<1,1> residualWaterPhaseN;
+        ConstitutiveTangentLocal<1,1> residualWaterPhaseB;
+        ConstitutiveTangentLocal<1,1> residualVaporPhaseN;
+        ConstitutiveTangentLocal<1,1> residualVaporPhaseB;
         ConstitutiveTangentLocal<1,1> tangentVaporPhaseDiffusionCoefficient;
+        ConstitutiveTangentLocal<1,1> tangentVaporPhaseDiffusionCoefficientGradient;
         ConstitutiveTangentLocal<1,1> tangentWaterPhaseDiffusionCoefficient;
+        ConstitutiveTangentLocal<1,1> tangentWaterPhaseDiffusionCoefficientGradient;
         ConstitutiveTangentLocal<1,1> tangentPhaseMassExchangeRate;
         ConstitutiveTangentLocal<1,1> tangentPhaseMassExchangeRateTimesEquilibriumSorptionCurve;
         ConstitutiveTangentLocal<1,1> tangentWaterPhaseDensity;
         ConstitutiveTangentLocal<1,1> tangentVaporPhaseSaturationDensityTimesVaporPhaseVolumeFraction;
         ConstitutiveTangentLocal<1,1> tangentVaporPhaseSaturationDensityTimesRelativeHumidity;
+        ConstitutiveTangentLocal<1,1> tangentVaporPhaseSaturationDensityTimesRelativeHumidityD1;
+        ConstitutiveTangentLocal<1,1> tangentVaporPhaseSaturationDensityTimesWaterVolumeFractionD1;
 
 		//define inputs and outputs
 		std::map< NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase* > constitutiveInputList;
@@ -273,10 +288,12 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
         if (numWaterPhaseFractionDofs>0)
         {
             constitutiveInputList[NuTo::Constitutive::Input::WATER_PHASE_FRACTION] = &waterPhaseFraction;
+            constitutiveInputList[NuTo::Constitutive::Input::WATER_PHASE_FRACTION_D1] = &waterPhaseFractionD1;
         }
         if (numRelativeHumidityDofs>0)
         {
             constitutiveInputList[NuTo::Constitutive::Input::RELATIVE_HUMIDITY] = &relativeHumidity;
+            constitutiveInputList[NuTo::Constitutive::Input::RELATIVE_HUMIDITY_D1] = &relativeHumidityD1;
         }
         // sum of all dofs
         int numDofs = numDispDofs
@@ -319,6 +336,19 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
                         constitutiveOutputList[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN] = &localEqStrain;
                         constitutiveOutputList[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI] = &nonlocalParameterXi;
 
+                    }
+                    if (numRelativeHumidityDofs || numWaterPhaseFractionDofs)
+                    {
+                        if(numRelativeHumidityDofs != numWaterPhaseFractionDofs)
+                        {
+                            throw MechanicsException(std::string("[NuTo::Truss::Evaluate] Number of relative humidity dofs must be equal to the number of water phase fraction dofs. Current number of dofs:\n")+
+                                                     std::string("Relative humidity dofs: ")+std::to_string(numRelativeHumidityDofs)+
+                                                     std::string("\nWater phase fraction dofs: ")+std::to_string(numWaterPhaseFractionDofs) + std::string("\n"));
+                        }
+                        constitutiveOutputList[NuTo::Constitutive::Output::RESIDUAL_WATER_PHASE_N]                                      = &residualWaterPhaseN;
+                        constitutiveOutputList[NuTo::Constitutive::Output::RESIDUAL_WATER_PHASE_B]                                      = &residualWaterPhaseB;
+                        constitutiveOutputList[NuTo::Constitutive::Output::RESIDUAL_VAPOR_PHASE_N]                                      = &residualVaporPhaseN;
+                        constitutiveOutputList[NuTo::Constitutive::Output::RESIDUAL_VAPOR_PHASE_B]                                      = &residualVaporPhaseB;
                     }
 				}
 			break;
@@ -365,10 +395,14 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
                                                      std::string("Relative humidity dofs: ")+std::to_string(numRelativeHumidityDofs)+
                                                      std::string("\nWater phase fraction dofs: ")+std::to_string(numWaterPhaseFractionDofs) + std::string("\n"));
                         }
-                        constitutiveOutputList[NuTo::Constitutive::Output::VAPOR_PHASE_DIFFUSION_COEFFICIENT]                           = &tangentVaporPhaseDiffusionCoefficient;
-                        constitutiveOutputList[NuTo::Constitutive::Output::WATER_PHASE_DIFFUSION_COEFFICIENT]                           = &tangentWaterPhaseDiffusionCoefficient;
-                        constitutiveOutputList[NuTo::Constitutive::Output::PHASE_MASS_EXCHANGE_RATE]                                    = &tangentPhaseMassExchangeRate;
-                        constitutiveOutputList[NuTo::Constitutive::Output::PHASE_MASS_EXCHANGE_RATE_TIMES_EQUILIBRIUM_SORPTION_CURVE]   = &tangentPhaseMassExchangeRateTimesEquilibriumSorptionCurve;
+                        constitutiveOutputList[NuTo::Constitutive::Output::VAPOR_PHASE_DIFFUSION_COEFFICIENT]                                   = &tangentVaporPhaseDiffusionCoefficient;
+                        constitutiveOutputList[NuTo::Constitutive::Output::WATER_PHASE_DIFFUSION_COEFFICIENT]                                   = &tangentWaterPhaseDiffusionCoefficient;
+                        constitutiveOutputList[NuTo::Constitutive::Output::PHASE_MASS_EXCHANGE_RATE]                                            = &tangentPhaseMassExchangeRate;
+                        constitutiveOutputList[NuTo::Constitutive::Output::PHASE_MASS_EXCHANGE_RATE_TIMES_EQUILIBRIUM_SORPTION_CURVE]           = &tangentPhaseMassExchangeRateTimesEquilibriumSorptionCurve;
+                        constitutiveOutputList[NuTo::Constitutive::Output::VAPOR_PHASE_DIFFUSION_COEFFICIENT_GRADIENT]                          = &tangentVaporPhaseDiffusionCoefficientGradient;
+                        constitutiveOutputList[NuTo::Constitutive::Output::WATER_PHASE_DIFFUSION_COEFFICIENT_GRADIENT]                          = &tangentWaterPhaseDiffusionCoefficientGradient;
+                        constitutiveOutputList[NuTo::Constitutive::Output::VAPOR_PHASE_SATURATION_DENSITY_TIMES_RELATIVE_HUMIDITY_D1]           = &tangentVaporPhaseSaturationDensityTimesRelativeHumidityD1;
+                        constitutiveOutputList[NuTo::Constitutive::Output::VAPOR_PHASE_SATURATION_DENSITY_TIMES_WATER_VOLUME_FRACTION_D1]       = &tangentVaporPhaseSaturationDensityTimesWaterVolumeFractionD1;
                     }
 				}
 			break;
@@ -561,13 +595,14 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
                 }
                 CalculateShapeFunctionsMoistureTransport(localIPCoord,shapeFunctionsMoistureTransport);
                 CalculateRelativeHumidity(shapeFunctionsMoistureTransport,nodeRelativeHumidity,relativeHumidity);
+                CalculateRelativeHumidity(shapeFunctionsMoistureTransport,nodeRelativeHumidityD1,relativeHumidityD1);
                 CalculateWaterPhaseFraction(shapeFunctionsMoistureTransport,nodeWaterPhaseFraction,waterPhaseFraction);
+                CalculateWaterPhaseFraction(shapeFunctionsMoistureTransport,nodeWaterPhaseFractionD1,waterPhaseFractionD1);
                 CalculateDerivativeShapeFunctionsMoistureTransport(localIPCoord,derivativeShapeFunctionsMoistureTransportNatural);
                 for (unsigned int count=0; count<derivativeShapeFunctionsMoistureTransportNatural.size(); count++)
                 {
                     derivativeShapeFunctionsMoistureTransportLocal[count] = derivativeShapeFunctionsMoistureTransportNatural[count]/detJ;
                 }
-
             }
 
 			ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(theIP);
@@ -640,6 +675,20 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
                         {
                             //add Kkk*nonlocalEqStrain-detJ*F
                             AddDetJRnonlocalEqStrain(shapeFunctionsNonlocalEqStrain,localEqStrain, Kkk, nodeNonlocalEqStrain, factor/nonlocalParameterXi.GetValue(0), numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs+numNonlocalTotalStrainDofs, it->second->GetFullVectorDouble());
+                        }
+                        if (numWaterPhaseFractionDofs>0 || numRelativeHumidityDofs>0)
+                        {
+                            int prevDofs = numDispDofs+numTempDofs+numNonlocalEqPlasticStrainDofs+numNonlocalTotalStrainDofs+numNonlocalEqStrainDofs;
+                            AddDetJNtC(shapeFunctionsMoistureTransport,residualWaterPhaseN,factor,prevDofs,                             it->second->GetFullVectorDouble());
+                            AddDetJNtC(shapeFunctionsMoistureTransport,residualVaporPhaseN,factor,prevDofs + numWaterPhaseFractionDofs, it->second->GetFullVectorDouble());
+
+                            AddDetJBtCBDofs(derivativeShapeFunctionsMoistureTransportLocal,residualWaterPhaseB,nodeWaterPhaseFraction,factor,prevDofs,it->second->GetFullVectorDouble());
+                            AddDetJBtCBDofs(derivativeShapeFunctionsMoistureTransportLocal,residualVaporPhaseB,nodeRelativeHumidity,factor,prevDofs + numWaterPhaseFractionDofs,it->second->GetFullVectorDouble());
+                            // Uncomment to check residual
+                            //it->second->GetFullVectorDouble().Info();         // Check Element Matrix if needed
+                            //NuTo::FullVector<double,Eigen::Dynamic> test = it->second->GetFullVectorDouble();
+                            //int a=0;
+                            //a++;
                         }
 					}
 				}
@@ -716,6 +765,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
                         }
                         if (numWaterPhaseFractionDofs>0 || numRelativeHumidityDofs>0)
                         {
+                            int prevDofs = numDispDofs + numTempDofs + numNonlocalEqPlasticStrainDofs + numNonlocalTotalStrainDofs + numNonlocalEqPlasticStrainDofs;
 
                             // Assembly of the "Stiffness"-Matrix (see: B.Johannesson - A Numerical Approach for Non-Linear Moisture Flow in Porous Materials with Account to Sorption Hysteresis)
                             // | K_w + R_w      -R_w_eq         |
@@ -727,22 +777,40 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
                             // | X - |      X = K_w + R_w
                             // | - - |
 
-                            AddDetJBtCB(derivativeShapeFunctionsMoistureTransportLocal,tangentWaterPhaseDiffusionCoefficient,factor,0,0,it->second->GetFullMatrixDouble());
-                            AddDetJNtCN(shapeFunctionsMoistureTransport,tangentPhaseMassExchangeRate,factor,0,0,it->second->GetFullMatrixDouble());
+                            AddDetJBtCB(derivativeShapeFunctionsMoistureTransportLocal,tangentWaterPhaseDiffusionCoefficient,factor,prevDofs,prevDofs,it->second->GetFullMatrixDouble());
+                            AddDetJNtCN(shapeFunctionsMoistureTransport,tangentPhaseMassExchangeRate,factor,prevDofs,prevDofs,it->second->GetFullMatrixDouble());
 
                             // | - - |      X = -R_w
                             // | X - |
 
-                            AddDetJNtCN(shapeFunctionsMoistureTransport,tangentPhaseMassExchangeRate,-1.0*factor,2,0,it->second->GetFullMatrixDouble());
+                            AddDetJNtCN(shapeFunctionsMoistureTransport,tangentPhaseMassExchangeRate,-1.0*factor,prevDofs+numWaterPhaseFractionDofs,prevDofs,it->second->GetFullMatrixDouble());
 
                             // | - X |      X = -R_w_eq
                             // | - - |
-                            AddDetJNtCN(shapeFunctionsMoistureTransport,tangentPhaseMassExchangeRateTimesEquilibriumSorptionCurve,-1.0*factor,0,2,it->second->GetFullMatrixDouble());
+                            AddDetJNtCN(shapeFunctionsMoistureTransport,tangentPhaseMassExchangeRateTimesEquilibriumSorptionCurve,-1.0*factor,prevDofs,prevDofs+numWaterPhaseFractionDofs,it->second->GetFullMatrixDouble());
 
                             // | - - |      X = K_phi + R_w_eq
                             // | - X |
-                            AddDetJBtCB(derivativeShapeFunctionsMoistureTransportLocal,tangentVaporPhaseDiffusionCoefficient,factor,2,2,it->second->GetFullMatrixDouble());
-                            AddDetJNtCN(shapeFunctionsMoistureTransport,tangentPhaseMassExchangeRateTimesEquilibriumSorptionCurve,factor,2,2,it->second->GetFullMatrixDouble());
+                            AddDetJBtCB(derivativeShapeFunctionsMoistureTransportLocal,tangentVaporPhaseDiffusionCoefficient,factor,prevDofs+numWaterPhaseFractionDofs,prevDofs+numWaterPhaseFractionDofs,it->second->GetFullMatrixDouble());
+                            AddDetJNtCN(shapeFunctionsMoistureTransport,tangentPhaseMassExchangeRateTimesEquilibriumSorptionCurve,factor,prevDofs+numWaterPhaseFractionDofs,prevDofs+numWaterPhaseFractionDofs,it->second->GetFullMatrixDouble());
+
+
+                            // Additional terms for full tangential stiffness
+
+                            // | X - |      X = B * BT * a_w  * N * dD_w/dEps_w
+                            // | - - |
+                            AddDetJBtCBDofsN(shapeFunctionsMoistureTransport,derivativeShapeFunctionsMoistureTransportLocal,tangentWaterPhaseDiffusionCoefficientGradient,nodeWaterPhaseFraction,factor,prevDofs,prevDofs,it->second->GetFullMatrixDouble());
+
+                            // | - - |      X = B * BT * a_phi  * N * dD_phi/dEps_w
+                            // | X - |        + NT * N * rho_vs * dphi/dt
+                            AddDetJBtCBDofsN(shapeFunctionsMoistureTransport,derivativeShapeFunctionsMoistureTransportLocal,tangentVaporPhaseDiffusionCoefficientGradient,nodeRelativeHumidity,factor,prevDofs+numWaterPhaseFractionDofs,prevDofs,it->second->GetFullMatrixDouble());
+                            AddDetJNtCN(shapeFunctionsMoistureTransport,tangentVaporPhaseSaturationDensityTimesRelativeHumidityD1,factor,prevDofs+numWaterPhaseFractionDofs,prevDofs,it->second->GetFullMatrixDouble());
+
+                            // | - - |      X = - NT * N * rho_vs * dEps_w/dt
+                            // | - X |
+
+                            AddDetJNtCN(shapeFunctionsMoistureTransport,tangentVaporPhaseSaturationDensityTimesWaterVolumeFractionD1,-1.0 * factor,prevDofs+numWaterPhaseFractionDofs,prevDofs+numWaterPhaseFractionDofs,it->second->GetFullMatrixDouble());
+
 
                             //it->second->GetFullMatrixDouble().Info();         // Check Element Matrix if needed
                             //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> test = it->second->GetFullMatrixDouble();
@@ -776,7 +844,7 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 					}
                     if (numWaterPhaseFractionDofs>0 || numRelativeHumidityDofs>0)
                     {
-
+                        int prevDofs = numDispDofs + numTempDofs + numNonlocalEqPlasticStrainDofs + numNonlocalTotalStrainDofs + numNonlocalEqPlasticStrainDofs;
                         // Assembly of the "Damping"-Matrix (see: B.Johannesson - A Numerical Approach for Non-Linear Moisture Flow in Porous Materials with Account to Sorption Hysteresis)
                         // | C_w     0     |
                         // |               |
@@ -785,16 +853,16 @@ NuTo::Error::eError NuTo::Truss::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 
                         // | X - |      X = C_w
                         // | - - |
-                        AddDetJNtCN(shapeFunctionsMoistureTransport,tangentWaterPhaseDensity,factor,0,0,it->second->GetFullMatrixDouble());
+                        AddDetJNtCN(shapeFunctionsMoistureTransport,tangentWaterPhaseDensity,factor,prevDofs,prevDofs,it->second->GetFullMatrixDouble());
 
                         // | - - |      X = -M_phi
                         // | X - |
-                        AddDetJNtCN(shapeFunctionsMoistureTransport,tangentVaporPhaseSaturationDensityTimesRelativeHumidity,-1.0*factor,2,0,it->second->GetFullMatrixDouble());
+                        AddDetJNtCN(shapeFunctionsMoistureTransport,tangentVaporPhaseSaturationDensityTimesRelativeHumidity,-1.0*factor,prevDofs+numWaterPhaseFractionDofs,prevDofs,it->second->GetFullMatrixDouble());
 
 
                         // | - - |      X = C_phi
                         // | - X |
-                        AddDetJNtCN(shapeFunctionsMoistureTransport,tangentVaporPhaseSaturationDensityTimesVaporPhaseVolumeFraction,factor,2,2,it->second->GetFullMatrixDouble());
+                        AddDetJNtCN(shapeFunctionsMoistureTransport,tangentVaporPhaseSaturationDensityTimesVaporPhaseVolumeFraction,factor,prevDofs+numWaterPhaseFractionDofs,prevDofs+numWaterPhaseFractionDofs,it->second->GetFullMatrixDouble());
 
                         //it->second->GetFullMatrixDouble().Info();         // Check Element Matrix if needed
                         //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> test = it->second->GetFullMatrixDouble();
@@ -1775,6 +1843,85 @@ void NuTo::Truss::AddDetJBtHeatFlux(const std::vector<double>& rDerivativeShapeF
         rResult(rRow+node1)+=rFactor*rDerivativeShapeFunctions[node1];
     }
 }
+
+
+//! @brief adds up the constitutive Tangent times the Shape Functions
+//! @param rShapeFunctions the shape functions
+//! @param rConstitutiveTangent the result given by the constitutive law
+//! @param factor factor including det Jacobian area and integration point weight
+//! @param rRow start row in case of a multifield problem
+//! @param rResult result vector
+void NuTo::Truss::AddDetJNtC(const std::vector<double>& rShapeFunctions,
+                                 const ConstitutiveTangentLocal<1,1>& rConstitutiveTangent, double rFactor,
+                                 int rRow,
+                                 FullVector<double,Eigen::Dynamic>& rResult)const
+{
+    rFactor*=rConstitutiveTangent(0,0);
+    for (int node1=0; node1<GetNumNodesGeometry(); node1++)
+    {
+        rResult(rRow+node1)+=rFactor*rShapeFunctions[node1];
+    }
+}
+
+//! @brief adds to a vector the product B^tCBDofs, where B contains the derivatives of the shape functions, C the constitutive tangent and Dofs the nodal dof values
+//! eventually include also area/width of an element
+//! @param rDerivativeShapeFunctions derivatives of the shape functions
+//! @param ConstitutiveTangentBase constitutive tangent matrix
+//! @param rDofs nodal dof values
+//! @param rFactor factor including area, determinant of Jacobian and IP weight
+//! @param rRow row, where to start to add the subvector
+//! @param rResult result vector
+void NuTo::Truss::AddDetJBtCBDofs(const std::vector<double>& rDerivativeShapeFunctions,
+                              const ConstitutiveTangentLocal<1,1>& rConstitutiveTangent,
+                              const std::vector<double>& rDofs, double rFactor, int rRow,
+                              FullVector<double,Eigen::Dynamic>& rResult)const
+{
+    rFactor *=rConstitutiveTangent(0,0);
+    for (int node1=0; node1<GetNumNodesField(); node1++)
+    {
+        for (int node2=0; node2<GetNumNodesField(); node2++)
+        {
+            rResult(rRow+node1)+=rFactor*rDerivativeShapeFunctions[node1]*rDerivativeShapeFunctions[node2]*rDofs[node2];
+        }
+    }
+}
+
+//! @brief adds to a matrix the product B^tCBDofsN, where B contains the derivatives of the shape functions, N the shape Functions, C the constitutive tangent and Dofs the nodal dof values
+//! eventually include also area/width of an element
+//! @param rShapeFunctions shape functions
+//! @param rDerivativeShapeFunctions derivatives of the shape functions
+//! @param ConstitutiveTangentBase constitutive tangent matrix
+//! @param rDofs nodal dof values
+//! @param rFactor factor including area, determinant of Jacobian and IP weight
+//! @param rRow row, where to start to add the subvector
+//! @param rResult result matrix
+void NuTo::Truss::AddDetJBtCBDofsN(const std::vector<double>& rShapeFunctions,
+                              const std::vector<double>& rDerivativeShapeFunctions,
+                              const ConstitutiveTangentLocal<1,1>& rConstitutiveTangent,
+                              const std::vector<double>& rDofs, double rFactor, int rRow, int rCol,
+                              FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const
+{
+    rFactor *=rConstitutiveTangent(0,0);
+    FullVector<double,Eigen::Dynamic> intermediaryResult;
+    intermediaryResult.resize(GetNumNodesField());
+    intermediaryResult.setZero();
+    for (int node1=0; node1<GetNumNodesField(); node1++)
+    {
+        for (int node2=0; node2<GetNumNodesField(); node2++)
+        {
+            intermediaryResult[node1]+=rFactor*rDerivativeShapeFunctions[node1]*rDerivativeShapeFunctions[node2]*rDofs[node2];
+        }
+    }
+
+    for (int node1=0; node1<GetNumNodesField(); node1++)
+    {
+        for (int node2=0; node2<GetNumNodesField(); node2++)
+        {
+            rResult(rRow+node1,rCol+node2)+=intermediaryResult[node1]*rShapeFunctions[node2];
+        }
+    }
+}
+
 
 //! @brief calculates the volume of an integration point (weight * detJac)
 //! @param rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
