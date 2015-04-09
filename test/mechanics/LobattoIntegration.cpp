@@ -4,6 +4,7 @@
 #include <eigen3/Eigen/Core>
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
+#include "nuto/math/SparseMatrixCSRSymmetric.h"
 #include "nuto/math/SparseDirectSolverMUMPS.h"
 #include "nuto/math/SparseDirectSolverPardiso.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
@@ -53,7 +54,7 @@ int buildStructure1D(const std::string& rElementTypeIdent,
     // first node
     nodeCoordinates(0) = factor*nodeCoordinatesFirstElement(0);
     myStructure.NodeCreate(node, "displacements", nodeCoordinates);
-    std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) << std::endl;
+    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) << std::endl;
     node++;
     // following nodes
     for(int i = 0; i < NumElements; i++)
@@ -61,7 +62,7 @@ int buildStructure1D(const std::string& rElementTypeIdent,
         for (int j = 1; j < nodeCoordinatesFirstElement.size(); j++)
         {
             nodeCoordinates(0) = factor*(nodeCoordinatesFirstElement(j) + elementBegin);
-            std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) << std::endl;
+            if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) << std::endl;
             myStructure.NodeCreate(node, "displacements", nodeCoordinates);
             node++;
         }
@@ -81,7 +82,7 @@ int buildStructure1D(const std::string& rElementTypeIdent,
         }
         node--;
 
-        std::cout <<  "create element: " << element << " nodes: " << elementIncidence << std::endl;
+        if(PRINTRESULT) std::cout <<  "create element: " << element << " nodes: " << elementIncidence << std::endl;
 
         int myElement = myStructure.ElementCreate(rElementTypeIdent, elementIncidence);
         myStructure.ElementSetSection(myElement, Section);
@@ -97,7 +98,13 @@ int buildStructure1D(const std::string& rElementTypeIdent,
     myStructure.LoadCreateNodeForce(1, numNodes-1, direction, Force);
 
     /** start analysis **/
-    myStructure.SetNumProcessors(4);
+#ifdef _OPENMP
+    int numThreads = 4;
+    myStructure.SetNumProcessors(numThreads);
+#if defined HAVE_PARDISO
+    NuTo::SparseDirectSolverPardiso mySolverPardiso(numThreads);
+#endif // PARDISO
+#endif // OPENMP
     myStructure.CalculateMaximumIndependentSets();
     myStructure.NodeBuildGlobalDofs();
 
@@ -117,7 +124,6 @@ int buildStructure1D(const std::string& rElementTypeIdent,
     NuTo::FullVector<double,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;
 
 #if defined HAVE_PARDISO
-    NuTo::SparseDirectSolverPardiso mySolverPardiso;
     NuTo::FullVector<double,Eigen::Dynamic> displacementVectorPardiso;
     stiffnessMatrix.SetOneBasedIndexing();
 
@@ -158,13 +164,10 @@ int buildStructure1D(const std::string& rElementTypeIdent,
 
     double nodeDisp = myStructure.NodeGetNodePtr(numNodes-1)->GetDisplacement(0);
 
-    if(PRINTRESULT)
-    {
-        std::cout << "Displacement last node FEM:\n" << nodeDisp << std::endl;
-        std::cout << "Displacement last node analytical:\n" << DisplacementCorrect << std::endl;
-    }
+    std::cout << "Displacement last node FEM:\n" << nodeDisp << std::endl;
+    std::cout << "Displacement last node analytical:\n" << DisplacementCorrect << std::endl;
 
-    if (fabs(nodeDisp - DisplacementCorrect)/fabs(DisplacementCorrect) > tol)
+        if (fabs(nodeDisp - DisplacementCorrect)/fabs(DisplacementCorrect) > tol)
     {
         throw NuTo::Exception("[LobattoIntegration] : displacement is not correct");
     }
@@ -174,7 +177,10 @@ int buildStructure1D(const std::string& rElementTypeIdent,
 
 /*
    ||>*----*----*----*----*
-      |    |    |    |    | --> Sigma
+      |    |    |    |    | -->
+      |    |    |    |    |
+   ||>*----*----*----*----*     Sigma
+      |    |    |    |    | -->
       |    |    |    |    |
    ||>*----*----*----*----*
       ^
@@ -182,104 +188,86 @@ int buildStructure1D(const std::string& rElementTypeIdent,
 int buildStructure2D(const std::string& rElementTypeIdent,
                      const std::string& rIntegrationTypeIdent,
                      int rNumNodesPerElementInOneDir,
-                     NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& nodeCoordinatesFirstElement,
+                     NuTo::FullVector<double, Eigen::Dynamic>& nodeCoordinatesFirstElement,
                      int NumElementsX, int NumElementsY)
 {
     /** parameters **/
     double  YoungsModulus = 20000.;
     double  PoissonRatio = 0.3;
-    double  Height = 100.;
+    double  Height = 5.;
     // there should be no dependency, because the pressure at the boundary is predefined
     double  Thickness = 2.123548;
-    double  Length = 1000.;
+    double  Length = 10;
     double  Stress = 10.;
     double  tol = 1.e-4;
+    double elementSize = nodeCoordinatesFirstElement(rNumNodesPerElementInOneDir-1) - nodeCoordinatesFirstElement(0);
     // reference element Length is 2.
-    double  factorX =  Length/(NumElementsX*2);
-    double  factorY =  Height/(NumElementsY*2);
-    // length real element
-    double  lengthX = Length/NumElementsX;
-    double  lengthY = Height/NumElementsY;
+    double  factorX =  Length/(NumElementsX*elementSize);
+    double  factorY =  Height/(NumElementsY*elementSize);
 
     /** Structure 2D **/
     NuTo::Structure myStructure(2);
 
-    /** nodes **/
-    //NuTo::FullVector<double,Eigen::Dynamic> nodeCoordinates(2);
-    //int node = 0;
-    //myStructure.NodeCreate(node, "displacements", nodeCoordinates);
-
-    //if(PRINTRESULT)
-    //    std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) << std::endl;
-
-    //node++;
-    // following nodes
-    //double elementBeginX = 0.;
-    //double elementBeginY= 0.;
-    //for(int i = 0; i < NumElementsX; i++)
-    //{
-    //    for (int j = 1; j < nodeCoordinatesFirstElement.size(); j++)
-    //    {
-    //        nodeCoordinates(0) = factorX*(nodeCoordinatesFirstElement(j) + elementBeginX);
-    //        nodeCoordinates(1) = factorY*(nodeCoordinatesFirstElement(j) + elementBeginY);
-    //        std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) << std::endl;
-    //        myStructure.NodeCreate(node, "displacements", nodeCoordinates);
-    //        node++;
-    //    }
-    //    elementBeginX+=elementLengthX;
-    //}
-    //elementBeginY+=elementLengthY;
-
-    //int numNodes = node;
-
-    /*
-    NuTo::FullVector<int,Eigen::Dynamic> elementIncidence(rNumNodesPerElementInOneDir*rNumNodesPerElementInOneDir);
+    /** Nodes **/
     NuTo::FullVector<double,Eigen::Dynamic> nodeCoordinates(2);
-    int nodes = 0;
-    for (int i = 0; i < NumElements; i++)
+    int node = 0;
+    double elementBeginX = 0.;
+    double elementBeginY = 0.;
+
+    nodeCoordinates(0) = factorX*nodeCoordinatesFirstElement(0);
+    nodeCoordinates(1) = factorY*nodeCoordinatesFirstElement(0);
+    myStructure.NodeCreate(node, "displacements", nodeCoordinates);
+    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) <<", "<< nodeCoordinates(1) << std::endl;
+    node++;
+
+    for(int y = 0; y < NumElementsY; y++)
     {
-        if (i == 0)
+        for (int i = ((y==0)?0:1); i < nodeCoordinatesFirstElement.size(); i++)
         {
-            for (int j = 0; j < rNumNodesPerElementInOneDir*rNumNodesPerElementInOneDir; j++)
+            if (node != 1)
             {
-                nodeCoordinates(0) = nodeCoordinatesFirstElement(j,0)*factorX + lengthX*i;
-                nodeCoordinates(1) = nodeCoordinatesFirstElement(j,1)*factorY;
-                myStructure.NodeCreate("displacements", nodeCoordinates);
-                elementIncidence(j) = nodes;
-                nodes++;
+                nodeCoordinates(0) = factorX*nodeCoordinatesFirstElement(0);
+                nodeCoordinates(1) = factorY*(nodeCoordinatesFirstElement(i) + elementBeginY);
+                myStructure.NodeCreate(node, "displacements", nodeCoordinates);
+                if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) <<", "<< nodeCoordinates(1)  << std::endl;
+                node++;
             }
 
-            int myElement = myStructure.ElementCreate(rElementTypeIdent, elementIncidence);
-            if (PRINTRESULT)
-                std::cout <<  "create element: " << myElement << " nodes: \n" << elementIncidence << std::endl;
-          }
-        else
-        {
-            for (int j = 0; j < rNumNodesPerElementInOneDir; j++)
-                elementIncidence(j*rNumNodesPerElementInOneDir) = elementIncidence((j+1)*rNumNodesPerElementInOneDir-1);
-            for (int j = 0; j < rNumNodesPerElementInOneDir*rNumNodesPerElementInOneDir; j++)
+            elementBeginX = 0.;
+            for(int x = 0; x < NumElementsX; x++)
             {
-                if (j%rNumNodesPerElementInOneDir != 0)
+                for (int j = 1; j < nodeCoordinatesFirstElement.size(); j++)
                 {
-                    nodeCoordinates(0) = nodeCoordinatesFirstElement(j,0)*factorX + lengthX*i;
-                    nodeCoordinates(1) = nodeCoordinatesFirstElement(j,1)*factorY;
-                    myStructure.NodeCreate("displacements", nodeCoordinates);
-                    elementIncidence(j) = nodes;
-                    nodes++;
+                    nodeCoordinates(0) = factorX*(nodeCoordinatesFirstElement(j) + elementBeginX);
+                    nodeCoordinates(1) = factorY*(nodeCoordinatesFirstElement(i) + elementBeginY);
+                    myStructure.NodeCreate(node, "displacements", nodeCoordinates);
+                    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) <<", "<< nodeCoordinates(1)  << std::endl;
+                    node++;
                 }
+                elementBeginX += elementSize;
             }
+        }
+        elementBeginY += elementSize;
+    }
+
+    /** Elements **/
+    NuTo::FullVector<int,Eigen::Dynamic> elementIncidence(rNumNodesPerElementInOneDir*rNumNodesPerElementInOneDir);
+    int numNodesInRow = NumElementsX*(rNumNodesPerElementInOneDir-1) + 1;
+    for(int j = 0; j < NumElementsY; j++)
+    {
+        for (int i = 0; i < NumElementsX; i++)
+        {
+            // one element
+            for (int k = 0; k < rNumNodesPerElementInOneDir; k++)
+                for(int l = 0; l < rNumNodesPerElementInOneDir; l++)
+                    elementIncidence(k + l*rNumNodesPerElementInOneDir) = i*(rNumNodesPerElementInOneDir - 1) + k + l*numNodesInRow + j*(rNumNodesPerElementInOneDir-1)*numNodesInRow;
 
             int myElement = myStructure.ElementCreate(rElementTypeIdent, elementIncidence);
-            if (PRINTRESULT)
-                std::cout <<  "create element: " << myElement << " nodes: \n " << elementIncidence << std::endl;
+            if (PRINTRESULT) std::cout <<  "create element: " << myElement << " nodes: \n" << elementIncidence << std::endl;
         }
     }
-    */
-
-
 
     myStructure.ElementTotalSetIntegrationType(rIntegrationTypeIdent, "NOIPDATA");
-
     myStructure.Info();
 
     /** create constitutive law **/
@@ -297,33 +285,55 @@ int buildStructure2D(const std::string& rElementTypeIdent,
 
     // Dirichlet
     NuTo::FullVector<double,Eigen::Dynamic> direction(2);
-    // fix both in x
-    direction << 1.,0.;
 
-    std::cout <<  "Nodes fixed: "<< std::endl;
-    for (int i = 0; i < rNumNodesPerElementInOneDir; i++)
+    if (PRINTRESULT) std::cout <<  "Nodes fixed: "<< std::endl;
+
+    direction(0) = 1; direction(1) = 0;
+    myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
+    if (PRINTRESULT) std::cout <<  0 << std::endl;
+    int nodeId = 0;
+    direction(1) = 0;
+    for(int j = 0; j < NumElementsY; j++)
     {
-        std::cout << i*rNumNodesPerElementInOneDir << std::endl;
-        myStructure.ConstraintLinearSetDisplacementNode(i*rNumNodesPerElementInOneDir, direction, 0.0);
+        for(int l = 1; l < rNumNodesPerElementInOneDir; l++)
+        {
+            nodeId = l*numNodesInRow + j*(rNumNodesPerElementInOneDir-1)*numNodesInRow;
+            myStructure.ConstraintLinearSetDisplacementNode(nodeId, direction, 0.0);
+            if (PRINTRESULT) std::cout <<  nodeId << std::endl;
+        }
     }
 
-    // fix node 1 in y
-    direction(0) = 0;
     direction(1) = 1;
     myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
+    if (PRINTRESULT) std::cout <<  0 << ", "<< direction << std::endl;
 
     // right boundary
-    std::cout <<  "Pressure on nodes: "<< std::endl;
-
     int groupNumberNodesRight = myStructure.GroupCreate("NODES");
-    for (int i= 0; i < rNumNodesPerElementInOneDir; i++)
+    if (PRINTRESULT) std::cout <<  "Pressure on nodes: "<< std::endl;
+    nodeId = (NumElementsX-1)*(rNumNodesPerElementInOneDir-1) + (rNumNodesPerElementInOneDir-1);
+    if (PRINTRESULT) std::cout <<  nodeId << std::endl;
+    myStructure.GroupAddNode(groupNumberNodesRight, nodeId);
+
+    for(int j = 0; j < NumElementsY; j++)
     {
-        //std::cout << (nodes-1)-i*(rNumNodesPerElementInOneDir-1) << std::endl;
-        //myStructure.GroupAddNode(groupNumberNodesRight, (nodes-1)-i*(rNumNodesPerElementInOneDir-1));
+        for(int l = 1; l < rNumNodesPerElementInOneDir; l++)
+        {
+            nodeId = (NumElementsX-1)*(rNumNodesPerElementInOneDir-1) +
+                    (rNumNodesPerElementInOneDir-1) + l*numNodesInRow + j*(rNumNodesPerElementInOneDir-1)*numNodesInRow;
+
+            if(PRINTRESULT) std::cout << nodeId << std::endl;
+            myStructure.GroupAddNode(groupNumberNodesRight, nodeId);
+        }
     }
-    //std::cout <<  " and element: " << NumElements-1 << std::endl;
+
+    if (PRINTRESULT) std::cout <<  " and elements: \n";
     int groupNumberElementsRight = myStructure.GroupCreate("ELEMENTS");
-    //myStructure.GroupAddElement(groupNumberElementsRight, NumElements-1);
+    for (int i = 0; i < NumElementsY; i++)
+    {
+        int elementId = NumElementsX*(i+1)-1;
+        myStructure.GroupAddElement(groupNumberElementsRight, elementId);
+        if(PRINTRESULT) std::cout << elementId  << std::endl;
+    }
 
     //NuTo::FullVector<double, 2> ForceVecRight({Force,0.});
     //myStructure.LoadSurfaceConstDirectionCreate2D(1, groupNumberElementsRight, groupNumberNodesRight, ForceVecRight);
@@ -332,15 +342,28 @@ int buildStructure2D(const std::string& rElementTypeIdent,
     myStructure.Info();
 
     /** start analysis **/
-    myStructure.SetNumProcessors(4);
+#ifdef _OPENMP
+    int numThreads = 1;
+    myStructure.SetNumProcessors(numThreads);
+#ifdef HAVE_PARDISO
+    NuTo::SparseDirectSolverPardiso mySolverPardiso(numThreads);
+#endif
+#endif
     myStructure.CalculateMaximumIndependentSets();
     myStructure.NodeBuildGlobalDofs();
 
     // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-    NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2(0,0);
+
+    //NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2(0,0);
+    NuTo::SparseMatrixCSRVector2Symmetric<double> stiffnessMatrixCSRVector2Symmetric(0,0);
+
     NuTo::FullVector<double,Eigen::Dynamic> dispForceVector;
-    myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
-    NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix (stiffnessMatrixCSRVector2);
+
+    //myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
+    myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2Symmetric, dispForceVector);
+
+    //NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix (stiffnessMatrixCSRVector2);
+    NuTo::SparseMatrixCSRSymmetric<double> stiffnessMatrixSymmetric (stiffnessMatrixCSRVector2Symmetric);
 
     // build global external load vector
     NuTo::FullVector<double,Eigen::Dynamic> extForceVector;
@@ -349,12 +372,15 @@ int buildStructure2D(const std::string& rElementTypeIdent,
     // calculate right hand side
     NuTo::FullVector<double,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;
 
-#ifdef HAVE_PARDISO
-    NuTo::SparseDirectSolverPardiso mySolverPardiso;
-    NuTo::FullVector<double,Eigen::Dynamic> displacementVectorPardiso;
-    stiffnessMatrix.SetOneBasedIndexing();
+    //stiffnessMatrix.SetOneBasedIndexing();
+    stiffnessMatrixSymmetric.SetOneBasedIndexing();
 
-    mySolverPardiso.Solve(stiffnessMatrix, rhsVector, displacementVectorPardiso);
+
+#ifdef HAVE_PARDISO
+    NuTo::FullVector<double,Eigen::Dynamic> displacementVectorPardiso;
+
+    //mySolverPardiso.Solve(stiffnessMatrix, rhsVector, displacementVectorPardiso);
+    mySolverPardiso.Solve(stiffnessMatrixSymmetric, rhsVector, displacementVectorPardiso);
     // write displacements to node
     myStructure.NodeMergeActiveDofValues(displacementVectorPardiso);
 
@@ -368,13 +394,12 @@ int buildStructure2D(const std::string& rElementTypeIdent,
     myStructure.AddVisualizationComponentDisplacements();
     myStructure.AddVisualizationComponentEngineeringStrain();
     myStructure.AddVisualizationComponentEngineeringStress();
-    myStructure.ExportVtkDataFile("LobattoTruss1D2N.vtk");
+    myStructure.ExportVtkDataFileElements("Lobatto2D.vtk");
 #elif defined HAVE_MUMPS
     NuTo::SparseDirectSolverMUMPS mySolverMUMPS;
     NuTo::FullVector<double,Eigen::Dynamic> displacementVectorMUMPS;
-    stiffnessMatrix.SetOneBasedIndexing();
 
-    mySolverMUMPS.Solve(stiffnessMatrix, rhsVector, displacementVectorMUMPS);
+    mySolverMUMPS.Solve(stiffnessMatrixSymmetric, rhsVector, displacementVectorMUMPS);
     // write displacements to node
     myStructure.NodeMergeActiveDofValues(displacementVectorMUMPS);
 
@@ -384,23 +409,20 @@ int buildStructure2D(const std::string& rElementTypeIdent,
     NuTo::FullVector<double,Eigen::Dynamic> residualVectorMUMPS = extForceVector - intForceVectorMUMPS;
     std::cout << "residual: " << residualVectorMUMPS.Norm() << std::endl;
 #else
-    std::cout << "PARDISO not available - can't solve system of equations " << std::endl;
+    std::cout << "PARDISO ans MUMPS not available - can't solve system of equations " << std::endl;
 #endif // HAVE_PARDISO
 
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> EngineeringStress(6,1);
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> EngineeringStressCorrect(6,1);
     EngineeringStressCorrect(0,0) = Stress;
 
-    double DisplacementCorrect = 0.5;
-    double nodeDisp = 0.;//myStructure.NodeGetNodePtr(nodes-1)->GetDisplacement(0);
+    double DisplacementCorrect = (Stress*Length)/YoungsModulus;
+    double nodeDisp = myStructure.NodeGetNodePtr(node-1)->GetDisplacement(0);
 
-    if (PRINTRESULT)
-    {
-        std::cout << "Displacement analytical: " << DisplacementCorrect  << std::endl;
-        std::cout << "Displacement FEM: " <<  nodeDisp << std::endl;
-    }
+    std::cout << "Displacement analytical: " << DisplacementCorrect  << std::endl;
+    std::cout << "Displacement FEM: " <<  nodeDisp << std::endl;
 
-   /* for(int element = 0; element < NumElements; element++)
+    for(int element = 0; element < NumElementsX*NumElementsY; element++)
     {
         if (PRINTRESULT)
         {
@@ -411,12 +433,11 @@ int buildStructure2D(const std::string& rElementTypeIdent,
             EngineeringStress.Info();
         }
     }
-    */
 
     double resultTol = fabs(nodeDisp - DisplacementCorrect)/fabs(DisplacementCorrect);
     if (resultTol > tol)
     {
-        //throw NuTo::Exception("[LobattoIntegration] : displacement is not correct");
+        throw NuTo::Exception("[LobattoIntegration] : displacement is not correct");
     }
 
     return 0;
@@ -424,79 +445,42 @@ int buildStructure2D(const std::string& rElementTypeIdent,
 
 int main()
 {
-    /** 2D **/
-
-    // 3x3Nodes
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ones2D(9,2); ones2D.fill(1);
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> nodeCoordinates2D(9,2);
-    NuTo::IntegrationType2D4NLobatto9Ip Lobatto2D4N9Ip;
-    for (int i = 0; i < 9; i++)
-    {
-        double coords[2];
-        Lobatto2D4N9Ip.GetLocalIntegrationPointCoordinates2D(i, coords);
-        nodeCoordinates2D(i,0) = coords[0];
-        nodeCoordinates2D(i,1) = coords[1];
-    }
-
-    nodeCoordinates2D += ones2D;
-    //buildStructure2D("PLANE2D4NSPECTRALORDER2", "2D4NLobatto9Ip", 3, nodeCoordinates2D, 1000, 1000);
-
-    // 4x4Nodes
-    ones2D.resize(16,2); ones2D.fill(1);
-    nodeCoordinates2D.resize(16,2);
-    NuTo::IntegrationType2D4NLobatto16Ip Lobatto2D4N16Ip;
-    for (int i = 0; i < 16; i++)
-    {
-        double coords[2];
-        Lobatto2D4N16Ip.GetLocalIntegrationPointCoordinates2D(i, coords);
-        nodeCoordinates2D(i,0) = coords[0];
-        nodeCoordinates2D(i,1) = coords[1];
-    }
-    nodeCoordinates2D += ones2D;
-    std::cout << "NodeCoordinates: \n" << nodeCoordinates2D << std::endl;
-    //buildStructure2D("PLANE2D4NSPECTRALORDER3", "2D4NLobatto16Ip", 4, nodeCoordinates2D, 1000, 1000);
-
-
-    // 5x5Nodes
-    ones2D.resize(25,2); ones2D.fill(1);
-    nodeCoordinates2D.resize(25,2);
-    NuTo::IntegrationType2D4NLobatto25Ip Lobatto2D4N25Ip;
-    for (int i = 0; i < 25; i++)
-    {
-        double coords[2];
-        Lobatto2D4N25Ip.GetLocalIntegrationPointCoordinates2D(i, coords);
-        nodeCoordinates2D(i,0) = coords[0];
-        nodeCoordinates2D(i,1) = coords[1];
-    }
-    nodeCoordinates2D += ones2D;
-    //buildStructure2D("PLANE2D4NSPECTRALORDER4", "2D4NLobatto25Ip", 5, nodeCoordinates2D, 1000, 1000);
-
-    /** 1D **/
-
-    // 3Nodes
+    // 3Nodes 2D
     NuTo::FullVector<double, Eigen::Dynamic> ones(3); ones.fill(1);
     NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(3);
     NuTo::IntegrationType1D2NLobatto3Ip Lobatto1D2N3Ip;
     for (int i = 0; i < 3; i++) Lobatto1D2N3Ip.GetLocalIntegrationPointCoordinates1D(i, nodeCoordinates(i));
     nodeCoordinates += ones;
-    buildStructure1D("TRUSS1D2NSPECTRALORDER2", "1D2NLobatto3Ip", 3, nodeCoordinates, 1000);
 
-    // 4Nodes
+    buildStructure2D("PLANE2D4NSPECTRALORDER2", "2D4NLobatto9Ip", 3, nodeCoordinates, 40, 20);
+
+    // 3Nodes 1D
+    buildStructure1D("TRUSS1D2NSPECTRALORDER2", "1D2NLobatto3Ip", 3, nodeCoordinates, 100);
+
+
+    // 4Nodes 2D
     ones.resize(4); ones.fill(1);
     nodeCoordinates.resize(4);
     NuTo::IntegrationType1D2NLobatto4Ip Lobatto1D2N4Ip;
     for (int i = 0; i < 4; i++) Lobatto1D2N4Ip.GetLocalIntegrationPointCoordinates1D(i, nodeCoordinates(i));
     nodeCoordinates+=ones;
-    buildStructure1D("TRUSS1D2NSPECTRALORDER3", "1D2NLobatto4Ip", 4, nodeCoordinates, 1000);
 
-    // 5Nodes
+    buildStructure2D("PLANE2D4NSPECTRALORDER3", "2D4NLobatto16Ip", 4, nodeCoordinates, 40, 20);
+
+    // 4Nodes 1D
+    buildStructure1D("TRUSS1D2NSPECTRALORDER3", "1D2NLobatto4Ip", 4, nodeCoordinates, 100);
+
+    // 5Nodes 2D
     ones.resize(5); ones.fill(1);
     nodeCoordinates.resize(5);
     NuTo::IntegrationType1D2NLobatto5Ip Lobatto1D2N5Ip;
     for (int i = 0; i < 5; i++) Lobatto1D2N5Ip.GetLocalIntegrationPointCoordinates1D(i, nodeCoordinates(i));
     nodeCoordinates+=ones;
-    buildStructure1D("TRUSS1D2NSPECTRALORDER4", "1D2NLobatto5Ip", 5, nodeCoordinates, 1000);
 
+    buildStructure2D("PLANE2D4NSPECTRALORDER4", "2D4NLobatto25Ip", 5, nodeCoordinates, 40, 20);
+
+    // 5Nodes 1D
+    buildStructure1D("TRUSS1D2NSPECTRALORDER4", "1D2NLobatto5Ip", 5, nodeCoordinates, 100);
 
     return 0;
 }

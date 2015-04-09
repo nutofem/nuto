@@ -293,7 +293,7 @@ int main()
 
 
 #if defined HAVE_PARDISO
-        NuTo::SparseDirectSolverPardiso Solver;
+        NuTo::SparseDirectSolverPardiso Solver(4);
 #elif defined HAVE_MUMPS
         NuTo::SparseDirectSolverMUMPS Solver;
 #else

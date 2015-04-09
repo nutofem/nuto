@@ -18,9 +18,10 @@ extern "C" void pardiso_chkmatrix  (int *, int *, double *, int *, int *, int *)
 extern "C" void pardiso_chkvec     (int *, int *, double *, int *);
 extern "C" void pardiso_printstats (int *, int *, double *, int *, int *, int *, double *, int *);
 
-NuTo::SparseDirectSolverPardiso::SparseDirectSolverPardiso() : SparseDirectSolver()
+NuTo::SparseDirectSolverPardiso::SparseDirectSolverPardiso(int rNumThreads) : SparseDirectSolver()
 {
 #ifdef HAVE_PARDISO
+    this->mNumThreads = rNumThreads;  // set the number of threads
     // set default solver parameters
     this->mOrderingType = 2;          // set ordering to METIS
     this->mNumRefinementSteps  = 0;   // maximum number of iterative refinement steps
@@ -102,6 +103,12 @@ void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>&
 
     int parameters[64];
     double dparameters[64];
+
+#ifdef _OPENMP
+    parameters[2]  = mNumThreads;
+#else
+    parameters[2]  = 1;
+#endif
 
     /** checks the current license in the file pardiso.lic and initializes the internal
     timer and the adress pointer pt. It sets the solver default values according to the matrix type. **/

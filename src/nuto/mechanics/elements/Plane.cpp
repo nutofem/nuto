@@ -451,13 +451,20 @@ NuTo::Error::eError NuTo::Plane::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 				break;
 				case Element::HESSIAN_0_TIME_DERIVATIVE:
 					{
-						//factor for the numerical integration
-						assert(mSection->GetThickness()>0);
-						double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
-						if (nonlocalTangentStressStrain.GetConstant()==false)
-							it->second->SetConstant(false);
-						if (nonlocalTangentStressStrain.GetSymmetry()==false)
-							it->second->SetSymmetry(false);
+                        //factor for the numerical integration
+                        assert(mSection->GetThickness()>0);
+                        double factor(mSection->GetThickness()*detJac*(mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
+                        if (nonlocalTangentStressStrain.GetConstant()==false)
+                            it->second->SetConstant(false);
+                        if (NumNonlocalElements != 0)
+                        {
+                            if (nonlocalTangentStressStrain.GetSymmetry()==false)
+                                it->second->SetSymmetry(false);
+                        }
+                        else
+                        {
+                            it->second->SetSymmetry(nonlocalTangentStressStrain.GetSubMatrix_3x3(0).GetSymmetry());
+                        }
 
 						if (numLocalDispDofs>0)
 						{

@@ -15,7 +15,7 @@ class SparseDirectSolverPardiso : public SparseDirectSolver
 {
 public:
     //! @brief ... default constructor
-    SparseDirectSolverPardiso();
+    SparseDirectSolverPardiso(int rNumThreads);
 
     //! @brief ... print information about the class attributes
     virtual void Info()const
@@ -155,9 +155,15 @@ protected:
     //! @brief ... solver type (direct or iterative)
     //! @sa 0 (direct), 1 (iterative)
     /*!
-        "This scalr value defines the solver method the user would like to use"
+        "This scalar value defines the solver method the user would like to use"
     */
     int mSolver;
+
+    //! @brief ... numbe rof threads
+    /*!
+        "Specifies the number of threads"
+    */
+    int mNumThreads;
 
 
 #endif // HAVE_PARDISO
