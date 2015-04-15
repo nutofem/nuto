@@ -76,7 +76,8 @@ int NuTo::MultiGridStructure::Initialize()
 
 	while(rGridDimension[0]%2==0 && rGridDimension[1]%2==0 && rGridDimension[2]%2==0
 			&&rGridDimension[0]>4 && rGridDimension[1]>4 && rGridDimension[2]>4 // delete this part later
-			)
+	      &&mNumGrids<mMaxGrids
+	     )
 	{
 		NuTo::StructureGrid* rCoarseGrid=new NuTo::StructureGrid(dim);
 		NuTo::StructureGrid* rGrid=mpStructureHandler;
@@ -168,8 +169,9 @@ int NuTo::MultiGridStructure::MultiGridSolve(std::vector<double>& rSolution,
 //	std::cout<<" rIntialNorm "<<rIntialNorm<<"\n";
 
 
-	while(++cycle<mMaxCycles && kappa>rAccuracySquare)
+	while(cycle<mMaxCycles && kappa>rAccuracySquare)
 	{
+		++cycle;
 		rError.assign((numPara+1)*3,0.);
 		if(mCycle[0]==0)//FMV- cycle
 		{
@@ -425,6 +427,15 @@ int NuTo::MultiGridStructure::GetMaxCycle()
 {
 	return mMaxCycles;
 }
+void NuTo::MultiGridStructure::SetMaxGrids(int rMaxGrids)
+{
+	mMaxGrids=rMaxGrids;
+}
+int NuTo::MultiGridStructure::GetMaxGrids()
+{
+	return mMaxGrids;
+}
+
 // export to Vtk Datafile
 void NuTo::MultiGridStructure::ExportVTKStructuredDataFile(int rGridLevel, const std::string& rFilename)
 {

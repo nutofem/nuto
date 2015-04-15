@@ -1,5 +1,5 @@
 //$Id$
-//! @author Andrea Ke√üler, ISM
+//! @author Andrea Keﬂler, ISM
 //! @date March 2013
 //! @brief ... standard class for multigrid structure
 
@@ -43,6 +43,7 @@ public:
         mNumPreSmoothingSteps=2;
         mNumPostSmoothingSteps=1;
         mMaxCycles=1;
+        mMaxGrids=10;
 
     }
 
@@ -107,6 +108,9 @@ public:
     void SetMaxCycle(int rMaxCycles);
     int GetMaxCycle();
 
+    void SetMaxGrids(int rMaxGrids);
+    int GetMaxGrids();
+    
     std::vector<double>&  GetParameters();
     std::vector<double>&  GetRightHandSide();
     void SetParameters(std::vector<double>& rParameters);
@@ -156,6 +160,7 @@ private:
     std::vector<int> mCycle; // save gridnumber, and 1 for restriction and -1 for prolongation
     bool mUseAsPreconditioner;
     int mMaxCycles;
+    int mMaxGrids;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION
