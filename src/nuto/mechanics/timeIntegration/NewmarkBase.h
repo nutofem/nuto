@@ -75,13 +75,6 @@ public:
     	return mGamma;
     }
 
-    bool IsDynamic()const;
-
-    void SetDynamic(bool rIsDynamic)
-    {
-    	mIsDynamic = rIsDynamic;
-    }
-
     bool GetUseLumpedMass()const
     {
     	return mUseLumpedMass;
@@ -123,7 +116,6 @@ protected:
 	double mKineticEnergy;
 	double mDampedEnergy;
 
-	bool mIsDynamic;
 	bool mUseLumpedMass;
     bool mUseDamping = true;
 };

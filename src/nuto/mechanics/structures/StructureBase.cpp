@@ -153,6 +153,8 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
 
     mNumLoadCases = 1;
 
+    mNumTimeDerivatives = 0;
+
     mHaveTmpStaticData = false;
     mUpdateTmpStaticDataRequired = true;
     mToleranceStiffnessEntries = 0.;
@@ -187,6 +189,7 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
     mLogger << "start serialization of structure base" << "\n";
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
+    & BOOST_SERIALIZATION_NVP(mNumTimeDerivatives)
     & BOOST_SERIALIZATION_NVP(mDimension)
     & BOOST_SERIALIZATION_NVP(mConstitutiveLawMap)
     & BOOST_SERIALIZATION_NVP(mConstraintMap)
@@ -225,6 +228,8 @@ void NuTo::StructureBase::Info()const
 {
     mLogger << "dimension : " << mDimension << "\n";
 
+    mLogger << "number of time derivatives : " << mNumTimeDerivatives << "\n";
+
     mLogger << "num dofs : " << mNumDofs << "\n";
     mLogger << "num active dofs : " << mNumActiveDofs << "\n";
     // print info for sections
@@ -232,6 +237,21 @@ void NuTo::StructureBase::Info()const
 
     // print info for groups
     GroupInfo(mVerboseLevel);
+}
+
+//! @brief ... number of time derivatives for the nodes (0 : static, 1: velocities, 2: accelerations)
+void NuTo::StructureBase::SetNumTimeDerivatives(int rNumTimeDerivatives)
+{
+	if (rNumTimeDerivatives<0 || rNumTimeDerivatives>2)
+        throw NuTo::MechanicsException("[NuTo::StructureBase::SetNumTimeDerivatives] number of time derivatives is either 0, 1 or 2.");
+
+	mNumTimeDerivatives = rNumTimeDerivatives;
+}
+
+//! @brief ... return number of time derivatives (0 : static, 1: velocities, 2: accelerations)
+int NuTo::StructureBase::GetNumTimeDerivatives()const
+{
+	return mNumTimeDerivatives;
 }
 
 //! @brief set the beginning of the time increment to the structure

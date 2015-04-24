@@ -194,31 +194,13 @@ int NuTo::Structure::NodeCreate(std::string rDOFs, NuTo::FullVector<double,Eigen
         id++;
         it = mNodeMap.find(id);
     }
-    this->NodeCreate(id, rDOFs, rCoordinates, 0);
+    this->NodeCreate(id, rDOFs, rCoordinates);
 
     //return int identifier of the new node
     return id;
 }
 
-//! creates a node
-int NuTo::Structure::NodeCreate(std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates, int rNumTimeDerivatives)
-{
-
-    //find unused integer id
-    int id(mNodeMap.size());
-    boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.find(id);
-    while (it!=mNodeMap.end())
-    {
-        id++;
-        it = mNodeMap.find(id);
-    }
-    this->NodeCreate(id, rDOFs, rCoordinates, rNumTimeDerivatives);
-
-    //return int identifier of the new node
-    return id;
-}
-
-void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates, int rNumTimeDerivatives)
+void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates)
 {
 	// check node number
 	boost::ptr_map<int,NodeBase>::iterator it = this->mNodeMap.find(rNodeNumber);
@@ -323,7 +305,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
     break;
     case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS):
         // coordinates and displacements
-        switch (rNumTimeDerivatives)
+        switch (mNumTimeDerivatives)
         {
         case 0:
 			switch (mDimension)
@@ -336,6 +318,22 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 				break;
 			case 3:
                 nodePtr = new NuTo::NodeCoordinatesDof<3,0,3,0,0,0,0,0,0,0>();
+				break;
+			default:
+				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+			}
+		break;
+		case 1:
+			switch (mDimension)
+			{
+			case 1:
+				nodePtr = new NuTo::NodeCoordinatesDof<1,1,1,0,0,0,0,0,0,0>();
+				break;
+			case 2:
+				nodePtr = new NuTo::NodeCoordinatesDof<2,1,2,0,0,0,0,0,0,0>();
+				break;
+			case 3:
+				nodePtr = new NuTo::NodeCoordinatesDof<3,1,3,0,0,0,0,0,0,0>();
 				break;
 			default:
 				throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -358,12 +356,12 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 			}
 		break;
 		default:
-			throw MechanicsException("[NuTo::Structure::NodeCreate] Coordinates and Displacements only implemented for 0 and 2 time derivatives.");
+			throw MechanicsException("[NuTo::Structure::NodeCreate] Coordinates and Displacements only implemented for 0,1 and 2 time derivatives.");
         }
     break;
 	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::ROTATIONS):
 		// coordinates and displacements and rotations
-		switch (rNumTimeDerivatives)
+		switch (mNumTimeDerivatives)
 		{
 		case 0:
 			switch (mDimension)
@@ -403,7 +401,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 	break;
     case (1 << Node::COORDINATES) | (1 << Node::TEMPERATURES):
         // coordinates and temperatures
-		switch (rNumTimeDerivatives)
+		switch (mNumTimeDerivatives)
 		{
 		case 0:
 			switch (mDimension)
@@ -477,7 +475,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 	break;
 	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::NONLOCALEQPLASTICSTRAIN):
 		// coordinates and displacements and nonlocal eq. plastic strains
-		switch (rNumTimeDerivatives)
+		switch (mNumTimeDerivatives)
 		{
 		case 0:
 			switch (mDimension)
@@ -517,7 +515,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 	break;
 	case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::NONLOCALTOTALSTRAIN):
 		// coordinates and displacements and nonlocal total strains
-		switch (rNumTimeDerivatives)
+		switch (mNumTimeDerivatives)
 		{
 		case 0:
 			switch (mDimension)
@@ -557,7 +555,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 		break;
 	    case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::NONLOCALEQSTRAIN):
 	        // coordinates and displacements and nonlocal eq. strains
-	        switch (rNumTimeDerivatives)
+	        switch (mNumTimeDerivatives)
 	        {
 	        case 0:
 	            switch (mDimension)
@@ -599,7 +597,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 	        break;
 	        case (1 << Node::COORDINATES) | (1 << Node::NONLOCALEQSTRAIN):
 	            // coordinates and displacements and nonlocal eq. strains
-	            switch (rNumTimeDerivatives)
+	            switch (mNumTimeDerivatives)
 	            {
 	            case 0:
 	                switch (mDimension)
@@ -646,7 +644,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 
         case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::WATERPHASEFRACTION) | (1 << Node::RELATIVEHUMIDITY):
             // coordinates and displacements and nonlocal eq. strains
-            switch (rNumTimeDerivatives)
+            switch (mNumTimeDerivatives)
             {
             case 0:
                 switch (mDimension)
@@ -675,7 +673,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullV
 
         case (1 << Node::COORDINATES) | (1 << Node::WATERPHASEFRACTION) | (1 << Node::RELATIVEHUMIDITY):
             // coordinates and displacements and nonlocal eq. strains
-            switch (rNumTimeDerivatives)
+            switch (mNumTimeDerivatives)
             {
             case 0:
                 switch (mDimension)

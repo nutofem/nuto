@@ -50,6 +50,9 @@ try
     //create structure
     NuTo::Structure myStructure(2);
 
+    //set number of time derivatives to 2 (nodes have disp, vel and accelerations)
+    myStructure.SetNumTimeDerivatives(2);
+
 	//create nodes
     int numNodesX = (int)(floor(mL/elementLength))+1;
     int numNodesY = (int)(floor(mH/elementHeight))+1;
@@ -64,7 +67,7 @@ try
         	NuTo::FullVector<double,Eigen::Dynamic> coordinates(2);
         	coordinates(0) = countX*deltaX;
         	coordinates(1) = countY*deltaY;
-        	myStructure.NodeCreate(nodeNum,std::string("DISPLACEMENTS"),coordinates,2);
+        	myStructure.NodeCreate(nodeNum,std::string("DISPLACEMENTS"),coordinates);
         	nodeNum++;
         }
     }
@@ -211,7 +214,6 @@ try
 	NuTo::NewmarkDirect myIntegrationScheme(&myStructure);
 
 	myIntegrationScheme.SetDampingCoefficientMass(0.05);
-	myIntegrationScheme.SetDynamic(true);
 
 	//set a sinusoidal load in xy-direction(diagonal) on the lower left node
 	double simulationTime(10.);
@@ -278,7 +280,7 @@ try
 
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_leftRef(2,2);
     result_leftRef(0,0) = -1; //disp on fixed node
-    result_leftRef(1,0) = -3.001683921119e+02;
+    result_leftRef(1,0) = -3.001682840791e+02;
 
     if ((result_leftRef-result_left).cwiseAbs().maxCoeff()>1e-4)
     {
@@ -302,7 +304,7 @@ try
     result_right.Info(15,12,true);
 
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_rightRef(2,2);
-    result_rightRef(1,0) = 3.016224604217e+02;
+    result_rightRef(1,0) = 3.016648179801e+02;
 
     if ((result_rightRef-result_right).cwiseAbs().maxCoeff()>1e-4)
     {

@@ -104,7 +104,7 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
     	//calculate till the end of the first three cycle
     	if (mHarmonicExtrapolation) {
     		//calculate the first three cycles
-    		Error = NuTo::NewmarkDirect::Solve(BeginHarmonicExcitation + 3./mHarmonicConstraintFactor(0,1));
+    		Error = Solve(BeginHarmonicExcitation + 3./mHarmonicConstraintFactor(0,1));
     		if (Error != NuTo::Error::SUCCESSFUL) {
     			return Error;
     		}
@@ -210,7 +210,7 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
     	disp_Ampl_j = 0.5*(disp_Max_j - disp_Min_j);
     	disp_Ampl_k = 0.5*(disp_Max_k - disp_Min_k);
 
-	    if (this->IsDynamic())
+        if (mStructure->GetNumTimeDerivatives()>1)
 	    {
 	        mStructure->NodeExtractDofValues(1,lastConverged_vel_j,lastConverged_vel_k);
 	        mStructure->NodeExtractDofValues(2,lastConverged_acc_j,lastConverged_acc_k);
@@ -223,93 +223,95 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 	    	// initiate number of cycles
     	int Njump(0);
     	Njump = 10;
-    	do {
-    	mStructure->SetNumExtrapolatedCycles(Njump);
-    		// extrapolate time starting from the end of the 4th cycle (SaveTime is still the end of the 3d cycle)
-    	mStructure->SetTime(SaveTime + (Njump + 1)/mHarmonicConstraintFactor(0,1));
-    	mStructure->SetPrevTime(SaveTime + (Njump + 1)/mHarmonicConstraintFactor(0,1));
-//    	mTime += Njump/mHarmonicConstraintFactor(0,1);
+    	do
+    	{
+			mStructure->SetNumExtrapolatedCycles(Njump);
+				// extrapolate time starting from the end of the 4th cycle (SaveTime is still the end of the 3d cycle)
+			mStructure->SetTime(SaveTime + (Njump + 1)/mHarmonicConstraintFactor(0,1));
+			mStructure->SetPrevTime(SaveTime + (Njump + 1)/mHarmonicConstraintFactor(0,1));
+	//    	mTime += Njump/mHarmonicConstraintFactor(0,1);
 
-    		// extrapolate state variables
-    	mStructure->ElementFatigueExtrapolateStaticData();
+				// extrapolate state variables
+			mStructure->ElementFatigueExtrapolateStaticData();
 
-	    if (this->IsDynamic())
-	    {
-	        mStructure->NodeExtractDofValues(1,lastConverged_vel_j,lastConverged_vel_k);
-	        mStructure->NodeExtractDofValues(2,lastConverged_acc_j,lastConverged_acc_k);
-			std::cout << "=== acc_j = " << lastConverged_acc_j[0] << std::endl;
-	    }
+            if (mStructure->GetNumTimeDerivatives()>1)
+			{
+				mStructure->NodeExtractDofValues(1,lastConverged_vel_j,lastConverged_vel_k);
+				mStructure->NodeExtractDofValues(2,lastConverged_acc_j,lastConverged_acc_k);
+				std::cout << "=== acc_j = " << lastConverged_acc_j[0] << std::endl;
+			}
 
-    	// find equilibrium
-//    		// find for the mean value (rFourier = 0)
-//    		// set BC for the mean displacement, which is the displacement at the beginning of the harmonic excitation
-//		double timeDependentConstraintFactor(this->CalculateTimeDependentConstraintFactor(BeginHarmonicExcitation));
-//		mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
-//		mStructure->ConstraintGetRHSAfterGaussElimination(bRHSend);
-//			// set mean displacement field
-//		mStructure->NodeMergeActiveDofValues(0,disp_Mean_j);
-//		mStructure->ElementTotalUpdateTmpStaticData();
-//			// calculate internal forces and external forces
-//		mStructure->BuildGlobalElasticGradientInternalPotentialSubVectors(intForce_j,intForce_k);
-//		CalculateExternalLoad(*mStructure, BeginHarmonicExcitation, extForce_j, extForce_k);
-//
-//		residual_j = intForce_j - extForce_j;
-//		residual_k = intForce_k - extForce_k;
-//
-//        if (Cmat.GetNumEntries()>0)
-//        {
-//            residual_mod = residual_j - CmatT*residual_k;
-//        } else {
-//            residual_mod = residual_j;
-//        }
-//
-//        this->CalculateGlobalModifiedStiffness(&stiffMatrix_jj,0);
-//
-//		// solve for trial state
-//		NuTo::SparseMatrixCSRGeneral<double> hessianModSolver(stiffMatrix_jj);
-//
-//		hessianModSolver.SetOneBasedIndexing();
-//		mySolver.Solve(hessianModSolver, residual_mod, delta_disp_j);
-//		delta_disp_j*=-1;
-//
-//        // calculate mean displacement
-//		disp_Mean_j += delta_disp_j;
-//		disp_Mean_k = bRHSend - Cmat*disp_Mean_j;
+			// find equilibrium
+	//    		// find for the mean value (rFourier = 0)
+	//    		// set BC for the mean displacement, which is the displacement at the beginning of the harmonic excitation
+	//		double timeDependentConstraintFactor(this->CalculateTimeDependentConstraintFactor(BeginHarmonicExcitation));
+	//		mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+	//		mStructure->ConstraintGetRHSAfterGaussElimination(bRHSend);
+	//			// set mean displacement field
+	//		mStructure->NodeMergeActiveDofValues(0,disp_Mean_j);
+	//		mStructure->ElementTotalUpdateTmpStaticData();
+	//			// calculate internal forces and external forces
+	//		mStructure->BuildGlobalElasticGradientInternalPotentialSubVectors(intForce_j,intForce_k);
+	//		CalculateExternalLoad(*mStructure, BeginHarmonicExcitation, extForce_j, extForce_k);
+	//
+	//		residual_j = intForce_j - extForce_j;
+	//		residual_k = intForce_k - extForce_k;
+	//
+	//        if (Cmat.GetNumEntries()>0)
+	//        {
+	//            residual_mod = residual_j - CmatT*residual_k;
+	//        } else {
+	//            residual_mod = residual_j;
+	//        }
+	//
+	//        this->CalculateGlobalModifiedStiffness(&stiffMatrix_jj,0);
+	//
+	//		// solve for trial state
+	//		NuTo::SparseMatrixCSRGeneral<double> hessianModSolver(stiffMatrix_jj);
+	//
+	//		hessianModSolver.SetOneBasedIndexing();
+	//		mySolver.Solve(hessianModSolver, residual_mod, delta_disp_j);
+	//		delta_disp_j*=-1;
+	//
+	//        // calculate mean displacement
+	//		disp_Mean_j += delta_disp_j;
+	//		disp_Mean_k = bRHSend - Cmat*disp_Mean_j;
 
-    	this->CalculateFourierCofficients(&disp_Mean_j,&disp_Mean_k,&disp_Ampl_j,&disp_Ampl_k);
+			this->CalculateFourierCofficients(&disp_Mean_j,&disp_Mean_k,&disp_Ampl_j,&disp_Ampl_k);
 
-	    if (this->IsDynamic())
-	    {
-	        mStructure->NodeExtractDofValues(1,lastConverged_vel_j,lastConverged_vel_k);
-	        mStructure->NodeExtractDofValues(2,lastConverged_acc_j,lastConverged_acc_k);
-			std::cout << "=== acc_j = " << lastConverged_acc_j[0] << std::endl;
+            if (mStructure->GetNumTimeDerivatives()>1)
+			{
+				mStructure->NodeExtractDofValues(1,lastConverged_vel_j,lastConverged_vel_k);
+				mStructure->NodeExtractDofValues(2,lastConverged_acc_j,lastConverged_acc_k);
+				std::cout << "=== acc_j = " << lastConverged_acc_j[0] << std::endl;
 
-	    }
+			}
 
-	    // store static data for the next jump
-	    mStructure->ElementFatigueSaveStaticData();
+			// store static data for the next jump
+			mStructure->ElementFatigueSaveStaticData();
 
-    	// straight forward integration after extrapolation
-		mStructure->NodeMergeActiveDofValues(0,disp_Mean_j);
-		mStructure->ElementTotalUpdateTmpStaticData();
-//		std::cout << "mStress before USD" << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetPrevStress() << std::endl;
-//		std::cout << "mOmegaCompr before USD" << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl;
-			// the state variables are already extrapolated, except of mPrevStrain and mPrevSigma
-			// call UpdateStaticDatat in order to update mPrevStrain and mPrevSigma too (this has to be done after the equilibrium has been found)
-		mStructure->ElementTotalUpdateStaticData();
-//		std::cout << "mStress after USD " << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetPrevStress() << std::endl;
-//		std::cout << "mOmegaCompr after USD" << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl;
-		SaveTime = mStructure->GetTime();
-		this->IntegrateSingleCycle(&disp_Mean_j,&disp_Mean_k,&disp_Ampl_j,&disp_Ampl_k,true);
-//	    if (this->IsDynamic())
-//	    {
-//	        mStructure->NodeExtractDofValues(1,lastConverged_vel_j,lastConverged_vel_k);
-//	        mStructure->NodeExtractDofValues(2,lastConverged_acc_j,lastConverged_acc_k);
-//			std::cout << "=== acc_j = " << lastConverged_acc_j[0] << std::endl;
-//
-//	    }
-//		Error = NuTo::NewmarkDirect::Solve(mStructure->GetTime() + 1./mHarmonicConstraintFactor(0,1));
-    	} while (SaveTime + (Njump + 1)/mHarmonicConstraintFactor(0,1) <= rTimeDelta);
+			// straight forward integration after extrapolation
+			mStructure->NodeMergeActiveDofValues(0,disp_Mean_j);
+			mStructure->ElementTotalUpdateTmpStaticData();
+	//		std::cout << "mStress before USD" << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetPrevStress() << std::endl;
+	//		std::cout << "mOmegaCompr before USD" << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl;
+				// the state variables are already extrapolated, except of mPrevStrain and mPrevSigma
+				// call UpdateStaticDatat in order to update mPrevStrain and mPrevSigma too (this has to be done after the equilibrium has been found)
+			mStructure->ElementTotalUpdateStaticData();
+	//		std::cout << "mStress after USD " << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetPrevStress() << std::endl;
+	//		std::cout << "mOmegaCompr after USD" << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl;
+			SaveTime = mStructure->GetTime();
+			this->IntegrateSingleCycle(&disp_Mean_j,&disp_Mean_k,&disp_Ampl_j,&disp_Ampl_k,true);
+	//	    if (this->IsDynamic())
+	//	    {
+	//	        mStructure->NodeExtractDofValues(1,lastConverged_vel_j,lastConverged_vel_k);
+	//	        mStructure->NodeExtractDofValues(2,lastConverged_acc_j,lastConverged_acc_k);
+	//			std::cout << "=== acc_j = " << lastConverged_acc_j[0] << std::endl;
+	//
+	//	    }
+	//		Error = NuTo::NewmarkDirect::Solve(mStructure->GetTime() + 1./mHarmonicConstraintFactor(0,1));
+    	}
+    	while (SaveTime + (Njump + 1)/mHarmonicConstraintFactor(0,1) <= rTimeDelta);
     }
 //    try
 //    {
@@ -1039,7 +1041,8 @@ void NuTo::JumpDirect::CalculateGlobalModifiedStiffness(NuTo::SparseMatrixCSRVec
 	massMatrix_kk.Resize(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(),mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
 	mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::MASS,massMatrix_jj,massMatrix_jk,massMatrix_kj,massMatrix_kk);
 
-	if (rFourierMode > 0 && this->IsDynamic()) {
+	if (rFourierMode > 0 && mStructure->GetNumTimeDerivatives()>1)
+		{
 		double frequency(mHarmonicConstraintFactor(0,1));
 		const double pi = boost::math::constants::pi<double>();
 		double factor(2*rFourierMode*pi*frequency);
@@ -1110,7 +1113,7 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
 	NuTo::FullVector<double,Eigen::Dynamic> lastConverged_vel_j, lastConverged_vel_k, lastConverged_acc_j, lastConverged_acc_k;
 
 	bool FirstEqulibrium(false);
-    if (this->IsDynamic() && FirstEqulibrium)
+    if (mStructure->GetNumTimeDerivatives()>1 && FirstEqulibrium)
     {
     	FirstEqulibrium = false;
     	if (mUseLumpedMass)
@@ -1293,7 +1296,8 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
 	const double pi = boost::math::constants::pi<double>();
 	double factor(2*pi*frequency);
 
-	if (this->IsDynamic()) {
+	if (mStructure->GetNumTimeDerivatives()>1)
+	{
 		if (mUseLumpedMass)
 		{
 			residual_j -= lumped_massMatrix_j.asDiagonal()*(*rDisp_Ampl_j)*factor*factor;
@@ -1393,7 +1397,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
     		                                 lumped_massMatrix_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
 
     // check equilibrium
-    if (this->IsDynamic())
+    if (mStructure->GetNumTimeDerivatives()>1)
     {
     	if (mUseLumpedMass)
     	{
@@ -1423,7 +1427,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
     NuTo::FullVector<double,Eigen::Dynamic> lastConverged_disp_j,lastConverged_disp_k, lastConverged_vel_j, lastConverged_vel_k, lastConverged_acc_j, lastConverged_acc_k;
 //  mStructure->NodeExtractDofValues(0,lastConverged_disp_j, lastConverged_disp_k);
 
-    if (this->IsDynamic())
+    if (mStructure->GetNumTimeDerivatives()>1)
     {
         mStructure->NodeExtractDofValues(1,lastConverged_vel_j,lastConverged_vel_k);
         mStructure->NodeExtractDofValues(2,lastConverged_acc_j,lastConverged_acc_k);
@@ -1454,7 +1458,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
     prevResidual_k = prevIntForce_k;
     std::cout << "     RES.: prevIntForce_j = " << prevIntForce_j.Norm() << std::endl;
 
-    if (this->IsDynamic())
+    if (mStructure->GetNumTimeDerivatives()>1)
     {
         if (mMuDampingMass>0)
         {
@@ -1500,7 +1504,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
         residual_mod=prevResidual_j;
     }
 
-    if (this->IsDynamic()) {
+    if (mStructure->GetNumTimeDerivatives()>1) {
     	std::cout << "=== vel_j = " << lastConverged_vel_j[0] << std::endl;
     }
 
@@ -1559,7 +1563,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
 			// calculate residual forces
 
             // calculate the velocity and acceleration of the rhs
-            if (this->IsDynamic())
+            if (mStructure->GetNumTimeDerivatives()>1)
             {
                 if (mTimeDependentConstraint!=-1)
                 {
@@ -1624,7 +1628,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
         	lastConverged_disp_j = disp_j;
 
         	// update nodal kinematic data
-            if (this->IsDynamic())
+            if (mStructure->GetNumTimeDerivatives()>1)
             {
                 mStructure->NodeMergeDofValues(1,vel_j,vel_k);
                 mStructure->NodeMergeDofValues(2,acc_j,acc_k);

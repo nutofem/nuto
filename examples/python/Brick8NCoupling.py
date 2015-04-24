@@ -311,11 +311,12 @@ myStructure.ConstraintLinearEquationAddTerm(id, 21, "z_displacement", 0.25)
 myStructure.ConstraintLinearEquationAddTerm(id, 27, "z_displacement", 0.25)
 
 # forces
+myStructure.SetNumLoadCases(1)
 direction = nuto.DoubleFullMatrix(3,1,(1,0,0))
-myStructure.LoadCreateNodeForce(1,28, direction, 1)
-myStructure.LoadCreateNodeForce(1,29, direction, 1)
-myStructure.LoadCreateNodeForce(1,30, direction, 1)
-myStructure.LoadCreateNodeForce(1,31, direction, 1)
+myStructure.LoadCreateNodeForce(0,28, direction, 1)
+myStructure.LoadCreateNodeForce(0,29, direction, 1)
+myStructure.LoadCreateNodeForce(0,30, direction, 1)
+myStructure.LoadCreateNodeForce(0,31, direction, 1)
 
 # start analysis
 myStructure.NodeBuildGlobalDofs()
@@ -333,7 +334,7 @@ stiffnessMatrix.RemoveZeroEntries(0,1e-14)
 # build global external load vector
 print "build external force vector"
 extForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalExternalLoadVector(1,extForceVector)
+myStructure.BuildGlobalExternalLoadVector(0,extForceVector)
 
 # calculate right hand side
 print "build right-hand-side vector"

@@ -154,9 +154,9 @@ try {
         {
             nodeCoordinates(0) = node * lengthElement / 2.; // three nodes per element
             if (node % 2 == 0)
-                myStructure.NodeCreate(node, "displacements nonlocalEqStrain", nodeCoordinates, 0);
+                myStructure.NodeCreate(node, "displacements nonlocalEqStrain", nodeCoordinates);
             else
-                myStructure.NodeCreate(node, "displacements", nodeCoordinates, 0);
+                myStructure.NodeCreate(node, "displacements", nodeCoordinates);
         }
 
         int nodeLeft = 0;
@@ -264,7 +264,7 @@ try {
         for(int node = 0; node < numNodes; node++)
         {
             nodeCoordinates(0) = node * lengthElement;
-            myStructure.NodeCreate(node, "displacements nonlocalEqStrain", nodeCoordinates, 0);
+            myStructure.NodeCreate(node, "displacements nonlocalEqStrain", nodeCoordinates);
         }
 
         int nodeLeft = 0;

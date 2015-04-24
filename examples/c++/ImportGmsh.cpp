@@ -25,11 +25,12 @@ try
 
     //create structure
     NuTo::Structure myStructure(2);
+    myStructure.SetNumTimeDerivatives(0);
 #ifdef SHOW_TIME
 	myStructure.SetShowTime(true);
 #endif //SHOW_TIME
 	NuTo::FullVector<int,Eigen::Dynamic> createdGroupIds;
-    myStructure.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ImportGmsh.msh",0,"displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
+    myStructure.ImportFromGmsh("/home/unger3/develop/nuto/examples/c++/ImportGmsh.msh","displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal",createdGroupIds);
     myStructure.Info();
 
     //create constitutive law nonlocal damage

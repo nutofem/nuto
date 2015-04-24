@@ -1929,7 +1929,13 @@ public:
     //************ Basic routines     ***************
     //**  defined in structures/StructureBase.cpp **
     //*************************************************
-    //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
+    //! @brief ... number of time derivatives (0 : static, 1: velocities, 2: accelerations)
+	void SetNumTimeDerivatives(int rNumTimeDerivatives);
+
+	//! @brief ... return number of time derivatives (0 : static, 1: velocities, 2: accelerations)
+	int GetNumTimeDerivatives()const;
+
+	//! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     virtual void Info()const;
 
     //! @brief set the beginning of the time increment to the structure
@@ -2049,7 +2055,10 @@ public:
 
 
 protected:
-    //! @brief ... storing the beginning of the time increment
+    //! @brief ... number of time derivatives (0 : static, 1: velocities, 2: accelerations)
+	int mNumTimeDerivatives;
+
+	//! @brief ... storing the beginning of the time increment
 	double mPrevTime;
 
     //! @brief ... storing the end of the time increment (current time)

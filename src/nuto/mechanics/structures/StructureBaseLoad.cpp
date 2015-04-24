@@ -39,6 +39,8 @@ int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, int rNodeIdent, cons
 
 int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
 {
+    if (rLoadCase>=mNumLoadCases)
+    	throw MechanicsException("[NuTo::StructureBase::LoadCreateNodeForce] Load case number larger than total number of load cases. Use myStructure.SetNumLoadCases(num) to set the maximum number");
     //find unused integer id
     int id(0);
     boost::ptr_map<int,LoadBase>::iterator it = this->mLoadMap.find(id);
@@ -91,6 +93,8 @@ int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent
 
 int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, const Group<NodeBase>* rNodeGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
 {
+    if (rLoadCase>=mNumLoadCases)
+    	throw MechanicsException("[NuTo::StructureBase::LoadCreateNodeGroupForce] Load case number larger than total number of load cases. Use myStructure.SetNumLoadCases(num) to set the maximum number");
     //find unused integer id
     int id(0);
     boost::ptr_map<int,LoadBase>::iterator it = this->mLoadMap.find(id);
@@ -118,6 +122,7 @@ int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, const Group<Nod
     }
     // insert load in load map
     this->mLoadMap.insert(id,loadPtr);
+
     return id;
 }
 
@@ -143,6 +148,8 @@ int NuTo::StructureBase::LoadSurfaceConstDirectionCreate3D(int rLoadCase, int rE
 
 int NuTo::StructureBase::LoadSurfaceConstDirectionCreate2D(int rLoadCase, int rElementGroupId, int rNodeGroupId, const NuTo::FullVector<double,Eigen::Dynamic>& rLoadVector)
 {
+    if (rLoadCase>=mNumLoadCases)
+    	throw MechanicsException("[NuTo::StructureBase::LoadSurfaceConstDirectionCreate2D] Load case number larger than total number of load cases. Use myStructure.SetNumLoadCases(num) to set the maximum number");
     //find unused integer id
     int id(0);
     boost::ptr_map<int,LoadBase>::iterator it = this->mLoadMap.find(id);
@@ -163,6 +170,8 @@ int NuTo::StructureBase::LoadSurfaceConstDirectionCreate2D(int rLoadCase, int rE
 
 int NuTo::StructureBase::LoadSurfacePressureCreate3D(int rLoadCase, int rElementGroupId, int rNodeGroupId, double rPressure)
 {
+    if (rLoadCase>=mNumLoadCases)
+    	throw MechanicsException("[NuTo::StructureBase::LoadSurfacePressureCreate3D] Load case number larger than total number of load cases. Use myStructure.SetNumLoadCases(num) to set the maximum number");
     //find unused integer id
     int id(0);
     boost::ptr_map<int,LoadBase>::iterator it = this->mLoadMap.find(id);
@@ -183,6 +192,8 @@ int NuTo::StructureBase::LoadSurfacePressureCreate3D(int rLoadCase, int rElement
 
 int NuTo::StructureBase::LoadSurfacePressureCreate2D(int rLoadCase, int rElementGroupId, int rNodeGroupId, double rPressure)
 {
+    if (rLoadCase>=mNumLoadCases)
+    	throw MechanicsException("[NuTo::StructureBase::LoadSurfacePressureCreate2D] Load case number larger than total number of load cases. Use myStructure.SetNumLoadCases(num) to set the maximum number");
     //find unused integer id
     int id(0);
     boost::ptr_map<int,LoadBase>::iterator it = this->mLoadMap.find(id);

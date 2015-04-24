@@ -53,6 +53,7 @@ int main()
 	NuTo::FullVector<double,Eigen::Dynamic> direction(1);
 	direction(0) = 1;
 	myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
+	myStructure.SetNumLoadCases(1);
 	if(EnableDisplacementControl)
 	{
 		std::cout << "Displacement control" << std::endl;
@@ -61,7 +62,7 @@ int main()
 	else
 	{
 		std::cout << "Load control" << std::endl;
-		myStructure.LoadCreateNodeForce(1,NumElements, direction, Force);
+		myStructure.LoadCreateNodeForce(0,NumElements, direction, Force);
 	}
 
 	// start analysis
@@ -75,7 +76,7 @@ int main()
 
 	// build global external load vector
 	NuTo::FullVector<double,Eigen::Dynamic> extForceVector;
-	myStructure.BuildGlobalExternalLoadVector(1,extForceVector);
+	myStructure.BuildGlobalExternalLoadVector(0,extForceVector);
 
 	// calculate right hand side
 	NuTo::FullVector<double,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;

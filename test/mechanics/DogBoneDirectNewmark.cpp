@@ -84,6 +84,7 @@ try
 	int dimension(2);
 
     NuTo::Structure myStructure(dimension);
+    myStructure.SetNumTimeDerivatives(2);
 
     //delete result directory
     if (boost::filesystem::exists(resultDir))    // does p actually exist?
@@ -132,7 +133,7 @@ try
 
     //import mesh
     NuTo::FullVector<int,Eigen::Dynamic> createdGroupIds;
-    myStructure.ImportFromGmsh(mshFile.string(),2,"displacements", "CONSTITUTIVELAWIPNONLOCAL", "STATICDATANONLOCAL", createdGroupIds);
+    myStructure.ImportFromGmsh(mshFile.string(),"displacements", "CONSTITUTIVELAWIPNONLOCAL", "STATICDATANONLOCAL", createdGroupIds);
 
 	//section
 	double thickness(1);
@@ -274,7 +275,6 @@ try
 	NuTo::NewmarkDirect myIntegrationScheme(&myStructure);
 
 	myIntegrationScheme.SetDampingCoefficientMass(0.0);
-	myIntegrationScheme.SetDynamic(true);
 
 	double simulationTime(0.002);
 	double finalDisplacement(0.00004*D);
@@ -347,8 +347,8 @@ try
     result_top.Info(15,12,true);
 
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_topRef(3,2);
-    result_topRef(1,1) = 1.520927892127e+04;
-    result_topRef(2,1) = 3.196442155067e+04;
+    result_topRef(1,1) = 1.521153610923e+04;
+    result_topRef(2,1) = 3.200333480953e+04;
 
     if ((result_topRef-result_top).cwiseAbs().maxCoeff()>1e-4)
     {
@@ -372,10 +372,10 @@ try
     result_bottom.Info(15,12,true);
 
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_bottomRef(3,2);
-    result_bottomRef(1,0) = -2.854111543832e+00;
-    result_bottomRef(1,1) = -1.519689689604e+04;
-    result_bottomRef(2,0) =  5.359644085246e+00;
-    result_bottomRef(2,1) = -3.198736663897e+04;
+    result_bottomRef(1,0) = -2.854085980428e+00;
+    result_bottomRef(1,1) = -1.519676408942e+04;
+    result_bottomRef(2,0) = -6.004761196833e+00;
+    result_bottomRef(2,1) = -3.197225601362e+04;
 
     if ((result_bottomRef-result_bottom).cwiseAbs().maxCoeff()>1e-4)
     {

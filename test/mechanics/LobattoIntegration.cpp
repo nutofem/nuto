@@ -95,7 +95,8 @@ int buildStructure1D(const std::string& rElementTypeIdent,
     direction(0) = 1;
     // first node is fixed
     myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
-    myStructure.LoadCreateNodeForce(1, numNodes-1, direction, Force);
+    myStructure.SetNumLoadCases(1);
+    myStructure.LoadCreateNodeForce(0, numNodes-1, direction, Force);
 
     /** start analysis **/
 #ifdef _OPENMP
@@ -118,7 +119,7 @@ int buildStructure1D(const std::string& rElementTypeIdent,
 
     // build global external load vector
     NuTo::FullVector<double,Eigen::Dynamic> extForceVector;
-    myStructure.BuildGlobalExternalLoadVector(1,extForceVector);
+    myStructure.BuildGlobalExternalLoadVector(0,extForceVector);
 
     // calculate right hand side
     NuTo::FullVector<double,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;
@@ -336,8 +337,9 @@ int buildStructure2D(const std::string& rElementTypeIdent,
     }
 
     //NuTo::FullVector<double, 2> ForceVecRight({Force,0.});
-    //myStructure.LoadSurfaceConstDirectionCreate2D(1, groupNumberElementsRight, groupNumberNodesRight, ForceVecRight);
-    myStructure.LoadSurfacePressureCreate2D(1, groupNumberElementsRight, groupNumberNodesRight, -Stress);
+    myStructure.SetNumLoadCases(1);
+    //myStructure.LoadSurfaceConstDirectionCreate2D(0, groupNumberElementsRight, groupNumberNodesRight, ForceVecRight);
+    myStructure.LoadSurfacePressureCreate2D(0, groupNumberElementsRight, groupNumberNodesRight, -Stress);
 
     myStructure.Info();
 
@@ -367,7 +369,7 @@ int buildStructure2D(const std::string& rElementTypeIdent,
 
     // build global external load vector
     NuTo::FullVector<double,Eigen::Dynamic> extForceVector;
-    myStructure.BuildGlobalExternalLoadVector(1,extForceVector);
+    myStructure.BuildGlobalExternalLoadVector(0,extForceVector);
 
     // calculate right hand side
     NuTo::FullVector<double,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;

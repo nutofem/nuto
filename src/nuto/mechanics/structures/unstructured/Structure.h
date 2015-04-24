@@ -205,30 +205,10 @@ public:
     int NodeCreate(std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates);
 
     //! @brief creates a node
-    //! @param rDOFs space separated string containing the attributes like
-    //! DISPLACEMENTS, ROTATIONS; TEMPERATURES
-    //! the number of DOFs will be chosen according to the structure
-    //! e.g. a 2D structure might have 2 displacements and 1 rotation
-    //! @param rCoordinates coordinates of the node
-    //! @param rNumTimeDerivatives ...  number of time derivatives for the dofs to be stored
-    //! @return node number
-    int NodeCreate(std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates, int rNumTimeDerivatives);
-
-    //! @brief creates a node
     //! @param rNodeNumber ... node number
     //! @param rDOFs ... space separated string containing the node dofs (e.g. displacements, rotations, temperatures)
     //! @param rCoordinates ...  node coordinates
-    inline void NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates)
-    {
-    	NodeCreate(rNodeNumber,rDOFs,rCoordinates,0);
-    }
-
-    //! @brief creates a node
-    //! @param rNodeNumber ... node number
-    //! @param rDOFs ... space separated string containing the node dofs (e.g. displacements, rotations, temperatures)
-    //! @param rCoordinates ...  node coordinates
-    //! @param rNumTimeDerivatives ...  number of time derivatives for the dofs to be stored
-    void NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates, int rNumTimeDerivatives);
+    void NodeCreate(int rNodeNumber, std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates);
 
     //! @brief creates multiple nodes
     //! @param rDOFs ... space separated string containing the nodal dofs (e.g. displacements, rotations, temperatures)
@@ -467,23 +447,19 @@ public:
 
     //! @brief import from gmsh
     //! @param rFileName .. file name
-    //! @param rNumTimeDerivatives .. number of time derivatives (0,1, or 2)
     //! @param rDOFs .. degrees of freedom for the nodes
     //! @param rElementData .. element data for the elements to be created
     //! @param rIPData .. ip data for the integration points to be created
     void ImportFromGmsh (const std::string& rFileName,
-    		int rNumTimeDerivatives,
     		const std::string& rDOFs, const std::string& rElementData, const std::string& rIPData);
 
     //! @brief import from gmsh
     //! @param rFileName .. file name
-    //! @param rNumTimeDerivatives .. number of time derivatives (0,1, or 2)
     //! @param rDOFs .. degrees of freedom for the nodes
     //! @param rElementData .. element data for the elements to be created
     //! @param rIPData .. ip data for the integration points to be created
     //! @param vector with the created groupes
     void ImportFromGmsh (const std::string& rFileName,
-    		int rNumTimeDerivatives,
     		const std::string& rDOFs, const std::string& rElementData, const std::string& rIPData,
     		NuTo::FullVector<int,Eigen::Dynamic>& rElementGroupIds);
 
@@ -679,13 +655,11 @@ protected:
 #ifndef SWIG
     //! @brief import from gmsh, do the actual work
     //! @param rFileName .. file name
-    //! @param rNumTimeDerivatives number of time derivatives (0,1 or 2)
     //! @param rDOFs .. degrees of freedom for the nodes
     //! @param rElementData .. element data for the elements to be created
     //! @param rIPData .. ip data for the integration points to be created
     //! @param vector with the created groupes
     void ImportFromGmshAux (const std::string& rFileName,
-    		int rNumTimeDerivatives,
     		const std::string& rDOFs, const std::string& rElementData, const std::string& rIPData,
     		bool rAddGroups, std::set<int>& rElementGroupIds);
 #endif //SWIG

@@ -107,8 +107,6 @@ try
     {
     	NuTo::NewmarkDirect myIntegrationScheme(&myStructure);
 
-    	myIntegrationScheme.SetDynamic(false);
-
         double simulationTime(1);
     	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> loadRHS(2,2);
         loadRHS(0,0) = 0.;

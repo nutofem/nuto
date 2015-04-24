@@ -126,6 +126,7 @@ int main()
 
 
         NuTo::Structure MTStructure1D(1);
+        MTStructure1D.SetNumTimeDerivatives(2);
 
         // disable output of calculation times
         MTStructure1D.SetShowTime(false);
@@ -182,7 +183,7 @@ int main()
         {
             NuTo::FullVector<double,Eigen::Dynamic> NodeCoordinates(1);
             NodeCoordinates(0)= i*(L/(NNodes-1));
-            MTStructure1D.NodeCreate(nodeNum,std::string("WATERPHASEFRACTION RELATIVEHUMIDITY"),NodeCoordinates,2);
+            MTStructure1D.NodeCreate(nodeNum,std::string("WATERPHASEFRACTION RELATIVEHUMIDITY"),NodeCoordinates);
             nodeNum++;
         }
 

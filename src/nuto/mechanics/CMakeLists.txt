@@ -238,6 +238,7 @@ structures/grid/StructureGridNode.cpp
 structures/grid/StructureGridElement.cpp
 )
 SET(NuToMechanicsTimeIntegration_SOURCES
+timeIntegration/CrankNicolson.cpp
 timeIntegration/NewmarkBase.cpp
 timeIntegration/NewmarkDirect.cpp
 timeIntegration/JumpDirect.cpp
