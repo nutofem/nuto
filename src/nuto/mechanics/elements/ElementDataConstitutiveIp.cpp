@@ -12,7 +12,7 @@
 #include "nuto/mechanics/elements/ElementDataConstitutiveIp.h"
 #include "nuto/mechanics/elements/IpDataBase.h"
 #include <assert.h>
-
+#include "nuto/mechanics/MechanicsException.h"
 
 NuTo::ElementDataConstitutiveIp::ElementDataConstitutiveIp(const ElementBase *rElement,
 		const NuTo::IntegrationTypeBase* rIntegrationType,	NuTo::IpData::eIpDataType rIpDataType) :

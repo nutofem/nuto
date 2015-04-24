@@ -1,5 +1,5 @@
 //$Id$
-//! @author Andrea Keßler, ISM
+//! @author Andrea Keï¿½ler, ISM
 //! @date March 2013
 //! @brief ... standard class for multigrid structure
 

@@ -31,6 +31,15 @@ public:
     //! @param rElement element
    virtual void InitializeUpdatedConstitutiveLaw(const ElementBase* rElement);
 
+   //! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
+   //! @param rElement element
+   //! @param rIp Ip
+   virtual void InitializeUpdatedConstitutiveLaw(const ElementBase* rElement,int rIp)
+   {
+	   throw MechanicsException("[NuTo::ElementDataConstitutiveBase::InitializeUpdatedConstitutiveLaw] only one constitutive law is assigned at one element.");
+
+   }
+
    //! @brief returns the enum of element data type
    //! @return enum of ElementDataType
    virtual const NuTo::ElementData::eElementDataType GetElementDataType()const;

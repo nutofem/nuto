@@ -68,6 +68,11 @@ public:
     //! @param rElement element
     virtual void InitializeUpdatedConstitutiveLaw(const ElementBase* rElement)=0;
 
+     //! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
+     //! @param rElement element
+     //! @param rIp Ip
+    virtual void InitializeUpdatedConstitutiveLaw(const ElementBase* rElement,int rIp)=0;
+
     //! @brief returns the static data of an integration point
     //! @param rIp integration point
     //! @return static data

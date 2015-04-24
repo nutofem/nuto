@@ -1,15 +1,16 @@
 // $Id$
-#ifndef ELEMENTDATACONSTITUTIVEBASE_H_
-#define ELEMENTDATACONSTITUTIVEBASE_H_
+#ifndef ELEMENTDATAVARIABLECONSTITUTIVEBASE_H_
+#define ELEMENTDATAVARIABLECONSTITUTIVEBASE_H_
 
 #include "nuto/mechanics/elements/ElementDataBase.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 namespace NuTo
 {
-//! @author Jörg F. Unger, ISM
-//! @date October 2009
-//! @brief ... class for elements with a single material per element and no static data
-class ElementDataConstitutiveBase : public virtual ElementDataBase
+//! @author Andrea Keszler
+//! @date October 2014
+//! @brief ... class for elements with a variable materials per element and no static data
+class ElementDataVariableConstitutiveBase : public virtual ElementDataBase
 {
 
 #ifdef ENABLE_SERIALIZATION
@@ -18,9 +19,9 @@ class ElementDataConstitutiveBase : public virtual ElementDataBase
 
 public:
     //! @brief constructor
-    ElementDataConstitutiveBase();
+    ElementDataVariableConstitutiveBase();
 
-    virtual ~ElementDataConstitutiveBase();
+    virtual ~ElementDataVariableConstitutiveBase();
 
     virtual void SetConstitutiveLaw(const ElementBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw);
 
@@ -50,8 +51,8 @@ public:
 #endif  // ENABLE_SERIALIZATION
 
 protected:
-    ConstitutiveBase* mConstitutiveLaw;
+	std::vector<ConstitutiveBase*>  mVarConstitutiveLaw;
 };
 }//namespace NuTo
 
-#endif /* ELEMENTDATACONSTITUTIVEBASE_H_ */
+#endif /* ELEMENTDATAVARIABLECONSTITUTIVEBASE_H_ */

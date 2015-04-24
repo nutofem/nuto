@@ -105,6 +105,7 @@ SET(NuToMechanicsElements_SOURCES
 elements/BoundaryGradientDamage1D.cpp
 elements/BoundaryMoistureTransport1D.cpp
 elements/Brick8N.cpp
+elements/Brick20N.cpp
 elements/ElementBase.cpp
 elements/ElementDataBase.cpp
 elements/ElementDataConstitutiveBase.cpp
@@ -112,6 +113,8 @@ elements/ElementDataConstitutiveIp.cpp
 elements/ElementDataConstitutiveIpNonlocal.cpp
 elements/ElementDataIpBase.cpp
 elements/ElementDataNonlocalBase.cpp
+elements/ElementDataVariableConstitutiveBase.cpp
+elements/ElementDataVariableConstitutiveIp.cpp
 elements/ElementOutputBase.cpp
 elements/ElementShapeFunctions.cpp
 elements/IpDataBase.cpp
@@ -154,6 +157,7 @@ integrationtypes/IntegrationType1D2NConstVariableIp.cpp
 integrationtypes/IntegrationType1D2NGauss1Ip.cpp
 integrationtypes/IntegrationType1D2NGauss2Ip.cpp
 integrationtypes/IntegrationType1D2NGauss3Ip.cpp
+integrationtypes/IntegrationType1D2NGauss4Ip.cpp
 integrationtypes/IntegrationType1D2NLobatto3Ip.cpp
 integrationtypes/IntegrationType1D2NLobatto4Ip.cpp
 integrationtypes/IntegrationType1D2NLobatto5Ip.cpp
@@ -176,6 +180,7 @@ integrationtypes/IntegrationType3D4NGauss1Ip.cpp
 integrationtypes/IntegrationType3D4NGauss4Ip.cpp
 integrationtypes/IntegrationType3D8NGauss1Ip.cpp
 integrationtypes/IntegrationType3D8NGauss2x2x2Ip.cpp
+integrationtypes/IntegrationType3D20NGauss3x3x3Ip.cpp
 integrationtypes/IntegrationTypeBase.cpp
 )
 

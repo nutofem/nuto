@@ -403,8 +403,10 @@ bool NuTo::StructureBase::CheckStiffness()
     NuTo::FullVector<double,Eigen::Dynamic> displacementsActiveDOFsCheck;
     NuTo::FullVector<double,Eigen::Dynamic> displacementsDependentDOFsCheck;
 
+#ifdef SHOW_TIME
     bool oldShowtime = mShowTime;
     mShowTime = false;
+#endif
 
     //recalculate stiffness
     this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
@@ -451,8 +453,10 @@ bool NuTo::StructureBase::CheckStiffness()
     this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
     this->ElementTotalUpdateTmpStaticData();
 
+#ifdef SHOW_TIME
     mShowTime=oldShowtime;
 
+#endif
     if ((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full).cwiseAbs().maxCoeff()>1e-1)
     {
         if (stiffnessMatrixCSRVector2Full.GetNumRows()<100)
@@ -948,6 +952,47 @@ void NuTo::StructureBase::ElementSetConstitutiveLaw(int rElementId, int rConstit
 #endif
 }
 
+//! @brief sets the constitutive law of a single element
+//! @param rElementIdent identifier for the element
+//! @param rIp  id of integration point
+//! @param rConstitutiveLawIdent identifier for the material
+void NuTo::StructureBase::ElementSetConstitutiveLaw(int rElementId,int rIp, int rConstitutiveLawIdent)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
+
+    boost::ptr_map<int,ConstitutiveBase>::iterator itConstitutive = mConstitutiveLawMap.find(rConstitutiveLawIdent);
+    if (itConstitutive==mConstitutiveLawMap.end())
+        throw MechanicsException("[NuTo::StructureBase::ElementSetConstitutiveLaw] Constitutive law with the given identifier does not exist.");
+
+    try
+    {
+    	ElementSetConstitutiveLaw(elementPtr,rIp,itConstitutive->second);
+    }
+    catch(NuTo::MechanicsException &e)
+    {
+        std::stringstream ss;
+        ss << rElementId;
+        e.AddMessage("[NuTo::StructureBase::ElementSetConstitutiveLaw] Error setting constitutive law  for element "
+        	+ ss.str() + ".");
+        throw e;
+    }
+    catch(...)
+    {
+        std::stringstream ss;
+        ss << rElementId;
+    	throw NuTo::MechanicsException
+    	   ("[NuTo::StructureBase::ElementSetConstitutiveLaw] Error setting constitutive law  for element " + ss.str() + ".");
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementSetConstitutiveLaw] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
 //! @brief sets the constitutive law of a group of elements
 //! @param rGroupIdent identifier for the group of elements
 //! @param rConstitutiveLawIdent identifier for the material
@@ -1054,6 +1099,17 @@ void NuTo::StructureBase::ElementSetConstitutiveLaw(ElementBase* rElement, Const
     //std::cout<< "[NuTo::StructureBase::ElementSetConstitutiveLaw]" << "\n";
 	rElement->SetConstitutiveLaw(rConstitutive);
 }
+
+//! @brief sets the constitutive law of a single ip at an element
+//! @param rElement element pointer
+//! @param rIp number of integration point
+//! @param rConstitutive material pointer
+void NuTo::StructureBase::ElementSetConstitutiveLaw(ElementBase* rElement,int rIp, ConstitutiveBase* rConstitutive)
+{
+    //std::cout<< "[NuTo::StructureBase::ElementSetConstitutiveLaw]" << "\n";
+	rElement->SetConstitutiveLaw(rIp,rConstitutive);
+}
+
 
 //! @brief sets the section of a single element
 //! @param rElementIdent identifier for the element
@@ -1364,6 +1420,7 @@ void NuTo::StructureBase::ElementTotalSetIntegrationType(const std::string& rInt
 //! @brief modifies the integration type of a single element
 //! @param rElement element pointer
 //! @param rIntegrationType integration type
+//! @param rIpDataType type of data stored at ip
 void NuTo::StructureBase::ElementSetIntegrationType(ElementBase* rElement, const IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType)
 {
 	rElement->SetIntegrationType(rIntegrationType, rIpDataType);
@@ -2339,7 +2396,7 @@ double NuTo::StructureBase::ElementTotalGetInternalEnergy()
     {
         try
         {
-        	throw MechanicsException("[NuTo::StructureBase::ElementTotalGetInternalEnergy] not yet implemented on ip level.");
+        	throw MechanicsException("[NuTo::StructureBase::ElementTotalGetInternalEnerg] not yet implemented on ip level.");
 //            elementVector[elementCount]->GetIpData(NuTo::IpData::INTERNAL_ENERGY,ipEnergy);
             for (int theIP=0; theIP<ipEnergy.GetNumColumns(); theIP++)
             {

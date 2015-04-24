@@ -1429,7 +1429,9 @@ void NuTo::OctreeGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,int 
 		NuTo::Structure myHelpStruc(3);
 
 		myHelpStruc.SetVerboseLevel(0);
+#ifdef SHOW_TIME
 		myHelpStruc.SetShowTime(false);
+#endif
 		// create material law
 		int myMat=myHelpStruc.ConstitutiveLawCreate("LINEARELASTICENGINEERINGSTRESS");
 		myHelpStruc.ConstitutiveLawSetPoissonsRatio(myMat, rPoissonsRatio);
@@ -2241,7 +2243,9 @@ void NuTo::OctreeGrid::GetEngineeringStrain(const std::vector<double> &rDisplace
 	NuTo::Structure myHelpStruc(3);
 
 	myHelpStruc.SetVerboseLevel(0);
+#ifdef SHOW_TIME
 	myHelpStruc.SetShowTime(false);
+#endif
 	// create material law
 
 	// create nodes

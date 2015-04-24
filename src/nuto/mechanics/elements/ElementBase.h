@@ -156,6 +156,12 @@ public:
     //! @param rConstitutiveLaw Pointer to constitutive law entry
     virtual void SetConstitutiveLaw(ConstitutiveBase* rConstitutiveLaw);
 
+    //! @brief sets the constitutive law for an element
+    //! @param rIp id of integration point
+    //! @param rConstitutiveLaw Pointer to constitutive law entry
+    virtual void SetConstitutiveLaw(int rIp, ConstitutiveBase* rConstitutiveLaw);
+
+
     //! @brief returns a pointer to the constitutive law for an integration point
     //! @param integration point number (counting from zero)
     //! @return pointer to constitutive law

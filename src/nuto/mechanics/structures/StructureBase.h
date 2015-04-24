@@ -674,6 +674,12 @@ public:
     //! @param rConstitutiveLawIdent identifier for the material
     void ElementSetConstitutiveLaw(int rElementId, int rConstitutiveLawIdent);
 
+    //! @brief sets the constitutive law of a single element
+    //! @param rElementIdent identifier for the element
+    //! @param rIp  id of integration point
+    //! @param rConstitutiveLawIdent identifier for the material
+    void ElementSetConstitutiveLaw(int rElementId,int rIp, int rConstitutiveLawIdent);
+
     //! @brief modifies the constitutive law of a group of elements
     //! @param rGroupIdent identifier for the group of elements
     //! @param rConstitutiveLawIdent identifier for the material
@@ -688,6 +694,12 @@ public:
     //! @param rElement element pointer
     //! @param rConstitutive material pointer
     void ElementSetConstitutiveLaw(ElementBase* rElement, ConstitutiveBase* rConstitutive);
+
+    //! @brief sets the constitutive law of a single ip at an element
+    //! @param rElement element pointer
+    //! @param rIp number of integration point
+    //! @param rConstitutive material pointer
+    void ElementSetConstitutiveLaw(ElementBase* rElement,int rIp, ConstitutiveBase* rConstitutive);
 #endif //SWIG
 
      //! @brief modifies the section of a single element

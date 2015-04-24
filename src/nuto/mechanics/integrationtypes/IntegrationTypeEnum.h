@@ -17,6 +17,7 @@ enum eIntegrationType
     IntegrationType1D2NGauss2Ip,
     IntegrationType1D2NBoundaryGauss3Ip,
     IntegrationType1D2NGauss3Ip,
+    IntegrationType1D2NGauss4Ip,
     IntegrationType1D2NLobatto3Ip,
     IntegrationType1D2NLobatto4Ip,
     IntegrationType1D2NLobatto5Ip,

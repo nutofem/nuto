@@ -17,6 +17,8 @@ bool NuTo::IntegrationType3D::CheckElementCompatibility(NuTo::Element::eElementT
         return true;
     case NuTo::Element::BRICK8N:
         return true;
+    case NuTo::Element::BRICK20N:
+        return true;
     default:
         return false;
     }

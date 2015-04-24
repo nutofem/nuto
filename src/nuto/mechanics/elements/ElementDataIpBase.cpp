@@ -96,7 +96,7 @@ NuTo::ElementDataIpBase::ElementDataIpBase(const ElementBase *rElement, int rNum
 //! @brief deconstructor
 NuTo::ElementDataIpBase::~ElementDataIpBase()
 {
-    //std::cout << "NuTo::ElementDataBase::~ElementDataBase()" << std::endl;
+//    std::cout << "NuTo::ElementDataIpBase::~ElementDataIpBase()" << std::endl;
 }
 
 //! @brief sets the fine scale model (deserialization from a binary file)

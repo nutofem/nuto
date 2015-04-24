@@ -11,6 +11,7 @@ enum eElementType
     BOUNDARYGRADIENTDAMAGE1D=0, //!< boundary element for gradient models
     BOUNDARYMOISTURETRANSPORT1D,//!< boundary element for moisture transport
     BRICK8N,                    //!< three-dimensional brick element with 8 nodes
+    BRICK20N,                   //!< three-dimensional brick element with 20 nodes - serendipitiy
     PLANE2D10N,                 //!< two-dimensional plane element with 10 nodes
     PLANE2D15N,                 //!< two-dimensional plane element with 10 nodes
     PLANE2D3N,                  //!< two-dimensional plane element with 3 nodes

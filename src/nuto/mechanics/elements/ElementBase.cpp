@@ -17,6 +17,7 @@
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIp.h"
+#include "nuto/mechanics/elements/ElementDataVariableConstitutiveIp.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIpCrack.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIpNonlocal.h"
 #include "nuto/mechanics/elements/ElementOutputIpData.h"
@@ -53,6 +54,9 @@ NuTo::ElementBase::ElementBase(const StructureBase* rStructure, ElementData::eEl
 	case NuTo::ElementData::CONSTITUTIVELAWIPCRACK:
 		ptrElementData = new NuTo::ElementDataConstitutiveIpCrack(this,const_cast<StructureBase*>(rStructure)->GetPtrIntegrationType(rIntegrationType),rIpDataType);
     break;
+	case NuTo::ElementData::VARIABLECONSTITUTIVELAWIP:
+		ptrElementData = new NuTo::ElementDataVariableConstitutiveIp(this,const_cast<StructureBase*>(rStructure)->GetPtrIntegrationType(rIntegrationType),rIpDataType);
+    break;
 
     default:
 		throw MechanicsException("[NuTo::ElementWithDataBase::ElementWithDataBase] unsupported element data type.");
@@ -79,6 +83,9 @@ NuTo::ElementBase::ElementBase(const StructureBase* rStructure, ElementData::eEl
     break;
 	case NuTo::ElementData::CONSTITUTIVELAWIPCRACK:
 		ptrElementData = new NuTo::ElementDataConstitutiveIpCrack(this,rNumIp,rIpDataType);
+    break;
+	case NuTo::ElementData::VARIABLECONSTITUTIVELAWIP:
+		ptrElementData = new NuTo::ElementDataVariableConstitutiveIp(this,rNumIp,rIpDataType);
     break;
 
     default:
@@ -155,6 +162,27 @@ void NuTo::ElementBase::SetConstitutiveLaw(ConstitutiveBase* rConstitutiveLaw)
 		//printf("check element constitutive was positive.\n");
 
 		mElementData->SetConstitutiveLaw(this, rConstitutiveLaw);
+	}
+	else
+	{
+		std::stringstream message;
+		message << "[NuTo::ElementWithDataBase::SetConstitutiveLaw] Constitutive Law " << mStructure->ConstitutiveLawGetId(rConstitutiveLaw)
+				<<" does not match element type of element "<< mStructure->ElementGetId(this) <<"." <<std::endl;
+	    throw MechanicsException(message.str());
+	}
+}
+
+//! @brief sets the constitutive law for an element
+//! @param rIp id of integration point
+//! @param rConstitutiveLaw Pointer to constitutive law entry
+void NuTo::ElementBase::SetConstitutiveLaw(int rIp, ConstitutiveBase* rConstitutiveLaw)
+{
+    //check compatibility between element type and constitutive law
+	if (rConstitutiveLaw->CheckElementCompatibility(this->GetEnumType()))
+	{
+		//printf("check element constitutive was positive.\n");
+
+		mElementData->SetConstitutiveLaw(this,rIp, rConstitutiveLaw);
 	}
 	else
 	{

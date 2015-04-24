@@ -458,6 +458,10 @@ void NuTo::Structure::ElementCreate (int rElementNumber, const std::string& rEle
    	{
 		elementDataType = NuTo::ElementData::CONSTITUTIVELAWIPNONLOCAL;
    	}
+    else if (upperCaseElementDataType=="VARIABLECONSTITUTIVELAWIP")
+   	{
+		elementDataType = NuTo::ElementData::VARIABLECONSTITUTIVELAWIP;
+   	}
     else
 	{
 		throw MechanicsException("[NuTo::Structure::ElementCreate] Element data type "+upperCaseElementDataType +" does not exist.");

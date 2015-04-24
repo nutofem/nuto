@@ -77,7 +77,7 @@ int NuTo::MultiGridStructure::Initialize()
 	while(rGridDimension[0]%2==0 && rGridDimension[1]%2==0 && rGridDimension[2]%2==0
 			&&rGridDimension[0]>4 && rGridDimension[1]>4 && rGridDimension[2]>4 // delete this part later
 	      &&mNumGrids<mMaxGrids
-	     )
+			)
 	{
 		NuTo::StructureGrid* rCoarseGrid=new NuTo::StructureGrid(dim);
 		NuTo::StructureGrid* rGrid=mpStructureHandler;

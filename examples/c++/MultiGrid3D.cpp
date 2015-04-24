@@ -22,7 +22,7 @@
 #include "nuto/optimize/ConjugateGradientGrid.h"
 #endif //ENABLE_OPTIMIZE
 
-// arguments for MGCG: nbr of cycles, nbr of pre , nbr of post smooting steps
+// arguments for MGCG: nbr of cycles, nbr of pre , nbr of post smooting steps, nbr of grids,
 int main(int argc, char *argv[])
 {
 	bool matrixFreeMethod=0; //0 -EBE, 1- NBN, false=0
@@ -172,6 +172,7 @@ int main(int argc, char *argv[])
 //		std::cout<<myGrid.GetDisplacementConstaints()[i]<<" ";
 //	std::cout<<"\n";
 
+//	myGrid.ExportVTKStructuredDataFile("multigridGeo.vtk");
 
 	size_t numDofs=myGrid.GetNumNodes()*3;
 #ifdef SHOW_TIME
@@ -201,6 +202,9 @@ end=clock();
 	myMultiGrid.SetStructure(&myGrid);
 	myMultiGrid.SetUseMultiGridAsPreconditoner(false);
 	myMultiGrid.SetMaxCycle(numDofs/10);
+	//added 01/2015
+//	myMultiGrid.SetMaxGrids(3);
+	myMultiGrid.SetMaxGrids(atoi(argv[4]));
 	myMultiGrid.SetNumPreSmoothingSteps(1);
 	myMultiGrid.SetNumPostSmoothingSteps(1);
 
@@ -271,30 +275,24 @@ end=clock();
 		std::cout<<"[MultiGrid3D] Solution method is multigrid preconditioned conjugate gradient method. \n";
 		NuTo::ConjugateGradientGrid myOptimizer(numNodes*3);
 		myOptimizer.SetVerboseLevel(1);
+		myOptimizer.SetMaxIterations((int) numNodes/500);
 		myGrid.SetMisesWielandt(false);
 		std::vector<double> rhs(rDisplVector.size());
 		myGrid.SetParameters(rDisplVector);
 		myGrid.SetRightHandSide(rhs);
 		myMultiGrid.SetUseMultiGridAsPreconditoner(true);
-		if(argc==4)
+		//2015-01: levels added
+		if(argc==5)
 		{
-			std::cout<<" test "<<argv[1]<<" "<<argv[3]<<"\n";
 			myMultiGrid.SetMaxCycle(atoi(argv[1]));
 			myMultiGrid.SetNumPreSmoothingSteps(atoi(argv[2]));
 			myMultiGrid.SetNumPostSmoothingSteps(atoi(argv[3]));
 		}
-		else if(argc==3)
-		{
-			myMultiGrid.SetMaxCycle(atoi(argv[1]));
-			myMultiGrid.SetNumPreSmoothingSteps(atoi(argv[2]));
-			myMultiGrid.SetNumPostSmoothingSteps(atoi(argv[2]));
-
-		}
 		else
 		{
-			myMultiGrid.SetMaxCycle(2);
-			myMultiGrid.SetNumPreSmoothingSteps(5);
-			myMultiGrid.SetNumPostSmoothingSteps(5);
+			myMultiGrid.SetMaxCycle(1);
+			myMultiGrid.SetNumPreSmoothingSteps(1);
+			myMultiGrid.SetNumPostSmoothingSteps(1);
 		}
 		myOptimizer.SetCallback( (&myMultiGrid));
 		myMultiGrid.Info();

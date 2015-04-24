@@ -8,6 +8,8 @@
 #include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
 
+#include "nuto/mechanics/MechanicsException.h"
+
 namespace NuTo
 {
 class IntegrationTypeBase;

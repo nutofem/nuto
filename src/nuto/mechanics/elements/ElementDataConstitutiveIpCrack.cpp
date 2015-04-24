@@ -3,6 +3,7 @@
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIpCrack.h"
 #include "nuto/mechanics/elements/IpDataBase.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 NuTo::ElementDataConstitutiveIpCrack::ElementDataConstitutiveIpCrack(const ElementBase *rElement,
 		const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType) :
@@ -32,6 +33,14 @@ void NuTo::ElementDataConstitutiveIpCrack::InitializeUpdatedConstitutiveLaw(cons
 	{
 		mIpData[theIp].Initialize(rElement,mConstitutiveLaw);
 	}
+}
+
+//! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
+//! @param rElement element
+//! @param rIp Ip
+void NuTo::ElementDataConstitutiveIpCrack::InitializeUpdatedConstitutiveLaw(const ElementBase* rElement,int rIp)
+{
+	throw MechanicsException("[NuTo::ElementDataConstitutiveIpCrack::InitializeUpdatedConstitutiveLaw] only one constitutive law is assigned at one element.");
 }
 
 //! @brief returns the enum of element data type

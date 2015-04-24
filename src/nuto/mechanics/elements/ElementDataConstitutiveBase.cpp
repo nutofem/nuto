@@ -41,6 +41,11 @@ void NuTo::ElementDataConstitutiveBase::SetConstitutiveLaw(const ElementBase* rE
 	InitializeUpdatedConstitutiveLaw(rElement);
 }
 
+void NuTo::ElementDataConstitutiveBase::SetConstitutiveLaw(const ElementBase* rElement,int rIp, NuTo::ConstitutiveBase* rConstitutiveLaw)
+{
+	throw MechanicsException("[NuTo::ElementDataConstitutiveBase::SetConstitutiveLaw] one material for whole element.");
+}
+
 bool NuTo::ElementDataConstitutiveBase::HasConstitutiveLawAssigned(int rIp)
 {
 	if (mConstitutiveLaw==0)

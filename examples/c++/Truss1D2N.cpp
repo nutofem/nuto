@@ -70,9 +70,11 @@ int main()
 	myStructure.NodeBuildGlobalDofs();
 
 	// build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-	NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix;
+	NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixVec;
 	NuTo::FullVector<double,Eigen::Dynamic> dispForceVector;
-	myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector);
+	myStructure.CalculateMaximumIndependentSets();
+	myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixVec, dispForceVector);
+	NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix(stiffnessMatrixVec);
 
 	// build global external load vector
 	NuTo::FullVector<double,Eigen::Dynamic> extForceVector;

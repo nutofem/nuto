@@ -32,6 +32,15 @@ public:
     //! @param rElement element
     virtual void InitializeUpdatedConstitutiveLaw(const ElementBase* rElement);
 
+    //! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
+    //! @param rElement element
+    //! @param rIp Ip
+    virtual void InitializeUpdatedConstitutiveLaw(const ElementBase* rElement,int rIp)
+    {
+ 	   throw MechanicsException("[NuTo::ElementDataConstitutiveIpNonlocal::InitializeUpdatedConstitutiveLaw] only one constitutive law is assigned at one element.");
+
+    }
+
     //! @brief adds the nonlocal weight to an integration point
     //! @param rLocalIpNumber local Ip
     //! @param rConstitutive constitutive model for which nonlocal data is to be calculated
