@@ -187,6 +187,9 @@ IF(ENABLE_C++_TESTS)
     ADD_EXECUTABLE(MoistureTransport1D MoistureTransport.cpp)
     TARGET_LINK_LIBRARIES(MoistureTransport1D NuToMetamodel NuToMechanics NuToMath NuToBase)
     ADD_TEST(c::mechanics::MoistureTransport1D ${CMAKE_CURRENT_BUILD_DIR}/MoistureTransport1D)
+  IF(MINGW)
+    SET_TARGET_PROPERTIES(MoistureTransport1D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  ENDIF(MINGW)
   ENDIF(ENABLE_METAMODEL)
 
   

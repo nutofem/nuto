@@ -13,7 +13,7 @@ NuTo::PolynomialLeastSquaresFitting::PolynomialLeastSquaresFitting()
 //! @param rBoundaryCondition ... a pair of x and y coordinates that should be matched by the polynom
 void NuTo::PolynomialLeastSquaresFitting::AddBoundaryCondition(std::pair<double,double> rBoundaryCondition)
 {
-    if (mBoundaryConditions.size() < mDegree)
+    if (int(mBoundaryConditions.size()) < mDegree)
     {
         mBoundaryConditions.push_back(rBoundaryCondition);
     }
@@ -58,7 +58,7 @@ void NuTo::PolynomialLeastSquaresFitting::BuildDerived()
             {
                 for(int j=0; j <= mDegree; j++)
                 {
-                    if ( i >= mBoundaryConditions.size())
+                    if ( i >= int(mBoundaryConditions.size()))
                     {
                         lhs.AddValue(i,j, pow(mSupportPoints.GetOrigSupportPointsInput()(0,k),i+j));
                     }
@@ -66,7 +66,7 @@ void NuTo::PolynomialLeastSquaresFitting::BuildDerived()
                 rhs(i) += pow(mSupportPoints.GetOrigSupportPointsInput()(0,k),i) * mSupportPoints.GetOrigSupportPointsOutput()(0,k);
             }
         }
-        for (int i=0; i< mBoundaryConditions.size(); i++)
+        for (int i=0; i< int(mBoundaryConditions.size()); i++)
         {
             for (int j=0; j<=mDegree; j++)
             {

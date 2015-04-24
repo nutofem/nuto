@@ -117,7 +117,6 @@ protected:
 	double mDampedEnergy;
 
 	bool mUseLumpedMass;
-    bool mUseDamping = true;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION
