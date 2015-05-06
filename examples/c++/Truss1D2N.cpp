@@ -25,7 +25,7 @@ int main()
 	myStructure.SectionSetArea(Section1, Area);
 
 	// create material law
-	int Material1 = myStructure.ConstitutiveLawCreate("LinearElastic");
+    int Material1 = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
 	myStructure.ConstitutiveLawSetYoungsModulus(Material1, YoungsModulus);
 
 	// create nodes
@@ -104,7 +104,7 @@ int main()
     myStructure.AddVisualizationComponentDisplacements();
     myStructure.AddVisualizationComponentEngineeringStrain();
     myStructure.AddVisualizationComponentEngineeringStress();
-	myStructure.ExportVtkDataFile("Truss1D2N.vtk");
+    myStructure.ExportVtkDataFileElements("Truss1D2N.vtk");
 #endif
 
 #else
