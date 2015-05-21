@@ -84,6 +84,38 @@ public:
     		std::map<NuTo::Constitutive::Output::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput);
 
     // parameters /////////////////////////////////////////////////////////////
+
+    //! @brief ... gets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @return ... value of the requested variable
+    virtual bool GetVariableBool(Constitutive::eConstitutiveVariable rIdentifier) const;
+
+    //! @brief ... sets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rValue ... new value for requested variable
+    virtual void SetVariableBool(Constitutive::eConstitutiveVariable rIdentifier, bool rValue);
+
+    //! @brief ... gets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @return ... value of the requested variable
+    virtual double GetVariableDouble(Constitutive::eConstitutiveVariable rIdentifier) const;
+
+    //! @brief ... sets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rValue ... new value for requested variable
+    virtual void SetVariableDouble(Constitutive::eConstitutiveVariable rIdentifier, double rValue);
+
+    //! @brief ... gets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @return ... value of the requested variable
+    virtual NuTo::FullVector<double,Eigen::Dynamic> GetVariableFullVectorDouble(Constitutive::eConstitutiveVariable rIdentifier) const;
+
+    //! @brief ... sets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rValue ... new value for requested variable
+    virtual void SetVariableFullVectorDouble(Constitutive::eConstitutiveVariable rIdentifier, NuTo::FullVector<double,Eigen::Dynamic> rValue);
+
+
     //! @brief ... get density
     //! @return ... density
     virtual double GetDensity() const;
@@ -316,144 +348,10 @@ public:
     //! @param ... fatigue extrapolation flag
     virtual void SetFatigueExtrapolation(bool rFatigueExtrapolation);
 
-    //! @brief ... get adsorption coefficients as vector
-    //! @return ... adsorption coefficients as vector
-    virtual NuTo::FullVector<double,Eigen::Dynamic> GetAdsorptionCoefficients() const;
-
-    //! @brief ... set adsorption coefficients as vector
-    //! @param ... adsorption coefficients as vector
-    virtual void SetAdsorptionCoefficients(NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients);
-
-    //! @brief ... get boundary surface relative humidity transport coefficient
-    //! @return ... boundary surface relative humidity transport coefficient
-    virtual double GetBoundarySurfaceRelativeHumidityTransportCoefficient() const;
-
-    //! @brief ... get boundary surface water volume fraction transport coefficient
-    //! @return ... boundary surface water volume fraction transport coefficient
-    virtual double GetBoundarySurfaceWaterVolumeFractionTransportCoefficient() const;
-
-    //! @brief ... set boundary surface relative humidity transport coefficient
-    //! @param ... boundary surface relative humidity transport coefficient
-    virtual void SetBoundarySurfaceRelativeHumidityTransportCoefficient(double rBeta);
-
-    //! @brief ... set boundary surface water volume fraction transport coefficient
-    //! @param ... boundary surface water volume fraction transport coefficient
-    virtual void SetBoundarySurfaceWaterVolumeFractionTransportCoefficient(double rBeta);
-
-    //! @brief ... get desorption coefficients as vector
-    //! @return ... desorption coefficients as vector
-    virtual NuTo::FullVector<double,Eigen::Dynamic> GetDesorptionCoefficients() const;
-
-    //! @brief ... set desorption coefficients as vector
-    //! @param ... desorption coefficients as vector
-    virtual void SetDesorptionCoefficients(NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients);
-
-    //! @brief ... returns a bool that tells if modified tangential stiffnes is enabled
-    //! @return ... true or false
-    virtual bool GetEnableModifiedTangentialStiffness() const;
-
-    //! @brief ... Enables the use of a modified tangential stiffnes (hessian_0 in constitutive law)
-    //! @param ... true or false
-    virtual void SetEnableModifiedTangentialStiffness (bool rEnableModifiedTangentialStiffness);
-
-    //! @brief ... returns a bool that tells if the sorption hysteresis model is enabled
-    //! @return ... true or false
-    virtual bool GetEnableSorptionHysteresis() const;
-
-    //! @brief ... Enables the use of the sorption hysteresis model
-    //! @param ... true or false
-    virtual void SetEnableSorptionHysteresis (bool rEnableSorptionHysteresis);
-
     //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
     //! @param rRelativeHumidity ... relative humidity
     //! @return ... equilibrium water volume fraction
     virtual double GetEquilibriumWaterVolumeFraction(double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const;
-
-    //! @brief ... set the gradient correction when changing from desorption to adsorption
-    //! @param ... gradient correction when changing from desorption to adsorption
-    virtual void SetKa(double rKa);
-
-    //! @brief ... get the gradient correction when changing from desorption to adsorption
-    //! @return ... gradient correction when changing from desorption to adsorption
-    virtual double GetKa() const;
-
-    //! @brief ... set the gradient correction when changing from adsorption to desorption
-    //! @param ... gradient correction when changing from adsorption to desorption
-    virtual void SetKd(double rKd);
-
-    //! @brief ... get the gradient correction when changing from adsorption to desorption
-    //! @return ... gradient correction when changing from adsorption to desorption
-    virtual double GetKd() const;
-
-    //! @brief ... get mass exchange rate between water phase and vapor phase
-    //! @return ... mass exchange rate
-    virtual double GetMassExchangeRate() const;
-
-    //! @brief ... set mass exchange rate between water phase and vapor phase
-    //! @param ... mass exchange rate
-    virtual void SetMassExchangeRate (double rMassExchangeRate);
-
-    //! @brief ... get porosity
-    //! @return ... porosity
-    virtual double GetPorosity() const;
-
-    //! @brief ... set porosity
-    //! @param ... porosity
-    virtual void SetPorosity(double rPorosity);
-
-    //! @brief ... get vapor phase diffusion coefficient
-    //! @return ... vapor phase diffusion coefficient
-    virtual double GetVaporPhaseDiffusionCoefficient() const;
-
-    //! @brief ... set vapor phase diffusion coefficient
-    //! @param ... vapor phase diffusion coefficient
-    virtual void SetVaporPhaseDiffusionCoefficient(double rVaporPhaseDiffusionCoefficient);
-
-    //! @brief ... get vapor phase diffusion exponent
-    //! @return ... vapor phase diffusion exponent
-    virtual double GetVaporPhaseDiffusionExponent() const;
-
-    //! @brief ... set vapor phase diffusion exponent
-    //! @param ... vapor phase diffusion exponent
-    virtual void SetVaporPhaseDiffusionExponent(double rVaporPhaseDiffusionExponent);
-
-    //! @brief ... get vapor phase Density
-    //! @return ... vapor phase saturation density
-    virtual double GetVaporPhaseSaturationDensity() const;
-
-    //! @brief ... set vapor phase saturation density
-    //! @param ... vapor phase saturation density
-    virtual void SetVaporPhaseSaturationDensity(double rVaporPhaseSaturationDensity);
-
-    //! @brief ... get water phase density
-    //! @return ... water phase density
-    virtual double GetWaterPhaseDensity() const;
-
-    //! @brief ... set water phase density
-    //! @param ... water phase density
-    virtual void SetWaterPhaseDensity(double rWaterPhaseDensity);
-
-    //! @brief ... get water phase diffusion coefficient
-    //! @return ... water phase diffusion coefficient
-    virtual double GetWaterPhaseDiffusionCoefficient() const;
-
-    //! @brief ... set water phase diffusion coefficient
-    //! @param ... water phase diffusion coefficient
-    virtual void SetWaterPhaseDiffusionCoefficient(double rWaterPhaseDiffusionCoefficient);
-
-    //! @brief ... set water phase diffusion exponent
-    //! @param ... water phase diffusion exponent
-    virtual void SetWaterPhaseDiffusionExponent(double rWaterPhaseDiffusionExponent);
-
-    //! @brief ... get water phase diffusion exponent
-    //! @return ... water phase diffusion exponent
-    virtual double GetWaterPhaseDiffusionExponent() const;
-
-
-
-
-
-
 
 
     ///////////////////////////////////////////////////////////////////////////

@@ -96,30 +96,36 @@ public:
                                                                                                                  const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
                                                                                                                  std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput);
 
-    //! @brief ... get adsorption coefficients as vector
-    //! @return ... adsorption coefficients as vector
-    virtual NuTo::FullVector<double,Eigen::Dynamic> GetAdsorptionCoefficients                                   () const override;
+    //! @brief ... gets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @return ... value of the requested variable
+    virtual bool                                    GetVariableBool                                             (Constitutive::eConstitutiveVariable rIdentifier) const override;
 
-    //! @brief ... get boundary surface relative humidity transport coefficient
-    //! @return ... boundary surface relative humidity transport coefficient
-    virtual double                                  GetBoundarySurfaceRelativeHumidityTransportCoefficient      () const override;
+    //! @brief ... sets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rValue ... new value for requested variable
+    virtual void                                    SetVariableBool                                             (Constitutive::eConstitutiveVariable rIdentifier, bool rValue) override;
 
-    //! @brief ... get boundary surface water volume fraction transport coefficient
-    //! @return ... boundary surface water volume fraction transport coefficient
-    virtual double                                  GetBoundarySurfaceWaterVolumeFractionTransportCoefficient      () const override;
+    //! @brief ... gets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @return ... value of the requested variable
+    virtual double                                  GetVariableDouble                                           (Constitutive::eConstitutiveVariable rIdentifier) const override;
 
+    //! @brief ... sets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rValue ... new value for requested variable
+    virtual void                                    SetVariableDouble                                           (Constitutive::eConstitutiveVariable rIdentifier, double rValue) override;
 
-    //! @brief ... get desorption coefficients as vector
-    //! @return ... desorption coefficients as vector
-    virtual NuTo::FullVector<double,Eigen::Dynamic> GetDesorptionCoefficients                                   () const override;
+    //! @brief ... gets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @return ... value of the requested variable
+    virtual NuTo::FullVector<double,Eigen::Dynamic> GetVariableFullVectorDouble                                 (Constitutive::eConstitutiveVariable rIdentifier) const override;
 
-    //! @brief ... returns a bool that tells if modified tangential stiffnes is enabled
-    //! @return ... true or false
-    virtual bool                                    GetEnableModifiedTangentialStiffness                        () const override;
+    //! @brief ... sets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rValue ... new value for requested variable
+    virtual void                                    SetVariableFullVectorDouble                                 (Constitutive::eConstitutiveVariable rIdentifier, NuTo::FullVector<double,Eigen::Dynamic> rValue) override;
 
-    //! @brief ... returns a bool that tells if the sorption hysteresis model is enabled
-    //! @return ... true or false
-    virtual bool                                    GetEnableSorptionHysteresis                                 () const override;
 
     //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
     //! @param rRelativeHumidity ... relative humidity
@@ -127,50 +133,11 @@ public:
     //! @return ... equilibrium water volume fraction
     virtual double                                  GetEquilibriumWaterVolumeFraction                           (double rRelativeHumidity,
                                                                                                                  NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const override;
-    //! @brief ... get the gradient correction when changing from desorption to adsorption
-    //! @return ... gradient correction when changing from desorption to adsorption
-    virtual double                                  GetKa                                                       () const override;
-
-    //! @brief ... get the gradient correction when changing from adsorption to desorption
-    //! @return ... gradient correction when changing from adsorption to desorption
-    virtual double                                  GetKd                                                       () const override;
-
-    //! @brief ... get mass exchange rate between water phase and vapor phase
-    //! @return ... mass exchange rate
-    virtual double                                  GetMassExchangeRate                                         () const override;
-
-    //! @brief ... get porosity
-    //! @return ... porosity
-    virtual double                                  GetPorosity                                                 () const override;
 
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship
     //! @sa eConstitutiveType
     virtual Constitutive::eConstitutiveType         GetType                                                     () const override;
-
-    //! @brief ... get vapor phase diffusion coefficient
-    //! @return ... vapor phase diffusion coefficient
-    virtual double                                  GetVaporPhaseDiffusionCoefficient                           () const override;
-
-    //! @brief ... get vapor phase diffusion exponent
-    //! @return ... vapor phase diffusion exponent
-    virtual double                                  GetVaporPhaseDiffusionExponent                              () const override;
-
-    //! @brief ... get vapor phase saturation density
-    //! @return ... vapor phase saturation density
-    virtual double                                  GetVaporPhaseSaturationDensity                              () const override;
-
-    //! @brief ... get water phase density
-    //! @return ... water phase density
-    virtual double                                  GetWaterPhaseDensity                                        () const override;
-
-    //! @brief ... get water phase diffusion coefficient
-    //! @return ... water phase diffusion coefficient
-    virtual double                                  GetWaterPhaseDiffusionCoefficient                           () const override;
-
-    //! @brief ... get water phase diffusion exponent
-    //! @return ... water phase diffusion exponent
-    virtual double                                  GetWaterPhaseDiffusionExponent                              () const override;
 
     //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
     //! @return ... see brief explanation
@@ -179,70 +146,6 @@ public:
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
     void                                            Info                                                        (unsigned short rVerboseLevel, Logger& rLogger) const;
-
-    //! @brief ... set adsorption coefficients as vector
-    //! @param ... adsorption coefficients as vector
-    virtual void                                    SetAdsorptionCoefficients                                   (NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients) override;
-
-    //! @brief ... set boundary surface relative humidity transport coefficient
-    //! @param ... boundary surface relative humidity transport coefficient
-    virtual void                                    SetBoundarySurfaceRelativeHumidityTransportCoefficient      (double rBeta) override;
-
-    //! @brief ... set boundary surface water volume fraction transport coefficient
-    //! @param ... boundary surface water volume fraction transport coefficient
-    virtual void                                    SetBoundarySurfaceWaterVolumeFractionTransportCoefficient   (double rBeta) override;
-
-    //! @brief ... set desorption coefficients as vector
-    //! @param ... desorption coefficients as vector
-    virtual void                                    SetDesorptionCoefficients                                   (NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients) override;
-
-    //! @brief ... Enables the use of a modified tangential stiffnes (hessian_0 in constitutive law)
-    //! @param ... true or false
-    virtual void                                    SetEnableModifiedTangentialStiffness                        (bool rEnableModifiedTangentialStiffness) override;
-
-    //! @brief ... Enables the use of the sorption hysteresis model
-    //! @param ... true or false
-    virtual void                                    SetEnableSorptionHysteresis                                 (bool rEnableSorptionHysteresis) override;
-
-    //! @brief ... set the gradient correction when changing from desorption to adsorption
-    //! @param ... gradient correction when changing from desorption to adsorption
-    virtual void                                    SetKa                                                       (double rKa) override;
-
-    //! @brief ... set the gradient correction when changing from adsorption to desorption
-    //! @param ... gradient correction when changing from adsorption to desorption
-    virtual void                                    SetKd                                                       (double rKd) override;
-
-    //! @brief ... set mass exchange rate between water phase and vapor phase
-    //! @param ... mass exchange rate
-    virtual void                                    SetMassExchangeRate                                         (double rMassExchangeRate) override;
-
-    //! @brief ... set porosity
-    //! @param ... porosity
-    virtual void                                    SetPorosity                                                 (double rPorosity) override;
-
-    //! @brief ... set vapor phase diffusion coefficient
-    //! @param ... vapor phase diffusion coefficient
-    virtual void                                    SetVaporPhaseDiffusionCoefficient                           (double rVaporPhaseDiffusionCoefficient) override;
-
-    //! @brief ... set vapor phase diffusion exponent
-    //! @param ... vapor phase diffusion exponent
-    virtual void                                    SetVaporPhaseDiffusionExponent                              (double rVaporPhaseDiffusionExponent) override;
-
-    //! @brief ... set vapor phase saturation density
-    //! @param ... vapor phase saturation density
-    virtual void                                    SetVaporPhaseSaturationDensity                              (double rVaporPhaseSaturationDensity) override;
-
-    //! @brief ... set water phase density
-    //! @param ... water phase density
-    virtual void                                    SetWaterPhaseDensity                                        (double rWaterPhaseDensity) override;
-
-    //! @brief ... set water phase diffusion coefficient
-    //! @param ... water phase diffusion coefficient
-    virtual void                                    SetWaterPhaseDiffusionCoefficient                           (double rWaterPhaseDiffusionCoefficient) override;
-
-    //! @brief ... set water phase diffusion exponent
-    //! @param ... water phase diffusion exponent
-    virtual void                                    SetWaterPhaseDiffusionExponent                              (double rWaterPhaseDiffusionExponent) override;
 
 
 protected:

@@ -716,47 +716,305 @@ NuTo::Error::eError                         NuTo::MoistureTransport::Evaluate1D 
     return Error::SUCCESSFUL;
 }
 
-//! @brief ... get adsorption coefficients as vector
-//! @return ... adsorption coefficients as vector
-NuTo::FullVector<double,Eigen::Dynamic>     NuTo::MoistureTransport::GetAdsorptionCoefficients                                  () const
+//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @return ... value of the requested variable
+bool NuTo::MoistureTransport::GetVariableBool(NuTo::Constitutive::eConstitutiveVariable rIdentifier) const
 {
-    return mAdsorptionCoeff;
+    switch(rIdentifier)
+    {
+        case Constitutive::eConstitutiveVariable::ENABLE_MODIFIED_TANGENTIAL_STIFFNESS:
+        {
+            return mEnableModifiedTangentialStiffness;
+        }
+        case Constitutive::eConstitutiveVariable::ENABLE_SORPTION_HYSTERESIS:
+        {
+            return mEnableSorptionHysteresis;
+        }
+        default:
+        {
+            throw MechanicsException("[NuTo::MoistureTransport::GetVariableBool] Constitutive law does not have the requested variable");
+        }
+    }
 }
 
-//! @brief ... get boundary surface relative humidity transport coefficient
-//! @return ... boundary surface relative humidity transport coefficient
-double                                      NuTo::MoistureTransport::GetBoundarySurfaceRelativeHumidityTransportCoefficient     () const
+//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::MoistureTransport::SetVariableBool(NuTo::Constitutive::eConstitutiveVariable rIdentifier, bool rValue)
 {
-    return mBetaRelHum;
+    switch(rIdentifier)
+    {
+        case Constitutive::eConstitutiveVariable::ENABLE_MODIFIED_TANGENTIAL_STIFFNESS:
+        {
+            mEnableModifiedTangentialStiffness = rValue;
+            SetParametersValid();
+            return;
+        }
+        case Constitutive::eConstitutiveVariable::ENABLE_SORPTION_HYSTERESIS:
+        {
+            mEnableSorptionHysteresis = rValue;
+            SetParametersValid();
+            return;
+        }
+        default:
+        {
+            throw MechanicsException("[NuTo::MoistureTransport::SetVariableBool] Constitutive law does not have the requested variable");
+        }
+    }
 }
 
-//! @brief ... get boundary surface water volume fraction transport coefficient
-//! @return ... boundary surface water volume fraction transport coefficient
-double                                      NuTo::MoistureTransport::GetBoundarySurfaceWaterVolumeFractionTransportCoefficient  () const
+//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @return ... value of the requested variable
+double NuTo::MoistureTransport::GetVariableDouble(NuTo::Constitutive::eConstitutiveVariable rIdentifier) const
 {
-    return mBetaWVFrac;
+    switch(rIdentifier)
+    {
+        case Constitutive::eConstitutiveVariable::BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE:
+        {
+            return mBetaRelHum;
+        }
+        case Constitutive::eConstitutiveVariable::BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE:
+        {
+            return mBetaWVFrac;
+        }
+        case Constitutive::eConstitutiveVariable::DENSITY_WATER_PHASE:
+        {
+            return mRhoW;
+        }
+        case Constitutive::eConstitutiveVariable::DIFFUSION_CONSTANT_GAS_PHASE:
+        {
+            return mDV;
+        }
+        case Constitutive::eConstitutiveVariable::DIFFUSION_CONSTANT_WATER_PHASE:
+        {
+            return mDW;
+        }
+        case Constitutive::eConstitutiveVariable::DIFFUSION_EXPONENT_GAS_PHASE:
+        {
+            return mAlphaV;
+        }
+        case Constitutive::eConstitutiveVariable::DIFFUSION_EXPONENT_WATER_PHASE:
+        {
+            return mAlphaW;
+        }
+        case Constitutive::eConstitutiveVariable::GRADIENT_CORRECTION_ADSORPTION_DESORPTION:
+        {
+            return mKd;
+        }
+        case Constitutive::eConstitutiveVariable::GRADIENT_CORRECTION_DESORPTION_ADSORPTION:
+        {
+            return mKa;
+        }
+        case Constitutive::eConstitutiveVariable::MASS_EXCHANGE_RATE:
+        {
+            return mR;
+        }
+        case Constitutive::eConstitutiveVariable::POROSITY:
+        {
+            return mEpsP;
+        }
+        case Constitutive::eConstitutiveVariable::SATURATION_DENSITY_GAS_PHASE:
+        {
+            return mRhoVS;
+        }
+        default:
+        {
+            throw MechanicsException("[NuTo::MoistureTransport::GetVariableDouble] Constitutive law does not have the requested variable");
+        }
+    }
 }
 
-//! @brief ... get desorption coefficients as vector
-//! @return ... desorption coefficients as vector
-NuTo::FullVector<double,Eigen::Dynamic>     NuTo::MoistureTransport::GetDesorptionCoefficients                                  () const
+//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::MoistureTransport::SetVariableDouble(NuTo::Constitutive::eConstitutiveVariable rIdentifier, double rValue)
 {
-    return mDesorptionCoeff;
+    switch(rIdentifier)
+    {
+        case Constitutive::eConstitutiveVariable::BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE:
+        {
+            mBetaRelHum = rValue;
+            SetParametersValid();
+            return;
+        }
+        case Constitutive::eConstitutiveVariable::BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE:
+        {
+            mBetaWVFrac = rValue;
+            SetParametersValid();
+            return;
+        }
+        case Constitutive::eConstitutiveVariable::DENSITY_WATER_PHASE:
+        {
+            CheckWaterPhaseDensity(rValue);
+            mRhoW = rValue;
+            SetParametersValid();
+            return;
+        }
+        case Constitutive::eConstitutiveVariable::DIFFUSION_CONSTANT_GAS_PHASE:
+        {
+            CheckVaporPhaseDiffusionCoefficient(rValue);
+            mDV=rValue;
+            SetParametersValid();
+            return;
+        }
+        case Constitutive::eConstitutiveVariable::DIFFUSION_CONSTANT_WATER_PHASE:
+        {
+            CheckWaterPhaseDiffusionCoefficient(rValue);
+            mDW=rValue;
+            SetParametersValid();
+            return;
+        }
+        case Constitutive::eConstitutiveVariable::DIFFUSION_EXPONENT_GAS_PHASE:
+        {
+            CheckVaporPhaseDiffusionExponent(rValue);
+            mAlphaV=rValue;
+            SetParametersValid();
+            return;
+        }
+        case Constitutive::eConstitutiveVariable::DIFFUSION_EXPONENT_WATER_PHASE:
+        {
+            CheckWaterPhaseDiffusionExponent(rValue);
+            mAlphaW=rValue;
+            SetParametersValid();
+            return;
+        }
+        case Constitutive::eConstitutiveVariable::GRADIENT_CORRECTION_ADSORPTION_DESORPTION:
+        {
+            CheckKd(rValue);
+            mKd = rValue;
+            SetParametersValid();
+            return;
+        }
+        case Constitutive::eConstitutiveVariable::GRADIENT_CORRECTION_DESORPTION_ADSORPTION:
+        {
+            CheckKa(rValue);
+            mKa = rValue;
+            SetParametersValid();
+            return;
+        }
+        case Constitutive::eConstitutiveVariable::MASS_EXCHANGE_RATE:
+        {
+            CheckMassExchangeRate(rValue);
+            mR = rValue;
+            SetParametersValid();
+            return;
+        }
+        case Constitutive::eConstitutiveVariable::POROSITY:
+        {
+            CheckPorosity(rValue);
+            mEpsP=rValue;
+            SetParametersValid();
+            return;
+        }
+        case Constitutive::eConstitutiveVariable::SATURATION_DENSITY_GAS_PHASE:
+        {
+            CheckVaporPhaseSaturationDensity(rValue);
+            mRhoVS=rValue;
+            SetParametersValid();
+            return;
+        }
+        default:
+        {
+            throw MechanicsException("[NuTo::MoistureTransport::SetVariableDouble] Constitutive law does not have the requested variable");
+        }
+    }
 }
 
-//! @brief ... returns a bool that tells if modified tangential stiffnes is enabled
-//! @return ... true or false
-bool                                        NuTo::MoistureTransport::GetEnableModifiedTangentialStiffness                        () const
+//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @return ... value of the requested variable
+NuTo::FullVector<double, Eigen::Dynamic> NuTo::MoistureTransport::GetVariableFullVectorDouble(NuTo::Constitutive::eConstitutiveVariable rIdentifier) const
 {
-    return mEnableModifiedTangentialStiffness;
+    switch(rIdentifier)
+    {
+        case Constitutive::eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_ADSORPTION:
+        {
+            return mAdsorptionCoeff;
+        }
+        case Constitutive::eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_DESORPTION:
+        {
+            return mDesorptionCoeff;
+        }
+        default:
+        {
+            throw MechanicsException("[NuTo::MoistureTransport::GetVariableFullVectorDouble] Constitutive law does not have the requested variable");
+        }
+    }
 }
 
-//! @brief ... returns a bool that tells if the sorption hysteresis model is enabled
-//! @return ... true or false
-bool                                        NuTo::MoistureTransport::GetEnableSorptionHysteresis                                 () const
+//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::MoistureTransport::SetVariableFullVectorDouble(NuTo::Constitutive::eConstitutiveVariable rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
 {
-    return mEnableSorptionHysteresis;
+    switch(rIdentifier)
+    {
+        case Constitutive::eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_ADSORPTION:
+        {
+            CheckAdsorptionCoefficients(rValue);
+            switch (rValue.GetNumRows())
+            {
+                case 3:
+                {
+                    mAdsorptionCoeff = rValue;
+                    break;
+                }
+                case 4:
+                {
+                    mAdsorptionCoeff.Resize(3);
+                    for(int i=0; i<3; i++)
+                    {
+                        mAdsorptionCoeff(i) = rValue(i+1);
+                    }
+                    break;
+                }
+                default:
+                {
+                    throw NuTo::MechanicsException("[NuTo::MoistureTransport::SetVariableFullVectorDouble] The vector for the adsorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
+                    break;
+                }
+            }
+            SetParametersValid();
+            return;
+        }
+        case Constitutive::eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_DESORPTION:
+        {
+            CheckDesorptionCoefficients(rValue);
+            switch (rValue.GetNumRows())
+            {
+                case 3:
+                {
+                    mDesorptionCoeff = rValue;
+                    break;
+                }
+                case 4:
+                {
+                    mDesorptionCoeff.Resize(3);
+                    for(int i=0; i<3; i++)
+                    {
+                        mDesorptionCoeff(i) = rValue(i+1);
+                    }
+                    break;
+                }
+                default:
+                {
+                    throw NuTo::MechanicsException("[NuTo::MoistureTransport::SetVariableFullVectorDouble] The vector for the desorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
+                    break;
+                }
+            }
+            SetParametersValid();
+            return;
+        }
+        default:
+        {
+            throw MechanicsException("[NuTo::MoistureTransport::SetVariableFullVectorDouble] Constitutive law does not have the requested variable");
+        }
+    }
 }
+
+
 
 //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
 //! @param rRelativeHumidity ... relative humidity
@@ -790,34 +1048,7 @@ double                                      NuTo::MoistureTransport::GetEquilibr
 }
 
 
-//! @brief ... get the gradient correction when changing from desorption to adsorption
-//! @return ... gradient correction when changing from desorption to adsorption
-double                                      NuTo::MoistureTransport::GetKa                                                      () const
-{
-    return mKa;
-}
 
-//! @brief ... get the gradient correction when changing from adsorption to desorption
-//! @return ... gradient correction when changing from adsorption to desorption
-double                                      NuTo::MoistureTransport::GetKd                                                      () const
-{
-    return mKd;
-}
-
-
-//! @brief ... get mass exchange rate between water phase and vapor phase
-//! @return ... mass exchange rate
-double                                      NuTo::MoistureTransport::GetMassExchangeRate                                        () const
-{
-    return mR;
-}
-
-//! @brief ... get porosity
-//! @return ... porosity
-double                                      NuTo::MoistureTransport::GetPorosity                                                () const
-{
-    return mEpsP;
-}
 
 //! @brief ... get type of constitutive relationship
 //! @return ... type of constitutive relationship
@@ -827,47 +1058,6 @@ NuTo::Constitutive::eConstitutiveType       NuTo::MoistureTransport::GetType    
     return NuTo::Constitutive::MOISTURE_TRANSPORT;
 }
 
-//! @brief ... get vapor phase diffusion coefficient
-//! @return ... vapor phase diffusion coefficient
-double                                      NuTo::MoistureTransport::GetVaporPhaseDiffusionCoefficient                          () const
-{
-    return mDV;
-}
-
-//! @brief ... get vapor phase diffusion exponent
-//! @return ... vapor phase diffusion exponent
-double                                      NuTo::MoistureTransport::GetVaporPhaseDiffusionExponent                             () const
-{
-    return mAlphaV;
-}
-
-//! @brief ... get vapor phase saturation density
-//! @return ... vapor phase saturation density
-double                                      NuTo::MoistureTransport::GetVaporPhaseSaturationDensity                             () const
-{
-    return mRhoVS;
-}
-
-//! @brief ... get water phase density
-//! @return ... water phase density
-double                                      NuTo::MoistureTransport::GetWaterPhaseDensity                                       () const
-{
-    return mRhoW;
-}
-
-//! @brief ... get water phase diffusion coefficient
-//! @return ... water phase diffusion coefficient
-double                                      NuTo::MoistureTransport::GetWaterPhaseDiffusionCoefficient                          () const
-{
-    return mDW;
-}
-
-//! @brief ... get water phase diffusion exponent
-//! @return ... water phase diffusion exponent
-double                                      NuTo::MoistureTransport::GetWaterPhaseDiffusionExponent                             () const
-{
-    return mAlphaW;
-}
 
 //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
 //! @return ... see brief explanation
@@ -881,201 +1071,17 @@ bool                                        NuTo::MoistureTransport::HaveTmpStat
 void                                        NuTo::MoistureTransport::Info                                                       (unsigned short rVerboseLevel, Logger& rLogger) const
 {
     this->ConstitutiveBase::Info(rVerboseLevel, rLogger);
-    rLogger << "    Mass exchange rate                 : " << this->GetMassExchangeRate()               << "\n";
-    rLogger << "    Porosity                           : " << this->GetPorosity()                       << "\n";
-    rLogger << "    Vapor phase diffusion coefficient  : " << this->GetVaporPhaseDiffusionCoefficient() << "\n";
-    rLogger << "    Vapor phase diffusion exponent     : " << this->GetVaporPhaseDiffusionExponent()    << "\n";
-    rLogger << "    Vapor phase saturation density     : " << this->GetVaporPhaseSaturationDensity()    << "\n";
-    rLogger << "    Water phase density                : " << this->GetWaterPhaseDensity()              << "\n";
-    rLogger << "    Water phase diffusion coefficient  : " << this->GetWaterPhaseDiffusionCoefficient() << "\n";
-    rLogger << "    Water phase diffusion exponent     : " << this->GetWaterPhaseDiffusionExponent()    << "\n";
+    rLogger << "    Mass exchange rate                  : " << this->GetVariableDouble(Constitutive::eConstitutiveVariable::MASS_EXCHANGE_RATE)              << "\n";
+    rLogger << "    Porosity                            : " << this->GetVariableDouble(Constitutive::eConstitutiveVariable::POROSITY)                        << "\n";
+    rLogger << "    Gas phase diffusion constant        : " << this->GetVariableDouble(Constitutive::eConstitutiveVariable::DIFFUSION_CONSTANT_GAS_PHASE)    << "\n";
+    rLogger << "    Gas phase diffusion exponent        : " << this->GetVariableDouble(Constitutive::eConstitutiveVariable::DIFFUSION_EXPONENT_GAS_PHASE)    << "\n";
+    rLogger << "    Gas phase saturation density        : " << this->GetVariableDouble(Constitutive::eConstitutiveVariable::SATURATION_DENSITY_GAS_PHASE)    << "\n";
+    rLogger << "    Water phase density                 : " << this->GetVariableDouble(Constitutive::eConstitutiveVariable::DENSITY_WATER_PHASE)             << "\n";
+    rLogger << "    Water phase diffusion constant      : " << this->GetVariableDouble(Constitutive::eConstitutiveVariable::DIFFUSION_CONSTANT_WATER_PHASE)  << "\n";
+    rLogger << "    Water phase diffusion exponent      : " << this->GetVariableDouble(Constitutive::eConstitutiveVariable::DIFFUSION_EXPONENT_WATER_PHASE)  << "\n";
 }
 
 
-//! @brief ... set adsorption coefficients as vector
-//! @param ... adsorption coefficients as vector
-void                                        NuTo::MoistureTransport::SetAdsorptionCoefficients                                  (NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients)
-{
-    CheckAdsorptionCoefficients(rAdsorptionCoefficients);
-    switch (rAdsorptionCoefficients.GetNumRows())
-    {
-        case 3:
-        {
-            mAdsorptionCoeff = rAdsorptionCoefficients;
-            break;
-        }
-        case 4:
-        {
-            mAdsorptionCoeff.Resize(3);
-            for(int i=0; i<3; i++)
-            {
-                mAdsorptionCoeff(i) = rAdsorptionCoefficients(i+1);
-            }
-            break;
-        }
-        default:
-        {
-            throw NuTo::MechanicsException("[NuTo::MoistureTransport::SetAdsorptionCoefficients] The vector for the adsorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
-            break;
-        }
-    }
-    SetParametersValid();
-}
-
-
-//! @brief ... set boundary surface relative humidity transport coefficient
-//! @param ... boundary surface relative humidity transport coefficient
-void                                        NuTo::MoistureTransport::SetBoundarySurfaceRelativeHumidityTransportCoefficient  (double rBeta)
-{
-
-    mBetaRelHum = rBeta;
-    SetParametersValid();
-}
-
-//! @brief ... set boundary surface water volume fraction transport coefficient
-//! @param ... boundary surface water volume fraction transport coefficient
-void                                        NuTo::MoistureTransport::SetBoundarySurfaceWaterVolumeFractionTransportCoefficient  (double rBeta)
-{
-
-    mBetaWVFrac = rBeta;
-    SetParametersValid();
-}
-
-//! @brief ... set desorption coefficients as vector
-//! @param ... desorption coefficients as vector
-void                                        NuTo::MoistureTransport::SetDesorptionCoefficients                                  (NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients)
-{
-    CheckDesorptionCoefficients(rDesorptionCoefficients);
-    switch (rDesorptionCoefficients.GetNumRows())
-    {
-        case 3:
-        {
-            mDesorptionCoeff = rDesorptionCoefficients;
-            break;
-        }
-        case 4:
-        {
-            mDesorptionCoeff.Resize(3);
-            for(int i=0; i<3; i++)
-            {
-                mDesorptionCoeff(i) = rDesorptionCoefficients(i+1);
-            }
-            break;
-        }
-        default:
-        {
-            throw NuTo::MechanicsException("[NuTo::MoistureTransport::SetDesorptionCoefficients] The vector for the desorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
-            break;
-        }
-    }
-    SetParametersValid();
-}
-
-
-//! @brief ... Enables the use of a modified tangential stiffnes (hessian_0 in constitutive law)
-//! @param ... true or false
-void                                        NuTo::MoistureTransport::SetEnableModifiedTangentialStiffness                       (bool rEnableModifiedTangentialStiffness)
-{
-    mEnableModifiedTangentialStiffness = rEnableModifiedTangentialStiffness;
-}
-
-//! @brief ... Enables the use of the sorption hysteresis model
-//! @param ... true or false
-void                                        NuTo::MoistureTransport::SetEnableSorptionHysteresis                                (bool rEnableSorptionHysteresis)
-{
-    mEnableSorptionHysteresis = rEnableSorptionHysteresis;
-}
-
-//! @brief ... set the gradient correction when changing from desorption to adsorption
-//! @param ... gradient correction when changing from desorption to adsorption
-void                                        NuTo::MoistureTransport::SetKa                                                      (double rKa)
-{
-    CheckKa(rKa);
-    mKa = rKa;
-    SetParametersValid();
-}
-
-//! @brief ... set the gradient correction when changing from adsorption to desorption
-//! @param ... gradient correction when changing from adsorption to desorption
-void                                        NuTo::MoistureTransport::SetKd                                                      (double rKd)
-{
-    CheckKd(rKd);
-    mKd = rKd;
-    SetParametersValid();
-}
-
-
-//! @brief ... set mass exchange rate between water phase and vapor phase
-//! @param ... mass exchange rate
-void                                        NuTo::MoistureTransport::SetMassExchangeRate                                        (double rMassExchangeRate)
-{
-    CheckMassExchangeRate(rMassExchangeRate);
-    mR = rMassExchangeRate;
-    SetParametersValid();
-}
-
-//! @brief ... set porosity
-//! @param ... porosity
-void                                        NuTo::MoistureTransport::SetPorosity                                                (double rPorosity)
-{
-    CheckPorosity(rPorosity);
-    mEpsP = rPorosity;
-    SetParametersValid();
-}
-
-//! @brief ... set vapor phase diffusion coefficient
-//! @param ... vapor phase diffusion coefficient
-void                                        NuTo::MoistureTransport::SetVaporPhaseDiffusionCoefficient                          (double rVaporPhaseDiffusionCoefficient)
-{
-    CheckVaporPhaseDiffusionCoefficient(rVaporPhaseDiffusionCoefficient);
-    mDV = rVaporPhaseDiffusionCoefficient;
-    SetParametersValid();
-}
-
-//! @brief ... set vapor phase diffusion exponent
-//! @param ... vapor phase diffusion exponent
-void                                        NuTo::MoistureTransport::SetVaporPhaseDiffusionExponent                             (double rVaporPhaseDiffusionExponent)
-{
-    CheckVaporPhaseDiffusionExponent(rVaporPhaseDiffusionExponent);
-    mAlphaV = rVaporPhaseDiffusionExponent;
-    SetParametersValid();
-}
-
-//! @brief ... set vapor phase saturation density
-//! @param ... vapor phase saturation density
-void                                        NuTo::MoistureTransport::SetVaporPhaseSaturationDensity                             (double rVaporPhaseSaturationDensity)
-{
-    CheckVaporPhaseSaturationDensity(rVaporPhaseSaturationDensity);
-    mRhoVS = rVaporPhaseSaturationDensity;
-    SetParametersValid();
-}
-
-//! @brief ... set water phase density
-//! @param ... water phase density
-void                                        NuTo::MoistureTransport::SetWaterPhaseDensity                                       (double rWaterPhaseDensity)
-{
-    CheckWaterPhaseDensity(rWaterPhaseDensity);
-    mRhoW = rWaterPhaseDensity;
-    SetParametersValid();
-}
-
-//! @brief ... set water phase diffusion coefficient
-//! @param ... water phase diffusion coefficient
-void                                        NuTo::MoistureTransport::SetWaterPhaseDiffusionCoefficient                          (double rWaterPhaseDiffusionCoefficient)
-{
-    CheckWaterPhaseDiffusionCoefficient(rWaterPhaseDiffusionCoefficient);
-    mDW = rWaterPhaseDiffusionCoefficient;
-    SetParametersValid();
-}
-
-//! @brief ... set water phase diffusion exponent
-//! @param ... water phase diffusion exponent
-void                                        NuTo::MoistureTransport::SetWaterPhaseDiffusionExponent                             (double rWaterPhaseDiffusionExponent)
-{
-    CheckWaterPhaseDiffusionExponent(rWaterPhaseDiffusionExponent);
-    mAlphaW = rWaterPhaseDiffusionExponent;
-    SetParametersValid();
-}
 
 
 

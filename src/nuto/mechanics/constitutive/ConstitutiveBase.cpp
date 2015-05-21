@@ -61,7 +61,55 @@ NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate3D(ElementBase* rElement, in
 {
 	std::cout << "[ConstitutiveBase::Evaluate3D] make this function pure virtual." << std::endl;
 	throw std::string("[ConstitutiveBase::Evaluate] make this function pure virtual.");
-	return Error::SUCCESSFUL;
+    return Error::SUCCESSFUL;
+}
+
+//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @return ... value of the requested variable
+bool NuTo::ConstitutiveBase::GetVariableBool(NuTo::Constitutive::eConstitutiveVariable rIdentifier) const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetVariableBool] This constitutive law has no variables of type bool.");
+}
+
+//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::ConstitutiveBase::SetVariableBool(NuTo::Constitutive::eConstitutiveVariable rIdentifier, bool rValue)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetVariableBool] This constitutive law has no variables of type bool.");
+}
+
+//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @return ... value of the requested variable
+double NuTo::ConstitutiveBase::GetVariableDouble(Constitutive::eConstitutiveVariable rIdentifier) const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetVariableDouble] This constitutive law has no variables of type double.");
+}
+
+//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::ConstitutiveBase::SetVariableDouble(NuTo::Constitutive::eConstitutiveVariable rIdentifier, double rValue)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetVariableDouble] This constitutive law has no variables of type double.");
+}
+
+//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @return ... value of the requested variable
+NuTo::FullVector<double, Eigen::Dynamic> NuTo::ConstitutiveBase::GetVariableFullVectorDouble(NuTo::Constitutive::eConstitutiveVariable rIdentifier) const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetVariableFullVectorDouble] This constitutive law has no variables of type NuTo::FullVector<double, Eigen::Dynamic>.");
+}
+
+//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::ConstitutiveBase::SetVariableFullVectorDouble(NuTo::Constitutive::eConstitutiveVariable rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetVariableFullVectorDouble] This constitutive law has no variables of type NuTo::FullVector<double, Eigen::Dynamic>.");
 }
 
 // set density
@@ -463,97 +511,6 @@ void NuTo::ConstitutiveBase::SetFatigueExtrapolation(bool rFatigueExtrapolation)
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetFatigueExtrapolation] The constitutive relationship does not have this option.");
 }
 
-//! @brief ... get adsorption coefficients as vector
-//! @return ... adsorption coefficients as vector
-NuTo::FullVector<double,Eigen::Dynamic> NuTo::ConstitutiveBase::GetAdsorptionCoefficients() const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetAdsorptionCoefficients] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set adsorption coefficients as vector
-//! @param ... adsorption coefficients as vector
-void NuTo::ConstitutiveBase::SetAdsorptionCoefficients(NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients)
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetAdsorptionCoefficients] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get boundary surface relative humidity transport coefficient
-//! @return ... boundary surface relative humidity transport coefficient
-double NuTo::ConstitutiveBase::GetBoundarySurfaceRelativeHumidityTransportCoefficient() const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetBoundarySurfaceRelativeHumidityTransportCoefficient] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get boundary surface water volume fraction transport coefficient
-//! @return ... boundary surface water volume fraction transport coefficient
-double NuTo::ConstitutiveBase::GetBoundarySurfaceWaterVolumeFractionTransportCoefficient() const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetBoundarySurfaceWaterVolumeFractionTransportCoefficient] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set boundary surface relative humidity transport coefficient
-//! @param ... boundary surface relative humidity transport coefficient
-void NuTo::ConstitutiveBase::SetBoundarySurfaceRelativeHumidityTransportCoefficient(double rBeta)
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetBoundarySurfaceRelativeHumidityTransportCoefficient] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set boundary surface water volume fraction transport coefficient
-//! @param ... boundary surface water volume fraction transport coefficient
-void NuTo::ConstitutiveBase::SetBoundarySurfaceWaterVolumeFractionTransportCoefficient(double rBeta)
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetBoundarySurfaceWaterVolumeFractionTransportCoefficient] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get desorption coefficients as vector
-//! @return ... desorption coefficients as vector
-NuTo::FullVector<double,Eigen::Dynamic> NuTo::ConstitutiveBase::GetDesorptionCoefficients() const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetDesorptionCoefficients] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set desorption coefficients as vector
-//! @param ... desorption coefficients as vector
-void NuTo::ConstitutiveBase::SetDesorptionCoefficients(NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients)
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetDesorptionCoefficients] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get the gradient correction when changing from desorption to adsorption
-//! @return ... gradient correction when changing from desorption to adsorption
-double NuTo::ConstitutiveBase::GetKa() const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetKa] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... returns a bool that tells if modified tangential stiffnes is enabled
-//! @return ... true or false
-bool NuTo::ConstitutiveBase::GetEnableModifiedTangentialStiffness() const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetEnableModifiedTangentialStiffness] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... Enables the use of a modified tangential stiffnes (hessian_0 in constitutive law)
-//! @param ... true or false
-void NuTo::ConstitutiveBase::SetEnableModifiedTangentialStiffness (bool rEnableModifiedTangentialStiffness)
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetEnableModifiedTangentialStiffness] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... returns a bool that tells if the sorption hysteresis model is enabled
-//! @return ... true or false
-bool NuTo::ConstitutiveBase::GetEnableSorptionHysteresis() const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetEnableSorptionHysteresis] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... Enables the use of the sorption hysteresis model
-//! @param ... true or false
-void NuTo::ConstitutiveBase::SetEnableSorptionHysteresis (bool rEnableSorptionHysteresis)
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetEnableSorptionHysteresis] The constitutive relationship does not have this parameter.");
-}
-
 //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
 //! @param rRelativeHumidity ... relative humidity
 //! @return ... equilibrium water volume fraction
@@ -563,138 +520,7 @@ double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double rRelativ
 }
 
 
-//! @brief ... set the gradient correction when changing from desorption to adsorption
-//! @param ... gradient correction when changing from desorption to adsorption
-void NuTo::ConstitutiveBase::SetKa(double rKa)
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetKa] The constitutive relationship does not have this parameter.");
-}
 
-//! @brief ... get the gradient correction when changing from adsorption to desorption
-//! @return ... gradient correction when changing from adsorption to desorption
-double NuTo::ConstitutiveBase::GetKd() const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetKd] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set the gradient correction when changing from adsorption to desorption
-//! @param ... gradient correction when changing from adsorption to desorption
-void NuTo::ConstitutiveBase::SetKd(double rKd)
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetKd] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get mass exchange rate between water phase and vapor phase
-//! @return ... mass exchange rate
-double NuTo::ConstitutiveBase::GetMassExchangeRate() const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetMassExchangeRate] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set mass exchange rate between water phase and vapor phase
-//! @param ... mass exchange rate
-void NuTo::ConstitutiveBase::SetMassExchangeRate (double rMassExchangeRate)
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetMassExchangeRate] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get porosity
-//! @return ... porosity
-double NuTo::ConstitutiveBase::GetPorosity() const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetPorosity] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set porosity
-//! @param ... porosity
-void NuTo::ConstitutiveBase::SetPorosity(double rPorosity)
-{
-        throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetPorosity] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get vapor phase diffusion coefficient
-//! @return ... vapor phase diffusion coefficient
-double NuTo::ConstitutiveBase::GetVaporPhaseDiffusionCoefficient() const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetVaporPhaseDiffusionCoefficient] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set vapor phase diffusion coefficient
-//! @param ... vapor phase diffusion coefficient
-void NuTo::ConstitutiveBase::SetVaporPhaseDiffusionCoefficient(double rVaporPhaseDiffusionCoefficient)
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetVaporPhaseDiffusionCoefficient] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get vapor phase diffusion exponent
-//! @return ... vapor phase diffusion exponent
-double NuTo::ConstitutiveBase::GetVaporPhaseDiffusionExponent() const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetVaporPhaseDiffusionExponent] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set vapor phase diffusion exponent
-//! @param ... vapor phase diffusion exponent
-void NuTo::ConstitutiveBase::SetVaporPhaseDiffusionExponent(double rVaporPhaseDiffusionExponent)
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetVaporPhaseDiffusionExponent] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get vapor phase saturation density
-//! @return ... vapor phase saturation density
-double NuTo::ConstitutiveBase::GetVaporPhaseSaturationDensity() const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetVaporPhaseSaturationDensity] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set vapor phase saturation density
-//! @param ... vapor phase saturation density
-void NuTo::ConstitutiveBase::SetVaporPhaseSaturationDensity(double rVaporPhaseSaturationDensity)
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetVaporPhaseSaturationDensity] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get water phase density
-//! @return ... water phase density
-double NuTo::ConstitutiveBase::GetWaterPhaseDensity() const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetWaterPhaseDensity] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set water phase density
-//! @param ... water phase density
-void NuTo::ConstitutiveBase::SetWaterPhaseDensity(double rWaterPhaseDensity)
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetWaterPhaseDensity] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get water phase diffusion coefficient
-//! @return ... water phase diffusion exponent
-double NuTo::ConstitutiveBase::GetWaterPhaseDiffusionCoefficient() const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetWaterPhaseDiffusionCoefficient] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set water phase diffusion coefficient
-//! @param ... water phase diffusion coefficient
-void NuTo::ConstitutiveBase::SetWaterPhaseDiffusionCoefficient(double rWaterPhaseDiffusionCoefficient)
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetWaterPhaseDiffusionCoefficient] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... get water phase diffusion exponent
-//! @return ... water phase diffusion exponent
-double NuTo::ConstitutiveBase::GetWaterPhaseDiffusionExponent() const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetWaterPhaseDiffusionExponent] The constitutive relationship does not have this parameter.");
-}
-
-//! @brief ... set water phase diffusion exponent
-//! @param ... water phase diffusion exponent
-void NuTo::ConstitutiveBase::SetWaterPhaseDiffusionExponent(double rWaterPhaseDiffusionExponent)
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetWaterPhaseDiffusionExponent] The constitutive relationship does not have this parameter.");
-}
 
 // modify parameter validity flag
 void NuTo::ConstitutiveBase::SetParametersValid()

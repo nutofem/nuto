@@ -204,6 +204,233 @@ void NuTo::StructureBase::ConstitutiveLawInfo(int rIdent, unsigned short rVerbos
     ConstitutiveLawPtr->Info(rVerboseLevel,mLogger);
 }
 
+//! @brief ... gets a variable of the constitutive law which is selected by a string
+//! @param rIdent ... constitutive law identifier
+//! @param rIdentifier ... String to identify the requested variable
+//! @return ... value of the requested variable
+bool NuTo::StructureBase::ConstitutiveLawGetVariableBool(int rIdent, const std::string &rIdentifier) const
+{
+    std::string upperCaseIdentifier;
+    NuTo::Constitutive::eConstitutiveVariable IdentifierEnum;
+
+    // transform string to uppercase
+    std::transform(rIdentifier.begin(), rIdentifier.end(), std::back_inserter(upperCaseIdentifier), (int(*)(int)) toupper);
+
+    // Get enum
+    IdentifierEnum = Constitutive::GetConstitutiveVariableFromString(upperCaseIdentifier);
+
+    return ConstitutiveLawGetVariableBool(rIdent,IdentifierEnum);
+}
+
+//! @brief ... sets a variable of the constitutive law which is selected by a string
+//! @param rIdent ... constitutive law identifier
+//! @param rIdentifier ... String to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::StructureBase::ConstitutiveLawSetVariableBool(int rIdent, const std::string &rIdentifier, bool rValue)
+{
+    std::string upperCaseIdentifier;
+    NuTo::Constitutive::eConstitutiveVariable IdentifierEnum;
+
+    // transform string to uppercase
+    std::transform(rIdentifier.begin(), rIdentifier.end(), std::back_inserter(upperCaseIdentifier), (int(*)(int)) toupper);
+
+    // Get enum
+    IdentifierEnum = Constitutive::GetConstitutiveVariableFromString(upperCaseIdentifier);
+
+    ConstitutiveLawSetVariableBool(rIdent,IdentifierEnum,rValue);
+}
+
+//! @brief ... gets a variable of the constitutive law which is selected by a string
+//! @param rIdent ... constitutive law identifier
+//! @param rIdentifier ... String to identify the requested variable
+//! @return ... value of the requested variable
+double NuTo::StructureBase::ConstitutiveLawGetVariableDouble(int rIdent, const string &rIdentifier) const
+{
+    std::string upperCaseIdentifier;
+    NuTo::Constitutive::eConstitutiveVariable IdentifierEnum;
+
+    // transform string to uppercase
+    std::transform(rIdentifier.begin(), rIdentifier.end(), std::back_inserter(upperCaseIdentifier), (int(*)(int)) toupper);
+
+    // Get enum
+    IdentifierEnum = Constitutive::GetConstitutiveVariableFromString(upperCaseIdentifier);
+
+    return ConstitutiveLawGetVariableDouble(rIdent,IdentifierEnum);
+}
+
+
+//! @brief ... sets a variable of the constitutive law which is selected by a sting
+//! @param rIdent ... constitutive law identifier
+//! @param rIdentifier ... String to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::StructureBase::ConstitutiveLawSetVariableDouble(int rIdent, const string &rIdentifier, double rValue)
+{
+    std::string upperCaseIdentifier;
+    NuTo::Constitutive::eConstitutiveVariable IdentifierEnum;
+
+    // transform string to uppercase
+    std::transform(rIdentifier.begin(), rIdentifier.end(), std::back_inserter(upperCaseIdentifier), (int(*)(int)) toupper);
+
+    // Get enum
+    IdentifierEnum = Constitutive::GetConstitutiveVariableFromString(upperCaseIdentifier);
+
+    ConstitutiveLawSetVariableDouble(rIdent,IdentifierEnum,rValue);
+}
+
+//! @brief ... gets a variable of the constitutive law which is selected by a string
+//! @param rIdent ... constitutive law identifier
+//! @param rIdentifier ... String to identify the requested variable
+//! @return ... value of the requested variable
+NuTo::FullVector<double, Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGetVariableFullVectorDouble(int rIdent, const string &rIdentifier) const
+{
+    std::string upperCaseIdentifier;
+    NuTo::Constitutive::eConstitutiveVariable IdentifierEnum;
+
+    // transform string to uppercase
+    std::transform(rIdentifier.begin(), rIdentifier.end(), std::back_inserter(upperCaseIdentifier), (int(*)(int)) toupper);
+
+    // Get enum
+    IdentifierEnum = Constitutive::GetConstitutiveVariableFromString(upperCaseIdentifier);
+
+    return ConstitutiveLawGetVariableFullVectorDouble(rIdent,IdentifierEnum);
+}
+
+//! @brief ... sets a variable of the constitutive law which is selected by a string
+//! @param rIdent ... constitutive law identifier
+//! @param rIdentifier ... String to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::StructureBase::ConstitutiveLawSetVariableFullVectorDouble(int rIdent, const string &rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
+{
+    std::string upperCaseIdentifier;
+    NuTo::Constitutive::eConstitutiveVariable IdentifierEnum;
+
+    // transform string to uppercase
+    std::transform(rIdentifier.begin(), rIdentifier.end(), std::back_inserter(upperCaseIdentifier), (int(*)(int)) toupper);
+
+    // Get enum
+    IdentifierEnum = Constitutive::GetConstitutiveVariableFromString(upperCaseIdentifier);
+
+    ConstitutiveLawSetVariableFullVectorDouble(rIdent,IdentifierEnum,rValue);
+}
+
+//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @param rIdent ... constitutive law identifier
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @return ... value of the requested variable
+bool NuTo::StructureBase::ConstitutiveLawGetVariableBool(int rIdent, NuTo::Constitutive::eConstitutiveVariable rIdentifier) const
+{
+    bool requestedValue;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        requestedValue = ConstitutiveLawPtr->GetVariableBool(rIdentifier);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetVariableBool] error getting requested value.");
+        throw e;
+    }
+    return requestedValue;
+}
+
+
+//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @param rIdent ... constitutive law identifier
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::StructureBase::ConstitutiveLawSetVariableBool(int rIdent, NuTo::Constitutive::eConstitutiveVariable rIdentifier, bool rValue)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetVariableBool(rIdentifier,rValue);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetVariableBool] error setting requested value.");
+        throw e;
+    }
+}
+
+
+//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @param rIdent ... constitutive law identifier
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @return ... value of the requested variable
+double NuTo::StructureBase::ConstitutiveLawGetVariableDouble(int rIdent, NuTo::Constitutive::eConstitutiveVariable rIdentifier) const
+{
+    double requestedValue;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        requestedValue = ConstitutiveLawPtr->GetVariableDouble(rIdentifier);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetVariableDouble] error getting requested value.");
+        throw e;
+    }
+    return requestedValue;
+}
+
+//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @param rIdent ... constitutive law identifier
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::StructureBase::ConstitutiveLawSetVariableDouble(int rIdent, NuTo::Constitutive::eConstitutiveVariable rIdentifier, double rValue)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetVariableDouble(rIdentifier,rValue);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetVariableDouble] error setting requested value.");
+        throw e;
+    }
+}
+
+//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @param rIdent ... constitutive law identifier
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @return ... value of the requested variable
+NuTo::FullVector<double, Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGetVariableFullVectorDouble(int rIdent, NuTo::Constitutive::eConstitutiveVariable rIdentifier) const
+{
+    NuTo::FullVector<double,Eigen::Dynamic> requestedValue;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        requestedValue = ConstitutiveLawPtr->GetVariableFullVectorDouble(rIdentifier);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetVariableFullVectorDouble] error getting requested value.");
+        throw e;
+    }
+    return requestedValue;
+}
+
+//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @param rIdent ... constitutive law identifier
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::StructureBase::ConstitutiveLawSetVariableFullVectorDouble(int rIdent, NuTo::Constitutive::eConstitutiveVariable rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetVariableFullVectorDouble(rIdentifier,rValue);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetVariableFullVectorDouble] error setting requested value.");
+        throw e;
+    }
+}
+
+
+
 // set density
 void NuTo::StructureBase::ConstitutiveLawSetDensity(int rIdent, double rRho)
 {
@@ -1034,228 +1261,6 @@ bool NuTo::StructureBase::ConstitutiveLawGetFatigueExtrapolation(int rIdent) con
     return FatigueExtrapolation;
 }
 
-//! @brief ... get adsorption coefficients as vector
-//! @param rIdent ... constitutive law identifier
-//! @return ... adsorption coefficients as vector
-NuTo::FullVector<double,Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGetAdsorptionCoefficients(int rIdent)
-{
-    NuTo::FullVector<double,3> AdsorptionCoefficients({0.0, 0.0, 0.0});
-
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        AdsorptionCoefficients = ConstitutiveLawPtr->GetAdsorptionCoefficients();
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetAdsorptionCoefficients] error getting adsorption coefficients.");
-        throw e;
-    }
-    return AdsorptionCoefficients;
-
-}
-
-//! @brief ... set adsorption coefficients as vector
-//! @param rIdent ... constitutive law identifier
-//! @param rAdsorptionCoefficients ... adsorption coefficients as vector
-void NuTo::StructureBase::ConstitutiveLawSetAdsorptionCoefficients(int rIdent, NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetAdsorptionCoefficients(rAdsorptionCoefficients);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetAdsorptionCoefficients] error setting adsorption coefficients.");
-        throw e;
-    }
-}
-
-//! @brief ... get boundary surface relative humidity transport coefficient
-//! @param rIdent ... constitutive law identifier
-//! @return ... boundary surface relative humidity transport coefficient
-double NuTo::StructureBase::ConstitutiveLawGetBoundarySurfaceRelativeHumidityTransportCoefficient(int rIdent) const
-{
-    double beta;
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        beta = ConstitutiveLawPtr->GetBoundarySurfaceRelativeHumidityTransportCoefficient();
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetBoundarySurfaceRelativeHumidityTransportCoefficient] error getting boundary surface relative humidity transport coefficient.");
-        throw e;
-    }
-    return beta;
-}
-
-//! @brief ... set boundary surface relative humidity transport coefficient
-//! @param rIdent ... constitutive law identifier
-//! @param ... boundary surface relative humidity transport coefficient
-void NuTo::StructureBase::ConstitutiveLawSetBoundarySurfaceRelativeHumidityTransportCoefficient(int rIdent, double rBeta)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetBoundarySurfaceRelativeHumidityTransportCoefficient(rBeta);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetBoundarySurfaceRelativeHumidityTransportCoefficient] error setting boundary surface relative humidity transport coefficient.");
-        throw e;
-    }
-}
-
-
-//! @brief ... get boundary surface water volume fraction transport coefficient
-//! @param rIdent ... constitutive law identifier
-//! @return ... boundary surface water volume fraction transport coefficient
-double NuTo::StructureBase::ConstitutiveLawGetBoundarySurfaceWaterVolumeFractionTransportCoefficient(int rIdent) const
-{
-    double beta;
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        beta = ConstitutiveLawPtr->GetBoundarySurfaceWaterVolumeFractionTransportCoefficient();
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetBoundarySurfaceWaterVolumeFractionTransportCoefficient] error getting boundary surface water volume fraction transport coefficient.");
-        throw e;
-    }
-    return beta;
-}
-
-//! @brief ... set boundary surface water volume fraction transport coefficient
-//! @param rIdent ... constitutive law identifier
-//! @param ... boundary surface water volume fraction transport coefficient
-void NuTo::StructureBase::ConstitutiveLawSetBoundarySurfaceWaterVolumeFractionTransportCoefficient(int rIdent, double rBeta)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetBoundarySurfaceWaterVolumeFractionTransportCoefficient(rBeta);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetBoundarySurfaceWaterVolumeFractionTransportCoefficient] error setting boundary surface water volume fraction transport coefficient.");
-        throw e;
-    }
-}
-
-//! @brief ... get desorption coefficients as vector
-//! @param rIdent ... constitutive law identifier
-//! @return ... desorption coefficients as vector
-NuTo::FullVector<double,Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGetDesorptionCoefficients(int rIdent)
-{
-    NuTo::FullVector<double,3> DesorptionCoefficients({0.0, 0.0, 0.0});
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        DesorptionCoefficients = ConstitutiveLawPtr->GetDesorptionCoefficients();
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetDesorptionCoefficients] error getting desorption coefficients.");
-        throw e;
-    }
-    return DesorptionCoefficients;
-}
-
-//! @brief ... set desorption coefficients as vector
-//! @param rIdent ... constitutive law identifier
-//! @param rDesorptionCoefficients ... desorption coefficients as vector
-void NuTo::StructureBase::ConstitutiveLawSetDesorptionCoefficients(int rIdent, NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetDesorptionCoefficients(rDesorptionCoefficients);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetDesorptionCoefficients] error setting desorption coefficients.");
-        throw e;
-    }
-}
-
-//! @brief ... returns a bool that tells if modified tangential stiffnes is enabled
-//! @param rIdent ... constitutive law identifier
-//! @return ... true or false
-bool NuTo::StructureBase::ConstitutiveLawGetEnableModifiedTangentialStiffness(int rIdent) const
-{
-    bool EnableModifiedTangentialStiffness;
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        EnableModifiedTangentialStiffness = ConstitutiveLawPtr->GetEnableModifiedTangentialStiffness();
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawEnableModifiedTangentialStiffness] error getting boolean value.");
-        throw e;
-    }
-    return EnableModifiedTangentialStiffness;
-}
-
-
-
-
-//! @brief ... Enables the use of a modified tangential stiffnes (hessian_0 in constitutive law)
-//! @param rIdent ... constitutive law identifier
-//! @param ... true or false
-void NuTo::StructureBase::ConstitutiveLawSetEnableModifiedTangentialStiffness(int rIdent, bool rEnableModifiedTangentialStiffness)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetEnableModifiedTangentialStiffness(rEnableModifiedTangentialStiffness);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetEnableModifiedTangentialStiffness] error enabling modified tangential stiffness.");
-        throw e;
-    }
-}
-
-//! @brief ... returns a bool that tells if the sorption hysteresis model is enabled
-//! @param rIdent ... constitutive law identifier
-//! @return ... true or false
-bool NuTo::StructureBase::ConstitutiveLawGetEnableSorptionHysteresis(int rIdent) const
-{
-    bool EnableSorptionHysteresis;
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        EnableSorptionHysteresis = ConstitutiveLawPtr->GetEnableSorptionHysteresis();
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawEnableSorptionHysteresis] error getting boolean value.");
-        throw e;
-    }
-    return EnableSorptionHysteresis;
-}
-
-//! @brief ... Enables the use of the sorption hysteresis model
-//! @param rIdent ... constitutive law identifier
-//! @param ... true or false
-void NuTo::StructureBase::ConstitutiveLawSetEnableSorptionHysteresis(int rIdent, bool rEnableSorptionHysteresis)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetEnableSorptionHysteresis(rEnableSorptionHysteresis);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetEnableSorptionHysteresis] error enabling sorption hysteresis.");
-        throw e;
-    }
-}
-
 
 //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
 //! @param rIdent ... constitutive law identifier
@@ -1276,358 +1281,4 @@ double NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction(int
         throw e;
     }
     return EquilibriumWaterVolumeFraction;
-}
-
-//! @brief ... get the gradient correction when changing from desorption to adsorption
-//! @param rIdent ... constitutive law identifier
-//! @return ... gradient correction when changing from desorption to adsorption
-double NuTo::StructureBase::ConstitutiveLawGetKa(int rIdent) const
-{
-    double Ka = 0.0;
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        Ka = ConstitutiveLawPtr->GetKa();
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetKa] error getting Ka.");
-        throw e;
-    }
-    return Ka;
-}
-
-//! @brief ... set the gradient correction when changing from desorption to adsorption
-//! @param rIdent ... constitutive law identifier
-//! @param ... gradient correction when changing from desorption to adsorption
-void NuTo::StructureBase::ConstitutiveLawSetKa(int rIdent, double rKa)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetKa(rKa);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetKa] error setting Ka.");
-        throw e;
-    }
-}
-
-//! @brief ... get the gradient correction when changing from adsorption to desorption
-//! @param rIdent ... constitutive law identifier
-//! @return ... gradient correction when changing from adsorption to desorption
-double NuTo::StructureBase::ConstitutiveLawGetKd(int rIdent) const
-{
-    double Kd = 0.0;
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        Kd = ConstitutiveLawPtr->GetKd();
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetKd] error getting Kd.");
-        throw e;
-    }
-    return Kd;
-}
-
-//! @brief ... set the gradient correction when changing from adsorption to desorption
-//! @param rIdent ... constitutive law identifier
-//! @param ... gradient correction when changing from adsorption to desorption
-void NuTo::StructureBase::ConstitutiveLawSetKd(int rIdent, double rKd)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetKd(rKd);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetKd] error setting Kd.");
-        throw e;
-    }
-}
-
-//! @brief ... get mass exchange rate between vapor phase and water phase
-//! @param rIdent ... constitutive law identifier
-double NuTo::StructureBase::ConstitutiveLawGetMassExchangeRate(int rIdent)
-{
-    double MassExchangeRate = 0.0;
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        MassExchangeRate = ConstitutiveLawPtr->GetMassExchangeRate();
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetMassExchangeRate] error getting mass exchange rate.");
-        throw e;
-    }
-    return MassExchangeRate;
-}
-
-//! @brief ... set mass exchange rate between vapor phase and water phase
-//! @param rIdent ... constitutive law identifier
-//! @param rMassExchangeRate ... mass exchange rate
-void NuTo::StructureBase::ConstitutiveLawSetMassExchangeRate(int rIdent, double rMassExchangeRate)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetMassExchangeRate(rMassExchangeRate);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetMassExchangeRate] error setting mass exchange rate.");
-        throw e;
-    }
-}
-
-//! @brief ... get porosity
-//! @param rIdent ... constitutive law identifier
-double NuTo::StructureBase::ConstitutiveLawGetPorosity(int rIdent)
-{
-    double Porosity = 0.0;
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        Porosity = ConstitutiveLawPtr->GetPorosity();
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetPorosity] error getting porosity.");
-        throw e;
-    }
-    return Porosity;
-}
-
-//! @brief ... set porosity
-//! @param rIdent ... constitutive law identifier
-//! @param rPorosity ... porosity
-void NuTo::StructureBase::ConstitutiveLawSetPorosity(int rIdent, double rPorosity)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetPorosity(rPorosity);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetPorosity] error setting porosity.");
-        throw e;
-    }
-}
-
-//! @brief ... get vapor phase diffusion coefficient
-//! @param rIdent ... constitutive law identifier
-double NuTo::StructureBase::ConstitutiveLawGetVaporPhaseDiffusionCoefficient(int rIdent)
-{
-    double VaporPhaseDiffusionCoefficient = 0.0;
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        VaporPhaseDiffusionCoefficient = ConstitutiveLawPtr->GetVaporPhaseDiffusionCoefficient();
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetVaporPhaseDiffusionCoefficient] error getting vapor phase diffusion coefficient.");
-        throw e;
-    }
-    return VaporPhaseDiffusionCoefficient;
-}
-
-//! @brief ... set vapor phase diffusion coefficient
-//! @param rIdent ... constitutive law identifier
-//! @param rVaporPhaseDiffusionCoefficient ... vapor phase diffusion coefficient
-void NuTo::StructureBase::ConstitutiveLawSetVaporPhaseDiffusionCoefficient(int rIdent, double rVaporPhaseDiffusionCoefficient)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetVaporPhaseDiffusionCoefficient(rVaporPhaseDiffusionCoefficient);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetVaporPhaseDiffusionCoefficient] error setting vapor phase diffusion coefficient.");
-        throw e;
-    }
-}
-
-//! @brief ... get vapor phase diffusion exponent
-//! @param rIdent ... constitutive law identifier
-double NuTo::StructureBase::ConstitutiveLawGetVaporPhaseDiffusionExponent(int rIdent)
-{
-    double VaporPhaseDiffusionExponent = 0.0;
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        VaporPhaseDiffusionExponent = ConstitutiveLawPtr->GetVaporPhaseDiffusionExponent();
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetVaporPhaseDiffusionExponent] error getting vapor phase diffusion exponent.");
-        throw e;
-    }
-    return VaporPhaseDiffusionExponent;
-}
-
-//! @brief ... set vapor phase diffusion exponent
-//! @param rIdent ... constitutive law identifier
-//! @param rVaporPhaseDiffusionExponent ... vapor phase diffusion exponent
-void NuTo::StructureBase::ConstitutiveLawSetVaporPhaseDiffusionExponent(int rIdent, double rVaporPhaseDiffusionExponent)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetVaporPhaseDiffusionExponent(rVaporPhaseDiffusionExponent);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetVaporPhaseDiffusionExponent] error setting vapor phase diffusion exponent.");
-        throw e;
-    }
-}
-
-//! @brief ... get vapor phase saturation density
-//! @param rIdent ... constitutive law identifier
-double NuTo::StructureBase::ConstitutiveLawGetVaporPhaseSaturationDensity(int rIdent)
-{
-    double VaporPhaseSaturationDensity = 0.0;
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        VaporPhaseSaturationDensity = ConstitutiveLawPtr->GetVaporPhaseSaturationDensity();
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetVaporPhaseSaturationDensity] error getting vapor phase saturation density.");
-        throw e;
-    }
-    return VaporPhaseSaturationDensity;
-}
-
-//! @brief ... set vapor phase saturation density
-//! @param rIdent ... constitutive law identifier
-//! @param rVaporPhaseSaturationDensity ... vapor phase saturation density
-void NuTo::StructureBase::ConstitutiveLawSetVaporPhaseSaturationDensity(int rIdent, double rVaporPhaseSaturationDensity)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetVaporPhaseSaturationDensity(rVaporPhaseSaturationDensity);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetVaporPhaseSaturationDensity] error setting vapor phase saturation density.");
-        throw e;
-    }
-}
-
-//! @brief ... get water phase density
-//! @param rIdent ... constitutive law identifier
-double NuTo::StructureBase::ConstitutiveLawGetWaterPhaseDensity(int rIdent)
-{
-    double WaterPhaseDensity = 0.0;
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        WaterPhaseDensity = ConstitutiveLawPtr->GetWaterPhaseDensity();
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetWaterPhaseDensity] error getting water phase density.");
-        throw e;
-    }
-    return WaterPhaseDensity;
-}
-
-
-//! @brief ... set water phase density
-//! @param rIdent ... constitutive law identifier
-//! @param rWaterPhaseDensity ... water phase density
-void NuTo::StructureBase::ConstitutiveLawSetWaterPhaseDensity(int rIdent, double rWaterPhaseDensity)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetWaterPhaseDensity(rWaterPhaseDensity);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetWaterPhaseDensity] error setting water phase density.");
-        throw e;
-    }
-}
-
-//! @brief ... get water phase diffusion coefficient
-//! @param rIdent ... constitutive law identifier
-double NuTo::StructureBase::ConstitutiveLawGetWaterPhaseDiffusionCoefficient(int rIdent)
-{
-    double WaterPhaseDiffusionCoefficient = 0.0;
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        WaterPhaseDiffusionCoefficient = ConstitutiveLawPtr->GetWaterPhaseDiffusionCoefficient();
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetWaterPhaseDiffusionCoefficient] error getting water phase diffusion coefficient.");
-        throw e;
-    }
-    return WaterPhaseDiffusionCoefficient;
-}
-
-//! @brief ... set water phase diffusion coefficient
-//! @param rIdent ... constitutive law identifier
-//! @param rWaterPhaseDiffusionCoefficient ... water phase diffusion coefficient
-void NuTo::StructureBase::ConstitutiveLawSetWaterPhaseDiffusionCoefficient(int rIdent, double rWaterPhaseDiffusionCoefficient)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetWaterPhaseDiffusionCoefficient(rWaterPhaseDiffusionCoefficient);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetWaterPhaseDiffusionCoefficient] error setting water phase diffusion coefficient.");
-        throw e;
-    }
-}
-
-
-//! @brief ... get water phase diffusion exponent
-//! @param rIdent ... constitutive law identifier
-double NuTo::StructureBase::ConstitutiveLawGetWaterPhaseDiffusionExponent(int rIdent)
-{
-    double WaterPhaseDiffusionExponent = 0.0;
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        WaterPhaseDiffusionExponent = ConstitutiveLawPtr->GetWaterPhaseDiffusionExponent();
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetWaterPhaseDiffusionExponent] error getting water phase diffusion exponent.");
-        throw e;
-    }
-    return WaterPhaseDiffusionExponent;
-}
-
-//! @brief ... set water phase diffusion exponent
-//! @param rIdent ... constitutive law identifier
-//! @param rWaterPhaseDiffusionExponent ... water phase diffusion exponent
-void NuTo::StructureBase::ConstitutiveLawSetWaterPhaseDiffusionExponent(int rIdent, double rWaterPhaseDiffusionExponent)
-{
-    try
-    {
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetWaterPhaseDiffusionExponent(rWaterPhaseDiffusionExponent);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetWaterPhaseDiffusionExponent] error setting water phase diffusion exponent.");
-        throw e;
-    }
 }

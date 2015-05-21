@@ -4,6 +4,7 @@
 
 #include <map>
 #include <boost/assign/list_of.hpp>
+#include <nuto/mechanics/MechanicsException.h>
 
 namespace NuTo
 {
@@ -52,6 +53,61 @@ enum eDamageLawType
     ISOTROPIC_CUBIC_HERMITE                         //!< cubic hermite h00
 };
 
+enum class eConstitutiveVariable
+{
+    BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE,      //!<
+    BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE,    //!<
+    DENSITY_WATER_PHASE,                        //!<
+    DIFFUSION_CONSTANT_GAS_PHASE,               //!<
+    DIFFUSION_CONSTANT_WATER_PHASE,             //!<
+    DIFFUSION_EXPONENT_GAS_PHASE,               //!<
+    DIFFUSION_EXPONENT_WATER_PHASE,             //!<
+    ENABLE_MODIFIED_TANGENTIAL_STIFFNESS,       //!<
+    ENABLE_SORPTION_HYSTERESIS,                 //!<
+    GRADIENT_CORRECTION_ADSORPTION_DESORPTION,  //!<
+    GRADIENT_CORRECTION_DESORPTION_ADSORPTION,  //!<
+    MASS_EXCHANGE_RATE,                         //!<
+    POLYNOMIAL_COEFFICIENTS_ADSORPTION,         //!<
+    POLYNOMIAL_COEFFICIENTS_DESORPTION,         //!<
+    POROSITY,                                   //!<
+    SATURATION_DENSITY_GAS_PHASE                //!<
+};
+
+static inline eConstitutiveVariable GetConstitutiveVariableFromString(const std::string& rVariableName)
+{
+    std::map<std::string,eConstitutiveVariable> MapStringToConstitutiveVariable;
+
+    MapStringToConstitutiveVariable["BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE"]        = eConstitutiveVariable::BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE;
+    MapStringToConstitutiveVariable["BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE"]      = eConstitutiveVariable::BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE;
+    MapStringToConstitutiveVariable["DENSITY_WATER_PHASE"]                          = eConstitutiveVariable::DENSITY_WATER_PHASE;
+    MapStringToConstitutiveVariable["DIFFUSION_CONSTANT_GAS_PHASE"]                 = eConstitutiveVariable::DIFFUSION_CONSTANT_GAS_PHASE;
+    MapStringToConstitutiveVariable["DIFFUSION_CONSTANT_WATER_PHASE"]               = eConstitutiveVariable::DIFFUSION_CONSTANT_WATER_PHASE;
+    MapStringToConstitutiveVariable["DIFFUSION_EXPONENT_GAS_PHASE"]                 = eConstitutiveVariable::DIFFUSION_EXPONENT_GAS_PHASE;
+    MapStringToConstitutiveVariable["DIFFUSION_EXPONENT_WATER_PHASE"]               = eConstitutiveVariable::DIFFUSION_EXPONENT_WATER_PHASE;
+    MapStringToConstitutiveVariable["ENABLE_MODIFIED_TANGENTIAL_STIFFNESS"]         = eConstitutiveVariable::ENABLE_MODIFIED_TANGENTIAL_STIFFNESS;
+    MapStringToConstitutiveVariable["ENABLE_SORPTION_HYSTERESIS"]                   = eConstitutiveVariable::ENABLE_SORPTION_HYSTERESIS;
+    MapStringToConstitutiveVariable["GRADIENT_CORRECTION_ADSORPTION_DESORPTION"]    = eConstitutiveVariable::GRADIENT_CORRECTION_ADSORPTION_DESORPTION;
+    MapStringToConstitutiveVariable["GRADIENT_CORRECTION_DESORPTION_ADSORPTION"]    = eConstitutiveVariable::GRADIENT_CORRECTION_DESORPTION_ADSORPTION;
+    MapStringToConstitutiveVariable["MASS_EXCHANGE_RATE"]                           = eConstitutiveVariable::MASS_EXCHANGE_RATE;
+    MapStringToConstitutiveVariable["POLYNOMIAL_COEFFICIENTS_ADSORPTION"]           = eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_ADSORPTION;
+    MapStringToConstitutiveVariable["POLYNOMIAL_COEFFICIENTS_DESORPTION"]           = eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_DESORPTION;
+    MapStringToConstitutiveVariable["POROSITY"]                                     = eConstitutiveVariable::POROSITY;
+    MapStringToConstitutiveVariable["SATURATION_DENSITY_GAS_PHASE"]                 = eConstitutiveVariable::SATURATION_DENSITY_GAS_PHASE;
+
+    // find element in map
+
+    auto itResult = MapStringToConstitutiveVariable.find(rVariableName);
+    if (itResult!=MapStringToConstitutiveVariable.end())
+    {
+        return itResult->second;
+    }
+    else
+    {
+        throw NuTo::MechanicsException("[NuTo::Constitutive::GetConstitutiveVariableFromString] There is no entry for constitutive variable identifier " +
+                                       rVariableName + " in file ConstitutiveEnum.h.");
+    }
+}
+
 namespace Input
 {
 enum eInput
@@ -61,7 +117,7 @@ enum eInput
     DEFORMATION_GRADIENT_3D,            //!<
     ENGINEERING_STRAIN_1D,              //!<
     ENGINEERING_STRAIN_2D,              //!<
-	ENGINEERING_STRAIN_3D,
+    ENGINEERING_STRAIN_3D,              //!<
     TEMPERATURE,                        //!<
     TEMPERATURE_GRADIENT_1D,            //!<
     TEMPERATURE_GRADIENT_2D,            //!<

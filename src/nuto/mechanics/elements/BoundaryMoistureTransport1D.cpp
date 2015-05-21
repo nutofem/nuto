@@ -422,9 +422,10 @@ double NuTo::BoundaryMoistureTransport1D::GetBoundaryWaterVolumeFraction() const
 //! @param water volume fraction at the boundary surface
 void NuTo::BoundaryMoistureTransport1D::SetBoundaryWaterVolumeFraction(double rBoundaryWaterVolumeFraction)
 {
-    if (rBoundaryWaterVolumeFraction < 0 || rBoundaryWaterVolumeFraction > this->GetConstitutiveLaw(0)->GetPorosity())
+    if (rBoundaryWaterVolumeFraction < 0 || rBoundaryWaterVolumeFraction > this->GetConstitutiveLaw(0)->GetVariableDouble(Constitutive::eConstitutiveVariable::POROSITY))
     {
-        throw MechanicsException("[NuTo::BoundaryMoistureTransport1D::SetBoundaryWaterVolumeFraction] boundary water volume fraction must be a value between 0 and the porosity value ("+std::to_string(this->GetConstitutiveLaw(0)->GetPorosity()) + ")");
+        throw MechanicsException("[NuTo::BoundaryMoistureTransport1D::SetBoundaryWaterVolumeFraction] boundary water volume fraction must be a value between 0 and the porosity value ("
+                                 +std::to_string(this->GetConstitutiveLaw(0)->GetVariableDouble(Constitutive::eConstitutiveVariable::POROSITY)) + ")");
     }
     mBoundaryWaterVolumeFraction = rBoundaryWaterVolumeFraction;
 }

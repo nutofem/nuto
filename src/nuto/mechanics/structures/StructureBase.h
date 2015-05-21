@@ -1267,6 +1267,83 @@ public:
     //! @param rVerboseLevel ... controls the verbosity of the information
     void ConstitutiveLawInfo(int rIdent, unsigned short rVerboseLevel) const;
 
+
+    //! @brief ... gets a variable of the constitutive law which is selected by a string
+    //! @param rIdent ... constitutive law identifier
+    //! @param rIdentifier ... String to identify the requested variable
+    //! @return ... value of the requested variable
+    bool ConstitutiveLawGetVariableBool(int rIdent, const std::string& rIdentifier) const;
+
+    //! @brief ... sets a variable of the constitutive law which is selected by a string
+    //! @param rIdent ... constitutive law identifier
+    //! @param rIdentifier ... String to identify the requested variable
+    //! @param rValue ... new value for requested variable
+    void ConstitutiveLawSetVariableBool(int rIdent, const std::string& rIdentifier, bool rValue);
+
+    //! @brief ... gets a variable of the constitutive law which is selected by a string
+    //! @param rIdent ... constitutive law identifier
+    //! @param rIdentifier ... String to identify the requested variable
+    //! @return ... value of the requested variable
+    double ConstitutiveLawGetVariableDouble(int rIdent, const std::string& rIdentifier) const;
+
+    //! @brief ... sets a variable of the constitutive law which is selected by a string
+    //! @param rIdent ... constitutive law identifier
+    //! @param rIdentifier ... String to identify the requested variable
+    //! @param rValue ... new value for requested variable
+    void ConstitutiveLawSetVariableDouble(int rIdent, const std::string& rIdentifier, double rValue);
+
+    //! @brief ... gets a variable of the constitutive law which is selected by a string
+    //! @param rIdent ... constitutive law identifier
+    //! @param rIdentifier ... String to identify the requested variable
+    //! @return ... value of the requested variable
+    NuTo::FullVector<double, Eigen::Dynamic> ConstitutiveLawGetVariableFullVectorDouble(int rIdent, const std::string& rIdentifier) const;
+
+    //! @brief ... sets a variable of the constitutive law which is selected by a string
+    //! @param rIdent ... constitutive law identifier
+    //! @param rIdentifier ... String to identify the requested variable
+    //! @param rValue ... new value for requested variable
+    void ConstitutiveLawSetVariableFullVectorDouble(int rIdent, const std::string& rIdentifier, NuTo::FullVector<double, Eigen::Dynamic>  rValue);
+
+
+#ifndef SWIG
+
+    //! @brief ... gets a variable of the constitutive law which is selected by an enum
+    //! @param rIdent ... constitutive law identifier
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @return ... value of the requested variable
+    bool ConstitutiveLawGetVariableBool(int rIdent, Constitutive::eConstitutiveVariable rIdentifier) const;
+
+    //! @brief ... sets a variable of the constitutive law which is selected by an enum
+    //! @param rIdent ... constitutive law identifier
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rValue ... new value for requested variable
+    void ConstitutiveLawSetVariableBool(int rIdent, Constitutive::eConstitutiveVariable rIdentifier, bool rValue);
+
+    //! @brief ... gets a variable of the constitutive law which is selected by an enum
+    //! @param rIdent ... constitutive law identifier
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @return ... value of the requested variable
+    double ConstitutiveLawGetVariableDouble(int rIdent, Constitutive::eConstitutiveVariable rIdentifier) const;
+
+    //! @brief ... sets a variable of the constitutive law which is selected by an enum
+    //! @param rIdent ... constitutive law identifier
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rValue ... new value for requested variable
+    void ConstitutiveLawSetVariableDouble(int rIdent, Constitutive::eConstitutiveVariable rIdentifier, double rValue);
+
+    //! @brief ... gets a variable of the constitutive law which is selected by an enum
+    //! @param rIdent ... constitutive law identifier
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @return ... value of the requested variable
+    NuTo::FullVector<double, Eigen::Dynamic> ConstitutiveLawGetVariableFullVectorDouble(int rIdent, Constitutive::eConstitutiveVariable rIdentifier) const;
+
+    //! @brief ... sets a variable of the constitutive law which is selected by an enum
+    //! @param rIdent ... constitutive law identifier
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rValue ... new value for requested variable
+    void ConstitutiveLawSetVariableFullVectorDouble(int rIdent, Constitutive::eConstitutiveVariable rIdentifier, NuTo::FullVector<double, Eigen::Dynamic>  rValue);
+#endif // SWIG
+
     //! @brief ... set density
     //! @param rIdent ... constitutive law identifier
     //! @param rRho ... density
@@ -1489,167 +1566,12 @@ public:
     //! @param ... viscoplastic yield surface offset
     void ConstitutiveLawSetViscoplasticYieldSurfaceOffset(int rIdent, double rViscoplasticYieldSurfaceOffset);
 
-    //! @brief ... get adsorption coefficients as vector
-    //! @param rIdent ... constitutive law identifier
-    //! @return ... adsorption coefficients as vector
-    NuTo::FullVector<double,Eigen::Dynamic> ConstitutiveLawGetAdsorptionCoefficients(int rIdent);
-
-    //! @brief ... set adsorption coefficients as vector
-    //! @param rIdent ... constitutive law identifier
-    //! @param rAdsorptionCoefficients ... adsorption coefficients as vector
-    void ConstitutiveLawSetAdsorptionCoefficients(int rIdent, NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients);
-
-    //! @brief ... get boundary surface relative humidity transport coefficient
-    //! @param rIdent ... constitutive law identifier
-    //! @return ... boundary surface relative humidity transport coefficient
-    double ConstitutiveLawGetBoundarySurfaceRelativeHumidityTransportCoefficient(int rIdent) const;
-
-    //! @brief ... set boundary surface relative humidity transport coefficient
-    //! @param rIdent ... constitutive law identifier
-    //! @param ... boundary surface relative humidity transport coefficient
-    void ConstitutiveLawSetBoundarySurfaceRelativeHumidityTransportCoefficient(int rIdent, double rBeta);
-
-    //! @brief ... get boundary surface water volume fraction transport coefficient
-    //! @param rIdent ... constitutive law identifier
-    //! @return ... boundary surface water volume fraction transport coefficient
-    double ConstitutiveLawGetBoundarySurfaceWaterVolumeFractionTransportCoefficient(int rIdent) const;
-
-    //! @brief ... set boundary surface water volume fraction transport coefficient
-    //! @param rIdent ... constitutive law identifier
-    //! @param ... boundary surface water volume fraction transport coefficient
-    void ConstitutiveLawSetBoundarySurfaceWaterVolumeFractionTransportCoefficient(int rIdent, double rBeta);
-
-
-    //! @brief ... get desorption coefficients as vector
-    //! @param rIdent ... constitutive law identifier
-    //! @return ... desorption coefficients as vector
-    NuTo::FullVector<double,Eigen::Dynamic> ConstitutiveLawGetDesorptionCoefficients(int rIdent);
-
-    //! @brief ... set desorption coefficients as vector
-    //! @param rIdent ... constitutive law identifier
-    //! @param rDesorptionCoefficients ... desorption coefficients as vector
-    void ConstitutiveLawSetDesorptionCoefficients(int rIdent, NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients);
-
-    //! @brief ... returns a bool that tells if modified tangential stiffnes is enabled
-    //! @param rIdent ... constitutive law identifier
-    //! @return ... true or false
-    bool ConstitutiveLawGetEnableModifiedTangentialStiffness(int rIdent) const;
-
-    //! @brief ... Enables the use of a modified tangential stiffnes (hessian_0 in constitutive law)
-    //! @param rIdent ... constitutive law identifier
-    //! @param ... true or false
-    void ConstitutiveLawSetEnableModifiedTangentialStiffness(int rIdent, bool rEnableModifiedTangentialStiffness);
-
-
-    //! @brief ... returns a bool that tells if the sorption hysteresis model is enabled
-    //! @param rIdent ... constitutive law identifier
-    //! @return ... true or false
-    bool ConstitutiveLawGetEnableSorptionHysteresis(int rIdent) const;
-
-    //! @brief ... Enables the use of the sorption hysteresis model
-    //! @param rIdent ... constitutive law identifier
-    //! @param ... true or false
-    void ConstitutiveLawSetEnableSorptionHysteresis(int rIdent, bool rEnableSorptionHysteresis);
-
     //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
     //! @param rIdent ... constitutive law identifier
     //! @param rRelativeHumidity ... relative humidity
     //! @param rCoeffs ... polynomial coefficients of the sorption curve
     //! @return ... equilibrium water volume fraction
     double ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const;
-
-    //! @brief ... get the gradient correction when changing from desorption to adsorption
-    //! @param rIdent ... constitutive law identifier
-    //! @return ... gradient correction when changing from desorption to adsorption
-    double ConstitutiveLawGetKa(int rIdent) const;
-
-    //! @brief ... set the gradient correction when changing from desorption to adsorption
-    //! @param rIdent ... constitutive law identifier
-    //! @param ... gradient correction when changing from desorption to adsorption
-    void ConstitutiveLawSetKa(int rIdent, double rKa);
-
-    //! @brief ... get the gradient correction when changing from adsorption to desorption
-    //! @param rIdent ... constitutive law identifier
-    //! @return ... gradient correction when changing from adsorption to desorption
-    double ConstitutiveLawGetKd(int rIdent) const;
-
-    //! @brief ... set the gradient correction when changing from adsorption to desorption
-    //! @param rIdent ... constitutive law identifier
-    //! @param ... gradient correction when changing from adsorption to desorption
-    void ConstitutiveLawSetKd(int rIdent, double rKd);
-
-    //! @brief ... get mass exchange rate between vapor phase and water phase
-    //! @param rIdent ... constitutive law identifier
-    double ConstitutiveLawGetMassExchangeRate(int rIdent);
-
-    //! @brief ... set mass exchange rate between vapor phase and water phase
-    //! @param rIdent ... constitutive law identifier
-    //! @param rMassExchangeRate ... mass exchange rate
-    void ConstitutiveLawSetMassExchangeRate(int rIdent, double rMassExchangeRate);
-
-    //! @brief ... get porosity
-    //! @param rIdent ... constitutive law identifier
-    double ConstitutiveLawGetPorosity(int rIdent);
-
-    //! @brief ... set porosity
-    //! @param rIdent ... constitutive law identifier
-    //! @param rPorosity ... porosity
-    void ConstitutiveLawSetPorosity(int rIdent, double rPorosity);
-
-    //! @brief ... get vapor phase diffusion coefficient
-    //! @param rIdent ... constitutive law identifier
-    double ConstitutiveLawGetVaporPhaseDiffusionCoefficient(int rIdent);
-
-    //! @brief ... set vapor phase diffusion coefficient
-    //! @param rIdent ... constitutive law identifier
-    //! @param rVaporPhaseDiffusionCoefficient ... vapor phase diffusion coefficient
-    void ConstitutiveLawSetVaporPhaseDiffusionCoefficient(int rIdent, double rVaporPhaseDiffusionCoefficient);
-
-    //! @brief ... get vapor phase diffusion exponent
-    //! @param rIdent ... constitutive law identifier
-    double ConstitutiveLawGetVaporPhaseDiffusionExponent(int rIdent);
-
-    //! @brief ... set vapor phase diffusion exponent
-    //! @param rIdent ... constitutive law identifier
-    //! @param rVaporPhaseDiffusionExponent ... vapor phase diffusion exponent
-    void ConstitutiveLawSetVaporPhaseDiffusionExponent(int rIdent, double rVaporPhaseDiffusionExponent);
-
-    //! @brief ... get vapor phase saturation density
-    //! @param rIdent ... constitutive law identifier
-    double ConstitutiveLawGetVaporPhaseSaturationDensity(int rIdent);
-
-    //! @brief ... set vapor phase saturation density
-    //! @param rIdent ... constitutive law identifier
-    //! @param rVaporPhaseSaturationDensity ... vapor phase saturation density
-    void ConstitutiveLawSetVaporPhaseSaturationDensity(int rIdent, double rVaporPhaseSaturationDensity);
-
-    //! @brief ... get water phase density
-    //! @param rIdent ... constitutive law identifier
-    double ConstitutiveLawGetWaterPhaseDensity(int rIdent);
-
-    //! @brief ... set water phase density
-    //! @param rIdent ... constitutive law identifier
-    //! @param rWaterPhaseDensity ... water phase density
-    void ConstitutiveLawSetWaterPhaseDensity(int rIdent, double rWaterPhaseDensity);
-
-    //! @brief ... get water phase diffusion coefficient
-    //! @param rIdent ... constitutive law identifier
-    double ConstitutiveLawGetWaterPhaseDiffusionCoefficient(int rIdent);
-
-    //! @brief ... set water phase diffusion coefficient
-    //! @param rIdent ... constitutive law identifier
-    //! @param rWaterPhaseDiffusionCoefficient ... water phase diffusion coefficient
-    void ConstitutiveLawSetWaterPhaseDiffusionCoefficient(int rIdent, double rWaterPhaseDiffusionCoefficient);
-
-    //! @brief ... get water phase diffusion exponent
-    //! @param rIdent ... constitutive law identifier
-    double ConstitutiveLawGetWaterPhaseDiffusionExponent(int rIdent);
-
-    //! @brief ... set water phase diffusion exponent
-    //! @param rIdent ... constitutive law identifier
-    //! @param rWaterPhaseDiffusionExponent ... water phase diffusion exponent
-    void ConstitutiveLawSetWaterPhaseDiffusionExponent(int rIdent, double rWaterPhaseDiffusionExponent);
-
 
     #ifndef SWIG
     //! @brief ... create a new section
