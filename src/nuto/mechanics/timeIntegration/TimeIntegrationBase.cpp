@@ -147,21 +147,26 @@ void NuTo::TimeIntegrationBase::CalculateExternalLoad(StructureBase& rStructure,
 
 		mLoadVectorStatic_j.Resize(rStructure.GetNumActiveDofs());
 		mLoadVectorStatic_k.Resize(rStructure.GetNumDofs()-rStructure.GetNumActiveDofs());
+
+		mLoadVectorTimeDependent_j.Resize(rStructure.GetNumActiveDofs());
+		mLoadVectorTimeDependent_k.Resize(rStructure.GetNumDofs()-rStructure.GetNumActiveDofs());
+
 		for (int count=0; count<rStructure.GetNumLoadCases(); count++)
 		{
 			rStructure.BuildGlobalExternalLoadVector(count,tmp_j,tmp_k);
+			std::cout<<"TIB_CEL1, mTimeDeoendentLoadCase = " << mTimeDependentLoadCase << std::endl;
 			if (count==mTimeDependentLoadCase)
 			{
+				std::cout << "TIB TimeDependent" << std::endl;
 				mLoadVectorTimeDependent_j=tmp_j;
 				mLoadVectorTimeDependent_k=tmp_k;
 			}
 			else
 			{
+				std::cout << "TIB Static" << std::endl;
 				mLoadVectorStatic_j+=tmp_j;
 				mLoadVectorStatic_k+=tmp_k;
 			}
-			//std::cout << "tmp_j\n" << tmp_j <<  std::endl;
-			//std::cout << "tmp_k\n" << tmp_k <<  std::endl;
 			std::cout << "sum of loads for loadcase " << count << " is " << tmp_j.ColumnwiseSum() + tmp_k.ColumnwiseSum() << std::endl;
 		}
 	}

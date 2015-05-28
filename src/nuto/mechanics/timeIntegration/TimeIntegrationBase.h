@@ -63,7 +63,7 @@ public:
     //! @param curTime ... current time in the load step
     //! @param rLoad_j ... external load vector for the independent dofs
     //! @param rLoad_k ... external load vector for the dependent dofs
-    void CalculateExternalLoad(StructureBase& rStructure, double curTime, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_j, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_k);
+    virtual void CalculateExternalLoad(StructureBase& rStructure, double curTime, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_j, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_k);
 
     //! @brief sets the nodes, for which displacements are to be monitored
     void CalculateOutputDispNodesPtr(StructureBase& rStructure);

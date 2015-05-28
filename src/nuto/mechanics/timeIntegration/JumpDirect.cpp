@@ -96,15 +96,26 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 #endif
     try
     {
-    	this->SetNewmarkBeta(15.);
+    	//this->SetNewmarkBeta(15.);   //for displac. controlled
+    	//this->SetNewmarkBeta(10.);   //for load control, 10%  incr 32
+    	//this->SetNewmarkBeta(15.);   //for load control, 5% incr 32
+    	this->SetNewmarkBeta(50);      //for load control, 10% incr 24
+
     	//calculate the end time of monotonic loading which is exactly the beginning of cyclic loading
     	NuTo::Error::eError Error;
-    	double BeginHarmonicExcitation(mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.GetNumRows()-1,0));
 
+    	double BeginHarmonicExcitation;
+    	if (mTimeDependentConstraint != -1) {
+    		BeginHarmonicExcitation = mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.GetNumRows()-1,0);
+    	} else if (mTimeDependentLoadCase != -1) {
+    		BeginHarmonicExcitation = mTimeDependentLoadFactor(mTimeDependentLoadFactor.GetNumRows()-1,0);
+    	} else {
+    		throw MechanicsException("[NuTo::JumpDirect::Solve] the harmonic excitation can be only applied to the time dependent constraint or load case.");
+    	}
     	//calculate till the end of the first three cycle
     	if (mHarmonicExtrapolation) {
     		//calculate the first three cycles
-    		Error = Solve(BeginHarmonicExcitation + 3./mHarmonicConstraintFactor(0,1));
+    		Error = NuTo::NewmarkDirect::Solve(BeginHarmonicExcitation + 3./mHarmonicFactor(0,1));
     		if (Error != NuTo::Error::SUCCESSFUL) {
     			return Error;
     		}
@@ -112,6 +123,8 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 			//calculate the whole loading history
 			return NuTo::NewmarkDirect::Solve(rTimeDelta);
 		}
+
+    	std::cout << " * * * After Newmark " << std::endl;
 
     	//calculate matrices
         //calculate constraint matrix
@@ -166,7 +179,7 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 
 //    	// calculate 10 cycles
 //    	std::cout << "Calculate 10 Cycles from here, mTime = " << mTime << std::endl;
-//    	Error = NuTo::NewmarkDirect::Solve(SaveTime + 10./mHarmonicConstraintFactor(0,1));
+//    	Error = NuTo::NewmarkDirect::Solve(SaveTime + 10./mHarmonicFactor(0,1));
 
 //    	//Example get damage
 //    	if (mStructure->ElementGetElementPtr(0)->GetConstitutiveLaw(0)->GetType() == NuTo::Constitutive::DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS){
@@ -190,21 +203,21 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 //    	}
 //
 //    	std::cout << "Repeat 10 Cycles from here, mTime = " << mTime << std::endl;
-//    	Error = NuTo::NewmarkDirect::Solve(SaveTime + 10./mHarmonicConstraintFactor(0,1));
+//    	Error = NuTo::NewmarkDirect::Solve(SaveTime + 10./mHarmonicFactor(0,1));
 
     	// perform the 4th cycle
     	// initialize mean displacement and displacement amplitude
     	NuTo::FullVector<double,Eigen::Dynamic> disp_Max_j, disp_Max_k, disp_Min_j, disp_Min_k;
 
-    	Error = NuTo::NewmarkDirect::Solve(SaveTime + 0.25/mHarmonicConstraintFactor(0,1));
+    	Error = NuTo::NewmarkDirect::Solve(SaveTime + 0.25/mHarmonicFactor(0,1));
     	mStructure->NodeExtractDofValues(0,disp_Max_j, disp_Max_k);
 
-    	Error = NuTo::NewmarkDirect::Solve(SaveTime + 0.75/mHarmonicConstraintFactor(0,1));
+    	Error = NuTo::NewmarkDirect::Solve(SaveTime + 0.75/mHarmonicFactor(0,1));
     	mStructure->NodeExtractDofValues(0,disp_Min_j, disp_Min_k);
 
     	NuTo::FullVector<double,Eigen::Dynamic> disp_Mean_j, disp_Mean_k, disp_Ampl_j, disp_Ampl_k;
 
-    	Error = NuTo::NewmarkDirect::Solve(SaveTime + 1./mHarmonicConstraintFactor(0,1));
+    	Error = NuTo::NewmarkDirect::Solve(SaveTime + 1./mHarmonicFactor(0,1));
     	mStructure->NodeExtractDofValues(0,disp_Mean_j, disp_Mean_k);
 
     	disp_Ampl_j = 0.5*(disp_Max_j - disp_Min_j);
@@ -223,13 +236,12 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 	    	// initiate number of cycles
     	int Njump(0);
     	Njump = 10;
-    	do
-    	{
-			mStructure->SetNumExtrapolatedCycles(Njump);
-				// extrapolate time starting from the end of the 4th cycle (SaveTime is still the end of the 3d cycle)
-			mStructure->SetTime(SaveTime + (Njump + 1)/mHarmonicConstraintFactor(0,1));
-			mStructure->SetPrevTime(SaveTime + (Njump + 1)/mHarmonicConstraintFactor(0,1));
-	//    	mTime += Njump/mHarmonicConstraintFactor(0,1);
+    	do {
+	  mStructure->SetNumExtrapolatedCycles(Njump);
+	  // extrapolate time starting from the end of the 4th cycle (SaveTime is still the end of the 3d cycle)
+	  mStructure->SetTime(SaveTime + (Njump + 1)/mHarmonicFactor(0,1));
+	  mStructure->SetPrevTime(SaveTime + (Njump + 1)/mHarmonicFactor(0,1));
+//        mTime += Njump/mHarmonicFactor(0,1);
 
 				// extrapolate state variables
 			mStructure->ElementFatigueExtrapolateStaticData();
@@ -290,36 +302,35 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 			// store static data for the next jump
 			mStructure->ElementFatigueSaveStaticData();
 
-			// straight forward integration after extrapolation
-			mStructure->NodeMergeActiveDofValues(0,disp_Mean_j);
-			mStructure->ElementTotalUpdateTmpStaticData();
-	//		std::cout << "mStress before USD" << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetPrevStress() << std::endl;
-	//		std::cout << "mOmegaCompr before USD" << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl;
-				// the state variables are already extrapolated, except of mPrevStrain and mPrevSigma
-				// call UpdateStaticDatat in order to update mPrevStrain and mPrevSigma too (this has to be done after the equilibrium has been found)
-			mStructure->ElementTotalUpdateStaticData();
-	//		std::cout << "mStress after USD " << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetPrevStress() << std::endl;
-	//		std::cout << "mOmegaCompr after USD" << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl;
-			SaveTime = mStructure->GetTime();
-			this->IntegrateSingleCycle(&disp_Mean_j,&disp_Mean_k,&disp_Ampl_j,&disp_Ampl_k,true);
-	//	    if (this->IsDynamic())
-	//	    {
-	//	        mStructure->NodeExtractDofValues(1,lastConverged_vel_j,lastConverged_vel_k);
-	//	        mStructure->NodeExtractDofValues(2,lastConverged_acc_j,lastConverged_acc_k);
-	//			std::cout << "=== acc_j = " << lastConverged_acc_j[0] << std::endl;
-	//
-	//	    }
-	//		Error = NuTo::NewmarkDirect::Solve(mStructure->GetTime() + 1./mHarmonicConstraintFactor(0,1));
-    	}
-    	while (SaveTime + (Njump + 1)/mHarmonicConstraintFactor(0,1) <= rTimeDelta);
+    	// straight forward integration after extrapolation
+	        mStructure->NodeMergeActiveDofValues(0,disp_Mean_j);
+		mStructure->ElementTotalUpdateTmpStaticData();
+//		std::cout << "mStress before USD" << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetPrevStress() << std::endl;
+//		std::cout << "mOmegaCompr before USD" << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl;
+			// the state variables are already extrapolated, except of mPrevStrain and mPrevSigma
+			// call UpdateStaticDatat in order to update mPrevStrain and mPrevSigma too (this has to be done after the equilibrium has been found)
+		mStructure->ElementTotalUpdateStaticData();
+//		std::cout << "mStress after USD " << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetPrevStress() << std::endl;
+//		std::cout << "mOmegaCompr after USD" << mStructure->ElementGetElementPtr(0)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl;
+		SaveTime = mStructure->GetTime();
+		this->IntegrateSingleCycle(&disp_Mean_j,&disp_Mean_k,&disp_Ampl_j,&disp_Ampl_k,true);
+//	    if (this->IsDynamic())
+//	    {
+//	        mStructure->NodeExtractDofValues(1,lastConverged_vel_j,lastConverged_vel_k);
+//	        mStructure->NodeExtractDofValues(2,lastConverged_acc_j,lastConverged_acc_k);
+//			std::cout << "=== acc_j = " << lastConverged_acc_j[0] << std::endl;
+//
+//	    }
+//		Error = NuTo::NewmarkDirect::Solve(mStructure->GetTime() + 1./mHarmonicFactor(0,1));
+    	} while (SaveTime + (Njump + 1)/mHarmonicFactor(0,1) <= rTimeDelta);
     }
 //    try
 //    {
 //    	double timeDependentConstraintTime(mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.GetNumRows()-1,0));
 //    	std::cout << "... applied harmonic = " << mHarmonicExcitation << std::endl;
-//    	std::cout << "... displecement amplitude = " << mHarmonicConstraintFactor(0,0) << std::endl;
-//    	std::cout << "... displecement frequency = " << mHarmonicConstraintFactor(0,1) << std::endl;
-//    	std::cout << "... number of cycles = " << int (mHarmonicConstraintFactor(0,2)) << std::endl;
+//    	std::cout << "... displecement amplitude = " << mHarmonicFactor(0,0) << std::endl;
+//    	std::cout << "... displecement frequency = " << mHarmonicFactor(0,1) << std::endl;
+//    	std::cout << "... number of cycles = " << int (mHarmonicFactor(0,2)) << std::endl;
 //    	std::cout << "... timeDependentConstraintTime = " << timeDependentConstraintTime << std::endl;
 //
 //        if (mMaxTimeStep==0)
@@ -1043,7 +1054,7 @@ void NuTo::JumpDirect::CalculateGlobalModifiedStiffness(NuTo::SparseMatrixCSRVec
 
 	if (rFourierMode > 0 && mStructure->GetNumTimeDerivatives()>1)
 		{
-		double frequency(mHarmonicConstraintFactor(0,1));
+		double frequency(mHarmonicFactor(0,1));
 		const double pi = boost::math::constants::pi<double>();
 		double factor(2*rFourierMode*pi*frequency);
 
@@ -1066,7 +1077,7 @@ void NuTo::JumpDirect::CalculateGlobalModifiedStiffness(NuTo::SparseMatrixCSRVec
 void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_k,
 		NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_k)
 {
-    NuTo::FullVector<double,Eigen::Dynamic> extForce_j, extForce_k;
+    NuTo::FullVector<double,Eigen::Dynamic> extForce_j, extForce_k, extForceMax_j, extForceMax_k;;
     NuTo::FullVector<double,Eigen::Dynamic> intForce_j(mStructure->GetNumActiveDofs()), intForce_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs()),
     		intForceMax_j(mStructure->GetNumActiveDofs()), intForceMax_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
     NuTo::FullVector<double,Eigen::Dynamic> residual_j, residual_k, residual_mod;
@@ -1083,13 +1094,29 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
     SparseMatrixCSRVector2General<double> stiffMatrix_jj(mStructure->GetNumActiveDofs(), mStructure->GetNumActiveDofs());
 
 
-	double BeginHarmonicExcitation(mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.GetNumRows()-1,0));
+	if (mTimeDependentConstraint != -1 && mTimeDependentLoadCase != -1) {
+		throw MechanicsException("[NuTo::JumpDirect::CalculateFourierCoefficients] the harmonic excitation is currently implemented for either time dependent constraint or load case.");
+	}
+
+	double BeginHarmonicExcitation;
+	if (mTimeDependentConstraint != -1) {
+		BeginHarmonicExcitation = mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.GetNumRows()-1,0);
+	} else if (mTimeDependentLoadCase != -1) {
+		BeginHarmonicExcitation = mTimeDependentLoadFactor(mTimeDependentLoadFactor.GetNumRows()-1,0);
+	} else {
+		throw MechanicsException("[NuTo::JumpDirect::CalculateFourierCoefficients] the harmonic excitation can be only applied to the time dependent constraint or load case.");
+	}
 
 	// find the mean value (rFourier = 0)
 
 	// set BC for the mean displacement, which is the displacement at the beginning of the harmonic excitation
-	double timeDependentConstraintFactor(this->CalculateTimeDependentConstraintFactor(BeginHarmonicExcitation));
-	mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+	double timeDependentConstraintFactor(0);
+    if (mTimeDependentConstraint!=-1)
+    {
+    	timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(BeginHarmonicExcitation);
+    	mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+    }
+
 	mStructure->ConstraintGetRHSAfterGaussElimination(bRHS);
 	// set mean displacement field
 	mStructure->NodeMergeActiveDofValues(0,*rDisp_Mean_j);
@@ -1100,7 +1127,6 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
 
 	residual_j = intForce_j - extForce_j;
 	residual_k = intForce_k - extForce_k;
-
 
 
 	////////**************
@@ -1236,10 +1262,24 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
 
 	// we need to calculate intForce(maximal displacement) - intForce(mean displacement)
 	// calculate time at which the harmonic displacement is maximal, this is a quarter of the period
-	double MaximumHarmonicExcitation(BeginHarmonicExcitation + 0.25/mHarmonicConstraintFactor(0,1));
+	double MaximumHarmonicExcitation(BeginHarmonicExcitation + 0.25/mHarmonicFactor(0,1));
 	// set BC for the maximal displacement
-	double timeDependentConstraintFactorMax(this->CalculateTimeDependentConstraintFactor(MaximumHarmonicExcitation));
-	mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactorMax);
+	double timeDependentConstraintFactorMax(0);
+    if (mTimeDependentConstraint != -1)
+    {
+    	timeDependentConstraintFactorMax = this->CalculateTimeDependentConstraintFactor(MaximumHarmonicExcitation);
+    	mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactorMax);
+    }
+
+    //set load amplitude for a load controlled case
+    if (mTimeDependentLoadCase != -1) {
+    	CalculateExternalLoad(*mStructure, MaximumHarmonicExcitation, extForceMax_j, extForceMax_k);
+    	extForce_j = extForceMax_j - extForce_j;
+    	extForce_k = extForceMax_k - extForce_k;
+	} else {
+		extForce_j.Zero(mStructure->GetNumActiveDofs()); extForce_k.Zero(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
+	}
+
 	mStructure->ConstraintGetRHSAfterGaussElimination(bRHSmax);
 	// set maximal displacement
 	mStructure->NodeMergeActiveDofValues(0,(*rDisp_Mean_j) + (*rDisp_Ampl_j));
@@ -1272,6 +1312,12 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
 	residual_j = intForce_j;
 	residual_k = intForce_k;
 
+	if (mTimeDependentLoadCase != -1)
+	{
+		residual_j -= extForce_j;
+		residual_k -= extForce_k;
+	}
+
     //calculate individual mass matrix
 //    NuTo::SparseMatrixCSRVector2General<double> massMatrix_jj,massMatrix_jk,massMatrix_kj,massMatrix_kk;
 //    NuTo::FullVector<double, Eigen::Dynamic> lumped_massMatrix_j(mStructure->GetNumDofs()),
@@ -1292,24 +1338,24 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
 		std::cout << "use full mass matrix " << std::endl;
 	}
 
-	double frequency(mHarmonicConstraintFactor(0,1));
+	double frequency(mHarmonicFactor(0,1));
 	const double pi = boost::math::constants::pi<double>();
 	double factor(2*pi*frequency);
 
-	if (mStructure->GetNumTimeDerivatives()>1)
-	{
-		if (mUseLumpedMass)
-		{
-			residual_j -= lumped_massMatrix_j.asDiagonal()*(*rDisp_Ampl_j)*factor*factor;
-			residual_k -= lumped_massMatrix_k.asDiagonal()*(*rDisp_Ampl_k)*factor*factor;
-		}
-		else
-		{
-			//add mass terms
-			residual_j -= (massMatrix_jj*(*rDisp_Ampl_j)+massMatrix_jk*(*rDisp_Ampl_k))*factor*factor;
-			residual_k -= (massMatrix_kj*(*rDisp_Ampl_j)+massMatrix_kk*(*rDisp_Ampl_k))*factor*factor;
-		}
-	}
+	// the impact of mass seems to be redundant because it is already introduced in the stiffness matrix
+//	if (mStructure->GetNumTimeDerivatives()>1) {
+//		if (mUseLumpedMass)
+//		{
+//			residual_j -= lumped_massMatrix_j.asDiagonal()*(*rDisp_Ampl_j)*factor*factor;
+//			residual_k -= lumped_massMatrix_k.asDiagonal()*(*rDisp_Ampl_k)*factor*factor;
+//		}
+//		else
+//		{
+//			//add mass terms
+//			residual_j -= (massMatrix_jj*(*rDisp_Ampl_j)+massMatrix_jk*(*rDisp_Ampl_k))*factor*factor;
+//			residual_k -= (massMatrix_kj*(*rDisp_Ampl_j)+massMatrix_kk*(*rDisp_Ampl_k))*factor*factor;
+//		}
+//	}
 
 	if (Cmat.GetNumEntries()>0)
 	{
@@ -1338,18 +1384,25 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
 	// the previous calculation of rDisp_Ampl_j is based on the update scheme
 	// the following calculation is based on direct calculation, that is:
 	// Kmod * rDisp_mean_j = -( (K12 - CmatT*K22)*delta_bRHS ), Fint = 0
-	DirectCalculation = true;
+	DirectCalculation = true;  //displ controlled set true!, load controlled set false (or true, which overestimates than the displ. amplitude)
     if (DirectCalculation)
     {
-    	// since the external load is constant, there is no contribution to the Fourier amplitude of external forces
-
+    	// calculate stiffness for the 1 mode
         K_jj.AddScal(massMatrix_jj,-factor*factor);
         K_jk.AddScal(massMatrix_jk,-factor*factor);
         K_kj.AddScal(massMatrix_kj,-factor*factor);
         K_kk.AddScal(massMatrix_kk,-factor*factor);
+
     	// contribution of bRHS to residual
         residual_j = K_jk * bRHS;
         residual_k = K_kk * bRHS;
+
+    	// contribution of the amplitude of external forces to residual
+    	if (mTimeDependentLoadCase != -1)
+    	{
+    		residual_j -= extForce_j;
+    		residual_k -= extForce_k;
+    	}
 
     	if (Cmat.GetNumEntries()>0)
     	{
@@ -1514,17 +1567,17 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
 //    }
 
     std::ofstream DamageFile;
-    DamageFile.open("Damage.txt", std::ios::app);
+    DamageFile.open("DamageJump.txt", std::ios::app);
 
     if (rIncludePostProcess){
     	mTime = curTime;
     	NuTo::NewmarkDirect::PostProcess(prevResidual_j, prevResidual_k);
-    	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // for Brick8N was ElementGetElementPtr(9)
+    	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(9)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
 	}
 
     // iterate over the increments within the cycle
 	const double pi = boost::math::constants::pi<double>();
-    double frequency(mHarmonicConstraintFactor(0,1));
+    double frequency(mHarmonicFactor(0,1));
     double timeStep(1./(mHarmonicIncrementation*frequency));
     for (int incr = 1; incr <= mHarmonicIncrementation; ++incr) {
     	// set new time
@@ -1532,8 +1585,11 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
     	mStructure->SetTime(curTime);
 
     	// set BC
-    	timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
-    	mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+        if (mTimeDependentConstraint!=-1)
+        {
+        	timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
+        	mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+        }
     	bRHSend.Zero(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
     	mStructure->ConstraintGetRHSAfterGaussElimination(bRHSend);
 
@@ -1621,7 +1677,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
 
         	std::cout << " Cyclic increment " << incr << std::endl;
         	NuTo::NewmarkDirect::PostProcess(prevResidual_j, prevResidual_k);
-        	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // for Brick8N was ElementGetElementPtr(9)
+        	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(9)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
 
             // update previous BC and displacements
         	bRHSprev = bRHSend;
