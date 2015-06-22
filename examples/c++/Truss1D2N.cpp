@@ -6,6 +6,7 @@
 #include "nuto/math/SparseDirectSolverMUMPS.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 
+
 int main()
 {
 	// definitions
@@ -34,8 +35,12 @@ int main()
 	{
 		std::cout << "create node: " << node << " coordinates: " << node * Length/NumElements << std::endl;
 		nodeCoordinates(0) = node * Length/NumElements;
-		myStructure.NodeCreate(node, "displacements", nodeCoordinates);
+        myStructure.NodeCreate(node, nodeCoordinates);
 	}
+
+    int InterpolationType = myStructure.InterpolationTypeCreate("Truss1D");
+    myStructure.InterpolationTypeAdd(InterpolationType, NuTo::Node::COORDINATES,    NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(InterpolationType, NuTo::Node::DISPLACEMENTS,  NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
 	// create elements
 	NuTo::FullVector<int,Eigen::Dynamic> elementIncidence(2);
@@ -44,10 +49,12 @@ int main()
 		std::cout <<  "create element: " << element << " nodes: " << element << "," << element+1 << std::endl;
 		elementIncidence(0) = element;
 		elementIncidence(1) = element + 1;
-		myStructure.ElementCreate(element, "Truss1D2N", elementIncidence);
+        myStructure.ElementCreate(InterpolationType, elementIncidence);
 		myStructure.ElementSetSection(element,Section1);
 		myStructure.ElementSetConstitutiveLaw(element,Material1);
 	}
+
+    myStructure.ElementTotalConvertToInterpolationType();
 
 	// set boundary conditions and loads
 	NuTo::FullVector<double,Eigen::Dynamic> direction(1);

@@ -362,7 +362,7 @@ public:
     //! @brief changes the node structure to match the interpolation type for all elements
     //! @param rNodeDistanceMerge Distance of nodes to be joined (should be significantly smaller than the node distance in the mesh)
     //! @param rMeshSize approximate size of the elements
-    void ElementTotalConvertToInterpolationType(double rNodeDistanceMerge, double rMeshSize);
+    void ElementTotalConvertToInterpolationType(double rNodeDistanceMerge = 1.e-6, double rMeshSize = 10.);
 
     //! @brief changes the node structure to match the interpolation type
     //! @param rGroupNumberElements group for elements (coordinates only) to be converted
