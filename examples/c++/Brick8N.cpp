@@ -68,11 +68,16 @@ try
                 {
                     nodeCoordinates(0) = (double)xCount * Length/(double)NumElementsX;
                     //std::cout << "node: " << node << " coordinates: " << nodeCoordinates.GetValue(0,0) << "," << nodeCoordinates.GetValue(1,0) << "," << nodeCoordinates.GetValue(2,0) << std::endl;
-                    myStructure.NodeCreate(node, "displacements", nodeCoordinates);
+                    myStructure.NodeCreate(node, nodeCoordinates);
                     node ++;
                 }
             }
         }
+
+        int InterpolationType = myStructure.InterpolationTypeCreate("BRICK3D");
+        myStructure.InterpolationTypeAdd(InterpolationType, NuTo::Node::COORDINATES,    NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+        myStructure.InterpolationTypeAdd(InterpolationType, NuTo::Node::DISPLACEMENTS,  NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+
 
         // create elements
         NuTo::FullVector<int,Eigen::Dynamic> elementIncidence(8);
@@ -94,13 +99,15 @@ try
                     elementIncidence(7) = node1 + (NumElementsX + 1) * (NumElementsY + 1) + NumElementsX + 1;
                     //std::cout << "element: " << element << " incidence: " << std::endl;
                     //elementIncidence.Info();
-                    myStructure.ElementCreate(element, "Brick8N", elementIncidence);
+                    myStructure.ElementCreate(InterpolationType, elementIncidence);
                     myStructure.ElementSetConstitutiveLaw(element,Material1);
             	    myStructure.ElementSetSection(element,mySection1);
                     element ++;
                 }
             }
         }
+
+        myStructure.ElementTotalConvertToInterpolationType();
 
         // boundary conditions
         NuTo::FullVector<double,Eigen::Dynamic> direction(3);
