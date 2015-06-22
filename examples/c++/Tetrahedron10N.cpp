@@ -7,6 +7,9 @@ int main()
 {
     // create structure
     NuTo::Structure myStructure(3);
+    int myInterpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TETRAHEDRON3D);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eAttributes::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eAttributes::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
     // create nodes
     NuTo::FullVector<double,Eigen::Dynamic> Coordinates(3);
@@ -16,57 +19,58 @@ int main()
     Coordinates(0) = 0.0;
     Coordinates(1) = 0.0;
     Coordinates(2) = 0.0;
-    Incidence(0) = myStructure.NodeCreate("displacements",Coordinates);
+    Incidence(0) = myStructure.NodeCreate(Coordinates);
 
     Coordinates(0) = 1.0;
     Coordinates(1) = 0.0;
     Coordinates(2) = 0.0;
-    Incidence(1) = myStructure.NodeCreate("displacements",Coordinates);
+    Incidence(1) = myStructure.NodeCreate(Coordinates);
 
     Coordinates(0) = 0.0;
     Coordinates(1) = 1.0;
     Coordinates(2) = 0.0;
-    Incidence(2) = myStructure.NodeCreate("displacements",Coordinates);
+    Incidence(2) = myStructure.NodeCreate(Coordinates);
 
     Coordinates(0) = 0.0;
     Coordinates(1) = 0.0;
     Coordinates(2) = 1.0;
-    Incidence(3) = myStructure.NodeCreate("displacements",Coordinates);
+    Incidence(3) = myStructure.NodeCreate(Coordinates);
 
     Coordinates(0) = 0.5;
     Coordinates(1) = 0.0;
     Coordinates(2) = 0.0;
-    Incidence(4) = myStructure.NodeCreate("displacements",Coordinates);
+    Incidence(4) = myStructure.NodeCreate(Coordinates);
 
     Coordinates(0) = 0.5;
     Coordinates(1) = 0.5;
     Coordinates(2) = 0.0;
-    Incidence(5) = myStructure.NodeCreate("displacements",Coordinates);
+    Incidence(5) = myStructure.NodeCreate(Coordinates);
 
     Coordinates(0) = 0.0;
     Coordinates(1) = 0.5;
     Coordinates(2) = 0.0;
-    Incidence(6) = myStructure.NodeCreate("displacements",Coordinates);
+    Incidence(6) = myStructure.NodeCreate(Coordinates);
 
     Coordinates(0) = 0.0;
     Coordinates(1) = 0.0;
     Coordinates(2) = 0.5;
-    Incidence(7) = myStructure.NodeCreate("displacements",Coordinates);
+    Incidence(7) = myStructure.NodeCreate(Coordinates);
 
     Coordinates(0) = 0.0;
     Coordinates(1) = 0.5;
     Coordinates(2) = 0.5;
-    Incidence(8) = myStructure.NodeCreate("displacements",Coordinates);
+    Incidence(8) = myStructure.NodeCreate(Coordinates);
 
     Coordinates(0) = 0.5;
     Coordinates(1) = 0.0;
     Coordinates(2) = 0.5;
-    Incidence(9) = myStructure.NodeCreate("displacements",Coordinates);
+    Incidence(9) = myStructure.NodeCreate(Coordinates);
 
 	// create element
-    int myElement1 = myStructure.ElementCreate("Tetrahedron10N",Incidence);
+    int myElement1 = myStructure.ElementCreate(myInterpolationType,Incidence);
+    myStructure.ElementTotalConvertToInterpolationType(1e-6,10);
 
-	//create constitutive law
+    //create constitutive law
     int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
     myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,1);
     myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0);
