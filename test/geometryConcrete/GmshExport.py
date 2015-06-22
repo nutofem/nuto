@@ -75,13 +75,13 @@ if (os.stat(errFile3D).st_size >0):
 # check the mesh proper import of the mesh
 
 structure = nuto.Structure(2)
-structure.ImportFromGmsh(mshFile2D,"displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal");
+structure.ImportFromGmsh(mshFile2D, "ConstitutiveLawIpNonlocal", "StaticDataNonlocal");
 if structure.GetNumElements() == 0:
 	print "Empty Structure"
 	sys.exit(-1)
 
 structure = nuto.Structure(3)
-structure.ImportFromGmsh(mshFile3D,"displacements", "ConstitutiveLawIpNonlocal", "StaticDataNonlocal");
+structure.ImportFromGmsh(mshFile3D, "ConstitutiveLawIpNonlocal", "StaticDataNonlocal");
 if structure.GetNumElements() == 0:
 	print "Empty Structure"
 	sys.exit(-1)

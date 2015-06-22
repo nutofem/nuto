@@ -17,26 +17,7 @@ void NuTo::ResultNodeAcceleration::CalculateValues(const StructureBase& rStructu
 {
 	const NodeBase* node(rStructure.NodeGetNodePtr(mNodeId));
 
-	switch(node->GetNumDisplacements())
-    {
-    case 1:
-    {
-    	node->GetDisplacements1D(2,rValues.data());
-    }
-    break;
-    case 2:
-    {
-    	node->GetDisplacements2D(2,rValues.data());
-    }
-    break;
-    case 3:
-    {
-    	node->GetDisplacements3D(2,rValues.data());
-    }
-    break;
-    default:
-        break;
-    }
+	rValues = node->GetDisplacements(2).transpose();
 }
 
 //! @brief number of data points per time step (e.g. number of Accelerationlacement components of a node

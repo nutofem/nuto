@@ -87,9 +87,9 @@ const NuTo::RelativeHumidity& NuTo::ConstitutiveInputBase::GetRelativeHumidity()
     throw MechanicsException("[NuTo::ConstitutiveInputBase::GetRelativeHumidity] not implemented for this input object.");
 }
 
-const NuTo::WaterPhaseFraction& NuTo::ConstitutiveInputBase::GetWaterPhaseFraction()const
+const NuTo::WaterVolumeFraction& NuTo::ConstitutiveInputBase::GetWaterVolumeFraction()const
 {
-    throw MechanicsException("[NuTo::ConstitutiveInputBase::GetWaterPhaseFraction] not implemented for this input object.");
+    throw MechanicsException("[NuTo::ConstitutiveInputBase::GetWaterVolumeFraction] not implemented for this input object.");
 }
 
 #ifdef ENABLE_SERIALIZATION

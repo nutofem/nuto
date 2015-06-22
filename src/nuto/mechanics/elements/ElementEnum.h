@@ -27,7 +27,14 @@ enum eElementType
     TRUSS1D4NDISP3NX,           //!< one-dimensional truss element with four nodes for displacements, three for another dof
     TRUSS1D2NSPECTRALORDER2,    //!< one-dimensional truss element with two nodes for geometry and 3 for field interpolation
     TRUSS1D2NSPECTRALORDER3,    //!< one-dimensional truss element with two nodes for geometry and 4 for field interpolation
-    TRUSS1D2NSPECTRALORDER4     //!< one-dimensional truss element with two nodes for geometry and 5 for field interpolation
+    TRUSS1D2NSPECTRALORDER4,    //!< one-dimensional truss element with two nodes for geometry and 5 for field interpolation
+    ELEMENT1D,                  //!< one dimensional element
+    ELEMENT2D,                  //!< two dimensional element
+    ELEMENT3D,                  //!< three dimensional element
+    BOUNDARYELEMENT1D,          //!< boundary of 1D element --> 0D surface
+    BOUNDARYELEMENT2D,          //!< boundary of 2D element --> 1D surface
+    BOUNDARYELEMENT3D           //!< boundary of 3D element --> 2D surface
+
 };
 
 enum eUpdateType
@@ -42,6 +49,7 @@ enum eOutput
 {
 	INTERNAL_GRADIENT,               //!<
 	INTERNAL_GRADIENT_ELASTIC,       //!< calculates internal gradient for the case that the state variables remain unchanged
+	EXTERNAL_GRADIENT,               //!< TODO: calculate external forces in element
 	HESSIAN_0_TIME_DERIVATIVE,       //!<
 	HESSIAN_0_TIME_DERIVATIVE_ELASTIC,	//!<
 	HESSIAN_1_TIME_DERIVATIVE,       //!<
@@ -55,6 +63,11 @@ enum eOutput
 	FATIGUE_SAVE_STATIC_DATA,		 //!< for fatigue applications: saving static data in case if the cycle jump should be repeated
 	FATIGUE_RESTORE_STATIC_DATA,     //!< cycle jump should be repeated, getting the previous state
 	FATIGUE_EXTRAPOLATE_STATIC_DATA  //!< extrapolate static data to make a jump
+};
+
+enum eInput
+{
+    SOME_LOAD                        //! < some dummy for calculating the external load vector
 };
 
 }

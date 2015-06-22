@@ -33,9 +33,9 @@ error = False
 myStructure = nuto.Structure(3)
 
 #create nodes
-myNode1 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,0,0)))
-myNode2 = myStructure.NodeCreate("displacements rotations",nuto.DoubleFullVector((5,0,0)))
-myNode3 = myStructure.NodeCreate("displacements rotations",nuto.DoubleFullVector((10,0,0)))
+myNode1 = myStructure.NodeCreateDOFs("displacements",nuto.DoubleFullVector((0,0,0)))
+myNode2 = myStructure.NodeCreateDOFs("displacements rotations",nuto.DoubleFullVector((5,0,0)))
+myNode3 = myStructure.NodeCreateDOFs("displacements rotations",nuto.DoubleFullVector((10,0,0)))
 
 #create group of nodes
 myNodeGroup = myStructure.GroupCreate("Nodes")

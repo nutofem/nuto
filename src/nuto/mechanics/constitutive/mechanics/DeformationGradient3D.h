@@ -17,6 +17,7 @@ class DeformationGradient2D;
 class EngineeringStrain3D;
 class GreenLagrangeStrain3D;
 class Solid;
+class Element3D;
 //! @brief ... three-dimensional deformation gradient
 /*!
    In the two-dimensional case, the deformation gradient \f$\boldsymbol{F}\f$ is defined as
@@ -37,6 +38,7 @@ class DeformationGradient3D : public ConstitutiveInputBase
 #endif // ENABLE_SERIALIZATION
     friend class NuTo::Solid;
     friend class EngineeringStrain3D;
+    friend class Element3D;
 public:
     //! @brief ... constructor
     //! @param pStructure ... structure

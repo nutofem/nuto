@@ -23,19 +23,23 @@ try
     NuTo::FullVector<double,Eigen::Dynamic> Coordinates(2);
     Coordinates(0) = 0.0;
     Coordinates(1) = 0.0;
-    int node1 = myStructure.NodeCreate("displacements",Coordinates);
+    int node1 = myStructure.NodeCreate(Coordinates);
 
     Coordinates(0) = lx;
     Coordinates(1) = 0.0;
-    int node2 = myStructure.NodeCreate("displacements",Coordinates);
+    int node2 = myStructure.NodeCreate(Coordinates);
 
     Coordinates(0) = 0.0;
     Coordinates(1) = ly;
-    int node3 = myStructure.NodeCreate("displacements",Coordinates);
+    int node3 = myStructure.NodeCreate(Coordinates);
 
     Coordinates(0) = lx;
     Coordinates(1) = ly;
-    int node4 = myStructure.NodeCreate("displacements",Coordinates);
+    int node4 = myStructure.NodeCreate(Coordinates);
+
+    int myInterpolationType = myStructure.InterpolationTypeCreate("Quad2D");
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT1);
 
     //create elements
     NuTo::FullVector<int,Eigen::Dynamic> Incidence(4);
@@ -43,7 +47,8 @@ try
     Incidence(1) = node2;
     Incidence(2) = node4;
     Incidence(3) = node3;
-    myStructure.ElementCreate("PLANE2D4N",Incidence);
+    myStructure.ElementCreate(myInterpolationType,Incidence);
+    myStructure.ElementTotalConvertToInterpolationType(1.e-5, 1);
 
     //create constitutive law
     int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");

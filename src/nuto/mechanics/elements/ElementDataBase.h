@@ -28,6 +28,7 @@ class ConstitutiveStaticDataBase;
 class ConstitutiveBase;
 class CrackBase;
 class IntegrationTypeBase;
+class InterpolationType;
 class ElementBase;
 class IpDataBase;
 class VisualizeComponentBase;
@@ -152,6 +153,8 @@ public:
     //! which actually need an integration type
     //! @return pointer to integration type
     virtual const IntegrationTypeBase* GetIntegrationType()const;
+
+
 
     //! @brief returns ip data type of the element
     //! implemented with an exception for all element data, reimplementation required for those element data

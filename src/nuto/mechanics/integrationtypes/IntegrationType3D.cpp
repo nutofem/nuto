@@ -11,6 +11,8 @@ bool NuTo::IntegrationType3D::CheckElementCompatibility(NuTo::Element::eElementT
 {
     switch (rElementType)
     {
+    case NuTo::Element::ELEMENT3D:
+        return true;
     case NuTo::Element::TETRAHEDRON4N:
         return true;
     case NuTo::Element::TETRAHEDRON10N:

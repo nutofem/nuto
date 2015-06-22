@@ -162,9 +162,8 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateCoefficientMatri
     int theNode(0);
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end();itNode++, curNodeEntry+=2, theNode++)
     {
-        double disp[1];
+        double disp = itNode->second->GetDisplacement(0);
         int dofx(itNode->second->GetDofDisplacement(0));
-        itNode->second->GetDisplacements1D(disp);
 
         rGlobalDofs[curNodeEntry] = mLagrangeDOF[theNode];
         rGlobalDofs[curNodeEntry+1] = dofx;
@@ -178,7 +177,7 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateCoefficientMatri
             rResult.AddValue(curNodeEntry+1,curNodeEntry+1,mPenalty);
         break;
         case NuTo::Constraint::SMALLER:
-            if (disp[0]-mRHS>-mLagrangeValue[theNode]/mPenalty)
+            if (disp-mRHS>-mLagrangeValue[theNode]/mPenalty)
             {
         		std::cout << "active stiffness" << std::endl;
                 //derivative with respect to ux and lambda
@@ -194,7 +193,7 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateCoefficientMatri
             }
         break;
         case NuTo::Constraint::GREATER:
-            if (mRHS-disp[0]>-mLagrangeValue[theNode]/mPenalty)
+            if (mRHS-disp>-mLagrangeValue[theNode]/mPenalty)
             {
                 //derivative with respect to ux and lambda
                  rResult.AddValue(curNodeEntry,curNodeEntry+1,-1.);
@@ -225,9 +224,8 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateGradientInternal
     int theNode(0);
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end();itNode++, curNodeEntry+=2, theNode++)
     {
-        double disp[1];
+        double disp = itNode->second->GetDisplacement(0);
         int dofx(itNode->second->GetDofDisplacement(0));
-        itNode->second->GetDisplacements1D(disp);
 
         rGlobalDofs[curNodeEntry] = mLagrangeDOF[theNode];
         rGlobalDofs[curNodeEntry+1] = dofx;
@@ -236,17 +234,17 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateGradientInternal
         {
         case NuTo::Constraint::EQUAL:
             //derivative with respect to lambda
-            rResult(curNodeEntry,0)=disp[0]-mRHS;
+            rResult(curNodeEntry,0)=disp-mRHS;
             //derivative with respect to displacement
-            rResult(curNodeEntry+1,0)=mLagrangeValue[theNode]+mPenalty*(disp[0]-mRHS);
+            rResult(curNodeEntry+1,0)=mLagrangeValue[theNode]+mPenalty*(disp-mRHS);
         break;
         case NuTo::Constraint::SMALLER:
-        	if (disp[0]-mRHS>-mLagrangeValue[theNode]/mPenalty)
+        	if (disp-mRHS>-mLagrangeValue[theNode]/mPenalty)
             {
                 //derivative with respect to lambda
-                rResult(curNodeEntry,0)=disp[0]-mRHS;
+                rResult(curNodeEntry,0)=disp-mRHS;
                 //derivative with respect to displacement
-                rResult(curNodeEntry+1,0)=mLagrangeValue[theNode]+mPenalty*(disp[0]-mRHS);
+                rResult(curNodeEntry+1,0)=mLagrangeValue[theNode]+mPenalty*(disp-mRHS);
             }
             else
             {
@@ -255,12 +253,12 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::CalculateGradientInternal
             }
         break;
         case NuTo::Constraint::GREATER:
-            if (mRHS-disp[0]>-mLagrangeValue[theNode]/mPenalty)
+            if (mRHS-disp>-mLagrangeValue[theNode]/mPenalty)
             {
                 //derivative with respect to lambda
-                rResult(curNodeEntry,0)=mRHS-disp[0];
+                rResult(curNodeEntry,0)=mRHS-disp;
                 //derivative with respect to displacement
-                rResult(curNodeEntry+1,0)=-mLagrangeValue[theNode]-mPenalty*(mRHS-disp[0]);
+                rResult(curNodeEntry+1,0)=-mLagrangeValue[theNode]-mPenalty*(mRHS-disp);
             }
             else
             {

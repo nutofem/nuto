@@ -28,6 +28,7 @@ enum eIntegrationType
     IntegrationType2D3NGauss3Ip,
     IntegrationType2D4NGauss1Ip,
     IntegrationType2D4NGauss4Ip,
+    IntegrationType2D4NGauss9Ip,
     IntegrationType2D4NLobatto9Ip,
     IntegrationType2D4NLobatto16Ip,
     IntegrationType2D4NLobatto25Ip,
@@ -35,7 +36,8 @@ enum eIntegrationType
     IntegrationType3D4NGauss4Ip,
     IntegrationType3D8NGauss1Ip,
     IntegrationType3D8NGauss2x2x2Ip,
-    NumIntegrationTypes
+    NumIntegrationTypes,
+    NotSet
 };
 }
 }

@@ -54,6 +54,13 @@ void NuTo::NodeBase::RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOr
 }
 
 
+//! @brief returns the number of time derivatives stored at the node
+//! @return number of derivatives
+int NuTo::NodeBase::GetNumTimeDerivatives()const
+{
+    throw MechanicsException("[NuTo::NodeBase::GetNumTimeDerivatives] Node of type " + GetNodeTypeStr() + " has no dofs");
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::NodeBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
@@ -77,628 +84,364 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::NodeBase)
 BOOST_CLASS_TRACKING(NuTo::NodeBase, track_always)
 #endif // ENABLE_SERIALIZATION
 
-//! @brief returns the number of coordinates of the node
-//! @return number of coordinates
-int NuTo::NodeBase::GetNumCoordinates()const
+//*************************************************
+//************     COORDINATES      ***************
+//*************************************************
+int NuTo::NodeBase::GetNumCoordinates() const
 {
-	return 0;
+    return 0;
+}
+double NuTo::NodeBase::GetCoordinate(short rComponent) const
+{throw MechanicsException("[NuTo::NodeBase::GetCoordinate] Node of type " + GetNodeTypeStr() + " has no coordinates.");}
+const Eigen::Matrix<double, 1, 1>& NuTo::NodeBase::GetCoordinates1D() const
+{throw MechanicsException("[NuTo::NodeBase::GetCoordinates1D] Node of type " + GetNodeTypeStr() + " has no coordinates.");}
+const Eigen::Matrix<double, 2, 1>& NuTo::NodeBase::GetCoordinates2D() const
+{throw MechanicsException("[NuTo::NodeBase::GetCoordinates2D] Node of type " + GetNodeTypeStr() + " has no coordinates.");}
+const Eigen::Matrix<double, 3, 1>& NuTo::NodeBase::GetCoordinates3D() const
+{throw MechanicsException("[NuTo::NodeBase::GetCoordinates3D] Node of type " + GetNodeTypeStr() + " has no coordinates.");}
+const Eigen::Matrix<double, Eigen::Dynamic, 1> NuTo::NodeBase::GetCoordinates() const
+{throw MechanicsException("[NuTo::NodeBase::GetCoordinates] Node of type " + GetNodeTypeStr() + " has no coordinates.");}
+
+void NuTo::NodeBase::SetCoordinates1D(const Eigen::Matrix<double, 1, 1>& rCoordinates)
+{throw MechanicsException("[NuTo::NodeBase::SetCoordinates1D] Node of type " + GetNodeTypeStr() + " has no coordinates.");}
+void NuTo::NodeBase::SetCoordinates2D(const Eigen::Matrix<double, 2, 1>& rCoordinates)
+{throw MechanicsException("[NuTo::NodeBase::SetCoordinates2D] Node of type " + GetNodeTypeStr() + " has no coordinates.");}
+void NuTo::NodeBase::SetCoordinates3D(const Eigen::Matrix<double, 3, 1>& rCoordinates)
+{throw MechanicsException("[NuTo::NodeBase::SetCoordinates3D] Node of type " + GetNodeTypeStr() + " has no coordinates.");}
+void NuTo::NodeBase::SetCoordinates  (const Eigen::Matrix<double, Eigen::Dynamic, 1>& rCoordinates)
+{throw MechanicsException("[NuTo::NodeBase::SetCoordinates] Node of type " + GetNodeTypeStr() + " has no coordinates.");}
+
+
+//*************************************************
+//************    DISPLACEMENTS     ***************
+//*************************************************
+int NuTo::NodeBase::GetNumDisplacements() const
+{
+    return 0;
+}
+int NuTo::NodeBase::GetDofDisplacement(int rComponent) const
+{throw MechanicsException("[NuTo::NodeBase::GetDofDisplacement] Node of type " + GetNodeTypeStr() + " has no displacements.");}
+double NuTo::NodeBase::GetDisplacement(short rIndex) const
+{throw MechanicsException("[NuTo::NodeBase::GetDisplacement] Node of type " + GetNodeTypeStr() + " has no displacements.");}
+
+const Eigen::Matrix<double, 1, 1>& NuTo::NodeBase::GetDisplacements1D() const
+{
+    return GetDisplacements1D(0);
+}
+const Eigen::Matrix<double, 2, 1>& NuTo::NodeBase::GetDisplacements2D() const
+{
+    return GetDisplacements2D(0);
+}
+const Eigen::Matrix<double, 3, 1>& NuTo::NodeBase::GetDisplacements3D() const
+{
+    return GetDisplacements3D(0);
+}
+const Eigen::Matrix<double, Eigen::Dynamic, 1> NuTo::NodeBase::GetDisplacements() const
+{
+    return GetDisplacements(0);
 }
 
-//! @brief returns the coordinates of the node
-//! @return coordinates
-void NuTo::NodeBase::GetCoordinates1D(double rCoordinates[1])const
+const Eigen::Matrix<double, 1, 1>& NuTo::NodeBase::GetDisplacements1D(int rTimeDerivative) const
+{throw MechanicsException("[NuTo::NodeBase::GetDisplacements1D] Node of type " + GetNodeTypeStr() + " has no displacements.");}
+const Eigen::Matrix<double, 2, 1>& NuTo::NodeBase::GetDisplacements2D(int rTimeDerivative) const
+{throw MechanicsException("[NuTo::NodeBase::GetDisplacements2D] Node of type " + GetNodeTypeStr() + " has no displacements.");}
+const Eigen::Matrix<double, 3, 1>& NuTo::NodeBase::GetDisplacements3D(int rTimeDerivative) const
+{throw MechanicsException("[NuTo::NodeBase::GetDisplacements3D] Node of type " + GetNodeTypeStr() + " has no displacements.");}
+const Eigen::Matrix<double, Eigen::Dynamic, 1> NuTo::NodeBase::GetDisplacements(int rTimeDerivative) const
+{throw MechanicsException("[NuTo::NodeBase::GetDisplacements] Node of type " + GetNodeTypeStr() + " has no displacements.");}
+
+void NuTo::NodeBase::SetDisplacements1D(const Eigen::Matrix<double, 1, 1>& rDisplacements)
 {
-	throw MechanicsException("[NuTo::NodeBase::GetCoordinates1D] Node of type " + GetNodeTypeStr() + " has no 1D coordinates.");
+    SetDisplacements1D(0, rDisplacements);
+}
+void NuTo::NodeBase::SetDisplacements2D(const Eigen::Matrix<double, 2, 1>& rDisplacements)
+{
+    SetDisplacements2D(0, rDisplacements);
+}
+void NuTo::NodeBase::SetDisplacements3D(const Eigen::Matrix<double, 3, 1>& rDisplacements)
+{
+    SetDisplacements3D(0, rDisplacements);
+}
+void NuTo::NodeBase::SetDisplacements(const Eigen::Matrix<double, Eigen::Dynamic, 1>& rDisplacements)
+{
+    SetDisplacements(0, rDisplacements);
 }
 
-//! @brief set the coordinates
-//! @param rCoordinates  given coordinates
-void NuTo::NodeBase::SetCoordinates1D(const double rCoordinates[1])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetCoordinates1D] Node of type " + GetNodeTypeStr() + " has no 1D coordinates.");
-}
+void NuTo::NodeBase::SetDisplacements1D(int rTimeDerivative, const Eigen::Matrix<double, 1, 1>& rDisplacements)
+{throw MechanicsException("[NuTo::NodeBase::SetDisplacements1D] Node of type " + GetNodeTypeStr() + " has no displacements.");}
+void NuTo::NodeBase::SetDisplacements2D(int rTimeDerivative, const Eigen::Matrix<double, 2, 1>& rDisplacements)
+{throw MechanicsException("[NuTo::NodeBase::SetDisplacements2D] Node of type " + GetNodeTypeStr() + " has no displacements.");}
+void NuTo::NodeBase::SetDisplacements3D(int rTimeDerivative, const Eigen::Matrix<double, 3, 1>& rDisplacements)
+{throw MechanicsException("[NuTo::NodeBase::SetDisplacements3D] Node of type " + GetNodeTypeStr() + " has no displacements.");}
+void NuTo::NodeBase::SetDisplacements  (int rTimeDerivative, const Eigen::Matrix<double, Eigen::Dynamic, 1>& rDisplacements)
+{throw MechanicsException("[NuTo::NodeBase::SetDisplacements] Node of type " + GetNodeTypeStr() + " has no displacements.");}
+//*************************************************
+//************       ROTATIONS      ***************
+//*************************************************
 
-//! @brief returns the coordinates of the node
-//! @return coordinates
-void NuTo::NodeBase::GetCoordinates2D(double rCoordinates[2])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetCoordinates1D] Node of type " + GetNodeTypeStr() + " has no 2D coordinates.");
-}
-
-//! @brief set the coordinates
-//! @param rCoordinates  given coordinates
-void NuTo::NodeBase::SetCoordinates2D(const double rCoordinates[1])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetCoordinates2D] Node of type " + GetNodeTypeStr() + " has no 2D coordinates.");
-}
-
-//! @brief returns the coordinates of the node
-//! @return coordinates
-void NuTo::NodeBase::GetCoordinates3D(double rCoordinates[3])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetCoordinates1D] Node of type " + GetNodeTypeStr() + " has no 3D coordinates.");
-}
-
-//! @brief set the coordinates
-//! @param rCoordinates  given coordinates
-void NuTo::NodeBase::SetCoordinates3D(const double rCoordinates[1])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetCoordinates3D] Node of type " + GetNodeTypeStr() + " has no 3D coordinates.");
-}
-
-//! @brief returns the number of coordinates of the node
-//! @param rIndex index of the component (e.g. 0,1,2)
-//! @return coordinate
-double NuTo::NodeBase::GetCoordinate(short rIndex)const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetCoordinates] Node of type " + GetNodeTypeStr() + " has no coordinates.");
-}
-
-//! @brief returns the number of time derivatives stored at the node
-//! @return number of derivatives
-int NuTo::NodeBase::GetNumTimeDerivatives()const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetNumTimeDerivatives] Node of type " + GetNodeTypeStr() + " has no dofs");
-}
-
-//! @brief returns the number of displacements of the node
-//! @return number of displacements
-int NuTo::NodeBase::GetNumDisplacements()const
-{
-	return 0;
-}
-
-//! @brief gives the global DOF of a displacement component
-//! @param rComponent component
-//! @return global DOF
-int NuTo::NodeBase::GetDofDisplacement(int rComponent)const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetDofDisplacement] Node of type " + GetNodeTypeStr() + " has no displacements.");
-}
-
-//! @brief returns the displacements of the node
-//! @return displacement
-void NuTo::NodeBase::GetDisplacements1D(double rCoordinates[1])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetDisplacements1D] Node of type " + GetNodeTypeStr() + " has no 1D displacements.");
-}
-
-//! @brief returns the displacements of the node
-//! @param rTimeDerivative time derivative (0
-//! @return displacement
-void NuTo::NodeBase::GetDisplacements1D(int rTimeDerivative, double rCoordinates[1])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetDisplacements1D] Node of type " + GetNodeTypeStr() + " has no 1D displacements.");
-}
-
-//! @brief set the displacements
-//! @param rDisplacements  given displacements
-void NuTo::NodeBase::SetDisplacements1D(const double rDisplacements[1])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetDisplacements1D] Node of type " + GetNodeTypeStr() + " has no 1D displacements.");
-}
-
-//! @brief set the displacements
-//! @param rTimeDerivative time derivative (0
-//! @param rDisplacements  given displacements
-void NuTo::NodeBase::SetDisplacements1D(int rTimeDerivative, const double rDisplacements[1])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetDisplacements1D] Node of type " + GetNodeTypeStr() + " has no 1D displacements.");
-}
-
-//! @brief returns the displacements of the node
-//! @return displacement
-void NuTo::NodeBase::GetDisplacements2D(double rCoordinates[2])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetDisplacements2D] Node of type " + GetNodeTypeStr() + " has no 2D displacements.");
-}
-
-//! @brief returns the displacements of the node
-//! @param rTimeDerivative time derivative (0
-//! @return displacement
-void NuTo::NodeBase::GetDisplacements2D(int rTimeDerivative, double rCoordinates[2])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetDisplacements2D] Node of type " + GetNodeTypeStr() + " has no 2D displacements.");
-}
-
-//! @brief set the displacements
-//! @param rDisplacements  given displacements
-void NuTo::NodeBase::SetDisplacements2D(const double rDisplacements[2])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetDisplacements2D] Node of type " + GetNodeTypeStr() + " has no 2D displacements.");
-}
-
-//! @brief set the displacements
-//! @param rTimeDerivative time derivative (0
-//! @param rDisplacements  given displacements
-void NuTo::NodeBase::SetDisplacements2D(int rTimeDerivative, const double rDisplacements[2])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetDisplacements2D] Node of type " + GetNodeTypeStr() + " has no 2D displacements.");
-}
-
-//! @brief returns the displacements of the node
-//! @return displacement
-void NuTo::NodeBase::GetDisplacements3D(double rCoordinates[3])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetDisplacements3D] Node of type " + GetNodeTypeStr() + " has no 3D displacements.");
-}
-
-//! @brief returns the displacements of the node
-//! @param rTimeDerivative time derivative (0
-//! @return displacement
-void NuTo::NodeBase::GetDisplacements3D(int rTimeDerivative, double rCoordinates[3])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetDisplacements3D] Node of type " + GetNodeTypeStr() + " has no 3D displacements.");
-}
-
-//! @brief set the displacements
-//! @param rDisplacements  given displacements
-void NuTo::NodeBase::SetDisplacements3D(const double rDisplacements[3])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetDofDisplacements3D] Node of type " + GetNodeTypeStr() + " has no 3D displacements.");
-}
-
-//! @brief set the displacements
-//! @param rTimeDerivative time derivative (0
-//! @param rDisplacements  given displacements
-void NuTo::NodeBase::SetDisplacements3D(int rTimeDerivative, const double rDisplacements[3])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetDofDisplacements3D] Node of type " + GetNodeTypeStr() + " has no 3D displacements.");
-}
-
-//! @brief returns the displacements of the node
-//! @return displacement
-double NuTo::NodeBase::GetDisplacement(short rIndex)const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetDisplacement] Node of type " + GetNodeTypeStr() + " has no displacements.");
-}
-
-//! @brief returns the number of Rotations of the node
-//! @return number of Rotations
 int NuTo::NodeBase::GetNumRotations()const
 {
-	return 0;
+    return 0;
 }
-
-//! @brief gives the global DOF of a Rotation component
-//! @param rComponent component
-//! @return global DOF
 int NuTo::NodeBase::GetDofRotation(int rComponent)const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetDofRotation] Node of type " + GetNodeTypeStr() + " has no rotations.");
-}
-
-//! @brief returns the Rotations of the node
-//! @return Rotation
-void NuTo::NodeBase::GetRotations2D(double rCoordinates[2])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetRotations2D] Node of type " + GetNodeTypeStr() + " has no 2D rotations.");
-}
-
-//! @brief returns the Rotations of the node
-//! @param rTimeDerivative time derivative (0
-//! @return Rotation
-void NuTo::NodeBase::GetRotations2D(int rTimeDerivative, double rCoordinates[2])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetRotations2D] Node of type " + GetNodeTypeStr() + " has no 2D rotations.");
-}
-
-//! @brief set the Rotations
-//! @param rRotations  given Rotations
-void NuTo::NodeBase::SetRotations2D(const double rRotations[2])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetRotations2D] Node of type " + GetNodeTypeStr() + " has no 2D rotations.");
-}
-
-//! @brief set the Rotations
-//! @param rTimeDerivative time derivative (0
-//! @param rRotations  given Rotations
-void NuTo::NodeBase::SetRotations2D(int rTimeDerivative, const double rRotations[2])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetRotations2D] Node of type " + GetNodeTypeStr() + " has no 2D rotations.");
-}
-
-//! @brief returns the Rotations of the node
-//! @return Rotation
-void NuTo::NodeBase::GetRotations3D(double rCoordinates[3])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetRotations3D] Node of type " + GetNodeTypeStr() + " has no 3D rotations.");
-}
-
-//! @brief returns the Rotations of the node
-//! @param rTimeDerivative time derivative (0
-//! @return Rotation
-void NuTo::NodeBase::GetRotations3D(int rTimeDerivative, double rCoordinates[3])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetRotations3D] Node of type " + GetNodeTypeStr() + " has no 3D rotations.");
-}
-
-//! @brief set the Rotations
-//! @param rRotations  given Rotations
-void NuTo::NodeBase::SetRotations3D(const double rRotations[3])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetRotations3D] Node of type " + GetNodeTypeStr() + " has no 3D rotations.");
-}
-
-//! @brief set the Rotations
-//! @param rTimeDerivative time derivative (0
-//! @param rRotations  given Rotations
-void NuTo::NodeBase::SetRotations3D(int rTimeDerivative, const double rRotations[3])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetRotations3D] Node of type " + GetNodeTypeStr() + " has no 3D rotations.");
-}
-
-//! @brief returns the Rotations of the node
-//! @return Rotation
+{throw MechanicsException("[NuTo::NodeBase::GetDofRotation] Node of type " + GetNodeTypeStr() + " has no rotations.");}
 double NuTo::NodeBase::GetRotation(short rIndex)const
+{throw MechanicsException("[NuTo::NodeBase::GetRotation] Node of type " + GetNodeTypeStr() + " has no rotations.");}
+
+const Eigen::Matrix<double, 1, 1>& NuTo::NodeBase::GetRotations2D() const
 {
-	throw MechanicsException("[NuTo::NodeBase::GetRotation] Node of type " + GetNodeTypeStr() + " has no rotations.");
+    return GetRotations2D(0);
+}
+const Eigen::Matrix<double, 3, 1>& NuTo::NodeBase::GetRotations3D() const
+{
+    return GetRotations3D(0);
+}
+const Eigen::Matrix<double, Eigen::Dynamic, 1> NuTo::NodeBase::GetRotations() const
+{
+    return GetRotations(0);
 }
 
-//! @brief returns the number of temperatures of the node
-//! @return number of temperatures
-int NuTo::NodeBase::GetNumTemperatures()const
+const Eigen::Matrix<double, 1, 1>& NuTo::NodeBase::GetRotations2D(int rTimeDerivative) const
+{throw MechanicsException("[NuTo::NodeBase::GetRotations2D] Node of type " + GetNodeTypeStr() + " has no rotations.");}
+const Eigen::Matrix<double, 3, 1>& NuTo::NodeBase::GetRotations3D(int rTimeDerivative) const
+{throw MechanicsException("[NuTo::NodeBase::GetRotations3D] Node of type " + GetNodeTypeStr() + " has no rotations.");}
+const Eigen::Matrix<double, Eigen::Dynamic, 1> NuTo::NodeBase::GetRotations(int rTimeDerivative) const
+{throw MechanicsException("[NuTo::NodeBase::GetRotations] Node of type " + GetNodeTypeStr() + " has no rotations.");}
+
+void NuTo::NodeBase::SetRotations2D(const Eigen::Matrix<double, 1, 1>& rRotations)
 {
-	return 0;
+    SetRotations2D(0, rRotations);
+}
+void NuTo::NodeBase::SetRotations3D(const Eigen::Matrix<double, 3, 1>& rRotations)
+{
+    SetRotations3D(0, rRotations);
+}
+void NuTo::NodeBase::SetRotations(const Eigen::Matrix<double, Eigen::Dynamic, 1>& rRotations)
+{
+    SetRotations(0, rRotations);
 }
 
-//! @brief returns the temperature of the node
-//! @return temperature
+void NuTo::NodeBase::SetRotations2D(int rTimeDerivative, const Eigen::Matrix<double, 1, 1>& rRotations)
+{throw MechanicsException("[NuTo::NodeBase::SetRotations2D] Node of type " + GetNodeTypeStr() + " has no rotations.");}
+void NuTo::NodeBase::SetRotations3D(int rTimeDerivative, const Eigen::Matrix<double, 3, 1>& rRotations)
+{throw MechanicsException("[NuTo::NodeBase::SetRotations3D] Node of type " + GetNodeTypeStr() + " has no rotations.");}
+void NuTo::NodeBase::SetRotations(int rTimeDerivative, const Eigen::Matrix<double, Eigen::Dynamic, 1>& rRotations)
+{throw MechanicsException("[NuTo::NodeBase::SetRotations] Node of type " + GetNodeTypeStr() + " has no rotations.");}
+
+
+
+//*************************************************
+//************      TEMPERATURE     ***************
+//*************************************************
+
+int NuTo::NodeBase::GetNumTemperatures() const
+{
+    return 0;
+}
+int NuTo::NodeBase::GetDofTemperature() const
+{throw MechanicsException("[NuTo::NodeBase::GetDofTemperature] Node of type " + GetNodeTypeStr() + " has no temperature.");}
+
+double NuTo::NodeBase::GetTemperature() const
+{
+    return GetTemperature(0);
+}
+double NuTo::NodeBase::GetTemperature(int rTimeDerivative) const
+{throw MechanicsException("[NuTo::NodeBase::GetTemperature] Node of type " + GetNodeTypeStr() + " has no temperature.");}
+
 void NuTo::NodeBase::SetTemperature(double rTemperature)
 {
-	throw MechanicsException("[NuTo::NodeBase::SetTemperature] Node of type " + GetNodeTypeStr() + " has no temperatures.");
+    SetTemperature(0, rTemperature);
 }
-
-//! @brief returns the temperature of the node
-//! @return temperature
 void NuTo::NodeBase::SetTemperature(int rTimeDerivative, double rTemperature)
-{
-	throw MechanicsException("[NuTo::NodeBase::SetTemperature] Node of type " + GetNodeTypeStr() + " has no temperatures.");
-}
+{throw MechanicsException("[NuTo::NodeBase::SetTemperature] Node of type " + GetNodeTypeStr() + " has no temperature.");}
 
-//! @brief returns the temperature of the node
-//! @return temperature
-double NuTo::NodeBase::GetTemperature()const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetTemperature] Node of type " + GetNodeTypeStr() + " has no temperatures.");
-}
+//*************************************************
+//********  NONLOCAL EQ PLASTIC STRAIN  ***********
+//*************************************************
 
-//! @brief returns the temperature of the node
-//! @return temperature
-double NuTo::NodeBase::GetTemperature(int rTimeDerivative)const
+int NuTo::NodeBase::GetNumNonlocalEqPlasticStrain() const
 {
-	throw MechanicsException("[NuTo::NodeBase::GetTemperature] Node of type " + GetNodeTypeStr() + " has no temperatures.");
+    return 0;
 }
+int NuTo::NodeBase::GetDofNonlocalEqPlasticStrain(int rComponent) const
+{throw MechanicsException("[NuTo::NodeBase::GetDofNonlocalEqPlasticStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq plastic strain.");}
 
-//! @brief gives the global DOF of a temperature component
-//! @param rComponent component
-//! @return global DOF
-int NuTo::NodeBase::GetDofTemperature()const
+const Eigen::Matrix<double, 2, 1>& NuTo::NodeBase::GetNonlocalEqPlasticStrain() const
 {
-	throw MechanicsException("[NuTo::NodeBase::GetDofTemperature] Node of type " + GetNodeTypeStr() + " has no temperatures.");
+    return GetNonlocalEqPlasticStrain(0);
 }
+const Eigen::Matrix<double, 2, 1>& NuTo::NodeBase::GetNonlocalEqPlasticStrain(int rTimeDerivative) const
+{throw MechanicsException("[NuTo::NodeBase::GetNonlocalEqPlasticStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq plastic strain.");}
 
-//! @brief returns the number of nonlocal eqivalent plastic strain of the node
-//! @return number of Damage
-int NuTo::NodeBase::GetNumNonlocalEqPlasticStrain()const
+void NuTo::NodeBase::SetNonlocalEqPlasticStrain(const Eigen::Matrix<double, 2, 1>& rNonlocalEqPlasticStrain)
 {
-	return 0;
+    SetNonlocalEqPlasticStrain(0, rNonlocalEqPlasticStrain);
 }
+void NuTo::NodeBase::SetNonlocalEqPlasticStrain(int rTimeDerivative, const Eigen::Matrix<double, 2, 1>& rNonlocalEqPlasticStrain)
+{throw MechanicsException("[NuTo::NodeBase::SetNonlocalEqPlasticStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq plastic strain.");}
 
-//! @brief returns the nonlocal eqivalent plastic strain of the node
-//! @return Damage
-void NuTo::NodeBase::SetNonlocalEqPlasticStrain(const double rNonlocalEqPlasticStrain[2])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetNonlocalEqPlasticStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eqivalent plastic strain.");
-}
+//*************************************************
+//********    NONLOCAL TOTAL STRAIN     ***********
+//*************************************************
 
-//! @brief returns the nonlocal eqivalent plastic strain of the node
-//! @return Damage
-void NuTo::NodeBase::SetNonlocalEqPlasticStrain(int rTimeDerivative, const double rNonlocalDamage[2])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetNonlocalEqPlasticStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eqivalent plastic strain.");
-}
-
-//! @brief returns the nonlocal eqivalent plastic strain of the node
-//! @return Damage
-void NuTo::NodeBase::GetNonlocalEqPlasticStrain(double rNonlocalDamage[2])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetNonlocalEqPlasticStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eqivalent plastic strain.");
-}
-
-//! @brief returns the nonlocal eqivalent plastic strain of the node
-//! @return Damage
-void NuTo::NodeBase::GetNonlocalEqPlasticStrain(int rTimeDerivative, double rNonlocalDamage[2])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetNonlocalEqPlasticStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eqivalent plastic strain.");
-}
-
-//! @brief gives the global DOF of a nonlocal eqivalent plastic strain component
-//! @param rComponent component
-//! @return global DOF
-int NuTo::NodeBase::GetDofNonlocalEqPlasticStrain(int rComponent)const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetDofNonlocalEqPlasticStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eqivalent plastic strain.");
-}
-
-//! @brief returns the number of nonlocal eqivalent plastic strain of the node
-//! @return number of Damage
 int NuTo::NodeBase::GetNumNonlocalTotalStrain()const
 {
-	return 0;
+    return 0;
 }
-
-//! @brief returns the nonlocal eqivalent plastic strain of the node
-//! @return Damage
-void NuTo::NodeBase::SetNonlocalTotalStrain1D(const double rNonlocalTotalStrain[2])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
-}
-
-//! @brief returns the nonlocal eqivalent plastic strain of the node
-//! @return Damage
-void NuTo::NodeBase::SetNonlocalTotalStrain2D(const double rNonlocalTotalStrain[2])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
-}
-
-//! @brief returns the nonlocal eqivalent plastic strain of the node
-//! @return Damage
-void NuTo::NodeBase::SetNonlocalTotalStrain3D(const double rNonlocalTotalStrain[2])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
-}
-
-//! @brief returns the nonlocal eqivalent plastic strain of the node
-//! @return Damage
-void NuTo::NodeBase::SetNonlocalTotalStrain1D(int rTimeDerivative, const double rNonlocalDamage[2])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
-}
-
-//! @brief returns the nonlocal eqivalent plastic strain of the node
-//! @return Damage
-void NuTo::NodeBase::SetNonlocalTotalStrain2D(int rTimeDerivative, const double rNonlocalDamage[2])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
-}
-
-//! @brief returns the nonlocal eqivalent plastic strain of the node
-//! @return Damage
-void NuTo::NodeBase::SetNonlocalTotalStrain3D(int rTimeDerivative, const double rNonlocalDamage[2])
-{
-	throw MechanicsException("[NuTo::NodeBase::SetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
-}
-
-//! @brief returns the nonlocal eqivalent plastic strain of the node
-//! @return Damage
-void NuTo::NodeBase::GetNonlocalTotalStrain1D(double rNonlocalDamage[2])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
-}
-
-//! @brief returns the nonlocal eqivalent plastic strain of the node
-//! @return Damage
-void NuTo::NodeBase::GetNonlocalTotalStrain2D(double rNonlocalDamage[2])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
-}
-
-//! @brief returns the nonlocal eqivalent plastic strain of the node
-//! @return Damage
-void NuTo::NodeBase::GetNonlocalTotalStrain3D(double rNonlocalDamage[2])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
-}
-
-//! @brief returns the nonlocal eqivalent plastic strain of the node
-//! @return Damage
-void NuTo::NodeBase::GetNonlocalTotalStrain1D(int rTimeDerivative, double rNonlocalDamage[2])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
-}
-
-//! @brief returns the nonlocal eqivalent plastic strain of the node
-//! @return Damage
-void NuTo::NodeBase::GetNonlocalTotalStrain2D(int rTimeDerivative, double rNonlocalDamage[2])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
-}
-
-//! @brief returns the nonlocal eqivalent plastic strain of the node
-//! @return Damage
-void NuTo::NodeBase::GetNonlocalTotalStrain3D(int rTimeDerivative, double rNonlocalDamage[2])const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
-}
-
-//! @brief returns the nonlocal total strain component of the node
-//! @return strain component (rTimeDerivative=0)
-double NuTo::NodeBase::GetNonlocalTotalStrain(short rIndex)const
-{
-	throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
-}
-
-//! @brief gives the global DOF of a nonlocal eqivalent plastic strain component
-//! @param rComponent component
-//! @return global DOF
 int NuTo::NodeBase::GetDofNonlocalTotalStrain(int rComponent)const
+{throw MechanicsException("[NuTo::NodeBase::GetDofNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");}
+double NuTo::NodeBase::GetNonlocalTotalStrain(short rIndex)const
+{throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");}
+
+const Eigen::Matrix<double, 1, 1>& NuTo::NodeBase::GetNonlocalTotalStrain1D() const
 {
-	throw MechanicsException("[NuTo::NodeBase::GetDofNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");
+    return GetNonlocalTotalStrain1D(0);
+}
+const Eigen::Matrix<double, 3, 1>& NuTo::NodeBase::GetNonlocalTotalStrain2D() const
+{
+    return GetNonlocalTotalStrain2D(0);
+}
+const Eigen::Matrix<double, 6, 1>& NuTo::NodeBase::GetNonlocalTotalStrain3D() const
+{
+    return GetNonlocalTotalStrain3D(0);
+}
+const Eigen::Matrix<double, Eigen::Dynamic, 1> NuTo::NodeBase::GetNonlocalTotalStrains() const
+{
+    return GetNonlocalTotalStrains(0);
 }
 
-//! @brief returns the number of temperatures of the node
-//! @return number of temperatures
-int NuTo::NodeBase::GetNumNonlocalEqStrain()const
+const Eigen::Matrix<double, 1, 1>& NuTo::NodeBase::GetNonlocalTotalStrain1D(int rTimeDerivative) const
+{throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain1D] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");}
+const Eigen::Matrix<double, 3, 1>& NuTo::NodeBase::GetNonlocalTotalStrain2D(int rTimeDerivative) const
+{throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain2D] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");}
+const Eigen::Matrix<double, 6, 1>& NuTo::NodeBase::GetNonlocalTotalStrain3D(int rTimeDerivative) const
+{throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrain3D] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");}
+const Eigen::Matrix<double, Eigen::Dynamic, 1> NuTo::NodeBase::GetNonlocalTotalStrains(int rTimeDerivative) const
+{throw MechanicsException("[NuTo::NodeBase::GetNonlocalTotalStrains] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");}
+
+void NuTo::NodeBase::SetNonlocalTotalStrain1D(const Eigen::Matrix<double, 1, 1>& rNonlocalTotalStrain)
 {
-    throw MechanicsException("[NuTo::NodeBase::GetNumNonlocalEqStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq. strain.");
+    SetNonlocalTotalStrain1D(0, rNonlocalTotalStrain);
+}
+void NuTo::NodeBase::SetNonlocalTotalStrain2D(const Eigen::Matrix<double, 3, 1>& rNonlocalTotalStrain)
+{
+    SetNonlocalTotalStrain2D(0, rNonlocalTotalStrain);
+}
+void NuTo::NodeBase::SetNonlocalTotalStrain3D(const Eigen::Matrix<double, 6, 1>& rNonlocalTotalStrain)
+{
+    SetNonlocalTotalStrain3D(0, rNonlocalTotalStrain);
+}
+void NuTo::NodeBase::SetNonlocalTotalStrain  (const Eigen::Matrix<double, Eigen::Dynamic, 1>& rNonlocalTotalStrain)
+{
+    SetNonlocalTotalStrain(0, rNonlocalTotalStrain);
 }
 
 
-//! @brief returns the nonlocal eq. strain of the node
-//! @return nonlocal eq. strain
-double NuTo::NodeBase::GetNonlocalEqStrain()const
+void NuTo::NodeBase::SetNonlocalTotalStrain1D(int rTimeDerivative, const Eigen::Matrix<double, 1, 1>& rNonlocalTotalStrain)
+{throw MechanicsException("[NuTo::NodeBase::SetNonlocalTotalStrain1D] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");}
+void NuTo::NodeBase::SetNonlocalTotalStrain2D(int rTimeDerivative, const Eigen::Matrix<double, 3, 1>& rNonlocalTotalStrain)
+{throw MechanicsException("[NuTo::NodeBase::SetNonlocalTotalStrain2D] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");}
+void NuTo::NodeBase::SetNonlocalTotalStrain3D(int rTimeDerivative, const Eigen::Matrix<double, 6, 1>& rNonlocalTotalStrain)
+{throw MechanicsException("[NuTo::NodeBase::SetNonlocalTotalStrain3D] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");}
+void NuTo::NodeBase::SetNonlocalTotalStrain  (int rTimeDerivative, const Eigen::Matrix<double, Eigen::Dynamic, 1>& rNonlocalTotalStrain)
+{throw MechanicsException("[NuTo::NodeBase::SetNonlocalTotalStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal total strain.");}
+
+//*************************************************
+//*******   NONLOCAL EQUIVALENT STRAIN   **********
+//*************************************************
+
+int NuTo::NodeBase::GetNumNonlocalEqStrain() const
 {
-    throw MechanicsException("[NuTo::NodeBase::GetNumNonlocalEqStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq. strain.");
+    return 0;
 }
+int NuTo::NodeBase::GetDofNonlocalEqStrain() const
+{throw MechanicsException("[NuTo::NodeBase::GetDofNonlocalEqStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq strain.");}
 
-
-//! @brief returns the nonlocal eq. strain of the node
-//! @param rTimeDerivative time derivative
-//! @return nonlocal eq. strain
-double NuTo::NodeBase::GetNonlocalEqStrain(int rTimeDerivative)const
+double NuTo::NodeBase::GetNonlocalEqStrain() const
 {
-    throw MechanicsException("[NuTo::NodeBase::GetNumNonlocalEqStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq. strain.");
+    return GetNonlocalEqStrain(0);
 }
+double NuTo::NodeBase::GetNonlocalEqStrain(int rTimeDerivative) const
+{throw MechanicsException("[NuTo::NodeBase::GetNonlocalEqStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq strain.");}
 
-
-//! @brief set the nonlocal eq. strain of the node
-//! @param rNonlocalEqStrain  given nonlocal eq. strain
 void NuTo::NodeBase::SetNonlocalEqStrain(double rNonlocalEqStrain)
 {
-    throw MechanicsException("[NuTo::NodeBase::GetNumNonlocalEqStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq. strain.");
+    SetNonlocalEqStrain(0, rNonlocalEqStrain);
 }
-
-
-//! @brief set the temperature of the node
-//! @param rTimeDerivative time derivative
-//! @param rNonlocalEqStrain given nonlocal eq. strain
 void NuTo::NodeBase::SetNonlocalEqStrain(int rTimeDerivative, double rNonlocalEqStrain)
-{
-    throw MechanicsException("[NuTo::NodeBase::GetNumNonlocalEqStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq. strain.");
-}
+{throw MechanicsException("[NuTo::NodeBase::SetNonlocalEqStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq strain.");}
 
+//**************************************************
+//*******      WATER VOLUME FRACTION      **********
+//**************************************************
 
-//! @brief gives the global DOF the nonlocal eq. strain
-//! @return global DOF
-int NuTo::NodeBase::GetDofNonlocalEqStrain()const
-{
-    throw MechanicsException("[NuTo::NodeBase::GetNumNonlocalEqStrain] Node of type " + GetNodeTypeStr() + " has no nonlocal eq. strain.");
-}
-
-
-// Moisture Transport --- Begin
-
-// WaterPhaseFraction, int TNumRelativeHumidity
-
-//! @brief returns the number of water phase fraction components of the node
-//! @return number of water phase fraction components
-int NuTo::NodeBase::GetNumWaterPhaseFraction()const
+int NuTo::NodeBase::GetNumWaterVolumeFraction() const
 {
     return 0;
 }
+int NuTo::NodeBase::GetDofWaterVolumeFraction() const
+{throw MechanicsException("[NuTo::NodeBase::GetDofWaterVolumeFraction] Node of type " + GetNodeTypeStr() + " has no water volume fraction.");}
 
-//! @brief returns the water phase fraction of the node
-//! @return water phase fraction
-double NuTo::NodeBase::GetWaterPhaseFraction()const
+double NuTo::NodeBase::GetWaterVolumeFraction() const
 {
-    throw MechanicsException("[NuTo::NodeBase::GetWaterPhaseFraction] Node of type " + GetNodeTypeStr() + " has no water phase fraction.");
+    return GetWaterVolumeFraction(0);
 }
+double NuTo::NodeBase::GetWaterVolumeFraction(int rTimeDerivative) const
+{throw MechanicsException("[NuTo::NodeBase::GetWaterVolumeFraction] Node of type " + GetNodeTypeStr() + " has no water volume fraction.");}
 
-//! @brief returns the water phase fraction of the node
-//! @param rTimeDerivative time derivative
-//! @return water phase fraction
-double NuTo::NodeBase::GetWaterPhaseFraction(int rTimeDerivative)const
+void NuTo::NodeBase::SetWaterVolumeFraction(double rWaterVolumeFraction)
 {
-    throw MechanicsException("[NuTo::NodeBase::GetWaterPhaseFraction] Node of type " + GetNodeTypeStr() + " has no water phase fraction.");
+    SetWaterVolumeFraction(0, rWaterVolumeFraction);
 }
+void NuTo::NodeBase::SetWaterVolumeFraction(int rTimeDerivative, double rWaterVolumeFraction)
+{throw MechanicsException("[NuTo::NodeBase::SetWaterVolumeFraction] Node of type " + GetNodeTypeStr() + " has no water volume fraction.");}
 
-//! @brief set the water phase fraction of the node
-//! @param rWaterPhaseFraction  given water phase fraction
-void NuTo::NodeBase::SetWaterPhaseFraction(double rWaterPhaseFraction)
-{
-    throw MechanicsException("[NuTo::NodeBase::SetWaterPhaseFraction] Node of type " + GetNodeTypeStr() + " has no water phase fraction.");
-}
+//*************************************************
+//*******       RELATIVE HUMIDITY        **********
+//*************************************************
 
-//! @brief set the water phase fraction of the node
-//! @param rTimeDerivative time derivative
-//! @param rWaterPhaseFraction  given water phase fraction
-void NuTo::NodeBase::SetWaterPhaseFraction(int rTimeDerivative, double rWaterPhaseFraction)
-{
-    throw MechanicsException("[NuTo::NodeBase::SetWaterPhaseFraction] Node of type " + GetNodeTypeStr() + " has no water phase fraction.");
-}
-
-//! @brief gives the global DOF of a water phase fraction component
-//! @param rComponent component
-//! @return global DOF
-int NuTo::NodeBase::GetDofWaterPhaseFraction()const
-{
-    throw MechanicsException("[NuTo::NodeBase::GetDofWaterPhaseFraction] Node of type " + GetNodeTypeStr() + " has no water phase fraction.");
-}
-
-// --- relative Feuchte
-
-//! @brief returns the number of relative humidity components of the node
-//! @return number of relative humidity components
-int NuTo::NodeBase::GetNumRelativeHumidity()const
+int NuTo::NodeBase::GetNumRelativeHumidity() const
 {
     return 0;
 }
+int NuTo::NodeBase::GetDofRelativeHumidity() const
+{throw MechanicsException("[NuTo::NodeBase::GetDofRelativeHumidity] Node of type " + GetNodeTypeStr() + " has no relative humidity.");}
 
-//! @brief returns the relative humidity of the node
-//! @return relative humidity
-double NuTo::NodeBase::GetRelativeHumidity()const
+double NuTo::NodeBase::GetRelativeHumidity() const
 {
-    throw MechanicsException("[NuTo::NodeBase::GetRelativeHumidity] Node of type " + GetNodeTypeStr() + " has no relative humidity.");
+    return GetRelativeHumidity(0);
 }
+double NuTo::NodeBase::GetRelativeHumidity(int rTimeDerivative) const
+{throw MechanicsException("[NuTo::NodeBase::GetRelativeHumidity] Node of type " + GetNodeTypeStr() + " has no relative humidity.");}
 
-//! @brief returns the relative humidity of the node
-//! @param rTimeDerivative time derivative
-//! @return relative humidity
-double NuTo::NodeBase::GetRelativeHumidity(int rTimeDerivative)const
-{
-    throw MechanicsException("[NuTo::NodeBase::GetRelativeHumidity] Node of type " + GetNodeTypeStr() + " has no relative humidity.");
-}
-
-//! @brief set the relative humidity of the node
-//! @param rTemperature  given relative humidity
 void NuTo::NodeBase::SetRelativeHumidity(double rRelativeHumidity)
 {
-    throw MechanicsException("[NuTo::NodeBase::SetRelativeHumidity] Node of type " + GetNodeTypeStr() + " has no relative humidity.");
+    SetRelativeHumidity(0, rRelativeHumidity);
 }
-
-//! @brief set the relative humidity of the node
-//! @param rTimeDerivative time derivative
-//! @param rTemperature  given relative humidity
 void NuTo::NodeBase::SetRelativeHumidity(int rTimeDerivative, double rRelativeHumidity)
-{
-    throw MechanicsException("[NuTo::NodeBase::SetRelativeHumidity] Node of type " + GetNodeTypeStr() + " has no relative humidity.");
-}
-
-//! @brief gives the global DOF of a relative humidity component
-//! @param rComponent component
-//! @return global DOF
-int NuTo::NodeBase::GetDofRelativeHumidity()const
-{
-    throw MechanicsException("[NuTo::NodeBase::GetDofRelativeHumidity] Node of type " + GetNodeTypeStr() + " has no relative humidity.");
-}
-
-
-
-// Moisture Transport --- End
-
+{throw MechanicsException("[NuTo::NodeBase::SetRelativeHumidity] Node of type " + GetNodeTypeStr() + " has no relative humidity.");}
 
 
 #ifdef ENABLE_VISUALIZE
 void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const
 {
-	double coordinates[3]={0,0,0};
+    Eigen::Matrix<double, 3, 1> coordinates = Eigen::Matrix<double, 3, 1>::Zero();
 	switch (this->GetNumCoordinates())
 	{
 	case 1:
-		this->GetCoordinates1D(coordinates);
+	    coordinates.block<1,1>(0,0) = this->GetCoordinates1D();
 		break;
 	case 2:
-		this->GetCoordinates2D(coordinates);
+        coordinates.block<2,1>(0,0) = this->GetCoordinates2D();
 		break;
 	case 3:
-		this->GetCoordinates3D(coordinates);
+        coordinates.block<3,1>(0,0) = this->GetCoordinates3D();
 		break;
 	default:
 		throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither coordinates in 1D, 2D or 3D.");
 	}
-	unsigned int PointId = rVisualize.AddPoint(coordinates);
-	std::cout << "add point " << PointId << std::endl;
+	unsigned int PointId = rVisualize.AddPoint(coordinates.data());
+//	std::cout << "add point " << PointId << std::endl;
 
     // store data
     boost::ptr_list<VisualizeComponentBase>::const_iterator WhatIter = rWhat.begin();
@@ -708,113 +451,115 @@ void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boos
         {
 			case NuTo::VisualizeBase::DISPLACEMENTS:
 			{
-				double displacements[3]={0,0,0};
+			    if (GetNumDisplacements() == 0)
+			        break;
+			    Eigen::Matrix<double, 3, 1> displacements = Eigen::Matrix<double, 3, 1>::Zero();
 				switch (this->GetNumDisplacements())
 				{
 				case 1:
-					this->GetDisplacements1D(displacements);
+				    displacements.block<1,1>(0,0) = this->GetDisplacements1D();
 					break;
 				case 2:
-					this->GetDisplacements2D(displacements);
+                    displacements.block<2,1>(0,0) = this->GetDisplacements2D();
 					break;
 				case 3:
-					this->GetDisplacements3D(displacements);
+                    displacements.block<3,1>(0,0) = this->GetDisplacements3D();
 					break;
 				default:
 					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither displacements in 1D, 2D or 3D.");
 				}
-					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), displacements);
+					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), displacements.data());
 			}
 				break;
 			case NuTo::VisualizeBase::ROTATION:
 			{
-				double rotations[3]={0,0,0};
+                Eigen::Matrix<double, 3, 1> rotations = Eigen::Matrix<double, 3, 1>::Zero();
 				switch (this->GetNumRotations())
 				{
 				case 1:
-					this->GetRotations2D(rotations);
+				    rotations.block<1,1>(0,0) = this->GetRotations2D();
 					break;
 				case 3:
-					this->GetRotations3D(rotations);
+                    rotations.block<3,1>(0,0) = this->GetRotations3D();
 					break;
 				default:
 					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither rotations in 2D or 3D.");
 				}
-					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), rotations);
+					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), rotations.data());
 			}
 				break;
 			case NuTo::VisualizeBase::VELOCITY:
 			{
-				double velocities[3]={0,0,0};
-				switch (this->GetNumDisplacements())
-				{
-				case 1:
-					this->GetDisplacements1D(1,velocities);
-					break;
-				case 2:
-					this->GetDisplacements2D(1,velocities);
-					break;
-				case 3:
-					this->GetDisplacements3D(1,velocities);
+                Eigen::Matrix<double, 3, 1> velocities = Eigen::Matrix<double, 3, 1>::Zero();
+                switch (this->GetNumDisplacements())
+                {
+                case 1:
+                    velocities.block<1,1>(0,0) = this->GetDisplacements1D(1);
+                    break;
+                case 2:
+                    velocities.block<2,1>(0,0) = this->GetDisplacements2D(1);
+                    break;
+                case 3:
+                    velocities.block<3,1>(0,0) = this->GetDisplacements3D(1);
 					break;
 				default:
 					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither velocities in 1D, 2D or 3D.");
 				}
-					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), velocities);
+					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), velocities.data());
 			}
 				break;
 			case NuTo::VisualizeBase::ANGULAR_VELOCITY:
 			{
-				double angularVelocities[3]={0,0,0};
-				switch (this->GetNumRotations())
-				{
-				case 1:
-					this->GetRotations2D(0,angularVelocities);
-					break;
-				case 3:
-					this->GetRotations3D(0,angularVelocities);
-					break;
+                Eigen::Matrix<double, 3, 1> angularVelocities = Eigen::Matrix<double, 3, 1>::Zero();
+                switch (this->GetNumRotations())
+                {
+                case 1:
+                    angularVelocities.block<1,1>(0,0) = this->GetRotations2D(1);
+                    break;
+                case 3:
+                    angularVelocities.block<3,1>(0,0) = this->GetRotations3D(1);
+                    break;
 				default:
 					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither angular velocities in 2D or 3D.");
 				}
-					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), angularVelocities);
+					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), angularVelocities.data());
 			}
 				break;
 			case NuTo::VisualizeBase::ACCELERATION:
 			{
-				double accelerations[3]={0,0,0};
-				switch (this->GetNumDisplacements())
-				{
-				case 1:
-					this->GetDisplacements1D(2,accelerations);
-					break;
-				case 2:
-					this->GetDisplacements2D(2,accelerations);
-					break;
-				case 3:
-					this->GetDisplacements3D(2,accelerations);
-					break;
+                Eigen::Matrix<double, 3, 1> accelerations = Eigen::Matrix<double, 3, 1>::Zero();
+                switch (this->GetNumDisplacements())
+                {
+                case 1:
+                    accelerations.block<1,1>(0,0) = this->GetDisplacements1D(2);
+                    break;
+                case 2:
+                    accelerations.block<2,1>(0,0) = this->GetDisplacements2D(2);
+                    break;
+                case 3:
+                    accelerations.block<3,1>(0,0) = this->GetDisplacements3D(2);
+                    break;
 				default:
 					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither accelerations in 1D, 2D or 3D.");
 				}
-					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), accelerations);
+					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), accelerations.data());
 			}
 				break;
 			case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
 			{
-				double angularAccelerations[3]={0,0,0};
-				switch (this->GetNumRotations())
-				{
-				case 1:
-					this->GetRotations2D(2,angularAccelerations);
-					break;
-				case 3:
-					this->GetRotations3D(2,angularAccelerations);
-					break;
+                Eigen::Matrix<double, 3, 1> angularAccelerations = Eigen::Matrix<double, 3, 1>::Zero();
+                switch (this->GetNumRotations())
+                {
+                case 1:
+                    angularAccelerations.block<1,1>(0,0) = this->GetRotations2D(2);
+                    break;
+                case 3:
+                    angularAccelerations.block<3,1>(0,0) = this->GetRotations3D(2);
+                    break;
 				default:
 					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither angular accelerations in 2D or 3D.");
 				}
-					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), angularAccelerations);
+					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), angularAccelerations.data());
 			}
 				break;
 			default:

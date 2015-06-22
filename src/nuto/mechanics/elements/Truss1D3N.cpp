@@ -31,7 +31,7 @@ NuTo::Truss1D3N::Truss1D3N(NuTo::StructureBase* rStructure, const std::vector<Nu
 //! @param shape functions for all the nodes
 void NuTo::Truss1D3N::CalculateShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
 {
-    ShapeFunctions1D::ShapeFunctions1D3N(rLocalCoordinates, rShapeFunctions);
+    ShapeFunctions1D::ShapeFunctionsTrussOrder2(rLocalCoordinates, rShapeFunctions);
 }
 
 //! @brief calculates the shape functions
@@ -39,7 +39,7 @@ void NuTo::Truss1D3N::CalculateShapeFunctionsGeometry(double rLocalCoordinates, 
 //! @param shape functions for all the nodes
 void NuTo::Truss1D3N::CalculateShapeFunctionsNonlocalTotalStrain(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
 {
-   ShapeFunctions1D::ShapeFunctions1D2N(rLocalCoordinates, rShapeFunctions);
+   ShapeFunctions1D::ShapeFunctionsTrussOrder1(rLocalCoordinates, rShapeFunctions);
 }
 
 //! @brief calculates the shape functions
@@ -47,7 +47,7 @@ void NuTo::Truss1D3N::CalculateShapeFunctionsNonlocalTotalStrain(double rLocalCo
 //! @param shape functions for all the nodes
 void NuTo::Truss1D3N::CalculateShapeFunctionsNonlocalEqStrain(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
 {
-    ShapeFunctions1D::ShapeFunctions1D2N(rLocalCoordinates, rShapeFunctions);
+    ShapeFunctions1D::ShapeFunctionsTrussOrder1(rLocalCoordinates, rShapeFunctions);
 }
 
 
@@ -57,7 +57,7 @@ void NuTo::Truss1D3N::CalculateShapeFunctionsNonlocalEqStrain(double rLocalCoord
 //! first all the directions for a single node, and then for the next node
 void NuTo::Truss1D3N::CalculateDerivativeShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
 {
-    ShapeFunctions1D::DerivativeShapeFunctions1D3N(rLocalCoordinates, rDerivativeShapeFunctions);
+    ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder2(rLocalCoordinates, rDerivativeShapeFunctions);
 }
 
 //! @brief calculates the derivative of the shape functions
@@ -66,7 +66,7 @@ void NuTo::Truss1D3N::CalculateDerivativeShapeFunctionsGeometry(double rLocalCoo
 //! first all the directions for a single node, and then for the next node
 void NuTo::Truss1D3N::CalculateDerivativeShapeFunctionsNonlocalTotalStrain(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
 {
-    ShapeFunctions1D::DerivativeShapeFunctions1D2N(rLocalCoordinates, rDerivativeShapeFunctions);
+    ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder1(rLocalCoordinates, rDerivativeShapeFunctions);
 }
 
 //! @brief calculates the derivative of the shape functions
@@ -75,7 +75,7 @@ void NuTo::Truss1D3N::CalculateDerivativeShapeFunctionsNonlocalTotalStrain(const
 //! first all the directions for a single node, and then for the next node
 void NuTo::Truss1D3N::CalculateDerivativeShapeFunctionsNonlocalEqStrain(const double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
 {
-    ShapeFunctions1D::DerivativeShapeFunctions1D2N(rLocalCoordinates, rDerivativeShapeFunctions);
+    ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder1(rLocalCoordinates, rDerivativeShapeFunctions);
 }
 
 //! @brief returns a pointer to the i-th node of the element

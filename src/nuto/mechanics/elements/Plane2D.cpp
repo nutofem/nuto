@@ -36,7 +36,7 @@ void NuTo::Plane2D::CalculateLocalCoordinates(std::vector<double>& rLocalCoordin
 	assert((int)rLocalCoordinates.size()==2*GetNumNodesGeometry());
     for (int theNode=0; theNode<GetNumNodesGeometry(); theNode++)
     {
-        GetNodeGeometry(theNode)->GetCoordinates2D(&(rLocalCoordinates[2*theNode]));
+//        GetNodeGeometry(theNode)->GetCoordinates2D(&(rLocalCoordinates[2*theNode]));
     }
 }
 
@@ -48,7 +48,7 @@ void NuTo::Plane2D::CalculateLocalDisplacements(std::vector<double>& rLocalDispl
 	assert((int)rLocalDisplacements.size()==2*GetNumNodesField());
     for (int theNode=0; theNode<GetNumNodesField(); theNode++)
     {
-        GetNodeField(theNode)->GetDisplacements2D(&(rLocalDisplacements[2*theNode]));
+//        GetNodeField(theNode)->GetDisplacements2D(&(rLocalDisplacements[2*theNode]));
     }
 }
 
@@ -142,13 +142,13 @@ double NuTo::Plane2D::CalculateArea()const
 {
     double coordinates1[2];
     double coordinates2[2];
-    GetNodeGeometry(GetNumNodesGeometry()-1)->GetCoordinates2D(coordinates2);
+//    GetNodeGeometry(GetNumNodesGeometry()-1)->GetCoordinates2D(coordinates2);
 	double area(0);
 	for (int theNode = 0; theNode<GetNumNodesGeometry(); theNode++)
 	{
 		coordinates1[0] = coordinates2[0];
 		coordinates1[1] = coordinates2[1];
-		GetNodeGeometry(theNode)->GetCoordinates2D(coordinates2);
+//		GetNodeGeometry(theNode)->GetCoordinates2D(coordinates2);
 		area += coordinates1[0]*coordinates2[1] - coordinates1[1]*coordinates2[0];
 	}
     return 0.5*area;
@@ -243,7 +243,7 @@ bool NuTo::Plane2D::CheckPointInsidePolygon( const std::tuple<double,double> *rP
 
 //! @brief help function used in the Cracklength calculation to sort
 //! @parameter array1 (coordinates of point1 (x,y) and then the angle wrt mean
-bool CompareFunctionCrackAngle (const boost::array<double,3>&  array1, const boost::array<double,3>&  array2)
+bool CompareFunctionCrackAngle (const Eigen::Matrix<double,2,1>&  array1, const Eigen::Matrix<double,2,1>&  array2)
 {
 	return (array1[2]<array2[2]);
 }
@@ -253,12 +253,11 @@ bool CompareFunctionCrackAngle (const boost::array<double,3>&  array1, const boo
 double NuTo::Plane2D::CalculateCrackLength2D(double rAlpha)const
 {
 	//get all nodes and calculate mean
-	std::vector<boost::array<double,3> > coordinates;
-	coordinates.resize(GetNumNodesGeometry());
+	std::vector<Eigen::Matrix<double, 2, 1> > coordinates(GetNumNodesGeometry());
 	boost::array<double,2> mean = {{0.,0.}};
 	for (int theNode = 0; theNode<GetNumNodesGeometry(); theNode++)
 	{
-		GetNodeGeometry(theNode)->GetCoordinates2D(&(coordinates[theNode][0]));
+	    coordinates[theNode] = GetNodeGeometry(theNode)->GetCoordinates2D();
 		mean[0]+=coordinates[theNode][0];
 		mean[1]+=coordinates[theNode][1];
 	}

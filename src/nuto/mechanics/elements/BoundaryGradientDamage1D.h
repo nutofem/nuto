@@ -7,20 +7,17 @@
 
 namespace NuTo
 {
-
 namespace BoundaryCondition
 {
 
 enum eType
 {
-    NOT_SET,
-    NEUMANN_HOMOGENEOUS,            // grad nonlocal eq strain * n = 0
+    NOT_SET, NEUMANN_HOMOGENEOUS,            // grad nonlocal eq strain * n = 0
     ROBIN_INHOMOGENEOUS,            // l * grad nonlocal eq strain * n + nonlocal eq strain = local eq strain
     MACAULAY                        // l * grad nonlocal eq strain * n + (nonlocal eq strain - local eq strain)_- = 0
 };
 
 }  // namespace BoundaryCondition
-
 
 class StructureBase;
 class ConstitutiveTangentLocal1x1;
@@ -239,12 +236,6 @@ public:
     //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
     //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
     NuTo::Error::eError Evaluate(boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase>& rElementOutput);
-
-    //! @brief cast the base pointer, otherwise throws an exception
-    const NuTo::BoundaryGradientDamage1D* AsBoundaryGradientDamage1D()const override;
-
-    //! @brief cast the base pointer, otherwise throws an exception
-    NuTo::BoundaryGradientDamage1D* AsBoundaryGradientDamage1D() override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

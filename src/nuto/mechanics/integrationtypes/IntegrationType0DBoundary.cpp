@@ -94,7 +94,7 @@ bool NuTo::IntegrationType0DBoundary::CheckElementCompatibility(
 {
     switch (rElementType)
     {
-        case Element::BOUNDARYGRADIENTDAMAGE1D:
+        case Element::BOUNDARYELEMENT1D:
         {
             return true;
         }

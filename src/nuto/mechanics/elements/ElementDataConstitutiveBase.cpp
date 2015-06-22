@@ -25,7 +25,7 @@
 NuTo::ElementDataConstitutiveBase::ElementDataConstitutiveBase() :  NuTo::ElementDataBase::ElementDataBase()
 {
     //std::cout << "ElementDataConstitutiveBase constructor " << std::endl;
-	mConstitutiveLaw = 0;
+	mConstitutiveLaw = nullptr;
 }
 //! @brief deconstructor
 NuTo::ElementDataConstitutiveBase::~ElementDataConstitutiveBase()
@@ -36,7 +36,7 @@ NuTo::ElementDataConstitutiveBase::~ElementDataConstitutiveBase()
 void NuTo::ElementDataConstitutiveBase::SetConstitutiveLaw(const ElementBase* rElement, NuTo::ConstitutiveBase* rConstitutiveLaw)
 {
 	//std::cout << "NuTo::ElementDataConstitutiveBase::SetConstitutiveLaw" << std::endl;
-	assert(rConstitutiveLaw!=0);
+	assert(rConstitutiveLaw!=nullptr);
     mConstitutiveLaw = rConstitutiveLaw;
 	InitializeUpdatedConstitutiveLaw(rElement);
 }
@@ -46,25 +46,22 @@ void NuTo::ElementDataConstitutiveBase::SetConstitutiveLaw(const ElementBase* rE
 	throw MechanicsException("[NuTo::ElementDataConstitutiveBase::SetConstitutiveLaw] one material for whole element.");
 }
 
-bool NuTo::ElementDataConstitutiveBase::HasConstitutiveLawAssigned(int rIp)
+bool NuTo::ElementDataConstitutiveBase::HasConstitutiveLawAssigned(int rIp) const
 {
-	if (mConstitutiveLaw==0)
-	    return false;
-	else
-		return true;
+	return mConstitutiveLaw != nullptr;
 }
 
 
 NuTo::ConstitutiveBase* NuTo::ElementDataConstitutiveBase::GetConstitutiveLaw(int rIp)
 {
-	if (mConstitutiveLaw==0)
+	if (mConstitutiveLaw==nullptr)
 		throw MechanicsException("[NuTo::ElementDataConstitutiveBase::GetConstitutiveLaw] no constitutive law assigned yet.");
 	return mConstitutiveLaw;
 }
 
 const NuTo::ConstitutiveBase* NuTo::ElementDataConstitutiveBase::GetConstitutiveLaw(int rIp)const
 {
-	if (mConstitutiveLaw==0)
+	if (mConstitutiveLaw==nullptr)
 		throw MechanicsException("[NuTo::ElementDataConstitutiveBase::GetConstitutiveLaw] no constitutive law assigned yet.");
 	return mConstitutiveLaw;
 }

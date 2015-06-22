@@ -25,22 +25,16 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, const FullVector<doubl
 
 	if (rDisplacements.GetNumColumns()!=1)
 	    throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] Displacement matrix has to have a single column.");
+
+
+
 	try
 	{
-		switch (rDisplacements.GetNumRows())
-		{
-		case 1:
-			nodePtr->SetDisplacements1D(rDisplacements.data());
-		break;
-		case 2:
-			nodePtr->SetDisplacements2D(rDisplacements.data());
-		break;
-		case 3:
-			nodePtr->SetDisplacements3D(rDisplacements.data());
-		break;
-		default:
-			throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] The number of displacement components is either 1, 2 or 3.");
-		}
+	    if (rDisplacements.GetNumRows() <= 0 or rDisplacements.GetNumRows() > 3)
+	        throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] The number of displacement components is either 1, 2 or 3.");
+
+	    nodePtr->SetDisplacements(rDisplacements);
+
 	}
     catch(NuTo::MechanicsException & b)
 	{
@@ -77,20 +71,10 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, int rTimeDerivative, c
 	    throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] number of time derivatives stored at node is less than the required value.");
 	try
 	{
-		switch (rDisplacements.GetNumRows())
-		{
-		case 1:
-			nodePtr->SetDisplacements1D(rTimeDerivative,rDisplacements.data());
-		break;
-		case 2:
-			nodePtr->SetDisplacements2D(rTimeDerivative,rDisplacements.data());
-		break;
-		case 3:
-			nodePtr->SetDisplacements3D(rTimeDerivative,rDisplacements.data());
-		break;
-		default:
-			throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] The number of displacement components is either 1, 2 or 3.");
-		}
+        if (rDisplacements.GetNumRows() <= 0 or rDisplacements.GetNumRows() > 3)
+            throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] The number of displacement components is either 1, 2 or 3.");
+
+        nodePtr->SetDisplacements(rTimeDerivative, rDisplacements);
 	}
     catch(NuTo::MechanicsException & b)
 	{
@@ -124,17 +108,10 @@ void NuTo::StructureBase::NodeSetRotations(int rNode, const FullVector<double,Ei
 	throw MechanicsException("[NuTo::StructureBase::NodeSetRotations] rotation matrix has to have a single column.");
 	try
 	{
-		switch (rRotations.GetNumRows())
-		{
-		case 1:
-			nodePtr->SetRotations2D(rRotations.data());
-		break;
-		case 3:
-			nodePtr->SetRotations3D(rRotations.data());
-		break;
-		default:
-			throw MechanicsException("[NuTo::StructureBase::NodeSetRotations] The number of rotation components is either 1, 3.");
-		}
+	    if (rRotations.GetNumRows() != 1 and rRotations.GetNumRows() != 3)
+            throw MechanicsException("[NuTo::StructureBase::NodeSetRotations] The number of rotation components is either 1, 3.");
+
+	    nodePtr->SetRotations(rRotations);
 	}
     catch(NuTo::MechanicsException & b)
 	{
@@ -177,20 +154,10 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, const FullV
     {
 		try
 		{
-			switch (rDisplacements.GetNumRows())
-			{
-			case 1:
-				itNode->second->SetDisplacements1D(rDisplacements.data());
-			break;
-			case 2:
-				itNode->second->SetDisplacements2D(rDisplacements.data());
-			break;
-			case 3:
-				itNode->second->SetDisplacements3D(rDisplacements.data());
-			break;
-			default:
-				throw MechanicsException("[NuTo::StructureBase::NodeGroupSetDisplacements] The number of displacement components is either 1, 2 or 3.");
-			}
+	        if (rDisplacements.GetNumRows() <= 0 or rDisplacements.GetNumRows() > 3)
+	            throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] The number of displacement components is either 1, 2 or 3.");
+
+	        itNode->second->SetDisplacements(rDisplacements);
 		}
 		catch(NuTo::MechanicsException & b)
 		{
@@ -238,20 +205,10 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, int rTimeDe
 			if (itNode->second->GetNumTimeDerivatives()<rTimeDerivative)
                 throw MechanicsException("[NuTo::StructureBase::NodeGroupSetDisplacements] not does not have a sufficient number of time derivatives.");
 
-			switch (rDisplacements.GetNumRows())
-			{
-			case 1:
-				itNode->second->SetDisplacements1D(rTimeDerivative, rDisplacements.data());
-			break;
-			case 2:
-				itNode->second->SetDisplacements2D(rTimeDerivative, rDisplacements.data());
-			break;
-			case 3:
-				itNode->second->SetDisplacements3D(rTimeDerivative, rDisplacements.data());
-			break;
-			default:
-				throw MechanicsException("[NuTo::StructureBase::NodeGroupSetDisplacements] The number of displacement components is either 1, 2 or 3.");
-			}
+            if (rDisplacements.GetNumRows() <= 0 or rDisplacements.GetNumRows() > 3)
+                throw MechanicsException("[NuTo::StructureBase::NodeGroupSetDisplacements] The number of displacement components is either 1, 2 or 3.");
+
+            itNode->second->SetDisplacements(rTimeDerivative, rDisplacements);
 		}
 		catch(NuTo::MechanicsException & b)
 		{
@@ -322,24 +279,10 @@ void NuTo::StructureBase::NodeGetDisplacements(int rNode, int rTimeDerivative, F
 
 	try
 	{
-		switch (nodePtr->GetNumDisplacements())
-		{
-		case 1:
-			rDisplacements.Resize(1);
-			nodePtr->GetDisplacements1D(rTimeDerivative,rDisplacements.data());
-		break;
-		case 2:
-			rDisplacements.Resize(2);
-			nodePtr->GetDisplacements2D(rTimeDerivative,rDisplacements.data());
-		break;
-		case 3:
-			rDisplacements.Resize(3);
-			nodePtr->GetDisplacements3D(rTimeDerivative,rDisplacements.data());
-		break;
-		case 0:
-			throw MechanicsException("[NuTo::StructureBase::NodeGetDisplacements] Node has no displacements.");
-		break;
-		}
+	    if (nodePtr->GetNumDisplacements() == 0)
+            throw MechanicsException("[NuTo::StructureBase::NodeGetDisplacements] Node has no displacements.");
+
+	    rDisplacements = nodePtr->GetDisplacements(rTimeDerivative);
 	}
     catch(NuTo::MechanicsException & b)
 	{
@@ -423,20 +366,10 @@ void NuTo::StructureBase::NodeGetRotations(int rNode, FullVector<double,Eigen::D
 
 	try
 	{
-		switch (nodePtr->GetNumDisplacements())
-		{
-		case 2:
-			rRotations.Resize(1);
-			nodePtr->GetRotations2D(rRotations.data());
-		break;
-		case 3:
-			rRotations.Resize(3);
-			nodePtr->GetRotations3D(rRotations.data());
-		break;
-		default:
-			throw MechanicsException("[NuTo::StructureBase::NodeGetRotations] Node has neither 1(2D) or 3(3D) rotations.");
-		break;
-		}
+	    if (nodePtr->GetNumRotations() != 1 and nodePtr->GetNumRotations() != 3)
+	        throw MechanicsException("[NuTo::StructureBase::NodeGetRotations] Node has neither 1(2D) or 3(3D) rotations.");
+
+	    rRotations = nodePtr->GetRotations();
 	}
     catch(NuTo::MechanicsException & b)
 	{
@@ -477,32 +410,17 @@ void NuTo::StructureBase::NodeGroupGetDisplacements(int rGroupIdent, FullMatrix<
     int numDisp= nodeGroup->begin()->second->GetNumDisplacements();
     //resize the matrix
     rDisplacements.Resize(nodeGroup->GetNumMembers(),numDisp);
-	double disp[3];
+
 	int theNode(0);
     for (Group<NodeBase>::iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++, theNode++)
     {
 		try
 		{
-			switch (numDisp)
-			{
-			case 1:
-				itNode->second->GetDisplacements1D(disp);
-				rDisplacements(theNode,0)=disp[0];
-			break;
-			case 2:
-				itNode->second->GetDisplacements2D(disp);
-				rDisplacements(theNode,0)=disp[0];
-				rDisplacements(theNode,1)=disp[1];
-			break;
-			case 3:
-				itNode->second->GetDisplacements3D(disp);
-				rDisplacements(theNode,0)=disp[0];
-				rDisplacements(theNode,1)=disp[1];
-				rDisplacements(theNode,2)=disp[2];
-			break;
-			default:
-				throw MechanicsException("[NuTo::StructureBase::NodeGroupGetDisplacements] The number of displacement components is either 1, 2 or 3.");
-			}
+		    if (numDisp != 1 and numDisp != 2 and numDisp != 3)
+		        throw MechanicsException("[NuTo::StructureBase::NodeGroupGetDisplacements] The number of displacement components is either 1, 2 or 3.");
+
+		    rDisplacements.SetRow(theNode, itNode->second->GetDisplacements());
+
 		}
 		catch(NuTo::MechanicsException & b)
 		{
@@ -534,24 +452,11 @@ void NuTo::StructureBase::NodeGetCoordinates(int rNode, NuTo::FullVector<double,
 
 	try
 	{
-		switch (nodePtr->GetNumCoordinates())
-		{
-		case 1:
-			rCoordinates.Resize(1);
-			nodePtr->GetCoordinates1D(rCoordinates.data());
-		break;
-		case 2:
-			rCoordinates.Resize(2);
-			nodePtr->GetCoordinates2D(rCoordinates.data());
-		break;
-		case 3:
-			rCoordinates.Resize(3);
-			nodePtr->GetCoordinates3D(rCoordinates.data());
-		break;
-		case 0:
+	    if (nodePtr->GetNumCoordinates() == 0)
 			throw MechanicsException("[NuTo::StructureBase::NodeGetCoordinates] Node has no coordinates.");
-		break;
-		}
+
+		rCoordinates = nodePtr->GetCoordinates();
+
 	}
     catch(NuTo::MechanicsException & b)
 	{
@@ -593,32 +498,17 @@ void NuTo::StructureBase::NodeGroupGetCoordinates(int rGroupIdent, FullMatrix<do
     int numCoords= nodeGroup->begin()->second->GetNumCoordinates();
     //resize the matrix
     rCoordinates.Resize(nodeGroup->GetNumMembers(),numCoords);
-	double coord[3];
+
 	int theNode(0);
     for (Group<NodeBase>::iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++, theNode++)
     {
 		try
 		{
-			switch (numCoords)
-			{
-			case 1:
-				itNode->second->GetCoordinates1D(coord);
-				rCoordinates(theNode,0)=coord[0];
-			break;
-			case 2:
-				itNode->second->GetCoordinates2D(coord);
-				rCoordinates(theNode,0)=coord[0];
-				rCoordinates(theNode,1)=coord[1];
-			break;
-			case 3:
-				itNode->second->GetCoordinates3D(coord);
-				rCoordinates(theNode,0)=coord[0];
-				rCoordinates(theNode,1)=coord[1];
-				rCoordinates(theNode,2)=coord[2];
-			break;
-			default:
-				throw MechanicsException("[NuTo::StructureBase::NodeGroupGetCoordinates] The number of coordinates components is either 1, 2 or 3.");
-			}
+            if (numCoords != 1 and numCoords != 2 and numCoords != 3)
+                throw MechanicsException("[NuTo::StructureBase::NodeGroupGetCoordinates] The number of coordinates components is either 1, 2 or 3.");
+
+            rCoordinates.SetRow(theNode, itNode->second->GetCoordinates());
+
 		}
 		catch(NuTo::MechanicsException & b)
 		{
@@ -654,8 +544,7 @@ void NuTo::StructureBase::NodeGetNonlocalEqPlasticStrain(int rNode, NuTo::FullVe
 		{
 			throw MechanicsException("[NuTo::StructureBase::NodeGetNonlocalEqPlasticStrain] Node does not have nonlocal equivalent plastic strains.");
 		}
-		rNonlocalEqPlasticStrain.resize(2);
-		nodePtr->GetNonlocalEqPlasticStrain(rNonlocalEqPlasticStrain.data());
+		rNonlocalEqPlasticStrain = nodePtr->GetNonlocalEqPlasticStrain();
 	}
     catch(NuTo::MechanicsException & b)
 	{
@@ -686,27 +575,12 @@ void NuTo::StructureBase::NodeGetNonlocalTotalStrain(int rNode, NuTo::FullVector
 
 	try
 	{
-		switch (nodePtr->GetNumNonlocalTotalStrain())
-		{
-		case 0:
-			throw MechanicsException("[NuTo::StructureBase::NodeGetNonlocalTotalStrain] Node does not have nonlocal total strains.");
-        break;
-		case 1:
-			rNonlocalTotalStrain.resize(1);
-			nodePtr->GetNonlocalTotalStrain1D(rNonlocalTotalStrain.data());
-		break;
-		case 3:
-			rNonlocalTotalStrain.resize(3);
-			nodePtr->GetNonlocalTotalStrain2D(rNonlocalTotalStrain.data());
-		break;
-		case 6:
-			rNonlocalTotalStrain.resize(6);
-			nodePtr->GetNonlocalTotalStrain3D(rNonlocalTotalStrain.data());
-		break;
-		default:
-			throw MechanicsException("[NuTo::StructureBase::NodeGetNonlocalTotalStrain] Number of nonlocal total strain components is either 1, 3 or 6 .");
-		break;
-		}
+	    int num = nodePtr->GetNumNonlocalTotalStrain();
+	    if (num != 1 and num != 3 and num != 6)
+            throw MechanicsException("[NuTo::StructureBase::NodeGetNonlocalTotalStrain] Number of nonlocal total strain components is either 1, 3 or 6 .");
+
+	    rNonlocalTotalStrain = nodePtr->GetNonlocalTotalStrains();
+
 	}
     catch(NuTo::MechanicsException & b)
 	{
@@ -892,7 +766,6 @@ int NuTo::StructureBase::NodeGetIdAtCoordinate(FullVector<double, Eigen::Dynamic
     std::vector<std::pair<int,NodeBase*> > nodeVector;
     this->GetNodesTotal(nodeVector);
 
-    double nodeCoordinates[3];
     double distance;
 
     int nodeId = -1;
@@ -901,26 +774,9 @@ int NuTo::StructureBase::NodeGetIdAtCoordinate(FullVector<double, Eigen::Dynamic
     	NodeBase* nodePtr(nodeVector[countNode].second);
     	if (nodePtr->GetNumCoordinates()<1)
     		continue;
-    	switch (mDimension)
-    	{
-    	case 1:
-    	    nodePtr->GetCoordinates1D(nodeCoordinates);
-    	    distance = fabs(nodeCoordinates[0]-rCoordinates(0));
-    	    break;
-    	case 2:
-    	    nodePtr->GetCoordinates2D(nodeCoordinates);
-    	    distance = sqrt((nodeCoordinates[0]-rCoordinates(0))*(nodeCoordinates[0]-rCoordinates(0))+
-    	    		        (nodeCoordinates[1]-rCoordinates(1))*(nodeCoordinates[1]-rCoordinates(1)));
-    	    break;
-    	case 3:
-    	    nodePtr->GetCoordinates3D(nodeCoordinates);
-    	    distance = sqrt((nodeCoordinates[0]-rCoordinates(0))*(nodeCoordinates[0]-rCoordinates(0))+
-    	    		        (nodeCoordinates[1]-rCoordinates(1))*(nodeCoordinates[1]-rCoordinates(1))+
-	                        (nodeCoordinates[2]-rCoordinates(2))*(nodeCoordinates[2]-rCoordinates(2)));
-    	    break;
-    	default:
-    		throw MechanicsException("[NuTo::StructureBase::NodeGetIdAtCoordinate] unsupported dimension of the structure.");
-    	}
+
+    	distance = nodePtr->GetCoordinates().norm();
+
     	if (distance<rRange)
     	{
     		if (nodeId==-1)
@@ -962,3 +818,5 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(VisualizeUnstructuredGrid& rV
     }
 }
 #endif //ENABLE_VISUALIZE
+
+

@@ -71,67 +71,67 @@ public:
     // parameters /////////////////////////////////////////////////////////////
     //! @brief ... get density
     //! @return ... density
-    double GetDensity() const;
+    double GetDensity() const override;
 
     //! @brief ... set density
     //! @param rRho ... density
-    void SetDensity(double rRho);
+    void SetDensity(double rRho) override;
 
     //! @brief ... get Young's modulus
     //! @return ... Young's modulus
-    double GetYoungsModulus() const;
+    double GetYoungsModulus() const override;
 
     //! @brief ... set Young's modulus
     //! @param rE ... Young's modulus
-    void SetYoungsModulus(double rE);
+    void SetYoungsModulus(double rE) override;
 
     //! @brief ... get Poisson's ratio
     //! @return ... Poisson's ratio
-    double GetPoissonsRatio() const;
+    double GetPoissonsRatio() const override;
 
     //! @brief ... set Poisson's ratio
     //! @param rNu ... Poisson's ratio
-    void SetPoissonsRatio(double rNu);
+    void SetPoissonsRatio(double rNu) override;
 
     //! @brief ... get nonlocal radius
     //! @return ... nonlocal radius
-    double GetNonlocalRadius() const;
+    double GetNonlocalRadius() const override;
 
     //! @brief ... set nonlocal radius
     //! @param rRadius...  nonlocal radius
-    void SetNonlocalRadius(double rNonlocalRadius);
+    void SetNonlocalRadius(double rNonlocalRadius) override;
 
     //! @brief ... get tensile strength
     //! @return ... tensile strength
-    double GetTensileStrength() const;
+    double GetTensileStrength() const override;
 
     //! @brief ... set tensile strength
     //! @param rTensileStrength...  tensile strength
-    void SetTensileStrength(double rTensileStrength);
+    void SetTensileStrength(double rTensileStrength) override;
 
     //! @brief ... get compressive strength
     //! @return ... compressive strength
-    double GetCompressiveStrength() const;
+    double GetCompressiveStrength() const override;
 
     //! @brief ... set compressive strength
     //! @param rCompressiveStrength...  compressive strength
-    void SetCompressiveStrength(double rCompressiveStrength);
+    void SetCompressiveStrength(double rCompressiveStrength) override;
 
     //! @brief ... get biaxial compressive strength
     //! @return ... biaxial compressive strength
-    double GetBiaxialCompressiveStrength() const;
+    double GetBiaxialCompressiveStrength() const override;
 
     //! @brief ... set biaxial compressive strength
     //! @param rBiaxialCompressiveStrength...  biaxial compressive strength
-    void SetBiaxialCompressiveStrength(double rBiaxialCompressiveStrength);
+    void SetBiaxialCompressiveStrength(double rBiaxialCompressiveStrength) override;
 
     //! @brief ... get fracture energy
     //! @return ... fracture energy
-    double GetFractureEnergy() const;
+    double GetFractureEnergy() const override;
 
     //! @brief ... set fracture energy
     //! @param rFractureEnergy... fracture energy
-    void SetFractureEnergy(double rFractureEnergy);
+    void SetFractureEnergy(double rFractureEnergy) override;
 
     //! @brief ... get thermal expansion coefficient
     //! @return ... thermal expansion coefficient
@@ -141,26 +141,23 @@ public:
     //! @param rAlpha ... thermal expansion coefficient
     void SetThermalExpansionCoefficient(double rNu) override;
 ///////////////////////////////////////////////////////////////////////////
-    //! @brief ... get dimension of the constitutive relationship
-    //! @return ... dimension of the constitutive relationship (1, 2 or 3)
-    int GetGlobalDimension() const;
 
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship
     //! @sa eConstitutiveType
-    Constitutive::eConstitutiveType GetType() const;
+    Constitutive::eConstitutiveType GetType() const override;
 
     //! @brief ... check parameters of the constitutive relationship
-    void CheckParameters()const;
+    void CheckParameters()const override;
 
     //! @brief ... check compatibility between element type and type of constitutive relationship
     //! @param rElementType ... element type
     //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-    bool CheckElementCompatibility(Element::eElementType rElementType) const;
+    bool CheckElementCompatibility(Element::eElementType rElementType) const override;
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
-    void Info(unsigned short rVerboseLevel, Logger& rLogger) const;
+    void Info(unsigned short rVerboseLevel, Logger& rLogger) const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -315,7 +312,7 @@ public:
 
     //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
     //! @return ... see brief explanation
-    bool HaveTmpStaticData() const;
+    bool HaveTmpStaticData() const override;
 
 protected:
     //! @brief ... density

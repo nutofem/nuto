@@ -37,7 +37,7 @@ NuTo::Plane2D4N::Plane2D4N(NuTo::StructureBase* rStructure, const std::vector<Nu
 //! @param shape functions for all the nodes
 void NuTo::Plane2D4N::CalculateShapeFunctionsGeometry(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
 {
-    ShapeFunctions2D::ShapeFunctions2D4N(rNaturalCoordinates, rShapeFunctions);
+    ShapeFunctions2D::ShapeFunctionsQuadOrder1(rNaturalCoordinates, rShapeFunctions);
 }
 
 //! @brief calculates the derivative of the shape functions
@@ -46,7 +46,7 @@ void NuTo::Plane2D4N::CalculateShapeFunctionsGeometry(const double rNaturalCoord
 //! first all the directions for a single node, and then for the next node
 void NuTo::Plane2D4N::CalculateDerivativeShapeFunctionsGeometryNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
 {
-    ShapeFunctions2D::DerivativeShapeFunctions2D4N(rNaturalCoordinates, rDerivativeShapeFunctions);
+    ShapeFunctions2D::DerivativeShapeFunctionsQuadOrder1(rNaturalCoordinates, rDerivativeShapeFunctions);
 }
 
 //! @brief calculates the shape functions for the surfaces (required for surface loads)
@@ -54,7 +54,7 @@ void NuTo::Plane2D4N::CalculateDerivativeShapeFunctionsGeometryNatural(const dou
 //! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
 void NuTo::Plane2D4N::CalculateShapeFunctionsSurface(double rNaturalCoordinates, std::vector<double>& rShapeFunctions)const
 {
-    ShapeFunctions1D::ShapeFunctions1D2N(rNaturalCoordinates, rShapeFunctions);
+    ShapeFunctions1D::ShapeFunctionsTrussOrder1(rNaturalCoordinates, rShapeFunctions);
 }
 
 //! @brief calculates the derivative of the shape functions with respect to local coordinatesfor the surfaces (required for surface loads)
@@ -63,7 +63,7 @@ void NuTo::Plane2D4N::CalculateShapeFunctionsSurface(double rNaturalCoordinates,
 //! first all the directions for a single node, and then for the next node
 void NuTo::Plane2D4N::CalculateDerivativeShapeFunctionsLocalSurface(double rNaturalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
 {
-    ShapeFunctions1D::DerivativeShapeFunctions1D2N(rNaturalCoordinates, rDerivativeShapeFunctions);
+    ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder1(rNaturalCoordinates, rDerivativeShapeFunctions);
 }
 
 //! @brief returns the surface nodes

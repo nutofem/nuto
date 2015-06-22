@@ -21,6 +21,7 @@ class GreenLagrangeStrain1D;
 class GreenLagrangeStrain2D;
 class GreenLagrangeStrain3D;
 class Truss;
+class Element1D;
 
 //! @brief ... one-dimensional deformation gradient
 /*!
@@ -39,6 +40,7 @@ class DeformationGradient1D : public ConstitutiveInputBase
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
     friend class NuTo::Truss;
+    friend class NuTo::Element1D;
     friend class EngineeringStrain1D;
     friend class EngineeringStrain2D;
     friend class EngineeringStrain3D;

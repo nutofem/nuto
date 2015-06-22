@@ -62,7 +62,7 @@ constitutive/mechanics/SecondPiolaKirchhoffStress2D.cpp
 constitutive/mechanics/SecondPiolaKirchhoffStress3D.cpp
 constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.cpp
 constitutive/moistureTransport/MoistureTransport.cpp
-constitutive/moistureTransport/WaterPhaseFraction.cpp
+constitutive/moistureTransport/WaterVolumeFraction.cpp
 constitutive/moistureTransport/RelativeHumidity.cpp
 constitutive/moistureTransport/ConstitutiveStaticDataMoistureTransport.cpp
 )
@@ -87,7 +87,7 @@ constraints/ConstraintLinearNodeGroupRotations2D.cpp
 constraints/ConstraintLinearNodeGroupTemperature.cpp
 constraints/ConstraintLinearNodeRelativeHumidity.cpp
 constraints/ConstraintLinearNodeRotations2D.cpp
-constraints/ConstraintLinearNodeWaterPhaseFraction.cpp
+constraints/ConstraintLinearNodeWaterVolumeFraction.cpp
 constraints/ConstraintNode.cpp
 constraints/ConstraintNodeGroup.cpp
 constraints/ConstraintNonlinear.cpp
@@ -102,8 +102,11 @@ structures/unstructured/StructureCrack.cpp
 )
 
 SET(NuToMechanicsElements_SOURCES
-elements/BoundaryGradientDamage1D.cpp
-elements/BoundaryMoistureTransport1D.cpp
+#elements/BoundaryGradientDamage1D.cpp
+#elements/BoundaryMoistureTransport1D.cpp
+elements/BoundaryElementBase.cpp
+elements/BoundaryElement1D.cpp
+elements/BoundaryElement2D.cpp
 elements/Brick8N.cpp
 elements/Brick20N.cpp
 elements/ElementBase.cpp
@@ -116,7 +119,11 @@ elements/ElementDataNonlocalBase.cpp
 elements/ElementDataVariableConstitutiveBase.cpp
 elements/ElementDataVariableConstitutiveIp.cpp
 elements/ElementOutputBase.cpp
+elements/ElementInputBase.cpp
 elements/ElementShapeFunctions.cpp
+elements/Element1D.cpp
+elements/Element2D.cpp
+elements/Element3D.cpp
 elements/IpDataBase.cpp
 elements/IpDataEmpty.cpp
 elements/IpDataCoordinates2DBase.cpp
@@ -126,21 +133,21 @@ elements/IpDataStaticDataBase.cpp
 elements/IpDataStaticDataWeightCoordinates2D.cpp
 elements/IpDataStaticDataNonlocal.cpp
 elements/IpDataWeightBase.cpp
-elements/Plane.cpp
-elements/Plane2D.cpp
-elements/Plane2D10N.cpp
-elements/Plane2D15N.cpp
-elements/Plane2D3N.cpp
-elements/Plane2D4N.cpp
-elements/Plane2D6N.cpp
-elements/Solid.cpp
-elements/Tetrahedron10N.cpp
-elements/Truss.cpp
-elements/Truss1D.cpp
-elements/Truss1D2N.cpp
-elements/Truss1D3N.cpp
-elements/Truss1D4NDisp3NX.cpp
-elements/Tetrahedron4N.cpp
+#elements/Plane.cpp
+#elements/Plane2D.cpp
+#elements/Plane2D10N.cpp
+#elements/Plane2D15N.cpp
+#elements/Plane2D3N.cpp
+#elements/Plane2D4N.cpp
+#elements/Plane2D6N.cpp
+#elements/Solid.cpp
+#elements/Tetrahedron10N.cpp
+#elements/Truss.cpp
+#elements/Truss1D.cpp
+#elements/Truss1D2N.cpp
+#elements/Truss1D3N.cpp
+#elements/Truss1D4NDisp3NX.cpp
+#elements/Tetrahedron4N.cpp
 )
 
 SET(NuToMechanicsGroups_SOURCES
@@ -169,6 +176,7 @@ integrationtypes/IntegrationType2D3NGauss3Ip.cpp
 integrationtypes/IntegrationType2D4NConstVariableIp.cpp
 integrationtypes/IntegrationType2D4NGauss1Ip.cpp
 integrationtypes/IntegrationType2D4NGauss4Ip.cpp
+integrationtypes/IntegrationType2D4NGauss9Ip.cpp
 integrationtypes/IntegrationType2D4NLobatto9Ip.cpp
 integrationtypes/IntegrationType2D4NLobatto16Ip.cpp
 integrationtypes/IntegrationType2D4NLobatto25Ip.cpp
@@ -182,6 +190,19 @@ integrationtypes/IntegrationType3D8NGauss1Ip.cpp
 integrationtypes/IntegrationType3D8NGauss2x2x2Ip.cpp
 integrationtypes/IntegrationType3D20NGauss3x3x3Ip.cpp
 integrationtypes/IntegrationTypeBase.cpp
+)
+
+SET(NuToMechanicsInterpolationtypes_SOURCE
+interpolationtypes/InterpolationType.cpp
+interpolationtypes/InterpolationBase.cpp
+interpolationtypes/Interpolation1D.cpp
+interpolationtypes/Interpolation1DTruss.cpp
+interpolationtypes/Interpolation2D.cpp
+interpolationtypes/Interpolation2DTriangle.cpp
+interpolationtypes/Interpolation2DQuad.cpp
+interpolationtypes/Interpolation3D.cpp
+interpolationtypes/Interpolation3DTetrahedron.cpp
+interpolationtypes/Interpolation3DBrick.cpp
 )
 
 SET(NuToMechanicsLoads_SOURCES
@@ -203,13 +224,8 @@ loads/LoadSurfacePressure3D.cpp
 )
 
 SET(NuToMechanicsNodes_SOURCES
-nodes/MapNodeKeyNodeEnum.cpp
 nodes/NodeBase.cpp
 nodes/NodeDof.cpp
-nodes/NodeGrid1D.cpp
-nodes/NodeGrid2D.cpp
-nodes/NodeGrid3D.cpp
-nodes/NodeRadius.cpp
 nodes/NodeNonlocalDataBase.cpp
 )
 
@@ -233,7 +249,8 @@ structures/StructureBaseNode.cpp
 structures/StructureBaseSection.cpp
 structures/unstructured/Structure.cpp
 structures/unstructured/StructureElement.cpp
-structures/unstructured//StructureGroup.cpp
+structures/unstructured/StructureGroup.cpp
+structures/unstructured/StructureInterpolationType.cpp
 structures/unstructured/StructureMesh.cpp
 structures/unstructured/StructureNode.cpp
 structures/grid/OctreeGrid.cpp
@@ -272,7 +289,7 @@ timeIntegration/VelocityVerlet.cpp
 SET(NuToMechanics_SOURCES
 MechanicsException.cpp ${NuToMechanicsConstitutive_SOURCES} ${NuToMechanicsConstraint_SOURCES}
 ${NuToMechanicsCrack_SOURCES} ${NuToMechanicsElements_SOURCES} ${NuToMechanicsGroups_SOURCES}
-${NuToMechanicsIntegrationtypes_SOURCES} ${NuToMechanicsLoads_SOURCES}
+${NuToMechanicsIntegrationtypes_SOURCES} ${NuToMechanicsInterpolationtypes_SOURCE} ${NuToMechanicsLoads_SOURCES}
 ${NuToMechanicsNodes_SOURCES} ${NuToMechanicsSection_SOURCES} ${NuToMechanicsStructures_SOURCES}
 ${NuToMechanicsTimeIntegration_SOURCES}
 )

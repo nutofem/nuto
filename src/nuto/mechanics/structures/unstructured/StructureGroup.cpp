@@ -2,8 +2,8 @@
 
 //! @brief ... Adds all elements to a group based on the type
 //! @param ... rIdentGroup identifier for the group
-//! @param ... rElemTypeStr  identifier for the element type
-void NuTo::Structure::GroupAddElementFromType(int rIdentGroup, std::string rElemTypeStr)
+//! @param ... rInterpolationType  identifier for the interpolation type
+void NuTo::Structure::GroupAddElementFromType(int rIdentGroup, int rInterpolationType)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -15,16 +15,20 @@ void NuTo::Structure::GroupAddElementFromType(int rIdentGroup, std::string rElem
 		if (itGroup==mGroupMap.end())
 			throw MechanicsException("[NuTo::Structure::GroupAddElementFromType] Group with the given identifier does not exist.");
 		if (itGroup->second->GetType()!=Groups::Elements)
-			throw MechanicsException("[NuTo::Structure::GroupAddElementFromType] An element can be added only to an element group.");
+			throw MechanicsException("[NuTo::Structure::GroupAddElementFromType] Group is not an element group.");
 
-		NuTo::Element::eElementType elementType = this->ElementTypeGetEnum(rElemTypeStr);
+		boost::ptr_map<int,InterpolationType>::iterator itInterpolationType = mInterpolationTypeMap.find(rInterpolationType);
+		if (itInterpolationType==mInterpolationTypeMap.end())
+            throw MechanicsException("[NuTo::Structure::GroupAddElementFromType] InterpolationType with the given identifier does not exist.");
 
-		boost::ptr_map<int,ElementBase>::iterator ElementIter = this->mElementMap.begin();
-	    while (ElementIter != this->mElementMap.end())
+		InterpolationType* interpolationType = itInterpolationType->second;
+
+		for (boost::ptr_map<int,ElementBase>::iterator elementIter = this->mElementMap.begin(); elementIter != this->mElementMap.end(); elementIter++)
 	    {
-			if (ElementIter->second->GetEnumType()==elementType)
-				itGroup->second->AddMember(ElementIter->first, ElementIter->second);
-			ElementIter++;
+		    ElementBase* element = elementIter->second;
+
+		    if (element->GetInterpolationType() == interpolationType)
+				itGroup->second->AddMember(elementIter->first, elementIter->second);
 	    }
     }
     catch(NuTo::MechanicsException &e)

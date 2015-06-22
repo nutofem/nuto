@@ -111,8 +111,8 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
         const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
         std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
-    // get section information determining which input on the constitutive level should be used
-    const SectionBase* section(rElement->GetSection());
+    // get interpolation type information determining which input on the constitutive level should be used
+    const InterpolationType* interpolationType = rElement->GetInterpolationType();
 
     // check if parameters are valid
     if (this->mParametersValid == false)
@@ -121,7 +121,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
         CheckParameters();
     }
 
-    if (section->GetType()!=Section::PLANE_STRAIN)
+    if (rElement->GetSection()->GetType()!=Section::PLANE_STRAIN)
     	throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate] only plane strain is implemented.");
 
     EngineeringStrain2D engineeringStrain;
@@ -143,7 +143,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
     elastStrain[3] =  - oldStaticData->mTmpEpsilonP[3];
 
     // subtract thermal strain
-    if (section->GetInputConstitutiveIsTemperature())
+    if (interpolationType->IsConstitutiveInput(Node::TEMPERATURES))
     {
         std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>::const_iterator itInput(rConstitutiveInput.find(NuTo::Constitutive::Input::TEMPERATURE));
         if (itInput==rConstitutiveInput.end())
@@ -1542,6 +1542,10 @@ bool NuTo::NonlocalDamagePlasticityEngineeringStress::CheckElementCompatibility(
     case NuTo::Element::TRUSS1D2N:
         return true;
     case NuTo::Element::TRUSS1D3N:
+        return true;
+    case NuTo::Element::ELEMENT1D:
+        return true;
+    case NuTo::Element::ELEMENT2D:
         return true;
     default:
         return false;

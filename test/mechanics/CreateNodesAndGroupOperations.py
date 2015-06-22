@@ -30,10 +30,10 @@ error = False
 
 myStructure = nuto.Structure(2)
 #coordinates = nuto.FullMatrixDouble(2,1,(1,1))
-node1 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((1,1)))
-node2 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((1,0)))
-node3 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,0)))
-node4 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,1)))
+node1 = myStructure.NodeCreate(nuto.DoubleFullVector((1,1)))
+node2 = myStructure.NodeCreate(nuto.DoubleFullVector((1,0)))
+node3 = myStructure.NodeCreate(nuto.DoubleFullVector((0,0)))
+node4 = myStructure.NodeCreate(nuto.DoubleFullVector((0,1)))
 
 NodeGroup1 = myStructure.GroupCreate("Nodes")
 NodeGroup2 = myStructure.GroupCreate("Nodes")

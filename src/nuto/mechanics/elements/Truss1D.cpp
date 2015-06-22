@@ -28,7 +28,7 @@ void NuTo::Truss1D::CalculateLocalCoordinates(std::vector<double>& rLocalCoordin
     assert((int)rLocalCoordinates.size()==GetNumNodesGeometry());
     for (int theNode=0; theNode<GetNumNodesGeometry(); theNode++)
     {
-        GetNodeGeometry(theNode)->GetCoordinates1D(&(rLocalCoordinates[theNode]));
+//        GetNodeGeometry(theNode)->GetCoordinates1D(&(rLocalCoordinates[theNode]));
     }
 }
 
@@ -43,7 +43,7 @@ void NuTo::Truss1D::CalculateLocalDisplacements(int rTimeDerivative, std::vector
     assert((int)rLocalDisplacements.size()==GetNumNodesField());
     for (int theNode=0; theNode<GetNumNodesField(); theNode++)
     {
-        GetNodeField(theNode)->GetDisplacements1D(rTimeDerivative, &(rLocalDisplacements[theNode]));
+//        GetNodeField(theNode)->GetDisplacements1D(rTimeDerivative, &(rLocalDisplacements[theNode]));
     }
 }
 
@@ -62,7 +62,7 @@ void NuTo::Truss1D::InterpolateCoordinatesFrom1D(double rLocalCoordinates, doubl
     {
         // get node coordinate
         double nodeCoordinate;
-        GetNodeGeometry(theNode)->GetCoordinates1D(&nodeCoordinate);
+//        GetNodeGeometry(theNode)->GetCoordinates1D(&nodeCoordinate);
 
         // add node contribution
         rGlobalCoordinates[0] += shapeFunctions[theNode] *  nodeCoordinate;
@@ -84,7 +84,7 @@ void NuTo::Truss1D::InterpolateDisplacementsFrom1D(int rTimeDerivatrive, double 
     {
         // get node displacements
         double nodeDisplacement;
-       	GetNodeField(theNode)->GetDisplacements1D(rTimeDerivatrive,&nodeDisplacement);
+//       	GetNodeField(theNode)->GetDisplacements1D(rTimeDerivatrive,&nodeDisplacement);
 
         // add node contribution
         rGlobalDisplacements[0] += shapeFunctions[theNode] *  nodeDisplacement;

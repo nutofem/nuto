@@ -9,7 +9,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/MechanicsException.h"
-#include <nuto/mechanics/sections/SectionPlane.h>
+#include "nuto/mechanics/sections/SectionPlane.h"
 
 // constructor
 NuTo::SectionPlane::SectionPlane(Section::eSectionType rSectionType)

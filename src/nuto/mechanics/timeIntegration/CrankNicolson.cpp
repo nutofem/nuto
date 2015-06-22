@@ -201,7 +201,7 @@ NuTo::Error::eError NuTo::CrankNicolson::Solve(double rFinalTime)
         residual_mod=prevResidual_j - CmatT*prevResidual_k;
 
 //@COMMENT check, if this could be avoided, only required if check for initial equilibrium required
-        std::cout << "residual in initial configuration " << residual_mod.Norm() << std::endl;
+        //std::cout << "residual in initial configuration " << residual_mod.Norm() << std::endl;
         if (residual_mod.Norm()>mToleranceForce)
             throw MechanicsException("[NuTo::CrankNicolson::Solve] Initial configuration is not in (dynamic) equilibrium.");
 

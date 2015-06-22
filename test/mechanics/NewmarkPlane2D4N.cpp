@@ -67,10 +67,14 @@ try
         	NuTo::FullVector<double,Eigen::Dynamic> coordinates(2);
         	coordinates(0) = countX*deltaX;
         	coordinates(1) = countY*deltaY;
-        	myStructure.NodeCreate(nodeNum,std::string("DISPLACEMENTS"),coordinates);
+        	myStructure.NodeCreate(nodeNum,coordinates);
         	nodeNum++;
         }
     }
+
+    int myInterpolationType = myStructure.InterpolationTypeCreate("Quad2D");
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
 	//create elements
     int numElementsX = numNodesX-1;
@@ -84,9 +88,11 @@ try
         	nodes(1) = countX+1+  countY   *numNodesX;
         	nodes(2) = countX+1+ (countY+1)*numNodesX;
         	nodes(3) = countX  + (countY+1)*numNodesX;
-        	myStructure.ElementCreate(std::string("PLANE2D4N"), nodes, std::string("ConstitutiveLawIp"), std::string("StaticData"));
+        	myStructure.ElementCreate(myInterpolationType, nodes, std::string("ConstitutiveLawIp"), std::string("StaticData"));
         }
     }
+
+    myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
 
     //section
 	double thickness(1);
@@ -344,13 +350,13 @@ try
 }
 catch (NuTo::MechanicsException& e)
 {
-    std::cout << "Error executing NewmarlPlane2D4N "<< std::endl;
+    std::cout << "Error executing NewmarkPlane2D4N "<< std::endl;
     std::cout << e.ErrorMessage() << std::endl;
     exit(1);
 }
 catch (NuTo::Exception& e)
 {
-    std::cout << "Error executing NewmarlPlane2D4N "<< std::endl;
+    std::cout << "Error executing NewmarkPlane2D4N "<< std::endl;
     std::cout << e.ErrorMessage() << std::endl;
     exit(1);
 }

@@ -103,8 +103,8 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
         const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
         std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
-        // get section information determining which input on the constitutive level should be used
-        const SectionBase* section(rElement->GetSection());
+        // get interpolation type information determining which input on the constitutive level should be used
+        const InterpolationType* interpolationType = rElement->GetInterpolationType();
 
         // check if parameters are valid
         if (this->mParametersValid == false)
@@ -113,7 +113,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
             CheckParameters();
         }
 
-        if (section->GetType()!=Section::TRUSS)
+        if (rElement->GetSection()->GetType()!=Section::TRUSS)
             throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::Evaluate] only truss sections are implemented.");
 
         EngineeringStrain1D strain1D;
@@ -127,7 +127,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
         ConstitutiveStaticDataGradientDamagePlasticity1D *oldStaticData = (rElement->GetStaticData(rIp))->AsGradientDamagePlasticity1D();
 
         // subtract thermal strain
-        if (section->GetInputConstitutiveIsTemperature())
+        if (interpolationType->IsConstitutiveInput(Node::TEMPERATURES))
         {
             std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>::const_iterator itInput(rConstitutiveInput.find(NuTo::Constitutive::Input::TEMPERATURE));
             if (itInput==rConstitutiveInput.end())
@@ -847,7 +847,7 @@ double NuTo::GradientDamagePlasticityEngineeringStress::GetCompressiveStrength()
 //! @param rCompressiveStrength...  compressive strength
 void NuTo::GradientDamagePlasticityEngineeringStress::SetCompressiveStrength(double rCompressiveStrength)
 {
-    this->CheckNonlocalRadius(rCompressiveStrength);
+    this->CheckCompressiveStrength(rCompressiveStrength);
     this->mCompressiveStrength = rCompressiveStrength;
     this->SetParametersValid();
 }

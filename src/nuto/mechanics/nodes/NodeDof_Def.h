@@ -1,6 +1,6 @@
 // $Id$
-#ifndef NODEDOF_DEF_H
-#define NODEDOF_DEF_H
+#ifndef NODET_DEF_H
+#define NODET_DEF_H
 
 #ifdef ENABLE_SERIALIZATION
 // serialize
@@ -13,7 +13,14 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/math/FullMatrix_Def.h"
-#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeCoordinates.h"
+#include "nuto/mechanics/nodes/NodeDisplacements.h"
+#include "nuto/mechanics/nodes/NodeRotations.h"
+#include "nuto/mechanics/nodes/NodeNonlocalEqPlasticStrain.h"
+#include "nuto/mechanics/nodes/NodeNonlocalEqStrain.h"
+#include "nuto/mechanics/nodes/NodeRelativeHumidity.h"
+#include "nuto/mechanics/nodes/NodeWaterVolumeFraction.h"
+
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
 #ifdef ENABLE_VISUALIZE
@@ -23,16 +30,23 @@
 #include <boost/ptr_container/ptr_list.hpp>
 #endif // ENABLE_VISUALIZE
 
-#define NODE_DOF_TEMPLATE_PARAMETERS int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain, int TNumWaterPhaseFraction, int TNumRelativeHumidity
-#define NODE_DOF_TEMPLATE_INITIALIZATION TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures, TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain, TNumNonlocalEqStrain, TNumWaterPhaseFraction, TNumRelativeHumidity
+#define NODE_DOF_TEMPLATE_PARAMETERS int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain, int TNumWaterVolumeFraction, int TNumRelativeHumidity
+#define NODE_DOF_TEMPLATE_INITIALIZATION TNumCoordinates, TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures, TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain, TNumNonlocalEqStrain, TNumWaterVolumeFraction, TNumRelativeHumidity
 
 namespace NuTo
 {
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for all nodes
-template <NODE_DOF_TEMPLATE_PARAMETERS>
-class NodeDof: public virtual NodeBase
+template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain, int TNumWaterVolumeFraction, int TNumRelativeHumidity>
+class NodeDof:
+        public NodeCoordinates<TNumCoordinates>,
+        public NodeDisplacements<TNumDisplacements, TNumTimeDerivatives>,
+        public NodeRotations<TNumRotations, TNumTimeDerivatives>,
+        public NodeNonlocalEqPlasticStrain<TNumNonlocalEqPlasticStrain, TNumTimeDerivatives>,
+        public NodeNonlocalEqStrain<TNumNonlocalEqStrain, TNumTimeDerivatives>,
+        public NodeRelativeHumidity<TNumRelativeHumidity,TNumTimeDerivatives>,
+        public NodeWaterVolumeFraction<TNumWaterVolumeFraction,TNumTimeDerivatives>
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -42,45 +56,44 @@ public:
     //! @brief constructor
     NodeDof();
 
-
     //! @brief destructor
-    ~NodeDof();
+    ~NodeDof() {}
 
     //! @brief assignment operator
-    void operator=(NodeDof const& rOther);
+    NodeDof& operator=(NodeDof const& rOther) = default;
 
-#ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize NodeDof" << std::endl;
-#endif
-        ar & boost::serialization::make_nvp("NodeDof",boost::serialization::base_object< NodeBase >(*this));
-
-/*    	ar & BOOST_SERIALIZATION_NVP(mDisplacements);
-   	    ar & BOOST_SERIALIZATION_NVP(mDofDisplacements);
-
-    	ar & BOOST_SERIALIZATION_NVP(mRotations);
-    	ar & BOOST_SERIALIZATION_NVP(mDofRotations);
-
-    	ar & BOOST_SERIALIZATION_NVP(mTemperatures);
-    	ar & BOOST_SERIALIZATION_NVP(mDofTemperatures);
-
-    	ar & BOOST_SERIALIZATION_NVP(mNonlocalEqPlasticStrain);
-    	ar & BOOST_SERIALIZATION_NVP(mDofNonlocalEqPlasticStrain);
-
-    	ar & BOOST_SERIALIZATION_NVP(mNonlocalTotalStrain);
-    	ar & BOOST_SERIALIZATION_NVP(mDofNonlocalTotalStrain);
-*/
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize NodeDof" << std::endl;
-#endif
-    }
-#endif // ENABLE_SERIALIZATION
+//#ifdef ENABLE_SERIALIZATION
+//    //! @brief serializes the class
+//    //! @param ar         archive
+//    //! @param version    version
+//    template<class Archive>
+//    void serialize(Archive & ar, const unsigned int version)
+//    {
+//#ifdef DEBUG_SERIALIZATION
+//    std::cout << "start serialize NodeT" << std::endl;
+//#endif
+//        ar & boost::serialization::make_nvp("NodeT",boost::serialization::base_object< NodeBase >(*this));
+//
+///*    	ar & BOOST_SERIALIZATION_NVP(mDisplacements);
+//   	    ar & BOOST_SERIALIZATION_NVP(mDofDisplacements);
+//
+//    	ar & BOOST_SERIALIZATION_NVP(mRotations);
+//    	ar & BOOST_SERIALIZATION_NVP(mDofRotations);
+//
+//    	ar & BOOST_SERIALIZATION_NVP(mTemperatures);
+//    	ar & BOOST_SERIALIZATION_NVP(mDofTemperatures);
+//
+//    	ar & BOOST_SERIALIZATION_NVP(mNonlocalEqPlasticStrain);
+//    	ar & BOOST_SERIALIZATION_NVP(mDofNonlocalEqPlasticStrain);
+//
+//    	ar & BOOST_SERIALIZATION_NVP(mNonlocalTotalStrain);
+//    	ar & BOOST_SERIALIZATION_NVP(mDofNonlocalTotalStrain);
+//*/
+//#ifdef DEBUG_SERIALIZATION
+//    std::cout << "finish serialize NodeT" << std::endl;
+//#endif
+//    }
+//#endif // ENABLE_SERIALIZATION
 
     //! @brief sets the global dofs
     //! @param rDOF current maximum DOF, this variable is increased within the routine
@@ -106,336 +119,99 @@ public:
 
     //! @brief returns the number of time derivatives stored at the node
     //! @return number of derivatives
-    int GetNumTimeDerivatives()const override;
-
-    //! @brief returns the number of displacements of the node
-    //! @return number of displacements
-    int GetNumDisplacements()const override;
-
-    //! @brief gives the global DOF of a displacement component
-    //! @param rComponent component
-    //! @return global DOF
-    int GetDofDisplacement(int rComponent)const override;
-
-    //! @brief returns the displacements of the node
-    //! @return displacement
-    void GetDisplacements1D(double rCoordinates[1])const override;
-
-    //! @brief returns the displacements of the node
-    //! @param rTimeDerivative time derivative
-    //! @return displacement
-    void GetDisplacements1D(int rTimeDerivative, double rDisplacements[1])const override;
-
-    //! @brief set the displacements
-    //! @param rDisplacements  given displacements
-    void SetDisplacements1D(const double rDisplacements[1]) override;
-
-    //! @brief set the displacements
-    //! @param rTimeDerivative time derivative
-    //! @param rDisplacements  given displacements
-    void SetDisplacements1D(int rTimeDerivative, const double rDisplacements[1]) override;
-
-    //! @brief returns the displacements of the node
-    //! @return displacement
-    void GetDisplacements2D(double rCoordinates[2])const override;
-
-    //! @brief returns the displacements of the node
-    //! @param rTimeDerivative time derivative
-    //! @return displacement
-    void GetDisplacements2D(int rTimeDerivative, double rDisplacements[2])const override;
-
-    //! @brief set the displacements
-    //! @param rDisplacements  given displacements
-    void SetDisplacements2D(const double rDisplacements[2]) override;
-
-    //! @brief set the displacements
-    //! @param rTimeDerivative time derivative
-    //! @param rDisplacements  given displacements
-    void SetDisplacements2D(int rTimeDerivative, const double rDisplacements[2]) override;
-
-    //! @brief returns the displacements of the node
-    //! @return displacement
-    void GetDisplacements3D(double rCoordinates[3])const override;
-
-    //! @brief returns the displacements of the node
-    //! @param rTimeDerivative time derivative
-    //! @return displacement
-    void GetDisplacements3D(int rTimeDerivative, double rDisplacements[3])const override;
-
-    //! @brief set the displacements
-    //! @param rDisplacements  given displacements
-    void SetDisplacements3D(const double rDisplacements[3]) override;
-
-    //! @brief set the displacements
-    //! @param rTimeDerivative time derivative
-    //! @param rDisplacements  given displacements
-    void SetDisplacements3D(int rTimeDerivative, const double rDisplacements[3])override;
-
-    //! @brief returns the displacements of the node
-    //! @return displacement
-    double GetDisplacement(short rIndex)const override;
-
-    //! @brief returns the number of Rotations of the node
-    //! @return number of Rotations
-    int GetNumRotations()const override;
-
-    //! @brief gives the global DOF of a Rotation component
-    //! @param rComponent component
-    //! @return global DOF
-    int GetDofRotation(int rComponent)const override;
-
-    //! @brief returns the Rotations of the node
-    //! @return Rotation
-    void GetRotations2D(double rRotations[1])const override;
-
-    //! @brief returns the Rotations of the node
-    //! @param rTimeDerivative time derivative
-    //! @return Rotation
-    void GetRotations2D(int rTimeDerivative, double rRotations[1])const override;
-
-    //! @brief set the Rotations
-    //! @param rRotations  given Rotations
-    void SetRotations2D(const double rRotations[1]) override;
-
-    //! @brief set the Rotations
-    //! @param rTimeDerivative time derivative
-    //! @param rRotations  given Rotations
-    void SetRotations2D(int rTimeDerivative, const double rRotations[1]) override;
-
-    //! @brief returns the Rotations of the node
-    //! @return Rotation
-    void GetRotations3D(double rRotations[3])const override;
-
-    //! @brief returns the Rotations of the node
-    //! @param rTimeDerivative time derivative
-    //! @return Rotation
-    void GetRotations3D(int rTimeDerivative, double rRotations[1])const override;
-
-    //! @brief set the Rotations
-    //! @param rRotations  given Rotations
-    void SetRotations3D(const double rRotations[3]) override;
-
-    //! @brief set the Rotations
-    //! @param rTimeDerivative time derivative
-    //! @param rRotations  given Rotations
-    void SetRotations3D(int rTimeDerivative, const double rRotations[3]) override;
-
-    //! @brief returns the Rotations of the node
-    //! @return Rotation
-    double GetRotation(short rIndex)const override;
-
-    //! @brief returns the number of temperatures of the node
-    //! @return number of temperatures
-    int GetNumTemperatures()const override;
-
-    //! @brief returns the temperature of the node
-    //! @return temperature
-    double GetTemperature()const override;
-
-    //! @brief returns the temperature of the node
-    //! @param rTimeDerivative time derivative
-    //! @return temperature
-    double GetTemperature(int rTimeDerivative)const override;
-
-    //! @brief set the temperature of the node
-    //! @param rTemperature  given temperature
-    void SetTemperature(double rTemperature) override;
-
-    //! @brief set the temperature of the node
-    //! @param rTimeDerivative time derivative
-    //! @param rTemperature  given temperature
-    void SetTemperature(int rTimeDerivative, double rTemperature) override;
-
-    //! @brief gives the global DOF of a temperature component
-    //! @param rComponent component
-    //! @return global DOF
-    int GetDofTemperature()const override;
-
-    //! @brief returns the number of Damage dofs of the node
-    //! @return number of Damages
-    int GetNumNonlocalEqPlasticStrain()const override;
-
-    //! @brief returns the Damage of the node
-    //! @return Damage
-    void GetNonlocalEqPlasticStrain(double* rNonlocalEqPlasticStrain)const override;
-
-    //! @brief returns the Damage of the node
-    //! @param rTimeDerivative time derivative
-    //! @return Damage
-    void GetNonlocalEqPlasticStrain(int rTimeDerivative, double* rNonlocalEqPlasticStrain)const override;
-
-    //! @brief set the Damage of the node
-    //! @param rDamage  given Damage
-    void SetNonlocalEqPlasticStrain(const double* rNonlocalEqPlasticStrain) override;
-
-    //! @brief set the Damage of the node
-    //! @param rTimeDerivative time derivative
-    //! @param rDamage  given Damage
-    void SetNonlocalEqPlasticStrain(int rTimeDerivative, const double* rNonlocalEqPlasticStrain) override;
-
-    //! @brief gives the global DOF of a Damage component
-    //! @param rComponent component
-    //! @return global DOF
-    int GetDofNonlocalEqPlasticStrain(int rComponent)const override;
-
-    //! @brief returns the number of Damage dofs of the node
-    //! @return number of Damages
-    int GetNumNonlocalTotalStrain()const override;
-
-    //! @brief returns the Damage of the node
-    //! @return Damage
-    void GetNonlocalTotalStrain1D(double* rNonlocalTotalStrain)const override;
-
-    //! @brief returns the Damage of the node
-    //! @return Damage
-    void GetNonlocalTotalStrain2D(double* rNonlocalTotalStrain)const override;
-
-    //! @brief returns the Damage of the node
-    //! @return Damage
-    void GetNonlocalTotalStrain3D(double* rNonlocalTotalStrain)const override;
-
-    //! @brief returns the Damage of the node
-    //! @param rTimeDerivative time derivative
-    //! @return Damage
-    void GetNonlocalTotalStrain1D(int rTimeDerivative, double* rNonlocalTotalStrain)const override;
-
-    //! @brief returns the Damage of the node
-    //! @param rTimeDerivative time derivative
-    //! @return Damage
-    void GetNonlocalTotalStrain2D(int rTimeDerivative, double* rNonlocalTotalStrain)const override;
-
-    //! @brief returns the Damage of the node
-    //! @param rTimeDerivative time derivative
-    //! @return Damage
-    void GetNonlocalTotalStrain3D(int rTimeDerivative, double* rNonlocalTotalStrain)const override;
-
-    //! @brief set the Damage of the node
-    //! @param rDamage  given Damage
-    void SetNonlocalTotalStrain1D(const double* rNonlocalTotalStrain) override;
-
-    //! @brief set the Damage of the node
-    //! @param rDamage  given Damage
-    void SetNonlocalTotalStrain2D(const double* rNonlocalTotalStrain) override;
-
-    //! @brief set the Damage of the node
-    //! @param rDamage  given Damage
-    void SetNonlocalTotalStrain3D(const double* rNonlocalTotalStrain) override;
-
-    //! @brief set the Damage of the node
-    //! @param rTimeDerivative time derivative
-    //! @param rDamage  given Damage
-    void SetNonlocalTotalStrain1D(int rTimeDerivative, const double* rNonlocalTotalStrain) override;
-
-    //! @brief set the Damage of the node
-    //! @param rTimeDerivative time derivative
-    //! @param rDamage  given Damage
-    void SetNonlocalTotalStrain2D(int rTimeDerivative, const double* rNonlocalTotalStrain) override;
-
-    //! @brief set the Damage of the node
-    //! @param rTimeDerivative time derivative
-    //! @param rDamage  given Damage
-    void SetNonlocalTotalStrain3D(int rTimeDerivative, const double* rNonlocalTotalStrain) override;
-
-    //! @brief returns the nonlocal total strain component of the node
-    //! @return strain component (rTimeDerivative=0)
-    double GetNonlocalTotalStrain(short rIndex)const override;
-
-    //! @brief gives the global DOF of a Damage component
-    //! @param rComponent component
-    //! @return global DOF
-    int GetDofNonlocalTotalStrain(int rComponent)const override;
-
-    //! @brief returns the number of temperatures of the node
-    //! @return number of temperatures
-    int GetNumNonlocalEqStrain()const override;
-
-    //! @brief returns the nonlocal eq. strain of the node
-    //! @return nonlocal eq. strain
-    double GetNonlocalEqStrain()const override;
-
-    //! @brief returns the nonlocal eq. strain of the node
-    //! @param rTimeDerivative time derivative
-    //! @return nonlocal eq. strain
-    double GetNonlocalEqStrain(int rTimeDerivative)const override;
-
-    //! @brief set the nonlocal eq. strain of the node
-    //! @param rNonlocalEqStrain  given nonlocal eq. strain
-    void SetNonlocalEqStrain(double rNonlocalEqStrain) override;
-
-    //! @brief set the temperature of the node
-    //! @param rTimeDerivative time derivative
-    //! @param rNonlocalEqStrain given nonlocal eq. strain
-    void SetNonlocalEqStrain(int rTimeDerivative, double rNonlocalEqStrain) override;
-
-    //! @brief gives the global DOF the nonlocal eq. strain
-    //! @return global DOF
-    virtual int GetDofNonlocalEqStrain()const override;
-
-
-    // Moisture Transport --- Begin
-
-    // WaterPhaseFraction, int TNumRelativeHumidity
-
-    //! @brief returns the number of water phase fraction components of the node
-    //! @return number of water phase fraction components
-    virtual int GetNumWaterPhaseFraction()const override;
-
-    //! @brief returns the water phase fraction of the node
-    //! @return water phase fraction
-    virtual double GetWaterPhaseFraction()const override;
-
-    //! @brief returns the water phase fraction of the node
-    //! @param rTimeDerivative time derivative
-    //! @return water phase fraction
-    virtual double GetWaterPhaseFraction(int rTimeDerivative)const override;
-
-    //! @brief set the water phase fraction of the node
-    //! @param rTemperature  given temperature
-    virtual void SetWaterPhaseFraction(double rWaterPhaseFraction) override;
-
-    //! @brief set the water phase fraction of the node
-    //! @param rTimeDerivative time derivative
-    //! @param rTemperature  given temperature
-    virtual void SetWaterPhaseFraction(int rTimeDerivative, double rWaterPhaseFraction) override;
-
-    //! @brief gives the global DOF of a water phase fraction component
-    //! @param rComponent component
-    //! @return global DOF
-    virtual int GetDofWaterPhaseFraction()const override;
-
-    //! @brief returns the number of relative humidity components of the node
-    //! @return number of relative humidity components
-    virtual int GetNumRelativeHumidity()const override;
-
-    //! @brief returns the relative humidity of the node
-    //! @return relative humidity
-    virtual double GetRelativeHumidity()const override;
-
-    //! @brief returns the relative humidity of the node
-    //! @param rTimeDerivative time derivative
-    //! @return relative humidity
-    virtual double GetRelativeHumidity(int rTimeDerivative)const override;
-
-    //! @brief set the relative humidity of the node
-    //! @param rTemperature  given relative humidity
-    virtual void SetRelativeHumidity(double rRelativeHumidity) override;
-
-    //! @brief set the relative humidity of the node
-    //! @param rTimeDerivative time derivative
-    //! @param rTemperature  given relative humidity
-    virtual void SetRelativeHumidity(int rTimeDerivative, double rRelativeHumidity) override;
-
-    //! @brief gives the global DOF of a relative humidity component
-    //! @param rComponent component
-    //! @return global DOF
-    virtual int GetDofRelativeHumidity()const override;
-
-
-    // Moisture Transport --- End
-
-
-
-
+    int GetNumTimeDerivatives() const override;
+
+
+//    //*************************************************
+//    //************      TEMPERATURE     ***************
+//    //*************************************************
+//
+//    int GetNumTemperatures() const override;
+//    int GetDofTemperature() const override;
+//
+//    double GetTemperature() const override;
+//    double GetTemperature(int rTimeDerivative) const override;
+//
+//    void SetTemperature(double rTemperature) override;
+//    void SetTemperature(int rTimeDerivative, double rTemperature) override;
+//
+//    //*************************************************
+//    //********  NONLOCAL EQ PLASTIC STRAIN  ***********
+//    //*************************************************
+//
+//    int GetNumNonlocalEqPlasticStrain() const override;
+//    int GetDofNonlocalEqPlasticStrain(int rComponent) const override;
+//
+//    const Eigen::Matrix<double, 2, 1>& GetNonlocalEqPlasticStrain() const override;
+//    const Eigen::Matrix<double, 2, 1>& GetNonlocalEqPlasticStrain(int rTimeDerivative) const override;
+//
+//    void SetNonlocalEqPlasticStrain(const Eigen::Matrix<double, 2, 1>& rNonlocalEqPlasticStrain) override;
+//    void SetNonlocalEqPlasticStrain(int rTimeDerivative, const Eigen::Matrix<double, 2, 1>& rNonlocalEqPlasticStrain) override;
+//
+//    //*************************************************
+//    //********    NONLOCAL TOTAL STRAIN     ***********
+//    //*************************************************
+//
+//    int GetNumNonlocalTotalStrain()const override;
+//    int GetDofNonlocalTotalStrain(int rComponent)const override;
+//    double GetNonlocalTotalStrain(short rIndex)const override;
+//
+//    const Eigen::Matrix<double, 1, 1>& GetNonlocalTotalStrain1D() const override;
+//    const Eigen::Matrix<double, 3, 1>& GetNonlocalTotalStrain2D() const override;
+//    const Eigen::Matrix<double, 6, 1>& GetNonlocalTotalStrain3D() const override;
+//    const Eigen::Matrix<double, Eigen::Dynamic, 1>& GetNonlocalTotalStrains() const override;
+//
+//    const Eigen::Matrix<double, 1, 1>& GetNonlocalTotalStrain1D(int rTimeDerivative) const override;
+//    const Eigen::Matrix<double, 3, 1>& GetNonlocalTotalStrain2D(int rTimeDerivative) const override;
+//    const Eigen::Matrix<double, 6, 1>& GetNonlocalTotalStrain3D(int rTimeDerivative) const override;
+//    const Eigen::Matrix<double, Eigen::Dynamic, 1>& GetNonlocalTotalStrains(int rTimeDerivative) const override;
+//
+//    void SetNonlocalTotalStrain1D(const Eigen::Matrix<double, 1, 1>& rNonlocalTotalStrain) override;
+//    void SetNonlocalTotalStrain2D(const Eigen::Matrix<double, 3, 1>& rNonlocalTotalStrain) override;
+//    void SetNonlocalTotalStrain3D(const Eigen::Matrix<double, 6, 1>& rNonlocalTotalStrain) override;
+//
+//    void SetNonlocalTotalStrain1D(int rTimeDerivative, const Eigen::Matrix<double, 1, 1>& rNonlocalTotalStrain) override;
+//    void SetNonlocalTotalStrain2D(int rTimeDerivative, const Eigen::Matrix<double, 3, 1>& rNonlocalTotalStrain) override;
+//    void SetNonlocalTotalStrain3D(int rTimeDerivative, const Eigen::Matrix<double, 6, 1>& rNonlocalTotalStrain) override;
+//
+//    //*************************************************
+//    //*******   NONLOCAL EQUIVALENT STRAIN   **********
+//    //*************************************************
+//
+//    int GetNumNonlocalEqStrain() const override;
+//    int GetDofNonlocalEqStrain() const override;
+//
+//    double GetNonlocalEqStrain() const override;
+//    double GetNonlocalEqStrain(int rTimeDerivative) const override;
+//
+//    void SetNonlocalEqStrain(double rNonlocalEqStrain) override;
+//    void SetNonlocalEqStrain(int rTimeDerivative, double rNonlocalEqStrain) override;
+//
+//    //*************************************************
+//    //*******      WATER PHASE FRACTION      **********
+//    //*************************************************
+//
+//    int GetNumWaterPhaseFraction() const override;
+//    int GetDofWaterPhaseFraction() const override;
+//
+//    double GetWaterPhaseFraction() const override;
+//    double GetWaterPhaseFraction(int rTimeDerivative) const override;
+//
+//    void SetWaterPhaseFraction(double rWaterPhaseFraction) override;
+//    void SetWaterPhaseFraction(int rTimeDerivative, double rWaterPhaseFraction) override;
+//
+//    //*************************************************
+//    //*******       RELATIVE HUMIDITY        **********
+//    //*************************************************
+//
+//    int GetNumRelativeHumidity() const override;
+//    int GetDofRelativeHumidity() const override;
+//
+//    double GetRelativeHumidity() const override;
+//    double GetRelativeHumidity(int rTimeDerivative) const override;
+//
+//    void SetRelativeHumidity(double rRelativeHumidity) override;
+//    void SetRelativeHumidity(int rTimeDerivative, double rRelativeHumidity) override;
 
 
     //! @brief returns the type of node as a string (all the data stored at the node)
@@ -446,62 +222,53 @@ public:
     //! @return enum
     //Node::eNodeType GetNodeType()const;
 
-#ifdef ENABLE_VISUALIZE
-    void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
-#endif // ENABLE_VISUALIZE
-
     //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
-    virtual NodeDof* Clone()const;
+    NodeBase* Clone() const override;
 
 protected:
-    boost::array<boost::array<double, TNumDisplacements>,TNumTimeDerivatives+1> mDisplacements;
-    boost::array<int, TNumDisplacements> mDofDisplacements;
 
-    boost::array<boost::array<double, TNumRotations>,TNumTimeDerivatives+1> mRotations;
-    boost::array<int, TNumRotations> mDofRotations;
-
-    boost::array<boost::array<double, TNumTemperatures>,TNumTimeDerivatives+1> mTemperatures;
-    boost::array<int, TNumTemperatures> mDofTemperatures;
-
-    boost::array<boost::array<double, TNumNonlocalEqPlasticStrain>,TNumTimeDerivatives+1> mNonlocalEqPlasticStrain;
-    boost::array<int, TNumNonlocalEqPlasticStrain> mDofNonlocalEqPlasticStrain;
-
-    boost::array<boost::array<double, TNumNonlocalTotalStrain>,TNumTimeDerivatives+1> mNonlocalTotalStrain;
-    boost::array<int, TNumNonlocalTotalStrain> mDofNonlocalTotalStrain;
-
-    boost::array<boost::array<double, TNumNonlocalEqStrain>,TNumTimeDerivatives+1> mNonlocalEqStrain;
-    boost::array<int, TNumNonlocalEqStrain> mDofNonlocalEqStrain;
-
-    boost::array<boost::array<double, TNumWaterPhaseFraction>,TNumTimeDerivatives+1> mWaterPhaseFraction;
-    boost::array<int, TNumWaterPhaseFraction> mDofWaterPhaseFraction;
-
-    boost::array<boost::array<double, TNumRelativeHumidity>,TNumTimeDerivatives+1> mRelativeHumidity;
-    boost::array<int, TNumRelativeHumidity> mDofRelativeHumidity;
+//    std::array<Eigen::Matrix<double, TNumTemperatures, 1>,TNumTimeDerivatives+1> mTemperatures;
+//    std::array<int, TNumTemperatures> mDofTemperatures;
+//
+//    std::array<Eigen::Matrix<double, TNumNonlocalEqPlasticStrain, 1>,TNumTimeDerivatives+1> mNonlocalEqPlasticStrain;
+//    std::array<int, TNumNonlocalEqPlasticStrain> mDofNonlocalEqPlasticStrain;
+//
+//    std::array<Eigen::Matrix<double, TNumNonlocalTotalStrain, 1>,TNumTimeDerivatives+1> mNonlocalTotalStrain;
+//    std::array<int, TNumNonlocalTotalStrain> mDofNonlocalTotalStrain;
+//
+//    std::array<Eigen::Matrix<double, TNumNonlocalEqStrain, 1>,TNumTimeDerivatives+1> mNonlocalEqStrain;
+//    std::array<int, TNumNonlocalEqStrain> mDofNonlocalEqStrain;
+//
+//    std::array<Eigen::Matrix<double, TNumWaterPhaseFraction, 1>,TNumTimeDerivatives+1> mWaterPhaseFraction;
+//    std::array<int, TNumWaterPhaseFraction> mDofWaterPhaseFraction;
+//
+//    std::array<Eigen::Matrix<double, TNumRelativeHumidity, 1>,TNumTimeDerivatives+1> mRelativeHumidity;
+//    std::array<int, TNumRelativeHumidity> mDofRelativeHumidity;
 
 };
 
 }//namespace NuTo
 
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,1,0,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,2,0,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,3,0,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2,1,0,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2,2,0,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2,3,0,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,2,1,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,3,3,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2,2,1,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2,3,3,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,0,0,1,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1,0,0,1,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,1,0,1,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,2,0,1,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,3,0,1,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2,1,0,1,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2,2,0,1,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2,3,0,1,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,1,0,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,2,0,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,3,0,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<2,1,0,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<2,2,0,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<2,3,0,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,2,1,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,3,3,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<2,2,1,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<2,3,3,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,0,0,1,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<1,0,0,1,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,1,0,1,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,2,0,1,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,3,0,1,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<2,1,0,1,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<2,2,0,1,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<2,3,0,1,0,0,0,0,0>)))
 #endif // ENABLE_SERIALIZATION
 
-#endif //NODEDOF_DEF_H
+#endif //NODET_DEF_H
 

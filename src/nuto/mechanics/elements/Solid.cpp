@@ -144,7 +144,7 @@ NuTo::Error::eError NuTo::Solid::Evaluate(boost::ptr_multimap<NuTo::Element::eOu
 			constitutiveInputList[NuTo::Constitutive::Input::TEMPERATURE_GRADIENT_3D] = &temperatureGradient;
 		}
 
-		if (section->GetInputConstitutiveIsTemperature())
+                if (section-Schlagzeugunterricht>GetInputConstitutiveIsTemperature())
 		{
 			constitutiveInputList[NuTo::Constitutive::Input::TEMPERATURE] = &temperature;
 		}
@@ -976,7 +976,6 @@ void NuTo::Solid::GetLocalIntegrationPointCoordinates(int rIpNum, double rCoordi
 void  NuTo::Solid::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const
 {
     double localCoordinates[3];
-    double nodeCoordinates[3];
     this->mElementData->GetIntegrationType()->GetLocalIntegrationPointCoordinates3D(rIpNum, localCoordinates);
     std::vector<double> shapeFunctions(GetNumNodesGeometry());
     CalculateShapeFunctionsGeometry(localCoordinates, shapeFunctions);
@@ -984,12 +983,10 @@ void  NuTo::Solid::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoor
     rCoordinates[1] = 0.;
     rCoordinates[2] = 0.;
 
-    nodeCoordinates[0] = 0;
-    nodeCoordinates[1] = 0;
-    nodeCoordinates[2] = 0;
+    Eigen::Matrix<double, 3, 1> nodeCoordinates;
     for (int theNode=0; theNode<GetNumNodesGeometry(); theNode++)
     {
-        GetNodeGeometry(theNode)->GetCoordinates3D(nodeCoordinates);
+        nodeCoordinates = GetNodeGeometry(theNode)->GetCoordinates3D();
         rCoordinates[0]+=shapeFunctions[theNode]*nodeCoordinates[0];
         rCoordinates[1]+=shapeFunctions[theNode]*nodeCoordinates[1];
         rCoordinates[2]+=shapeFunctions[theNode]*nodeCoordinates[2];
@@ -1013,7 +1010,10 @@ void NuTo::Solid::CalculateCoordinates(std::vector<double>& rCoordinates)const
     assert((int)rCoordinates.size()==3*GetNumNodes());
     for (int count=0; count<GetNumNodesGeometry(); count++)
     {
-        GetNodeGeometry(count)->GetCoordinates3D(&(rCoordinates[3*count]));
+        Eigen::Matrix<double, 3, 1> coordinates = GetNodeGeometry(count)->GetCoordinates3D();
+        rCoordinates[3*count + 0] = coordinates[0];
+        rCoordinates[3*count + 1] = coordinates[1];
+        rCoordinates[3*count + 2] = coordinates[2];
     }
 
 }
@@ -1028,7 +1028,10 @@ void NuTo::Solid::CalculateDisplacements(std::vector<double>& rDisplacements)con
     {
         if (GetNodeField(count)->GetNumDisplacements()!=3)
             throw MechanicsException("[NuTo::Solid::CalculateDisplacements] Displacement is required as input to the constitutive model, but the node does not have this data.");
-        GetNodeField(count)->GetDisplacements3D(&(rDisplacements[3*count]));
+        Eigen::Matrix<double, 3, 1> displacements = GetNodeGeometry(count)->GetDisplacements3D();
+        rDisplacements[3*count + 0] = displacements[0];
+        rDisplacements[3*count + 1] = displacements[1];
+        rDisplacements[3*count + 2] = displacements[2];
     }
 }
 
@@ -1061,8 +1064,7 @@ void NuTo::Solid::InterpolateCoordinatesFrom3D(double rLocalCoordinates[3], doub
     for (int NodeCount = 0; NodeCount < this->GetNumNodesGeometry(); NodeCount++)
     {
         // get node coordinate
-        double NodeCoordinate[3];
-        GetNodeGeometry(NodeCount)->GetCoordinates3D(NodeCoordinate);
+        Eigen::Matrix<double, 3, 1> NodeCoordinate = GetNodeGeometry(NodeCount)->GetCoordinates3D();
 
         // add node contribution
         rGlobalCoordinates[0] += ShapeFunctions[NodeCount] *  NodeCoordinate[0];
@@ -1085,8 +1087,7 @@ void NuTo::Solid::InterpolateDisplacementsFrom3D(int rTimeDerivative, double rLo
     for (int NodeCount = 0; NodeCount < this->GetNumNodesField(); NodeCount++)
     {
         // get node displacements
-        double NodeDisplacement[3];
-        GetNodeField(NodeCount)->GetDisplacements3D(rTimeDerivative, NodeDisplacement);
+        Eigen::Matrix<double, 3, 1> NodeDisplacement = GetNodeField(NodeCount)->GetDisplacements3D(rTimeDerivative);
 
         // add node contribution
         rGlobalDisplacements[0] += ShapeFunctions[NodeCount] *  NodeDisplacement[0];

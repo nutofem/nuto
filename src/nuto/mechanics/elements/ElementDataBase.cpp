@@ -178,7 +178,6 @@ NuTo::IpData::eIpDataType NuTo::ElementDataBase::GetIpDataType(int  rIp)const
 	throw MechanicsException("[NuTo::ElementDataBase::GetIpDataTyp] Not implemented for the ElementDataClass - check the allocated element data type..");
 }
 
-
 //! @brief adds the nonlocal weight to an integration point
 //! @param rLocalIpNumber local Ip
 //! @param rConstitutive constitutive model for which nonlocal data is to be calculated

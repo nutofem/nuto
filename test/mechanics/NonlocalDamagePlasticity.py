@@ -32,25 +32,35 @@ error = False
 myStructure = nuto.Structure(2)
 
 #create nodes
-node1 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,0)))
-node2 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((1,0)))
-node3 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((2,0)))
-node4 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,1)))
-node5 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((1,1)))
-node6 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((2,1)))
-node7 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,2)))
-node8 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((1,2)))
-node9 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((2,2)))
+node1 = myStructure.NodeCreate(nuto.DoubleFullVector((0,0)))
+node2 = myStructure.NodeCreate(nuto.DoubleFullVector((1,0)))
+node3 = myStructure.NodeCreate(nuto.DoubleFullVector((2,0)))
+node4 = myStructure.NodeCreate(nuto.DoubleFullVector((0,1)))
+node5 = myStructure.NodeCreate(nuto.DoubleFullVector((1,1)))
+node6 = myStructure.NodeCreate(nuto.DoubleFullVector((2,1)))
+node7 = myStructure.NodeCreate(nuto.DoubleFullVector((0,2)))
+node8 = myStructure.NodeCreate(nuto.DoubleFullVector((1,2)))
+node9 = myStructure.NodeCreate(nuto.DoubleFullVector((2,2)))
+
+it1IP = myStructure.InterpolationTypeCreate("Quad2D")
+myStructure.InterpolationTypeAdd(it1IP, "coordinates", "equidistant1")
+myStructure.InterpolationTypeAdd(it1IP, "displacements", "equidistant1")
+
+it4IP = myStructure.InterpolationTypeCreate("Quad2D")
+myStructure.InterpolationTypeAdd(it4IP, "coordinates", "equidistant1")
+myStructure.InterpolationTypeAdd(it4IP, "displacements", "equidistant1")
+
 
 #create element
-element1 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullVector((node1,node2,node5,node4)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
-myStructure.ElementSetIntegrationType(element1,"2D4NGauss1Ip","StaticDataNonlocal")
-element2 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullVector((node2,node3,node6,node5)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
-myStructure.ElementSetIntegrationType(element2,"2D4NGauss4Ip","StaticDataNonlocal")
-element3 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullVector((node4,node5,node8,node7)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
-myStructure.ElementSetIntegrationType(element3,"2D4NGauss1Ip","StaticDataNonlocal")
-element4 = myStructure.ElementCreate("PLANE2D4N",nuto.IntFullVector((node5,node6,node9,node8)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
-myStructure.ElementSetIntegrationType(element4,"2D4NGauss4Ip","StaticDataNonlocal")
+element1 = myStructure.ElementCreate(it1IP,nuto.IntFullVector((node1,node2,node5,node4)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
+element2 = myStructure.ElementCreate(it4IP,nuto.IntFullVector((node2,node3,node6,node5)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
+element3 = myStructure.ElementCreate(it1IP,nuto.IntFullVector((node4,node5,node8,node7)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
+element4 = myStructure.ElementCreate(it4IP,nuto.IntFullVector((node5,node6,node9,node8)),"ConstitutiveLawIpNonlocal","StaticDataNonlocal")
+
+myStructure.InterpolationTypeSetIntegrationType(it1IP, "2D4NGauss1Ip","StaticDataNonlocal")
+myStructure.InterpolationTypeSetIntegrationType(it1IP, "2D4NGauss4Ip","StaticDataNonlocal")
+
+myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10)
 
 #create constitutive law
 myMatDamage = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticityEngineeringStress")

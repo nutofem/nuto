@@ -66,9 +66,14 @@ for zCount in range (0, NumElementsZ + 1):
         for xCount in range(0, NumElementsX + 1):
             nodeCoordinates.SetValue(0,0, xCount * Length/NumElementsX)
             #print "node: " + str(node) + " coordinates: " + str(nodeCoordinates.GetValue(0,0)) + "," + str(nodeCoordinates.GetValue(1,0)) + "," + str(nodeCoordinates.GetValue(2,0))
-            myStructure.NodeCreate(node, "displacements", nodeCoordinates)
+            myStructure.NodeCreate(node,nodeCoordinates)
             myStructure.GroupAddNode(NodeGroup1,node)
             node += 1
+
+interpolationType = myStructure.InterpolationTypeCreate("Brick3D");
+myStructure.InterpolationTypeAdd(interpolationType, "Coordinates", "Equidistant1");
+myStructure.InterpolationTypeAdd(interpolationType, "Displacements", "Equidistant1");
+
 
 # create elements
 elementIncidence = nuto.IntFullVector(8)
@@ -88,7 +93,7 @@ for zCount in range (0, NumElementsZ):
             elementIncidence.SetValue(7,0, node1 + (NumElementsX + 1) * (NumElementsY + 1) + NumElementsX + 1)
             #print "element: " + str(element) + " incidence: "
             #elementIncidence.Info()
-            myStructure.ElementCreate(element, "Brick8N", elementIncidence)
+            myStructure.ElementCreate(element, interpolationType, elementIncidence,"CONSTITUTIVELAWIP","NOIPDATA")
             myStructure.ElementSetConstitutiveLaw(element,myMatLin)
             myStructure.ElementSetSection(element,mySection)
             myStructure.GroupAddElement(ElementGroup1,element)

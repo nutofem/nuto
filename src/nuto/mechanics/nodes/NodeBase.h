@@ -10,7 +10,8 @@
 #include <boost/array.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include <vector>
+#include <array>
+#include <assert.h>
 
 #include "nuto/math/FullMatrix_Def.h"
 #include "nuto/math/FullVector_Def.h"
@@ -44,9 +45,7 @@ public:
     virtual ~NodeBase(){};
 
     //! @brief assignment operator
-    void operator=(NodeBase const& rOther)
-    {
-    }
+    NodeBase& operator=(NodeBase const& rOther) = default;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -79,378 +78,178 @@ public:
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
     virtual void RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering);
 
-    //! @brief returns the number of coordinates of the node
-    //! @return number of coordinates
-    virtual int GetNumCoordinates()const;
-
-    //! @brief returns the coordinates of the node
-    //! @return coordinates
-    virtual void GetCoordinates1D(double rCoordinates[1])const;
-
-    //! @brief set the coordinates
-    //! @param rCoordinates  given coordinates
-    virtual void SetCoordinates1D(const double rCoordinates[1]);
-
-    //! @brief returns the coordinates of the node
-    //! @return coordinates
-    virtual void GetCoordinates2D(double rCoordinates[2])const;
-
-    //! @brief set the coordinates
-    //! @param rCoordinates  given coordinates
-    virtual void SetCoordinates2D(const double rCoordinates[2]);
-
-    //! @brief returns the coordinates of the node
-    //! @return coordinates
-    virtual void GetCoordinates3D(double rCoordinates[3])const;
-
-    //! @brief set the coordinates
-    //! @param rCoordinates  given coordinates
-    virtual void SetCoordinates3D(const double rCoordinates[3]);
-
-    //! @brief returns the number of coordinates of the node
-    //! @return coordinates
-    virtual double GetCoordinate(short rIndex)const;
-
     //! @brief returns the number of time derivatives stored at the node
     //! @return number of derivatives
     virtual int GetNumTimeDerivatives()const;
 
-    //! @brief returns the number of displacements of the node
-    //! @return number of displacements
-    virtual int GetNumDisplacements()const;
+    //*************************************************
+    //************     COORDINATES      ***************
+    //*************************************************
+    virtual int GetNumCoordinates() const;
+    virtual double GetCoordinate(short rComponent) const;
 
-    //! @brief gives the global DOF of a displacement component
-    //! @param rComponent component
-    //! @return global DOF
-    virtual int GetDofDisplacement(int rComponent)const;
+    virtual const Eigen::Matrix<double, 1, 1>& GetCoordinates1D() const;
+    virtual const Eigen::Matrix<double, 2, 1>& GetCoordinates2D() const;
+    virtual const Eigen::Matrix<double, 3, 1>& GetCoordinates3D() const;
+    virtual const Eigen::Matrix<double, Eigen::Dynamic, 1> GetCoordinates() const;
 
-    //! @brief returns the displacements of the node
-    //! @return displacement
-    virtual void GetDisplacements1D(double rCoordinates[1])const;
+    virtual void SetCoordinates1D(const Eigen::Matrix<double, 1, 1>& rCoordinates);
+    virtual void SetCoordinates2D(const Eigen::Matrix<double, 2, 1>& rCoordinates);
+    virtual void SetCoordinates3D(const Eigen::Matrix<double, 3, 1>& rCoordinates);
+    virtual void SetCoordinates  (const Eigen::Matrix<double, Eigen::Dynamic, 1>& rCoordinates);
 
-    //! @brief returns the displacements of the node
-    //! @param rTimeDerivative time derivative
-    //! @return displacement
-    virtual void GetDisplacements1D(int rTimeDerivative, double rDisplacements[1])const;
 
-    //! @brief set the displacements
-    //! @param rDisplacements  given displacements
-    virtual void SetDisplacements1D(const double rDisplacements[1]);
 
-    //! @brief set the displacements
-    //! @param rTimeDerivative time derivative
-    //! @param rDisplacements  given displacements
-    virtual void SetDisplacements1D(int rTimeDerivative, const double rDisplacements[1]);
+    //*************************************************
+    //************    DISPLACEMENTS     ***************
+    //*************************************************
+    virtual int GetNumDisplacements() const;
+    virtual int GetDofDisplacement(int rComponent) const;
+    virtual double GetDisplacement(short rIndex) const;
 
-    //! @brief returns the displacements of the node
-    //! @return displacement
-    virtual void GetDisplacements2D(double rDisplacements[2])const;
+    const Eigen::Matrix<double, 1, 1>& GetDisplacements1D() const;
+    const Eigen::Matrix<double, 2, 1>& GetDisplacements2D() const;
+    const Eigen::Matrix<double, 3, 1>& GetDisplacements3D() const;
+    const Eigen::Matrix<double, Eigen::Dynamic, 1> GetDisplacements() const;
 
-    //! @brief returns the displacements of the node
-    //! @param rTimeDerivative time derivative
-    //! @return displacement
-    virtual void GetDisplacements2D(int rTimeDerivative, double rDisplacements[2])const;
+    virtual const Eigen::Matrix<double, 1, 1>& GetDisplacements1D(int rTimeDerivative) const;
+    virtual const Eigen::Matrix<double, 2, 1>& GetDisplacements2D(int rTimeDerivative) const;
+    virtual const Eigen::Matrix<double, 3, 1>& GetDisplacements3D(int rTimeDerivative) const;
+    virtual const Eigen::Matrix<double, Eigen::Dynamic, 1> GetDisplacements(int rTimeDerivative) const;
 
-    //! @brief set the displacements
-    //! @param rDisplacements  given displacements
-    virtual void SetDisplacements2D(const double rDisplacements[2]);
+    void SetDisplacements1D(const Eigen::Matrix<double, 1, 1>& rDisplacements);
+    void SetDisplacements2D(const Eigen::Matrix<double, 2, 1>& rDisplacements);
+    void SetDisplacements3D(const Eigen::Matrix<double, 3, 1>& rDisplacements);
+    void SetDisplacements  (const Eigen::Matrix<double, Eigen::Dynamic, 1>& rDisplacements);
 
-    //! @brief set the displacements
-    //! @param rTimeDerivative time derivative
-    //! @param rDisplacements  given displacements
-    virtual void SetDisplacements2D(int rTimeDerivative, const double rDisplacements[2]);
+    virtual void SetDisplacements1D(int rTimeDerivative, const Eigen::Matrix<double, 1, 1>& rDisplacements);
+    virtual void SetDisplacements2D(int rTimeDerivative, const Eigen::Matrix<double, 2, 1>& rDisplacements);
+    virtual void SetDisplacements3D(int rTimeDerivative, const Eigen::Matrix<double, 3, 1>& rDisplacements);
+    virtual void SetDisplacements  (int rTimeDerivative, const Eigen::Matrix<double, Eigen::Dynamic, 1>& rDisplacements);
 
-    //! @brief returns the displacements of the node
-    //! @return displacement
-    virtual void GetDisplacements3D(double rDisplacements[3])const;
+    //*************************************************
+    //************       ROTATIONS      ***************
+    //*************************************************
 
-    //! @brief returns the displacements of the node
-    //! @param rTimeDerivative time derivative
-    //! @return displacement
-    virtual void GetDisplacements3D(int rTimeDerivative, double rDisplacements[3])const;
-
-    //! @brief set the displacements
-    //! @param rDisplacements  given displacements
-    virtual void SetDisplacements3D(const double rDisplacements[3]);
-
-    //! @brief set the displacements
-    //! @param rTimeDerivative time derivative
-    //! @param rDisplacements  given displacements
-    virtual void SetDisplacements3D(int rTimeDerivative, const double rDisplacements[3]);
-
-    //! @brief returns the displacements of the node
-    //! @return displacement
-    virtual double GetDisplacement(short rIndex)const;
-
-    //! @brief returns the number of Rotations of the node
-    //! @return number of Rotations
     virtual int GetNumRotations()const;
-
-    //! @brief gives the global DOF of a Rotation component
-    //! @param rComponent component
-    //! @return global DOF
     virtual int GetDofRotation(int rComponent)const;
-
-    //! @brief returns the Rotations of the node
-    //! @return Rotation
-    virtual void GetRotations2D(double rRotations[1])const;
-
-    //! @brief returns the Rotations of the node
-    //! @param rTimeDerivative time derivative
-    //! @return Rotation
-    virtual void GetRotations2D(int rTimeDerivative, double rRotations[1])const;
-
-    //! @brief set the Rotations
-    //! @param rRotations  given Rotations
-    virtual void SetRotations2D(const double rRotations[1]);
-
-    //! @brief set the Rotations
-    //! @param rTimeDerivative time derivative
-    //! @param rRotations  given Rotations
-    virtual void SetRotations2D(int rTimeDerivative, const double rRotations[1]);
-
-    //! @brief returns the Rotations of the node
-    //! @return Rotation
-    virtual void GetRotations3D(double rRotations[3])const;
-
-    //! @brief returns the Rotations of the node
-    //! @param rTimeDerivative time derivative
-    //! @return Rotation
-    virtual void GetRotations3D(int rTimeDerivative, double rRotations[1])const;
-
-    //! @brief set the Rotations
-    //! @param rRotations  given Rotations
-    virtual void SetRotations3D(const double rRotations[3]);
-
-    //! @brief set the Rotations
-    //! @param rTimeDerivative time derivative
-    //! @param rRotations  given Rotations
-    virtual void SetRotations3D(int rTimeDerivative, const double rRotations[3]);
-
-    //! @brief returns the Rotations of the node
-    //! @return Rotation
     virtual double GetRotation(short rIndex)const;
 
-    //! @brief returns the number of temperatures of the node
-    //! @return number of temperatures
-    virtual int GetNumTemperatures()const;
+    const Eigen::Matrix<double, 1, 1>& GetRotations2D() const;
+    const Eigen::Matrix<double, 3, 1>& GetRotations3D() const;
+    const Eigen::Matrix<double, Eigen::Dynamic, 1> GetRotations() const;
 
-    //! @brief returns the temperature of the node
-    //! @return temperature
-    virtual double GetTemperature()const;
+    virtual const Eigen::Matrix<double, 1, 1>& GetRotations2D(int rTimeDerivative) const;
+    virtual const Eigen::Matrix<double, 3, 1>& GetRotations3D(int rTimeDerivative) const;
+    virtual const Eigen::Matrix<double, Eigen::Dynamic, 1> GetRotations(int rTimeDerivative) const;
 
-    //! @brief returns the temperature of the node
-    //! @param rTimeDerivative time derivative
-    //! @return temperature
-    virtual double GetTemperature(int rTimeDerivative)const;
+    void SetRotations2D(const Eigen::Matrix<double, 1, 1>& rRotations);
+    void SetRotations3D(const Eigen::Matrix<double, 3, 1>& rRotations);
+    void SetRotations  (const Eigen::Matrix<double, Eigen::Dynamic, 1>& rRotations);
 
-    //! @brief set the temperature of the node
-    //! @param rTemperature  given temperature
-    virtual void SetTemperature(double rTemperature);
 
-    //! @brief set the temperature of the node
-    //! @param rTimeDerivative time derivative
-    //! @param rTemperature  given temperature
+    virtual void SetRotations2D(int rTimeDerivative, const Eigen::Matrix<double, 1, 1>& rRotations);
+    virtual void SetRotations3D(int rTimeDerivative, const Eigen::Matrix<double, 3, 1>& rRotations);
+    virtual void SetRotations  (int rTimeDerivative, const Eigen::Matrix<double, Eigen::Dynamic, 1>& rRotations);
+
+
+    //*************************************************
+    //************      TEMPERATURE     ***************
+    //*************************************************
+
+    virtual int GetNumTemperatures() const;
+    virtual int GetDofTemperature() const;
+
+    double GetTemperature() const;
+    virtual double GetTemperature(int rTimeDerivative) const;
+
+    void SetTemperature(double rTemperature);
     virtual void SetTemperature(int rTimeDerivative, double rTemperature);
 
-    //! @brief gives the global DOF of a temperature component
-    //! @return global DOF
-    virtual int GetDofTemperature()const;
+    //*************************************************
+    //********  NONLOCAL EQ PLASTIC STRAIN  ***********
+    //*************************************************
 
-    //! @brief returns the number of nonlocal equivalent plastic strain dofs of the node
-    //! @return number of Damages
-    virtual int GetNumNonlocalEqPlasticStrain()const;
+    virtual int GetNumNonlocalEqPlasticStrain() const;
+    virtual int GetDofNonlocalEqPlasticStrain(int rComponent) const;
 
-    //! @brief returns the Damage of the node
-    //! @return Damage
-    virtual void GetNonlocalEqPlasticStrain(double* rNonlocalEqPlasticStrain)const;
+    const Eigen::Matrix<double, 2, 1>& GetNonlocalEqPlasticStrain() const;
+    virtual const Eigen::Matrix<double, 2, 1>& GetNonlocalEqPlasticStrain(int rTimeDerivative) const;
 
-    //! @brief returns the Damage of the node
-    //! @param rTimeDerivative time derivative
-    //! @return Damage
-    virtual void GetNonlocalEqPlasticStrain(int rTimeDerivative, double* rNonlocalEqPlasticStrain)const;
+    void SetNonlocalEqPlasticStrain(const Eigen::Matrix<double, 2, 1>& rNonlocalEqPlasticStrain);
+    virtual void SetNonlocalEqPlasticStrain(int rTimeDerivative, const Eigen::Matrix<double, 2, 1>& rNonlocalEqPlasticStrain);
 
-    //! @brief set the Damage of the node
-    //! @param rDamage  given Damage
-    virtual void SetNonlocalEqPlasticStrain(const double* rNonlocalEqPlasticStrain);
+    //*************************************************
+    //********    NONLOCAL TOTAL STRAIN     ***********
+    //*************************************************
 
-    //! @brief set the Damage of the node
-    //! @param rTimeDerivative time derivative
-    //! @param rDamage  given Damage
-    virtual void SetNonlocalEqPlasticStrain(int rTimeDerivative, const double* rNonlocalEqPlasticStrain);
-
-    //! @brief gives the global DOF of a Damage component
-    //! @param rComponent component
-    //! @return global DOF
-    virtual int GetDofNonlocalEqPlasticStrain(int rComponent)const;
-
-    //! @brief returns the number of nonlocal equivalent plastic strain dofs of the node
-    //! @return number of Damages
     virtual int GetNumNonlocalTotalStrain()const;
-
-    //! @brief returns the Damage of the node
-    //! @return Damage
-    virtual void GetNonlocalTotalStrain1D(double* rNonlocalTotalStrain)const;
-
-    //! @brief returns the Damage of the node
-    //! @return Damage
-    virtual void GetNonlocalTotalStrain2D(double* rNonlocalTotalStrain)const;
-
-    //! @brief returns the Damage of the node
-    //! @return Damage
-    virtual void GetNonlocalTotalStrain3D(double* rNonlocalTotalStrain)const;
-
-    //! @brief returns the Damage of the node
-    //! @param rTimeDerivative time derivative
-    //! @return Damage
-    virtual void GetNonlocalTotalStrain1D(int rTimeDerivative, double* rNonlocalTotalStrain)const;
-
-    //! @brief returns the Damage of the node
-    //! @param rTimeDerivative time derivative
-    //! @return Damage
-    virtual void GetNonlocalTotalStrain2D(int rTimeDerivative, double* rNonlocalTotalStrain)const;
-
-    //! @brief returns the Damage of the node
-    //! @param rTimeDerivative time derivative
-    //! @return Damage
-    virtual void GetNonlocalTotalStrain3D(int rTimeDerivative, double* rNonlocalTotalStrain)const;
-
-    //! @brief set the Damage of the node
-    //! @param rDamage  given Damage
-    virtual void SetNonlocalTotalStrain1D(const double* rNonlocalTotalStrain);
-
-    //! @brief set the Damage of the node
-    //! @param rDamage  given Damage
-    virtual void SetNonlocalTotalStrain2D(const double* rNonlocalTotalStrain);
-
-    //! @brief set the Damage of the node
-    //! @param rDamage  given Damage
-    virtual void SetNonlocalTotalStrain3D(const double* rNonlocalTotalStrain);
-
-    //! @brief set the Damage of the node
-    //! @param rTimeDerivative time derivative
-    //! @param rDamage  given Damage
-    virtual void SetNonlocalTotalStrain1D(int rTimeDerivative, const double* rNonlocalTotalStrain);
-
-    //! @brief set the Damage of the node
-    //! @param rTimeDerivative time derivative
-    //! @param rDamage  given Damage
-    virtual void SetNonlocalTotalStrain2D(int rTimeDerivative, const double* rNonlocalTotalStrain);
-
-    //! @brief set the Damage of the node
-    //! @param rTimeDerivative time derivative
-    //! @param rDamage  given Damage
-    virtual void SetNonlocalTotalStrain3D(int rTimeDerivative, const double* rNonlocalTotalStrain);
-
-    //! @brief returns the nonlocal total strain component of the node
-    //! @return strain component (rTimeDerivative=0)
+    virtual int GetDofNonlocalTotalStrain(int rComponent)const;
     virtual double GetNonlocalTotalStrain(short rIndex)const;
 
-    //! @brief gives the global DOF of a Damage component
-    //! @param rComponent component
-    //! @return global DOF
-    virtual int GetDofNonlocalTotalStrain(int rComponent)const;
+    const Eigen::Matrix<double, 1, 1>& GetNonlocalTotalStrain1D() const;
+    const Eigen::Matrix<double, 3, 1>& GetNonlocalTotalStrain2D() const;
+    const Eigen::Matrix<double, 6, 1>& GetNonlocalTotalStrain3D() const;
+    const Eigen::Matrix<double, Eigen::Dynamic, 1> GetNonlocalTotalStrains() const;
 
-    //! @brief returns the number of temperatures of the node
-    //! @return number of temperatures
-    virtual int GetNumNonlocalEqStrain()const;
+    virtual const Eigen::Matrix<double, 1, 1>& GetNonlocalTotalStrain1D(int rTimeDerivative) const;
+    virtual const Eigen::Matrix<double, 3, 1>& GetNonlocalTotalStrain2D(int rTimeDerivative) const;
+    virtual const Eigen::Matrix<double, 6, 1>& GetNonlocalTotalStrain3D(int rTimeDerivative) const;
+    virtual const Eigen::Matrix<double, Eigen::Dynamic, 1> GetNonlocalTotalStrains(int rTimeDerivative) const;
 
-    //! @brief returns the nonlocal eq. strain of the node
-    //! @return nonlocal eq. strain
-    virtual double GetNonlocalEqStrain()const;
+    void SetNonlocalTotalStrain1D(const Eigen::Matrix<double, 1, 1>& rNonlocalTotalStrain);
+    void SetNonlocalTotalStrain2D(const Eigen::Matrix<double, 3, 1>& rNonlocalTotalStrain);
+    void SetNonlocalTotalStrain3D(const Eigen::Matrix<double, 6, 1>& rNonlocalTotalStrain);
+    void SetNonlocalTotalStrain  (const Eigen::Matrix<double, Eigen::Dynamic, 1>& rNonlocalTotalStrain);
 
-    //! @brief returns the nonlocal eq. strain of the node
-    //! @param rTimeDerivative time derivative
-    //! @return nonlocal eq. strain
-    virtual double GetNonlocalEqStrain(int rTimeDerivative)const;
+    virtual void SetNonlocalTotalStrain1D(int rTimeDerivative, const Eigen::Matrix<double, 1, 1>& rNonlocalTotalStrain);
+    virtual void SetNonlocalTotalStrain2D(int rTimeDerivative, const Eigen::Matrix<double, 3, 1>& rNonlocalTotalStrain);
+    virtual void SetNonlocalTotalStrain3D(int rTimeDerivative, const Eigen::Matrix<double, 6, 1>& rNonlocalTotalStrain);
+    virtual void SetNonlocalTotalStrain  (int rTimeDerivative, const Eigen::Matrix<double, Eigen::Dynamic, 1>& rNonlocalTotalStrain);
 
-    //! @brief set the nonlocal eq. strain of the node
-    //! @param rNonlocalEqStrain  given nonlocal eq. strain
-    virtual void SetNonlocalEqStrain(double rNonlocalEqStrain);
+    //*************************************************
+    //*******   NONLOCAL EQUIVALENT STRAIN   **********
+    //*************************************************
 
-    //! @brief set the temperature of the node
-    //! @param rTimeDerivative time derivative
-    //! @param rNonlocalEqStrain given nonlocal eq. strain
+    virtual int GetNumNonlocalEqStrain() const;
+    virtual int GetDofNonlocalEqStrain() const;
+
+    double GetNonlocalEqStrain() const;
+    virtual double GetNonlocalEqStrain(int rTimeDerivative) const;
+
+    void SetNonlocalEqStrain(double rNonlocalEqStrain);
     virtual void SetNonlocalEqStrain(int rTimeDerivative, double rNonlocalEqStrain);
 
-    //! @brief gives the global DOF the nonlocal eq. strain
-    //! @return global DOF
-    virtual int GetDofNonlocalEqStrain()const;
+    //**************************************************
+    //*******      WATER VOLUME FRACTION      **********
+    //**************************************************
 
-    // Moisture Transport --- Begin
+    virtual int GetNumWaterVolumeFraction() const;
+    virtual int GetDofWaterVolumeFraction() const;
 
-    // WaterPhaseFraction, int TNumRelativeHumidity
+    double GetWaterVolumeFraction() const;
+    virtual double GetWaterVolumeFraction(int rTimeDerivative) const;
 
-    //! @brief returns the number of water phase fraction components of the node
-    //! @return number of water phase fraction components
-    virtual int GetNumWaterPhaseFraction()const;
+    void SetWaterVolumeFraction(double rWaterVolumeFraction);
+    virtual void SetWaterVolumeFraction(int rTimeDerivative, double rWaterVolumeFraction);
 
-    //! @brief returns the water phase fraction of the node
-    //! @return water phase fraction
-    virtual double GetWaterPhaseFraction()const;
+    //*************************************************
+    //*******       RELATIVE HUMIDITY        **********
+    //*************************************************
 
-    //! @brief returns the water phase fraction of the node
-    //! @param rTimeDerivative time derivative
-    //! @return water phase fraction
-    virtual double GetWaterPhaseFraction(int rTimeDerivative)const;
+    virtual int GetNumRelativeHumidity() const;
+    virtual int GetDofRelativeHumidity() const;
 
-    //! @brief set the water phase fraction of the node
-    //! @param rTemperature  given temperature
-    virtual void SetWaterPhaseFraction(double rWaterPhaseFraction);
+    double GetRelativeHumidity() const;
+    virtual double GetRelativeHumidity(int rTimeDerivative) const;
 
-    //! @brief set the water phase fraction of the node
-    //! @param rTimeDerivative time derivative
-    //! @param rTemperature  given temperature
-    virtual void SetWaterPhaseFraction(int rTimeDerivative, double rWaterPhaseFraction);
-
-    //! @brief gives the global DOF of a water phase fraction component
-    //! @param rComponent component
-    //! @return global DOF
-    virtual int GetDofWaterPhaseFraction()const;
-
-
-    //! @brief returns the number of relative humidity components of the node
-    //! @return number of relative humidity components
-    virtual int GetNumRelativeHumidity()const;
-
-    //! @brief returns the relative humidity of the node
-    //! @return relative humidity
-    virtual double GetRelativeHumidity()const;
-
-    //! @brief returns the relative humidity of the node
-    //! @param rTimeDerivative time derivative
-    //! @return relative humidity
-    virtual double GetRelativeHumidity(int rTimeDerivative)const;
-
-    //! @brief set the relative humidity of the node
-    //! @param rTemperature  given relative humidity
-    virtual void SetRelativeHumidity(double rRelativeHumidity);
-
-    //! @brief set the relative humidity of the node
-    //! @param rTimeDerivative time derivative
-    //! @param rTemperature  given relative humidity
+    void SetRelativeHumidity(double rRelativeHumidity);
     virtual void SetRelativeHumidity(int rTimeDerivative, double rRelativeHumidity);
-
-    //! @brief gives the global DOF of a relative humidity component
-    //! @param rComponent component
-    //! @return global DOF
-    virtual int GetDofRelativeHumidity()const;
-
-
-
-    // Moisture Transport --- End
 
 
     //! @brief returns the type of node as a string (all the data stored at the node)
     //! @return string
     virtual std::string GetNodeTypeStr()const=0;
-
-    //! @brief returns the type of node as an enum (all the data stored at the node)
-    //! @return enum
-    virtual Node::eNodeType GetNodeType()const
-    {
-    	throw MechanicsException("[NodeBase::GetNodeType] routine is removed");
-    }
 
 #ifdef ENABLE_VISUALIZE
     virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
@@ -476,10 +275,7 @@ public:
 
     bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2)
     {
-        double coord1[2], coord2[2];
-        nodePtr1->GetCoordinates2D(coord1);
-        nodePtr2->GetCoordinates2D(coord2);
-        return coord1[0] < coord2[0];
+        return nodePtr1->GetCoordinate(0) < nodePtr2->GetCoordinate(0);
     }
 };
 
@@ -492,10 +288,7 @@ public:
 
     bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2)
     {
-        double coord1[2], coord2[2];
-        nodePtr1->GetCoordinates2D(coord1);
-        nodePtr2->GetCoordinates2D(coord2);
-        return coord1[0] > coord2[0];
+        return nodePtr1->GetCoordinate(0) > nodePtr2->GetCoordinate(0);
     }
 };
 
@@ -508,10 +301,7 @@ public:
 
     bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2)
     {
-        double coord1[2], coord2[2];
-        nodePtr1->GetCoordinates2D(coord1);
-        nodePtr2->GetCoordinates2D(coord2);
-        return coord1[1] < coord2[1];
+        return nodePtr1->GetCoordinate(1) < nodePtr2->GetCoordinate(1);
     }
 };
 
@@ -524,15 +314,26 @@ public:
 
     bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2)
     {
-        double coord1[2], coord2[2];
-        nodePtr1->GetCoordinates2D(coord1);
-        nodePtr2->GetCoordinates2D(coord2);
-        return coord1[1] > coord2[1];
+        return nodePtr1->GetCoordinate(1) > nodePtr2->GetCoordinate(1);
     }
 };
 
 }//namespace NuTo
 #ifdef ENABLE_SERIALIZATION
+
+namespace boost
+{
+    //! @brief tell boost how to serialize an Eigen::Matrix
+    template<class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+    inline void serialize(
+        Archive & ar,
+        Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> & t,
+        const unsigned int file_version
+    )
+    {
+        ar & boost::serialization::make_array(t.data(), t.size());
+    }
+}
 BOOST_CLASS_EXPORT_KEY(NuTo::NodeBase)
 #endif // ENABLE_SERIALIZATION
 #endif //NODEBASE_H

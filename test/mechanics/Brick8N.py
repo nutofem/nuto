@@ -32,17 +32,23 @@ error = False
 myStructure = nuto.Structure(3)
 
 #create nodes
-myNode1 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((-1.,-1.,-1.)))
-myNode2 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((+1.,-1.,-1.)))
-myNode3 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((+1.,+1.,-1.)))
-myNode4 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((-1.,+1.,-1.)))
-myNode5 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((-1.,-1.,+1.)))
-myNode6 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((+1.,-1.,+1.)))
-myNode7 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((+1.,+1.,+1.)))
-myNode8 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((-1.,+1.,+1.)))
+myNode1 = myStructure.NodeCreate(nuto.DoubleFullVector((-1.,-1.,-1.)))
+myNode2 = myStructure.NodeCreate(nuto.DoubleFullVector((+1.,-1.,-1.)))
+myNode3 = myStructure.NodeCreate(nuto.DoubleFullVector((+1.,+1.,-1.)))
+myNode4 = myStructure.NodeCreate(nuto.DoubleFullVector((-1.,+1.,-1.)))
+myNode5 = myStructure.NodeCreate(nuto.DoubleFullVector((-1.,-1.,+1.)))
+myNode6 = myStructure.NodeCreate(nuto.DoubleFullVector((+1.,-1.,+1.)))
+myNode7 = myStructure.NodeCreate(nuto.DoubleFullVector((+1.,+1.,+1.)))
+myNode8 = myStructure.NodeCreate(nuto.DoubleFullVector((-1.,+1.,+1.)))
+
+#create interpolation type
+myInterpolationType = myStructure.InterpolationTypeCreate("Brick3D");
+myStructure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistant1");
+myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant1");
 
 #create element
-myElement1 = myStructure.ElementCreate("Brick8N",nuto.IntFullVector((myNode1,myNode2,myNode3,myNode4,myNode5,myNode6,myNode7,myNode8)))
+myElement1 = myStructure.ElementCreate(myInterpolationType,nuto.IntFullVector((myNode1,myNode2,myNode3,myNode4,myNode5,myNode6,myNode7,myNode8)))
+myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
 
 #create constitutive law
 myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")

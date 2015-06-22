@@ -1296,7 +1296,6 @@ void NuTo::Plane::GetLocalIntegrationPointCoordinates(int rIpNum, double rCoordi
 void  NuTo::Plane::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const
 {
     double naturalCoordinates[2];
-    double nodeCoordinates[3];
     this->mElementData->GetIntegrationType()->GetLocalIntegrationPointCoordinates2D(rIpNum, naturalCoordinates);
     std::vector<double> shapeFunctions(GetNumNodes());
     CalculateShapeFunctionsGeometry(naturalCoordinates, shapeFunctions);
@@ -1304,16 +1303,16 @@ void  NuTo::Plane::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoor
     rCoordinates[1] = 0.;
     rCoordinates[2] = 0.;
 
-    nodeCoordinates[0] = 0;
-    nodeCoordinates[1] = 0;
-    nodeCoordinates[2] = 0;
+    Eigen::Matrix<double, 3, 1> nodeCoordinates;
+    nodeCoordinates.setZero();
     for (int theNode=0; theNode<GetNumNodes(); theNode++)
     {
         const NodeBase *nodePtr(GetNode(theNode));
         if (nodePtr->GetNumCoordinates()==2)
-            nodePtr->GetCoordinates2D(nodeCoordinates);
+            nodeCoordinates.block<2,1>(0,0) = nodePtr->GetCoordinates2D();
         else
-            nodePtr->GetCoordinates3D(nodeCoordinates);
+            nodeCoordinates = nodePtr->GetCoordinates3D();
+
         for (int theCoordinate=0; theCoordinate<nodePtr->GetNumCoordinates(); theCoordinate++)
         {
             rCoordinates[theCoordinate]+=shapeFunctions[theNode]*nodeCoordinates[theCoordinate];
@@ -1467,13 +1466,15 @@ void NuTo::Plane::InterpolateCoordinatesFrom2D(double rNaturalCoordinates[2], do
     rGlobalCoordinates[2] = 0.0;
     for (int NodeCount = 0; NodeCount < this->GetNumNodesGeometry(); NodeCount++)
     {
+
         // get node coordinate
-        double NodeCoordinate[3];
+        Eigen::Matrix<double, 3, 1> NodeCoordinate;
+        NodeCoordinate.setZero();
         const NodeBase *nodePtr(GetNodeGeometry(NodeCount));
         if (nodePtr->GetNumCoordinates()==2)
-            nodePtr->GetCoordinates2D(NodeCoordinate);
+            NodeCoordinate.block<2,1>(0,0) = nodePtr->GetCoordinates2D();
         else
-            nodePtr->GetCoordinates3D(NodeCoordinate);
+            NodeCoordinate = nodePtr->GetCoordinates3D();
 
         // add node contribution
         for (int theCoordinate=0; theCoordinate<nodePtr->GetNumCoordinates(); theCoordinate++)
@@ -1497,12 +1498,13 @@ void NuTo::Plane::InterpolateDisplacementsFrom2D(int rTimeDerivative, double rNa
     for (int NodeCount = 0; NodeCount < this->GetNumNodesField(); NodeCount++)
     {
         // get node displacements
-        double NodeDisplacement[3];
+        Eigen::Matrix<double, 3, 1> NodeDisplacement;
+        NodeDisplacement.setZero();
         const NodeBase *nodePtr(GetNode(NodeCount));
         if (nodePtr->GetNumDisplacements()==2)
-            nodePtr->GetDisplacements2D(rTimeDerivative, NodeDisplacement);
+            NodeDisplacement.block<2,1>(0,0) = nodePtr->GetDisplacements2D(rTimeDerivative);
         else
-            nodePtr->GetDisplacements3D(rTimeDerivative, NodeDisplacement);
+            NodeDisplacement = nodePtr->GetDisplacements3D(rTimeDerivative);
 
         // add node contribution
         for (int theDisplacement=0; theDisplacement<nodePtr->GetNumDisplacements(); theDisplacement++)

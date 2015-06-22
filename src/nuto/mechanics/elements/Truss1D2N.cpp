@@ -31,7 +31,7 @@ NuTo::Truss1D2N::Truss1D2N(NuTo::StructureBase* rStructure, const std::vector<Nu
 //! @param shape functions for all the nodes
 void NuTo::Truss1D2N::CalculateShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rShapeFunctions)const
 {
-    ShapeFunctions1D::ShapeFunctions1D2N(rLocalCoordinates,rShapeFunctions);
+    ShapeFunctions1D::ShapeFunctionsTrussOrder1(rLocalCoordinates,rShapeFunctions);
 }
 
 //! @brief calculates the derivative of the shape functions
@@ -40,7 +40,7 @@ void NuTo::Truss1D2N::CalculateShapeFunctionsGeometry(double rLocalCoordinates, 
 //! first all the directions for a single node, and then for the next node
 void NuTo::Truss1D2N::CalculateDerivativeShapeFunctionsGeometry(double rLocalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
 {
-    ShapeFunctions1D::DerivativeShapeFunctions1D2N(rLocalCoordinates, rDerivativeShapeFunctions);
+    ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder1(rLocalCoordinates, rDerivativeShapeFunctions);
 }
 
 

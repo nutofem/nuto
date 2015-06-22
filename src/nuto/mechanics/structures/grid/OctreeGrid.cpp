@@ -1443,42 +1443,42 @@ void NuTo::OctreeGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,int 
 		nodeCoordinates(0) = -mVoxelSpacing[0] * 0.5;
 		nodeCoordinates(1) = -mVoxelSpacing[1] * 0.5;
 		nodeCoordinates(2) = -mVoxelSpacing[2] * 0.5;
-		elementIncidence(0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+		elementIncidence(0)=myHelpStruc.NodeCreateDOFs("displacements", nodeCoordinates);
 
 		nodeCoordinates(0) = mVoxelSpacing[0] * 0.5;
 		nodeCoordinates(1) = -mVoxelSpacing[1] * 0.5;
 		nodeCoordinates(2) = -mVoxelSpacing[2] * 0.5;
-		elementIncidence(1)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+		elementIncidence(1)=myHelpStruc.NodeCreateDOFs("displacements", nodeCoordinates);
 
 		nodeCoordinates(0) = -mVoxelSpacing[0] * 0.5;
 		nodeCoordinates(1) = mVoxelSpacing[1] * 0.5;
 		nodeCoordinates(2) = -mVoxelSpacing[2] * 0.5;
-		elementIncidence(3)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+		elementIncidence(3)=myHelpStruc.NodeCreateDOFs("displacements", nodeCoordinates);
 
 		nodeCoordinates(0) = mVoxelSpacing[0] * 0.5;
 		nodeCoordinates(1) = mVoxelSpacing[1] * 0.5;
 		nodeCoordinates(2) = -mVoxelSpacing[2] * 0.5;
-		elementIncidence(2)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+		elementIncidence(2)=myHelpStruc.NodeCreateDOFs("displacements", nodeCoordinates);
 
 		nodeCoordinates(0) = -mVoxelSpacing[0] * 0.5;
 		nodeCoordinates(1) = -mVoxelSpacing[1] * 0.5;
 		nodeCoordinates(2) = mVoxelSpacing[2] * 0.5;
-		elementIncidence(4)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+		elementIncidence(4)=myHelpStruc.NodeCreateDOFs("displacements", nodeCoordinates);
 
 		nodeCoordinates(0) = mVoxelSpacing[0] * 0.5;
 		nodeCoordinates(1) = -mVoxelSpacing[1] * 0.5;
 		nodeCoordinates(2) = mVoxelSpacing[2] * 0.5;
-		elementIncidence(5)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+		elementIncidence(5)=myHelpStruc.NodeCreateDOFs("displacements", nodeCoordinates);
 
 		nodeCoordinates(0) = -mVoxelSpacing[0] * 0.5;
 		nodeCoordinates(1) = mVoxelSpacing[1] * 0.5;
 		nodeCoordinates(2) = mVoxelSpacing[2] * 0.5;
-		elementIncidence(7)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+		elementIncidence(7)=myHelpStruc.NodeCreateDOFs("displacements", nodeCoordinates);
 
 		nodeCoordinates(0) = mVoxelSpacing[0] * 0.5;
 		nodeCoordinates(1) = mVoxelSpacing[1] * 0.5;
 		nodeCoordinates(2) = mVoxelSpacing[2] * 0.5;
-		elementIncidence(6)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+		elementIncidence(6)=myHelpStruc.NodeCreateDOFs("displacements", nodeCoordinates);
 
 		// first element create
 
@@ -2255,42 +2255,42 @@ void NuTo::OctreeGrid::GetEngineeringStrain(const std::vector<double> &rDisplace
 	nodeCoordinates(0) = -mVoxelSpacing[0] * 0.5;
 	nodeCoordinates(1) = -mVoxelSpacing[1] * 0.5;
 	nodeCoordinates(2) = -mVoxelSpacing[2] * 0.5;
-	elementIncidence(0)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+	elementIncidence(0)=myHelpStruc.NodeCreateDOFs("displacements", nodeCoordinates);
 
 	nodeCoordinates(0) = mVoxelSpacing[0] * 0.5;
 	nodeCoordinates(1) = -mVoxelSpacing[1] * 0.5;
 	nodeCoordinates(2) = -mVoxelSpacing[2] * 0.5;
-	elementIncidence(1)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+	elementIncidence(1)=myHelpStruc.NodeCreateDOFs("displacements", nodeCoordinates);
 
 	nodeCoordinates(0) = mVoxelSpacing[0] * 0.5;
 	nodeCoordinates(1) = mVoxelSpacing[1] * 0.5;
 	nodeCoordinates(2) = -mVoxelSpacing[2] * 0.5;
-	elementIncidence(2)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+	elementIncidence(2)=myHelpStruc.NodeCreateDOFs("displacements", nodeCoordinates);
 
 	nodeCoordinates(0) = -mVoxelSpacing[0] * 0.5;
 	nodeCoordinates(1) = mVoxelSpacing[1] * 0.5;
 	nodeCoordinates(2) = -mVoxelSpacing[2] * 0.5;
-	elementIncidence(3)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+	elementIncidence(3)=myHelpStruc.NodeCreateDOFs("displacements", nodeCoordinates);
 
 	nodeCoordinates(0) = -mVoxelSpacing[0] * 0.5;
 	nodeCoordinates(1) = -mVoxelSpacing[1] * 0.5;
 	nodeCoordinates(2) = mVoxelSpacing[2] * 0.5;
-	elementIncidence(4)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+	elementIncidence(4)=myHelpStruc.NodeCreateDOFs("displacements", nodeCoordinates);
 
 	nodeCoordinates(0) = mVoxelSpacing[0] * 0.5;
 	nodeCoordinates(1) = -mVoxelSpacing[1] * 0.5;
 	nodeCoordinates(2) = mVoxelSpacing[2] * 0.5;
-	elementIncidence(5)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+	elementIncidence(5)=myHelpStruc.NodeCreateDOFs("displacements", nodeCoordinates);
 
 	nodeCoordinates(0) = mVoxelSpacing[0] * 0.5;
 	nodeCoordinates(1) = mVoxelSpacing[1] * 0.5;
 	nodeCoordinates(2) = mVoxelSpacing[2] * 0.5;
-	elementIncidence(6)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+	elementIncidence(6)=myHelpStruc.NodeCreateDOFs("displacements", nodeCoordinates);
 
 	nodeCoordinates(0) = -mVoxelSpacing[0] * 0.5;
 	nodeCoordinates(1) = mVoxelSpacing[1] * 0.5;
 	nodeCoordinates(2) = mVoxelSpacing[2] * 0.5;
-	elementIncidence(7)=myHelpStruc.NodeCreate("displacements", nodeCoordinates);
+	elementIncidence(7)=myHelpStruc.NodeCreateDOFs("displacements", nodeCoordinates);
 
 	// first element create
 
@@ -2338,7 +2338,9 @@ void NuTo::OctreeGrid::GetEngineeringStrain(const std::vector<double> &rDisplace
 	{
 //		CalculateNodalCoordinatesAtElement(element,nodes,nodeCoord);
 
-		myElementPointer->CalculateJacobian(mLocalDerivativeShapeFunctions,nodeCoord, invJacobian, detJac);
+	    // deactivated temporarily
+//		myElementPointer->CalculateJacobian(mLocalDerivativeShapeFunctions,nodeCoord, invJacobian, detJac);
+	    double detJacUnusedWarningFixMe = detJac;
 
 		myElementPointer->CalculateDerivativeShapeFunctionsGlobal(mLocalDerivativeShapeFunctions,invJacobian,
 													derivativeShapeFunctionsGlobal);

@@ -149,7 +149,7 @@ bool NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain::CheckCon
 {
 	if (rConstitutiveType==NuTo::Constitutive::NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS)
 	{
-		if (rElementType==NuTo::Element::PLANE2D3N || rElementType==NuTo::Element::PLANE2D4N || rElementType==NuTo::Element::PLANE2D6N)
+		if (rElementType == NuTo::Element::ELEMENT2D || rElementType==NuTo::Element::PLANE2D3N || rElementType==NuTo::Element::PLANE2D4N || rElementType==NuTo::Element::PLANE2D6N)
 			return true;
 		else
 			return false;

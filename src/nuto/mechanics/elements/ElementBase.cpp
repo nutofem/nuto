@@ -35,45 +35,49 @@
 #endif
 
 NuTo::ElementBase::ElementBase(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
-		IntegrationType::eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType)
-        : mStructure(rStructure)
+        IpData::eIpDataType rIpDataType, const InterpolationType* rInterpolationType)
+        : mStructure(rStructure), mInterpolationType(rInterpolationType)
 {
+
+    const IntegrationTypeBase* integrationType = mInterpolationType->GetCurrentIntegrationType();
+
     //allocate element data
 	ElementDataBase* ptrElementData;
 	switch(rElementDataType)
 	{
 	case NuTo::ElementData::NOELEMENTDATA:
-		throw MechanicsException("[NuTo::ElementWithDataBase::ElementWithDataBase] no elements without element data implemented.");
+		throw MechanicsException("[NuTo::ElementBase::ElementBase] no elements without element data implemented.");
     break;
 	case NuTo::ElementData::CONSTITUTIVELAWIP:
-		ptrElementData = new NuTo::ElementDataConstitutiveIp(this,const_cast<StructureBase*>(rStructure)->GetPtrIntegrationType(rIntegrationType),rIpDataType);
+		ptrElementData = new NuTo::ElementDataConstitutiveIp(this,integrationType,rIpDataType);
     break;
 	case NuTo::ElementData::CONSTITUTIVELAWIPNONLOCAL:
-		ptrElementData = new NuTo::ElementDataConstitutiveIpNonlocal(this,const_cast<StructureBase*>(rStructure)->GetPtrIntegrationType(rIntegrationType),rIpDataType);
+		ptrElementData = new NuTo::ElementDataConstitutiveIpNonlocal(this,integrationType,rIpDataType);
     break;
 	case NuTo::ElementData::CONSTITUTIVELAWIPCRACK:
-		ptrElementData = new NuTo::ElementDataConstitutiveIpCrack(this,const_cast<StructureBase*>(rStructure)->GetPtrIntegrationType(rIntegrationType),rIpDataType);
+		ptrElementData = new NuTo::ElementDataConstitutiveIpCrack(this,integrationType,rIpDataType);
     break;
 	case NuTo::ElementData::VARIABLECONSTITUTIVELAWIP:
-		ptrElementData = new NuTo::ElementDataVariableConstitutiveIp(this,const_cast<StructureBase*>(rStructure)->GetPtrIntegrationType(rIntegrationType),rIpDataType);
+		ptrElementData = new NuTo::ElementDataVariableConstitutiveIp(this,integrationType,rIpDataType);
     break;
 
     default:
-		throw MechanicsException("[NuTo::ElementWithDataBase::ElementWithDataBase] unsupported element data type.");
+		throw MechanicsException("[NuTo::ElementBase::ElementWithDataBase] unsupported element data type.");
 	}
 	mElementData = ptrElementData;
 }
 
 NuTo::ElementBase::ElementBase(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
-		int rNumIp, IpData::eIpDataType rIpDataType)
-        : mStructure(rStructure)
+		int rNumIp, IpData::eIpDataType rIpDataType, const InterpolationType* rInterpolationType)
+        : mStructure(rStructure), mInterpolationType(rInterpolationType)
 {
+
     //allocate element data
 	ElementDataBase* ptrElementData;
 	switch(rElementDataType)
 	{
 	case NuTo::ElementData::NOELEMENTDATA:
-		throw MechanicsException("[NuTo::ElementWithDataBase::ElementWithDataBase] no elements without element data implemented.");
+		throw MechanicsException("[NuTo::ElementBase::ElementBase] no elements without element data implemented.");
     break;
 	case NuTo::ElementData::CONSTITUTIVELAWIP:
 		ptrElementData = new NuTo::ElementDataConstitutiveIp(this,rNumIp,rIpDataType);
@@ -89,7 +93,7 @@ NuTo::ElementBase::ElementBase(const StructureBase* rStructure, ElementData::eEl
     break;
 
     default:
-		throw MechanicsException("[NuTo::ElementWithDataBase::ElementWithDataBase] unsupported element data type.");
+		throw MechanicsException("[NuTo::ElementBase::ElementBase] unsupported element data type.");
 	}
 	mElementData = ptrElementData;
 }
@@ -199,90 +203,59 @@ bool NuTo::ElementBase::HasConstitutiveLawAssigned(int rIp)const
 	return mElementData->HasConstitutiveLawAssigned(rIp);
 }
 
-void NuTo::ElementBase::InterpolateCoordinatesFrom1D(double rLocalCoordinates, double rGlobalCoordinates[3]) const
+int NuTo::ElementBase::GetNumNodes() const
 {
-    throw MechanicsException("[NuTo::ElementBase::InterpolateCoordinatesFrom1D] 1D geometry interpolation routine not implemented.");
+    return mInterpolationType->GetNumNodes();
 }
 
-void NuTo::ElementBase::InterpolateCoordinatesFrom2D(double rLocalCoordinates[2], double rGlobalCoordinates[3]) const
+int NuTo::ElementBase::GetNumNodes(Node::eAttributes rDofType) const
 {
-    throw MechanicsException("[NuTo::ElementBase::InterpolateCoordinatesFrom2D] 2D geometry interpolation routine not implemented.");
+    return mInterpolationType->Get(rDofType).GetNumNodes();
 }
 
-void NuTo::ElementBase::InterpolateCoordinatesFrom3D(double rLocalCoordinates[3], double rGlobalCoordinates[3]) const
+const Eigen::MatrixXd NuTo::ElementBase::ExtractNodeValues(Node::eAttributes rDofType) const
 {
-    throw MechanicsException("[NuTo::ElementBase::InterpolateCoordinatesFrom3D] 3D geometry interpolation routine not implemented.");
+    return this->ExtractNodeValues(0, rDofType);
 }
 
-void NuTo::ElementBase::InterpolateDisplacementsFrom1D(int rTimeDerivative, double rLocalCoordinates, double rGlobalDisplacements[3]) const
+const Eigen::MatrixXd NuTo::ElementBase::ExtractNodeValues(int rTimeDerivative, Node::eAttributes rDofType) const
 {
-    throw MechanicsException("[NuTo::ElementBase::InterpolateDisplacementsFrom1D] 1D displacement interpolation routine not implemented.");
+    throw NuTo::MechanicsException("[NuTo::ElementBase::ExtractNodeValues] not implemented.");
 }
 
-void NuTo::ElementBase::InterpolateDisplacementsFrom2D(int rTimeDerivative, double rLocalCoordinates[2], double rGlobalDisplacements[3]) const
+const Eigen::VectorXd NuTo::ElementBase::InterpolateDof(const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const
 {
-    throw MechanicsException("[NuTo::ElementBase::InterpolateDisplacementsFrom2D] 2D displacement interpolation routine not implemented.");
+    return InterpolateDof(0, rNaturalCoordinates, rDofType);
 }
 
-void NuTo::ElementBase::InterpolateDisplacementsFrom3D(int rTimeDerivative, double rLocalCoordinates[3], double rGlobalDisplacements[3]) const
+const Eigen::VectorXd NuTo::ElementBase::InterpolateDof(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const
 {
-    throw MechanicsException("[NuTo::ElementBase::InterpolateDisplacementsFrom3D] 3D displacement interpolation routine not implemented.");
+    const InterpolationBase& interpolationType = mInterpolationType->Get(rDofType);
+    const Eigen::MatrixXd nodalValues = ExtractNodeValues(rTimeDerivative, rDofType);
+    const Eigen::VectorXd shapeFunctions = interpolationType.CalculateShapeFunctions(rNaturalCoordinates);
+
+    return nodalValues * shapeFunctions;
 }
 
-void NuTo::ElementBase::InterpolateTemperatureFrom1D(double rLocalCoordinates, double& rTemperature) const
+const Eigen::Vector3d NuTo::ElementBase::InterpolateDof3D(const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const
 {
-    throw MechanicsException("[NuTo::ElementBase::InterpolateTemperatureFrom1D] 1D temperature interpolation routine not implemented.");
+    return InterpolateDof3D(0, rNaturalCoordinates, rDofType);
 }
 
-void NuTo::ElementBase::InterpolateTemperatureFrom2D(double rLocalCoordinates[2], double& rTemperature) const
+const Eigen::Vector3d NuTo::ElementBase::InterpolateDof3D(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const
 {
-    throw MechanicsException("[NuTo::ElementBase::InterpolateTemperatureFrom2D] 2D temperature interpolation routine not implemented.");
-}
+    const InterpolationBase& interpolationType = mInterpolationType->Get(rDofType);
+    const Eigen::MatrixXd nodalValues = ExtractNodeValues(rTimeDerivative, rDofType);
+    const Eigen::VectorXd shapeFunctions = interpolationType.CalculateShapeFunctions(rNaturalCoordinates);
 
-void NuTo::ElementBase::InterpolateTemperatureFrom3D(double rLocalCoordinates[3], double& rTemperature) const
-{
-    throw MechanicsException("[NuTo::ElementBase::InterpolateTemperatureFrom3D] 3D temperature interpolation routine not implemented.");
-}
-
-//! @brief ... interpolate three-dimensional global nonlocal eq strain from one-dimensional local point coordinates (element coordinates system)
-//! @param rLocalCoordinates ... one-dimensional local point coordinates
-//! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
-void NuTo::ElementBase::InterpolateNonlocalEqStrainFrom1D(double rLocalCoordinates, double& rNonlocalEqStrain) const
-{
-    throw MechanicsException("[NuTo::ElementBase::InterpolateNonlocalEqStrainFrom1D] 1D nonlocal eq strain interpolation routine not implemented.");
-}
+    Eigen::VectorXd result = nodalValues * shapeFunctions;
+    Eigen::Vector3d interpolation3D = Eigen::Vector3d::Zero();
 
 
-//! @brief ... interpolate three-dimensional global nonlocal eq strain from two-dimensional local point coordinates (element coordinates system)
-//! @param rLocalCoordinates ... two-dimensional local point coordinates
-//! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
-void NuTo::ElementBase::InterpolateNonlocalEqStrainFrom2D(double rLocalCoordinates[2], double& rNonlocalEqStrain) const
-{
-    throw MechanicsException("[NuTo::ElementBase::InterpolateNonlocalEqStrainFrom2D] 2D nonlocal eq strain interpolation routine not implemented.");
-}
+    for (int iRow = 0; iRow < result.rows(); ++iRow)
+        interpolation3D[iRow] = result[iRow];
 
-//! @brief ... interpolate three-dimensional global nonlocal eq strain from three-dimensional local point coordinates (element coordinates system)
-//! @param rLocalCoordinates ... three-dimensional local point coordinates
-//! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
-void NuTo::ElementBase::InterpolateNonlocalEqStrainFrom3D(double rLocalCoordinates[3], double& rNonlocalEqStrain) const
-{
-    throw MechanicsException("[NuTo::ElementBase::InterpolateNonlocalEqStrainFrom3D] 3D nonlocal eq strain interpolation routine not implemented.");
-}
-
-//! @brief ... interpolate three-dimensional global relative humidity from one-dimensional local point coordinates (element coordinates system)
-//! @param rLocalCoordinates ... one-dimensional local point coordinates
-//! @param rRelativeHumidity ... interpolated relative humidity
-void NuTo::ElementBase::InterpolateRelativeHumidityFrom1D(double rLocalCoordinates, double& rRelativeHumidity) const
-{
-    throw MechanicsException("[NuTo::ElementBase::InterpolateRelativeHumidityFrom1D] 1D relative humidity interpolation routine not implemented.");
-}
-
-//! @brief ... interpolate three-dimensional global water volume fraction from one-dimensional local point coordinates (element coordinates system)
-//! @param rLocalCoordinates ... one-dimensional local point coordinates
-//! @param rWaterVolumeFraction ... interpolated water volume fraction
-void NuTo::ElementBase::InterpolateWaterVolumeFractionFrom1D(double rLocalCoordinates, double& rWaterVolumeFraction) const
-{
-    throw MechanicsException("[NuTo::ElementBase::InterpolateWaterVolumeFractionFrom1D] 1D water volume fraction interpolation routine not implemented.");
+    return interpolation3D;
 }
 
 //! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)
@@ -318,6 +291,20 @@ void NuTo::ElementBase::SetIntegrationType(const NuTo::IntegrationTypeBase* rInt
 const NuTo::IntegrationTypeBase* NuTo::ElementBase::GetIntegrationType()const
 {
     return mElementData->GetIntegrationType();
+}
+
+//! @brief sets the interpolation type of an element
+//! @param rInterpolationType interpolation type
+void NuTo::ElementBase::SetInterpolationType(const InterpolationType* rInterpolationType)
+{
+    mInterpolationType = rInterpolationType;
+}
+
+//! @brief returns a pointer to the interpolation type of an element
+//! @return pointer to interpolation type
+const NuTo::InterpolationType* NuTo::ElementBase::GetInterpolationType () const
+{
+    return mInterpolationType;
 }
 
 //! @brief returns ip data type of the element
@@ -385,6 +372,19 @@ void NuTo::ElementBase::SetStaticData(int rIp, ConstitutiveStaticDataBase* rStat
 	    return this->mElementData->SetStaticData(rIp,rStaticData);
 	else
 		throw MechanicsException("[NuTo::ElementBase::SetStaticData] Static data is not compatible with the element and or constitutive model");
+}
+
+const Eigen::Vector3d NuTo::ElementBase::GetGlobalIntegrationPointCoordinates(int rIpNum) const
+{
+    Eigen::VectorXd shapeFunctions = mInterpolationType->Get(Node::COORDINATES).GetShapeFunctions(rIpNum);
+    Eigen::MatrixXd nodeCoordinates = ExtractNodeValues(0, Node::COORDINATES);
+    assert(shapeFunctions.rows() == nodeCoordinates.cols());
+
+    Eigen::Vector3d globalIntegrationPointCoordinates = Eigen::Vector3d::Zero();
+    for (int iRow = 0; iRow < nodeCoordinates.rows(); iRow++)
+        globalIntegrationPointCoordinates[iRow] = nodeCoordinates.row(iRow) * shapeFunctions;
+
+    return globalIntegrationPointCoordinates;
 }
 
 //! @brief returns the natural coordinates of an given point
@@ -481,28 +481,25 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
         // no visualisation
         return;
 
+
+
+
     // calculate global point coordinates and store point at the visualize object
     int dimension (VisualizationPointLocalCoordinates.size()/NumVisualizationPoints);
     assert(VisualizationPointLocalCoordinates.size() == NumVisualizationPoints * dimension);
+
+    // TODO: fix that by proper visualization point (natural!) coordinates, local might be misleading here
+    Eigen::MatrixXd visualizationPointNaturalCoordinates = Eigen::MatrixXd::Map(VisualizationPointLocalCoordinates.data(), dimension, NumVisualizationPoints);
+
     std::vector<unsigned int> PointIdVec;
     for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
     {
-        double GlobalPointCoor[3];
-        switch (dimension)
-        {
-        case 1:
-            this->InterpolateCoordinatesFrom1D(VisualizationPointLocalCoordinates[PointCount], GlobalPointCoor);
-            break;
-        case 2:
-            this->InterpolateCoordinatesFrom2D(&VisualizationPointLocalCoordinates[2*PointCount], GlobalPointCoor);
-            break;
-        case 3:
-            this->InterpolateCoordinatesFrom3D(&VisualizationPointLocalCoordinates[3*PointCount], GlobalPointCoor);
-            break;
-        default:
+        if (dimension != 1 and dimension != 2 and dimension != 3)
             throw NuTo::MechanicsException("[NuTo::ElementBase::Visualize] invalid dimension of local coordinates");
-        }
-        unsigned int PointId = rVisualize.AddPoint(GlobalPointCoor);
+
+        const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
+        Eigen::Matrix<double, 3, 1> GlobalPointCoor = this->InterpolateDof3D(coords, Node::eAttributes::COORDINATES);
+        unsigned int PointId = rVisualize.AddPoint(GlobalPointCoor.data());
         PointIdVec.push_back(PointId);
     }
 
@@ -692,67 +689,28 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
         case NuTo::VisualizeBase::DISPLACEMENTS:
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
-                double GlobalDisplacements[3];
-                switch (dimension)
-                {
-                case 1:
-                    this->InterpolateDisplacementsFrom1D(0,VisualizationPointLocalCoordinates[PointCount], GlobalDisplacements);
-                    break;
-                case 2:
-                    this->InterpolateDisplacementsFrom2D(0,&VisualizationPointLocalCoordinates[2*PointCount], GlobalDisplacements);
-                    break;
-                case 3:
-                    this->InterpolateDisplacementsFrom3D(0,&VisualizationPointLocalCoordinates[3*PointCount], GlobalDisplacements);
-                    break;
-                default:
-                    throw NuTo::MechanicsException("[NuTo::ElemenBase::Visualize] invalid dimension of local coordinates");
-                }
+                const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
+                Eigen::Vector3d GlobalDisplacements = this->InterpolateDof3D(coords, Node::eAttributes::DISPLACEMENTS);
                 unsigned int PointId = PointIdVec[PointCount];
-                rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), GlobalDisplacements);
+                rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), GlobalDisplacements.data());
             }
             break;
         case NuTo::VisualizeBase::VELOCITY:
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
-                double GlobalVelocity[3];
-                switch (dimension)
-                {
-                case 1:
-                    this->InterpolateDisplacementsFrom1D(1,VisualizationPointLocalCoordinates[PointCount], GlobalVelocity);
-                    break;
-                case 2:
-                    this->InterpolateDisplacementsFrom2D(1,&VisualizationPointLocalCoordinates[2*PointCount], GlobalVelocity);
-                    break;
-                case 3:
-                    this->InterpolateDisplacementsFrom3D(1,&VisualizationPointLocalCoordinates[3*PointCount], GlobalVelocity);
-                    break;
-                default:
-                    throw NuTo::MechanicsException("[NuTo::ElemenBase::Visualize] invalid dimension of local coordinates");
-                }
+                const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
+                Eigen::Vector3d GlobalVelocity = this->InterpolateDof3D(1,coords, Node::eAttributes::DISPLACEMENTS);
                 unsigned int PointId = PointIdVec[PointCount];
-                rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), GlobalVelocity);
+                rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), GlobalVelocity.data());
             }
             break;
         case NuTo::VisualizeBase::ACCELERATION:
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
-                double GlobalAcceleration[3];
-                switch (dimension)
-                {
-                case 1:
-                    this->InterpolateDisplacementsFrom1D(2,VisualizationPointLocalCoordinates[PointCount], GlobalAcceleration);
-                    break;
-                case 2:
-                    this->InterpolateDisplacementsFrom2D(2,&VisualizationPointLocalCoordinates[2*PointCount], GlobalAcceleration);
-                    break;
-                case 3:
-                    this->InterpolateDisplacementsFrom3D(2,&VisualizationPointLocalCoordinates[3*PointCount], GlobalAcceleration);
-                    break;
-                default:
-                    throw NuTo::MechanicsException("[NuTo::ElemenBase::Visualize] invalid dimension of local coordinates");
-                }
+                const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
+                Eigen::Vector3d GlobalAcceleration = this->InterpolateDof3D(2,coords, Node::eAttributes::DISPLACEMENTS);
                 unsigned int PointId = PointIdVec[PointCount];
-                rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), GlobalAcceleration);
+                rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), GlobalAcceleration.data());
             }
             break;
         case NuTo::VisualizeBase::ENGINEERING_STRAIN:
@@ -912,27 +870,16 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
         case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
-                double nonlocalEqStrain = 0;
-                if (GetSection()->GetIsNonlocalEqStrainDof())
+                Eigen::Matrix<double, Eigen::Dynamic, 1> nonlocalEqStrain(1);
+                if (mInterpolationType->IsDof(Node::NONLOCALEQSTRAIN))
                 {
                     // calculate only if element has nonlocal eq strain dofs
-                    switch (dimension)
-                    {
-                    case 1:
-                        this->InterpolateNonlocalEqStrainFrom1D(VisualizationPointLocalCoordinates[PointCount], nonlocalEqStrain);
-                        break;
-                    case 2:
-                        this->InterpolateNonlocalEqStrainFrom2D(&VisualizationPointLocalCoordinates[2*PointCount], nonlocalEqStrain);
-                        break;
-                    case 3:
-                        this->InterpolateNonlocalEqStrainFrom3D(&VisualizationPointLocalCoordinates[3*PointCount], nonlocalEqStrain);
-                        break;
-                    default:
-                        throw NuTo::MechanicsException("[NuTo::ElemenBase::Visualize] invalid dimension of local coordinates");
-                    }
+                    const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
+                    nonlocalEqStrain =  InterpolateDof(coords, Node::eAttributes::NONLOCALEQSTRAIN);
+                    assert(nonlocalEqStrain.rows() == 1);
                 }
                 unsigned int PointId = PointIdVec[PointCount];
-                rVisualize.SetPointDataScalar(PointId, WhatIter->GetComponentName(), nonlocalEqStrain);
+                rVisualize.SetPointDataScalar(PointId, WhatIter->GetComponentName(), nonlocalEqStrain.at(0,0));
             }
             break;
         case NuTo::VisualizeBase::CONSTITUTIVE:
@@ -1003,65 +950,39 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
         case NuTo::VisualizeBase::TEMPERATURE:
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
-                double temperature;
-                switch (dimension)
-                {
-                case 1:
-                    this->InterpolateTemperatureFrom1D(VisualizationPointLocalCoordinates[PointCount], temperature);
-                    break;
-                case 2:
-                    this->InterpolateTemperatureFrom2D(&VisualizationPointLocalCoordinates[2*PointCount], temperature);
-                    break;
-                case 3:
-                    this->InterpolateTemperatureFrom3D(&VisualizationPointLocalCoordinates[3*PointCount], temperature);
-                    break;
-                default:
-                    throw NuTo::MechanicsException("[NuTo::ElemenBase::Visualize] invalid dimension of local coordinates");
-                }
-
+                const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
+                Eigen::VectorXd temperature = InterpolateDof(coords, Node::eAttributes::TEMPERATURES);
                 unsigned int PointId = PointIdVec[PointCount];
-                rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), &temperature);
+                rVisualize.SetPointDataScalar(PointId, WhatIter->GetComponentName(), temperature.at(0,0));
             }
             break;
 
         case NuTo::VisualizeBase::RELATIVE_HUMIDITY:
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
-                double relativeHumidity = 0;
-                if (GetSection()->GetIsRelativeHumidityDof())
+                Eigen::Matrix<double, Eigen::Dynamic, 1> relativeHumidity;
+                if (mInterpolationType->IsDof(Node::RELATIVEHUMIDITY))
                 {
-                    // calculate only if element has relative humidity dofs
-                    switch (dimension)
-                    {
-                    case 1:
-                        this->InterpolateRelativeHumidityFrom1D(VisualizationPointLocalCoordinates[PointCount], relativeHumidity);
-                        break;
-                    default:
-                        throw NuTo::MechanicsException("[NuTo::ElemenBase::Visualize] invalid dimension of local coordinates");
-                    }
+                    // calculate only if element has nonlocal eq strain dofs
+                    const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
+                    relativeHumidity =  InterpolateDof(coords, Node::eAttributes::RELATIVEHUMIDITY);
+                    assert(relativeHumidity.rows() == 1);
                 }
                 unsigned int PointId = PointIdVec[PointCount];
-                rVisualize.SetPointDataScalar(PointId, WhatIter->GetComponentName(), relativeHumidity);
+                rVisualize.SetPointDataScalar(PointId, WhatIter->GetComponentName(), relativeHumidity.at(0,0));
             }
             break;
         case NuTo::VisualizeBase::WATER_VOLUME_FRACTION:
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
-                double waterVolumeFraction = 0;
-                if (GetSection()->GetIsWaterPhaseFractionDof())
+                Eigen::Matrix<double, Eigen::Dynamic, 1> waterVolumeFraction;
+                if (mInterpolationType->IsDof(Node::WATERVOLUMEFRACTION))
                 {
-                    // calculate only if element has water volume fraction dofs
-                    switch (dimension)
-                    {
-                    case 1:
-                        this->InterpolateWaterVolumeFractionFrom1D(VisualizationPointLocalCoordinates[PointCount], waterVolumeFraction);
-                        break;
-                    default:
-                        throw NuTo::MechanicsException("[NuTo::ElemenBase::Visualize] invalid dimension of local coordinates");
-                    }
+                    // calculate only if element has nonlocal eq strain dofs
+                    const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
+                    waterVolumeFraction =  InterpolateDof(coords, Node::eAttributes::WATERVOLUMEFRACTION);
+                    assert(waterVolumeFraction.rows() == 1);
                 }
-                unsigned int PointId = PointIdVec[PointCount];
-                rVisualize.SetPointDataScalar(PointId, WhatIter->GetComponentName(), waterVolumeFraction);
             }
             break;
 		default:
@@ -1128,8 +1049,7 @@ void NuTo::ElementBase::GetIntegratedStress(FullMatrix<double,Eigen::Dynamic,Eig
 	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  rIpStress(elementOutputIpData.GetFullMatrixDouble());
 
     //this is certainly not the fastest approach, since the jacobian/derivates etc. is calculated twice, but it's not a critical routine
-    std::vector<double> ipVolume;
-    this->GetIntegrationPointVolume(ipVolume);
+    Eigen::VectorXd ipVolume = this->GetIntegrationPointVolume();
 
     rStress.Resize(rIpStress.GetNumRows(),1);
     for (int countIP=0; countIP<rIpStress.GetNumColumns(); countIP++)
@@ -1153,8 +1073,7 @@ void NuTo::ElementBase::GetIntegratedStrain(FullMatrix<double,Eigen::Dynamic,Eig
 	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  rIpStrain(elementOutputIpData.GetFullMatrixDouble());
 
     //this is certainly not the fastest approach, since the jacobian/derivates etc. is calculated twice, but it's not a critical routine
-    std::vector<double> ipVolume;
-    this->GetIntegrationPointVolume(ipVolume);
+	Eigen::VectorXd ipVolume = this->GetIntegrationPointVolume();
 
     rStrain.Resize(rIpStrain.GetNumRows(),1);
     for (int countIP=0; countIP<rIpStrain.GetNumColumns(); countIP++)
@@ -1183,6 +1102,80 @@ const bool NuTo::ElementBase::IsCracked() const
 {
 	return this->mElementData->IsCracked();
 }
+
+//! @brief cast the base pointer to an Element1D, otherwise throws an exception
+const NuTo::Element1D* NuTo::ElementBase::AsElement1D()const
+{
+    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElement1D] Element is not of type Element1D.");
+}
+
+//! @brief cast the base pointer to an Element1D, otherwise throws an exception
+NuTo::Element1D* NuTo::ElementBase::AsElement1D()
+{
+    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElement1D] Element is not of type Element1D.");
+}
+
+//! @brief cast the base pointer to an Element2D, otherwise throws an exception
+const NuTo::Element2D* NuTo::ElementBase::AsElement2D()const
+{
+    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElement2D] Element is not of type Element2D.");
+}
+
+//! @brief cast the base pointer to an Element2D, otherwise throws an exception
+NuTo::Element2D* NuTo::ElementBase::AsElement2D()
+{
+    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElement2D] Element is not of type Element2D.");
+}
+
+//! @brief cast the base pointer to an Element3D, otherwise throws an exception
+const NuTo::Element3D* NuTo::ElementBase::AsElement3D()const
+{
+    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElement3D] Element is not of type Element3D.");
+}
+
+//! @brief cast the base pointer to an Element3D, otherwise throws an exception
+NuTo::Element3D* NuTo::ElementBase::AsElement3D()
+{
+    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElement3D] Element is not of type Element3D.");
+}
+
+
+//! @brief cast the base pointer to an BoundaryElement1D, otherwise throws an exception
+const NuTo::BoundaryElement1D* NuTo::ElementBase::AsBoundaryElement1D()const
+{
+    throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryElement1D] BoundaryElement is not of type BoundaryElement1D.");
+}
+
+//! @brief cast the base pointer to an BoundaryElement1D, otherwise throws an exception
+NuTo::BoundaryElement1D* NuTo::ElementBase::AsBoundaryElement1D()
+{
+    throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryElement1D] BoundaryElement is not of type BoundaryElement1D.");
+}
+
+//! @brief cast the base pointer to an BoundaryElement2D, otherwise throws an exception
+const NuTo::BoundaryElement2D* NuTo::ElementBase::AsBoundaryElement2D()const
+{
+    throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryElement2D] BoundaryElement is not of type BoundaryElement2D.");
+}
+
+//! @brief cast the base pointer to an BoundaryElement2D, otherwise throws an exception
+NuTo::BoundaryElement2D* NuTo::ElementBase::AsBoundaryElement2D()
+{
+    throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryElement2D] BoundaryElement is not of type BoundaryElement2D.");
+}
+//
+////! @brief cast the base pointer to an BoundaryElement3D, otherwise throws an exception
+//const NuTo::BoundaryElement3D* NuTo::ElementBase::AsBoundaryElement3D()const
+//{
+//    throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryElement3D] BoundaryElement is not of type BoundaryElement3D.");
+//}
+//
+////! @brief cast the base pointer to an BoundaryElement3D, otherwise throws an exception
+//NuTo::BoundaryElement3D* NuTo::ElementBase::AsBoundaryElement3D()
+//{
+//    throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryElement3D] BoundaryElement is not of type BoundaryElement3D.");
+//}
+
 
 //! @brief cast the base pointer to a Plane, otherwise throws an exception
 const NuTo::Plane* NuTo::ElementBase::AsPlane()const
@@ -1232,18 +1225,6 @@ NuTo::Truss* NuTo::ElementBase::AsTruss()
 	throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementTruss] Element is not of type ElementTruss.");
 }
 
-//! @brief cast the base pointer to a BoundaryGradientDamage1D, otherwise throws an exception
-const NuTo::BoundaryGradientDamage1D* NuTo::ElementBase::AsBoundaryGradientDamage1D()const
-{
-	throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryGradientDamage1D] Element is not of type BoundaryGradientDamage1D.");
-}
-
-//! @brief cast the base pointer to a BoundaryGradientDamage1D, otherwise throws an exception
-NuTo::BoundaryGradientDamage1D* NuTo::ElementBase::AsBoundaryGradientDamage1D()
-{
-	throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryGradientDamage1D] Element is not of type BoundaryGradientDamage1D.");
-}
-
 //! @brief returns the Element Data Vector
 //! this was necessary due to recursive problems for serialization (nonlocal data)
 //! this method should only be called from the serialization routine of the structure
@@ -1261,4 +1242,5 @@ void NuTo::ElementBase::SetDataPtr(NuTo::ElementDataBase* rElementData)
         delete mElementData;
     mElementData = rElementData;
 }
+
 

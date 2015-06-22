@@ -90,6 +90,5 @@ void NuTo::IntegrationType1D2NLobatto5Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(2);
     VisualizationCellsIP.push_back(3);
     VisualizationCellsIP.push_back(4);
-    VisualizationCellsIP.push_back(5);
 }
 #endif // ENABLE_VISUALIZE

@@ -16,9 +16,9 @@
 
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/groups/Group.h"
-#include "nuto/mechanics/elements/Truss1D2N.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/math/SparseMatrixCSRVector2General.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementOutputFullMatrixDouble.h"
 #include "nuto/mechanics/elements/ElementOutputFullVectorDouble.h"
 #include "nuto/mechanics/elements/ElementOutputVectorInt.h"
@@ -39,7 +39,7 @@ void NuTo::StructureBase::ElementStiffness(int rElementId, NuTo::FullMatrix<doub
 	{
 		ElementCoefficientMatrix(rElementId, 0, rResult, rGlobalDofsRow, rGlobalDofsColumn);
 	}
-	catch(NuTo::MechanicsException e)
+	catch(NuTo::MechanicsException& e)
 	{
 		std::stringstream ss;
 		ss << rElementId;
@@ -271,41 +271,18 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 		for (int countNode=0; countNode<nonlocalElements[countElement]->GetNumNodes(); countNode++)
 		{
 			NodeBase *theNode=const_cast<NuTo::ElementBase*>(nonlocalElements[countElement])->GetNode(countNode);
-			double disp[3];
+			Eigen::Matrix<double, Eigen::Dynamic, 1> disp;
 			int numDisp = theNode->GetNumDisplacements();
 			assert(numDisp<=3);
 
 			for (int countDisp=0; countDisp<numDisp; countDisp++)
 			{
-				switch (theNode->GetNumDisplacements())
-				{
-				case 1:
-					theNode->GetDisplacements1D(disp);
-					break;
-				case 2:
-					theNode->GetDisplacements2D(disp);
-					break;
-				case 3:
-					theNode->GetDisplacements3D(disp);
-					break;
-				default:
-					throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce] Only nodes with 1,2 or 3 displacement components considered.");
-				}
-				disp[countDisp]+=rDelta;
-				switch (theNode->GetNumDisplacements())
-				{
-				case 1:
-					theNode->SetDisplacements1D(disp);
-					break;
-				case 2:
-					theNode->SetDisplacements2D(disp);
-					break;
-				case 3:
-					theNode->SetDisplacements3D(disp);
-					break;
-				default:
-					throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce] Only nodes with 1,2 or 3 displacement components considered.");
-				}
+			    if (theNode->GetNumDisplacements() != 1 and theNode->GetNumDisplacements() != 2 and theNode->GetNumDisplacements() != 3)
+                    throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce] Only nodes with 1,2 or 3 displacement components considered.");
+
+			    disp = theNode->GetDisplacements();
+			    disp[countDisp]+=rDelta;
+				theNode->SetDisplacements(disp);
 
 				//update tmpstatic data of nonlocal elements
 				if (mHaveTmpStaticData)
@@ -319,20 +296,8 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 //					rElementPtr->CalculateGradientInternalPotential(resforce2, globalDofsRow);
 
 					disp[countDisp]-=rDelta;
-					switch (theNode->GetNumDisplacements())
-					{
-					case 1:
-						theNode->SetDisplacements1D(disp);
-						break;
-					case 2:
-						theNode->SetDisplacements2D(disp);
-						break;
-					case 3:
-						theNode->SetDisplacements3D(disp);
-						break;
-					default:
-						throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce] Only nodes with 1,2 or 3 displacement components considered.");
-					}
+					theNode->SetDisplacements(disp);
+
 					//update tmpstatic data of nonlocal elements
 					if (mHaveTmpStaticData)
 					{
@@ -343,20 +308,7 @@ void NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce(ElementBase* rElem
 				{
 					//reset the displacements and then calculate the resforce and the reset the tmp static data
 					disp[countDisp]-=rDelta;
-					switch (theNode->GetNumDisplacements())
-					{
-					case 1:
-						theNode->SetDisplacements1D(disp);
-						break;
-					case 2:
-						theNode->SetDisplacements2D(disp);
-						break;
-					case 3:
-						theNode->SetDisplacements3D(disp);
-						break;
-					default:
-						throw MechanicsException("[NuTo::StructureBase::ElementCoefficientMatrix_0_Resforce] Only nodes with 1,2 or 3 displacement components considered.");
-					}
+                    theNode->SetDisplacements(disp);
 
 //					rElementPtr->CalculateGradientInternalPotential(resforce2, globalDofsRow);
 
@@ -1096,7 +1048,6 @@ void NuTo::StructureBase::ElementTotalSetConstitutiveLaw(int rConstitutiveLawIde
 //! @param rConstitutive material pointer
 void NuTo::StructureBase::ElementSetConstitutiveLaw(ElementBase* rElement, ConstitutiveBase* rConstitutive)
 {
-    //std::cout<< "[NuTo::StructureBase::ElementSetConstitutiveLaw]" << "\n";
 	rElement->SetConstitutiveLaw(rConstitutive);
 }
 
@@ -1256,6 +1207,110 @@ void NuTo::StructureBase::ElementSetSection(ElementBase* rElement, SectionBase* 
     rElement->SetSection(rSection);
 }
 
+//! @brief modifies the interpolation type of a single element
+//! @param rElementId ... element number
+//! @param rInterpolationTypeId ... interpolation type id
+void NuTo::StructureBase::ElementSetInterpolationType(int rElementId, int rInterpolationTypeId)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
+
+    boost::ptr_map<int,InterpolationType>::iterator itInterpolationType = mInterpolationTypeMap.find(rInterpolationTypeId);
+    if (itInterpolationType==mInterpolationTypeMap.end())
+        throw MechanicsException("[NuTo::StructureBase::ElementSetInterpolationType] Interpolation type with the given identifier does not exist.");
+
+    try
+    {
+        ElementSetInterpolationType(elementPtr, itInterpolationType->second);
+    }
+    catch(NuTo::MechanicsException &e)
+    {
+        std::stringstream ss;
+        ss << rElementId;
+        e.AddMessage("[NuTo::StructureBase::ElementSetInterpolationType] Error setting interpolation type for element "
+            + ss.str() + ".");
+        throw e;
+    }
+    catch(...)
+    {
+        std::stringstream ss;
+        ss << rElementId;
+        throw NuTo::MechanicsException
+           ("[NuTo::StructureBase::ElementSetInterpolationType] Error setting interpolation type for element " + ss.str() + ".");
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementSetInterpolationType] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+
+}
+
+//! @brief modifies the interpolation type of a group of elements
+//! @param rGroupId ... identifier for the group of elements
+//! @param rInterpolationTypeId ... interpolation type id
+void NuTo::StructureBase::ElementGroupSetInterpolationType(int rGroupId, int rInterpolationTypeId)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::ElementGroupSetInterpolationType] Group with the given identifier does not exist.");
+    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+        throw MechanicsException("[NuTo::StructureBase::ElementGroupSetInterpolationType] Group is not an element group.");
+    Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
+    assert(elementGroup!=0);
+
+    boost::ptr_map<int,InterpolationType>::iterator itInterpolationType = mInterpolationTypeMap.find(rInterpolationTypeId);
+    if (itInterpolationType==mInterpolationTypeMap.end())
+        throw MechanicsException("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Interpolation type with the given identifier does not exist.");
+
+    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+    {
+        try
+        {
+            ElementSetInterpolationType(itElement->second, itInterpolationType->second);
+        }
+        catch(NuTo::MechanicsException &e)
+        {
+            std::stringstream ss;
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
+            e.AddMessage("[NuTo::StructureBase::ElementGroupSetInterpolationType] Error setting interpolation type for element "
+                + ss.str() + ".");
+            throw e;
+        }
+        catch(...)
+        {
+            std::stringstream ss;
+            assert(ElementGetId(itElement->second)==itElement->first);
+            ss << itElement->first;
+            throw NuTo::MechanicsException
+               ("[NuTo::StructureBase::ElementGroupSetInterpolationType] Error setting interpolation type for element " + ss.str() + ".");
+        }
+    }
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+
+}
+
+//! @brief modifies the interpolation type of a single element
+//! @param rElement element pointer
+//! @param rInterpolationType interpolation type
+void NuTo::StructureBase::ElementSetInterpolationType(ElementBase* rElement, InterpolationType* rInterpolationType)
+{
+    rElement->SetInterpolationType(rInterpolationType);
+}
+
+
 //! @brief returns the enum of string identifier for an integration type
 //! @param rIpDataTypeStr string
 //! @return enum
@@ -1285,146 +1340,6 @@ NuTo::IpData::eIpDataType NuTo::StructureBase::ElementGetEnumIntegrationType(con
     return ipDataType;
 }
 
-
-//! @brief modifies the integration type of a single element
-//! @param rElementIdent identifier for the element
-//! @param rIntegrationTypeIdent id for the integration type
-//! @param rIpDataTypeStr integration point data
-void NuTo::StructureBase::ElementSetIntegrationType(int rElementId,
-		const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    ElementBase* elementPtr = ElementGetElementPtr(rElementId);
-
-    try
-    {
-    	ElementSetIntegrationType(elementPtr,GetPtrIntegrationType(rIntegrationTypeIdent), ElementGetEnumIntegrationType(rIpDataTypeStr));
-    }
-    catch(NuTo::MechanicsException &e)
-    {
-        std::stringstream ss;
-        ss << rElementId;
-        e.AddMessage("[NuTo::StructureBase::ElementSetIntegrationType] Error setting integration type for element "
-        	+ ss.str() + ".");
-        throw e;
-    }
-    catch(...)
-    {
-        std::stringstream ss;
-        ss << rElementId;
-    	throw NuTo::MechanicsException
-    	   ("[NuTo::StructureBase::ElementSetIntegrationType] Error setting integration type for element " + ss.str() + ".");
-    }
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementSetIntegrationType] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-
-}
-
-//! @brief modifies the integration type of a group of elements
-//! @param rGroupIdent identifier for the group of elements
-//! @param rIntegrationTypeIdent identifier for the integration type
-void NuTo::StructureBase::ElementGroupSetIntegrationType(int rGroupIdent,
-		const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-	boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
-    if (itGroup==mGroupMap.end())
-        throw MechanicsException("[NuTo::StructureBase::ElementGroupSetIntegrationType] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
-    	throw MechanicsException("[NuTo::StructureBase::ElementGroupSetIntegrationType] Group is not an element group.");
-    Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
-    assert(elementGroup!=0);
-    NuTo::IpData::eIpDataType ipDataType = ElementGetEnumIntegrationType(rIpDataTypeStr);
-    for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
-    {
-        try
-        {
-        	ElementSetIntegrationType(itElement->second,GetPtrIntegrationType(rIntegrationTypeIdent),ipDataType);
-        }
-        catch(NuTo::MechanicsException &e)
-        {
-            std::stringstream ss;
-            assert(ElementGetId(itElement->second)==itElement->first);
-            ss << itElement->first;
-            e.AddMessage("[NuTo::StructureBase::ElementGroupSetIntegrationType] Error setting integration type for element "
-            	+ ss.str() + ".");
-            throw e;
-        }
-        catch(...)
-        {
-            std::stringstream ss;
-            assert(ElementGetId(itElement->second)==itElement->first);
-            ss << itElement->first;
-       	    throw NuTo::MechanicsException
-        	   ("[NuTo::StructureBase::ElementGroupSetIntegrationType] Error setting integration type for element " + ss.str() + ".");
-        }
-    }
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementGroupSetIntegrationType] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-
-}
-
-//! @brief modifies the section of a all elements
-//! @param rSectionIdent identifier for the section
-void NuTo::StructureBase::ElementTotalSetIntegrationType(const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    NuTo::IpData::eIpDataType ipDataType = ElementGetEnumIntegrationType(rIpDataTypeStr);
-    std::vector<ElementBase*> elementVector;
-    GetElementsTotal(elementVector);
-    for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
-    {
-        try
-        {
-        	ElementSetIntegrationType(elementVector[countElement],GetPtrIntegrationType(rIntegrationTypeIdent),ipDataType);
-        }
-        catch(NuTo::MechanicsException &e)
-        {
-            std::stringstream ss;
-            ss << ElementGetId(elementVector[countElement]);
-            e.AddMessage("[NuTo::StructureBase::ElementTotalSetIntegrationType] Error setting integration type for element "
-            		+ ss.str() + ".");
-            throw e;
-        }
-        catch(...)
-        {
-            std::stringstream ss;
-            ss << ElementGetId(elementVector[countElement]);
-        	throw NuTo::MechanicsException
-        	   ("[NuTo::StructureBase::ElementTotalSetIntegrationType] Error setting integration type for element "
-        			   + ss.str() + ".");
-        }
-    }
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ElementTotalSetIntegrationType] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-}
-
-//! @brief modifies the integration type of a single element
-//! @param rElement element pointer
-//! @param rIntegrationType integration type
-//! @param rIpDataType type of data stored at ip
-void NuTo::StructureBase::ElementSetIntegrationType(ElementBase* rElement, const IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType)
-{
-	rElement->SetIntegrationType(rIntegrationType, rIpDataType);
-}
 
 //! @brief calculates the engineering strain
 //! @param rElemIdent  identifier for the element
@@ -1644,7 +1559,10 @@ void NuTo::StructureBase::ElementGetIntegrationPointCoordinates(int rElementId, 
 		//evaluate the coordinates
     	rCoordinates.Resize(3,elementPtr->GetNumIntegrationPoints());
     	for (int count=0; count<elementPtr->GetNumIntegrationPoints(); count++)
-    	    elementPtr->GetGlobalIntegrationPointCoordinates(count,&(rCoordinates.data()[3*count]));
+    	{
+    	    Eigen::Vector3d coords = elementPtr->GetGlobalIntegrationPointCoordinates(count);
+    	    rCoordinates.SetBlock(count, 0, coords);
+    	}
     }
     catch(NuTo::MechanicsException &e)
     {
@@ -2675,17 +2593,12 @@ double NuTo::StructureBase::ElementGroupGetVolume(int rGroupId)
     assert(elementGroup!=0);
 
     double totalVolume(0);
-    std::vector<double> elementVolume;
 
     for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
     {
         try
         {
-        	itElement->second->GetIntegrationPointVolume(elementVolume);
-        	for (unsigned int count=0; count<elementVolume.size(); count++)
-        	{
-        		totalVolume+=elementVolume[count];
-        	}
+        	totalVolume += itElement->second->GetIntegrationPointVolume().sum();
         }
         catch(NuTo::MechanicsException &e)
         {

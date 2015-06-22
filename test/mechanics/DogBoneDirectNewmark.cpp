@@ -124,7 +124,7 @@ try
     std::cout<< "in the test file, the gmsh command is not executed. If you want to use it, uncomment the next line and make sure, ./gmsh is added to the path." << "\n";
     boost::filesystem::path mshFile(resultDir);
     mshFile /= std::string("DogBoneDirectNewmarkGeometry.msh");
-    //if (system(gmshCommand.c_str())!=0)
+//    if (system(gmshCommand.c_str())!=0)
     {
         boost::filesystem::path srcFileMsh(resultFile.parent_path().parent_path());
         srcFileMsh/= std::string("DogBoneDirectNewmarkGeometry.msh");
@@ -132,8 +132,17 @@ try
     }
 
     //import mesh
-    NuTo::FullVector<int,Eigen::Dynamic> createdGroupIds;
-    myStructure.ImportFromGmsh(mshFile.string(),"displacements", "CONSTITUTIVELAWIPNONLOCAL", "STATICDATANONLOCAL", createdGroupIds);
+    NuTo::FullMatrix<int,Eigen::Dynamic, Eigen::Dynamic> createdGroupIds = myStructure.ImportFromGmsh(mshFile.string(), "CONSTITUTIVELAWIPNONLOCAL", "STATICDATANONLOCAL");
+
+    assert(createdGroupIds.GetNumRows() == 1);
+    int groupId = createdGroupIds.GetValue(0,0);
+    int myInterpolationType = createdGroupIds.GetValue(0,1);
+
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT1);
+
+
+    myStructure.ElementGroupSetInterpolationType(groupId, myInterpolationType);
+    myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
 
 	//section
 	double thickness(1);

@@ -18,7 +18,7 @@
 namespace NuTo
 {
 class NodeBase;
-class Solid;
+class Element3D;
 class StructureBase;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -62,7 +62,7 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
-    std::vector<std::pair<const Solid*, int> > mVolumeElements;
+    std::vector<std::pair<const Element3D*, int> > mVolumeElements;
     IntegrationTypeBase* mIntegrationType3NPtr;
     IntegrationTypeBase* mIntegrationType4NPtr;
     IntegrationTypeBase* mIntegrationType6NPtr;

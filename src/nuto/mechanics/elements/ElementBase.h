@@ -21,7 +21,7 @@
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/ElementShapeFunctions.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeBase.h"
@@ -37,6 +37,7 @@ class ConstitutiveBase;
 class ConstitutiveStaticDataBase;
 class ElementDataBase;
 class IntegrationTypeBase;
+class InterpolationType;
 class NodeBase;
 class Plane;
 class Plane2D;
@@ -51,6 +52,11 @@ class Truss;
 class VisualizeComponentBase;
 class IpDataBase;
 class ElementOutputBase;
+class Element1D;
+class Element2D;
+class Element3D;
+class BoundaryElement1D;
+class BoundaryElement2D;
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -68,20 +74,23 @@ public:
     //! @param rElementDataType ... element data type
     //! @param rIntegrationType ... integration type (local coordinates are stored as a type, e.g. Gauss 2x2
     //! @param rIpDataType ... data type to decide what is stored at the integration point level
+    //! @param rInterpolationType ... interpolation type
     ElementBase(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
-    		IntegrationType::eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType);
+    		IpData::eIpDataType rIpDataType, const InterpolationType* rInterpolationType);
 
     //! @brief constructor
     //! @param rStructure ... structure to which the element belongs
     //! @param rElementDataType ... element data type
     //! @param rNumIp ... number of integration points (here local coordinates should be stored at the ip (e.g. XFEM)
     //! @param rIpDataType ... data type to decide what is stored at the integration point level
+    //! @param rInterpolationType ... interpolation type
     ElementBase(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
-    		int rNumIp, IpData::eIpDataType rIpDataType);
+    		int rNumIp, IpData::eIpDataType rIpDataType, const InterpolationType* rInterpolationType);
+
+    ElementBase(const ElementBase& ) = default;
 
     virtual ~ElementBase();
 
-    //! @todo copy-constructor
 
     //! @brief returns the enum (type of the element)
     //! @return enum
@@ -103,7 +112,7 @@ public:
 
     //! @brief returns the number of nodes in this element
     //! @return number of nodes
-    virtual int GetNumNodes()const=0;
+    virtual int GetNumNodes()const;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
@@ -115,38 +124,31 @@ public:
     //! @return pointer to the node
     virtual const NodeBase* GetNode(int rLocalNodeNumber)const=0;
 
+    //! @brief returns the number of nodes in this element of a specific dof
+    //! @brief rDofType dof type
+    //! @return number of nodes
+    virtual int GetNumNodes(Node::eAttributes rDofType)const;
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @brief rDofType dof type
+    //! @return pointer to the node
+    virtual NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType)=0;
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @param local node number
+    //! @brief rDofType dof type
+    //! @return pointer to the node
+    virtual const NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType)const=0;
+
     //! @brief sets the rLocalNodeNumber-th node of the element
     //! @param local node number
     //! @param pointer to the node
     virtual void SetNode(int rLocalNodeNumber, NodeBase* rNode)=0;
 
-    //! @brief returns the number of nodes in this element(geometry interpolation)
-    //! @return number of nodes
-    virtual int GetNumNodesGeometry()const=0;
-
-    //! @brief returns a pointer to the i-th node of the element
-    //! @param local node number
-    //! @return pointer to the node
-    virtual const NodeBase* GetNodeGeometry(int rLocalNodeNumber)const=0;
-
-    //! @brief returns a pointer to the i-th node of the element (geometry interpolation)
-    //! @param local node number
-    //! @return pointer to the node
-    virtual NodeBase* GetNodeGeometry(int rLocalNodeNumber)=0;
-
-    //! @brief returns the number of nodes in this element(geometry interpolation)
-    //! @return number of nodes
-    virtual int GetNumNodesField()const=0;
-
-    //! @brief returns a pointer to the i-th node of the element (field interpolation)
-    //! @param local node number
-    //! @return pointer to the node
-    virtual NodeBase* GetNodeField(int rLocalNodeNumber)=0;
-
-    //! @brief returns a pointer to the i-th node of the element (field interpolation)
-    //! @param local node number
-    //! @return pointer to the node
-    virtual const NodeBase* GetNodeField(int rLocalNodeNumber)const=0;
+    //! @brief resizes the node vector
+    //! @param rNewNumNodes new number of nodes
+    virtual void ResizeNodes(int rNewNumNodes) = 0;
 
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
     //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
@@ -199,6 +201,14 @@ public:
     //! @return pointer to integration type
     virtual const IntegrationTypeBase* GetIntegrationType()const;
 
+    //! @brief sets the interpolation type of an element
+    //! @param rInterpolationType interpolation type
+    virtual void SetInterpolationType(const InterpolationType* rInterpolationType);
+
+    //! @brief returns a pointer to the interpolation type of an element
+    //! @return pointer to interpolation type
+    virtual const InterpolationType* GetInterpolationType() const;
+
     //! @brief returns ip data type of the element
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! which actually need an integration type
@@ -219,7 +229,7 @@ public:
     //! @return edge length
     virtual double GetIpEdgeLength(int rIp)const;
 
-    //! @brief calculates output data fo the elmement
+    //! @brief calculates output data for the element
     //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
     //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
     virtual Error::eError Evaluate(boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase>& rConstitutiveOutput)=0;
@@ -254,78 +264,14 @@ public:
     //! @brief Update the static data of an element
     //virtual Error::eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)=0;
 
-    //! @brief ... interpolate three-dimensional global point coordinates from one-dimensional local point coordinates (element coordinates system)
-    //! @param rLocalCoordinates ... one-dimensional local point coordinates
-    //! @param rGlobalCoordinates ... three-dimension global point coordinates
-    virtual void InterpolateCoordinatesFrom1D(double rLocalCoordinates, double rGlobalCoordinates[3]) const;
+    const Eigen::MatrixXd ExtractNodeValues(Node::eAttributes rDofType) const;
+    virtual const Eigen::MatrixXd ExtractNodeValues(int rTimeDerivative, Node::eAttributes rDofType) const;
 
-    //! @brief ... interpolate three-dimensional global point coordinates from two-dimensional local point coordinates (element coordinates system)
-    //! @param rLocalCoordinates ... two-dimensional local point coordinates
-    //! @param rGlobalCoordinates ... three-dimension global point coordinates
-    virtual void InterpolateCoordinatesFrom2D(double rLocalCoordinates[2], double rGlobalCoordinates[3]) const;
+    const Eigen::VectorXd InterpolateDof(const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const;
+    const Eigen::VectorXd InterpolateDof(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const;
 
-    //! @brief ... interpolate three-dimensional global point coordinates from three-dimensional local point coordinates (element coordinates system)
-    //! @param rLocalCoordinates ... three-dimensional local point coordinates
-    //! @param rGlobalCoordinates ... three-dimension global point coordinates
-    virtual void InterpolateCoordinatesFrom3D(double rLocalCoordinates[3], double rGlobalCoordinates[3]) const;
-
-    //! @brief ... interpolate three-dimensional global point displacements from one-dimensional local point coordinates (element coordinates system)
-    //! @param rTimeDerivative ... time derivative (0 disp, 1 velocities, 2 accelerations)
-    //! @param rLocalCoordinates ... one-dimensional local point coordinates
-    //! @param rGlobalDisplacements ... three-dimension global point displacements
-    virtual void InterpolateDisplacementsFrom1D(int rTimeDerivative, double rLocalCoordinates, double rGlobalDisplacements[3]) const;
-
-    //! @brief ... interpolate three-dimensional global point displacements from two-dimensional local point coordinates (element coordinates system)
-    //! @param rTimeDerivative ... time derivative (0 disp, 1 velocities, 2 accelerations)
-    //! @param rLocalCoordinates ... two-dimensional local point coordinates
-    //! @param rGlobalDisplacements ... three-dimension global point displacements
-    virtual void InterpolateDisplacementsFrom2D(int rTimeDerivative, double rLocalCoordinates[2], double rGlobalDisplacements[3]) const;
-
-    //! @brief ... interpolate three-dimensional global point displacements from three-dimensional local point coordinates (element coordinates system)
-    //! @param rTimeDerivative ... time derivative (0 disp, 1 velocities, 2 accelerations)
-    //! @param rLocalCoordinates ... three-dimensional local point coordinates
-    //! @param rGlobalDisplacements ... three-dimension global point displacements
-    virtual void InterpolateDisplacementsFrom3D(int rTimeDerivative, double rLocalCoordinates[3], double rGlobalDisplacements[3]) const;
-
-    //! @brief ... interpolate three-dimensional global temperature from one-dimensional local point coordinates (element coordinates system)
-    //! @param rLocalCoordinates ... one-dimensional local point coordinates
-    //! @param rTemperatures ... interpolated temperature
-    virtual void InterpolateTemperatureFrom1D(double rLocalCoordinates, double& rTemperature) const;
-
-    //! @brief ... interpolate three-dimensional global temperature from two-dimensional local point coordinates (element coordinates system)
-    //! @param rLocalCoordinates ... two-dimensional local point coordinates
-    //! @param rTemperatures ... interpolated temperature
-    virtual void InterpolateTemperatureFrom2D(double rLocalCoordinates[2], double& rTemperature) const;
-
-    //! @brief ... interpolate three-dimensional global temperature from three-dimensional local point coordinates (element coordinates system)
-    //! @param rLocalCoordinates ... three-dimensional local point coordinates
-    //! @param rTemperatures ... interpolated temperature
-    virtual void InterpolateTemperatureFrom3D(double rLocalCoordinates[3], double& rTemperature) const;
-
-    //! @brief ... interpolate three-dimensional global nonlocal eq strain from one-dimensional local point coordinates (element coordinates system)
-    //! @param rLocalCoordinates ... one-dimensional local point coordinates
-    //! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
-    virtual void InterpolateNonlocalEqStrainFrom1D(double rLocalCoordinates, double& rNonlocalEqStrain) const;
-
-    //! @brief ... interpolate three-dimensional global nonlocal eq strain from two-dimensional local point coordinates (element coordinates system)
-    //! @param rLocalCoordinates ... two-dimensional local point coordinates
-    //! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
-    virtual void InterpolateNonlocalEqStrainFrom2D(double rLocalCoordinates[2], double& rNonlocalEqStrain) const;
-
-    //! @brief ... interpolate three-dimensional global nonlocal eq strain from three-dimensional local point coordinates (element coordinates system)
-    //! @param rLocalCoordinates ... three-dimensional local point coordinates
-    //! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
-    virtual void InterpolateNonlocalEqStrainFrom3D(double rLocalCoordinates[3], double& rNonlocalEqStrain) const;
-
-    //! @brief ... interpolate three-dimensional global relative humidity from one-dimensional local point coordinates (element coordinates system)
-    //! @param rLocalCoordinates ... one-dimensional local point coordinates
-    //! @param rRelativeHumidity ... interpolated relative humidity
-    virtual void InterpolateRelativeHumidityFrom1D(double rLocalCoordinates, double& rRelativeHumidity) const;
-
-    //! @brief ... interpolate three-dimensional global water volume fraction from one-dimensional local point coordinates (element coordinates system)
-    //! @param rLocalCoordinates ... one-dimensional local point coordinates
-    //! @param rWaterVolumeFraction ... interpolated water volume fraction
-    virtual void InterpolateWaterVolumeFractionFrom1D(double rLocalCoordinates, double& rWaterVolumeFraction) const;
+    const Eigen::Vector3d InterpolateDof3D(const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const;
+    const Eigen::Vector3d InterpolateDof3D(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const;
 
     //! @brief adds the nonlocal weight to an integration point
     //! @param rLocalIpNumber local Ip
@@ -357,13 +303,13 @@ public:
     virtual double CalculateArea()const;
 
     //! @brief calculates the volume of an integration point (weight * detJac)
-    //! @param rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
-    virtual void GetIntegrationPointVolume(std::vector<double>& rVolume)const=0;
+    //! @return rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
+    virtual const Eigen::VectorXd GetIntegrationPointVolume()const=0;
 
     //! @brief returns the coordinates of an integration point
     //! @param rIpNum integration point
-    //! @param rCoordinates coordinates to be returned
-    virtual void GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const=0;
+    //! @return rCoordinates coordinates to be returned
+    virtual const Eigen::Vector3d GetGlobalIntegrationPointCoordinates(int rIpNum)const;
 
     //! @brief computes the natural coordinates of an given point
     //! implemented with an exception for all elements, reimplementation required for those elements
@@ -406,6 +352,49 @@ public:
     //! @return bool cracked or not
     const bool IsCracked() const;
 
+
+    //! @brief cast the base pointer to an Element1D, otherwise throws an exception
+    virtual const Element1D* AsElement1D()const;
+
+    //! @brief cast the base pointer to an Element1D, otherwise throws an exception
+    virtual Element1D* AsElement1D();
+
+    //! @brief cast the base pointer to an Element2D, otherwise throws an exception
+    virtual const Element2D* AsElement2D()const;
+
+    //! @brief cast the base pointer to an Element2D, otherwise throws an exception
+    virtual Element2D* AsElement2D();
+
+    //! @brief cast the base pointer to an Element3D, otherwise throws an exception
+    virtual const Element3D* AsElement3D()const;
+
+    //! @brief cast the base pointer to an Element3D, otherwise throws an exception
+    virtual Element3D* AsElement3D();
+
+
+
+    //! @brief cast the base pointer to an BoundaryElement1D, otherwise throws an exception
+    virtual const BoundaryElement1D* AsBoundaryElement1D()const;
+
+    //! @brief cast the base pointer to an BoundaryElement1D, otherwise throws an exception
+    virtual BoundaryElement1D* AsBoundaryElement1D();
+
+    //! @brief cast the base pointer to an BoundaryElement2D, otherwise throws an exception
+    virtual const BoundaryElement2D* AsBoundaryElement2D()const;
+
+    //! @brief cast the base pointer to an BoundaryElement2D, otherwise throws an exception
+    virtual BoundaryElement2D* AsBoundaryElement2D();
+//
+//    //! @brief cast the base pointer to an BoundaryElement3D, otherwise throws an exception
+//    virtual const BoundaryElement3D* AsBoundaryElement3D()const;
+//
+//    //! @brief cast the base pointer to an BoundaryElement3D, otherwise throws an exception
+//    virtual BoundaryElement3D* AsBoundaryElement3D();
+
+
+
+
+
     //! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
     virtual const Plane* AsPlane()const;
 
@@ -430,11 +419,6 @@ public:
     //! @brief cast the base pointer to an ElementTruss, otherwise throws an exception
     virtual Truss* AsTruss();
 
-    //! @brief cast the base pointer to an BoundaryGradientDamage1D, otherwise throws an exception
-    virtual const BoundaryGradientDamage1D* AsBoundaryGradientDamage1D()const;
-
-    //! @brief cast the base pointer to an BoundaryGradientDamage1D, otherwise throws an exception
-    virtual BoundaryGradientDamage1D* AsBoundaryGradientDamage1D();
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -500,6 +484,8 @@ protected:
 
     //the base class of the elements data
     ElementDataBase *mElementData;
+
+    const InterpolationType* mInterpolationType;
 };
 }//namespace NuTo
 #endif //ELEMENT_BASE_H

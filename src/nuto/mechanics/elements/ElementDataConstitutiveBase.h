@@ -29,7 +29,7 @@ public:
     //! @param rIp integration point
     virtual void SetConstitutiveLaw(const ElementBase* rElement, int rIp, NuTo::ConstitutiveBase* rConstitutiveLaw);
 
-    bool HasConstitutiveLawAssigned(int rIp);
+    bool HasConstitutiveLawAssigned(int rIp) const override;
 
     //! @brief returns the constitutive law of an integration point
     //! @param rIp integration point

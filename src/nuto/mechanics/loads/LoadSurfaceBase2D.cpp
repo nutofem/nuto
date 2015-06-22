@@ -6,76 +6,82 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/loads/LoadSurfaceBase2D.h"
-#include "nuto/mechanics/elements/Plane2D.h"
-
+#include "nuto/mechanics/elements/Element2D.h"
 
 //! @brief constructor
-NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStructure, int rElementGroupId, int rNodeGroupId) : LoadBase(rLoadCase)
+NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStructure, int rElementGroupId, int rNodeGroupId) :
+        LoadBase(rLoadCase)
 {
     //get element group
-	const Group<ElementBase> *elementGroup = rStructure->GroupGetGroupPtr(rElementGroupId)->AsGroupElement();
+    const Group<ElementBase> *elementGroup = rStructure->GroupGetGroupPtr(rElementGroupId)->AsGroupElement();
 
     //get node group
-	const Group<NodeBase> *nodeGroup = rStructure->GroupGetGroupPtr(rNodeGroupId)->AsGroupNode();
+    const Group<NodeBase> *nodeGroup = rStructure->GroupGetGroupPtr(rNodeGroupId)->AsGroupNode();
 
-	//since the search is done via the id's, the surface nodes are ptr, so make another set with the node ptrs
-	std::set<const NodeBase*> nodePtrSet;
-    for (Group<NodeBase>::const_iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++)
+    //since the search is done via the id's, the surface nodes are ptr, so make another set with the node ptrs
+    std::set<const NodeBase*> nodePtrSet;
+    for (Group<NodeBase>::const_iterator itNode = nodeGroup->begin(); itNode != nodeGroup->end(); itNode++)
     {
-    	nodePtrSet.insert(itNode->second);
+        nodePtrSet.insert(itNode->second);
     }
 
-    std::cout << "number of loaded nodes " << nodeGroup->GetNumMembers() << std::endl;
+//    std::cout << "number of loaded nodes " << nodeGroup->GetNumMembers() << std::endl;
 
-	//loop over all elements
-	std::vector<const NodeBase*> surfaceNodes;
-    for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
+//loop over all elements
+    Eigen::VectorXi surfaceNodeIndices;
+    std::vector<const NodeBase*> surfaceNodes;
+    for (Group<ElementBase>::const_iterator itElement = elementGroup->begin(); itElement != elementGroup->end(); itElement++)
     {
         try
         {
-        	//check if plane element
-        	Plane2D* elementPtr = itElement->second->AsPlane2D();
+            //check if plane element
+            Element2D* elementPtr = itElement->second->AsElement2D();
+            const InterpolationType* InterpolationType = elementPtr->GetInterpolationType();
 
-        	//loop over all surfaces
-        	for (int countSurface=0; countSurface<elementPtr->GetNumSurfaces(); countSurface++)
-        	{
-        		bool addSurface(true);
-        		elementPtr->GetSurfaceNodes(countSurface, surfaceNodes);
+            //loop over all surfaces
+            for (int iSurface = 0; iSurface < InterpolationType->GetNumSurfaces(); iSurface++)
+            {
+                bool addSurface = true;
+                surfaceNodeIndices = InterpolationType->GetSurfaceNodeIndices(iSurface);
+                int numSurfaceNodes = surfaceNodeIndices.rows();
+                surfaceNodes.resize(numSurfaceNodes);
 
-        		//check, if all surface nodes are in the node group
-        		for (unsigned int countNode=0; countNode<surfaceNodes.size(); countNode++)
-        		{
-        			if (nodePtrSet.find(surfaceNodes[countNode])==nodePtrSet.end())
-        			{
-        				//this surface has at least one node that is not in the list, continue
-        				addSurface=false;
-        			}
-        		}
+                for (int iSurfaceNode = 0; iSurfaceNode < numSurfaceNodes; ++iSurfaceNode)
+                {
+                    surfaceNodes[iSurfaceNode] = elementPtr->GetNode(surfaceNodeIndices.at(iSurfaceNode, 0));
+                }
 
-        		if (addSurface)
-        		{
-        			mPlaneElements.push_back (std::pair<const Plane2D*, int>(elementPtr,countSurface));
-            		double nodeCoordinates[2];
-            		surfaceNodes[0]->GetCoordinates2D(nodeCoordinates);
-            		surfaceNodes[1]->GetCoordinates2D(nodeCoordinates);
-        		}
-        	}
-        }
-        catch(NuTo::MechanicsException &e)
+                //check, if all surface nodes are in the node group
+                for (unsigned int countNode = 0; countNode < surfaceNodes.size(); countNode++)
+                {
+                    if (nodePtrSet.find(surfaceNodes[countNode]) == nodePtrSet.end())
+                    {
+                        //this surface has at least one node that is not in the list, continue
+                        addSurface = false;
+                    }
+                }
+
+                if (addSurface)
+                {
+                    mElements2D.push_back(std::make_pair(elementPtr, iSurface));
+//            		double nodeCoordinates[2];
+//            		surfaceNodes[0]->GetCoordinates2D(nodeCoordinates);
+//            		surfaceNodes[1]->GetCoordinates2D(nodeCoordinates);
+                }
+            }
+        } catch (NuTo::MechanicsException &e)
         {
             std::stringstream ss;
-            assert(rStructure->ElementGetId(itElement->second)==itElement->first);
+            assert(rStructure->ElementGetId(itElement->second) == itElement->first);
             ss << itElement->first;
-            e.AddMessage("[NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D] Error calculating surfaces for surface loads in element "  + ss.str() + "(Maybe not a solid element?).");
+            e.AddMessage("[NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D] Error calculating surfaces for surface loads in element " + ss.str() + "(Maybe not a solid element?).");
             throw e;
-        }
-        catch(...)
+        } catch (...)
         {
             std::stringstream ss;
-            assert(rStructure->ElementGetId(itElement->second)==itElement->first);
+            assert(rStructure->ElementGetId(itElement->second) == itElement->first);
             ss << itElement->first;
-            throw NuTo::MechanicsException
-               ("[NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D] Error calculating surfaces for surface loads in element " + ss.str() + "(Maybe not a solid element?).");
+            throw NuTo::MechanicsException("[NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D] Error calculating surfaces for surface loads in element " + ss.str() + "(Maybe not a solid element?).");
         }
     }
 
@@ -89,115 +95,120 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
 //! @brief adds the load to global sub-vectors
 //! @param rActiceDofsLoadVector ... global load vector which correspond to the active dofs
 //! @param rDependentDofsLoadVector ... global load vector which correspond to the dependent dofs
-void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const
+void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double, Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double, Eigen::Dynamic>& rDependentDofsLoadVector) const
 {
-    if (rLoadCase!=mLoadCase)
-    	return;
-    for (unsigned int countPlaneElement=0; countPlaneElement<mPlaneElements.size(); countPlaneElement++)
-	{
-		const Plane2D* planeElementPtr = mPlaneElements[countPlaneElement].first;
+    if (rLoadCase != mLoadCase)
+        return;
+    for (unsigned int countPlaneElement = 0; countPlaneElement < mElements2D.size(); countPlaneElement++)
+    {
+        const Element2D* elementPtr = mElements2D[countPlaneElement].first;
+        int surface = mElements2D[countPlaneElement].second;
 
-		std::vector<const NodeBase*> surfaceNodes;
+        const InterpolationBase& interpolationTypeDisps = elementPtr->GetInterpolationType()->Get(Node::DISPLACEMENTS);
+        const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType()->Get(Node::COORDINATES);
 
-		planeElementPtr->GetSurfaceNodes(mPlaneElements[countPlaneElement].second, surfaceNodes);
-		int numSurfaceNodes(surfaceNodes.size());
-		IntegrationTypeBase* integrationType(0);
-		switch (numSurfaceNodes)
-		{
-		case 2:
-			integrationType = mIntegrationType2NPtr;
-			break;
-		case 3:
-			integrationType = mIntegrationType3NPtr;
-			break;
-		case 4:
-			integrationType = mIntegrationType4NPtr;
-			break;
-		case 5:
-			integrationType = mIntegrationType5NPtr;
-			break;
-		default:
-			throw MechanicsException("[NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D] integration types only for 2, 3, 4 and 5 nodes (on the surface) implemented.");
-		}
+        IntegrationTypeBase* integrationType(0);
+        switch (interpolationTypeDisps.GetTypeOrder())
+        {
+        case Interpolation::EQUIDISTANT1:
+            integrationType = mIntegrationType2NPtr;
+            break;
+        case Interpolation::EQUIDISTANT2:
+            integrationType = mIntegrationType3NPtr;
+            break;
+        case Interpolation::EQUIDISTANT3:
+            integrationType = mIntegrationType4NPtr;
+            break;
+        case Interpolation::EQUIDISTANT4:
+            integrationType = mIntegrationType5NPtr;
+            break;
+        default:
+            throw MechanicsException("[NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D] integration types only for 2, 3, 4 and 5 nodes (on the surface) implemented.");
+        }
 
-		//loop over surface integration points
-        std::vector<double> shapeFunctions(numSurfaceNodes),derivativeShapeFunctionsLocal(numSurfaceNodes);
-        for (int countIp=0; countIp<integrationType->GetNumIntegrationPoints(); countIp++)
-		{
-			//get local ip coordinates
-        	double naturalIpCoordinates;
-        	integrationType->GetLocalIntegrationPointCoordinates1D(countIp,naturalIpCoordinates);
-			//std::cout << "naturalIpCoordinates " << naturalIpCoordinates << std::endl;
+        Eigen::MatrixXd nodeCoordinates = elementPtr->ExtractNodeValues(0, Node::COORDINATES);
 
-			//calculate shape functions
-        	planeElementPtr->CalculateShapeFunctionsSurface(naturalIpCoordinates, shapeFunctions);
-			//std::cout << "  shape functions " << std::endl;
-			//for (unsigned int count=0; count<shapeFunctions.size(); count++)
-			//	std::cout << shapeFunctions[count] << " ";
-			//std::cout << std::endl;
+        Eigen::Matrix<double, 1, 1> ipCoordsSurface;
+        Eigen::Matrix<double, 2, 1> ipCoordsNatural;
+        NuTo::FullVector<double, 2> ipCoordsGlobal;
 
-			//calculate derivatives of shape functions
-        	planeElementPtr->CalculateDerivativeShapeFunctionsLocalSurface(naturalIpCoordinates, derivativeShapeFunctionsLocal);
+        Eigen::MatrixXd derivativeNaturalSurfaceCoordinates;
+        Eigen::MatrixXd derivativeShapeFunctionsNatural;
+        Eigen::VectorXd shapeFunctions;
 
-			//calculate global coordinates and basis vectors in the plane including the jacobian
-        	FullVector<double,2> globalIpCoordinates,basisVector1, basisVector2;
-        	globalIpCoordinates.setZero();
-        	basisVector1.setZero();
-        	basisVector2.setZero();
-        	for (int countNode=0; countNode<numSurfaceNodes; countNode++)
-        	{
-        		double nodeCoordinates[2];
-        		surfaceNodes[countNode]->GetCoordinates2D(nodeCoordinates);
-    			//std::cout << "nodeCoordinates " << nodeCoordinates[0] << " " << nodeCoordinates[1] << std::endl;
-        		globalIpCoordinates[0]+=shapeFunctions[countNode]*nodeCoordinates[0];
-        		globalIpCoordinates[1]+=shapeFunctions[countNode]*nodeCoordinates[1];
+        // loop over surface integration points
+        for (int theIp = 0; theIp < integrationType->GetNumIntegrationPoints(); theIp++)
+        {
+            // #######################################
+            // ##  Calculate IP coordinates in
+            // ## surface CS, natural CS and global CS
+            // #######################################
+            double tmp;
+            integrationType->GetLocalIntegrationPointCoordinates1D(theIp, tmp);
+            ipCoordsSurface(0) = tmp;
+            ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface);
+            ipCoordsGlobal = nodeCoordinates * interpolationTypeCoords.CalculateShapeFunctions(ipCoordsNatural);
 
-				basisVector1(0) +=derivativeShapeFunctionsLocal[countNode]*nodeCoordinates[0];
-				basisVector1(1) +=derivativeShapeFunctionsLocal[countNode]*nodeCoordinates[1];
-        	}
-//			std::cout << "globalIpCoordinates " << globalIpCoordinates[0] << " " << globalIpCoordinates[1]<< std::endl;
+            // #######################################
+            // ##  Calculate the surface jacobian
+            // ## = || [dX / dXi] * [dXi / dAlpha] ||
+            // #######################################
+            derivativeShapeFunctionsNatural = interpolationTypeCoords.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural);
+            const Eigen::Matrix2d jacobian = nodeCoordinates * derivativeShapeFunctionsNatural;                     // = [dX / dXi]
 
-			//calculate basis vectors (in the plane) and determinant of Jacobian using the cross product of the basis vectors
-        	basisVector2(0) = basisVector1(1);
-        	basisVector2(1) = -basisVector1(0);
-        	double detJ = basisVector1.norm();
-        	basisVector2*=1./detJ;
+            derivativeNaturalSurfaceCoordinates = interpolationTypeCoords.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, surface); // = [dXi / dAlpha]
+            double detJacobian = (jacobian * derivativeNaturalSurfaceCoordinates).norm();                           // = || [dX / dXi] * [dXi / dAlpha] ||
 
-        	//calculate weighting factor
-            double thickness = mPlaneElements[countPlaneElement].first->GetSection()->GetThickness();
-            double factor(thickness*detJ*(integrationType->GetIntegrationPointWeight(countIp)));
+            // #######################################
+            // ##  Calculate surface normal vector
+            // ## = ( dY / dAlpha     -dX/dAlpha).T
+            // #######################################
+            // dXdAlpha :  [2 x NumNodes] * [NumNodes x 2] * [2 x 1] = [2 x 1]
+            Eigen::Vector2d surfaceTangentVector = nodeCoordinates * derivativeShapeFunctionsNatural * derivativeNaturalSurfaceCoordinates;
+            surfaceTangentVector.normalize();
+            NuTo::FullVector<double, 2> surfaceNormalVector;
+            surfaceNormalVector(0) = surfaceTangentVector.at(1, 0);
+            surfaceNormalVector(1) = -surfaceTangentVector.at(0, 0);
 
-			//calculate surface load
-        	FullVector<double,2> loadVector;
-			CalculateSurfaceLoad(globalIpCoordinates, basisVector2, loadVector);
-			//std::cout << "load vector \n" << loadVector << std::endl;
-			loadVector*=factor;
-			//std::cout << "load vector with weights \n" << loadVector << std::endl;
+//            std::cout << "Global IP coordinate:        " << ipCoordsGlobal.transpose()      << std::endl;
+//            std::cout << "Surface tangent vector @ IP: " << surfaceTangentVector.transpose()<< std::endl;
+//            std::cout << "Surface normal vector  @ IP: " << surfaceNormalVector.transpose() << std::endl;
 
-			//std::cout << "  detJ " << detJ << " weight " << integrationType->GetIntegrationPointWeight(countIp) << std::endl;
-			//std::cout << "  shape functions " << std::endl;
-			//for (unsigned int count=0; count<shapeFunctions.size(); count++)
-			//	std::cout << shapeFunctions[count] << " ";
-			//std::cout << std::endl;
+            // calculate 2D shape functions
+            shapeFunctions = interpolationTypeDisps.CalculateShapeFunctions(ipCoordsNatural);
 
-			//add load vector to global vector
-			for (int countNode=0; countNode<numSurfaceNodes; countNode++)
-			{
-				assert(surfaceNodes[countNode]->GetNumDisplacements() == 2);
-				for (int countDispDof=0; countDispDof<2; countDispDof++)
-				{
-					int theDof = surfaceNodes[countNode]->GetDofDisplacement(countDispDof);
-					if (theDof<rActiceDofsLoadVector.GetNumRows())
-					{
-						//std::cout << "add to dof " << theDof << " " << shapeFunctions[countNode]*loadVector(countDispDof) << std::endl;
-						rActiceDofsLoadVector(theDof)+=shapeFunctions[countNode]*loadVector(countDispDof);
-					}
-					else
-					{
-						rDependentDofsLoadVector(theDof-rActiceDofsLoadVector.GetNumRows())+=shapeFunctions[countNode]*loadVector(countDispDof);
-					}
-				}
-			}
-		}
-	}
+            //calculate weighting factor
+            double thickness = elementPtr->GetSection()->GetThickness();
+            double factor = thickness * (integrationType->GetIntegrationPointWeight(theIp)) * detJacobian;
+
+            //calculate surface load
+            FullVector<double, 2> loadVector;
+            CalculateSurfaceLoad(ipCoordsGlobal, surfaceNormalVector, loadVector);
+            loadVector *= factor;
+
+//			std::cout << "load vector with weights \n" << loadVector << std::endl;
+//			std::cout << "detJ " << detJacobian << " weight " << integrationType->GetIntegrationPointWeight(theIp) << std::endl;
+
+            //add load vector to global vector
+            for (int iNode = 0; iNode < shapeFunctions.rows(); iNode++)
+            {
+                const NodeBase* node = elementPtr->GetNode(interpolationTypeDisps.GetNodeIndex(iNode));
+                assert(node->GetNumDisplacements() == 2);
+                for (int iDispDof = 0; iDispDof < 2; iDispDof++)
+                {
+                    int theDof = node->GetDofDisplacement(iDispDof);
+                    double theLoad = shapeFunctions[iNode] * loadVector(iDispDof);
+                    if (theDof < rActiceDofsLoadVector.GetNumRows())
+                    {
+//						std::cout << "add to dof " << theDof << " " << theLoad << std::endl;
+                        rActiceDofsLoadVector(theDof) += theLoad;
+                    }
+                    else
+                    {
+                        rDependentDofsLoadVector(theDof - rActiceDofsLoadVector.GetNumRows()) += theLoad;
+                    }
+                }
+            }
+        }
+    }
 }

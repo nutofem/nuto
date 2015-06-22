@@ -1,121 +1,132 @@
-// $Id$
+/*
+ * NodeCoordinates.h
+ *
+ *  Created on: 15 Apr 2015
+ *      Author: ttitsche
+ */
 
-#ifndef NODE_COORDINATES_H
-#define NODE_COORDINATES_H
-#include "nuto/mechanics/nodes/NodeCoordinates_Def.h"
-#include "nuto/math/FullMatrix.h"
+#ifndef NODECOORDINATES_H_
+#define NODECOORDINATES_H_
 
-#include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 
-//! @brief ... constructor
-template <int TNumCoordinates >
-NuTo::NodeCoordinates<TNumCoordinates>::NodeCoordinates() : NuTo::NodeBase()
+namespace NuTo
 {
+template<int TNumCoordinates>
+class NodeCoordinates: public virtual NodeBase
+{
+public:
+    NodeCoordinates()
+    {
+        static_assert(TNumCoordinates >= 0 and TNumCoordinates <= 3, "The node must have 0,1,2 or 3 coordinates.");
+        mCoordinates = Eigen::Matrix<double, TNumCoordinates, 1>::Zero();
+    }
+
+    NodeCoordinates(const NodeCoordinates&) = default;
+    NodeCoordinates& operator=(const NodeCoordinates&) = default;
+
+    virtual ~NodeCoordinates() {}
+
+    int GetNumCoordinates() const override
+    {
+        return TNumCoordinates;
+    }
+
+    double GetCoordinate(short rComponent) const override
+    {
+        assert(0 <= rComponent and rComponent < TNumCoordinates);
+        return mCoordinates[rComponent];
+    }
+    inline const Eigen::Matrix<double, 1, 1>& GetCoordinates1D() const override
+    {
+        throw MechanicsException("[NuTo::NodeCoordinates::GetCoordinates1D] Not implemented for " + std::to_string(TNumCoordinates) + " coordinates.");
+    }
+    inline const Eigen::Matrix<double, 2, 1>& GetCoordinates2D() const override
+    {
+        throw MechanicsException("[NuTo::NodeCoordinates::GetCoordinates2D] Not implemented for " + std::to_string(TNumCoordinates) + " coordinates.");
+    }
+    inline const Eigen::Matrix<double, 3, 1>& GetCoordinates3D() const override
+    {
+        throw MechanicsException("[NuTo::NodeCoordinates::GetCoordinates3D] Not implemented for " + std::to_string(TNumCoordinates) + " coordinates.");
+    }
+    const Eigen::Matrix<double, Eigen::Dynamic, 1> GetCoordinates() const override
+    {
+        return mCoordinates;
+    }
+
+    inline void SetCoordinates1D(const Eigen::Matrix<double, 1, 1>& rCoordinates) override
+    {
+        throw MechanicsException("[NuTo::NodeCoordinates::SetCoordinates1D] Not implemented for " + std::to_string(TNumCoordinates) + " coordinates.");
+    }
+    inline void SetCoordinates2D(const Eigen::Matrix<double, 2, 1>& rCoordinates) override
+    {
+        throw MechanicsException("[NuTo::NodeCoordinates::SetCoordinates2D] Not implemented for " + std::to_string(TNumCoordinates) + " coordinates.");
+    }
+    inline void SetCoordinates3D(const Eigen::Matrix<double, 3, 1>& rCoordinates) override
+    {
+        throw MechanicsException("[NuTo::NodeCoordinates::SetCoordinates3D] Not implemented for " + std::to_string(TNumCoordinates) + " coordinates.");
+    }
+    void SetCoordinates  (const Eigen::Matrix<double, Eigen::Dynamic, 1>& rCoordinates) override
+    {
+        assert(TNumCoordinates == rCoordinates.rows());
+        mCoordinates = rCoordinates;
+    }
+
+protected:
+    Eigen::Matrix<double, TNumCoordinates, 1> mCoordinates;
+
+private:
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+#endif // ENABLE_SERIALIZATION
+
+};
+
+//*************************************************
+//************  COORDINATES   GET   ***************
+//*************************************************
+
+template<>
+inline const Eigen::Matrix<double, 1, 1>& NodeCoordinates<1>::GetCoordinates1D() const
+{
+    return mCoordinates;
+}
+template<>
+inline const Eigen::Matrix<double, 2, 1>& NodeCoordinates<2>::GetCoordinates2D() const
+{
+    return mCoordinates;
+}
+template<>
+inline const Eigen::Matrix<double, 3, 1>& NodeCoordinates<3>::GetCoordinates3D() const
+{
+    return mCoordinates;
 }
 
-//! @brief ... destructor
-template <int TNumCoordinates >
-NuTo::NodeCoordinates<TNumCoordinates>::~NodeCoordinates()
+//*************************************************
+//************  COORDINATES   SET   ***************
+//*************************************************
+
+template<>
+inline void NodeCoordinates<1>::SetCoordinates1D(const Eigen::Matrix<double, 1, 1>& rCoordinates)
 {
+    mCoordinates = rCoordinates;
+}
+template<>
+inline void NodeCoordinates<2>::SetCoordinates2D(const Eigen::Matrix<double, 2, 1>& rCoordinates)
+{
+    mCoordinates = rCoordinates;
+}
+template<>
+inline void NodeCoordinates<3>::SetCoordinates3D(const Eigen::Matrix<double, 3, 1>& rCoordinates)
+{
+    mCoordinates = rCoordinates;
 }
 
-//! @brief assignment operator
-template <int TNumCoordinates >
-void NuTo::NodeCoordinates<TNumCoordinates>::
-     operator=(NuTo::NodeCoordinates<TNumCoordinates> const& rOther)
-{
-    mCoordinates = rOther.mCoordinates;
-}
+} /* namespace NuTo */
 
-template <int TNumCoordinates >
-void NuTo::NodeCoordinates<TNumCoordinates>::GetCoordinates1D(double rCoordinates[1] )const
-{
-    assert(TNumCoordinates==1);
-    rCoordinates[0] = mCoordinates[0];
-}
-
-template <int TNumCoordinates >
-void NuTo::NodeCoordinates<TNumCoordinates>::GetCoordinates2D(double rCoordinates[2] )const
-{
-    assert(TNumCoordinates==2);
-    rCoordinates[0] = mCoordinates[0];
-    rCoordinates[1] = mCoordinates[1];
-}
-
-template <int TNumCoordinates >
-void NuTo::NodeCoordinates<TNumCoordinates>::GetCoordinates3D(double rCoordinates[3] )const
-{
-    assert(TNumCoordinates==3);
-    rCoordinates[0] = mCoordinates[0];
-    rCoordinates[1] = mCoordinates[1];
-    rCoordinates[2] = mCoordinates[2];
-}
-
-template <int TNumCoordinates >
-void NuTo::NodeCoordinates<TNumCoordinates>::SetCoordinates1D(const double rCoordinates[1] )
-{
-    assert(TNumCoordinates==1);
-    mCoordinates[0] = rCoordinates[0];
-}
-
-template <int TNumCoordinates >
-void NuTo::NodeCoordinates<TNumCoordinates>::SetCoordinates2D(const double rCoordinates[2] )
-{
-    assert(TNumCoordinates==2);
-    mCoordinates[0] = rCoordinates[0];
-    mCoordinates[1] = rCoordinates[1];
-}
-
-template <int TNumCoordinates >
-void NuTo::NodeCoordinates<TNumCoordinates>::SetCoordinates3D(const double rCoordinates[3] )
-{
-    assert(TNumCoordinates==3);
-    mCoordinates[0] = rCoordinates[0];
-    mCoordinates[1] = rCoordinates[1];
-    mCoordinates[2] = rCoordinates[2];
-}
-
-template <int TNumCoordinates >
-double NuTo::NodeCoordinates<TNumCoordinates>::GetCoordinate(short rComponent) const
-{
-    assert(TNumCoordinates>rComponent);
-    return mCoordinates[rComponent];
-}
-
-
-//! @brief returns the type of node as a string (all the data stored at the node)
-//! @return string
-template <int TNumCoordinates >
-std::string NuTo::NodeCoordinates<TNumCoordinates>::GetNodeTypeStr()const
-{
-	throw MechanicsException("");
-    return std::string("[NuTo::NodeDof::GetNodeTypeStr]to be done");
-}
-
-
-//! @brief returns the number of coordinates of the node
-//! @return number of coordinates (=dimension)
-template <int TNumCoordinates >
-int NuTo::NodeCoordinates<TNumCoordinates>::GetNumCoordinates()const
-{
-	return TNumCoordinates;
-}
-
-#ifdef ENABLE_VISUALIZE
-template <int TNumCoordinates >
-void NuTo::NodeCoordinates<TNumCoordinates>::Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const
-{
-
-}
-#endif // ENABLE_VISUALIZE
-
-//! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
-template <int TNumCoordinates >
-NuTo::NodeCoordinates<TNumCoordinates>* NuTo::NodeCoordinates<TNumCoordinates>::
-Clone()const
-{
-    return new NuTo::NodeCoordinates<TNumCoordinates>(*this);
-}
-
-#endif //NODE_COORDINATES_H
-
+#endif /* NODECOORDINATES_H_ */

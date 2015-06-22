@@ -33,22 +33,27 @@ error = False
 myStructure = nuto.Structure(3)
 
 #create nodes
-myNode1 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,0,0)))
-myNode2 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((1,0,0)))
-myNode3 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,1,0)))
-myNode4 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,0,1)))
-myNode5 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0.5,0,0)))
-myNode6 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0.5,0.5,0)))
-myNode7 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0.0,0.5,0)))
-myNode8 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0.0,0,0.5)))
-myNode9 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0,0.5,0.5)))
-myNode10 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((0.5,0.0,0.5)))
+myNode1 = myStructure.NodeCreate(nuto.DoubleFullVector((0,0,0)))
+myNode2 = myStructure.NodeCreate(nuto.DoubleFullVector((1,0,0)))
+myNode3 = myStructure.NodeCreate(nuto.DoubleFullVector((0,1,0)))
+myNode4 = myStructure.NodeCreate(nuto.DoubleFullVector((0,0,1)))
+myNode5 = myStructure.NodeCreate(nuto.DoubleFullVector((0.5,0,0)))
+myNode6 = myStructure.NodeCreate(nuto.DoubleFullVector((0.5,0.5,0)))
+myNode7 = myStructure.NodeCreate(nuto.DoubleFullVector((0.0,0.5,0)))
+myNode8 = myStructure.NodeCreate(nuto.DoubleFullVector((0.0,0,0.5)))
+myNode9 = myStructure.NodeCreate(nuto.DoubleFullVector((0,0.5,0.5)))
+myNode10 = myStructure.NodeCreate(nuto.DoubleFullVector((0.5,0.0,0.5)))
 
 #create section
 mySection = myStructure.SectionCreate("Volume")
 
+myInterpolationType = myStructure.InterpolationTypeCreate("TETRAHEDRON3D");
+myStructure.InterpolationTypeAdd(myInterpolationType, "Coordinates","EQUIDISTANT2");
+myStructure.InterpolationTypeAdd(myInterpolationType, "Displacements", "EQUIDISTANT2");
+
 #create element
-myElement1 = myStructure.ElementCreate("Tetrahedron10N",nuto.IntFullVector((myNode1,myNode2,myNode3,myNode4,myNode5,myNode6,myNode7,myNode8,myNode9,myNode10)))
+myElement1 = myStructure.ElementCreate(myInterpolationType,nuto.IntFullVector((myNode1,myNode2,myNode3,myNode4,myNode5,myNode6,myNode7,myNode8,myNode9,myNode10)))
+myStructure.ElementTotalConvertToInterpolationType(1.e-6, 1);
 
 #create constitutive law
 myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")

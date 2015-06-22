@@ -41,13 +41,19 @@ lx = 1.;
 #create nodes
 Coordinates = nuto.DoubleFullVector(1);
 Coordinates.SetValue(0,0,0);
-node1 = myStructure.NodeCreate("displacements",Coordinates);
+node1 = myStructure.NodeCreate(Coordinates);
 
 Coordinates.SetValue(0,0,lx);
-node2 = myStructure.NodeCreate("displacements",Coordinates);
+node2 = myStructure.NodeCreate(Coordinates);
 
 Incidence = nuto.IntFullVector((node1,node2));
-myStructure.ElementCreate("TRUSS1D2N",Incidence);
+
+myInterpolationType = myStructure.InterpolationTypeCreate("Truss1D");
+myStructure.InterpolationTypeAdd(myInterpolationType, "Coordinates", "Equidistant1");
+myStructure.InterpolationTypeAdd(myInterpolationType, "Displacements", "Equidistant1");
+
+myStructure.ElementCreate(myInterpolationType,Incidence);
+myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
 
 #create constitutive law
 myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");

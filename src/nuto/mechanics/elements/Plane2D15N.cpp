@@ -45,7 +45,7 @@ NuTo::Plane2D15N::Plane2D15N(NuTo::StructureBase* rStructure, const std::vector<
 //! @param shape functions for all the nodes
 void NuTo::Plane2D15N::CalculateShapeFunctionsGeometry(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
 {
-    ShapeFunctions2D::ShapeFunctions2D15N(rNaturalCoordinates, rShapeFunctions);
+    ShapeFunctions2D::ShapeFunctionsTriangleOrder4(rNaturalCoordinates, rShapeFunctions);
 }
 
 //! @brief calculates the derivative of the shape functions
@@ -54,7 +54,7 @@ void NuTo::Plane2D15N::CalculateShapeFunctionsGeometry(const double rNaturalCoor
 //! first all the directions for a single node, and then for the next node
 void NuTo::Plane2D15N::CalculateDerivativeShapeFunctionsGeometryNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
 {
-    ShapeFunctions2D::DerivativeShapeFunctions2D15N(rNaturalCoordinates, rDerivativeShapeFunctions);
+    ShapeFunctions2D::DerivativeShapeFunctionsTriangleOrder4(rNaturalCoordinates, rDerivativeShapeFunctions);
 }
 
 //! @brief calculate the natural coordinates in 2D of all nodes
@@ -62,68 +62,11 @@ void NuTo::Plane2D15N::CalculateNaturalNodeCoordinates(std::vector< std::array<d
 {
 	rNaturalNodeCoordinates.resize(15);
 
-	std::array<double,2>& tmparray(rNaturalNodeCoordinates[0]);
-	tmparray[0] = 0.;
-
-	//node 0
-	rNaturalNodeCoordinates[0][0] = 0.0;
-	rNaturalNodeCoordinates[0][1] = 0.0;
-
-	//node 1
-	rNaturalNodeCoordinates[1][0] = 1./4.;
-	rNaturalNodeCoordinates[1][1] = 0.0;
-
-	//node 2
-	rNaturalNodeCoordinates[2][0] = 2./4.;
-	rNaturalNodeCoordinates[2][1] = 0.0;
-
-	//node 3
-	rNaturalNodeCoordinates[3][0] = 3./4.;
-	rNaturalNodeCoordinates[3][1] = 0.0;
-
-	//node 4
-	rNaturalNodeCoordinates[4][0] = 1.;
-	rNaturalNodeCoordinates[4][1] = 0.;
-
-	//node 5
-	rNaturalNodeCoordinates[5][0] = 0.;
-	rNaturalNodeCoordinates[5][1] = 1./4.;
-
-	//node 6
-	rNaturalNodeCoordinates[6][0] = 1./4.;
-	rNaturalNodeCoordinates[6][1] = 1./4.;
-
-	//node 7
-	rNaturalNodeCoordinates[7][0] = 2./4.;
-	rNaturalNodeCoordinates[7][1] = 1./4.;
-
-	//node 8
-	rNaturalNodeCoordinates[8][0] = 3./4.;
-	rNaturalNodeCoordinates[8][1] = 1./4.;
-
-	//node 9
-	rNaturalNodeCoordinates[9][0] = 0.;
-	rNaturalNodeCoordinates[9][1] = 2./4.;
-
-	//node 10
-	rNaturalNodeCoordinates[10][0] = 1./4.;
-	rNaturalNodeCoordinates[10][1] = 2./4.;
-
-	//node 11
-	rNaturalNodeCoordinates[11][0] = 2./4.;
-	rNaturalNodeCoordinates[11][1] = 2./4.;
-
-	//node 12
-	rNaturalNodeCoordinates[12][0] = 0.;
-	rNaturalNodeCoordinates[12][1] = 3./4.;
-
-	//node 13
-	rNaturalNodeCoordinates[13][0] = 1./4.;
-	rNaturalNodeCoordinates[13][1] = 3./4.;
-
-	//node 14
-	rNaturalNodeCoordinates[14][0] = 0.;
-	rNaturalNodeCoordinates[14][1] = 1.;
+    for (int i = 0; i < 15; ++i)
+    {
+        rNaturalNodeCoordinates[i][0] = ShapeFunctions2D::NodeCoordinatesTriangleOrder4(i)[0];
+        rNaturalNodeCoordinates[i][1] = ShapeFunctions2D::NodeCoordinatesTriangleOrder4(i)[1];
+    }
 }
 
 //! @brief calculates the shape functions for the surfaces (required for surface loads)
@@ -131,7 +74,7 @@ void NuTo::Plane2D15N::CalculateNaturalNodeCoordinates(std::vector< std::array<d
 //! @param shape functions for all the nodes, size should already be correct, but can be checked with an assert
 void NuTo::Plane2D15N::CalculateShapeFunctionsSurface(double rNaturalCoordinates, std::vector<double>& rShapeFunctions)const
 {
-    ShapeFunctions1D::ShapeFunctions1D5N(rNaturalCoordinates, rShapeFunctions);
+    ShapeFunctions1D::ShapeFunctionsTrussOrder4(rNaturalCoordinates, rShapeFunctions);
 }
 
 //! @brief calculates the derivative of the shape functions with respect to local coordinates for the surfaces (required for surface loads)
@@ -140,7 +83,7 @@ void NuTo::Plane2D15N::CalculateShapeFunctionsSurface(double rNaturalCoordinates
 //! first all the directions for a single node, and then for the next node
 void NuTo::Plane2D15N::CalculateDerivativeShapeFunctionsLocalSurface(double rNaturalCoordinates, std::vector<double>& rDerivativeShapeFunctions)const
 {
-    ShapeFunctions1D::DerivativeShapeFunctions1D5N(rNaturalCoordinates, rDerivativeShapeFunctions);
+    ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder4(rNaturalCoordinates, rDerivativeShapeFunctions);
 }
 
 //! @brief returns the surface nodes

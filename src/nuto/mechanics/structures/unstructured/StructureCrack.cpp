@@ -142,7 +142,7 @@ int NuTo::Structure::CrackCreate(NuTo::FullVector<int,Eigen::Dynamic>& rNodes)
 
     size_t numNodes=rNodes.GetNumRows();
     for(size_t thisNodeCount=0;thisNodeCount<numNodes;++thisNodeCount)
-    	CrackPushBack(id,this->NodeGetNodePtr(rNodes(thisNodeCount)));
+    	CrackPushBack(id,this->NodeGetNodePtr(rNodes.GetValue(thisNodeCount)));
 
 	return id;
 
@@ -389,7 +389,7 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 		for(locNodeId1stEdge=0; locNodeId1stEdge<numElemNodes; locNodeId1stEdge++)
 		{
 			// create a temporary point
-			int tmpNodeId=this->NodeCreate("Coordinates");
+			int tmpNodeId=this->NodeCreateDOFs("Coordinates");
 			double relCoor=0.0;
 			size_t segment;
 			bool edgeIntersected=thisCrackPtr->Intersect(
@@ -410,8 +410,9 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 
 				//! building up crack segment in element
 				//! build up integration cells for the two elements
-				double xA[2], xB[2];
-				this->NodeGetNodePtr(tmpNodeId)->GetCoordinates2D(xA);
+				Eigen::Matrix<double, 2, 1> xA, xB;
+				xA = this->NodeGetNodePtr(tmpNodeId)->GetCoordinates2D();
+
 				//! check if the crack running thru the element
 				unsigned short numIntersectedEdges=1; //!< one edge already intersected
 				for(locNodeId2ndEdge=locNodeId1stEdge+1; locNodeId2ndEdge<numElemNodes; locNodeId2ndEdge++)
@@ -442,13 +443,10 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 				nodeBasePtrMap_t::iterator crackedNodePairIt = crackedNodes.find(oldNodePtr);
 				if(crackedNodePairIt==crackedNodes.end())
 				{
-					const int newNode=this->NodeCreate("displacements");
+					const int newNode=this->NodeCreateDOFs("displacements");
 					newNodePtr=this->NodeGetNodePtr(newNode);
-					double val2D[2];
-					oldNodePtr->GetCoordinates2D(val2D);
-					newNodePtr->SetCoordinates2D(val2D);
-					oldNodePtr->GetDisplacements2D(val2D);
-					newNodePtr->SetDisplacements2D(val2D);
+					newNodePtr->SetCoordinates2D(oldNodePtr->GetCoordinates2D());
+                    newNodePtr->SetDisplacements2D(oldNodePtr->GetDisplacements2D());
 					crackedNodes.insert(std::make_pair(oldNodePtr,newNodePtr));
 				}else{
 					newNodePtr=crackedNodePairIt->second;
@@ -459,13 +457,10 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 				crackedNodePairIt = crackedNodes.find(oldNodePtr);
 				if(crackedNodePairIt==crackedNodes.end())
 				{
-					const int newNode=this->NodeCreate("displacements");
+					const int newNode=this->NodeCreateDOFs("displacements");
 					newNodePtr=this->NodeGetNodePtr(newNode);
-					double val2D[2];
-					oldNodePtr->GetCoordinates2D(val2D);
-					newNodePtr->SetCoordinates2D(val2D);
-					oldNodePtr->GetDisplacements2D(val2D);
-					newNodePtr->SetDisplacements2D(val2D);
+                    newNodePtr->SetCoordinates2D(oldNodePtr->GetCoordinates2D());
+                    newNodePtr->SetDisplacements2D(oldNodePtr->GetDisplacements2D());
 					crackedNodes.insert(std::make_pair(oldNodePtr,newNodePtr));
 				}else{
 					newNodePtr=crackedNodePairIt->second;
@@ -473,7 +468,7 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 				newNodes[(locNodeId1stEdge+1)%numElemNodes]=newNodePtr;
 
 				if(numIntersectedEdges==2){ //!< if  numIntersectedEdges==2 -> crack running thru
-					this->NodeGetNodePtr(tmpNodeId)->GetCoordinates2D(xB);
+					xB = this->NodeGetNodePtr(tmpNodeId)->GetCoordinates2D();
 					//! for the torn element we have to copy all other element's nodes
 					for(unsigned short i=numElemNodes; i--;)
 					{
@@ -482,13 +477,10 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 						crackedNodePairIt = crackedNodes.find(oldNodePtr);
 						if(crackedNodePairIt==crackedNodes.end())
 						{
-							const int newNode=this->NodeCreate("displacements");
+							const int newNode=this->NodeCreateDOFs("displacements");
 							newNodePtr=this->NodeGetNodePtr(newNode);
-							double val2D[2];
-							oldNodePtr->GetCoordinates2D(val2D);
-							newNodePtr->SetCoordinates2D(val2D);
-							oldNodePtr->GetDisplacements2D(val2D);
-							newNodePtr->SetDisplacements2D(val2D);
+		                    newNodePtr->SetCoordinates2D(oldNodePtr->GetCoordinates2D());
+		                    newNodePtr->SetDisplacements2D(oldNodePtr->GetDisplacements2D());
 							crackedNodes.insert(std::make_pair(oldNodePtr,newNodePtr));
 						}else{
 							newNodePtr=crackedNodePairIt->second;
@@ -501,7 +493,7 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 					for(locNodeId2ndEdge=0; locNodeId2ndEdge<numElemNodes; locNodeId2ndEdge++)
 					{
 						if(locNodeId2ndEdge==locNodeId1stEdge) continue; //!< this edge is already cracked
-						int newCrackEnd=this->NodeCreate("Coordinates");
+						int newCrackEnd=this->NodeCreateDOFs("Coordinates");
 						//! @todo check if the intersecting crack segment is at the end or beginning of the crack
 						const unsigned short rayIntersect=thisCrackPtr->ExtendEnd(
 								thisCrackedElem->GetNode(locNodeId2ndEdge),
@@ -524,7 +516,7 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 								//~ this->NodeGetNodePtr(newCrackEnd)->GetCoordinates2D(xA);
 							}else
 								throw NuTo::MechanicsException("[NuTo::Structure::InitiatePhantomNodeMethod] Got a wrong end of the crack!!!");
-							this->NodeGetNodePtr(newCrackEnd)->GetCoordinates2D(xB);
+							xB = this->NodeGetNodePtr(newCrackEnd)->GetCoordinates2D();
 							edgeCracked=true;
 							break; //!< now we have two intersections --> it's enough
 						}else{
@@ -563,8 +555,7 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 				//! check the position of the nodes
 				for(unsigned short i=oldNodes.size(); i--;)
 				{
-					double val2D[2];
-					oldNodes[i]->GetCoordinates2D(val2D);
+					Eigen::Matrix<double, 2, 1> val2D = oldNodes[i]->GetCoordinates2D();
 					//! calculate the distance of the node to the cracksegment
 					/**
 						In the two-dimensional case, with the normalized normal $\boldsymbol{n}$ of the crack the distance $d$ is defined as
@@ -593,7 +584,7 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 				elementBasePtr_t newElPtrB = this->ElementGetElementPtr(numElB);
 
 				//! @brief 4) get numer and position of integration points and create two new modifiable integration types
-				double ipCoor[3];
+				Eigen::Vector3d ipCoor;
 				//! get general information and informations about integration type for this element
 				size_t numIp=thisCrackedElem->GetIntegrationType()->GetNumIntegrationPoints();
 				std::stringstream  intTypeStr;
@@ -611,7 +602,7 @@ void NuTo::Structure::InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedEl
 				std::vector<size_t> outsideIpsA(0), outsideIpsB(0);
 				//! get the global coordinates of each IP
 				for(size_t ip=0; ip<numIp; ++ip){
-					thisCrackedElem->GetGlobalIntegrationPointCoordinates(ip,ipCoor);
+					ipCoor = thisCrackedElem->GetGlobalIntegrationPointCoordinates(ip);
 					//! calculate the distance of the node to the cracksegment
 					/**
 						In the two-dimensional case, with the normalized normal $\boldsymbol{n}$ of the crack the distance $d$ is defined as
@@ -705,7 +696,7 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethod(
 		for(locNodeId1stEdge=0; locNodeId1stEdge<numElemNodes; locNodeId1stEdge++)
 		{
 			// create a temporary point
-			int tmpNodeId=this->NodeCreate("Coordinates");
+			int tmpNodeId=this->NodeCreateDOFs("Coordinates");
 			double relCoor=0.0;
 			size_t segment;
 			bool edgeIntersected=thisCrackPtr->Intersect(
@@ -726,8 +717,8 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethod(
 
 				//! building up crack segment in element
 				//! build up integration cells for the two elements
-				double xA[2], xB[2];
-				this->NodeGetNodePtr(tmpNodeId)->GetCoordinates2D(xA);
+                Eigen::Matrix<double, 2, 1> xA, xB;
+                xA = this->NodeGetNodePtr(tmpNodeId)->GetCoordinates2D();
 				//! check if the crack running thru the element
 				unsigned short numIntersectedEdges=1; //!< one edge already intersected
 				for(locNodeId2ndEdge=locNodeId1stEdge+1; locNodeId2ndEdge<numElemNodes; locNodeId2ndEdge++)
@@ -758,13 +749,10 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethod(
 				nodeBasePtrMap_t::iterator crackedNodePairIt = crackedNodes.find(oldNodePtr);
 				if(crackedNodePairIt==crackedNodes.end())
 				{
-					const int newNode=this->NodeCreate("displacements");
+					const int newNode=this->NodeCreateDOFs("displacements");
 					newNodePtr=this->NodeGetNodePtr(newNode);
-					double val2D[2];
-					oldNodePtr->GetCoordinates2D(val2D);
-					newNodePtr->SetCoordinates2D(val2D);
-					oldNodePtr->GetDisplacements2D(val2D);
-					newNodePtr->SetDisplacements2D(val2D);
+                    newNodePtr->SetCoordinates2D(oldNodePtr->GetCoordinates2D());
+                    newNodePtr->SetDisplacements2D(oldNodePtr->GetDisplacements2D());
 					crackedNodes.insert(std::make_pair(oldNodePtr,newNodePtr));
 				}else{
 					newNodePtr=crackedNodePairIt->second;
@@ -775,13 +763,10 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethod(
 				crackedNodePairIt = crackedNodes.find(oldNodePtr);
 				if(crackedNodePairIt==crackedNodes.end())
 				{
-					const int newNode=this->NodeCreate("displacements");
+					const int newNode=this->NodeCreateDOFs("displacements");
 					newNodePtr=this->NodeGetNodePtr(newNode);
-					double val2D[2];
-					oldNodePtr->GetCoordinates2D(val2D);
-					newNodePtr->SetCoordinates2D(val2D);
-					oldNodePtr->GetDisplacements2D(val2D);
-					newNodePtr->SetDisplacements2D(val2D);
+                    newNodePtr->SetCoordinates2D(oldNodePtr->GetCoordinates2D());
+                    newNodePtr->SetDisplacements2D(oldNodePtr->GetDisplacements2D());
 					crackedNodes.insert(std::make_pair(oldNodePtr,newNodePtr));
 				}else{
 					newNodePtr=crackedNodePairIt->second;
@@ -789,7 +774,7 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethod(
 				newNodes[(locNodeId1stEdge+1)%numElemNodes]=newNodePtr;
 
 				if(numIntersectedEdges==2){ //!< if  numIntersectedEdges==2 -> crack running thru
-					this->NodeGetNodePtr(tmpNodeId)->GetCoordinates2D(xB);
+					xB = this->NodeGetNodePtr(tmpNodeId)->GetCoordinates2D();
 					//! for the torn element we have to copy all other element's nodes
 					for(unsigned short i=numElemNodes; i--;)
 					{
@@ -798,13 +783,10 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethod(
 						crackedNodePairIt = crackedNodes.find(oldNodePtr);
 						if(crackedNodePairIt==crackedNodes.end())
 						{
-							const int newNode=this->NodeCreate("displacements");
+							const int newNode=this->NodeCreateDOFs("displacements");
 							newNodePtr=this->NodeGetNodePtr(newNode);
-							double val2D[2];
-							oldNodePtr->GetCoordinates2D(val2D);
-							newNodePtr->SetCoordinates2D(val2D);
-							oldNodePtr->GetDisplacements2D(val2D);
-							newNodePtr->SetDisplacements2D(val2D);
+                            newNodePtr->SetCoordinates2D(oldNodePtr->GetCoordinates2D());
+                            newNodePtr->SetDisplacements2D(oldNodePtr->GetDisplacements2D());
 							crackedNodes.insert(std::make_pair(oldNodePtr,newNodePtr));
 						}else{
 							newNodePtr=crackedNodePairIt->second;
@@ -817,7 +799,7 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethod(
 					for(locNodeId2ndEdge=0; locNodeId2ndEdge<numElemNodes; locNodeId2ndEdge++)
 					{
 						if(locNodeId2ndEdge==locNodeId1stEdge) continue; //!< this edge is already cracked
-						int newCrackEnd=this->NodeCreate("Coordinates");
+						int newCrackEnd=this->NodeCreateDOFs("Coordinates");
 						//! @todo check if the intersecting crack segment is at the end or beginning of the crack
 						const unsigned short rayIntersect=thisCrackPtr->ExtendEnd(
 								thisCrackedElem->GetNode(locNodeId2ndEdge),
@@ -840,7 +822,7 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethod(
 								//~ this->NodeGetNodePtr(newCrackEnd)->GetCoordinates2D(xA);
 							}else
 								throw NuTo::MechanicsException("[NuTo::Structure::InitiatePhantomNodeMethod] Got a wrong end of the crack!!!");
-							this->NodeGetNodePtr(newCrackEnd)->GetCoordinates2D(xB);
+							xB = this->NodeGetNodePtr(newCrackEnd)->GetCoordinates2D();
 							edgeCracked=true;
 							break; //!< now we have two intersections --> it's enough
 						}else{
@@ -879,8 +861,7 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethod(
 				//! check the position of the nodes
 				for(unsigned short i=oldNodes.size(); i--;)
 				{
-					double val2D[2];
-					oldNodes[i]->GetCoordinates2D(val2D);
+				    Eigen::Matrix<double, 2, 1> val2D = oldNodes[i]->GetCoordinates2D();
 					//! calculate the distance of the node to the cracksegment
 					/**
 						In the two-dimensional case, with the normalized normal $\boldsymbol{n}$ of the crack the distance $d$ is defined as
@@ -911,7 +892,7 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethod(
 				crackedElems.insert(newElPtrB);
 
 				//! @brief 4) get numer and position of integration points and create two new modifiable integration types
-				double ipCoor[3];
+				Eigen::Vector3d ipCoor;
 				std::stringstream  intTypeStr, intTypeStrA, intTypeStrB;
 				//! set integration type for the new elements
 				switch(thisCrackedElem->GetEnumType())
@@ -942,7 +923,7 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethod(
 				//! get the global coordinates of each IP
 				size_t numIp=newElPtrA->GetNumIntegrationPoints();
 				for(size_t ip=0; ip<numIp; ++ip){
-					newElPtrA->GetGlobalIntegrationPointCoordinates(ip,ipCoor);
+					ipCoor = newElPtrA->GetGlobalIntegrationPointCoordinates(ip);
 					//! calculate the distance of the node to the cracksegment
 					/**
 						In the two-dimensional case, with the normalized normal $\boldsymbol{n}$ of the crack the distance $d$ is defined as
@@ -1045,7 +1026,7 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethodT
 		for(locNodeId1stEdge=0; locNodeId1stEdge<numElemNodes; locNodeId1stEdge++)
 		{
 			// create a temporary point
-			int tmpNodeId=this->NodeCreate("Coordinates");
+			int tmpNodeId=this->NodeCreateDOFs("Coordinates");
 			double relCoor=0.0;
 			size_t segment;
 			bool edgeIntersected=thisCrackPtr->Intersect(
@@ -1066,8 +1047,8 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethodT
 
 				//! building up crack segment in element
 				//! build up integration cells for the two elements
-				double xA[2], xB[2];
-				this->NodeGetNodePtr(tmpNodeId)->GetCoordinates2D(xA);
+                Eigen::Matrix<double, 2, 1> xA, xB;
+                xA = this->NodeGetNodePtr(tmpNodeId)->GetCoordinates2D();
 				//! check if the crack running thru the element
 				unsigned short numIntersectedEdges=1; //!< one edge already intersected
 				for(locNodeId2ndEdge=locNodeId1stEdge+1; locNodeId2ndEdge<numElemNodes; locNodeId2ndEdge++)
@@ -1097,13 +1078,10 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethodT
 				nodeBasePtrMap_t::iterator crackedNodePairIt = crackedNodes.find(oldNodePtr);
 				if(crackedNodePairIt==crackedNodes.end())
 				{
-					const int newNode=this->NodeCreate("displacements");
+					const int newNode=this->NodeCreateDOFs("displacements");
 					newNodePtr=this->NodeGetNodePtr(newNode);
-					double val2D[2];
-					oldNodePtr->GetCoordinates2D(val2D);
-					newNodePtr->SetCoordinates2D(val2D);
-					oldNodePtr->GetDisplacements2D(val2D);
-					newNodePtr->SetDisplacements2D(val2D);
+                    newNodePtr->SetCoordinates2D(oldNodePtr->GetCoordinates2D());
+                    newNodePtr->SetDisplacements2D(oldNodePtr->GetDisplacements2D());
 					crackedNodes.insert(std::make_pair(oldNodePtr,newNodePtr));
 				}else{
 					newNodePtr=crackedNodePairIt->second;
@@ -1114,13 +1092,10 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethodT
 				crackedNodePairIt = crackedNodes.find(oldNodePtr);
 				if(crackedNodePairIt==crackedNodes.end())
 				{
-					const int newNode=this->NodeCreate("displacements");
+					const int newNode=this->NodeCreateDOFs("displacements");
 					newNodePtr=this->NodeGetNodePtr(newNode);
-					double val2D[2];
-					oldNodePtr->GetCoordinates2D(val2D);
-					newNodePtr->SetCoordinates2D(val2D);
-					oldNodePtr->GetDisplacements2D(val2D);
-					newNodePtr->SetDisplacements2D(val2D);
+                    newNodePtr->SetCoordinates2D(oldNodePtr->GetCoordinates2D());
+                    newNodePtr->SetDisplacements2D(oldNodePtr->GetDisplacements2D());
 					crackedNodes.insert(std::make_pair(oldNodePtr,newNodePtr));
 				}else{
 					newNodePtr=crackedNodePairIt->second;
@@ -1128,7 +1103,7 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethodT
 				newNodes[(locNodeId1stEdge+1)%numElemNodes]=newNodePtr;
 
 				if(numIntersectedEdges==2){ //!< if  numIntersectedEdges==2 -> crack running thru
-					this->NodeGetNodePtr(tmpNodeId)->GetCoordinates2D(xB);
+					xB = this->NodeGetNodePtr(tmpNodeId)->GetCoordinates2D();
 					//! for the torn element we have to copy all other element's nodes
 					for(unsigned short i=numElemNodes; i--;)
 					{
@@ -1137,13 +1112,10 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethodT
 						crackedNodePairIt = crackedNodes.find(oldNodePtr);
 						if(crackedNodePairIt==crackedNodes.end())
 						{
-							const int newNode=this->NodeCreate("displacements");
+							const int newNode=this->NodeCreateDOFs("displacements");
 							newNodePtr=this->NodeGetNodePtr(newNode);
-							double val2D[2];
-							oldNodePtr->GetCoordinates2D(val2D);
-							newNodePtr->SetCoordinates2D(val2D);
-							oldNodePtr->GetDisplacements2D(val2D);
-							newNodePtr->SetDisplacements2D(val2D);
+                            newNodePtr->SetCoordinates2D(oldNodePtr->GetCoordinates2D());
+                            newNodePtr->SetDisplacements2D(oldNodePtr->GetDisplacements2D());
 							crackedNodes.insert(std::make_pair(oldNodePtr,newNodePtr));
 						}else{
 							newNodePtr=crackedNodePairIt->second;
@@ -1157,7 +1129,7 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethodT
 					for(locNodeId2ndEdge=0; locNodeId2ndEdge<numElemNodes; locNodeId2ndEdge++)
 					{
 						if(locNodeId2ndEdge==locNodeId1stEdge) continue; //!< this edge is already cracked
-						int newCrackEnd=this->NodeCreate("Coordinates");
+						int newCrackEnd=this->NodeCreateDOFs("Coordinates");
 						//! store the two line nodes to find find the connected elements
 						crackTipNodePtr[0]=thisCrackedElem->GetNode(locNodeId2ndEdge);
 						crackTipNodePtr[1]=thisCrackedElem->GetNode(((locNodeId2ndEdge+1)%numElemNodes));
@@ -1182,7 +1154,7 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethodT
 								//~ this->NodeGetNodePtr(newCrackEnd)->GetCoordinates2D(xA);
 							}else
 								throw NuTo::MechanicsException("[NuTo::Structure::InitiatePhantomNodeMethodTriangle] Got a wrong end of the crack!!!");
-							this->NodeGetNodePtr(newCrackEnd)->GetCoordinates2D(xB);
+							xB = this->NodeGetNodePtr(newCrackEnd)->GetCoordinates2D();
 							edgeCracked=true;
 							//! change the integration scheme of the elements around the crack tip
 							std::vector< elementBasePtr_t > elementVec;
@@ -1241,15 +1213,16 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethodT
 				std::vector<nodeBasePtr_t> rNodeVectorB(newNodes);
 				std::vector<double> nodeVec(2);
 				std::vector< std::vector<double> > integrationAreaA, localCoordinatesAreaA, integrationAreaB, localCoordinatesAreaB;
-				nodeVec.assign(xA,xA+2);
+				nodeVec[0] = xA[0];
+				nodeVec[1] = xA[1];
 				integrationAreaB.push_back(nodeVec);
-				nodeVec.assign(xB,xB+2);
+                nodeVec[0] = xB[0];
+                nodeVec[1] = xB[1];
 				integrationAreaB.push_back(nodeVec);
 				//! check the position of the nodes
 				for(unsigned short i=oldNodes.size(); i--;)
 				{
-					double val2D[2];
-					oldNodes[i]->GetCoordinates2D(val2D);
+					Eigen::Matrix<double, 2, 1> val2D = oldNodes[i]->GetCoordinates2D();
 					//! calculate the distance of the node to the cracksegment
 					/**
 						In the two-dimensional case, with the normalized normal $\boldsymbol{n}$ of the crack the distance $d$ is defined as
@@ -1268,16 +1241,20 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::InitiatePhantomNodeMethodT
 					{
 						rNodeVectorA[i]=newNodes[i];
 						rNodeVectorB[i]=oldNodes[i];
-						nodeVec.assign(val2D,val2D+2);
+						nodeVec[0] = val2D[0];
+						nodeVec[1] = val2D[1];
 						integrationAreaB.push_back(nodeVec);
 					}else{ //< left area corresponds to element A
-						nodeVec.assign(val2D,val2D+2);
+                        nodeVec[0] = val2D[0];
+                        nodeVec[1] = val2D[1];
 						integrationAreaA.push_back(nodeVec);
 					}
 				}
-				nodeVec.assign(xB,xB+2);
+                nodeVec[0] = xA[0];
+                nodeVec[1] = xA[1];
 				integrationAreaA.push_back(nodeVec);
-				nodeVec.assign(xA,xA+2);
+                nodeVec[0] = xB[0];
+                nodeVec[1] = xB[1];
 				integrationAreaA.push_back(nodeVec);
 				
 				//! create the new element A

@@ -24,7 +24,7 @@
 #include "nuto/mechanics/groups/GroupBase.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
 #include "nuto/mechanics/loads/LoadBase.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/sections/SectionBase.h"
@@ -41,6 +41,7 @@ namespace NuTo
 class ElementBase;
 class NodeBase;
 template<class T, int rows> class FullVector;
+template<class T, int rows, int cols> class FullMatrix;
 template<class T> class SparseMatrixCSRSymmetric;
 template<class T> class SparseMatrixCSRGeneral;
 template<class T> class SparseMatrixCSRVector2General;
@@ -722,33 +723,31 @@ public:
     //! @return enum
     NuTo::IpData::eIpDataType ElementGetEnumIntegrationType(const std::string& rIpDataTypeStr);
 
-    //! @brief modifies the constitutive law of a single element
-    //! @param rElement element pointer
-    //! @param rConstitutive material pointer
-    void ElementSetIntegrationType(ElementBase* rElement, const IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
-#endif //SWIG
-
-    //! @brief modifies the section of a single element
-    //! @param rElementIdent element number
-    //! @param rSectionIdent identifier for the section
-    void ElementSetIntegrationType(int rElementId, const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr);
-
-    //! @brief modifies the section of a group of elements
-    //! @param rGroupIdent identifier for the group of elements
-    //! @param rSectionId identifier for the section
-    void ElementGroupSetIntegrationType(int rGroupIdent, const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr);
-
-    //! @brief modifies the section of a all elements
-    //! @param rSectionIdent identifier for the section
-    void ElementTotalSetIntegrationType(const std::string& rIntegrationTypeIdent, std::string rIpDataTypeStr);
-
-
-#ifndef SWIG
     //! @brief modifies the section of a single element
     //! @param rElement element pointer
-    //! @param rConstitutive section
+    //! @param rSection section
     void ElementSetSection(ElementBase* rElement, SectionBase* rSection);
 #endif //SWIG
+
+    //! @brief modifies the interpolation type of a single element
+    //! @param rElementId ... element number
+    //! @param rInterpolationTypeId ... interpolation type id
+    void ElementSetInterpolationType(int rElementId, int rInterpolationTypeId);
+
+    //! @brief modifies the interpolation type of a group of elements
+    //! @param rGroupId ... identifier for the group of elements
+    //! @param rInterpolationTypeId ... interpolation type id
+    void ElementGroupSetInterpolationType(int rGroupId, int rInterpolationTypeId);
+
+#ifndef SWIG
+    //! @brief modifies the interpolation type of a single element
+    //! @param rElement element pointer
+    //! @param rInterpolationType interpolation type
+    void ElementSetInterpolationType(ElementBase* rElement, InterpolationType* rInterpolationType);
+#endif //SWIG
+
+
+
 
     //! @brief calculates the engineering strain
     //! @param rElemIdent  element number
@@ -937,13 +936,13 @@ public:
     //! @param rNode pointer to node
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetWaterPhaseFractionNode(NodeBase* rNode, double rValue);
+    int ConstraintLinearSetWaterVolumeFractionNode(NodeBase* rNode, double rValue);
 
     //! @brief adds a water volume fraction constraint for a node
     //! @param rIdent identifier for node
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetWaterPhaseFractionNode(int rIdent, double rValue);
+    int ConstraintLinearSetWaterVolumeFractionNode(int rIdent, double rValue);
 
 #ifndef SWIG
     //! @brief adds a displacement constraint equation for a group of node
@@ -1573,7 +1572,8 @@ public:
     //! @return ... equilibrium water volume fraction
     double ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const;
 
-    #ifndef SWIG
+#ifndef SWIG
+
     //! @brief ... create a new section
     //! @param rIdent ... section identifier
     //! @param rType ... section type
@@ -1635,16 +1635,6 @@ public:
     //! @return section thickness
     double SectionGetThickness(int rId) const;
 
-    //! @brief ... set section dofs
-    //! @param rIdent ... section identifier
-    //! @param rDOFs ... displacements, temperatures, rotations
-   void SectionSetDOF(int rId, const std::string& rDOFs);
-
-   //! @brief ... set constitutive input for section
-   //! @param rIdent ... section identifier
-   //! @param rDOFs ... Temperature, TemperatureGradient, DeformationGradient
-   void SectionSetInputConstitutive(int rId, const std::string& rDOFs);
-
     //! @brief ... print information about all sections
     //! @param rVerboseLevel ... controls the verbosity of the information
     void SectionInfo(unsigned short rVerboseLevel) const;
@@ -1699,6 +1689,16 @@ public:
     //! @param rIdent ... group identifier
     //! @return ... pointer to the group
     const GroupBase* GroupGetGroupPtr(int rIdent) const;
+
+    //! @brief ... Creates a group for the structure
+    //! @param ... rType  type of the group, e.g. "NODES" or "ELEMENTS"
+    //! @return ... rIdent identifier for the group
+    int GroupCreate(NuTo::Groups::eGroupId rEnumType);
+
+    //! @brief ... Creates a group for the structure
+    //! @param ... rIdent identifier for the group
+    //! @param ... rType  type of the group
+    void GroupCreate(int id, NuTo::Groups::eGroupId rEnumType);
 #endif
 
     //! @brief ... Creates a group for the structure
@@ -1706,10 +1706,6 @@ public:
     //! @param ... rType  type of the group, e.g. "NODES" or "ELEMENTS"
     int GroupCreate(const std::string& rType);
 
-    //! @brief ... Creates a group for the structure
-    //! @param ... rIdent identifier for the group
-    //! @param ... rType  type of the group
-    void GroupCreate(int id, NuTo::Groups::eGroupId rEnumType);
 
     //! @brief ... Deletes a group from the structure
     //! @param ... rIdent identifier for the group
@@ -2027,6 +2023,10 @@ protected:
     //! @brief ... map storing the section name and the pointer to the section object
     //! @sa SectionBase
     boost::ptr_map<int,SectionBase> mSectionMap;
+
+    //! @brief ... map storing the interpolation types
+    //! @sa InterpolationType
+    boost::ptr_map<int,InterpolationType> mInterpolationTypeMap;
 
     //! @brief ... a mapping from the enums of the predefined integration types to their corresponding string name
     std::vector<std::string> mMappingIntEnum2String;

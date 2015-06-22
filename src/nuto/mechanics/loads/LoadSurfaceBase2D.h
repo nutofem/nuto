@@ -18,7 +18,7 @@
 namespace NuTo
 {
 class NodeBase;
-class Plane2D;
+class Element2D;
 class StructureBase;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -54,7 +54,7 @@ public:
     void serialize(Archive & ar, const unsigned int version)
     {
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase)
-           & BOOST_SERIALIZATION_NVP(mPlaneElements)
+           & BOOST_SERIALIZATION_NVP(mElements2D)
            & BOOST_SERIALIZATION_NVP(mIntegrationType2NPtr)
            & BOOST_SERIALIZATION_NVP(mIntegrationType3NPtr)
            & BOOST_SERIALIZATION_NVP(mIntegrationType4NPtr)
@@ -63,7 +63,7 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
-    std::vector<std::pair<const Plane2D*, int> > mPlaneElements;
+    std::vector<std::pair<const Element2D*, int> > mElements2D;
     IntegrationTypeBase* mIntegrationType2NPtr;
     IntegrationTypeBase* mIntegrationType3NPtr;
     IntegrationTypeBase* mIntegrationType4NPtr;

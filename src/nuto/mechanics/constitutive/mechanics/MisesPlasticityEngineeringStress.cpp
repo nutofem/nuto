@@ -110,8 +110,8 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate3D(ElementBa
 		const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
 		std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
-	// get section information determining which input on the constitutive level should be used
-	const SectionBase* section(rElement->GetSection());
+    // get interpolation type information determining which input on the constitutive level should be used
+    const InterpolationType* interpolationType = rElement->GetInterpolationType();
 
 	// check if parameters are valid
     if (this->mParametersValid == false)
@@ -132,7 +132,7 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate3D(ElementBa
 	//subtract thermal strain
 	EngineeringStrain3D elasticEngineeringStrain(engineeringStrain);
 	// if temperature is an input, subtract thermal strains to get elastic strains
-	if (section->GetInputConstitutiveIsTemperature())
+	if (interpolationType->IsConstitutiveInput(Node::TEMPERATURES))
 	{
 		std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>::const_iterator itInput(rConstitutiveInput.find(NuTo::Constitutive::Input::TEMPERATURE));
 		if (itInput==rConstitutiveInput.end())

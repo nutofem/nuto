@@ -1308,12 +1308,12 @@ void NuTo::Truss::CalculateNodalNonlocalEqPlasticStrain(int rTimeDerivative, std
     assert(rTimeDerivative>=0);
     assert(rTimeDerivative<3);
 	assert((int)rNodalNonlocalEqPlasticStrain.size()==2*GetNumNodesField());
-	double nonlocalEqPlasticStrain[2];
+	Eigen::Matrix<double, 2, 1> nonlocalEqPlasticStrain;
     for (int count=0; count<GetNumNodesField(); count++)
     {
         if (GetNodeField(count)->GetNumNonlocalEqPlasticStrain()!=2)
             throw MechanicsException("[NuTo::Truss::CalculateNodalNonlocalEqPlasticStrain] Damage is required as input to the constitutive model, but the node does not have this data.");
-        GetNodeField(count)->GetNonlocalEqPlasticStrain(nonlocalEqPlasticStrain);
+        nonlocalEqPlasticStrain = GetNodeField(count)->GetNonlocalEqPlasticStrain();
         rNodalNonlocalEqPlasticStrain[count] = nonlocalEqPlasticStrain[0];
         rNodalNonlocalEqPlasticStrain[count+GetNumNodesField()] = nonlocalEqPlasticStrain[1];
     }
@@ -1328,13 +1328,13 @@ void NuTo::Truss::CalculateNodalNonlocalTotalStrain(int rTimeDerivative, std::ve
     assert(rTimeDerivative>=0);
     assert(rTimeDerivative<3);
 	assert((int)rNodalNonlocalTotalStrain.size()==GetNumShapeFunctionsNonlocalTotalStrain());
-	double nonlocalTotalStrain[1];
+	double nonlocalTotalStrain;
     for (int count=0; count<GetNumShapeFunctionsNonlocalTotalStrain(); count++)
     {
         if (GetNodeNonlocalTotalStrain(count)->GetNumNonlocalTotalStrain()!=1)
             throw MechanicsException("[NuTo::Truss::CalculateNodalNonlocalTotalStrain] nonlocal strain is required as input to the constitutive model, but the node does not have this data.");
-        GetNodeNonlocalTotalStrain(count)->GetNonlocalTotalStrain1D(nonlocalTotalStrain);
-        rNodalNonlocalTotalStrain[count] = nonlocalTotalStrain[0];
+        nonlocalTotalStrain = GetNodeNonlocalTotalStrain(count)->GetNonlocalTotalStrain(0);
+        rNodalNonlocalTotalStrain[count] = nonlocalTotalStrain;
     }
 }
 
@@ -1450,7 +1450,6 @@ void NuTo::Truss::GetLocalIntegrationPointCoordinates(int rIpNum, double& rCoord
 void  NuTo::Truss::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoordinates[3])const
 {
     double naturalCoordinates;
-    double nodeCoordinates[3];
     std::vector<double> shapeFunctions(GetNumNodesGeometry());
     GetLocalIntegrationPointCoordinates(rIpNum, naturalCoordinates);
     CalculateShapeFunctionsGeometry(naturalCoordinates, shapeFunctions);
@@ -1458,26 +1457,13 @@ void  NuTo::Truss::GetGlobalIntegrationPointCoordinates(int rIpNum, double rCoor
     rCoordinates[1] = 0.;
     rCoordinates[2] = 0.;
 
-    nodeCoordinates[0] = 0;
-    nodeCoordinates[1] = 0;
-    nodeCoordinates[2] = 0;
     for (int theNode=0; theNode<GetNumNodesGeometry(); theNode++)
     {
     	const NodeBase *nodePtr(GetNodeGeometry(theNode));
-    	switch (nodePtr->GetNumCoordinates())
-    	{
-    	case 1:
-    		nodePtr->GetCoordinates1D(nodeCoordinates);
-    	break;
-    	case 2:
-    		nodePtr->GetCoordinates2D(nodeCoordinates);
-    	break;
-    	case 3:
-    		nodePtr->GetCoordinates3D(nodeCoordinates);
-    	break;
-    	default:
-    		throw MechanicsException("[NuTo::Truss::GetGlobalIntegrationPointCoordinates] Node has to have 1, 2 or 3 coordinates.");
-    	}
+    	Eigen::Matrix<double, Eigen::Dynamic, 1> nodeCoordinates = nodePtr->GetCoordinates1D();
+
+    	if (nodeCoordinates.rows() < 1 or nodeCoordinates.rows() > 3)
+    	    throw MechanicsException("[NuTo::Truss::GetGlobalIntegrationPointCoordinates] Node has to have 1, 2 or 3 coordinates.");
 
     	for (int theCoordinate=0; theCoordinate<nodePtr->GetNumCoordinates(); theCoordinate++)
     	{

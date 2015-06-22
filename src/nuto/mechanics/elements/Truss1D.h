@@ -60,28 +60,28 @@ public:
     //! @brief ... interpolate three-dimensional global point coordinates from one-dimensional local point coordinates (element coordinates system)
     //! @param rLocalCoordinates ... one-dimensional local point coordinates
     //! @param rGlobalCoordinates ... three-dimension global point coordinates
-    void InterpolateCoordinatesFrom1D(double rLocalCoordinates, double rGlobalCoordinates[3]) const override;
+    void InterpolateCoordinatesFrom1D(double rLocalCoordinates, double rGlobalCoordinates[3]) const;
 
     //! @brief ... interpolate three-dimensional global point displacements from one-dimensional local point coordinates (element coordinates system)
     //! @param rTimeDerivative ... time derivative (0 disp, 1 velocities, 2 accelerations)
     //! @param rLocalCoordinates ... one-dimensional local point coordinates
     //! @param rGlobalDisplacements ... three-dimension global point displacements
-    void InterpolateDisplacementsFrom1D(int rTimeDerivative, double rLocalCoordinates, double rGlobalDisplacements[3]) const override;
+    void InterpolateDisplacementsFrom1D(int rTimeDerivative, double rLocalCoordinates, double rGlobalDisplacements[3]) const;
 
     //! @brief ... interpolate three-dimensional global nonlocal eq strain from one-dimensional local point coordinates (element coordinates system)
     //! @param rLocalCoordinates ... one-dimensional local point coordinates
     //! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
-    void InterpolateNonlocalEqStrainFrom1D(double rLocalCoordinates, double& rNonlocalEqStrain) const override;
+    void InterpolateNonlocalEqStrainFrom1D(double rLocalCoordinates, double& rNonlocalEqStrain) const;
 
     //! @brief ... interpolate three-dimensional global relative humidity from one-dimensional local point coordinates (element coordinates system)
     //! @param rLocalCoordinates ... one-dimensional local point coordinates
     //! @param rRelativeHumidity ... interpolated relative humidity
-    virtual void InterpolateRelativeHumidityFrom1D(double rLocalCoordinates, double& rRelativeHumidity) const override;
+    void InterpolateRelativeHumidityFrom1D(double rLocalCoordinates, double& rRelativeHumidity) const;
 
     //! @brief ... interpolate three-dimensional global water volume fraction from one-dimensional local point coordinates (element coordinates system)
     //! @param rLocalCoordinates ... one-dimensional local point coordinates
     //! @param rWaterVolumeFraction ... interpolated water volume fraction
-    virtual void InterpolateWaterVolumeFractionFrom1D(double rLocalCoordinates, double& rWaterVolumeFraction) const override;
+    void InterpolateWaterVolumeFractionFrom1D(double rLocalCoordinates, double& rWaterVolumeFraction) const;
 
 
 protected:

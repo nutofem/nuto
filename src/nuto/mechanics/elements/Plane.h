@@ -316,18 +316,18 @@ public:
     //! @brief ... interpolate three-dimensional global point coordinates from two-dimensional local point coordinates (element coordinates system)
     //! @param rNaturalCoordinates ... two-dimensional point coordinates in natural coordinate system
     //! @param rGlobalCoordinates ... three-dimension global point coordinates
-    void InterpolateCoordinatesFrom2D(double rNaturalCoordinates[2], double rGlobalCoordinates[2]) const override;
+    void InterpolateCoordinatesFrom2D(double rNaturalCoordinates[2], double rGlobalCoordinates[2]) const;
 
     //! @brief ... interpolate three-dimensional global point displacements from three-dimensional local point coordinates (element coordinates system)
     //! @param rTimeDerivative ... time derivative (0 disp, 1 velocities, 2 accelerations)
     //! @param rNaturalCoordinates ... two-dimensional point coordinates in natural coordinate system
     //! @param rGlobalDisplacements ... three-dimension global point displacements
-    void InterpolateDisplacementsFrom2D(int rTimeDerivative, double rNaturalCoordinates[2], double rGlobalDisplacements[3]) const override;
+    void InterpolateDisplacementsFrom2D(int rTimeDerivative, double rNaturalCoordinates[2], double rGlobalDisplacements[3]) const;
 
     //! @brief ... interpolate three-dimensional global nonlocal eq strain from two-dimensional local point coordinates (element coordinates system)
     //! @param rLocalCoordinates ... two-dimensional local point coordinates
     //! @param rNonlocalEqStrain ... interpolated nonlocal eq strain
-    void InterpolateNonlocalEqStrainFrom2D(double rLocalCoordinates[2], double& rNonlocalEqStrain) const override;
+    void InterpolateNonlocalEqStrainFrom2D(double rLocalCoordinates[2], double& rNonlocalEqStrain) const;
 
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @param rVolume  vector for storage of the ip volumes (area in 2D)

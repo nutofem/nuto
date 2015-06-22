@@ -282,7 +282,7 @@ public:
     //! @param shape functions for all the nodes
     void CalculateShapeFunctionsGeometry(const double rNaturalCoordinates[2], std::vector<double>& rShapeFunctions)const
     {
-        return NuTo::ShapeFunctions2D::ShapeFunctionsPlane2D4N(rNaturalCoordinates, rShapeFunctions);
+        NuTo::ShapeFunctions2D::ShapeFunctionsQuadOrder1(rNaturalCoordinates, rShapeFunctions);
     }
 
     //! @brief calculates the derivative of the shape functions
@@ -291,7 +291,7 @@ public:
     //! first all the directions for a single node, and then for the next node
     void CalculateDerivativeShapeFunctionsGeometryNatural(const double rNaturalCoordinates[2], std::vector<double>& rDerivativeShapeFunctions)const
     {
-        return NuTo::ShapeFunctions2D::DerivativeShapeFunctionsPlane2D4N(rNaturalCoordinates, rDerivativeShapeFunctions);
+        NuTo::ShapeFunctions2D::DerivativeShapeFunctionsQuadOrder1(rNaturalCoordinates, rDerivativeShapeFunctions);
     }
 
     //! @brief calculates the shape functions
@@ -306,16 +306,16 @@ public:
 
         switch (TOrder) {
         case 2:
-            NuTo::ShapeFunctions1D::ShapeFunctions1D3N(rNaturalCoordinates[0],shapeFunctions1Dx);
-            NuTo::ShapeFunctions1D::ShapeFunctions1D3N(rNaturalCoordinates[1],shapeFunctions1Dy);
+            NuTo::ShapeFunctions1D::ShapeFunctionsTrussOrder2(rNaturalCoordinates[0],shapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::ShapeFunctionsTrussOrder2(rNaturalCoordinates[1],shapeFunctions1Dy);
             break;
         case 3:
-            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder3(rNaturalCoordinates[0],shapeFunctions1Dx);
-            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder3(rNaturalCoordinates[1],shapeFunctions1Dy);
+            NuTo::ShapeFunctions1D::ShapeFunctionsTrussSpectralOrder3(rNaturalCoordinates[0],shapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::ShapeFunctionsTrussSpectralOrder3(rNaturalCoordinates[1],shapeFunctions1Dy);
             break;
         case 4:
-            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder4(rNaturalCoordinates[0],shapeFunctions1Dx);
-            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder4(rNaturalCoordinates[1],shapeFunctions1Dy);
+            NuTo::ShapeFunctions1D::ShapeFunctionsTrussSpectralOrder4(rNaturalCoordinates[0],shapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::ShapeFunctionsTrussSpectralOrder4(rNaturalCoordinates[1],shapeFunctions1Dy);
             break;
         default:
             break;
@@ -352,22 +352,22 @@ public:
 
         switch (TOrder) {
         case 2:
-            NuTo::ShapeFunctions1D::ShapeFunctions1D3N(rNaturalCoordinates[0],shapeFunctions1Dx);
-            NuTo::ShapeFunctions1D::ShapeFunctions1D3N(rNaturalCoordinates[1],shapeFunctions1Dy);
-            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D3N(rNaturalCoordinates[0],derShapeFunctions1Dx);
-            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D3N(rNaturalCoordinates[1],derShapeFunctions1Dy);
+            NuTo::ShapeFunctions1D::ShapeFunctionsTrussOrder2(rNaturalCoordinates[0],shapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::ShapeFunctionsTrussOrder2(rNaturalCoordinates[1],shapeFunctions1Dy);
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder2(rNaturalCoordinates[0],derShapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder2(rNaturalCoordinates[1],derShapeFunctions1Dy);
             break;
         case 3:
-            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder3(rNaturalCoordinates[0],shapeFunctions1Dx);
-            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder3(rNaturalCoordinates[1],shapeFunctions1Dy);
-            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D2NSpectralOrder3(rNaturalCoordinates[0],derShapeFunctions1Dx);
-            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D2NSpectralOrder3(rNaturalCoordinates[1],derShapeFunctions1Dy);
+            NuTo::ShapeFunctions1D::ShapeFunctionsTrussSpectralOrder3(rNaturalCoordinates[0],shapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::ShapeFunctionsTrussSpectralOrder3(rNaturalCoordinates[1],shapeFunctions1Dy);
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctionsTrussSpectralOrder3(rNaturalCoordinates[0],derShapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctionsTrussSpectralOrder3(rNaturalCoordinates[1],derShapeFunctions1Dy);
             break;
         case 4:
-            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder4(rNaturalCoordinates[0],shapeFunctions1Dx);
-            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder4(rNaturalCoordinates[1],shapeFunctions1Dy);
-            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D2NSpectralOrder4(rNaturalCoordinates[0],derShapeFunctions1Dx);
-            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D2NSpectralOrder4(rNaturalCoordinates[1],derShapeFunctions1Dy);
+            NuTo::ShapeFunctions1D::ShapeFunctionsTrussSpectralOrder4(rNaturalCoordinates[0],shapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::ShapeFunctionsTrussSpectralOrder4(rNaturalCoordinates[1],shapeFunctions1Dy);
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctionsTrussSpectralOrder4(rNaturalCoordinates[0],derShapeFunctions1Dx);
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctionsTrussSpectralOrder4(rNaturalCoordinates[1],derShapeFunctions1Dy);
             break;
         default:
             break;
@@ -401,13 +401,13 @@ public:
 
         switch (TOrder) {
         case 2:
-            NuTo::ShapeFunctions1D::ShapeFunctions1D3N(rLocalCoordinates,rShapeFunctions);
+            NuTo::ShapeFunctions1D::ShapeFunctionsTrussOrder2(rLocalCoordinates,rShapeFunctions);
             break;
         case 3:
-            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder3(rLocalCoordinates,rShapeFunctions);
+            NuTo::ShapeFunctions1D::ShapeFunctionsTrussSpectralOrder3(rLocalCoordinates,rShapeFunctions);
             break;
         case 4:
-            NuTo::ShapeFunctions1D::ShapeFunctions1D2NSpectralOrder4(rLocalCoordinates,rShapeFunctions);
+            NuTo::ShapeFunctions1D::ShapeFunctionsTrussSpectralOrder4(rLocalCoordinates,rShapeFunctions);
             break;
         default:
             break;
@@ -424,13 +424,13 @@ public:
 
         switch (TOrder) {
         case 2:
-            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D3N(rLocalCoordinates,rDerivativeShapeFunctions);
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder2(rLocalCoordinates,rDerivativeShapeFunctions);
             break;
         case 3:
-            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D2NSpectralOrder3(rLocalCoordinates,rDerivativeShapeFunctions);
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctionsTrussSpectralOrder3(rLocalCoordinates,rDerivativeShapeFunctions);
             break;
         case 4:
-            NuTo::ShapeFunctions1D::DerivativeShapeFunctions1D2NSpectralOrder4(rLocalCoordinates,rDerivativeShapeFunctions);
+            NuTo::ShapeFunctions1D::DerivativeShapeFunctionsTrussSpectralOrder4(rLocalCoordinates,rDerivativeShapeFunctions);
             break;
         default:
             break;

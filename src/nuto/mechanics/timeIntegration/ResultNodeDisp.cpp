@@ -17,26 +17,7 @@ void NuTo::ResultNodeDisp::CalculateValues(const StructureBase& rStructure, NuTo
 {
 	const NodeBase* node(rStructure.NodeGetNodePtr(mNodeId));
 
-	switch(node->GetNumDisplacements())
-    {
-    case 1:
-    {
-    	node->GetDisplacements1D(rValues.data());
-    }
-    break;
-    case 2:
-    {
-    	node->GetDisplacements2D(rValues.data());
-    }
-    break;
-    case 3:
-    {
-    	node->GetDisplacements3D(rValues.data());
-    }
-    break;
-    default:
-        break;
-    }
+	rValues = node->GetDisplacements().transpose();
 }
 
 //! @brief number of data points per time step (e.g. number of displacement components of a node

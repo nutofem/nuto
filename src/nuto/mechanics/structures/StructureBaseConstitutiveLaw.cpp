@@ -1203,6 +1203,9 @@ void NuTo::StructureBase::ConstitutiveLawSetViscoplasticYieldSurfaceOffset(int r
     }
 }
 
+
+
+
 // get viscosity
 double NuTo::StructureBase::ConstitutiveLawGetViscoplasticYieldSurfaceOffset(int rIdent) const
 {
@@ -1218,6 +1221,27 @@ double NuTo::StructureBase::ConstitutiveLawGetViscoplasticYieldSurfaceOffset(int
         throw e;
     }
     return ViscoplasticYieldSurfaceOffset;
+}
+
+//! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
+//! @param rIdent ... constitutive law identifier
+//! @param rRelativeHumidity ... relative humidity
+//! @param rCoeffs ... polynomial coefficients of the sorption curve
+//! @return ... equilibrium water volume fraction
+double NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const
+{
+    double EquilibriumWaterVolumeFraction = 0.0;
+    try
+    {
+        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        EquilibriumWaterVolumeFraction = ConstitutiveLawPtr->GetEquilibriumWaterVolumeFraction(rRelativeHumidity,rCoeffs);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction] error getting the equilibrium water volume fraction.");
+        throw e;
+    }
+    return EquilibriumWaterVolumeFraction;
 }
 
 // set fatigue flag
@@ -1261,24 +1285,3 @@ bool NuTo::StructureBase::ConstitutiveLawGetFatigueExtrapolation(int rIdent) con
     return FatigueExtrapolation;
 }
 
-
-//! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
-//! @param rIdent ... constitutive law identifier
-//! @param rRelativeHumidity ... relative humidity
-//! @param rCoeffs ... polynomial coefficients of the sorption curve
-//! @return ... equilibrium water volume fraction
-double NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const
-{
-    double EquilibriumWaterVolumeFraction = 0.0;
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        EquilibriumWaterVolumeFraction = ConstitutiveLawPtr->GetEquilibriumWaterVolumeFraction(rRelativeHumidity,rCoeffs);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction] error getting the equilibrium water volume fraction.");
-        throw e;
-    }
-    return EquilibriumWaterVolumeFraction;
-}

@@ -2,6 +2,10 @@
 #ifndef NODEENUM_H_
 #define NODEENUM_H_
 
+#include <map>
+#include <boost/algorithm/string.hpp>
+#include "nuto/mechanics/MechanicsException.h"
+
 namespace NuTo
 {
 namespace Node
@@ -10,15 +14,7 @@ enum eNodeType
 {
     NodeCoordinates,
     NodeCoordinatesDof,
-    NodeCoordinatesMultiscale2D,
     NodeCoordinatesDofNonlocalData,
-    NodeCoordinatesDofRadius,
-    NodeGrid1D,
-    NodeGrid2D,
-    NodeGrid3D,
-    NodeGridDisplacements1D,
-    NodeGridDisplacements2D,
-    NodeGridDisplacements3D
 };
 
 enum eAttributes
@@ -32,9 +28,51 @@ enum eAttributes
     NONLOCALEQPLASTICSTRAIN,
     NONLOCALTOTALSTRAIN,
     NONLOCALEQSTRAIN,
-    WATERPHASEFRACTION,
+    WATERVOLUMEFRACTION,
     RELATIVEHUMIDITY
 };
+
+static inline std::map<eAttributes, std::string> GetAttributeMap()
+{
+    std::map<eAttributes, std::string> attributeMap;
+    attributeMap[eAttributes::COORDINATES]             = "COORDINATES";
+    attributeMap[eAttributes::ROTATIONS]               = "ROTATIONS";
+    attributeMap[eAttributes::TEMPERATURES]            = "TEMPERATURES";
+    attributeMap[eAttributes::DISPLACEMENTS]           = "DISPLACEMENTS";
+    attributeMap[eAttributes::FINESCALEDISPLACEMENTS]  = "FINESCALEDISPLACEMENTS";
+    attributeMap[eAttributes::NONLOCALDATA]            = "NONLOCALDATA";
+    attributeMap[eAttributes::NONLOCALEQPLASTICSTRAIN] = "NONLOCALEQPLASTICSTRAIN";
+    attributeMap[eAttributes::NONLOCALTOTALSTRAIN]     = "NONLOCALTOTALSTRAIN";
+    attributeMap[eAttributes::NONLOCALEQSTRAIN]        = "NONLOCALEQSTRAIN";
+    attributeMap[eAttributes::WATERVOLUMEFRACTION]     = "WATERVOLUMEFRACTION";
+    attributeMap[eAttributes::RELATIVEHUMIDITY]        = "RELATIVEHUMIDITY";
+    return attributeMap;
+}
+
+
+static inline std::string AttributeToString(const eAttributes& rAttribute)
+{
+    try
+    {
+        return GetAttributeMap().find(rAttribute)->second;
+    }
+    catch (const std::out_of_range& e)
+    {
+        throw NuTo::MechanicsException("[NuTo::Node::AttributeToString] Enum undefined or not implemented.");
+    }
+}
+
+static inline eAttributes AttributeToEnum(const std::string& rAttribute)
+{
+    std::string uppercase = boost::to_upper_copy(rAttribute);
+
+    for(auto entry : GetAttributeMap())
+        if (entry.second == uppercase)
+            return entry.first;
+
+    throw NuTo::MechanicsException("[NuTo::Node::AttributeToEnum] DofType " + rAttribute + " has no enum equivalent or is not implemented.");
+}
+
 
 }
 }

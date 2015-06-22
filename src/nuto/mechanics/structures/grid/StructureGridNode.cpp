@@ -8,12 +8,7 @@
 
 #include "nuto/mechanics/structures/grid/StructureGrid.h"
 #include "nuto/math/FullMatrix.h"
-#include "nuto/mechanics/nodes/NodeGrid1D.h"
-#include "nuto/mechanics/nodes/NodeGrid2D.h"
-#include "nuto/mechanics/nodes/NodeGrid3D.h"
-#include "nuto/mechanics/nodes/NodeGridDisplacements1D.h"
-#include "nuto/mechanics/nodes/NodeGridDisplacements2D.h"
-#include "nuto/mechanics/nodes/NodeGridDisplacements3D.h"
+
 
 //! @brief returns the number of nodes
 //! @return number of nodes
