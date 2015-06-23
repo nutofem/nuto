@@ -7,19 +7,24 @@ try:
     myStructure = nuto.Structure(1)
 
     #create nodes
-    myNode1 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((1,)))
+    myNode1 = myStructure.NodeCreateDOFs("displacements",nuto.DoubleFullVector((1,)))
     myStructure.NodeSetDisplacements(myNode1,nuto.DoubleFullVector((0.0,)))
-    myNode2 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((6,)))
+    myNode2 = myStructure.NodeCreateDOFs("displacements",nuto.DoubleFullVector((6,)))
     myStructure.NodeSetDisplacements(myNode2,nuto.DoubleFullVector((0.3,)))
-    myNode3 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((10,)))
+    myNode3 = myStructure.NodeCreateDOFs("displacements",nuto.DoubleFullVector((10,)))
     myStructure.NodeSetDisplacements(myNode3,nuto.DoubleFullVector((0.6,)))
 
+    #create interpolation type
+    myInterpolationType = myStructure.InterpolationTypeCreate("Truss1D")
+    myStructure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistant1")
+    myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant1")
+
     #create element
-    myElement1 = myStructure.ElementCreate("Truss1D2N",nuto.IntFullVector((myNode1,myNode2)))
-    myElement2 = myStructure.ElementCreate("Truss1D2N",nuto.IntFullVector((myNode3,myNode2)))
+    myElement1 = myStructure.ElementCreate(myInterpolationType,nuto.IntFullVector((myNode1,myNode2)))
+    myElement2 = myStructure.ElementCreate(myInterpolationType,nuto.IntFullVector((myNode2,myNode3)))
 
     #create constitutive law
-    myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic")
+    myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
     myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10)
     myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1)
 
@@ -27,7 +32,6 @@ try:
     mySection1 = myStructure.SectionCreate ("TRUSS")
     myStructure.SectionSetArea(mySection1,0.01)
 
-    myStructure.ElementSetIntegrationType(myElement1,"1D2NGauss2Ip","NOIPDATA")
     myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin)
     myStructure.ElementSetSection(myElement1,mySection1)
     myStructure.ElementSetConstitutiveLaw(myElement2,myMatLin)
@@ -37,6 +41,6 @@ try:
     myStructure.AddVisualizationComponentDisplacements()
     myStructure.AddVisualizationComponentEngineeringStrain()
     myStructure.AddVisualizationComponentEngineeringStress()
-    myStructure.ExportVtkDataFile("Truss1D2N.vtk")
+    myStructure.ExportVtkDataFileElements("Truss1D2N.vtk")
 except nuto.Exception, e:
     print e.ErrorMessage()

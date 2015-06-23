@@ -28,7 +28,12 @@ nodeCoordinates = nuto.DoubleFullVector(1)
 for node in range(0, NumElements + 1):
     print "create node: " + str(node) + " coordinates: " + str(node * Length/NumElements)
     nodeCoordinates.SetValue(0, 0, node * Length/NumElements)
-    myStructure.NodeCreate(node, "displacements", nodeCoordinates)
+    myStructure.NodeCreateDOFs(node, "displacements", nodeCoordinates)
+
+#create interpolation type
+myInterpolationType = myStructure.InterpolationTypeCreate("Truss1D")
+myStructure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistant1")
+myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant1")
 
 # create elements
 elementIncidence = nuto.IntFullVector(2)
@@ -36,7 +41,7 @@ for element in range(0, NumElements):
     print "create element: " + str(element) + " nodes: " + str(element) + "," + str(element+1)
     elementIncidence.SetValue(0, 0, element)
     elementIncidence.SetValue(1, 0, element + 1)
-    myStructure.ElementCreate(element, "Truss1D2N", elementIncidence)
+    myStructure.ElementCreate(element, myInterpolationType, elementIncidence, "ConstitutiveLawIP", "NoIPData")
     myStructure.ElementSetSection(element,Section1)
     myStructure.ElementSetConstitutiveLaw(element,Material1)
 
@@ -90,4 +95,4 @@ print "residual: " + str(residualVector.Norm())
 myStructure.AddVisualizationComponentDisplacements()
 myStructure.AddVisualizationComponentEngineeringStrain()
 myStructure.AddVisualizationComponentEngineeringStress()
-myStructure.ExportVtkDataFile("Truss1D2N.vtk")
+myStructure.ExportVtkDataFileElements("Truss1D2N.vtk")

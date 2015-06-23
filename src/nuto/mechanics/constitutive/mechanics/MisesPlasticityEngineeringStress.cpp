@@ -819,6 +819,8 @@ bool NuTo::MisesPlasticityEngineeringStress::CheckElementCompatibility(NuTo::Ele
         return true;
     case NuTo::Element::BRICK8N:
         return true;
+    case NuTo::Element::ELEMENT3D:
+        return true;
     default:
         return false;
     }
