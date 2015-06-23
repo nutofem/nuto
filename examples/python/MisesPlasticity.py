@@ -10,17 +10,22 @@ printResult = False
 myStructure = nuto.Structure(3)
 
 #create nodes
-myNode1 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((+1,+1,+1)))
-myNode2 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector(( 0,+1,+1)))
-myNode3 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector(( 0, 0,+1)))
-myNode4 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((+1, 0,+1)))
-myNode5 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((+1,+1, 0)))
-myNode6 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector(( 0,+1, 0)))
-myNode7 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector(( 0, 0, 0)))
-myNode8 = myStructure.NodeCreate("displacements",nuto.DoubleFullVector((+1, 0, 0)))
+myNode1 = myStructure.NodeCreateDOFs("displacements",nuto.DoubleFullVector((+1,+1,+1)))
+myNode2 = myStructure.NodeCreateDOFs("displacements",nuto.DoubleFullVector(( 0,+1,+1)))
+myNode3 = myStructure.NodeCreateDOFs("displacements",nuto.DoubleFullVector(( 0, 0,+1)))
+myNode4 = myStructure.NodeCreateDOFs("displacements",nuto.DoubleFullVector((+1, 0,+1)))
+myNode5 = myStructure.NodeCreateDOFs("displacements",nuto.DoubleFullVector((+1,+1, 0)))
+myNode6 = myStructure.NodeCreateDOFs("displacements",nuto.DoubleFullVector(( 0,+1, 0)))
+myNode7 = myStructure.NodeCreateDOFs("displacements",nuto.DoubleFullVector(( 0, 0, 0)))
+myNode8 = myStructure.NodeCreateDOFs("displacements",nuto.DoubleFullVector((+1, 0, 0)))
+
+#create interpolation type
+myInterpolationType = myStructure.InterpolationTypeCreate("Brick3D");
+myStructure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistant1");
+myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant1");
 
 #create element
-myElement1 = myStructure.ElementCreate("Brick8N",nuto.IntFullVector((myNode1,myNode2,myNode3,myNode4,myNode5,myNode6,myNode7,myNode8)),"ConstitutiveLawIp","StaticData")
+myElement1 = myStructure.ElementCreate(myInterpolationType,nuto.IntFullVector((myNode5,myNode6,myNode7,myNode8,myNode1,myNode2,myNode3,myNode4)),"ConstitutiveLawIp","StaticData")
 
 #create section
 mySection = myStructure.SectionCreate("Volume")

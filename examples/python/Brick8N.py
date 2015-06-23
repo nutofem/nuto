@@ -38,12 +38,16 @@ for zCount in range (0, NumElementsZ + 1):
         for xCount in range(0, NumElementsX + 1):
             nodeCoordinates.SetValue(0,0, xCount * Length/NumElementsX)
             #print "node: " + str(node) + " coordinates: " + str(nodeCoordinates.GetValue(0,0)) + "," + str(nodeCoordinates.GetValue(1,0)) + "," + str(nodeCoordinates.GetValue(2,0))
-            myStructure.NodeCreate(node, "displacements", nodeCoordinates)
+            myStructure.NodeCreate(node, nodeCoordinates)
             node += 1
+#create interpolation type
+myInterpolationType = myStructure.InterpolationTypeCreate("Brick3D")
+myStructure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistant1")
+myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant1")
 
 # create elements
 elementIncidence = nuto.IntFullVector(8)
-element = 0
+
 for zCount in range (0, NumElementsZ):
     for yCount in range(0, NumElementsY):
         for xCount in range(0, NumElementsX):
@@ -58,10 +62,13 @@ for zCount in range (0, NumElementsZ):
             elementIncidence.SetValue(7,0, node1 + (NumElementsX + 1) * (NumElementsY + 1) + NumElementsX + 1)
             #print "element: " + str(element) + " incidence: "
             #elementIncidence.Info()
-            myStructure.ElementCreate(element, "Brick8N", elementIncidence)
-            myStructure.ElementSetConstitutiveLaw(element,Material1)
-            myStructure.ElementSetSection(element,Section1)
-            element += 1
+            myStructure.ElementCreate(myInterpolationType, elementIncidence)
+
+myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10)
+myStructure.ElementTotalSetConstitutiveLaw(Material1)
+myStructure.ElementTotalSetSection(Section1)
+
+
 
 # boundary conditions
 direction = nuto.DoubleFullMatrix(3,1,(1,0,0))
