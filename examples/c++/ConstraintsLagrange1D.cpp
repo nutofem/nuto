@@ -24,18 +24,26 @@ try
     //create nodes
     NuTo::FullVector<double,Eigen::Dynamic> Coordinates(1);
     Coordinates(0,0) = 0.0;
-    int node1 = myStructure.NodeCreate("displacements",Coordinates);
+    int node1 = 0;
+    myStructure.NodeCreate(node1, Coordinates);
 
     Coordinates(0,0) = lx;
-    int node2 = myStructure.NodeCreate("displacements",Coordinates);
+    int node2 = 1;
+    myStructure.NodeCreate(node2, Coordinates);
+
+    int interpolationType = myStructure.InterpolationTypeCreate("TRUSS1D");
+    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
     NuTo::FullVector<int,Eigen::Dynamic> Incidence(2);
     Incidence(0,0) = node1;
     Incidence(1,0) = node2;
-    myStructure.ElementCreate("TRUSS1D2N",Incidence);
+    myStructure.ElementCreate(interpolationType,Incidence);
+
+    myStructure.ElementTotalConvertToInterpolationType(1e-6,3);
 
     //create constitutive law
-    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic");
+    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
     myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,1);
     myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0);
 

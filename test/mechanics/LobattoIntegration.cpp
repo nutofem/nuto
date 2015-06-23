@@ -20,8 +20,8 @@
  |>*----*----*----*----*  -->F
 */
 
-int buildStructure1D(const std::string& rElementTypeIdent,
-                     const std::string& rIntegrationTypeIdent,
+int buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
+                     //NuTo::IntegrationType::eIntegrationType rIntegrationTypeIdent,
                      int rNumNodesPerElement,
                      NuTo::FullVector<double, Eigen::Dynamic>& nodeCoordinatesFirstElement,
                      int NumElements = 10)
@@ -53,7 +53,7 @@ int buildStructure1D(const std::string& rElementTypeIdent,
     int node = 0;
     // first node
     nodeCoordinates(0) = factor*nodeCoordinatesFirstElement(0);
-    myStructure.NodeCreate(node, "displacements", nodeCoordinates);
+    myStructure.NodeCreate(node, nodeCoordinates);
     if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) << std::endl;
     node++;
     // following nodes
@@ -63,11 +63,15 @@ int buildStructure1D(const std::string& rElementTypeIdent,
         {
             nodeCoordinates(0) = factor*(nodeCoordinatesFirstElement(j) + elementBegin);
             if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) << std::endl;
-            myStructure.NodeCreate(node, "displacements", nodeCoordinates);
+            myStructure.NodeCreate(node, nodeCoordinates);
             node++;
         }
         elementBegin+=elementLength;
     }
+
+    int interpolationType = myStructure.InterpolationTypeCreate("TRUSS1D");
+    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::COORDINATES, rElementTypeIdent);
+    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::DISPLACEMENTS, rElementTypeIdent);
 
     int numNodes = node;
 
@@ -84,11 +88,12 @@ int buildStructure1D(const std::string& rElementTypeIdent,
 
         if(PRINTRESULT) std::cout <<  "create element: " << element << " nodes: " << elementIncidence << std::endl;
 
-        int myElement = myStructure.ElementCreate(rElementTypeIdent, elementIncidence);
-        myStructure.ElementSetSection(myElement, Section);
-        myStructure.ElementSetConstitutiveLaw(myElement, Material);
-        myStructure.ElementSetIntegrationType(myElement, rIntegrationTypeIdent, "NOIPDATA");
+        myStructure.ElementCreate(interpolationType, elementIncidence);
     }
+
+    myStructure.ElementTotalConvertToInterpolationType(1e-6,3);
+    myStructure.ElementTotalSetSection(Section);
+    myStructure.ElementTotalSetConstitutiveLaw(Material);
 
     /** set boundary conditions and loads **/
     NuTo::FullVector<double,Eigen::Dynamic> direction(1);
@@ -186,8 +191,8 @@ int buildStructure1D(const std::string& rElementTypeIdent,
    ||>*----*----*----*----*
       ^
 */
-int buildStructure2D(const std::string& rElementTypeIdent,
-                     const std::string& rIntegrationTypeIdent,
+int buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
+                     //NuTo::IntegrationType::eIntegrationType rIntegrationTypeIdent,
                      int rNumNodesPerElementInOneDir,
                      NuTo::FullVector<double, Eigen::Dynamic>& nodeCoordinatesFirstElement,
                      int NumElementsX, int NumElementsY)
@@ -217,7 +222,8 @@ int buildStructure2D(const std::string& rElementTypeIdent,
 
     nodeCoordinates(0) = factorX*nodeCoordinatesFirstElement(0);
     nodeCoordinates(1) = factorY*nodeCoordinatesFirstElement(0);
-    myStructure.NodeCreate(node, "displacements", nodeCoordinates);
+    //myStructure.NodeCreateDOFs(node, "Displacements", nodeCoordinates);
+    myStructure.NodeCreate(node, nodeCoordinates);
     if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) <<", "<< nodeCoordinates(1) << std::endl;
     node++;
 
@@ -229,7 +235,8 @@ int buildStructure2D(const std::string& rElementTypeIdent,
             {
                 nodeCoordinates(0) = factorX*nodeCoordinatesFirstElement(0);
                 nodeCoordinates(1) = factorY*(nodeCoordinatesFirstElement(i) + elementBeginY);
-                myStructure.NodeCreate(node, "displacements", nodeCoordinates);
+                //myStructure.NodeCreateDOFs(node, "Displacements", nodeCoordinates);
+                myStructure.NodeCreate(node, nodeCoordinates);
                 if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) <<", "<< nodeCoordinates(1)  << std::endl;
                 node++;
             }
@@ -241,7 +248,8 @@ int buildStructure2D(const std::string& rElementTypeIdent,
                 {
                     nodeCoordinates(0) = factorX*(nodeCoordinatesFirstElement(j) + elementBeginX);
                     nodeCoordinates(1) = factorY*(nodeCoordinatesFirstElement(i) + elementBeginY);
-                    myStructure.NodeCreate(node, "displacements", nodeCoordinates);
+                    //myStructure.NodeCreateDOFs(node, "Displacements", nodeCoordinates);
+                    myStructure.NodeCreate(node, nodeCoordinates);
                     if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) <<", "<< nodeCoordinates(1)  << std::endl;
                     node++;
                 }
@@ -250,6 +258,10 @@ int buildStructure2D(const std::string& rElementTypeIdent,
         }
         elementBeginY += elementSize;
     }
+
+    int interpolationType = myStructure.InterpolationTypeCreate("QUAD2D");
+    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::DISPLACEMENTS, rElementTypeIdent);
+    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::COORDINATES, rElementTypeIdent);
 
     /** Elements **/
     NuTo::FullVector<int,Eigen::Dynamic> elementIncidence(rNumNodesPerElementInOneDir*rNumNodesPerElementInOneDir);
@@ -263,20 +275,20 @@ int buildStructure2D(const std::string& rElementTypeIdent,
                 for(int l = 0; l < rNumNodesPerElementInOneDir; l++)
                     elementIncidence(k + l*rNumNodesPerElementInOneDir) = i*(rNumNodesPerElementInOneDir - 1) + k + l*numNodesInRow + j*(rNumNodesPerElementInOneDir-1)*numNodesInRow;
 
-            int myElement = myStructure.ElementCreate(rElementTypeIdent, elementIncidence);
+            int myElement = myStructure.ElementCreate(interpolationType, elementIncidence);
             if (PRINTRESULT) std::cout <<  "create element: " << myElement << " nodes: \n" << elementIncidence << std::endl;
         }
     }
 
-    myStructure.ElementTotalSetIntegrationType(rIntegrationTypeIdent, "NOIPDATA");
     myStructure.Info();
-
     /** create constitutive law **/
     int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
     myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,YoungsModulus);
     myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,PoissonRatio);
 
     /** create section **/
+    myStructure.ElementTotalConvertToInterpolationType(1.e-6,10);
+    //myStructure.InterpolationTypeSetIntegrationType(myInterpolationType, rIntegrationTypeIdent, NuTo::IpData::STATICDATA);
     int mySection = myStructure.SectionCreate("Plane_Stress");
     myStructure.SectionSetThickness(mySection,Thickness);
 
@@ -454,10 +466,12 @@ int main()
     for (int i = 0; i < 3; i++) Lobatto1D2N3Ip.GetLocalIntegrationPointCoordinates1D(i, nodeCoordinates(i));
     nodeCoordinates += ones;
 
-    buildStructure2D("PLANE2D4NSPECTRALORDER2", "2D4NLobatto9Ip", 3, nodeCoordinates, 40, 20);
-
     // 3Nodes 1D
-    buildStructure1D("TRUSS1D2NSPECTRALORDER2", "1D2NLobatto3Ip", 3, nodeCoordinates, 100);
+    //buildStructure1D("TRUSS1D2NSPECTRALORDER2", "1D2NLobatto3Ip", 3, nodeCoordinates, 100);
+    buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, 100);
+
+    //buildStructure2D("PLANE2D4NSPECTRALORDER2", "2D4NLobatto9Ip", 3, nodeCoordinates, 40, 20);
+    buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, 40, 20);
 
 
     // 4Nodes 2D
@@ -467,10 +481,12 @@ int main()
     for (int i = 0; i < 4; i++) Lobatto1D2N4Ip.GetLocalIntegrationPointCoordinates1D(i, nodeCoordinates(i));
     nodeCoordinates+=ones;
 
-    buildStructure2D("PLANE2D4NSPECTRALORDER3", "2D4NLobatto16Ip", 4, nodeCoordinates, 40, 20);
+    //buildStructure2D("PLANE2D4NSPECTRALORDER3", "2D4NLobatto16Ip", 4, nodeCoordinates, 40, 20);
+    buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO3, 4, nodeCoordinates, 40, 20);
 
     // 4Nodes 1D
-    buildStructure1D("TRUSS1D2NSPECTRALORDER3", "1D2NLobatto4Ip", 4, nodeCoordinates, 100);
+    //buildStructure1D("TRUSS1D2NSPECTRALORDER3", "1D2NLobatto4Ip", 4, nodeCoordinates, 100);
+    buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO3, 4, nodeCoordinates, 100);
 
     // 5Nodes 2D
     ones.resize(5); ones.fill(1);
@@ -479,10 +495,12 @@ int main()
     for (int i = 0; i < 5; i++) Lobatto1D2N5Ip.GetLocalIntegrationPointCoordinates1D(i, nodeCoordinates(i));
     nodeCoordinates+=ones;
 
-    buildStructure2D("PLANE2D4NSPECTRALORDER4", "2D4NLobatto25Ip", 5, nodeCoordinates, 40, 20);
+    //buildStructure2D("PLANE2D4NSPECTRALORDER4", "2D4NLobatto25Ip", 5, nodeCoordinates, 40, 20);
+    buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO4, 5, nodeCoordinates, 40, 20);
 
     // 5Nodes 1D
-    buildStructure1D("TRUSS1D2NSPECTRALORDER4", "1D2NLobatto5Ip", 5, nodeCoordinates, 100);
+    //buildStructure1D("TRUSS1D2NSPECTRALORDER4", "1D2NLobatto5Ip", 5, nodeCoordinates, 100);
+    buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO4, 5, nodeCoordinates, 100);
 
     return 0;
 }

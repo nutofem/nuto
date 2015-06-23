@@ -216,12 +216,16 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
         }
     }
 
+
+
     Eigen::Vector3i numBoxes = Eigen::Vector3i::Ones(); // initialize as 3D array with at least one box per dimension
     Eigen::VectorXd deltaBox(mDimension);
     for (int iDim = 0; iDim < mDimension; ++iDim)
     {
+        // sligtly move the boundingBoxMin
+        boundingBoxMin[iDim] -= rNodeDistanceMerge;
         numBoxes[iDim] = (boundingBoxMax[iDim] - boundingBoxMin[iDim]) / rMeshSize + 1;
-        deltaBox[iDim] = (boundingBoxMax[iDim] - boundingBoxMin[iDim] + rMeshSize / 4) / numBoxes[iDim]; // small offset to fit coordinates at boundingBoxMax in the last box
+        deltaBox[iDim] = (boundingBoxMax[iDim] - boundingBoxMin[iDim] + rNodeDistanceMerge) / numBoxes[iDim]; // small offset to fit coordinates at boundingBoxMax in the last box
         if (deltaBox[iDim] < rNodeDistanceMerge)
             throw MechanicsException("[NuTo::Structure::ElementConvertToInterpolationType] The merge distance is larger than the mesh size, that should not happen.");
     }

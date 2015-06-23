@@ -58,7 +58,10 @@ public:
            & BOOST_SERIALIZATION_NVP(mIntegrationType2NPtr)
            & BOOST_SERIALIZATION_NVP(mIntegrationType3NPtr)
            & BOOST_SERIALIZATION_NVP(mIntegrationType4NPtr)
-           & BOOST_SERIALIZATION_NVP(mIntegrationType5NPtr);
+           & BOOST_SERIALIZATION_NVP(mIntegrationType5NPtr)
+           & BOOST_SERIALIZATION_NVP(mIntegrationType3NPtrLobatto)
+           & BOOST_SERIALIZATION_NVP(mIntegrationType4NPtrLobatto)
+           & BOOST_SERIALIZATION_NVP(mIntegrationType5NPtrLobatto);
     }
 #endif // ENABLE_SERIALIZATION
 
@@ -68,6 +71,9 @@ protected:
     IntegrationTypeBase* mIntegrationType3NPtr;
     IntegrationTypeBase* mIntegrationType4NPtr;
     IntegrationTypeBase* mIntegrationType5NPtr;
+    IntegrationTypeBase* mIntegrationType3NPtrLobatto;
+    IntegrationTypeBase* mIntegrationType4NPtrLobatto;
+    IntegrationTypeBase* mIntegrationType5NPtrLobatto;
 };
 }//namespace NuTo
 #endif //LoadSurfaceBase2D_H

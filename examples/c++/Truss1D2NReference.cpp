@@ -50,20 +50,26 @@ int main()
 	NuTo::FullVector<double,Eigen::Dynamic> nodeCoordinates(1);
 	nodeCoordinates(0) =  0.;
 	output<<nodeCoordinates(0)<<"\n";
-	myStructure.NodeCreate(0, "displacements", nodeCoordinates);
+    myStructure.NodeCreate(0, nodeCoordinates);
 	nodeCoordinates(0) =  2000.;
 	output<<nodeCoordinates(0)<<"\n";
-	myStructure.NodeCreate(1, "displacements", nodeCoordinates);
+    myStructure.NodeCreate(1, nodeCoordinates);
 	nodeCoordinates(0) =  3000.0;
 	output<<nodeCoordinates(0)<<"\n";
-	myStructure.NodeCreate(2, "displacements", nodeCoordinates);
+    myStructure.NodeCreate(2, nodeCoordinates);
 	nodeCoordinates(0) =  4000.0;
 	output<<nodeCoordinates(0)<<"\n";
-	myStructure.NodeCreate(3, "displacements", nodeCoordinates);
+    myStructure.NodeCreate(3, nodeCoordinates);
 	nodeCoordinates(0) =  6000.0;
 	output<<nodeCoordinates(0)<<"\n";
-	myStructure.NodeCreate(4, "displacements", nodeCoordinates);
+    myStructure.NodeCreate(4, nodeCoordinates);
 	output.close();
+
+
+    int interpolationType = myStructure.InterpolationTypeCreate("TRUSS1D");
+    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+
 //	for(int node = 0; node < NumElements + 1; node++)
 //	{
 //		std::cout << "create node: " << node << " coordinates: " << node * Length/NumElements << std::endl;
@@ -87,8 +93,8 @@ int main()
 		std::cout <<  "create element: " << element << " nodes: " << element << "," << element+1 << std::endl;
 		elementIncidence(0) = element;
 		elementIncidence(1) = element + 1;
-		myStructure.ElementCreate(element, "Truss1D2N", elementIncidence);
-		myStructure.ElementSetSection(element,Section1);
+        myStructure.ElementCreate(interpolationType, elementIncidence);
+        myStructure.ElementSetSection(element,Section1);
 //			myStructure.ElementSetConstitutiveLaw(element,Material1);
 		if(element<2)
 		{
@@ -103,6 +109,8 @@ int main()
 
 	}
 	output.close();
+
+    myStructure.ElementTotalConvertToInterpolationType(1e-6,3);
 
 	filename="Truss1D2NReference-ipCoor";
 	output.open(filename.c_str());

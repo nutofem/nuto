@@ -88,8 +88,13 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
     //set standard integration types for triangles and quads, this can be modified according to the needs
     mIntegrationType2NPtr = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NGauss1Ip);
     mIntegrationType3NPtr = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NGauss2Ip);
-    mIntegrationType4NPtr = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NGauss2Ip);
-    mIntegrationType5NPtr = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NGauss3Ip);
+    mIntegrationType4NPtr = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NGauss3Ip);
+    mIntegrationType5NPtr = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NGauss4Ip);
+
+    mIntegrationType3NPtrLobatto = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NLobatto3Ip);
+    mIntegrationType4NPtrLobatto = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NLobatto4Ip);
+    mIntegrationType5NPtrLobatto = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NLobatto5Ip);
+
 }
 
 //! @brief adds the load to global sub-vectors
@@ -121,6 +126,15 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             break;
         case Interpolation::EQUIDISTANT4:
             integrationType = mIntegrationType5NPtr;
+            break;
+        case Interpolation::LOBATTO2:
+            integrationType = mIntegrationType3NPtrLobatto;
+            break;
+        case Interpolation::LOBATTO3:
+            integrationType = mIntegrationType4NPtrLobatto;
+            break;
+        case Interpolation::LOBATTO4:
+            integrationType = mIntegrationType5NPtrLobatto;
             break;
         default:
             throw MechanicsException("[NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D] integration types only for 2, 3, 4 and 5 nodes (on the surface) implemented.");
