@@ -86,17 +86,17 @@
 #ENDIF(MINGW)
 
 # NonlocalDamagePlasticityBeam
-#ADD_EXECUTABLE(NonlocalDamagePlasticityBeam NonlocalDamagePlasticityBeam.cpp)
-#TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityBeam NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-#IF (ENABLE_VISUALIZE)
-#  TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityBeam NuToVisualize)
-#ENDIF (ENABLE_VISUALIZE)
-#IF(MUMPS_FOUND)
-#  TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityBeam ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-#ENDIF(MUMPS_FOUND)
-#IF(MINGW)
-#  SET_TARGET_PROPERTIES(NonlocalDamagePlasticityBeam PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-#ENDIF(MINGW)
+ADD_EXECUTABLE(NonlocalDamagePlasticityBeam NonlocalDamagePlasticityBeam.cpp)
+TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityBeam NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+IF (ENABLE_VISUALIZE)
+  TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityBeam NuToVisualize)
+ENDIF (ENABLE_VISUALIZE)
+IF(MUMPS_FOUND)
+  TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityBeam ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+ENDIF(MUMPS_FOUND)
+IF(MINGW)
+  SET_TARGET_PROPERTIES(NonlocalDamagePlasticityBeam PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)
 
 # NonlocalDamagePlasticityModel
 #ADD_EXECUTABLE(NonlocalDamagePlasticityModel NonlocalDamagePlasticityModel.cpp)
@@ -112,19 +112,19 @@
 #ENDIF(MINGW)
 
 # Import Gmsh
-#ADD_EXECUTABLE(ImportGmsh ImportGmsh.cpp)
-#configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ImportGmsh.msh
-#    ${CMAKE_CURRENT_BINARY_DIR}/ImportGmsh.msh COPYONLY)
-#TARGET_LINK_LIBRARIES(ImportGmsh NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-#IF (ENABLE_VISUALIZE)
-#  TARGET_LINK_LIBRARIES(ImportGmsh NuToVisualize)
-#ENDIF (ENABLE_VISUALIZE)
-#IF(MUMPS_FOUND)
-#  TARGET_LINK_LIBRARIES(ImportGmsh ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-#ENDIF(MUMPS_FOUND)
-#IF(MINGW)
-#  SET_TARGET_PROPERTIES(ImportGmsh PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-#ENDIF(MINGW)
+ADD_EXECUTABLE(ImportGmsh ImportGmsh.cpp)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ImportGmsh.msh
+    ${CMAKE_CURRENT_BINARY_DIR}/ImportGmsh.msh COPYONLY)
+TARGET_LINK_LIBRARIES(ImportGmsh NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+IF (ENABLE_VISUALIZE)
+  TARGET_LINK_LIBRARIES(ImportGmsh NuToVisualize)
+ENDIF (ENABLE_VISUALIZE)
+IF(MUMPS_FOUND)
+  TARGET_LINK_LIBRARIES(ImportGmsh ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+ENDIF(MUMPS_FOUND)
+IF(MINGW)
+  SET_TARGET_PROPERTIES(ImportGmsh PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)
 
 # Plane2D4NFreeHangingNode
 ADD_EXECUTABLE(Plane2D4NFreeHangingNode Plane2D4NFreeHangingNode.cpp)
