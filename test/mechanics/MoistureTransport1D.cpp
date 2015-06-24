@@ -385,9 +385,9 @@ int main()
 
         // Begin Test Structure Evaluate
 
-        std::map<int,NuTo::SparseMatrixCSR<double> > HessianSubmatrices;
+        std::map<int,NuTo::SparseMatrixCSR<double>& > HessianSubmatrices;
 
-        MTStructure1D.Evaluate();
+        //MTStructure1D.Evaluate();
 
 
 

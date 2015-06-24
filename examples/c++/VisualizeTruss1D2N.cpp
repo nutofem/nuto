@@ -15,46 +15,55 @@ int main()
     NuTo::FullVector<double,Eigen::Dynamic> Displacements(1);
 
     Coordinates(0) = 1;
-    int myNode1 = myStructure.NodeCreate("displacements", Coordinates);
-    Displacements(0) = 0;
-    myStructure.NodeSetDisplacements(myNode1, Displacements);
-
+    myStructure.NodeCreate(0, Coordinates);
     Coordinates(0) = 6;
-    int myNode2 = myStructure.NodeCreate("displacements", Coordinates);
-    Displacements(0) = 0.3;
-    myStructure.NodeSetDisplacements(myNode2, Displacements);
-
+    myStructure.NodeCreate(1, Coordinates);
     Coordinates(0) = 10;
-    int myNode3 = myStructure.NodeCreate("displacements", Coordinates);
-    Displacements(0) = 0.6;
-    myStructure.NodeSetDisplacements(myNode3, Displacements);
+    myStructure.NodeCreate(2, Coordinates);
+
+    int interpolationType = myStructure.InterpolationTypeCreate("TRUSS1D");
+    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
     // create element
     NuTo::FullVector<int,Eigen::Dynamic> Incidences(2);
 
-    Incidences(0) = myNode1;
-    Incidences(1) = myNode2;
-    int myElement1 = myStructure.ElementCreate("Truss1D2N", Incidences);
+    Incidences(0) = 0;
+    Incidences(1) = 1;
+    int myElement1 = myStructure.ElementCreate(interpolationType, Incidences);
 
-    Incidences(0) = myNode3;
-    Incidences(1) = myNode2;
-    int myElement2 = myStructure.ElementCreate("Truss1D2N", Incidences);
+    Incidences(0) = 1;
+    Incidences(1) = 2;
+    int myElement2 = myStructure.ElementCreate(interpolationType, Incidences);
+
+    myStructure.ElementTotalConvertToInterpolationType(1e-6,3);
+
+    Displacements(0) = 0;
+    myStructure.NodeSetDisplacements(0, Displacements);
+    Displacements(0) = 0.3;
+    myStructure.NodeSetDisplacements(1, Displacements);
+    Displacements(0) = 0.6;
+    myStructure.NodeSetDisplacements(2, Displacements);
 
     // create constitutive law
-    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic");
+    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
     myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10);
     myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1);
 
     // create section
-    int mySection1 = myStructure.SectionCreate("1D");
+    int mySection1 = myStructure.SectionCreate("Truss");
     myStructure.SectionSetArea(mySection1,0.01);
 
     // assign material, section and integration type
-    myStructure.ElementSetIntegrationType(myElement1,"1D2NGauss2Ip","NOIPDATA");
+
+    myStructure.InterpolationTypeSetIntegrationType(interpolationType, NuTo::IntegrationType::IntegrationType1D2NGauss2Ip, NuTo::IpData::STATICDATA);
+
+    //myStructure.ElementSetIntegrationType(myElement1,"1D2NGauss2Ip","NOIPDATA");
     myStructure.ElementSetConstitutiveLaw(myElement1,myMatLin);
     myStructure.ElementSetSection(myElement1,mySection1);
     myStructure.ElementSetConstitutiveLaw(myElement2,myMatLin);
     myStructure.ElementSetSection(myElement2,mySection1);
+
 
     // visualize element
     myStructure.AddVisualizationComponentDisplacements();
