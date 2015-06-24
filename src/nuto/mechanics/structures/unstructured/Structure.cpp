@@ -1923,6 +1923,13 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalElasticGradientInternalPotential
     return errorGlobal;
 }
 
+//! @brief ... evaluates the structur
+void NuTo::Structure::Evaluate(const std::map<int, NuTo::SparseMatrixCSR<double> > &rHessianSubmatrices)
+{
+
+    //decltype(mHessianSubmatrices) Test;
+}
+
 //! @brief Builds the nonlocal data for integral type nonlocal constitutive models
 //! @param rConstitutiveId constitutive model for which the data is build
 void NuTo::Structure::BuildNonlocalData(int rConstitutiveId)

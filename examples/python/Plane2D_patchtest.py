@@ -15,14 +15,9 @@ PoissonsRatio = 0.2
 
 Force = 5
 
-#ElementType = "PLANE2D3N"
-#IntegragionType = "2D3NGauss3Ip"
+#ElementType = "Triangle2D"
+ElementType = "Quad2D"
 
-ElementType = "PLANE2D4N"
-#IntegragionType = "2D4NGauss4Ip"
-#IntegragionType2 = IntegragionType
-IntegragionType = "2D4NConst9Ip"
-IntegragionType2 = "2D4NMod4Ip"
 
 #StressState = "XX"
 StressState = "YY"
@@ -50,17 +45,16 @@ mySection = myStructure.SectionCreate("Plane_Strain")
 myStructure.SectionSetThickness(mySection,1)
 
 numNodes=8
-myStructure.NodesCreate("displacements", nuto.DoubleFullMatrix(2,numNodes,(	 0 ,  0 ,
-																			10 ,  0 ,
-																			 2 ,  2 ,
-																			 8 ,  3 ,
-																			 4 ,  7 ,
-																			 8 ,  7 ,
-																			 0 , 10 ,
-																			10 , 10	)) )
-																			
+myStructure.NodesCreate(nuto.DoubleFullMatrix(2,numNodes,(	 0 ,  0 ,
+															10 ,  0 ,
+															 2 ,  2 ,
+															 8 ,  3 ,
+															 4 ,  7 ,
+															 8 ,  7 ,
+															 0 , 10 ,
+															10 , 10	)) )	
 
-if ElementType == "PLANE2D3N":
+if ElementType == "Triangle2D":
 	numElements=10
 	elementIncidence = nuto.IntFullMatrix(3,numElements,(	0,1,3,
 															0,2,6,
@@ -72,7 +66,8 @@ if ElementType == "PLANE2D3N":
 															3,7,5,
 															4,5,6,
 															5,7,6 ) )
-elif ElementType == "PLANE2D4N":
+
+elif ElementType == "Quad2D":
 	numElements=5
 	elementIncidence = nuto.IntFullMatrix(4,numElements,(	3,2,0,1 ,
 															4,6,0,2 ,
@@ -84,15 +79,17 @@ else:
 	error = True;
 	sys.exit(-1)
 
-elements=myStructure.ElementsCreate(ElementType, elementIncidence)
+
+#create interpolation type
+myInterpolationType = myStructure.InterpolationTypeCreate(ElementType);
+myStructure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistant1");
+myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant1");
+
+elements=myStructure.ElementsCreate(myInterpolationType, elementIncidence)
 myStructure.ElementTotalSetConstitutiveLaw(myMatLin)
 myStructure.ElementTotalSetSection(mySection)
+myStructure.ElementTotalConvertToInterpolationType(1.e-6,10)
 
-for i in range(0,elements.GetNumRows()):
-	if i==2:
-		myStructure.ElementSetIntegrationType(i,IntegragionType2,"NOIPDATA")
-	else:
-		myStructure.ElementSetIntegrationType(i,IntegragionType,"NOIPDATA")
 
 LoadNodesXPos = myStructure.GroupCreate("Nodes")
 LoadNodesXNeg = myStructure.GroupCreate("Nodes")

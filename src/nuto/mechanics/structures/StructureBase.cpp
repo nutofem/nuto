@@ -683,6 +683,12 @@ void NuTo::StructureBase::ClearVisualizationComponents()
 #endif
 }
 
+//! @brief ... evaluates the structur
+void NuTo::StructureBase::Evaluate(const std::map<int, NuTo::SparseMatrixCSR<double> > &rHessianSubmatrices)
+{
+    throw MechanicsException("[NuTo::StructureBase::Evaluate] Not implemented.");
+}
+
 
 void NuTo::StructureBase::ExportVtkDataFile(const std::string& rFileName)
 {

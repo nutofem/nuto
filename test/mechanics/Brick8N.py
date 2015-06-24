@@ -72,7 +72,7 @@ myStructure.GroupAddNode(groupBoundaryNodes,myNode8)
 
 #make group of boundary elements (in this case it is just one
 groupBoundaryElements = myStructure.GroupCreate("Elements")
-myStructure.GroupAddElementsFromNodes(groupBoundaryElements,groupBoundaryNodes,0);
+myStructure.GroupAddElementsFromNodes(groupBoundaryElements,groupBoundaryNodes,False);
 
 #create surface loads (0 - pressure on X, 1-const-direction Y)
 myStructure.LoadSurfacePressureCreate3D(0, groupBoundaryElements, groupBoundaryNodes, 2.);

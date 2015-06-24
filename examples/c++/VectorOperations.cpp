@@ -14,7 +14,7 @@
 int main()
 {
     //vector size
-   int size = 9000000;
+   int size = 900000;
    int iter = 1000;
    //int size = 5;
 
@@ -54,8 +54,8 @@ int main()
        	r[i]=k.at(i);
 
     }
-    A=Amat.mEigenMatrix;
-    B=Bmat.mEigenMatrix;
+    A=Amat;
+    B=Bmat;
 
     double result=0;
 #ifdef SHOW_TIME
@@ -326,4 +326,5 @@ int main()
     delete[] p;
     delete[] q;
     delete[] r;
+
 }

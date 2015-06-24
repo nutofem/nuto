@@ -301,6 +301,7 @@ int main()
 
 #ifdef _OPENMP
         MTStructure1D.SetNumProcessors(4);
+        std::cout << "OpenMP enabled" << std::endl;
 #else
         MTStructure1D.SetNumProcessors(1);
 #endif
@@ -382,7 +383,15 @@ int main()
                 throw NuTo::Exception(std::string("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.NodeGetNodePtr("+std::to_string(i)+")->GetRelativeHumidity(0) != InitialRelativeHumidity"));
         }
 
+        // Begin Test Structure Evaluate
 
+        std::map<int,NuTo::SparseMatrixCSR<double> > HessianSubmatrices;
+
+        MTStructure1D.Evaluate();
+
+
+
+        // End Test Structure Evaluate
 
         // %%%%%%%%%%%%%%%%%%%%%%%
         // Manual time integration
@@ -603,7 +612,7 @@ int main()
             }
             else
             {
-                std::cout << "Calculation finished without any errors!" << std::endl;
+                std::cout << "Calculation finished!" << std::endl;
             }
 
         }

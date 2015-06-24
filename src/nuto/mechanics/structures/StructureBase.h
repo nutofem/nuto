@@ -4,6 +4,7 @@
 #define STRUCTUREBASE_H
 
 #include <ctime>
+#include <map>
 #include <array>
 
 #ifdef ENABLE_SERIALIZATION
@@ -159,6 +160,9 @@ public:
 
     //! @brief ... clear all visualization components
     void ClearVisualizationComponents();
+
+    //! @brief ... evaluates the structur
+    virtual void Evaluate(const std::map<int,NuTo::SparseMatrixCSR<double> >& rHessianSubmatrices);
 
     //! @brief ... export the entire structure to Vtk data file
     //! @param rFileName ... file name
