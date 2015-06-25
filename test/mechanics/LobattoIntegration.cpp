@@ -468,10 +468,10 @@ int main()
 
     // 3Nodes 1D
     //buildStructure1D("TRUSS1D2NSPECTRALORDER2", "1D2NLobatto3Ip", 3, nodeCoordinates, 100);
-    buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, 100);
+    buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, 10);
 
     //buildStructure2D("PLANE2D4NSPECTRALORDER2", "2D4NLobatto9Ip", 3, nodeCoordinates, 40, 20);
-    buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, 40, 20);
+    buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, 4, 2);
 
 
     // 4Nodes 2D
@@ -482,11 +482,11 @@ int main()
     nodeCoordinates+=ones;
 
     //buildStructure2D("PLANE2D4NSPECTRALORDER3", "2D4NLobatto16Ip", 4, nodeCoordinates, 40, 20);
-    buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO3, 4, nodeCoordinates, 40, 20);
+    buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO3, 4, nodeCoordinates, 4, 2);
 
     // 4Nodes 1D
     //buildStructure1D("TRUSS1D2NSPECTRALORDER3", "1D2NLobatto4Ip", 4, nodeCoordinates, 100);
-    buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO3, 4, nodeCoordinates, 100);
+    buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO3, 4, nodeCoordinates, 10);
 
     // 5Nodes 2D
     ones.resize(5); ones.fill(1);
@@ -496,11 +496,11 @@ int main()
     nodeCoordinates+=ones;
 
     //buildStructure2D("PLANE2D4NSPECTRALORDER4", "2D4NLobatto25Ip", 5, nodeCoordinates, 40, 20);
-    buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO4, 5, nodeCoordinates, 40, 20);
+    buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO4, 5, nodeCoordinates, 4, 2);
 
     // 5Nodes 1D
     //buildStructure1D("TRUSS1D2NSPECTRALORDER4", "1D2NLobatto5Ip", 5, nodeCoordinates, 100);
-    buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO4, 5, nodeCoordinates, 100);
+    buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO4, 5, nodeCoordinates, 10);
 
     return 0;
 }
