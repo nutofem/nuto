@@ -10,7 +10,7 @@
 
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/math/SparseDirectSolverMUMPS.h"
-#include "boost-1_55/boost/filesystem.hpp"
+#include <boost/filesystem.hpp>
 
 #define DEBUG_PRINT true
 

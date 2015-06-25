@@ -48,6 +48,10 @@ public:
     //! @param mDimension  Structural dimension (1,2 or 3)
     Structure(int mDimension);
 
+    //! @brief destructor
+    virtual ~Structure();
+
+
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
     //! @brief serializes the class, this is the load routine

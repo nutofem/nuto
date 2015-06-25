@@ -41,6 +41,12 @@ NuTo::Structure::Structure(int rDimension) :
 {
 }
 
+//! @brief destructor
+NuTo::Structure::~Structure()
+{
+	mElementMap.clear();
+}
+
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
 void NuTo::Structure::Info() const
 {

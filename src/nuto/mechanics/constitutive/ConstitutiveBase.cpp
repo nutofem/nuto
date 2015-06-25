@@ -541,34 +541,6 @@ void NuTo::ConstitutiveBase::SetParametersValid()
     this->mParametersValid = true;
 }
 
-//! @brief ... avoid dynamic cast
-//! @return ... see brief explanation
-NuTo::ConstitutiveEngineeringStressStrain* NuTo::ConstitutiveBase::AsConstitutiveEngineeringStressStrain()
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AsConstitutiveEngineeringStressStrain] Constitutive Law is not of type EngineeringStressStrain.");
-}
-
-//! @brief ... avoid dynamic cast
-//! @return ... see brief explanation
-const NuTo::ConstitutiveEngineeringStressStrain* NuTo::ConstitutiveBase::AsConstitutiveEngineeringStressStrain()const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AsConstitutiveEngineeringStressStrain] Constitutive Law is not of type EngineeringStressStrain.");
-}
-
-//! @brief ... avoid dynamic cast
-//! @return ... see brief explanation
-NuTo::ConstitutiveLatticeStressStrain* NuTo::ConstitutiveBase::AsConstitutiveLatticeStressStrain()
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AsConstitutiveLatticeStressStrain] Constitutive Law is not of type LatticeStressStrain.");
-}
-
-//! @brief ... avoid dynamic cast
-//! @return ... see brief explanation
-const NuTo::ConstitutiveLatticeStressStrain* NuTo::ConstitutiveBase::AsConstitutiveLatticeStressStrain()const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AsConstitutiveLatticeStressStrain] Constitutive Law is not of type LatticeStressStrain.");
-}
-
 
 // info routine
 void NuTo::ConstitutiveBase::Info(unsigned short rVerboseLevel, Logger& rLogger) const

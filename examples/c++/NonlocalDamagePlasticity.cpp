@@ -8,7 +8,7 @@
 #include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.h"
 #include <eigen3/Eigen/Core>
 
-#define printResult true
+#define printResult false
 
 int main()
 {
@@ -22,69 +22,81 @@ int main()
 	NuTo::FullVector<double,Eigen::Dynamic> Coordinates(2);
 	Coordinates(0) = 0.0;
 	Coordinates(1) = 0.0;
-	int node1 = myStructure.NodeCreate("displacements",Coordinates);
+	int node1 = myStructure.NodeCreate(Coordinates);
 
 	Coordinates(0) = 1.0;
 	Coordinates(1) = 0.0;
-	int node2 = myStructure.NodeCreate("displacements",Coordinates);
+	int node2 = myStructure.NodeCreate(Coordinates);
 
 	Coordinates(0) = 2.0;
 	Coordinates(1) = 0.0;
-	int node3 = myStructure.NodeCreate("displacements",Coordinates);
+	int node3 = myStructure.NodeCreate(Coordinates);
 
 	Coordinates(0) = 0.0;
 	Coordinates(1) = 1.0;
-	int node4 = myStructure.NodeCreate("displacements",Coordinates);
+	int node4 = myStructure.NodeCreate(Coordinates);
 
 	Coordinates(0) = 1.0;
 	Coordinates(1) = 1.0;
-	int node5 = myStructure.NodeCreate("displacements",Coordinates);
+	int node5 = myStructure.NodeCreate(Coordinates);
 
 	Coordinates(0) = 2.0;
 	Coordinates(1) = 1.0;
-	int node6 = myStructure.NodeCreate("displacements",Coordinates);
+	int node6 = myStructure.NodeCreate(Coordinates);
 
 	Coordinates(0) = 0.0;
 	Coordinates(1,0) = 2.0;
-	int node7 = myStructure.NodeCreate("displacements",Coordinates);
+	int node7 = myStructure.NodeCreate(Coordinates);
 
 	Coordinates(0) = 1.0;
 	Coordinates(1) = 2.0;
-	int node8 = myStructure.NodeCreate("displacements",Coordinates);
+	int node8 = myStructure.NodeCreate(Coordinates);
 
 	Coordinates(0) = 2.0;
 	Coordinates(1) = 2.0;
-	int node9 = myStructure.NodeCreate("displacements",Coordinates);
+	int node9 = myStructure.NodeCreate(Coordinates);
 
-	//create elements
+	//create interpolation type with 4x4 integration
+	int myInterpolationTypeStandard = myStructure.InterpolationTypeCreate("Quad2D");
+    myStructure.InterpolationTypeAdd(myInterpolationTypeStandard, NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(myInterpolationTypeStandard, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+
+	//create interpolation type with 1x1 integration
+	int myInterpolationTypeRed = myStructure.InterpolationTypeCreate("Quad2D");
+    myStructure.InterpolationTypeAdd(myInterpolationTypeRed, NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(myInterpolationTypeRed, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeSetIntegrationType(myInterpolationTypeRed, std::string("2D4NGauss1Ip"), std::string("StaticDataNonlocal"));
+
+    //create elements
 	NuTo::FullVector<int,Eigen::Dynamic> Incidence(4);
 	Incidence(0) = node1;
 	Incidence(1) = node2;
 	Incidence(2) = node5;
 	Incidence(3) = node4;
-    int myElement1 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
-    myStructure.ElementSetIntegrationType(myElement1,"2D4NGauss1Ip","StaticDataNonlocal");
+    int myElement1 = myStructure.ElementCreate(myInterpolationTypeRed,Incidence,std::string("ConstitutiveLawIpNonlocal"),std::string("StaticDataNonlocal"));
 
 	Incidence(0) = node2;
 	Incidence(1) = node3;
 	Incidence(2) = node6;
 	Incidence(3) = node5;
-    int myElement2 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
-    myStructure.ElementSetIntegrationType(myElement2,"2D4NGauss4Ip","StaticDataNonlocal");
+    int myElement2 = myStructure.ElementCreate(myInterpolationTypeStandard,Incidence,std::string("ConstitutiveLawIpNonlocal"),std::string("StaticDataNonlocal"));
 		
 	Incidence(0) = node4;
 	Incidence(1) = node5;
 	Incidence(2) = node8;
 	Incidence(3) = node7;
-    int myElement3 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
-    myStructure.ElementSetIntegrationType(myElement3,"2D4NGauss1Ip","StaticDataNonlocal");
+    myStructure.ElementCreate(myInterpolationTypeRed,Incidence,std::string("ConstitutiveLawIpNonlocal"),std::string("StaticDataNonlocal"));
 		
 	Incidence(0) = node5;
 	Incidence(1) = node6;
 	Incidence(2) = node9;
 	Incidence(3) = node8;
-    int myElement4 = myStructure.ElementCreate("PLANE2D4N",Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
-    myStructure.ElementSetIntegrationType(myElement4,"2D4NGauss4Ip","StaticDataNonlocal");
+    myStructure.ElementCreate(myInterpolationTypeStandard,Incidence,std::string("ConstitutiveLawIpNonlocal"),std::string("StaticDataNonlocal"));
+
+    //update nodes to include displacements
+    double mergingTol(1.e-6);
+    int numSubCells(3);
+    myStructure.ElementTotalConvertToInterpolationType(mergingTol, numSubCells);
 
 	//create constitutive law
 	int myMatDamage = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticityEngineeringStress");
@@ -112,7 +124,7 @@ int main()
 	myStructure.BuildNonlocalData(myMatDamage);
 
 	//Calculate maximum independent sets for parallelization (openmp)
-    //myStructure.CalculateMaximumIndependentSets();
+    myStructure.CalculateMaximumIndependentSets();
 
 	// visualize results
 	myStructure.AddVisualizationComponentNonlocalWeights(myElement1,0);
@@ -253,16 +265,20 @@ int main()
 			if (printResult)
 				std::cout << "max difference in stiffness matrix for unloading and scaled elastic matrix " << maxerror2 << std::endl;
 			if (maxerror2>1e-6)
+			{
 				std::cout << "stiffness matrix for unloading and scaled elastic matrix are not identical." << std::endl;
 				error = true;
+			}
 		}
 		else
 		{
 			if (printResult)
 				std::cout << "max difference in stiffness matrix for nonuniform plastic loading/unloading " << maxerror << std::endl;
 			if (maxerror>1e-6)
+			{
 				std::cout << "stiffness matrix for nonuniform plastic loading/unloading is not correct." << std::endl;
 				error = true;
+			}
 		}
 
 		//update the structure, and then recalculate stiffness
@@ -279,7 +295,7 @@ int main()
 	myStructure.AddVisualizationComponentEngineeringStress();
 	myStructure.AddVisualizationComponentDamage();
 	myStructure.AddVisualizationComponentEngineeringPlasticStrain();
-	myStructure.ExportVtkDataFileElements("NonlocalDamagePlasticityModel.vtk");
+	myStructure.ExportVtkDataFileElements("NonlocalDamagePlasticity.vtk");
 
     }
     catch (NuTo::Exception& e)

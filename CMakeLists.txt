@@ -204,7 +204,8 @@ SET(NUTO_PYTHON_MODULES_INSTALL_PATH "lib${LIB_SUFFIX}/python${PYTHON_VERSION}/s
 
 # SWIG required for interface files c++ and python
 MESSAGE(STATUS "Checking for SWIG...")
-SET(SWIG_EXECUTABLE "swig") # otherwise the standard FindSWIG.cmake looks for swig 2.0
+find_program(SWIG_EXECUTABLE NAMES swig3.0 swig swig2.0)
+MESSAGE(STATUS "MYSWIG_EXECUTABLE = ${SWIG_EXECUTABLE1}")
 FIND_PACKAGE(SWIG REQUIRED)
 MESSAGE(STATUS "SWIG found: ${SWIG_EXECUTABLE}")
 message(STATUS "...SWIG_VERSION = ${SWIG_VERSION}")

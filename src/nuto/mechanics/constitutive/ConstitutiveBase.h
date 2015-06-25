@@ -22,7 +22,6 @@
 namespace NuTo
 {
 // forward declarations
-class ConstitutiveEngineeringStressStrain;
 class ConstitutiveLatticeStressStrain;
 class ConstitutiveStaticDataBase;
 class ConstitutiveTangentLocal1x1;
@@ -384,22 +383,6 @@ public:
     //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
     //! @return ... see brief explanation
     virtual bool HaveTmpStaticData() const=0;
-
-    //! @brief ... avoid dynamic cast
-    //! @return ... see brief explanation
-    virtual const ConstitutiveEngineeringStressStrain* AsConstitutiveEngineeringStressStrain()const;
-
-    //! @brief ... avoid dynamic cast
-    //! @return ... see brief explanation
-    virtual ConstitutiveEngineeringStressStrain* AsConstitutiveEngineeringStressStrain();
-
-    //! @brief ... avoid dynamic cast
-    //! @return ... see brief explanation
-    virtual const ConstitutiveLatticeStressStrain* AsConstitutiveLatticeStressStrain()const;
-
-    //! @brief ... avoid dynamic cast
-    //! @return ... see brief explanation
-    virtual ConstitutiveLatticeStressStrain* AsConstitutiveLatticeStressStrain();
 
     //! @brief ... allocate the correct static data
     //! @return ... see brief explanation

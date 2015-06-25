@@ -228,7 +228,6 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
         // loop over the integration points
         for (int theIP = 0; theIP < GetNumIntegrationPoints(); theIP++)
         {
-
             // calculate Jacobian
             const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural =
                     mInterpolationType->Get(Node::COORDINATES).GetDerivativeShapeFunctionsNatural(theIP);

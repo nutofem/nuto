@@ -35,7 +35,7 @@ int main()
 	NuTo::OctreeGrid myGrid(3); // also creates CallbackHandler
 	myGrid.SetVerboseLevel(0);
 //	std::string inputFile="InputTest";
-	std::string inputFile="../trunk/examples/c++/InputStructureGrid3D";
+	std::string inputFile="InputStructureGrid3D";
 	myGrid.ImportFromVtkASCIIFileHeader(inputFile);
 
 	//calculate one element stiffness matrix with E=1

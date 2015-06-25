@@ -648,13 +648,19 @@ void NuTo::StructureGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,i
 		nodeCoordinates(2) = mVoxelSpacing[2] * 0.5;
 		elementIncidence(7)=myHelpStruc.NodeCreateDOFs("displacements", nodeCoordinates);
 
+
 		// first element create
+	    int myInterpolationType = myHelpStruc.InterpolationTypeCreate("Brick3D");
+	    myHelpStruc.InterpolationTypeAdd(myInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+	    myHelpStruc.InterpolationTypeAdd(myInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
 	   // elementIncidence.Info();
-		int myHelpElement=myHelpStruc.ElementCreate("Brick8N", elementIncidence);
+		int myHelpElement=myHelpStruc.ElementCreate(myInterpolationType, elementIncidence);
+		//myHelpStruc.ElementTotalConvertToInterpolationType(1.e-6, 3);
 		myHelpStruc.ElementSetConstitutiveLaw(myHelpElement,myMat);
 		int mySection1 = myHelpStruc.SectionCreate("VOLUME");
 		myHelpStruc.ElementSetSection(myHelpElement,mySection1);
+
 
 		// build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
 		NuTo::FullVector<int,Eigen::Dynamic> rows;
@@ -663,6 +669,7 @@ void NuTo::StructureGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,i
 		myHelpStruc.ElementStiffness(0,stiffnessMatrix,rows,coluums );
 //		if(mVerboseLevel>3)
 		stiffnessMatrix.WriteToFile("stiffness","   ");
+
 		if((int) mLocalCoefficientMatrix0.size()==rBasisMaterialNum)
 		{
 			std::vector<double> stiffness(24*24);
@@ -679,20 +686,41 @@ void NuTo::StructureGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,i
 			//calculate shape derivative functions
 			const double rLocalCoordinates[3]={0,0,0};
 			mLocalDerivativeShapeFunctions.resize(24);
-			NuTo::Brick8N* myElementPointer;
-			myElementPointer=static_cast<NuTo::Brick8N*> (myHelpStruc.ElementGetElementPtr(myHelpElement));
-			myElementPointer->CalculateDerivativeShapeFunctionsGeometryNatural( rLocalCoordinates, mLocalDerivativeShapeFunctions);
-//			std::cout<<"[StructureGrid] (line "<<__LINE__<<" mLocalDerivativeShapeFunctions "<<mLocalDerivativeShapeFunctions[0]<<" "<<mLocalDerivativeShapeFunctions[1]<<" "<<mLocalDerivativeShapeFunctions[2]<<"\n";
+			//NuTo::Brick8N* myElementPointer;
+			//myElementPointer=static_cast<NuTo::Brick8N*> (myHelpStruc.ElementGetElementPtr(myHelpElement));
+			//std::cout << "test3 " << std::endl;
+
+			const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = myHelpStruc.ElementGetElementPtr(myHelpElement)->GetInterpolationType()->Get(Node::COORDINATES).GetDerivativeShapeFunctionsNatural(0);
+			//std::cout << "derivativeShapeFunctionsGeometryNatural " << derivativeShapeFunctionsGeometryNatural.rows() << " " << derivativeShapeFunctionsGeometryNatural.cols() << std::endl;
+			mLocalDerivativeShapeFunctions.resize(derivativeShapeFunctionsGeometryNatural.rows()*derivativeShapeFunctionsGeometryNatural.cols());
+			for (int node=0; node<derivativeShapeFunctionsGeometryNatural.rows();node++)
+			{
+				for (int dim=0; dim<derivativeShapeFunctionsGeometryNatural.cols();dim++)
+				{
+					mLocalDerivativeShapeFunctions[node*derivativeShapeFunctionsGeometryNatural.cols()+dim] = derivativeShapeFunctionsGeometryNatural(node,dim);
+				}
+			}
+
+			//myElementPointer->CalculateDerivativeShapeFunctionsGeometryNatural( rLocalCoordinates, mLocalDerivativeShapeFunctions);
+
+			//			std::cout<<"[StructureGrid] (line "<<__LINE__<<" mLocalDerivativeShapeFunctions "<<mLocalDerivativeShapeFunctions[0]<<" "<<mLocalDerivativeShapeFunctions[1]<<" "<<mLocalDerivativeShapeFunctions[2]<<"\n";
 //			std::cout<<"[StructureGrid] (line "<<__LINE__<<" mLocalDerivativeShapeFunctions "<<mLocalDerivativeShapeFunctions[21]<<" "<<mLocalDerivativeShapeFunctions[22]<<" "<<mLocalDerivativeShapeFunctions[23]<<"\n";
+            LinearElasticEngineeringStress myMaterial;
+			myMaterial.SetPoissonsRatio(rPoissonsRatio);
+            myMaterial.SetYoungsModulus(1.0);
 #ifdef PLANESTRESS
-			static_cast<NuTo::LinearElasticEngineeringStress*> (myElementPointer->GetConstitutiveLaw(0))->CalculateCoefficients2DPlainStress(mC11,mC12,mC44);
+            myMaterial.CalculateCoefficients2DPlainStress(mC11,mC12,mC44);
+			//static_cast<NuTo::LinearElasticEngineeringStress*> (myElementPointer->GetConstitutiveLaw(0))->CalculateCoefficients2DPlainStress(mC11,mC12,mC44);
 #else
-			static_cast<NuTo::LinearElasticEngineeringStress*> (myElementPointer->GetConstitutiveLaw(0))->CalculateCoefficients3D(mC11,mC12,mC44);
+            myMaterial.CalculateCoefficients3D(mC11,mC12,mC44);
+			//static_cast<NuTo::LinearElasticEngineeringStress*> (myElementPointer->GetConstitutiveLaw(0))->CalculateCoefficients3D(mC11,mC12,mC44);
 #endif //PLANESTRESS
 //			std::cout<<"[StructureGrid] (line "<<__LINE__<<" stiffnessTensorCoefficients "<<mC11<<" "<<mC12<<" "<<" "<<mC44<<"\n";
 		}
 		else
+		{
 			throw MechanicsException("[StructureGrid::SetBasisElementStiffnessMatrix] Basis material number is wrong.");
+		}
 		// for strain and stress computations
 		// get shape function derivatives for element center
 	}
@@ -700,8 +728,6 @@ void NuTo::StructureGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,i
 	{
 		throw MechanicsException("[StructureGrid::SetBasisElementStiffnessMatrix] Error.");
 	}
-
-
 }
 
 //! @brief set basis edge stiffnesses
