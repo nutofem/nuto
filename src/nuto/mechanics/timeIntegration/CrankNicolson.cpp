@@ -129,14 +129,14 @@ NuTo::Error::eError NuTo::CrankNicolson::Solve(double rFinalTime)
             dampingMatrix_jk.Resize(mStructure->GetNumActiveDofs(),mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
             dampingMatrix_kj.Resize(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(),mStructure->GetNumActiveDofs());
             dampingMatrix_kk.Resize(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(),mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-            mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::DAMPING,dampingMatrix_jj,dampingMatrix_jk,dampingMatrix_kj,dampingMatrix_kk);
+            mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::DAMPING,dampingMatrix_jj,dampingMatrix_jk,dampingMatrix_kj,dampingMatrix_kk);
             if (mStructure->GetNumTimeDerivatives())
             {
                 massMatrix_jj.Resize(mStructure->GetNumActiveDofs(),mStructure->GetNumActiveDofs());
                 massMatrix_jk.Resize(mStructure->GetNumActiveDofs(),mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
                 massMatrix_kj.Resize(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(),mStructure->GetNumActiveDofs());
                 massMatrix_kk.Resize(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(),mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-                mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::MASS,massMatrix_jj,massMatrix_jk,massMatrix_kj,massMatrix_kk);
+                mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::MASS,massMatrix_jj,massMatrix_jk,massMatrix_kj,massMatrix_kk);
             }
         }
 
@@ -256,17 +256,17 @@ NuTo::Error::eError NuTo::CrankNicolson::Solve(double rFinalTime)
 
             //calculate the residual contribution from stiffness
             stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();stiffMatrix_kj.SetZeroEntries();stiffMatrix_kk.SetZeroEntries();
-            mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk, stiffMatrix_kj, stiffMatrix_kk);
+            mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk, stiffMatrix_kj, stiffMatrix_kk);
             residual_j += stiffMatrix_jk * deltaBRHS;
             if (mStructure->GetNumTimeDerivatives()>0)
             {
                 dampingMatrix_jj.SetZeroEntries();dampingMatrix_jk.SetZeroEntries();dampingMatrix_kj.SetZeroEntries();dampingMatrix_kk.SetZeroEntries();
-                mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::DAMPING, dampingMatrix_jj, dampingMatrix_jk, dampingMatrix_kj, dampingMatrix_kk);
+                mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::DAMPING, dampingMatrix_jj, dampingMatrix_jk, dampingMatrix_kj, dampingMatrix_kk);
                 residual_j -= (dampingMatrix_jj*lastConverged_vel_j + (dampingMatrix_jk * (deltaBRHS *(-1./timeStep)+lastConverged_vel_k)))*2.;
                 if (mStructure->GetNumTimeDerivatives()>1)
                 {
                     massMatrix_jj.SetZeroEntries();massMatrix_jk.SetZeroEntries();massMatrix_kj.SetZeroEntries();massMatrix_kk.SetZeroEntries();
-                    mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::MASS, massMatrix_jj, massMatrix_jk, massMatrix_kj, massMatrix_kk);
+                    mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::MASS, massMatrix_jj, massMatrix_jk, massMatrix_kj, massMatrix_kk);
                     residual_j -= massMatrix_jj * (lastConverged_vel_j*(4./timeStep)+lastConverged_acc_j*2.)+
                                   massMatrix_jk * (deltaBRHS *(-4./(timeStep*timeStep))+lastConverged_vel_k*(4./timeStep)+lastConverged_acc_k*2.);
                 }
@@ -397,15 +397,15 @@ NuTo::Error::eError NuTo::CrankNicolson::Solve(double rFinalTime)
             {
                 //calculate hessian
                 stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();stiffMatrix_kj.SetZeroEntries();stiffMatrix_kk.SetZeroEntries();
-                mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk, stiffMatrix_kj, stiffMatrix_kk);
+                mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk, stiffMatrix_kj, stiffMatrix_kk);
                 if (mStructure->GetNumTimeDerivatives()>0)
                 {
                     dampingMatrix_jj.SetZeroEntries();dampingMatrix_jk.SetZeroEntries();dampingMatrix_kj.SetZeroEntries();dampingMatrix_kk.SetZeroEntries();
-                    mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::DAMPING, dampingMatrix_jj, dampingMatrix_jk, dampingMatrix_kj, dampingMatrix_kk);
+                    mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::DAMPING, dampingMatrix_jj, dampingMatrix_jk, dampingMatrix_kj, dampingMatrix_kk);
                     if (mStructure->GetNumTimeDerivatives()>1)
                     {
                         massMatrix_jj.SetZeroEntries();massMatrix_jk.SetZeroEntries();massMatrix_kj.SetZeroEntries();massMatrix_kk.SetZeroEntries();
-                        mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::MASS, massMatrix_jj, massMatrix_jk, massMatrix_kj, massMatrix_kk);
+                        mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::MASS, massMatrix_jj, massMatrix_jk, massMatrix_kj, massMatrix_kk);
                     }
                 }
                 //build hessian

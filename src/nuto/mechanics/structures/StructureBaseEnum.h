@@ -4,15 +4,22 @@
 
 namespace NuTo
 {
-namespace StructureBaseEnum
+namespace StructureEnum
 {
-enum eMatrixType
+
+enum class eMatrixType
 {
     STIFFNESS=0,
     DAMPING,
     MASS,
     LUMPED_MASS
 };
+
+enum class eOutput
+{
+    STIFFNESS_DISPLACEMENTS_JJ
+};
+
 }
 }
 #endif /* STRUCTUREBASEENUM_H_ */

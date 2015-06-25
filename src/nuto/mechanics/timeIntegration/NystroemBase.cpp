@@ -151,7 +151,7 @@ NuTo::Error::eError NuTo::NystroemBase::Solve(double rTimeDelta)
         	full2MassMatrix_jk.Resize(mStructure->GetNumActiveDofs(),mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
         	full2MassMatrix_kj.Resize(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(),mStructure->GetNumActiveDofs());
         	full2MassMatrix_kk.Resize(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(),mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-			mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::MASS,full2MassMatrix_jj,full2MassMatrix_jk,full2MassMatrix_kj,full2MassMatrix_kk);
+            mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::MASS,full2MassMatrix_jj,full2MassMatrix_jk,full2MassMatrix_kj,full2MassMatrix_kk);
 			fullMassMatrix_jj=full2MassMatrix_jj;
 			fullMassMatrix_jj.SetOneBasedIndexing();
 	    }

@@ -128,7 +128,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 				massMatrix_jk.Resize(mStructure->GetNumActiveDofs(),mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
 				massMatrix_kj.Resize(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(),mStructure->GetNumActiveDofs());
 				massMatrix_kk.Resize(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(),mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-				mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::MASS,massMatrix_jj,massMatrix_jk,massMatrix_kj,massMatrix_kk);
+                mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::MASS,massMatrix_jj,massMatrix_jk,massMatrix_kj,massMatrix_kk);
         		std::cout << "use full mass matrix " << std::endl;
         	}
             //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> m11Full(massMatrix_jj);
@@ -329,7 +329,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
 			//calculate the residual contribution from stiffness
 			stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();stiffMatrix_kj.SetZeroEntries();stiffMatrix_kk.SetZeroEntries();
-			mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk, stiffMatrix_kj, stiffMatrix_kk);
+            mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk, stiffMatrix_kj, stiffMatrix_kk);
 			residual_j += stiffMatrix_jk * deltaBRHS;
 			if (mStructure->GetNumTimeDerivatives()>1)
 			{
@@ -420,7 +420,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 			else
 			{
 				stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();
-				mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk);
+                mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk);
 
 				//calculate the residual for the zero time step
 				residual_j += stiffMatrix_jk * deltaBRHS;
@@ -523,7 +523,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                 if (numEntriesCMat>0)
                 {
                     stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();stiffMatrix_kj.SetZeroEntries();stiffMatrix_kk.SetZeroEntries();
-                    mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk, stiffMatrix_kj, stiffMatrix_kk);
+                    mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk, stiffMatrix_kj, stiffMatrix_kk);
                     if (mStructure->GetNumTimeDerivatives()>1)
                     {
                         //add damping and mass to full hessian
@@ -545,7 +545,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                 else
                 {
                     stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();
-                    mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk);
+                    mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk);
 
                     if (mStructure->GetNumTimeDerivatives()>1)
                     {
@@ -575,7 +575,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 /*
 //check stiffness matrix
 stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();
-mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk);
+mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk);
 //std::cout << "stiffness exact1\n" <<  FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(stiffMatrix_jj) << std::endl;
 FullVector<double, Eigen::Dynamic> check_disp_j1,check_disp_j2,check_disp_k1,check_disp_k2;
 mStructure->NodeExtractDofValues(0,check_disp_j1,check_disp_k1);

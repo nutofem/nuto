@@ -684,7 +684,7 @@ void NuTo::StructureBase::ClearVisualizationComponents()
 }
 
 //! @brief ... evaluates the structur
-void NuTo::StructureBase::Evaluate(const std::map<int, NuTo::SparseMatrixCSR<double> > &rHessianSubmatrices)
+void NuTo::StructureBase::Evaluate(boost::ptr_multimap<int, NuTo::SparseMatrixCSR<double> &> &rStructureOutput)
 {
     throw MechanicsException("[NuTo::StructureBase::Evaluate] Not implemented.");
 }
@@ -925,7 +925,7 @@ void NuTo::StructureBase::BuildGlobalCoefficientMatrixCheck()
 }
 
 // build global coefficient matrix0
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrixCSRGeneral<double>& rMatrix, FullVector<double,Eigen::Dynamic>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType rType, SparseMatrixCSRGeneral<double>& rMatrix, FullVector<double,Eigen::Dynamic>& rVector)
 {
     //check for dof numbering and build of tmp static data
     BuildGlobalCoefficientMatrixCheck();
@@ -996,7 +996,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::Stru
 }
 
 // build global coefficient matrix0
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrixCSRSymmetric<double>& rMatrix, FullVector<double,Eigen::Dynamic>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType rType, SparseMatrixCSRSymmetric<double>& rMatrix, FullVector<double,Eigen::Dynamic>& rVector)
 {
     //check for dof numbering and build of tmp static data
     BuildGlobalCoefficientMatrixCheck();
@@ -1066,7 +1066,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::Stru
 }
 
 // build global coefficient matrix0
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrixCSRVector2General<double>& rMatrix, FullVector<double,Eigen::Dynamic>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType rType, SparseMatrixCSRVector2General<double>& rMatrix, FullVector<double,Eigen::Dynamic>& rVector)
 {
     //check for dof numbering and build of tmp static data
     BuildGlobalCoefficientMatrixCheck();
@@ -1147,7 +1147,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::Stru
 }
 
 // build global coefficient matrix0
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullVector<double,Eigen::Dynamic>& rVector)
+NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType rType, SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullVector<double,Eigen::Dynamic>& rVector)
 {
     //check for dof numbering and build of tmp static data
     BuildGlobalCoefficientMatrixCheck();
@@ -1233,7 +1233,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::Spa
 #endif
     start=clock();
 #endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::STIFFNESS, rMatrix, rVector);
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::STIFFNESS, rMatrix, rVector);
 #ifdef SHOW_TIME
     end=clock();
 #ifdef _OPENMP
@@ -1260,7 +1260,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::Spa
 #endif
     start=clock();
 #endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::STIFFNESS, rMatrix, rVector);
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::STIFFNESS, rMatrix, rVector);
 #ifdef SHOW_TIME
     end=clock();
 #ifdef _OPENMP
@@ -1288,7 +1288,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::Spa
 #endif
     start=clock();
 #endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::STIFFNESS, rMatrix, rVector);
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::STIFFNESS, rMatrix, rVector);
 #ifdef SHOW_TIME
     end=clock();
 #ifdef _OPENMP
@@ -1316,7 +1316,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMat
 #endif
     start=clock();
 #endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::STIFFNESS, rMatrix, rVector);
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::STIFFNESS, rMatrix, rVector);
 #ifdef SHOW_TIME
     end=clock();
 #ifdef _OPENMP
@@ -1344,7 +1344,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix1(NuTo::Spa
 #endif
     start=clock();
 #endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::DAMPING, rMatrix, rVector);
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::DAMPING, rMatrix, rVector);
 #ifdef SHOW_TIME
     end=clock();
 #ifdef _OPENMP
@@ -1372,7 +1372,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::Spa
 #endif
     start=clock();
 #endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::MASS, rMatrix, rVector);
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::MASS, rMatrix, rVector);
 #ifdef SHOW_TIME
     end=clock();
 #ifdef _OPENMP
@@ -1400,7 +1400,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::Spa
 #endif
     start=clock();
 #endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::MASS, rMatrix, rVector);
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::MASS, rMatrix, rVector);
 #ifdef SHOW_TIME
     end=clock();
 #ifdef _OPENMP
@@ -1428,7 +1428,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::Spa
 #endif
     start=clock();
 #endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::MASS, rMatrix, rVector);
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::MASS, rMatrix, rVector);
 #ifdef SHOW_TIME
     end=clock();
 #ifdef _OPENMP
@@ -1456,7 +1456,7 @@ NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(SparseMat
 #endif
     start=clock();
 #endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureBaseEnum::MASS, rMatrix, rVector);
+    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::MASS, rMatrix, rVector);
 #ifdef SHOW_TIME
     end=clock();
 #ifdef _OPENMP

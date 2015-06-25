@@ -209,7 +209,7 @@ private:
         NuTo::SparseMatrixCSRVector2General<double> kk(numDepDofs,numDepDofs);
         NuTo::FullVector<double,Eigen::Dynamic> dummy;
 
-        rStructure.BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::MASS, jj, jk, kj, kk);
+        rStructure.BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::MASS, jj, jk, kj, kk);
 
         NuTo::FullMatrix<double> jjFull(jj), jkFull(jk), kjFull(kj), kkFull(kk);
 

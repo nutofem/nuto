@@ -257,7 +257,7 @@ void NuTo::Structure::Restore (const std::string &filename, std::string rType )
 #endif // ENABLE_SERIALIZATION
 
 // based on the global dofs build submatrices of the global coefficent matrix0
-NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK)
+NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType rType, SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK)
 {
     assert(this->mNodeNumberingRequired == false);
     assert(rMatrixJJ.IsSymmetric() == false);
@@ -273,15 +273,15 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
     Error::eError errorGlobal(Error::SUCCESSFUL);
 
     boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
-    if (rType == NuTo::StructureBaseEnum::STIFFNESS)
+    if (rType == NuTo::StructureEnum::eMatrixType::STIFFNESS)
     {
         boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>(elementOutput)(Element::HESSIAN_0_TIME_DERIVATIVE);
     }
-    else if (rType == NuTo::StructureBaseEnum::DAMPING)
+    else if (rType == NuTo::StructureEnum::eMatrixType::DAMPING)
     {
         boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>(elementOutput)(Element::HESSIAN_1_TIME_DERIVATIVE);
     }
-    else if (rType == NuTo::StructureBaseEnum::MASS)
+    else if (rType == NuTo::StructureEnum::eMatrixType::MASS)
     {
         boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>(elementOutput)(Element::HESSIAN_2_TIME_DERIVATIVE);
     }
@@ -294,13 +294,13 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
     NuTo::Element::eOutput matrixHessianOrderType;
     switch (rType)
     {
-    case NuTo::StructureBaseEnum::STIFFNESS:
+    case NuTo::StructureEnum::eMatrixType::STIFFNESS:
         matrixHessianOrderType = Element::HESSIAN_0_TIME_DERIVATIVE;
         break;
-    case NuTo::StructureBaseEnum::DAMPING:
+    case NuTo::StructureEnum::eMatrixType::DAMPING:
         matrixHessianOrderType = Element::HESSIAN_1_TIME_DERIVATIVE;
         break;
-    case NuTo::StructureBaseEnum::MASS:
+    case NuTo::StructureEnum::eMatrixType::MASS:
         matrixHessianOrderType = Element::HESSIAN_2_TIME_DERIVATIVE;
         break;
     default:
@@ -343,7 +343,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
                     {
                         NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> elementMatrix(elementOutput.find(matrixHessianOrderType)->second->GetFullMatrixDouble());
 
-                        //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
+                        //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementMatrix = (rType == NuTo::StructureEnum::eMatrixType::STIFFNESS) ?
                         //		elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second->GetFullMatrixDouble() :
                         //		elementOutput.find(Element::HESSIAN_2_TIME_DERIVATIVE)->second->GetFullMatrixDouble();
 
@@ -411,7 +411,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
                 {
                     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> elementMatrix(elementOutput.find(matrixHessianOrderType)->second->GetFullMatrixDouble());
 
-                    //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
+                    //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementMatrix = (rType == NuTo::StructureEnum::eMatrixType::STIFFNESS) ?
                     //		elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second->GetFullMatrixDouble() :
                     //		elementOutput.find(Element::HESSIAN_2_TIME_DERIVATIVE)->second->GetFullMatrixDouble();
 
@@ -471,7 +471,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 
             NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> elementMatrix(elementOutput.find(matrixHessianOrderType)->second->GetFullMatrixDouble());
 
-            //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementMatrix = (rType == NuTo::StructureBaseEnum::STIFFNESS) ?
+            //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  elementMatrix = (rType == NuTo::StructureEnum::eMatrixType::STIFFNESS) ?
             //		elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second->GetFullMatrixDouble() :
             //		elementOutput.find(Element::HESSIAN_2_TIME_DERIVATIVE)->second->GetFullMatrixDouble();
 
@@ -556,7 +556,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
     }
 #endif
 
-    if (rType == NuTo::StructureBaseEnum::STIFFNESS)
+    if (rType == NuTo::StructureEnum::eMatrixType::STIFFNESS)
     {
         //write contribution of Lagrange Multipliers
         ConstraintsBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK);
@@ -566,7 +566,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 }
 
 // based on the global dofs build submatrices of the global coefficent matrix
-NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK, SparseMatrix<double>& rMatrixKJ, SparseMatrix<double>& rMatrixKK)
+NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType rType, SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK, SparseMatrix<double>& rMatrixKJ, SparseMatrix<double>& rMatrixKK)
 {
     assert(this->mNodeNumberingRequired == false);
     assert(rMatrixJJ.IsSymmetric() == false);
@@ -590,15 +590,15 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
     Error::eError errorGlobal(Error::SUCCESSFUL);
 
     boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
-    if (rType == NuTo::StructureBaseEnum::STIFFNESS)
+    if (rType == NuTo::StructureEnum::eMatrixType::STIFFNESS)
     {
         boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>(elementOutput)(Element::HESSIAN_0_TIME_DERIVATIVE);
     }
-    else if (rType == NuTo::StructureBaseEnum::DAMPING)
+    else if (rType == NuTo::StructureEnum::eMatrixType::DAMPING)
     {
         boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>(elementOutput)(Element::HESSIAN_1_TIME_DERIVATIVE);
     }
-    else if (rType == NuTo::StructureBaseEnum::MASS)
+    else if (rType == NuTo::StructureEnum::eMatrixType::MASS)
     {
         boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>(elementOutput)(Element::HESSIAN_2_TIME_DERIVATIVE);
     }
@@ -611,13 +611,13 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
     NuTo::Element::eOutput matrixHessianOrderType;
     switch (rType)
     {
-    case NuTo::StructureBaseEnum::STIFFNESS:
+    case NuTo::StructureEnum::eMatrixType::STIFFNESS:
         matrixHessianOrderType = Element::HESSIAN_0_TIME_DERIVATIVE;
         break;
-    case NuTo::StructureBaseEnum::DAMPING:
+    case NuTo::StructureEnum::eMatrixType::DAMPING:
         matrixHessianOrderType = Element::HESSIAN_1_TIME_DERIVATIVE;
         break;
-    case NuTo::StructureBaseEnum::MASS:
+    case NuTo::StructureEnum::eMatrixType::MASS:
         matrixHessianOrderType = Element::HESSIAN_2_TIME_DERIVATIVE;
         break;
     default:
@@ -855,7 +855,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
         }
     }
 #endif
-    if (rType == NuTo::StructureBaseEnum::STIFFNESS)
+    if (rType == NuTo::StructureEnum::eMatrixType::STIFFNESS)
     {
         //write contribution of Lagrange Multipliers
         ConstraintBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK, rMatrixKJ, rMatrixKK);
@@ -1133,7 +1133,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalElasticStiffnessSubMatricesGener
 }
 
 // based on the global dofs build submatrices of the global coefficent matrix0
-NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK)
+NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureEnum::eMatrixType rType, SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK)
 {
     assert(this->mNodeNumberingRequired == false);
     assert(rMatrixJJ.IsSymmetric() == true);
@@ -1149,11 +1149,11 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
     Error::eError errorGlobal(Error::SUCCESSFUL);
 
     boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
-    if (rType == NuTo::StructureBaseEnum::STIFFNESS)
+    if (rType == NuTo::StructureEnum::eMatrixType::STIFFNESS)
     {
         boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>(elementOutput)(Element::HESSIAN_0_TIME_DERIVATIVE);
     }
-    else if (rType == NuTo::StructureBaseEnum::MASS)
+    else if (rType == NuTo::StructureEnum::eMatrixType::MASS)
     {
         boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>(elementOutput)(Element::HESSIAN_2_TIME_DERIVATIVE);
     }
@@ -1204,7 +1204,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
         }
         else
         {
-            NuTo::ElementOutputBase* outputPtrHessian = ((rType == NuTo::StructureBaseEnum::STIFFNESS) ? elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second : elementOutput.find(Element::HESSIAN_2_TIME_DERIVATIVE)->second);
+            NuTo::ElementOutputBase* outputPtrHessian = ((rType == NuTo::StructureEnum::eMatrixType::STIFFNESS) ? elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second : elementOutput.find(Element::HESSIAN_2_TIME_DERIVATIVE)->second);
 
             if (outputPtrHessian->GetSymmetry() == false)
             {
@@ -1251,7 +1251,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
 #else
     }
 #endif
-    if (rType == NuTo::StructureBaseEnum::STIFFNESS)
+    if (rType == NuTo::StructureEnum::eMatrixType::STIFFNESS)
     {
         //write contribution of Lagrange Multipliers
         ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(rMatrixJJ, rMatrixJK);
@@ -1261,7 +1261,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
 }
 
 // based on the global dofs build submatrices of the global coefficent matrix0
-NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureBaseEnum::eMatrixType rType, SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK, SparseMatrix<double>& rMatrixKK)
+NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureEnum::eMatrixType rType, SparseMatrix<double>& rMatrixJJ, SparseMatrix<double>& rMatrixJK, SparseMatrix<double>& rMatrixKK)
 {
     assert(this->mNodeNumberingRequired == false);
     assert(rMatrixJJ.IsSymmetric() == true);
@@ -1281,11 +1281,11 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
     Error::eError errorGlobal(Error::SUCCESSFUL);
 
     boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
-    if (rType == NuTo::StructureBaseEnum::STIFFNESS)
+    if (rType == NuTo::StructureEnum::eMatrixType::STIFFNESS)
     {
         boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>(elementOutput)(Element::HESSIAN_0_TIME_DERIVATIVE);
     }
-    else if (rType == NuTo::StructureBaseEnum::MASS)
+    else if (rType == NuTo::StructureEnum::eMatrixType::MASS)
     {
         boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>(elementOutput)(Element::HESSIAN_2_TIME_DERIVATIVE);
     }
@@ -1335,7 +1335,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
         }
         else
         {
-            NuTo::ElementOutputBase* outputPtrHessian = ((rType == NuTo::StructureBaseEnum::STIFFNESS) ? elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second : elementOutput.find(Element::HESSIAN_2_TIME_DERIVATIVE)->second);
+            NuTo::ElementOutputBase* outputPtrHessian = ((rType == NuTo::StructureEnum::eMatrixType::STIFFNESS) ? elementOutput.find(Element::HESSIAN_0_TIME_DERIVATIVE)->second : elementOutput.find(Element::HESSIAN_2_TIME_DERIVATIVE)->second);
 
             if (outputPtrHessian->GetSymmetry() == false)
             {
@@ -1398,7 +1398,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
 #else
     }
 #endif
-    if (rType == NuTo::StructureBaseEnum::STIFFNESS)
+    if (rType == NuTo::StructureEnum::eMatrixType::STIFFNESS)
     {
         //write contribution of Lagrange Multipliers
         ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(rMatrixJJ, rMatrixJK, rMatrixKK);
@@ -1930,7 +1930,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalElasticGradientInternalPotential
 }
 
 //! @brief ... evaluates the structur
-void NuTo::Structure::Evaluate(const std::map<int, NuTo::SparseMatrixCSR<double> > &rHessianSubmatrices)
+void NuTo::Structure::Evaluate(boost::ptr_multimap<int, NuTo::SparseMatrixCSR<double> &> &rStructureOutput)
 {
 
     //decltype(mHessianSubmatrices) Test;
