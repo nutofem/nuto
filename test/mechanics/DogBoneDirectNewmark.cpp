@@ -142,7 +142,7 @@ try
 
 
     myStructure.ElementGroupSetInterpolationType(groupId, myInterpolationType);
-    myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
+    myStructure.ElementTotalConvertToInterpolationType();
 
 	//section
 	double thickness(1);

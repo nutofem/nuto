@@ -48,7 +48,7 @@ try
     Incidence(2) = node4;
     Incidence(3) = node3;
     myStructure.ElementCreate(myInterpolationType,Incidence);
-    myStructure.ElementTotalConvertToInterpolationType(1.e-5, 1);
+    myStructure.ElementTotalConvertToInterpolationType();
 
     //create constitutive law
     int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");

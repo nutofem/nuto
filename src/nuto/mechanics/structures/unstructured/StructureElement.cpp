@@ -125,6 +125,97 @@ void NuTo::Structure::ElementInfo(int rVerboseLevel) const
     }
 }
 
+//! @brief changes the node structure to match the interpolation type
+//! the node merge distance and the box size are calculated from the element sizes
+void NuTo::Structure::ElementTotalConvertToInterpolationType()
+{
+    // create a group with all elements
+    bool showTime = mShowTime;
+    mShowTime = false;
+
+    // create element group containing the new elements
+    int groupNumber = GroupCreate("Elements");
+    GroupBase* group = mGroupMap.find(groupNumber)->second;
+
+    for (boost::ptr_map<int, ElementBase>::iterator itElement = mElementMap.begin(); itElement != mElementMap.end(); ++itElement)
+    {
+        int elementId = itElement->first;
+        ElementBase* elementPtr = itElement->second;
+        group->AddMember(elementId, elementPtr);
+    }
+    mShowTime = showTime;
+
+    // convert elements
+    ElementConvertToInterpolationType(groupNumber);
+
+    // delete load from map
+    mGroupMap.erase(groupNumber);
+}
+
+//! @brief changes the node structure to match the interpolation type
+//! @remark The node merge distance is the smallest element length divided by 1000.
+//! @remark The mesh size is the median element length divided by 2.
+//! @param rGroupNumberElements group for elements (coordinates only) to be converted
+void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements)
+{
+    // determine the element sizes and calculate the mesh size and the merge distance using these values.
+
+    boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rGroupNumberElements);
+    if (itGroup == mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::ElementConvertToInterpolationType] Group with the given identifier does not exist.");
+
+    if (itGroup->second->GetType() != NuTo::Groups::Elements)
+        throw MechanicsException("[NuTo::Structure::ElementConvertToInterpolationType] Group is not an element group.");
+
+    Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
+    assert(elementGroup != 0);
+
+    NuTo::FullVector<int, Eigen::Dynamic> elementIndices = elementGroup->GetMemberIds();
+    int numElements = elementIndices.GetNumRows();
+
+    // calculate and store the 'size' of each element
+    // = volume in 3D
+    // = area in 2D
+    // = length in 1D
+    Eigen::VectorXd elementSize(numElements);
+
+    for (int iElement = 0; iElement < numElements; ++iElement)
+    {
+        int elementId = elementIndices[iElement];
+        ElementBase* element = &(mElementMap.at(elementId));
+        Eigen::VectorXd sizeForEachIntegrationPoint = element->GetIntegrationPointVolume();
+
+        elementSize[iElement] = sizeForEachIntegrationPoint.sum();
+    }
+
+    std::sort(elementSize.data(), elementSize.data()+numElements, std::less<double>()); // sort in accending order
+
+    double sizeMin = elementSize(0);
+    double sizeMed = elementSize(numElements/2);
+
+    double lengthMin = std::pow(sizeMin, 1./mDimension);
+    double lengthMed = std::pow(sizeMed, 1./mDimension);
+
+    double mergeDist = lengthMin / 1000.;
+    double meshSize = lengthMed / 2.;
+
+    if (mVerboseLevel > 0)
+    {
+        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] total size:            " << elementSize.sum() << std::endl;
+        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] min. element size:     " << sizeMin << std::endl;
+        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] median element size:   " << sizeMed << std::endl;
+        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] ====================== " << std::endl;
+        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] min. element length:   " << lengthMin << std::endl;
+        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] median element length: " << lengthMed << std::endl;
+        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] ====================== " << std::endl;
+        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] merge distance:        " << mergeDist << std::endl;
+        std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] mesh size:             " << meshSize << std::endl;
+    }
+
+    ElementTotalConvertToInterpolationType(mergeDist, meshSize);
+
+}
+
 //! @brief changes the node structure to match the interpolation type for all elements
 //! @param rNodeDistanceMerge Distance of nodes to be joined (should be significantly smaller than the node distance in the mesh)
 //! @param rMeshSize approximate size of the elements

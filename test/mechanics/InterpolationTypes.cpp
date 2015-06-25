@@ -310,7 +310,10 @@ void ImportFromGmsh(std::string rMeshFile)
     int interpolationType = groupIndices.GetValue(0, 1);
     myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT2);
 
-    myStructure.ElementConvertToInterpolationType(groupIndices.GetValue(0, 0), 1.e-5, 0.02);
+    myStructure.SetVerboseLevel(10);
+    myStructure.ElementConvertToInterpolationType(groupIndices.GetValue(0, 0));
+
+    return;
 
     myStructure.InterpolationTypeSetIntegrationType(interpolationType, NuTo::IntegrationType::IntegrationType2D3NGauss3Ip, NuTo::IpData::NOIPDATA);
 

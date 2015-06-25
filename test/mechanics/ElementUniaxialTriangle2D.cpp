@@ -64,7 +64,9 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
 
         }
     }
-    myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
+
+    myStructure.SetVerboseLevel(10);
+    myStructure.ElementTotalConvertToInterpolationType();
 
     int mySection = myStructure.SectionCreate("Plane_Stress");
     myStructure.SectionSetThickness(mySection, test.lZ);

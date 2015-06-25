@@ -229,7 +229,7 @@ int main()
             MTStructure1D.ElementSetConstitutiveLaw(i,ConstLaw);
         }
 
-        MTStructure1D.ElementTotalConvertToInterpolationType(1.e-6, 10);
+        MTStructure1D.ElementTotalConvertToInterpolationType();
 
         // Apply nodal start values
 

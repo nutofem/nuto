@@ -53,7 +53,7 @@ myStructure.InterpolationTypeAdd(myInterpolationType, "Coordinates", "Equidistan
 myStructure.InterpolationTypeAdd(myInterpolationType, "Displacements", "Equidistant1");
 
 myStructure.ElementCreate(myInterpolationType,Incidence);
-myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
+myStructure.ElementTotalConvertToInterpolationType();
 
 #create constitutive law
 myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");

@@ -99,7 +99,7 @@ int main()
     Incidence3(2) = node8;
     int myElement5 = myStructure.ElementCreate(interpolationType3,Incidence3,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
 
-    myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
+    myStructure.ElementTotalConvertToInterpolationType();
 
     //create constitutive law
     int myMatDamage = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticityEngineeringStress");

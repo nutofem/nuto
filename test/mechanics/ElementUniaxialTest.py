@@ -249,7 +249,7 @@ def Run3D(r3DShape, rTypeOrder):
 					return
 				
 
-	myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
+	myStructure.ElementTotalConvertToInterpolationType();
 
 	mySection = myStructure.SectionCreate("Volume");
 	myStructure.ElementTotalSetSection(mySection);
@@ -313,7 +313,7 @@ def Run2D(r2DShape, rTypeOrder):
 				return
 				
 
-	myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
+	myStructure.ElementTotalConvertToInterpolationType();
 
 	mySection = myStructure.SectionCreate("Plane_Stress");
 	myStructure.SectionSetThickness(mySection, lZ);
@@ -361,7 +361,7 @@ def Run1D(r1DShape, rTypeOrder):
 			errorMsg += "Element shape " + r2DShape +" is invalid. \n"
 			return
 
-	myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
+	myStructure.ElementTotalConvertToInterpolationType();
 
 	mySection = myStructure.SectionCreate("Truss");
 	myStructure.SectionSetArea(mySection, lZ*lY);

@@ -77,7 +77,7 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
     std::cout << "######### VOLUME: " << volume << std::endl;
 
     myStructure.SetVerboseLevel(10);
-    myStructure.ElementTotalConvertToInterpolationType(1.e-6, 3);
+    myStructure.ElementTotalConvertToInterpolationType();
 
     int mySection = myStructure.SectionCreate("VOLUME");
     myStructure.ElementTotalSetSection(mySection);

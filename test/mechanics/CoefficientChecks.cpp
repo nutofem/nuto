@@ -27,7 +27,7 @@ void CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder rType
             3, 6, 2, 3, 6, 4, 4, 5, 6, 6;
 
     myStructure.ElementsCreate(interpolationType, nodeNumbers);
-    myStructure.ElementTotalConvertToInterpolationType(11.e-6, 5);
+    myStructure.ElementTotalConvertToInterpolationType();
 
 
     //Calculate maximum independent sets for parallelization (openmp)

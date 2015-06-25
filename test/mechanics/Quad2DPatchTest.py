@@ -60,7 +60,7 @@ def RunPatchTest(StressState):
 	myStructure.InterpolationTypeAdd(interpolationType, "Displacements", "Equidistant1");
 
 	myStructure.ElementsCreate(interpolationType, elementIncidence)
-	myStructure.ElementTotalConvertToInterpolationType(1.e-6, 4)
+	myStructure.ElementTotalConvertToInterpolationType()
 	myStructure.ElementTotalSetConstitutiveLaw(myMatLin)
 	myStructure.ElementTotalSetSection(mySection)
 

@@ -48,7 +48,8 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
         myStructure.ElementCreate(myInterpolationType, nodes);
     }
 
-    myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
+    myStructure.SetVerboseLevel(10);
+    myStructure.ElementTotalConvertToInterpolationType();
 
     int mySection = myStructure.SectionCreate("Truss");
     myStructure.SectionSetArea(mySection, test.lZ*test.lY);

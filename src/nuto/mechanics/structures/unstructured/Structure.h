@@ -372,15 +372,25 @@ public:
     int ElementsCreate(int rInterpolationTypeId, NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
 
     //! @brief changes the node structure to match the interpolation type for all elements
+    //! the node merge distance and the box size are calculated from the element sizes
+    void ElementTotalConvertToInterpolationType();
+
+    //! @brief changes the node structure to match the interpolation type
+    //! the node merge distance and the box size are calculated from the element sizes
+    //! @param rGroupNumberElements group for elements (coordinates only) to be converted
+    void ElementConvertToInterpolationType(int rGroupNumberElements);
+
+    //! @brief changes the node structure to match the interpolation type for all elements
     //! @param rNodeDistanceMerge Distance of nodes to be joined (should be significantly smaller than the node distance in the mesh)
     //! @param rMeshSize approximate size of the elements
-    void ElementTotalConvertToInterpolationType(double rNodeDistanceMerge = 1.e-6, double rMeshSize = 10.);
+    void ElementTotalConvertToInterpolationType(double rNodeDistanceMerge, double rMeshSize);
 
     //! @brief changes the node structure to match the interpolation type
     //! @param rGroupNumberElements group for elements (coordinates only) to be converted
     //! @param rNodeDistanceMerge Distance of nodes to be joined (should be significantly smaller than the node distance in the mesh)
     //! @param rMeshSize approximate size of the elements
     void ElementConvertToInterpolationType(int rGroupNumberElements, double rNodeDistanceMerge, double rMeshSize);
+
 
     //! @brief Deletes an element
     //! @param rElementNumber element number

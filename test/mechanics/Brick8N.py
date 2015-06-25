@@ -48,7 +48,7 @@ myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidist
 
 #create element
 myElement1 = myStructure.ElementCreate(myInterpolationType,nuto.IntFullVector((myNode1,myNode2,myNode3,myNode4,myNode5,myNode6,myNode7,myNode8)))
-myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
+myStructure.ElementTotalConvertToInterpolationType();
 
 #create constitutive law
 myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")

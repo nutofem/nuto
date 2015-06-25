@@ -28,7 +28,8 @@ void RunGmsh(NuTo::Interpolation::eTypeOrder rTypeOrder)
 
     myStructure.ImportFromGmsh(file, "ConstitutiveLawIP", "NoIPData");
 
-    myStructure.ElementTotalConvertToInterpolationType(1.e-6, 3);
+    myStructure.SetVerboseLevel(10);
+    myStructure.ElementTotalConvertToInterpolationType();
 
     int allElements = myStructure.GroupCreate("Elements");
     myStructure.GroupAddElementFromType(allElements, myInterpolationType);
@@ -147,7 +148,7 @@ int main(int argc, char* argv[])
     try
     {
         Run(NuTo::Interpolation::EQUIDISTANT1);
-//        Run(NuTo::Interpolation::EQUIDISTANT2);
+        Run(NuTo::Interpolation::EQUIDISTANT2);
     }
     catch (NuTo::Exception& e)
     {

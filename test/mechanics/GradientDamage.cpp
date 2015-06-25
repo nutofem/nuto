@@ -298,7 +298,7 @@ void GradientDamage1D()
 
     int groupElements = myStructure.GroupCreate("ELEMENTS");
     myStructure.GroupAddElementFromType(groupElements, interpolationType);
-    myStructure.ElementConvertToInterpolationType(groupElements, 1.e-6, 100);
+    myStructure.ElementConvertToInterpolationType(groupElements);
 
     myStructure.InterpolationTypeSetIntegrationType(interpolationType, NuTo::IntegrationType::IntegrationType1D2NGauss2Ip, NuTo::IpData::STATICDATA);
     myStructure.ElementTotalSetConstitutiveLaw(myNumberConstitutiveLaw);
@@ -436,7 +436,7 @@ void GradientDamage2D()
     int mySection = myStructure.SectionCreate("Plane_Strain");
     myStructure.SectionSetThickness(mySection, lZ);
 
-    myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
+    myStructure.ElementTotalConvertToInterpolationType();
     myStructure.InterpolationTypeSetIntegrationType(myInterpolationType, NuTo::IntegrationType::IntegrationType2D4NGauss4Ip, NuTo::IpData::STATICDATA);
     myStructure.ElementTotalSetConstitutiveLaw(myConstitutiveLaw);
     myStructure.ElementTotalSetSection(mySection);
@@ -575,8 +575,8 @@ void Check1D2D()
     int myConstitutiveLaw1D = SetConstitutiveLaw(myStructure1D);
     int myConstitutiveLaw2D = SetConstitutiveLaw(myStructure2D);
 
-    myStructure1D.ElementTotalConvertToInterpolationType(1.e-6, 100);
-    myStructure2D.ElementTotalConvertToInterpolationType(1.e-6, 100);
+    myStructure1D.ElementTotalConvertToInterpolationType();
+    myStructure2D.ElementTotalConvertToInterpolationType();
 
     int mySection1D = myStructure1D.SectionCreate("Truss");
     int mySection2D = myStructure2D.SectionCreate("Plane_Stress");

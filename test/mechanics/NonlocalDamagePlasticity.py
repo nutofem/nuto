@@ -60,7 +60,7 @@ element4 = myStructure.ElementCreate(it4IP,nuto.IntFullVector((node5,node6,node9
 myStructure.InterpolationTypeSetIntegrationType(it1IP, "2D4NGauss1Ip","StaticDataNonlocal")
 myStructure.InterpolationTypeSetIntegrationType(it1IP, "2D4NGauss4Ip","StaticDataNonlocal")
 
-myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10)
+myStructure.ElementTotalConvertToInterpolationType()
 
 #create constitutive law
 myMatDamage = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticityEngineeringStress")

@@ -76,7 +76,7 @@ void HydrostaticPressureTriangle2D(NuTo::Interpolation::eTypeOrder rInterpolatio
     myStructure.InterpolationTypeAdd(0, NuTo::Node::DISPLACEMENTS, rInterpolationDisp);
 
     int elementGroup = myStructure.ElementsCreate(0,nodeIds);
-    myStructure.ElementConvertToInterpolationType(elementGroup, 1.e-6, 1);
+    myStructure.ElementConvertToInterpolationType(elementGroup);
 
     for (int iSurface = 0; iSurface < 3; ++iSurface)
         myStructure.LoadSurfacePressureCreate2D(0, elementGroup, s.GetValue(iSurface), pressure);
@@ -130,7 +130,7 @@ void HydrostaticPressureQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationCoo
     myStructure.InterpolationTypeAdd(0, NuTo::Node::DISPLACEMENTS, rInterpolationDisp);
 
     int elementGroup = myStructure.ElementsCreate(0,nodeIds);
-    myStructure.ElementConvertToInterpolationType(elementGroup, 1.e-6, 1);
+    myStructure.ElementConvertToInterpolationType(elementGroup);
 
     for (int iSurface = 0; iSurface < 4; ++iSurface)
         myStructure.LoadSurfacePressureCreate2D(0, elementGroup, s.GetValue(iSurface), pressure);
@@ -194,7 +194,7 @@ void HydrostaticPressureTetrahedron3D(NuTo::Interpolation::eTypeOrder rInterpola
     myStructure.InterpolationTypeAdd(0, NuTo::Node::DISPLACEMENTS, rInterpolationDisp);
 
     int elementGroup = myStructure.ElementsCreate(0,nodeIds);
-    myStructure.ElementConvertToInterpolationType(elementGroup, 1.e-6, 1);
+    myStructure.ElementConvertToInterpolationType(elementGroup);
 
     for (int iSurface = 0; iSurface < 4; ++iSurface)
         myStructure.LoadSurfacePressureCreate3D(0, elementGroup, s.GetValue(iSurface), pressure);
@@ -270,7 +270,7 @@ void HydrostaticPressureBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationCo
     myStructure.InterpolationTypeAdd(0, NuTo::Node::DISPLACEMENTS, rInterpolationDisp);
 
     int elementGroup = myStructure.ElementsCreate(0,nodeIds);
-    myStructure.ElementConvertToInterpolationType(elementGroup, 1.e-6, 1);
+    myStructure.ElementConvertToInterpolationType(elementGroup);
 
     for (int iSurface = 0; iSurface < 6; ++iSurface)
         myStructure.LoadSurfacePressureCreate3D(0, elementGroup, s.GetValue(iSurface), pressure);
@@ -339,7 +339,7 @@ void SurfaceLoadTriangle2D(NuTo::Interpolation::eTypeOrder rInterpolationCoords,
     myStructure.InterpolationTypeAdd(0, NuTo::Node::DISPLACEMENTS, rInterpolationDisp);
 
     int elementGroup = myStructure.ElementsCreate(0,nodeIds);
-    myStructure.ElementConvertToInterpolationType(elementGroup, 1.e-6, 1);
+    myStructure.ElementConvertToInterpolationType(elementGroup);
 
     int section = myStructure.SectionCreate(NuTo::Section::PLANE_STRESS);
     myStructure.SectionSetThickness(section, thickness);
@@ -384,7 +384,7 @@ void SurfaceLoadQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationCoords,
     myStructure.InterpolationTypeAdd(0, NuTo::Node::DISPLACEMENTS, rInterpolationDisp);
 
     int elementGroup = myStructure.ElementsCreate(0,nodeIds);
-    myStructure.ElementConvertToInterpolationType(elementGroup, 1.e-6, 1);
+    myStructure.ElementConvertToInterpolationType(elementGroup);
 
     int section = myStructure.SectionCreate(NuTo::Section::PLANE_STRESS);
     myStructure.SectionSetThickness(section, thickness);
@@ -438,7 +438,7 @@ void SurfaceLoadTetrahedron3D(NuTo::Interpolation::eTypeOrder rInterpolationCoor
     myStructure.InterpolationTypeAdd(0, NuTo::Node::DISPLACEMENTS, rInterpolationDisp);
 
     int elementGroup = myStructure.ElementsCreate(0,nodeIds);
-    myStructure.ElementConvertToInterpolationType(elementGroup, 1.e-6, 1);
+    myStructure.ElementConvertToInterpolationType(elementGroup);
 
     NuTo::FullVector<double, Eigen::Dynamic> load(3);
     load << 42.,-M_PI,4.2e6;
@@ -489,7 +489,7 @@ void SurfaceLoadBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationCoords,
     myStructure.InterpolationTypeAdd(0, NuTo::Node::DISPLACEMENTS, rInterpolationDisp);
 
     int elementGroup = myStructure.ElementsCreate(0,nodeIds);
-    myStructure.ElementConvertToInterpolationType(elementGroup, 1.e-6, 1);
+    myStructure.ElementConvertToInterpolationType(elementGroup);
 
     NuTo::FullVector<double, Eigen::Dynamic> load(3);
     load << 42.,-M_PI,4.2e6;
