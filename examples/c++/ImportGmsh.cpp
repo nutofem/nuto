@@ -46,13 +46,16 @@ int main()
         myStructure.SectionSetThickness(mySectionMatrix, thickness);
 
         //imprt from gmsh
-        myStructure.ImportFromGmsh("./ImportGmsh.msh", NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIPNONLOCAL, NuTo::IpData::eIpDataType::STATICDATANONLOCAL);
+        NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ids = myStructure.ImportFromGmsh("./ImportGmsh.msh", NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIPNONLOCAL, NuTo::IpData::eIpDataType::STATICDATANONLOCAL);
 
-        //interpolation type
-        int myInterpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRIANGLE2D);
-        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT2);
+        // mesh file contains two physical groups, 102 to keep, 101 to delete
+        int groupId = ids(1,0);
+        assert(groupId == 102);
+
+        int myInterpolationType = ids(1,1);
+
         myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT2);
-        myStructure.ElementGroupSetInterpolationType(102, myInterpolationType);
+        myStructure.ElementTotalConvertToInterpolationType();
 
         //delete nodes
         bool deleteNodes = true;
