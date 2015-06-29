@@ -148,9 +148,11 @@ public:
     //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
     NuTo::Error::eError BuildGlobalElasticGradientInternalPotentialSubVectors(NuTo::FullVector<double, Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullVector<double, Eigen::Dynamic>& rDependentDofGradientVector);
 
-
+#ifndef SWIG
     //! @brief ... evaluates the structur
-    virtual void Evaluate(boost::ptr_multimap<int, NuTo::SparseMatrixCSR<double> &> &rStructureOutput) override;
+    virtual void Evaluate(std::map<StructureEnum::eOutput, StructureOutputBase*> &rStructureOutput) override;
+#endif
+
 
 //*************************************************
 //************ Node routines        ***************

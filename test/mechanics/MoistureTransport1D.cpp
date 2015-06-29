@@ -22,6 +22,9 @@
 
 #include <nuto/metamodel/PolynomialLeastSquaresFitting.h>
 
+#include <nuto/mechanics/structures/StructureOutputFullVectorDouble.h>
+#include <nuto/mechanics/structures/StructureOutputSparseMatrixCSRVector2.h>
+
 int main()
 {
     try
@@ -384,14 +387,8 @@ int main()
         }
 
         // Begin Test Structure Evaluate
+        // -----------------------------
 
-        //std::map<int,NuTo::SparseMatrixCSR<double>& > HessianSubmatrices;
-
-        //MTStructure1D.Evaluate(HessianSubmatrices);
-
-
-
-        // End Test Structure Evaluate
 
         // %%%%%%%%%%%%%%%%%%%%%%%
         // Manual time integration
@@ -402,6 +399,28 @@ int main()
         {
             gettimeofday(&time_begin, NULL);
         }
+
+        // Evaluate Version
+
+        NuTo::StructureOutputFullVectorDouble Residual;
+
+        NuTo::StructureOutputSparseMatrixCSRVector2 Hessian_0;
+        NuTo::StructureOutputSparseMatrixCSRVector2 Hessian_1;
+
+        std::map<NuTo::StructureEnum::eOutput, NuTo::StructureOutputBase*> StructureOutputResidual;
+        std::map<NuTo::StructureEnum::eOutput, NuTo::StructureOutputBase*> StructureOutputHessian;
+        std::map<NuTo::StructureEnum::eOutput, NuTo::StructureOutputBase*> StructureOutputResAndHessian;
+
+        StructureOutputResidual[NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT]  = &Residual;
+
+        StructureOutputHessian[NuTo::StructureEnum::eOutput::STIFFNESS]  = &Hessian_0;
+        StructureOutputHessian[NuTo::StructureEnum::eOutput::DAMPING]    = &Hessian_1;
+
+        StructureOutputResAndHessian[NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT]   = &Residual;
+        StructureOutputResAndHessian[NuTo::StructureEnum::eOutput::STIFFNESS]           = &Hessian_0;
+        StructureOutputResAndHessian[NuTo::StructureEnum::eOutput::DAMPING]             = &Hessian_1;
+
+        // Ende Evaluate Version
 
         NuTo::SparseMatrixCSRVector2General<double> Hessian, Hessian0, Hessian1;
         Hessian.Resize(NNodes*2,NNodes*2);
@@ -465,7 +484,13 @@ int main()
             // Calculate residual
             // ------------------
             Buffer_Vec.Resize(0);
-            MTStructure1D.BuildGlobalGradientInternalPotentialVector(res);
+            //MTStructure1D.BuildGlobalGradientInternalPotentialVector(res);
+
+            //res.Info(12,5,true);
+
+            MTStructure1D.Evaluate(StructureOutputResAndHessian);
+            //Residual.GetFullVectorDouble().Info(12,5,true);
+
 
 /*
             NuTo::FullVector<int, Eigen::Dynamic> DofNum;
@@ -488,16 +513,25 @@ int main()
                 // calculate correction
                 // --------------------
 
-                MTStructure1D.BuildGlobalCoefficientMatrix0(Hessian0, Buffer_Vec);
-                MTStructure1D.BuildGlobalCoefficientMatrix1(Hessian1, Buffer_Vec);
-                Hessian = Hessian0;
-                Hessian.AddScal(Hessian1,1.0/(delta_t * sigma));
-                res = -res;
+
+
+                //MTStructure1D.BuildGlobalCoefficientMatrix0(Hessian0, Buffer_Vec);
+                //MTStructure1D.BuildGlobalCoefficientMatrix1(Hessian1, Buffer_Vec);
+                //Hessian = Hessian0;
+                //Hessian.AddScal(Hessian1,1.0/(delta_t * sigma));
+                if(NIterations > 1)
+                {
+                    MTStructure1D.Evaluate(StructureOutputHessian);
+                }
+                Hessian = Hessian_0.GetPtrSparseMatrixCSRVector2Double()->AsSparseMatrixCSRVector2General();
+                Hessian.AddScal(Hessian_1.GetPtrSparseMatrixCSRVector2Double()->AsSparseMatrixCSRVector2General(),1.0/(delta_t * sigma));
+
+                //res = -Residual.GetFullVectorDouble();
 
                 NuTo::SparseMatrixCSRGeneral<double> HessianForSolver(Hessian);
                 HessianForSolver.SetOneBasedIndexing();
 
-                Solver.Solve(HessianForSolver,res,delta_dis);
+                Solver.Solve(HessianForSolver,-Residual.GetFullVectorDouble(),delta_dis);
 
                 // apply correction
                 // ----------------
@@ -512,10 +546,12 @@ int main()
 
                 // Calculate residual
                 // ------------------
-                MTStructure1D.BuildGlobalGradientInternalPotentialVector(res);
+                //MTStructure1D.BuildGlobalGradientInternalPotentialVector(res);
+                MTStructure1D.Evaluate(StructureOutputResidual);
+
 
             }
-            while(std::abs(res.Min())>MaxResidual || std::abs(res.Max())>MaxResidual);
+            while(std::abs(Residual.GetFullVectorDouble().Min())>MaxResidual || std::abs(Residual.GetFullVectorDouble().Max())>MaxResidual);
 
 
 

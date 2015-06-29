@@ -31,6 +31,7 @@
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/mechanics/structures/StructureBaseEnum.h"
+#include "nuto/mechanics/structures/StructureOutputBase.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeBase.h"
@@ -161,8 +162,10 @@ public:
     //! @brief ... clear all visualization components
     void ClearVisualizationComponents();
 
+#ifndef SWIG
     //! @brief ... evaluates the structur
-    virtual void Evaluate(boost::ptr_multimap<int, NuTo::SparseMatrixCSR<double> &> &rStructureOutput);
+    virtual void Evaluate(std::map<StructureEnum::eOutput, StructureOutputBase*> &rStructureOutput);
+#endif // SWIG
 
     //! @brief ... export the entire structure to Vtk data file
     //! @param rFileName ... file name

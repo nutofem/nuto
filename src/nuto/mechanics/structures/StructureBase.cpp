@@ -67,6 +67,7 @@ extern "C" {
 #include "nuto/mechanics/integrationtypes/IntegrationType0DBoundary.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/structures/StructureOutputBase.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
@@ -684,7 +685,7 @@ void NuTo::StructureBase::ClearVisualizationComponents()
 }
 
 //! @brief ... evaluates the structur
-void NuTo::StructureBase::Evaluate(boost::ptr_multimap<int, NuTo::SparseMatrixCSR<double> &> &rStructureOutput)
+void NuTo::StructureBase::Evaluate(std::map<StructureEnum::eOutput, StructureOutputBase *> &rStructureOutput)
 {
     throw MechanicsException("[NuTo::StructureBase::Evaluate] Not implemented.");
 }

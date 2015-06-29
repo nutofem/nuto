@@ -107,7 +107,7 @@ public:
     //! @brief ... resize the matrix and initialize everything to zero
     //! @param  rRow ... number of rows
     //! @param  rCol ... number of columns
-    void Resize(int rRow, int rCol);
+    virtual void Resize(int rRow, int rCol) override;
 
     //! @brief ... resize the matrix and initialize everything to zero
     //! @param  rRow ... number of rows=number of columns

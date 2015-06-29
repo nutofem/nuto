@@ -86,6 +86,14 @@ public:
         }
     }
 
+    //! @brief ... resize matrix
+    //! @param rNumRows_ ... number of rows
+    //! @param rNumColumns_ ... number of columns
+    virtual void Resize(int rRow, int rCol)
+    {
+        throw NuTo::MathException("[NuTo::SparseSparseMatrixCSR::Resize] Not implemented for two input values!");
+    }
+
     //! @brief ... reserve memory for non-zero matrix entries
     //! @param rNumReserveEntries_ ... number of entries for which memory is reserved
     void Reserve(unsigned int rNumReserveEntries_)
