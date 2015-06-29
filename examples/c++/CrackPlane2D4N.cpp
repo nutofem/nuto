@@ -48,14 +48,20 @@ int main()
 		DBG_POSITION_INFO("InitCrackCoords5 Matrix")
 		InitCrackCoords5.Info();
 		
-		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Nodes = myStructure.NodesCreate("displacements", Coordinates);
-		
-		NuTo::FullVector<int,Eigen::Dynamic> CrackNodes1 = myStructure.NodesCreate("coordinates", InitCrackCoords1);
-		NuTo::FullVector<int,Eigen::Dynamic> CrackNodes5 = myStructure.NodesCreate("coordinates", InitCrackCoords5);
+		// nodes create
+		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Nodes = myStructure.NodesCreate(Coordinates);
+		NuTo::FullVector<int,Eigen::Dynamic> CrackNodes1 = myStructure.NodesCreate(InitCrackCoords1);
+		NuTo::FullVector<int,Eigen::Dynamic> CrackNodes5 = myStructure.NodesCreate(InitCrackCoords5);
+
 		DBG_POSITION_INFO("CrackNodes1")
 		CrackNodes1.Info(5);
 		DBG_POSITION_INFO("CrackNodes5")
 		CrackNodes5.Info(5);
+
+        // interpolation type
+        int InterpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
+        myStructure.InterpolationTypeAdd(InterpolationType, NuTo::Node::COORDINATES,    NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+        myStructure.InterpolationTypeAdd(InterpolationType, NuTo::Node::DISPLACEMENTS,  NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
 		// create elements
 		NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> Incidences(4,4);
@@ -84,10 +90,11 @@ int main()
 		DBG_POSITION_INFO("Incidence Matrix")
 		Incidences.Info();
 
-		NuTo::FullVector<int,Eigen::Dynamic> Elements = myStructure.ElementsCreate("Plane2D4N", Incidences, "CONSTITUTIVELAWIPCRACK" , "NOIPDATA");
+		NuTo::FullVector<int,Eigen::Dynamic> Elements = myStructure.ElementsCreate(InterpolationType,Incidences,"CONSTITUTIVELAWIPCRACK","NOIPDATA");
+        myStructure.ElementTotalConvertToInterpolationType();
 
 	    // create constitutive law
-	    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElastic");
+	    int myMatLin = myStructure.ConstitutiveLawCreate("LINEARELASTICENGINEERINGSTRESS");
 	    myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10);
 	    myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1);
 
@@ -98,7 +105,6 @@ int main()
 
 	    // assign material, section and integration type
 DBG_POSITION_INFO("before")
-	    myStructure.ElementTotalSetIntegrationType("2D4NGauss4Ip","NOIPDATA");
 DBG_POSITION_INFO("after")
 	    myStructure.ElementTotalSetConstitutiveLaw(myMatLin);
 	    myStructure.ElementTotalSetSection(mySection1);
@@ -142,7 +148,7 @@ DBG_PRINT_VAL(crack5)
         myStructure.AddVisualizationComponentCracks();
         myStructure.AddVisualizationComponentEngineeringStrain();
         myStructure.AddVisualizationComponentEngineeringStress();
-        myStructure.ExportVtkDataFile("CrackPlane2D4N.vtk");
+        myStructure.ExportVtkDataFileElements("CrackPlane2D4N.vtk");
 #endif
 	}
 	catch (NuTo::MathException& e)
