@@ -1709,12 +1709,12 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
 
         //Build the connectivity graph
         //First get for all nodes all the elements
-        std::map<NodeBase*, std::vector<unsigned int> > elementsPerNode;
+        std::map<const NodeBase*, std::vector<unsigned int> > elementsPerNode;
         for (unsigned int elementCount = 0; elementCount< elementVector.size(); elementCount++)
         {
-            for (int nodeCount = 0; nodeCount< elementVector[elementCount]->GetNumNodes(); nodeCount++)
+            for (int nodeCount = 0; nodeCount< elementVector[elementCount]->GetNumInfluenceNodes(); nodeCount++)
             {
-                elementsPerNode[elementVector[elementCount]->GetNode(nodeCount)].push_back(elementCount);
+                elementsPerNode[elementVector[elementCount]->GetInfluenceNode(nodeCount)].push_back(elementCount);
             }
         }
 

@@ -29,6 +29,7 @@ int main()
         //create structure
         NuTo::Structure myStructure(2);
         myStructure.SetNumTimeDerivatives(0);
+        myStructure.SetVerboseLevel(9);
 
         //create constitutive law nonlocal damage
         int myMatDamage = 999;
@@ -45,24 +46,23 @@ int main()
         int mySectionMatrix = myStructure.SectionCreate("Plane_Strain");
         myStructure.SectionSetThickness(mySectionMatrix, thickness);
 
-        //imprt from gmsh
+        //import from gmsh
         NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ids = myStructure.ImportFromGmsh("./ImportGmsh.msh", NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIPNONLOCAL, NuTo::IpData::eIpDataType::STATICDATANONLOCAL);
 
         // mesh file contains two physical groups, 102 to keep, 101 to delete
-        int groupId = ids(1,0);
-        assert(groupId == 102);
+        assert(ids(0,0) == 101);
+        assert(ids(1,0) == 102);
 
-        int myInterpolationType = ids(1,1);
-
+        //interpolation type
+        int myInterpolationType = ids(1,1); // extract geometry and the coordinate interpolation from gmsh
         myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT2);
-        myStructure.ElementTotalConvertToInterpolationType();
 
         //delete nodes
         bool deleteNodes = true;
         myStructure.ElementGroupDelete(101, deleteNodes);
 
         //assign section and constitutive law
-        myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
+        myStructure.ElementTotalConvertToInterpolationType();
         myStructure.ElementTotalSetSection(mySectionMatrix);
         myStructure.ElementTotalSetConstitutiveLaw(myMatDamage);
 
@@ -109,6 +109,7 @@ int main()
 
         // build global dof numbering
         myStructure.NodeBuildGlobalDofs();
+        myStructure.CalculateMaximumIndependentSets();
 
 #ifdef ENABLE_VISUALIZE
         myStructure.AddVisualizationComponentSection();

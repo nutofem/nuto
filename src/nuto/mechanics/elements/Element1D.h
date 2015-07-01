@@ -285,8 +285,6 @@ public:
 
 
 protected:
-    //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
-    void ReorderNodes() override;
 
     //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
     void CheckElement() override;

@@ -7,6 +7,7 @@
 
 #include "nuto/mechanics/elements/BoundaryElementBase.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
+#include "nuto/mechanics/structures/StructureBase.h"
 
 NuTo::BoundaryElementBase::BoundaryElementBase(const ElementBase* rBaseElement, int rSurfaceId)
 : ElementBase::ElementBase(rBaseElement->GetStructure(), rBaseElement->GetElementDataType(), rBaseElement->GetIpDataType(0), rBaseElement->GetInterpolationType()),
@@ -15,34 +16,9 @@ NuTo::BoundaryElementBase::BoundaryElementBase(const ElementBase* rBaseElement, 
 
 }
 
-int NuTo::BoundaryElementBase::GetNumNodes() const
-{
-    return 0;
-}
-
-NuTo::NodeBase* NuTo::BoundaryElementBase::GetNode(int rLocalNodeNumber)
-{
-    throw MechanicsException("[NuTo::BoundaryElementBase::GetNode] Node cannot be determined.");
-    // for 1D
-    assert(rLocalNodeNumber == 0);
-    Eigen::VectorXi surfaceNodeIndices = mBaseElement->GetInterpolationType()->GetSurfaceNodeIndices(mSurfaceId);
-    int baseNodeIndexOfSurface = surfaceNodeIndices.at(0, 0);
-    return const_cast<NodeBase*>(mBaseElement->GetNode(baseNodeIndexOfSurface));
-}
-
-const NuTo::NodeBase* NuTo::BoundaryElementBase::GetNode(int rLocalNodeNumber) const
-{
-    throw MechanicsException("[NuTo::BoundaryElementBase::GetNode] Node cannot be determined.");
-    // for 1D
-    assert(rLocalNodeNumber == 0);
-    Eigen::VectorXi surfaceNodeIndices = mBaseElement->GetInterpolationType()->GetSurfaceNodeIndices(mSurfaceId);
-    int baseNodeIndexOfSurface = surfaceNodeIndices.at(0, 0);
-    return mBaseElement->GetNode(baseNodeIndexOfSurface);
-}
-
 int NuTo::BoundaryElementBase::GetNumNodes(Node::eAttributes rDofType) const
 {
-    return 0;
+    throw MechanicsException("[NuTo::BoundaryElementBase::GetNumNodes] The number of nodes cannot be determined.");
 }
 
 NuTo::NodeBase* NuTo::BoundaryElementBase::GetNode(int rLocalNodeNumber, Node::eAttributes rDofType)
@@ -122,4 +98,20 @@ const Eigen::Vector3d NuTo::BoundaryElementBase::GetGlobalIntegrationPointCoordi
 const Eigen::MatrixXd NuTo::BoundaryElementBase::ExtractNodeValues(int rTimeDerivative, Node::eAttributes rAttribute) const
 {
     return mBaseElement->ExtractNodeValues(rTimeDerivative, rAttribute);
+}
+
+NuTo::BoundaryType::eType NuTo::BoundaryElementBase::GetBoundaryConditionType() const
+{
+    return mBoundaryConditionType;
+}
+
+void NuTo::BoundaryElementBase::SetBoundaryConditionType(BoundaryType::eType rBoundaryConditionType)
+{
+    mBoundaryConditionType = rBoundaryConditionType;
+}
+
+void NuTo::BoundaryElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)
+{
+    if (GetStructure()->GetVerboseLevel() > 10)
+        std::cout << "[NuTo::BoundaryElementBase::Visualize] Pleeeaaase, implement the visualization for me!!!" << std::endl;
 }

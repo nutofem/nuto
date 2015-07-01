@@ -130,6 +130,9 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eAttributes rDofType, Nu
 
     UpdateLocalStartIndices();
 
+    if (rDofType == Node::COORDINATES)
+        UpdateNodeRenumberingIndices();
+
     if (mIntegrationType != nullptr)
         newType->UpdateIntegrationType(*mIntegrationType);
 }
@@ -393,3 +396,59 @@ bool NuTo::InterpolationType::CoordinatesAreEqual(const Eigen::VectorXd& rC1, co
     return true;
 }
 
+const Eigen::MatrixX2i& NuTo::InterpolationType::GetNodeRenumberingIndices() const
+{
+    return mNodeRenumberingIndices;
+}
+
+void NuTo::InterpolationType::UpdateNodeRenumberingIndices()
+{
+    int numSwaps = 0;
+    mNodeRenumberingIndices.resize(0,2);
+
+
+    // loop over all points i (with coordinates)
+    const InterpolationBase& it = Get(Node::COORDINATES);
+
+    // why -1? the last check is done for i=num-2 vs j=num-1
+    for (int i = 0; i < it.GetNumNodes()-1; ++i)
+    {
+        // calculate swapped coordinates x_i --> x_i'
+        const Eigen::VectorXd& x_i = it.GetNaturalNodeCoordinates(i);
+        Eigen::VectorXd x_i_prime = x_i;
+
+        switch (mShapeType)
+        {
+            case Interpolation::TRUSS1D:
+                // reflect at (0,0,0) n = (1,0,0)
+                x_i_prime = -x_i;
+                break;
+            case Interpolation::TRIANGLE2D:
+            case Interpolation::QUAD2D:
+            case Interpolation::TETRAHEDRON3D:
+            case Interpolation::BRICK3D:
+                // reflect at (0,0,0) n = (1,-1,0)
+                x_i_prime[0] = x_i[1];
+                x_i_prime[1] = x_i[0];
+                break;
+            default:
+                throw NuTo::MechanicsException("[NuTo::InterpolationType::UpdateNodeRenumberingIndices] not implemented for " + Interpolation::ShapeTypeToString(mShapeType));
+        }
+
+        // find a point j != i with x_j == x_i'
+
+        // why j = i+1? to avoid the case i==j and to avoid duplicated entries [i,j] and [j,i]
+        for (int j = i+1; j < it.GetNumNodes(); ++j)
+        {
+            const auto& x_j = it.GetNaturalNodeCoordinates(j);
+            if (CoordinatesAreEqual(x_i_prime, x_j))
+            {
+                // store i and j as swap pairs
+                mNodeRenumberingIndices.conservativeResize(numSwaps+1,2);
+                mNodeRenumberingIndices(numSwaps,0) = i;
+                mNodeRenumberingIndices(numSwaps,1) = j;
+                numSwaps++;
+            }
+        }
+    }
+}

@@ -835,21 +835,6 @@ void NuTo::Element3D::AddDetJBtSigma(const Eigen::MatrixXd& rDerivativeShapeFunc
     }
 }
 
-void NuTo::Element3D::ReorderNodes()
-{
-    // swap all nodes
-//    unsigned int lastNode = mNodes.size() - 1;
-//    for (unsigned int iNode = 0; iNode < lastNode; ++iNode, --lastNode)
-//    {
-////        std::cout << "Swapping node " << iNode << " and " << lastNode << "." << std::endl;
-//        NodeBase* tmpNode = mNodes[iNode];
-//        mNodes[iNode] = mNodes[lastNode];
-//        mNodes[lastNode] = tmpNode;
-//    }
-
-
-}
-
 void NuTo::Element3D::CalculateJacobian(const Eigen::MatrixXd& rDerivativeShapeFunctions, const Eigen::MatrixXd& rNodeCoordinates,
         Eigen::Matrix3d& rInvJacobian, double& rDetJac) const
 {

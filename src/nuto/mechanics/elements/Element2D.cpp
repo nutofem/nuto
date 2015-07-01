@@ -1105,20 +1105,6 @@ void NuTo::Element2D::AddDetJNtdLocalEqStraindEpsilonB(Eigen::VectorXd rShapeFun
 
 }
 
-void NuTo::Element2D::ReorderNodes()
-{
-    // swap all nodes
-    unsigned int lastNode = mNodes.size() - 1;
-    for (unsigned int iNode = 0; iNode < lastNode; ++iNode, --lastNode)
-    {
-        std::cout << "Swapping node " << iNode << " and " << lastNode << "." << std::endl;
-        NodeBase* tmpNode = mNodes[iNode];
-        mNodes[iNode] = mNodes[lastNode];
-        mNodes[lastNode] = tmpNode;
-    }
-
-}
-
 void NuTo::Element2D::CalculateJacobian(const Eigen::MatrixXd& rDerivativeShapeFunctions, const Eigen::MatrixXd& rNodeCoordinates, Eigen::Matrix2d& rInvJacobian, double& rDetJac) const
 {
     /*       jacobian

@@ -1438,11 +1438,6 @@ void NuTo::Element1D::AddDetJRnonlocalEqStrain(const Eigen::VectorXd& rShapeFunc
 
 }
 
-void NuTo::Element1D::ReorderNodes()
-{
-    throw NuTo::MechanicsException("[NuTo::Element1D::ReorderNodes] not implemented.");
-}
-
 double NuTo::Element1D::CalculateJacobian(const Eigen::MatrixXd& rDerivativeShapeFunctions, const Eigen::MatrixXd& rNodeCoordinates) const
 {
 

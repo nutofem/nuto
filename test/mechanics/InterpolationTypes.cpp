@@ -24,6 +24,8 @@
 
 const bool PRINTRESULT = true;
 
+//! @brief checks, whether or not the natural node coordinates match the shape functions
+//! This should be true: N_i(xi_j) == 1 for i == j    and      N_j(xi_i) == 0 for i != j
 void CheckShapeFunctionsAndNodePositions(NuTo::InterpolationType& rIT, int rNumNodesExpected)
 {
     auto dofType = NuTo::Node::COORDINATES;
@@ -215,6 +217,7 @@ void CheckBrick()
 
 }
 
+//! @brief API of the interpolation types
 void CheckAPI()
 {
     NuTo::Structure myStructure(2);
@@ -232,9 +235,6 @@ void CheckAPI()
     //create section
     int mySection = myStructure.SectionCreate("Plane_Strain");
     myStructure.SectionSetThickness(mySection, 1);
-
-
-
 
 
     NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(2);
@@ -281,12 +281,6 @@ void CheckAPI()
     myStructure.NodeBuildGlobalDofs();
     myStructure.CalculateMaximumIndependentSets();
 
-//    NuTo::FullVector<double, Eigen::Dynamic> nodeVal(2);
-//    nodeVal(0) = 0.1;
-//    nodeVal(1) = 0.3333;
-//
-//    myStructure.NodeSetDisplacements(nodeIndex1, nodeVal);
-
     myStructure.BuildGlobalCoefficientMatrix0(hessian, dummy);
     myStructure.BuildGlobalGradientInternalPotentialVector(internalGradient);
 
@@ -295,11 +289,9 @@ void CheckAPI()
 //    hessian_full.Info(10,3, true);
 //    internalGradient.Info(10,3, true);
 
-    // if needed:
-//    myStructure.ElementSetInterpolationType(elementIndex, myInterpolationTypeIndex);
-
 }
 
+//! @brief Imports a mesh file and builds the hessian and the internal gradient.
 void ImportFromGmsh(std::string rMeshFile)
 {
     NuTo::Structure myStructure(2);
@@ -312,8 +304,6 @@ void ImportFromGmsh(std::string rMeshFile)
 
     myStructure.SetVerboseLevel(10);
     myStructure.ElementConvertToInterpolationType(groupIndices.GetValue(0, 0));
-
-    return;
 
     myStructure.InterpolationTypeSetIntegrationType(interpolationType, NuTo::IntegrationType::IntegrationType2D3NGauss3Ip, NuTo::IpData::NOIPDATA);
 
@@ -340,7 +330,184 @@ void ImportFromGmsh(std::string rMeshFile)
 
 }
 
-//#define TRYCATCH
+
+//! @brief Creates two elements from the same set of nodes. One with positive jacobian, one with a negative one. In the latter one, the nodes should be swapped.
+void NodeReordering()
+{
+    bool errorsOccurred = false;
+
+    // structures
+    NuTo::Structure myStructureTruss(1);
+    NuTo::Structure myStructureTriangle(2);
+    NuTo::Structure myStructureQuad(2);
+    NuTo::Structure myStructureTetrahedron(3);
+    NuTo::Structure myStructureBrick(3);
+
+    // interpolation types
+    int itTruss       = myStructureTruss.InterpolationTypeCreate(NuTo::Interpolation::TRUSS1D);
+    int itTriangle    = myStructureTriangle.InterpolationTypeCreate(NuTo::Interpolation::TRIANGLE2D);
+    int itQuad        = myStructureQuad.InterpolationTypeCreate(NuTo::Interpolation::QUAD2D);
+    int itTetrahedron = myStructureTetrahedron.InterpolationTypeCreate(NuTo::Interpolation::TETRAHEDRON3D);
+    int itBricks      = myStructureBrick.InterpolationTypeCreate(NuTo::Interpolation::BRICK3D);
+
+    myStructureTruss.InterpolationTypeAdd(itTruss, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
+    myStructureTriangle.InterpolationTypeAdd(itTriangle, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
+    myStructureQuad.InterpolationTypeAdd(itQuad, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
+    myStructureTetrahedron.InterpolationTypeAdd(itTetrahedron, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
+    myStructureBrick.InterpolationTypeAdd(itBricks, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
+
+
+
+    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> nodeIds;
+
+
+    // **************
+    // **  TRUSS
+    // **************
+    try
+    {
+        NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> nodes(1,2);
+        nodes << 0, 1;
+
+        nodeIds = myStructureTruss.NodesCreate(nodes);
+        NuTo::FullVector<int, Eigen::Dynamic> ids(2);
+
+        // right numbering
+        ids << nodeIds(0), nodeIds(1);
+        myStructureTruss.ElementCreate(itTruss, ids);
+
+        // "wrong" numbering
+        ids << nodeIds(1), nodeIds(0);
+        myStructureTruss.ElementCreate(itTruss, ids);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        std::cout << "Truss failed." << std::endl;
+        std::cout << e.ErrorMessage() << std::endl;
+        errorsOccurred = true;
+    }
+
+    // **************
+    // **  TRIANGLE
+    // **************
+    try
+    {
+
+        NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> nodes(2,3);
+        nodes << 0, 2, 2,
+                 0, 0, 3;
+
+        nodeIds = myStructureTriangle.NodesCreate(nodes);
+        NuTo::FullVector<int, Eigen::Dynamic> ids(3);
+
+        // right numbering
+        ids << nodeIds(0), nodeIds(1), nodeIds(2);
+        myStructureTriangle.ElementCreate(itTriangle, ids);
+
+        // "wrong" numbering
+        ids << nodeIds(2), nodeIds(1), nodeIds(0);
+        myStructureTriangle.ElementCreate(itTriangle, ids);
+
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        std::cout << "Triangle failed." << std::endl;
+        std::cout << e.ErrorMessage() << std::endl;
+        errorsOccurred = true;
+    }
+
+    // **************
+    // **    QUAD
+    // **************
+    try
+    {
+        NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> nodes(2,4);
+        nodes << 0, 2, 2, 0,
+                 0, 0, 3, 2;
+
+        nodeIds = myStructureQuad.NodesCreate(nodes);
+        NuTo::FullVector<int, Eigen::Dynamic> ids(4);
+
+        // right numbering
+        ids << nodeIds(0), nodeIds(1), nodeIds(2), nodeIds(3);
+        myStructureQuad.ElementCreate(itQuad, ids);
+
+        // "wrong" numbering
+        ids << nodeIds(3), nodeIds(2), nodeIds(1), nodeIds(0);
+        myStructureQuad.ElementCreate(itQuad, ids);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        std::cout << "Quad failed." << std::endl;
+        std::cout << e.ErrorMessage() << std::endl;
+        errorsOccurred = true;
+    }
+
+    // **************
+    // ** TETRAHEDRON
+    // **************
+    try
+    {
+        NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> nodes(3,4);
+        nodes << 0, 2, 0, 0,
+                 0, 0, 3, 0,
+                 0, 0, 0, 4;
+
+
+        nodeIds = myStructureTetrahedron.NodesCreate(nodes);
+        NuTo::FullVector<int, Eigen::Dynamic> ids(4);
+
+        // right numbering
+        ids << nodeIds(0), nodeIds(1), nodeIds(2), nodeIds(3);
+        myStructureTetrahedron.ElementCreate(itTetrahedron, ids);
+
+        // "wrong" numbering
+        ids << nodeIds(0), nodeIds(3), nodeIds(2), nodeIds(1);
+        myStructureTetrahedron.ElementCreate(itTetrahedron, ids);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        std::cout << "Tetrahedron failed." << std::endl;
+        std::cout << e.ErrorMessage() << std::endl;
+        errorsOccurred = true;
+    }
+
+    // **************
+    // **  BRICK
+    // **************
+    try
+    {
+        NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> nodes(3,8);
+        nodes << 0, 2, 2, 0, 0, 2, 2, 0,
+                 0, 0, 3, 3, 0, 0, 3, 3,
+                 0, 0, 0, 0, 4, 4, 4, 4;
+
+
+        nodeIds = myStructureBrick.NodesCreate(nodes);
+        NuTo::FullVector<int, Eigen::Dynamic> ids(8);
+
+        // right numbering
+        ids << nodeIds(0), nodeIds(1), nodeIds(2), nodeIds(3), nodeIds(4), nodeIds(5), nodeIds(6), nodeIds(7);
+        myStructureBrick.ElementCreate(itBricks, ids);
+
+        // "wrong" numbering
+        ids << nodeIds(4), nodeIds(5), nodeIds(6), nodeIds(7), nodeIds(0), nodeIds(1), nodeIds(2), nodeIds(3);
+        myStructureBrick.ElementCreate(itBricks, ids);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        std::cout << "Brick failed." << std::endl;
+        std::cout << e.ErrorMessage() << std::endl;
+        errorsOccurred = true;
+    }
+
+
+    if (errorsOccurred)
+        throw NuTo::MechanicsException("[NodeReordering] Errors occurred!");
+}
+
+
+#define TRYCATCH
 
 int main(int argc, char* argv[])
 {
@@ -361,6 +528,7 @@ int main(int argc, char* argv[])
 
     CheckAPI();
     ImportFromGmsh(meshFile2D);
+    NodeReordering();
 #ifdef TRYCATCH
 }
 catch (NuTo::Exception& e)

@@ -114,7 +114,7 @@ public:
 
     void PrintNodeIndices() const;
     void PrintNodeCoordinates() const;
-
+    const Eigen::MatrixX2i& GetNodeRenumberingIndices() const;
 
 private:
 
@@ -127,6 +127,11 @@ private:
     bool CoordinatesAreEqual(const Eigen::VectorXd& rC1, const Eigen::VectorXd& rC2) const;
 
     void UpdateLocalStartIndices();
+
+    //! @brief Calculates index pairs that - if swapped - change the orientation of the element.
+    //! It is implemented by reflecting each point at a plane at (0,0,0) with normal vector (1,-1,0) which is equal to swapping xi and eta coordinates
+    //! @remark Different behavior for 1D: xi' = -xi. This could be done using polymorphism, but I think that bundling it here is sufficient.
+    void UpdateNodeRenumberingIndices();
 
 
     //! @brief map of single dof interpolations
@@ -155,6 +160,9 @@ private:
 
     //! @brief current integration type
     const IntegrationTypeBase* mIntegrationType;
+
+    //! @brief node renumbering indices that (if applied) change the orientation of the element
+    Eigen::MatrixX2i mNodeRenumberingIndices;
 
 };
 

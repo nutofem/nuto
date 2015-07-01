@@ -26,6 +26,11 @@ public:
 
     }
 
+    //! @brief returns the number of nodes in this element
+    //! @sa See GetBoundaryNodeIndex for further information.
+    //! @return number of nodes
+    int GetNumNodes() const override;
+
     //! @brief calculates output data for the element
     //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
     //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
@@ -52,11 +57,6 @@ public:
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
     ConstitutiveStaticDataBase* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const override;
 
-    // getter setter
-
-    BoundaryType::eType GetBoundaryConditionType() const;
-    void SetBoundaryConditionType(BoundaryType::eType rBoundaryConditionType);
-
     //! @brief cast the base pointer to an BoundaryElement1D, otherwise throws an exception
     const BoundaryElement2D* AsBoundaryElement2D() const override;
 
@@ -68,6 +68,24 @@ protected:
     BoundaryElement2D()
     {
     }
+
+    //! @brief calculates the base element's node index on the boundary
+    //! @param rBoundaryNodeNumber node index of the boundary
+    //! @sa See PointIsOnBoundary.
+    int GetBoundaryNodeIndex(int rBoundaryNodeIndex) const override;
+
+
+private:
+    //! @brief returns a vector of boundary node indices
+    //! @remark this method could be moved to the interpolation type where the node indices of all boundaries could be stored. For better performance.
+    //! I think that this method (and the GetNode and GetNumNodes) is mostly used for debugging/info routines and performance doesn't matter here.
+    const Eigen::VectorXi GetBoundaryNodeIndices() const;
+
+    //! @brief returns true, if P is in line with A and B
+    //! @remark The boundary consists of two corner vectors A and B. A point P is on the connecting line between them, if det(B-A  A-P) = 0.
+    //! This is used to determine these P that are on the boundary of A and B.
+    //! @param rA rB rP points A B P
+    bool PointIsOnBoundary(const Eigen::VectorXd rA, const Eigen::VectorXd rB, const Eigen::VectorXd rP) const;
 
 };
 

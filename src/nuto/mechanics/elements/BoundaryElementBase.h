@@ -39,18 +39,41 @@ public:
 
     //! @brief returns the number of nodes in this element
     //! @return number of nodes
-    int GetNumNodes() const;
+    virtual int GetNumNodes() const override = 0;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @return pointer to the node
-    NodeBase* GetNode(int rLocalNodeNumber) override;
+    NodeBase* GetNode(int rLocalNodeNumber) override
+    {
+        return const_cast<NodeBase*>(mBaseElement->GetNode(GetBoundaryNodeIndex(rLocalNodeNumber)));
+    }
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @return pointer to the node
-    const NodeBase* GetNode(int rLocalNodeNumber) const override;
+    const NodeBase* GetNode(int rLocalNodeNumber) const override
+    {
+        return mBaseElement->GetNode(GetBoundaryNodeIndex(rLocalNodeNumber));
+    }
 
+
+    //! @brief returns the number of nodes in this element that are influenced by it
+    //! @remark overridden by boundary elements
+    //! @return number of nodes
+    int GetNumInfluenceNodes()const override
+    {
+        return mBaseElement->GetNumNodes();
+    }
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @remark overridden by boundary elements
+    //! @param local node number
+    //! @return pointer to the node
+    const NodeBase* GetInfluenceNode(int rLocalNodeNumber)const override
+    {
+        return mBaseElement->GetNode(rLocalNodeNumber);
+    }
     //! @brief returns the number of nodes in this element of a specific dof
     //! @brief rDofType dof type
     //! @return number of nodes
@@ -60,13 +83,13 @@ public:
     //! @param local node number
     //! @brief rDofType dof type
     //! @return pointer to the node
-    NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType) override;
+    virtual NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType) override;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @brief rDofType dof type
     //! @return pointer to the node
-    const NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType) const override;
+    virtual const NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType) const override;
 
     //! @brief sets the rLocalNodeNumber-th node of the element
     //! @param local node number
@@ -109,12 +132,23 @@ public:
 
     const Eigen::MatrixXd ExtractNodeValues(int rTimeDerivative, Node::eAttributes rAttribute) const override;
 
+    BoundaryType::eType GetBoundaryConditionType() const;
+    void SetBoundaryConditionType(BoundaryType::eType rBoundaryConditionType);
+
+
+#ifdef ENABLE_VISUALIZE
+    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) override;
+#endif // ENABLE_VISUALIZE
+
 protected:
     //! @brief ... just for serialization
     BoundaryElementBase()
     {
     }
 
+    //! @brief calculates the base element's node index on the boundary
+    //! @param rBoundaryNodeNumber node index of the boundary
+    virtual int GetBoundaryNodeIndex(int rBoundaryNodeIndex) const = 0;
 
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
     void ReorderNodes() override

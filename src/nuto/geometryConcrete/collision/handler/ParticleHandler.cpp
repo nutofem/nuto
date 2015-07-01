@@ -616,9 +616,9 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh2D(std::string rOutputFile,
     file << "\n";
     file << "// points: \n";
     file << "p0 = newp; Point(p0) = {xS, yS, 0, meshSpecimen}; \n";
-    file << "p1 = newp; Point(p1) = {xS, yE, 0, meshSpecimen}; \n";
+    file << "p1 = newp; Point(p1) = {xE, yS, 0, meshSpecimen}; \n";
     file << "p2 = newp; Point(p2) = {xE, yE, 0, meshSpecimen}; \n";
-    file << "p3 = newp; Point(p3) = {xE, yS, 0, meshSpecimen}; \n";
+    file << "p3 = newp; Point(p3) = {xS, yE, 0, meshSpecimen}; \n";
     file << "\n";
     file << "// lines \n";
     file << "l0 = newreg; Line(l0) = {p0, p1}; \n";

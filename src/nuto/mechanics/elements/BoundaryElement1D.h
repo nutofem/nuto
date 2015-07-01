@@ -26,6 +26,10 @@ public:
 
     }
 
+    //! @brief returns the number of nodes in this element
+    //! @return number of nodes
+    int GetNumNodes() const override;
+
     //! @brief calculates output data for the element
     //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
     //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
@@ -54,9 +58,6 @@ public:
 
     // getter setter
 
-    BoundaryType::eType GetBoundaryConditionType() const;
-    void SetBoundaryConditionType(BoundaryType::eType rBoundaryConditionType);
-
     double GetBoundaryRelativeHumidity() const;
     void SetBoundaryRelativeHumidity(double rBoundaryRelativeHumidity);
 
@@ -74,6 +75,10 @@ protected:
     BoundaryElement1D()
     {
     }
+
+    //! @brief calculates the base element's node index on the boundary
+    //! @param rBoundaryNodeNumber node index of the boundary
+    int GetBoundaryNodeIndex(int rBoundaryNodeIndex) const override;
 
     //! @brief ... relative humidity at the boundary surface
     double mBoundaryRelativeHumidity;

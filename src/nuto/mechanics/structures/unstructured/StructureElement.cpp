@@ -212,7 +212,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
         std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] mesh size:             " << meshSize << std::endl;
     }
 
-    ElementTotalConvertToInterpolationType(mergeDist, meshSize);
+    ElementConvertToInterpolationType(rGroupNumberElements, mergeDist, meshSize);
 
 }
 

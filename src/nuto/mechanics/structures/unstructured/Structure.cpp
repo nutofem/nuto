@@ -2913,7 +2913,7 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
 
         case 17: // 20-node second order hexahedron (8 nodes associated with the vertices and 12 with the edges).
             shapeType = Interpolation::BRICK3D;
-            typeOrder = Interpolation::EQUIDISTANT1;
+            typeOrder = Interpolation::EQUIDISTANT2;
             break;
 
 //    	case 18: // 15-node second order prism (6 nodes associated with the vertices and 9 with the edges).

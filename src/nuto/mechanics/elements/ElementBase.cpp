@@ -477,12 +477,6 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
         VisualizationCellsIncidence,
         VisualizationCellsIP);
 
-    if (NumVisualizationPoints == 0)
-        // no visualisation
-        return;
-
-
-
 
     // calculate global point coordinates and store point at the visualize object
     int dimension (VisualizationPointLocalCoordinates.size()/NumVisualizationPoints);
@@ -1038,23 +1032,29 @@ int NuTo::ElementBase::GetNumNonlocalElements()const
 //! @param rStress integrated stress
 void NuTo::ElementBase::GetIntegratedStress(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rStress)
 {
-	// define variables storing the element contribution
-	ElementOutputIpData elementOutputIpData(IpData::ENGINEERING_STRESS);
-	NuTo::Element::eOutput keyIP_DATA(Element::IP_DATA);
+    // define local variables storing the element contribution would be wrong, since at the moment you pass it to the ptr_map, you will run into problems.
+    // My theory (TT): In this case, the d'tor of the ElementOutputIpData would be called twice, trying to delete the same underlying data array twice.
+    // --> use the ptr_maps as intended with pointers, or better the insert operators
 
-	boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
-	elementOutput.insert(keyIP_DATA,&elementOutputIpData);
+    NuTo::Element::eOutput keyIP_DATA = Element::IP_DATA;
+    boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
 
-	this->Evaluate(elementOutput);
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  rIpStress(elementOutputIpData.GetFullMatrixDouble());
+    // first brackets: the ptr_map
+    // second brackets: (KEY, arguments for c'tor of ElementOutputIpData)
+    boost::assign::ptr_map_insert<ElementOutputIpData>(elementOutput)(keyIP_DATA, IpData::ENGINEERING_STRESS);
 
-    //this is certainly not the fastest approach, since the jacobian/derivates etc. is calculated twice, but it's not a critical routine
-    Eigen::VectorXd ipVolume = this->GetIntegrationPointVolume();
+    this->Evaluate(elementOutput);
 
-    rStress.Resize(rIpStress.GetNumRows(),1);
-    for (int countIP=0; countIP<rIpStress.GetNumColumns(); countIP++)
+    // optional: extract the data from the ptr_map
+    ElementOutputBase& elementOutputIpData = elementOutput.at(keyIP_DATA);
+
+    const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& ipStress = elementOutputIpData.GetFullMatrixDouble();
+    const Eigen::VectorXd ipVolume = this->GetIntegrationPointVolume();
+
+    rStress.Resize(ipStress.GetNumRows(), 1);
+    for (int countIP = 0; countIP < ipStress.GetNumColumns(); countIP++)
     {
-    	rStress+=(rIpStress.col(countIP)*(ipVolume[countIP]));
+        rStress += (ipStress.col(countIP) * (ipVolume[countIP]));
     }
 }
 
@@ -1062,23 +1062,22 @@ void NuTo::ElementBase::GetIntegratedStress(FullMatrix<double,Eigen::Dynamic,Eig
 //! @param rStrain integrated strain
 void NuTo::ElementBase::GetIntegratedStrain(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rStrain)
 {
-	// define variables storing the element contribution
-	ElementOutputIpData elementOutputIpData(IpData::ENGINEERING_STRAIN);
-	NuTo::Element::eOutput keyIP_DATA(Element::IP_DATA);
+    // see [NuTo::ElementBase::GetIntegratedStress]
+    NuTo::Element::eOutput keyIP_DATA(Element::IP_DATA);
 
-	boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
-	elementOutput.insert(keyIP_DATA,&elementOutputIpData);
+    boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+    boost::assign::ptr_map_insert<ElementOutputIpData>(elementOutput)(keyIP_DATA, IpData::ENGINEERING_STRAIN);
 
-	this->Evaluate(elementOutput);
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>&  rIpStrain(elementOutputIpData.GetFullMatrixDouble());
+    this->Evaluate(elementOutput);
+    ElementOutputBase& elementOutputIpData = elementOutput.at(keyIP_DATA);
 
-    //this is certainly not the fastest approach, since the jacobian/derivates etc. is calculated twice, but it's not a critical routine
-	Eigen::VectorXd ipVolume = this->GetIntegrationPointVolume();
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rIpStrain(elementOutputIpData.GetFullMatrixDouble());
+    Eigen::VectorXd ipVolume = this->GetIntegrationPointVolume();
 
-    rStrain.Resize(rIpStrain.GetNumRows(),1);
-    for (int countIP=0; countIP<rIpStrain.GetNumColumns(); countIP++)
+    rStrain.Resize(rIpStrain.GetNumRows(), 1);
+    for (int countIP = 0; countIP < rIpStrain.GetNumColumns(); countIP++)
     {
-        rStrain+=rIpStrain.col(countIP)*(ipVolume[countIP]);
+        rStrain += rIpStrain.col(countIP) * (ipVolume[countIP]);
     }
 }
 
@@ -1243,4 +1242,21 @@ void NuTo::ElementBase::SetDataPtr(NuTo::ElementDataBase* rElementData)
     mElementData = rElementData;
 }
 
+void NuTo::ElementBase::ReorderNodes()
+{
+    const Eigen::MatrixX2i& reorderIndices = mInterpolationType->GetNodeRenumberingIndices();
+    for (int i = 0; i < reorderIndices.rows(); ++i)
+    {
+        int i0 = reorderIndices(i,0);
+        int i1 = reorderIndices(i,1);
+        // swap nodes i0 and i1
+        NodeBase* tmpNode0 = GetNode(i0);
+        NodeBase* tmpNode1 = GetNode(i1);
+        SetNode(i0, tmpNode1);
+        SetNode(i1, tmpNode0);
 
+        if (mStructure->GetVerboseLevel() > 5)
+            mStructure->GetLogger() << "[NuTo::ElementBase::ReorderNodes] Swapped nodes " << i0 << " and " << i1<< ".\n";
+    }
+    mStructure->GetLogger() << "\n";
+}

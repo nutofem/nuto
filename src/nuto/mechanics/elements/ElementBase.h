@@ -114,6 +114,14 @@ public:
     //! @return number of nodes
     virtual int GetNumNodes()const;
 
+    //! @brief returns the number of nodes in this element that are influenced by it
+    //! @remark overridden by boundary elements
+    //! @return number of nodes
+    virtual int GetNumInfluenceNodes()const
+    {
+        return GetNumNodes();
+    }
+
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @return pointer to the node
@@ -123,6 +131,17 @@ public:
     //! @param local node number
     //! @return pointer to the node
     virtual const NodeBase* GetNode(int rLocalNodeNumber)const=0;
+
+    //! @brief returns a pointer to the i-th node of the element
+    //! @remark overridden by boundary elements
+    //! @param local node number
+    //! @return pointer to the node
+    virtual const NodeBase* GetInfluenceNode(int rLocalNodeNumber)const
+    {
+        return GetNode(rLocalNodeNumber);
+    }
+
+
 
     //! @brief returns the number of nodes in this element of a specific dof
     //! @brief rDofType dof type
@@ -271,6 +290,12 @@ public:
     const Eigen::VectorXd InterpolateDof(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const;
 
     const Eigen::Vector3d InterpolateDof3D(const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const;
+
+    //! @brief interpolates a vector dof to 3D, mainly for visualization
+    //! @remark is overridden by the boundary element
+    //! @param rTimeDerivative ... time derivative (0..2)
+    //! @param rNaturalCoordinates ... coordinates of the point in natural element coordinates
+    //! @param rDofType ... dof type
     const Eigen::Vector3d InterpolateDof3D(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const;
 
     //! @brief adds the nonlocal weight to an integration point
@@ -466,7 +491,7 @@ protected:
     };
 
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
-    virtual void ReorderNodes() = 0;
+    virtual void ReorderNodes();
 
     //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
     virtual void CheckElement() = 0;

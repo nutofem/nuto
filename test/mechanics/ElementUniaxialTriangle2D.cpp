@@ -58,8 +58,8 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
             myStructure.ElementCreate(myInterpolationType, nodes);
 
             nodes(0) = countX  +  countY   *numNodesX;
-            nodes(1) = countX+1+ (countY+1)*numNodesX;
-            nodes(2) = countX  + (countY+1)*numNodesX;
+            nodes(2) = countX+1+ (countY+1)*numNodesX;
+            nodes(1) = countX  + (countY+1)*numNodesX;
             myStructure.ElementCreate(myInterpolationType, nodes);
 
         }

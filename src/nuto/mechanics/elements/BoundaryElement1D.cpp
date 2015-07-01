@@ -458,16 +458,6 @@ NuTo::Error::eError NuTo::BoundaryElement1D::Evaluate(boost::ptr_multimap<NuTo::
 
 }
 
-NuTo::BoundaryType::eType NuTo::BoundaryElement1D::GetBoundaryConditionType() const
-{
-    return mBoundaryConditionType;
-}
-
-void NuTo::BoundaryElement1D::SetBoundaryConditionType(BoundaryType::eType rBoundaryConditionType)
-{
-    mBoundaryConditionType = rBoundaryConditionType;
-}
-
 double NuTo::BoundaryElement1D::GetBoundaryRelativeHumidity() const
 {
     return mBoundaryRelativeHumidity;
@@ -503,4 +493,18 @@ const NuTo::BoundaryElement1D* NuTo::BoundaryElement1D::AsBoundaryElement1D() co
 NuTo::BoundaryElement1D* NuTo::BoundaryElement1D::AsBoundaryElement1D()
 {
     return this;
+}
+
+int NuTo::BoundaryElement1D::GetNumNodes() const
+{
+    return 1;
+}
+
+
+int NuTo::BoundaryElement1D::GetBoundaryNodeIndex(int rBoundaryNodeIndex) const
+{
+    Eigen::VectorXi surfaceNodeIndices = mBaseElement->GetInterpolationType()->GetSurfaceNodeIndices(mSurfaceId);
+    assert(surfaceNodeIndices.rows() == 1);
+
+    return surfaceNodeIndices(0);
 }
