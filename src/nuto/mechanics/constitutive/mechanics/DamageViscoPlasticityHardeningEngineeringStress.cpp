@@ -1240,6 +1240,8 @@ bool NuTo::DamageViscoPlasticityHardeningEngineeringStress::CheckElementCompatib
     {
     case NuTo::Element::BRICK8N:
         return true;
+    case NuTo::Element::ELEMENT3D:
+        return true;
     case NuTo::Element::PLANE2D10N:
         return true;
     case NuTo::Element::PLANE2D3N:

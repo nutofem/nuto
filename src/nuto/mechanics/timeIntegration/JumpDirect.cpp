@@ -96,10 +96,10 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 #endif
     try
     {
-    	//this->SetNewmarkBeta(15.);   //for displac. controlled
+    	this->SetNewmarkBeta(15.);   //for displac. controlled
     	//this->SetNewmarkBeta(10.);   //for load control, 10%  incr 32
     	//this->SetNewmarkBeta(15.);   //for load control, 5% incr 32
-    	this->SetNewmarkBeta(50);      //for load control, 10% incr 24
+    	//this->SetNewmarkBeta(50.);   //for load control, 10% incr 24
 
     	//calculate the end time of monotonic loading which is exactly the beginning of cyclic loading
     	NuTo::Error::eError Error;
@@ -1598,7 +1598,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
     if (rIncludePostProcess){
     	mTime = curTime;
     	NuTo::NewmarkDirect::PostProcess(prevResidual_j, prevResidual_k);
-    	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(9)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
+    	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
 	}
 
     // iterate over the increments within the cycle
@@ -1703,7 +1703,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
 
         	std::cout << " Cyclic increment " << incr << std::endl;
         	NuTo::NewmarkDirect::PostProcess(prevResidual_j, prevResidual_k);
-        	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(9)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
+        	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
 
             // update previous BC and displacements
         	bRHSprev = bRHSend;

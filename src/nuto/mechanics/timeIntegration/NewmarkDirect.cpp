@@ -281,9 +281,9 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             plotVector0.AppendColumns(reactionForce);
         }
 */
-//VK        std::ofstream DamageFile;
-//VK        DamageFile.open("DamageJump.txt", std::ios::app);
-//VK    	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(9)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // bulo ElementGetElementPtr(9) dlya Brick8N and ElementGetElementPtr(141) dlya Brick8Nhole;
+        std::ofstream DamageFile;
+        DamageFile.open("DamageJump.txt", std::ios::app);
+    	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // bulo ElementGetElementPtr(9) dlya Brick8N and ElementGetElementPtr(141) dlya Brick8Nhole;
 
         PostProcess(prevResidual_j, prevResidual_k);
 
@@ -869,7 +869,7 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
 				//perform Postprocessing
                 mStructure->GetLogger() << " *** PostProcess *** from NewMarkDirect \n";
 
-//VK            	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(9)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // bulo ElementGetElementPtr(9) dlya Brick8N and ElementGetElementPtr(141) dlya Brick8Nhole;
+            	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // bulo ElementGetElementPtr(9) dlya Brick8N and ElementGetElementPtr(141) dlya Brick8Nhole;
 
                 PostProcess(prevResidual_j, prevResidual_k);
 
@@ -898,7 +898,7 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
                 }
             }
         }
-//VK        DamageFile.close();
+        DamageFile.close();
     }
     catch (MechanicsException& e)
     {
