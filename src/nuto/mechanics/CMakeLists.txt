@@ -165,6 +165,7 @@ integrationtypes/IntegrationType1D2NGauss1Ip.cpp
 integrationtypes/IntegrationType1D2NGauss2Ip.cpp
 integrationtypes/IntegrationType1D2NGauss3Ip.cpp
 integrationtypes/IntegrationType1D2NGauss4Ip.cpp
+integrationtypes/IntegrationType1D2NGauss5Ip.cpp
 integrationtypes/IntegrationType1D2NLobatto3Ip.cpp
 integrationtypes/IntegrationType1D2NLobatto4Ip.cpp
 integrationtypes/IntegrationType1D2NLobatto5Ip.cpp

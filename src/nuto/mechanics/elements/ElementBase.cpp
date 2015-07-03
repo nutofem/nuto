@@ -170,7 +170,7 @@ void NuTo::ElementBase::SetConstitutiveLaw(ConstitutiveBase* rConstitutiveLaw)
 	else
 	{
 		std::stringstream message;
-		message << "[NuTo::ElementWithDataBase::SetConstitutiveLaw] Constitutive Law " << mStructure->ConstitutiveLawGetId(rConstitutiveLaw)
+		message << "[NuTo::ElementBase::SetConstitutiveLaw] Constitutive Law " << mStructure->ConstitutiveLawGetId(rConstitutiveLaw)
 				<<" does not match element type of element "<< mStructure->ElementGetId(this) <<"." <<std::endl;
 	    throw MechanicsException(message.str());
 	}
@@ -191,7 +191,7 @@ void NuTo::ElementBase::SetConstitutiveLaw(int rIp, ConstitutiveBase* rConstitut
 	else
 	{
 		std::stringstream message;
-		message << "[NuTo::ElementWithDataBase::SetConstitutiveLaw] Constitutive Law " << mStructure->ConstitutiveLawGetId(rConstitutiveLaw)
+		message << "[NuTo::ElementBase::SetConstitutiveLaw] Constitutive Law " << mStructure->ConstitutiveLawGetId(rConstitutiveLaw)
 				<<" does not match element type of element "<< mStructure->ElementGetId(this) <<"." <<std::endl;
 	    throw MechanicsException(message.str());
 	}
@@ -279,7 +279,7 @@ void NuTo::ElementBase::SetIntegrationType(const NuTo::IntegrationTypeBase* rInt
 	else
 	{
 		std::stringstream message;
-		message << "[NuTo::ElementWithDataBase::SetIntegrationType] Integration Type does not match element type of element "<< mStructure->ElementGetId(this) <<"." <<std::endl;
+		message << "[NuTo::ElementBase::SetIntegrationType] Integration Type does not match element type of element "<< mStructure->ElementGetId(this) <<"." <<std::endl;
 	    throw MechanicsException(message.str());
 	}
 }

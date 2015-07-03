@@ -518,8 +518,7 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eAttributes> rDOFs
                 nodePtr = new NuTo::NodeDof<2, 0, 2, 0, 0, 0, 0, 1, 0, 0>();
                 break;
             case 3:
-                throw MechanicsException("[NuTo::Structure::NodeCreate] nonlocal eq strain not yet implemented for 3D.");
-                //nodePtr = new NuTo::NodeDof<3,0,3,0,0,0,0,1,0,0>();
+                nodePtr = new NuTo::NodeDof<3,0,3,0,0,0,0,1,0,0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");

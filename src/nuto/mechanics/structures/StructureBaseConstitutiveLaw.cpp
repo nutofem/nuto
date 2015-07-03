@@ -81,6 +81,23 @@ int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
 }
 
 // create a new constitutive law
+int NuTo::StructureBase::ConstitutiveLawCreate(Constitutive::eConstitutiveType rType)
+{
+    //find unused integer id
+    int constitutiveNumber = mConstitutiveLawMap.size();
+    boost::ptr_map<int,ConstitutiveBase>::iterator it = mConstitutiveLawMap.find(constitutiveNumber);
+    while (it!=mConstitutiveLawMap.end())
+    {
+        constitutiveNumber++;
+        it = mConstitutiveLawMap.find(constitutiveNumber);
+    }
+
+    this->ConstitutiveLawCreate(constitutiveNumber, rType);
+    return constitutiveNumber;
+}
+
+
+// create a new constitutive law
 void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConstitutiveType rType)
 {
     // check if constitutive law identifier exists

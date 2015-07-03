@@ -603,7 +603,7 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
                             int startIndexNonlocalEqStrain = mInterpolationType->Get(Node::NONLOCALEQSTRAIN).GetLocalStartIndex();
                             it->second->GetFullMatrixDouble().AddBlock(startIndexNonlocalEqStrain, startIndexNonlocalEqStrain, Kee);
 
-                            if (activeDofs.find(Node::NONLOCALEQSTRAIN) != activeDofs.end())
+                            if (activeDofs.find(Node::DISPLACEMENTS) != activeDofs.end())
                             {
                                 int startIndexDisplacement = mInterpolationType->Get(Node::DISPLACEMENTS).GetLocalStartIndex();
                                 AddDetJNtdLocalEqStraindEpsilonB(shapeFunctions.at(Node::NONLOCALEQSTRAIN), tangentLocalEqStrainStrain, derivativeShapeFunctions.at(Node::DISPLACEMENTS), factor,

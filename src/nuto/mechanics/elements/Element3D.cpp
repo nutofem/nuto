@@ -28,8 +28,8 @@
 
 #include "nuto/math/FullMatrix.h"
 
-NuTo::Element3D::Element3D(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType,
-        IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType) :
+NuTo::Element3D::Element3D(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType,
+        InterpolationType* rInterpolationType) :
         NuTo::ElementBase::ElementBase(rStructure, rElementDataType, rIpDataType, rInterpolationType), mNodes(rNodes)
 {
     mSection = 0;
@@ -77,8 +77,25 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
         //allocate damage
         Damage damage;
 
+        //allocate nonlocal eq strain
+        NonlocalEqStrain nonlocalEqStrain;
+
+        //allocate local eq strain
+        LocalEqStrain localEqStrain;
+
+        //allocate transient nonlocal parameter
+        ConstitutiveTangentLocal<1, 1> nonlocalParameter;
+        ConstitutiveTangentLocal<6, 1> tangentStressNonlocalEqStrain;
+        ConstitutiveTangentLocal<6, 1> tangentLocalEqStrainStrain;
+
+        NuTo::ConstitutiveTangentNonlocal<6, 6> nonlocalTangentStressStrain;
+
         //for the lumped mass calculation
         double total_mass = 0.;
+
+        /*****************************************\
+         *     FILL CONSTITUTIVE INPUT LIST      *
+         \*****************************************/
 
         for (auto dof : dofs)
         {
@@ -91,13 +108,20 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                 constitutiveInputList[NuTo::Constitutive::Input::DEFORMATION_GRADIENT_3D] = &(deformationGradient);
             }
                 break;
+            case Node::NONLOCALEQSTRAIN:
+            {
+                constitutiveInputList[NuTo::Constitutive::Input::NONLOCAL_EQ_STRAIN] = &(nonlocalEqStrain);
+            }
+                break;
             default:
-                throw MechanicsException(
-                        "[NuTo::Element3D::Evaluate] Constitutive input for " + Node::AttributeToString(dof) + " not implemented.");
+                throw MechanicsException("[NuTo::Element3D::Evaluate] Constitutive input for " + Node::AttributeToString(dof) + " not implemented.");
             }
         }
 
-        //define outputs
+        /*****************************************\
+         *    FILL CONSTITUTIVE OUTPUT LIST      *
+         \*****************************************/
+
         for (auto it = rElementOutput.begin(); it != rElementOutput.end(); it++)
         {
             switch (it->first)
@@ -117,10 +141,14 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                             constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_STRESS_3D] = &(engineeringStress3D);
                         }
                             break;
+                        case Node::NONLOCALEQSTRAIN:
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN] = &localEqStrain;
+                            constitutiveOutputList[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI] = &nonlocalParameter;
+                        }
+                            break;
                         default:
-                            throw MechanicsException(
-                                    "[NuTo::Element3D::Evaluate] Constitutive output INTERNAL_GRADIENT for " + Node::AttributeToString(dof)
-                                            + " not implemented.");
+                            throw MechanicsException("[NuTo::Element3D::Evaluate] Constitutive output INTERNAL_GRADIENT for " + Node::AttributeToString(dof) + " not implemented.");
 
                         }
                     }
@@ -139,13 +167,20 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     case Node::DISPLACEMENTS:
                     {
                         constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D] = &tangentStressStrain;
+                        if (activeDofs.find(Node::NONLOCALEQSTRAIN) != activeDofs.end())
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_3D] = &tangentStressNonlocalEqStrain;
+                        }
+                    }
+                        break;
+                    case Node::NONLOCALEQSTRAIN:
+                    {
+                        constitutiveOutputList[NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_XI_D_STRAIN_3D] = &tangentLocalEqStrainStrain;
+                        constitutiveOutputList[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI] = &nonlocalParameter;
                     }
                         break;
                     default:
-                        throw MechanicsException(
-                                "[NuTo::Element3D::Evaluate] Constitutive output HESSIAN_0_TIME_DERIVATIVE for " + Node::AttributeToString(dof)
-                                        + " not implemented.");
-
+                        throw MechanicsException("[NuTo::Element3D::Evaluate] Constitutive output HESSIAN_0_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
                     }
                 }
             }
@@ -219,6 +254,10 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
             }
         }
 
+        /*****************************************\
+         *     CALCULATE CONSTITUTIVE INPUTS     *
+         \*****************************************/
+
         Eigen::Matrix3d invJacobian;
         double detJacobian;
 
@@ -229,10 +268,11 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
         for (int theIP = 0; theIP < GetNumIntegrationPoints(); theIP++)
         {
             // calculate Jacobian
-            const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural =
-                    mInterpolationType->Get(Node::COORDINATES).GetDerivativeShapeFunctionsNatural(theIP);
+            const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = mInterpolationType->Get(Node::COORDINATES).GetDerivativeShapeFunctionsNatural(theIP);
 
             this->CalculateJacobian(derivativeShapeFunctionsGeometryNatural, nodalValues[Node::COORDINATES], invJacobian, detJacobian);
+
+            double factor = detJacobian * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP));
 
             // calculate shape functions and their derivatives
 
@@ -248,7 +288,6 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
             }
 
             // define constitutive inputs
-
             for (auto dof : dofs)
             {
                 if (mInterpolationType->IsConstitutiveInput(dof) == false)
@@ -257,15 +296,22 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                 {
                 case Node::DISPLACEMENTS:
                 {
-//                    constitutiveInputList[NuTo::Constitutive::Input::DEFORMATION_GRADIENT_3D] = &(deformationGradient);
                     deformationGradient = CalculateDeformationGradient(derivativeShapeFunctions.at(dof), nodalValues.at(dof));
                 }
                     break;
+                case Node::NONLOCALEQSTRAIN:
+                {
+                    nonlocalEqStrain(0, 0) = (nodalValues[Node::NONLOCALEQSTRAIN] * shapeFunctions[Node::NONLOCALEQSTRAIN])(0, 0);
+                }
+                    break;
                 default:
-                    throw MechanicsException(
-                            "[NuTo::Element3D::Evaluate] Constitutive input for " + Node::AttributeToString(dof) + " not implemented.");
+                    throw MechanicsException("[NuTo::Element3D::Evaluate] Constitutive input for " + Node::AttributeToString(dof) + " not implemented.");
                 }
             }
+
+            /*****************************************\
+             *      EVALUATE CONSTITUTIVE LAW        *
+             \*****************************************/
 
             ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(theIP);
             try
@@ -279,7 +325,17 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                 throw e;
             }
 
-            //calculate output
+            /*****************************************\
+             *           CALCULATE OUTPUT            *
+             \*****************************************/
+
+            //calculate Kee detJacobian*(NtN+cBtB)
+            FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> Kee;
+            if (dofs.find(Node::NONLOCALEQSTRAIN) != dofs.end())
+            {
+                CalculateKee(shapeFunctions.at(Node::NONLOCALEQSTRAIN), derivativeShapeFunctions.at(Node::NONLOCALEQSTRAIN), nonlocalParameter, factor, Kee);
+            }
+
             for (auto it = rElementOutput.begin(); it != rElementOutput.end(); it++)
             {
                 switch (it->first)
@@ -301,10 +357,17 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                                 AddDetJBtSigma(derivativeShapeFunctions.at(dof), engineeringStress3D, factor, startIndex, it->second->GetFullVectorDouble());
                             }
                                 break;
+                            case Node::NONLOCALEQSTRAIN:
+                            {
+                                int startIndexNonlocalEqStrain = mInterpolationType->Get(Node::NONLOCALEQSTRAIN).GetLocalStartIndex();
+
+                                AddDetJRnonlocalEqStrain(shapeFunctions.at(Node::NONLOCALEQSTRAIN), localEqStrain, Kee, nodalValues.at(Node::NONLOCALEQSTRAIN), factor / nonlocalParameter.GetValue(0),
+                                        startIndexNonlocalEqStrain, it->second->GetFullVectorDouble());
+                            }
+
+                                break;
                             default:
-                                throw MechanicsException(
-                                        "[NuTo::Element3D::Evaluate] Element output INTERNAL_GRADIENT for " + Node::AttributeToString(dof)
-                                                + " not implemented.");
+                                throw MechanicsException("[NuTo::Element3D::Evaluate] Element output INTERNAL_GRADIENT for " + Node::AttributeToString(dof) + " not implemented.");
 
                             }
                         }
@@ -327,14 +390,33 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         {
                         case Node::DISPLACEMENTS:
                         {
-                            AddDetJBtCB(derivativeShapeFunctions.at(dof), tangentStressStrain, factor, startIndex, startIndex,
-                                    it->second->GetFullMatrixDouble());
+                            AddDetJBtCB(derivativeShapeFunctions.at(dof), tangentStressStrain, factor, startIndex, startIndex, it->second->GetFullMatrixDouble());
+
+                            if (activeDofs.find(Node::NONLOCALEQSTRAIN) != activeDofs.end())
+                            {
+                                int startIndexNonlocalEqStrain = mInterpolationType->Get(Node::NONLOCALEQSTRAIN).GetLocalStartIndex();
+                                AddDetJBtdSigmadNonlocalEqStrainN(derivativeShapeFunctions.at(Node::DISPLACEMENTS), tangentStressNonlocalEqStrain, shapeFunctions.at(Node::NONLOCALEQSTRAIN), factor,
+                                        startIndex, startIndexNonlocalEqStrain, it->second->GetFullMatrixDouble());
+                            }
+
+                        }
+                            break;
+                        case Node::NONLOCALEQSTRAIN:
+                        {
+                            int startIndexNonlocalEqStrain = mInterpolationType->Get(Node::NONLOCALEQSTRAIN).GetLocalStartIndex();
+                            it->second->GetFullMatrixDouble().AddBlock(startIndexNonlocalEqStrain, startIndexNonlocalEqStrain, Kee);
+
+                            if (activeDofs.find(Node::DISPLACEMENTS) != activeDofs.end())
+                            {
+                                int startIndexDisplacement = mInterpolationType->Get(Node::DISPLACEMENTS).GetLocalStartIndex();
+                                AddDetJNtdLocalEqStraindEpsilonB(shapeFunctions.at(Node::NONLOCALEQSTRAIN), tangentLocalEqStrainStrain, derivativeShapeFunctions.at(Node::DISPLACEMENTS), factor,
+                                        startIndexNonlocalEqStrain, startIndexDisplacement, it->second->GetFullMatrixDouble());
+                            }
+
                         }
                             break;
                         default:
-                            throw MechanicsException(
-                                    "[NuTo::Element3D::Evaluate] Element output HESSIAN_0_TIME_DERIVATIVE for " + Node::AttributeToString(dof)
-                                            + " not implemented.");
+                            throw MechanicsException("[NuTo::Element3D::Evaluate] Element output HESSIAN_0_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
 
                         }
                     }
@@ -355,25 +437,22 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         case Node::DISPLACEMENTS:
                         {
 
-                            double factor(detJacobian * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))
-                                            * constitutivePtr->GetDensity());
+                            double factor(detJacobian * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)) * constitutivePtr->GetDensity());
                             const Eigen::MatrixXd tmpMatrix = shapeFunctions.at(dof) * shapeFunctions.at(dof).transpose() * factor;
                             Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& result(it->second->GetFullMatrixDouble());
                             for (int count = 0; count < tmpMatrix.rows(); count++)
                             {
                                 for (int count2 = 0; count2 < tmpMatrix.cols(); count2++)
                                 {
-                                    result(3*count,  3*count2)   += tmpMatrix(count,count2);
-                                    result(3*count+1,3*count2+1) += tmpMatrix(count,count2);
-                                    result(3*count+2,3*count2+2) += tmpMatrix(count,count2);
+                                    result(3 * count, 3 * count2) += tmpMatrix(count, count2);
+                                    result(3 * count + 1, 3 * count2 + 1) += tmpMatrix(count, count2);
+                                    result(3 * count + 2, 3 * count2 + 2) += tmpMatrix(count, count2);
                                 }
                             }
                         }
                             break;
                         default:
-                            throw MechanicsException(
-                                    "[NuTo::Element3D::Evaluate] Element output HESSIAN_2_TIME_DERIVATIVE for " + Node::AttributeToString(dof)
-                                            + " not implemented.");
+                            throw MechanicsException("[NuTo::Element3D::Evaluate] Element output HESSIAN_2_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
 
                         }
                     }
@@ -390,8 +469,7 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                             // calculate local mass matrix (the nonlocal terms are zero)
                             // don't forget to include determinant of the Jacobian and area
                             // detJ * area * density * HtH, :
-                            double factor(detJacobian * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))
-                                            * constitutivePtr->GetDensity());
+                            double factor(detJacobian * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)) * constitutivePtr->GetDensity());
                             FullVector<double, Eigen::Dynamic>& result(it->second->GetFullVectorDouble());
                             total_mass += factor;
                             const Eigen::VectorXd& shapeFunction = shapeFunctions.at(dof);
@@ -414,17 +492,15 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                                 double scaleFactor = total_mass / sum_diagonal;
                                 for (int count = 0; count < shapeFunction.rows(); count++)
                                 {
-                                    result(3*count) *= scaleFactor;
-                                    result(3*count+1) = result(3*count);
-                                    result(3*count+2) = result(3*count);
+                                    result(3 * count) *= scaleFactor;
+                                    result(3 * count + 1) = result(3 * count);
+                                    result(3 * count + 2) = result(3 * count);
                                 }
                             }
                         }
                             break;
                         default:
-                            throw MechanicsException(
-                                    "[NuTo::Element3D::Evaluate] Element output LUMPED_HESSIAN_2_TIME_DERIVATIVE for " + Node::AttributeToString(dof)
-                                            + " not implemented.");
+                            throw MechanicsException("[NuTo::Element3D::Evaluate] Element output LUMPED_HESSIAN_2_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
                         }
                     }
 
@@ -464,7 +540,6 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
             }
 
         }
-
 
     } catch (NuTo::MechanicsException& e)
     {
@@ -533,18 +608,17 @@ void NuTo::Element3D::SetNode(int rLocalNodeNumber, NodeBase* rNode)
 
 void NuTo::Element3D::ResizeNodes(int rNewNumNodes)
 {
-   if (rNewNumNodes == (int)mNodes.size())
-       return;
+    if (rNewNumNodes == (int) mNodes.size())
+        return;
 
-   if (rNewNumNodes > (int)mNodes.size())
-   {
-       // just resize (enlarge)
-       mNodes.resize(rNewNumNodes);
-   }
-   else
-   {
-       throw MechanicsException("[NuTo::Element3D::ResizeNodes] Resize that reduces the number of nodes is not implemented yet.");
-   }
+    if (rNewNumNodes > (int) mNodes.size())
+    {
+        // just resize (enlarge)
+        mNodes.resize(rNewNumNodes);
+    } else
+    {
+        throw MechanicsException("[NuTo::Element3D::ResizeNodes] Resize that reduces the number of nodes is not implemented yet.");
+    }
 }
 
 void NuTo::Element3D::ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr)
@@ -631,7 +705,7 @@ const Eigen::MatrixXd NuTo::Element3D::ExtractNodeValues(int rTimeDerivative, No
             break;
 
         default:
-            throw MechanicsException("[NuTo::Element3D::ExtractNodeValues] Not implemented for " + Node::AttributeToString(rDofType) +".");
+            throw MechanicsException("[NuTo::Element3D::ExtractNodeValues] Not implemented for " + Node::AttributeToString(rDofType) + ".");
         }
     }
     return nodalValues;
@@ -670,7 +744,7 @@ void NuTo::Element3D::ExtractNodeValues(Eigen::MatrixXd& rNodeValues, int rTimeD
             break;
 
         default:
-            throw MechanicsException("[NuTo::Element3D::ExtractNodeValues] Not implemented for " + Node::AttributeToString(rDofType) +".");
+            throw MechanicsException("[NuTo::Element3D::ExtractNodeValues] Not implemented for " + Node::AttributeToString(rDofType) + ".");
         }
     }
 }
@@ -708,7 +782,7 @@ const Eigen::VectorXi NuTo::Element3D::CalculateGlobalRowDofs() const
             }
                 break;
             default:
-                throw MechanicsException("[NuTo::Element3D::CalculateGlobalRowDofs] Not implemented for " + Node::AttributeToString(dof) +".");
+                throw MechanicsException("[NuTo::Element3D::CalculateGlobalRowDofs] Not implemented for " + Node::AttributeToString(dof) + ".");
 
             }
         }
@@ -727,8 +801,7 @@ const Eigen::VectorXi NuTo::Element3D::CalculateGlobalColumnDofs() const
     }
 }
 
-const NuTo::DeformationGradient3D NuTo::Element3D::CalculateDeformationGradient(const Eigen::MatrixXd& rDerivativeShapeFunctionsLocal,
-        const Eigen::MatrixXd& rNodalDisplacements) const
+const NuTo::DeformationGradient3D NuTo::Element3D::CalculateDeformationGradient(const Eigen::MatrixXd& rDerivativeShapeFunctionsLocal, const Eigen::MatrixXd& rNodalDisplacements) const
 {
     DeformationGradient3D deformationGradient;
 
@@ -749,59 +822,59 @@ const NuTo::DeformationGradient3D NuTo::Element3D::CalculateDeformationGradient(
 //! @param rFactor factor including determinant of Jacobian and IP weight
 //! @param rRow row, where to start to add the submatrix
 //! @param rCoefficientMatrix to be added to
-void NuTo::Element3D::AddDetJBtCB(const Eigen::MatrixXd& rDerivativeShapeFunctionsGlobal, const ConstitutiveTangentLocal<6, 6>& rConstitutiveTangent,
-        double rFactor, int rRow, int rCol, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoefficientMatrix) const
+void NuTo::Element3D::AddDetJBtCB(const Eigen::MatrixXd& rDerivativeShapeFunctionsGlobal, const ConstitutiveTangentLocal<6, 6>& rConstitutiveTangent, double rFactor, int rRow, int rCol,
+        FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoefficientMatrix) const
 {
     const double *C = rConstitutiveTangent.data();
-    double x1,x2,y1,y2,z1,z2,x2x1,y2x1,z2x1,x2y1,y2y1,z2y1,x2z1,y2z1,z2z1;
-    for (int theNode1=0; theNode1<GetNumNodes(); theNode1++)
+    double x1, x2, y1, y2, z1, z2, x2x1, y2x1, z2x1, x2y1, y2y1, z2y1, x2z1, y2z1, z2z1;
+    for (int theNode1 = 0; theNode1 < GetNumNodes(); theNode1++)
     {
-        int node1mul3 = 3*theNode1;
-        int node1mul3plus1 = node1mul3+1;
-        int node1mul3plus2 = node1mul3plus1+1;
+        int node1mul3 = 3 * theNode1;
+        int node1mul3plus1 = node1mul3 + 1;
+        int node1mul3plus2 = node1mul3plus1 + 1;
 
-        assert((int)rDerivativeShapeFunctionsGlobal.size()>node1mul3plus2);
-        x1 = rFactor * rDerivativeShapeFunctionsGlobal(theNode1,0);
-        y1 = rFactor * rDerivativeShapeFunctionsGlobal(theNode1,1);
-        z1 = rFactor * rDerivativeShapeFunctionsGlobal(theNode1,2);
-        node1mul3 +=rRow;
-        node1mul3plus1 +=rRow;
-        node1mul3plus2 +=rRow;
-        for (int theNode2=0; theNode2<GetNumNodes(); theNode2++)
+        assert((int )rDerivativeShapeFunctionsGlobal.size() > node1mul3plus2);
+        x1 = rFactor * rDerivativeShapeFunctionsGlobal(theNode1, 0);
+        y1 = rFactor * rDerivativeShapeFunctionsGlobal(theNode1, 1);
+        z1 = rFactor * rDerivativeShapeFunctionsGlobal(theNode1, 2);
+        node1mul3 += rRow;
+        node1mul3plus1 += rRow;
+        node1mul3plus2 += rRow;
+        for (int theNode2 = 0; theNode2 < GetNumNodes(); theNode2++)
         {
-            int node2mul3 = 3*theNode2;
-            int node2mul3plus1 = node2mul3+1;
-            int node2mul3plus2 = node2mul3plus1+1;
-            node2mul3 +=rCol;
-            node2mul3plus1 +=rCol;
-            node2mul3plus2 +=rCol;
+            int node2mul3 = 3 * theNode2;
+            int node2mul3plus1 = node2mul3 + 1;
+            int node2mul3plus2 = node2mul3plus1 + 1;
+            node2mul3 += rCol;
+            node2mul3plus1 += rCol;
+            node2mul3plus2 += rCol;
 
-            assert((int)rDerivativeShapeFunctionsGlobal.size()>node2mul3plus2);
-            x2 = rDerivativeShapeFunctionsGlobal(theNode2,0);
-            y2 = rDerivativeShapeFunctionsGlobal(theNode2,1);
-            z2 = rDerivativeShapeFunctionsGlobal(theNode2,2);
+            assert((int )rDerivativeShapeFunctionsGlobal.size() > node2mul3plus2);
+            x2 = rDerivativeShapeFunctionsGlobal(theNode2, 0);
+            y2 = rDerivativeShapeFunctionsGlobal(theNode2, 1);
+            z2 = rDerivativeShapeFunctionsGlobal(theNode2, 2);
 
-            x2x1 = x2*x1;
-            y2x1 = y2*x1;
-            z2x1 = z2*x1;
-            x2y1 = x2*y1;
-            y2y1 = y2*y1;
-            z2y1 = z2*y1;
-            x2z1 = x2*z1;
-            y2z1 = y2*z1;
-            z2z1 = z2*z1;
-            assert(rCoefficientMatrix.GetNumRows()>node1mul3plus2 && rCoefficientMatrix.GetNumColumns()>node1mul3plus2);
-            assert(rCoefficientMatrix.GetNumRows()>node2mul3plus2 && rCoefficientMatrix.GetNumColumns()>node2mul3plus2);
+            x2x1 = x2 * x1;
+            y2x1 = y2 * x1;
+            z2x1 = z2 * x1;
+            x2y1 = x2 * y1;
+            y2y1 = y2 * y1;
+            z2y1 = z2 * y1;
+            x2z1 = x2 * z1;
+            y2z1 = y2 * z1;
+            z2z1 = z2 * z1;
+            assert(rCoefficientMatrix.GetNumRows() > node1mul3plus2 && rCoefficientMatrix.GetNumColumns() > node1mul3plus2);
+            assert(rCoefficientMatrix.GetNumRows() > node2mul3plus2 && rCoefficientMatrix.GetNumColumns() > node2mul3plus2);
 
-            rCoefficientMatrix(node1mul3,node2mul3)          +=x2x1*C[0] +x2y1*C[3] +x2z1*C[5] +y2x1*C[18]+y2y1*C[21]+y2z1*C[23]+z2x1*C[30]+z2y1*C[33]+z2z1*C[35];
-            rCoefficientMatrix(node1mul3,node2mul3plus1)     +=y2x1*C[6] +y2y1*C[9] +y2z1*C[11]+x2x1*C[18]+x2y1*C[21]+x2z1*C[23]+z2x1*C[24]+z2y1*C[27]+z2z1*C[29];
-            rCoefficientMatrix(node1mul3,node2mul3plus2)     +=z2x1*C[12]+z2y1*C[15]+z2z1*C[17]+y2x1*C[24]+y2y1*C[27]+y2z1*C[29]+x2x1*C[30]+x2y1*C[33]+x2z1*C[35];
-            rCoefficientMatrix(node1mul3plus1,node2mul3)     +=x2y1*C[1] +x2x1*C[3] +x2z1*C[4] +y2y1*C[19]+y2x1*C[21]+y2z1*C[22]+z2y1*C[31]+z2x1*C[33]+z2z1*C[34];
-            rCoefficientMatrix(node1mul3plus1,node2mul3plus1)+=y2y1*C[7] +y2x1*C[9] +y2z1*C[10]+x2y1*C[19]+x2x1*C[21]+x2z1*C[22]+z2y1*C[25]+z2x1*C[27]+z2z1*C[28];
-            rCoefficientMatrix(node1mul3plus1,node2mul3plus2)+=z2y1*C[13]+z2x1*C[15]+z2z1*C[16]+y2y1*C[25]+y2x1*C[27]+y2z1*C[28]+x2y1*C[31]+x2x1*C[33]+x2z1*C[34];
-            rCoefficientMatrix(node1mul3plus2,node2mul3)     +=x2z1*C[2] +x2y1*C[4] +x2x1*C[5] +y2z1*C[20]+y2y1*C[22]+y2x1*C[23]+z2z1*C[32]+z2y1*C[34]+z2x1*C[35];
-            rCoefficientMatrix(node1mul3plus2,node2mul3plus1)+=y2z1*C[8] +y2y1*C[10]+y2x1*C[11]+x2z1*C[20]+x2y1*C[22]+x2x1*C[23]+z2z1*C[26]+z2y1*C[28]+z2x1*C[29];
-            rCoefficientMatrix(node1mul3plus2,node2mul3plus2)+=z2z1*C[14]+z2y1*C[16]+z2x1*C[17]+y2z1*C[26]+y2y1*C[28]+y2x1*C[29]+x2z1*C[32]+x2y1*C[34]+x2x1*C[35];
+            rCoefficientMatrix(node1mul3, node2mul3) += x2x1 * C[0] + x2y1 * C[3] + x2z1 * C[5] + y2x1 * C[18] + y2y1 * C[21] + y2z1 * C[23] + z2x1 * C[30] + z2y1 * C[33] + z2z1 * C[35];
+            rCoefficientMatrix(node1mul3, node2mul3plus1) += y2x1 * C[6] + y2y1 * C[9] + y2z1 * C[11] + x2x1 * C[18] + x2y1 * C[21] + x2z1 * C[23] + z2x1 * C[24] + z2y1 * C[27] + z2z1 * C[29];
+            rCoefficientMatrix(node1mul3, node2mul3plus2) += z2x1 * C[12] + z2y1 * C[15] + z2z1 * C[17] + y2x1 * C[24] + y2y1 * C[27] + y2z1 * C[29] + x2x1 * C[30] + x2y1 * C[33] + x2z1 * C[35];
+            rCoefficientMatrix(node1mul3plus1, node2mul3) += x2y1 * C[1] + x2x1 * C[3] + x2z1 * C[4] + y2y1 * C[19] + y2x1 * C[21] + y2z1 * C[22] + z2y1 * C[31] + z2x1 * C[33] + z2z1 * C[34];
+            rCoefficientMatrix(node1mul3plus1, node2mul3plus1) += y2y1 * C[7] + y2x1 * C[9] + y2z1 * C[10] + x2y1 * C[19] + x2x1 * C[21] + x2z1 * C[22] + z2y1 * C[25] + z2x1 * C[27] + z2z1 * C[28];
+            rCoefficientMatrix(node1mul3plus1, node2mul3plus2) += z2y1 * C[13] + z2x1 * C[15] + z2z1 * C[16] + y2y1 * C[25] + y2x1 * C[27] + y2z1 * C[28] + x2y1 * C[31] + x2x1 * C[33] + x2z1 * C[34];
+            rCoefficientMatrix(node1mul3plus2, node2mul3) += x2z1 * C[2] + x2y1 * C[4] + x2x1 * C[5] + y2z1 * C[20] + y2y1 * C[22] + y2x1 * C[23] + z2z1 * C[32] + z2y1 * C[34] + z2x1 * C[35];
+            rCoefficientMatrix(node1mul3plus2, node2mul3plus1) += y2z1 * C[8] + y2y1 * C[10] + y2x1 * C[11] + x2z1 * C[20] + x2y1 * C[22] + x2x1 * C[23] + z2z1 * C[26] + z2y1 * C[28] + z2x1 * C[29];
+            rCoefficientMatrix(node1mul3plus2, node2mul3plus2) += z2z1 * C[14] + z2y1 * C[16] + z2x1 * C[17] + y2z1 * C[26] + y2y1 * C[28] + y2x1 * C[29] + x2z1 * C[32] + x2y1 * C[34] + x2x1 * C[35];
         }
     }
 }
@@ -812,31 +885,124 @@ void NuTo::Element3D::AddDetJBtCB(const Eigen::MatrixXd& rDerivativeShapeFunctio
 //! @param factor factor including det Jacobian area and integration point weight
 //! @param rRow start row (in case of a multifield problem)
 //! @param rResult resforce vector
-void NuTo::Element3D::AddDetJBtSigma(const Eigen::MatrixXd& rDerivativeShapeFunctionsLocal, const EngineeringStress3D& rEngineeringStress, double rFactor,
-        int rRow, FullVector<double, Eigen::Dynamic>& rResult) const
+void NuTo::Element3D::AddDetJBtSigma(const Eigen::MatrixXd& rDerivativeShapeFunctionsLocal, const EngineeringStress3D& rEngineeringStress, double rFactor, int rRow,
+        FullVector<double, Eigen::Dynamic>& rResult) const
 {
     const double *s = rEngineeringStress.GetData();
 
-    double x1,y1,z1;
-    for (int theNode1=0; theNode1<rDerivativeShapeFunctionsLocal.rows(); theNode1++)
+    double x1, y1, z1;
+    for (int theNode1 = 0; theNode1 < rDerivativeShapeFunctionsLocal.rows(); theNode1++)
     {
-        int node1mul3 = 3*theNode1;
-        int node1mul3plus1 = node1mul3+1;
-        int node1mul3plus2 = node1mul3plus1+1;
+        int node1mul3 = 3 * theNode1;
+        int node1mul3plus1 = node1mul3 + 1;
+        int node1mul3plus2 = node1mul3plus1 + 1;
 
-        assert(rResult.GetNumRows()>node1mul3plus2);
-        x1 = rFactor * rDerivativeShapeFunctionsLocal(theNode1,0);
-        y1 = rFactor * rDerivativeShapeFunctionsLocal(theNode1,1);
-        z1 = rFactor * rDerivativeShapeFunctionsLocal(theNode1,2);
+        assert(rResult.GetNumRows() > node1mul3plus2);
+        x1 = rFactor * rDerivativeShapeFunctionsLocal(theNode1, 0);
+        y1 = rFactor * rDerivativeShapeFunctionsLocal(theNode1, 1);
+        z1 = rFactor * rDerivativeShapeFunctionsLocal(theNode1, 2);
 
-        rResult(rRow + node1mul3)     +=x1*s[0]+y1*s[3]+z1*s[5];
-        rResult(rRow + node1mul3plus1)+=y1*s[1]+x1*s[3]+z1*s[4];
-        rResult(rRow + node1mul3plus2)+=z1*s[2]+y1*s[4]+x1*s[5];
+        rResult(rRow + node1mul3) += x1 * s[0] + y1 * s[3] + z1 * s[5];
+        rResult(rRow + node1mul3plus1) += y1 * s[1] + x1 * s[3] + z1 * s[4];
+        rResult(rRow + node1mul3plus2) += z1 * s[2] + y1 * s[4] + x1 * s[5];
     }
 }
 
-void NuTo::Element3D::CalculateJacobian(const Eigen::MatrixXd& rDerivativeShapeFunctions, const Eigen::MatrixXd& rNodeCoordinates,
-        Eigen::Matrix3d& rInvJacobian, double& rDetJac) const
+//! @brief calculates the Kee matrix
+//! @param rShapeFunctions of the ip for all shape functions
+//! @param rDerivativeShapeFunctions of the ip for all shape functions
+//! @param nonlocal gradient radius xi
+//! @param rFactor multiplication factor (detJ area..)
+//! @param Kee return matrix with detJ * (Nt N + cBtB)
+void NuTo::Element3D::CalculateKee(Eigen::VectorXd rShapeFunctions, const Eigen::MatrixXd& rDerivativeShapeFunctions, ConstitutiveTangentLocal<1, 1>& rNonlocalParameter, double rFactor,
+        FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rKee) const
+{
+    //resize and set to zero
+    rKee.Resize(rShapeFunctions.rows(), rShapeFunctions.rows());
+
+    rKee = rFactor * (1/rNonlocalParameter(0, 0)*rShapeFunctions * rShapeFunctions.transpose() + rDerivativeShapeFunctions * rDerivativeShapeFunctions.transpose());
+}
+
+//! @brief add Kee*nonlocalEqStrain-detJ*N.T*localEqStrain (detJ is already included in Kee)
+//! @param rShapeFunctions of the ip for all shape functions
+//! @param rLocalEqStrain local eq. strain values
+//! @param rKee stiffness matrix Kee
+//! @param rNodeNonlocalEqStrain nodal nonlocal eq strain values
+//! @param rFactor factor including detJ and area
+//! @param rResult result
+void NuTo::Element3D::AddDetJRnonlocalEqStrain(const Eigen::VectorXd& rShapeFunctions, LocalEqStrain& rLocalEqStrain, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rKee,
+        Eigen::MatrixXd& rNodeNonlocalEqStrain, double rFactor, int startIndexNonlocalEqStrain, FullVector<double, Eigen::Dynamic>& rResult) const
+{
+    assert(rResult.GetNumRows() >= (int )(startIndexNonlocalEqStrain + rShapeFunctions.size()));
+    assert(rShapeFunctions.size() == rNodeNonlocalEqStrain.size());
+
+    // perform Kee * nodeNonlocalEqStrain
+    rResult.segment(startIndexNonlocalEqStrain, rShapeFunctions.size()) += rKee * rNodeNonlocalEqStrain.transpose() - rLocalEqStrain.GetValue(0) * rFactor * rShapeFunctions;
+
+}
+
+//! @brief add detJ B.T dSigma/dnonlocalEqStrain N
+//! @param derivativeShapeFunctions of the ip for all shape functions
+//! @param tangentStressNonlocalEqStrain derivative of the stress with respect to the nonlocal eq strain
+//! @param rShapeFunctions of the ip for all shape functions
+//! @param rFactor factor including detJ and area
+//! @param rResult result
+void NuTo::Element3D::AddDetJBtdSigmadNonlocalEqStrainN(const Eigen::MatrixXd& rDerivativeShapeFunctions, ConstitutiveTangentLocal<6, 1>& rTangentStressNonlocalEqStrain,
+        Eigen::VectorXd rShapeFunctions, double rFactor, int rRow, int rCol, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rResult) const
+{
+
+
+    int numNodesDisplacement = mInterpolationType->Get(Node::DISPLACEMENTS).GetNumNodes();
+    int numNodesNonlocalEqStrain = mInterpolationType->Get(Node::NONLOCALEQSTRAIN).GetNumNodes();
+
+    assert(rDerivativeShapeFunctions.rows() == numNodesDisplacement);
+    assert(rDerivativeShapeFunctions.cols() == GetGlobalDimension());
+    assert(rShapeFunctions.rows() == numNodesNonlocalEqStrain);
+    assert(rShapeFunctions.cols() == 1);
+
+    for (int theNode = 0; theNode < numNodesDisplacement; theNode++)
+    {
+        double dphi_dx = rDerivativeShapeFunctions(theNode, 0);
+        double dphi_dy = rDerivativeShapeFunctions(theNode, 1);
+        double dphi_dz = rDerivativeShapeFunctions(theNode, 2);
+
+        rResult.block(rRow + 3 * theNode    , rCol, 1, numNodesNonlocalEqStrain) += rFactor*(dphi_dx * rTangentStressNonlocalEqStrain(0) + dphi_dy * rTangentStressNonlocalEqStrain(3) + dphi_dz * rTangentStressNonlocalEqStrain(5)) * rShapeFunctions.transpose();
+        rResult.block(rRow + 3 * theNode + 1, rCol, 1, numNodesNonlocalEqStrain) += rFactor*(dphi_dy * rTangentStressNonlocalEqStrain(1) + dphi_dx * rTangentStressNonlocalEqStrain(3) + dphi_dz * rTangentStressNonlocalEqStrain(4)) * rShapeFunctions.transpose();
+        rResult.block(rRow + 3 * theNode + 2, rCol, 1, numNodesNonlocalEqStrain) += rFactor*(dphi_dz * rTangentStressNonlocalEqStrain(2) + dphi_dy * rTangentStressNonlocalEqStrain(4) + dphi_dx * rTangentStressNonlocalEqStrain(5)) * rShapeFunctions.transpose();
+    }
+}
+//! @brief add detJ N_transpose dEqStrain/dEpsilon B
+//! @param rShapeFunctions of the ip for the nonlocal eq strain dofs
+//! @param rTangentLocalEqStrainStrain derivative of the local eq strains with respect to the strain
+//! @param rderivativeShapeFunctions of the ip for the displacement dofs
+//! @param rFactor factor including detJ and area
+//! @param rResult result
+void NuTo::Element3D::AddDetJNtdLocalEqStraindEpsilonB(Eigen::VectorXd rShapeFunctions, ConstitutiveTangentLocal<6, 1>& rTangentLocalEqStrainStrain, const Eigen::MatrixXd& rDerivativeShapeFunctions,
+        double rFactor, int rRow, int rCol, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rResult) const
+{
+
+    int numNodesDisplacement = mInterpolationType->Get(Node::DISPLACEMENTS).GetNumNodes();
+    int numNodesNonlocalEqStrain = mInterpolationType->Get(Node::NONLOCALEQSTRAIN).GetNumNodes();
+
+    assert(rDerivativeShapeFunctions.rows() == numNodesDisplacement);
+    assert(rDerivativeShapeFunctions.cols() == GetGlobalDimension());
+    assert(rShapeFunctions.rows() == numNodesNonlocalEqStrain);
+    assert(rShapeFunctions.cols() == 1);
+
+    for (int theNode = 0; theNode < numNodesDisplacement; theNode++)
+    {
+        double dphi_dx = rDerivativeShapeFunctions(theNode, 0);
+        double dphi_dy = rDerivativeShapeFunctions(theNode, 1);
+        double dphi_dz = rDerivativeShapeFunctions(theNode, 2);
+
+        rResult.block(rRow, rCol+ 3 * theNode    ,numNodesNonlocalEqStrain,1) -= rFactor*(dphi_dx * rTangentLocalEqStrainStrain(0) + dphi_dy * rTangentLocalEqStrainStrain(3) + dphi_dz * rTangentLocalEqStrainStrain(5)) * rShapeFunctions;
+        rResult.block(rRow, rCol+ 3 * theNode + 1,numNodesNonlocalEqStrain,1) -= rFactor*(dphi_dy * rTangentLocalEqStrainStrain(1) + dphi_dx * rTangentLocalEqStrainStrain(3) + dphi_dz * rTangentLocalEqStrainStrain(4)) * rShapeFunctions;
+        rResult.block(rRow, rCol+ 3 * theNode + 2,numNodesNonlocalEqStrain,1) -= rFactor*(dphi_dz * rTangentLocalEqStrainStrain(2) + dphi_dy * rTangentLocalEqStrainStrain(4) + dphi_dx * rTangentLocalEqStrainStrain(5)) * rShapeFunctions;
+
+    }
+}
+
+void NuTo::Element3D::CalculateJacobian(const Eigen::MatrixXd& rDerivativeShapeFunctions, const Eigen::MatrixXd& rNodeCoordinates, Eigen::Matrix3d& rInvJacobian, double& rDetJac) const
 {
     /*       jacobian
      j0, j2,
@@ -849,7 +1015,7 @@ void NuTo::Element3D::CalculateJacobian(const Eigen::MatrixXd& rDerivativeShapeF
     Eigen::Matrix3d jacobian = rNodeCoordinates.lazyProduct(rDerivativeShapeFunctions);
     rDetJac = jacobian.determinant();
 
-    if (rDetJac==0)
+    if (rDetJac == 0)
         throw MechanicsException("[NuTo::Element3D::CalculateJacobian] Determinant of the Jacobian is zero, no inversion possible.");
 
     rInvJacobian = jacobian.inverse();

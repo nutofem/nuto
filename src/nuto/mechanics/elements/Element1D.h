@@ -261,15 +261,20 @@ public:
 			double rFactor,
             FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rKee) const;
 
-    //! @brief add Kee*nonlocalEqStrain-detJ*N.T*localEqStrain (detJ is already included in Kkk)
+    //! @brief add Kee*nonlocalEqStrain-detJ*N.T*localEqStrain (detJ is already included in Kee)
     //! @param rShapeFunctions of the ip for all shape functions
     //! @param rLocalEqStrain local eq. strain values
-    //! @param rKkk stiffness matrix Kkk
+    //! @param rKee stiffness matrix Kee
     //! @param rNodeNonlocalEqStrain nodal nonlocal eq strain values
     //! @param rFactor factor including detJ and area
     //! @param rResult result
-    void AddDetJRnonlocalEqStrain(const Eigen::VectorXd& rShapeFunctions, LocalEqStrain& rLocslEqStrain, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rKee, Eigen::MatrixXd& rNodeNonlocalEqStrain, double rFactor,
-    		int startIndexNonlocalEqStrain, FullVector<double, Eigen::Dynamic>& rResult) const;
+    void AddDetJRnonlocalEqStrain(const Eigen::VectorXd& rShapeFunctions, 
+                                LocalEqStrain& rLocslEqStrain, 
+                                FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rKee, 
+                                Eigen::MatrixXd& rNodeNonlocalEqStrain, 
+                                double rFactor,
+    		                    int startIndexNonlocalEqStrain, 
+                                FullVector<double, Eigen::Dynamic>& rResult) const;
 
     //! @brief cast the base pointer to an Element1D, otherwise throws an exception
     const NuTo::Element1D* AsElement1D()const override

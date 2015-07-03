@@ -1581,9 +1581,14 @@ public:
 
 #ifndef SWIG
 
-    //! @brief ... create a new section
-    //! @param rIdent ... section identifier
-    //! @param rType ... section type
+    //! @brief ... create a new constitutive law
+    //! @param rIdent ... constitutive law identifier
+    //! @param rType ... constitutive law type
+    int ConstitutiveLawCreate(Constitutive::eConstitutiveType rType);
+
+    //! @brief ... create a new constitutive law
+    //! @param rIdent ... constitutive law identifier
+    //! @param rType ... constitutive law type
     void ConstitutiveLawCreate(int rIdent, Constitutive::eConstitutiveType rType);
 
     //! @brief ... get the pointer to a constitutive law from the constitutive law identifier

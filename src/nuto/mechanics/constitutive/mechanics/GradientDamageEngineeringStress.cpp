@@ -685,7 +685,229 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(ElementBas
         const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
         std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
-    throw NuTo::MechanicsException("[NuTo::GradientDamageEngineeringStress::Evaluate3D] not implemented for 3D.");
+    // get section information determining which input on the constitutive level should be used
+    const SectionBase* section(rElement->GetSection());
+
+    // check if parameters are valid
+    if (this->mParametersValid == false)
+    {
+        //throw an exception giving information related to the wrong parameter
+        CheckParameters();
+    }
+
+    // calculate engineering strain
+    EngineeringStrain3D strain3D;
+
+    if (rConstitutiveInput.find(NuTo::Constitutive::Input::DEFORMATION_GRADIENT_3D) == rConstitutiveInput.end())
+        throw MechanicsException("[NuTo::GradientDamageEngineeringStress::Evaluate2D] deformation gradient 3d needed to evaluate engineering strain3d.");
+    const DeformationGradient3D& deformationGradient(rConstitutiveInput.find(NuTo::Constitutive::Input::DEFORMATION_GRADIENT_3D)->second->GetDeformationGradient3D());
+    deformationGradient.GetEngineeringStrain(strain3D);
+
+    //Get previous ip_data
+    ConstitutiveStaticDataGradientDamage1D *oldStaticData = (rElement->GetStaticData(rIp))->AsGradientDamage1D();
+
+    // nonlocal eq strain
+    if (rConstitutiveInput.find(NuTo::Constitutive::Input::NONLOCAL_EQ_STRAIN) == rConstitutiveInput.end())
+        throw MechanicsException("[NuTo::GradientDamageEngineeringStress::Evaluate3D] nonlocal eq strain needed to evaluate engineering stress 3d.");
+    const double nonlocalEqStrain = rConstitutiveInput.find(NuTo::Constitutive::Input::NONLOCAL_EQ_STRAIN)->second->GetNonlocalEqStrain().GetValue(0);
+
+    // last converged kappa
+    const double kappaLastConverged = oldStaticData->mKappa;
+
+    // kappa
+    const double kappa = std::max(nonlocalEqStrain, kappaLastConverged);
+
+    //calculate damage
+    double omega = CalculateDamage(kappa);
+
+    LocalEqStrain localEqStrain; // = CalculateLocalEqStrain3D(strain3D);
+    ConstitutiveTangentLocal<6, 1> localEqStrainTangent; // = CalculateLocalEqStrainTangent3D(strain3D);
+
+    CalculateLocalEqStrainAndDerivativeModifiedMises3D(strain3D, localEqStrain, localEqStrainTangent);
+
+    //set this to true, if update is in the map, perform the update after all other outputs have been calculated
+    bool performUpdateAtEnd(false);
+
+    for (std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>::iterator itOutput = rConstitutiveOutput.begin(); itOutput != rConstitutiveOutput.end(); itOutput++)
+    {
+        switch (itOutput->first)
+        {
+        case NuTo::Constitutive::Output::ENGINEERING_STRESS_3D:
+        {
+            EngineeringStress3D& engineeringStress3D = itOutput->second->GetEngineeringStress3D();
+
+            double C11, C12, C44;
+
+            this->CalculateCoefficients3D(C11, C12, C44);
+            // calculate Engineering stress
+            engineeringStress3D[0] = C11 * strain3D[0] + C12 * strain3D[1] + C12 * strain3D[2];
+            engineeringStress3D[1] = C11 * strain3D[1] + C12 * strain3D[0] + C12 * strain3D[2];
+            engineeringStress3D[2] = C11 * strain3D[2] + C12 * strain3D[0] + C12 * strain3D[1];
+            engineeringStress3D[3] = C44 * strain3D[3];
+            engineeringStress3D[4] = C44 * strain3D[4];
+            engineeringStress3D[5] = C44 * strain3D[5];
+
+            engineeringStress3D *= (1 - omega);
+        }
+            break;
+        case NuTo::Constitutive::Output::ENGINEERING_STRAIN_3D:
+        {
+            EngineeringStrain3D& engineeringStrain3D(itOutput->second->GetEngineeringStrain3D());
+            engineeringStrain3D[0] = strain3D[0];
+            engineeringStrain3D[1] = strain3D[1];
+            engineeringStrain3D[2] = strain3D[2];
+            engineeringStrain3D[3] = strain3D[3];
+            engineeringStrain3D[4] = strain3D[4];
+            engineeringStrain3D[5] = strain3D[5];
+        }
+            break;
+        case NuTo::Constitutive::Output::LOCAL_EQ_STRAIN:
+        {
+            itOutput->second->GetLocalEqStrain() = localEqStrain;
+        }
+            break;
+        case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D:
+        {
+            ConstitutiveTangentLocal<6, 6>& tangent(itOutput->second->AsConstitutiveTangentLocal_6x6());
+            double C11, C12, C44;
+            // calculate coefficients of the material matrix
+
+            this->CalculateCoefficients3D(C11, C12, C44);
+
+            // store tangent at the output object
+            tangent(0, 0) = C11;
+            tangent(1, 0) = C12;
+            tangent(2, 0) = C12;
+            tangent(3, 0) = 0;
+            tangent(4, 0) = 0;
+            tangent(5, 0) = 0;
+
+            tangent(0, 1) = C12;
+            tangent(1, 1) = C11;
+            tangent(2, 1) = C12;
+            tangent(3, 1) = 0;
+            tangent(4, 1) = 0;
+            tangent(5, 1) = 0;
+
+            tangent(0, 2) = C12;
+            tangent(1, 2) = C12;
+            tangent(2, 2) = C11;
+            tangent(3, 2) = 0;
+            tangent(4, 2) = 0;
+            tangent(5, 2) = 0;
+
+            tangent(0, 3) = 0;
+            tangent(1, 3) = 0;
+            tangent(2, 3) = 0;
+            tangent(3, 3) = C44;
+            tangent(4, 3) = 0;
+            tangent(5, 3) = 0;
+
+            tangent(0, 4) = 0;
+            tangent(1, 4) = 0;
+            tangent(2, 4) = 0;
+            tangent(3, 4) = 0;
+            tangent(4, 4) = C44;
+            tangent(5, 4) = 0;
+
+            tangent(0, 5) = 0;
+            tangent(1, 5) = 0;
+            tangent(2, 5) = 0;
+            tangent(3, 5) = 0;
+            tangent(4, 5) = 0;
+            tangent(5, 5) = C44;
+
+            tangent *= (1 - omega);
+            tangent.SetSymmetry(true);
+        }
+            break;
+        case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_3D:
+        {
+            ConstitutiveTangentLocal<6, 1>& tangent(itOutput->second->AsConstitutiveTangentLocal_6x1());
+            if (nonlocalEqStrain >= kappaLastConverged)
+            {
+                double damageDerivative = CalculateDerivativeDamage(nonlocalEqStrain);
+                // loading
+                double C11, C12, C44;
+                this->CalculateCoefficients3D(C11, C12, C44);
+                // calculate Engineering stress
+                tangent(0) = -damageDerivative * (C11 * strain3D[0] + C12 * strain3D[1] + C12 * strain3D[2] );
+                tangent(1) = -damageDerivative * (C11 * strain3D[1] + C12 * strain3D[0] + C12 * strain3D[2] );
+                tangent(2) = -damageDerivative * (C11 * strain3D[2] + C12 * strain3D[0] + C12 * strain3D[1] );
+
+                tangent(3) = -damageDerivative * (C44 * strain3D[3]);
+                tangent(4) = -damageDerivative * (C44 * strain3D[4]);
+                tangent(5) = -damageDerivative * (C44 * strain3D[5]);
+
+            } else
+            {
+                // unloading
+                tangent.setZero();
+            }
+        }
+            break;
+        case NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_D_STRAIN_3D:
+        {
+            ConstitutiveTangentLocal<6, 1>& tangent(itOutput->second->AsConstitutiveTangentLocal_6x1());
+            tangent = localEqStrainTangent;
+        }
+            break;
+        case NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_XI_D_STRAIN_3D:
+        {
+            ConstitutiveTangentLocal<6, 1>& tangent(itOutput->second->AsConstitutiveTangentLocal_6x1());
+
+            double xi = mNonlocalRadius;
+            double dXi = 0;
+
+            if (mNonlocalRadiusParameter != 0.)
+            {
+                throw MechanicsException("[NuTo::GradientDamageEngineeringStress::Evaluate3D] D_LOCAL_EQ_STRAIN_XI_D_STRAIN_3D not implemented for 3D for mNonlocalRadiusParameter != 0.");
+            }
+
+            double factor = 1. / xi - (localEqStrain[0] - nonlocalEqStrain) / (xi * xi) * dXi;
+
+            tangent = factor * localEqStrainTangent;
+
+        }
+            break;
+        case NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI:
+        {
+            ConstitutiveTangentLocal<1, 1>& variableNonlocalRadius(itOutput->second->AsConstitutiveTangentLocal_1x1());
+            variableNonlocalRadius[0] = mNonlocalRadius;
+            if (mNonlocalRadiusParameter != 0.)
+            {
+                throw MechanicsException("[NuTo::GradientDamageEngineeringStress::Evaluate3D] NONLOCAL_PARAMETER_XI not implemented for 3D for mNonlocalRadiusParameter != 0.");
+            }
+        }
+            break;
+        case NuTo::Constitutive::Output::DAMAGE:
+        {
+            itOutput->second->GetDamage().SetDamage(omega);
+        }
+            break;
+        case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
+        {
+            throw MechanicsException("[NuTo::GradientDamageEngineeringStress::Evaluate3D] tmp_static_data has to be updated without any other outputs, call it separately.");
+        }
+            break;
+        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
+        {
+            performUpdateAtEnd = true;
+        }
+            break;
+        default:
+            throw MechanicsException(
+                    std::string("[NuTo::GradientDamageEngineeringStress::Evaluate3D] output object ") + NuTo::Constitutive::OutputToString(itOutput->first)
+                            + std::string(" could not be calculated, check the allocated material law and the section behavior."));
+        }
+    }
+
+    //update history variables
+    if (performUpdateAtEnd)
+    {
+        oldStaticData->mKappa = kappa;
+    }
+    return Error::SUCCESSFUL;
 }
 
 //! @brief ... create new static data object for an integration point
@@ -706,7 +928,7 @@ NuTo::ConstitutiveStaticDataBase* NuTo::GradientDamageEngineeringStress::Allocat
 //! @return ... pointer to static data object
 NuTo::ConstitutiveStaticDataBase* NuTo::GradientDamageEngineeringStress::AllocateStaticDataEngineeringStress_EngineeringStrain3D(const ElementBase* rElement) const
 {
-    throw MechanicsException("[NuTo::GradientDamageEngineeringStress::AllocateStaticDataEngineeringStress_EngineeringStrain3D] Nonlocal damage plasticity model not implemented for 3D.");
+    return new ConstitutiveStaticDataGradientDamage1D();
 }
 
 // calculate coefficients of the material matrix
@@ -917,7 +1139,7 @@ bool NuTo::GradientDamageEngineeringStress::CheckElementCompatibility(NuTo::Elem
         return true;
     case NuTo::Element::ELEMENT2D:
         return true;
-//    case NuTo::Element::ELEMENT3D:
+    case NuTo::Element::ELEMENT3D:
 //        return true;
     case NuTo::Element::BOUNDARYELEMENT1D:
         return true;
@@ -1206,7 +1428,53 @@ void NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrainAndDerivativeM
 void NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrainAndDerivativeModifiedMises3D(const NuTo::EngineeringStrain3D& rStrain3D, NuTo::LocalEqStrain& rLocalEqStrain,
         NuTo::ConstitutiveTangentLocal<6, 1>& rLocalEqStrainTangent) const
 {
-    throw NuTo::MechanicsException("[NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrainAndDerivativeModifiedMises3D] not implemented");
+    const double k = mCompressiveStrength / mTensileStrength;
+    const double K1 = (k - 1.) / (2. * k * (1 - 2 * mNu));
+    const double K2 = 3. / (k * (1 + mNu) * (1 + mNu));
+
+    const double eps_xx = rStrain3D[0];
+    const double eps_yy = rStrain3D[1];
+    const double eps_zz = rStrain3D[2];
+    const double eps_xy = 0.5*rStrain3D[3];
+    const double eps_yz = 0.5*rStrain3D[4];
+    const double eps_zx = 0.5*rStrain3D[5];
+
+    double I1 = eps_xx + eps_yy + eps_zz;
+    double J2 = 1. / 6. * (std::pow(eps_xx - eps_yy, 2) + std::pow(eps_yy - eps_zz, 2) + std::pow(eps_zz - eps_xx, 2))
+            + std::pow(eps_xy, 2)+ std::pow(eps_yz, 2)+ std::pow(eps_zx, 2);
+
+    double A = K1 * K1 * I1 * I1 + K2 * J2;
+
+    if (A == 0) // prevent division by 0
+    {
+        rLocalEqStrain[0] = 0;
+
+        rLocalEqStrainTangent[0] = (1 + mNu / (mNu - 1)) * K1;
+        rLocalEqStrainTangent[1] = (1 + mNu / (mNu - 1)) * K1;
+        rLocalEqStrainTangent[2] = (1 + mNu / (mNu - 1)) * K1;
+        rLocalEqStrainTangent[3] = 0;
+        rLocalEqStrainTangent[4] = 0;
+        rLocalEqStrainTangent[5] = 0;
+
+        return;
+    }
+
+    rLocalEqStrain[0] = K1 * I1 + std::sqrt(A);
+
+    const double dJ2dexx = 1. / 3. * (2*eps_xx - eps_yy - eps_zz);
+    const double dJ2deyy = 1. / 3. * (2*eps_yy - eps_xx - eps_zz);
+    const double dJ2dezz = 1. / 3. * (2*eps_zz - eps_xx - eps_yy);
+    const double dJ2dgxy = eps_xy;
+    const double dJ2dgyz = eps_yz;
+    const double dJ2dgzx = eps_zx;
+
+    rLocalEqStrainTangent[0] = K1 + 1. / (2 * std::sqrt(A)) * (2 * K1 * K1 * I1 + K2 * dJ2dexx);
+    rLocalEqStrainTangent[1] = K1 + 1. / (2 * std::sqrt(A)) * (2 * K1 * K1 * I1 + K2 * dJ2deyy);
+    rLocalEqStrainTangent[2] = K1 + 1. / (2 * std::sqrt(A)) * (2 * K1 * K1 * I1 + K2 * dJ2dezz);
+    rLocalEqStrainTangent[3] = 1. / (2 * std::sqrt(A)) * K2 * dJ2dgxy;
+    rLocalEqStrainTangent[4] = 1. / (2 * std::sqrt(A)) * K2 * dJ2dgyz;
+    rLocalEqStrainTangent[5] = 1. / (2 * std::sqrt(A)) * K2 * dJ2dgzx;
+
 }
 
 //! @brief calculates the local eq strain and its derivatives for the modified mises model in plane stress state

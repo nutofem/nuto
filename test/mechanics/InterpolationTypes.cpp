@@ -8,6 +8,12 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationType.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation2DTriangle.h"
+
+
+#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss3Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss4Ip.h"
+
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
@@ -54,8 +60,7 @@ void CheckShapeFunctionsAndNodePositions(NuTo::InterpolationType& rIT, int rNumN
                 // should be 1
                 if (std::abs(shapeFunctions(iShapeFunctions) - 1) > 1.e-10)
                     throw NuTo::MechanicsException("[CheckShapeFunctionsAndNodePositions] shape functions and node positions do not match (should be 1).");
-            }
-            else
+            } else
             {
                 // should be 0
                 if (std::abs(shapeFunctions(iShapeFunctions)) > 1.e-10)
@@ -91,6 +96,50 @@ void CheckNodeIndexing(NuTo::InterpolationType& rIT)
         }
     }
     std::cout << "[CheckNodeIndexing] OK!" << std::endl;
+}
+
+void CheckTruss()
+{
+
+    {
+        NuTo::IntegrationType1D2NGauss2Ip myIntegrationType;
+        NuTo::InterpolationType myIT(NuTo::Interpolation::eShapeType::TRUSS1D);
+        myIT.AddDofInterpolation(NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+        CheckShapeFunctionsAndNodePositions(myIT, 3);
+        myIT.UpdateIntegrationType(myIntegrationType);
+        myIT.PrintNodeCoordinates();
+        myIT.PrintNodeIndices();
+        CheckNodeIndexing (myIT);
+    }
+
+
+    {
+        NuTo::IntegrationType1D2NGauss3Ip myIntegrationType;
+        NuTo::InterpolationType myIT(NuTo::Interpolation::eShapeType::TRUSS1D);
+        myIT.AddDofInterpolation(NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT3);
+        CheckShapeFunctionsAndNodePositions(myIT, 4);
+        myIT.UpdateIntegrationType(myIntegrationType);
+        myIT.PrintNodeCoordinates();
+        myIT.PrintNodeIndices();
+        CheckNodeIndexing (myIT);
+    }
+
+
+    {
+        NuTo::IntegrationType1D2NGauss4Ip myIntegrationType;
+        NuTo::InterpolationType myIT(NuTo::Interpolation::eShapeType::TRUSS1D);
+        myIT.AddDofInterpolation(NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+        myIT.AddDofInterpolation(NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT4);
+        myIT.AddDofInterpolation(NuTo::Node::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+        myIT.UpdateIntegrationType(myIntegrationType);
+        myIT.PrintNodeCoordinates();
+        myIT.PrintNodeIndices();
+        CheckNodeIndexing (myIT);
+    }
+
+
+    std::cout << "[CheckTruss] OK!" << std::endl;
+
 }
 
 void CheckTriangle()
@@ -225,8 +274,6 @@ void CheckAPI()
     double lx = 3;
     double ly = 5;
 
-
-
     //create constitutive law
     int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
     myStructure.ConstitutiveLawSetYoungsModulus(myMatLin, 10);
@@ -261,7 +308,6 @@ void CheckAPI()
 
     int elementIndex = myStructure.ElementCreate(myInterpolationTypeIndex, nodeIndices, "ConstitutiveLawIp", "StaticData");
     myStructure.ElementSetConstitutiveLaw(elementIndex, myMatLin);
-
 
     int elementGroup = myStructure.GroupCreate("ELEMENTS");
     myStructure.GroupAddElement(elementGroup, elementIndex);
@@ -525,7 +571,7 @@ int main(int argc, char* argv[])
     CheckQuad();
     CheckTetrahedron();
     CheckBrick();
-
+    CheckTruss();
     CheckAPI();
     ImportFromGmsh(meshFile2D);
     NodeReordering();

@@ -152,6 +152,63 @@ public:
                         int rRow,
                         FullVector<double,Eigen::Dynamic>& rResult)const;
 
+    //! @brief calculates the Kee matrix
+    //! @param rShapeFunctions of the ip for all shape functions
+    //! @param rDerivativeShapeFunctions of the ip for all shape functions
+    //! @param nonlocal gradient radius xi
+    //! @param rFactor multiplication factor (detJ area..)
+    //! @param Kee return matrix with detJ * (Nt N + cBtB)
+    void CalculateKee(Eigen::VectorXd rShapeFunctions,
+                      const Eigen::MatrixXd& rDerivativeShapeFunctions,
+                      ConstitutiveTangentLocal<1, 1>& rNonlocalParameter,
+                      double rFactor,
+                      FullMatrix<double,Eigen::Dynamic, Eigen::Dynamic>& rKee) const;
+
+
+    //! @brief add Kee*nonlocalEqStrain-detJ*N.T*localEqStrain (detJ is already included in Kee)
+    //! @param rShapeFunctions of the ip for all shape functions
+    //! @param rLocalEqStrain local eq. strain values
+    //! @param rKee stiffness matrix Kee
+    //! @param rNodeNonlocalEqStrain nodal nonlocal eq strain values
+    //! @param rFactor factor including detJ and area
+    //! @param rResult result
+    void AddDetJRnonlocalEqStrain(const Eigen::VectorXd& rShapeFunctions,
+                                  LocalEqStrain& rLocalEqStrain,
+                                  FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rKee,
+                                  Eigen::MatrixXd& rNodeNonlocalEqStrain,
+                                  double rFactor,
+                                  int startIndexNonlocalEqStrain,
+                                  FullVector<double, Eigen::Dynamic>& rResult) const;
+
+
+    //! @brief add detJ B.T dSigma/dnonlocalEqStrain N
+    //! @param derivativeShapeFunctions of the ip for all shape functions
+    //! @param tangentStressNonlocalEqStrain derivative of the stress with respect to the nonlocal eq strain
+    //! @param rShapeFunctions of the ip for all shape functions
+    //! @param rFactor factor including detJ and area
+    //! @param rResult result
+    void AddDetJBtdSigmadNonlocalEqStrainN(const Eigen::MatrixXd& rDerivativeShapeFunctionsLocal,
+                        ConstitutiveTangentLocal<6, 1>& rTangentStressNonlocalEqStrain,
+                        Eigen::VectorXd rShapeFunctions,
+                        double rFactor,
+                        int rRow,
+                        int rCol,
+                        FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rResult) const;
+
+    //! @brief add detJ N_transpose dEqStrain/dEpsilon B
+    //! @param rShapeFunctions of the ip for the nonlocal eq strain dofs
+    //! @param rTangentLocalEqStrainStrain derivative of the local eq strains with respect to the strain
+    //! @param rderivativeShapeFunctions of the ip for the displacement dofs
+    //! @param rFactor factor including detJ and area
+    //! @param rResult result
+    void AddDetJNtdLocalEqStraindEpsilonB(Eigen::VectorXd rShapeFunctions,
+                        ConstitutiveTangentLocal<6, 1>& rTangentLocalEqStrainStrain,
+                        const Eigen::MatrixXd& rDerivativeShapeFunctions,
+                        double rFactor,
+                        int rRow,
+                        int rCol,
+                        FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rResult) const;
+
     //! @brief cast the base pointer to an Element3D, otherwise throws an exception
     const NuTo::Element3D* AsElement3D()const override
     {

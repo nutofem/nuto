@@ -24,10 +24,11 @@ NuTo::IntegrationType::eIntegrationType NuTo::Interpolation1DTruss::GetStandardI
         return NuTo::IntegrationType::IntegrationType1D2NGauss2Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT3:
         return NuTo::IntegrationType::IntegrationType1D2NGauss3Ip;
+    case NuTo::Interpolation::eTypeOrder::EQUIDISTANT4:
+            return NuTo::IntegrationType::IntegrationType1D2NGauss4Ip;
     case NuTo::Interpolation::eTypeOrder::LOBATTO3:
         return NuTo::IntegrationType::IntegrationType1D2NLobatto4Ip;
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
-    case NuTo::Interpolation::eTypeOrder::EQUIDISTANT4:
         return NuTo::IntegrationType::IntegrationType1D2NLobatto5Ip;
     default:
         throw MechanicsException("[NuTo::Interpolation1DTruss::GetStandardIntegrationType] Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");

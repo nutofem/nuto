@@ -55,4 +55,4 @@ protected:
 };
 }
 
-#endif //IntegrationType1D_H
+#endif //IntegrationType3D_H

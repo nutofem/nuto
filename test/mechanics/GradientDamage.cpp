@@ -12,6 +12,7 @@
 
 #include "nuto/mechanics/constitutive/mechanics/LocalEqStrain.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
+#include "nuto/mechanics/constitutive/mechanics/EngineeringStrain3D.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal.h"
 
 //#define PRINTRESULT
@@ -210,6 +211,84 @@ void CheckLocalEqStrainDerivatives()
             }
 
         }
+    }
+}
+
+void CheckLocalEqStrainDerivatives3D()
+{
+    NuTo::GradientDamageEngineeringStress law;
+    NuTo::FullVector<double, Eigen::Dynamic> myDamageLaw(1);
+    myDamageLaw(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING;
+
+    // create a damage law
+
+    law.SetDensity(1.0);
+    law.SetYoungsModulus(30000);
+    law.SetPoissonsRatio(0.3);
+    law.SetNonlocalRadius(1.);
+    law.SetTensileStrength(4.);
+    law.SetCompressiveStrength(40.);
+    law.SetFractureEnergy(0.21);
+    law.SetDamageLaw(myDamageLaw);
+
+    NuTo::EngineeringStrain3D strain;
+    NuTo::LocalEqStrain localEqStrain0, localEqStrain1;
+    NuTo::ConstitutiveTangentLocal<6, 1> tangent, dummy, tangent_CDF;
+
+    std::vector<NuTo::FullVector<double, 6>> strainCases;
+
+    strainCases.push_back(NuTo::FullVector<double, 6>(
+    { 1, 0, 0, 0, 0, 0 }));
+    strainCases.push_back(NuTo::FullVector<double, 6>(
+    { 0, 1, 0, 0, 0, 0 }));
+    strainCases.push_back(NuTo::FullVector<double, 6>(
+    { 0, 0, 1, 0, 0, 0 }));
+    strainCases.push_back(NuTo::FullVector<double, 6>(
+    { 0, 0, 0, 1, 0, 0 }));
+    strainCases.push_back(NuTo::FullVector<double, 6>(
+    { 0, 0, 0, 0, 1, 0 }));
+    strainCases.push_back(NuTo::FullVector<double, 6>(
+    { 0, 0, 0, 0, 0, 1 }));
+
+    double delta = 1.e-8;
+
+    // check derivatives for plane stress and plane strain
+    for (unsigned int iCase = 0; iCase < strainCases.size(); ++iCase)
+    {
+        strain[0] = strainCases[iCase][0];
+        strain[1] = strainCases[iCase][1];
+        strain[2] = strainCases[iCase][2];
+        strain[3] = strainCases[iCase][3];
+        strain[4] = strainCases[iCase][4];
+        strain[5] = strainCases[iCase][5];
+
+        law.CalculateLocalEqStrainAndDerivativeModifiedMises3D(strain, localEqStrain0, tangent);
+        // calculate derivative numerically
+        for (int i = 0; i < 6; ++i)
+        {
+            strain[i] += delta;
+
+            law.CalculateLocalEqStrainAndDerivativeModifiedMises3D(strain, localEqStrain1, dummy);
+
+            tangent_CDF[i] = (localEqStrain1[0] - localEqStrain0[0]) / delta;
+
+            strain[i] -= delta;
+        }
+
+        if ((tangent - tangent_CDF).cwiseAbs().maxCoeff() > 1.e-7)
+        {
+            std::cout << "strain:" << std::endl;
+            strain.Info(15, 5, true);
+
+            std::cout << "tangent algo: ";
+            tangent.Trans().Info(15, 5, true);
+
+            std::cout << "tangent cdf : ";
+            tangent_CDF.Trans().Info(15, 5, true);
+            throw NuTo::MechanicsException("[CheckLocalEqStrainDerivatives] wrong derivatives!");
+
+        }
+
     }
 }
 
@@ -805,7 +884,7 @@ int main()
 
     try
     {
-
+        CheckLocalEqStrainDerivatives3D();
         CheckLocalEqStrainDerivatives();
         CheckDamageLaws();
         GradientDamage1D();

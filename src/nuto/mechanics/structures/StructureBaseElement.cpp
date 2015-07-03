@@ -1550,7 +1550,7 @@ void NuTo::StructureBase::ElementGetIntegrationPointCoordinates(int rElementId, 
     // build global tmp static data
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
     {
-        throw MechanicsException("[NuTo::StructureBase::ElementGetEngineeringStress] First update of tmp static data required.");
+        throw MechanicsException("[NuTo::StructureBase::ElementGetIntegrationPointCoordinates] First update of tmp static data required.");
     }
 
     ElementBase* elementPtr = ElementGetElementPtr(rElementId);
@@ -1561,14 +1561,14 @@ void NuTo::StructureBase::ElementGetIntegrationPointCoordinates(int rElementId, 
     	for (int count=0; count<elementPtr->GetNumIntegrationPoints(); count++)
     	{
     	    Eigen::Vector3d coords = elementPtr->GetGlobalIntegrationPointCoordinates(count);
-    	    rCoordinates.SetBlock(count, 0, coords);
+    	    rCoordinates.SetBlock(0, count, coords);
     	}
     }
     catch(NuTo::MechanicsException &e)
     {
         std::stringstream ss;
         ss << rElementId;
-        e.AddMessage("[NuTo::StructureBase::ElementGetEngineeringStress] Error getting engineering strain for element "
+        e.AddMessage("[NuTo::StructureBase::ElementGetIntegrationPointCoordinates] Error getting integration point coordinates for element "
         	+ ss.str() + ".");
         throw e;
     }
@@ -1577,7 +1577,7 @@ void NuTo::StructureBase::ElementGetIntegrationPointCoordinates(int rElementId, 
         std::stringstream ss;
         ss << rElementId;
     	throw NuTo::MechanicsException
-    	   ("[NuTo::StructureBase::ElementGetEngineeringStress] Error getting engineering strain for element " + ss.str() + ".");
+    	   ("[NuTo::StructureBase::ElementGetIntegrationPointCoordinates] Error getting integration point coordinates for element " + ss.str() + ".");
     }
 #ifdef SHOW_TIME
     end=clock();

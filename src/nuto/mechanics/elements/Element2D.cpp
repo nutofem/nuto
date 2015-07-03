@@ -277,6 +277,15 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
             }
         }
 
+
+
+
+
+        /*****************************************\
+         *     CALCULATE CONSTITUTIVE INPUTS     *
+        \*****************************************/
+
+
         Eigen::Matrix2d invJacobian;
         double detJacobian;
 
@@ -330,6 +339,14 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                 }
             }
 
+
+
+
+
+            /*****************************************\
+             *      EVALUATE CONSTITUTIVE LAW        *
+            \*****************************************/
+
             ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(theIP);
             try
             {
@@ -342,6 +359,15 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                 throw e;
             }
 
+
+
+
+
+
+            /*****************************************\
+             *           CALCULATE OUTPUT            *
+            \*****************************************/
+            
             //calculate Kee detJacobian*(NtN+cBtB)
             FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> Kee;
             if (dofs.find(Node::NONLOCALEQSTRAIN) != dofs.end())
@@ -349,7 +375,7 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                 CalculateKee(shapeFunctions.at(Node::NONLOCALEQSTRAIN), derivativeShapeFunctions.at(Node::NONLOCALEQSTRAIN), nonlocalParameter, factor, Kee);
             }
 
-            //calculate output
+
             for (auto it = rElementOutput.begin(); it != rElementOutput.end(); it++)
             {
                 switch (it->first)
@@ -1026,7 +1052,6 @@ void NuTo::Element2D::CalculateKee(Eigen::VectorXd rShapeFunctions, const Eigen:
     rKee.Resize(rShapeFunctions.rows(), rShapeFunctions.rows());
 
     rKee = rFactor * (1/rNonlocalParameter(0, 0)*rShapeFunctions * rShapeFunctions.transpose() + rDerivativeShapeFunctions * rDerivativeShapeFunctions.transpose());
-    //std::cout<<"rKee: "<<rKee<<std::endl;
 }
 //! @brief add Kee*nonlocalEqStrain-detJ*N.T*localEqStrain (detJ is already included in Kee)
 //! @param rShapeFunctions of the ip for all shape functions
