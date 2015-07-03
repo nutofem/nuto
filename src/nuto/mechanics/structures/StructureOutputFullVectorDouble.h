@@ -14,7 +14,10 @@ class StructureOutputFullVectorDouble: public StructureOutputBase
 {
     friend class Structure;
 public:
-    StructureOutputFullVectorDouble() : StructureOutputBase(){}
+    StructureOutputFullVectorDouble(FullVector<double,Eigen::Dynamic>& rVector)
+        : StructureOutputBase(),
+          mVector(rVector)
+    {}
 
     virtual ~StructureOutputFullVectorDouble(){}
 
@@ -23,10 +26,15 @@ public:
         return mVector;
     }
 
+    virtual int GetNumSubmatrices() const override
+    {
+        return 0;
+    }
+
 private:
     bool mConstant  = false;
 
-    FullVector<double,Eigen::Dynamic> mVector;
+    FullVector<double,Eigen::Dynamic>& mVector;
 };
 
 

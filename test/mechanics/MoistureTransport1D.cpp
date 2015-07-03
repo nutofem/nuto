@@ -23,7 +23,7 @@
 #include <nuto/metamodel/PolynomialLeastSquaresFitting.h>
 
 #include <nuto/mechanics/structures/StructureOutputFullVectorDouble.h>
-#include <nuto/mechanics/structures/StructureOutputSparseMatrixCSRVector2.h>
+#include <nuto/mechanics/structures/StructureOutputSparseMatrix.h>
 
 int main()
 {
@@ -309,6 +309,7 @@ int main()
         MTStructure1D.SetNumProcessors(1);
 #endif
         MTStructure1D.CalculateMaximumIndependentSets();
+        MTStructure1D.UseMaximumIndependentSets(true);
         MTStructure1D.NodeBuildGlobalDofs();
 
 
@@ -402,49 +403,45 @@ int main()
 
         // Evaluate Version
 
-        NuTo::StructureOutputFullVectorDouble Residual;
 
-        NuTo::StructureOutputSparseMatrixCSRVector2 Hessian_0;
-        NuTo::StructureOutputSparseMatrixCSRVector2 Hessian_1;
+        NuTo::SparseMatrixCSRVector2General<double> Hessian_0;
+        NuTo::SparseMatrixCSRVector2General<double> Hessian_1;
+
+        NuTo::FullVector<double, Eigen::Dynamic> Residual;
+
+        NuTo::StructureOutputFullVectorDouble SOResidual(Residual);
+        NuTo::StructureOutputSparseMatrix SOHessian_0(Hessian_0);
+        NuTo::StructureOutputSparseMatrix SOHessian_1(Hessian_1);
 
         std::map<NuTo::StructureEnum::eOutput, NuTo::StructureOutputBase*> StructureOutputResidual;
         std::map<NuTo::StructureEnum::eOutput, NuTo::StructureOutputBase*> StructureOutputHessian;
         std::map<NuTo::StructureEnum::eOutput, NuTo::StructureOutputBase*> StructureOutputResAndHessian;
 
-        StructureOutputResidual[NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT]  = &Residual;
+        StructureOutputResidual[NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT]  = &SOResidual;
 
-        StructureOutputHessian[NuTo::StructureEnum::eOutput::STIFFNESS]  = &Hessian_0;
-        StructureOutputHessian[NuTo::StructureEnum::eOutput::DAMPING]    = &Hessian_1;
+        StructureOutputHessian[NuTo::StructureEnum::eOutput::STIFFNESS_FULL]  = &SOHessian_0;
+        StructureOutputHessian[NuTo::StructureEnum::eOutput::DAMPING_FULL]    = &SOHessian_1;
 
-        StructureOutputResAndHessian[NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT]   = &Residual;
-        StructureOutputResAndHessian[NuTo::StructureEnum::eOutput::STIFFNESS]           = &Hessian_0;
-        StructureOutputResAndHessian[NuTo::StructureEnum::eOutput::DAMPING]             = &Hessian_1;
+        StructureOutputResAndHessian[NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT]   = &SOResidual;
+        StructureOutputResAndHessian[NuTo::StructureEnum::eOutput::STIFFNESS_FULL]      = &SOHessian_0;
+        StructureOutputResAndHessian[NuTo::StructureEnum::eOutput::DAMPING_FULL]        = &SOHessian_1;
 
-        // Ende Evaluate Version
 
-        NuTo::SparseMatrixCSRVector2General<double> Hessian, Hessian0, Hessian1;
-        Hessian.Resize(NNodes*2,NNodes*2);
-        Hessian0.Resize(NNodes*2,NNodes*2);
-        Hessian1.Resize(NNodes*2,NNodes*2);
+        NuTo::SparseMatrixCSRVector2General<double> Hessian;
 
-        NuTo::SparseMatrixCSRGeneral<double> BufferMat;
+        //NuTo::SparseMatrixCSRGeneral<double> BufferMat;
 
-        NuTo::FullVector<double,Eigen::Dynamic> dis, vel, acc;
-        dis.resize(NNodes*2);
-        vel.resize(NNodes*2);
-        acc.resize(NNodes*2);
+        NuTo::FullVector<double,Eigen::Dynamic> dis(NNodes*2), vel(NNodes*2);
 
-        NuTo::FullVector<double,Eigen::Dynamic> dis_last, vel_last, acc_last, delta_dis;
-        dis_last.resize(NNodes*2);
-        vel_last.resize(NNodes*2);
-        acc_last.resize(NNodes*2);
+
+        NuTo::FullVector<double,Eigen::Dynamic> dis_last(NNodes*2), vel_last(NNodes*2), delta_dis(NNodes*2);
+        //dis_last.resize(NNodes*2);
+        //vel_last.resize(NNodes*2);
+        //acc_last.resize(NNodes*2);
         //delta_dis.resize(NNodes*2);
 
         NuTo::FullVector<double,Eigen::Dynamic> Buffer_Vec;
 
-        NuTo::FullVector<double,Eigen::Dynamic> res, resComp;
-        res.resize(NNodes*2);
-        resComp.resize(NNodes*2);
 
         int NIterations = 0;
 
@@ -484,27 +481,15 @@ int main()
             // Calculate residual
             // ------------------
             Buffer_Vec.Resize(0);
-            //MTStructure1D.BuildGlobalGradientInternalPotentialVector(res);
+            //MTStructure1D.BuildGlobalGradientInternalPotentialVector(Residual);
 
             //res.Info(12,5,true);
 
             MTStructure1D.Evaluate(StructureOutputResAndHessian);
+
+            //MTStructure1D.Evaluate(StructureOutputResidual);
             //Residual.GetFullVectorDouble().Info(12,5,true);
 
-
-/*
-            NuTo::FullVector<int, Eigen::Dynamic> DofNum;
-            NuTo::FullVector<int, Eigen::Dynamic> DofNum2;
-            MTStructure1D.ElementGradientInternalPotential(1,res,DofNum);
-            res.Info(10,5,true);
-            DofNum.Info(10,5,true);
-
-            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> test =Hessian0;
-            MTStructure1D.ElementCoefficientMatrix(1,0,test,DofNum,DofNum2);
-            test.Info(10,5,true);
-            DofNum.Info(10,5,true);
-            DofNum2.Info(10,5,true);
-            return 0;*/
 
             do
             {
@@ -523,15 +508,15 @@ int main()
                 {
                     MTStructure1D.Evaluate(StructureOutputHessian);
                 }
-                Hessian = Hessian_0.GetPtrSparseMatrixCSRVector2Double()->AsSparseMatrixCSRVector2General();
-                Hessian.AddScal(Hessian_1.GetPtrSparseMatrixCSRVector2Double()->AsSparseMatrixCSRVector2General(),1.0/(delta_t * sigma));
+                Hessian = Hessian_0;
+                Hessian.AddScal(Hessian_1,1.0/(delta_t * sigma));
 
                 //res = -Residual.GetFullVectorDouble();
 
                 NuTo::SparseMatrixCSRGeneral<double> HessianForSolver(Hessian);
                 HessianForSolver.SetOneBasedIndexing();
 
-                Solver.Solve(HessianForSolver,-Residual.GetFullVectorDouble(),delta_dis);
+                Solver.Solve(HessianForSolver,-Residual,delta_dis);
 
                 // apply correction
                 // ----------------
@@ -546,12 +531,12 @@ int main()
 
                 // Calculate residual
                 // ------------------
-                //MTStructure1D.BuildGlobalGradientInternalPotentialVector(res);
+                //MTStructure1D.BuildGlobalGradientInternalPotentialVector(Residual);
                 MTStructure1D.Evaluate(StructureOutputResidual);
 
 
             }
-            while(std::abs(Residual.GetFullVectorDouble().Min())>MaxResidual || std::abs(Residual.GetFullVectorDouble().Max())>MaxResidual);
+            while(std::abs(Residual.Min())>MaxResidual || std::abs(Residual.Max())>MaxResidual);
 
 
 
@@ -562,12 +547,12 @@ int main()
             else
             {
                 std::cout << "Caonvergence after " << NIterations << " iterations "<< std::endl;
-                std::cout << "Final residual: " << ((std::abs(res.Min()) > std::abs(res.Max())) ? std::abs(res.Min()) : std::abs(res.Max())) << std::endl << std::endl;
+                std::cout << "Final residual: " << ((std::abs(Residual.Min()) > std::abs(Residual.Max())) ? std::abs(Residual.Min()) : std::abs(Residual.Max())) << std::endl << std::endl;
             }
         }
 
-        dis.Info();
 
+        //dis.Info(12,5,true);
 
 /*
         NuTo::CrankNicolson TimeIntegrationScheme(&MTStructure1D);
@@ -661,7 +646,7 @@ int main()
         {
             std::cout << "elapsed time : " << (time_end.tv_sec - time_begin.tv_sec) + (time_end.tv_usec - time_begin.tv_usec)/1000000.0<< " seconds" << std::endl;
         }
-    }    
+    }
     catch(NuTo::Exception e)
     {
         std::cout << e.ErrorMessage() << std::endl;

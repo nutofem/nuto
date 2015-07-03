@@ -1929,6 +1929,8 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalElasticGradientInternalPotential
     return errorGlobal;
 }
 
+
+
 //! @brief ... evaluates the structur
 void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputBase *> &rStructureOutput)
 {
@@ -1970,7 +1972,7 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
         throw e;
     }
 
-    std::map<NuTo::Element::eOutput,StructureOutputBase *> AssignmentMap;
+    //std::map<NuTo::Element::eOutput,StructureOutputBase *> AssignmentMap;
     boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
 
     // loop over all outputs
@@ -1979,20 +1981,20 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
         // first switch: sets data types and adjusts sizes
         switch(iteratorOutput.first)
         {
-            case NuTo::StructureEnum::eOutput::DAMPING:
-            case NuTo::StructureEnum::eOutput::MASS:
-            case NuTo::StructureEnum::eOutput::STIFFNESS:
+            case NuTo::StructureEnum::eOutput::DAMPING_FULL:
+            case NuTo::StructureEnum::eOutput::MASS_FULL:
+            case NuTo::StructureEnum::eOutput::STIFFNESS_FULL:
             {
-                // Check if memory for matrix is allocated. If not, do so!
-                std::shared_ptr<SparseMatrixCSRVector2<double>>& OutputMatrixPtr = iteratorOutput.second->GetPtrSparseMatrixCSRVector2Double();
-                if(!OutputMatrixPtr)
-                {
-                    OutputMatrixPtr = std::make_shared<SparseMatrixCSRVector2General<double>>();
-                }
 
                 // Get reference to matrix data
-                SparseMatrixCSRVector2<double>& OutputMatrix = *OutputMatrixPtr;
+                SparseMatrix<double>& OutputMatrix =iteratorOutput.second->GetSparseMatrixDouble();
 
+#ifdef _OPENMP
+                if (mUseMIS && OutputMatrix.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
+                {
+                    throw MechanicsException("[NuTo::Structure::Evaluate] Parallel assembly not possible! Use SparseMatrixCSRVector2 for all your output matrices.");
+                }
+#endif
 
                 // Check matrix dimensions and resize if neccessary
                 if (OutputMatrix.GetNumColumns()!=this->mNumActiveDofs || OutputMatrix.GetNumRows()!=this->mNumActiveDofs)
@@ -2006,22 +2008,22 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
 
                 switch(iteratorOutput.first)
                 {
-                    case NuTo::StructureEnum::eOutput::STIFFNESS:
+                    case NuTo::StructureEnum::eOutput::STIFFNESS_FULL:
                     {
                         boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>(elementOutput)(Element::HESSIAN_0_TIME_DERIVATIVE);
-                        AssignmentMap[Element::HESSIAN_0_TIME_DERIVATIVE]=iteratorOutput.second;
+                        //AssignmentMap[Element::HESSIAN_0_TIME_DERIVATIVE]= iteratorOutput.second;
                         break;
                     }
-                    case NuTo::StructureEnum::eOutput::DAMPING:
+                    case NuTo::StructureEnum::eOutput::DAMPING_FULL:
                     {
                         boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>(elementOutput)(Element::HESSIAN_1_TIME_DERIVATIVE);
-                        AssignmentMap[Element::HESSIAN_1_TIME_DERIVATIVE]=iteratorOutput.second;
+                        //AssignmentMap[Element::HESSIAN_1_TIME_DERIVATIVE]= iteratorOutput.second;
                         break;
                     }
-                    case NuTo::StructureEnum::eOutput::MASS:
+                    case NuTo::StructureEnum::eOutput::MASS_FULL:
                     {
                         boost::assign::ptr_map_insert<ElementOutputFullMatrixDouble>(elementOutput)(Element::HESSIAN_2_TIME_DERIVATIVE);
-                        AssignmentMap[Element::HESSIAN_2_TIME_DERIVATIVE]=iteratorOutput.second;
+                        //AssignmentMap[Element::HESSIAN_2_TIME_DERIVATIVE]= iteratorOutput.second;
                         break;
                     }
                     default:
@@ -2052,7 +2054,7 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
                     case NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT:
                     {
                         boost::assign::ptr_map_insert<ElementOutputFullVectorDouble>(elementOutput)(Element::INTERNAL_GRADIENT);
-                        AssignmentMap[Element::INTERNAL_GRADIENT]=iteratorOutput.second;
+                        //AssignmentMap[Element::INTERNAL_GRADIENT]=iteratorOutput.second;
                         break;
                     }
 
@@ -2070,12 +2072,7 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
             {
                 throw NuTo::MechanicsException("[NuTo::Structure::Evaluate] Output request not implemented.");
             }
-
         }
-
-
-        // second switch: sets element outputs depending on structure outputs
-
     }
     boost::assign::ptr_map_insert<ElementOutputVectorInt>(elementOutput)(Element::GLOBAL_ROW_DOF);
     boost::assign::ptr_map_insert<ElementOutputVectorInt>(elementOutput)(Element::GLOBAL_COLUMN_DOF);
@@ -2083,7 +2080,297 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
 
     // define variables storing the element contribution
     Error::eError errorGlobal(Error::SUCCESSFUL);
+#ifdef _OPENMP
+    if (mNumProcessors!=0)
+    {
+        omp_set_num_threads(mNumProcessors);
+    }
 
+    // use independents sets
+    if (mUseMIS)
+    {
+        if (mMIS.size()==0)
+        {
+            throw MechanicsException("[NuTo::Structure::Evaluate] maximum independent set not calculated.");
+        }
+        //if (rMatrixJJ.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
+        //    throw MechanicsException("[NuTo::Structure::Evaluate] MatrixJJ does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
+        //if (rMatrixJK.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
+        //    throw MechanicsException("[NuTo::Structure::Evaluate] MatrixJK does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
+        //if (rMatrixKJ.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
+        //    throw MechanicsException("[NuTo::Structure::Evaluate] MatrixKJ does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
+        //if (rMatrixKK.AllowParallelAssemblyUsingMaximumIndependentSets()==false)
+        //    throw MechanicsException("[NuTo::Structure::Evaluate] MatrixKK does not allow for parallel assembly, use SparseMatrixCSRVector2 instead.");
+
+        for (unsigned int misCounter=0; misCounter<mMIS.size(); misCounter++)
+        {
+            std::vector<ElementBase*>::iterator elementIter;
+#pragma omp parallel default(shared) private(elementIter) firstprivate(elementOutput)
+            {
+                //here != had to replaced by < in order to make it compile under openmp
+                for (auto elementIter = this->mMIS[misCounter].begin(); elementIter != this->mMIS[misCounter].end(); elementIter++)
+                {
+#pragma omp single nowait
+                    {
+                        ElementBase* elementPtr = *elementIter;
+                        // calculate element contribution
+                        //bool symmetryFlag = false;
+                        Error::eError error;
+                        error = elementPtr->Evaluate(elementOutput);
+
+                        if (error!=Error::SUCCESSFUL)
+                        {
+                            if (errorGlobal==Error::SUCCESSFUL)
+                            errorGlobal = error;
+                            else if (errorGlobal!=error)
+                            throw MechanicsException("[NuTo::Structure::Evaluate] elements have returned multiple different error codes, can't handle that.");
+                        }
+                        else
+                        {
+
+                            for(auto iteratorOutput : rStructureOutput)
+                            {
+                                // Needed by Vectors and matrices as well
+                                std::vector<int>& elementVectorGlobalDofsRow(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
+
+                                switch(iteratorOutput.first)
+                                {
+                                    case NuTo::StructureEnum::eOutput::DAMPING_FULL:
+                                    case NuTo::StructureEnum::eOutput::MASS_FULL:
+                                    case NuTo::StructureEnum::eOutput::STIFFNESS_FULL:
+                                    {
+                                        std::vector<int>& elementVectorGlobalDofsColumn(elementOutput.find(Element::GLOBAL_COLUMN_DOF)->second->GetVectorInt());
+
+                                        NuTo::Element::eOutput ElementEnum;
+
+                                        switch(iteratorOutput.first)
+                                        {
+                                            case NuTo::StructureEnum::eOutput::STIFFNESS_FULL:
+                                            {
+                                                ElementEnum = Element::HESSIAN_0_TIME_DERIVATIVE;
+                                                break;
+                                            }
+                                            case NuTo::StructureEnum::eOutput::DAMPING_FULL:
+                                            {
+                                                ElementEnum = Element::HESSIAN_1_TIME_DERIVATIVE;
+                                                break;
+                                            }
+                                            case NuTo::StructureEnum::eOutput::MASS_FULL:
+                                            {
+                                                ElementEnum = Element::HESSIAN_2_TIME_DERIVATIVE;
+                                                break;
+                                            }
+                                            default:
+                                            {
+                                                throw NuTo::MechanicsException("[NuTo::Structure::Evaluate] Element output for request structure output not implemented.");
+                                            }
+                                        }
+
+                                        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& elementMatrix = elementOutput.find(ElementEnum)->second->GetFullMatrixDouble();;
+
+                                        assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementVectorGlobalDofsRow.size());
+                                        assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementVectorGlobalDofsColumn.size());
+
+                                        for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofsRow.size(); rowCount++)
+                                        {
+                                            int globalRowDof = elementVectorGlobalDofsRow[rowCount];
+                                            for (unsigned int colCount = 0; colCount < elementVectorGlobalDofsColumn.size(); colCount++)
+                                            {
+                                                int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
+                                                iteratorOutput.second->GetSparseMatrixDouble().AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+                                            }
+                                        }
+
+                                        break;
+                                    }
+
+
+                                    case NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT:
+                                    {
+                                        NuTo::FullVector<double, Eigen::Dynamic>* elementVector;
+                                        switch(iteratorOutput.first)
+                                        {
+                                            case NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT:
+                                            {
+                                                elementVector = &elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullVectorDouble();
+                                                break;
+                                            }
+
+                                            default:
+                                            {
+                                                throw NuTo::MechanicsException("[NuTo::Structure::Evaluate] Element output for request structure output not implemented.");
+                                            }
+                                        }
+
+                                        assert(static_cast<unsigned int>(elementVector->GetNumRows()) == elementVectorGlobalDofsRow.size());
+
+                                        // write element contribution to global vectors
+                                        for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofsRow.size(); rowCount++)
+                                        {
+                                            int globalRowDof = elementVectorGlobalDofsRow[rowCount];
+                                            iteratorOutput.second->GetFullVectorDouble()(globalRowDof) += elementVector->GetValue(rowCount);
+                                        }
+
+                                        break;
+                                    }
+
+
+                                    default:
+                                    {
+                                        throw NuTo::MechanicsException("[NuTo::Structure::Evaluate] Output request not implemented.");
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                }   // end loop over elements
+            }   // end parallel region
+        }   // end loop over independent sets
+
+
+
+
+
+
+
+
+
+    }
+
+    // DONT use independents sets
+    else
+    {
+#pragma omp parallel default(shared) firstprivate(elementOutput)
+        {
+            // loop over all elements
+            for(auto elementIter : this->mElementMap)
+            {
+#pragma omp single nowait
+                {
+                    ElementBase* elementPtr = elementIter->second;
+                    // calculate element contribution
+                    //bool symmetryFlag = false;
+                    Error::eError error;
+                    error = elementPtr->Evaluate(elementOutput);
+
+                    if (error!=Error::SUCCESSFUL)
+                    {
+                        if (errorGlobal==Error::SUCCESSFUL)
+                        errorGlobal = error;
+                        else if (errorGlobal!=error)
+                        throw MechanicsException("[NuTo::Structure::Evaluate] elements have returned multiple different error codes, can't handle that.");
+                    }
+                    else
+                    {
+
+                        for(auto iteratorOutput : rStructureOutput)
+                        {
+                            // Needed by Vectors and matrices as well
+                            std::vector<int>& elementVectorGlobalDofsRow(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
+
+                            switch(iteratorOutput.first)
+                            {
+                                case NuTo::StructureEnum::eOutput::DAMPING_FULL:
+                                case NuTo::StructureEnum::eOutput::MASS_FULL:
+                                case NuTo::StructureEnum::eOutput::STIFFNESS_FULL:
+                                {
+                                    std::vector<int>& elementVectorGlobalDofsColumn(elementOutput.find(Element::GLOBAL_COLUMN_DOF)->second->GetVectorInt());
+
+                                    NuTo::Element::eOutput ElementEnum;
+
+                                    switch(iteratorOutput.first)
+                                    {
+                                        case NuTo::StructureEnum::eOutput::STIFFNESS_FULL:
+                                        {
+                                            ElementEnum = Element::HESSIAN_0_TIME_DERIVATIVE;
+                                            break;
+                                        }
+                                        case NuTo::StructureEnum::eOutput::DAMPING_FULL:
+                                        {
+                                            ElementEnum = Element::HESSIAN_1_TIME_DERIVATIVE;
+                                            break;
+                                        }
+                                        case NuTo::StructureEnum::eOutput::MASS_FULL:
+                                        {
+                                            ElementEnum = Element::HESSIAN_2_TIME_DERIVATIVE;
+                                            break;
+                                        }
+                                        default:
+                                        {
+                                            throw NuTo::MechanicsException("[NuTo::Structure::Evaluate] Element output for request structure output not implemented.");
+                                        }
+                                    }
+
+                                    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& elementMatrix = elementOutput.find(ElementEnum)->second->GetFullMatrixDouble();;
+
+                                    assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementVectorGlobalDofsRow.size());
+                                    assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementVectorGlobalDofsColumn.size());
+
+                                    for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofsRow.size(); rowCount++)
+                                    {
+                                        int globalRowDof = elementVectorGlobalDofsRow[rowCount];
+                                        for (unsigned int colCount = 0; colCount < elementVectorGlobalDofsColumn.size(); colCount++)
+                                        {
+                                            int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
+#pragma omp critical (StructureEvaluate_BuildMatrices)
+                                            {
+                                                iteratorOutput.second->GetSparseMatrixDouble().AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+                                            }   // end critical region (omp)
+                                        }
+                                    }
+
+                                    break;
+                                }
+
+
+                                case NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT:
+                                {
+                                    NuTo::FullVector<double, Eigen::Dynamic>* elementVector;
+                                    switch(iteratorOutput.first)
+                                    {
+                                        case NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT:
+                                        {
+                                            elementVector = &elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullVectorDouble();
+                                            break;
+                                        }
+
+                                        default:
+                                        {
+                                            throw NuTo::MechanicsException("[NuTo::Structure::Evaluate] Element output for request structure output not implemented.");
+                                        }
+                                    }
+
+                                    assert(static_cast<unsigned int>(elementVector->GetNumRows()) == elementVectorGlobalDofsRow.size());
+
+                                    // write element contribution to global vectors
+                                    for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofsRow.size(); rowCount++)
+                                    {
+                                        int globalRowDof = elementVectorGlobalDofsRow[rowCount];
+#pragma omp critical (StructureEvaluate_BuildVector)
+                                        {
+                                            iteratorOutput.second->GetFullVectorDouble()(globalRowDof) += elementVector->GetValue(rowCount);
+                                        }   // end critical region (omp)
+                                    }
+
+                                    break;
+                                }
+
+
+                                default:
+                                {
+                                    throw NuTo::MechanicsException("[NuTo::Structure::Evaluate] Output request not implemented.");
+                                }
+                            }
+                        }
+                    }
+
+                }   // end of omp single
+            }   // end loop over all elements
+        }   // end of parallel region
+    }
+
+#else
     for(auto elementIter : this->mElementMap)
     {
         ElementBase* elementPtr = elementIter->second;
@@ -2101,19 +2388,46 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
         }
         else
         {
-            for(auto AssignmentIt : AssignmentMap)
-            {
-                switch(AssignmentIt.first)
-                {
 
-                    case Element::HESSIAN_0_TIME_DERIVATIVE:
-                    case Element::HESSIAN_1_TIME_DERIVATIVE:
-                    case Element::HESSIAN_2_TIME_DERIVATIVE:
+            for(auto iteratorOutput : rStructureOutput)
+            {
+                // Needed by Vectors and matrices as well
+                std::vector<int>& elementVectorGlobalDofsRow(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
+
+                switch(iteratorOutput.first)
+                {
+                    case NuTo::StructureEnum::eOutput::DAMPING_FULL:
+                    case NuTo::StructureEnum::eOutput::MASS_FULL:
+                    case NuTo::StructureEnum::eOutput::STIFFNESS_FULL:
                     {
-                        std::vector<int>& elementVectorGlobalDofsRow(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
                         std::vector<int>& elementVectorGlobalDofsColumn(elementOutput.find(Element::GLOBAL_COLUMN_DOF)->second->GetVectorInt());
 
-                        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> elementMatrix(elementOutput.find(AssignmentIt.first)->second->GetFullMatrixDouble());
+                        NuTo::Element::eOutput ElementEnum;
+
+                        switch(iteratorOutput.first)
+                        {
+                            case NuTo::StructureEnum::eOutput::STIFFNESS_FULL:
+                            {
+                                ElementEnum = Element::HESSIAN_0_TIME_DERIVATIVE;
+                                break;
+                            }
+                            case NuTo::StructureEnum::eOutput::DAMPING_FULL:
+                            {
+                                ElementEnum = Element::HESSIAN_1_TIME_DERIVATIVE;
+                                break;
+                            }
+                            case NuTo::StructureEnum::eOutput::MASS_FULL:
+                            {
+                                ElementEnum = Element::HESSIAN_2_TIME_DERIVATIVE;
+                                break;
+                            }
+                            default:
+                            {
+                                throw NuTo::MechanicsException("[NuTo::Structure::Evaluate] Element output for request structure output not implemented.");
+                            }
+                        }
+
+                        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& elementMatrix = elementOutput.find(ElementEnum)->second->GetFullMatrixDouble();;
 
                         assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementVectorGlobalDofsRow.size());
                         assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementVectorGlobalDofsColumn.size());
@@ -2125,101 +2439,108 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
                             {
                                 int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
 
-                                AssignmentIt.second->GetPtrSparseMatrixCSRVector2Double().get()->AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+                                iteratorOutput.second->GetSparseMatrixDouble().AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
                             }
                         }
+
                         break;
                     }
-                    case Element::INTERNAL_GRADIENT:
-                    {
-                        NuTo::FullVector<double, Eigen::Dynamic>& elementVector(elementOutput.find(AssignmentIt.first)->second->GetFullVectorDouble());
-                        std::vector<int>& elementVectorGlobalDofsRow(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
 
-                        assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofsRow.size());
+
+                    case NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT:
+                    {
+                        NuTo::FullVector<double, Eigen::Dynamic>* elementVector;
+                        switch(iteratorOutput.first)
+                        {
+                            case NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT:
+                            {
+                                elementVector = &elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullVectorDouble();
+                                break;
+                            }
+
+                            default:
+                            {
+                                throw NuTo::MechanicsException("[NuTo::Structure::Evaluate] Element output for request structure output not implemented.");
+                            }
+                        }
+
+                        assert(static_cast<unsigned int>(elementVector->GetNumRows()) == elementVectorGlobalDofsRow.size());
 
                         // write element contribution to global vectors
                         for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofsRow.size(); rowCount++)
                         {
                             int globalRowDof = elementVectorGlobalDofsRow[rowCount];
-                            AssignmentIt.second->GetFullVectorDouble()(globalRowDof) += elementVector(rowCount);
+                            iteratorOutput.second->GetFullVectorDouble()(globalRowDof) += elementVector->GetValue(rowCount);
                         }
+
                         break;
                     }
+
+
                     default:
                     {
-                        throw MechanicsException("[NuTo::Structure::Evaluate] Unhandled element output.");
+                        throw NuTo::MechanicsException("[NuTo::Structure::Evaluate] Output request not implemented.");
                     }
                 }
             }
+
+//            for(auto AssignmentIt : AssignmentMap)
+//            {
+//                // Needed by Vectors and matrices as well
+//                std::vector<int>& elementVectorGlobalDofsRow(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
+
+//                switch(AssignmentIt.first)
+//                {
+//                    case Element::HESSIAN_0_TIME_DERIVATIVE:
+//                    case Element::HESSIAN_1_TIME_DERIVATIVE:
+//                    case Element::HESSIAN_2_TIME_DERIVATIVE:
+//                    {
+//                        std::vector<int>& elementVectorGlobalDofsColumn(elementOutput.find(Element::GLOBAL_COLUMN_DOF)->second->GetVectorInt());
+
+//                        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& elementMatrix(elementOutput.find(AssignmentIt.first)->second->GetFullMatrixDouble());
+
+//                        assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementVectorGlobalDofsRow.size());
+//                        assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementVectorGlobalDofsColumn.size());
+
+//                        for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofsRow.size(); rowCount++)
+//                        {
+//                            int globalRowDof = elementVectorGlobalDofsRow[rowCount];
+//                            for (unsigned int colCount = 0; colCount < elementVectorGlobalDofsColumn.size(); colCount++)
+//                            {
+//                                int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
+
+//                                AssignmentIt.second->GetSparseMatrixDouble().AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+//                            }
+//                        }
+//                        break;
+//                    }
+
+//                    case Element::INTERNAL_GRADIENT:
+//                    {
+//                        NuTo::FullVector<double, Eigen::Dynamic>& elementVector(elementOutput.find(AssignmentIt.first)->second->GetFullVectorDouble());
+
+//                        assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofsRow.size());
+
+//                        // write element contribution to global vectors
+//                        for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofsRow.size(); rowCount++)
+//                        {
+//                            int globalRowDof = elementVectorGlobalDofsRow[rowCount];
+//                            AssignmentIt.second->GetFullVectorDouble()(globalRowDof) += elementVector(rowCount);
+//                        }
+//                        break;
+//                    }
+//                    default:
+//                    {
+//                        throw MechanicsException("[NuTo::Structure::Evaluate] Unhandled element output.");
+//                    }
+//                }
+//            }
+
+
         }
     }
 
-/*
-    // evaluate requests
-
-    for(int i=rRequestedOutput.size()-1; i>-1; i--)
-    {
-
-        // Get Iterator to requested output in output-map
-        auto OutputDataIterator = rStructureOutput.find(rRequestedOutput[i]);
-
-        std::shared_ptr<StructureOutputBase> OutputData;
-
-        // Check if output is already in the output-map and decide what to do if not
-        if(OutputDataIterator!=rStructureOutput.end())
-        {
-            OutputData = OutputDataIterator->second;
-        }
-        else
-        {
-            if(rAutoAddRequests)
-            {
-                // Try to make a new entry in map and evaluate the results
-                // Next command inserts into map and gets back an iterator to the inserted ressource as well as a bool that tells, if the insert was successfull (return as a std::pair<iterator,bool>)
-                //      This might look a little bit ugly, but it avoids another find() for the iterator and the check if iterator = map.end()
-                auto InsertResult = rStructureOutput.insert(std::pair<StructureEnum::eOutput,std::shared_ptr<StructureOutputBase>>(rRequestedOutput[i], std::make_shared<StructureOutputBase>()));
-                if (InsertResult.second)
-                {
-                    OutputDataIterator  = InsertResult.first;
-                    OutputData          = OutputDataIterator->second;
-                }
-                else
-                {
-                    throw NuTo::MechanicsException("[NuTo::Structure::Evaluate] Failed to insert new value into structure output map.");
-                }
-            }
-            else
-            {
-                throw NuTo::MechanicsException("[NuTo::Structure::Evaluate] No entry for requested output in output-map.");
-            }
-        }
-
-
-        // Allocate memory for vector/matrix and resize
-
-        switch(rRequestedOutput[i])
-        {
-            case NuTo::StructureEnum::eOutput::DAMPING:
-            case NuTo::StructureEnum::eOutput::MASS:
-            case NuTo::StructureEnum::eOutput::STIFFNESS:
-            {
-                OutputData->mMatrix = std::make_shared<SparseMatrixCSRGeneral>();
-                break;
-            }
-
-            default:
-            {
-                throw NuTo::MechanicsException("[NuTo::Structure::Evaluate] Output request not handled.");
-            }
-        }
-
-
-
-        rRequestedOutput.pop_back();
-    }
-
-*/
-
+#endif
 }
 
 //! @brief Builds the nonlocal data for integral type nonlocal constitutive models

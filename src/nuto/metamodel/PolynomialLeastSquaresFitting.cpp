@@ -75,9 +75,13 @@ void NuTo::PolynomialLeastSquaresFitting::BuildDerived()
             rhs(i) = mBoundaryConditions[i].second;
         }
         lhs.SetOneBasedIndexing();
+
+
         NuTo::SparseDirectSolverMUMPS Solver;
         Solver.SetShowTime(false);
+
         Solver.Solve(lhs,rhs,mPolynomialCoeffs);
+
     }
     catch(NuTo::Exception& e)
     {

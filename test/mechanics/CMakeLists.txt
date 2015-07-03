@@ -223,6 +223,15 @@ ADD_TEST(c::mechanics::NonlocalDamagePlasticityModel ${CMAKE_CURRENT_BUILD_DIR}/
     TARGET_LINK_LIBRARIES(InterpolationTypes ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
   ENDIF(MUMPS_FOUND)
   ADD_TEST(c::mechanics::InterpolationTypes ${CMAKE_CURRENT_BUILD_DIR}/InterpolationTypes)
+
+
+    # structure evaluate
+  ADD_EXECUTABLE(StructureEvaluate StructureEvaluate.cpp)
+    TARGET_LINK_LIBRARIES(StructureEvaluate NuToMechanics NuToMath NuToBase)
+    ADD_TEST(c::mechanics::StructureEvaluate ${CMAKE_CURRENT_BUILD_DIR}/StructureEvaluate)
+  IF(MINGW)
+    SET_TARGET_PROPERTIES(StructureEvaluate PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  ENDIF(MINGW)
   
 ENDIF(ENABLE_C++_TESTS)
   

@@ -16,17 +16,13 @@ public:
 
     virtual ~StructureOutputBase();
 
-    virtual std::shared_ptr<SparseMatrixCSRVector2<double>>& GetPtrSparseMatrixCSRVector2Double();
+    virtual SparseMatrix<double>& GetSparseMatrixDouble();
 
-    virtual FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixDouble();
-
-    virtual FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixInt();
+    virtual SparseMatrix<double>& GetSparseMatrixDouble(StructureEnum::eSubMatrix rSubmatrixEnum);
 
     virtual FullVector<double,Eigen::Dynamic>& GetFullVectorDouble();
 
-    virtual FullVector<int,Eigen::Dynamic>& GetFullVectorInt();
-
-    virtual std::vector<int>& GetVectorInt();
+    virtual int GetNumSubmatrices() const = 0;
 
     virtual void SetSymmetry(bool rSymmetric);
 
