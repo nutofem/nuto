@@ -31,6 +31,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/sections/SectionBase.h"
+#include "nuto/mechanics/sections/SectionTruss.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 
 #include "nuto/math/FullMatrix.h"
@@ -418,7 +419,10 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
 
             double detJacobian = CalculateJacobian(derivativeShapeFunctionsGeometryNatural, nodalValues[Node::COORDINATES]);
 
-            double factor = detJacobian * mSection->GetArea() * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP));
+            const Eigen::VectorXd shapeFunctionsAtIp = mInterpolationType->Get(Node::COORDINATES).GetShapeFunctions(theIP);
+            const Eigen::VectorXd globalIPCoordinate = nodalValues[Node::COORDINATES]*shapeFunctionsAtIp;
+
+            double factor = detJacobian * mSection->GetArea() * mSection->AsSectionTruss()->GetAreaFactor(globalIPCoordinate[0]) * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP));
 
             // calculate shape functions and their derivatives
             for (auto dof : dofs)
