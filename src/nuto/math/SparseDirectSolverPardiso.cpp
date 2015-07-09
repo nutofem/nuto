@@ -2,6 +2,8 @@
 
 #include <ctime>
 
+#include <omp.h>
+
 #include "nuto/math/MathException.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/FullVector.h"
