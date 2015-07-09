@@ -154,20 +154,20 @@ void NuTo::TimeIntegrationBase::CalculateExternalLoad(StructureBase& rStructure,
 		for (int count=0; count<rStructure.GetNumLoadCases(); count++)
 		{
 			rStructure.BuildGlobalExternalLoadVector(count,tmp_j,tmp_k);
-			std::cout<<"TIB_CEL1, mTimeDeoendentLoadCase = " << mTimeDependentLoadCase << std::endl;
+			mStructure->GetLogger()<<"TIB_CEL1, mTimeDeoendentLoadCase = " << mTimeDependentLoadCase << "\n";
 			if (count==mTimeDependentLoadCase)
 			{
-				std::cout << "TIB TimeDependent" << std::endl;
+			    mStructure->GetLogger() << "TIB TimeDependent \n";
 				mLoadVectorTimeDependent_j=tmp_j;
 				mLoadVectorTimeDependent_k=tmp_k;
 			}
 			else
 			{
-				std::cout << "TIB Static" << std::endl;
+			    mStructure->GetLogger() << "TIB Static \n";
 				mLoadVectorStatic_j+=tmp_j;
 				mLoadVectorStatic_k+=tmp_k;
 			}
-			std::cout << "sum of loads for loadcase " << count << " is " << tmp_j.ColumnwiseSum() + tmp_k.ColumnwiseSum() << std::endl;
+			mStructure->GetLogger() << "sum of loads for loadcase " << count << " is " << tmp_j.ColumnwiseSum() + tmp_k.ColumnwiseSum() << "\n";
 		}
 	}
 
@@ -293,8 +293,6 @@ int NuTo::TimeIntegrationBase::AddResultGroupNodeForce(const std::string& rResul
 		resultNumber++;
 		it = mResultMap.find(resultNumber);
 	}
-
-	std::cout << "check if group exists " << std::endl;
 
 	mResultMap.insert(resultNumber, new ResultGroupNodeForce(rResultStr, rGroupNodeId));
 

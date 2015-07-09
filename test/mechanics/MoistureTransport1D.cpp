@@ -269,8 +269,8 @@ int main()
         ElementNodeNumbers.Resize(1);
         ElementNodeNumbers(0) = 0;
 
-        auto BoundaryElementIDs = MTStructure1D.BoundaryElementsCreate(elemGroupBoundary,nodeGroupBoundary);
-
+        int groupBoundaryElements = MTStructure1D.BoundaryElementsCreate(elemGroupBoundary,nodeGroupBoundary);
+        auto BoundaryElementIDs = MTStructure1D.GroupGetMemberIds(groupBoundaryElements);
         for (int i=0; i<BoundaryElementIDs.GetNumRows(); i++)
         {
             MTStructure1D.ElementGetElementPtr(BoundaryElementIDs(i))->SetBoundaryRelativeHumidity(BC_RelativeHumidity);

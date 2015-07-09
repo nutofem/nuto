@@ -406,7 +406,8 @@ void GradientDamage1D()
     assert(myStructure.GroupGetNumMembers(elemGroupBoundary) == 2);
 
     NuTo::BoundaryType::eType boundaryConditionType = NuTo::BoundaryType::ROBIN_INHOMOGENEOUS;
-    NuTo::FullVector<int, Eigen::Dynamic> boundaryElementIds = myStructure.BoundaryElementsCreate(elemGroupBoundary, nodeGroupBoundary);
+    int gBoundaryElements = myStructure.BoundaryElementsCreate(elemGroupBoundary, nodeGroupBoundary);
+    auto boundaryElementIds = myStructure.GroupGetMemberIds(gBoundaryElements);
     for (int iBoundaryElement = 0; iBoundaryElement < boundaryElementIds.GetNumRows(); ++iBoundaryElement)
     {
         NuTo::BoundaryElement1D* boundaryElement = myStructure.ElementGetElementPtr(boundaryElementIds.GetValue(iBoundaryElement))->AsBoundaryElement1D();
@@ -531,7 +532,8 @@ void GradientDamage2D()
     assert(myStructure.GroupGetNumMembers(elemGroupBoundary) == 2 * numElementsY);
 
     NuTo::BoundaryType::eType boundaryConditionType = NuTo::BoundaryType::ROBIN_INHOMOGENEOUS;
-    NuTo::FullVector<int, Eigen::Dynamic> boundaryElementIds = myStructure.BoundaryElementsCreate(elemGroupBoundary, nodeGroupBoundary);
+    int gBoundaryElements = myStructure.BoundaryElementsCreate(elemGroupBoundary, nodeGroupBoundary);
+    auto boundaryElementIds = myStructure.GroupGetMemberIds(gBoundaryElements);
     for (int iBoundaryElement = 0; iBoundaryElement < boundaryElementIds.GetNumRows(); ++iBoundaryElement)
     {
         NuTo::BoundaryElement2D* boundaryElement = myStructure.ElementGetElementPtr(boundaryElementIds.GetValue(iBoundaryElement))->AsBoundaryElement2D();

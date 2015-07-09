@@ -435,11 +435,11 @@ public:
 //    NuTo::Element::eElementType ElementTypeGetEnum(const std::string& rElementType);
 #endif //SWIG
 
-    //! @brief creates boundary elements
+    //! @brief creates boundary elements and add them to an element group
     //! @param rElementGroupId ... group id including the base elements
     //! @param rNodeGroupId ... node group id that includes the surface nodes
-    //! @return ... ids of the created boundary elements
-    NuTo::FullVector<int, Eigen::Dynamic> BoundaryElementsCreate(int rElementGroupId, int rNodeGroupId);
+    //! @return ... ids of the created boundary element group
+    int BoundaryElementsCreate(int rElementGroupId, int rNodeGroupId);
 
 
 #ifndef SWIG

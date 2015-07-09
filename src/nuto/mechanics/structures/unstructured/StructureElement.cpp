@@ -709,11 +709,11 @@ int NuTo::Structure::ElementsCreate(int rInterpolationTypeId, NuTo::FullMatrix<i
     return newElementGroup;
 }
 
-//! @brief creates boundary elements
+//! @brief creates boundary elements and add them to an element group
 //! @param rElementGroupId ... group id including the base elements
 //! @param rNodeGroupId ... node group id that includes the surface nodes
-//! @return ... ids of the created boundary elements
-NuTo::FullVector<int, Eigen::Dynamic> NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupId)
+//! @return ... ids of the created boundary element group
+int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupId)
 {
 #ifdef SHOW_TIME
     std::clock_t start, end;
@@ -844,7 +844,9 @@ NuTo::FullVector<int, Eigen::Dynamic> NuTo::Structure::BoundaryElementsCreate(in
 
     }
 
-    NuTo::FullVector<int, Eigen::Dynamic> boundaryElementIds(newBoundaryElementIds);
+    int boundaryElementGroup = GroupCreate(Groups::Elements);
+    for (int boundaryElementId : newBoundaryElementIds)
+        GroupAddElement(boundaryElementGroup, boundaryElementId);
 
 #ifdef SHOW_TIME
     end = clock();
@@ -852,7 +854,7 @@ NuTo::FullVector<int, Eigen::Dynamic> NuTo::Structure::BoundaryElementsCreate(in
         std::cout << "[NuTo::Structure::BoundaryElementsCreate] " << difftime(end, start) / CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 
-    return boundaryElementIds;
+    return boundaryElementGroup;
 }
 
 //! @brief Deletes a group of elements element

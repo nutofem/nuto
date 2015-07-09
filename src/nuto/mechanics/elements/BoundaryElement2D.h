@@ -63,6 +63,9 @@ public:
     //! @brief cast the base pointer to an BoundaryElement1D, otherwise throws an exception
     BoundaryElement2D* AsBoundaryElement2D() override;
 
+    //! @brief returns true, if the boundary conditions are fulfilled, post-processing
+    bool IsBoundaryConditionFulfilled() const;
+
 protected:
     //! @brief ... just for serialization
     BoundaryElement2D()

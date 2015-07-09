@@ -233,7 +233,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             residual_mod=prevResidual_j;
         }
 
-        std::cout << "residual in initial configuration " << residual_mod.Norm() << std::endl;
+        mStructure->GetLogger() << "residual in initial configuration " << residual_mod.Norm() << "\n";
         if (residual_mod.Norm()>mToleranceForce)
             throw MechanicsException("[NuTo::NewmarkDirect::Solve] Initial configuration is not in (dynamic) equilibrium.");
 
@@ -386,7 +386,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 				residual_mod = residual_j - CmatT*residual_k;
 			}
 			//std::cout << "expected rhs for trial state\n" << residual_mod.transpose() << std::endl<< std::endl;
-			std::cout << "norm of predicted residual in trial state:" << residual_mod.Norm() << std::endl<< std::endl;
+			mStructure->GetLogger() << "norm of predicted residual in trial state:" << residual_mod.Norm() << "\n";
 
 			//calculate stiffness and disp force vector (the displacements of the dependent dofs do not take into account the modified rhs)
 			if (numEntriesCMat>0)

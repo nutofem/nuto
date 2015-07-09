@@ -36,7 +36,7 @@
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/sections/SectionEnum.h"
 
-#define MAX_OMEGA 0.99
+#define MAX_OMEGA 0.999
 //#define ENABLE_DEBUG
 
 NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress() :
