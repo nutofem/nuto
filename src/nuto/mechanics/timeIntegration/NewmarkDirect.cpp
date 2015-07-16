@@ -82,14 +82,32 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 #endif
     start=clock();
 #endif
+
+//#ifdef _OPENMP
+//    int numThreads = 4;
+//    mStructure->SetNumProcessors(numThreads);
+//#if defined HAVE_PARDISO
+//    NuTo::SparseDirectSolverPardiso mySolver(numThreads);
+//#else
+//    NuTo::SparseDirectSolverMUMPS mySolver;
+//#endif // PARDISO
+//#else
+//    NuTo::SparseDirectSolverMUMPS mySolver;
+//#endif // OPENMP
+
     //allocate solver
     NuTo::SparseDirectSolverMUMPS mySolver;
-    //NuTo::SparseDirectSolverMKLPardiso mySolver;
+//    NuTo::SparseDirectSolverPardiso mySolver(4);
+
+//    NuTo::SparseDirectSolverMKLPardiso mySolver;
+//    mySolver.SetVerboseLevel(3);
 #ifdef SHOW_TIME
         mySolver.SetShowTime(mStructure->GetShowTime());
 #endif
     try
     {
+    	NuTo::Error::eError Error;
+
         if (mMaxTimeStep==0)
             throw MechanicsException("[NuTo::NewmarkDirect::Solve] max time step is set to zero.");
 
@@ -281,14 +299,20 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             plotVector0.AppendColumns(reactionForce);
         }
 */
-        std::ofstream DamageFile;
-        DamageFile.open("DamageJump.txt", std::ios::app);
-    	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // bulo ElementGetElementPtr(9) dlya Brick8N and ElementGetElementPtr(141) dlya Brick8Nhole;
+//        std::ofstream DamageFile;
+//        DamageFile.open("DamageJump.txt", std::ios::app);
+//    	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // bulo ElementGetElementPtr(9) dlya Brick8N and ElementGetElementPtr(141) dlya Brick8Nhole;
 
         PostProcess(prevResidual_j, prevResidual_k);
 
 
         double timeStep = mTimeStep;
+
+        // the minimal time step defined, which is equivalent to six cut-backs
+        if (mAutomaticTimeStepping) {
+			SetMinTimeStep(mMinTimeStep > 0. ? mMinTimeStep : mTimeStep*pow(0.5,6.));
+        }
+
         while (curTime < rTimeDelta)
         {
             //apply constraints for last converged time step
@@ -336,7 +360,19 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
 			//calculate the residual contribution from stiffness
 			stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();stiffMatrix_kj.SetZeroEntries();stiffMatrix_kk.SetZeroEntries();
-            mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk, stiffMatrix_kj, stiffMatrix_kk);
+            Error = mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk, stiffMatrix_kj, stiffMatrix_kk);
+
+            // if the stiffness evaluation is failed, go to the beginning of the while loop and decreases the time step
+    		if (Error != NuTo::Error::SUCCESSFUL && mAutomaticTimeStepping) {
+                curTime -= timeStep;
+                timeStep*=0.5;
+                if (timeStep < mMinTimeStep) {
+                    mStructure->GetLogger() << "The minimal time step achieved, the actual time step is " << timeStep << "\n";
+                    throw MechanicsException("[NuTo::NewmarkDirect::Solve] no convergence, the current time step is too short.");
+                }
+    			continue;
+    		}
+
 			residual_j += stiffMatrix_jk * deltaBRHS;
 			if (mStructure->GetNumTimeDerivatives()>1)
 			{
@@ -427,7 +463,18 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 			else
 			{
 				stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();
-                mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk);
+                Error = mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk);
+
+                // if the stiffness evaluation is failed, go to the beginning of the while loop and decreases the time step
+        		if (Error != NuTo::Error::SUCCESSFUL && mAutomaticTimeStepping) {
+                    curTime -= timeStep;
+                    timeStep*=0.5;
+                    if (timeStep < mMinTimeStep) {
+                        mStructure->GetLogger() << "The minimal time step achieved, the actual time step is " << timeStep << "\n";
+                        throw MechanicsException("[NuTo::NewmarkDirect::Solve] no convergence, the current time step is too short.");
+                    }
+        			continue;
+        		}
 
 				//calculate the residual for the zero time step
 				residual_j += stiffMatrix_jk * deltaBRHS;
@@ -530,7 +577,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                 if (numEntriesCMat>0)
                 {
                     stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();stiffMatrix_kj.SetZeroEntries();stiffMatrix_kk.SetZeroEntries();
-                    mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk, stiffMatrix_kj, stiffMatrix_kk);
+                    Error = mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk, stiffMatrix_kj, stiffMatrix_kk);
                     if (mStructure->GetNumTimeDerivatives()>1)
                     {
                         //add damping and mass to full hessian
@@ -552,7 +599,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                 else
                 {
                     stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();
-                    mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk);
+                    Error = mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk);
 
                     if (mStructure->GetNumTimeDerivatives()>1)
                     {
@@ -569,6 +616,11 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                         }
                     }
                 }
+
+                // if the stiffness evaluation is failed, leaves the while loop and decreases the time step
+        		if (Error != NuTo::Error::SUCCESSFUL && mAutomaticTimeStepping) {
+        			break;
+        		}
 
                 if (mCheckCoefficientMatrix)
                 {
@@ -869,7 +921,7 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
 				//perform Postprocessing
                 mStructure->GetLogger() << " *** PostProcess *** from NewMarkDirect \n";
 
-            	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // bulo ElementGetElementPtr(9) dlya Brick8N and ElementGetElementPtr(141) dlya Brick8Nhole;
+//            	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // bulo ElementGetElementPtr(9) dlya Brick8N and ElementGetElementPtr(141) dlya Brick8Nhole;
 
                 PostProcess(prevResidual_j, prevResidual_k);
 
@@ -891,6 +943,10 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
                     //no convergence, reduce the time step and start from scratch
                     curTime -= timeStep;
                     timeStep*=0.5;
+                    if (timeStep < mMinTimeStep) {
+                        mStructure->GetLogger() << "The minimal time step achieved, the actual time step is " << timeStep << "\n";
+                        throw MechanicsException("[NuTo::NewmarkDirect::Solve] no convergence, the current time step is too short.");
+                    }
                 }
                 else
                 {
@@ -898,7 +954,7 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
                 }
             }
         }
-        DamageFile.close();
+//        DamageFile.close();
     }
     catch (MechanicsException& e)
     {

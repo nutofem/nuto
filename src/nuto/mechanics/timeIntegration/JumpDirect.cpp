@@ -1592,13 +1592,13 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
 //        throw MechanicsException("[NuTo::JumpDirect::Solve] Configuration after the extrapolation jump is not in (dynamic) equilibrium.");
 //    }
 
-    std::ofstream DamageFile;
-    DamageFile.open("DamageJump.txt", std::ios::app);
+//    std::ofstream DamageFile;
+//    DamageFile.open("DamageJump.txt", std::ios::app);
 
     if (rIncludePostProcess){
     	mTime = curTime;
     	NuTo::NewmarkDirect::PostProcess(prevResidual_j, prevResidual_k);
-    	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
+//    	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
 	}
 
     // iterate over the increments within the cycle
@@ -1703,7 +1703,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
 
         	std::cout << " Cyclic increment " << incr << std::endl;
         	NuTo::NewmarkDirect::PostProcess(prevResidual_j, prevResidual_k);
-        	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
+//        	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
 
             // update previous BC and displacements
         	bRHSprev = bRHSend;
@@ -1721,7 +1721,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
         // update structure time
         mStructure->SetPrevTime(curTime);
 	}
-    DamageFile.close();
+//    DamageFile.close();
 }
 
 

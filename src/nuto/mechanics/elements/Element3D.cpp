@@ -243,6 +243,26 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     }
                 }
                 break;
+			case Element::INTERNAL_GRADIENT_ELASTIC:
+				it->second->GetFullVectorDouble().Resize(numActiveDofs);
+				for (auto dof : activeDofs)
+				{
+					switch (dof)
+					{
+					case Node::DISPLACEMENTS:
+					{
+						constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_STRESS_ELASTIC_3D] = &(engineeringStress3D);
+                    }
+					break;
+					default:
+						throw MechanicsException(
+								"[NuTo::Element3D::Evaluate] Constitutive output INTERNAL_GRADIENT for " + Node::AttributeToString(dof)
+						+ " not implemented.");
+
+                    }
+				}
+
+				break;
             case Element::HESSIAN_0_TIME_DERIVATIVE:
             {
                 it->second->GetFullMatrixDouble().Resize(numActiveDofs, numActiveDofs);
@@ -296,6 +316,30 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                 }
             }
                 break;
+			case Element::HESSIAN_0_TIME_DERIVATIVE_ELASTIC:
+				{
+					it->second->GetFullMatrixDouble().Resize(numActiveDofs,numActiveDofs);
+	                it->second->GetFullMatrixDouble().setZero();
+					it->second->SetSymmetry(true);
+					it->second->SetConstant(true);
+	                for (auto dof : activeDofs)
+	                {
+	                    switch (dof)
+	                    {
+	                    case Node::DISPLACEMENTS:
+	                    {
+	                        constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_3D] = &tangentStressStrain;
+	                    }
+	                        break;
+	                    default:
+	                        throw MechanicsException(
+	                                "[NuTo::Element3D::Evaluate] Constitutive output HESSIAN_0_TIME_DERIVATIVE for " + Node::AttributeToString(dof)
+	                                        + " not implemented.");
+
+	                    }
+	                }
+				}
+				break;
             case Element::HESSIAN_1_TIME_DERIVATIVE:
                 it->second->GetFullMatrixDouble().Resize(numActiveDofs, numActiveDofs);
                 it->second->SetSymmetry(true);
@@ -349,6 +393,15 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
             case Element::UPDATE_TMP_STATIC_DATA:
                 constitutiveOutputList[NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA] = 0;
                 break;
+			case Element::FATIGUE_SAVE_STATIC_DATA:
+				constitutiveOutputList[NuTo::Constitutive::Output::FATIGUE_SAVE_STATIC_DATA] = 0;
+			break;
+			case Element::FATIGUE_RESTORE_STATIC_DATA:
+				constitutiveOutputList[NuTo::Constitutive::Output::FATIGUE_RESTORE_STATIC_DATA] = 0;
+			break;
+			case Element::FATIGUE_EXTRAPOLATE_STATIC_DATA:
+				constitutiveOutputList[NuTo::Constitutive::Output::FATIGUE_EXTRAPOLATE_STATIC_DATA] = 0;
+			break;
             case Element::IP_DATA:
                 switch (it->second->GetIpDataType())
                 {
@@ -577,6 +630,29 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     }
                 }
                     break;
+				case Element::INTERNAL_GRADIENT_ELASTIC:
+				{
+					// Jacobian
+                    double factor(fabs(detJacobian * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))));
+                    for (auto dof : activeDofs)
+                    {
+                        int startIndex = mInterpolationType->Get(dof).GetLocalStartIndex();
+                        switch (dof)
+                        {
+                        case Node::DISPLACEMENTS:
+                        {
+                            AddDetJBtSigma(derivativeShapeFunctions.at(dof), engineeringStress3D, factor, startIndex, it->second->GetFullVectorDouble());
+                        }
+                            break;
+                        default:
+                            throw MechanicsException(
+                                    "[NuTo::Element3D::Evaluate] Element output INTERNAL_GRADIENT_ELASTIC for " + Node::AttributeToString(dof)
+                                            + " not implemented.");
+
+                        }
+                    }
+				}
+					break;
                 case Element::HESSIAN_0_TIME_DERIVATIVE:
                 {
                     //factor for the numerical integration
@@ -770,6 +846,35 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     }
                 }
                     break;
+				case Element::HESSIAN_0_TIME_DERIVATIVE_ELASTIC:
+                {
+                    //factor for the numerical integration
+                    double factor(detJacobian * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
+                    if (tangentStressStrain.GetConstant() == false)
+                        it->second->SetConstant(false);
+                    if (tangentStressStrain.GetSymmetry() == false)
+                        it->second->SetSymmetry(false);
+
+                    for (auto dof : activeDofs)
+                    {
+                        int startIndex = mInterpolationType->Get(dof).GetLocalStartIndex();
+                        switch (dof)
+                        {
+                        case Node::DISPLACEMENTS:
+                        {
+                            AddDetJBtCB(derivativeShapeFunctions.at(dof), tangentStressStrain, factor, startIndex, startIndex,
+                                    it->second->GetFullMatrixDouble());
+                        }
+                            break;
+                        default:
+                            throw MechanicsException(
+                                    "[NuTo::Element3D::Evaluate] Element output HESSIAN_0_TIME_DERIVATIVE_ELASTIC for " + Node::AttributeToString(dof)
+                                            + " not implemented.");
+
+                        }
+                    }
+                }
+					break;
                 case Element::HESSIAN_1_TIME_DERIVATIVE:
                 {
                 //factor for the numerical integration
@@ -969,6 +1074,12 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                 case Element::UPDATE_STATIC_DATA:
                 case Element::UPDATE_TMP_STATIC_DATA:
                     break;
+				case Element::FATIGUE_SAVE_STATIC_DATA:
+				break;
+				case Element::FATIGUE_RESTORE_STATIC_DATA:
+				break;
+				case Element::FATIGUE_EXTRAPOLATE_STATIC_DATA:
+				break;
                 case Element::IP_DATA:
                     switch (it->second->GetIpDataType())
                     {

@@ -923,8 +923,9 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
         catch (...)
         {
             rLogger << "[NuTo::DamageViscoPlasticityHardeningEngineeringStress::ReturnMapping3D] No convergence after MAXITS steps, check the Newton." << "\n";
+//Fatigue   std::cout << " Element " << rElement->ElementGetId() << ", Ip " << rIp << std::endl;
 
-            return Error::NO_CONVERGENCE;
+//          return Error::NO_CONVERGENCE;
         }
 
         // calculate inelastic solution

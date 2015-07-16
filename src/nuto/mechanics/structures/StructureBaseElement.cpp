@@ -1818,7 +1818,7 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
     return errorGlobal;
 }
 
-//! @brief saves static data of a all elements
+//! @brief saves static data of all elements
 NuTo::Error::eError NuTo::StructureBase::ElementFatigueSaveStaticData()
 {
 #ifdef SHOW_TIME
