@@ -89,6 +89,8 @@ void NuTo::IntegrationType0DBoundary::GetVisualizationCells(
 //    VisualizationCellsIP.push_back(3);
 }
 
+#endif // ENABLE_VISUALIZE
+
 bool NuTo::IntegrationType0DBoundary::CheckElementCompatibility(
         NuTo::Element::eElementType rElementType) const
 {
@@ -105,4 +107,4 @@ bool NuTo::IntegrationType0DBoundary::CheckElementCompatibility(
     }
 }
 
-#endif // ENABLE_VISUALIZE
+

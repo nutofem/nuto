@@ -198,6 +198,7 @@ try
     DirectionXY.SetValue(1,0,1.0);
 
      //export the initial plot
+#ifdef ENABLE_VISUALIZE
 	boost::filesystem::path resultFile;
 	resultFile = resultDir;
 	resultFile /= std::string("ElementOutput2D_0")+std::string(".vtk");
@@ -205,6 +206,7 @@ try
 	resultFile = resultDir;
 	resultFile /= std::string("ParticleOutput2D_0")+std::string(".vtk");
 	myStructure.ExportVtkDataFileNodes(resultFile.string());
+#endif // ENABLE_VISUALIZE
 
 	myStructure.Info();
 

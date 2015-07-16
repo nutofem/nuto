@@ -166,11 +166,6 @@ public:
     //! @brief ... clear all visualization components
     void ClearVisualizationComponents();
 
-#ifndef SWIG
-    //! @brief ... evaluates the structur
-    virtual void Evaluate(std::map<StructureEnum::eOutput, StructureOutputBase*> &rStructureOutput);
-#endif // SWIG
-
     //! @brief ... export the entire structure to Vtk data file
     //! @param rFileName ... file name
     //! @param rWhat ... string which describes what to plot
@@ -222,6 +217,11 @@ public:
 
 #endif //SWIG
 #endif // ENABLE_VISUALIZE
+
+#ifndef SWIG
+    //! @brief ... evaluates the structur
+    virtual void Evaluate(std::map<StructureEnum::eOutput, StructureOutputBase*> &rStructureOutput);
+#endif // SWIG
 
     //@brief determines the maximum independent sets and stores it at the structure
     // is only relevant for openmp, otherwise the routine is just empty

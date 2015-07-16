@@ -551,8 +551,11 @@ int main()
 
         //dis.Info(12,5,true);
 */
+#ifdef ENABLE_VISUALIZE
         MTStructure1D.AddVisualizationComponentRelativeHumidity();
         MTStructure1D.AddVisualizationComponentWaterVolumeFraction();
+#endif // ENABLE_VISUALIZE
+
 
         NuTo::CrankNicolsonEvaluate TimeIntegrationScheme(&MTStructure1D);
 
@@ -586,8 +589,10 @@ int main()
 
         if(UseVisualization)
         {
+#ifdef ENABLE_VISUALIZE
             mkdir(VTKFolder.c_str(),0777);
             MTStructure1D.ExportVtkDataFileElements(VTKFolder+"/"+VTKFile,false);
+#endif //ENABLE_VISUALIZE
         }
 
         // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

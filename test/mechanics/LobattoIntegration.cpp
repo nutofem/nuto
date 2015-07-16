@@ -167,11 +167,13 @@ int buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
     std::cout << "Solver not available - can't solve system of equations " << std::endl;
 #endif
 
+#ifdef ENABLE_VISUALIZE
     // visualize results
     myStructure.AddVisualizationComponentDisplacements();
     myStructure.AddVisualizationComponentEngineeringStrain();
     myStructure.AddVisualizationComponentEngineeringStress();
     myStructure.ExportVtkDataFile("LobattoTruss1D2N.vtk");
+#endif // ENABLE_VISUALIZE
 
     double DisplacementCorrect = (Force*Length)/(Area*YoungsModulus);
 

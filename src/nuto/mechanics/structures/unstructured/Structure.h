@@ -150,7 +150,7 @@ public:
 
 #ifndef SWIG
     //! @brief ... evaluates the structur
-    virtual void Evaluate(std::map<StructureEnum::eOutput, StructureOutputBase *> &rStructureOutput) override;
+    virtual void Evaluate(std::map<StructureEnum::eOutput, StructureOutputBase*>& rStructureOutput) override;
 #endif
 
 

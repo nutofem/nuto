@@ -747,6 +747,7 @@ void Check1D2D()
 
     myStructure2D.ConstraintLinearSetDisplacementNode(0, directionY, 0.);
 
+#ifdef ENABLE_VISUALIZE
     myStructure1D.AddVisualizationComponentDisplacements();
     myStructure1D.AddVisualizationComponentEngineeringStrain();
     myStructure1D.AddVisualizationComponentEngineeringStress();
@@ -765,6 +766,7 @@ void Check1D2D()
     myStructure2D.NodeBuildGlobalDofs();
     myStructure1D.CalculateMaximumIndependentSets();
     myStructure2D.CalculateMaximumIndependentSets();
+#endif //ENABLE_VISUALIZE
 
     NuTo::NewmarkDirect myIntegrationScheme1D(&myStructure1D);
     NuTo::NewmarkDirect myIntegrationScheme2D(&myStructure2D);

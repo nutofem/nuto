@@ -703,13 +703,6 @@ void NuTo::StructureBase::ClearVisualizationComponents()
 #endif
 }
 
-//! @brief ... evaluates the structur
-void NuTo::StructureBase::Evaluate(std::map<StructureEnum::eOutput, StructureOutputBase *> &rStructureOutput)
-{
-    throw MechanicsException("[NuTo::StructureBase::Evaluate] Not implemented.");
-}
-
-
 void NuTo::StructureBase::ExportVtkDataFile(const std::string& rFileName)
 {
     mLogger<<"[NuTo::StructureBase::ExportVtkDataFile] this routine is deprecated, use ExportVtkDataFileElements instead." << "\n";
@@ -920,6 +913,14 @@ void NuTo::StructureBase::DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVi
 
 
 #endif // ENABLE_VISUALIZE
+
+
+//! @brief ... evaluates the structur
+void NuTo::StructureBase::Evaluate(std::map<StructureEnum::eOutput, StructureOutputBase *> &rStructureOutput)
+{
+    throw MechanicsException("[NuTo::StructureBase::Evaluate] Not implemented.");
+}
+
 
 void NuTo::StructureBase::BuildGlobalCoefficientMatrixCheck()
 {

@@ -274,11 +274,14 @@ try
     myStructure.ElementTotalUpdateTmpStaticData();
 	resultFile = resultDir;
 	resultFile /= std::string("ElementOutput2D_0")+std::string(".vtk");
+#ifdef ENABLE_VISUALIZE
 	myStructure.ExportVtkDataFileElements(resultFile.string());
+#endif
 	resultFile = resultDir;
 	resultFile /= std::string("NodeOutput2D_0")+std::string(".vtk");
+#ifdef ENABLE_VISUALIZE
 	myStructure.ExportVtkDataFileNodes(resultFile.string());
-
+#endif
 	myStructure.Info();
 
 	NuTo::NewmarkDirect myIntegrationScheme(&myStructure);

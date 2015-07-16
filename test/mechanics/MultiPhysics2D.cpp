@@ -408,8 +408,10 @@ int main()
         // Time Integration
         // %%%%%%%%%%%%%%%%
 
+#ifdef ENABLE_VISUALIZE
         myStructure.AddVisualizationComponentRelativeHumidity();
         myStructure.AddVisualizationComponentWaterVolumeFraction();
+#endif // ENABLE_VISUALIZE
 
         NuTo::CrankNicolsonEvaluate TimeIntegrationScheme(&myStructure);
 

@@ -127,11 +127,13 @@ int main()
     myStructure.CalculateMaximumIndependentSets();
 
 	// visualize results
+#ifdef ENABLE_VISUALIZE
 	myStructure.AddVisualizationComponentNonlocalWeights(myElement1,0);
 	myStructure.AddVisualizationComponentNonlocalWeights(myElement2,0);
 	myStructure.AddVisualizationComponentNonlocalWeights(myElement2,1);
 	myStructure.AddVisualizationComponentNonlocalWeights(myElement2,2);
 	myStructure.AddVisualizationComponentNonlocalWeights(myElement2,3);
+#endif // ENABLE_VISUALIZE
 	myStructure.ElementTotalUpdateTmpStaticData();
 	//myStructure.ExportVtkDataFileElements("PlaneNonlocalWeights.vtk");
 
@@ -289,13 +291,14 @@ int main()
 			throw NuTo::Exception("Error calling NonlocalDamagePlasticity.");
 		}
     }
-
+#ifdef ENABLE_VISUALIZE
 	myStructure.AddVisualizationComponentDisplacements();
 	myStructure.AddVisualizationComponentEngineeringStrain();
 	myStructure.AddVisualizationComponentEngineeringStress();
 	myStructure.AddVisualizationComponentDamage();
 	myStructure.AddVisualizationComponentEngineeringPlasticStrain();
 	myStructure.ExportVtkDataFileElements("NonlocalDamagePlasticity.vtk");
+#endif // ENABLE_VISUALIZE
 
     }
     catch (NuTo::Exception& e)
