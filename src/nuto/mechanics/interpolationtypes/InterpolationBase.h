@@ -129,6 +129,9 @@ public:
     //! @brief returns the number of surfaces
     virtual int GetNumSurfaces() const = 0;
 
+    //! @brief return the number of dofs per node depending on dimension
+    virtual int GetNumDofsPerNode() const = 0;
+
 protected:
 
     //! @brief returns the natural coordinates of the nodes that span the surface
@@ -139,9 +142,6 @@ protected:
     //! @brief calculate and store the shape functions and their derivatives
     //! @param rIntegrationType ... integration type
     void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType);
-
-    //! @brief return the number of dofs per node depending on dimension
-    virtual int GetNumDofsPerNode() const = 0;
 
     //! @brief return the number node depending the shape and the order
     virtual int CalculateNumNodes() const = 0;

@@ -48,7 +48,12 @@ public:
     //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
     //! there is also a routine GetLocalDimension, which is e.g. 2 for plane elements and 1 for truss elements
     //! @return global dimension
-    int GetGlobalDimension()const override;
+    virtual int GetGlobalDimension()const override;
+
+    //! @brief returns the local dimension of the element
+    //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
+    //! @return local dimension
+    virtual int GetLocalDimension()const override;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
@@ -113,10 +118,10 @@ public:
                              const Eigen::MatrixXd& rNodeCoordinates)const;
 
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
-    const Eigen::VectorXi CalculateGlobalRowDofs() const;
+    virtual const Eigen::VectorXi CalculateGlobalRowDofs() const;
 
     //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
-    const Eigen::VectorXi CalculateGlobalColumnDofs() const;
+    virtual const Eigen::VectorXi CalculateGlobalColumnDofs() const;
 
     //! @brief calculates the deformation gradient in 1D
     //! @param rDerivativeShapeFunctionsLocal derivatives of the shape functions with respect to local coordinates (plane world coordinates)
@@ -132,7 +137,7 @@ public:
     //! @param rFactor factor including determinant of Jacobian and IP weight
     //! @param rRow row, where to start to add the submatrix
     //! @param rCoefficientMatrix to be added to
-    void AddDetJBtCB(const Eigen::MatrixXd& rDerivativeShapeFunctionsGlobal,
+    virtual void AddDetJBtCB(const Eigen::MatrixXd& rDerivativeShapeFunctionsGlobal,
                                   const ConstitutiveTangentLocal<1,1>& rConstitutiveTangent, double rFactor,
                                   int rRow, int rCol,
                                   FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoefficientMatrix)const;
@@ -143,7 +148,7 @@ public:
     //! @param factor factor including det Jacobian area and integration point weight
     //! @param rRow start row (in case of a multifield problem)
     //! @param rResult resforce vector
-    void AddDetJBtSigma(const Eigen::MatrixXd& rDerivativeShapeFunctionsGlobal,
+    virtual void AddDetJBtSigma(const Eigen::MatrixXd& rDerivativeShapeFunctionsGlobal,
                         const EngineeringStress1D& rEngineeringStress,
                         double factor,
                         int rRow,
@@ -294,10 +299,6 @@ protected:
     //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
     void CheckElement() override;
 
-
-
-
-private:
     std::vector<NodeBase*> mNodes;
 
     const SectionBase *mSection;

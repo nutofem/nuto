@@ -12,6 +12,7 @@
 #include "nuto/mechanics/interpolationtypes/Interpolation3DTetrahedron.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation3DBrick.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation1DTruss.h"
+#include "nuto/mechanics/interpolationtypes/Interpolation1DTrussIn2D.h"
 
 #include <boost/foreach.hpp>
 
@@ -60,6 +61,9 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eAttributes rDofType, Nu
     case Interpolation::eShapeType::TRUSS1D:
         newType = new Interpolation1DTruss(rDofType, rTypeOrder);
         break;
+    case Interpolation::eShapeType::TRUSS2D:
+        newType = new Interpolation1DTrussIn2D(rDofType, rTypeOrder);
+        break;
     case Interpolation::eShapeType::TRIANGLE2D:
         newType = new Interpolation2DTriangle(rDofType, rTypeOrder);
         break;
@@ -85,8 +89,7 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eAttributes rDofType, Nu
     {
         SetIsActive(false, rDofType);
         SetIsConstitutiveInput(false, rDofType);
-    }
-    else
+    } else
     {
         SetIsActive(true, rDofType);
         SetIsConstitutiveInput(true, rDofType);
@@ -236,17 +239,8 @@ void NuTo::InterpolationType::UpdateLocalStartIndices()
     // calculate local start indices
     // prescribe a specific order
 
-
-    std::vector<Node::eAttributes> orderedDofs({
-        Node::COORDINATES,
-        Node::DISPLACEMENTS,
-        Node::TEMPERATURES,
-        Node::NONLOCALEQPLASTICSTRAIN,
-        Node::NONLOCALEQSTRAIN,
-        Node::RELATIVEHUMIDITY,
-        Node::WATERVOLUMEFRACTION
-    });
-
+    std::vector<Node::eAttributes> orderedDofs(
+    { Node::COORDINATES, Node::DISPLACEMENTS, Node::TEMPERATURES, Node::NONLOCALEQPLASTICSTRAIN, Node::NONLOCALEQSTRAIN, Node::RELATIVEHUMIDITY, Node::WATERVOLUMEFRACTION });
 
     int currentStartIndex = 0;
     for (unsigned int i = 0; i < orderedDofs.size(); ++i)
@@ -404,14 +398,13 @@ const Eigen::MatrixX2i& NuTo::InterpolationType::GetNodeRenumberingIndices() con
 void NuTo::InterpolationType::UpdateNodeRenumberingIndices()
 {
     int numSwaps = 0;
-    mNodeRenumberingIndices.resize(0,2);
-
+    mNodeRenumberingIndices.resize(0, 2);
 
     // loop over all points i (with coordinates)
     const InterpolationBase& it = Get(Node::COORDINATES);
 
     // why -1? the last check is done for i=num-2 vs j=num-1
-    for (int i = 0; i < it.GetNumNodes()-1; ++i)
+    for (int i = 0; i < it.GetNumNodes() - 1; ++i)
     {
         // calculate swapped coordinates x_i --> x_i'
         const Eigen::VectorXd& x_i = it.GetNaturalNodeCoordinates(i);
@@ -419,34 +412,35 @@ void NuTo::InterpolationType::UpdateNodeRenumberingIndices()
 
         switch (mShapeType)
         {
-            case Interpolation::TRUSS1D:
-                // reflect at (0,0,0) n = (1,0,0)
-                x_i_prime = -x_i;
-                break;
-            case Interpolation::TRIANGLE2D:
-            case Interpolation::QUAD2D:
-            case Interpolation::TETRAHEDRON3D:
-            case Interpolation::BRICK3D:
-                // reflect at (0,0,0) n = (1,-1,0)
-                x_i_prime[0] = x_i[1];
-                x_i_prime[1] = x_i[0];
-                break;
-            default:
-                throw NuTo::MechanicsException("[NuTo::InterpolationType::UpdateNodeRenumberingIndices] not implemented for " + Interpolation::ShapeTypeToString(mShapeType));
+        case Interpolation::TRUSS1D:
+        case Interpolation::TRUSS2D:
+            // reflect at (0,0,0) n = (1,0,0)
+            x_i_prime = -x_i;
+            break;
+        case Interpolation::TRIANGLE2D:
+        case Interpolation::QUAD2D:
+        case Interpolation::TETRAHEDRON3D:
+        case Interpolation::BRICK3D:
+            // reflect at (0,0,0) n = (1,-1,0)
+            x_i_prime[0] = x_i[1];
+            x_i_prime[1] = x_i[0];
+            break;
+        default:
+            throw NuTo::MechanicsException("[NuTo::InterpolationType::UpdateNodeRenumberingIndices] not implemented for " + Interpolation::ShapeTypeToString(mShapeType));
         }
 
         // find a point j != i with x_j == x_i'
 
         // why j = i+1? to avoid the case i==j and to avoid duplicated entries [i,j] and [j,i]
-        for (int j = i+1; j < it.GetNumNodes(); ++j)
+        for (int j = i + 1; j < it.GetNumNodes(); ++j)
         {
             const auto& x_j = it.GetNaturalNodeCoordinates(j);
             if (CoordinatesAreEqual(x_i_prime, x_j))
             {
                 // store i and j as swap pairs
-                mNodeRenumberingIndices.conservativeResize(numSwaps+1,2);
-                mNodeRenumberingIndices(numSwaps,0) = i;
-                mNodeRenumberingIndices(numSwaps,1) = j;
+                mNodeRenumberingIndices.conservativeResize(numSwaps + 1, 2);
+                mNodeRenumberingIndices(numSwaps, 0) = i;
+                mNodeRenumberingIndices(numSwaps, 1) = j;
                 numSwaps++;
             }
         }

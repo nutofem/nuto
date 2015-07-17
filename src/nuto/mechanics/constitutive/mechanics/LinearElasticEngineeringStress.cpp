@@ -724,6 +724,8 @@ bool NuTo::LinearElasticEngineeringStress::CheckElementCompatibility(NuTo::Eleme
     {
     case NuTo::Element::ELEMENT1D:
         return true;
+    case NuTo::Element::ELEMENT1DIn2D:
+        return true;
     case NuTo::Element::ELEMENT2D:
         return true;
     case NuTo::Element::ELEMENT3D:

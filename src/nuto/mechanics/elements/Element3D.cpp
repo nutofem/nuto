@@ -34,10 +34,10 @@
 
 NuTo::Element3D::Element3D(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType,
         InterpolationType* rInterpolationType) :
-        NuTo::ElementBase::ElementBase(rStructure, rElementDataType, rIpDataType, rInterpolationType), mNodes(rNodes)
+        NuTo::ElementBase::ElementBase(rStructure, rElementDataType, rIpDataType, rInterpolationType),
+        mNodes(rNodes),
+        mSection(0)
 {
-    mSection = 0;
-    CheckElement();
 }
 
 NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase>& rElementOutput)
@@ -1016,6 +1016,11 @@ NuTo::Element::eElementType NuTo::Element3D::GetEnumType() const
 }
 
 int NuTo::Element3D::GetGlobalDimension() const
+{
+    return 3;
+}
+
+int NuTo::Element3D::GetLocalDimension()const
 {
     return 3;
 }

@@ -38,10 +38,10 @@
 
 
 NuTo::Element2D::Element2D(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType) :
-        NuTo::ElementBase::ElementBase(rStructure, rElementDataType, rIpDataType, rInterpolationType), mNodes(rNodes)
+        NuTo::ElementBase::ElementBase(rStructure, rElementDataType, rIpDataType, rInterpolationType),
+        mNodes(rNodes),
+        mSection(0)
 {
-    mSection = 0;
-    CheckElement();
 }
 
 NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase>& rElementOutput)
@@ -1147,6 +1147,11 @@ int NuTo::Element2D::GetGlobalDimension() const
     return 2;
 }
 
+int NuTo::Element2D::GetLocalDimension()const
+{
+    return 2;
+}
+
 NuTo::NodeBase* NuTo::Element2D::GetNode(int rLocalNodeNumber)
 {
     assert(rLocalNodeNumber >= 0);
@@ -1166,7 +1171,9 @@ const NuTo::NodeBase* NuTo::Element2D::GetNode(int rLocalNodeNumber) const
 NuTo::NodeBase* NuTo::Element2D::GetNode(int rLocalNodeNumber, Node::eAttributes rDofType)
 {
     assert(rLocalNodeNumber >= 0);
-    assert(rLocalNodeNumber < (int )mNodes.size());
+
+    std::cout << "mNodes.size() \n" <<  mNodes.size() << std::endl;
+    assert(rLocalNodeNumber <  (int )mNodes.size());
     assert(rLocalNodeNumber < mInterpolationType->Get(rDofType).GetNumNodes());
     int nodeIndex = mInterpolationType->Get(rDofType).GetNodeIndex(rLocalNodeNumber);
     assert(nodeIndex < (int )mNodes.size());

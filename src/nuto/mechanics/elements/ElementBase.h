@@ -53,6 +53,7 @@ class VisualizeComponentBase;
 class IpDataBase;
 class ElementOutputBase;
 class Element1D;
+class Element1DIn2D;
 class Element2D;
 class Element3D;
 class BoundaryElement1D;
@@ -76,8 +77,7 @@ public:
     //! @param rIntegrationType ... integration type (local coordinates are stored as a type, e.g. Gauss 2x2
     //! @param rIpDataType ... data type to decide what is stored at the integration point level
     //! @param rInterpolationType ... interpolation type
-    ElementBase(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
-    		IpData::eIpDataType rIpDataType, const InterpolationType* rInterpolationType);
+    ElementBase(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, const InterpolationType* rInterpolationType);
 
     //! @brief constructor
     //! @param rStructure ... structure to which the element belongs
@@ -85,40 +85,43 @@ public:
     //! @param rNumIp ... number of integration points (here local coordinates should be stored at the ip (e.g. XFEM)
     //! @param rIpDataType ... data type to decide what is stored at the integration point level
     //! @param rInterpolationType ... interpolation type
-    ElementBase(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType,
-    		int rNumIp, IpData::eIpDataType rIpDataType, const InterpolationType* rInterpolationType);
+    ElementBase(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType, int rNumIp, IpData::eIpDataType rIpDataType, const InterpolationType* rInterpolationType);
 
-    ElementBase(const ElementBase& ) = default;
+    ElementBase(const ElementBase&) = default;
 
     virtual ~ElementBase();
 
-
     //! @brief returns the enum (type of the element)
     //! @return enum
-    virtual NuTo::Element::eElementType GetEnumType()const=0;
+    virtual NuTo::Element::eElementType GetEnumType() const=0;
 
     //! @brief returns the enum of element data type
     //! @return enum of ElementDataType
-    const NuTo::ElementData::eElementDataType GetElementDataType()const;
+    const NuTo::ElementData::eElementDataType GetElementDataType() const;
 
     //! @brief returns the id number of the element
     //! @return id
-    int ElementGetId()const;
+    int ElementGetId() const;
 
     //! @brief returns the global dimension of the element
     //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
     //! there is also a routine GetLocalDimension, which is e.g. 2 for plane elements and 1 for truss elements
     //! @return global dimension
-    virtual int GetGlobalDimension()const=0;
+    virtual int GetGlobalDimension() const=0;
+
+    //! @brief returns the local dimension of the element
+    //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
+    //! @return local dimension
+    virtual int GetLocalDimension() const=0;
 
     //! @brief returns the number of nodes in this element
     //! @return number of nodes
-    virtual int GetNumNodes()const;
+    virtual int GetNumNodes() const;
 
     //! @brief returns the number of nodes in this element that are influenced by it
     //! @remark overridden by boundary elements
     //! @return number of nodes
-    virtual int GetNumInfluenceNodes()const
+    virtual int GetNumInfluenceNodes() const
     {
         return GetNumNodes();
     }
@@ -131,23 +134,21 @@ public:
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @return pointer to the node
-    virtual const NodeBase* GetNode(int rLocalNodeNumber)const=0;
+    virtual const NodeBase* GetNode(int rLocalNodeNumber) const=0;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @remark overridden by boundary elements
     //! @param local node number
     //! @return pointer to the node
-    virtual const NodeBase* GetInfluenceNode(int rLocalNodeNumber)const
+    virtual const NodeBase* GetInfluenceNode(int rLocalNodeNumber) const
     {
         return GetNode(rLocalNodeNumber);
     }
 
-
-
     //! @brief returns the number of nodes in this element of a specific dof
     //! @brief rDofType dof type
     //! @return number of nodes
-    virtual int GetNumNodes(Node::eAttributes rDofType)const;
+    virtual int GetNumNodes(Node::eAttributes rDofType) const;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
@@ -159,7 +160,7 @@ public:
     //! @param local node number
     //! @brief rDofType dof type
     //! @return pointer to the node
-    virtual const NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType)const=0;
+    virtual const NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType) const=0;
 
     //! @brief sets the rLocalNodeNumber-th node of the element
     //! @param local node number
@@ -183,11 +184,10 @@ public:
     //! @param rConstitutiveLaw Pointer to constitutive law entry
     virtual void SetConstitutiveLaw(int rIp, ConstitutiveBase* rConstitutiveLaw);
 
-
     //! @brief returns a pointer to the constitutive law for an integration point
     //! @param integration point number (counting from zero)
     //! @return pointer to constitutive law
-    const ConstitutiveBase* GetConstitutiveLaw(int rIp)const;
+    const ConstitutiveBase* GetConstitutiveLaw(int rIp) const;
 
     //! @brief returns a pointer to the constitutive law for an integration point
     //! @param integration point number (counting from zero)
@@ -195,7 +195,7 @@ public:
     ConstitutiveBase* GetConstitutiveLaw(int rIp);
 
     //! @brief returns true, if the constitutive law has been assigned
-    bool HasConstitutiveLawAssigned(int rIp)const;
+    bool HasConstitutiveLawAssigned(int rIp) const;
 
     //! @brief sets the section of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
@@ -207,7 +207,7 @@ public:
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! which actually need a section
     //! @return pointer to section
-    virtual const SectionBase* GetSection()const=0;
+    virtual const SectionBase* GetSection() const=0;
 
     //! @brief sets the integration type of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
@@ -219,7 +219,7 @@ public:
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! which actually need an integration type
     //! @return pointer to integration type
-    virtual const IntegrationTypeBase* GetIntegrationType()const;
+    virtual const IntegrationTypeBase* GetIntegrationType() const;
 
     //! @brief sets the interpolation type of an element
     //! @param rInterpolationType interpolation type
@@ -233,21 +233,21 @@ public:
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! which actually need an integration type
     //! @return pointer to integration type
-    NuTo::IpData::eIpDataType GetIpDataType(int  rIp)const;
+    NuTo::IpData::eIpDataType GetIpDataType(int rIp) const;
 
     //! @brief returns the number of integration points
     //! @return number of integration points
-    int GetNumIntegrationPoints()const;
+    int GetNumIntegrationPoints() const;
 
     //! @brief returns the weight of an integration point
     //! @param rIpNum integration point
     //! @return weight
-    double GetIntegrationPointWeight(int rIpNum)const;
+    double GetIntegrationPointWeight(int rIpNum) const;
 
     //! @brief calculate the length of an edge (belonging to an integration point for lattice elements)
     //! @param rIp integration point
     //! @return edge length
-    virtual double GetIpEdgeLength(int rIp)const;
+    virtual double GetIpEdgeLength(int rIp) const;
 
     //! @brief calculates output data for the element
     //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
@@ -256,15 +256,15 @@ public:
 
     //! @brief integrates the stress over the element
     //! @param rStress integrated stress
-    void GetIntegratedStress(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rStress);
+    void GetIntegratedStress(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rStress);
 
     //! @brief integrates the strain over the element
     //! @param rStrain integrated strain
-    void GetIntegratedStrain(FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rStress);
+    void GetIntegratedStrain(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rStress);
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
-    virtual  ConstitutiveStaticDataBase* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw)const=0;
+    virtual ConstitutiveStaticDataBase* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const=0;
 
     //! @brief Returns the static data for an integration point of an element
     //! @param rIp integration point
@@ -274,7 +274,7 @@ public:
     //! @brief Returns the static data for an integration point of an element
     //! @param rIp integration point
     //! @return static data
-    const ConstitutiveStaticDataBase* GetStaticData(int rIp)const;
+    const ConstitutiveStaticDataBase* GetStaticData(int rIp) const;
 
     //! @brief sets the static data for an integration point of an element
     //! @param rIp integration point
@@ -285,10 +285,12 @@ public:
     //virtual Error::eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)=0;
 
     const Eigen::MatrixXd ExtractNodeValues(Node::eAttributes rDofType) const;
+
     virtual const Eigen::MatrixXd ExtractNodeValues(int rTimeDerivative, Node::eAttributes rDofType) const;
 
-    const Eigen::VectorXd InterpolateDof(const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const;
-    const Eigen::VectorXd InterpolateDof(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const;
+    virtual const Eigen::VectorXd InterpolateDofGlobal(const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const;
+
+    virtual const Eigen::VectorXd InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const;
 
     const Eigen::Vector3d InterpolateDof3D(const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const;
 
@@ -310,39 +312,39 @@ public:
     //! @param rIp local Ip
     //! @param rNonlocalElement nonlocal element (must be in the range of the nonlocal element size stored at the element data level)
     //! @retrun weights for each integration point of the nonlocal element
-    const std::vector<double>& GetNonlocalWeights(int rIp, int rNonlocalElement)const;
+    const std::vector<double>& GetNonlocalWeights(int rIp, int rNonlocalElement) const;
 
     //! @brief returns a vector of the nonlocal elements
     //! @retrun nonlocal elements
-    const std::vector<const NuTo::ElementBase*>& GetNonlocalElements()const;
+    const std::vector<const NuTo::ElementBase*>& GetNonlocalElements() const;
 
     //! @brief returns the number of nonlocal elements
     //! @param rConstitutive constitutive model for the nonlocale elements
     //! @rerun number of nonlocal elements
-    int GetNumNonlocalElements()const;
+    int GetNumNonlocalElements() const;
 
     //! @brief delete the nonlocal elements
     void DeleteNonlocalElements();
 
     //! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)
     //! @return Area
-    virtual double CalculateArea()const;
+    virtual double CalculateArea() const;
 
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @return rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
-    virtual const Eigen::VectorXd GetIntegrationPointVolume()const=0;
+    virtual const Eigen::VectorXd GetIntegrationPointVolume() const=0;
 
     //! @brief returns the coordinates of an integration point
     //! @param rIpNum integration point
     //! @return rCoordinates coordinates to be returned
-    virtual const Eigen::Vector3d GetGlobalIntegrationPointCoordinates(int rIpNum)const;
+    virtual const Eigen::Vector3d GetGlobalIntegrationPointCoordinates(int rIpNum) const;
 
     //! @brief computes the natural coordinates of an given point
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! @param rGlobCoords (input) ... pointer to the array of coordinates
     //! @param rLocCoords (output) ... coordinates to be returned
     //! @return True if coordinates are within the element, False otherwise
-    virtual bool GetLocalPointCoordinates(const double* rGlobCoords,  double* rLocCoords)const;
+    virtual bool GetLocalPointCoordinates(const double* rGlobCoords, double* rLocCoords) const;
 
     //! @brief Gets the additional node of an boundary element, if it has one
     //! @return Additional boundary node
@@ -368,11 +370,11 @@ public:
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! @param rGlobCoords (input) ... pointer to the array of coordinates
     //! @return True if coordinates are within the element, False otherwise
-    virtual bool CheckPointInside(const double* rGlobCoords)const;
+    virtual bool CheckPointInside(const double* rGlobCoords) const;
 
     //! @brief Returns the vector of crack pointers of an element
     //! @return crack pointer vector
-    virtual const std::vector<CrackBase*>  GetCracks() const;
+    virtual const std::vector<CrackBase*> GetCracks() const;
 
     //! @brief Set the information that the element is already cracked or not
     //! @param bool (Input) cracked or not
@@ -382,35 +384,32 @@ public:
     //! @return bool cracked or not
     const bool IsCracked() const;
 
-
     //! @brief cast the base pointer to an Element1D, otherwise throws an exception
-    virtual const Element1D* AsElement1D()const;
+    virtual const Element1D* AsElement1D() const;
 
     //! @brief cast the base pointer to an Element1D, otherwise throws an exception
     virtual Element1D* AsElement1D();
 
     //! @brief cast the base pointer to an Element2D, otherwise throws an exception
-    virtual const Element2D* AsElement2D()const;
+    virtual const Element2D* AsElement2D() const;
 
     //! @brief cast the base pointer to an Element2D, otherwise throws an exception
     virtual Element2D* AsElement2D();
 
     //! @brief cast the base pointer to an Element3D, otherwise throws an exception
-    virtual const Element3D* AsElement3D()const;
+    virtual const Element3D* AsElement3D() const;
 
     //! @brief cast the base pointer to an Element3D, otherwise throws an exception
     virtual Element3D* AsElement3D();
 
-
-
     //! @brief cast the base pointer to an BoundaryElement1D, otherwise throws an exception
-    virtual const BoundaryElement1D* AsBoundaryElement1D()const;
+    virtual const BoundaryElement1D* AsBoundaryElement1D() const;
 
     //! @brief cast the base pointer to an BoundaryElement1D, otherwise throws an exception
     virtual BoundaryElement1D* AsBoundaryElement1D();
 
     //! @brief cast the base pointer to an BoundaryElement2D, otherwise throws an exception
-    virtual const BoundaryElement2D* AsBoundaryElement2D()const;
+    virtual const BoundaryElement2D* AsBoundaryElement2D() const;
 
     //! @brief cast the base pointer to an BoundaryElement2D, otherwise throws an exception
     virtual BoundaryElement2D* AsBoundaryElement2D();
@@ -422,34 +421,29 @@ public:
     virtual BoundaryElement3D* AsBoundaryElement3D();
 
 
-
-
-
-
     //! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
-    virtual const Plane* AsPlane()const;
+    virtual const Plane* AsPlane() const;
 
     //! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
     virtual Plane* AsPlane();
 
     //! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
-    virtual const Plane2D* AsPlane2D()const;
+    virtual const Plane2D* AsPlane2D() const;
 
     //! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
     virtual Plane2D* AsPlane2D();
 
     //! @brief cast the base pointer to an ElementSolid, otherwise throws an exception
-    virtual const Solid* AsSolid()const;
+    virtual const Solid* AsSolid() const;
 
     //! @brief cast the base pointer to an ElementSolid, otherwise throws an exception
     virtual Solid* AsSolid();
 
     //! @brief cast the base pointer to an ElementTruss, otherwise throws an exception
-    virtual const Truss* AsTruss()const;
+    virtual const Truss* AsTruss() const;
 
     //! @brief cast the base pointer to an ElementTruss, otherwise throws an exception
     virtual Truss* AsTruss();
-
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -463,27 +457,22 @@ public:
 
     virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat);
 
-    virtual void GetVisualizationCells(
-        unsigned int& NumVisualizationPoints,
-        std::vector<double>& VisualizationPointLocalCoordinates,
-        unsigned int& NumVisualizationCells,
-        std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
-        std::vector<unsigned int>& VisualizationCellsIncidence,
-        std::vector<unsigned int>& VisualizationCellsIP) const;
+    virtual void GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType, std::vector<unsigned int>& VisualizationCellsIncidence,
+            std::vector<unsigned int>& VisualizationCellsIP) const;
 
 #endif // ENABLE_VISUALIZE
 
     //! @brief returns the structure
-    const StructureBase* GetStructure()const
+    const StructureBase* GetStructure() const
     {
-    	return mStructure;
+        return mStructure;
     }
 
 private:
     //! @brief returns the Element Data Vector
     //! this was necessary due to recursive problems for serialization (nonlocal data)
     //! this method should only be called from the serialization routine of the structure
-    NuTo::ElementDataBase* GetDataPtr()const;
+    NuTo::ElementDataBase* GetDataPtr() const;
 
     //! @brief sets the Element Data Vector
     //! this was necessary due to recursive problems for serialization (nonlocal data)
@@ -495,7 +484,8 @@ protected:
     ElementBase()
     {
         mElementData = 0;
-    };
+    }
+    ;
 
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
     virtual void ReorderNodes();
@@ -519,6 +509,6 @@ protected:
 
     const InterpolationType* mInterpolationType;
 };
-}//namespace NuTo
+}    //namespace NuTo
 #endif //ELEMENT_BASE_H
 

@@ -25,3 +25,4 @@ int NuTo::Interpolation1D::GetNumDofsPerNode() const
         return 2;
     return 1;
 }
+

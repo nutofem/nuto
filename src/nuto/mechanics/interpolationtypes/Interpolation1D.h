@@ -23,10 +23,8 @@ public:
     //! @return ... natural surface edge coordinates
     const std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const override;
 
-protected:
-
     //! @brief return the number of dofs per node depending on dimension
-    int GetNumDofsPerNode() const override;
+    virtual int GetNumDofsPerNode() const override;
 
 };
 

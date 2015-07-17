@@ -252,6 +252,14 @@ ADD_TEST(c::mechanics::NonlocalDamagePlasticityModel ${CMAKE_CURRENT_BUILD_DIR}/
   IF(MINGW)
     SET_TARGET_PROPERTIES(StructureEvaluate PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
+
+  # ElementsInHigherDimensions
+  ADD_EXECUTABLE(ElementsInHigherDimensions ElementsInHigherDimensions.cpp)
+    TARGET_LINK_LIBRARIES(ElementsInHigherDimensions NuToMechanics NuToMath NuToBase)
+    ADD_TEST(c::mechanics::ElementsInHigherDimensions ${CMAKE_CURRENT_BUILD_DIR}/StructureEvaluate)
+  IF(MINGW)
+    SET_TARGET_PROPERTIES(ElementsInHigherDimensions PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  ENDIF(MINGW)
   
 ENDIF(ENABLE_C++_TESTS)
   

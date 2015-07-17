@@ -8,6 +8,7 @@
 #include "nuto/mechanics/elements/IpDataEnum.h"
 
 #include "nuto/mechanics/elements/Element1D.h"
+#include "nuto/mechanics/elements/Element1DIn2D.h"
 #include "nuto/mechanics/elements/Element2D.h"
 #include "nuto/mechanics/elements/Element3D.h"
 
@@ -192,13 +193,13 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
         elementSize[iElement] = sizeForEachIntegrationPoint.sum();
     }
 
-    std::sort(elementSize.data(), elementSize.data()+numElements, std::less<double>()); // sort in accending order
+    std::sort(elementSize.data(), elementSize.data() + numElements, std::less<double>()); // sort in accending order
 
     double sizeMin = elementSize(0);
-    double sizeMed = elementSize(numElements/2);
+    double sizeMed = elementSize(numElements / 2);
 
-    double lengthMin = std::pow(sizeMin, 1./mDimension);
-    double lengthMed = std::pow(sizeMed, 1./mDimension);
+    double lengthMin = std::pow(sizeMin, 1. / mDimension);
+    double lengthMed = std::pow(sizeMed, 1. / mDimension);
 
     double mergeDist = lengthMin / 1000.;
     double meshSize = lengthMed / 2.;
@@ -311,8 +312,6 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
         }
     }
 
-
-
     Eigen::Vector3i numBoxes = Eigen::Vector3i::Ones(); // initialize as 3D array with at least one box per dimension
     Eigen::VectorXd deltaBox(mDimension);
     for (int iDim = 0; iDim < mDimension; ++iDim)
@@ -365,10 +364,12 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
     {
         const InterpolationType* interpolationType = element->GetInterpolationType();
 
-        for (int iNode = 0; iNode < interpolationType->GetNumNodes(); ++iNode)
+        for (int iNode = 0; iNode < element->GetNumNodes(); ++iNode)
         {
+
             Eigen::VectorXd naturalNodeCoordinates = interpolationType->GetNaturalNodeCoordinates(iNode);
-            Eigen::VectorXd globalNodeCoordinates = element->InterpolateDof(naturalNodeCoordinates, Node::COORDINATES);
+            Eigen::VectorXd globalNodeCoordinates = element->InterpolateDofGlobal(naturalNodeCoordinates, Node::COORDINATES);
+
             Eigen::Vector3i boxIndex3D = Eigen::Vector3i::Zero(); // default access is the first box
             for (int iDim = 0; iDim < mDimension; ++iDim)
                 boxIndex3D[iDim] = std::floor((globalNodeCoordinates[iDim] - boundingBoxMin[iDim]) / deltaBox[iDim]);
@@ -376,6 +377,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
             // 3D-index --> 1D-index mapping
             int boxIndex1D = boxIndex3D[0] + boxIndex3D[1] * numBoxes[0] + boxIndex3D[2] * numBoxes[0] * numBoxes[1];
             assert(boxIndex1D < (int )boxes.size());
+
             boxes[boxIndex1D].push_back(TmpNode(globalNodeCoordinates, element, iNode, nodeDistanceMerge2));
         }
     }
@@ -421,7 +423,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
             std::set<Node::eAttributes> nodeDofs;
             for (TmpNode& singleUniqueNode : singleSameNode)
             {
-                auto nodeDofsOther =  singleUniqueNode.element->GetInterpolationType()->GetNodeDofs(singleUniqueNode.elementNodeId);
+                auto nodeDofsOther = singleUniqueNode.element->GetInterpolationType()->GetNodeDofs(singleUniqueNode.elementNodeId);
                 for (auto dof : nodeDofsOther)
                     nodeDofs.insert(dof);
             }
@@ -443,8 +445,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
                 int oldNodeIndex = NodeGetId(oldNode);
                 NodeExchangePtr(oldNodeIndex, oldNode, newNode); // from now on, newNode is nullPtr
 
-            }
-            else
+            } else
             {
                 // create node manually
                 NodeBase* newNode = NodePtrCreate(nodeDofs, nodeCoordinates);
@@ -647,16 +648,25 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
 
     try
     {
-        switch (mDimension)
+        switch (interpolationType->GetShapeType())
         {
-        case 1:
+        case NuTo::Interpolation::eShapeType::TRUSS1D:
             ptrElement = new Element1D(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
+            ptrElement->CheckElement();
             break;
-        case 2:
+        case NuTo::Interpolation::eShapeType::TRUSS2D:
+            ptrElement = new Element1DIn2D(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
+            ptrElement->CheckElement();
+            break;
+        case NuTo::Interpolation::eShapeType::TRIANGLE2D:
+        case NuTo::Interpolation::eShapeType::QUAD2D:
             ptrElement = new Element2D(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
+            ptrElement->CheckElement();
             break;
-        case 3:
+        case NuTo::Interpolation::eShapeType::TETRAHEDRON3D:
+        case NuTo::Interpolation::eShapeType::BRICK3D:
             ptrElement = new Element3D(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
+            ptrElement->CheckElement();
             break;
         default:
             throw MechanicsException("[NuTo::Structure::ElementCreate] invalid dimension.");
@@ -961,8 +971,7 @@ void NuTo::Structure::ElementDeleteInternal(int rElementId)
     if (itElement == this->mElementMap.end())
     {
         throw MechanicsException("[NuTo::Structure::ElementDeleteInternal] Element does not exist.");
-    }
-    else
+    } else
     {
         // Search for elements in groups: using a loop over all groups
         for (boost::ptr_map<int, GroupBase>::iterator groupIt = mGroupMap.begin(); groupIt != mGroupMap.end(); ++groupIt)

@@ -775,7 +775,7 @@ int NuTo::StructureBase::NodeGetIdAtCoordinate(FullVector<double, Eigen::Dynamic
     	if (nodePtr->GetNumCoordinates()<1)
     		continue;
 
-    	distance = nodePtr->GetCoordinates().norm();
+    	distance = (nodePtr->GetCoordinates()-rCoordinates).norm();
 
     	if (distance<rRange)
     	{
