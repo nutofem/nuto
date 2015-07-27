@@ -77,7 +77,7 @@ class LinearElasticEngineeringStress: public ConstitutiveBase
 public:
     LinearElasticEngineeringStress();
 
-    //! @brief ... evaluate the constitutive relation in 2D
+    //! @brief ... evaluate the constitutive relation in 1D
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rUpdateHistory ... update history variables after leaving the routine

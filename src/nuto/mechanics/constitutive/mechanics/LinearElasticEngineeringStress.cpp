@@ -378,6 +378,7 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(ElementBase
  		    }
 
 		    tangent.SetSymmetry(true);
+            tangent.SetConstant(true);
     		break;
     	}
     	case NuTo::Constitutive::Output::ENGINEERING_STRAIN_3D:

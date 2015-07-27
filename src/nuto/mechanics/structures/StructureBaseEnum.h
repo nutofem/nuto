@@ -15,6 +15,12 @@ enum class eMatrixType
     LUMPED_MASS
 };
 
+enum class eSubVector
+{
+    J,
+    K
+};
+
 enum class eSubMatrix
 {
     JJ,
@@ -25,12 +31,12 @@ enum class eSubMatrix
 
 enum class eOutput
 {
-    DAMPING_FULL,
+    DAMPING,
     DAMPING_MOISTURE_TRANSPORT,
     INTERNAL_GRADIENT,
     INTERNAL_GRADIENT_MOISTURE_TRANSPORT,
-    MASS_FULL,
-    STIFFNESS_FULL,
+    MASS,
+    STIFFNESS,
     STIFFNESS_DISPLACEMENTS_JJ,
     STIFFNESS_MOISTURE_TRANSPORT
 };

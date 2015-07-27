@@ -128,9 +128,16 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 
     	//calculate matrices
         //calculate constraint matrix
+
+        /*
+        // ConstraintGetConstraintMatrixAfterGaussElimination(const NuTo::SparseMatrixCSRGeneral<double>& ... ) replaced by
+        // const NuTo::SparseMatrixCSRGeneral<double> ConstraintGetConstraintMatrixAfterGaussElimination() const;
+        // ---> No need for CmatTmp anymore! --- vhirtham
+
         NuTo::SparseMatrixCSRGeneral<double> CmatTmp;
         mStructure->ConstraintGetConstraintMatrixAfterGaussElimination(CmatTmp);
-        NuTo::SparseMatrixCSRVector2General<double> Cmat(CmatTmp);
+        */
+        NuTo::SparseMatrixCSRVector2General<double> Cmat(mStructure->ConstraintGetConstraintMatrixAfterGaussElimination());
         SparseMatrixCSRVector2General<double> CmatT (Cmat.Transpose());
         FullVector<double,Eigen::Dynamic> bRHSprev, bRHSend;
 
@@ -1031,9 +1038,16 @@ void NuTo::JumpDirect::CalculateGlobalModifiedStiffness(NuTo::SparseMatrixCSRVec
 
 	//calculate matrices
     //calculate constraint matrix
+
+    /*
+    // ConstraintGetConstraintMatrixAfterGaussElimination(const NuTo::SparseMatrixCSRGeneral<double>& ... ) replaced by
+    // const NuTo::SparseMatrixCSRGeneral<double> ConstraintGetConstraintMatrixAfterGaussElimination() const;
+    // ---> No need for CmatTmp anymore! --- vhirtham
+
     NuTo::SparseMatrixCSRGeneral<double> CmatTmp;
     mStructure->ConstraintGetConstraintMatrixAfterGaussElimination(CmatTmp);
-    NuTo::SparseMatrixCSRVector2General<double> Cmat(CmatTmp);
+    */
+    NuTo::SparseMatrixCSRVector2General<double> Cmat(mStructure->ConstraintGetConstraintMatrixAfterGaussElimination());
     SparseMatrixCSRVector2General<double> CmatT (Cmat.Transpose());
 
     // allocate space for stiffness matrix
@@ -1085,9 +1099,15 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
     FullVector<double,Eigen::Dynamic> bRHS, bRHSmax;
 
     //calculate constraint matrix
+    /*
+    // ConstraintGetConstraintMatrixAfterGaussElimination(const NuTo::SparseMatrixCSRGeneral<double>& ... ) replaced by
+    // const NuTo::SparseMatrixCSRGeneral<double> ConstraintGetConstraintMatrixAfterGaussElimination() const;
+    // ---> No need for CmatTmp anymore! --- vhirtham
+
     NuTo::SparseMatrixCSRGeneral<double> CmatTmp;
     mStructure->ConstraintGetConstraintMatrixAfterGaussElimination(CmatTmp);
-    NuTo::SparseMatrixCSRVector2General<double> Cmat(CmatTmp);
+    */
+    NuTo::SparseMatrixCSRVector2General<double> Cmat(mStructure->ConstraintGetConstraintMatrixAfterGaussElimination());
     SparseMatrixCSRVector2General<double> CmatT (Cmat.Transpose());
 
     // allocate space for stiffness matrix
@@ -1117,7 +1137,7 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
     	mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
     }
 
-	mStructure->ConstraintGetRHSAfterGaussElimination(bRHS);
+    bRHS = mStructure->ConstraintGetRHSAfterGaussElimination();
 	// set mean displacement field
 	mStructure->NodeMergeActiveDofValues(0,*rDisp_Mean_j);
 	mStructure->ElementTotalUpdateTmpStaticData();
@@ -1280,7 +1300,7 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
 		extForce_j.Zero(mStructure->GetNumActiveDofs()); extForce_k.Zero(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
 	}
 
-	mStructure->ConstraintGetRHSAfterGaussElimination(bRHSmax);
+    bRHSmax= mStructure->ConstraintGetRHSAfterGaussElimination();
 	// set maximal displacement
 	mStructure->NodeMergeActiveDofValues(0,(*rDisp_Mean_j) + (*rDisp_Ampl_j));
 	mStructure->ElementTotalUpdateTmpStaticData();
@@ -1432,9 +1452,15 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
 		NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_k, bool rIncludePostProcess)
 {
     //calculate constraint matrix
+    /*
+    // ConstraintGetConstraintMatrixAfterGaussElimination(const NuTo::SparseMatrixCSRGeneral<double>& ... ) replaced by
+    // const NuTo::SparseMatrixCSRGeneral<double> ConstraintGetConstraintMatrixAfterGaussElimination() const;
+    // ---> No need for CmatTmp anymore! --- vhirtham
+
     NuTo::SparseMatrixCSRGeneral<double> CmatTmp;
     mStructure->ConstraintGetConstraintMatrixAfterGaussElimination(CmatTmp);
-    NuTo::SparseMatrixCSRVector2General<double> Cmat(CmatTmp);
+    */
+    NuTo::SparseMatrixCSRVector2General<double> Cmat(mStructure->ConstraintGetConstraintMatrixAfterGaussElimination());
     SparseMatrixCSRVector2General<double> CmatT (Cmat.Transpose());
     FullVector<double,Eigen::Dynamic> bRHSprev, bRHShalf, bRHSend, bRHSdot, bRHSddot;
 
@@ -1501,7 +1527,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
 
     lastConverged_disp_j = *rDisp_Mean_j;
 
-    mStructure->ConstraintGetRHSAfterGaussElimination(bRHSprev);
+    bRHSprev = mStructure->ConstraintGetRHSAfterGaussElimination();
     mStructure->NodeMergeActiveDofValues(0,lastConverged_disp_j); //disp_k is internally calculated from the previous constraint matrix
     mStructure->ElementTotalUpdateTmpStaticData();
 
@@ -1591,7 +1617,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
         	mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
         }
     	bRHSend.Zero(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-    	mStructure->ConstraintGetRHSAfterGaussElimination(bRHSend);
+        bRHSend = mStructure->ConstraintGetRHSAfterGaussElimination();
 
 		// add harmonic excitation
 		disp_j = (*rDisp_Mean_j) + (*rDisp_Ampl_j)*sin(2*pi*frequency*(curTime - startingCycleTime));
@@ -1626,7 +1652,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
 					timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime - 0.5*timeStep);
 					mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
                 }
-                mStructure->ConstraintGetRHSAfterGaussElimination(bRHShalf);
+                bRHShalf = mStructure->ConstraintGetRHSAfterGaussElimination();
 
                 // get last velocities
                 mStructure->NodeExtractDofValues(1,lastConverged_vel_j,lastConverged_vel_k);

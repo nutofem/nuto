@@ -1,10 +1,9 @@
 #ifndef STRUCTUREOUTPUTSPARSESUBMATRICES4
 #define STRUCTUREOUTPUTSPARSESUBMATRICES4
 
-
 #include "nuto/math/SparseMatrix.h"
 #include "nuto/mechanics/structures/StructureOutputBase.h"
-#include "nuto/mechanics/structures/StructureBaseEnum.h"
+
 
 
 namespace NuTo
@@ -27,7 +26,7 @@ public:
           mMatrixKK(rMatrixKK)
     {}
 
-    virtual ~StructureOutputSparseMatrix(){}
+    virtual ~StructureOutputSparseSubmatrices4(){}
 
     virtual int GetNumSubmatrices() const override
     {
@@ -46,11 +45,11 @@ public:
             {
                 return mMatrixJK;
             }
-            case StructureEnum::eSubMatrix::JJ:
+            case StructureEnum::eSubMatrix::KJ:
             {
                 return mMatrixKJ;
             }
-            case StructureEnum::eSubMatrix::KJ:
+            case StructureEnum::eSubMatrix::KK:
             {
                 return mMatrixKK;
             }
@@ -61,11 +60,24 @@ public:
         }
     }
 
+    virtual bool GetConstant() const override
+    {
+        return mConstant;
+    }
+
+    virtual void SetConstant(bool rConstant) override
+    {
+        mConstant = rConstant;
+    }
+
 private:
     bool mConstant  = false;
     bool mSymmetric = false;
 
-    SparseMatrix<double>& mMatrixJJ, mMatrixJK, mMatrixKJ, mMatrixKK;
+    SparseMatrix<double>& mMatrixJJ;
+    SparseMatrix<double>& mMatrixJK;
+    SparseMatrix<double>& mMatrixKJ;
+    SparseMatrix<double>& mMatrixKK;
 };
 
 

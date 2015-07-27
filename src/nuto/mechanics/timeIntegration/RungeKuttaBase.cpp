@@ -96,9 +96,15 @@ NuTo::Error::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         mStructure->NodeBuildGlobalDofs();
 
         //calculate constraint matrix
+        /*
+        // ConstraintGetConstraintMatrixAfterGaussElimination(const NuTo::SparseMatrixCSRGeneral<double>& ... ) replaced by
+        // const NuTo::SparseMatrixCSRGeneral<double> ConstraintGetConstraintMatrixAfterGaussElimination() const;
+        // ---> No need for CmatTmp anymore! --- vhirtham
+
         NuTo::SparseMatrixCSRGeneral<double> CmatTmp;
         mStructure->ConstraintGetConstraintMatrixAfterGaussElimination(CmatTmp);
-        NuTo::SparseMatrixCSRVector2General<double> Cmat(CmatTmp);
+        */
+        NuTo::SparseMatrixCSRVector2General<double> Cmat(mStructure->ConstraintGetConstraintMatrixAfterGaussElimination());
         SparseMatrixCSRVector2General<double> CmatT (Cmat.Transpose());
         FullVector<double,Eigen::Dynamic> bRHS, bRHSdot, bRHSddot;
         if (CmatT.GetNumEntries() > 0)

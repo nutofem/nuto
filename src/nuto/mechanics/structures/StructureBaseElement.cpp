@@ -2659,7 +2659,6 @@ void NuTo::StructureBase::ElementVectorAddToVisualize(VisualizeUnstructuredGrid&
     {
     	throw NuTo::MechanicsException("[NuTo::StructureBase::ExportVtkDataFile] Update of tmpStaticData required first.");
     }
-
     for (unsigned int ElementCount = 0; ElementCount < rElements.size(); ElementCount++)
     {
         rElements[ElementCount]->Visualize(rVisualize, rWhat);

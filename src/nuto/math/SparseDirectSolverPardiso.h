@@ -15,7 +15,7 @@ class SparseDirectSolverPardiso : public SparseDirectSolver
 {
 public:
     //! @brief ... default constructor
-    SparseDirectSolverPardiso(int rNumThreads);
+    SparseDirectSolverPardiso(int rNumThreads, int rVerboseLevel = 1);
 
     //! @brief ... print information about the class attributes
     virtual void Info()const
@@ -166,7 +166,10 @@ protected:
     int mNumThreads;
 
 
+
+
 #endif // HAVE_PARDISO
+    int mVerboseLevel;
 };
 }
 #endif // SPARSE_DIRECT_SOLVER_PARDISO_H

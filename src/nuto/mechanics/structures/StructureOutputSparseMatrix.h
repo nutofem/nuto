@@ -31,6 +31,16 @@ public:
         return mMatrix;
     }
 
+    virtual bool GetConstant() const override
+    {
+        return mConstant;
+    }
+
+    virtual void SetConstant(bool rConstant) override
+    {
+        mConstant = rConstant;
+    }
+
 private:
     bool mConstant  = false;
     bool mSymmetric = false;

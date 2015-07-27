@@ -253,6 +253,41 @@ if (mShowTime)
 #endif
 }
 
+
+
+//! @brief ... Adds all nodes which fulfill the conditions specified in a std::function
+//! @param ... rIdentGroup identifier for the group
+//! @param ... rFunction std::function
+void NuTo::StructureBase::GroupAddNodeFunction(int rIdentGroup, std::function<bool (NuTo::NodeBase *)> rFunction)
+{
+#ifdef SHOW_TIME
+std::clock_t start, end;
+start = clock();
+#endif
+boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
+if (itGroup == mGroupMap.end())
+    throw MechanicsException("[NuTo::StructureBase::GroupAddNodeFunction] Group with the given identifier does not exist.");
+if (itGroup->second->GetType() != Groups::Nodes)
+    throw MechanicsException("[NuTo::StructureBase::GroupAddNodeFunction] A node can be added only to a node group.");
+
+std::vector<std::pair<int, NodeBase*> > nodeVector;
+this->GetNodesTotal(nodeVector);
+
+for (unsigned int countNode = 0; countNode < nodeVector.size(); countNode++)
+{
+    NodeBase* nodePtr(nodeVector[countNode].second);
+    if (rFunction(nodePtr))
+        itGroup->second->AddMember(nodeVector[countNode].first, nodePtr);
+}
+#ifdef SHOW_TIME
+end = clock();
+if (mShowTime)
+    std::cout << "[NuTo::StructureBase::GroupAddNodeCoordinateRange] " << difftime(end, start) / CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+
+
 //! @brief ... Adds all nodes to a group whose coordinates are in the specified range
 //! @param ... rIdentGroup identifier for the group
 //! @param ... rCenter center of the selection circle

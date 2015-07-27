@@ -220,6 +220,82 @@ public:
     void AddDetJNtdLocalEqStraindEpsilonB(Eigen::VectorXd rShapeFunctions, ConstitutiveTangentLocal<3, 1>& rTangentLocalEqStrainStrain, const Eigen::MatrixXd& rDerivativeShapeFunctions,
             double rFactor, int rRow, int rCol, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rResult) const;
 
+
+    //! @brief adds up the constitutive Tangent times the Shape Functions
+    //! @param rShapeFunctions the shape functions
+    //! @param rConstitutiveTangent the result given by the constitutive law
+    //! @param factor factor including det Jacobian area and integration point weight
+    //! @param rRow start row in case of a multifield problem
+    //! @param rResult result vector
+    void AddDetJNtX(Eigen::VectorXd& rShapeFunctions,
+                        ConstitutiveTangentLocal<1,1>& rConstitutiveTangent,
+                        double rFactor,
+                        int rRow,
+                        FullVector<double,Eigen::Dynamic>& rResult) const;
+
+    //! @brief adds up the constitutive Tangent times the derivative shape functions
+    //! @param rDerivativeShapeFunctions the derivative shape functions
+    //! @param rConstitutiveTangent the result given by the constitutive law
+    //! @param factor factor including det Jacobian area and integration point weight
+    //! @param rRow start row in case of a multifield problem
+    //! @param rResult result vector
+    void AddDetJBtX(const Eigen::MatrixXd& rDerivativeShapeFunctions,
+                        ConstitutiveTangentLocal<2,1>& rConstitutiveTangent,
+                        double rFactor,
+                        int rRow,
+                        FullVector<double,Eigen::Dynamic>& rResult) const;
+
+
+    //! @brief adds to a matrix the product B1^t X B2, where B1 and B2 are the derivative shape functions and X is the constitutive tangent
+    //! @param rDerivativeShapeFunction1 derivative shape function 1
+    //! @param rDerivativeShapeFunction2 derivative shape function 2
+    //! @param ConstitutiveTangentBase constitutive tangent matrix
+    //! @param rFactor factor including area, determinant of Jacobian and IP weight
+    //! @param rRow row, where to start to add the submatrix
+    //! @param rCol col, where to start to add the submatrix
+    //! @param rResult result
+    void AddDetJBtXB(const Eigen::MatrixXd& rDerivativeShapeFunctions1,
+                        const Eigen::MatrixXd& rDerivativeShapeFunctions2,
+                        const ConstitutiveTangentLocal<1,1>& rConstitutiveTangent,
+                        double rFactor,
+                        int rRow,
+                        int rCol,
+                        FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rResult)const;
+
+    //! @brief adds to a matrix the product B^t X N, where B is the derivative shape functions, N the shape function and X the constitutive tangent
+    //! @param rDerivativeShapeFunction derivative shape function
+    //! @param rShapeFunction shape function
+    //! @param ConstitutiveTangentBase constitutive tangent matrix
+    //! @param rFactor factor including area, determinant of Jacobian and IP weight
+    //! @param rRow row, where to start to add the submatrix
+    //! @param rCol col, where to start to add the submatrix
+    //! @param rResult result
+    void AddDetJBtXN(const Eigen::MatrixXd& rDerivativeShapeFunction,
+                        const Eigen::VectorXd& rShapeFunction,
+                        const ConstitutiveTangentLocal<2,1>& rConstitutiveTangent,
+                        double rFactor,
+                        int rRow,
+                        int rCol,
+                        FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rResult)const;
+
+
+    //! @brief adds to a matrix the product N1^t X N2, where N1 and N2 contains the the shape functions and X is the constitutive tangent
+    //! @param rShapeFunction1 shape function 1
+    //! @param rShapeFunction2 shape function 2
+    //! @param ConstitutiveTangentBase constitutive tangent matrix
+    //! @param rFactor factor including area, determinant of Jacobian and IP weight
+    //! @param rRow row, where to start to add the submatrix
+    //! @param rCol col, where to start to add the submatrix
+    //! @param rResult result
+    void AddDetJNtXN(const Eigen::VectorXd& rShapeFunction1,
+                        const Eigen::VectorXd& rShapeFunction2,
+                        const ConstitutiveTangentLocal<1,1>& rConstitutiveTangent,
+                        double rFactor,
+                        int rRow,
+                        int rCol,
+                        FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rResult)const;
+
+
     //! @brief cast the base pointer to an Element2D, otherwise throws an exception
     const NuTo::Element2D* AsElement2D()const override
     {

@@ -1,12 +1,15 @@
 
 #include <nuto/base/Exception.h>
 #include <nuto/mechanics/structures/unstructured/Structure.h>
-#include <nuto/mechanics/timeIntegration/NewmarkDirect.h>
+//#include <nuto/mechanics/timeIntegration/CrankNicolson.h>
+#include <nuto/mechanics/timeIntegration/CrankNicolsonEvaluate.h>
 
 #include "boost/filesystem.hpp"
 
 #include <iostream>
 #include <sys/stat.h>
+#include <sys/time.h>
+#include <eigen3/Eigen/Core>
 
 
 void TestConstraints()
@@ -26,8 +29,8 @@ int main()
         double Height           = 0.2;
         double Length           = 2.0;
 
-        double ElementHeight    = 0.1;
-        double ElementLength    = 0.1;
+        double ElementHeight    = 0.025;
+        double ElementLength    = 0.025;
 
         double Thickness        = 1.0;
 
@@ -35,16 +38,15 @@ int main()
         double PoissonRatio     = 0.0;
         double YoungsModulus    = 30000.0;
 
-        double SimulationTime   = 10.0;
-        unsigned int TimeSteps  = 50;
+        double SimulationTime   = 40.0;
+        unsigned int TimeSteps  = 3;
 
 
 
-        std::string     VTKFile                         = "ResultsStructureEvaluate.vtk";
         std::string     VTKFolder                       = "Result";
 
 
-
+        timeval         time_begin, time_end;
 
 
         // %%%%%%%%%%%%%%%%
@@ -122,8 +124,9 @@ int main()
         }
 
         myStructure.ElementTotalConvertToInterpolationType();
-        //myStructure.NodeBuildGlobalDofs();
+        //myStructure.NodeBuildGlobalDofs();false
 
+        myStructure.UseMaximumIndependentSets(true);
         myStructure.CalculateMaximumIndependentSets();
 
 
@@ -160,25 +163,15 @@ int main()
         // Set groups
         // %%%%%%%%%%
 
-        // bottom boundary
-        int GRPNodes_Bottom = myStructure.GroupCreate("Nodes");
-        int Direction=1;
-        double Min= 0. - 0.01 * ElementHeight;
-        double Max= 0. + 0.01 * ElementHeight;
-        myStructure.GroupAddNodeCoordinateRange(GRPNodes_Bottom,Direction,Min,Max);
 
-        // top boundary
-        int GRPNodes_Top = myStructure.GroupCreate("Nodes");
-        Direction=1;
-        Min = Height - 0.01 * ElementHeight;
-        Max = Height + 0.01 * ElementHeight;
-        myStructure.GroupAddNodeCoordinateRange(GRPNodes_Top,Direction,Min,Max);
+
+
 
         //left boundary
         int GRPNodes_Left = myStructure.GroupCreate("Nodes");
-        Direction = 0;
-        Min = 0. - 0.01 * ElementLength;
-        Max = 0. + 0.01 * ElementLength;;
+        int Direction = 0;
+        double Min = 0. - 0.01 * ElementLength;
+        double Max = 0. + 0.01 * ElementLength;;
         myStructure.GroupAddNodeCoordinateRange(GRPNodes_Left,Direction,Min,Max);
 
         //right boundary
@@ -195,20 +188,50 @@ int main()
         Max = Length + 0.01 * ElementLength;
         myStructure.GroupAddNodeCoordinateRange(GrpNodes_All,Direction,Min,Max);
 
-        //intersect the groups for the left bottom node
-        int GRPLeftBottomSupport = myStructure.GroupIntersection(GRPNodes_Bottom,GRPNodes_Left);
-        if (myStructure.GroupGetNumMembers(GRPLeftBottomSupport)!=1)
-        {
-            std::cout << "group for bottom left boundary node has " << myStructure.GroupGetNumMembers(GRPLeftBottomSupport) << " members."<< std::endl;
-            exit(-1);
-        }
+        int GRPNodes_Center = myStructure.GroupCreate("Nodes");
 
-        int GRPLeftTopSupport = myStructure.GroupIntersection(GRPNodes_Top,GRPNodes_Left);
-        if (myStructure.GroupGetNumMembers(GRPLeftTopSupport)!=1)
-        {
-            std::cout << "group for top left boundary node has " << myStructure.GroupGetNumMembers(GRPLeftTopSupport) << " members."<< std::endl;
-            exit(-1);
-        }
+        auto PickNodeFunction = [Length,Height](NuTo::NodeBase* rNodePtr) -> bool
+                                {
+                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    {
+                                        double x = rNodePtr->GetCoordinate(0);
+                                        double y = rNodePtr->GetCoordinate(1);
+                                        if (x >= Length/2 -0.1 &&
+                                            x <= Length/2 +0.1 &&
+                                            y >= Height / 2.0)
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                };
+
+        myStructure.GroupAddNodeFunction(GRPNodes_Center,PickNodeFunction);
+
+
+
+        int GRPNodes_BottomRight = myStructure.GroupCreate("Nodes");
+
+        auto PickNodeFunction2 = [Length,Height](NuTo::NodeBase* rNodePtr) -> bool
+                                {
+                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    {
+                                        double x = rNodePtr->GetCoordinate(0);
+                                        double y = rNodePtr->GetCoordinate(1);
+                                        if (x >= Length - Length/3 -0.1 &&
+                                            x <= Length - Length/3 +0.1 &&
+                                            y <= Height / 2.0)
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                };
+
+        myStructure.GroupAddNodeFunction(GRPNodes_BottomRight,PickNodeFunction2);
+
+
+
 
 
 
@@ -244,6 +267,44 @@ int main()
         DispRHS(DispRHS.GetNumRows()-1,1) = DispRHS(DispRHS.GetNumRows()-2,1);
 
 
+        auto DispFunctionRHS =    [SimulationTime](double rTime)->double
+                                  {
+                                        double QuarterTime = SimulationTime/4.0;
+                                        if(rTime>=2*QuarterTime)
+                                        {
+                                            if (rTime<=3*QuarterTime)
+                                            {
+                                                return -0.2 * (rTime-2*QuarterTime) / QuarterTime;
+                                            }
+                                            return -0.2;
+                                        }
+                                        return 0.0;
+
+                                  };
+
+        auto DispFunctionCenter = [SimulationTime](double rTime)->double
+                                  {
+                                        double QuarterTime = SimulationTime/4.0;
+                                        double factor = 0.0;
+
+                                        if (rTime<=1*QuarterTime)
+                                        {
+                                            factor = rTime/QuarterTime * 0.1;
+                                        }
+                                        else if(rTime<=3*QuarterTime)
+                                        {
+                                            factor = 0.1;
+                                        }
+                                        else
+                                        {
+                                            factor = 0.1 - (rTime-3*QuarterTime)/QuarterTime * 0.1;
+                                        }
+
+                                        return factor * sin(rTime);
+                                  };
+
+
+
 
         NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DirectionX(2,1);
         DirectionX.SetValue(0,0,1.0);
@@ -260,10 +321,14 @@ int main()
 
 
 
-        myStructure.LoadCreateNodeGroupForce(0,GRPLeftBottomSupport,DirectionX, 1);
+        //myStructure.LoadCreateNodeGroupForce(0,GRPLeftBottomSupport,DirectionX, 1);
 
-                                  myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Left ,DirectionX,0);
-        int ConstraintRightDisp = myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Right,DirectionX,0);
+                                   myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Left           ,DirectionX,0);
+                                   myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Left           ,DirectionY,0);
+                                   myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Right          ,DirectionX,0);
+        int ConstraintRightDisp  = myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Right          ,DirectionY,0);
+        int ConstraintCenterDisp = myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Center         ,DirectionY,0);
+        //                           myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_BottomRight    ,DirectionY,0);
 
 
 
@@ -289,9 +354,9 @@ int main()
         // Create time integration scheme
         // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-        NuTo::NewmarkDirect myTimeIntegrationScheme(&myStructure);
+        NuTo::CrankNicolsonEvaluate myTimeIntegrationScheme(&myStructure);
 
-        myTimeIntegrationScheme.SetDampingCoefficientMass(0.05);
+        //myTimeIntegrationScheme.SetDampingCoefficientMass(0.05);
         //5 timesteps to capture the quarter wave (5/quarter wave)
         myTimeIntegrationScheme.SetMaxTimeStep(Period/20.);
         myTimeIntegrationScheme.SetTimeStep(SimulationTime/TimeSteps);
@@ -299,13 +364,16 @@ int main()
         myTimeIntegrationScheme.SetMinTimeStep(0.001*myTimeIntegrationScheme.GetMaxTimeStep());
 
 
-        myTimeIntegrationScheme.SetTimeDependentConstraint(ConstraintRightDisp, DispRHS);
+        myTimeIntegrationScheme.AddTimeDependentConstraint(ConstraintRightDisp,  DispFunctionRHS);
+        myTimeIntegrationScheme.AddTimeDependentConstraint(ConstraintCenterDisp, DispFunctionCenter);
+        //myTimeIntegrationScheme.AddTimeDependentConstraint(ConstraintRightDisp, DispRHS);
+        //myTimeIntegrationScheme.SetTimeDependentConstraint(ConstraintRightDisp, DispRHS);
 
 
 
         //set output during the simulation to false
         myStructure.SetShowTime(false);
-        myStructure.SetNumProcessors(8);
+        myStructure.SetNumProcessors(4);
 
         myTimeIntegrationScheme.AddResultTime("Time");
         myTimeIntegrationScheme.AddResultGroupNodeForce("Forces_GroupNodes_Left" ,GRPNodes_Left);
@@ -315,9 +383,12 @@ int main()
         bool deleteResultDirectoryFirst(true);
         myTimeIntegrationScheme.SetResultDirectory(VTKFolder,deleteResultDirectoryFirst);
 
-        //solve (perform Newton raphson iteration
-        myTimeIntegrationScheme.Solve(SimulationTime);
 
+        //solve (perform Newton raphson iteration
+        gettimeofday(&time_begin, NULL);
+        myTimeIntegrationScheme.Solve(SimulationTime);
+        gettimeofday(&time_end, NULL);
+        std::cout << "elapsed time : " << (time_end.tv_sec - time_begin.tv_sec) + (time_end.tv_usec - time_begin.tv_usec)/1000000.0<< " seconds" << std::endl;
 
 
 

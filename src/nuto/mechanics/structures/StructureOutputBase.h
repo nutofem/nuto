@@ -22,7 +22,11 @@ public:
 
     virtual FullVector<double,Eigen::Dynamic>& GetFullVectorDouble();
 
-    virtual int GetNumSubmatrices() const = 0;
+    virtual FullVector<double,Eigen::Dynamic>& GetFullVectorDouble(StructureEnum::eSubVector rSubvectorEnum);
+
+    virtual int GetNumSubmatrices() const;
+
+    virtual int GetNumSubvectors() const;
 
     virtual void SetSymmetry(bool rSymmetric);
 

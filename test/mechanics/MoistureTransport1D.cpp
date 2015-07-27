@@ -18,7 +18,7 @@
 #include <nuto/mechanics/nodes/NodeDof.h>
 #include <nuto/mechanics/nodes/NodeCoordinates.h>
 #include <nuto/mechanics/structures/unstructured/Structure.h>
-#include "nuto/mechanics/timeIntegration/CrankNicolson.h"
+#include "nuto/mechanics/timeIntegration/CrankNicolsonEvaluate.h"
 
 #include <nuto/metamodel/PolynomialLeastSquaresFitting.h>
 
@@ -47,7 +47,6 @@ int main()
         double          Area        = 0.04*0.04;
 
         double          delta_t     = 1.0/1.0 *     1.0 * 24.0 * 60.0 * 60.0;
-        double          t           = 0.0;
         double          t_final     = 1.0/1.0 *   293.0 * 24.0 * 60.0 * 60.0;
 
 
@@ -81,15 +80,13 @@ int main()
 
 
         // max residual
-        double          MaxResidual                     =    1.0e-12 * Area;
+        double          MaxResidual                     =    1.0e-13;
 
         // time measurement
         bool            measureTime                     = true;
         timeval         time_begin, time_end;
 
-        // other
-        bool            showPrgress                     = false;
-        boost::progress_display ProgressBar(int(t_final/delta_t));
+
 
         bool            UseVisualization                = true;
         std::string     VTKFile                         = "ResultsMoistureTransport1D.vtk";
@@ -390,7 +387,7 @@ int main()
         // Begin Test Structure Evaluate
         // -----------------------------
 
-
+/*
         // %%%%%%%%%%%%%%%%%%%%%%%
         // Manual time integration
         // %%%%%%%%%%%%%%%%%%%%%%%
@@ -419,12 +416,12 @@ int main()
 
         StructureOutputResidual[NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT]  = &SOResidual;
 
-        StructureOutputHessian[NuTo::StructureEnum::eOutput::STIFFNESS_FULL]  = &SOHessian_0;
-        StructureOutputHessian[NuTo::StructureEnum::eOutput::DAMPING_FULL]    = &SOHessian_1;
+        StructureOutputHessian[NuTo::StructureEnum::eOutput::STIFFNESS]  = &SOHessian_0;
+        StructureOutputHessian[NuTo::StructureEnum::eOutput::DAMPING]    = &SOHessian_1;
 
         StructureOutputResAndHessian[NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT]   = &SOResidual;
-        StructureOutputResAndHessian[NuTo::StructureEnum::eOutput::STIFFNESS_FULL]      = &SOHessian_0;
-        StructureOutputResAndHessian[NuTo::StructureEnum::eOutput::DAMPING_FULL]        = &SOHessian_1;
+        StructureOutputResAndHessian[NuTo::StructureEnum::eOutput::STIFFNESS]      = &SOHessian_0;
+        StructureOutputResAndHessian[NuTo::StructureEnum::eOutput::DAMPING]        = &SOHessian_1;
 
 
         NuTo::SparseMatrixCSRVector2General<double> Hessian;
@@ -553,23 +550,27 @@ int main()
 
 
         //dis.Info(12,5,true);
+*/
+        MTStructure1D.AddVisualizationComponentRelativeHumidity();
+        MTStructure1D.AddVisualizationComponentWaterVolumeFraction();
 
-/*
-        NuTo::CrankNicolson TimeIntegrationScheme(&MTStructure1D);
+        NuTo::CrankNicolsonEvaluate TimeIntegrationScheme(&MTStructure1D);
 
         TimeIntegrationScheme.SetTimeStep(delta_t);
         TimeIntegrationScheme.SetMaxTimeStep(delta_t);
         TimeIntegrationScheme.SetMinTimeStep(delta_t);
 
         TimeIntegrationScheme.SetPerformLineSearch(false);
-        TimeIntegrationScheme.SetToleranceForce(1e-9);
+        TimeIntegrationScheme.SetCheckEquilibriumOnStart(false);
+        TimeIntegrationScheme.SetToleranceForce(MaxResidual);
+        TimeIntegrationScheme.SetMaxNumIterations(40);
 
         //set result directory
         bool deleteResultDirectoryFirst(true);
         TimeIntegrationScheme.SetResultDirectory("./ResultsMoistureTransport1D",deleteResultDirectoryFirst);
 
         TimeIntegrationScheme.Solve(t_final);
-*/
+
 
         if(measureTime)
         {
@@ -586,8 +587,6 @@ int main()
         if(UseVisualization)
         {
             mkdir(VTKFolder.c_str(),0777);
-            MTStructure1D.AddVisualizationComponentRelativeHumidity();
-            MTStructure1D.AddVisualizationComponentWaterVolumeFraction();
             MTStructure1D.ExportVtkDataFileElements(VTKFolder+"/"+VTKFile,false);
         }
 

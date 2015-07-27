@@ -631,8 +631,29 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
 		}
     }
 
+
+
+
+
+
+
+
+
+
     //calculate the element solution
     Evaluate(elementOutput);
+
+
+
+
+
+
+
+
+
+
+
+
 
     //assign the outputs
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* damage(0);

@@ -39,7 +39,9 @@ class StructureBase;
 class NonlocalEqPlasticStrain;
 class NonlocalEqStrain;
 class RelativeHumidity;
+class RelativeHumidityGradient2D;
 class WaterVolumeFraction;
+class WaterVolumeFractionGradient2D;
 
 //! @brief ... base class for the constitutive relationship, e.g. material laws
 //! @author Jörg F. Unger, BAM
@@ -68,8 +70,9 @@ public:
     virtual const EngineeringStrain2D& GetEngineeringStrain2D()const;
     virtual const EngineeringStrain3D& GetEngineeringStrain3D()const;
     virtual const RelativeHumidity& GetRelativeHumidity()const;
+    virtual const RelativeHumidityGradient2D& GetRelativeHumidityGradient2D()const;
     virtual const WaterVolumeFraction& GetWaterVolumeFraction()const;
-
+    virtual const WaterVolumeFractionGradient2D& GetWaterVolumeFractionGradient2D()const;
     virtual const EngineeringStress1D& GetEngineeringStress1D()const;
 
 #ifdef ENABLE_SERIALIZATION

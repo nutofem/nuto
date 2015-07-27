@@ -99,10 +99,15 @@ NuTo::Error::eError NuTo::CrankNicolson::Solve(double rFinalTime)
         //renumber dofs and build constraint matrix
         mStructure->NodeBuildGlobalDofs();
 
-        //calculate constraint matrix
+        /*
+        // ConstraintGetConstraintMatrixAfterGaussElimination(const NuTo::SparseMatrixCSRGeneral<double>& ... ) replaced by
+        // const NuTo::SparseMatrixCSRGeneral<double> ConstraintGetConstraintMatrixAfterGaussElimination() const;
+        // ---> No need for CmatTmp anymore! --- vhirtham
+
         NuTo::SparseMatrixCSRGeneral<double> CmatTmp;
-        mStructure->ConstraintGetConstraintMatrixAfterGaussElimination(CmatTmp);
-        NuTo::SparseMatrixCSRVector2General<double> Cmat(CmatTmp);
+        mStructure->ConstraintGetConstraintMatrixAfterGaussElimination(CmatTmp);*/
+
+        NuTo::SparseMatrixCSRVector2General<double> Cmat(mStructure->ConstraintGetConstraintMatrixAfterGaussElimination());
         SparseMatrixCSRVector2General<double> CmatT (Cmat.Transpose());
         int numEntriesCMat(Cmat.GetNumEntries());
         FullVector<double,Eigen::Dynamic> bRHSprev, bRHS;
@@ -173,7 +178,7 @@ NuTo::Error::eError NuTo::CrankNicolson::Solve(double rFinalTime)
             mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
         }
 //        plotHistory(0,1) = timeDependentConstraintFactor;
-        mStructure->ConstraintGetRHSAfterGaussElimination(bRHSprev);
+        bRHSprev = mStructure->ConstraintGetRHSAfterGaussElimination();
         mStructure->NodeMergeActiveDofValues(0,lastConverged_disp_j); //disp_k is internally calculated from the previous constraint matrix
         mStructure->ElementTotalUpdateTmpStaticData();
 
@@ -216,7 +221,7 @@ NuTo::Error::eError NuTo::CrankNicolson::Solve(double rFinalTime)
                 timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
                 mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
             }
-            mStructure->ConstraintGetRHSAfterGaussElimination(bRHSprev);
+            bRHSprev = mStructure->ConstraintGetRHSAfterGaussElimination();
             mStructure->NodeMergeActiveDofValues(0,lastConverged_disp_j); //disp_k is internally calculated from the previous constraint matrix
             mStructure->ElementTotalUpdateTmpStaticData();
 
@@ -251,7 +256,7 @@ NuTo::Error::eError NuTo::CrankNicolson::Solve(double rFinalTime)
                 timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
                 mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
             }
-            mStructure->ConstraintGetRHSAfterGaussElimination(bRHS);
+            bRHS = mStructure->ConstraintGetRHSAfterGaussElimination();
             FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deltaBRHS(bRHS-bRHSprev);
 
             //calculate the residual contribution from stiffness

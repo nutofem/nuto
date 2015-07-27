@@ -19,6 +19,10 @@
 #include "nuto/mechanics/constitutive/thermal/TemperatureGradient3D.h"
 #include "nuto/mechanics/constitutive/mechanics/LocalEqStrain.h"
 #include "nuto/mechanics/constitutive/mechanics/NonlocalEqStrain.h"
+#include "nuto/mechanics/constitutive/moistureTransport/RelativeHumidity.h"
+#include "nuto/mechanics/constitutive/moistureTransport/RelativeHumidityGradient2D.h"
+#include "nuto/mechanics/constitutive/moistureTransport/WaterVolumeFraction.h"
+#include "nuto/mechanics/constitutive/moistureTransport/WaterVolumeFractionGradient2D.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentNonlocal.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
@@ -65,9 +69,16 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
             ExtractNodeValues(nodalValues[dof], 0, dof);
         }
 
-        //define inputs and outputs
+
+
+
+
+        /*****************************************\
+         *    CONSTITUTIVE INPUT DECLARATION     *
+        \*****************************************/
+
         std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*> constitutiveInputList;
-        std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*> constitutiveOutputList;
+
 
         EngineeringStress2D engineeringStress2D;
         EngineeringStress3D engineeringStress3D;
@@ -79,11 +90,30 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
         //allocate damage
         Damage damage;
 
+        // Moisture Transport
+        // ------------------
+
+        RelativeHumidity                relativeHumidity;
+        RelativeHumidity                relativeHumidityD1;
+        RelativeHumidityGradient2D      relativeHumidityGradient;
+        WaterVolumeFraction             waterVolumeFraction;
+        WaterVolumeFraction             waterVolumeFractionD1;
+        WaterVolumeFractionGradient2D   waterVolumeFractionGradient;
+
         //allocate nonlocal eq strain
         NonlocalEqStrain nonlocalEqStrain;
 
         //allocate local eq strain
         LocalEqStrain localEqStrain;
+
+
+
+
+        /*****************************************\
+         *    CONSTITUTIVE OUTPUT DECLARATION    *
+        \*****************************************/
+
+        std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*> constitutiveOutputList;
 
         //allocate transient nonlocal parameter
         ConstitutiveTangentLocal<1, 1> nonlocalParameter;
@@ -110,8 +140,43 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
 
         DeformationGradient2D deformationGradient;
 
+        // Moisture Transport
+        // ------------------
+
+        // Naming scheme for matrices: tangent_D_X_D_Y_HN_AB
+        // D_X_D_Y:     defines the derivative of X with respect to Y
+        // HN:          defines the matrix the tangent belongs to, for example H0 for stiffness or H1 for damping
+        // AB:          defines the combination of (derivative) shapefunctions the tangent has to be multiplied with, for example BN means: derivative shapefunctions * tangent * shapefunctions
+
+        // Internal Gradient
+        ConstitutiveTangentLocal<1,1> residualWaterPhaseN;
+        ConstitutiveTangentLocal<2,1> residualWaterPhaseB;
+        ConstitutiveTangentLocal<1,1> residualVaporPhaseN;
+        ConstitutiveTangentLocal<2,1> residualVaporPhaseB;
+        // Hessian 0
+        ConstitutiveTangentLocal<1,1> tangent_D_Residual_RH_D_RH_H0_BB;
+        ConstitutiveTangentLocal<1,1> tangent_D_Residual_RH_D_RH_H0_NN;
+        ConstitutiveTangentLocal<2,1> tangent_D_Residual_RH_D_WV_H0_BN;
+        ConstitutiveTangentLocal<1,1> tangent_D_Residual_RH_D_WV_H0_NN;
+        ConstitutiveTangentLocal<1,1> tangent_D_Residual_WV_D_RH_H0_NN;
+        ConstitutiveTangentLocal<1,1> tangent_D_Residual_WV_D_WV_H0_BB;
+        ConstitutiveTangentLocal<2,1> tangent_D_Residual_WV_D_WV_H0_BN;
+        ConstitutiveTangentLocal<1,1> tangent_D_Residual_WV_D_WV_H0_NN;
+        // Hessian 1
+        ConstitutiveTangentLocal<1,1> tangent_D_Residual_RH_D_RH_H1_NN;
+        ConstitutiveTangentLocal<1,1> tangent_D_Residual_RH_D_WV_H1_NN;
+        ConstitutiveTangentLocal<1,1> tangent_D_Residual_WV_D_WV_H1_NN;
+
         //for the lumped mass calculation
         double total_mass = 0.;
+
+
+
+
+
+        /*****************************************\
+         *     FILL CONSTITUTIVE INPUT LIST      *
+        \*****************************************/
 
         for (auto dof : dofs)
         {
@@ -129,12 +194,33 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                 constitutiveInputList[NuTo::Constitutive::Input::NONLOCAL_EQ_STRAIN] = &(nonlocalEqStrain);
             }
                 break;
+            case Node::RELATIVEHUMIDITY:
+            {
+                constitutiveInputList[NuTo::Constitutive::Input::RELATIVE_HUMIDITY]                 = &(relativeHumidity);
+                constitutiveInputList[NuTo::Constitutive::Input::RELATIVE_HUMIDITY_D1]              = &(relativeHumidityD1);
+                constitutiveInputList[NuTo::Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT]        = &(relativeHumidityGradient);
+            }
+                break;
+            case Node::WATERVOLUMEFRACTION:
+            {
+                constitutiveInputList[NuTo::Constitutive::Input::WATER_VOLUME_FRACTION]             = &(waterVolumeFraction);
+                constitutiveInputList[NuTo::Constitutive::Input::WATER_VOLUME_FRACTION_D1]          = &(waterVolumeFractionD1);
+                constitutiveInputList[NuTo::Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT]    = &(waterVolumeFractionGradient);
+            }
+                break;
             default:
                 throw MechanicsException("[NuTo::Element2D::Evaluate] Constitutive input for " + Node::AttributeToString(dof) + " not implemented.");
             }
         }
 
-        //define outputs
+
+
+
+
+        /*****************************************\
+         *    FILL CONSTITUTIVE OUTPUT LIST      *
+        \*****************************************/
+
         for (auto it = rElementOutput.begin(); it != rElementOutput.end(); it++)
         {
             switch (it->first)
@@ -158,6 +244,25 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         {
                             constitutiveOutputList[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN] = &localEqStrain;
                             constitutiveOutputList[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI] = &nonlocalParameter;
+                        }
+                            break;
+                        case Node::RELATIVEHUMIDITY:
+                        {
+                            if (activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                            {
+                                constitutiveOutputList[NuTo::Constitutive::Output::RESIDUAL_VAPOR_PHASE_N]                                      = &residualVaporPhaseN;
+                                constitutiveOutputList[NuTo::Constitutive::Output::RESIDUAL_VAPOR_PHASE_B]                                      = &residualVaporPhaseB;
+                            }
+                        }
+                            break;
+
+                        case Node::WATERVOLUMEFRACTION:
+                        {
+                            if (activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end())
+                            {
+                                constitutiveOutputList[NuTo::Constitutive::Output::RESIDUAL_WATER_PHASE_N]                                      = &residualWaterPhaseN;
+                                constitutiveOutputList[NuTo::Constitutive::Output::RESIDUAL_WATER_PHASE_B]                                      = &residualWaterPhaseB;
+                            }
                         }
                             break;
                         default:
@@ -201,6 +306,28 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         constitutiveOutputList[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI] = &nonlocalParameter;
                     }
                         break;
+                    case Node::RELATIVEHUMIDITY:
+                    {
+                        if (activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_RH_D_RH_H0_BB]                                            = &tangent_D_Residual_RH_D_RH_H0_BB;
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_RH_D_RH_H0_NN]                                            = &tangent_D_Residual_RH_D_RH_H0_NN;
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_RH_D_WV_H0_BN]                                            = &tangent_D_Residual_RH_D_WV_H0_BN;
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_RH_D_WV_H0_NN]                                            = &tangent_D_Residual_RH_D_WV_H0_NN;
+                        }
+                    }
+                        break;
+                    case Node::WATERVOLUMEFRACTION:
+                    {
+                        if (activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end())
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_WV_D_RH_H0_NN]                                            = &tangent_D_Residual_WV_D_RH_H0_NN;
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_WV_D_WV_H0_BB]                                            = &tangent_D_Residual_WV_D_WV_H0_BB;
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_WV_D_WV_H0_BN]                                            = &tangent_D_Residual_WV_D_WV_H0_BN;
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_WV_D_WV_H0_NN]                                            = &tangent_D_Residual_WV_D_WV_H0_NN;
+                        }
+                    }
+                        break;
                     default:
                         throw MechanicsException("[NuTo::Element2D::Evaluate] Constitutive output HESSIAN_0_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
 
@@ -212,7 +339,37 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                 it->second->GetFullMatrixDouble().Resize(numActiveDofs, NumActiveDofsNonlocal);
                 it->second->SetSymmetry(true);
                 it->second->SetConstant(true);
-                throw MechanicsException("[NuTo::Element2D::Evaluate] Constitutive output HESSIAN_1_TIME_DERIVATIVE not implemented.");
+                for (auto dof : activeDofs)
+                {
+                    switch (dof)
+                    {
+                    case Node::DISPLACEMENTS:
+                    {
+                        break;
+                    }
+                    case Node::RELATIVEHUMIDITY:
+                    {
+                        if (activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_RH_D_RH_H1_NN]                                            = &tangent_D_Residual_RH_D_RH_H1_NN;
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_RH_D_WV_H1_NN]                                            = &tangent_D_Residual_RH_D_WV_H1_NN;
+                        }
+                    }
+                        break;
+                    case Node::WATERVOLUMEFRACTION:
+                    {
+                        if (activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end())
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_WV_D_WV_H1_NN]                                            = &tangent_D_Residual_WV_D_WV_H1_NN;
+                        }
+                    }
+                        break;
+                    default:
+                    {
+                        throw MechanicsException("[NuTo::Element2D::Evaluate] Constitutive output HESSIAN_1_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
+                    }
+                    }
+                }
                 break;
             case Element::HESSIAN_2_TIME_DERIVATIVE:
             {
@@ -334,6 +491,25 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     nonlocalEqStrain(0, 0) = (nodalValues[Node::NONLOCALEQSTRAIN] * shapeFunctions[Node::NONLOCALEQSTRAIN])(0, 0);
                 }
                     break;
+                case Node::RELATIVEHUMIDITY:
+                {
+                    relativeHumidity(0,0)        = (nodalValues[Node::RELATIVEHUMIDITY] * shapeFunctions[Node::RELATIVEHUMIDITY])(0,0);
+                    relativeHumidityD1(0,0)      = (ExtractNodeValues(1, Node::RELATIVEHUMIDITY) * shapeFunctions[Node::RELATIVEHUMIDITY])(0,0);
+
+                    relativeHumidityGradient.setZero();
+                    relativeHumidityGradient.AddBlock(0,0,derivativeShapeFunctions[Node::RELATIVEHUMIDITY].transpose() * nodalValues[Node::RELATIVEHUMIDITY].transpose());
+                }
+                    break;
+                case Node::WATERVOLUMEFRACTION:
+                {
+                    waterVolumeFraction(0,0)         = (nodalValues[Node::WATERVOLUMEFRACTION] * shapeFunctions[Node::WATERVOLUMEFRACTION])(0,0);
+                    waterVolumeFractionD1(0,0)       = (ExtractNodeValues(1, Node::WATERVOLUMEFRACTION) * shapeFunctions[Node::WATERVOLUMEFRACTION])(0);
+
+                    waterVolumeFractionGradient.setZero();
+                    waterVolumeFractionGradient.AddBlock(0,0, derivativeShapeFunctions[Node::WATERVOLUMEFRACTION].transpose() * nodalValues[Node::WATERVOLUMEFRACTION].transpose());
+
+                }
+                    break;
                 default:
                     throw MechanicsException("[NuTo::Element2D::Evaluate] Constitutive input for " + Node::AttributeToString(dof) + " not implemented.");
                 }
@@ -404,6 +580,42 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                                         startIndexNonlocalEqStrain, it->second->GetFullVectorDouble());
                             }
                                 break;
+                            case Node::RELATIVEHUMIDITY:
+                            {
+                                if(activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                                {
+                                    AddDetJBtX( derivativeShapeFunctions.at(Node::RELATIVEHUMIDITY),
+                                                residualVaporPhaseB,
+                                                factor,
+                                                startIndex,
+                                                it->second->GetFullVectorDouble());
+
+                                    AddDetJNtX( shapeFunctions.at(Node::RELATIVEHUMIDITY),
+                                                residualVaporPhaseN,
+                                                factor,
+                                                startIndex,
+                                                it->second->GetFullVectorDouble());
+                                }
+                            }
+                                break;
+                            case Node::WATERVOLUMEFRACTION:
+                            {
+                                if(activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end())
+                                {
+                                    AddDetJBtX( derivativeShapeFunctions.at(Node::WATERVOLUMEFRACTION),
+                                                residualWaterPhaseB,
+                                                factor,
+                                                startIndex,
+                                                it->second->GetFullVectorDouble());
+
+                                    AddDetJNtX( shapeFunctions.at(Node::WATERVOLUMEFRACTION),
+                                                residualWaterPhaseN,
+                                                factor,
+                                                startIndex,
+                                                it->second->GetFullVectorDouble());
+                                }
+                            }
+                                break;
                             default:
                                 throw MechanicsException("[NuTo::Element2D::Evaluate] Element output INTERNAL_GRADIENT for " + Node::AttributeToString(dof) + " not implemented.");
 
@@ -413,22 +625,14 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                 }
                     break;
                 case Element::HESSIAN_0_TIME_DERIVATIVE:
-                {
-                    //factor for the numerical integration
-                    assert(mSection->GetThickness() > 0);
-                    double factor(mSection->GetThickness() * detJacobian * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
-                    if (nonlocalTangentStressStrain.GetConstant() == false)
-                        it->second->SetConstant(false);
-                    if (NumNonlocalElements != 0)
-                    {
-                        if (nonlocalTangentStressStrain.GetSymmetry() == false)
-                            it->second->SetSymmetry(false);
-                    } else
-                    {
-                        it->second->SetSymmetry(nonlocalTangentStressStrain.GetSubMatrix_3x3(0).GetSymmetry());
-                    }
+                 {
+                     //factor for the numerical integration
+                     assert(mSection->GetThickness() > 0);
+                     double factor(mSection->GetThickness() * detJacobian * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
 
-                    for (auto dof : activeDofs)
+
+
+                     for (auto dof : activeDofs)
                     {
                         int startIndex = mInterpolationType->Get(dof).GetLocalStartIndex();
                         switch (dof)
@@ -437,6 +641,24 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         {
                             if (NumNonlocalElements != 0)
                             {
+
+                                if (NumNonlocalElements != 0)
+                                {
+                                    if (nonlocalTangentStressStrain.GetConstant() == false)
+                                        it->second->SetConstant(false);
+
+                                    if (nonlocalTangentStressStrain.GetSymmetry() == false)
+                                        it->second->SetSymmetry(false);
+                                } else
+                                {
+
+                                    if (nonlocalTangentStressStrain.GetSubMatrix_3x3(0).GetConstant() == false)
+                                        it->second->SetConstant(false);
+
+                                    if (nonlocalTangentStressStrain.GetSubMatrix_3x3(0).GetSymmetry() == false)
+                                        it->second->SetSymmetry(false);
+                                }
+
                                 //Nonlocal Model where the material model is still local
                                 if (nonlocalTangentStressStrain.GetLocalSolution())
                                 {
@@ -524,7 +746,130 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
 
                         }
                             break;
+                        case Node::RELATIVEHUMIDITY:
+                        {
+                                                        if(activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                            {
+                                int indexRelHum = startIndex;
+                                int indexWatVol = mInterpolationType->Get(Node::WATERVOLUMEFRACTION).GetLocalStartIndex();
 
+                                auto& RelHumShapeFunction = shapeFunctions.at(Node::RELATIVEHUMIDITY);
+                                auto& WatVolShapeFunction = shapeFunctions.at(Node::WATERVOLUMEFRACTION);
+
+                                auto& RelHumDerivativeShapeFunction = derivativeShapeFunctions.at(Node::RELATIVEHUMIDITY);
+
+                                // | - - |
+                                // | - X |
+
+
+                                AddDetJBtXB(RelHumDerivativeShapeFunction,
+                                            RelHumDerivativeShapeFunction,
+                                            tangent_D_Residual_RH_D_RH_H0_BB,
+                                            factor,
+                                            indexRelHum,
+                                            indexRelHum,
+                                            it->second->GetFullMatrixDouble());
+
+                                AddDetJNtXN(RelHumShapeFunction,
+                                            RelHumShapeFunction,
+                                            tangent_D_Residual_RH_D_RH_H0_NN,
+                                            factor,
+                                            indexRelHum,
+                                            indexRelHum,
+                                            it->second->GetFullMatrixDouble());
+
+                                // coupling terms
+
+                                // | - - |
+                                // | X - |
+
+                                AddDetJBtXN(RelHumDerivativeShapeFunction,
+                                            WatVolShapeFunction,
+                                            tangent_D_Residual_RH_D_WV_H0_BN,
+                                            factor,
+                                            indexRelHum,
+                                            indexWatVol,
+                                            it->second->GetFullMatrixDouble());
+
+                                AddDetJNtXN(RelHumShapeFunction,
+                                            WatVolShapeFunction,
+                                            tangent_D_Residual_RH_D_WV_H0_NN,
+                                            factor,
+                                            indexRelHum,
+                                            indexWatVol,
+                                            it->second->GetFullMatrixDouble());
+/*
+                                //it->second->GetFullMatrixDouble().Info();         // Check Element Matrix if needed
+                                //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> test = it->second->GetFullMatrixDouble();
+                                //test.Info(4,5,true);
+                                //int a=0;
+                                //a++;
+*/
+                            }
+                        }
+                            break;
+                        case Node::WATERVOLUMEFRACTION:
+                        {
+
+                            if(activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end())
+                            {
+                                int indexRelHum = mInterpolationType->Get(Node::RELATIVEHUMIDITY).GetLocalStartIndex();
+                                int indexWatVol = startIndex;
+
+                                auto& RelHumShapeFunction = shapeFunctions.at(Node::RELATIVEHUMIDITY);
+                                auto& WatVolShapeFunction = shapeFunctions.at(Node::WATERVOLUMEFRACTION);
+
+                                auto& WatVolDerivativeShapeFunction = derivativeShapeFunctions.at(Node::WATERVOLUMEFRACTION);
+
+                                // | X - |
+                                // | - - |
+
+                                AddDetJBtXB(WatVolDerivativeShapeFunction,
+                                            WatVolDerivativeShapeFunction,
+                                            tangent_D_Residual_WV_D_WV_H0_BB,
+                                            factor,
+                                            indexWatVol,
+                                            indexWatVol,
+                                            it->second->GetFullMatrixDouble());
+
+
+                                AddDetJBtXN(WatVolDerivativeShapeFunction,
+                                            WatVolShapeFunction,
+                                            tangent_D_Residual_WV_D_WV_H0_BN,
+                                            factor,
+                                            indexWatVol,
+                                            indexWatVol,
+                                            it->second->GetFullMatrixDouble());
+
+                                AddDetJNtXN(WatVolShapeFunction,
+                                            WatVolShapeFunction,
+                                            tangent_D_Residual_WV_D_WV_H0_NN,
+                                            factor,
+                                            indexWatVol,
+                                            indexWatVol,
+                                            it->second->GetFullMatrixDouble());
+
+
+                                // coupling terms
+
+                                // | - X |
+                                // | - - |
+
+                                AddDetJNtXN(WatVolShapeFunction,
+                                            RelHumShapeFunction,
+                                            tangent_D_Residual_WV_D_RH_H0_NN,
+                                            factor,
+                                            indexWatVol,
+                                            indexRelHum,
+                                            it->second->GetFullMatrixDouble());
+
+
+                                //it->second->GetFullMatrixDouble().Info();         // Check Element Matrix if needed
+                                //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> test = it->second->GetFullMatrixDouble();
+                                //int a=0;
+                            }
+                        }
+                            break;
                         default:
                             throw MechanicsException("[NuTo::Element2D::Evaluate] Element output HESSIAN_0_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
 
@@ -534,8 +879,101 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     break;
                 case Element::HESSIAN_1_TIME_DERIVATIVE:
                 {
-                    throw MechanicsException("[NuTo::Element2D::Evaluate] Element output HESSIAN_1_TIME_DERIVATIVE not implemented.");
+                //factor for the numerical integration
+                //assert(mSection->GetArea() > 0);
+                //if (tangentStressStrain.GetConstant() == false)
+                //    it->second->SetConstant(false);
+                //if (tangentStressStrain.GetSymmetry() == false)
+                //    it->second->SetSymmetry(false);
 
+                for (auto dof : activeDofs)
+                {
+                    int startIndex = mInterpolationType->Get(dof).GetLocalStartIndex();
+                    switch (dof)
+                    {
+                    case Node::DISPLACEMENTS:
+                    {
+                        break;
+                    }
+
+
+                    case Node::RELATIVEHUMIDITY:
+                    {
+
+                        if(activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                        {
+                            int indexRelHum = startIndex;
+                            int indexWatVol = mInterpolationType->Get(Node::WATERVOLUMEFRACTION).GetLocalStartIndex();
+
+                            auto RelHumShapeFunction = shapeFunctions.at(Node::RELATIVEHUMIDITY);
+                            auto WatVolShapeFunction = shapeFunctions.at(Node::WATERVOLUMEFRACTION);
+
+                            // | - - |
+                            // | - X |
+
+                            AddDetJNtXN(RelHumShapeFunction,
+                                        RelHumShapeFunction,
+                                        tangent_D_Residual_RH_D_RH_H1_NN,
+                                        factor,
+                                        indexRelHum,
+                                        indexRelHum,
+                                        it->second->GetFullMatrixDouble());
+
+                            // coupling terms
+
+                            // | - - |
+                            // | X - |
+
+                            AddDetJNtXN(RelHumShapeFunction,
+                                        WatVolShapeFunction,
+                                        tangent_D_Residual_RH_D_WV_H1_NN,
+                                        factor,
+                                        indexRelHum,
+                                        indexWatVol,
+                                        it->second->GetFullMatrixDouble());
+
+                            //it->second->GetFullMatrixDouble().Info();         // Check Element Matrix if needed
+                            //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> test = it->second->GetFullMatrixDouble();
+                            //test.Info(4,4,true);
+                            //int a=0;
+                            //a++;
+
+                        }
+                    }
+                        break;
+                    case Node::WATERVOLUMEFRACTION:
+                    {
+
+                        if(activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end())
+                        {
+                            int indexWatVol = startIndex;
+
+                            auto WatVolShapeFunction = shapeFunctions.at(Node::WATERVOLUMEFRACTION);
+
+
+                            // | X - |
+                            // | - - |
+
+                            AddDetJNtXN(WatVolShapeFunction,
+                                        WatVolShapeFunction,
+                                        tangent_D_Residual_WV_D_WV_H1_NN,
+                                        factor,
+                                        indexWatVol,
+                                        indexWatVol,
+                                        it->second->GetFullMatrixDouble());
+
+
+                            //it->second->GetFullMatrixDouble().Info();         // Check Element Matrix if needed
+                            //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> test = it->second->GetFullMatrixDouble();
+                            //int a=0;
+                        }
+                    }
+                        break;
+                    default:
+                        throw MechanicsException("[NuTo::Element2D::Evaluate] Element output HESSIAN_1_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
+
+                    }
+                }
                 }
                     break;
                 case Element::HESSIAN_2_TIME_DERIVATIVE:
@@ -560,6 +998,8 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                             }
                         }
                             break;
+                        case Node::RELATIVEHUMIDITY:
+                        case Node::WATERVOLUMEFRACTION:
                         case Node::TEMPERATURES:
                             break;
                         default:
@@ -825,6 +1265,14 @@ void NuTo::Element2D::ExtractNodeValues(Eigen::MatrixXd& rNodeValues, int rTimeD
             rNodeValues(0, iNode) = node->GetNonlocalEqStrain(rTimeDerivative);
             break;
 
+        case Node::WATERVOLUMEFRACTION:
+            rNodeValues(0,iNode) = node->GetWaterVolumeFraction(rTimeDerivative);
+            break;
+
+        case Node::RELATIVEHUMIDITY:
+            rNodeValues(0,iNode) = node->GetRelativeHumidity(rTimeDerivative);
+            break;
+
         default:
             throw MechanicsException("[NuTo::Element2D::ExtractNodeValues] Not implemented for " + Node::AttributeToString(rDofType) + ".");
         }
@@ -860,6 +1308,16 @@ const Eigen::VectorXi NuTo::Element2D::CalculateGlobalRowDofs() const
             case Node::NONLOCALEQSTRAIN:
             {
                 globalRowDofs[index++] = nodePtr->GetDofNonlocalEqStrain();
+            }
+                break;
+            case Node::WATERVOLUMEFRACTION:
+            {
+                globalRowDofs[index++] = nodePtr->GetDofWaterVolumeFraction();
+            }
+                break;
+            case Node::RELATIVEHUMIDITY:
+            {
+                globalRowDofs[index++] = nodePtr->GetDofRelativeHumidity();
             }
                 break;
             default:
@@ -1130,6 +1588,141 @@ void NuTo::Element2D::AddDetJNtdLocalEqStraindEpsilonB(Eigen::VectorXd rShapeFun
 
 }
 
+
+
+
+//! @brief adds up the constitutive Tangent times the derivative shape functions
+//! @param rDerivativeShapeFunctions the derivative shape functions
+//! @param rConstitutiveTangent the result given by the constitutive law
+//! @param factor factor including det Jacobian area and integration point weight
+//! @param rRow start row in case of a multifield problem
+//! @param rResult result vector
+void NuTo::Element2D::AddDetJBtX(const Eigen::MatrixXd &rDerivativeShapeFunctions, ConstitutiveTangentLocal<2,1> &rConstitutiveTangent, double rFactor, int rRow, FullVector<double, Eigen::Dynamic> &rResult) const
+{
+    Eigen::VectorXd tmpfactor = rConstitutiveTangent * rFactor;
+    int NumDofs      = rDerivativeShapeFunctions.rows();
+
+    assert(rDerivativeShapeFunctions.cols() == GetGlobalDimension());
+
+    Eigen::VectorXd result = rDerivativeShapeFunctions * tmpfactor;
+    rResult.block(rRow, 0, NumDofs, 1) += result;
+}
+
+
+
+
+
+
+
+
+//! @brief adds up the constitutive Tangent times the Shape Functions
+//! @param rShapeFunctions the shape functions
+//! @param rConstitutiveTangent the result given by the constitutive law
+//! @param factor factor including det Jacobian area and integration point weight
+//! @param rRow start row in case of a multifield problem
+//! @param rResult result vector
+void NuTo::Element2D::AddDetJNtX(Eigen::VectorXd &rShapeFunctions, ConstitutiveTangentLocal<1, 1> &rConstitutiveTangent, double rFactor, int rRow, FullVector<double, Eigen::Dynamic> &rResult) const
+{
+    Eigen::VectorXd tmpfactor = rConstitutiveTangent * rFactor;
+    int NumDofs      = rShapeFunctions.rows();
+
+    assert(rShapeFunctions.cols() == 1);
+
+    Eigen::VectorXd result =  rShapeFunctions * tmpfactor;
+
+    rResult.block(rRow, 0, NumDofs, 1) += result;
+}
+
+
+//! @brief adds to a matrix the product B1^t X B2, where B1 and B2 are the derivative shape functions and X is the constitutive tangent
+//! @param rDerivativeShapeFunction1 derivative shape function 1
+//! @param rDerivativeShapeFunction2 derivative shape function 2
+//! @param ConstitutiveTangentBase constitutive tangent matrix
+//! @param rFactor factor including area, determinant of Jacobian and IP weight
+//! @param rRow row, where to start to add the submatrix
+//! @param rCol col, where to start to add the submatrix
+//! @param rResult result
+void NuTo::Element2D::AddDetJBtXB(const Eigen::MatrixXd &rDerivativeShapeFunctions1,
+                                  const Eigen::MatrixXd &rDerivativeShapeFunctions2,
+                                  const ConstitutiveTangentLocal<1, 1> &rConstitutiveTangent,
+                                  double rFactor,
+                                  int rRow,
+                                  int rCol,
+                                  FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> &rResult) const
+{
+    int NumRowDofs  = rDerivativeShapeFunctions1.rows();
+    int NumColDofs  = rDerivativeShapeFunctions2.rows();
+
+    assert(rDerivativeShapeFunctions1.cols() == GetGlobalDimension());
+    assert(rDerivativeShapeFunctions2.cols() == GetGlobalDimension());
+
+    rFactor *= rConstitutiveTangent(0,0);
+
+    Eigen::MatrixXd result =  rDerivativeShapeFunctions1 * rFactor * rDerivativeShapeFunctions2.transpose();
+
+    rResult.block(rRow,rCol,NumRowDofs,NumColDofs)+=result;
+}
+
+
+//! @brief adds to a matrix the product B^t X N, where B is the derivative shape functions, N the shape function and X the constitutive tangent
+//! @param rDerivativeShapeFunction derivative shape function
+//! @param rShapeFunction shape function
+//! @param ConstitutiveTangentBase constitutive tangent matrix
+//! @param rFactor factor including area, determinant of Jacobian and IP weight
+//! @param rRow row, where to start to add the submatrix
+//! @param rCol col, where to start to add the submatrix
+//! @param rResult result
+void NuTo::Element2D::AddDetJBtXN(const Eigen::MatrixXd &rDerivativeShapeFunction,
+                                  const Eigen::VectorXd &rShapeFunction,
+                                  const ConstitutiveTangentLocal<2, 1> &rConstitutiveTangent,
+                                  double rFactor,
+                                  int rRow,
+                                  int rCol,
+                                  FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> &rResult) const
+{
+    int NumRowDofs  = rDerivativeShapeFunction.rows();
+    int NumColDofs  = rShapeFunction.rows();
+
+    Eigen::VectorXd tmpfactor = rConstitutiveTangent * rFactor;
+
+    assert(rShapeFunction.cols() == 1);
+    assert(rDerivativeShapeFunction.cols() == GetGlobalDimension());
+
+
+    Eigen::MatrixXd result =  rDerivativeShapeFunction * tmpfactor * rShapeFunction.transpose();
+
+    rResult.block(rRow,rCol,NumRowDofs,NumColDofs)+=result;
+}
+
+//! @brief adds to a matrix the product N1^t X N2, where N1 and N2 contains the the shape functions and X is the constitutive tangent
+//! @param rShapeFunction1 shape function 1
+//! @param rShapeFunction2 shape function 2
+//! @param ConstitutiveTangentBase constitutive tangent matrix
+//! @param rFactor factor including area, determinant of Jacobian and IP weight
+//! @param rRow row, where to start to add the submatrix
+//! @param rCol col, where to start to add the submatrix
+void NuTo::Element2D::AddDetJNtXN(const Eigen::VectorXd &rShapeFunction1,
+                                  const Eigen::VectorXd &rShapeFunction2,
+                                  const ConstitutiveTangentLocal<1,1> &rConstitutiveTangent,
+                                  double rFactor,
+                                  int rRow,
+                                  int rCol,
+                                  FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> &rResult) const
+{
+    int NumRowDofs  = rShapeFunction1.rows();
+    int NumColDofs  = rShapeFunction2.rows();
+
+    assert(rShapeFunction1.cols() == 1);
+    assert(rShapeFunction2.cols() == 1);
+
+    rFactor *= rConstitutiveTangent(0,0);
+
+    Eigen::MatrixXd result =  rShapeFunction1 * rFactor * rShapeFunction2.transpose();
+
+    rResult.block(rRow,rCol,NumRowDofs,NumColDofs)+=result;
+}
+
+
 void NuTo::Element2D::CalculateJacobian(const Eigen::MatrixXd& rDerivativeShapeFunctions, const Eigen::MatrixXd& rNodeCoordinates, Eigen::Matrix2d& rInvJacobian, double& rDetJac) const
 {
     /*       jacobian
@@ -1228,4 +1821,7 @@ void NuTo::Element2D::CheckElement()
         throw MechanicsException("[NuTo::Element2D::CheckElement] element with zero volume (check nodes).");
     }
 }
+
+
+
 

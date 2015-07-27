@@ -428,9 +428,12 @@ NuTo::SparseMatrixCSRVector2General<T>& NuTo::SparseMatrixCSRVector2General<T>::
 	{
 		throw MathException("[SparseMatrixCSRVector2General::operator-=] both matrices must have zero based indexing.");
 	}
-	for (int row = 0; row < rOther.GetNumRows(); row++)
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static)
+#endif
+    for (int row = 0; row < rOther.GetNumRows(); ++row)
 	{
-		for (unsigned int pos = 0; pos < rOther.mValues[row].size(); pos++)
+        for (unsigned int pos = 0; pos < rOther.mValues[row].size(); ++pos)
 		{
 			this->AddValue(row, rOther.mColumns[row][pos], - rOther.mValues[row][pos]);
 		}
@@ -452,9 +455,12 @@ NuTo::SparseMatrixCSRVector2General<T>& NuTo::SparseMatrixCSRVector2General<T>::
 	{
 		throw MathException("[SparseMatrixCSRVector2General::operator+=] both matrices must have zero based indexing.");
 	}
-	for (int row = 0; row < rOther.GetNumRows(); row++)
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static)
+#endif
+    for (int row = 0; row < rOther.GetNumRows(); ++row)
 	{
-		for (unsigned int pos = 0; pos < rOther.mValues[row].size(); pos++)
+        for (unsigned int pos = 0; pos < rOther.mValues[row].size(); ++pos)
 		{
 			this->AddValue(row, rOther.mColumns[row][pos], rOther.mValues[row][pos]);
 		}
@@ -476,9 +482,12 @@ NuTo::SparseMatrixCSRVector2General<T>& NuTo::SparseMatrixCSRVector2General<T>::
 	{
 		throw MathException("[SparseMatrixCSRVector2General::operator+=] both matrices must have zero based indexing.");
 	}
-	for (int row = 0; row < rOther.GetNumRows(); row++)
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static)
+#endif
+    for (int row = 0; row < rOther.GetNumRows(); ++row)
 	{
-		for (unsigned int pos = 0; pos < rOther.mValues[row].size(); pos++)
+        for (unsigned int pos = 0; pos < rOther.mValues[row].size(); ++pos)
 		{
 			this->AddValue(row, rOther.mColumns[row][pos], rOther.mValues[row][pos]);
 			if (row!=rOther.mColumns[row][pos])
@@ -503,19 +512,21 @@ NuTo::SparseMatrixCSRVector2General<T> NuTo::SparseMatrixCSRVector2General<T>::o
 		throw MathException("[SparseMatrixCSRVector2General::operator*] both matrices must have zero based indexing.");
 	}
 	SparseMatrixCSRVector2General<T> result(this->GetNumRows(), rOther.GetNumColumns());
-
-	for (int thisRow = 0; thisRow < this->GetNumRows(); thisRow++)
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static)
+#endif
+    for (int thisRow = 0; thisRow < this->GetNumRows(); ++thisRow)
 	{
 		const std::vector<T>& thisValueVec(this->mValues[thisRow]);
 		const std::vector<int>& thisColumnVec(this->mColumns[thisRow]);
-		for (unsigned int thisPos = 0; thisPos < thisValueVec.size(); thisPos++)
+        for (unsigned int thisPos = 0; thisPos < thisValueVec.size(); ++thisPos)
 		{
 			unsigned int thisColumn =thisColumnVec[thisPos];
 			T thisValue = thisValueVec[thisPos];
 
 			const std::vector<int>& otherColumnVec(rOther.mColumns[thisColumn]);
 			const std::vector<T>& otherValueVec(rOther.mValues[thisColumn]);
-			for (unsigned int otherPos = 0; otherPos < otherColumnVec.size(); otherPos++)
+            for (unsigned int otherPos = 0; otherPos < otherColumnVec.size(); ++otherPos)
 			{
 				result.AddValue(thisRow, otherColumnVec[otherPos], thisValue * otherValueVec[otherPos]);
 			}
@@ -531,10 +542,13 @@ template<class T>
 NuTo::SparseMatrixCSRVector2General<T> NuTo::SparseMatrixCSRVector2General<T>::operator* ( const T &rOther ) const
 {
 	SparseMatrixCSRVector2General<T> result(*this);
-	for (unsigned int thisRow=0; thisRow< this->mValues.size(); thisRow++)
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static)
+#endif
+    for (unsigned int thisRow=0; thisRow< this->mValues.size(); ++thisRow)
 	{
 		std::vector<T>& resultValueVec(result.mValues[thisRow]);
-		for (unsigned int thisColumn=0; thisColumn< this->mValues[thisRow].size(); thisColumn++)
+        for (unsigned int thisColumn=0; thisColumn< this->mValues[thisRow].size(); ++thisColumn)
 		{
 			resultValueVec[thisColumn]*=rOther;
 		}
@@ -557,21 +571,24 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2
 	if (this->HasOneBasedIndexing())
 	{
 		// loop over rows
-		for (int row = 0; row < this->GetNumRows(); row++)
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static)
+#endif
+        for (int row = 0; row < this->GetNumRows(); ++row)
 		{
 			// initialize result
-			for (int matrixCol = 0; matrixCol < result.GetNumColumns(); matrixCol++)
+            for (int matrixCol = 0; matrixCol < result.GetNumColumns(); ++matrixCol)
 			{
 				result(row,matrixCol) = 0.0;
 			}
 			const std::vector<T>& thisValueVec(this->mValues[row]);
 			const std::vector<int>& thisColumnVec(this->mColumns[row]);
 			// perform multiplication
-			for (unsigned int pos = 0; pos < this->mColumns.size(); pos++)
+            for (unsigned int pos = 0; pos < this->mColumns.size(); ++pos)
 			{
 				int column = thisColumnVec[pos] - 1;
 				T value = thisValueVec[pos];
-				for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+                for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); ++matrixCol)
 				{
 					result(row,matrixCol) += value * rMatrix(column,matrixCol);
 				}
@@ -581,21 +598,24 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2
 	else
 	{
 		// loop over rows
-		for (int row = 0; row < this->GetNumRows(); row++)
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static)
+#endif
+        for (int row = 0; row < this->GetNumRows(); ++row)
 		{
 			// initialize result
-			for (int matrixCol = 0; matrixCol < result.GetNumColumns(); matrixCol++)
+            for (int matrixCol = 0; matrixCol < result.GetNumColumns(); ++matrixCol)
 			{
 				result(row,matrixCol) = 0.0;
 			}
 			const std::vector<T>& thisValueVec(this->mValues[row]);
 			const std::vector<int>& thisColumnVec(this->mColumns[row]);
 			// perform multiplication
-			for (unsigned int pos = 0; pos < thisColumnVec.size(); pos++)
+            for (unsigned int pos = 0; pos < thisColumnVec.size(); ++pos)
 			{
 				int column = thisColumnVec[pos];
 				T value = thisValueVec[pos];
-				for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+                for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); ++matrixCol)
 				{
 					result(row,matrixCol) += value * rMatrix(column,matrixCol);
 				}

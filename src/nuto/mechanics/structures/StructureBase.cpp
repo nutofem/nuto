@@ -2901,6 +2901,15 @@ void NuTo::StructureBase::SetNumProcessors(int rNumProcessors)
 #endif //_OPENMP
 }
 
+int NuTo::StructureBase::GetNumProcessors() const
+{
+#ifdef _OPENMP
+    return mNumProcessors;
+#else
+    return 1;
+#endif //_OPENMP
+}
+
 void NuTo::StructureBase::SetOMPNested(bool rNested)
 {
 #ifdef _OPENMP

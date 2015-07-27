@@ -125,6 +125,7 @@ public:
     //! @param rIdent ... identifier
     //! @param rNumData ... number of field data components
     void DefineCellDataField(const std::string& rIdent, unsigned int rNumData = 0);
+
 private:
     //! @brief ... vector of points
     boost::ptr_vector<Point> mPoints;

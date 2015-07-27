@@ -132,6 +132,11 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
         // Moisture Transport
         // ------------------
 
+        // Naming scheme for matrices: tangent_D_X_D_Y_HN_AB
+        // D_X_D_Y:     defines the derivative of X with respect to Y
+        // HN:          defines the matrix the tangent belongs to, for example H0 for stiffness or H1 for damping
+        // AB:          defines the combination of (derivative) shapefunctions the tangent has to be multiplied with, for example BN means: derivative shapefunctions * tangent * shapefunctions
+
         // Internal Gradient
         ConstitutiveTangentLocal<1,1> residualWaterPhaseN;
         ConstitutiveTangentLocal<1,1> residualWaterPhaseB;

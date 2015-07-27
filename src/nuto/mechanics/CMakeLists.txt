@@ -63,7 +63,9 @@ constitutive/mechanics/SecondPiolaKirchhoffStress3D.cpp
 constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.cpp
 constitutive/moistureTransport/MoistureTransport.cpp
 constitutive/moistureTransport/WaterVolumeFraction.cpp
+constitutive/moistureTransport/WaterVolumeFractionGradient2D.cpp
 constitutive/moistureTransport/RelativeHumidity.cpp
+constitutive/moistureTransport/RelativeHumidityGradient2D.cpp
 constitutive/moistureTransport/ConstitutiveStaticDataMoistureTransport.cpp
 )
 
@@ -263,6 +265,7 @@ structures/grid/StructureGridElement.cpp
 )
 SET(NuToMechanicsTimeIntegration_SOURCES
 timeIntegration/CrankNicolson.cpp
+timeIntegration/CrankNicolsonEvaluate.cpp
 timeIntegration/NewmarkBase.cpp
 timeIntegration/NewmarkDirect.cpp
 timeIntegration/JumpDirect.cpp
@@ -282,6 +285,7 @@ timeIntegration/RungeKutta4.cpp
 timeIntegration/RungeKuttaCashKarp.cpp
 timeIntegration/RungeKuttaDormandPrince.cpp
 timeIntegration/RungeKuttaBase.cpp
+timeIntegration/TimeDependencyBase.cpp
 timeIntegration/TimeIntegrationBase.cpp
 timeIntegration/VelocityVerlet.cpp
 )

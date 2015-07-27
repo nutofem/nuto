@@ -460,6 +460,7 @@ NuTo::SparseMatrixCSRGeneral<T> NuTo::SparseMatrixCSRGeneral<T>::operator* (cons
 template <class T>
 NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRGeneral<T>::operator* (const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const
 {
+
 	if (this->GetNumColumns() != rMatrix.GetNumRows())
 	{
 		throw MathException("[SparseMatrixCSRGeneral::operator*] invalid matrix dimensions.");

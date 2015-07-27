@@ -454,6 +454,7 @@ public:
 #endif  // ENABLE_SERIALIZATION
 
 #ifdef ENABLE_VISUALIZE
+
     virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat);
 
     virtual void GetVisualizationCells(

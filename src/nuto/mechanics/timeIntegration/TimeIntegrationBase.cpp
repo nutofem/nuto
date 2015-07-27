@@ -32,6 +32,8 @@
 #include "nuto/mechanics/timeIntegration/ResultNodeDisp.h"
 #include "nuto/mechanics/timeIntegration/ResultNodeAcceleration.h"
 #include "nuto/mechanics/timeIntegration/ResultTime.h"
+#include "nuto/mechanics/timeIntegration/TimeDependencyFunction.h"
+#include "nuto/mechanics/timeIntegration/TimeDependencyMatrix.h"
 
 
 NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) : NuTo::NuToObject::NuToObject(), mStructure(rStructure)
@@ -62,12 +64,44 @@ void NuTo::TimeIntegrationBase::ResetForNextLoad()
 	mTimeDependentConstraint = -1;
 	mTimeDependentConstraintFactor.Resize(0,0);
  	mTimeDependentLoadCase = -1;
- 	mTimeDependentLoadFactor.Resize(0,0);
+    mTimeDependentLoadFactor.Resize(0,0);
 }
+
+
+//! @brief Adds the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
+//! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
+//! @param rTimeDependentConstraintFactor ... first row time, rhs of the constraint (linear interpolation in between afterwards linear extrapolation)
+void NuTo::TimeIntegrationBase::AddTimeDependentConstraint(int rTimeDependentConstraint, const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> &rTimeDependentConstraintFactor)
+{
+    if (rTimeDependentConstraintFactor.GetNumColumns()!=2)
+        throw MechanicsException("[NuTo::TimeIntegrationBase::SetDisplacements] number of columns must be 2, first column contains the time, second column contains the corresponding rhs.");
+    if (rTimeDependentConstraintFactor.GetNumRows()<2)
+        throw MechanicsException("[NuTo::TimeIntegrationBase::SetDisplacements] number of rows must be at least 2.");
+    if (rTimeDependentConstraintFactor(0,0)!=0)
+        throw MechanicsException("[NuTo::TimeIntegrationBase::SetDisplacements] the first time should always be zero.");
+    //check, if the time is monotonically increasing
+    for (int count=0; count<rTimeDependentConstraintFactor.GetNumRows()-1; count++)
+    {
+        if (rTimeDependentConstraintFactor(count,0)>=rTimeDependentConstraintFactor(count+1,0))
+            throw MechanicsException("[NuTo::TimeIntegrationBase::SetDisplacements] time has to increase monotonically.");
+    }
+
+    mMapTimeDependentConstraint.emplace(rTimeDependentConstraint, std::make_shared<TimeDependencyMatrix>(rTimeDependentConstraintFactor));
+}
+
+
+//! @brief Adds the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
+//! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
+//! @param rTimeDependentConstraintFunction ... function that calculates the time dependent constraint factor for the current time step
+void NuTo::TimeIntegrationBase::AddTimeDependentConstraint(int rTimeDependentConstraint, const std::function<double (double rTime)>& rTimeDependentConstraintFunction)
+{
+    mMapTimeDependentConstraint.emplace(rTimeDependentConstraint, std::make_shared<TimeDependencyFunction>(rTimeDependentConstraintFunction));
+}
+
 
 //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
 //! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
-//! @param mTimeDependentConstraintFactor ... first row time, rhs of the constraint (linear interpolation in between afterwards, constant)
+//! @param rTimeDependentConstraintFactor ... first row time, rhs of the constraint (linear interpolation in between afterwards, constant)
 void NuTo::TimeIntegrationBase::SetTimeDependentConstraint(int rTimeDependentConstraint, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rTimeDependentConstraintFactor)
 {
 	if (rTimeDependentConstraintFactor.GetNumColumns()!=2)

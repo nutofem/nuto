@@ -113,7 +113,6 @@ int buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
 #if defined HAVE_PARDISO
     NuTo::SparseDirectSolverPardiso mySolverPardiso(numThreads);
 #endif // PARDISO
-
     myStructure.CalculateMaximumIndependentSets();
     myStructure.NodeBuildGlobalDofs();
 

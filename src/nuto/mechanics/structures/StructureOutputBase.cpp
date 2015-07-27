@@ -21,7 +21,22 @@ NuTo::SparseMatrix<double> &NuTo::StructureOutputBase::GetSparseMatrixDouble(NuT
 
 NuTo::FullVector<double,Eigen::Dynamic>& NuTo::StructureOutputBase::GetFullVectorDouble()
 {
-    throw MechanicsException("[StructureOutputBase::GetFullVectorDouble] output matrix is not of type FullVector<double,Eigen::Dynamic>");
+    throw MechanicsException("[StructureOutputBase::GetFullVectorDouble] output vector is not of type FullVector<double,Eigen::Dynamic>");
+}
+
+NuTo::FullVector<double, Eigen::Dynamic> &NuTo::StructureOutputBase::GetFullVectorDouble(NuTo::StructureEnum::eSubVector rSubvectorEnum)
+{
+    throw MechanicsException("[StructureOutputBase::GetFullVectorDouble] output vector is not of type FullVector<double,Eigen::Dynamic>");
+}
+
+int NuTo::StructureOutputBase::GetNumSubmatrices() const
+{
+    throw MechanicsException("[StructureOutputBase::GetNumSubmatrices] structure output has no submatrices.");
+}
+
+int NuTo::StructureOutputBase::GetNumSubvectors() const
+{
+    throw MechanicsException("[StructureOutputBase::GetNumSubvectors] structure output has no subvectors.");
 }
 
 void NuTo::StructureOutputBase::SetSymmetry(bool rSymmetric)

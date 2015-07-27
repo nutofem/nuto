@@ -20,7 +20,9 @@ extern "C" void pardiso_chkmatrix  (int *, int *, double *, int *, int *, int *)
 extern "C" void pardiso_chkvec     (int *, int *, double *, int *);
 extern "C" void pardiso_printstats (int *, int *, double *, int *, int *, int *, double *, int *);
 
-NuTo::SparseDirectSolverPardiso::SparseDirectSolverPardiso(int rNumThreads) : SparseDirectSolver()
+NuTo::SparseDirectSolverPardiso::SparseDirectSolverPardiso(int rNumThreads, int rVerboseLevel)
+    : SparseDirectSolver(),
+      mVerboseLevel(rVerboseLevel)
 {
 #ifdef HAVE_PARDISO
     this->mNumThreads = rNumThreads;  // set the number of threads
@@ -98,7 +100,7 @@ void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>&
     }
     int maxfct(1);  // Maximum number of numerical factorizations.
     int mnum(1);    // Which factorization to use.
-    int msglvl(1);  // Print statistical information in file
+    int msglvl(this->mVerboseLevel);  // Print statistical information in file
     int error(0);   // Initialize error flag
     double ddum(0); // Double dummy
     int idum(0);    // Integer dummy
@@ -147,7 +149,7 @@ void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>&
     // Reordering and Symbolic Factorization.
     // This step also allocates all memory that is necessary for the factorization.
     int phase = 11;
-    int a = omp_get_num_threads();
+    //int a = omp_get_num_threads();
     pardiso (pt,
              &maxfct,
              &mnum,

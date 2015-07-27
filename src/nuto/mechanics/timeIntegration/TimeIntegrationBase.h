@@ -19,6 +19,7 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/FullVector.h"
 #include "nuto/mechanics/timeIntegration/ResultBase.h"
+#include "nuto/mechanics/timeIntegration/TimeDependencyBase.h"
 
 namespace NuTo
 {
@@ -46,6 +47,17 @@ public:
 
     //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
     void ResetForNextLoad();
+
+    //! @brief Adds the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
+    //! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
+    //! @param mTimeDependentConstraintFactor ... first row time, rhs of the constraint (linear interpolation in between afterwards linear extrapolation)
+    void AddTimeDependentConstraint(int rTimeDependentConstraint, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& mTimeDependentConstraintFactor);
+
+    //! @brief Adds the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
+    //! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
+    //! @param rTimeDependentConstraintFunction ... function that calculates the time dependent constraint factor for the current time step
+    void AddTimeDependentConstraint(int rTimeDependentConstraint, const std::function<double (double rTime)>& rTimeDependentConstraintFunction);
+
 
     //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
     //! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
@@ -240,11 +252,23 @@ protected:
 
     //structure belonging to the time integration scheme
     StructureBase* mStructure;
-    //constraint for displacement control (as a function of time)
-    int mTimeDependentConstraint;
-    //includes for each time step the rhs of the constraint mConstraintLoad
-    //the time step is given by mTimeDelta/(mConstraintRHS.Rows()-1)
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mTimeDependentConstraintFactor;
+
+
+    // DEPRECATED BLOCK BEGIN
+
+        //constraint for displacement control (as a function of time)
+        int mTimeDependentConstraint;
+        //includes for each time step the rhs of the constraint mConstraintLoad
+        //the time step is given by mTimeDelta/(mConstraintRHS.Rows()-1)
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mTimeDependentConstraintFactor;
+
+    // DEPRECATED BLOCK END
+
+    // Saves the IDs of all time dependent constraints
+    std::map<int,std::shared_ptr<TimeDependencyBase>> mMapTimeDependentConstraint;
+
+
+
     //time dependent load case number
     int mTimeDependentLoadCase;
 	//includes for each time step the scalar factor for the load case

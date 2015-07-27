@@ -22,6 +22,14 @@ public:
     //! @return ... pointer to static data object
     ConstitutiveStaticDataBase*                     AllocateStaticDataEngineeringStress_EngineeringStrain1D     (const ElementBase* rElement) const override;
 
+    //! @brief ... create new static data object for an integration point
+    //! @return ... pointer to static data object
+    ConstitutiveStaticDataBase*                     AllocateStaticDataEngineeringStress_EngineeringStrain2D     (const ElementBase* rElement) const override;
+
+    //! @brief ... create new static data object for an integration point
+    //! @return ... pointer to static data object
+    ConstitutiveStaticDataBase*                     AllocateStaticDataEngineeringStress_EngineeringStrain3D     (const ElementBase* rElement) const override;
+
     //! @brief ... calculates the sorption Curve coefficients when the sorption direction has changed
     void                                            CalculateSorptionCurveCoefficients                          (ConstitutiveStaticDataMoistureTransport* rStaticData,
                                                                                                                  const RelativeHumidity&     rRelativeHumidity);
@@ -92,9 +100,20 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError                     Evaluate1D                                                  (ElementBase* rElement, int rIp,
+    virtual NuTo::Error::eError                     Evaluate1D                                                  (ElementBase* rElement,
+                                                                                                                 int rIp,
                                                                                                                  const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
                                                                                                                  std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput);
+
+    //! @brief ... evaluate the constitutive relation in 2D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    NuTo::Error::eError                             Evaluate2D                                                  (ElementBase* rElement,
+                                                                                                                 int rIp,
+                                                                                                                 const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
+                                                                                                                 std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput) override;
 
     //! @brief ... gets a variable of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested variable

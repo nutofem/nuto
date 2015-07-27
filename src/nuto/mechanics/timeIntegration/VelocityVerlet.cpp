@@ -99,9 +99,15 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(double rTimeDelta)
         mStructure->NodeBuildGlobalDofs();
 
         //calculate constraint matrix
+        /*
+        // ConstraintGetConstraintMatrixAfterGaussElimination(const NuTo::SparseMatrixCSRGeneral<double>& ... ) replaced by
+        // const NuTo::SparseMatrixCSRGeneral<double> ConstraintGetConstraintMatrixAfterGaussElimination() const;
+        // ---> No need for CmatTmp anymore! --- vhirtham
+
         NuTo::SparseMatrixCSRGeneral<double> CmatTmp;
         mStructure->ConstraintGetConstraintMatrixAfterGaussElimination(CmatTmp);
-        NuTo::SparseMatrixCSRVector2General<double> Cmat(CmatTmp);
+        */
+        NuTo::SparseMatrixCSRVector2General<double> Cmat(mStructure->ConstraintGetConstraintMatrixAfterGaussElimination());
         SparseMatrixCSRVector2General<double> CmatT (Cmat.Transpose());
         FullVector<double,Eigen::Dynamic> bRHS, bRHSdot, bRHSddot;
         if (CmatT.GetNumEntries() > 0)
@@ -149,7 +155,7 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(double rTimeDelta)
             {
                 timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
                 mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
-				mStructure->ConstraintGetRHSAfterGaussElimination(bRHS);
+                bRHS = mStructure->ConstraintGetRHSAfterGaussElimination();
             }
 
             //calculate new displacement approximation (disp_k is calculated internally when NodeMerge is called

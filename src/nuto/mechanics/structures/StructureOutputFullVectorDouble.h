@@ -26,9 +26,19 @@ public:
         return mVector;
     }
 
-    virtual int GetNumSubmatrices() const override
+    virtual int GetNumSubvectors() const override
     {
-        return 0;
+        return 1;
+    }
+
+    virtual bool GetConstant() const override
+    {
+        return mConstant;
+    }
+
+    virtual void SetConstant(bool rConstant) override
+    {
+        mConstant = rConstant;
     }
 
 private:

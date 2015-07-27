@@ -6,6 +6,7 @@
 #include <ctime>
 #include <map>
 #include <array>
+#include <functional>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -230,6 +231,9 @@ public:
 
     //@brief set the number of processors for openmp parallelization
     void SetNumProcessors(int rNumProcessors);
+
+    //@brief get the number of processors for openmp parallelization
+    int GetNumProcessors() const;
 
     //@brief set the number of processors for openmp parallelization
     void SetOMPNested(bool rNested);
@@ -1001,14 +1005,19 @@ public:
     //! @param rConstraintMatrix constraint matrix
     void ConstraintGetConstraintMatrixBeforeGaussElimination(NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix);
 
+    /*
     //! @brief returns the constraint matrix  (after gauss elimination)
     //! @param rConstraintMatrix constraint matrix
-    void ConstraintGetConstraintMatrixAfterGaussElimination(NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix);
+    void ConstraintGetConstraintMatrixAfterGaussElimination(NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix);*/
+
+    //! @brief returns the constraint matrix  (after gauss elimination)
+    //! @return constraint matrix  (after gauss elimination)
+    const NuTo::SparseMatrixCSRGeneral<double>& ConstraintGetConstraintMatrixAfterGaussElimination() const;
 
     //! @brief returns the constraint vector after gauss elimination
     //! rConstraintMatrix*DOFS = RHS
-    //! @param rRHS rhs
-    void ConstraintGetRHSAfterGaussElimination(NuTo::FullVector<double,Eigen::Dynamic>& rRHS);
+    //! @return rhs
+    const NuTo::FullVector<double,Eigen::Dynamic>& ConstraintGetRHSAfterGaussElimination() const;
 
     //! @brief returns the constraint vector after gauss elimination
     //! rConstraintMatrix*DOFS = RHS
@@ -1757,6 +1766,14 @@ public:
     //! @param ... rMin ... minimum value
     //! @param ... rMax ... maximum value
     void GroupAddNodeCoordinateRange(int rIdentGroup, int rDirection, double rMin, double rMax);
+
+#ifndef SWIG
+    //! @brief ... Adds all nodes which fulfill the conditions specified in a std::function
+    //! @param ... rIdentGroup identifier for the group
+    //! @param ... rFunction std::function
+    void GroupAddNodeFunction(int rIdentGroup,
+                              std::function<bool (NodeBase*)> rFunction);
+#endif
 
     //! @brief ... Adds an element to an element group
     //! @param ... rIdentGroup identifier for the group

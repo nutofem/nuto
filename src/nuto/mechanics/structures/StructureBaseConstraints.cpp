@@ -486,6 +486,7 @@ int NuTo::StructureBase::ConstraintGetNumLinearConstraints()const
     return numLinearConstraints;
 }
 
+/*
 //! @brief calculates returns constraint matrix that builds relations between the nodal dagrees of freedom
 void NuTo::StructureBase::ConstraintGetConstraintMatrixAfterGaussElimination(NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)
 {
@@ -493,7 +494,18 @@ void NuTo::StructureBase::ConstraintGetConstraintMatrixAfterGaussElimination(NuT
     {
         throw MechanicsException("[NuTo::StructureBase::ConstraintGetConstraintMatrixAfterGaussElimination] build global numbering first");
     }
-	rConstraintMatrix = mConstraintMatrix;
+    rConstraintMatrix = mConstraintMatrix;
+}*/
+
+//! @brief returns the constraint matrix  (after gauss elimination)
+//! @return constraint matrix  (after gauss elimination)
+const NuTo::SparseMatrixCSRGeneral<double> &NuTo::StructureBase::ConstraintGetConstraintMatrixAfterGaussElimination() const
+{
+    if (mNodeNumberingRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::ConstraintGetConstraintMatrixAfterGaussElimination] build global numbering first");
+    }
+    return mConstraintMatrix;
 }
 
 //! @brief calculates the constraint matrix that builds relations between the nodal dagrees of freedom
@@ -539,14 +551,14 @@ void NuTo::StructureBase::ConstraintGetConstraintMatrixBeforeGaussElimination(Nu
 
 //! @brief returns the constraint vector after gauss elimination
 //! rConstraintMatrix*DOFS = RHS
-//! @param rConstraintMatrix constraint matrix
-void NuTo::StructureBase::ConstraintGetRHSAfterGaussElimination(NuTo::FullVector<double,Eigen::Dynamic>& rRHS)
+//! @return rhs
+const NuTo::FullVector<double, Eigen::Dynamic> &NuTo::StructureBase::ConstraintGetRHSAfterGaussElimination() const
 {
     if (mNodeNumberingRequired)
     {
         throw MechanicsException("[NuTo::StructureBase::ConstraintGetRHSAfterGaussElimination] build global numbering first");
     }
-    rRHS = mConstraintRHS;
+    return mConstraintRHS;
 }
 
 //! @brief returns the constraint vector after gauss elimination
