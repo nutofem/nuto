@@ -28,7 +28,7 @@ NuTo::IntegrationType::eIntegrationType NuTo::Interpolation2DTriangle::GetStanda
     default:
         throw MechanicsException("[NuTo::Interpolation2DTriangle::GetStandardIntegrationType] Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
-    return NuTo::IntegrationType::IntegrationType1D2NGauss2Ip;
+
 }
 
 const Eigen::VectorXd NuTo::Interpolation2DTriangle::CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const

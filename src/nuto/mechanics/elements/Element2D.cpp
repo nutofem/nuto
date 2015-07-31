@@ -458,7 +458,7 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
 
             this->CalculateJacobian(derivativeShapeFunctionsGeometryNatural, nodalValues[Node::COORDINATES], invJacobian, detJacobian);
 
-            double factor(mSection->GetThickness() * fabs(detJacobian * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))));
+            double factor(mSection->GetThickness() * (detJacobian) * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
             // calculate shape functions and their derivatives
 
             for (auto dof : dofs)
@@ -562,7 +562,7 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     //on the global level
                     if (mStructure->GetHessianConstant(0) == false)
                     {
-                        double factor(mSection->GetThickness() * fabs(detJacobian * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))));
+                        double factor(mSection->GetThickness() * detJacobian * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)));
                         for (auto dof : activeDofs)
                         {
                             int startIndex = mInterpolationType->Get(dof).GetLocalStartIndex();
