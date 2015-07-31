@@ -12,6 +12,7 @@
 
 #include "nuto/mechanics/elements/BoundaryElement1D.h"
 #include "nuto/mechanics/elements/BoundaryElement2D.h"
+#include "nuto/mechanics/elements/BoundaryElement2DAdditionalNode.h"
 
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/nodes/NodeDof.h"
@@ -712,8 +713,9 @@ int NuTo::Structure::ElementsCreate(int rInterpolationTypeId, NuTo::FullMatrix<i
 //! @brief creates boundary elements and add them to an element group
 //! @param rElementGroupId ... group id including the base elements
 //! @param rNodeGroupId ... node group id that includes the surface nodes
+//! @param rNodeDependency ... if not nullptr (default) a boundary element of type BoundaryElementXNodeDependent will be created instead of a normal one
 //! @return ... ids of the created boundary element group
-int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupId)
+int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupId, NodeBase* rNodeDependency)
 {
 #ifdef SHOW_TIME
     std::clock_t start, end;
@@ -808,7 +810,14 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
                         integrationType = IntegrationType::IntegrationType0DBoundary;
                         break;
                     case Element::ELEMENT2D:
-                        boundaryElement = new BoundaryElement2D(elementPtr, surfaceId);
+                        if(rNodeDependency==nullptr)
+                        {
+                            boundaryElement = new BoundaryElement2D(elementPtr, surfaceId);
+                        }
+                        else
+                        {
+                            boundaryElement = new BoundaryElement2DAdditionalNode(elementPtr,surfaceId,rNodeDependency);
+                        }
                         integrationType = IntegrationType::IntegrationType1D2NGauss3Ip; // TODO, esp. for 3D. Maybe InterpolationType::GetSurfaceInterpolationType
                         break;
                     case Element::ELEMENT3D:

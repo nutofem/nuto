@@ -42,6 +42,13 @@ double NuTo::ConstraintLinearNodeRelativeHumidity::GetRHS() const
     return mRHS;
 }
 
+//!@brief sets/modifies the right hand side of the constraint equation
+//!@param rRHS new right hand side
+void NuTo::ConstraintLinearNodeRelativeHumidity::SetRHS(double rRHS)
+{
+    mRHS = rRHS;
+}
+
 //!@brief writes for the current constraint equation(s) the rhs into the vector
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param rCurConstraintEquation (is incremented during the function call)

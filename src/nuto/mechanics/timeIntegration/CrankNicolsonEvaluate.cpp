@@ -388,7 +388,7 @@ NuTo::Error::eError NuTo::CrankNicolsonEvaluate::Solve(double rFinalTime)
         {
             if (itOutputMap.second->GetConstant())
             {
-                //OutputMapHessianComponents.erase(itOutputMap.first);
+                OutputMapHessianComponents.erase(itOutputMap.first);
             }
         }
 
@@ -515,6 +515,8 @@ NuTo::Error::eError NuTo::CrankNicolsonEvaluate::Solve(double rFinalTime)
             }
             bRHS = mStructure->ConstraintGetRHSAfterGaussElimination();
             FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deltaBRHS(bRHS-bRHSprev);
+
+             NuTo::FullMatrix<double, Eigen::Dynamic,Eigen::Dynamic> test(Cmat);
 
 
 

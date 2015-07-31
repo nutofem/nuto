@@ -236,7 +236,7 @@ int NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode(NodeBase* rNode
         mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeRelativeHumidity(rNode,rValue));
         break;
     case 2:
-        throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode] not implemented for 2D.");
+        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeRelativeHumidity(rNode,rValue));
         break;
     case 3:
         throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode] not implemented for 3D.");
@@ -295,7 +295,7 @@ int NuTo::StructureBase::ConstraintLinearSetWaterVolumeFractionNode(NodeBase* rN
         mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeWaterVolumeFraction(rNode,rValue));
         break;
     case 2:
-        throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetWaterVolumeFractionNode] not implemented for 2D.");
+        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeWaterVolumeFraction(rNode,rValue));
         break;
     case 3:
         throw MechanicsException("[NuTo::StructureBase::ConstraintLinearSetWaterVolumeFractionNode] not implemented for 3D.");

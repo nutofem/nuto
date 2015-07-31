@@ -343,6 +343,10 @@ public:
     //! @return True if coordinates are within the element, False otherwise
     virtual bool GetLocalPointCoordinates(const double* rGlobCoords,  double* rLocCoords)const;
 
+    //! @brief Gets the additional node of an boundary element, if it has one
+    //! @return Additional boundary node
+    virtual NodeBase* GetAdditionalBoundaryNode() const;
+
     //! @brief sets the water volume fraction at the boundary surface
     //! @return water volume fraction at the boundary surface
     virtual double GetBoundaryWaterVolumeFraction() const;

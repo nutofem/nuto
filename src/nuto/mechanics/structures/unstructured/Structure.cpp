@@ -2197,6 +2197,7 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
 #pragma omp single nowait
                     {
                         ElementBase* elementPtr = *elementIter;
+
 #else
     for(auto elementIter : this->mElementMap)
     {
@@ -2206,6 +2207,7 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
                         // calculate element contribution
                         //bool symmetryFlag = false;
                         Error::eError error;
+
                         error = elementPtr->Evaluate(elementOutputMap);
 
                         if (error!=Error::SUCCESSFUL)

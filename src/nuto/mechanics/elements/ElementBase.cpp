@@ -394,7 +394,14 @@ const Eigen::Vector3d NuTo::ElementBase::GetGlobalIntegrationPointCoordinates(in
 //! @return True if coordinates are within the element, False otherwise
 bool NuTo::ElementBase::GetLocalPointCoordinates(const double* rGlobCoords,  double* rLocCoords)const
 {
-	throw NuTo::MechanicsException("[NuTo::ElementBase::GetLocalPointCoordinates] not implemented for this element type.");
+    throw NuTo::MechanicsException("[NuTo::ElementBase::GetLocalPointCoordinates] not implemented for this element type.");
+}
+
+//! @brief Gets the additional node of an boundary element, if it has one
+//! @return Additional boundary node
+NuTo::NodeBase *NuTo::ElementBase::GetAdditionalBoundaryNode() const
+{
+    throw NuTo::MechanicsException("[NuTo::ElementBase::GetAdditionalBoundaryNode] not implemented for this element type.");
 }
 
 //! @brief sets the water volume fraction at the boundary surface
@@ -998,6 +1005,8 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
                     waterVolumeFraction =  InterpolateDof(coords, Node::eAttributes::WATERVOLUMEFRACTION);
                     assert(waterVolumeFraction.rows() == 1);
                 }
+                unsigned int PointId = PointIdVec[PointCount];
+                rVisualize.SetPointDataScalar(PointId, WhatIter->GetComponentName(), waterVolumeFraction     .at(0,0));
             }
             break;
 		default:

@@ -20,7 +20,7 @@ public:
     {
     	mSymmetric = false;
     	mConstant  = false;
-    };
+    }
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

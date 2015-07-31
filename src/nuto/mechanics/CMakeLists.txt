@@ -109,6 +109,7 @@ SET(NuToMechanicsElements_SOURCES
 elements/BoundaryElementBase.cpp
 elements/BoundaryElement1D.cpp
 elements/BoundaryElement2D.cpp
+elements/BoundaryElement2DAdditionalNode.cpp
 elements/Brick8N.cpp
 elements/Brick20N.cpp
 elements/ElementBase.cpp

@@ -25,6 +25,10 @@ public:
     //!@return rRHS
     virtual double              GetRHS                                          () const override;
 
+    //!@brief sets/modifies the right hand side of the constraint equation
+    //!@param rRHS new right hand side
+    virtual void                SetRHS                                          (double rRHS) override;
+
     //!@brief writes for the current constraint equation(s) the rhs into the vector
     // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
     //! @param rCurConstraintEquation (is incremented during the function call)

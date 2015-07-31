@@ -8,32 +8,33 @@ namespace Element
 {
 enum eElementType
 {
-    BOUNDARYGRADIENTDAMAGE1D=0, //!< boundary element for gradient models
-    BOUNDARYMOISTURETRANSPORT1D,//!< boundary element for moisture transport
-    BRICK8N,                    //!< three-dimensional brick element with 8 nodes
-    BRICK20N,                   //!< three-dimensional brick element with 20 nodes - serendipitiy
-    PLANE2D10N,                 //!< two-dimensional plane element with 10 nodes
-    PLANE2D15N,                 //!< two-dimensional plane element with 10 nodes
-    PLANE2D3N,                  //!< two-dimensional plane element with 3 nodes
-    PLANE2D4N,                  //!< two-dimensional plane element with 4 nodes
-    PLANE2D4NSPECTRALORDER2,    //!< two-dimensional plane element with 2x2 nodes for geometry interpolation and 3x3 for field interpolation
-    PLANE2D4NSPECTRALORDER3,    //!< two-dimensional plane element with 2x2 nodes for geometry interpolation and 4x4 for field interpolation
-    PLANE2D4NSPECTRALORDER4,    //!< two-dimensional plane element with 2x2 nodes for geometry interpolation and 5x5 for field interpolation
-    PLANE2D6N,                  //!< two-dimensional plane element with 6 nodes
-    TETRAHEDRON4N,              //!< three-dimensional tetrahedron element with 4 nodes
-    TETRAHEDRON10N,             //!< three-dimensional tetrahedron element with 10 nodes
-    TRUSS1D2N,                  //!< one-dimensional truss element with two nodes
-    TRUSS1D3N,                  //!< one-dimensional truss element with three nodes
-    TRUSS1D4NDISP3NX,           //!< one-dimensional truss element with four nodes for displacements, three for another dof
-    TRUSS1D2NSPECTRALORDER2,    //!< one-dimensional truss element with two nodes for geometry and 3 for field interpolation
-    TRUSS1D2NSPECTRALORDER3,    //!< one-dimensional truss element with two nodes for geometry and 4 for field interpolation
-    TRUSS1D2NSPECTRALORDER4,    //!< one-dimensional truss element with two nodes for geometry and 5 for field interpolation
-    ELEMENT1D,                  //!< one dimensional element
-    ELEMENT2D,                  //!< two dimensional element
-    ELEMENT3D,                  //!< three dimensional element
-    BOUNDARYELEMENT1D,          //!< boundary of 1D element --> 0D surface
-    BOUNDARYELEMENT2D,          //!< boundary of 2D element --> 1D surface
-    BOUNDARYELEMENT3D           //!< boundary of 3D element --> 2D surface
+    BOUNDARYGRADIENTDAMAGE1D=0,     //!< boundary element for gradient models
+    BOUNDARYMOISTURETRANSPORT1D,    //!< boundary element for moisture transport
+    BRICK8N,                        //!< three-dimensional brick element with 8 nodes
+    BRICK20N,                       //!< three-dimensional brick element with 20 nodes - serendipitiy
+    PLANE2D10N,                     //!< two-dimensional plane element with 10 nodes
+    PLANE2D15N,                     //!< two-dimensional plane element with 10 nodes
+    PLANE2D3N,                      //!< two-dimensional plane element with 3 nodes
+    PLANE2D4N,                      //!< two-dimensional plane element with 4 nodes
+    PLANE2D4NSPECTRALORDER2,        //!< two-dimensional plane element with 2x2 nodes for geometry interpolation and 3x3 for field interpolation
+    PLANE2D4NSPECTRALORDER3,        //!< two-dimensional plane element with 2x2 nodes for geometry interpolation and 4x4 for field interpolation
+    PLANE2D4NSPECTRALORDER4,        //!< two-dimensional plane element with 2x2 nodes for geometry interpolation and 5x5 for field interpolation
+    PLANE2D6N,                      //!< two-dimensional plane element with 6 nodes
+    TETRAHEDRON4N,                  //!< three-dimensional tetrahedron element with 4 nodes
+    TETRAHEDRON10N,                 //!< three-dimensional tetrahedron element with 10 nodes
+    TRUSS1D2N,                      //!< one-dimensional truss element with two nodes
+    TRUSS1D3N,                      //!< one-dimensional truss element with three nodes
+    TRUSS1D4NDISP3NX,               //!< one-dimensional truss element with four nodes for displacements, three for another dof
+    TRUSS1D2NSPECTRALORDER2,        //!< one-dimensional truss element with two nodes for geometry and 3 for field interpolation
+    TRUSS1D2NSPECTRALORDER3,        //!< one-dimensional truss element with two nodes for geometry and 4 for field interpolation
+    TRUSS1D2NSPECTRALORDER4,        //!< one-dimensional truss element with two nodes for geometry and 5 for field interpolation
+    ELEMENT1D,                      //!< one dimensional element
+    ELEMENT2D,                      //!< two dimensional element
+    ELEMENT3D,                      //!< three dimensional element
+    BOUNDARYELEMENT1D,              //!< boundary of 1D element --> 0D surface
+    BOUNDARYELEMENT2D,              //!< boundary of 2D element --> 1D surface
+    BOUNDARYELEMENT3D,              //!< boundary of 3D element --> 2D surface
+    BOUNDARYELEMENT2DADDITIONALNODE //!< boundary of 2D element --> 1D surface with additional node as dependency
 
 };
 

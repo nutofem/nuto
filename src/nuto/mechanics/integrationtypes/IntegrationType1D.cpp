@@ -16,6 +16,8 @@ bool NuTo::IntegrationType1D::CheckElementCompatibility(NuTo::Element::eElementT
         return true;
     case NuTo::Element::BOUNDARYELEMENT2D:
         return true;
+    case NuTo::Element::BOUNDARYELEMENT2DADDITIONALNODE:
+        return true;
     case NuTo::Element::TRUSS1D2N:
         return true;
     case NuTo::Element::TRUSS1D3N:

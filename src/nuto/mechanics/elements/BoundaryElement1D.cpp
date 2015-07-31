@@ -189,6 +189,13 @@ NuTo::Error::eError NuTo::BoundaryElement1D::Evaluate(boost::ptr_multimap<NuTo::
                 it->second->SetSymmetry(true);
                 it->second->SetConstant(true);
                 break;
+            case Element::HESSIAN_2_TIME_DERIVATIVE:
+            {
+                it->second->GetFullMatrixDouble().Resize(numActiveDofs, numActiveDofs);
+                it->second->SetSymmetry(true);
+                it->second->SetConstant(true);
+                break;
+            }
             case Element::UPDATE_STATIC_DATA:
                 constitutiveOutputList[NuTo::Constitutive::Output::UPDATE_STATIC_DATA] = 0;
                 break;

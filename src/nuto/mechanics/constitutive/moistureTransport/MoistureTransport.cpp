@@ -264,14 +264,10 @@ bool                                        NuTo::MoistureTransport::CheckElemen
 {
     switch (rElementType)
     {
-    case NuTo::Element::ELEMENT1D:
-        return true;
-    case NuTo::Element::ELEMENT2D:
-        return true;
     case NuTo::Element::BOUNDARYELEMENT1D:
-        return true;
-    case NuTo::Element::BOUNDARYMOISTURETRANSPORT1D:
-        return true;
+    case NuTo::Element::BOUNDARYELEMENT2DADDITIONALNODE:
+    case NuTo::Element::ELEMENT1D:
+    case NuTo::Element::ELEMENT2D:
     case NuTo::Element::TRUSS1D2N:
         return true;
     default:
@@ -1071,6 +1067,60 @@ NuTo::Error::eError NuTo::MoistureTransport::Evaluate2D(NuTo::ElementBase *rElem
 
 
 
+        /*--------------------------------------*\
+        |                BOUNDARY                |
+        \*--------------------------------------*/
+
+        case NuTo::Constitutive::Output::BOUNDARY_SURFACE_WATER_PHASE_RESIDUAL:
+        {
+
+
+            double waterVolumeFractionBoundary = GetEquilibriumWaterVolumeFraction(rElement->GetAdditionalBoundaryNode()->GetRelativeHumidity(),
+                                                                                   StaticData->GetActualSorptionCoeff());
+
+            ConstitutiveTangentLocal<1,1>& residualBoundarySurfaceWaterPhase(itOutput->second->AsConstitutiveTangentLocal_1x1());
+
+            residualBoundarySurfaceWaterPhase(0,0) = mBetaWVFrac*(waterVolumeFraction(0) - waterVolumeFractionBoundary);
+            residualBoundarySurfaceWaterPhase.SetSymmetry(false);
+            break;
+        }
+
+
+        case NuTo::Constitutive::Output::BOUNDARY_SURFACE_VAPOR_PHASE_RESIDUAL:
+        {
+
+            double relativeHumidityBoundary = rElement->GetAdditionalBoundaryNode()->GetRelativeHumidity();
+
+            ConstitutiveTangentLocal<1,1>& residualBoundarySurfaceVaporPhase(itOutput->second->AsConstitutiveTangentLocal_1x1());
+            residualBoundarySurfaceVaporPhase(0,0) = mBetaRelHum*(relativeHumidity(0) - relativeHumidityBoundary);
+            residualBoundarySurfaceVaporPhase.SetSymmetry(false);
+            break;
+        }
+
+
+        case NuTo::Constitutive::Output::BOUNDARY_SURFACE_RELATIVE_HUMIDIY_TRANSPORT_COEFFICIENT:
+        {
+            ConstitutiveTangentLocal<1,1>& BoundarySurfaceMoistureTransportCoefficient(itOutput->second->AsConstitutiveTangentLocal_1x1());
+            BoundarySurfaceMoistureTransportCoefficient(0,0) = mBetaRelHum;
+            BoundarySurfaceMoistureTransportCoefficient.SetSymmetry(false);
+            break;
+        }
+
+
+        case NuTo::Constitutive::Output::BOUNDARY_SURFACE_WATER_VOLUME_FRACTION_TRANSPORT_COEFFICIENT:
+        {
+            ConstitutiveTangentLocal<1,1>& BoundarySurfaceMoistureTransportCoefficient(itOutput->second->AsConstitutiveTangentLocal_1x1());
+            BoundarySurfaceMoistureTransportCoefficient(0,0) = mBetaWVFrac;
+            BoundarySurfaceMoistureTransportCoefficient.SetSymmetry(false);
+            break;
+        }
+
+
+
+        /*--------------------------------------*\
+        |              STATIC DATA               |
+        \*--------------------------------------*/
+
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
         {
 
@@ -1089,12 +1139,11 @@ NuTo::Error::eError NuTo::MoistureTransport::Evaluate2D(NuTo::ElementBase *rElem
             break;
         }
 
-
         default:
         {
-//            throw MechanicsException(std::string("[NuTo::MoistureTransport::Evaluate2D ] output object)") +
-//                                     NuTo::Constitutive::OutputToString(itOutput->first) +
-//                                     std::string(" could not be calculated, check the allocated material law and the section behavior."));
+            throw MechanicsException(std::string("[NuTo::MoistureTransport::Evaluate2D ] output object)") +
+                                     NuTo::Constitutive::OutputToString(itOutput->first) +
+                                     std::string(" could not be calculated, check the allocated material law and the section behavior."));
         }
         }
     }

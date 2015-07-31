@@ -385,7 +385,7 @@ void NuTo::TimeIntegrationBase::PostProcess(const FullVector<double, Eigen::Dyna
 				break;
 			}
 			default:
-				throw MechanicsException("[NuTo::NewmarkDirect::Solve] Unknown component in postprocessing.");
+                throw MechanicsException("[NuTo::TimeIntegrationBase::PostProcess] Unknown component in postprocessing.");
 			}
         }
 

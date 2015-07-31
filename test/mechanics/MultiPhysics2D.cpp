@@ -26,6 +26,7 @@
 #include <nuto/mechanics/structures/StructureOutputFullVectorDouble.h>
 #include <nuto/mechanics/structures/StructureOutputSparseMatrix.h>
 
+
 int main()
 {
     try
@@ -42,24 +43,27 @@ int main()
         bool            EnableSorptionHysteresis            = false;
         bool            EnableModiefiedTangentialStiffness  = false;
 
-        //unsigned int    NElements   = 16;                               // Number of elements
+        //unsigned int    NElements   = 16;                             // Number of elements
         unsigned int    NNodes;                                         // Number of nodes
 
 
-        double Height           = 0.016;
+        double Height           = 0.04;
         double Length           = 0.16;
 
-        unsigned int NumNodesX = 10;
-        unsigned int NumNodesY = 2;
+        unsigned int NumElementsX = 16;
+        unsigned int NumElementsY = 4;
+
+        unsigned int NumNodesX = NumElementsX + 1;
+        unsigned int NumNodesY = NumElementsY + 1;
 
         //double ElementHeight    = static_cast<double>(Height)/static_cast<double>(NumNodesY-1);
         //double ElementLength    = static_cast<double>(Length)/static_cast<double>(NumNodesX-1);
 
         double          Thickness    = 0.04;
 
-        double          delta_t     = 1.0/1.0 *     1.0 * 24.0 * 60.0 * 60.0;
-        double          t_final     = 1.0/1.0 *    10.0 * 24.0 * 60.0 * 60.0;
-
+        double          delta_t                         = 1.0/1.0 *     1.0 * 24.0 * 60.0 * 60.0;
+        double          t_final                         = 1.0/1.0 *     5.0 * 24.0 * 60.0 * 60.0;
+        double          BC_TransitionTime               =                     24.0 * 60.0 * 60.0;
 
         // initial node values
         double          InitialRelativeHumidity         =    0.95;
@@ -77,8 +81,7 @@ int main()
         double          WaterPhaseDiffusionExponent     =    2.0        ;
 
         // Boundary Condition Values
-        //double          BC_RelativeHumidity             =    0.45;
-        //double          BC_WaterVolumeFraction;       //=    calculated later
+        double          BC_RelativeHumidity             =    0.45;
         double          BC_Surface_Moisture_Transfer_RH =    1.0e-10 * delta_t;
         double          BC_Surface_Moisture_Transfer_WVF=    1.0e-7 * delta_t;
         bool            SorptionHistoryDesorption       =    true;
@@ -91,7 +94,7 @@ int main()
 
 
         // max residual
-        double          MaxResidual                     =    1.0e-12;
+        double          MaxResidual                     =    1.0e-18;
 
 
 
@@ -229,9 +232,6 @@ int main()
         // %%%%%%%%%%%%%%%
 
 
-        unsigned int NumElementsX = NumNodesX-1;
-        unsigned int NumElementsY = NumNodesY-1;
-
         NuTo::FullVector<int,Eigen::Dynamic> Nodes(4);
 
         for (unsigned int iY=0; iY< NumElementsY; iY++)
@@ -260,7 +260,14 @@ int main()
 
         for (unsigned int i=0; i<NNodes; i++)
         {
-            auto NodeMultiplier= myStructure.NodeGetNodePtr(i)->GetCoordinates()[0]/Length;
+            /*
+            double NodeX = myStructure.NodeGetNodePtr(i)->GetCoordinates()[0] / Length;
+            double NodeY = myStructure.NodeGetNodePtr(i)->GetCoordinates()[1] / Height;
+            double XVal = 0.5 * sin(NodeX * 3.14) + 0.5 * NodeX * NodeX;
+            double YVal = (cos((NodeY + 0.5)* 3.14) + 1.0) * (0.5 +0.5*NodeY);
+            double NodeMultiplier = 0.25 +  XVal * 0.75 * YVal;
+            */
+            double NodeMultiplier = 1.0;
             if(myStructure.NodeGetNodePtr(i)->GetNumRelativeHumidity() != 0)
             {
                 myStructure.NodeGetNodePtr(i)->SetRelativeHumidity(0,InitialRelativeHumidity*NodeMultiplier);
@@ -271,35 +278,51 @@ int main()
             }
         }
 
-//        // %%%%%%%%%%%%%%%%%%%%%%%%
-//        // Create Boundary Elements
-//        // %%%%%%%%%%%%%%%%%%%%%%%%
+        // %%%%%%%%%%%%%%%%%%%%%%%%
+        // Create Boundary Elements
+        // %%%%%%%%%%%%%%%%%%%%%%%%
 
 
-//        // Add Nodes to boundary
-//        int nodeGroupBoundary = myStructure.GroupCreate("NODES");
-//        myStructure.GroupAddNodeCoordinateRange(nodeGroupBoundary, 0,         -1.e-6,         1.e-6);
-//        myStructure.GroupAddNodeCoordinateRange(nodeGroupBoundary, 0,         L-1.e-6,        L + 1.e-6);
+        // Add Nodes to boundary
+        int nodeGroupBoundary = myStructure.GroupCreate("NODES");
 
-//        // Group all elements with boundary nodes
-//        int elemGroupBoundary = myStructure.GroupCreate("ELEMENTS");
-//        myStructure.GroupAddElementsFromNodes(elemGroupBoundary, nodeGroupBoundary, false);
 
-//        // Create boundary elements
-//        ElementNodeNumbers.Resize(1);
-//        ElementNodeNumbers(0) = 0;
+        auto GetBoundaryNodesLambda = [Length,Height](NuTo::NodeBase* rNodePtr) -> bool
+                                {
+                                    double Tol = 1.e-6;
+                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    {
+                                        double x = rNodePtr->GetCoordinate(0);
+                                        double y = rNodePtr->GetCoordinate(1);
+                                        if ((x >=        -Tol   && x <=          Tol) ||
+                                            (x >= Length -Tol   && x <= Length + Tol) ||
+                                            (y >=        -Tol   && y <=          Tol) ||
+                                            (y >= Height -Tol   && y <= Height + Tol) )
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                };
 
-//        auto BoundaryElementIDs = myStructure.BoundaryElementsCreate(elemGroupBoundary,nodeGroupBoundary);
+        myStructure.GroupAddNodeFunction(nodeGroupBoundary,GetBoundaryNodesLambda);
 
-//        for (int i=0; i<BoundaryElementIDs.GetNumRows(); i++)
-//        {
-//            myStructure.ElementGetElementPtr(BoundaryElementIDs(i))->SetBoundaryRelativeHumidity(BC_RelativeHumidity);
-//            myStructure.ElementGetElementPtr(BoundaryElementIDs(i))->SetBoundaryWaterVolumeFraction(BC_WaterVolumeFraction);
-//        }
+        // Group all elements with boundary nodes
+        int elemGroupBoundary = myStructure.GroupCreate("ELEMENTS");
+        myStructure.GroupAddElementsFromNodes(elemGroupBoundary, nodeGroupBoundary, false);
 
-//        // %%%%%%%%%%%%%%%
-//        // Set Static Data
-//        // %%%%%%%%%%%%%%%
+
+
+        int BoundaryNodeID = myStructure.NodeCreateDOFs("RELATIVEHUMIDITY");
+
+
+        myStructure.BoundaryElementsCreate(elemGroupBoundary,nodeGroupBoundary,myStructure.NodeGetNodePtr(BoundaryNodeID));
+
+
+
+        // %%%%%%%%%%%%%%%
+        // Set Static Data
+        // %%%%%%%%%%%%%%%
 
 
         // Loop over all integration points
@@ -314,6 +337,36 @@ int main()
                 StaticData ->SetSorptionHistoryDesorption(SorptionHistoryDesorption);
             }
         }
+
+        // %%%%%%%%%%%%%%%
+        // Set Constraints
+        // %%%%%%%%%%%%%%%
+
+        auto RelativeHumidityFunc = [BC_RelativeHumidity,
+                                     BC_TransitionTime,
+                                     InitialRelativeHumidity,
+                                     t_final]
+                                     (double rTime)->double
+                                  {
+
+                                        if(rTime == 0.0)
+                                        {
+                                            return InitialRelativeHumidity;
+                                        }
+                                        else
+                                        {
+                                            if(rTime< BC_TransitionTime)
+                                            {
+                                                return InitialRelativeHumidity - sin(rTime / BC_TransitionTime * 3.14 /2.0) * (InitialRelativeHumidity-BC_RelativeHumidity);
+                                            }
+                                            {
+                                                return BC_RelativeHumidity;
+                                            }
+                                        }
+                                  };
+
+        int BoundaryConstraint = myStructure.ConstraintLinearSetRelativeHumidityNode(BoundaryNodeID,1.0);
+        //myStructure.ConstraintLinearSetWaterVolumeFractionNode(BoundaryNodeID,1.0);
 
 
 
@@ -360,92 +413,28 @@ int main()
 
         NuTo::CrankNicolsonEvaluate TimeIntegrationScheme(&myStructure);
 
-        TimeIntegrationScheme.SetTimeStep(delta_t);
-        TimeIntegrationScheme.SetMaxTimeStep(delta_t);
-        TimeIntegrationScheme.SetMinTimeStep(delta_t);
+
+        //TimeIntegrationScheme.SetMaxTimeStep(delta_t);
+        //TimeIntegrationScheme.SetMinTimeStep(delta_t);
 
         TimeIntegrationScheme.SetPerformLineSearch(false);
-        TimeIntegrationScheme.SetCheckEquilibriumOnStart(false);
+        TimeIntegrationScheme.SetCheckEquilibriumOnStart(true);
         TimeIntegrationScheme.SetToleranceForce(MaxResidual);
         TimeIntegrationScheme.SetMaxNumIterations(40);
+
+        TimeIntegrationScheme.AddTimeDependentConstraint(BoundaryConstraint,  RelativeHumidityFunc);
+
 
         //set result directory
         bool deleteResultDirectoryFirst(true);
         TimeIntegrationScheme.SetResultDirectory("./ResultsMoistureTransport1D",deleteResultDirectoryFirst);
 
+
+        TimeIntegrationScheme.SetTimeStep(delta_t);
+        TimeIntegrationScheme.SetMinTimeStepPlot(t_final);
         TimeIntegrationScheme.Solve(t_final);
 
 
-
-
-
-
-//        // %%%%%%%%%%%%%%%%%
-//        // Visualize Results
-//        // %%%%%%%%%%%%%%%%%
-
-
-//        if(UseVisualization)
-//        {
-//            mkdir(VTKFolder.c_str(),0777);
-//            myStructure.ExportVtkDataFileElements(VTKFolder+"/"+VTKFile,false);
-//        }
-
-//        // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//        // Compare Results with paper from Johannesson and Nyman(2010)
-//        // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-//        // Just in case one uses an interpolation order higher than 1
-//        NNodes = NElements + 1;
-
-//        if(NElements==16)
-//        {
-//            NuTo::FullVector<double,Eigen::Dynamic> PaperValues(NNodes);
-//            PaperValues(0)  = 0.06;
-//            PaperValues(1)  = 0.097;
-//            PaperValues(2)  = 0.116;
-//            PaperValues(3)  = 0.129;
-//            PaperValues(4)  = 0.138;
-//            PaperValues(5)  = 0.146;
-//            PaperValues(6)  = 0.148;
-//            PaperValues(7)  = 0.151;
-//            PaperValues(8)  = 0.152;
-//            PaperValues(9)  = PaperValues(7);
-//            PaperValues(10) = PaperValues(6);
-//            PaperValues(11) = PaperValues(5);
-//            PaperValues(12) = PaperValues(4);
-//            PaperValues(13) = PaperValues(3);
-//            PaperValues(14) = PaperValues(2);
-//            PaperValues(15) = PaperValues(1);
-//            PaperValues(16) = PaperValues(0);
-
-//            NuTo::FullVector<double,Eigen::Dynamic> WPF;
-//            WPF.resize(NNodes);
-//            for (unsigned int i=0; i<NNodes; i++)
-//            {
-//                WPF(i)  = myStructure.NodeGetNodePtr(i)->GetWaterVolumeFraction();
-//            }
-
-//            NuTo::FullVector<double,Eigen::Dynamic> Diff = WPF - PaperValues;
-//            if(std::abs(Diff.Max()) > 0.01 || std::abs(Diff.Min()) > 0.01)
-//            {
-//                throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp]: Results differ to much from given values!");
-//            }
-//            else
-//            {
-//                std::cout << "Calculation finished!" << std::endl;
-//            }
-
-//        }
-//        else
-//        {
-//            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp]: This testfile needs 16 elements to compare the results with the values taken from the paper of Johannesson and Nyman(2010)");
-//        }
-
-//        if(measureTime)
-//        {
-//            std::cout << "elapsed time : " << (time_end.tv_sec - time_begin.tv_sec) + (time_end.tv_usec - time_begin.tv_usec)/1000000.0<< " seconds" << std::endl;
-//        }
     }
     catch(NuTo::Exception e)
     {
@@ -453,3 +442,7 @@ int main()
         return 1;
     }
 }
+
+
+// paraview calc Code:
+// coordsX * iHat + coordsY * jHat + (coordsZ + WaterVolumeFraction) * kHat

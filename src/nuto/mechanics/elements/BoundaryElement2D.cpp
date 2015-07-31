@@ -12,6 +12,8 @@
 
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/mechanics/constitutive/moistureTransport/RelativeHumidity.h"
+#include "nuto/mechanics/constitutive/moistureTransport/WaterVolumeFraction.h"
 #include "nuto/mechanics/elements/ElementOutputBase.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
@@ -52,6 +54,21 @@ NuTo::Error::eError NuTo::BoundaryElement2D::Evaluate(boost::ptr_multimap<NuTo::
         ConstitutiveTangentLocal<3, 1> tangentLocalEqStrainStrain;
         ConstitutiveTangentLocal<1, 1> nonlocalParameter;
 
+
+        //allocate relative humidity
+        RelativeHumidity relativeHumidity;
+        RelativeHumidity relativeHumidityD1;
+
+        //allocate water phase fraction
+        WaterVolumeFraction waterVolumeFraction;
+        WaterVolumeFraction waterVolumeFractionD1;
+
+
+        ConstitutiveTangentLocal<1,1> residualBoundarySurfaceWaterPhase;
+        ConstitutiveTangentLocal<1,1> residualBoundarySurfaceVaporPhase;
+        ConstitutiveTangentLocal<1,1> tangentSurfaceRelativeHumidityTransportCoefficient;
+        ConstitutiveTangentLocal<1,1> tangentSurfaceWaterVolumeFractionTransportCoefficient;
+
         //allocate input list and output list
         std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*> constitutiveInputList;
         std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*> constitutiveOutputList;
@@ -68,9 +85,17 @@ NuTo::Error::eError NuTo::BoundaryElement2D::Evaluate(boost::ptr_multimap<NuTo::
                 constitutiveInputList[NuTo::Constitutive::Input::NONLOCAL_EQ_STRAIN] = &(nonlocalEqStrain);
                 break;
             case Node::RELATIVEHUMIDITY:
+            {
+                constitutiveInputList[NuTo::Constitutive::Input::RELATIVE_HUMIDITY]             = &relativeHumidity;
+                constitutiveInputList[NuTo::Constitutive::Input::RELATIVE_HUMIDITY_D1]          = &relativeHumidityD1;
                 break;
+            }
             case Node::WATERVOLUMEFRACTION:
+            {
+                constitutiveInputList[NuTo::Constitutive::Input::WATER_VOLUME_FRACTION]         = &waterVolumeFraction;
+                constitutiveInputList[NuTo::Constitutive::Input::WATER_VOLUME_FRACTION_D1]      = &waterVolumeFractionD1;
                 break;
+            }
             default:
                 break;
             }
@@ -95,9 +120,21 @@ NuTo::Error::eError NuTo::BoundaryElement2D::Evaluate(boost::ptr_multimap<NuTo::
                         break;
 
                     case Node::RELATIVEHUMIDITY:
+                    {
+                        if (activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::BOUNDARY_SURFACE_VAPOR_PHASE_RESIDUAL]  = &residualBoundarySurfaceVaporPhase;
+                        }
                         break;
+                    }
                     case Node::WATERVOLUMEFRACTION:
+                    {
+                        if (activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end())
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::BOUNDARY_SURFACE_WATER_PHASE_RESIDUAL]  = &residualBoundarySurfaceWaterPhase;
+                        }
                         break;
+                    }
                     default:
                         break;
                     }
@@ -119,9 +156,21 @@ NuTo::Error::eError NuTo::BoundaryElement2D::Evaluate(boost::ptr_multimap<NuTo::
                         constitutiveOutputList[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI] = &nonlocalParameter;
                         break;
                     case Node::RELATIVEHUMIDITY:
+                    {
+                        if (activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::BOUNDARY_SURFACE_RELATIVE_HUMIDIY_TRANSPORT_COEFFICIENT]  = &tangentSurfaceRelativeHumidityTransportCoefficient;
+                        }
                         break;
+                    }
                     case Node::WATERVOLUMEFRACTION:
+                    {
+                        if (activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end())
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::BOUNDARY_SURFACE_WATER_VOLUME_FRACTION_TRANSPORT_COEFFICIENT]  = &tangentSurfaceWaterVolumeFractionTransportCoefficient;
+                        }
                         break;
+                    }
                     default:
                         break;
                     }
@@ -133,6 +182,13 @@ NuTo::Error::eError NuTo::BoundaryElement2D::Evaluate(boost::ptr_multimap<NuTo::
                 it->second->SetSymmetry(true);
                 it->second->SetConstant(true);
                 break;
+            case Element::HESSIAN_2_TIME_DERIVATIVE:
+            {
+                it->second->GetFullMatrixDouble().Resize(numActiveDofs, numActiveDofs);
+                it->second->SetSymmetry(true);
+                it->second->SetConstant(true);
+                break;
+            }
             case Element::UPDATE_STATIC_DATA:
                 constitutiveOutputList[NuTo::Constitutive::Output::UPDATE_STATIC_DATA] = 0;
                 break;
@@ -220,8 +276,19 @@ NuTo::Error::eError NuTo::BoundaryElement2D::Evaluate(boost::ptr_multimap<NuTo::
                     nonlocalEqStrain(0, 0) = (nodalValues[dof] * shapeFunctions[dof])(0, 0);
                     break;
                 case Node::RELATIVEHUMIDITY:
+                {
+                    relativeHumidity(0,0)               = (nodalValues[Node::RELATIVEHUMIDITY] * shapeFunctions[Node::RELATIVEHUMIDITY])(0,0);
+                    relativeHumidityD1(0,0)             = (ExtractNodeValues(1, Node::RELATIVEHUMIDITY) * shapeFunctions[Node::RELATIVEHUMIDITY])(0,0);
+
+                }
                     break;
                 case Node::WATERVOLUMEFRACTION:
+                {
+                    waterVolumeFraction(0,0)            = (nodalValues[Node::WATERVOLUMEFRACTION] * shapeFunctions[Node::WATERVOLUMEFRACTION])(0,0);
+                    waterVolumeFractionD1(0,0)          = (ExtractNodeValues(1, Node::WATERVOLUMEFRACTION) * shapeFunctions[Node::WATERVOLUMEFRACTION])(0);
+
+
+                }
                     break;
                 default:
                     break;
@@ -317,9 +384,29 @@ NuTo::Error::eError NuTo::BoundaryElement2D::Evaluate(boost::ptr_multimap<NuTo::
                             break;
                         }
                         case Node::RELATIVEHUMIDITY:
+                        {
+                            if(activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                            {
+                                mBaseElement-> AsElement2D() -> AddDetJNtX( shapeFunctions.at(Node::RELATIVEHUMIDITY),
+                                                                            residualBoundarySurfaceVaporPhase,
+                                                                            factor,
+                                                                            startIndex,
+                                                                            it->second->GetFullVectorDouble());
+                            }
                             break;
+                        }
                         case Node::WATERVOLUMEFRACTION:
+                        {
+                            if(activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end())
+                            {
+                                mBaseElement-> AsElement2D() -> AddDetJNtX( shapeFunctions.at(Node::WATERVOLUMEFRACTION),
+                                                                            residualBoundarySurfaceWaterPhase,
+                                                                            factor,
+                                                                            startIndex,
+                                                                            it->second->GetFullVectorDouble());
+                            }
                             break;
+                        }
                         default:
                             break;
                         }
@@ -350,9 +437,37 @@ NuTo::Error::eError NuTo::BoundaryElement2D::Evaluate(boost::ptr_multimap<NuTo::
                             }
                             break;
                         case Node::RELATIVEHUMIDITY:
+                        {
+                            if(activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                            {
+                                auto RelHumShapeFunction = shapeFunctions.at(Node::RELATIVEHUMIDITY);
+
+                                mBaseElement-> AsElement2D() -> AddDetJNtXN(RelHumShapeFunction,
+                                                                            RelHumShapeFunction,
+                                                                            tangentSurfaceRelativeHumidityTransportCoefficient,
+                                                                            factor,
+                                                                            startIndex,
+                                                                            startIndex,
+                                                                            it->second->GetFullMatrixDouble());
+                            }
                             break;
+                        }
                         case Node::WATERVOLUMEFRACTION:
+                        {
+                            if(activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end())
+                            {
+                                auto WatVolShapeFunction = shapeFunctions.at(Node::WATERVOLUMEFRACTION);
+
+                                mBaseElement-> AsElement2D() -> AddDetJNtXN(WatVolShapeFunction,
+                                                                            WatVolShapeFunction,
+                                                                            tangentSurfaceWaterVolumeFractionTransportCoefficient,
+                                                                            factor,
+                                                                            startIndex,
+                                                                            startIndex,
+                                                                            it->second->GetFullMatrixDouble());
+                            }
                             break;
+                        }
                         default:
                             break;
                         }

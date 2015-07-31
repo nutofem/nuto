@@ -798,6 +798,17 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                                             indexRelHum,
                                             indexWatVol,
                                             it->second->GetFullMatrixDouble());
+
+
+                                // Maybe replace the tangent check for constness by a constitutive law function that tells if the build matrix is constant or not
+                                if(it->second->GetConstant() &&
+                                   (tangent_D_Residual_RH_D_RH_H0_BB.GetConstant() == false ||
+                                    tangent_D_Residual_RH_D_RH_H0_NN.GetConstant() == false ||
+                                    tangent_D_Residual_RH_D_WV_H0_BN.GetConstant() == false ||
+                                    tangent_D_Residual_RH_D_WV_H0_NN.GetConstant() == false))
+                                {
+                                    it->second->SetConstant(false);
+                                }
 /*
                                 //it->second->GetFullMatrixDouble().Info();         // Check Element Matrix if needed
                                 //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> test = it->second->GetFullMatrixDouble();
@@ -863,6 +874,16 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                                             indexRelHum,
                                             it->second->GetFullMatrixDouble());
 
+
+                                // Maybe replace the tangent check for constness by a constitutive law function that tells if the build matrix is constant or not
+                                if(it->second->GetConstant() &&
+                                   (tangent_D_Residual_WV_D_RH_H0_NN.GetConstant() == false ||
+                                    tangent_D_Residual_WV_D_WV_H0_BB.GetConstant() == false ||
+                                    tangent_D_Residual_WV_D_WV_H0_BN.GetConstant() == false ||
+                                    tangent_D_Residual_WV_D_WV_H0_NN.GetConstant() == false))
+                                {
+                                    it->second->SetConstant(false);
+                                }
 
                                 //it->second->GetFullMatrixDouble().Info();         // Check Element Matrix if needed
                                 //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> test = it->second->GetFullMatrixDouble();
@@ -932,6 +953,15 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                                         indexWatVol,
                                         it->second->GetFullMatrixDouble());
 
+
+                            // Maybe replace the tangent check for constness by a constitutive law function that tells if the build matrix is constant or not
+                            if(it->second->GetConstant() &&
+                               (tangent_D_Residual_RH_D_RH_H1_NN.GetConstant() == false ||
+                                tangent_D_Residual_RH_D_WV_H1_NN.GetConstant() == false))
+                            {
+                                it->second->SetConstant(false);
+                            }
+
                             //it->second->GetFullMatrixDouble().Info();         // Check Element Matrix if needed
                             //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> test = it->second->GetFullMatrixDouble();
                             //test.Info(4,4,true);
@@ -962,6 +992,12 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                                         indexWatVol,
                                         it->second->GetFullMatrixDouble());
 
+                            // Maybe replace the tangent check for constness by a constitutive law function that tells if the build matrix is constant or not
+                            if(it->second->GetConstant() &&
+                               tangent_D_Residual_WV_D_WV_H1_NN.GetConstant() == false)
+                            {
+                                it->second->SetConstant(false);
+                            }
 
                             //it->second->GetFullMatrixDouble().Info();         // Check Element Matrix if needed
                             //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> test = it->second->GetFullMatrixDouble();

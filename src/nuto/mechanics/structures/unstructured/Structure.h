@@ -438,8 +438,9 @@ public:
     //! @brief creates boundary elements and add them to an element group
     //! @param rElementGroupId ... group id including the base elements
     //! @param rNodeGroupId ... node group id that includes the surface nodes
+    //! @param rNodeDependency ... if not nullptr (default) a boundary element of type BoundaryElementXNodeDependent will be created instead of a normal one
     //! @return ... ids of the created boundary element group
-    int BoundaryElementsCreate(int rElementGroupId, int rNodeGroupId);
+    int BoundaryElementsCreate(int rElementGroupId, int rNodeGroupId, NodeBase* rNodeDependency = nullptr);
 
 
 #ifndef SWIG
