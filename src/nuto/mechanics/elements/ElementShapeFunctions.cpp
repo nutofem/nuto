@@ -1527,6 +1527,262 @@ Eigen::Matrix<double,20, 3> DerivativeShapeFunctionsBrickOrder2(const Eigen::Vec
     return derivativeShapeFunctions;
 }
 
+
+Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickSpectralOrder2(int rNodeIndex)
+{
+    const int d = 3;
+    const int dxd = d*d;
+
+    assert(rNodeIndex >= 0);
+    assert(rNodeIndex <  d*d*d);
+
+    double cX = ShapeFunctions1D::NodeCoordinatesTrussOrder2(rNodeIndex % d)(0, 0);
+    double cY = ShapeFunctions1D::NodeCoordinatesTrussOrder2((rNodeIndex % dxd)/d)(0, 0);
+    double cZ = ShapeFunctions1D::NodeCoordinatesTrussOrder2(rNodeIndex / dxd)(0, 0);
+
+    return Eigen::Vector3d(cX, cY, cZ);
+}
+
+Eigen::Matrix<double,27, 1> ShapeFunctionsBrickSpectralOrder2(const Eigen::VectorXd& rCoordinates)
+{
+    const int d = 3;
+    const int dxd = d*d;
+
+    const Eigen::Matrix<double, 1, 1>& cX = rCoordinates.row(0);
+    const Eigen::Matrix<double, 1, 1>& cY = rCoordinates.row(1);
+    const Eigen::Matrix<double, 1, 1>& cZ = rCoordinates.row(2);
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dx = ShapeFunctions1D::ShapeFunctionsTrussOrder2(cX);
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dy = ShapeFunctions1D::ShapeFunctionsTrussOrder2(cY);
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dz = ShapeFunctions1D::ShapeFunctionsTrussOrder2(cZ);
+
+    Eigen::Matrix<double, d, d> shapeFunctionsMatrix1 = shapeFunctions1Dx * shapeFunctions1Dy.transpose();
+    Eigen::Matrix<double, d, dxd> shapeFunctionsMatrix;
+    for (int countZ=0; countZ<d; countZ++)
+    {
+    	shapeFunctionsMatrix.block(0,countZ*d,d,d) = shapeFunctions1Dz(countZ)*shapeFunctionsMatrix1;
+    }
+    return Eigen::Map<Eigen::Matrix<double, d*dxd, 1>>(shapeFunctionsMatrix.data(), d*dxd);
+}
+
+Eigen::Matrix<double,27, 3> DerivativeShapeFunctionsBrickSpectralOrder2(const Eigen::VectorXd& rCoordinates)
+{
+    const int d = 3;
+    const int dxd = d*d;
+
+    const Eigen::Matrix<double, 1, 1>& cX = rCoordinates.row(0);
+    const Eigen::Matrix<double, 1, 1>& cY = rCoordinates.row(1);
+    const Eigen::Matrix<double, 1, 1>& cZ = rCoordinates.row(2);
+
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dx = ShapeFunctions1D::ShapeFunctionsTrussOrder2(cX);
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dy = ShapeFunctions1D::ShapeFunctionsTrussOrder2(cY);
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dz = ShapeFunctions1D::ShapeFunctionsTrussOrder2(cZ);
+
+    const Eigen::Matrix<double, d, 1>& derShapeFunctions1Dx = ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder2(cX);
+    const Eigen::Matrix<double, d, 1>& derShapeFunctions1Dy = ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder2(cY);
+    const Eigen::Matrix<double, d, 1>& derShapeFunctions1Dz = ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder2(cZ);
+
+    Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctions;
+
+    int theNode(0);
+    for (int countzNode=0; countzNode<d; countzNode++)
+        for (int countyNode=0; countyNode<d; countyNode++)
+            for (int countxNode=0; countxNode<d; countxNode++,theNode++)
+            {
+            	//this can still be optimized, since the calculation of the product of the variables that are not derived is performed several times
+				derivativeShapeFunctions(theNode,0) = derShapeFunctions1Dx(countxNode)*shapeFunctions1Dy(countyNode)*shapeFunctions1Dz(countzNode);
+				derivativeShapeFunctions(theNode,1) = derShapeFunctions1Dy(countyNode)*shapeFunctions1Dz(countzNode)*shapeFunctions1Dx(countxNode);
+				derivativeShapeFunctions(theNode,2) = derShapeFunctions1Dz(countzNode)*shapeFunctions1Dx(countxNode)*shapeFunctions1Dy(countyNode);
+            }
+/*   Eigen::Matrix<double,27, 1>  shapeOrig = ShapeFunctionsBrickSpectralOrder2(rCoordinates);
+   Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctionsCDF;
+   double delta=1e-8;
+   for (int der=0; der<3; der++)
+   {
+	   Eigen::VectorXd coordinates(rCoordinates);
+	   coordinates(der)+=delta;
+	   Eigen::Matrix<double,27, 1>  shapeCDF = ShapeFunctionsBrickSpectralOrder2(coordinates);
+	   derivativeShapeFunctionsCDF.col(der) = 1./delta*(shapeCDF-shapeOrig);
+   }
+   std::cout << "DerShapeFunctions " << std::endl;
+   std::cout << derivativeShapeFunctions << std::endl;
+   std::cout << "DerShapeFunctions CDF" << std::endl;
+   std::cout << derivativeShapeFunctionsCDF << std::endl;
+   std::cout << "diff" << std::endl;
+   std::cout << derivativeShapeFunctionsCDF-derivativeShapeFunctions << std::endl;
+*/
+   return derivativeShapeFunctions;
+}
+
+Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickSpectralOrder3(int rNodeIndex)
+{
+    const int d = 4;
+    const int dxd = d*d;
+
+    assert(rNodeIndex >= 0);
+    assert(rNodeIndex <  d*d*d);
+
+    double cX = ShapeFunctions1D::NodeCoordinatesTrussOrder3(rNodeIndex % d)(0, 0);
+    double cY = ShapeFunctions1D::NodeCoordinatesTrussOrder3((rNodeIndex % dxd)/d)(0, 0);
+    double cZ = ShapeFunctions1D::NodeCoordinatesTrussOrder3(rNodeIndex / dxd)(0, 0);
+
+    return Eigen::Vector3d(cX, cY, cZ);
+}
+
+Eigen::Matrix<double,64, 1> ShapeFunctionsBrickSpectralOrder3(const Eigen::VectorXd& rCoordinates)
+{
+    const int d = 4;
+    const int dxd = d*d;
+
+    const Eigen::Matrix<double, 1, 1>& cX = rCoordinates.row(0);
+    const Eigen::Matrix<double, 1, 1>& cY = rCoordinates.row(1);
+    const Eigen::Matrix<double, 1, 1>& cZ = rCoordinates.row(2);
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dx = ShapeFunctions1D::ShapeFunctionsTrussOrder3(cX);
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dy = ShapeFunctions1D::ShapeFunctionsTrussOrder3(cY);
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dz = ShapeFunctions1D::ShapeFunctionsTrussOrder3(cZ);
+
+    Eigen::Matrix<double, d, d> shapeFunctionsMatrix1 = shapeFunctions1Dx * shapeFunctions1Dy.transpose();
+    Eigen::Matrix<double, d, dxd> shapeFunctionsMatrix;
+    for (int countZ=0; countZ<d; countZ++)
+    {
+    	shapeFunctionsMatrix.block(0,countZ*d,d,d) = shapeFunctions1Dz(countZ)*shapeFunctionsMatrix1;
+    }
+    return Eigen::Map<Eigen::Matrix<double, d*dxd, 1>>(shapeFunctionsMatrix.data(), d*dxd);
+}
+
+Eigen::Matrix<double,64, 3> DerivativeShapeFunctionsBrickSpectralOrder3(const Eigen::VectorXd& rCoordinates)
+{
+    const int d = 4;
+    const int dxd = d*d;
+
+    const Eigen::Matrix<double, 1, 1>& cX = rCoordinates.row(0);
+    const Eigen::Matrix<double, 1, 1>& cY = rCoordinates.row(1);
+    const Eigen::Matrix<double, 1, 1>& cZ = rCoordinates.row(2);
+
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dx = ShapeFunctions1D::ShapeFunctionsTrussOrder3(cX);
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dy = ShapeFunctions1D::ShapeFunctionsTrussOrder3(cY);
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dz = ShapeFunctions1D::ShapeFunctionsTrussOrder3(cZ);
+
+    const Eigen::Matrix<double, d, 1>& derShapeFunctions1Dx = ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder3(cX);
+    const Eigen::Matrix<double, d, 1>& derShapeFunctions1Dy = ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder3(cY);
+    const Eigen::Matrix<double, d, 1>& derShapeFunctions1Dz = ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder3(cZ);
+
+    Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctions;
+
+    int theNode(0);
+    for (int countzNode=0; countzNode<d; countzNode++)
+        for (int countyNode=0; countyNode<d; countyNode++)
+            for (int countxNode=0; countxNode<d; countxNode++,theNode++)
+            {
+            	//this can still be optimized, since the calculation of the product of the variables that are not derived is performed several times
+				derivativeShapeFunctions(theNode,0) = derShapeFunctions1Dx(countxNode)*shapeFunctions1Dy(countyNode)*shapeFunctions1Dz(countzNode);
+				derivativeShapeFunctions(theNode,1) = derShapeFunctions1Dy(countyNode)*shapeFunctions1Dz(countzNode)*shapeFunctions1Dx(countxNode);
+				derivativeShapeFunctions(theNode,2) = derShapeFunctions1Dz(countzNode)*shapeFunctions1Dx(countxNode)*shapeFunctions1Dy(countyNode);
+            }
+/*   Eigen::Matrix<double,64, 1>  shapeOrig = ShapeFunctionsBrickSpectralOrder3(rCoordinates);
+   Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctionsCDF;
+   double delta=1e-8;
+   for (int der=0; der<3; der++)
+   {
+	   Eigen::VectorXd coordinates(rCoordinates);
+	   coordinates(der)+=delta;
+	   Eigen::Matrix<double,64, 1>  shapeCDF = ShapeFunctionsBrickSpectralOrder3(coordinates);
+	   derivativeShapeFunctionsCDF.col(der) = 1./delta*(shapeCDF-shapeOrig);
+   }
+   std::cout << "DerShapeFunctions " << std::endl;
+   std::cout << derivativeShapeFunctions << std::endl;
+   std::cout << "DerShapeFunctions CDF" << std::endl;
+   std::cout << derivativeShapeFunctionsCDF << std::endl;
+   std::cout << "diff" << std::endl;
+   std::cout << derivativeShapeFunctionsCDF-derivativeShapeFunctions << std::endl;
+*/
+   return derivativeShapeFunctions;
+}
+
+Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickSpectralOrder4(int rNodeIndex)
+{
+    const int d = 5;
+    const int dxd = d*d;
+
+    assert(rNodeIndex >= 0);
+    assert(rNodeIndex <  d*d*d);
+
+    double cX = ShapeFunctions1D::NodeCoordinatesTrussOrder4(rNodeIndex % d)(0, 0);
+    double cY = ShapeFunctions1D::NodeCoordinatesTrussOrder4((rNodeIndex % dxd)/d)(0, 0);
+    double cZ = ShapeFunctions1D::NodeCoordinatesTrussOrder4(rNodeIndex / dxd)(0, 0);
+
+    return Eigen::Vector3d(cX, cY, cZ);
+}
+
+Eigen::Matrix<double,125, 1> ShapeFunctionsBrickSpectralOrder4(const Eigen::VectorXd& rCoordinates)
+{
+    const int d = 5;
+    const int dxd = d*d;
+
+    const Eigen::Matrix<double, 1, 1>& cX = rCoordinates.row(0);
+    const Eigen::Matrix<double, 1, 1>& cY = rCoordinates.row(1);
+    const Eigen::Matrix<double, 1, 1>& cZ = rCoordinates.row(2);
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dx = ShapeFunctions1D::ShapeFunctionsTrussOrder4(cX);
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dy = ShapeFunctions1D::ShapeFunctionsTrussOrder4(cY);
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dz = ShapeFunctions1D::ShapeFunctionsTrussOrder4(cZ);
+
+    Eigen::Matrix<double, d, d> shapeFunctionsMatrix1 = shapeFunctions1Dx * shapeFunctions1Dy.transpose();
+    Eigen::Matrix<double, d, dxd> shapeFunctionsMatrix;
+    for (int countZ=0; countZ<d; countZ++)
+    {
+    	shapeFunctionsMatrix.block(0,countZ*d,d,d) = shapeFunctions1Dz(countZ)*shapeFunctionsMatrix1;
+    }
+    return Eigen::Map<Eigen::Matrix<double, d*dxd, 1>>(shapeFunctionsMatrix.data(), d*dxd);
+}
+
+Eigen::Matrix<double,125, 3> DerivativeShapeFunctionsBrickSpectralOrder4(const Eigen::VectorXd& rCoordinates)
+{
+    const int d = 5;
+    const int dxd = d*d;
+
+    const Eigen::Matrix<double, 1, 1>& cX = rCoordinates.row(0);
+    const Eigen::Matrix<double, 1, 1>& cY = rCoordinates.row(1);
+    const Eigen::Matrix<double, 1, 1>& cZ = rCoordinates.row(2);
+
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dx = ShapeFunctions1D::ShapeFunctionsTrussOrder4(cX);
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dy = ShapeFunctions1D::ShapeFunctionsTrussOrder4(cY);
+    const Eigen::Matrix<double, d, 1>& shapeFunctions1Dz = ShapeFunctions1D::ShapeFunctionsTrussOrder4(cZ);
+
+    const Eigen::Matrix<double, d, 1>& derShapeFunctions1Dx = ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder4(cX);
+    const Eigen::Matrix<double, d, 1>& derShapeFunctions1Dy = ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder4(cY);
+    const Eigen::Matrix<double, d, 1>& derShapeFunctions1Dz = ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder4(cZ);
+
+    Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctions;
+
+    int theNode(0);
+    for (int countzNode=0; countzNode<d; countzNode++)
+        for (int countyNode=0; countyNode<d; countyNode++)
+            for (int countxNode=0; countxNode<d; countxNode++,theNode++)
+            {
+            	//this can still be optimized, since the calculation of the product of the variables that are not derived is performed several times
+				derivativeShapeFunctions(theNode,0) = derShapeFunctions1Dx(countxNode)*shapeFunctions1Dy(countyNode)*shapeFunctions1Dz(countzNode);
+				derivativeShapeFunctions(theNode,1) = derShapeFunctions1Dy(countyNode)*shapeFunctions1Dz(countzNode)*shapeFunctions1Dx(countxNode);
+				derivativeShapeFunctions(theNode,2) = derShapeFunctions1Dz(countzNode)*shapeFunctions1Dx(countxNode)*shapeFunctions1Dy(countyNode);
+            }
+/*   Eigen::Matrix<double,125, 1>  shapeOrig = ShapeFunctionsBrickSpectralOrder4(rCoordinates);
+   Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctionsCDF;
+   double delta=1e-8;
+   for (int der=0; der<3; der++)
+   {
+	   Eigen::VectorXd coordinates(rCoordinates);
+	   coordinates(der)+=delta;
+	   Eigen::Matrix<double,125, 1>  shapeCDF = ShapeFunctionsBrickSpectralOrder4(coordinates);
+	   derivativeShapeFunctionsCDF.col(der) = 1./delta*(shapeCDF-shapeOrig);
+   }
+   std::cout << "DerShapeFunctions " << std::endl;
+   std::cout << derivativeShapeFunctions << std::endl;
+   std::cout << "DerShapeFunctions CDF" << std::endl;
+   std::cout << derivativeShapeFunctionsCDF << std::endl;
+   std::cout << "diff" << std::endl;
+   std::cout << derivativeShapeFunctionsCDF-derivativeShapeFunctions << std::endl;
+*/
+   return derivativeShapeFunctions;
+}
+
 }
 
 }

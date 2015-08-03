@@ -31,6 +31,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss2x2x2Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType3D8NLobatto.h"
 
 //! @brief ... Info routine that prints general information about the allocated integration types
 //! an integration type is only allocated if required (from created elements)
@@ -130,6 +131,15 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType
         break;
         case  NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip:
             ptrIntegrationType = new NuTo::IntegrationType3D8NGauss2x2x2Ip();
+        break;
+        case  NuTo::IntegrationType::IntegrationType3D8NLobatto3x3x3Ip:
+            ptrIntegrationType = new NuTo::IntegrationType3D8NLobatto<3>();
+        break;
+        case  NuTo::IntegrationType::IntegrationType3D8NLobatto4x4x4Ip:
+            ptrIntegrationType = new NuTo::IntegrationType3D8NLobatto<4>();
+        break;
+        case  NuTo::IntegrationType::IntegrationType3D8NLobatto5x5x5Ip:
+            ptrIntegrationType = new NuTo::IntegrationType3D8NLobatto<5>();
         break;
         default:
             throw MechanicsException("[NuTo::StructureBase::GetPtrIntegrationType] Enum of integration type does not exist.");

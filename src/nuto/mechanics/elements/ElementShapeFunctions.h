@@ -176,6 +176,30 @@ namespace ShapeFunctions3D
     Eigen::Matrix<double,20, 1> ShapeFunctionsBrickOrder2(const Eigen::VectorXd& rCoordinates);
 
     Eigen::Matrix<double,20, 3> DerivativeShapeFunctionsBrickOrder2(const Eigen::VectorXd& rCoordinates);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    Eigen::Matrix<double, 3,  1> NodeCoordinatesBrickSpectralOrder2(int rNodeIndex);
+
+    Eigen::Matrix<double, 27, 1> ShapeFunctionsBrickSpectralOrder2(const Eigen::VectorXd& rCoordinates);
+
+    Eigen::Matrix<double, 27, 3> DerivativeShapeFunctionsBrickSpectralOrder2(const Eigen::VectorXd& rCoordinates);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	Eigen::Matrix<double, 3,  1> NodeCoordinatesBrickSpectralOrder3(int rNodeIndex);
+
+	Eigen::Matrix<double, 64, 1> ShapeFunctionsBrickSpectralOrder3(const Eigen::VectorXd& rCoordinates);
+
+	Eigen::Matrix<double, 64, 3> DerivativeShapeFunctionsBrickSpectralOrder3(const Eigen::VectorXd& rCoordinates);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	Eigen::Matrix<double, 3,  1> NodeCoordinatesBrickSpectralOrder4(int rNodeIndex);
+
+	Eigen::Matrix<double, 125, 1> ShapeFunctionsBrickSpectralOrder4(const Eigen::VectorXd& rCoordinates);
+
+	Eigen::Matrix<double, 125, 3> DerivativeShapeFunctionsBrickSpectralOrder4(const Eigen::VectorXd& rCoordinates);
 }
 
 } /* namespace NuTo */

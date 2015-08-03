@@ -21,7 +21,12 @@ NuTo::IntegrationType::eIntegrationType NuTo::Interpolation3DBrick::GetStandardI
         return NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip;
-
+    case NuTo::Interpolation::eTypeOrder::LOBATTO2:
+        return NuTo::IntegrationType::IntegrationType3D8NLobatto3x3x3Ip;
+    case NuTo::Interpolation::eTypeOrder::LOBATTO3:
+        return NuTo::IntegrationType::IntegrationType3D8NLobatto4x4x4Ip;
+    case NuTo::Interpolation::eTypeOrder::LOBATTO4:
+        return NuTo::IntegrationType::IntegrationType3D8NLobatto5x5x5Ip;
     default:
         throw MechanicsException("[NuTo::Interpolation3DBrick::GetStandardIntegrationType] Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
@@ -35,6 +40,12 @@ const Eigen::VectorXd NuTo::Interpolation3DBrick::CalculateShapeFunctions(const 
         return ShapeFunctions3D::ShapeFunctionsBrickOrder1(rCoordinates);
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return ShapeFunctions3D::ShapeFunctionsBrickOrder2(rCoordinates);
+    case NuTo::Interpolation::eTypeOrder::LOBATTO2:
+        return ShapeFunctions3D::ShapeFunctionsBrickSpectralOrder2(rCoordinates);
+    case NuTo::Interpolation::eTypeOrder::LOBATTO3:
+        return ShapeFunctions3D::ShapeFunctionsBrickSpectralOrder3(rCoordinates);
+    case NuTo::Interpolation::eTypeOrder::LOBATTO4:
+        return ShapeFunctions3D::ShapeFunctionsBrickSpectralOrder4(rCoordinates);
     default:
         throw MechanicsException("[NuTo::Interpolation3DBrick::CalculateShapeFunctions] Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
@@ -48,6 +59,12 @@ const Eigen::MatrixXd NuTo::Interpolation3DBrick::CalculateDerivativeShapeFuncti
         return ShapeFunctions3D::DerivativeShapeFunctionsBrickOrder1(rCoordinates);
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return ShapeFunctions3D::DerivativeShapeFunctionsBrickOrder2(rCoordinates);
+    case NuTo::Interpolation::eTypeOrder::LOBATTO2:
+        return ShapeFunctions3D::DerivativeShapeFunctionsBrickSpectralOrder2(rCoordinates);
+    case NuTo::Interpolation::eTypeOrder::LOBATTO3:
+        return ShapeFunctions3D::DerivativeShapeFunctionsBrickSpectralOrder3(rCoordinates);
+    case NuTo::Interpolation::eTypeOrder::LOBATTO4:
+        return ShapeFunctions3D::DerivativeShapeFunctionsBrickSpectralOrder4(rCoordinates);
     default:
         throw MechanicsException("[NuTo::Interpolation3DBrick::CalculateDerivativeShapeFunctionsNatural] Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
@@ -61,6 +78,12 @@ const Eigen::VectorXd NuTo::Interpolation3DBrick::CalculateNaturalNodeCoordinate
         return ShapeFunctions3D::NodeCoordinatesBrickOrder1(rNodeIndexDof);
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return ShapeFunctions3D::NodeCoordinatesBrickOrder2(rNodeIndexDof);
+    case NuTo::Interpolation::eTypeOrder::LOBATTO2:
+        return ShapeFunctions3D::NodeCoordinatesBrickSpectralOrder2(rNodeIndexDof);
+    case NuTo::Interpolation::eTypeOrder::LOBATTO3:
+        return ShapeFunctions3D::NodeCoordinatesBrickSpectralOrder3(rNodeIndexDof);
+    case NuTo::Interpolation::eTypeOrder::LOBATTO4:
+        return ShapeFunctions3D::NodeCoordinatesBrickSpectralOrder4(rNodeIndexDof);
     default:
         throw MechanicsException("[NuTo::Interpolation3DBrick::CalculateNaturalNodeCoordinates] Node arrangement for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
@@ -74,8 +97,14 @@ int NuTo::Interpolation3DBrick::CalculateNumNodes() const
         return 8;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return 20;
+    case NuTo::Interpolation::eTypeOrder::LOBATTO2:
+        return 27;
+    case NuTo::Interpolation::eTypeOrder::LOBATTO3:
+        return 64;
+    case NuTo::Interpolation::eTypeOrder::LOBATTO4:
+        return 125;
     default:
-        throw MechanicsException("[NuTo::Interpolation3DBrick::GetNumNodes] Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException("[NuTo::Interpolation3DBrick::CalculateNumNodes] Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 

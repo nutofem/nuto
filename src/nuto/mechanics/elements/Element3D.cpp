@@ -825,7 +825,26 @@ const NuTo::DeformationGradient3D NuTo::Element3D::CalculateDeformationGradient(
 void NuTo::Element3D::AddDetJBtCB(const Eigen::MatrixXd& rDerivativeShapeFunctionsGlobal, const ConstitutiveTangentLocal<6, 6>& rConstitutiveTangent, double rFactor, int rRow, int rCol,
         FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoefficientMatrix) const
 {
-    const double *C = rConstitutiveTangent.data();
+	Eigen::Matrix<double, 6 , Eigen::Dynamic> Bmat;
+	Bmat.setZero(6,3*GetNumNodes());
+	int theColumn(0);
+    for (int theNode1 = 0; theNode1 < GetNumNodes(); theNode1++, theColumn+=3)
+    {
+    	Bmat(0,theColumn)  = rDerivativeShapeFunctionsGlobal(theNode1, 0);
+    	Bmat(1,theColumn+1)= rDerivativeShapeFunctionsGlobal(theNode1, 1);
+    	Bmat(2,theColumn+2)= rDerivativeShapeFunctionsGlobal(theNode1, 2);
+    	Bmat(3,theColumn+1)= rDerivativeShapeFunctionsGlobal(theNode1, 2);
+    	Bmat(3,theColumn+2)= rDerivativeShapeFunctionsGlobal(theNode1, 1);
+    	Bmat(4,theColumn)  = rDerivativeShapeFunctionsGlobal(theNode1, 2);
+    	Bmat(4,theColumn+2)= rDerivativeShapeFunctionsGlobal(theNode1, 0);
+    	Bmat(5,theColumn)  = rDerivativeShapeFunctionsGlobal(theNode1, 1);
+    	Bmat(5,theColumn+1)= rDerivativeShapeFunctionsGlobal(theNode1, 0);
+    }
+
+    Eigen::Matrix<double, 6 , 6> Cmod(rConstitutiveTangent*rFactor);
+    rCoefficientMatrix.noalias() += Bmat.transpose()*Cmod*Bmat;
+
+    /*const double *C = rConstitutiveTangent.data();
     double x1, x2, y1, y2, z1, z2, x2x1, y2x1, z2x1, x2y1, y2y1, z2y1, x2z1, y2z1, z2z1;
     for (int theNode1 = 0; theNode1 < GetNumNodes(); theNode1++)
     {
@@ -877,6 +896,7 @@ void NuTo::Element3D::AddDetJBtCB(const Eigen::MatrixXd& rDerivativeShapeFunctio
             rCoefficientMatrix(node1mul3plus2, node2mul3plus2) += z2z1 * C[14] + z2y1 * C[16] + z2x1 * C[17] + y2z1 * C[26] + y2y1 * C[28] + y2x1 * C[29] + x2z1 * C[32] + x2y1 * C[34] + x2x1 * C[35];
         }
     }
+    */
 }
 
 //! @brief adds up the internal force vector

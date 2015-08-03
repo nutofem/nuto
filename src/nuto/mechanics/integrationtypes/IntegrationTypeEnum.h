@@ -37,6 +37,9 @@ enum eIntegrationType
     IntegrationType3D4NGauss4Ip,
     IntegrationType3D8NGauss1Ip,
     IntegrationType3D8NGauss2x2x2Ip,
+    IntegrationType3D8NLobatto3x3x3Ip,
+    IntegrationType3D8NLobatto4x4x4Ip,
+    IntegrationType3D8NLobatto5x5x5Ip,
     NumIntegrationTypes,
     NotSet
 };

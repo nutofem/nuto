@@ -37,9 +37,9 @@ void NuTo::InterpolationBase::UpdateIntegrationType(const IntegrationTypeBase& r
     mShapeFunctions = std::vector<Eigen::VectorXd>(numIPs);
     mDerivativeShapeFunctionsNatural = std::vector<Eigen::MatrixXd>(numIPs);
 
+    int dim = rIntegrationType.GetCoordinateDimension();
     for (int iIP = 0; iIP < numIPs; ++iIP)
     {
-        int dim = rIntegrationType.GetCoordinateDimension();
         Eigen::VectorXd IPcoordinates;
         switch (dim)
         {
@@ -66,12 +66,11 @@ void NuTo::InterpolationBase::UpdateIntegrationType(const IntegrationTypeBase& r
         }
             break;
         default:
-            break;
+            throw MechanicsException("[NuTo::InterpolationBase::UpdateIntegrationType] only implemented for dimension 1,2 and 3");
         }
         mShapeFunctions[iIP] = CalculateShapeFunctions(IPcoordinates);
         mDerivativeShapeFunctionsNatural[iIP] = CalculateDerivativeShapeFunctionsNatural(IPcoordinates);
     }
-
     mUpdateRequired = false;
 }
 

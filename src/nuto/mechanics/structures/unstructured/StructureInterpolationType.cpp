@@ -151,10 +151,13 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node:
 
     IntegrationType::eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
     const IntegrationTypeBase* integrationType = this->GetPtrIntegrationType(integrationTypeEnum);
+    std::cout << "[NuTo::Structure::InterpolationTypeAdd] integration type " << integrationType->GetNumIntegrationPoints()<< std::endl;
 
     interpolationType->UpdateIntegrationType(*integrationType);
     if (mVerboseLevel > 2)
         mLogger << "[NuTo::Structure::InterpolationTypeAdd] Updated IntegrationType to " << integrationType->GetStrIdentifier() << ".\n";
+
+    std::cout << "[NuTo::Structure::InterpolationTypeAdd] current integration type " << interpolationType->GetCurrentIntegrationType()->GetNumIntegrationPoints()<< std::endl;
 
     // update all elements
     // disable show time
