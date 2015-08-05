@@ -212,6 +212,16 @@ ADD_TEST(c::mechanics::NonlocalDamagePlasticityModel ${CMAKE_CURRENT_BUILD_DIR}/
   ENDIF(MINGW)
   ENDIF(ENABLE_METAMODEL)
 
+  # MoistureTransport
+  IF(ENABLE_METAMODEL)
+    ADD_EXECUTABLE(MoistureTransport3D MoistureTransport3D.cpp)
+    TARGET_LINK_LIBRARIES(MoistureTransport3D NuToMetamodel NuToMechanics NuToMath NuToBase)
+    ADD_TEST(c::mechanics::MoistureTransport3D ${CMAKE_CURRENT_BUILD_DIR}/MoistureTransport3D)
+  IF(MINGW)
+    SET_TARGET_PROPERTIES(MoistureTransport3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  ENDIF(MINGW)
+  ENDIF(ENABLE_METAMODEL)
+
   # MultiPhysics2D
   IF(ENABLE_METAMODEL)
     ADD_EXECUTABLE(MultiPhysics2D MultiPhysics2D.cpp)

@@ -1192,18 +1192,18 @@ NuTo::BoundaryElement2D* NuTo::ElementBase::AsBoundaryElement2D()
 {
     throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryElement2D] BoundaryElement is not of type BoundaryElement2D.");
 }
-//
-////! @brief cast the base pointer to an BoundaryElement3D, otherwise throws an exception
-//const NuTo::BoundaryElement3D* NuTo::ElementBase::AsBoundaryElement3D()const
-//{
-//    throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryElement3D] BoundaryElement is not of type BoundaryElement3D.");
-//}
-//
-////! @brief cast the base pointer to an BoundaryElement3D, otherwise throws an exception
-//NuTo::BoundaryElement3D* NuTo::ElementBase::AsBoundaryElement3D()
-//{
-//    throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryElement3D] BoundaryElement is not of type BoundaryElement3D.");
-//}
+
+//! @brief cast the base pointer to an BoundaryElement3D, otherwise throws an exception
+const NuTo::BoundaryElement3D* NuTo::ElementBase::AsBoundaryElement3D()const
+{
+    throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryElement3D] BoundaryElement is not of type BoundaryElement3D.");
+}
+
+//! @brief cast the base pointer to an BoundaryElement3D, otherwise throws an exception
+NuTo::BoundaryElement3D* NuTo::ElementBase::AsBoundaryElement3D()
+{
+    throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryElement3D] BoundaryElement is not of type BoundaryElement3D.");
+}
 
 
 //! @brief cast the base pointer to a Plane, otherwise throws an exception

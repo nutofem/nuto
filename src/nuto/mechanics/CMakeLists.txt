@@ -64,8 +64,10 @@ constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.cpp
 constitutive/moistureTransport/MoistureTransport.cpp
 constitutive/moistureTransport/WaterVolumeFraction.cpp
 constitutive/moistureTransport/WaterVolumeFractionGradient2D.cpp
+constitutive/moistureTransport/WaterVolumeFractionGradient3D.cpp
 constitutive/moistureTransport/RelativeHumidity.cpp
 constitutive/moistureTransport/RelativeHumidityGradient2D.cpp
+constitutive/moistureTransport/RelativeHumidityGradient3D.cpp
 constitutive/moistureTransport/ConstitutiveStaticDataMoistureTransport.cpp
 )
 
@@ -110,6 +112,8 @@ elements/BoundaryElementBase.cpp
 elements/BoundaryElement1D.cpp
 elements/BoundaryElement2D.cpp
 elements/BoundaryElement2DAdditionalNode.cpp
+elements/BoundaryElement3D.cpp
+elements/BoundaryElement3DAdditionalNode.cpp
 elements/Brick8N.cpp
 elements/Brick20N.cpp
 elements/ElementBase.cpp

@@ -19,6 +19,10 @@ bool NuTo::IntegrationType2D::CheckElementCompatibility(NuTo::Element::eElementT
 {
     switch (rElementType)
     {
+    case NuTo::Element::BOUNDARYELEMENT3D:
+        return true;
+    case NuTo::Element::BOUNDARYELEMENT3DADDITIONALNODE:
+        return true;
     case NuTo::Element::ELEMENT2D:
         return true;
     case NuTo::Element::PLANE2D3N:

@@ -219,8 +219,8 @@ int main()
 
         int myInterpolationType = myStructure.InterpolationTypeCreate("Quad2D");
         myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::RELATIVEHUMIDITY, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::WATERVOLUMEFRACTION, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::RELATIVEHUMIDITY, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::WATERVOLUMEFRACTION, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
 
 

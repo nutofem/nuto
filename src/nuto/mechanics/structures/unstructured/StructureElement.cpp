@@ -1,5 +1,6 @@
 // $Id$
 
+
 #include <assert.h>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
@@ -13,6 +14,8 @@
 #include "nuto/mechanics/elements/BoundaryElement1D.h"
 #include "nuto/mechanics/elements/BoundaryElement2D.h"
 #include "nuto/mechanics/elements/BoundaryElement2DAdditionalNode.h"
+#include "nuto/mechanics/elements/BoundaryElement3D.h"
+#include "nuto/mechanics/elements/BoundaryElement3DAdditionalNode.h"
 
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/nodes/NodeDof.h"
@@ -381,6 +384,8 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
     int maxBoxSize = -1;   // for statistics only
     int sumBoxSize = 0;    // for statistics only
 
+
+
     for (std::vector<TmpNode>& box : boxes)
     {
         int boxSize = box.size();
@@ -425,6 +430,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
 
             if (nodeDofs.find(Node::COORDINATES) != nodeDofs.end())
             {
+
                 // If the node is a coordinate node, it should already be in the elements mNodes, check that:
                 NodeBase* oldNode = singleSameNode[0].element->GetNode(singleSameNode[0].elementNodeId);
                 assert(oldNode != nullptr);
@@ -821,8 +827,16 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
                         integrationType = IntegrationType::IntegrationType1D2NGauss3Ip; // TODO, esp. for 3D. Maybe InterpolationType::GetSurfaceInterpolationType
                         break;
                     case Element::ELEMENT3D:
-                        // create BoundaryElement3D
-                        throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] not yet implemented for 3D.");
+                        if(rNodeDependency==nullptr)
+                        {
+                            boundaryElement = new BoundaryElement3D(elementPtr, surfaceId);
+                        }
+                        else
+                        {
+                            boundaryElement = new BoundaryElement3DAdditionalNode(elementPtr,surfaceId,rNodeDependency);
+                        }
+                        integrationType = IntegrationType::IntegrationType2D4NGauss4Ip; // TODO, esp. for 3D. Maybe InterpolationType::GetSurfaceInterpolationType
+                                                                                        // Differ between surface types 3N / 4N
                         break;
                     default:
                         break;

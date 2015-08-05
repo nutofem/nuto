@@ -57,6 +57,7 @@ class Element2D;
 class Element3D;
 class BoundaryElement1D;
 class BoundaryElement2D;
+class BoundaryElement3D;
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -413,12 +414,13 @@ public:
 
     //! @brief cast the base pointer to an BoundaryElement2D, otherwise throws an exception
     virtual BoundaryElement2D* AsBoundaryElement2D();
-//
-//    //! @brief cast the base pointer to an BoundaryElement3D, otherwise throws an exception
-//    virtual const BoundaryElement3D* AsBoundaryElement3D()const;
-//
-//    //! @brief cast the base pointer to an BoundaryElement3D, otherwise throws an exception
-//    virtual BoundaryElement3D* AsBoundaryElement3D();
+
+    //! @brief cast the base pointer to an BoundaryElement3D, otherwise throws an exception
+    virtual const BoundaryElement3D* AsBoundaryElement3D()const;
+
+    //! @brief cast the base pointer to an BoundaryElement2D, otherwise throws an exception
+    virtual BoundaryElement3D* AsBoundaryElement3D();
+
 
 
 

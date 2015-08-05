@@ -3,8 +3,10 @@
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal.h"
 #include "nuto/mechanics/constitutive/moistureTransport/RelativeHumidity.h"
 #include "nuto/mechanics/constitutive/moistureTransport/RelativeHumidityGradient2D.h"
+#include "nuto/mechanics/constitutive/moistureTransport/RelativeHumidityGradient3D.h"
 #include "nuto/mechanics/constitutive/moistureTransport/WaterVolumeFraction.h"
 #include "nuto/mechanics/constitutive/moistureTransport/WaterVolumeFractionGradient2D.h"
+#include "nuto/mechanics/constitutive/moistureTransport/WaterVolumeFractionGradient3D.h"
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
@@ -266,8 +268,11 @@ bool                                        NuTo::MoistureTransport::CheckElemen
     {
     case NuTo::Element::BOUNDARYELEMENT1D:
     case NuTo::Element::BOUNDARYELEMENT2DADDITIONALNODE:
+    case NuTo::Element::BOUNDARYELEMENT3D:
+    case NuTo::Element::BOUNDARYELEMENT3DADDITIONALNODE:
     case NuTo::Element::ELEMENT1D:
     case NuTo::Element::ELEMENT2D:
+    case NuTo::Element::ELEMENT3D:
     case NuTo::Element::TRUSS1D2N:
         return true;
     default:
@@ -1142,6 +1147,390 @@ NuTo::Error::eError NuTo::MoistureTransport::Evaluate2D(NuTo::ElementBase *rElem
         default:
         {
             throw MechanicsException(std::string("[NuTo::MoistureTransport::Evaluate2D ] output object)") +
+                                     NuTo::Constitutive::OutputToString(itOutput->first) +
+                                     std::string(" could not be calculated, check the allocated material law and the section behavior."));
+        }
+        }
+    }
+    return Error::SUCCESSFUL;
+}
+
+
+
+//! @brief ... evaluate the constitutive relation in 3D
+//! @param rElement ... element
+//! @param rIp ... integration point
+//! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+//! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+NuTo::Error::eError NuTo::MoistureTransport::Evaluate3D(NuTo::ElementBase *rElement, int rIp, const std::map<NuTo::Constitutive::Input::eInput, const NuTo::ConstitutiveInputBase *> &rConstitutiveInput, std::map<NuTo::Constitutive::Output::eOutput, NuTo::ConstitutiveOutputBase *> &rConstitutiveOutput)
+{
+    // get section information determining which input on the constitutive level should be used
+    //const SectionBase* section(rElement->GetSection());
+
+    // check if parameters are valid
+    if (this->mParametersValid == false)
+    {
+        //throw an exception giving information related to the wrong parameter
+        CheckParameters();
+    }
+
+
+
+    if(rConstitutiveInput.find(NuTo::Constitutive::Input::WATER_VOLUME_FRACTION)==rConstitutiveInput.end())
+    {
+        throw MechanicsException("[NuTo::MoistureTransport::Evaluate] water volume fraction needed to evaluate moisture transport.");
+    }
+    if(rConstitutiveInput.find(NuTo::Constitutive::Input::RELATIVE_HUMIDITY)==rConstitutiveInput.end())
+    {
+        throw MechanicsException("[NuTo::MoistureTransport::Evaluate] relative humidity needed to evaluate moisture transport.");
+    }
+    if(rConstitutiveInput.find(NuTo::Constitutive::Input::WATER_VOLUME_FRACTION_D1)==rConstitutiveInput.end())
+    {
+        throw MechanicsException("[NuTo::MoistureTransport::Evaluate] firt time derivative (velocity) of water volume fraction needed to evaluate moisture transport.");
+    }
+    if(rConstitutiveInput.find(NuTo::Constitutive::Input::RELATIVE_HUMIDITY_D1)==rConstitutiveInput.end())
+    {
+        throw MechanicsException("[NuTo::MoistureTransport::Evaluate] firt time derivative (velocity) of relative humidity needed to evaluate moisture transport.");
+    }
+    const RelativeHumidity&         relativeHumidity            (rConstitutiveInput.find(NuTo::Constitutive::Input::RELATIVE_HUMIDITY)              ->second->GetRelativeHumidity());
+    const RelativeHumidity&         relativeHumidityD1          (rConstitutiveInput.find(NuTo::Constitutive::Input::RELATIVE_HUMIDITY_D1)           ->second->GetRelativeHumidity());
+    const WaterVolumeFraction&      waterVolumeFraction         (rConstitutiveInput.find(NuTo::Constitutive::Input::WATER_VOLUME_FRACTION)          ->second->GetWaterVolumeFraction());
+    const WaterVolumeFraction&      waterVolumeFractionD1       (rConstitutiveInput.find(NuTo::Constitutive::Input::WATER_VOLUME_FRACTION_D1)       ->second->GetWaterVolumeFraction());
+
+    ConstitutiveStaticDataMoistureTransport *StaticData = (rElement->GetStaticData(rIp))->AsMoistureTransport();
+    //StaticData->RelHumDecreasingHistory = false;
+
+
+    for (auto itOutput = rConstitutiveOutput.begin(); itOutput != rConstitutiveOutput.end(); itOutput++)
+    {
+        switch(itOutput->first)
+        {
+
+        /*--------------------------------------*\
+        |               STIFFNESS                |
+        \*--------------------------------------*/
+
+        case NuTo::Constitutive::Output::D_RESIDUAL_RH_D_RH_H0_BB:
+        {
+            ConstitutiveTangentLocal<1,1>& D_Residual_RH_D_RH_H0_BB(itOutput->second->AsConstitutiveTangentLocal_1x1());
+
+            D_Residual_RH_D_RH_H0_BB(0,0)     = mDV * pow(1 - (waterVolumeFraction(0) / mEpsP), mAlphaV);
+
+            D_Residual_RH_D_RH_H0_BB.SetSymmetry(false);
+            break;
+        }
+
+        case NuTo::Constitutive::Output::D_RESIDUAL_RH_D_RH_H0_NN:
+        {
+            ConstitutiveTangentLocal<1,1>& D_Residual_RH_D_RH_H0_NN(itOutput->second->AsConstitutiveTangentLocal_1x1());
+
+            CalculateSorptionCurveCoefficients(StaticData, relativeHumidity);
+            if(mEnableModifiedTangentialStiffness)
+            {
+                D_Residual_RH_D_RH_H0_NN(0,0) =  mR * (StaticData->mActualSorptionCoeff(0) +
+                                                       StaticData->mActualSorptionCoeff(1) * relativeHumidity(0) +
+                                                       StaticData->mActualSorptionCoeff(2) * relativeHumidity(0) * relativeHumidity(0));
+            }
+            else
+            {
+                D_Residual_RH_D_RH_H0_NN(0,0) =  mR * (StaticData->mActualSorptionCoeff(0) +
+                                                       StaticData->mActualSorptionCoeff(1) * relativeHumidity(0) * 2.0 +
+                                                       StaticData->mActualSorptionCoeff(2) * relativeHumidity(0) * relativeHumidity(0) * 3.0) -
+                                                 mRhoVS * relativeHumidityD1(0);
+            }
+
+            D_Residual_RH_D_RH_H0_NN.SetSymmetry(false);
+            D_Residual_RH_D_RH_H0_NN.SetConstant(false);
+            break;
+        }
+
+
+        case NuTo::Constitutive::Output::D_RESIDUAL_RH_D_WV_H0_BN:
+        {
+            ConstitutiveTangentLocal<3,1>& D_Residual_RH_D_WV_H0_BN(itOutput->second->AsConstitutiveTangentLocal_3x1());
+
+            CalculateSorptionCurveCoefficients(StaticData, relativeHumidity);
+            if(mEnableModifiedTangentialStiffness)
+            {
+                D_Residual_RH_D_WV_H0_BN.setZero();
+            }
+            else
+            {
+                const RelativeHumidityGradient3D& relativeHumidityGradient(rConstitutiveInput.find(NuTo::Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT)->second->GetRelativeHumidityGradient3D());
+
+                D_Residual_RH_D_WV_H0_BN  =  relativeHumidityGradient * mDV * mAlphaV / mEpsP * pow(1 - (waterVolumeFraction(0) / mEpsP), mAlphaV - 1.0);
+            }
+
+            D_Residual_RH_D_WV_H0_BN.SetSymmetry(false);
+            break;
+        }
+
+
+        case NuTo::Constitutive::Output::D_RESIDUAL_RH_D_WV_H0_NN:
+        {
+            ConstitutiveTangentLocal<1,1>& D_Residual_RH_D_WV_H0_NN(itOutput->second->AsConstitutiveTangentLocal_1x1());
+
+            CalculateSorptionCurveCoefficients(StaticData, relativeHumidity);
+            if(mEnableModifiedTangentialStiffness)
+            {
+                D_Residual_RH_D_WV_H0_NN(0,0) =  -mR;
+            }
+            else
+            {
+                D_Residual_RH_D_WV_H0_NN(0,0) =  -mR + mRhoVS * relativeHumidityD1(0);
+            }
+
+            D_Residual_RH_D_WV_H0_NN.SetSymmetry(false);
+            break;
+        }
+
+
+        case NuTo::Constitutive::Output::D_RESIDUAL_WV_D_RH_H0_NN:
+        {
+            ConstitutiveTangentLocal<1,1>& D_Residual_WV_D_RH_H0_NN(itOutput->second->AsConstitutiveTangentLocal_1x1());
+
+            CalculateSorptionCurveCoefficients(StaticData, relativeHumidity);
+            if(mEnableModifiedTangentialStiffness)
+            {
+                D_Residual_WV_D_RH_H0_NN(0,0) = -mR * (StaticData->mActualSorptionCoeff(0) +
+                                                       StaticData->mActualSorptionCoeff(1) * relativeHumidity(0) +
+                                                       StaticData->mActualSorptionCoeff(2) * relativeHumidity(0) * relativeHumidity(0));
+            }
+            else
+            {
+                D_Residual_WV_D_RH_H0_NN(0,0) = -mR * (StaticData->mActualSorptionCoeff(0) +
+                                                       StaticData->mActualSorptionCoeff(1) * relativeHumidity(0) * 2.0 +
+                                                       StaticData->mActualSorptionCoeff(2) * relativeHumidity(0) * relativeHumidity(0) * 3.0);
+            }
+
+            D_Residual_WV_D_RH_H0_NN.SetSymmetry(false);
+            break;
+        }
+
+        case NuTo::Constitutive::Output::D_RESIDUAL_WV_D_WV_H0_BB:
+        {
+            ConstitutiveTangentLocal<1,1>& D_Residual_WV_D_WV_H0_BB(itOutput->second->AsConstitutiveTangentLocal_1x1());
+
+            D_Residual_WV_D_WV_H0_BB(0,0)     = mDW * pow(waterVolumeFraction(0) / mEpsP, mAlphaW);
+
+            D_Residual_WV_D_WV_H0_BB.SetSymmetry(false);
+            break;
+        }
+
+
+        case NuTo::Constitutive::Output::D_RESIDUAL_WV_D_WV_H0_BN:
+        {
+            ConstitutiveTangentLocal<3,1>& D_Residual_WV_D_WV_H0_BN(itOutput->second->AsConstitutiveTangentLocal_3x1());
+
+            if(mEnableModifiedTangentialStiffness)
+            {
+                D_Residual_WV_D_WV_H0_BN.setZero();
+            }
+            else
+            {
+                const WaterVolumeFractionGradient3D&      waterVolumeFractionGradient (rConstitutiveInput.find(NuTo::Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT) ->second->GetWaterVolumeFractionGradient3D());
+
+                D_Residual_WV_D_WV_H0_BN = waterVolumeFractionGradient * mDW * mAlphaW / mEpsP * pow(waterVolumeFraction(0) / mEpsP, mAlphaW - 1.0);
+            }
+
+            D_Residual_WV_D_WV_H0_BN.SetSymmetry(false);
+            break;
+        }
+
+
+        case NuTo::Constitutive::Output::D_RESIDUAL_WV_D_WV_H0_NN:
+        {
+            ConstitutiveTangentLocal<1,1>& D_Residual_WV_D_WV_H0_NN(itOutput->second->AsConstitutiveTangentLocal_1x1());
+
+            D_Residual_WV_D_WV_H0_NN(0,0)=   mR;
+
+            D_Residual_WV_D_WV_H0_NN.SetSymmetry(false);
+            break;
+        }
+
+
+
+        /*--------------------------------------*\
+        |                DAMPING                 |
+        \*--------------------------------------*/
+
+
+        case NuTo::Constitutive::Output::D_RESIDUAL_RH_D_RH_H1_NN:
+        {
+            ConstitutiveTangentLocal<1,1>& D_Residual_RH_D_RH_H1_NN(itOutput->second->AsConstitutiveTangentLocal_1x1());
+
+            D_Residual_RH_D_RH_H1_NN(0,0)     = mRhoVS * (mEpsP  - waterVolumeFraction(0));
+
+            D_Residual_RH_D_RH_H1_NN.SetSymmetry(false);
+            D_Residual_RH_D_RH_H1_NN.SetConstant(false);
+            break;
+        }
+
+
+        case NuTo::Constitutive::Output::D_RESIDUAL_RH_D_WV_H1_NN:
+        {
+            ConstitutiveTangentLocal<1,1>& D_Residual_RH_D_WV_H1_NN(itOutput->second->AsConstitutiveTangentLocal_1x1());
+
+            D_Residual_RH_D_WV_H1_NN(0,0)     = - mRhoVS * relativeHumidity(0);
+
+            D_Residual_RH_D_WV_H1_NN.SetSymmetry(false);
+            D_Residual_RH_D_WV_H1_NN.SetConstant(false);
+            break;
+        }
+
+
+        case NuTo::Constitutive::Output::D_RESIDUAL_WV_D_WV_H1_NN:
+        {
+            ConstitutiveTangentLocal<1,1>& D_Residual_WV_D_WV_H1_NN(itOutput->second->AsConstitutiveTangentLocal_1x1());
+
+            D_Residual_WV_D_WV_H1_NN(0,0)     = mRhoW;
+
+            D_Residual_WV_D_WV_H1_NN.SetSymmetry(false);
+            D_Residual_WV_D_WV_H1_NN.SetConstant(false);
+            break;
+        }
+
+
+
+        /*--------------------------------------*\
+        |            INTERNAL FORCE              |
+        \*--------------------------------------*/
+
+
+        case NuTo::Constitutive::Output::RESIDUAL_WATER_PHASE_N:
+        {
+            ConstitutiveTangentLocal<1,1>& residualWaterPhaseN(itOutput->second->AsConstitutiveTangentLocal_1x1());
+
+            residualWaterPhaseN(0,0)=   mRhoW * waterVolumeFractionD1(0) +
+                                        mR    * waterVolumeFraction(0) -
+                                        mR    * (StaticData->mActualSorptionCoeff(0) * relativeHumidity(0) +
+                                                 StaticData->mActualSorptionCoeff(1) * relativeHumidity(0) * relativeHumidity(0) +
+                                                 StaticData->mActualSorptionCoeff(2) * relativeHumidity(0) * relativeHumidity(0) * relativeHumidity(0));
+
+            residualWaterPhaseN.SetSymmetry(false);
+            break;
+        }
+
+
+        case NuTo::Constitutive::Output::RESIDUAL_WATER_PHASE_B:
+        {
+            const WaterVolumeFractionGradient3D&      waterVolumeFractionGradient (rConstitutiveInput.find(NuTo::Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT) ->second->GetWaterVolumeFractionGradient3D());
+            ConstitutiveTangentLocal<3,1>& residualWaterPhaseB(itOutput->second->AsConstitutiveTangentLocal_3x1());
+            residualWaterPhaseB.setZero();
+
+
+            residualWaterPhaseB.AddBlock(0,0, mDW * pow(waterVolumeFraction(0) / mEpsP, mAlphaW) * waterVolumeFractionGradient);
+
+            residualWaterPhaseB.SetSymmetry(false);
+            break;
+        }
+
+
+        case NuTo::Constitutive::Output::RESIDUAL_VAPOR_PHASE_N:
+        {
+            ConstitutiveTangentLocal<1,1>& residualVaporPhaseN(itOutput->second->AsConstitutiveTangentLocal_1x1());
+
+            residualVaporPhaseN(0,0)=   mRhoVS * (mEpsP - waterVolumeFraction(0)) * relativeHumidityD1(0) -
+                                        mRhoVS * relativeHumidity(0)             * waterVolumeFractionD1(0) -
+                                        mR     * waterVolumeFraction(0) +
+                                        mR     * (StaticData->mActualSorptionCoeff(0) * relativeHumidity(0) +
+                                                  StaticData->mActualSorptionCoeff(1) * relativeHumidity(0) * relativeHumidity(0) +
+                                                  StaticData->mActualSorptionCoeff(2) * relativeHumidity(0) * relativeHumidity(0) * relativeHumidity(0));
+
+            residualVaporPhaseN.SetSymmetry(false);
+            break;
+        }
+
+
+        case NuTo::Constitutive::Output::RESIDUAL_VAPOR_PHASE_B:
+        {
+            const RelativeHumidityGradient3D& relativeHumidityGradient(rConstitutiveInput.find(NuTo::Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT)->second->GetRelativeHumidityGradient3D());
+            ConstitutiveTangentLocal<3,1>& residualVaporPhaseB(itOutput->second->AsConstitutiveTangentLocal_3x1());
+            residualVaporPhaseB.setZero();
+            residualVaporPhaseB.AddBlock(0,0, mDV * pow(1 - (waterVolumeFraction(0) / mEpsP), mAlphaV) * relativeHumidityGradient);
+            residualVaporPhaseB.SetSymmetry(false);
+            break;
+        }
+
+
+
+
+
+        /*--------------------------------------*\
+        |                BOUNDARY                |
+        \*--------------------------------------*/
+
+        case NuTo::Constitutive::Output::BOUNDARY_SURFACE_WATER_PHASE_RESIDUAL:
+        {
+
+
+            double waterVolumeFractionBoundary = GetEquilibriumWaterVolumeFraction(rElement->GetAdditionalBoundaryNode()->GetRelativeHumidity(),
+                                                                                       StaticData->GetActualSorptionCoeff());
+
+            ConstitutiveTangentLocal<1,1>& residualBoundarySurfaceWaterPhase(itOutput->second->AsConstitutiveTangentLocal_1x1());
+
+            residualBoundarySurfaceWaterPhase(0,0) = mBetaWVFrac*(waterVolumeFraction(0) - waterVolumeFractionBoundary);
+            residualBoundarySurfaceWaterPhase.SetSymmetry(false);
+            break;
+        }
+
+
+        case NuTo::Constitutive::Output::BOUNDARY_SURFACE_VAPOR_PHASE_RESIDUAL:
+        {
+
+            double relativeHumidityBoundary = rElement->GetAdditionalBoundaryNode()->GetRelativeHumidity();
+
+            ConstitutiveTangentLocal<1,1>& residualBoundarySurfaceVaporPhase(itOutput->second->AsConstitutiveTangentLocal_1x1());
+            residualBoundarySurfaceVaporPhase(0,0) = mBetaRelHum*(relativeHumidity(0) - relativeHumidityBoundary);
+            residualBoundarySurfaceVaporPhase.SetSymmetry(false);
+            break;
+        }
+
+
+        case NuTo::Constitutive::Output::BOUNDARY_SURFACE_RELATIVE_HUMIDIY_TRANSPORT_COEFFICIENT:
+        {
+            ConstitutiveTangentLocal<1,1>& BoundarySurfaceMoistureTransportCoefficient(itOutput->second->AsConstitutiveTangentLocal_1x1());
+            BoundarySurfaceMoistureTransportCoefficient(0,0) = mBetaRelHum;
+            BoundarySurfaceMoistureTransportCoefficient.SetSymmetry(false);
+            break;
+        }
+
+
+        case NuTo::Constitutive::Output::BOUNDARY_SURFACE_WATER_VOLUME_FRACTION_TRANSPORT_COEFFICIENT:
+        {
+            ConstitutiveTangentLocal<1,1>& BoundarySurfaceMoistureTransportCoefficient(itOutput->second->AsConstitutiveTangentLocal_1x1());
+            BoundarySurfaceMoistureTransportCoefficient(0,0) = mBetaWVFrac;
+            BoundarySurfaceMoistureTransportCoefficient.SetSymmetry(false);
+            break;
+        }
+
+
+
+        /*--------------------------------------*\
+        |              STATIC DATA               |
+        \*--------------------------------------*/
+
+        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
+        {
+
+            if (StaticData->mLastRelHumValue > relativeHumidity(0))
+            {
+                StaticData->mSorptionHistoryDesorption = true;
+            }
+            if (StaticData->mLastRelHumValue < relativeHumidity(0))
+            {
+                StaticData->mSorptionHistoryDesorption = false;
+            }
+            StaticData->mLastRelHumValue = relativeHumidity(0);
+            StaticData->mLastSorptionCoeff = StaticData->mActualSorptionCoeff;
+            StaticData->mLastJunctionPoint = StaticData->mActualJunctionPoint;
+
+            break;
+        }
+
+        default:
+        {
+            throw MechanicsException(std::string("[NuTo::MoistureTransport::Evaluate3D ] output object)") +
                                      NuTo::Constitutive::OutputToString(itOutput->first) +
                                      std::string(" could not be calculated, check the allocated material law and the section behavior."));
         }

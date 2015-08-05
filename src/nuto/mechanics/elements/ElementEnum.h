@@ -34,7 +34,8 @@ enum eElementType
     BOUNDARYELEMENT1D,              //!< boundary of 1D element --> 0D surface
     BOUNDARYELEMENT2D,              //!< boundary of 2D element --> 1D surface
     BOUNDARYELEMENT3D,              //!< boundary of 3D element --> 2D surface
-    BOUNDARYELEMENT2DADDITIONALNODE //!< boundary of 2D element --> 1D surface with additional node as dependency
+    BOUNDARYELEMENT2DADDITIONALNODE, //!< boundary of 2D element --> 1D surface with additional node as dependency
+    BOUNDARYELEMENT3DADDITIONALNODE //!< boundary of 3D element --> 2D surface with additional node as dependency
 
 };
 

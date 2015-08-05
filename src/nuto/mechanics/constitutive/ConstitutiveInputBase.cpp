@@ -92,6 +92,11 @@ const NuTo::RelativeHumidityGradient2D &NuTo::ConstitutiveInputBase::GetRelative
     throw MechanicsException("[NuTo::ConstitutiveInputBase::GetRelativeHumidityGradient2D] not implemented for this input object.");
 }
 
+const NuTo::RelativeHumidityGradient3D &NuTo::ConstitutiveInputBase::GetRelativeHumidityGradient3D() const
+{
+    throw MechanicsException("[NuTo::ConstitutiveInputBase::GetRelativeHumidityGradient3D] not implemented for this input object.");
+}
+
 const NuTo::WaterVolumeFraction& NuTo::ConstitutiveInputBase::GetWaterVolumeFraction()const
 {
     throw MechanicsException("[NuTo::ConstitutiveInputBase::GetWaterVolumeFraction] not implemented for this input object.");
@@ -102,6 +107,10 @@ const NuTo::WaterVolumeFractionGradient2D &NuTo::ConstitutiveInputBase::GetWater
     throw MechanicsException("[NuTo::ConstitutiveInputBase::GetWaterVolumeFractionGradient2D] not implemented for this input object.");
 }
 
+const NuTo::WaterVolumeFractionGradient3D &NuTo::ConstitutiveInputBase::GetWaterVolumeFractionGradient3D() const
+{
+    throw MechanicsException("[NuTo::ConstitutiveInputBase::GetWaterVolumeFractionGradient3D] not implemented for this input object.");
+}
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::ConstitutiveInputBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
