@@ -3103,8 +3103,41 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
             typeOrder = Interpolation::EQUIDISTANT2;
             break;
 
-//    	case 12: // 27-node second order hexahedron (8 nodes associated with the vertices, 12 with the edges, 6 with the faces and 1 with the volume).
-
+    	case 12: // 27-node second order hexahedron (8 nodes associated with the vertices, 12 with the edges, 6 with the faces and 1 with the volume).
+    	{
+    		shapeType = Interpolation::BRICK3D;
+            typeOrder = Interpolation::LOBATTO2;
+            //ordering is different than in gmsh, fix this first
+            NuTo::FullVector<int, Eigen::Dynamic> nodeNumbersGmsh(nodeNumbers);
+            nodeNumbers(0)  = nodeNumbersGmsh(4);
+            nodeNumbers(1)  = nodeNumbersGmsh(16);
+            nodeNumbers(2)  = nodeNumbersGmsh(5);
+            nodeNumbers(3)  = nodeNumbersGmsh(10);
+            nodeNumbers(4)  = nodeNumbersGmsh(21);
+            nodeNumbers(5)  = nodeNumbersGmsh(12);
+            nodeNumbers(6)  = nodeNumbersGmsh(0);
+            nodeNumbers(7)  = nodeNumbersGmsh(8);
+            nodeNumbers(8)  = nodeNumbersGmsh(1);
+            nodeNumbers(9)  = nodeNumbersGmsh(17);
+            nodeNumbers(10) = nodeNumbersGmsh(25);
+            nodeNumbers(11) = nodeNumbersGmsh(18);
+            nodeNumbers(12) = nodeNumbersGmsh(22);
+            nodeNumbers(13) = nodeNumbersGmsh(26);
+            nodeNumbers(14) = nodeNumbersGmsh(23);
+            nodeNumbers(15) = nodeNumbersGmsh(9);
+            nodeNumbers(16) = nodeNumbersGmsh(20);
+            nodeNumbers(17) = nodeNumbersGmsh(11);
+            nodeNumbers(18) = nodeNumbersGmsh(7);
+            nodeNumbers(19) = nodeNumbersGmsh(19);
+            nodeNumbers(20) = nodeNumbersGmsh(6);
+            nodeNumbers(21) = nodeNumbersGmsh(15);
+            nodeNumbers(22) = nodeNumbersGmsh(24);
+            nodeNumbers(23) = nodeNumbersGmsh(14);
+            nodeNumbers(24) = nodeNumbersGmsh(3);
+            nodeNumbers(25) = nodeNumbersGmsh(13);
+            nodeNumbers(26) = nodeNumbersGmsh(2);
+            break;
+    	}
 //    	case 13: // 18-node second order prism (6 nodes associated with the vertices, 9 with the edges and 3 with the quadrangular faces).
 
 //    	case 14: // 14-node second order pyramid (5 nodes associated with the vertices, 8 with the edges and 1 with the quadrangular face).
