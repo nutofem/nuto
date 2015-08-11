@@ -153,6 +153,7 @@ void Run2d(NuTo::FullVector<double, -1> rNodeCoords0, NuTo::FullVector<double, -
 
 int main(int argc, char* argv[])
 {
+
     // node coordinates
     NuTo::FullVector<double, -1> nodeCoords0(ParametersGeometry2D::mDimension);
     NuTo::FullVector<double, -1> nodeCoords1(ParametersGeometry2D::mDimension);
@@ -231,7 +232,7 @@ int main(int argc, char* argv[])
     {
         std::cout << "## Test failed ##" << std::endl;
         std::cout << e.ErrorMessage();
-        return -1;
+        return EXIT_FAILURE;
     }
 
     std::cout << "## Test successful ##" << std::endl;

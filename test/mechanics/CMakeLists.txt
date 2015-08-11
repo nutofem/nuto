@@ -256,7 +256,7 @@ ADD_TEST(c::mechanics::NonlocalDamagePlasticityModel ${CMAKE_CURRENT_BUILD_DIR}/
   # TrussIn2D
   ADD_EXECUTABLE(TrussIn2D TrussIn2D.cpp)
     TARGET_LINK_LIBRARIES(TrussIn2D NuToMechanics NuToMath NuToBase)
-    ADD_TEST(c::mechanics::TrussIn2D ${CMAKE_CURRENT_BUILD_DIR}/StructureEvaluate)
+    ADD_TEST(c::mechanics::TrussIn2D ${CMAKE_CURRENT_BUILD_DIR}/TrussIn2D)
   IF(MINGW)
     SET_TARGET_PROPERTIES(TrussIn2D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
@@ -264,7 +264,7 @@ ADD_TEST(c::mechanics::NonlocalDamagePlasticityModel ${CMAKE_CURRENT_BUILD_DIR}/
   # TrussIn3D
   ADD_EXECUTABLE(TrussIn3D TrussIn3D.cpp)
     TARGET_LINK_LIBRARIES(TrussIn3D NuToMechanics NuToMath NuToBase)
-    ADD_TEST(c::mechanics::TrussIn3D ${CMAKE_CURRENT_BUILD_DIR}/StructureEvaluate)
+    ADD_TEST(c::mechanics::TrussIn3D ${CMAKE_CURRENT_BUILD_DIR}/TrussIn3D)
   IF(MINGW)
     SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)

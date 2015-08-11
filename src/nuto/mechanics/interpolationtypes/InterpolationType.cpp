@@ -58,6 +58,7 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eAttributes rDofType, Nu
     switch (mShapeType)
     {
     case Interpolation::eShapeType::TRUSS1D:
+    case Interpolation::eShapeType::TRUSSXD:
         newType = new Interpolation1DTruss(mStructure, rDofType, rTypeOrder);
         break;
     case Interpolation::eShapeType::TRIANGLE2D:

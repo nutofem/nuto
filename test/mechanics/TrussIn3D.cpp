@@ -279,7 +279,7 @@ int main(int argc, char* argv[])
     {
         std::cout << "## Test failed ##" << std::endl;
         std::cout << e.ErrorMessage();
-        return -1;
+        return EXIT_FAILURE;
     }
 
     std::cout << "## Test successful ##" << std::endl;
