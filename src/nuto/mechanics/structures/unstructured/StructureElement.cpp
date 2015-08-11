@@ -1,6 +1,5 @@
 // $Id$
 
-
 #include <assert.h>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
@@ -8,7 +7,7 @@
 #include "nuto/mechanics/elements/IpDataEnum.h"
 
 #include "nuto/mechanics/elements/Element1D.h"
-#include "nuto/mechanics/elements/Element1DIn2D.h"
+#include "nuto/mechanics/elements/Element1DInXD.h"
 #include "nuto/mechanics/elements/Element2D.h"
 #include "nuto/mechanics/elements/Element3D.h"
 
@@ -386,8 +385,6 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
     int maxBoxSize = -1;   // for statistics only
     int sumBoxSize = 0;    // for statistics only
 
-
-
     for (std::vector<TmpNode>& box : boxes)
     {
         int boxSize = box.size();
@@ -654,8 +651,8 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
             ptrElement = new Element1D(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
             ptrElement->CheckElement();
             break;
-        case NuTo::Interpolation::eShapeType::TRUSS2D:
-            ptrElement = new Element1DIn2D(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
+        case NuTo::Interpolation::eShapeType::TRUSSXD:
+            ptrElement = new Element1DInXD(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
             ptrElement->CheckElement();
             break;
         case NuTo::Interpolation::eShapeType::TRIANGLE2D:
@@ -826,24 +823,22 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
                         integrationType = IntegrationType::IntegrationType0DBoundary;
                         break;
                     case Element::ELEMENT2D:
-                        if(rNodeDependency==nullptr)
+                        if (rNodeDependency == nullptr)
                         {
                             boundaryElement = new BoundaryElement2D(elementPtr, surfaceId);
-                        }
-                        else
+                        } else
                         {
-                            boundaryElement = new BoundaryElement2DAdditionalNode(elementPtr,surfaceId,rNodeDependency);
+                            boundaryElement = new BoundaryElement2DAdditionalNode(elementPtr, surfaceId, rNodeDependency);
                         }
                         integrationType = IntegrationType::IntegrationType1D2NGauss3Ip; // TODO, esp. for 3D. Maybe InterpolationType::GetSurfaceInterpolationType
                         break;
                     case Element::ELEMENT3D:
-                        if(rNodeDependency==nullptr)
+                        if (rNodeDependency == nullptr)
                         {
                             boundaryElement = new BoundaryElement3D(elementPtr, surfaceId);
-                        }
-                        else
+                        } else
                         {
-                            boundaryElement = new BoundaryElement3DAdditionalNode(elementPtr,surfaceId,rNodeDependency);
+                            boundaryElement = new BoundaryElement3DAdditionalNode(elementPtr, surfaceId, rNodeDependency);
                         }
                         integrationType = IntegrationType::IntegrationType2D4NGauss4Ip; // TODO, esp. for 3D. Maybe InterpolationType::GetSurfaceInterpolationType
                                                                                         // Differ between surface types 3N / 4N

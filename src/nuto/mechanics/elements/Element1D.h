@@ -44,16 +44,10 @@ public:
     //! @return enum
     NuTo::Element::eElementType GetEnumType()const override;
 
-    //! @brief returns the global dimension of the element
-    //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
-    //! there is also a routine GetLocalDimension, which is e.g. 2 for plane elements and 1 for truss elements
-    //! @return global dimension
-    virtual int GetGlobalDimension()const override;
-
     //! @brief returns the local dimension of the element
     //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
     //! @return local dimension
-    virtual int GetLocalDimension()const override;
+    int GetLocalDimension()const override;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number

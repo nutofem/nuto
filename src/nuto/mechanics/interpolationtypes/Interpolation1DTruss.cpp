@@ -7,8 +7,8 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation1DTruss.h"
 
-NuTo::Interpolation1DTruss::Interpolation1DTruss(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
-        NuTo::Interpolation1D::Interpolation1D(rDofType, rTypeOrder)
+NuTo::Interpolation1DTruss::Interpolation1DTruss(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
+        NuTo::Interpolation1D::Interpolation1D(rStructure, rDofType, rTypeOrder)
 {
     Initialize();
 }

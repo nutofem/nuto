@@ -812,11 +812,6 @@ NuTo::Element::eElementType NuTo::Element1D::GetEnumType() const
     return NuTo::Element::ELEMENT1D;
 }
 
-int NuTo::Element1D::GetGlobalDimension() const
-{
-    return GetLocalDimension();
-}
-
 int NuTo::Element1D::GetLocalDimension()const
 {
     return 1;

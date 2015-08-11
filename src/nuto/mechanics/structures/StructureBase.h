@@ -43,6 +43,8 @@ namespace NuTo
 {
 class ElementBase;
 class NodeBase;
+class InterpolationBase;
+class InterpolationType;
 template<class T, int rows> class FullVector;
 template<class T, int rows, int cols> class FullMatrix;
 template<class T> class SparseMatrixCSRSymmetric;
@@ -53,6 +55,7 @@ class EngineeringStrain2D;
 class NewtonRaphsonAuxRoutinesBase;
 class CrackBase;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain;
+
 
 #ifdef ENABLE_VISUALIZE
 class VisualizeUnstructuredGrid;

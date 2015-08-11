@@ -7,8 +7,8 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation3D.h"
 
-NuTo::Interpolation3D::Interpolation3D(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
-        InterpolationBase::InterpolationBase(rDofType, rTypeOrder)
+NuTo::Interpolation3D::Interpolation3D(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
+        InterpolationBase::InterpolationBase(rStructure, rDofType, rTypeOrder)
 {
 
 }

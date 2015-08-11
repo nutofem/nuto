@@ -7,8 +7,8 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation3DTetrahedron.h"
 
-NuTo::Interpolation3DTetrahedron::Interpolation3DTetrahedron(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
-        Interpolation3D::Interpolation3D(rDofType, rTypeOrder)
+NuTo::Interpolation3DTetrahedron::Interpolation3DTetrahedron(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
+        Interpolation3D::Interpolation3D(rStructure, rDofType, rTypeOrder)
 {
     Initialize();
 }

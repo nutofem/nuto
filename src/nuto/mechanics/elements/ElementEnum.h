@@ -29,7 +29,7 @@ enum eElementType
     TRUSS1D2NSPECTRALORDER3,        //!< one-dimensional truss element with two nodes for geometry and 4 for field interpolation
     TRUSS1D2NSPECTRALORDER4,        //!< one-dimensional truss element with two nodes for geometry and 5 for field interpolation
     ELEMENT1D,                      //!< one dimensional element
-    ELEMENT1DIn2D,                  //!< one dimensional element in 2D
+    ELEMENT1DInXD,                  //!< one dimensional element in 2D or 3D
     ELEMENT2D,                      //!< two dimensional element
     ELEMENT3D,                      //!< three dimensional element
     BOUNDARYELEMENT1D,              //!< boundary of 1D element --> 0D surface

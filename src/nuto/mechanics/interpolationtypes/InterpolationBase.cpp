@@ -8,7 +8,7 @@
 #include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 
-NuTo::InterpolationBase::InterpolationBase(Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
+NuTo::InterpolationBase::InterpolationBase(const StructureBase* rStructure, Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
     mTypeOrder(rTypeOrder),
     mDofType(rDofType),
     mIsConstitutiveInput(true),
@@ -16,7 +16,8 @@ NuTo::InterpolationBase::InterpolationBase(Node::eAttributes rDofType, NuTo::Int
     mNumDofs(-1),
     mNumNodes(-1),
     mLocalStartIndex(0),
-    mUpdateRequired(true)
+    mUpdateRequired(true),
+    mStructure(rStructure)
 {
 }
 

@@ -48,7 +48,7 @@ const Eigen::VectorXd NuTo::BoundaryElementBase::GetIntegrationPointVolume() con
 const Eigen::Vector3d NuTo::BoundaryElementBase::GetGlobalIntegrationPointCoordinates(int rIpNum) const
 {
     Eigen::VectorXd naturalSurfaceIpCoordinates;
-    switch (GetGlobalDimension())
+    switch (GetStructure()->GetDimension())
     {
         case 1:
         {

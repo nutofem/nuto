@@ -129,7 +129,7 @@ elements/ElementOutputBase.cpp
 elements/ElementInputBase.cpp
 elements/ElementShapeFunctions.cpp
 elements/Element1D.cpp
-elements/Element1DIn2D.cpp
+elements/Element1DInXD.cpp
 elements/Element2D.cpp
 elements/Element3D.cpp
 elements/IpDataBase.cpp
@@ -209,7 +209,6 @@ interpolationtypes/InterpolationType.cpp
 interpolationtypes/InterpolationBase.cpp
 interpolationtypes/Interpolation1D.cpp
 interpolationtypes/Interpolation1DTruss.cpp
-interpolationtypes/Interpolation1DTrussIn2D.cpp
 interpolationtypes/Interpolation2D.cpp
 interpolationtypes/Interpolation2DTriangle.cpp
 interpolationtypes/Interpolation2DQuad.cpp

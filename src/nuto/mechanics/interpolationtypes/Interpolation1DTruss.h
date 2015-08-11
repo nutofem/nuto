@@ -25,7 +25,7 @@ class Interpolation1DTruss: public Interpolation1D
 {
 public:
 
-    Interpolation1DTruss(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
+    Interpolation1DTruss(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
 
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type

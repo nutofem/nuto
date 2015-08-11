@@ -7,8 +7,8 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation1D.h"
 
-NuTo::Interpolation1D::Interpolation1D(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
-        InterpolationBase::InterpolationBase(rDofType, rTypeOrder)
+NuTo::Interpolation1D::Interpolation1D(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
+        InterpolationBase::InterpolationBase(rStructure, rDofType, rTypeOrder)
 {
 
 }
@@ -21,8 +21,24 @@ const std::vector<Eigen::VectorXd> NuTo::Interpolation1D::GetSurfaceEdgesCoordin
 
 int NuTo::Interpolation1D::GetNumDofsPerNode() const
 {
-    if (mDofType == Node::NONLOCALEQPLASTICSTRAIN)
+    switch (mDofType)
+    {
+    case NuTo::Node::COORDINATES:
+        return mStructure->GetDimension();
+    case NuTo::Node::DISPLACEMENTS:
+        return mStructure->GetDimension();
+    case NuTo::Node::TEMPERATURES:
+        return 1;
+    case NuTo::Node::NONLOCALEQSTRAIN:
+        return 1;
+    case NuTo::Node::NONLOCALEQPLASTICSTRAIN:
         return 2;
-    return 1;
+    case NuTo::Node::RELATIVEHUMIDITY:
+        return 1;
+    case NuTo::Node::WATERVOLUMEFRACTION:
+        return 1;
+    default:
+        throw NuTo::MechanicsException("[NuTo::Interpolation1D::GetNumDofsPerNode] dof type not found.");
+    }
 }
 

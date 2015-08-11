@@ -16,7 +16,7 @@ namespace NuTo
 class Interpolation1D: public InterpolationBase
 {
 public:
-    Interpolation1D(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
+    Interpolation1D(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
 
     //! @brief returns the natural coordinates of the nodes that span the surface
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType

@@ -20,12 +20,15 @@
 
 namespace NuTo
 {
+class StructureBase;
+class InterpolationBase;
 
 class InterpolationType
 {
 public:
 
-    InterpolationType(NuTo::Interpolation::eShapeType rShapeType);
+
+    InterpolationType(const StructureBase* rStructure, NuTo::Interpolation::eShapeType rShapeType);
 
     virtual ~InterpolationType();
 
@@ -163,6 +166,9 @@ private:
 
     //! @brief node renumbering indices that (if applied) change the orientation of the element
     Eigen::MatrixX2i mNodeRenumberingIndices;
+
+    //! @brief StructureBase pointer
+    const StructureBase* mStructure;
 
 };
 

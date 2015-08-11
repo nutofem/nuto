@@ -252,15 +252,22 @@ ADD_TEST(c::mechanics::NonlocalDamagePlasticityModel ${CMAKE_CURRENT_BUILD_DIR}/
   IF(MINGW)
     SET_TARGET_PROPERTIES(StructureEvaluate PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
-
-  # ElementsInHigherDimensions
-  ADD_EXECUTABLE(ElementsInHigherDimensions ElementsInHigherDimensions.cpp)
-    TARGET_LINK_LIBRARIES(ElementsInHigherDimensions NuToMechanics NuToMath NuToBase)
-    ADD_TEST(c::mechanics::ElementsInHigherDimensions ${CMAKE_CURRENT_BUILD_DIR}/StructureEvaluate)
+  
+  # TrussIn2D
+  ADD_EXECUTABLE(TrussIn2D TrussIn2D.cpp)
+    TARGET_LINK_LIBRARIES(TrussIn2D NuToMechanics NuToMath NuToBase)
+    ADD_TEST(c::mechanics::TrussIn2D ${CMAKE_CURRENT_BUILD_DIR}/StructureEvaluate)
   IF(MINGW)
-    SET_TARGET_PROPERTIES(ElementsInHigherDimensions PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+    SET_TARGET_PROPERTIES(TrussIn2D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
   
+  # TrussIn3D
+  ADD_EXECUTABLE(TrussIn3D TrussIn3D.cpp)
+    TARGET_LINK_LIBRARIES(TrussIn3D NuToMechanics NuToMath NuToBase)
+    ADD_TEST(c::mechanics::TrussIn3D ${CMAKE_CURRENT_BUILD_DIR}/StructureEvaluate)
+  IF(MINGW)
+    SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  ENDIF(MINGW)
 ENDIF(ENABLE_C++_TESTS)
   
 IF(ENABLE_C++_TESTS_WIP)  

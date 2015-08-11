@@ -219,14 +219,14 @@ const Eigen::MatrixXd NuTo::ElementBase::ExtractNodeValues(int rTimeDerivative, 
 
 const Eigen::VectorXd NuTo::ElementBase::InterpolateDofGlobal(const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const
 {
-    assert(GetLocalDimension() == GetGlobalDimension() && "Global and local dimensions do not agree.");
+    assert(GetLocalDimension() == GetStructure()->GetDimension() && "Global and local dimensions do not agree.");
 
     return InterpolateDofGlobal(0, rNaturalCoordinates, rDofType);
 }
 
 const Eigen::VectorXd NuTo::ElementBase::InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const
 {
-    assert(GetLocalDimension() == GetGlobalDimension() && "Global and local dimensions do not agree.");
+    assert(GetLocalDimension() == GetStructure()->GetDimension() && "Global and local dimensions do not agree.");
 
     const InterpolationBase& interpolationType = mInterpolationType->Get(rDofType);
     const Eigen::MatrixXd nodalValues = ExtractNodeValues(rTimeDerivative, rDofType);

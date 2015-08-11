@@ -1,12 +1,12 @@
 /*
- * Element1DIn2D.h
+ * Element1DInXD.h
  *
- *  Created on: 13 July 2015
+ *  Created on: 06 August 2015
  *      Author: phuschke
  */
 
-#ifndef ELEMENT1DIN2D_H_
-#define ELEMENT1DIN2D_H_
+#ifndef ELEMENT1DINXD_H_
+#define ELEMENT1DINXD_H_
 
 #include "nuto/mechanics/elements/Element1D.h"
 
@@ -24,13 +24,13 @@ class HeatFlux1D;
 template<int TNumRows, int TNumColumns> class ConstitutiveTangentLocal;
 template<int TNumRows, int TNumColumns> class ConstitutiveTangentNonlocal;
 
-class Element1DIn2D: public Element1D
+class Element1DInXD: public Element1D
 {
 
 public:
-    Element1DIn2D(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType);
+    Element1DInXD(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType);
 
-    virtual ~Element1DIn2D()
+    virtual ~Element1DInXD()
     {
     }
     ;
@@ -38,17 +38,6 @@ public:
     //! @brief returns the enum (type of the element)
     //! @return enum
     NuTo::Element::eElementType GetEnumType() const override;
-
-    //! @brief returns the global dimension of the element
-    //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
-    //! there is also a routine GetLocalDimension, which is e.g. 2 for plane elements and 1 for truss elements
-    //! @return global dimension
-    int GetGlobalDimension() const override;
-
-    //! @brief returns the local dimension of the element
-    //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
-    //! @return local dimension
-    int GetLocalDimension() const override;
 
     const Eigen::MatrixXd ExtractNodeValues(int rTimeDerivative, Node::eAttributes) const override;
     const Eigen::MatrixXd ExtractGlobalNodeValues(int rTimeDerivative, Node::eAttributes rDofType) const;
@@ -77,24 +66,16 @@ public:
     const Eigen::VectorXi CalculateGlobalRowDofs() const override;
 
     //! @brief cast the base pointer to an Element1D, otherwise throws an exception
-    const NuTo::Element1DIn2D* AsElement1DIn2D() const
+    const NuTo::Element1DInXD* AsElement1DInXD() const
     {
         return this;
     }
 
     //! @brief cast the base pointer to an Element1D, otherwise throws an exception
-    NuTo::Element1DIn2D* AsElement1DIn2D()
+    NuTo::Element1DInXD* AsElement1DInXD()
     {
         return this;
     }
-
-    //! @brief gets element length
-    //! @return element length
-    double GetElementLength() const;
-
-    //! @brief sets element length
-    //! @param rElementLength element length
-    void SetElementLength(const double rElementLength);
 
 protected:
 
@@ -102,18 +83,24 @@ protected:
     void CheckElement() override;
 
 private:
-    //! @brief calculates the element length
-    //! @return mElementLength
-    double CalculateElementLength();
 
-    //! @brief calculates the rotation matrix
+    //! @brief Calculates the rotation matrix. 2x2 in 2D, 3x3 in 3D
     //! @return mRotationMatrix
-    Eigen::Matrix2d CalculateRotationMatrix();
+    Eigen::MatrixXd CalculateRotationMatrix();
 
-    double mElementLength;
-    Eigen::Matrix2d mRotationMatrix;
+    //! @brief Calculates the transformation matrix. The size of the matrix depends on the number of nodes and the global dimension of the element.
+    //! @param rGlobalDimension: global dimension of the element, i.e. 2 or 3
+    //! @param rNumberOfNodes: number of nodes of the element
+    //! @return  transformationMatrix
+    Eigen::MatrixXd CalculateTransformationMatrix(unsigned int rGlobalDimension, unsigned int rNumberOfNodes) const;
+
+    //! @brief Returns the number of dofs for each node depending on the dof type, i.e. scalar or vector quantity
+    //! @return number of dofs per node
+    int GetNumDofsPerNode(Node::eAttributes rDofType) const;
+
+    Eigen::MatrixXd mRotationMatrix;
 };
 
 } /* namespace NuTo */
 
-#endif /* ELEMENT1DIN2D_H_ */
+#endif /* ELEMENT1DINXD_H_ */

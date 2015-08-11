@@ -12,16 +12,15 @@
 #include "nuto/mechanics/interpolationtypes/Interpolation3DTetrahedron.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation3DBrick.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation1DTruss.h"
-#include "nuto/mechanics/interpolationtypes/Interpolation1DTrussIn2D.h"
 
 #include <boost/foreach.hpp>
 
 #include <iomanip>
 
-NuTo::InterpolationType::InterpolationType(NuTo::Interpolation::eShapeType rShapeType) :
-        mShapeType(rShapeType), mNumDofs(0), mNumActiveDofs(0)
+
+NuTo::InterpolationType::InterpolationType(const StructureBase* rStructure, NuTo::Interpolation::eShapeType rShapeType) :
+        mShapeType(rShapeType), mNumDofs(0), mNumActiveDofs(0), mIntegrationType(nullptr), mStructure(rStructure)
 {
-    mIntegrationType = nullptr;
 }
 
 NuTo::InterpolationType::~InterpolationType()
@@ -59,22 +58,19 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eAttributes rDofType, Nu
     switch (mShapeType)
     {
     case Interpolation::eShapeType::TRUSS1D:
-        newType = new Interpolation1DTruss(rDofType, rTypeOrder);
-        break;
-    case Interpolation::eShapeType::TRUSS2D:
-        newType = new Interpolation1DTrussIn2D(rDofType, rTypeOrder);
+        newType = new Interpolation1DTruss(mStructure, rDofType, rTypeOrder);
         break;
     case Interpolation::eShapeType::TRIANGLE2D:
-        newType = new Interpolation2DTriangle(rDofType, rTypeOrder);
+        newType = new Interpolation2DTriangle(mStructure, rDofType, rTypeOrder);
         break;
     case Interpolation::eShapeType::QUAD2D:
-        newType = new Interpolation2DQuad(rDofType, rTypeOrder);
+        newType = new Interpolation2DQuad(mStructure, rDofType, rTypeOrder);
         break;
     case Interpolation::eShapeType::TETRAHEDRON3D:
-        newType = new Interpolation3DTetrahedron(rDofType, rTypeOrder);
+        newType = new Interpolation3DTetrahedron(mStructure, rDofType, rTypeOrder);
         break;
     case Interpolation::eShapeType::BRICK3D:
-        newType = new Interpolation3DBrick(rDofType, rTypeOrder);
+        newType = new Interpolation3DBrick(mStructure, rDofType, rTypeOrder);
         break;
     default:
         throw NuTo::MechanicsException("[NuTo::InterpolationType::AddDofInterpolation] ShapeType " + NuTo::Interpolation::ShapeTypeToString(mShapeType) + " not implemented.");
@@ -413,7 +409,7 @@ void NuTo::InterpolationType::UpdateNodeRenumberingIndices()
         switch (mShapeType)
         {
         case Interpolation::TRUSS1D:
-        case Interpolation::TRUSS2D:
+        case Interpolation::TRUSSXD:
             // reflect at (0,0,0) n = (1,0,0)
             x_i_prime = -x_i;
             break;

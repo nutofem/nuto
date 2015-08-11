@@ -7,8 +7,8 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation3DBrick.h"
 
-NuTo::Interpolation3DBrick::Interpolation3DBrick(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
-        Interpolation3D::Interpolation3D(rDofType, rTypeOrder)
+NuTo::Interpolation3DBrick::Interpolation3DBrick(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
+        Interpolation3D::Interpolation3D(rStructure, rDofType, rTypeOrder)
 {
     Initialize();
 }

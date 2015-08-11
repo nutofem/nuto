@@ -1,5 +1,5 @@
 /*
- * InterpolationType.h
+ * InterpolationBase.h
  *
  *  Created on: 17 Mar 2015
  *      Author: ttitsche
@@ -13,6 +13,8 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/elements/ElementShapeFunctions.h"
+#include "nuto/mechanics/structures/StructureBase.h"
+
 
 #include <vector>
 #include <assert.h>
@@ -21,9 +23,7 @@
 
 namespace NuTo
 {
-
 class IntegrationTypeBase;
-
 
 //! @brief this class stores the information of the interpolation of a single dof type
 //! @remark the API only allows const access to this class via the InterpolationType.Get(dofType)
@@ -32,7 +32,7 @@ class InterpolationBase
 {
 friend class InterpolationType;
 public:
-    InterpolationBase(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
+    InterpolationBase(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
 
     virtual ~InterpolationBase() {};
 
@@ -176,6 +176,10 @@ protected:
     std::vector<Eigen::MatrixXd> mDerivativeShapeFunctionsNatural;
 
     bool mUpdateRequired;
+
+    //! @brief StructureBase pointer
+    const StructureBase* mStructure;
+
 
 };
 

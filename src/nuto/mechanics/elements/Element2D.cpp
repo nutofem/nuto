@@ -1142,10 +1142,6 @@ NuTo::Element::eElementType NuTo::Element2D::GetEnumType() const
     return NuTo::Element::ELEMENT2D;
 }
 
-int NuTo::Element2D::GetGlobalDimension() const
-{
-    return 2;
-}
 
 int NuTo::Element2D::GetLocalDimension()const
 {
@@ -1587,7 +1583,7 @@ void NuTo::Element2D::AddDetJBtdSigmadNonlocalEqStrainN(const Eigen::MatrixXd& r
     int numNodesNonlocalEqStrain = mInterpolationType->Get(Node::NONLOCALEQSTRAIN).GetNumNodes();
 
     assert(rDerivativeShapeFunctions.rows() == numNodesDisplacement);
-    assert(rDerivativeShapeFunctions.cols() == GetGlobalDimension());
+    assert(rDerivativeShapeFunctions.cols() == GetStructure()->GetDimension());
     assert(rShapeFunctions.rows() == numNodesNonlocalEqStrain);
     assert(rShapeFunctions.cols() == 1);
 
@@ -1616,7 +1612,7 @@ void NuTo::Element2D::AddDetJNtdLocalEqStraindEpsilonB(Eigen::VectorXd rShapeFun
     int numNodesNonlocalEqStrain = mInterpolationType->Get(Node::NONLOCALEQSTRAIN).GetNumNodes();
 
     assert(rDerivativeShapeFunctions.rows() == numNodesDisplacement);
-    assert(rDerivativeShapeFunctions.cols() == GetGlobalDimension());
+    assert(rDerivativeShapeFunctions.cols() == GetStructure()->GetDimension());
     assert(rShapeFunctions.rows() == numNodesNonlocalEqStrain);
     assert(rShapeFunctions.cols() == 1);
 
@@ -1645,7 +1641,7 @@ void NuTo::Element2D::AddDetJBtX(const Eigen::MatrixXd &rDerivativeShapeFunction
     Eigen::VectorXd tmpfactor = rConstitutiveTangent * rFactor;
     int NumDofs      = rDerivativeShapeFunctions.rows();
 
-    assert(rDerivativeShapeFunctions.cols() == GetGlobalDimension());
+    assert(rDerivativeShapeFunctions.cols() == GetStructure()->GetDimension());
 
     Eigen::VectorXd result = rDerivativeShapeFunctions * tmpfactor;
     rResult.block(rRow, 0, NumDofs, 1) += result;
@@ -1696,8 +1692,8 @@ void NuTo::Element2D::AddDetJBtXB(const Eigen::MatrixXd &rDerivativeShapeFunctio
     int NumRowDofs  = rDerivativeShapeFunctions1.rows();
     int NumColDofs  = rDerivativeShapeFunctions2.rows();
 
-    assert(rDerivativeShapeFunctions1.cols() == GetGlobalDimension());
-    assert(rDerivativeShapeFunctions2.cols() == GetGlobalDimension());
+    assert(rDerivativeShapeFunctions1.cols() == GetStructure()->GetDimension());
+    assert(rDerivativeShapeFunctions2.cols() == GetStructure()->GetDimension());
 
     rFactor *= rConstitutiveTangent(0,0);
 
@@ -1729,7 +1725,7 @@ void NuTo::Element2D::AddDetJBtXN(const Eigen::MatrixXd &rDerivativeShapeFunctio
     Eigen::VectorXd tmpfactor = rConstitutiveTangent * rFactor;
 
     assert(rShapeFunction.cols() == 1);
-    assert(rDerivativeShapeFunction.cols() == GetGlobalDimension());
+    assert(rDerivativeShapeFunction.cols() == GetStructure()->GetDimension() );
 
 
     Eigen::MatrixXd result =  rDerivativeShapeFunction * tmpfactor * rShapeFunction.transpose();
