@@ -1544,21 +1544,21 @@ NuTo::Error::eError NuTo::MoistureTransport::Evaluate3D(NuTo::ElementBase *rElem
 //! @brief ... gets a variable of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested variable
 //! @return ... value of the requested variable
-bool NuTo::MoistureTransport::GetVariableBool(NuTo::Constitutive::eConstitutiveVariable rIdentifier) const
+bool NuTo::MoistureTransport::GetParameterBool(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     switch(rIdentifier)
     {
-        case Constitutive::eConstitutiveVariable::ENABLE_MODIFIED_TANGENTIAL_STIFFNESS:
+        case Constitutive::eConstitutiveParameter::ENABLE_MODIFIED_TANGENTIAL_STIFFNESS:
         {
             return mEnableModifiedTangentialStiffness;
         }
-        case Constitutive::eConstitutiveVariable::ENABLE_SORPTION_HYSTERESIS:
+        case Constitutive::eConstitutiveParameter::ENABLE_SORPTION_HYSTERESIS:
         {
             return mEnableSorptionHysteresis;
         }
         default:
         {
-            throw MechanicsException("[NuTo::MoistureTransport::GetVariableBool] Constitutive law does not have the requested variable");
+            throw MechanicsException("[NuTo::MoistureTransport::GetParameterBool] Constitutive law does not have the requested variable");
         }
     }
 }
@@ -1566,17 +1566,17 @@ bool NuTo::MoistureTransport::GetVariableBool(NuTo::Constitutive::eConstitutiveV
 //! @brief ... sets a variable of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested variable
 //! @param rValue ... new value for requested variable
-void NuTo::MoistureTransport::SetVariableBool(NuTo::Constitutive::eConstitutiveVariable rIdentifier, bool rValue)
+void NuTo::MoistureTransport::SetParameterBool(NuTo::Constitutive::eConstitutiveParameter rIdentifier, bool rValue)
 {
     switch(rIdentifier)
     {
-        case Constitutive::eConstitutiveVariable::ENABLE_MODIFIED_TANGENTIAL_STIFFNESS:
+        case Constitutive::eConstitutiveParameter::ENABLE_MODIFIED_TANGENTIAL_STIFFNESS:
         {
             mEnableModifiedTangentialStiffness = rValue;
             SetParametersValid();
             return;
         }
-        case Constitutive::eConstitutiveVariable::ENABLE_SORPTION_HYSTERESIS:
+        case Constitutive::eConstitutiveParameter::ENABLE_SORPTION_HYSTERESIS:
         {
             mEnableSorptionHysteresis = rValue;
             SetParametersValid();
@@ -1584,7 +1584,7 @@ void NuTo::MoistureTransport::SetVariableBool(NuTo::Constitutive::eConstitutiveV
         }
         default:
         {
-            throw MechanicsException("[NuTo::MoistureTransport::SetVariableBool] Constitutive law does not have the requested variable");
+            throw MechanicsException("[NuTo::MoistureTransport::SetParameterBool] Constitutive law does not have the requested variable");
         }
     }
 }
@@ -1592,61 +1592,61 @@ void NuTo::MoistureTransport::SetVariableBool(NuTo::Constitutive::eConstitutiveV
 //! @brief ... gets a variable of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested variable
 //! @return ... value of the requested variable
-double NuTo::MoistureTransport::GetVariableDouble(NuTo::Constitutive::eConstitutiveVariable rIdentifier) const
+double NuTo::MoistureTransport::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     switch(rIdentifier)
     {
-        case Constitutive::eConstitutiveVariable::BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE:
+        case Constitutive::eConstitutiveParameter::BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE:
         {
             return mBetaRelHum;
         }
-        case Constitutive::eConstitutiveVariable::BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE:
+        case Constitutive::eConstitutiveParameter::BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE:
         {
             return mBetaWVFrac;
         }
-        case Constitutive::eConstitutiveVariable::DENSITY_WATER_PHASE:
+        case Constitutive::eConstitutiveParameter::DENSITY_WATER_PHASE:
         {
             return mRhoW;
         }
-        case Constitutive::eConstitutiveVariable::DIFFUSION_CONSTANT_GAS_PHASE:
+        case Constitutive::eConstitutiveParameter::DIFFUSION_CONSTANT_GAS_PHASE:
         {
             return mDV;
         }
-        case Constitutive::eConstitutiveVariable::DIFFUSION_CONSTANT_WATER_PHASE:
+        case Constitutive::eConstitutiveParameter::DIFFUSION_CONSTANT_WATER_PHASE:
         {
             return mDW;
         }
-        case Constitutive::eConstitutiveVariable::DIFFUSION_EXPONENT_GAS_PHASE:
+        case Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_GAS_PHASE:
         {
             return mAlphaV;
         }
-        case Constitutive::eConstitutiveVariable::DIFFUSION_EXPONENT_WATER_PHASE:
+        case Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_WATER_PHASE:
         {
             return mAlphaW;
         }
-        case Constitutive::eConstitutiveVariable::GRADIENT_CORRECTION_ADSORPTION_DESORPTION:
+        case Constitutive::eConstitutiveParameter::GRADIENT_CORRECTION_ADSORPTION_DESORPTION:
         {
             return mKd;
         }
-        case Constitutive::eConstitutiveVariable::GRADIENT_CORRECTION_DESORPTION_ADSORPTION:
+        case Constitutive::eConstitutiveParameter::GRADIENT_CORRECTION_DESORPTION_ADSORPTION:
         {
             return mKa;
         }
-        case Constitutive::eConstitutiveVariable::MASS_EXCHANGE_RATE:
+        case Constitutive::eConstitutiveParameter::MASS_EXCHANGE_RATE:
         {
             return mR;
         }
-        case Constitutive::eConstitutiveVariable::POROSITY:
+        case Constitutive::eConstitutiveParameter::POROSITY:
         {
             return mEpsP;
         }
-        case Constitutive::eConstitutiveVariable::SATURATION_DENSITY_GAS_PHASE:
+        case Constitutive::eConstitutiveParameter::SATURATION_DENSITY_GAS_PHASE:
         {
             return mRhoVS;
         }
         default:
         {
-            throw MechanicsException("[NuTo::MoistureTransport::GetVariableDouble] Constitutive law does not have the requested variable");
+            throw MechanicsException("[NuTo::MoistureTransport::GetParameterDouble] Constitutive law does not have the requested variable");
         }
     }
 }
@@ -1654,86 +1654,86 @@ double NuTo::MoistureTransport::GetVariableDouble(NuTo::Constitutive::eConstitut
 //! @brief ... sets a variable of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested variable
 //! @param rValue ... new value for requested variable
-void NuTo::MoistureTransport::SetVariableDouble(NuTo::Constitutive::eConstitutiveVariable rIdentifier, double rValue)
+void NuTo::MoistureTransport::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
     switch(rIdentifier)
     {
-        case Constitutive::eConstitutiveVariable::BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE:
+        case Constitutive::eConstitutiveParameter::BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE:
         {
             mBetaRelHum = rValue;
             SetParametersValid();
             return;
         }
-        case Constitutive::eConstitutiveVariable::BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE:
+        case Constitutive::eConstitutiveParameter::BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE:
         {
             mBetaWVFrac = rValue;
             SetParametersValid();
             return;
         }
-        case Constitutive::eConstitutiveVariable::DENSITY_WATER_PHASE:
+        case Constitutive::eConstitutiveParameter::DENSITY_WATER_PHASE:
         {
             CheckWaterPhaseDensity(rValue);
             mRhoW = rValue;
             SetParametersValid();
             return;
         }
-        case Constitutive::eConstitutiveVariable::DIFFUSION_CONSTANT_GAS_PHASE:
+        case Constitutive::eConstitutiveParameter::DIFFUSION_CONSTANT_GAS_PHASE:
         {
             CheckVaporPhaseDiffusionCoefficient(rValue);
             mDV=rValue;
             SetParametersValid();
             return;
         }
-        case Constitutive::eConstitutiveVariable::DIFFUSION_CONSTANT_WATER_PHASE:
+        case Constitutive::eConstitutiveParameter::DIFFUSION_CONSTANT_WATER_PHASE:
         {
             CheckWaterPhaseDiffusionCoefficient(rValue);
             mDW=rValue;
             SetParametersValid();
             return;
         }
-        case Constitutive::eConstitutiveVariable::DIFFUSION_EXPONENT_GAS_PHASE:
+        case Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_GAS_PHASE:
         {
             CheckVaporPhaseDiffusionExponent(rValue);
             mAlphaV=rValue;
             SetParametersValid();
             return;
         }
-        case Constitutive::eConstitutiveVariable::DIFFUSION_EXPONENT_WATER_PHASE:
+        case Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_WATER_PHASE:
         {
             CheckWaterPhaseDiffusionExponent(rValue);
             mAlphaW=rValue;
             SetParametersValid();
             return;
         }
-        case Constitutive::eConstitutiveVariable::GRADIENT_CORRECTION_ADSORPTION_DESORPTION:
+        case Constitutive::eConstitutiveParameter::GRADIENT_CORRECTION_ADSORPTION_DESORPTION:
         {
             CheckKd(rValue);
             mKd = rValue;
             SetParametersValid();
             return;
         }
-        case Constitutive::eConstitutiveVariable::GRADIENT_CORRECTION_DESORPTION_ADSORPTION:
+        case Constitutive::eConstitutiveParameter::GRADIENT_CORRECTION_DESORPTION_ADSORPTION:
         {
             CheckKa(rValue);
             mKa = rValue;
             SetParametersValid();
             return;
         }
-        case Constitutive::eConstitutiveVariable::MASS_EXCHANGE_RATE:
+        case Constitutive::eConstitutiveParameter::MASS_EXCHANGE_RATE:
         {
             CheckMassExchangeRate(rValue);
             mR = rValue;
             SetParametersValid();
             return;
         }
-        case Constitutive::eConstitutiveVariable::POROSITY:
+        case Constitutive::eConstitutiveParameter::POROSITY:
         {
             CheckPorosity(rValue);
             mEpsP=rValue;
             SetParametersValid();
             return;
         }
-        case Constitutive::eConstitutiveVariable::SATURATION_DENSITY_GAS_PHASE:
+        case Constitutive::eConstitutiveParameter::SATURATION_DENSITY_GAS_PHASE:
         {
             CheckVaporPhaseSaturationDensity(rValue);
             mRhoVS=rValue;
@@ -1742,7 +1742,7 @@ void NuTo::MoistureTransport::SetVariableDouble(NuTo::Constitutive::eConstitutiv
         }
         default:
         {
-            throw MechanicsException("[NuTo::MoistureTransport::SetVariableDouble] Constitutive law does not have the requested variable");
+            throw MechanicsException("[NuTo::MoistureTransport::SetParameterDouble] Constitutive law does not have the requested variable");
         }
     }
 }
@@ -1750,21 +1750,21 @@ void NuTo::MoistureTransport::SetVariableDouble(NuTo::Constitutive::eConstitutiv
 //! @brief ... gets a variable of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested variable
 //! @return ... value of the requested variable
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::MoistureTransport::GetVariableFullVectorDouble(NuTo::Constitutive::eConstitutiveVariable rIdentifier) const
+NuTo::FullVector<double, Eigen::Dynamic> NuTo::MoistureTransport::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     switch(rIdentifier)
     {
-        case Constitutive::eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_ADSORPTION:
+        case Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_ADSORPTION:
         {
             return mAdsorptionCoeff;
         }
-        case Constitutive::eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_DESORPTION:
+        case Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION:
         {
             return mDesorptionCoeff;
         }
         default:
         {
-            throw MechanicsException("[NuTo::MoistureTransport::GetVariableFullVectorDouble] Constitutive law does not have the requested variable");
+            throw MechanicsException("[NuTo::MoistureTransport::GetParameterFullVectorDouble] Constitutive law does not have the requested variable");
         }
     }
 }
@@ -1772,11 +1772,11 @@ NuTo::FullVector<double, Eigen::Dynamic> NuTo::MoistureTransport::GetVariableFul
 //! @brief ... sets a variable of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested variable
 //! @param rValue ... new value for requested variable
-void NuTo::MoistureTransport::SetVariableFullVectorDouble(NuTo::Constitutive::eConstitutiveVariable rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
+void NuTo::MoistureTransport::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
 {
     switch(rIdentifier)
     {
-        case Constitutive::eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_ADSORPTION:
+        case Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_ADSORPTION:
         {
             CheckAdsorptionCoefficients(rValue);
             switch (rValue.GetNumRows())
@@ -1797,14 +1797,14 @@ void NuTo::MoistureTransport::SetVariableFullVectorDouble(NuTo::Constitutive::eC
                 }
                 default:
                 {
-                    throw NuTo::MechanicsException("[NuTo::MoistureTransport::SetVariableFullVectorDouble] The vector for the adsorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
+                    throw NuTo::MechanicsException("[NuTo::MoistureTransport::SetParameterFullVectorDouble] The vector for the adsorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
                     break;
                 }
             }
             SetParametersValid();
             return;
         }
-        case Constitutive::eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_DESORPTION:
+        case Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION:
         {
             CheckDesorptionCoefficients(rValue);
             switch (rValue.GetNumRows())
@@ -1825,7 +1825,7 @@ void NuTo::MoistureTransport::SetVariableFullVectorDouble(NuTo::Constitutive::eC
                 }
                 default:
                 {
-                    throw NuTo::MechanicsException("[NuTo::MoistureTransport::SetVariableFullVectorDouble] The vector for the desorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
+                    throw NuTo::MechanicsException("[NuTo::MoistureTransport::SetParameterFullVectorDouble] The vector for the desorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
                     break;
                 }
             }
@@ -1834,7 +1834,7 @@ void NuTo::MoistureTransport::SetVariableFullVectorDouble(NuTo::Constitutive::eC
         }
         default:
         {
-            throw MechanicsException("[NuTo::MoistureTransport::SetVariableFullVectorDouble] Constitutive law does not have the requested variable");
+            throw MechanicsException("[NuTo::MoistureTransport::SetParameterFullVectorDouble] Constitutive law does not have the requested variable");
         }
     }
 }
@@ -1896,14 +1896,14 @@ bool                                        NuTo::MoistureTransport::HaveTmpStat
 void                                        NuTo::MoistureTransport::Info                                                       (unsigned short rVerboseLevel, Logger& rLogger) const
 {
     this->ConstitutiveBase::Info(rVerboseLevel, rLogger);
-    rLogger << "    Mass exchange rate                  : " << this->GetVariableDouble(Constitutive::eConstitutiveVariable::MASS_EXCHANGE_RATE)              << "\n";
-    rLogger << "    Porosity                            : " << this->GetVariableDouble(Constitutive::eConstitutiveVariable::POROSITY)                        << "\n";
-    rLogger << "    Gas phase diffusion constant        : " << this->GetVariableDouble(Constitutive::eConstitutiveVariable::DIFFUSION_CONSTANT_GAS_PHASE)    << "\n";
-    rLogger << "    Gas phase diffusion exponent        : " << this->GetVariableDouble(Constitutive::eConstitutiveVariable::DIFFUSION_EXPONENT_GAS_PHASE)    << "\n";
-    rLogger << "    Gas phase saturation density        : " << this->GetVariableDouble(Constitutive::eConstitutiveVariable::SATURATION_DENSITY_GAS_PHASE)    << "\n";
-    rLogger << "    Water phase density                 : " << this->GetVariableDouble(Constitutive::eConstitutiveVariable::DENSITY_WATER_PHASE)             << "\n";
-    rLogger << "    Water phase diffusion constant      : " << this->GetVariableDouble(Constitutive::eConstitutiveVariable::DIFFUSION_CONSTANT_WATER_PHASE)  << "\n";
-    rLogger << "    Water phase diffusion exponent      : " << this->GetVariableDouble(Constitutive::eConstitutiveVariable::DIFFUSION_EXPONENT_WATER_PHASE)  << "\n";
+    rLogger << "    Mass exchange rate                  : " << this->GetParameterDouble(Constitutive::eConstitutiveParameter::MASS_EXCHANGE_RATE)              << "\n";
+    rLogger << "    Porosity                            : " << this->GetParameterDouble(Constitutive::eConstitutiveParameter::POROSITY)                        << "\n";
+    rLogger << "    Gas phase diffusion constant        : " << this->GetParameterDouble(Constitutive::eConstitutiveParameter::DIFFUSION_CONSTANT_GAS_PHASE)    << "\n";
+    rLogger << "    Gas phase diffusion exponent        : " << this->GetParameterDouble(Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_GAS_PHASE)    << "\n";
+    rLogger << "    Gas phase saturation density        : " << this->GetParameterDouble(Constitutive::eConstitutiveParameter::SATURATION_DENSITY_GAS_PHASE)    << "\n";
+    rLogger << "    Water phase density                 : " << this->GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY_WATER_PHASE)             << "\n";
+    rLogger << "    Water phase diffusion constant      : " << this->GetParameterDouble(Constitutive::eConstitutiveParameter::DIFFUSION_CONSTANT_WATER_PHASE)  << "\n";
+    rLogger << "    Water phase diffusion exponent      : " << this->GetParameterDouble(Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_WATER_PHASE)  << "\n";
 }
 
 

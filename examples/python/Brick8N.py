@@ -23,8 +23,8 @@ myStructure = nuto.Structure(3)
 
 # create material law
 Material1 = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
-myStructure.ConstitutiveLawSetYoungsModulus(Material1, YoungsModulus)
-myStructure.ConstitutiveLawSetPoissonsRatio(Material1, PoissonsRatio)
+myStructure.ConstitutiveLawSetParameterDouble(Material1,"YoungsModulus", YoungsModulus)
+myStructure.ConstitutiveLawSetParameterDouble(Material1,"PoissonsRatio", PoissonsRatio)
 
 Section1 = myStructure.SectionCreate("Volume")
 

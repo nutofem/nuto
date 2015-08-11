@@ -21,8 +21,8 @@ int NuTo::MisesWielandt::Optimize()
     const double tol=mAccuracyGradient;
 	double lambda=0.,		//lambda_min = lambda
 		   prevLambda=0.,
-		   norm=0.,
-		   prevNorm=0.;
+           norm=0.;
+           //prevNorm=0.;
 
     int numGradientCalls(0),   // number of gradient calls
 		curIteration(0);       //number of iterations
@@ -86,7 +86,7 @@ int NuTo::MisesWielandt::Optimize()
 //			r[i]*=-1;
 //			r[i]+=u[i];
 //		}
-		prevNorm=norm;
+        //prevNorm=norm;
 		norm=0.;
 		prevLambda=lambda;
 		lambda=0.;

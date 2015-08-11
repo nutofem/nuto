@@ -50,8 +50,8 @@ try
 
         // create material law
         int Material1 = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
-        myStructure.ConstitutiveLawSetYoungsModulus(Material1, YoungsModulus);
-        myStructure.ConstitutiveLawSetPoissonsRatio(Material1, PoissonsRatio);
+        myStructure.ConstitutiveLawSetParameterDouble(Material1,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
+        myStructure.ConstitutiveLawSetParameterDouble(Material1,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, PoissonsRatio);
 
         int mySection1 = myStructure.SectionCreate("VOLUME");
 

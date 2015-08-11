@@ -27,7 +27,7 @@ int main()
 
 	// create material law
     int Material1 = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
-	myStructure.ConstitutiveLawSetYoungsModulus(Material1, YoungsModulus);
+    myStructure.ConstitutiveLawSetParameterDouble(Material1,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
 
 	// create nodes
 	NuTo::FullVector<double,Eigen::Dynamic> nodeCoordinates(1);

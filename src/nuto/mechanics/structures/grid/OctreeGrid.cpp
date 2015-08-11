@@ -1434,8 +1434,8 @@ void NuTo::OctreeGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,int 
 #endif
 		// create material law
 		int myMat=myHelpStruc.ConstitutiveLawCreate("LINEARELASTICENGINEERINGSTRESS");
-		myHelpStruc.ConstitutiveLawSetPoissonsRatio(myMat, rPoissonsRatio);
-		myHelpStruc.ConstitutiveLawSetYoungsModulus(myMat, 1.0);
+        myHelpStruc.ConstitutiveLawSetParameterDouble(myMat,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, rPoissonsRatio);
+        myHelpStruc.ConstitutiveLawSetParameterDouble(myMat,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.0);
 
 		// create nodes
 		NuTo::FullVector<double,Eigen::Dynamic> nodeCoordinates(3);
@@ -1571,7 +1571,7 @@ void NuTo::OctreeGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,int 
 			mLocalCoefficientMatrix0.push_back(stiffness);
 
 			//calculate shape derivative functions
-			const double rLocalCoordinates[3]={0,0,0};
+            //const double rLocalCoordinates[3]={0,0,0};
 			mLocalDerivativeShapeFunctions.resize(24);
 
 			const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = myHelpStruc.ElementGetElementPtr(myHelpElement)->GetInterpolationType()->Get(Node::COORDINATES).GetDerivativeShapeFunctionsNatural(0);
@@ -1588,8 +1588,8 @@ void NuTo::OctreeGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,int 
 			//			std::cout<<"[StructureGrid] (line "<<__LINE__<<" mLocalDerivativeShapeFunctions "<<mLocalDerivativeShapeFunctions[0]<<" "<<mLocalDerivativeShapeFunctions[1]<<" "<<mLocalDerivativeShapeFunctions[2]<<"\n";
 //			std::cout<<"[StructureGrid] (line "<<__LINE__<<" mLocalDerivativeShapeFunctions "<<mLocalDerivativeShapeFunctions[21]<<" "<<mLocalDerivativeShapeFunctions[22]<<" "<<mLocalDerivativeShapeFunctions[23]<<"\n";
             LinearElasticEngineeringStress myMaterial;
-			myMaterial.SetPoissonsRatio(rPoissonsRatio);
-            myMaterial.SetYoungsModulus(1.0);
+            myMaterial.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,rPoissonsRatio);
+            myMaterial.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,1.0);
 #ifdef PLANESTRESS
             myMaterial.CalculateCoefficients2DPlainStress(mC11,mC12,mC44);
 			//static_cast<NuTo::LinearElasticEngineeringStress*> (myElementPointer->GetConstitutiveLaw(0))->CalculateCoefficients2DPlainStress(mC11,mC12,mC44);
@@ -1664,12 +1664,15 @@ void NuTo::OctreeGrid::SetDisplacementConstraints(size_t rDirection,size_t *rGri
 double NuTo::OctreeGrid::ApproximateSystemConditionNumber()
 {
 	size_t numNodes=mData.size();
+#ifdef _OPENACC
 	#pragma data present(mData,mLocalCoefficientMatrix0)
 	#pragma acc parallel loop
+#endif
 	std::vector<double> rProduct(3*numNodes);
 	std::vector<size_t> nodeNumbers(8);
-
+#ifdef _OPENACC
 	#pragma acc parallel loop
+#endif
 	for(std::map<uint32_t,data>::const_iterator it=mData.begin();it!=mData.end();++it)
 	{
 		double elemStiff=it->second.weight;
@@ -1746,7 +1749,9 @@ void NuTo::OctreeGrid::CalculateMatrixVectorProductEBE(std::vector<double>& u,st
 	int dofsElem=24;
 
 	// make sure residual vector is reset with zero //
+#ifdef _OPENACC
 #pragma acc parallel loop present(r[0:numParas])
+#endif
 	for(size_t i=0;i<numParas;++i)
 		r[i]=0;
 	//hanging node correction
@@ -1757,15 +1762,19 @@ void NuTo::OctreeGrid::CalculateMatrixVectorProductEBE(std::vector<double>& u,st
     //	std::vector<double>  force(mNumParameters,1);
 
 	//move local data in loop for acc ?
-	#pragma acc firstprivate(residual[0,dofsElem],displacement[0,dofsElem])
+#ifdef _OPENACC
+    #pragma acc firstprivate(residual[0,dofsElem],displacement[0,dofsElem])
+#endif
 	std::vector<double> residual (dofsElem);
 	std::vector<double> displacement(dofsElem);
 	uint32_t numNodes=8;
 	std::vector<size_t> constraint(numNodes);
 	std::vector<uint32_t> id(numNodes);
 	//loop over all elements
+#ifdef _OPENACC
 	#pragma acc parallel loop present(u[0:numParas],r[0:numParas],mData[0:numElems],mLocalCoefficientMatrix0[0:576])
-	for(std::map<uint32_t,data>::const_iterator it=mData.begin();it!=mData.end();++it)
+#endif
+    for(std::map<uint32_t,data>::const_iterator it=mData.begin();it!=mData.end();++it)
 	{
 		uint32_t key=it->first;
 		uint32_t level=it->second.level;
@@ -1794,8 +1803,10 @@ void NuTo::OctreeGrid::CalculateMatrixVectorProductEBE(std::vector<double>& u,st
 
 			std::map<uint32_t,data>::const_iterator it_node;
 
+#ifdef _OPENACC
 			#pragma acc parallel loop
-//			std::cout<<"id : "<<id[0]<<" key "<<key<<" key nodes: \n";
+#endif
+            //			std::cout<<"id : "<<id[0]<<" key "<<key<<" key nodes: \n";
 			for(uint32_t count=1;count<numNodes;++count)
 			{
 				x=MortonOrder::DecodeMorton3X(count)*fac;
@@ -1811,12 +1822,15 @@ void NuTo::OctreeGrid::CalculateMatrixVectorProductEBE(std::vector<double>& u,st
 				displacement[3*count+1]=u[3*id[count]+1];
 				displacement[3*count+2]=u[3*id[count]+2];
 			}
-
+#ifdef _OPENACC
 			#pragma acc parallel loop //needed or for each thread initialized already with zero
+#endif
 			for(int i=0;i<dofsElem;++i)
 			{
 				residual[i]=0;
-				#pragma acc parallel loop
+#ifdef _OPENACC
+                #pragma acc parallel loop
+#endif
 				for(int j=0;j<dofsElem;++j)
 					residual[i]+=youngsModulus*mLocalCoefficientMatrix0[0][dofsElem*i+j]*displacement[j];
 
@@ -1890,7 +1904,9 @@ void NuTo::OctreeGrid::BuildGlobalCoefficientMatrix(std::vector<double>& rKglob,
 
 			std::map<uint32_t,data>::const_iterator it_node;
 
-			#pragma acc parallel loop
+#ifdef _OPENACC
+            #pragma acc parallel loop
+#endif
 //			std::cout<<"id : "<<id[0]<<" key "<<key<<" key nodes: \n";
 			for(uint32_t count=1;count<numNodes;++count)
 			{
@@ -1905,14 +1921,18 @@ void NuTo::OctreeGrid::BuildGlobalCoefficientMatrix(std::vector<double>& rKglob,
 //				key_nodes[count]=it_node->first;
 			}
 
+#ifdef _OPENACC
 			#pragma acc parallel loop //needed or for each thread initialized already with zero
-			for(uint32_t i=0;i<numNodes;++i)
+#endif
+            for(uint32_t i=0;i<numNodes;++i)
 			{
 				// not an hanging node in any direction
 //				if((constraint[i]&1)!= 1 && (constraint[i]&2)!= 2 && (constraint[i]&4)!= 4)
 //				{
-					#pragma acc parallel loop
-					for(uint32_t j=0;j<numNodes;++j)
+#ifdef _OPENACC
+                    #pragma acc parallel loop
+#endif
+                    for(uint32_t j=0;j<numNodes;++j)
 					{
 //						if((constraint[i]&8)!= 8) //   x-dir. is not constraint
 //						{
@@ -2140,13 +2160,17 @@ void NuTo::OctreeGrid::HessianDiag(std::vector<double>& rHessianDiag)
 	size_t numNodes=mData.size();
 	if(mHessianDiag.empty()==true)
 	{
+#ifdef _OPENACC
 	#pragma data present(rHessianDiag,mData,mLocalCoefficientMatrix0)
 	#pragma acc parallel loop
+#endif
 		std::vector<double> rProduct(3*numNodes);
 
 		std::vector<size_t> nodeNumbers(8);
 
+#ifdef _OPENACC
 		#pragma acc parallel loop
+#endif
 		for(std::map<uint32_t,data>::const_iterator it=mData.begin();it!=mData.end();++it)
 		{
 			double elemStiff=it->second.weight;
@@ -2325,7 +2349,7 @@ void NuTo::OctreeGrid::GetEngineeringStrain(const std::vector<double> &rDisplace
 	std::vector<size_t> nodes(rNodesPerElement);
 	rEngineeringStrain.resize(mNumElements*6);
 	std::vector<double>nodeCoord(rNodesPerElement*3);
-	double invJacobian[9], detJac;
+    double invJacobian[9];
 	std::vector<double> derivativeShapeFunctionsGlobal(mLocalDerivativeShapeFunctions.size());
 
 #ifdef PLANESTRESS
@@ -2361,7 +2385,7 @@ void NuTo::OctreeGrid::GetEngineeringStrain(const std::vector<double> &rDisplace
 
 	    // deactivated temporarily
 //		myElementPointer->CalculateJacobian(mLocalDerivativeShapeFunctions,nodeCoord, invJacobian, detJac);
-	    double detJacUnusedWarningFixMe = detJac;
+        //double detJacUnusedWarningFixMe = detJac;
 
 		myElementPointer->CalculateDerivativeShapeFunctionsGlobal(mLocalDerivativeShapeFunctions,invJacobian,
 													derivativeShapeFunctionsGlobal);

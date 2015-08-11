@@ -95,8 +95,8 @@ int main()
 
 	    // create constitutive law
 	    int myMatLin = myStructure.ConstitutiveLawCreate("LINEARELASTICENGINEERINGSTRESS");
-	    myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10);
-	    myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1);
+        myStructure.ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,10);
+        myStructure.ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,0.1);
 
 	    // create section
 	    //~ int mySection1 = myStructure.SectionCreate("PLANE_STRAIN");

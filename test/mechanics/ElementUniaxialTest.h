@@ -51,9 +51,9 @@ private:
     void SetConstitutiveLaw(NuTo::Structure& rStructure)
     {
         rStructure.ConstitutiveLawCreate(0, NuTo::Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS);
-        rStructure.ConstitutiveLawSetYoungsModulus(0, E);
-        rStructure.ConstitutiveLawSetPoissonsRatio(0,nu);
-        rStructure.ConstitutiveLawSetDensity(0, rho);
+        rStructure.ConstitutiveLawSetParameterDouble(0,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, E);
+        rStructure.ConstitutiveLawSetParameterDouble(0,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,nu);
+        rStructure.ConstitutiveLawSetParameterDouble(0,NuTo::Constitutive::eConstitutiveParameter::DENSITY, rho);
         rStructure.ElementTotalSetConstitutiveLaw(0);
     }
 

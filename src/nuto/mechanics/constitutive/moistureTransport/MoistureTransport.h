@@ -130,32 +130,32 @@ public:
     //! @brief ... gets a variable of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested variable
     //! @return ... value of the requested variable
-    virtual bool                                    GetVariableBool                                             (Constitutive::eConstitutiveVariable rIdentifier) const override;
+    virtual bool                                    GetParameterBool                                             (Constitutive::eConstitutiveParameter rIdentifier) const override;
 
     //! @brief ... sets a variable of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested variable
     //! @param rValue ... new value for requested variable
-    virtual void                                    SetVariableBool                                             (Constitutive::eConstitutiveVariable rIdentifier, bool rValue) override;
+    virtual void                                    SetParameterBool                                             (Constitutive::eConstitutiveParameter rIdentifier, bool rValue) override;
 
     //! @brief ... gets a variable of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested variable
     //! @return ... value of the requested variable
-    virtual double                                  GetVariableDouble                                           (Constitutive::eConstitutiveVariable rIdentifier) const override;
+    virtual double                                  GetParameterDouble                                           (Constitutive::eConstitutiveParameter rIdentifier) const override;
 
     //! @brief ... sets a variable of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested variable
     //! @param rValue ... new value for requested variable
-    virtual void                                    SetVariableDouble                                           (Constitutive::eConstitutiveVariable rIdentifier, double rValue) override;
+    virtual void                                    SetParameterDouble                                           (Constitutive::eConstitutiveParameter rIdentifier, double rValue) override;
 
     //! @brief ... gets a variable of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested variable
     //! @return ... value of the requested variable
-    virtual NuTo::FullVector<double,Eigen::Dynamic> GetVariableFullVectorDouble                                 (Constitutive::eConstitutiveVariable rIdentifier) const override;
+    virtual NuTo::FullVector<double,Eigen::Dynamic> GetParameterFullVectorDouble                                 (Constitutive::eConstitutiveParameter rIdentifier) const override;
 
     //! @brief ... sets a variable of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested variable
     //! @param rValue ... new value for requested variable
-    virtual void                                    SetVariableFullVectorDouble                                 (Constitutive::eConstitutiveVariable rIdentifier, NuTo::FullVector<double,Eigen::Dynamic> rValue) override;
+    virtual void                                    SetParameterFullVectorDouble                                 (Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double,Eigen::Dynamic> rValue) override;
 
 
     //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity

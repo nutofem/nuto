@@ -304,7 +304,8 @@ NuTo::Error::eError NuTo::BoundaryElement1D::Evaluate(boost::ptr_multimap<NuTo::
             //            std::cout << "nonlocal eq strain " << nonlocalEqStrain[0] << std::endl;
 
 
-            double e0 = constitutivePtr->GetTensileStrength() / constitutivePtr->GetYoungsModulus();
+            double e0 = constitutivePtr->GetParameterDouble(Constitutive::eConstitutiveParameter::TENSILE_STRENGTH) /
+                        constitutivePtr->GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS);
             if (mBoundaryConditionType == BoundaryType::MACAULAY)
             {
 

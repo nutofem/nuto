@@ -64,17 +64,17 @@ myStructure.ElementTotalConvertToInterpolationType()
 
 #create constitutive law
 myMatDamage = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticityEngineeringStress")
-myStructure.ConstitutiveLawSetYoungsModulus(myMatDamage,9)
-myStructure.ConstitutiveLawSetPoissonsRatio(myMatDamage,0.25)
-myStructure.ConstitutiveLawSetNonlocalRadius(myMatDamage,0.7)
-myStructure.ConstitutiveLawSetTensileStrength(myMatDamage,2)
-myStructure.ConstitutiveLawSetCompressiveStrength(myMatDamage,20)
-myStructure.ConstitutiveLawSetBiaxialCompressiveStrength(myMatDamage,25)
-myStructure.ConstitutiveLawSetFractureEnergy(myMatDamage,0.2)
+myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,"YoungsModulus",9)
+myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,"PoissonsRatio",0.25)
+myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,"NonlocalRadius",0.7)
+myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,"TensileStrength",2)
+myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,"CompressiveStrength",20)
+myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,"BiaxialCompressiveStrength",25)
+myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,"FractureEnergy",0.2)
 
 myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
-myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,9)
-myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.25)
+myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"YoungsModulus",9)
+myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"PoissonsRatio",0.25)
 
 #create section
 mySection = myStructure.SectionCreate("Plane_Strain")

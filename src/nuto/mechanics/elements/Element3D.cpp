@@ -893,7 +893,8 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         case Node::DISPLACEMENTS:
                         {
 
-                            double factor(detJacobian * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)) * constitutivePtr->GetDensity());
+                            double factor(detJacobian * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))
+                                                      * constitutivePtr->GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY));
                             const Eigen::MatrixXd tmpMatrix = shapeFunctions.at(dof) * shapeFunctions.at(dof).transpose() * factor;
                             Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& result(it->second->GetFullMatrixDouble());
                             for (int count = 0; count < tmpMatrix.rows(); count++)
@@ -928,7 +929,8 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                             // calculate local mass matrix (the nonlocal terms are zero)
                             // don't forget to include determinant of the Jacobian and area
                             // detJ * area * density * HtH, :
-                            double factor(detJacobian * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP)) * constitutivePtr->GetDensity());
+                            double factor(detJacobian * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))
+                                                      * constitutivePtr->GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY));
                             FullVector<double, Eigen::Dynamic>& result(it->second->GetFullVectorDouble());
                             total_mass += factor;
                             const Eigen::VectorXd& shapeFunction = shapeFunctions.at(dof);

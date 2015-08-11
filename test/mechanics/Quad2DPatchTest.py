@@ -30,8 +30,8 @@ def RunPatchTest(StressState):
 
 	# create material law
 	myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
-	myStructure.ConstitutiveLawSetYoungsModulus(myMatLin, E)
-	myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin, v)
+        myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"YoungsModulus", E)
+        myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"PoissonsRatio", v)
 
 	#create section
 	mySection = myStructure.SectionCreate("Plane_Stress")

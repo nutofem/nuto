@@ -9,7 +9,7 @@ myStructure.SectionSetArea(Section1, 1)
 
 # create material law
 Material1 = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
-myStructure.ConstitutiveLawSetYoungsModulus(Material1, 1)
+myStructure.ConstitutiveLawSetParameterDouble(Material1,"YoungsModulus", 1)
 
 # create nodes
 nodeCoordinates = nuto.DoubleFullVector(1)

@@ -160,7 +160,7 @@ const NuTo::Interpolation::eShapeType NuTo::InterpolationType::GetShapeType() co
 
 NuTo::IntegrationType::eIntegrationType NuTo::InterpolationType::GetStandardIntegrationType() const
 {
-    NuTo::IntegrationType::eIntegrationType integrationType;
+    NuTo::IntegrationType::eIntegrationType integrationType = IntegrationType::eIntegrationType::NotSet;
     int maxOrder = 0;
 
     for (Node::eAttributes dof : GetDofs())
@@ -215,9 +215,13 @@ const Eigen::VectorXi NuTo::InterpolationType::GetSurfaceNodeIndices(int rSurfac
 //        std::cout << shapeFunctions << std::endl;
         assert(std::abs(shapeFunctions.norm() - 1) < 1.e-8);
         int indexNodeCoordinate;                                        // index in the coordinate interpolation
+
+#ifdef DEBUG
         double value = shapeFunctions.maxCoeff(&indexNodeCoordinate);   // find the index where the shape function is 1
         assert(std::abs(value - 1) < 1.e-8);
-
+#else
+        shapeFunctions.maxCoeff(&indexNodeCoordinate);   // find the index where the shape function is 1
+#endif
         surfaceNodeIndices(i) = interpolationType.GetNodeIndex(indexNodeCoordinate); // index in the Element::mNodes vector
     }
 

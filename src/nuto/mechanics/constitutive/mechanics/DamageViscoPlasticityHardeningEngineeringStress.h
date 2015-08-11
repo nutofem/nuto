@@ -97,125 +97,28 @@ public:
     double CalculateDuctility()const;
 
     // parameters /////////////////////////////////////////////////////////////
-    //! @brief ... get density
-    //! @return ... density
-    virtual double GetDensity() const override;
 
-    //! @brief ... set density
-    //! @param rRho ... density
-    virtual void SetDensity(double rRho) override;
+    //! @brief ... gets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @return ... value of the requested variable
+    virtual double GetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier) const override;
 
-    //! @brief ... get Young's modulus
-    //! @return ... Young's modulus
-    double GetYoungsModulus() const override;
+    //! @brief ... sets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rValue ... new value for requested variable
+    virtual void SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue) override;
 
-    //! @brief ... set Young's modulus
-    //! @param rE ... Young's modulus
-    void SetYoungsModulus(double rE) override;
 
-    //! @brief ... get Poisson's ratio
-    //! @return ... Poisson's ratio
-    double GetPoissonsRatio() const override;
+    //! @brief ... gets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @return ... value of the requested variable
+    virtual bool GetParameterBool(Constitutive::eConstitutiveParameter rIdentifier) const override;
 
-    //! @brief ... set Poisson's ratio
-    //! @param rNu ... Poisson's ratio
-    void SetPoissonsRatio(double rNu) override;
+    //! @brief ... sets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rValue ... new value for requested variable
+    virtual void SetParameterBool(Constitutive::eConstitutiveParameter rIdentifier, bool rValue) override;
 
-    //! @brief ... get thermal expansion coefficient
-    //! @return ... thermal expansion coefficient
-    double GetThermalExpansionCoefficient() const override;
-
-    //! @brief ... set thermal expansion coefficient
-    //! @param rAlpha ... thermal expansion coefficient
-    void SetThermalExpansionCoefficient(double rNu) override;
-
-    //! @brief ... get tensile strength
-    //! @return ... tensile strength
-    double GetTensileStrength() const override;
-
-    //! @brief ... set tensile strength
-    //! @param rTensileStrength...  tensile strength
-    void SetTensileStrength(double rTensileStrength) override;
-
-    //! @brief ... get compressive strength
-    //! @return ... compressive strength
-    double GetCompressiveStrength() const override;
-
-    //! @brief ... set compressive strength
-    //! @param rCompressiveStrength...  compressive strength
-    void SetCompressiveStrength(double rCompressiveStrength) override;
-
-    //! @brief ... get biaxial compressive strength
-    //! @return ... biaxial compressive strength
-    double GetBiaxialCompressiveStrength() const override;
-
-    //! @brief ... set biaxial compressive strength
-    //! @param rBiaxialCompressiveStrength...  biaxial compressive strength
-    void SetBiaxialCompressiveStrength(double rBiaxialCompressiveStrength) override;
-
-    //! @brief ... get viscosity
-    //! @return ... viscosity
-    double GetViscosity() const override;
-
-    //! @brief ... set viscosity
-    //! @param rViscosity ... viscosity
-    void SetViscosity(double rViscosity) override;
-
-    //! @brief ... get viscosity exponent
-    //! @return ... viscosity exponent
-    double GetViscosityExponent() const override;
-
-    //! @brief ... set viscosity exponent
-    //! @param rViscosity ... viscosity exponent
-    void SetViscosityExponent(double rViscosityExponent) override;
-
-    //! @brief ... get damage distribution (determines the portion of damage via viscoplasticity and plasticity)
-    //! @return ... damage distribution
-    double GetDamageDistribution() const override;
-
-    //! @brief ... set damage distribution (determines the portion of damage via viscoplasticity and plasticity)
-    //! @param rDamageDistribution... damage distribution
-    void SetDamageDistribution(double rDamageDistribution) override;
-
-    //! @brief ... get viscoplastic yield surface offset with respect to the plastic yield surface
-    //! @return ... viscoplastic yield surface offset
-    double GetViscoplasticYieldSurfaceOffset() const override;
-
-    //! @brief ... set viscoplastic yield surface offset with respect to the plastic yield surface
-    //! @param rViscoplasticYieldSurfaceOffset... viscoplastic yield surface offset
-    void SetViscoplasticYieldSurfaceOffset(double rViscoplasticYieldSurfaceOffset) override;
-
-    //! @brief ... get fracture energy
-    //! @return ... fracture energy
-    double GetFractureEnergy() const override;
-
-    //! @brief ... set fracture energy
-    //! @param rFractureEnergy... fracture energy
-    void SetFractureEnergy(double rFractureEnergy) override;
-
-    //! @brief ... get hardening value
-    //! @return ... hardening value
-    double GetHardeningValue() const override;
-
-    //! @brief ... set hardening value
-    //! @param rH ...  hardening value
-    void SetHardeningValue(double rHardening) override;
-
-    //! @brief ... get hardening exponent
-    //! @return ... hardening exponent
-    double GetHardeningExponent() const override;
-
-    //! @brief ... set hardening exponent
-    //! @param rHexponent ...  hardening exponent
-    void SetHardeningExponent(double rHardeningExponent) override;
-
-    //! @brief ... get fatigue extrapolation
-    //! @param FatigueExtrapolation ...
-    bool GetFatigueExtrapolation() const override;
-
-    //! @brief ... set fatigue extrapolation, if true allocates the respective constitutive static data
-    //! @param FatigueExtrapolation ...
-    void SetFatigueExtrapolation(bool rFatigueExtrapolation) override;
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -403,8 +306,8 @@ private:
 			EngineeringStress3D rPrevStress;      // stress at the beginning of the time increment
 			EngineeringStrain3D rDeltaStrain;     // mechanical strain increment (strain increment without thermal component)
 			double rDeltaTime, rBeta, rHP, rHVP, rViscosity;  // time increment, rBeta, rHP, rHVP, rViscosity
-			double rViscosityExponent;			  // rViscosityExponent
-			double rPrevKappaInelastic; 		  // cumulative equivalent inelastic strain
+            //double rViscosityExponent;			  // rViscosityExponent
+            //double rPrevKappaInelastic; 		  // cumulative equivalent inelastic strain
 												  // at the beginning of the time increment
 			double rPrevHardening;				  // hardening at the beginning of the time increment
 
@@ -425,8 +328,8 @@ private:
 			rHP = rParameter[14];					// rParameter(14) rHP
 			rHVP = rParameter[15];					// rParameter(15) rHVP
 			rViscosity = rParameter[16];			// rParameter(16) rViscosity
-			rViscosityExponent = rParameter[17];	// rParameter(17) rViscosityExponent
-			rPrevKappaInelastic = rParameter[18];	// rParameter(18) rPrevKappaInelastic
+            //rViscosityExponent = rParameter[17];	// rParameter(17) rViscosityExponent
+            //rPrevKappaInelastic = rParameter[18];	// rParameter(18) rPrevKappaInelastic
 			rPrevHardening = rParameter[19];		// rParameter(19) rPrevHardening
 
 			rVP = rUnknown[12];						// rUnknown(12) is the state variable associated with cumulative plastic flow rate
@@ -534,8 +437,8 @@ private:
 
     		EngineeringStress3D rPrevStress;      // stress at the beginning of the time increment
     		EngineeringStrain3D rDeltaStrain;     // mechanical strain increment (strain increment without thermal component)
-    		double rDeltaTime, rBeta, rHP, rHVP, rViscosity;  // time increment, rBeta, rHP, rHVP, rViscosity
-    		double rViscosityExponent;			  // rViscosityExponent
+            double rDeltaTime, rBeta, rViscosity;  // time increment, rBeta, rHP, rHVP, rViscosity
+            //double rViscosityExponent;			  // rViscosityExponent
 
     		EngineeringStress3D rDeltaStress, rDeltaProjStress;		// stress increment, projection stress increment
     		double rVP, rVviscoP;					// state variable, its positive counterpart is cumulative plastic and viscoplastic
@@ -550,10 +453,10 @@ private:
 
     		rDeltaTime = rParameter[12]; 			// rParameter(12) time increment itself
     		rBeta = rParameter[13];					// rParameter(13) rBeta
-    		rHP = rParameter[14];					// rParameter(14) rHP
-    		rHVP = rParameter[15];					// rParameter(15) rHVP
+            //rHP = rParameter[14];					// rParameter(14) rHP
+            //rHVP = rParameter[15];					// rParameter(15) rHVP
     		rViscosity = rParameter[16];			// rParameter(16) rViscosity
-    		rViscosityExponent = rParameter[17];	// rParameter(17) rViscosityExponent
+            //rViscosityExponent = rParameter[17];	// rParameter(17) rViscosityExponent
 
     		rVP = rUnknown[12];						// rUnknown(12) is the state variable associated with cumulative plastic flow rate
     		rVviscoP = rUnknown[13];				// rUnknown(13) is the state variable associated with cumulative viscoplastic flow rate

@@ -2459,7 +2459,7 @@ void NuTo::Structure::BuildNonlocalData(int rConstitutiveId)
 //! @param rConstitutiveId constitutive model for which the data is build
 void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
 {
-    double R(rConstitutive->GetNonlocalRadius());
+    double R(rConstitutive->GetParameterDouble(Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS));
     double R2(R * R);
     std::vector<ElementBase*> indexElement;
     std::vector<int> indexIp;

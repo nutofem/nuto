@@ -102,9 +102,9 @@ try
 
 	//constitutive
     int myMatLattice = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
-    myStructure.ConstitutiveLawSetYoungsModulus(myMatLattice,30000);
-    myStructure.ConstitutiveLawSetPoissonsRatio(myMatLattice,0.0);
-    myStructure.ConstitutiveLawSetDensity(myMatLattice,density);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLattice,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,30000);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLattice,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,0.0);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLattice,NuTo::Constitutive::eConstitutiveParameter::DENSITY,density);
     myStructure.ElementTotalSetConstitutiveLaw(myMatLattice);
 
     //wavespeed

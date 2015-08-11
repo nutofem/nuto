@@ -292,7 +292,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(ElementBas
         std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
     // get section information determining which input on the constitutive level should be used
-    const SectionBase* section(rElement->GetSection());
+    //const SectionBase* section(rElement->GetSection());
 
     // check if parameters are valid
     if (this->mParametersValid == false)
@@ -686,7 +686,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(ElementBas
         std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
     // get section information determining which input on the constitutive level should be used
-    const SectionBase* section(rElement->GetSection());
+    //const SectionBase* section(rElement->GetSection());
 
     // check if parameters are valid
     if (this->mParametersValid == false)
@@ -949,174 +949,166 @@ void NuTo::GradientDamageEngineeringStress::CalculateCoefficients2DPlaneStress(d
     C33 = factor * 0.5 * (1.0 - this->mNu);
 }
 // parameters /////////////////////////////////////////////////////////////
-//! @brief ... get density
-//! @return ... density
-double NuTo::GradientDamageEngineeringStress::GetDensity() const
+
+//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @return ... value of the requested variable
+double NuTo::GradientDamageEngineeringStress::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    return this->mRho;
+    switch(rIdentifier)
+    {
+    case Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH:
+        return mCompressiveStrength;
+    case Constitutive::eConstitutiveParameter::DENSITY:
+        return this->mRho;
+    case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
+        return mFractureEnergy;
+    case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS:
+        return this->mNonlocalRadius;
+    case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER:
+        return mNonlocalRadiusParameter;
+    case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
+        return this->mNu;
+    case Constitutive::eConstitutiveParameter::TENSILE_STRENGTH:
+        return mTensileStrength;
+    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
+        return this->mThermalExpansionCoefficient;
+    case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
+        return this->mE;
+    default:
+    {
+        throw MechanicsException("[NuTo::GradientDamageEngineeringStress::GetParameterDouble] Constitutive law does not have the requested variable");
+    }
+    }
 }
 
-//! @brief ... set density
-//! @param rRho ... density
-void NuTo::GradientDamageEngineeringStress::SetDensity(double rRho)
+//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::GradientDamageEngineeringStress::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
-    this->CheckDensity(rRho);
-    this->mRho = rRho;
-    this->SetParametersValid();
+    switch(rIdentifier)
+    {
+    case Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH:
+    {
+        this->CheckCompressiveStrength(rValue);
+        this->mCompressiveStrength = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::DENSITY:
+    {
+        this->CheckDensity(rValue);
+        this->mRho = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
+    {
+        this->CheckFractureEnergy(rValue);
+        this->mFractureEnergy = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS:
+    {
+        this->CheckNonlocalRadius(rValue);
+        this->mNonlocalRadius = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER:
+    {
+        this->CheckNonlocalRadiusParameter(rValue);
+        mNonlocalRadiusParameter = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
+    {
+        this->CheckPoissonsRatio(rValue);
+        this->mNu = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::TENSILE_STRENGTH:
+    {
+        this->CheckTensileStrength(rValue);
+        this->mTensileStrength = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
+    {
+        this->CheckThermalExpansionCoefficient(rValue);
+        this->mThermalExpansionCoefficient = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
+    {
+        this->CheckYoungsModulus(rValue);
+        this->mE = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    default:
+    {
+        throw MechanicsException("[NuTo::GradientDamageEngineeringStress::SetParameterDouble] Constitutive law does not have the requested variable");
+    }
+    }
 }
 
-//! @brief ... get Young's modulus
-//! @return ... Young's modulus
-double NuTo::GradientDamageEngineeringStress::GetYoungsModulus() const
+
+//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @return ... value of the requested variable
+NuTo::FullVector<double, Eigen::Dynamic> NuTo::GradientDamageEngineeringStress::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    return mE;
+    switch(rIdentifier)
+    {
+    case Constitutive::eConstitutiveParameter::DAMAGE_LAW:
+    {
+        NuTo::FullVector<double, Eigen::Dynamic> damageLaw(mDamageLawParameters.rows() + 1);
+
+        damageLaw[0] = static_cast<double>(mDamageLawType);
+        damageLaw.SetBlock(1, 0, mDamageLawParameters);
+        return damageLaw;
+        break;
+    }
+    default:
+    {
+        throw MechanicsException("[NuTo::GradientDamageEngineeringStress::GetParameterFullVectorDouble] Constitutive law does not have the requested variable");
+    }
+    }
 }
 
-//! @brief ... set Young's modulus
-//! @param rE ... Young's modulus
-void NuTo::GradientDamageEngineeringStress::SetYoungsModulus(double rE)
+
+//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::GradientDamageEngineeringStress::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
 {
-    this->CheckYoungsModulus(rE);
-    this->mE = rE;
-    this->SetParametersValid();
+    switch(rIdentifier)
+    {
+    case Constitutive::eConstitutiveParameter::DAMAGE_LAW:
+    {
+        this->CheckDamageLaw(rValue);
+        mDamageLawType = static_cast<int>(rValue[0]);
+        int numDamageLawParameters = rValue.rows() - 1;
+        if (numDamageLawParameters > 0)
+            mDamageLawParameters = rValue.GetBlock(1, 0, numDamageLawParameters, 1);
+
+        this->SetParametersValid();
+        break;
+    }
+    default:
+    {
+        throw MechanicsException("[NuTo::GradientDamageEngineeringStress::SetParameterFullVectorDouble] Constitutive law does not have the requested variable");
+    }
+    }
 }
 
-//! @brief ... get Poisson's ratio
-//! @return ... Poisson's ratio
-double NuTo::GradientDamageEngineeringStress::GetPoissonsRatio() const
-{
-    return mNu;
-}
-
-//! @brief ... set Poisson's ratio
-//! @param rNu ... Poisson's ratio
-void NuTo::GradientDamageEngineeringStress::SetPoissonsRatio(double rNu)
-{
-    this->CheckPoissonsRatio(rNu);
-    this->mNu = rNu;
-    this->SetParametersValid();
-}
-
-//! @brief ... get nonlocal radius
-//! @return ... nonlocal radius
-double NuTo::GradientDamageEngineeringStress::GetNonlocalRadius() const
-{
-    return mNonlocalRadius;
-}
-
-//! @brief ... set nonlocal radius
-//! @param rRadius...  nonlocal radius
-void NuTo::GradientDamageEngineeringStress::SetNonlocalRadius(double rNonlocalRadius)
-{
-    this->CheckNonlocalRadius(rNonlocalRadius);
-    this->mNonlocalRadius = rNonlocalRadius;
-    this->SetParametersValid();
-}
-
-//! @brief ... get nonlocal radius parameter
-//! @return ... nonlocal radius parameter
-double NuTo::GradientDamageEngineeringStress::GetNonlocalRadiusParameter() const
-{
-    return mNonlocalRadiusParameter;
-}
-
-//! @brief ... set nonlocal radius parameter
-//! @param rRadius ...  nonlocal radius parameter
-void NuTo::GradientDamageEngineeringStress::SetNonlocalRadiusParameter(double rRadiusParameter)
-{
-    this->CheckNonlocalRadiusParameter(rRadiusParameter);
-    mNonlocalRadiusParameter = rRadiusParameter;
-    this->SetParametersValid();
-}
-
-//! @brief ... get thermal expansion coefficient
-//! @return ... thermal expansion coefficient
-double NuTo::GradientDamageEngineeringStress::GetThermalExpansionCoefficient() const
-{
-    return mThermalExpansionCoefficient;
-}
-
-//! @brief ... set thermal expansion coefficient
-//! @param rNu ... thermal expansion coefficient
-void NuTo::GradientDamageEngineeringStress::SetThermalExpansionCoefficient(double rAlpha)
-{
-    this->CheckThermalExpansionCoefficient(rAlpha);
-    this->mThermalExpansionCoefficient = rAlpha;
-    this->SetParametersValid();
-}
-
-//! @brief ... get fracture energy
-//! @return ... fracture energy
-double NuTo::GradientDamageEngineeringStress::GetFractureEnergy() const
-{
-    return mFractureEnergy;
-}
-
-//! @brief ... set fracture energy
-//! @param rFractureEnergy... fracture energy
-void NuTo::GradientDamageEngineeringStress::SetFractureEnergy(double rFractureEnergy)
-{
-    this->CheckFractureEnergy(rFractureEnergy);
-    this->mFractureEnergy = rFractureEnergy;
-    this->SetParametersValid();
-}
-
-//! @brief ... get tensile strength
-//! @return ... tensile strength
-double NuTo::GradientDamageEngineeringStress::GetTensileStrength() const
-{
-    return mTensileStrength;
-}
-
-//! @brief ... set tensile strength
-//! @param rTensileStrength...  tensile strength
-void NuTo::GradientDamageEngineeringStress::SetTensileStrength(double rTensileStrength)
-{
-    this->CheckTensileStrength(rTensileStrength);
-    this->mTensileStrength = rTensileStrength;
-    this->SetParametersValid();
-}
-
-//! @brief ... get compressive strength
-//! @return ... compressive strength
-double NuTo::GradientDamageEngineeringStress::GetCompressiveStrength() const
-{
-    return mCompressiveStrength;
-}
-
-//! @brief ... set compressive strength
-//! @param rCompressiveStrength...  compressive strength
-void NuTo::GradientDamageEngineeringStress::SetCompressiveStrength(double rCompressiveStrength)
-{
-    this->CheckCompressiveStrength(rCompressiveStrength);
-    this->mCompressiveStrength = rCompressiveStrength;
-    this->SetParametersValid();
-}
-
-//! @brief ... get damage law
-//! @return ... damage law
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::GradientDamageEngineeringStress::GetDamageLaw() const
-{
-    NuTo::FullVector<double, Eigen::Dynamic> damageLaw(mDamageLawParameters.rows() + 1);
-
-    damageLaw[0] = static_cast<double>(mDamageLawType);
-    damageLaw.SetBlock(1, 0, mDamageLawParameters);
-    return damageLaw;
-}
-
-//! @brief ... set damage law parameters
-//! @param rDamageLaw ... damage law parameters
-void NuTo::GradientDamageEngineeringStress::SetDamageLaw(const NuTo::FullVector<double, Eigen::Dynamic> rDamageLaw)
-{
-    this->CheckDamageLaw(rDamageLaw);
-    mDamageLawType = static_cast<int>(rDamageLaw[0]);
-    int numDamageLawParameters = rDamageLaw.rows() - 1;
-    if (numDamageLawParameters > 0)
-        mDamageLawParameters = rDamageLaw.GetBlock(1, 0, numDamageLawParameters, 1);
-
-    this->SetParametersValid();
-
-}
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -1301,7 +1293,7 @@ void NuTo::GradientDamageEngineeringStress::CheckParameters() const
     this->CheckTensileStrength(mTensileStrength);
     this->CheckCompressiveStrength(mCompressiveStrength);
     this->CheckFractureEnergy(mFractureEnergy);
-    this->CheckDamageLaw(GetDamageLaw());
+    this->CheckDamageLaw(GetParameterFullVectorDouble(Constitutive::eConstitutiveParameter::DAMAGE_LAW));
     this->CheckThermalExpansionCoefficient(mThermalExpansionCoefficient);
 }
 

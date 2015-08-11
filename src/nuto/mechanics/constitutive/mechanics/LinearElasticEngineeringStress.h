@@ -126,37 +126,17 @@ public:
     void CalculateCoefficients3D(double& C11, double& C12, double& C44) const;
 
     // parameters /////////////////////////////////////////////////////////////
-    //! @brief ... get density
-    //! @return ... density
-    virtual double GetDensity() const override;
 
-    //! @brief ... set density
-    //! @param rRho ... density
-    virtual void SetDensity(double rRho) override;
+    //! @brief ... gets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @return ... value of the requested variable
+    virtual double GetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier) const override;
 
-    //! @brief ... get Young's modulus
-    //! @return ... Young's modulus
-    double GetYoungsModulus() const override;
+    //! @brief ... sets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rValue ... new value for requested variable
+    virtual void SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue) override;
 
-    //! @brief ... set Young's modulus
-    //! @param rE ... Young's modulus
-    void SetYoungsModulus(double rE) override;
-
-    //! @brief ... get Poisson's ratio
-    //! @return ... Poisson's ratio
-    double GetPoissonsRatio() const override;
-
-    //! @brief ... set Poisson's ratio
-    //! @param rNu ... Poisson's ratio
-    void SetPoissonsRatio(double rNu) override;
-
-    //! @brief ... get thermal expansion coefficient
-    //! @return ... thermal expansion coefficient
-    double GetThermalExpansionCoefficient() const override;
-
-    //! @brief ... set thermal expansion coefficient
-    //! @param rAlpha ... thermal expansion coefficient
-    void SetThermalExpansionCoefficient(double rNu) override;
     ///////////////////////////////////////////////////////////////////////////
 
     //! @brief ... get type of constitutive relationship

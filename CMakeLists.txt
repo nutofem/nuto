@@ -20,6 +20,7 @@ OPTION(ENABLE_PARDISO "enables support for PARDISO solver" FALSE)
 OPTION(ENABLE_DEBUG "enables debug information" FALSE)
 OPTION(ENABLE_DEBUG_SERIALIZATION "prints additional debug information during serialization" FALSE)
 OPTION(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" TRUE)
+OPTION(ENABLE_OPENACC "enables OpenACC" FALSE)
 OPTION(ENABLE_OPENMP "enables OpenMP" TRUE)
 OPTION(ENABLE_SERIALIZATION "enables serialization" FALSE)
 OPTION(ENABLE_NUMPY "enables numpy" TRUE)
@@ -114,6 +115,13 @@ ENDIF(ENABLE_DEBUG_SERIALIZATION)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts ${CMAKE_MODULE_PATH})
 INCLUDE(NuToMacros)
 
+# find openacc
+IF(ENABLE_OPENACC)
+  MESSAGE(STATUS "OpenACC support currently not implemented, wait for gcc 5.X")
+  ADD_DEFINITIONS("-D_OPENACC")
+ENDIF(ENABLE_OPENACC)
+
+
 # find openmp
 IF(ENABLE_OPENMP)
   MESSAGE(STATUS "Checking for OpenMP support ...")
@@ -171,7 +179,6 @@ FIND_PACKAGE(Numpy REQUIRED)
 ELSE(ENABLE_NUMPY)
     message (STATUS "Numpy not activated ")
 ENDIF(ENABLE_NUMPY)
-
 
 # Python required for interface files c++ and python
 MESSAGE(STATUS "Checking for Python...")

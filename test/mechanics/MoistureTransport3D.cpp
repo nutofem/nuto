@@ -401,29 +401,29 @@ int main()
         int myConstitutiveLaw = myStructure.ConstitutiveLawCreate("MoistureTransport");
 
         // set variables
-        myStructure.ConstitutiveLawSetVariableBool    (myConstitutiveLaw,"ENABLE_MODIFIED_TANGENTIAL_STIFFNESS",EnableModiefiedTangentialStiffness);      // sets whether modified tangential stiffness should be used or not
-        myStructure.ConstitutiveLawSetVariableBool    (myConstitutiveLaw,"enable_sorption_hysteresis",EnableSorptionHysteresis);                          // sets whether sorption hysteresis should be used or not
+        myStructure.ConstitutiveLawSetParameterBool    (myConstitutiveLaw,"ENABLE_MODIFIED_TANGENTIAL_STIFFNESS",EnableModiefiedTangentialStiffness);      // sets whether modified tangential stiffness should be used or not
+        myStructure.ConstitutiveLawSetParameterBool    (myConstitutiveLaw,"enable_sorption_hysteresis",EnableSorptionHysteresis);                          // sets whether sorption hysteresis should be used or not
 
 
-        myStructure.ConstitutiveLawSetVariableDouble  (myConstitutiveLaw,"boundary_TRANSPORT_CONSTANT_GAS_PHASE",BC_Surface_Moisture_Transfer_RH);        // set water phase density
-        myStructure.ConstitutiveLawSetVariableDouble  (myConstitutiveLaw,"BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE",BC_Surface_Moisture_Transfer_WVF);     // set water phase density
-        myStructure.ConstitutiveLawSetVariableDouble  (myConstitutiveLaw,"DENSITY_WATER_PHASE",WaterPhaseDensity);                                        // set water phase density
-        myStructure.ConstitutiveLawSetVariableDouble  (myConstitutiveLaw,"DIFFUSION_CONSTANT_GAS_PHASE",VaporPhaseDiffusionCoefficient);                  // set vapor phase diffusion coefficient
-        myStructure.ConstitutiveLawSetVariableDouble  (myConstitutiveLaw,"DIFFUSION_CONSTANT_WATER_PHASE",WaterPhaseDiffusionCoefficient);                // set water phase diffusion coefficient
-        myStructure.ConstitutiveLawSetVariableDouble  (myConstitutiveLaw,"DIFFUSION_EXPONENT_GAS_PHASE",VaporPhaseDiffusionExponent);                     // set vapor phase diffusion exponent
-        myStructure.ConstitutiveLawSetVariableDouble  (myConstitutiveLaw,"DIFFUSION_EXPONENT_WATER_PHASE",WaterPhaseDiffusionExponent);                   // set water phase diffusion exponent
-        myStructure.ConstitutiveLawSetVariableDouble  (myConstitutiveLaw,"GRADIENT_CORRECTION_ADSORPTION_DESORPTION",Kd);                                 // set gradient correction when changing from adsorption to desorption
-        myStructure.ConstitutiveLawSetVariableDouble  (myConstitutiveLaw,"GRADIENT_CORRECTION_DESORPTION_ADSORPTION",Ka);                                 // set gradient correction when changing from desorption to adsorption
-        myStructure.ConstitutiveLawSetVariableDouble  (myConstitutiveLaw,"MASS_EXCHANGE_RATE",MassExchangeRate);                                          // set mass exchange rate
-        myStructure.ConstitutiveLawSetVariableDouble  (myConstitutiveLaw,"POROSITY",Porosity);                                                            // set porosity
-        myStructure.ConstitutiveLawSetVariableDouble  (myConstitutiveLaw,"SATURATION_DENSITY_GAS_PHASE",VaporPhaseSaturationDensity);                     // set vapor phase saturation density
+        myStructure.ConstitutiveLawSetParameterDouble  (myConstitutiveLaw,"boundary_TRANSPORT_CONSTANT_GAS_PHASE",BC_Surface_Moisture_Transfer_RH);        // set water phase density
+        myStructure.ConstitutiveLawSetParameterDouble  (myConstitutiveLaw,"BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE",BC_Surface_Moisture_Transfer_WVF);     // set water phase density
+        myStructure.ConstitutiveLawSetParameterDouble  (myConstitutiveLaw,"DENSITY_WATER_PHASE",WaterPhaseDensity);                                        // set water phase density
+        myStructure.ConstitutiveLawSetParameterDouble  (myConstitutiveLaw,"DIFFUSION_CONSTANT_GAS_PHASE",VaporPhaseDiffusionCoefficient);                  // set vapor phase diffusion coefficient
+        myStructure.ConstitutiveLawSetParameterDouble  (myConstitutiveLaw,"DIFFUSION_CONSTANT_WATER_PHASE",WaterPhaseDiffusionCoefficient);                // set water phase diffusion coefficient
+        myStructure.ConstitutiveLawSetParameterDouble  (myConstitutiveLaw,"DIFFUSION_EXPONENT_GAS_PHASE",VaporPhaseDiffusionExponent);                     // set vapor phase diffusion exponent
+        myStructure.ConstitutiveLawSetParameterDouble  (myConstitutiveLaw,"DIFFUSION_EXPONENT_WATER_PHASE",WaterPhaseDiffusionExponent);                   // set water phase diffusion exponent
+        myStructure.ConstitutiveLawSetParameterDouble  (myConstitutiveLaw,"GRADIENT_CORRECTION_ADSORPTION_DESORPTION",Kd);                                 // set gradient correction when changing from adsorption to desorption
+        myStructure.ConstitutiveLawSetParameterDouble  (myConstitutiveLaw,"GRADIENT_CORRECTION_DESORPTION_ADSORPTION",Ka);                                 // set gradient correction when changing from desorption to adsorption
+        myStructure.ConstitutiveLawSetParameterDouble  (myConstitutiveLaw,"MASS_EXCHANGE_RATE",MassExchangeRate);                                          // set mass exchange rate
+        myStructure.ConstitutiveLawSetParameterDouble  (myConstitutiveLaw,"POROSITY",Porosity);                                                            // set porosity
+        myStructure.ConstitutiveLawSetParameterDouble  (myConstitutiveLaw,"SATURATION_DENSITY_GAS_PHASE",VaporPhaseSaturationDensity);                     // set vapor phase saturation density
 
-        myStructure.ConstitutiveLawSetVariableFullVectorDouble    (myConstitutiveLaw,"polynomial_COEFFICIENTS_ADSORPTION",AdsorptionFit.GetPolynomialCoefficients());               // set adsorption coefficients
-        myStructure.ConstitutiveLawSetVariableFullVectorDouble    (myConstitutiveLaw,"POLYNOMIAL_COEFFICIENTS_DESORPTION",DesorptionFit.GetPolynomialCoefficients());               // set desorption coefficients
+        myStructure.ConstitutiveLawSetParameterFullVectorDouble    (myConstitutiveLaw,"polynomial_COEFFICIENTS_ADSORPTION",AdsorptionFit.GetPolynomialCoefficients());               // set adsorption coefficients
+        myStructure.ConstitutiveLawSetParameterFullVectorDouble    (myConstitutiveLaw,"POLYNOMIAL_COEFFICIENTS_DESORPTION",DesorptionFit.GetPolynomialCoefficients());               // set desorption coefficients
 
 
         // Calculate equilibrium water volume fraction
-        InitialWaterVolumeFraction   = myStructure.ConstitutiveLawGetEquilibriumWaterVolumeFraction(myConstitutiveLaw,InitialRelativeHumidity,myStructure.ConstitutiveLawGetVariableFullVectorDouble(myConstitutiveLaw,NuTo::Constitutive::eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_DESORPTION));
+        InitialWaterVolumeFraction   = myStructure.ConstitutiveLawGetEquilibriumWaterVolumeFraction(myConstitutiveLaw,InitialRelativeHumidity,myStructure.ConstitutiveLawGetParameterFullVectorDouble(myConstitutiveLaw,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
 
 
 
@@ -541,8 +541,8 @@ int main()
             for (int theIP=0; theIP< myStructure.ElementGetElementPtr(i)->GetNumIntegrationPoints(); theIP++)
             {
                 NuTo::ConstitutiveStaticDataMoistureTransport *StaticData = myStructure.ElementGetElementPtr(i)->GetStaticData(theIP)->AsMoistureTransport();
-                StaticData->SetLastSorptionCoeff(myStructure.ConstitutiveLawGetVariableFullVectorDouble(myConstitutiveLaw,NuTo::Constitutive::eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_DESORPTION));
-                StaticData->SetActualSorptionCoeff(myStructure.ConstitutiveLawGetVariableFullVectorDouble(myConstitutiveLaw,NuTo::Constitutive::eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_DESORPTION));
+                StaticData->SetLastSorptionCoeff(myStructure.ConstitutiveLawGetParameterFullVectorDouble(myConstitutiveLaw,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
+                StaticData->SetActualSorptionCoeff(myStructure.ConstitutiveLawGetParameterFullVectorDouble(myConstitutiveLaw,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
                 StaticData->SetLastRelHumValue(InitialRelativeHumidity);
                 StaticData ->SetSorptionHistoryDesorption(SorptionHistoryDesorption);
             }

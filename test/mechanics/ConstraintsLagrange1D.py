@@ -57,8 +57,8 @@ myStructure.ElementTotalConvertToInterpolationType();
 
 #create constitutive law
 myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
-myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,1);
-myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0);
+myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"YoungsModulus",1);
+myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"PoissonsRatio",0);
 
 #create section
 mySection = myStructure.SectionCreate("TRUSS");

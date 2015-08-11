@@ -15,7 +15,7 @@ int main()
 	double YoungsModulus = 10000.;
 	double YoungsModulusDiff = 20000.; //difference from node 0 to lats node, +/-
 	double Area = 10. * 10.;
-	double Length = 6000.;
+    //double Length = 6000.;
 	int NumElements = 4;
 	double Force = 1.;
 	bool EnableDisplacementControl = true;
@@ -32,8 +32,8 @@ int main()
 	// create material law
 	int Material1 = myStructure.ConstitutiveLawCreate("LINEARELASTICENGINEERINGSTRESS");
 	int Material2 = myStructure.ConstitutiveLawCreate("LINEARELASTICENGINEERINGSTRESS");
-	myStructure.ConstitutiveLawSetYoungsModulus(Material1, YoungsModulus);
-	myStructure.ConstitutiveLawSetYoungsModulus(Material2, YoungsModulus+YoungsModulusDiff);
+    myStructure.ConstitutiveLawSetParameterDouble(Material1,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
+    myStructure.ConstitutiveLawSetParameterDouble(Material2,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus+YoungsModulusDiff);
 //    myStructure.ConstitutiveLawSetPoissonsRatio(Material1,0.2);
 //    myStructure.ConstitutiveLawSetPoissonsRatio(Material2,0.2);
 
@@ -99,12 +99,12 @@ int main()
 		if(element<2)
 		{
 			myStructure.ElementSetConstitutiveLaw(element,Material1);
-			output<<myStructure.ConstitutiveLawGetYoungsModulus(Material1)<<"\n";
+            output<<myStructure.ConstitutiveLawGetParameterDouble(Material1,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS)<<"\n";
 		}
 		else
 		{
 			myStructure.ElementSetConstitutiveLaw(element,Material2);
-			output<<myStructure.ConstitutiveLawGetYoungsModulus(Material2)<<"\n";
+            output<<myStructure.ConstitutiveLawGetParameterDouble(Material2,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS)<<"\n";
 		}
 
 	}

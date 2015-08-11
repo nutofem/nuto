@@ -35,8 +35,9 @@ int NuTo::ConjugateGradientGrid::Optimize()
 
 
 	optimization_return_attributes returnValue;
+#ifdef _OPENACC
 #pragma acc data  copyin()
-
+#endif
 	// u  = parameters
 	// r  = gradient
 	// pr = preconditioned gradient = p r
@@ -51,11 +52,10 @@ int NuTo::ConjugateGradientGrid::Optimize()
 //	std::cout<<"pr[numpar]="<<pr[mNumParameters-1]<<"\n";
 	std::vector<double> h(mNumParameters+3);
 	std::vector<double> d(mNumParameters+3);
-
+#ifdef _OPENACC
 #pragma acc data copy(v),copyin(r,pr,h,d)
+#endif
 
-	int precision = 6;
-	int width = 10;
 	bool converged(false);
 	double rAccuracyGradientScaled = mAccuracyGradient;
 	double rAccuracyGradientSquare =rAccuracyGradientScaled*rAccuracyGradientScaled;

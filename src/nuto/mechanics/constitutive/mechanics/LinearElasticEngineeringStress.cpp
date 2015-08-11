@@ -629,72 +629,77 @@ void NuTo::LinearElasticEngineeringStress::CalculateCoefficients3D(double& C11, 
     C44 = this->mE / (2. * (1.0 + this->mNu));
 }
 
+
+
 ///////////////////////////////////////////////////////////////////////////
 
 // parameters /////////////////////////////////////////////////////////////
-//! @brief ... get density
-//! @return ... density
-double NuTo::LinearElasticEngineeringStress::GetDensity() const
+
+
+//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @return ... value of the requested variable
+double NuTo::LinearElasticEngineeringStress::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    return this->mRho;
+    switch(rIdentifier)
+    {
+    case Constitutive::eConstitutiveParameter::DENSITY:
+        return this->mRho;
+    case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
+        return this->mNu;
+    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
+        return this->mThermalExpansionCoefficient;
+    case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
+        return this->mE;
+    default:
+    {
+        throw MechanicsException("[NuTo::LinearElasticEngineeringStress::GetParameterDouble] Constitutive law does not have the requested variable");
+    }
+    }
 }
 
-//! @brief ... set density
-//! @param rRho ... density
-void NuTo::LinearElasticEngineeringStress::SetDensity(double rRho)
+//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::LinearElasticEngineeringStress::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
-    this->CheckDensity(rRho);
-    this->mRho = rRho;
-    this->SetParametersValid();
+    switch(rIdentifier)
+    {
+    case Constitutive::eConstitutiveParameter::DENSITY:
+    {
+        this->CheckDensity(rValue);
+        this->mRho = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
+    {
+        this->CheckPoissonsRatio(rValue);
+        this->mNu = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
+    {
+        this->CheckThermalExpansionCoefficient(rValue);
+        this->mThermalExpansionCoefficient = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
+    {
+        this->CheckYoungsModulus(rValue);
+        this->mE = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    default:
+    {
+        throw MechanicsException("[NuTo::LinearElasticEngineeringStress::SetParameterDouble] Constitutive law does not have the requested variable");
+    }
+    }
 }
 
-//! @brief ... get Young's modulus
-//! @return ... Young's modulus
-double NuTo::LinearElasticEngineeringStress::GetYoungsModulus() const
-{
-    return mE;
-}
-
-//! @brief ... set Young's modulus
-//! @param rE ... Young's modulus
-void NuTo::LinearElasticEngineeringStress::SetYoungsModulus(double rE)
-{
-    this->CheckYoungsModulus(rE);
-    this->mE = rE;
-    this->SetParametersValid();
-}
-
-//! @brief ... get Poisson's ratio
-//! @return ... Poisson's ratio
-double NuTo::LinearElasticEngineeringStress::GetPoissonsRatio() const
-{
-    return mNu;
-}
-
-//! @brief ... set Poisson's ratio
-//! @param rNu ... Poisson's ratio
-void NuTo::LinearElasticEngineeringStress::SetPoissonsRatio(double rNu)
-{
-    this->CheckPoissonsRatio(rNu);
-    this->mNu = rNu;
-    this->SetParametersValid();
-}
-
-//! @brief ... get thermal expansion coefficient
-//! @return ... thermal expansion coefficient
-double NuTo::LinearElasticEngineeringStress::GetThermalExpansionCoefficient() const
-{
-    return mThermalExpansionCoefficient;
-}
-
-//! @brief ... set thermal expansion coefficient
-//! @param rNu ... thermal expansion coefficient
-void NuTo::LinearElasticEngineeringStress::SetThermalExpansionCoefficient(double rAlpha)
-{
-    this->CheckThermalExpansionCoefficient(rAlpha);
-    this->mThermalExpansionCoefficient = rAlpha;
-    this->SetParametersValid();
-}
 ///////////////////////////////////////////////////////////////////////////
 
 //! @brief ... get type of constitutive relationship

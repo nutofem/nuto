@@ -162,17 +162,17 @@ try
     {
 		myMat = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticityEngineeringStress");
 	    double fct(3e6);
-		myStructure.ConstitutiveLawSetTensileStrength(myMat,fct);
-	    myStructure.ConstitutiveLawSetCompressiveStrength(myMat,10*fct);
-		myStructure.ConstitutiveLawSetBiaxialCompressiveStrength(myMat,fct*12.5);
-	    myStructure.ConstitutiveLawSetFractureEnergy(myMat,50);
+        myStructure.ConstitutiveLawSetParameterDouble(myMat,NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH,fct);
+        myStructure.ConstitutiveLawSetParameterDouble(myMat,NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH,10*fct);
+        myStructure.ConstitutiveLawSetParameterDouble(myMat,NuTo::Constitutive::eConstitutiveParameter::BIAXIAL_COMPRESSIVE_STRENGTH,fct*12.5);
+        myStructure.ConstitutiveLawSetParameterDouble(myMat,NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY,50);
 		double nonlocalRadius(meshSize*1.2);
-		myStructure.ConstitutiveLawSetNonlocalRadius(myMat,nonlocalRadius);
+        myStructure.ConstitutiveLawSetParameterDouble(myMat,NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS,nonlocalRadius);
     }
 
-	myStructure.ConstitutiveLawSetYoungsModulus(myMat,30e9);
-	myStructure.ConstitutiveLawSetPoissonsRatio(myMat,0.2);
-	myStructure.ConstitutiveLawSetDensity(myMat,mDensityConcrete);
+    myStructure.ConstitutiveLawSetParameterDouble(myMat, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 30e9);
+    myStructure.ConstitutiveLawSetParameterDouble(myMat, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.2);
+    myStructure.ConstitutiveLawSetParameterDouble(myMat, NuTo::Constitutive::eConstitutiveParameter::DENSITY, mDensityConcrete);;
 
     myStructure.ElementTotalSetConstitutiveLaw(myMat);
 
@@ -181,9 +181,9 @@ try
 	    myStructure.BuildNonlocalData(myMat);
 
     //wavespeed
-    double nu(myStructure.ConstitutiveLawGetPoissonsRatio(myMat));
-    double E(myStructure.ConstitutiveLawGetYoungsModulus(myMat));
-    double rho(myStructure.ConstitutiveLawGetDensity(myMat));
+    double nu(myStructure.ConstitutiveLawGetParameterDouble(myMat,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO));
+    double E(myStructure.ConstitutiveLawGetParameterDouble(myMat,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS));
+    double rho(myStructure.ConstitutiveLawGetParameterDouble(myMat,NuTo::Constitutive::eConstitutiveParameter::DENSITY));
 
     double cs(sqrt(E/(2.*(1.+nu))/rho));
     //double kappaPlaneStrain(3.-4.*nu); //plane strain

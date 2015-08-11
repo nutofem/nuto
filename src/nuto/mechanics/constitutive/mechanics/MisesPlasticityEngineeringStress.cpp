@@ -628,59 +628,92 @@ double NuTo::MisesPlasticityEngineeringStress::GetHardeningModulus(double rEpsil
 ///////////////////////////////////////////////////////////////////////////
 
 // parameters /////////////////////////////////////////////////////////////
-//! @brief ... get Young's modulus
-//! @return ... Young's modulus
-double NuTo::MisesPlasticityEngineeringStress::GetYoungsModulus() const
+
+//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @return ... value of the requested variable
+double NuTo::MisesPlasticityEngineeringStress::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-	return mE;
+    switch(rIdentifier)
+    {
+    case Constitutive::eConstitutiveParameter::INITIAL_HARDENING_MODULUS:
+        if(mH.size()==0)
+            throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::GetParameterDouble] Size of hardening modulus vector is zero.");
+        return mH[0].second;
+    case Constitutive::eConstitutiveParameter::INITIAL_YIELD_STRENGTH:
+        if(mSigma.size()==0)
+            throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::GetParameterDouble] Size of yield strength vector is zero.");
+        return mSigma[0].second;
+    case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
+        return this->mNu;
+    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
+        return this->mThermalExpansionCoefficient;
+    case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
+        return this->mE;
+    default:
+    {
+        throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::GetParameterDouble] Constitutive law does not have the requested variable");
+    }
+    }
+}
+
+//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::MisesPlasticityEngineeringStress::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
+{
+
+    switch(rIdentifier)
+    {
+    case Constitutive::eConstitutiveParameter::INITIAL_HARDENING_MODULUS:
+    {
+        if(mH.size()==0)
+            throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::SetParameterDouble] Size of hardening modulus vector is zero.");
+        if (rValue<0)
+            throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::SetParameterDouble] Initial hardening modulus must not be negative.");
+        mH[0].second = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::INITIAL_YIELD_STRENGTH:
+    {
+        if(mSigma.size()==0)
+            throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::SetParameterDouble] Size of yield strength vector is zero.");
+        if (rValue<=0)
+            throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::SetParameterDouble] Initial yield strength has to be positive.");
+        mSigma[0].second = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
+    {
+        this->CheckPoissonsRatio(rValue);
+        this->mNu = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
+    {
+        this->CheckThermalExpansionCoefficient(rValue);
+        this->mThermalExpansionCoefficient = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
+    {
+        this->CheckYoungsModulus(rValue);
+        this->mE = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    default:
+    {
+        throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::SetParameterDouble] Constitutive law does not have the requested variable");
+    }
+    }
 }
 
 
-//! @brief ... set Young's modulus
-//! @param rE ... Young's modulus
-void NuTo::MisesPlasticityEngineeringStress::SetYoungsModulus(double rE)
-{
-    this->CheckYoungsModulus(rE);
-    this->mE = rE;
-    this->SetParametersValid();
-}
-
-
-//! @brief ... get Poisson's ratio
-//! @return ... Poisson's ratio
-double NuTo::MisesPlasticityEngineeringStress::GetPoissonsRatio() const
-{
-    return mNu;
-}
-
-//! @brief ... set Poisson's ratio
-//! @param rNu ... Poisson's ratio
-void NuTo::MisesPlasticityEngineeringStress::SetPoissonsRatio(double rNu)
-{
-    this->CheckPoissonsRatio(rNu);
-    this->mNu = rNu;
-    this->SetParametersValid();
-}
-//! @brief ... get initial yield strength
-//! @return ... yield strength
-double NuTo::MisesPlasticityEngineeringStress::GetInitialYieldStrength() const
-{
-	if(mSigma.size()==0)
-		throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::GetInitialYieldStrength] Size of yield strength vector is zero.");
-	return mSigma[0].second;
-}
-
-//! @brief ... set initial yield strength
-//! @param rSigma ...  yield strength
-void NuTo::MisesPlasticityEngineeringStress::SetInitialYieldStrength(double rSigma)
-{
-	if(mSigma.size()==0)
-		throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::SetInitialYieldStrength] Size of yield strength vector is zero.");
-	if (rSigma<=0)
-		throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::SetInitialYieldStrength] Initial yield strength has to be positive.");
-	mSigma[0].second = rSigma;
-    this->SetParametersValid();
-}
 
 //! @brief ... get yield strength for multilinear response
 //! @return ... first column: equivalent plastic strain
@@ -722,26 +755,6 @@ void NuTo::MisesPlasticityEngineeringStress::AddYieldStrength(double rEpsilon, d
     this->SetParametersValid();
 }
 
-//! @brief ... get initial hardening modulus
-//! @return ... hardening modulus
-double NuTo::MisesPlasticityEngineeringStress::GetInitialHardeningModulus() const
-{
-	if(mH.size()==0)
-		throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::SetInitialHardeningModulus] Size of hardening modulus vector is zero.");
-	return mH[0].second;
-}
-
-//! @brief ... set initial hardening modulus
-//! @param rH ...  hardening modulus
-void NuTo::MisesPlasticityEngineeringStress::SetInitialHardeningModulus(double rH)
-{
-	if(mH.size()==0)
-		throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::SetInitialHardeningModulus] Size of hardening modulus vector is zero.");
-	if (rH<0)
-		throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::SetInitialHardeningModulus] Initial hardening modulus must not be negative.");
-	mH[0].second = rH;
-    this->SetParametersValid();
-}
 
 //! @brief ... get hardening modulus for multilinear response
 //! @return ... first column: equivalent plastic strain
@@ -775,22 +788,6 @@ void NuTo::MisesPlasticityEngineeringStress::AddHardeningModulus(double rEpsilon
 		}
 	}
 	mH.insert(it,1,std::pair<double,double>(rEpsilon,rH));
-    this->SetParametersValid();
-}
-
-//! @brief ... get thermal expansion coefficient
-//! @return ... thermal expansion coefficient
-double NuTo::MisesPlasticityEngineeringStress::GetThermalExpansionCoefficient() const
-{
-    return mThermalExpansionCoefficient;
-}
-
-//! @brief ... set thermal expansion coefficient
-//! @param rNu ... thermal expansion coefficient
-void NuTo::MisesPlasticityEngineeringStress::SetThermalExpansionCoefficient(double rAlpha)
-{
-    this->CheckThermalExpansionCoefficient(rAlpha);
-    this->mThermalExpansionCoefficient = rAlpha;
     this->SetParametersValid();
 }
 

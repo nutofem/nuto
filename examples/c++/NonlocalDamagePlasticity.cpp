@@ -100,17 +100,17 @@ int main()
 
 	//create constitutive law
 	int myMatDamage = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticityEngineeringStress");
-	myStructure.ConstitutiveLawSetYoungsModulus(myMatDamage,9);
-	myStructure.ConstitutiveLawSetPoissonsRatio(myMatDamage,0.25);
-	myStructure.ConstitutiveLawSetNonlocalRadius(myMatDamage,0.7);
-	myStructure.ConstitutiveLawSetTensileStrength(myMatDamage,2);
-	myStructure.ConstitutiveLawSetCompressiveStrength(myMatDamage,20);
-	myStructure.ConstitutiveLawSetBiaxialCompressiveStrength(myMatDamage,25);
-	myStructure.ConstitutiveLawSetFractureEnergy(myMatDamage,0.2);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,9);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,0.25);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS,0.7);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH,2);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH,20);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,NuTo::Constitutive::eConstitutiveParameter::BIAXIAL_COMPRESSIVE_STRENGTH,25);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY,0.2);
 
 	int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
-	myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,9);
-	myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.25);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,9);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,0.25);
 
 	//create section
 	int mySection = myStructure.SectionCreate("Plane_Strain");

@@ -752,7 +752,7 @@ NuTo::ConstitutiveStaticDataBase* NuTo::DamageViscoPlasticityHardeningEngineerin
 //! @return ... see brief explanation
 NuTo::ConstitutiveStaticDataBase* NuTo::DamageViscoPlasticityHardeningEngineeringStress::AllocateStaticDataEngineeringStress_EngineeringStrain3D(const ElementBase* rElement)const
 {
-	if (this->GetFatigueExtrapolation()) {
+    if (this->GetParameterBool(NuTo::Constitutive::eConstitutiveParameter::FATIGUE_EXTRAPOLATION)) {
 		return new ConstitutiveStaticDataDamageViscoPlasticity3DFatigue();
 	} else {
 		return new ConstitutiveStaticDataDamageViscoPlasticity3D();
@@ -790,12 +790,14 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
 	}
 
 	// get material parameters
-    double f_ct  = mTensileStrength;
+    //double f_ct  = mTensileStrength;
     double f_c1  = mCompressiveStrength;
     double f_c2  = mBiaxialCompressiveStrength;
     double Hoffset = mViscoplasticYieldSurfaceOffset;
     double viscosity = mViscosity;
-    double alpha = mDamageDistribution;
+#ifdef DEBUG
+    double alpha = mDamageDistribution; // only needed for assert. Produces warning in release mode
+#endif
 
     assert(f_c2 > f_c1);
     assert(f_c1 > 0.);
@@ -1025,245 +1027,200 @@ double NuTo::DamageViscoPlasticityHardeningEngineeringStress::CalculateDuctility
 ///////////////////////////////////////////////////////////////////////////
 
 // parameters /////////////////////////////////////////////////////////////
-//! @brief ... get density
-//! @return ... density
-double NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetDensity() const
+
+//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @return ... value of the requested variable
+double NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-	return this->mRho;
+    switch(rIdentifier)
+    {
+    case Constitutive::eConstitutiveParameter::BIAXIAL_COMPRESSIVE_STRENGTH:
+        return mBiaxialCompressiveStrength;
+    case Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH:
+        return mCompressiveStrength;
+    case Constitutive::eConstitutiveParameter::DAMAGE_DISTRIBUTION:
+        return this->mDamageDistribution;
+    case Constitutive::eConstitutiveParameter::DENSITY:
+        return this->mRho;
+    case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
+        return mFractureEnergy;
+    case Constitutive::eConstitutiveParameter::HARDENING_EXPONENT:
+        return mHardeningExponent;
+    case Constitutive::eConstitutiveParameter::HARDENING_VALUE:
+        return mHardening;
+    case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
+        return this->mNu;
+    case Constitutive::eConstitutiveParameter::TENSILE_STRENGTH:
+        return mTensileStrength;
+    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
+        return this->mThermalExpansionCoefficient;
+    case Constitutive::eConstitutiveParameter::VISCOPLASTIC_YIELD_SURFACE_OFFSET:
+        return mViscoplasticYieldSurfaceOffset;
+    case Constitutive::eConstitutiveParameter::VISCOSITY:
+        return mViscosity;
+    case Constitutive::eConstitutiveParameter::VISCOSITY_EXPONENT:
+        return mViscosityExponent;
+    case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
+        return this->mE;
+    default:
+    {
+        throw MechanicsException("[NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetParameterDouble] Constitutive law does not have the requested variable");
+    }
+    }
 }
 
-//! @brief ... set density
-//! @param rRho ... density
-void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetDensity(double rRho)
+//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
-    this->CheckDensity(rRho);
-    this->mRho = rRho;
-    this->SetParametersValid();
+    switch(rIdentifier)
+    {
+    case Constitutive::eConstitutiveParameter::BIAXIAL_COMPRESSIVE_STRENGTH:
+    {
+        this->CheckBiaxialCompressiveStrength(rValue);
+        this->mBiaxialCompressiveStrength = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH:
+    {
+        this->CheckCompressiveStrength(rValue);
+        this->mCompressiveStrength = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::DAMAGE_DISTRIBUTION:
+    {
+        this->CheckDamageDistribution(rValue);
+        this->mDamageDistribution = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::DENSITY:
+    {
+        this->CheckDensity(rValue);
+        this->mRho = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
+    {
+        this->CheckFractureEnergy(rValue);
+        this->mFractureEnergy = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::HARDENING_EXPONENT:
+    {
+
+        this->CheckHardeningExponent(rValue);
+        this->mHardeningExponent = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::HARDENING_VALUE:
+    {
+        this->mHardening = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
+    {
+        this->CheckPoissonsRatio(rValue);
+        this->mNu = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::TENSILE_STRENGTH:
+    {
+        this->CheckTensileStrength(rValue);
+        this->mTensileStrength = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
+    {
+        this->CheckThermalExpansionCoefficient(rValue);
+        this->mThermalExpansionCoefficient = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::VISCOPLASTIC_YIELD_SURFACE_OFFSET:
+    {
+        this->CheckViscoplasticYieldSurfaceOffset(rValue);
+        this->mViscoplasticYieldSurfaceOffset = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::VISCOSITY:
+    {
+        this->CheckViscosity(rValue);
+        this->mViscosity = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::VISCOSITY_EXPONENT:
+    {
+        this->CheckViscosityExponent(rValue);
+        this->mViscosityExponent = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
+    {
+        this->CheckYoungsModulus(rValue);
+        this->mE = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    default:
+    {
+        throw MechanicsException("[NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetParameterDouble] Constitutive law does not have the requested variable");
+    }
+    }
 }
 
-//! @brief ... get Young's modulus
-//! @return ... Young's modulus
-double NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetYoungsModulus() const
+//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @return ... value of the requested variable
+bool NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetParameterBool(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-	return mE;
-}
+    switch(rIdentifier)
+    {
+    case Constitutive::eConstitutiveParameter::FATIGUE_EXTRAPOLATION:
+        return mFatigueExtrapolation;
 
-
-//! @brief ... set Young's modulus
-//! @param rE ... Young's modulus
-void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetYoungsModulus(double rE)
-{
-    this->CheckYoungsModulus(rE);
-    this->mE = rE;
-    this->SetParametersValid();
-}
-
-
-//! @brief ... get Poisson's ratio
-//! @return ... Poisson's ratio
-double NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetPoissonsRatio() const
-{
-    return mNu;
-}
-
-
-//! @brief ... set Poisson's ratio
-//! @param rNu ... Poisson's ratio
-void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetPoissonsRatio(double rNu)
-{
-    this->CheckPoissonsRatio(rNu);
-    this->mNu = rNu;
-    this->SetParametersValid();
-}
-
-//! @brief ... get thermal expansion coefficient
-//! @return ... thermal expansion coefficient
-double NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetThermalExpansionCoefficient() const
-{
-    return mThermalExpansionCoefficient;
-}
-
-//! @brief ... set thermal expansion coefficient
-//! @param rNu ... thermal expansion coefficient
-void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetThermalExpansionCoefficient(double rAlpha)
-{
-    this->CheckThermalExpansionCoefficient(rAlpha);
-    this->mThermalExpansionCoefficient = rAlpha;
-    this->SetParametersValid();
-}
-
-//! @brief ... get tensile strength
-//! @return ... tensile strength
-double NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetTensileStrength() const
-{
-    return mTensileStrength;
-}
-
-//! @brief ... set tensile strength
-//! @param rTensileStrength...  tensile strength
-void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetTensileStrength(double rTensileStrength)
-{
-    this->CheckTensileStrength(rTensileStrength);
-    this->mTensileStrength = rTensileStrength;
-    this->SetParametersValid();
-}
-
-//! @brief ... get compressive strength
-//! @return ... compressive strength
-double NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetCompressiveStrength() const
-{
-    return mCompressiveStrength;
-}
-
-//! @brief ... set compressive strength
-//! @param rCompressiveStrength...  compressive strength
-void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetCompressiveStrength(double rCompressiveStrength)
-{
-    this->CheckCompressiveStrength(rCompressiveStrength);
-    this->mCompressiveStrength = rCompressiveStrength;
-    this->SetParametersValid();
-}
-
-//! @brief ... get biaxial compressive strength
-//! @return ... biaxial compressive strength
-double NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetBiaxialCompressiveStrength() const
-{
-    return mBiaxialCompressiveStrength;
-}
-
-//! @brief ... set biaxial compressive strength
-//! @param rBiaxialCompressiveStrength...  biaxial compressive strength
-void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetBiaxialCompressiveStrength(double rBiaxialCompressiveStrength)
-{
-    this->CheckBiaxialCompressiveStrength(rBiaxialCompressiveStrength);
-    this->mBiaxialCompressiveStrength = rBiaxialCompressiveStrength;
-    this->SetParametersValid();
-}
-
-//! @brief ... get viscosity
-//! @return ... viscosity
-double NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetViscosity() const
-{
-    return mViscosity;
-}
-
-//! @brief ... set viscosity
-//! @param rViscosity...  viscosity
-void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetViscosity(double rViscosity)
-{
-    this->CheckViscosity(rViscosity);
-    this->mViscosity = rViscosity;
-    this->SetParametersValid();
-}
-
-//! @brief ... get viscosity exponent
-//! @return ... viscosity exponent
-double NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetViscosityExponent() const
-{
-    return mViscosityExponent;
-}
-
-//! @brief ... set viscosity exponent
-//! @param rViscosity...  viscosity exponent
-void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetViscosityExponent(double rViscosityExponent)
-{
-    this->CheckViscosityExponent(rViscosityExponent);
-    this->mViscosityExponent = rViscosityExponent;
-    this->SetParametersValid();
-}
-
-//! @brief ... get damage distribution (determines the portion of damage via viscoplasticity and plasticity)
-//! @return ... damage distribution
-double NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetDamageDistribution() const
-{
-    return mDamageDistribution;
-}
-
-//! @brief ... set damage distribution (determines the portion of damage via viscoplasticity and plasticity)
-//! @param rDamageDistribution... damage distribution
-void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetDamageDistribution(double rDamageDistribution)
-{
-    this->CheckDamageDistribution(rDamageDistribution);
-    this->mDamageDistribution = rDamageDistribution;
-    this->SetParametersValid();
-}
-
-//! @brief ... get viscoplastic yield surface offset with respect to the plastic yield surface
-//! @return ... viscoplastic yield surface offset
-double NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetViscoplasticYieldSurfaceOffset() const
-{
-    return mViscoplasticYieldSurfaceOffset;
-}
-
-//! @brief ... set viscoplastic yield surface offset with respect to the plastic yield surface
-//! @param rViscoplasticYieldSurfaceOffset... viscoplastic yield surface offset
-void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetViscoplasticYieldSurfaceOffset(double rViscoplasticYieldSurfaceOffset)
-{
-    this->CheckViscoplasticYieldSurfaceOffset(rViscoplasticYieldSurfaceOffset);
-    this->mViscoplasticYieldSurfaceOffset = rViscoplasticYieldSurfaceOffset;
-    this->SetParametersValid();
-}
-
-//! @brief ... get fracture energy
-//! @return ... fracture energy
-double NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetFractureEnergy() const
-{
-    return mFractureEnergy;
-}
-
-//! @brief ... set fracture energy
-//! @param rFractureEnergy... fracture energy
-void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetFractureEnergy(double rFractureEnergy)
-{
-    this->CheckFractureEnergy(rFractureEnergy);
-    this->mFractureEnergy = rFractureEnergy;
-    this->SetParametersValid();
-}
-
-//! @brief ... get hardening value
-//! @return ... hardening value
-double NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetHardeningValue() const
-{
-    return mHardening;
-}
-
-//! @brief ... set hardening value
-//! @param rHardening... hardening value
-void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetHardeningValue(double rHardening)
-{
-    this->mHardening = rHardening;
-    this->SetParametersValid();
+    default:
+    {
+        throw MechanicsException("[NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetParameterBool] Constitutive law does not have the requested variable");
+    }
+    }
 }
 
 
-//! @brief ... get hardening exponent
-//! @return ... hardening exponent
-double NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetHardeningExponent() const
+//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetParameterBool(NuTo::Constitutive::eConstitutiveParameter rIdentifier, bool rValue)
 {
-	return mHardeningExponent;
-}
-//! @brief ... set hardening exponent
-//! @param rHexponent ...  hardening exponent
-void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetHardeningExponent(double rHardeningExponent)
-{
-	this->CheckHardeningExponent(rHardeningExponent);
-	this->mHardeningExponent = rHardeningExponent;
-    this->SetParametersValid();
-}
-
-//! @brief ... get fatigue extrapolation
-//! @param FatigueExtrapolation ...
-bool NuTo::DamageViscoPlasticityHardeningEngineeringStress::GetFatigueExtrapolation() const
-{
-	return mFatigueExtrapolation;
+    switch(rIdentifier)
+    {
+    case Constitutive::eConstitutiveParameter::FATIGUE_EXTRAPOLATION:
+    {
+        this->mFatigueExtrapolation = rValue;
+        break;
+    }
+    default:
+    {
+        throw MechanicsException("[NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetParameterBool] Constitutive law does not have the requested variable");
+    }
+    }
 }
 
-//! @brief ... set fatigue extrapolation
-//! @param FatigueExtrapolation ...
-void NuTo::DamageViscoPlasticityHardeningEngineeringStress::SetFatigueExtrapolation(bool rFatigueExtrapolation)
-{
-	this->mFatigueExtrapolation = rFatigueExtrapolation;
-}
+
+
 ///////////////////////////////////////////////////////////////////////////
 
 //! @brief ... get type of constitutive relationship

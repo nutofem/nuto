@@ -844,6 +844,7 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
                                                                                         // Differ between surface types 3N / 4N
                         break;
                     default:
+
                         break;
                     }
 

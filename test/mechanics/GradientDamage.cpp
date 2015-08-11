@@ -21,8 +21,8 @@
 bool CheckDamageLawsDerivatives(NuTo::GradientDamageEngineeringStress rConstitutiveLaw)
 {
     double epsilon = 1.e-8;
-    double E = rConstitutiveLaw.GetYoungsModulus();
-    double e0 = rConstitutiveLaw.GetTensileStrength() / E;
+    double E = rConstitutiveLaw.GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS);
+    double e0 = rConstitutiveLaw.GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH) / E;
     double step = e0 / 5;
     for (int i = 1; i < 100; ++i)
     {
@@ -53,12 +53,12 @@ void CheckDamageLaws()
 {
     NuTo::GradientDamageEngineeringStress myConstitutiveLaw;
 
-    myConstitutiveLaw.SetDensity(1.0);
-    myConstitutiveLaw.SetYoungsModulus(30000);
-    myConstitutiveLaw.SetPoissonsRatio(0.3);
-    myConstitutiveLaw.SetNonlocalRadius(1.0);
-    myConstitutiveLaw.SetTensileStrength(4.);
-    myConstitutiveLaw.SetFractureEnergy(0.21);
+    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DENSITY,1.0);
+    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,30000);
+    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,0.3);
+    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS,1.0);
+    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH,4.);
+    myConstitutiveLaw.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY,0.21);
 
     NuTo::FullVector<double, Eigen::Dynamic> myDamageLaw(1);
     myDamageLaw(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING;
@@ -76,19 +76,19 @@ void CheckDamageLaws()
     NuTo::FullVector<double, Eigen::Dynamic> myDamageLawHermite(1);
     myDamageLawHermite(0) = NuTo::Constitutive::eDamageLawType::ISOTROPIC_CUBIC_HERMITE;
 
-    myConstitutiveLaw.SetDamageLaw(myDamageLawNoSoftening);
+    myConstitutiveLaw.SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW,myDamageLawNoSoftening);
     if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
         throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_NO_SOFTENING: wrong damage derivatives");
 
-    myConstitutiveLaw.SetDamageLaw(myDamageLawLinear);
+    myConstitutiveLaw.SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW,myDamageLawLinear);
     if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
         throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_LINEAR_SOFTENING: wrong damage derivatives");
 
-    myConstitutiveLaw.SetDamageLaw(myDamageLawExponential);
+    myConstitutiveLaw.SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW,myDamageLawExponential);
     if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
         throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_EXPONENTIAL_SOFTENING: wrong damage derivatives");
 
-    myConstitutiveLaw.SetDamageLaw(myDamageLawHermite);
+    myConstitutiveLaw.SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW,myDamageLawHermite);
     if (not CheckDamageLawsDerivatives(myConstitutiveLaw))
         throw NuTo::MechanicsException("DamageLaw::ISOTROPIC_CUBIC_HERMITE: wrong damage derivatives");
 
@@ -102,14 +102,14 @@ void CheckLocalEqStrainDerivatives()
 
     // create a damage law
 
-    law.SetDensity(1.0);
-    law.SetYoungsModulus(30000);
-    law.SetPoissonsRatio(0.3);
-    law.SetNonlocalRadius(1.);
-    law.SetTensileStrength(4.);
-    law.SetCompressiveStrength(40.);
-    law.SetFractureEnergy(0.21);
-    law.SetDamageLaw(myDamageLaw);
+    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DENSITY,1.0);
+    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,30000);
+    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,0.3);
+    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS,1.);
+    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH,4.);
+    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH,40.);
+    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY,0.21);
+    law.SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW,myDamageLaw);
 
     NuTo::EngineeringStrain2D strain;
     NuTo::LocalEqStrain localEqStrain0, localEqStrain1;
@@ -222,14 +222,14 @@ void CheckLocalEqStrainDerivatives3D()
 
     // create a damage law
 
-    law.SetDensity(1.0);
-    law.SetYoungsModulus(30000);
-    law.SetPoissonsRatio(0.3);
-    law.SetNonlocalRadius(1.);
-    law.SetTensileStrength(4.);
-    law.SetCompressiveStrength(40.);
-    law.SetFractureEnergy(0.21);
-    law.SetDamageLaw(myDamageLaw);
+    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DENSITY,1.0);
+    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,30000);
+    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,0.3);
+    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS,1.);
+    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH,4.);
+    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH,40.);
+    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY,0.21);
+    law.SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW,myDamageLaw);
 
     NuTo::EngineeringStrain3D strain;
     NuTo::LocalEqStrain localEqStrain0, localEqStrain1;
@@ -299,13 +299,13 @@ int SetConstitutiveLaw(NuTo::Structure& rStructure)
 
     // create a damage law
     int lawId = rStructure.ConstitutiveLawCreate("GradientDamageEngineeringStress");
-    rStructure.ConstitutiveLawSetDensity(lawId, 1.0);
-    rStructure.ConstitutiveLawSetYoungsModulus(lawId, 30000);
-    rStructure.ConstitutiveLawSetPoissonsRatio(lawId, 0.0);
-    rStructure.ConstitutiveLawSetNonlocalRadius(lawId, 1.);
-    rStructure.ConstitutiveLawSetTensileStrength(lawId, 4.);
-    rStructure.ConstitutiveLawSetCompressiveStrength(lawId, 4. * 10);
-    rStructure.ConstitutiveLawSetFractureEnergy(lawId, 0.21);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::DENSITY, 1.0);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 30000);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.0);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS, 1.);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH, 4.);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY, 0.21);
     rStructure.ConstitutiveLawSetDamageLaw(lawId, myDamageLaw);
 
 //    int myNumberConstitutiveLaw = rStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");

@@ -150,30 +150,30 @@ int main()
         int ConstLaw = MTStructure1D.ConstitutiveLawCreate("MoistureTransport");
 
         // set variables
-        MTStructure1D.ConstitutiveLawSetVariableBool    (ConstLaw,"ENABLE_MODIFIED_TANGENTIAL_STIFFNESS",EnableModiefiedTangentialStiffness);      // sets whether modified tangential stiffness should be used or not
-        MTStructure1D.ConstitutiveLawSetVariableBool    (ConstLaw,"enable_sorption_hysteresis",EnableSorptionHysteresis);                          // sets whether sorption hysteresis should be used or not
+        MTStructure1D.ConstitutiveLawSetParameterBool    (ConstLaw,"ENABLE_MODIFIED_TANGENTIAL_STIFFNESS",EnableModiefiedTangentialStiffness);      // sets whether modified tangential stiffness should be used or not
+        MTStructure1D.ConstitutiveLawSetParameterBool    (ConstLaw,"enable_sorption_hysteresis",EnableSorptionHysteresis);                          // sets whether sorption hysteresis should be used or not
 
 
-        MTStructure1D.ConstitutiveLawSetVariableDouble  (ConstLaw,"boundary_TRANSPORT_CONSTANT_GAS_PHASE",BC_Surface_Moisture_Transfer_RH);        // set water phase density
-        MTStructure1D.ConstitutiveLawSetVariableDouble  (ConstLaw,"BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE",BC_Surface_Moisture_Transfer_WVF);     // set water phase density
-        MTStructure1D.ConstitutiveLawSetVariableDouble  (ConstLaw,"DENSITY_WATER_PHASE",WaterPhaseDensity);                                        // set water phase density
-        MTStructure1D.ConstitutiveLawSetVariableDouble  (ConstLaw,"DIFFUSION_CONSTANT_GAS_PHASE",VaporPhaseDiffusionCoefficient);                  // set vapor phase diffusion coefficient
-        MTStructure1D.ConstitutiveLawSetVariableDouble  (ConstLaw,"DIFFUSION_CONSTANT_WATER_PHASE",WaterPhaseDiffusionCoefficient);                // set water phase diffusion coefficient
-        MTStructure1D.ConstitutiveLawSetVariableDouble  (ConstLaw,"DIFFUSION_EXPONENT_GAS_PHASE",VaporPhaseDiffusionExponent);                     // set vapor phase diffusion exponent
-        MTStructure1D.ConstitutiveLawSetVariableDouble  (ConstLaw,"DIFFUSION_EXPONENT_WATER_PHASE",WaterPhaseDiffusionExponent);                   // set water phase diffusion exponent
-        MTStructure1D.ConstitutiveLawSetVariableDouble  (ConstLaw,"GRADIENT_CORRECTION_ADSORPTION_DESORPTION",Kd);                                 // set gradient correction when changing from adsorption to desorption
-        MTStructure1D.ConstitutiveLawSetVariableDouble  (ConstLaw,"GRADIENT_CORRECTION_DESORPTION_ADSORPTION",Ka);                                 // set gradient correction when changing from desorption to adsorption
-        MTStructure1D.ConstitutiveLawSetVariableDouble  (ConstLaw,"MASS_EXCHANGE_RATE",MassExchangeRate);                                          // set mass exchange rate
-        MTStructure1D.ConstitutiveLawSetVariableDouble  (ConstLaw,"POROSITY",Porosity);                                                            // set porosity
-        MTStructure1D.ConstitutiveLawSetVariableDouble  (ConstLaw,"SATURATION_DENSITY_GAS_PHASE",VaporPhaseSaturationDensity);                     // set vapor phase saturation density
+        MTStructure1D.ConstitutiveLawSetParameterDouble  (ConstLaw,"boundary_TRANSPORT_CONSTANT_GAS_PHASE",BC_Surface_Moisture_Transfer_RH);        // set water phase density
+        MTStructure1D.ConstitutiveLawSetParameterDouble  (ConstLaw,"BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE",BC_Surface_Moisture_Transfer_WVF);     // set water phase density
+        MTStructure1D.ConstitutiveLawSetParameterDouble  (ConstLaw,"DENSITY_WATER_PHASE",WaterPhaseDensity);                                        // set water phase density
+        MTStructure1D.ConstitutiveLawSetParameterDouble  (ConstLaw,"DIFFUSION_CONSTANT_GAS_PHASE",VaporPhaseDiffusionCoefficient);                  // set vapor phase diffusion coefficient
+        MTStructure1D.ConstitutiveLawSetParameterDouble  (ConstLaw,"DIFFUSION_CONSTANT_WATER_PHASE",WaterPhaseDiffusionCoefficient);                // set water phase diffusion coefficient
+        MTStructure1D.ConstitutiveLawSetParameterDouble  (ConstLaw,"DIFFUSION_EXPONENT_GAS_PHASE",VaporPhaseDiffusionExponent);                     // set vapor phase diffusion exponent
+        MTStructure1D.ConstitutiveLawSetParameterDouble  (ConstLaw,"DIFFUSION_EXPONENT_WATER_PHASE",WaterPhaseDiffusionExponent);                   // set water phase diffusion exponent
+        MTStructure1D.ConstitutiveLawSetParameterDouble  (ConstLaw,"GRADIENT_CORRECTION_ADSORPTION_DESORPTION",Kd);                                 // set gradient correction when changing from adsorption to desorption
+        MTStructure1D.ConstitutiveLawSetParameterDouble  (ConstLaw,"GRADIENT_CORRECTION_DESORPTION_ADSORPTION",Ka);                                 // set gradient correction when changing from desorption to adsorption
+        MTStructure1D.ConstitutiveLawSetParameterDouble  (ConstLaw,"MASS_EXCHANGE_RATE",MassExchangeRate);                                          // set mass exchange rate
+        MTStructure1D.ConstitutiveLawSetParameterDouble  (ConstLaw,"POROSITY",Porosity);                                                            // set porosity
+        MTStructure1D.ConstitutiveLawSetParameterDouble  (ConstLaw,"SATURATION_DENSITY_GAS_PHASE",VaporPhaseSaturationDensity);                     // set vapor phase saturation density
 
-        MTStructure1D.ConstitutiveLawSetVariableFullVectorDouble    (ConstLaw,"polynomial_COEFFICIENTS_ADSORPTION",AdsorptionFit.GetPolynomialCoefficients());               // set adsorption coefficients
-        MTStructure1D.ConstitutiveLawSetVariableFullVectorDouble    (ConstLaw,"POLYNOMIAL_COEFFICIENTS_DESORPTION",DesorptionFit.GetPolynomialCoefficients());               // set desorption coefficients
+        MTStructure1D.ConstitutiveLawSetParameterFullVectorDouble    (ConstLaw,"polynomial_COEFFICIENTS_ADSORPTION",AdsorptionFit.GetPolynomialCoefficients());               // set adsorption coefficients
+        MTStructure1D.ConstitutiveLawSetParameterFullVectorDouble    (ConstLaw,"POLYNOMIAL_COEFFICIENTS_DESORPTION",DesorptionFit.GetPolynomialCoefficients());               // set desorption coefficients
 
 
         // Calculate equilibrium water volume fraction
-        InitialWaterVolumeFraction   = MTStructure1D.ConstitutiveLawGetEquilibriumWaterVolumeFraction(ConstLaw,InitialRelativeHumidity,MTStructure1D.ConstitutiveLawGetVariableFullVectorDouble(ConstLaw,NuTo::Constitutive::eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_DESORPTION));
-        BC_WaterVolumeFraction      = MTStructure1D.ConstitutiveLawGetEquilibriumWaterVolumeFraction(ConstLaw,BC_RelativeHumidity,MTStructure1D.ConstitutiveLawGetVariableFullVectorDouble(ConstLaw,NuTo::Constitutive::eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_DESORPTION));
+        InitialWaterVolumeFraction   = MTStructure1D.ConstitutiveLawGetEquilibriumWaterVolumeFraction(ConstLaw,InitialRelativeHumidity,MTStructure1D.ConstitutiveLawGetParameterFullVectorDouble(ConstLaw,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
+        BC_WaterVolumeFraction      = MTStructure1D.ConstitutiveLawGetEquilibriumWaterVolumeFraction(ConstLaw,BC_RelativeHumidity,MTStructure1D.ConstitutiveLawGetParameterFullVectorDouble(ConstLaw,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
 
 
 
@@ -285,8 +285,8 @@ int main()
             for (int theIP=0; theIP< MTStructure1D.ElementGetElementPtr(i)->GetNumIntegrationPoints(); theIP++)
             {
                 NuTo::ConstitutiveStaticDataMoistureTransport *StaticData = MTStructure1D.ElementGetElementPtr(i)->GetStaticData(theIP)->AsMoistureTransport();
-                StaticData->SetLastSorptionCoeff(MTStructure1D.ConstitutiveLawGetVariableFullVectorDouble(ConstLaw,NuTo::Constitutive::eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_DESORPTION));
-                StaticData->SetActualSorptionCoeff(MTStructure1D.ConstitutiveLawGetVariableFullVectorDouble(ConstLaw,NuTo::Constitutive::eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_DESORPTION));
+                StaticData->SetLastSorptionCoeff(MTStructure1D.ConstitutiveLawGetParameterFullVectorDouble(ConstLaw,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
+                StaticData->SetActualSorptionCoeff(MTStructure1D.ConstitutiveLawGetParameterFullVectorDouble(ConstLaw,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
                 StaticData->SetLastRelHumValue(InitialRelativeHumidity);
                 StaticData ->SetSorptionHistoryDesorption(SorptionHistoryDesorption);
             }
@@ -345,35 +345,35 @@ int main()
             throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.SectionGetArea(Section1)!=Area");
 
         // Constitutive Law
-        if (MTStructure1D.ConstitutiveLawGetVariableBool(ConstLaw,"enable_MODIFIED_TANGENTIAL_STIFFNESS")!=EnableModiefiedTangentialStiffness)
-            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetVariableBool(ConstLaw,\"enable_MODIFIED_TANGENTIAL_STIFFNESS\")!=EnableModiefiedTangentialStiffness");
-        if (MTStructure1D.ConstitutiveLawGetVariableBool(ConstLaw,"ENABLE_SORPTION_HYSTERESIS")!=EnableSorptionHysteresis)
-            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetVariableBool(ConstLaw,\"ENABLE_SORPTION_HYSTERESIS\")!=EnableSorptionHysteresis");
+        if (MTStructure1D.ConstitutiveLawGetParameterBool(ConstLaw,"enable_MODIFIED_TANGENTIAL_STIFFNESS")!=EnableModiefiedTangentialStiffness)
+            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetParameterBool(ConstLaw,\"enable_MODIFIED_TANGENTIAL_STIFFNESS\")!=EnableModiefiedTangentialStiffness");
+        if (MTStructure1D.ConstitutiveLawGetParameterBool(ConstLaw,"ENABLE_SORPTION_HYSTERESIS")!=EnableSorptionHysteresis)
+            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetParameterBool(ConstLaw,\"ENABLE_SORPTION_HYSTERESIS\")!=EnableSorptionHysteresis");
 
-        if (MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,"boundary_TRANSPORT_CONSTANT_GAS_PHASE")!=BC_Surface_Moisture_Transfer_RH)
-            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,\"boundary_TRANSPORT_CONSTANT_GAS_PHASE\")!=BC_Surface_Moisture_Transfer_RH");
-        if (MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,"BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE")!=BC_Surface_Moisture_Transfer_WVF)
-            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,\"BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE\")!=BC_Surface_Moisture_Transfer_WVF");
-        if (MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,"DENSITY_WATER_PHASE")!=WaterPhaseDensity)
-            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,\"DENSITY_WATER_PHASE\")!=WaterPhaseDensity");
-        if (MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,"DIFFUSION_CONSTANT_GAS_PHASE")!=VaporPhaseDiffusionCoefficient)
-            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,\"DIFFUSION_CONSTANT_GAS_PHASE\")!=VaporPhaseDiffusionCoefficient");
-        if (MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,"DIFFUSION_CONSTANT_WATER_PHASE")!=WaterPhaseDiffusionCoefficient)
-            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,\"DIFFUSION_CONSTANT_WATER_PHASE\")!=WaterPhaseDiffusionCoefficient");
-        if (MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,"DIFFUSION_EXPONENT_GAS_PHASE")!=VaporPhaseDiffusionExponent)
-            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,\"DIFFUSION_EXPONENT_GAS_PHASE\")!=VaporPhaseDiffusionExponent");
-        if (MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,"DIFFUSION_EXPONENT_WATER_PHASE")!=WaterPhaseDiffusionExponent)
-            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,\"DIFFUSION_EXPONENT_WATER_PHASE\")!=WaterPhaseDiffusionExponent");
-        if (MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,"GRADIENT_CORRECTION_DESORPTION_ADSORPTION")!=Ka)
-            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,\"GRADIENT_CORRECTION_DESORPTION_ADSORPTION\")!=Ka");
-        if (MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,"GRADIENT_CORRECTION_ADSORPTION_DESORPTION")!=Kd)
-            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,\"GRADIENT_CORRECTION_ADSORPTION_DESORPTION\")!=Kd");
-        if (MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,"MASS_EXCHANGE_RATE")!=MassExchangeRate)
-            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,\"MASS_EXCHANGE_RATE\")!=MassExchangeRate");
-        if (MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,"POROSITY")!=Porosity)
-            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,\"POROSITY\")!=Porosity");
-        if (MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,"SATURATION_DENSITY_GAS_PHASE")!=VaporPhaseSaturationDensity)
-            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetVariableDouble(ConstLaw,\"SATURATION_DENSITY_GAS_PHASE\")!=VaporPhaseSaturationDensity");
+        if (MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,"boundary_TRANSPORT_CONSTANT_GAS_PHASE")!=BC_Surface_Moisture_Transfer_RH)
+            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,\"boundary_TRANSPORT_CONSTANT_GAS_PHASE\")!=BC_Surface_Moisture_Transfer_RH");
+        if (MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,"BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE")!=BC_Surface_Moisture_Transfer_WVF)
+            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,\"BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE\")!=BC_Surface_Moisture_Transfer_WVF");
+        if (MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,"DENSITY_WATER_PHASE")!=WaterPhaseDensity)
+            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,\"DENSITY_WATER_PHASE\")!=WaterPhaseDensity");
+        if (MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,"DIFFUSION_CONSTANT_GAS_PHASE")!=VaporPhaseDiffusionCoefficient)
+            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,\"DIFFUSION_CONSTANT_GAS_PHASE\")!=VaporPhaseDiffusionCoefficient");
+        if (MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,"DIFFUSION_CONSTANT_WATER_PHASE")!=WaterPhaseDiffusionCoefficient)
+            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,\"DIFFUSION_CONSTANT_WATER_PHASE\")!=WaterPhaseDiffusionCoefficient");
+        if (MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,"DIFFUSION_EXPONENT_GAS_PHASE")!=VaporPhaseDiffusionExponent)
+            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,\"DIFFUSION_EXPONENT_GAS_PHASE\")!=VaporPhaseDiffusionExponent");
+        if (MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,"DIFFUSION_EXPONENT_WATER_PHASE")!=WaterPhaseDiffusionExponent)
+            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,\"DIFFUSION_EXPONENT_WATER_PHASE\")!=WaterPhaseDiffusionExponent");
+        if (MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,"GRADIENT_CORRECTION_DESORPTION_ADSORPTION")!=Ka)
+            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,\"GRADIENT_CORRECTION_DESORPTION_ADSORPTION\")!=Ka");
+        if (MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,"GRADIENT_CORRECTION_ADSORPTION_DESORPTION")!=Kd)
+            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,\"GRADIENT_CORRECTION_ADSORPTION_DESORPTION\")!=Kd");
+        if (MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,"MASS_EXCHANGE_RATE")!=MassExchangeRate)
+            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,\"MASS_EXCHANGE_RATE\")!=MassExchangeRate");
+        if (MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,"POROSITY")!=Porosity)
+            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,\"POROSITY\")!=Porosity");
+        if (MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,"SATURATION_DENSITY_GAS_PHASE")!=VaporPhaseSaturationDensity)
+            throw NuTo::Exception("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.ConstitutiveLawGetParameterDouble(ConstLaw,\"SATURATION_DENSITY_GAS_PHASE\")!=VaporPhaseSaturationDensity");
 
         // Nodes
         for (unsigned int i=0; i<NNodes; i++)

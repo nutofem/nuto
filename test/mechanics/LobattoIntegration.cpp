@@ -42,7 +42,7 @@ int buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
 
     /** create material law **/
     int Material = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
-    myStructure.ConstitutiveLawSetYoungsModulus(Material, YoungsModulus);
+    myStructure.ConstitutiveLawSetParameterDouble(Material, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
 
     /** create nodes **/
     double elementLength = nodeCoordinatesFirstElement(rNumNodesPerElement-1) - nodeCoordinatesFirstElement(0);
@@ -104,13 +104,18 @@ int buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
     myStructure.LoadCreateNodeForce(0, numNodes-1, direction, Force);
 
     /** start analysis **/
-    int numThreads = 1;
+
 #ifdef _OPENMP
-    numThreads = 4;
+    int numThreads = 4;
     myStructure.SetNumProcessors(numThreads);
 #endif // OPENMP
 
 #if defined HAVE_PARDISO
+
+#ifndef _OPENMP
+    int numThreads = 1;
+#endif
+
     NuTo::SparseDirectSolverPardiso mySolverPardiso(numThreads);
 #endif // PARDISO
     myStructure.CalculateMaximumIndependentSets();
@@ -285,8 +290,8 @@ int buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
     myStructure.Info();
     /** create constitutive law **/
     int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
-    myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,YoungsModulus);
-    myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,PoissonRatio);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,YoungsModulus);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,PoissonRatio);
 
     /** create section **/
     myStructure.ElementTotalConvertToInterpolationType(1.e-6,10);
@@ -358,9 +363,8 @@ int buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
     myStructure.Info();
 
     /** start analysis **/
-    int numThreads = 1;
 #ifdef _OPENMP
-    numThreads = 4;
+    int numThreads = 4;
     myStructure.SetNumProcessors(numThreads);
 #endif
 

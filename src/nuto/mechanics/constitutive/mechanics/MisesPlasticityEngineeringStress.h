@@ -84,65 +84,36 @@ public:
     void CalculateCoefficients3D(double& C11, double& C12, double& C44) const;
 
     // parameters /////////////////////////////////////////////////////////////
-    //! @brief ... get Young's modulus
-    //! @return ... Young's modulus
-    double GetYoungsModulus() const;
 
-    //! @brief ... set Young's modulus
-    //! @param rE ... Young's modulus
-    void SetYoungsModulus(double rE);
+    //! @brief ... gets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @return ... value of the requested variable
+    virtual double GetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier) const override;
 
-    //! @brief ... get Poisson's ratio
-    //! @return ... Poisson's ratio
-    double GetPoissonsRatio() const;
-
-    //! @brief ... set Poisson's ratio
-    //! @param rNu ... Poisson's ratio
-    void SetPoissonsRatio(double rNu);
-
-    //! @brief ... get initial yield strength
-    //! @return ... yield strength
-    double GetInitialYieldStrength() const;
-
-    //! @brief ... set initial yield strength
-    //! @param rSigma ...  yield strength
-    void SetInitialYieldStrength(double rSigma);
+    //! @brief ... sets a variable of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rValue ... new value for requested variable
+    virtual void SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue) override;
 
     //! @brief ... get yield strength for multilinear response
     //! @return ... first column: equivalent plastic strain
     //! @return ... second column: corresponding yield strength
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> GetYieldStrength() const;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> GetYieldStrength() const override;
 
     //! @brief ... add yield strength
     //! @param rEpsilon ...  equivalent plastic strain
     //! @param rSigma ...  yield strength
-    void AddYieldStrength(double rEpsilon, double rSigma);
-
-    //! @brief ... get initial hardening modulus
-    //! @return ... hardening modulus
-    double GetInitialHardeningModulus() const;
-
-    //! @brief ... set initial hardening modulus
-    //! @param rH ...  hardening modulus
-    void SetInitialHardeningModulus(double rH);
+    void AddYieldStrength(double rEpsilon, double rSigma) override;
 
     //! @brief ... get hardening modulus for multilinear response
     //! @return ... first column: equivalent plastic strain
     //! @return ... second column: corresponding hardening modulus
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> GetHardeningModulus() const;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> GetHardeningModulus() const  override;
 
     //! @brief ... add hardening modulus
     //! @param rEpsilon ...  equivalent plastic strain
     //! @param rSigma ...  hardening modulus
-    void AddHardeningModulus(double rEpsilon, double rSigma);
-
-    //! @brief ... get thermal expansion coefficient
-    //! @return ... thermal expansion coefficient
-    double GetThermalExpansionCoefficient() const override;
-
-    //! @brief ... set thermal expansion coefficient
-    //! @param rAlpha ... thermal expansion coefficient
-    void SetThermalExpansionCoefficient(double rNu) override;
+    void AddHardeningModulus(double rEpsilon, double rSigma) override;
 
     //! @brief ... get dimension of the constitutive relationship
     //! @return ... dimension of the constitutive relationship (1, 2 or 3)
@@ -151,7 +122,7 @@ public:
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship
     //! @sa eConstitutiveType
-    Constitutive::eConstitutiveType GetType() const;
+    Constitutive::eConstitutiveType GetType() const  override;
 
     //! @brief ... check parameters of the constitutive relationship
     void CheckParameters()const;

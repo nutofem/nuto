@@ -34,20 +34,20 @@ error = False
 structure=nuto.Structure(3)
 
 Material1 = structure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
-structure.ConstitutiveLawSetYoungsModulus(Material1, 20000)
-structure.ConstitutiveLawSetPoissonsRatio(Material1, 0.2)
-structure.ConstitutiveLawSetDensity(Material1, 0.5)
+structure.ConstitutiveLawSetParameterDouble(Material1,"YoungsModulus", 20000)
+structure.ConstitutiveLawSetParameterDouble(Material1,"PoissonsRatio", 0.2)
+structure.ConstitutiveLawSetParameterDouble(Material1,"Density", 0.5)
 if(printResult):
     structure.ConstitutiveLawInfo(Material1, 0)
-E = structure.ConstitutiveLawGetYoungsModulus(Material1)
+E = structure.ConstitutiveLawGetParameterDouble(Material1,"YoungsModulus")
 if(E != 20000):
     print '[' + system,sys.argv[0] + '] : Young\'s modulus is not correct.'
     error = True
-Nu = structure.ConstitutiveLawGetPoissonsRatio(Material1)
+Nu = structure.ConstitutiveLawGetParameterDouble(Material1,"PoissonsRatio")
 if(Nu != 0.2):
     print '[' + system,sys.argv[0] + '] : Poisson\'s ratio is not correct.'
     error = True
-Rho = structure.ConstitutiveLawGetDensity(Material1)
+Rho = structure.ConstitutiveLawGetParameterDouble(Material1,"Density")
 if(Rho != 0.5):
     print '[' + system,sys.argv[0] + '] : Density is not correct.'
     error = True

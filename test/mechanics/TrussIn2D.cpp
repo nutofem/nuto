@@ -79,8 +79,8 @@ void Run2d(NuTo::FullVector<double, -1> rNodeCoords0, NuTo::FullVector<double, -
     //**********************************************
 
     int fibreMaterial = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
-    myStructure.ConstitutiveLawSetYoungsModulus(fibreMaterial, ParametersMaterial::mYoungsModulus);
-    myStructure.ConstitutiveLawSetPoissonsRatio(fibreMaterial, ParametersMaterial::mPoissonsRatio);
+    myStructure.ConstitutiveLawSetParameterDouble(fibreMaterial, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, ParametersMaterial::mYoungsModulus);
+    myStructure.ConstitutiveLawSetParameterDouble(fibreMaterial, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, ParametersMaterial::mPoissonsRatio);
 
     //**********************************************
     //          Interpolation

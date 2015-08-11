@@ -729,8 +729,10 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         {
                         case Node::DISPLACEMENTS:
                         {
-                            double density = constitutivePtr->GetDensity();
+
+                            double density = constitutivePtr->GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY);
                             const Eigen::MatrixXd tmpMatrix = shapeFunctions.at(dof) * shapeFunctions.at(dof).transpose() * factor * density;
+
                             Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& result(it->second->GetFullMatrixDouble());
                             result.block(0, 0, tmpMatrix.rows(), tmpMatrix.cols()) += tmpMatrix;
 

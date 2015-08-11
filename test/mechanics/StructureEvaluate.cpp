@@ -150,9 +150,9 @@ int main()
         // %%%%%%%%%%%%%%%%%%%%%%%
 
         int myConstitutiveLaw = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
-        myStructure.ConstitutiveLawSetYoungsModulus(myConstitutiveLaw,YoungsModulus);
-        myStructure.ConstitutiveLawSetPoissonsRatio(myConstitutiveLaw,PoissonRatio);
-        myStructure.ConstitutiveLawSetDensity(myConstitutiveLaw,Density);
+        myStructure.ConstitutiveLawSetParameterDouble(myConstitutiveLaw,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,YoungsModulus);
+        myStructure.ConstitutiveLawSetParameterDouble(myConstitutiveLaw,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,PoissonRatio);
+        myStructure.ConstitutiveLawSetParameterDouble(myConstitutiveLaw,NuTo::Constitutive::eConstitutiveParameter::DENSITY,Density);
         myStructure.ElementTotalSetConstitutiveLaw(myConstitutiveLaw);
 
 

@@ -1290,37 +1290,37 @@ public:
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... String to identify the requested variable
     //! @return ... value of the requested variable
-    bool ConstitutiveLawGetVariableBool(int rIdent, const std::string& rIdentifier) const;
+    bool ConstitutiveLawGetParameterBool(int rIdent, const std::string& rIdentifier) const;
 
     //! @brief ... sets a variable of the constitutive law which is selected by a string
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... String to identify the requested variable
     //! @param rValue ... new value for requested variable
-    void ConstitutiveLawSetVariableBool(int rIdent, const std::string& rIdentifier, bool rValue);
+    void ConstitutiveLawSetParameterBool(int rIdent, const std::string& rIdentifier, bool rValue);
 
     //! @brief ... gets a variable of the constitutive law which is selected by a string
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... String to identify the requested variable
     //! @return ... value of the requested variable
-    double ConstitutiveLawGetVariableDouble(int rIdent, const std::string& rIdentifier) const;
+    double ConstitutiveLawGetParameterDouble(int rIdent, const std::string& rIdentifier) const;
 
     //! @brief ... sets a variable of the constitutive law which is selected by a string
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... String to identify the requested variable
     //! @param rValue ... new value for requested variable
-    void ConstitutiveLawSetVariableDouble(int rIdent, const std::string& rIdentifier, double rValue);
+    void ConstitutiveLawSetParameterDouble(int rIdent, const std::string& rIdentifier, double rValue);
 
     //! @brief ... gets a variable of the constitutive law which is selected by a string
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... String to identify the requested variable
     //! @return ... value of the requested variable
-    NuTo::FullVector<double, Eigen::Dynamic> ConstitutiveLawGetVariableFullVectorDouble(int rIdent, const std::string& rIdentifier) const;
+    NuTo::FullVector<double, Eigen::Dynamic> ConstitutiveLawGetParameterFullVectorDouble(int rIdent, const std::string& rIdentifier) const;
 
     //! @brief ... sets a variable of the constitutive law which is selected by a string
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... String to identify the requested variable
     //! @param rValue ... new value for requested variable
-    void ConstitutiveLawSetVariableFullVectorDouble(int rIdent, const std::string& rIdentifier, NuTo::FullVector<double, Eigen::Dynamic>  rValue);
+    void ConstitutiveLawSetParameterFullVectorDouble(int rIdent, const std::string& rIdentifier, NuTo::FullVector<double, Eigen::Dynamic>  rValue);
 
 
 #ifndef SWIG
@@ -1329,76 +1329,39 @@ public:
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... Enum to identify the requested variable
     //! @return ... value of the requested variable
-    bool ConstitutiveLawGetVariableBool(int rIdent, Constitutive::eConstitutiveVariable rIdentifier) const;
+    bool ConstitutiveLawGetParameterBool(int rIdent, Constitutive::eConstitutiveParameter rIdentifier) const;
 
     //! @brief ... sets a variable of the constitutive law which is selected by an enum
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... Enum to identify the requested variable
     //! @param rValue ... new value for requested variable
-    void ConstitutiveLawSetVariableBool(int rIdent, Constitutive::eConstitutiveVariable rIdentifier, bool rValue);
+    void ConstitutiveLawSetParameterBool(int rIdent, Constitutive::eConstitutiveParameter rIdentifier, bool rValue);
 
     //! @brief ... gets a variable of the constitutive law which is selected by an enum
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... Enum to identify the requested variable
     //! @return ... value of the requested variable
-    double ConstitutiveLawGetVariableDouble(int rIdent, Constitutive::eConstitutiveVariable rIdentifier) const;
+    double ConstitutiveLawGetParameterDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier) const;
 
     //! @brief ... sets a variable of the constitutive law which is selected by an enum
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... Enum to identify the requested variable
     //! @param rValue ... new value for requested variable
-    void ConstitutiveLawSetVariableDouble(int rIdent, Constitutive::eConstitutiveVariable rIdentifier, double rValue);
+    void ConstitutiveLawSetParameterDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier, double rValue);
 
     //! @brief ... gets a variable of the constitutive law which is selected by an enum
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... Enum to identify the requested variable
     //! @return ... value of the requested variable
-    NuTo::FullVector<double, Eigen::Dynamic> ConstitutiveLawGetVariableFullVectorDouble(int rIdent, Constitutive::eConstitutiveVariable rIdentifier) const;
+    NuTo::FullVector<double, Eigen::Dynamic> ConstitutiveLawGetParameterFullVectorDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier) const;
 
     //! @brief ... sets a variable of the constitutive law which is selected by an enum
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... Enum to identify the requested variable
     //! @param rValue ... new value for requested variable
-    void ConstitutiveLawSetVariableFullVectorDouble(int rIdent, Constitutive::eConstitutiveVariable rIdentifier, NuTo::FullVector<double, Eigen::Dynamic>  rValue);
+    void ConstitutiveLawSetParameterFullVectorDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double, Eigen::Dynamic>  rValue);
 #endif // SWIG
 
-    //! @brief ... set density
-    //! @param rIdent ... constitutive law identifier
-    //! @param rRho ... density
-    void ConstitutiveLawSetDensity(int rIdent, double rRho);
-
-    //! @brief ... get densuty
-    //! @param rIdent ... constitutive law identifier
-    //! @return ... density
-    double ConstitutiveLawGetDensity(int rIdent) const;
-
-    //! @brief ... set Young's modulus
-    //! @param rIdent ... constitutive law identifier
-    //! @param rE ... Young's modulus
-    void ConstitutiveLawSetYoungsModulus(int rIdent, double rE);
-
-    //! @brief ... get Young's modulus
-    //! @param rIdent ... constitutive law identifier
-    //! @return ... Young's modulus
-    double ConstitutiveLawGetYoungsModulus(int rIdent) const;
-
-    //! @brief ... set Poisson's ratio
-    //! @param rIdent ... constitutive law identifier
-    //! @param rNu ... Poisson's ratio
-    void ConstitutiveLawSetPoissonsRatio(int rIdent, double rNu);
-
-    //! @brief ... get Poisson's ratio
-    //! @param rIdent ... constitutive law identifier
-    //! @return ... Poisson's ratio
-    double ConstitutiveLawGetPoissonsRatio(int rIdent) const;
-
-    //! @brief ... get initial yield strength
-    //! @return ... yield strength
-    double ConstitutiveLawGetInitialYieldStrength(int rIdent) const;
-
-    //! @brief ... set initial yield strength
-    //! @param rSigma ...  yield strength
-    void ConstitutiveLawSetInitialYieldStrength(int rIdent, double rSigma);
 
     //! @brief ... get yield strength for multilinear response
     //! @return ... first column: equivalent plastic strain
@@ -1410,30 +1373,6 @@ public:
     //! @param rSigma ...  yield strength
     void ConstitutiveLawAddYieldStrength(int rIdent, double rEpsilon, double rSigma);
 
-    //! @brief ... get initial hardening modulus
-    //! @return ... hardening modulus
-    double ConstitutiveLawGetInitialHardeningModulus(int rIdent) const;
-
-    //! @brief ... set hardening modulus
-    //! @param rH ...  hardening modulus
-    void ConstitutiveLawSetInitialHardeningModulus(int rIdent, double rH);
-
-    //! @brief ... get hardening value
-    //! @return ... hardening value
-    double ConstitutiveLawGetHardeningValue(int rIdent) const;
-
-    //! @brief ... set hardening value
-    //! @return ... hardening value
-    void ConstitutiveLawSetHardeningValue(int rIdent, double rHardening);
-
-    //! @brief ... get hardening exponent
-    //! @return ... hardening exponent
-    double ConstitutiveLawGetHardeningExponent(int rIdent) const;
-
-    //! @brief ... set hardening exponent
-    //! @return ... hardening exponent
-    void ConstitutiveLawSetHardeningExponent(int rIdent, double rHardeningExponent);
-
     //! @brief ... get hardening modulus for multilinear response
     //! @return ... first column: equivalent plastic strain
     //! @return ... second column: corresponding hardening modulus
@@ -1444,114 +1383,9 @@ public:
     //! @param rSigma ...  hardening modulus
     void ConstitutiveLawAddHardeningModulus(int rIdent, double rEpsilon, double rH);
 
-    //! @brief ... get nonlocal radius
-    //! @return ... nonlocal radius
-    double ConstitutiveLawGetNonlocalRadius(int rIdent) const;
-
-    //! @brief ... set nonlocal radius
-    //! @param rRadius ...  nonlocal radius
-    void ConstitutiveLawSetNonlocalRadius(int rIdent, double rRadius);
-
-    //! @brief ... get nonlocal radius parameter
-    //! @return ... nonlocal radius parameter
-    double ConstitutiveLawGetNonlocalRadiusParameter(int rIdent) const;
-
-    //! @brief ... set nonlocal radius parameter
-    //! @param rRadius ...  nonlocal radius parameter
-    void ConstitutiveLawSetNonlocalRadiusParameter(int rIdent, double rRadiusParameter);
 
 
-    //! @brief ... get tensile strength
-    //! @param rTensileStrength ...  tensile strength
-    double ConstitutiveLawGetTensileStrength(int rIdent);
 
-    //! @brief ... set tensile strength
-    //! @param rTensileStrength ...  tensile strength
-    void ConstitutiveLawSetTensileStrength(int rIdent, double rTensileStrength);
-
-    //! @brief ... get shear strength
-    //! @param rIdent ...  constitutive model
-    double ConstitutiveLawGetShearStrength(int rIdent);
-
-    //! @brief ... set shear strength
-    //! @param rShearStrength ...  shear strength
-    void ConstitutiveLawSetShearStrength(int rIdent, double rShearStrength);
-
-    //! @brief ... get compressive strength
-    //! @param rCompressiveStrength ...  compressive strength
-    double ConstitutiveLawGetCompressiveStrength(int rIdent);
-
-    //! @brief ... set compressive strength
-    //! @param rCompressiveStrength ...  compressive strength
-    void ConstitutiveLawSetCompressiveStrength(int rIdent, double rCompressiveStrength);
-
-    //! @brief ... get biaxial compressive strength
-    //! @param rBiaxialCompressiveStrength ...  biaxial compressive strength
-    double ConstitutiveLawGetBiaxialCompressiveStrength(int rIdent);
-
-    //! @brief ... set biaxial compressive strength
-    //! @param rBiaxialCompressiveStrength ...  biaxial compressive strength
-    void ConstitutiveLawSetBiaxialCompressiveStrength(int rIdent, double rBiaxialCompressiveStrength);
-
-    //! @brief ... get fracture energy
-    //! @param rFractureEnergy ...  fracture energy
-    double ConstitutiveLawGetFractureEnergy(int rIdent);
-
-    //! @brief ... set fracture energy
-    //! @param rFractureEnergy ...  fracture energy
-    void ConstitutiveLawSetFractureEnergy(int rIdent, double rFractureEnergy);
-
-    //! @brief ... get friction coefficient
-    //! @param rIdent ...  constitutive model
-    double ConstitutiveLawGetFrictionCoefficient(int rIdent);
-
-    //! @brief ... set friction coefficient
-    //! @param rFrictionCoefficient ...  friction coefficient
-    void ConstitutiveLawSetFrictionCoefficient(int rIdent, double rFrictionCoefficient);
-
-    //! @brief ... set heat cpacity
-    void ConstitutiveLawSetHeatCapacity(int rIdent, double rHeatCapacity);
-
-    //! @brief ... get heat cpacity
-    double ConstitutiveLawGetheatCapacity(int rIdent) const;
-
-    //! @brief ... set thermal conductivity
-    void ConstitutiveLawSetThermalConductivity(int rIdent, double rThermalConductivity);
-
-    //! @brief ... get thermal conductivity
-    double ConstitutiveLawGetThermalConductivity(int rIdent) const;
-
-    //! @brief ... get viscosity
-    //! @return ... viscosity
-    double ConstitutiveLawGetViscosity(int rIdent) const;
-
-    //! @brief ... set viscosity
-    //! @param ... viscosity
-    void ConstitutiveLawSetViscosity(int rIdent, double rViscosity);
-
-    //! @brief ... get viscosity exponent
-    //! @return ... viscosity exponent
-    double ConstitutiveLawGetViscosityExponent(int rIdent) const;
-
-    //! @brief ... set fatigue extrapolation flag
-    //! @param ... fatigue extrapolation flag
-    void ConstitutiveLawSetFatigueExtrapolation(int rIdent, bool rFatigueExtrapolation);
-
-    //! @brief ... get fatigue extrapolation flag
-    //! @param ... fatigue extrapolation flag
-    bool ConstitutiveLawGetFatigueExtrapolation(int rIdent) const;
-
-    //! @brief ... set viscosity exponent
-    //! @param ... viscosity exponent
-    void ConstitutiveLawSetViscosityExponent(int rIdent, double rViscosityExponent);
-
-    //! @brief ... get damage distribution (determines the portion of damage via viscoplasticity and plasticity)
-    //! @return ... damage distribution
-    double ConstitutiveLawGetDamageDistribution(int rIdent) const;
-
-    //! @brief ... set damage distribution (determines the portion of damage via viscoplasticity and plasticity)
-    //! @param ... damage distribution
-    void ConstitutiveLawSetDamageDistribution(int rIdent, double rDamageDistribution);
 
 
     //! @brief ... get damage law
@@ -1576,13 +1410,6 @@ public:
     //! rDamageLaw[1] = e_f // post-peak slope parameter <BR>
     void ConstitutiveLawSetDamageLaw(int rIdent, const NuTo::FullVector<double, Eigen::Dynamic> rDamageLaw);
 
-    //! @brief ... get viscoplastic yield surface offset with respect to the plastic yield surface
-    //! @return ... viscoplastic yield surface offset
-    double ConstitutiveLawGetViscoplasticYieldSurfaceOffset(int rIdent) const;
-
-    //! @brief ... set viscoplastic yield surface offset with respect to the plastic yield surface
-    //! @param ... viscoplastic yield surface offset
-    void ConstitutiveLawSetViscoplasticYieldSurfaceOffset(int rIdent, double rViscoplasticYieldSurfaceOffset);
 
     //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
     //! @param rIdent ... constitutive law identifier

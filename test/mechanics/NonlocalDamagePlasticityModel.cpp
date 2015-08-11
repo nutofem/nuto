@@ -78,7 +78,7 @@ int main()
     Incidence(1) = node5;
     Incidence(2) = node8;
     Incidence(3) = node7;
-    int myElement3 = myStructure.ElementCreate(interpolationType,Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
+    myStructure.ElementCreate(interpolationType,Incidence,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
 
 /*  Incidence(0,0) = node5;
     Incidence(1,0) = node6;
@@ -92,28 +92,28 @@ int main()
     Incidence3(0) = node5;
     Incidence3(1) = node6;
     Incidence3(2) = node9;
-    int myElement4 = myStructure.ElementCreate(interpolationType3,Incidence3,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
+    myStructure.ElementCreate(interpolationType3,Incidence3,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
 
     Incidence3(0) = node5;
     Incidence3(1) = node9;
     Incidence3(2) = node8;
-    int myElement5 = myStructure.ElementCreate(interpolationType3,Incidence3,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
+    myStructure.ElementCreate(interpolationType3,Incidence3,"ConstitutiveLawIpNonlocal","StaticDataNonlocal");
 
     myStructure.ElementTotalConvertToInterpolationType();
 
     //create constitutive law
     int myMatDamage = myStructure.ConstitutiveLawCreate("NonlocalDamagePlasticityEngineeringStress");
-    myStructure.ConstitutiveLawSetYoungsModulus(myMatDamage,9);
-    myStructure.ConstitutiveLawSetPoissonsRatio(myMatDamage,0.25);
-    myStructure.ConstitutiveLawSetNonlocalRadius(myMatDamage,2.);
-    myStructure.ConstitutiveLawSetTensileStrength(myMatDamage,2);
-    myStructure.ConstitutiveLawSetCompressiveStrength(myMatDamage,20);
-    myStructure.ConstitutiveLawSetBiaxialCompressiveStrength(myMatDamage,25);
-    myStructure.ConstitutiveLawSetFractureEnergy(myMatDamage,0.2);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,9);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,0.25);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS,2.);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH,2);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH,20);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,NuTo::Constitutive::eConstitutiveParameter::BIAXIAL_COMPRESSIVE_STRENGTH,25);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatDamage,NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY,0.2);
 
     int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
-    myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10);
-    myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.25);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,10);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,0.25);
 
     //create section
     int mySection = myStructure.SectionCreate("Plane_Strain");
@@ -278,7 +278,7 @@ int main()
 #endif
 
     NuTo::FullVector<double,Eigen::Dynamic> shift(2);
-    shift(0) = 3.+myStructure.ConstitutiveLawGetNonlocalRadius(myMatDamage);
+    shift(0) = 3.+myStructure.ConstitutiveLawGetParameterDouble(myMatDamage,NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS);
     shift(1) = 0;
     myStructure.CopyAndTranslate(shift);
 

@@ -37,9 +37,9 @@ def Run(rStructure, rType, rOrder):
 	# set constitutive law
 	# **********************
 	lawId = rStructure.ConstitutiveLawCreate("LINEARELASTICENGINEERINGSTRESS")
-	rStructure.ConstitutiveLawSetYoungsModulus(lawId, E)
-	rStructure.ConstitutiveLawSetPoissonsRatio(lawId,nu)
-	rStructure.ConstitutiveLawSetDensity(lawId,rho)
+        rStructure.ConstitutiveLawSetParameterDouble(lawId,"YoungsModulus", E)
+        rStructure.ConstitutiveLawSetParameterDouble(lawId,"PoissonsRatio",nu)
+        rStructure.ConstitutiveLawSetParameterDouble(lawId,"Density",rho)
 	
 	rStructure.ElementTotalSetConstitutiveLaw(lawId)
 

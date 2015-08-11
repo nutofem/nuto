@@ -53,10 +53,15 @@ enum eDamageLawType
     ISOTROPIC_CUBIC_HERMITE                         //!< cubic hermite h00
 };
 
-enum class eConstitutiveVariable
+enum class eConstitutiveParameter
 {
+    BIAXIAL_COMPRESSIVE_STRENGTH,               //!<
     BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE,      //!<
     BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE,    //!<
+    COMPRESSIVE_STRENGTH,                       //!<
+    DAMAGE_DISTRIBUTION,                        //!<
+    DAMAGE_LAW,                                 //!<
+    DENSITY,                                    //!<
     DENSITY_WATER_PHASE,                        //!<
     DIFFUSION_CONSTANT_GAS_PHASE,               //!<
     DIFFUSION_CONSTANT_WATER_PHASE,             //!<
@@ -64,36 +69,71 @@ enum class eConstitutiveVariable
     DIFFUSION_EXPONENT_WATER_PHASE,             //!<
     ENABLE_MODIFIED_TANGENTIAL_STIFFNESS,       //!<
     ENABLE_SORPTION_HYSTERESIS,                 //!<
+    FATIGUE_EXTRAPOLATION,                      //!<
+    FRACTURE_ENERGY,                            //!<
     GRADIENT_CORRECTION_ADSORPTION_DESORPTION,  //!<
     GRADIENT_CORRECTION_DESORPTION_ADSORPTION,  //!<
+    HARDENING_EXPONENT,                         //!<
+    HARDENING_VALUE,                            //!<
+    INITIAL_HARDENING_MODULUS,                  //!<
+    INITIAL_YIELD_STRENGTH,                     //!<
     MASS_EXCHANGE_RATE,                         //!<
+    NONLOCAL_RADIUS,                            //!<
+    NONLOCAL_RADIUS_PARAMETER,                  //!<
+    POISSONS_RATIO,                              //!<
     POLYNOMIAL_COEFFICIENTS_ADSORPTION,         //!<
     POLYNOMIAL_COEFFICIENTS_DESORPTION,         //!<
     POROSITY,                                   //!<
-    SATURATION_DENSITY_GAS_PHASE                //!<
+    SATURATION_DENSITY_GAS_PHASE,               //!<
+    TENSILE_STRENGTH,                           //!<
+    THERMAL_EXPANSION_COEFFICIENT,              //!<
+    VISCOPLASTIC_YIELD_SURFACE_OFFSET,          //!<
+    VISCOSITY,                                  //!<
+    VISCOSITY_EXPONENT,                         //!<
+    YOUNGS_MODULUS                              //!<
+
 };
 
-static inline eConstitutiveVariable GetConstitutiveVariableFromString(const std::string& rVariableName)
+static inline eConstitutiveParameter GetConstitutiveVariableFromString(const std::string& rVariableName)
 {
-    std::map<std::string,eConstitutiveVariable> MapStringToConstitutiveVariable;
+    std::map<std::string,eConstitutiveParameter> MapStringToConstitutiveVariable;
 
-    MapStringToConstitutiveVariable["BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE"]        = eConstitutiveVariable::BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE;
-    MapStringToConstitutiveVariable["BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE"]      = eConstitutiveVariable::BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE;
-    MapStringToConstitutiveVariable["DENSITY_WATER_PHASE"]                          = eConstitutiveVariable::DENSITY_WATER_PHASE;
-    MapStringToConstitutiveVariable["DIFFUSION_CONSTANT_GAS_PHASE"]                 = eConstitutiveVariable::DIFFUSION_CONSTANT_GAS_PHASE;
-    MapStringToConstitutiveVariable["DIFFUSION_CONSTANT_WATER_PHASE"]               = eConstitutiveVariable::DIFFUSION_CONSTANT_WATER_PHASE;
-    MapStringToConstitutiveVariable["DIFFUSION_EXPONENT_GAS_PHASE"]                 = eConstitutiveVariable::DIFFUSION_EXPONENT_GAS_PHASE;
-    MapStringToConstitutiveVariable["DIFFUSION_EXPONENT_WATER_PHASE"]               = eConstitutiveVariable::DIFFUSION_EXPONENT_WATER_PHASE;
-    MapStringToConstitutiveVariable["ENABLE_MODIFIED_TANGENTIAL_STIFFNESS"]         = eConstitutiveVariable::ENABLE_MODIFIED_TANGENTIAL_STIFFNESS;
-    MapStringToConstitutiveVariable["ENABLE_SORPTION_HYSTERESIS"]                   = eConstitutiveVariable::ENABLE_SORPTION_HYSTERESIS;
-    MapStringToConstitutiveVariable["GRADIENT_CORRECTION_ADSORPTION_DESORPTION"]    = eConstitutiveVariable::GRADIENT_CORRECTION_ADSORPTION_DESORPTION;
-    MapStringToConstitutiveVariable["GRADIENT_CORRECTION_DESORPTION_ADSORPTION"]    = eConstitutiveVariable::GRADIENT_CORRECTION_DESORPTION_ADSORPTION;
-    MapStringToConstitutiveVariable["MASS_EXCHANGE_RATE"]                           = eConstitutiveVariable::MASS_EXCHANGE_RATE;
-    MapStringToConstitutiveVariable["POLYNOMIAL_COEFFICIENTS_ADSORPTION"]           = eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_ADSORPTION;
-    MapStringToConstitutiveVariable["POLYNOMIAL_COEFFICIENTS_DESORPTION"]           = eConstitutiveVariable::POLYNOMIAL_COEFFICIENTS_DESORPTION;
-    MapStringToConstitutiveVariable["POROSITY"]                                     = eConstitutiveVariable::POROSITY;
-    MapStringToConstitutiveVariable["SATURATION_DENSITY_GAS_PHASE"]                 = eConstitutiveVariable::SATURATION_DENSITY_GAS_PHASE;
-
+    MapStringToConstitutiveVariable["BIAXIALCOMPRESSIVESTRENGTH"]                   = eConstitutiveParameter::BIAXIAL_COMPRESSIVE_STRENGTH;
+    MapStringToConstitutiveVariable["BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE"]        = eConstitutiveParameter::BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE;
+    MapStringToConstitutiveVariable["BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE"]      = eConstitutiveParameter::BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE;
+    MapStringToConstitutiveVariable["COMPRESSIVESTRENGTH"]                          = eConstitutiveParameter::COMPRESSIVE_STRENGTH;
+    MapStringToConstitutiveVariable["DAMAGEDISTRIBUTION"]                           = eConstitutiveParameter::DAMAGE_DISTRIBUTION;
+    MapStringToConstitutiveVariable["DAMAGELAW"]                                    = eConstitutiveParameter::DAMAGE_LAW;
+    MapStringToConstitutiveVariable["DENSITY"]                                      = eConstitutiveParameter::DENSITY;
+    MapStringToConstitutiveVariable["DENSITY_WATER_PHASE"]                          = eConstitutiveParameter::DENSITY_WATER_PHASE;
+    MapStringToConstitutiveVariable["DIFFUSION_CONSTANT_GAS_PHASE"]                 = eConstitutiveParameter::DIFFUSION_CONSTANT_GAS_PHASE;
+    MapStringToConstitutiveVariable["DIFFUSION_CONSTANT_WATER_PHASE"]               = eConstitutiveParameter::DIFFUSION_CONSTANT_WATER_PHASE;
+    MapStringToConstitutiveVariable["DIFFUSION_EXPONENT_GAS_PHASE"]                 = eConstitutiveParameter::DIFFUSION_EXPONENT_GAS_PHASE;
+    MapStringToConstitutiveVariable["DIFFUSION_EXPONENT_WATER_PHASE"]               = eConstitutiveParameter::DIFFUSION_EXPONENT_WATER_PHASE;
+    MapStringToConstitutiveVariable["ENABLE_MODIFIED_TANGENTIAL_STIFFNESS"]         = eConstitutiveParameter::ENABLE_MODIFIED_TANGENTIAL_STIFFNESS;
+    MapStringToConstitutiveVariable["ENABLE_SORPTION_HYSTERESIS"]                   = eConstitutiveParameter::ENABLE_SORPTION_HYSTERESIS;
+    MapStringToConstitutiveVariable["FATIGUEEXTRAPOLATION"]                         = eConstitutiveParameter::FATIGUE_EXTRAPOLATION;
+    MapStringToConstitutiveVariable["FRACTUREENERGY"]                               = eConstitutiveParameter::FRACTURE_ENERGY;
+    MapStringToConstitutiveVariable["GRADIENT_CORRECTION_ADSORPTION_DESORPTION"]    = eConstitutiveParameter::GRADIENT_CORRECTION_ADSORPTION_DESORPTION;
+    MapStringToConstitutiveVariable["GRADIENT_CORRECTION_DESORPTION_ADSORPTION"]    = eConstitutiveParameter::GRADIENT_CORRECTION_DESORPTION_ADSORPTION;
+    MapStringToConstitutiveVariable["HARDENINGEXPONENT"]                            = eConstitutiveParameter::HARDENING_EXPONENT;
+    MapStringToConstitutiveVariable["HARDENINGVALUE"]                               = eConstitutiveParameter::HARDENING_VALUE;
+    MapStringToConstitutiveVariable["INITIALHARDENINGMODULUS"]                      = eConstitutiveParameter::INITIAL_HARDENING_MODULUS;
+    MapStringToConstitutiveVariable["INITIALYIELDSTRENGTH"]                         = eConstitutiveParameter::INITIAL_YIELD_STRENGTH;
+    MapStringToConstitutiveVariable["MASS_EXCHANGE_RATE"]                           = eConstitutiveParameter::MASS_EXCHANGE_RATE;
+    MapStringToConstitutiveVariable["NONLOCALRADIUS"]                               = eConstitutiveParameter::NONLOCAL_RADIUS;
+    MapStringToConstitutiveVariable["NONLOCALRADIUSPARAMETER"]                      = eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER;
+    MapStringToConstitutiveVariable["POISSONSRATIO"]                                = eConstitutiveParameter::POISSONS_RATIO;
+    MapStringToConstitutiveVariable["POLYNOMIAL_COEFFICIENTS_ADSORPTION"]           = eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_ADSORPTION;
+    MapStringToConstitutiveVariable["POLYNOMIAL_COEFFICIENTS_DESORPTION"]           = eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION;
+    MapStringToConstitutiveVariable["POROSITY"]                                     = eConstitutiveParameter::POROSITY;
+    MapStringToConstitutiveVariable["SATURATION_DENSITY_GAS_PHASE"]                 = eConstitutiveParameter::SATURATION_DENSITY_GAS_PHASE;
+    MapStringToConstitutiveVariable["TENSILESTRENGTH"]                              = eConstitutiveParameter::TENSILE_STRENGTH;
+    MapStringToConstitutiveVariable["THERMALEXPANSIONCOEFFICIENT"]                  = eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT;
+    MapStringToConstitutiveVariable["VISCOPLASTICYIELDSURFACEOFFSET"]               = eConstitutiveParameter::VISCOPLASTIC_YIELD_SURFACE_OFFSET;
+    MapStringToConstitutiveVariable["VISCOSITY"]                                    = eConstitutiveParameter::VISCOSITY;
+    MapStringToConstitutiveVariable["VISCOSITYEXPONENT"]                            = eConstitutiveParameter::VISCOSITY_EXPONENT;
+    MapStringToConstitutiveVariable["YOUNGSMODULUS"]                                = eConstitutiveParameter::YOUNGS_MODULUS;
     // find element in map
 
     auto itResult = MapStringToConstitutiveVariable.find(rVariableName);

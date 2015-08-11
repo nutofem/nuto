@@ -601,8 +601,8 @@ void NuTo::StructureGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,i
 #endif
 		// create material law
 		int myMat=myHelpStruc.ConstitutiveLawCreate("LINEARELASTICENGINEERINGSTRESS");
-		myHelpStruc.ConstitutiveLawSetPoissonsRatio(myMat, rPoissonsRatio);
-		myHelpStruc.ConstitutiveLawSetYoungsModulus(myMat, 1.0);
+        myHelpStruc.ConstitutiveLawSetParameterDouble(myMat,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, rPoissonsRatio);
+        myHelpStruc.ConstitutiveLawSetParameterDouble(myMat,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.0);
 
 		// create nodes
 		NuTo::FullVector<double,Eigen::Dynamic> nodeCoordinates(3);
@@ -684,7 +684,7 @@ void NuTo::StructureGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,i
 			mLocalCoefficientMatrix0.push_back(stiffness);
 
 			//calculate shape derivative functions
-			const double rLocalCoordinates[3]={0,0,0};
+            //const double rLocalCoordinates[3]={0,0,0};
 			mLocalDerivativeShapeFunctions.resize(24);
 			//NuTo::Brick8N* myElementPointer;
 			//myElementPointer=static_cast<NuTo::Brick8N*> (myHelpStruc.ElementGetElementPtr(myHelpElement));
@@ -706,8 +706,8 @@ void NuTo::StructureGrid::SetBasisElementStiffnessMatrix(double rPoissonsRatio,i
 			//			std::cout<<"[StructureGrid] (line "<<__LINE__<<" mLocalDerivativeShapeFunctions "<<mLocalDerivativeShapeFunctions[0]<<" "<<mLocalDerivativeShapeFunctions[1]<<" "<<mLocalDerivativeShapeFunctions[2]<<"\n";
 //			std::cout<<"[StructureGrid] (line "<<__LINE__<<" mLocalDerivativeShapeFunctions "<<mLocalDerivativeShapeFunctions[21]<<" "<<mLocalDerivativeShapeFunctions[22]<<" "<<mLocalDerivativeShapeFunctions[23]<<"\n";
             LinearElasticEngineeringStress myMaterial;
-			myMaterial.SetPoissonsRatio(rPoissonsRatio);
-            myMaterial.SetYoungsModulus(1.0);
+            myMaterial.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,rPoissonsRatio);
+            myMaterial.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,1.0);
 #ifdef PLANESTRESS
             myMaterial.CalculateCoefficients2DPlainStress(mC11,mC12,mC44);
 			//static_cast<NuTo::LinearElasticEngineeringStress*> (myElementPointer->GetConstitutiveLaw(0))->CalculateCoefficients2DPlainStress(mC11,mC12,mC44);
@@ -1150,8 +1150,9 @@ void NuTo::StructureGrid::CreateGrid(int rThresholdMaterialValue, std::string fi
 			std::cout<<mEdgeId[i]<<" ";
 		std::cout<<"\n";
 	}
-
+#ifdef _OPENACC
 #pragma acc data copyin(mVoxelId,mYoungsModulus,mLocalCoefficientMatrix0,mRightHandSide)
+#endif
 }
 
 //! @brief set displacement boundary conditions
@@ -1238,23 +1239,29 @@ void NuTo::StructureGrid::CalculateMatrixVectorProductEBE(std::vector<double>& u
 
 
 	// make sure residual vector is reset with zero //
+#ifdef _OPENACC
 #pragma acc parallel loop present(r[0:numParas])
+#endif
 {
 	for(size_t i=0;i<numParas;++i)
 		r[i]=0;
 }
 
 	//move local data in loop for acc ?
-	#pragma acc firstprivate(residual[0,24],displacement[0,24],nodeNumbers[0,numNodes],youngsModulus)
-	std::vector<double> residual (24);
+#ifdef _OPENACC
+    #pragma acc firstprivate(residual[0,24],displacement[0,24],nodeNumbers[0,numNodes],youngsModulus)
+#endif
+    std::vector<double> residual (24);
 	std::vector<double> displacement(24);
 	int numNodes=8;
 	std::vector<size_t> nodeNumbers(numNodes);
 	double youngsModulus=0;
 
 	//loop over all elements
-	#pragma acc parallel loop present(u[0:numParas],r[0:numParas],mVoxelId[0:numElems],mYoungsModulus[0:numElems],	mLocalCoefficientMatrix0[0:576],mDofIsConstraint[0:numParas])
-	for (size_t elementNumber=0;elementNumber<numElems;++elementNumber)
+#ifdef _OPENACC
+    #pragma acc parallel loop present(u[0:numParas],r[0:numParas],mVoxelId[0:numElems],mYoungsModulus[0:numElems],	mLocalCoefficientMatrix0[0:576],mDofIsConstraint[0:numParas])
+#endif
+    for (size_t elementNumber=0;elementNumber<numElems;++elementNumber)
 	{
 		//calculate local return vector with all dofs: r=Ku
 		#ifndef NODESATELEM
@@ -1262,8 +1269,10 @@ void NuTo::StructureGrid::CalculateMatrixVectorProductEBE(std::vector<double>& u
 		#endif
 		youngsModulus=mYoungsModulus[elementNumber];
 
+#ifdef _OPENACC
 		#pragma acc parallel loop
-		for(int node=0;node<numNodes;++node)
+#endif
+        for(int node=0;node<numNodes;++node)
 		{
 			#ifdef NODESATELEM
 			nodeNumbers[node]=mNodesAtElem[8*elementNumber+node];
@@ -1273,12 +1282,16 @@ void NuTo::StructureGrid::CalculateMatrixVectorProductEBE(std::vector<double>& u
 			displacement[3*node+1]=u[3*nodeNumbers[node]+1];
 			displacement[3*node+2]=u[3*nodeNumbers[node]+2];
 		}
-		#pragma acc parallel loop //needed or for each thread initialized already with zero
-		for(int i=0;i<dofsElem;++i)
+#ifdef _OPENACC
+        #pragma acc parallel loop //needed or for each thread initialized already with zero
+#endif
+        for(int i=0;i<dofsElem;++i)
 		{
 			residual[i]=0;
-			#pragma acc parallel loop
-			for(int j=0;j<dofsElem;++j)
+#ifdef _OPENACC
+            #pragma acc parallel loop
+#endif
+            for(int j=0;j<dofsElem;++j)
 				residual[i]+=youngsModulus*mLocalCoefficientMatrix0[0][dofsElem*i+j]*displacement[j];
 		}
 
@@ -1399,8 +1412,10 @@ void NuTo::StructureGrid::Hessian(std::vector<double>&  rDiagHessian)
 //! @param rHessianDiag ... input residual, output z=p*r
 void NuTo::StructureGrid::HessianDiag(std::vector<double>& rHessianDiag)
 {
+#ifdef _OPENACC
 #pragma data present(rHessianDiag,mYoungsModulus,mLocalCoefficientMatrix0)
 #pragma acc parallel loop
+#endif
 	// input vector is residual which has to preconditioned
 	size_t numNodes=mEdgeId.size();
 	std::vector<double> rProduct(3*numNodes);
@@ -1411,8 +1426,9 @@ void NuTo::StructureGrid::HessianDiag(std::vector<double>& rHessianDiag)
 			size_t numElems=mVoxelId.size();
 	//		std::cout<<"[StructureGrid::HessianDiag] EBE"<<std::endl;
 			std::vector<size_t> nodeNumbers(8);
-
+#ifdef _OPENACC
 	#pragma acc parallel loop
+#endif
 			for (size_t elementNumber=0;elementNumber<numElems;++elementNumber)
 			{
 				double elemStiff=0;
@@ -1583,7 +1599,7 @@ void NuTo::StructureGrid::GetEngineeringStrain(const std::vector<double> &rDispl
 	std::vector<size_t> nodes(rNodesPerElement);
 	rEngineeringStrain.resize(mVoxelId.size()*6);
 	std::vector<double>nodeCoord(rNodesPerElement*3);
-	double invJacobian[9], detJac;
+    double invJacobian[9];
 	std::vector<double> derivativeShapeFunctionsGlobal(mLocalDerivativeShapeFunctions.size());
 
 #ifdef PLANESTRESS
@@ -1617,7 +1633,7 @@ void NuTo::StructureGrid::GetEngineeringStrain(const std::vector<double> &rDispl
 		CalculateNodalCoordinatesAtElement(element,nodes,nodeCoord);
 
 //		myElementPointer->CalculateJacobian(mLocalDerivativeShapeFunctions,nodeCoord, invJacobian, detJac);
-        double detJacUnusedWarningFixMe = detJac;
+        //double detJacUnusedWarningFixMe = detJac;
 
 		myElementPointer->CalculateDerivativeShapeFunctionsGlobal(mLocalDerivativeShapeFunctions,invJacobian,
 													derivativeShapeFunctionsGlobal);

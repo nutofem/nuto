@@ -755,150 +755,116 @@ void NuTo::GradientDamagePlasticityEngineeringStress::CalculateCoefficients3D(do
 }
 
 // parameters /////////////////////////////////////////////////////////////
-//! @brief ... get density
-//! @return ... density
-double NuTo::GradientDamagePlasticityEngineeringStress::GetDensity() const
+
+//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @return ... value of the requested variable
+double NuTo::GradientDamagePlasticityEngineeringStress::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    return this->mRho;
+    switch(rIdentifier)
+    {
+    case Constitutive::eConstitutiveParameter::BIAXIAL_COMPRESSIVE_STRENGTH:
+        return mBiaxialCompressiveStrength;
+    case Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH:
+        return mCompressiveStrength;
+    case Constitutive::eConstitutiveParameter::DENSITY:
+        return this->mRho;
+    case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
+        return mFractureEnergy;
+    case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS:
+        return this->mNonlocalRadius;
+    case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
+        return this->mNu;
+    case Constitutive::eConstitutiveParameter::TENSILE_STRENGTH:
+        return mTensileStrength;
+    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
+        return this->mThermalExpansionCoefficient;
+    case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
+        return this->mE;
+    default:
+    {
+        throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::GetParameterDouble] Constitutive law does not have the requested variable");
+    }
+    }
 }
 
-//! @brief ... set density
-//! @param rRho ... density
-void NuTo::GradientDamagePlasticityEngineeringStress::SetDensity(double rRho)
+//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rValue ... new value for requested variable
+void NuTo::GradientDamagePlasticityEngineeringStress::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
-    this->CheckDensity(rRho);
-    this->mRho = rRho;
-    this->SetParametersValid();
+    switch(rIdentifier)
+    {
+    case Constitutive::eConstitutiveParameter::BIAXIAL_COMPRESSIVE_STRENGTH:
+    {
+        this->CheckBiaxialCompressiveStrength(rValue);
+        this->mBiaxialCompressiveStrength = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH:
+    {
+        this->CheckCompressiveStrength(rValue);
+        this->mCompressiveStrength = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::DENSITY:
+    {
+        this->CheckDensity(rValue);
+        this->mRho = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
+    {
+        this->CheckFractureEnergy(rValue);
+        this->mFractureEnergy = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS:
+    {
+        this->CheckNonlocalRadius(rValue);
+        this->mNonlocalRadius = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
+    {
+        this->CheckPoissonsRatio(rValue);
+        this->mNu = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::TENSILE_STRENGTH:
+    {
+        this->CheckTensileStrength(rValue);
+        this->mTensileStrength = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
+    {
+        this->CheckThermalExpansionCoefficient(rValue);
+        this->mThermalExpansionCoefficient = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
+    {
+        this->CheckYoungsModulus(rValue);
+        this->mE = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    default:
+    {
+        throw MechanicsException("[NuTo::GradientDamagePlasticityEngineeringStress::SetParameterDouble] Constitutive law does not have the requested variable");
+    }
+    }
 }
 
-//! @brief ... get Young's modulus
-//! @return ... Young's modulus
-double NuTo::GradientDamagePlasticityEngineeringStress::GetYoungsModulus() const
-{
-    return mE;
-}
-
-
-//! @brief ... set Young's modulus
-//! @param rE ... Young's modulus
-void NuTo::GradientDamagePlasticityEngineeringStress::SetYoungsModulus(double rE)
-{
-    this->CheckYoungsModulus(rE);
-    this->mE = rE;
-    this->SetParametersValid();
-}
-
-
-//! @brief ... get Poisson's ratio
-//! @return ... Poisson's ratio
-double NuTo::GradientDamagePlasticityEngineeringStress::GetPoissonsRatio() const
-{
-    return mNu;
-}
-
-//! @brief ... set Poisson's ratio
-//! @param rNu ... Poisson's ratio
-void NuTo::GradientDamagePlasticityEngineeringStress::SetPoissonsRatio(double rNu)
-{
-    this->CheckPoissonsRatio(rNu);
-    this->mNu = rNu;
-    this->SetParametersValid();
-}
-
-//! @brief ... get nonlocal radius
-//! @return ... nonlocal radius
-double NuTo::GradientDamagePlasticityEngineeringStress::GetNonlocalRadius() const
-{
-    return mNonlocalRadius;
-}
-
-//! @brief ... set nonlocal radius
-//! @param rRadius...  nonlocal radius
-void NuTo::GradientDamagePlasticityEngineeringStress::SetNonlocalRadius(double rNonlocalRadius)
-{
-    this->CheckNonlocalRadius(rNonlocalRadius);
-    this->mNonlocalRadius = rNonlocalRadius;
-    this->SetParametersValid();
-}
-//! @brief ... get tensile strength
-//! @return ... tensile strength
-double NuTo::GradientDamagePlasticityEngineeringStress::GetTensileStrength() const
-{
-    return mTensileStrength;
-}
-
-//! @brief ... set tensile strength
-//! @param rTensileStrength...  tensile strength
-void NuTo::GradientDamagePlasticityEngineeringStress::SetTensileStrength(double rTensileStrength)
-{
-    this->CheckNonlocalRadius(rTensileStrength);
-    this->mTensileStrength = rTensileStrength;
-    this->SetParametersValid();
-}
-
-//! @brief ... get compressive strength
-//! @return ... compressive strength
-double NuTo::GradientDamagePlasticityEngineeringStress::GetCompressiveStrength() const
-{
-    return mCompressiveStrength;
-}
-
-//! @brief ... set compressive strength
-//! @param rCompressiveStrength...  compressive strength
-void NuTo::GradientDamagePlasticityEngineeringStress::SetCompressiveStrength(double rCompressiveStrength)
-{
-    this->CheckCompressiveStrength(rCompressiveStrength);
-    this->mCompressiveStrength = rCompressiveStrength;
-    this->SetParametersValid();
-}
-
-//! @brief ... get biaxial compressive strength
-//! @return ... biaxial compressive strength
-double NuTo::GradientDamagePlasticityEngineeringStress::GetBiaxialCompressiveStrength() const
-{
-    return mBiaxialCompressiveStrength;
-}
-
-//! @brief ... set biaxial compressive strength
-//! @param rBiaxialCompressiveStrength...  biaxial compressive strength
-void NuTo::GradientDamagePlasticityEngineeringStress::SetBiaxialCompressiveStrength(double rBiaxialCompressiveStrength)
-{
-    this->CheckNonlocalRadius(rBiaxialCompressiveStrength);
-    this->mBiaxialCompressiveStrength = rBiaxialCompressiveStrength;
-    this->SetParametersValid();
-}
-
-//! @brief ... get fracture energy
-//! @return ... fracture energy
-double NuTo::GradientDamagePlasticityEngineeringStress::GetFractureEnergy() const
-{
-    return mFractureEnergy;
-}
-
-//! @brief ... set fracture energy
-//! @param rFractureEnergy... fracture energy
-void NuTo::GradientDamagePlasticityEngineeringStress::SetFractureEnergy(double rFractureEnergy)
-{
-    this->CheckFractureEnergy(rFractureEnergy);
-    this->mFractureEnergy = rFractureEnergy;
-    this->SetParametersValid();
-}
-
-//! @brief ... get thermal expansion coefficient
-//! @return ... thermal expansion coefficient
-double NuTo::GradientDamagePlasticityEngineeringStress::GetThermalExpansionCoefficient() const
-{
-    return mThermalExpansionCoefficient;
-}
-
-//! @brief ... set thermal expansion coefficient
-//! @param rNu ... thermal expansion coefficient
-void NuTo::GradientDamagePlasticityEngineeringStress::SetThermalExpansionCoefficient(double rAlpha)
-{
-    this->CheckThermalExpansionCoefficient(rAlpha);
-    this->mThermalExpansionCoefficient = rAlpha;
-    this->SetParametersValid();
-}
 ///////////////////////////////////////////////////////////////////////////
 
 
@@ -1146,6 +1112,10 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     std::vector<FullMatrix<double,1,1> > vectorN;
     //! @brief number of active yield functions
     int numActiveYieldFunctions;
+
+    // to avoid warning -Wmaybe-uninitialized
+    yieldConditionLS(0) = 0;
+    yieldConditionLS(1) = 0;
 
     // for the application of strains in steps, calculate the total strain increment to be applied
     deltaStrain = rStrain-rPrevTotalStrain;
@@ -2860,6 +2830,10 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     //! @brief number of active yield functions
     int numActiveYieldFunctions;
 
+    // to avoid warning -Wmaybe-uninitialized
+    delta2Gamma(0) = 0;
+    delta2Gamma(1) = 0;
+
     // for the application of strains in steps, calculate the total strain increment to be applied
     deltaStrain = rStrain - rPrevTotalStrain;
 #ifdef ENABLE_DEBUG
@@ -3391,6 +3365,15 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
                             // compute deltaGamma
                             Eigen::Matrix<double,6,1> helpVector = hessian * residual;
                             Eigen::Matrix<double,6,1> helpVector2; helpVector2.Zero();
+
+                            // to avoid warning -Wmaybe-uninitialized
+                            helpVector2(0) = 0;
+                            helpVector2(1) = 0;
+                            helpVector2(2) = 0;
+                            helpVector2(3) = 0;
+                            helpVector2(4) = 0;
+                            helpVector2(5) = 0;
+
                             for (int count=0; count<numYieldSurfaces; count++)
                             {
                                 if (yieldConditionFlag(count)==INACTIVE)

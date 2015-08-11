@@ -281,8 +281,8 @@ void CheckAPI()
 
     //create constitutive law
     int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
-    myStructure.ConstitutiveLawSetYoungsModulus(myMatLin, 10);
-    myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin, 0.2);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 10);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.2);
 
     //create section
     int mySection = myStructure.SectionCreate("Plane_Strain");
@@ -367,8 +367,8 @@ void ImportFromGmsh(std::string rMeshFile)
     myStructure.ElementTotalSetSection(section);
 
     int constitutiveLaw = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
-    myStructure.ConstitutiveLawSetYoungsModulus(constitutiveLaw, 42);
-    myStructure.ConstitutiveLawSetPoissonsRatio(constitutiveLaw, .25);
+    myStructure.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 42);
+    myStructure.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, .25);
     myStructure.ElementTotalSetConstitutiveLaw(constitutiveLaw);
 
     myStructure.NodeBuildGlobalDofs();

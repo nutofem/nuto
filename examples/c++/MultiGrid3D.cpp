@@ -220,10 +220,10 @@ end=clock();
 
 	if(argc==1)//nothing added after programm name
 	{
-		solMeth==MG;
+        solMeth=MG;
 	}
 	else
-		solMeth==MGCG;
+        solMeth=MGCG;
 
 	if(solMeth==MG)
 	{

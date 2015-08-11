@@ -25,8 +25,8 @@ try:
 
     #create constitutive law
     myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
-    myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,10)
-    myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0.1)
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"YoungsModulus",10)
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"PoissonsRatio",0.1)
 
     #create section
     mySection1 = myStructure.SectionCreate ("TRUSS")
