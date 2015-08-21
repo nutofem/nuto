@@ -20,12 +20,13 @@ NuTo::IntegrationType::eIntegrationType NuTo::Interpolation1DTruss::GetStandardI
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT1:
         return NuTo::IntegrationType::IntegrationType1D2NGauss1Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
-    case NuTo::Interpolation::eTypeOrder::LOBATTO2:
         return NuTo::IntegrationType::IntegrationType1D2NGauss2Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT3:
         return NuTo::IntegrationType::IntegrationType1D2NGauss3Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT4:
             return NuTo::IntegrationType::IntegrationType1D2NGauss4Ip;
+    case NuTo::Interpolation::eTypeOrder::LOBATTO2:
+        return NuTo::IntegrationType::IntegrationType1D2NLobatto3Ip;
     case NuTo::Interpolation::eTypeOrder::LOBATTO3:
         return NuTo::IntegrationType::IntegrationType1D2NLobatto4Ip;
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:

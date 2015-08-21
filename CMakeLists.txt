@@ -36,7 +36,7 @@ OPTION(ENABLE_PYTHON_TESTS "create makefiles for python tests" TRUE)
 OPTION(ENABLE_C++_TESTS "create makefiles for c++ tests" TRUE)
 OPTION(ENABLE_C++_TESTS_WIP "provides an additional flag to avoid compiling all tests" FALSE)
 OPTION(ENABLE_GUI "enable building the GUI application" FALSE)
-OPTION(ENABLE_MY_EXAMPLES "enable building private examples in a separate directory (nuto/myNutoExamples)" FALSE)
+OPTION(ENABLE_MY_EXAMPLES "enable building private examples in a separate directory (nuto/myNutoExamples)" TRUE)
 OPTION(ENABLE_CGAL "enables CGAL libraries (for cracks only)" FALSE)
 OPTION(ENABLE_ARPACK "enables ARPACK libraries (for the solution of eigenvalue problems)" TRUE)
 
