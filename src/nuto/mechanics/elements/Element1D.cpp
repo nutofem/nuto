@@ -68,6 +68,8 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
             nodalValues[dof] = ExtractNodeValues(0, dof);
         }
 
+        double total_mass(0.);
+
         /*****************************************\
          *    CONSTITUTIVE INPUT DECLARATION     *
          \*****************************************/
@@ -757,6 +759,42 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     {
                         switch (dof)
                         {
+                        case Node::DISPLACEMENTS:
+                        {
+                            //this->CalculateShapeFunctionsField(localIPCoord, shapeFunctionsField);
+                            // calculate local mass matrix (the nonlocal terms are zero)
+                            // don't forget to include determinant of the Jacobian and area
+                            // detJ * area * density * HtH, :
+                            double density = constitutivePtr->GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY);
+                            double factor2 (density * factor);
+                            FullVector<double,Eigen::Dynamic>& result(it->second->GetFullVectorDouble());
+                            total_mass+=factor2;
+                            //calculate for the translational dofs the diagonal entries
+                            int size = shapeFunctions.at(dof).size();
+
+                            for (int count = 0; count < size; count++)
+                            {
+                                result(count)+= shapeFunctions.at(dof)(count)*shapeFunctions.at(dof)(count)*factor2;
+                            }
+
+                            if (theIP+1==GetNumIntegrationPoints())
+                            {
+                                //calculate sum of diagonal entries (is identical for all directions, that's why only x direction is calculated
+                                double sum_diagonal(0);
+                                for (int count = 0; count < size; count++)
+                                {
+                                    sum_diagonal+= result(count);
+                                }
+
+                                //scale so that the sum of the diagonals represents the full mass
+                                double scaleFactor = total_mass/sum_diagonal;
+                                for (int count = 0; count < size; count++)
+                                {
+                                    result(count) *= scaleFactor;
+                                }
+                            }
+                        }
+                            break;
                         default:
                             throw MechanicsException("[NuTo::Element1D::Evaluate] Element output LUMPED_HESSIAN_2_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
                         }

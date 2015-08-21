@@ -86,7 +86,7 @@ void NuTo::TimeIntegrationBase::AddTimeDependentConstraint(int rTimeDependentCon
             throw MechanicsException("[NuTo::TimeIntegrationBase::SetDisplacements] time has to increase monotonically.");
     }
 
-    mMapTimeDependentConstraint.emplace(rTimeDependentConstraint, std::make_shared<TimeDependencyMatrix>(rTimeDependentConstraintFactor));
+    mMapTimeDependentConstraint.insert(std::pair<int,std::shared_ptr<TimeDependencyBase>> (rTimeDependentConstraint, std::make_shared<TimeDependencyMatrix>(rTimeDependentConstraintFactor)));
 }
 
 
@@ -95,7 +95,7 @@ void NuTo::TimeIntegrationBase::AddTimeDependentConstraint(int rTimeDependentCon
 //! @param rTimeDependentConstraintFunction ... function that calculates the time dependent constraint factor for the current time step
 void NuTo::TimeIntegrationBase::AddTimeDependentConstraint(int rTimeDependentConstraint, const std::function<double (double rTime)>& rTimeDependentConstraintFunction)
 {
-    mMapTimeDependentConstraint.emplace(rTimeDependentConstraint, std::make_shared<TimeDependencyFunction>(rTimeDependentConstraintFunction));
+    mMapTimeDependentConstraint.insert(std::pair<int,std::shared_ptr<TimeDependencyBase>> (rTimeDependentConstraint, std::make_shared<TimeDependencyFunction>(rTimeDependentConstraintFunction)));
 }
 
 

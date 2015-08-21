@@ -416,7 +416,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
     {
     	solveMatrix->SetOneBasedIndexing();
     	solver.Factorization(*solveMatrix);
-    	solver.SetShowTime(false);
+        solver.SetShowTime(false);
     }
 
     do
