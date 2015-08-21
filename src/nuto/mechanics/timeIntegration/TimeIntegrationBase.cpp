@@ -526,7 +526,7 @@ void NuTo::TimeIntegrationBase::SetPlotElementGroups(NuTo::FullVector<int,Eigen:
 
 void NuTo::TimeIntegrationBase::ExportVisualizationFiles(const std::string& rResultDir, double rTime, int timeStep)
 {
-#ifdef ENABLE_VISUALIZATION
+#ifdef ENABLE_VISUALIZE
     //plot the solution vtk file
     std::stringstream ssTimeStepVTK;
     ssTimeStepVTK << timeStep;
@@ -655,5 +655,5 @@ void NuTo::TimeIntegrationBase::ExportVisualizationFiles(const std::string& rRes
             file.close();
         }
     }
-#endif //ENABLE_VISUALIZATION
+#endif //ENABLE_VISUALIZE
 }

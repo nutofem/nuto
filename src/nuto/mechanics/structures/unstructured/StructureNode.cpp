@@ -203,7 +203,7 @@ int NuTo::Structure::NodeCreate()
 }
 
 //! creates a node
-int NuTo::Structure::NodeCreate(NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates)
+int NuTo::Structure::NodeCreate(NuTo::FullVector<double,Eigen::Dynamic> rCoordinates)
 {
 
     //find unused integer id
@@ -220,7 +220,7 @@ int NuTo::Structure::NodeCreate(NuTo::FullVector<double,Eigen::Dynamic>& rCoordi
     return id;
 }
 
-NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eAttributes> rDOFs, NuTo::FullVector<double, Eigen::Dynamic>& rCoordinates)
+NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eAttributes> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates)
 {
 
     if (rCoordinates.GetNumRows() != mDimension || rCoordinates.GetNumColumns() != 1)
@@ -847,7 +847,7 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eAttributes> rDOFs
     return nodePtr;
 }
 
-void NuTo::Structure::NodeCreate(int rNodeNumber, NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates)
+void NuTo::Structure::NodeCreate(int rNodeNumber, NuTo::FullVector<double,Eigen::Dynamic> rCoordinates)
 {
 	// check node number
 	boost::ptr_map<int,NodeBase>::iterator it = this->mNodeMap.find(rNodeNumber);
@@ -881,7 +881,7 @@ int NuTo::Structure::NodeCreateDOFs(std::string rDOFs)
     return NodeCreateDOFs(rDOFs, coordinates);
 }
 
-int NuTo::Structure::NodeCreateDOFs(std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates)
+int NuTo::Structure::NodeCreateDOFs(std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic> rCoordinates)
 {
     //find unused integer id
     int id(mNodeMap.size());
@@ -901,7 +901,7 @@ int NuTo::Structure::NodeCreateDOFs(std::string rDOFs, NuTo::FullVector<double,E
 //! @param node number
 //! @param rDOFs ... space separated string containing the node dofs (e.g. displacements, rotations, temperatures)
 //! @param rCoordinates ...  node coordinates
-void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates)
+void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic> rCoordinates)
 {
 
     // check node number

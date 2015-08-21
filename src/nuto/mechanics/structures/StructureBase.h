@@ -411,7 +411,7 @@ public:
     //! @param ... rCoordinates
     //! @param ... rRange
     //! @return ... node id
-    int NodeGetIdAtCoordinate(FullVector<double, Eigen::Dynamic>& rCoordinates, double rRange);
+    int NodeGetIdAtCoordinate(FullVector<double, Eigen::Dynamic> rCoordinates, double rRange);
 
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNodeId (Input) 			... node id

@@ -202,12 +202,12 @@ public:
     //! @brief creates a node with coordinates only
     //! @param rCoordinates coordinates of the node
     //! @return node number
-    int NodeCreate(NuTo::FullVector<double, Eigen::Dynamic>& rCoordinates);
+    int NodeCreate(NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
 
     //! @brief creates a node with coordinates only
     //! @param rNodeNumber ... node number
     //! @param rCoordinates ...  node coordinates
-    void NodeCreate(int rNodeNumber, NuTo::FullVector<double, Eigen::Dynamic>& rCoordinates);
+    void NodeCreate(int rNodeNumber, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
 
     //! @brief creates multiple nodes with coordinates only
     //! @param rCoordinates ...  nodal coordinates (column-wise storage of each nodal coordinate)
@@ -224,13 +224,13 @@ public:
     //! @param rDOFs ... space separated string containing the node dofs (e.g. displacements, rotations, temperatures)
     //! @param rCoordinates ...  node coordinates
     //! @return node number
-    int NodeCreateDOFs(std::string rDOFs, NuTo::FullVector<double, Eigen::Dynamic>& rCoordinates);
+    int NodeCreateDOFs(std::string rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
 
     //! @brief creates a node with specific dofs
     //! @param node number
     //! @param rDOFs ... space separated string containing the node dofs (e.g. displacements, rotations, temperatures)
     //! @param rCoordinates ...  node coordinates
-    void NodeCreateDOFs(int rNodeNumber, std::string rDOFs, NuTo::FullVector<double, Eigen::Dynamic>& rCoordinates);
+    void NodeCreateDOFs(int rNodeNumber, std::string rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
 
     //! @brief deletes a node
     //! @param rNodeNumber ... node number
@@ -776,7 +776,7 @@ private:
     //! @param rDOFs
     //! @param rCoordinates coordinates of the node
     //! @return node pointer
-    NodeBase* NodePtrCreate(std::set<Node::eAttributes> rDOFs, NuTo::FullVector<double, Eigen::Dynamic>& rCoordinates);
+    NodeBase* NodePtrCreate(std::set<Node::eAttributes> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

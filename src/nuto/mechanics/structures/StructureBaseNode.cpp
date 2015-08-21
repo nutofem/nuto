@@ -757,7 +757,7 @@ void NuTo::StructureBase::NodeGetElements(const NuTo::NodeBase* rNodePtr, std::v
 //! @param ... rCoordinates
 //! @param ... rRange
 //! @return ... node id
-int NuTo::StructureBase::NodeGetIdAtCoordinate(FullVector<double, Eigen::Dynamic>& rCoordinates, double rRange)
+int NuTo::StructureBase::NodeGetIdAtCoordinate(FullVector<double, Eigen::Dynamic> rCoordinates, double rRange)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
