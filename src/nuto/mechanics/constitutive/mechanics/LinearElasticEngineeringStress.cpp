@@ -718,43 +718,24 @@ bool NuTo::LinearElasticEngineeringStress::CheckElementCompatibility(NuTo::Eleme
     switch (rElementType)
     {
     case NuTo::Element::ELEMENT1D:
-        return true;
-    case NuTo::Element::ELEMENT1DInXD:
-        return true;
+    case NuTo::Element::ELEMENT1DINXD:
     case NuTo::Element::ELEMENT2D:
-        return true;
     case NuTo::Element::ELEMENT3D:
-        return true;
     case NuTo::Element::BRICK8N:
-        return true;
     case NuTo::Element::PLANE2D10N:
-        return true;
     case NuTo::Element::PLANE2D15N:
-        return true;
     case NuTo::Element::PLANE2D3N:
-        return true;
     case NuTo::Element::PLANE2D4N:
-        return true;
     case NuTo::Element::PLANE2D4NSPECTRALORDER2:
-        return true;
     case NuTo::Element::PLANE2D4NSPECTRALORDER3:
-        return true;
     case NuTo::Element::PLANE2D4NSPECTRALORDER4:
-        return true;
     case NuTo::Element::PLANE2D6N:
-        return true;
     case NuTo::Element::TETRAHEDRON4N:
-        return true;
     case NuTo::Element::TETRAHEDRON10N:
-        return true;
     case NuTo::Element::TRUSS1D2N:
-        return true;
     case NuTo::Element::TRUSS1D2NSPECTRALORDER2:
-        return true;
     case NuTo::Element::TRUSS1D2NSPECTRALORDER3:
-        return true;
     case NuTo::Element::TRUSS1D2NSPECTRALORDER4:
-        return true;
     case NuTo::Element::TRUSS1D3N:
         return true;
     default:

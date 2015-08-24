@@ -24,7 +24,8 @@ enum eConstitutiveType
     STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< strain gradient damage plasticity model (damage and plasticity are function of nonlocal total strain)
     DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS,    //!< viscoplastic damage model
     DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS, //!< viscoplastic damage model with hardening
-    MOISTURE_TRANSPORT                             //!< moisture transport model
+    MOISTURE_TRANSPORT,                             //!< moisture transport model
+    LINEAR_SPRING                                   //!< linear spring model
 };
 
 enum eNonlocalDamageYieldSurface
@@ -85,6 +86,8 @@ enum class eConstitutiveParameter
     POLYNOMIAL_COEFFICIENTS_DESORPTION,         //!<
     POROSITY,                                   //!<
     SATURATION_DENSITY_GAS_PHASE,               //!<
+    SPRING_STIFFNESS,                           //!<
+    SPRING_DIRECTION,                           //!<
     TENSILE_STRENGTH,                           //!<
     THERMAL_EXPANSION_COEFFICIENT,              //!<
     VISCOPLASTIC_YIELD_SURFACE_OFFSET,          //!<
@@ -128,6 +131,7 @@ static inline eConstitutiveParameter GetConstitutiveVariableFromString(const std
     MapStringToConstitutiveVariable["POLYNOMIAL_COEFFICIENTS_DESORPTION"]           = eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION;
     MapStringToConstitutiveVariable["POROSITY"]                                     = eConstitutiveParameter::POROSITY;
     MapStringToConstitutiveVariable["SATURATION_DENSITY_GAS_PHASE"]                 = eConstitutiveParameter::SATURATION_DENSITY_GAS_PHASE;
+    MapStringToConstitutiveVariable["SPRING_STIFFNESS"]                             = eConstitutiveParameter::SPRING_STIFFNESS;
     MapStringToConstitutiveVariable["TENSILESTRENGTH"]                              = eConstitutiveParameter::TENSILE_STRENGTH;
     MapStringToConstitutiveVariable["THERMALEXPANSIONCOEFFICIENT"]                  = eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT;
     MapStringToConstitutiveVariable["VISCOPLASTICYIELDSURFACEOFFSET"]               = eConstitutiveParameter::VISCOPLASTIC_YIELD_SURFACE_OFFSET;

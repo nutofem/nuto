@@ -20,6 +20,7 @@ namespace Interpolation
 
 enum eShapeType
 {
+    SPRING,
     TRUSS1D,
     TRUSSXD,
     TRIANGLE2D,
@@ -30,6 +31,7 @@ enum eShapeType
 static inline std::map<eShapeType, std::string> GetShapeTypeMap()
 {
     std::map<eShapeType, std::string> shapeTypeMap;
+    shapeTypeMap[eShapeType::SPRING]        = "SPRING";
     shapeTypeMap[eShapeType::TRUSS1D]       = "TRUSS1D";
     shapeTypeMap[eShapeType::TRUSSXD]       = "TRUSSXD";
     shapeTypeMap[eShapeType::TRIANGLE2D]    = "TRIANGLE2D";

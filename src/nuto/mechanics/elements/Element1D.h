@@ -37,7 +37,7 @@ public:
     //! @brief calculates output data for the element
     //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
     //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
-    Error::eError Evaluate(boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase>& rElementOutput) override;
+    virtual Error::eError Evaluate(boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase>& rElementOutput) override;
 
 
     //! @brief returns the enum (type of the element)

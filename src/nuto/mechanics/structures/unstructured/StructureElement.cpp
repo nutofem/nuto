@@ -8,6 +8,7 @@
 
 #include "nuto/mechanics/elements/Element1D.h"
 #include "nuto/mechanics/elements/Element1DInXD.h"
+#include "nuto/mechanics/elements/Element1DSpring.h"
 #include "nuto/mechanics/elements/Element2D.h"
 #include "nuto/mechanics/elements/Element3D.h"
 
@@ -216,6 +217,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
         std::cout << "[NuTo::Structure::ElementConvertToInterpolationType] mesh size:             " << meshSize << std::endl;
     }
 
+
     ElementConvertToInterpolationType(rGroupNumberElements, mergeDist, meshSize);
 
 }
@@ -330,6 +332,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
         mLogger << "[NuTo::Structure::ElementConvertToInterpolationType] distance  of boxes: " << deltaBox.transpose() << "\n";
     }
 
+
     if ((boundingBoxMax - boundingBoxMin).minCoeff() <= 0)
         // The group has at least one element and this element has no spacial size.
         throw MechanicsException("[NuTo::Structure::ElementConvertToInterpolationType] Bounding box with zero length. Your element definition might be messed up.");
@@ -424,6 +427,9 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
                 for (auto dof : nodeDofsOther)
                     nodeDofs.insert(dof);
             }
+
+
+
 
             NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(tmpNode.coords);
 
@@ -647,6 +653,10 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
     {
         switch (interpolationType->GetShapeType())
         {
+        case NuTo::Interpolation::eShapeType::SPRING:
+            ptrElement = new Element1DSpring(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
+            ptrElement->CheckElement();
+            break;
         case NuTo::Interpolation::eShapeType::TRUSS1D:
             ptrElement = new Element1D(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
             ptrElement->CheckElement();

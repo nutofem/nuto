@@ -1,31 +1,12 @@
-#include "nuto/mechanics/elements/Element1D.h"
 #include "nuto/mechanics/elements/Element1DInXD.h"
-#include "nuto/mechanics/constitutive/mechanics/Damage.h"
-#include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
-#include "nuto/mechanics/constitutive/mechanics/EngineeringStrain1D.h"
-#include "nuto/mechanics/constitutive/mechanics/EngineeringStrain3D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress1D.h"
-#include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
-#include "nuto/mechanics/constitutive/thermal/HeatFlux1D.h"
-#include "nuto/mechanics/constitutive/thermal/HeatFlux3D.h"
-#include "nuto/mechanics/constitutive/thermal/Temperature.h"
-#include "nuto/mechanics/constitutive/thermal/TemperatureGradient1D.h"
-#include "nuto/mechanics/constitutive/thermal/TemperatureGradient3D.h"
-#include "nuto/mechanics/constitutive/mechanics/LocalEqStrain.h"
-#include "nuto/mechanics/constitutive/mechanics/NonlocalEqStrain.h"
-#include "nuto/mechanics/constitutive/moistureTransport/RelativeHumidity.h"
-#include "nuto/mechanics/constitutive/moistureTransport/WaterVolumeFraction.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal.h"
-#include "nuto/mechanics/constitutive/ConstitutiveTangentNonlocal.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/ElementOutputFullMatrixInt.h"
 #include "nuto/mechanics/elements/ElementOutputFullMatrixDouble.h"
 #include "nuto/mechanics/elements/ElementOutputVectorInt.h"
-#include "nuto/mechanics/elements/Plane.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/sections/SectionBase.h"
-#include "nuto/mechanics/sections/SectionTruss.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 
 #include "nuto/math/FullMatrix.h"
@@ -38,7 +19,7 @@ NuTo::Element1DInXD::Element1DInXD(const NuTo::StructureBase* rStructure, const 
 
 NuTo::Element::eElementType NuTo::Element1DInXD::GetEnumType() const
 {
-    return NuTo::Element::ELEMENT1DInXD;
+    return NuTo::Element::ELEMENT1DINXD;
 }
 
 
@@ -177,7 +158,7 @@ const Eigen::VectorXi NuTo::Element1DInXD::CalculateGlobalRowDofs() const
     for (auto dof : mInterpolationType->GetActiveDofs())
     {
         const InterpolationBase& interpolationType = mInterpolationType->Get(dof);
-        int index = interpolationType.GetLocalStartIndex(); //
+        int index = interpolationType.GetLocalStartIndex();
 
         for (int iNodeDof = 0; iNodeDof < interpolationType.GetNumNodes(); ++iNodeDof)
         {

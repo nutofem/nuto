@@ -1171,8 +1171,6 @@ const NuTo::NodeBase* NuTo::Element2D::GetNode(int rLocalNodeNumber) const
 NuTo::NodeBase* NuTo::Element2D::GetNode(int rLocalNodeNumber, Node::eAttributes rDofType)
 {
     assert(rLocalNodeNumber >= 0);
-
-//    std::cout << "mNodes.size() \n" <<  mNodes.size() << std::endl;
     assert(rLocalNodeNumber <  (int )mNodes.size());
     assert(rLocalNodeNumber < mInterpolationType->Get(rDofType).GetNumNodes());
     int nodeIndex = mInterpolationType->Get(rDofType).GetNodeIndex(rLocalNodeNumber);

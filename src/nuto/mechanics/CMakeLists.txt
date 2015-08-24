@@ -48,6 +48,7 @@ constitutive/mechanics/InterfaceTractions1D.cpp
 constitutive/mechanics/InterfaceTractions2D.cpp
 constitutive/mechanics/InterfaceTractions3D.cpp
 constitutive/mechanics/LinearElasticEngineeringStress.cpp
+constitutive/mechanics/LinearSpring.cpp
 constitutive/mechanics/LocalEqPlasticStrain.cpp
 constitutive/mechanics/LocalEqStrain.cpp
 constitutive/mechanics/MisesPlasticityEngineeringStress.cpp
@@ -129,6 +130,7 @@ elements/ElementOutputBase.cpp
 elements/ElementInputBase.cpp
 elements/ElementShapeFunctions.cpp
 elements/Element1D.cpp
+elements/Element1DSpring.cpp
 elements/Element1DInXD.cpp
 elements/Element2D.cpp
 elements/Element3D.cpp
@@ -246,6 +248,7 @@ sections/SectionBase.cpp
 sections/SectionTruss.cpp
 sections/SectionPlane.cpp
 sections/SectionVolume.cpp
+sections/SectionSpring.cpp
 )
 
 SET(NuToMechanicsStructures_SOURCES

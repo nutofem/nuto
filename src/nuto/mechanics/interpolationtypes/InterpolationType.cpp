@@ -17,7 +17,6 @@
 
 #include <iomanip>
 
-
 NuTo::InterpolationType::InterpolationType(const StructureBase* rStructure, NuTo::Interpolation::eShapeType rShapeType) :
         mShapeType(rShapeType), mNumDofs(0), mNumActiveDofs(0), mIntegrationType(nullptr), mStructure(rStructure)
 {
@@ -57,6 +56,7 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eAttributes rDofType, Nu
     InterpolationBase* newType;
     switch (mShapeType)
     {
+    case Interpolation::eShapeType::SPRING:
     case Interpolation::eShapeType::TRUSS1D:
     case Interpolation::eShapeType::TRUSSXD:
         newType = new Interpolation1DTruss(mStructure, rDofType, rTypeOrder);
@@ -413,6 +413,7 @@ void NuTo::InterpolationType::UpdateNodeRenumberingIndices()
 
         switch (mShapeType)
         {
+        case Interpolation::SPRING:
         case Interpolation::TRUSS1D:
         case Interpolation::TRUSSXD:
             // reflect at (0,0,0) n = (1,0,0)

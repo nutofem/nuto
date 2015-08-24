@@ -220,6 +220,34 @@ int NuTo::Structure::NodeCreate(NuTo::FullVector<double,Eigen::Dynamic> rCoordin
     return id;
 }
 
+//! creates a node with rDofs degrees of freedom
+int NuTo::Structure::NodeCreate(NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates, std::set<NuTo::Node::eAttributes> rDofs)
+{
+
+    //find unused integer id
+    int id(mNodeMap.size());
+    boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.find(id);
+    while (it!=mNodeMap.end())
+    {
+        id++;
+        it = mNodeMap.find(id);
+    }
+
+    NodeBase* nodePtr = NodePtrCreate(rDofs, rCoordinates);
+
+    // add node to map
+    this->mNodeMap.insert(id, nodePtr);
+
+    //renumbering of dofs for global matrices required
+    this->mNodeNumberingRequired  = true;
+
+    //return int identifier of the new node
+    return id;
+}
+
+
+
+
 NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eAttributes> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates)
 {
 

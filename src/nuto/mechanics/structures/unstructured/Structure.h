@@ -281,6 +281,14 @@ public:
     }
 
 #ifndef SWIG
+
+    //! @brief creates a node with rDofs degrees of freedom
+    //! @param rCoordinates coordinates of the node
+    //! @param rDofs degrees of freedom of the node
+    //! @return node number
+    int NodeCreate(NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates, std::set<Node::eAttributes> rDofs);
+
+
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
     //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
     void NodeExchangePtr(int rId, NuTo::NodeBase* rOldPtr, NuTo::NodeBase* rNewPtr);

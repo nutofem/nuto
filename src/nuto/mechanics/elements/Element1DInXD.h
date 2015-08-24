@@ -5,8 +5,7 @@
  *      Author: phuschke
  */
 
-#ifndef ELEMENT1DINXD_H_
-#define ELEMENT1DINXD_H_
+#pragma once
 
 #include "nuto/mechanics/elements/Element1D.h"
 
@@ -103,4 +102,3 @@ private:
 
 } /* namespace NuTo */
 
-#endif /* ELEMENT1DINXD_H_ */
