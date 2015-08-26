@@ -861,6 +861,10 @@ public:
     //! this is used for the estimation of the critical time step
     double ElementTotalCalculateLargestElementEigenvalue();
 
+    //! @brief calculate the largest element eigenvalue for a group of elements solving the generalized eigenvalue problem Ku=lambda Mu
+    //! this is used for the estimation of the critical time step
+    double ElementGroupCalculateLargestElementEigenvalue(int rGroupId);
+
     //*************************************************
     //************ Constraint routines     ***************
     //**  defined in StructureBaseConstraints.cpp **
@@ -1847,6 +1851,9 @@ public:
 	//! @parameters rTimeDerivative (0 = stiffness, 1 damping, 2 mass)
     //! @return (true = const false=variable)
 	bool GetHessianConstant(int rTimeDerivative)const;
+
+    //! @brief calculate the critical time step for a vector of elements solving the generalized eigenvalue problem Ku=lambda Mu
+    double ElementCalculateLargestElementEigenvalue(const std::vector< ElementBase*>& rElementVector);
 
 
 protected:

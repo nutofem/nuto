@@ -1257,5 +1257,6 @@ void NuTo::ElementBase::ReorderNodes()
         if (mStructure->GetVerboseLevel() > 5)
             mStructure->GetLogger() << "[NuTo::ElementBase::ReorderNodes] Swapped nodes " << i0 << " and " << i1 << ".\n";
     }
-    mStructure->GetLogger() << "\n";
+    if (mStructure->GetVerboseLevel() > 5)
+    	mStructure->GetLogger() << "\n";
 }

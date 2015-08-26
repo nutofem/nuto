@@ -2449,9 +2449,29 @@ double NuTo::StructureBase::ElementTotalGetElasticEnergy()
     return elasticEnergy;
 }
 
+//! @brief calculate the largest element eigenvalue for a group of elements solving the generalized eigenvalue problem Ku=lambda Mu
+//! this is used for the estimation of the critical time step
+double NuTo::StructureBase::ElementGroupCalculateLargestElementEigenvalue(int rGroupId)
+{
+    std::vector< NuTo::ElementBase*> elementVector;
+    NuTo::GroupBase* grp_PtrBase = this->GroupGetGroupPtr(rGroupId);
+    Group<NuTo::ElementBase> *grp_Ptr = grp_PtrBase->AsGroupElement();
+    assert(grp_Ptr!=0);
+	this->GetElementsByGroup(grp_Ptr,elementVector);
+    return this->ElementCalculateLargestElementEigenvalue(elementVector);
+}
 
 //! @brief calculate the critical time step for all elements solving the generalized eigenvalue problem Ku=lambda Mu
 double NuTo::StructureBase::ElementTotalCalculateLargestElementEigenvalue()
+{
+    std::vector< ElementBase*> elementVector;
+    GetElementsTotal(elementVector);
+    return this->ElementCalculateLargestElementEigenvalue(elementVector);
+}
+
+
+//! @brief calculate the critical time step for a vector of elements solving the generalized eigenvalue problem Ku=lambda Mu
+double NuTo::StructureBase::ElementCalculateLargestElementEigenvalue(const std::vector< ElementBase*>& rElementVector)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -2460,8 +2480,6 @@ double NuTo::StructureBase::ElementTotalCalculateLargestElementEigenvalue()
 #endif
     start=clock();
 #endif
-    std::vector< ElementBase*> elementVector;
-    GetElementsTotal(elementVector);
 
     Error::eError errorGlobal (Error::SUCCESSFUL);
 
@@ -2489,11 +2507,11 @@ double NuTo::StructureBase::ElementTotalCalculateLargestElementEigenvalue()
 #ifdef _OPENMP
     	#pragma omp for schedule(dynamic,1) nowait
 #endif //_OPENMP
-		for (unsigned int countElement=0;  countElement<elementVector.size();countElement++)
+		for (unsigned int countElement=0;  countElement<rElementVector.size();countElement++)
 		{
 			try
 			{
-				Error::eError error = elementVector[countElement]->Evaluate(elementOutput);
+				Error::eError error = rElementVector[countElement]->Evaluate(elementOutput);
 				if (error!=Error::SUCCESSFUL)
 #ifdef _OPENMP
 #pragma omp critical
@@ -2535,7 +2553,7 @@ double NuTo::StructureBase::ElementTotalCalculateLargestElementEigenvalue()
 			catch(NuTo::Exception& e)
 			{
 				std::stringstream ss;
-				ss << ElementGetId(elementVector[countElement]);
+				ss << ElementGetId(rElementVector[countElement]);
 				std::string exceptionStringLocal(e.ErrorMessage()
 						+"[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] Error calculating critical time step for element " + ss.str() + ".\n");
 				exception+=1;
@@ -2544,7 +2562,7 @@ double NuTo::StructureBase::ElementTotalCalculateLargestElementEigenvalue()
 			catch(...)
 			{
 				std::stringstream ss;
-				ss << ElementGetId(elementVector[countElement]);
+				ss << ElementGetId(rElementVector[countElement]);
 				std::string exceptionStringLocal("[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] Error calculating critical time step for element " + ss.str() + ".\n");
 				exception+=1;
 				exceptionStringTotal+=exceptionStringLocal;

@@ -275,7 +275,6 @@ void NuTo::InterpolationType::SetIsActive(bool rIsActiveDof, Node::eAttributes r
     {
         mNumActiveDofs += Get(dof).GetNumDofs();
     }
-
 }
 
 bool NuTo::InterpolationType::IsActive(const Node::eAttributes& rDofType) const
