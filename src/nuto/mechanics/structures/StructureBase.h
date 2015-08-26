@@ -1325,39 +1325,39 @@ public:
 
 #ifndef SWIG
 
-    //! @brief ... gets a variable of the constitutive law which is selected by an enum
+    //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdent ... constitutive law identifier
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
     bool ConstitutiveLawGetParameterBool(int rIdent, Constitutive::eConstitutiveParameter rIdentifier) const;
 
-    //! @brief ... sets a variable of the constitutive law which is selected by an enum
+    //! @brief ... sets a parameter of the constitutive law which is selected by an enum
     //! @param rIdent ... constitutive law identifier
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
     void ConstitutiveLawSetParameterBool(int rIdent, Constitutive::eConstitutiveParameter rIdentifier, bool rValue);
 
-    //! @brief ... gets a variable of the constitutive law which is selected by an enum
+    //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdent ... constitutive law identifier
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
     double ConstitutiveLawGetParameterDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier) const;
 
-    //! @brief ... sets a variable of the constitutive law which is selected by an enum
+    //! @brief ... sets a parameter of the constitutive law which is selected by an enum
     //! @param rIdent ... constitutive law identifier
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
     void ConstitutiveLawSetParameterDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier, double rValue);
 
-    //! @brief ... gets a variable of the constitutive law which is selected by an enum
+    //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdent ... constitutive law identifier
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
     NuTo::FullVector<double, Eigen::Dynamic> ConstitutiveLawGetParameterFullVectorDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier) const;
 
-    //! @brief ... sets a variable of the constitutive law which is selected by an enum
+    //! @brief ... sets a parameter of the constitutive law which is selected by an enum
     //! @param rIdent ... constitutive law identifier
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
     void ConstitutiveLawSetParameterFullVectorDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double, Eigen::Dynamic>  rValue);
 #endif // SWIG
@@ -1417,6 +1417,12 @@ public:
     //! @param rCoeffs ... polynomial coefficients of the sorption curve
     //! @return ... equilibrium water volume fraction
     double ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const;
+
+
+    //! @brief ... adds a constitutive law to a multi physics model
+    //! @param rIdentMultiPhysics ... multi physics constitutive law to which the constitutive law should be added
+    //! @param rIdentConstitutiveLaw ... constitutive law which should be added to the multi physics model
+    void ConstitutiveLawMultiPhysicsAddConstitutiveLaw(int rIdentMultiPhysics, int rIdentConstitutiveLaw);
 
 #ifndef SWIG
 

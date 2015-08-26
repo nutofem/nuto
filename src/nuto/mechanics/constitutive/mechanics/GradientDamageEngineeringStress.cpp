@@ -950,8 +950,8 @@ void NuTo::GradientDamageEngineeringStress::CalculateCoefficients2DPlaneStress(d
 }
 // parameters /////////////////////////////////////////////////////////////
 
-//! @brief ... gets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... gets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
 double NuTo::GradientDamageEngineeringStress::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
@@ -982,8 +982,8 @@ double NuTo::GradientDamageEngineeringStress::GetParameterDouble(NuTo::Constitut
     }
 }
 
-//! @brief ... sets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
 void NuTo::GradientDamageEngineeringStress::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
@@ -1060,8 +1060,8 @@ void NuTo::GradientDamageEngineeringStress::SetParameterDouble(NuTo::Constitutiv
 }
 
 
-//! @brief ... gets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... gets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
 NuTo::FullVector<double, Eigen::Dynamic> NuTo::GradientDamageEngineeringStress::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
@@ -1084,8 +1084,8 @@ NuTo::FullVector<double, Eigen::Dynamic> NuTo::GradientDamageEngineeringStress::
 }
 
 
-//! @brief ... sets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
 void NuTo::GradientDamageEngineeringStress::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
 {

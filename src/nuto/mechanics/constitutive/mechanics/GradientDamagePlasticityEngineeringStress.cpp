@@ -756,8 +756,8 @@ void NuTo::GradientDamagePlasticityEngineeringStress::CalculateCoefficients3D(do
 
 // parameters /////////////////////////////////////////////////////////////
 
-//! @brief ... gets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... gets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
 double NuTo::GradientDamagePlasticityEngineeringStress::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
@@ -788,8 +788,8 @@ double NuTo::GradientDamagePlasticityEngineeringStress::GetParameterDouble(NuTo:
     }
 }
 
-//! @brief ... sets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
 void NuTo::GradientDamagePlasticityEngineeringStress::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {

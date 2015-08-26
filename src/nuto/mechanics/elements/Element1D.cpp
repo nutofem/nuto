@@ -382,7 +382,7 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
             }
                 break;
             default:
-                throw MechanicsException("[NuTo::Plane::Evaluate] element output not implemented.");
+                throw MechanicsException("[NuTo::Element1D::Evaluate] element output not implemented.");
             }
         }				//end for: constitutive output list
 

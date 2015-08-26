@@ -65,7 +65,8 @@ enum eOutput
 	GLOBAL_COLUMN_DOF,               //!< calculates the column dofs of the local element matrices
 	FATIGUE_SAVE_STATIC_DATA,		 //!< for fatigue applications: saving static data in case if the cycle jump should be repeated
 	FATIGUE_RESTORE_STATIC_DATA,     //!< cycle jump should be repeated, getting the previous state
-	FATIGUE_EXTRAPOLATE_STATIC_DATA  //!< extrapolate static data to make a jump
+        FATIGUE_EXTRAPOLATE_STATIC_DATA, //!< extrapolate static data to make a jump
+        RESIDUAL_NORM_FACTOR             //!< factor to scale the residual
 };
 
 enum eInput

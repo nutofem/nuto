@@ -280,6 +280,40 @@ bool                                        NuTo::MoistureTransport::CheckElemen
     }
 }
 
+
+//! @brief ... checks if the constitutive law has a specific parameter
+//! @param rIdentifier ... Enum to identify the requested parameter
+//! @return ... true/false
+bool NuTo::MoistureTransport::CheckHaveParameter(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+{
+    switch(rIdentifier)
+    {
+        case Constitutive::eConstitutiveParameter::BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE:
+        case Constitutive::eConstitutiveParameter::BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE:
+        case Constitutive::eConstitutiveParameter::DENSITY_WATER_PHASE:
+        case Constitutive::eConstitutiveParameter::DIFFUSION_CONSTANT_GAS_PHASE:
+        case Constitutive::eConstitutiveParameter::DIFFUSION_CONSTANT_WATER_PHASE:
+        case Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_GAS_PHASE:
+        case Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_WATER_PHASE:
+        case Constitutive::eConstitutiveParameter::ENABLE_MODIFIED_TANGENTIAL_STIFFNESS:
+        case Constitutive::eConstitutiveParameter::ENABLE_SORPTION_HYSTERESIS:
+        case Constitutive::eConstitutiveParameter::GRADIENT_CORRECTION_ADSORPTION_DESORPTION:
+        case Constitutive::eConstitutiveParameter::GRADIENT_CORRECTION_DESORPTION_ADSORPTION:
+        case Constitutive::eConstitutiveParameter::MASS_EXCHANGE_RATE:
+        case Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_ADSORPTION:
+        case Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION:
+        case Constitutive::eConstitutiveParameter::POROSITY:
+        case Constitutive::eConstitutiveParameter::SATURATION_DENSITY_GAS_PHASE:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
+    }
+}
+
 //! @brief ... check the number of adsorption coefficients
 //! @param rAdsorptionCoefficients ... adsorption coefficients
 void                                        NuTo::MoistureTransport::CheckAdsorptionCoefficients                                (NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients) const
@@ -1144,11 +1178,36 @@ NuTo::Error::eError NuTo::MoistureTransport::Evaluate2D(NuTo::ElementBase *rElem
             break;
         }
 
+        /*--------------------------------------*\
+        |         RESIDUAL NORM FACTOR           |
+        \*--------------------------------------*/
+
+        case NuTo::Constitutive::Output::RESIDUAL_NORM_FACTOR_RELATIVE_HUMIDITY:
+        {
+            ConstitutiveTangentLocal<1,1>& residualNormFactorRelativeHumidity(itOutput->second->AsConstitutiveTangentLocal_1x1());
+
+            residualNormFactorRelativeHumidity(0,0)=   1.0 / mR;
+
+            residualNormFactorRelativeHumidity.SetSymmetry(false);
+            break;
+        }
+
+
+        case NuTo::Constitutive::Output::RESIDUAL_NORM_FACTOR_WATER_VOLUME_FRACTION:
+        {
+            ConstitutiveTangentLocal<1,1>& residualNormFactorWaterVolumeFraction(itOutput->second->AsConstitutiveTangentLocal_1x1());
+
+            residualNormFactorWaterVolumeFraction(0,0)=   1.0 / mR;
+
+            residualNormFactorWaterVolumeFraction.SetSymmetry(false);
+            break;
+        }
+
         default:
         {
-            throw MechanicsException(std::string("[NuTo::MoistureTransport::Evaluate2D ] output object)") +
+            throw MechanicsException(std::string("[NuTo::MoistureTransport::Evaluate2D ] output object (") +
                                      NuTo::Constitutive::OutputToString(itOutput->first) +
-                                     std::string(" could not be calculated, check the allocated material law and the section behavior."));
+                                     std::string(") could not be calculated, check the allocated material law and the section behavior."));
         }
         }
     }
@@ -1540,9 +1599,48 @@ NuTo::Error::eError NuTo::MoistureTransport::Evaluate3D(NuTo::ElementBase *rElem
 }
 
 
+//! @brief ... gets a set of all constitutive output enums that are compatible with the constitutive law
+//! @return ... set of all constitutive output enums that are compatible with the constitutive law
+bool NuTo::MoistureTransport::CheckOutputTypeCompatibility(NuTo::Constitutive::Output::eOutput rOutputEnum) const
+{
+    switch (rOutputEnum)
+    {
+    case Constitutive::Output::BOUNDARY_SURFACE_RELATIVE_HUMIDIY_TRANSPORT_COEFFICIENT:
+    case Constitutive::Output::BOUNDARY_SURFACE_VAPOR_PHASE_RESIDUAL:
+    case Constitutive::Output::BOUNDARY_SURFACE_WATER_PHASE_RESIDUAL:
+    case Constitutive::Output::BOUNDARY_SURFACE_WATER_VOLUME_FRACTION_TRANSPORT_COEFFICIENT:
+    case Constitutive::Output::D_RESIDUAL_RH_D_RH_H0_BB:
+    case Constitutive::Output::D_RESIDUAL_RH_D_RH_H0_NN:
+    case Constitutive::Output::D_RESIDUAL_RH_D_RH_H1_NN:
+    case Constitutive::Output::D_RESIDUAL_RH_D_WV_H0_BN:
+    case Constitutive::Output::D_RESIDUAL_RH_D_WV_H0_NN:
+    case Constitutive::Output::D_RESIDUAL_RH_D_WV_H1_NN:
+    case Constitutive::Output::D_RESIDUAL_WV_D_RH_H0_NN:
+    case Constitutive::Output::D_RESIDUAL_WV_D_WV_H0_BB:
+    case Constitutive::Output::D_RESIDUAL_WV_D_WV_H0_BN:
+    case Constitutive::Output::D_RESIDUAL_WV_D_WV_H0_NN:
+    case Constitutive::Output::D_RESIDUAL_WV_D_WV_H1_NN:
+    case Constitutive::Output::RESIDUAL_NORM_FACTOR_RELATIVE_HUMIDITY:
+    case Constitutive::Output::RESIDUAL_NORM_FACTOR_WATER_VOLUME_FRACTION:
+    case Constitutive::Output::RESIDUAL_VAPOR_PHASE_B:
+    case Constitutive::Output::RESIDUAL_VAPOR_PHASE_N:
+    case Constitutive::Output::RESIDUAL_WATER_PHASE_B:
+    case Constitutive::Output::RESIDUAL_WATER_PHASE_N:
+    case Constitutive::Output::UPDATE_STATIC_DATA:
+    {
+        return true;
+    }
+    default:
+    {
+        return false;
+    }
+    }
+}
 
-//! @brief ... gets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+
+
+//! @brief ... gets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
 bool NuTo::MoistureTransport::GetParameterBool(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
@@ -1563,8 +1661,8 @@ bool NuTo::MoistureTransport::GetParameterBool(NuTo::Constitutive::eConstitutive
     }
 }
 
-//! @brief ... sets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
 void NuTo::MoistureTransport::SetParameterBool(NuTo::Constitutive::eConstitutiveParameter rIdentifier, bool rValue)
 {
@@ -1589,8 +1687,8 @@ void NuTo::MoistureTransport::SetParameterBool(NuTo::Constitutive::eConstitutive
     }
 }
 
-//! @brief ... gets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... gets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
 double NuTo::MoistureTransport::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
@@ -1651,8 +1749,8 @@ double NuTo::MoistureTransport::GetParameterDouble(NuTo::Constitutive::eConstitu
     }
 }
 
-//! @brief ... sets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
 void NuTo::MoistureTransport::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
@@ -1747,8 +1845,8 @@ void NuTo::MoistureTransport::SetParameterDouble(NuTo::Constitutive::eConstituti
     }
 }
 
-//! @brief ... gets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... gets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
 NuTo::FullVector<double, Eigen::Dynamic> NuTo::MoistureTransport::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
@@ -1769,8 +1867,8 @@ NuTo::FullVector<double, Eigen::Dynamic> NuTo::MoistureTransport::GetParameterFu
     }
 }
 
-//! @brief ... sets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
 void NuTo::MoistureTransport::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
 {

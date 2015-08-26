@@ -15,6 +15,8 @@
 
 #include <nuto/math/SparseMatrixCSRGeneral.h>
 
+
+#include <nuto/mechanics/constitutive/multiPhysics/ConstitutiveStaticDataMultiPhysics.h>
 #include <nuto/mechanics/constitutive/moistureTransport/ConstitutiveStaticDataMoistureTransport.h>
 #include <nuto/mechanics/nodes/NodeDof.h>
 #include <nuto/mechanics/nodes/NodeCoordinates.h>
@@ -46,12 +48,15 @@ int main()
         //unsigned int    NElements   = 16;                             // Number of elements
         unsigned int    NNodes;                                         // Number of nodes
 
-
-        double Height           = 0.04;
         double Length           = 0.16;
+        double Height           = 0.04;
 
         unsigned int NumElementsX = 16;
         unsigned int NumElementsY = 4;
+
+        //double ElementHeight    = Height / static_cast<double>(NumElementsY);
+        double ElementLength    = Length / static_cast<double>(NumElementsX);
+
 
         unsigned int NumNodesX = NumElementsX + 1;
         unsigned int NumNodesY = NumElementsY + 1;
@@ -59,10 +64,11 @@ int main()
         //double ElementHeight    = static_cast<double>(Height)/static_cast<double>(NumNodesY-1);
         //double ElementLength    = static_cast<double>(Length)/static_cast<double>(NumNodesX-1);
 
+
         double          Thickness    = 0.04;
 
         double          delta_t                         = 1.0/1.0 *     1.0 * 24.0 * 60.0 * 60.0;
-        double          t_final                         = 1.0/1.0 *     5.0 * 24.0 * 60.0 * 60.0;
+        double          SimulationTime                  = 1.0/1.0 *     3.0 * 24.0 * 60.0 * 60.0;
         double          BC_TransitionTime               =                     24.0 * 60.0 * 60.0;
 
         // initial node values
@@ -71,6 +77,13 @@ int main()
 
 
         // constitutive law values
+        // -----------------------
+
+        // Linear Elastic
+        double Density                                  = 1.0;      // N/mm³
+        double PoissonRatio                             = 0.0;
+        double YoungsModulus                            = 30000.0;
+        // Moisture Transport
         double          MassExchangeRate                =    3.42e-7    ;
         double          Porosity                        =    0.25      ;
         double          VaporPhaseDiffusionCoefficient  =    3.9e-10     ;
@@ -94,7 +107,7 @@ int main()
 
 
         // max residual
-        double          MaxResidual                     =    1.0e-18;
+        double          MaxResidual                     =    1.0e-9;
 
 
 
@@ -156,34 +169,42 @@ int main()
         // Create and set Constitutive Law
         // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+        int ConstLawLinearElastic     = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
+        int ConstLawMoistureTransport = myStructure.ConstitutiveLawCreate("MoistureTransport");
+        int ConstLawMultiPhysics      = myStructure.ConstitutiveLawCreate("MultiPhysics");
+        myStructure.ConstitutiveLawMultiPhysicsAddConstitutiveLaw(ConstLawMultiPhysics,ConstLawLinearElastic);
+        myStructure.ConstitutiveLawMultiPhysicsAddConstitutiveLaw(ConstLawMultiPhysics,ConstLawMoistureTransport);
 
-        int ConstLaw = myStructure.ConstitutiveLawCreate("MoistureTransport");
 
         // set variables
-        myStructure.ConstitutiveLawSetParameterBool    (ConstLaw,"ENABLE_MODIFIED_TANGENTIAL_STIFFNESS",EnableModiefiedTangentialStiffness);      // sets whether modified tangential stiffness should be used or not
-        myStructure.ConstitutiveLawSetParameterBool    (ConstLaw,"enable_sorption_hysteresis",EnableSorptionHysteresis);                          // sets whether sorption hysteresis should be used or not
+
+        myStructure.ConstitutiveLawSetParameterDouble  (ConstLawMultiPhysics,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,YoungsModulus);
+        myStructure.ConstitutiveLawSetParameterDouble  (ConstLawMultiPhysics,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,PoissonRatio);
+        myStructure.ConstitutiveLawSetParameterDouble  (ConstLawMultiPhysics,NuTo::Constitutive::eConstitutiveParameter::DENSITY,Density);
+
+        myStructure.ConstitutiveLawSetParameterBool    (ConstLawMultiPhysics,"ENABLE_MODIFIED_TANGENTIAL_STIFFNESS",EnableModiefiedTangentialStiffness);      // sets whether modified tangential stiffness should be used or not
+        myStructure.ConstitutiveLawSetParameterBool    (ConstLawMultiPhysics,"enable_sorption_hysteresis",EnableSorptionHysteresis);                          // sets whether sorption hysteresis should be used or not
 
 
-        myStructure.ConstitutiveLawSetParameterDouble  (ConstLaw,"boundary_TRANSPORT_CONSTANT_GAS_PHASE",BC_Surface_Moisture_Transfer_RH);        // set water phase density
-        myStructure.ConstitutiveLawSetParameterDouble  (ConstLaw,"BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE",BC_Surface_Moisture_Transfer_WVF);     // set water phase density
-        myStructure.ConstitutiveLawSetParameterDouble  (ConstLaw,"DENSITY_WATER_PHASE",WaterPhaseDensity);                                        // set water phase density
-        myStructure.ConstitutiveLawSetParameterDouble  (ConstLaw,"DIFFUSION_CONSTANT_GAS_PHASE",VaporPhaseDiffusionCoefficient);                  // set vapor phase diffusion coefficient
-        myStructure.ConstitutiveLawSetParameterDouble  (ConstLaw,"DIFFUSION_CONSTANT_WATER_PHASE",WaterPhaseDiffusionCoefficient);                // set water phase diffusion coefficient
-        myStructure.ConstitutiveLawSetParameterDouble  (ConstLaw,"DIFFUSION_EXPONENT_GAS_PHASE",VaporPhaseDiffusionExponent);                     // set vapor phase diffusion exponent
-        myStructure.ConstitutiveLawSetParameterDouble  (ConstLaw,"DIFFUSION_EXPONENT_WATER_PHASE",WaterPhaseDiffusionExponent);                   // set water phase diffusion exponent
-        myStructure.ConstitutiveLawSetParameterDouble  (ConstLaw,"GRADIENT_CORRECTION_ADSORPTION_DESORPTION",Kd);                                 // set gradient correction when changing from adsorption to desorption
-        myStructure.ConstitutiveLawSetParameterDouble  (ConstLaw,"GRADIENT_CORRECTION_DESORPTION_ADSORPTION",Ka);                                 // set gradient correction when changing from desorption to adsorption
-        myStructure.ConstitutiveLawSetParameterDouble  (ConstLaw,"MASS_EXCHANGE_RATE",MassExchangeRate);                                          // set mass exchange rate
-        myStructure.ConstitutiveLawSetParameterDouble  (ConstLaw,"POROSITY",Porosity);                                                            // set porosity
-        myStructure.ConstitutiveLawSetParameterDouble  (ConstLaw,"SATURATION_DENSITY_GAS_PHASE",VaporPhaseSaturationDensity);                     // set vapor phase saturation density
+        myStructure.ConstitutiveLawSetParameterDouble  (ConstLawMultiPhysics,"boundary_TRANSPORT_CONSTANT_GAS_PHASE",BC_Surface_Moisture_Transfer_RH);        // set water phase density
+        myStructure.ConstitutiveLawSetParameterDouble  (ConstLawMultiPhysics,"BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE",BC_Surface_Moisture_Transfer_WVF);     // set water phase density
+        myStructure.ConstitutiveLawSetParameterDouble  (ConstLawMultiPhysics,"DENSITY_WATER_PHASE",WaterPhaseDensity);                                        // set water phase density
+        myStructure.ConstitutiveLawSetParameterDouble  (ConstLawMultiPhysics,"DIFFUSION_CONSTANT_GAS_PHASE",VaporPhaseDiffusionCoefficient);                  // set vapor phase diffusion coefficient
+        myStructure.ConstitutiveLawSetParameterDouble  (ConstLawMultiPhysics,"DIFFUSION_CONSTANT_WATER_PHASE",WaterPhaseDiffusionCoefficient);                // set water phase diffusion coefficient
+        myStructure.ConstitutiveLawSetParameterDouble  (ConstLawMultiPhysics,"DIFFUSION_EXPONENT_GAS_PHASE",VaporPhaseDiffusionExponent);                     // set vapor phase diffusion exponent
+        myStructure.ConstitutiveLawSetParameterDouble  (ConstLawMultiPhysics,"DIFFUSION_EXPONENT_WATER_PHASE",WaterPhaseDiffusionExponent);                   // set water phase diffusion exponent
+        myStructure.ConstitutiveLawSetParameterDouble  (ConstLawMultiPhysics,"GRADIENT_CORRECTION_ADSORPTION_DESORPTION",Kd);                                 // set gradient correction when changing from adsorption to desorption
+        myStructure.ConstitutiveLawSetParameterDouble  (ConstLawMultiPhysics,"GRADIENT_CORRECTION_DESORPTION_ADSORPTION",Ka);                                 // set gradient correction when changing from desorption to adsorption
+        myStructure.ConstitutiveLawSetParameterDouble  (ConstLawMultiPhysics,"MASS_EXCHANGE_RATE",MassExchangeRate);                                          // set mass exchange rate
+        myStructure.ConstitutiveLawSetParameterDouble  (ConstLawMultiPhysics,"POROSITY",Porosity);                                                            // set porosity
+        myStructure.ConstitutiveLawSetParameterDouble  (ConstLawMultiPhysics,"SATURATION_DENSITY_GAS_PHASE",VaporPhaseSaturationDensity);                     // set vapor phase saturation density
 
-        myStructure.ConstitutiveLawSetParameterFullVectorDouble    (ConstLaw,"polynomial_COEFFICIENTS_ADSORPTION",AdsorptionFit.GetPolynomialCoefficients());               // set adsorption coefficients
-        myStructure.ConstitutiveLawSetParameterFullVectorDouble    (ConstLaw,"POLYNOMIAL_COEFFICIENTS_DESORPTION",DesorptionFit.GetPolynomialCoefficients());               // set desorption coefficients
+        myStructure.ConstitutiveLawSetParameterFullVectorDouble    (ConstLawMultiPhysics,"polynomial_COEFFICIENTS_ADSORPTION",AdsorptionFit.GetPolynomialCoefficients());               // set adsorption coefficients
+        myStructure.ConstitutiveLawSetParameterFullVectorDouble    (ConstLawMultiPhysics,"POLYNOMIAL_COEFFICIENTS_DESORPTION",DesorptionFit.GetPolynomialCoefficients());               // set desorption coefficients
 
 
         // Calculate equilibrium water volume fraction
-        InitialWaterVolumeFraction   = myStructure.ConstitutiveLawGetEquilibriumWaterVolumeFraction(ConstLaw,InitialRelativeHumidity,myStructure.ConstitutiveLawGetParameterFullVectorDouble(ConstLaw,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
-        //BC_WaterVolumeFraction       = myStructure.ConstitutiveLawGetEquilibriumWaterVolumeFraction(ConstLaw,BC_RelativeHumidity,myStructure.ConstitutiveLawGetParameterFullVectorDouble(ConstLaw,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
+        InitialWaterVolumeFraction   = myStructure.ConstitutiveLawGetEquilibriumWaterVolumeFraction(ConstLawMoistureTransport,InitialRelativeHumidity,myStructure.ConstitutiveLawGetParameterFullVectorDouble(ConstLawMoistureTransport,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
 
 
 
@@ -219,8 +240,9 @@ int main()
 
         int myInterpolationType = myStructure.InterpolationTypeCreate("Quad2D");
         myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::RELATIVEHUMIDITY, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::WATERVOLUMEFRACTION, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::RELATIVEHUMIDITY, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::WATERVOLUMEFRACTION, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
 
 
@@ -248,7 +270,7 @@ int main()
                 myStructure.ElementSetSection(elementNumber,mySection);
 
                 // set element constitutive law
-                myStructure.ElementSetConstitutiveLaw(elementNumber,ConstLaw);
+                myStructure.ElementSetConstitutiveLaw(elementNumber,ConstLawMultiPhysics);
             }
         }
 
@@ -267,6 +289,7 @@ int main()
             double YVal = (cos((NodeY + 0.5)* 3.14) + 1.0) * (0.5 +0.5*NodeY);
             double NodeMultiplier = 0.25 +  XVal * 0.75 * YVal;
             */
+
             double NodeMultiplier = 1.0;
             if(myStructure.NodeGetNodePtr(i)->GetNumRelativeHumidity() != 0)
             {
@@ -277,6 +300,46 @@ int main()
                 myStructure.NodeGetNodePtr(i)->SetWaterVolumeFraction(0,InitialWaterVolumeFraction*NodeMultiplier);
             }
         }
+
+
+
+        // %%%%%%%%%%
+        // Set groups
+        // %%%%%%%%%%
+
+        //left boundary
+        int GRPNodes_Left = myStructure.GroupCreate("Nodes");
+        int Direction = 0;
+        double Min = 0. - 0.01 * ElementLength;
+        double Max = 0. + 0.01 * ElementLength;;
+        myStructure.GroupAddNodeCoordinateRange(GRPNodes_Left,Direction,Min,Max);
+
+        //right boundary
+        int GRPNodes_Right = myStructure.GroupCreate("Nodes");
+        Direction = 0;
+        Min = Length - 0.01 * ElementLength;
+        Max = Length + 0.01 * ElementLength;
+        myStructure.GroupAddNodeCoordinateRange(GRPNodes_Right,Direction,Min,Max);
+
+        int GRPNodes_Center = myStructure.GroupCreate("Nodes");
+
+        auto PickNodeFunction = [Length,Height](NuTo::NodeBase* rNodePtr) -> bool
+                                {
+                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    {
+                                        double x = rNodePtr->GetCoordinate(0);
+                                        double y = rNodePtr->GetCoordinate(1);
+                                        if (x >= Length/2 -0.1 &&
+                                            x <= Length/2 +0.1 &&
+                                            y >= Height / 2.0)
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                };
+        myStructure.GroupAddNodeFunction(GRPNodes_Center,PickNodeFunction);
+
 
         // %%%%%%%%%%%%%%%%%%%%%%%%
         // Create Boundary Elements
@@ -330,11 +393,14 @@ int main()
         {
             for (int theIP=0; theIP< myStructure.ElementGetElementPtr(i)->GetNumIntegrationPoints(); theIP++)
             {
-                NuTo::ConstitutiveStaticDataMoistureTransport *StaticData = myStructure.ElementGetElementPtr(i)->GetStaticData(theIP)->AsMoistureTransport();
-                StaticData->SetLastSorptionCoeff(myStructure.ConstitutiveLawGetParameterFullVectorDouble(ConstLaw,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
-                StaticData->SetActualSorptionCoeff(myStructure.ConstitutiveLawGetParameterFullVectorDouble(ConstLaw,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
-                StaticData->SetLastRelHumValue(InitialRelativeHumidity);
-                StaticData ->SetSorptionHistoryDesorption(SorptionHistoryDesorption);
+                NuTo::ConstitutiveStaticDataMultiPhysics *StaticDataMultiPhysics = myStructure.ElementGetElementPtr(i)->GetStaticData(theIP)->AsMultiPhysics();
+                StaticDataMultiPhysics->AddNewStaticData(NuTo::Constitutive::eConstitutiveStaticDataType::MOISTURE_TRANSPORT);
+                NuTo::ConstitutiveStaticDataMoistureTransport *StaticDataMoistureTransport = StaticDataMultiPhysics->AsMoistureTransport();
+
+                StaticDataMoistureTransport->SetLastSorptionCoeff(myStructure.ConstitutiveLawGetParameterFullVectorDouble(ConstLawMoistureTransport,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
+                StaticDataMoistureTransport->SetActualSorptionCoeff(myStructure.ConstitutiveLawGetParameterFullVectorDouble(ConstLawMoistureTransport,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
+                StaticDataMoistureTransport->SetLastRelHumValue(InitialRelativeHumidity);
+                StaticDataMoistureTransport->SetSorptionHistoryDesorption(SorptionHistoryDesorption);
             }
         }
 
@@ -345,7 +411,7 @@ int main()
         auto RelativeHumidityFunc = [BC_RelativeHumidity,
                                      BC_TransitionTime,
                                      InitialRelativeHumidity,
-                                     t_final]
+                                     SimulationTime]
                                      (double rTime)->double
                                   {
 
@@ -368,7 +434,39 @@ int main()
         int BoundaryConstraint = myStructure.ConstraintLinearSetRelativeHumidityNode(BoundaryNodeID,1.0);
         //myStructure.ConstraintLinearSetWaterVolumeFractionNode(BoundaryNodeID,1.0);
 
+        auto DispFunctionCenter = [SimulationTime](double rTime)->double
+                                  {
+                                        double QuarterTime = SimulationTime/4.0;
+                                        double factor = 0.0;
 
+                                        if (rTime<=1*QuarterTime)
+                                        {
+                                            factor = rTime/QuarterTime * 0.1;
+                                        }
+                                        else if(rTime<=3*QuarterTime)
+                                        {
+                                            factor = 0.1;
+                                        }
+                                        else
+                                        {
+                                            factor = 0.1 - (rTime-3*QuarterTime)/QuarterTime * 0.1;
+                                        }
+
+                                        return factor * sin(rTime)*0.2;
+                                  };
+
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DirectionX(2,1);
+        DirectionX.SetValue(0,0,1.0);
+
+        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DirectionY(2,1);
+        DirectionY.SetValue(1,0,1.0);
+
+
+        myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Left           ,DirectionX,0);
+        myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Left           ,DirectionY,0);
+        myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Right          ,DirectionY,0);
+        int ConstraintRightDisp = myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Right          ,DirectionX,0);
+        //int ConstraintCenterDisp = myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Center         ,DirectionY,0);
 
         // %%%%%%%%%%%%%%%%%%%%%
         // Multi processor Setup
@@ -411,30 +509,35 @@ int main()
 #ifdef ENABLE_VISUALIZE
         myStructure.AddVisualizationComponentRelativeHumidity();
         myStructure.AddVisualizationComponentWaterVolumeFraction();
+        myStructure.AddVisualizationComponentDisplacements();
+        myStructure.AddVisualizationComponentEngineeringStrain();
+        myStructure.AddVisualizationComponentEngineeringStress();
+
 #endif // ENABLE_VISUALIZE
 
-        NuTo::CrankNicolsonEvaluate TimeIntegrationScheme(&myStructure);
+
+        NuTo::CrankNicolsonEvaluate myTimeIntegrationScheme(&myStructure);
 
 
-        //TimeIntegrationScheme.SetMaxTimeStep(delta_t);
-        //TimeIntegrationScheme.SetMinTimeStep(delta_t);
+        //myTimeIntegrationScheme.SetMaxTimeStep(delta_t);
+        //myTimeIntegrationScheme.SetMinTimeStep(delta_t);
 
-        TimeIntegrationScheme.SetPerformLineSearch(false);
-        TimeIntegrationScheme.SetCheckEquilibriumOnStart(true);
-        TimeIntegrationScheme.SetToleranceForce(MaxResidual);
-        TimeIntegrationScheme.SetMaxNumIterations(40);
+        myTimeIntegrationScheme.SetPerformLineSearch(false);
+        myTimeIntegrationScheme.SetCheckEquilibriumOnStart(true);
+        myTimeIntegrationScheme.SetToleranceForce(MaxResidual);
+        myTimeIntegrationScheme.SetMaxNumIterations(40);
 
-        TimeIntegrationScheme.AddTimeDependentConstraint(BoundaryConstraint,  RelativeHumidityFunc);
-
+        myTimeIntegrationScheme.AddTimeDependentConstraint(BoundaryConstraint,  RelativeHumidityFunc);
+        myTimeIntegrationScheme.AddTimeDependentConstraint(ConstraintRightDisp, DispFunctionCenter);
 
         //set result directory
         bool deleteResultDirectoryFirst(true);
-        TimeIntegrationScheme.SetResultDirectory("./ResultsMoistureTransport1D",deleteResultDirectoryFirst);
+        myTimeIntegrationScheme.SetResultDirectory("./ResultsMultiPhysics2D",deleteResultDirectoryFirst);
 
 
-        TimeIntegrationScheme.SetTimeStep(delta_t);
-        TimeIntegrationScheme.SetMinTimeStepPlot(t_final);
-        TimeIntegrationScheme.Solve(t_final);
+        myTimeIntegrationScheme.SetTimeStep(delta_t);
+        myTimeIntegrationScheme.SetMinTimeStepPlot(delta_t);
+        myTimeIntegrationScheme.Solve(SimulationTime);
 
 
     }

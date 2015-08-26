@@ -12,6 +12,7 @@
 #include <vector>
 #include <map>
 
+
 #include "nuto/base/ErrorEnum.h"
 #include "nuto/math/FullMatrix_Def.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
@@ -84,33 +85,38 @@ public:
 
     // parameters /////////////////////////////////////////////////////////////
 
-    //! @brief ... gets a variable of the constitutive law which is selected by an enum
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @brief ... checks if the constitutive law has a specific parameter
+    //! @param rIdentifier ... Enum to identify the requested parameter
+    //! @return ... true/false
+    virtual bool CheckHaveParameter(Constitutive::eConstitutiveParameter rIdentifier) const;
+
+    //! @brief ... gets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
     virtual bool GetParameterBool(Constitutive::eConstitutiveParameter rIdentifier) const;
 
-    //! @brief ... sets a variable of the constitutive law which is selected by an enum
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @brief ... sets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
     virtual void SetParameterBool(Constitutive::eConstitutiveParameter rIdentifier, bool rValue);
 
-    //! @brief ... gets a variable of the constitutive law which is selected by an enum
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @brief ... gets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
     virtual double GetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier) const;
 
-    //! @brief ... sets a variable of the constitutive law which is selected by an enum
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @brief ... sets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
     virtual void SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue);
 
-    //! @brief ... gets a variable of the constitutive law which is selected by an enum
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @brief ... gets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
     virtual NuTo::FullVector<double,Eigen::Dynamic> GetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier) const;
 
-    //! @brief ... sets a variable of the constitutive law which is selected by an enum
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @brief ... sets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
     virtual void SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double,Eigen::Dynamic> rValue);
 
@@ -174,6 +180,13 @@ public:
     //! @return ... equilibrium water volume fraction
     virtual double GetEquilibriumWaterVolumeFraction(double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const;
 
+    //! @brief ... adds a constitutive law to a multi physics model
+    //! @param ... additional constitutive law
+    virtual void  MultiPhysicsAddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw);
+
+    //! @brief ... gets a set of all constitutive output enums that are compatible with the constitutive law
+    //! @return ... set of all constitutive output enums that are compatible with the constitutive law
+    virtual bool CheckOutputTypeCompatibility(NuTo::Constitutive::Output::eOutput rOutputEnum) const;
 
     ///////////////////////////////////////////////////////////////////////////
 

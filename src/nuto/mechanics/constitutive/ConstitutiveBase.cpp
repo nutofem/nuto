@@ -64,48 +64,56 @@ NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate3D(ElementBase* rElement, in
     return Error::SUCCESSFUL;
 }
 
-//! @brief ... gets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... checks if the constitutive law has a specific parameter
+//! @param rIdentifier ... Enum to identify the requested parameter
+//! @return ... true/false
+bool NuTo::ConstitutiveBase::CheckHaveParameter(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::CheckHaveParameter] Not implemented for this constitutive law.");
+}
+
+//! @brief ... gets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
 bool NuTo::ConstitutiveBase::GetParameterBool(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetParameterBool] This constitutive law has no variables of type bool.");
 }
 
-//! @brief ... sets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
 void NuTo::ConstitutiveBase::SetParameterBool(NuTo::Constitutive::eConstitutiveParameter rIdentifier, bool rValue)
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetParameterBool] This constitutive law has no variables of type bool.");
 }
 
-//! @brief ... gets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... gets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
 double NuTo::ConstitutiveBase::GetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier) const
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetParameterDouble] This constitutive law has no variables of type double.");
 }
 
-//! @brief ... sets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
 void NuTo::ConstitutiveBase::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetParameterDouble] This constitutive law has no variables of type double.");
 }
 
-//! @brief ... gets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... gets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
 NuTo::FullVector<double, Eigen::Dynamic> NuTo::ConstitutiveBase::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetParameterFullVectorDouble] This constitutive law has no variables of type NuTo::FullVector<double, Eigen::Dynamic>.");
 }
 
-//! @brief ... sets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
 void NuTo::ConstitutiveBase::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
 {
@@ -187,6 +195,22 @@ double NuTo::ConstitutiveBase::GetRanfieldFactorHardeningModulus(const ElementBa
 double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction] The constitutive relationship does not have this parameter.");
+}
+
+
+//! @brief ... adds a constitutive law to a multi physics model
+//! @param ... additional constitutive law
+void NuTo::ConstitutiveBase::MultiPhysicsAddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw)
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::MultiPhysicsAddConstitutiveLaw] The constitutive relationship does not have this parameter.");
+}
+
+
+//! @brief ... gets a set of all constitutive output enums that are compatible with the constitutive law
+//! @return ... set of all constitutive output enums that are compatible with the constitutive law
+bool NuTo::ConstitutiveBase::CheckOutputTypeCompatibility(Constitutive::Output::eOutput rOutputEnum) const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetCompatibleOutputEnums] Function not implemented for this constitutive law.");
 }
 
 

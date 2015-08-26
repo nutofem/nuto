@@ -2097,6 +2097,7 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
 
 
             case NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT:
+            case NuTo::StructureEnum::eOutput::RESIDUAL_NORM_FACTOR:
             {
                 switch(iteratorOutput.second->GetNumSubvectors())
                 {
@@ -2151,7 +2152,11 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
                         boost::assign::ptr_map_insert<ElementOutputFullVectorDouble>(elementOutputMap)(Element::INTERNAL_GRADIENT);
                         break;
                     }
-
+                    case NuTo::StructureEnum::eOutput::RESIDUAL_NORM_FACTOR:
+                    {
+                        boost::assign::ptr_map_insert<ElementOutputFullVectorDouble>(elementOutputMap)(Element::RESIDUAL_NORM_FACTOR);
+                        break;
+                    }
 
                     default:
                     {
@@ -2340,6 +2345,7 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
 
 
                                     case NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT:
+                                    case NuTo::StructureEnum::eOutput::RESIDUAL_NORM_FACTOR:
                                     {
                                         NuTo::FullVector<double, Eigen::Dynamic>* elementVector;
                                         switch(iteratorOutput.first)
@@ -2349,6 +2355,11 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
                                                 elementVector = &elementOutputMap.find(Element::INTERNAL_GRADIENT)->second->GetFullVectorDouble();
                                                 break;
                                             }
+                                            case NuTo::StructureEnum::eOutput::RESIDUAL_NORM_FACTOR:
+                                            {
+                                                elementVector = &elementOutputMap.find(Element::RESIDUAL_NORM_FACTOR)->second->GetFullVectorDouble();
+                                                break;
+                                            }
 
                                             default:
                                             {
@@ -2356,51 +2367,69 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
                                             }
                                         }
 
-                                        assert(static_cast<unsigned int>(elementVector->GetNumRows()) == elementVectorGlobalDofsRow.size());
 
+                                        // TODO: Find a better solution
+                                        if(elementPtr->GetEnumType() != Element::BOUNDARYELEMENT2DADDITIONALNODE)
+                                        {
+                                            assert(static_cast<unsigned int>(elementVector->GetNumRows()) == elementVectorGlobalDofsRow.size());
+                                        }
                                         switch(iteratorOutput.second->GetNumSubvectors())
                                         {
-                                            case 1:
+                                        case 1:
+                                        {
+                                            // write element contribution to global vectors
+                                            for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofsRow.size(); rowCount++)
                                             {
-                                                // write element contribution to global vectors
-                                                for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofsRow.size(); rowCount++)
+                                                int globalRowDof = elementVectorGlobalDofsRow[rowCount];
+                                                if (globalRowDof < activeDofs)
                                                 {
-                                                    int globalRowDof = elementVectorGlobalDofsRow[rowCount];
-                                                    iteratorOutput.second->GetFullVectorDouble()(globalRowDof) += elementVector->GetValue(rowCount);
-                                                }
-                                                break;
-                                            }
-                                            case 2:
-                                            {
-
-                                                // write element contribution to global vectors
-                                                for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofsRow.size(); rowCount++)
-                                                {
-                                                    int globalRowDof = elementVectorGlobalDofsRow[rowCount];
-                                                    if (globalRowDof < activeDofs)
+                                                    if(iteratorOutput.first == NuTo::StructureEnum::eOutput::RESIDUAL_NORM_FACTOR)
                                                     {
-                                                        iteratorOutput.second->GetFullVectorDouble(StructureEnum::eSubVector::J)(globalRowDof) += elementVector->GetValue(rowCount);
+
+                                                        if(elementPtr->GetEnumType() != Element::BOUNDARYELEMENT2DADDITIONALNODE &&
+                                                           iteratorOutput.second->GetFullVectorDouble()(globalRowDof) < elementVector->GetValue(rowCount))
+                                                        {
+                                                            iteratorOutput.second->GetFullVectorDouble()(globalRowDof) = elementVector->GetValue(rowCount);
+                                                        }
                                                     }
                                                     else
                                                     {
-                                                        globalRowDof -= activeDofs;
-                                                        assert(globalRowDof < dependendDofs);
-                                                        iteratorOutput.second->GetFullVectorDouble(StructureEnum::eSubVector::K)(globalRowDof) += elementVector->GetValue(rowCount);
+                                                        iteratorOutput.second->GetFullVectorDouble()(globalRowDof) += elementVector->GetValue(rowCount);
                                                     }
                                                 }
-                                                break;
                                             }
-                                            default:
+                                            break;
+                                        }
+                                        case 2:
+                                        {
+
+                                            // write element contribution to global vectors
+                                            for (unsigned int rowCount = 0; rowCount < elementVectorGlobalDofsRow.size(); rowCount++)
                                             {
-                                                throw NuTo::MechanicsException( std::string("[NuTo::Structure::Evaluate] StructureOutput for vectors with ") +
-                                                                                std::to_string(iteratorOutput.second->GetNumSubvectors()) +
-                                                                                std::string(" subvectors not supported."));
+                                                int globalRowDof = elementVectorGlobalDofsRow[rowCount];
+                                                if (globalRowDof < activeDofs)
+                                                {
+                                                    iteratorOutput.second->GetFullVectorDouble(StructureEnum::eSubVector::J)(globalRowDof) += elementVector->GetValue(rowCount);
+                                                }
+                                                else
+                                                {
+                                                    globalRowDof -= activeDofs;
+                                                    assert(globalRowDof < dependendDofs);
+                                                    iteratorOutput.second->GetFullVectorDouble(StructureEnum::eSubVector::K)(globalRowDof) += elementVector->GetValue(rowCount);
+                                                }
                                             }
+                                            break;
+                                        }
+                                        default:
+                                        {
+                                            throw NuTo::MechanicsException( std::string("[NuTo::Structure::Evaluate] StructureOutput for vectors with ") +
+                                                                            std::to_string(iteratorOutput.second->GetNumSubvectors()) +
+                                                                            std::string(" subvectors not supported."));
+                                        }
                                         }   // switch number of subvectors
 
                                         break;
                                     }
-
 
                                     default:
                                     {

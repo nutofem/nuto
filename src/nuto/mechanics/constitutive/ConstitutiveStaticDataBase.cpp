@@ -164,6 +164,18 @@ const NuTo::ConstitutiveStaticDataMoistureTransport* NuTo::ConstitutiveStaticDat
     throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::AsMoistureTransport] Static data is not of type ConstitutiveStaticDataMoistureTransport.");
 }
 
+//!@ brief reinterpret as multi physics
+NuTo::ConstitutiveStaticDataMultiPhysics *NuTo::ConstitutiveStaticDataBase::AsMultiPhysics()
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::AsMultiPhysics] Static data is not of type ConstitutiveStaticDataMultiPhysics.");
+}
+
+//!@ brief reinterpret as multi physics
+const NuTo::ConstitutiveStaticDataMultiPhysics *NuTo::ConstitutiveStaticDataBase::AsMultiPhysics() const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::AsMultiPhysics] Static data is not of type ConstitutiveStaticDataMultiPhysics.");
+}
+
 
 void NuTo::ConstitutiveStaticDataBase::SetFineScaleModel(std::string rFileName, double rMacroLength, double rCenter[2], std::string rIPName)
 {

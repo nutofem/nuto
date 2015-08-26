@@ -31,7 +31,7 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& NuTo::ElementOutputBase:
 
 NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& NuTo::ElementOutputBase::GetFullMatrixInt()
 {
-	throw MechanicsException("[ElementOutputBase::GetFullMatrixDouble] element output matrix is not of type FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>");
+    throw MechanicsException("[ElementOutputBase::GetFullMatrixInt] element output matrix is not of type FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>");
 }
 
 NuTo::FullVector<double,Eigen::Dynamic>& NuTo::ElementOutputBase::GetFullVectorDouble()
@@ -46,7 +46,7 @@ NuTo::FullVector<int,Eigen::Dynamic>& NuTo::ElementOutputBase::GetFullVectorInt(
 
 std::vector<int>& NuTo::ElementOutputBase::GetVectorInt()
 {
-	throw MechanicsException("[ElementOutputBase::GetFullMatrixDouble] element output matrix is not of type std::vector<int>");
+    throw MechanicsException("[ElementOutputBase::GetVectorInt] element output matrix is not of type std::vector<int>");
 }
 
 NuTo::IpData::eIpStaticDataType NuTo::ElementOutputBase::GetIpDataType()

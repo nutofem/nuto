@@ -43,7 +43,7 @@ int main()
 
 
 
-        std::string     VTKFolder                       = "Result";
+        std::string     VTKFolder                       = "ResultStructureEvaluate";
 
 
         timeval         time_begin, time_end;

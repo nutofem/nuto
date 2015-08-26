@@ -167,6 +167,10 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
         ConstitutiveTangentLocal<1,1> tangent_D_Residual_RH_D_WV_H1_NN;
         ConstitutiveTangentLocal<1,1> tangent_D_Residual_WV_D_WV_H1_NN;
 
+        ConstitutiveTangentLocal<1,1> residualNormFactorDisplacements;
+        ConstitutiveTangentLocal<1,1> residualNormFactorRelativeHumidity;
+        ConstitutiveTangentLocal<1,1> residualNormFactorWaterVolumeFraction;
+
         //for the lumped mass calculation
         double total_mass = 0.;
 
@@ -414,6 +418,42 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                 default:
                     throw MechanicsException("[NuTo::Element2D::Evaluate] this ip data type is not implemented.");
                 }
+                break;
+            case Element::RESIDUAL_NORM_FACTOR:
+            {
+                it->second->GetFullVectorDouble().Resize(numActiveDofs);
+                for (auto dof : activeDofs)
+                {
+                    switch (dof)
+                    {
+                    case Node::DISPLACEMENTS:
+                    {
+                        constitutiveOutputList[NuTo::Constitutive::Output::RESIDUAL_NORM_FACTOR_DISPLACEMENTS]                                      = &residualNormFactorDisplacements;
+                        break;
+                    }
+                    case Node::RELATIVEHUMIDITY:
+                    {
+                        if (activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::RESIDUAL_NORM_FACTOR_RELATIVE_HUMIDITY]                              = &residualNormFactorRelativeHumidity;
+                        }
+                    }
+                        break;
+                    case Node::WATERVOLUMEFRACTION:
+                    {
+                        if (activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end())
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::RESIDUAL_NORM_FACTOR_WATER_VOLUME_FRACTION]                          = &residualNormFactorWaterVolumeFraction;
+                        }
+                    }
+                        break;
+                    default:
+                    {
+                        throw MechanicsException("[NuTo::Element2D::Evaluate] Constitutive output RESIDUAL_NORM_FACTOR for " + Node::AttributeToString(dof) + " not implemented.");
+                    }
+                    }
+                }
+            }
                 break;
             case Element::GLOBAL_ROW_DOF:
             {
@@ -1095,6 +1135,56 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     }
 
                     break;
+
+                case Element::RESIDUAL_NORM_FACTOR:
+                {
+                    double factor = 1.0;
+                    for (auto dof : activeDofs)
+                    {
+                        int startIndex = mInterpolationType->Get(dof).GetLocalStartIndex();
+                        switch (dof)
+                        {
+                        case Node::DISPLACEMENTS:
+                        {
+                            AddDetJNtX(shapeFunctions.at(dof),
+                                       residualNormFactorDisplacements,
+                                       factor,
+                                       startIndex,
+                                       it->second->GetFullVectorDouble());
+                        }
+                            break;
+                        case Node::RELATIVEHUMIDITY:
+                        {
+                            if(activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                            {
+                                AddDetJNtX(shapeFunctions.at(dof),
+                                           residualNormFactorRelativeHumidity,
+                                           factor,
+                                           startIndex,
+                                           it->second->GetFullVectorDouble());
+                            }
+                        }
+                            break;
+                        case Node::WATERVOLUMEFRACTION:
+                        {
+                            if(activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end())
+                            {
+                                AddDetJNtX(shapeFunctions.at(dof),
+                                           residualNormFactorWaterVolumeFraction,
+                                           factor,
+                                           startIndex,
+                                           it->second->GetFullVectorDouble());
+                            }
+                        }
+                            break;
+                        default:
+                            throw MechanicsException("[NuTo::Element2D::Evaluate] Element output INTERNAL_GRADIENT for " + Node::AttributeToString(dof) + " not implemented.");
+
+                        }
+                    }
+                    auto test = it->second->GetFullVectorDouble();
+                    break;
+                }
                 case Element::UPDATE_STATIC_DATA:
                 case Element::UPDATE_TMP_STATIC_DATA:
                     break;

@@ -32,6 +32,7 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/math/SparseMatrixCSRSymmetric.h"
+#include "nuto/mechanics/structures/StructureOutputFullVectorDouble.h"
 #include "nuto/mechanics/structures/StructureOutputFullSubvectorsDouble2.h"
 #include "nuto/mechanics/structures/StructureOutputSparseSubmatrices4.h"
 
@@ -242,7 +243,7 @@ NuTo::Error::eError NuTo::CrankNicolsonEvaluate::Solve(double rFinalTime)
         FullVector<double,Eigen::Dynamic>       bRHSprev,
                                                 bRHS;
 
-
+        FullVector<double,Eigen::Dynamic>       residualFactor;
 
         // Skalars
         // -------
@@ -287,6 +288,8 @@ NuTo::Error::eError NuTo::CrankNicolsonEvaluate::Solve(double rFinalTime)
         // Vectors
         // -------
 
+        NuTo::StructureOutputFullVectorDouble       outputResidualFactor(residualFactor);
+
         NuTo::StructureOutputFullSubvectorsDouble2  outputIntForce      (intForce_j,
                                                                          intForce_k);
 
@@ -323,6 +326,10 @@ NuTo::Error::eError NuTo::CrankNicolsonEvaluate::Solve(double rFinalTime)
             }
         }
 
+        if(mStructure->GetDimension() == 2)
+        {
+            OutputMapFirstEvaluate      [StructureEnum::eOutput::RESIDUAL_NORM_FACTOR] = &outputResidualFactor;
+        }
 
 
 
@@ -427,6 +434,9 @@ NuTo::Error::eError NuTo::CrankNicolsonEvaluate::Solve(double rFinalTime)
 
         residual_mod=prevResidual_j - CmatT*prevResidual_k;
 
+
+
+
         //@COMMENT check, if this could be avoided, only required if check for initial equilibrium required
         //std::cout << "residual in initial configuration " << residual_mod.Norm() << std::endl;
 
@@ -452,7 +462,7 @@ NuTo::Error::eError NuTo::CrankNicolsonEvaluate::Solve(double rFinalTime)
         {
 
 
-
+            mStructure->GetLogger() << "Actual time: " << mTime << "(timestep " << timeStep << ").\n";
 
 
             /*---------------------------------*\
@@ -578,7 +588,7 @@ NuTo::Error::eError NuTo::CrankNicolsonEvaluate::Solve(double rFinalTime)
                 residual_mod = residual_j - CmatT*residual_k;
             }
             //std::cout << "expected rhs for trial state\n" << residual_mod.transpose() << std::endl<< std::endl;
-            std::cout << "norm of predicted residual in trial state:" << residual_mod.Norm() << std::endl<< std::endl;
+            //std::cout << "norm of predicted residual in trial state:" << residual_mod.Norm() << std::endl<< std::endl;
 
 
 
@@ -660,10 +670,6 @@ NuTo::Error::eError NuTo::CrankNicolsonEvaluate::Solve(double rFinalTime)
 
             mStructure->ElementTotalUpdateTmpStaticData();
 
-
-
-
-
             /*---------------------------------*\
             |         Calculate Residual        |
             \*---------------------------------*/
@@ -703,9 +709,23 @@ NuTo::Error::eError NuTo::CrankNicolsonEvaluate::Solve(double rFinalTime)
                 residual_mod=residual_j;
             }
 
-            //calculate norm of initial residual (first time step)
             double normResidual(residual_mod.Norm());
-            std::cout << "norm of residual after prediction state:" << normResidual << std::endl<< std::endl;
+
+
+            auto residual_normalized = residual_mod;
+            if(mStructure->GetDimension() == 2)
+            {
+                for (int i=0; i< residual_mod.GetNumRows(); ++i)
+                {
+                    residual_normalized(i) *= residualFactor(i);
+                }
+                normResidual = residual_normalized.Norm();
+            }
+
+            //calculate norm of initial residual (first time step)
+
+
+            //std::cout << "norm of residual after prediction state:" << normResidual << std::endl<< std::endl;
 
 
 
@@ -720,6 +740,7 @@ NuTo::Error::eError NuTo::CrankNicolsonEvaluate::Solve(double rFinalTime)
             \*---------------------------------*/
 
             int iteration(0);
+            //while(normResidual>mToleranceForce && iteration<mMaxNumIterations)
             while(normResidual>mToleranceForce && iteration<mMaxNumIterations)
             {
 
@@ -867,7 +888,21 @@ NuTo::Error::eError NuTo::CrankNicolsonEvaluate::Solve(double rFinalTime)
                         residual_mod = residual_j;
                     }
 
+
+
                     trialNormResidual=residual_mod.Norm();
+
+                    if(mStructure->GetDimension() == 2)
+                    {
+                        residual_normalized = residual_mod;
+                        for (int i=0; i< residual_mod.GetNumRows(); ++i)
+                        {
+                            residual_normalized(i) *= residualFactor(i);
+                        }
+                        trialNormResidual=residual_normalized.Norm();
+                    }
+
+
 
                     if(mPerformLineSearch)
                     {
@@ -922,7 +957,6 @@ NuTo::Error::eError NuTo::CrankNicolsonEvaluate::Solve(double rFinalTime)
 
 
 
-
             /*---------------------------------*\
             |  Update last conv disp, vel & acc |
             \*---------------------------------*/
@@ -968,7 +1002,9 @@ NuTo::Error::eError NuTo::CrankNicolsonEvaluate::Solve(double rFinalTime)
                 |         Post Processing           |
                 \*---------------------------------*/
 
-                mStructure->GetLogger() << "Convergence after " << iteration << " iterations at time " << mTime << "(timestep " << timeStep << ").\n";
+
+                mStructure->GetLogger() << "Number of iterations until convergence : " << iteration    << "\n"
+                                        << "Final norm of residual                 : " << normResidual << "\n\n";
 
                 //perform Postprocessing
                 //mStructure->GetLogger() << " *** PostProcess *** from Crank Nicolson \n";

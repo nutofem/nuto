@@ -13,6 +13,7 @@
 #include "nuto/mechanics/constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/thermal/LinearHeatFlux.h"
 #include "nuto/mechanics/constitutive/moistureTransport/MoistureTransport.h"
+#include "nuto/mechanics/constitutive/multiPhysics/ConstitutiveMultiPhysics.h"
 
 // create a new constitutive law
 int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
@@ -53,7 +54,13 @@ Constitutive    ::eConstitutiveType ConstitutiveLawType;
     } else if (ConstitutiveLawTypeString == "MOISTURETRANSPORT")
     {
         ConstitutiveLawType = Constitutive::MOISTURE_TRANSPORT;
-    } else
+
+    }
+    else if (ConstitutiveLawTypeString == "MULTIPHYSICS")
+    {
+        ConstitutiveLawType = Constitutive::MULTI_PHYSICS;
+    }
+    else
     {
         throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] invalid type of constitutive law.");
     }
@@ -131,7 +138,10 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
         case NuTo::Constitutive::MOISTURE_TRANSPORT:
             ConstitutiveLawPtr = new NuTo::MoistureTransport();
             break;
-        default:
+        case NuTo::Constitutive::MULTI_PHYSICS:
+            ConstitutiveLawPtr = new NuTo::ConstitutiveMultiPhysics();
+            break;
+         default:
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] invalid type of constitutive law.");
         }
 
@@ -320,9 +330,9 @@ IdentifierEnum    = Constitutive::GetConstitutiveVariableFromString(upperCaseIde
     ConstitutiveLawSetParameterFullVectorDouble(rIdent, IdentifierEnum, rValue);
 }
 
-//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @brief ... gets a parameter of the constitutive law which is selected by an enum
 //! @param rIdent ... constitutive law identifier
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
 bool NuTo::StructureBase::ConstitutiveLawGetParameterBool(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
@@ -339,9 +349,9 @@ bool NuTo::StructureBase::ConstitutiveLawGetParameterBool(int rIdent, NuTo::Cons
     return requestedValue;
 }
 
-//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
 //! @param rIdent ... constitutive law identifier
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
 void NuTo::StructureBase::ConstitutiveLawSetParameterBool(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier, bool rValue)
 {
@@ -356,9 +366,11 @@ void NuTo::StructureBase::ConstitutiveLawSetParameterBool(int rIdent, NuTo::Cons
     }
 }
 
-//! @brief ... gets a variable of the constitutive law which is selected by an enum
+
+
+//! @brief ... gets a parameter of the constitutive law which is selected by an enum
 //! @param rIdent ... constitutive law identifier
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
 double NuTo::StructureBase::ConstitutiveLawGetParameterDouble(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
@@ -375,9 +387,9 @@ double NuTo::StructureBase::ConstitutiveLawGetParameterDouble(int rIdent, NuTo::
     return requestedValue;
 }
 
-//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
 //! @param rIdent ... constitutive law identifier
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
 void NuTo::StructureBase::ConstitutiveLawSetParameterDouble(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
@@ -392,9 +404,9 @@ void NuTo::StructureBase::ConstitutiveLawSetParameterDouble(int rIdent, NuTo::Co
     }
 }
 
-//! @brief ... gets a variable of the constitutive law which is selected by an enum
+//! @brief ... gets a parameter of the constitutive law which is selected by an enum
 //! @param rIdent ... constitutive law identifier
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
 NuTo::FullVector<double, Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGetParameterFullVectorDouble(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
@@ -411,9 +423,9 @@ NuTo::FullVector<double, Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGet
     return requestedValue;
 }
 
-//! @brief ... sets a variable of the constitutive law which is selected by an enum
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
 //! @param rIdent ... constitutive law identifier
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
 void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
 {
@@ -559,4 +571,25 @@ double NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction(int
     }
     return EquilibriumWaterVolumeFraction;
 }
+
+
+//! @brief ... adds a constitutive law to a multi physics model
+//! @param rIdentMultiPhysics ... multi physics constitutive law to which the constitutive law should be added
+//! @param rIdentConstitutiveLaw ... constitutive law which should be added to the multi physics model
+void NuTo::StructureBase::ConstitutiveLawMultiPhysicsAddConstitutiveLaw(int rIdentMultiPhysics, int rIdentConstitutiveLaw)
+{
+    try
+    {
+        ConstitutiveBase* MultiPhysicsLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdentMultiPhysics);
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdentConstitutiveLaw);
+
+        MultiPhysicsLawPtr->MultiPhysicsAddConstitutiveLaw(ConstitutiveLawPtr);
+    }
+    catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawMultiPhysicsAddConstitutiveLaw] error adding constitutive law to multi physics model.");
+        throw e;
+    }
+}
+
 

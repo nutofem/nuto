@@ -70,6 +70,8 @@ constitutive/moistureTransport/RelativeHumidity.cpp
 constitutive/moistureTransport/RelativeHumidityGradient2D.cpp
 constitutive/moistureTransport/RelativeHumidityGradient3D.cpp
 constitutive/moistureTransport/ConstitutiveStaticDataMoistureTransport.cpp
+constitutive/multiPhysics/ConstitutiveMultiPhysics.cpp
+constitutive/multiPhysics/ConstitutiveStaticDataMultiPhysics.cpp
 )
 
 SET(NuToMechanicsConstraint_SOURCES

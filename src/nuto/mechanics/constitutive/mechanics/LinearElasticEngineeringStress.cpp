@@ -185,6 +185,7 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate1D(ElementBase
             break;
         }
         default:
+
             throw MechanicsException(std::string("[NuTo::LinearElasticEngineeringStress::Evaluate1D] output object)") + NuTo::Constitutive::OutputToString(itOutput->first) + std::string(" could not be calculated, check the allocated material law and the section behavior."));
         }
     }
@@ -426,6 +427,15 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(ElementBase
             itOutput->second->GetDamage().SetDamage(0.);
             break;
         }
+        case NuTo::Constitutive::Output::RESIDUAL_NORM_FACTOR_DISPLACEMENTS:
+        {
+            ConstitutiveTangentLocal<1,1>& residualNormFactorDisplacements(itOutput->second->AsConstitutiveTangentLocal_1x1());
+
+            residualNormFactorDisplacements(0,0)=  mE;
+
+            residualNormFactorDisplacements.SetSymmetry(false);
+            break;
+        }
         case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
         {
@@ -433,7 +443,7 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(ElementBase
             break;
         }
         default:
-            throw MechanicsException(std::string("[NuTo::LinearElasticEngineeringStressEngineeringStress::Evaluate3D] output object)") + NuTo::Constitutive::OutputToString(itOutput->first) + std::string(" culd not be calculated, check the allocated material law and the section behavior."));
+            throw MechanicsException(std::string("[NuTo::LinearElasticEngineeringStressEngineeringStress::Evaluate2D] output object(") + NuTo::Constitutive::OutputToString(itOutput->first) + std::string(") could not be calculated, check the allocated material law and the section behavior."));
         }
     }
 
@@ -631,13 +641,36 @@ void NuTo::LinearElasticEngineeringStress::CalculateCoefficients3D(double& C11, 
 
 
 
+
+
 ///////////////////////////////////////////////////////////////////////////
 
 // parameters /////////////////////////////////////////////////////////////
 
 
-//! @brief ... gets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... checks if the constitutive law has a specific parameter
+//! @param rIdentifier ... Enum to identify the requested parameter
+//! @return ... true/false
+bool NuTo::LinearElasticEngineeringStress::CheckHaveParameter(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+{
+    switch(rIdentifier)
+    {
+        case Constitutive::eConstitutiveParameter::DENSITY:
+        case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
+        case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
+        case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
+    }
+}
+
+//! @brief ... gets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
 double NuTo::LinearElasticEngineeringStress::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
@@ -658,8 +691,8 @@ double NuTo::LinearElasticEngineeringStress::GetParameterDouble(NuTo::Constituti
     }
 }
 
-//! @brief ... sets a variable of the constitutive law which is selected by an enum
-//! @param rIdentifier ... Enum to identify the requested variable
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
 void NuTo::LinearElasticEngineeringStress::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
@@ -700,7 +733,38 @@ void NuTo::LinearElasticEngineeringStress::SetParameterDouble(NuTo::Constitutive
     }
 }
 
+
+
 ///////////////////////////////////////////////////////////////////////////
+
+//! @brief ... gets a set of all constitutive output enums that are compatible with the constitutive law
+//! @return ... set of all constitutive output enums that are compatible with the constitutive law
+bool NuTo::LinearElasticEngineeringStress::CheckOutputTypeCompatibility(NuTo::Constitutive::Output::eOutput rOutputEnum) const
+{
+    switch (rOutputEnum)
+    {
+    case Constitutive::Output::DAMAGE:
+    case Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D:
+    case Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D:
+    case Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D:
+    case Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_3D:
+    case Constitutive::Output::ENGINEERING_STRAIN_1D:
+    case Constitutive::Output::ENGINEERING_STRAIN_3D:
+    case Constitutive::Output::ENGINEERING_STRESS_1D:
+    case Constitutive::Output::ENGINEERING_STRESS_2D:
+    case Constitutive::Output::ENGINEERING_STRESS_3D:
+    case Constitutive::Output::RESIDUAL_NORM_FACTOR_DISPLACEMENTS:
+    case Constitutive::Output::UPDATE_STATIC_DATA:
+    case Constitutive::Output::UPDATE_TMP_STATIC_DATA:
+    {
+        return true;
+    }
+    default:
+    {
+        return false;
+    }
+    }
+}
 
 //! @brief ... get type of constitutive relationship
 //! @return ... type of constitutive relationship

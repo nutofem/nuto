@@ -32,6 +32,7 @@ class ConstitutiveStaticDataStrainGradientDamagePlasticity1D;
 class ConstitutiveStaticDataDamageViscoPlasticity3D;
 class ConstitutiveStaticDataDamageViscoPlasticity3DFatigue;
 class ConstitutiveStaticDataMoistureTransport;
+class ConstitutiveStaticDataMultiPhysics;
 class ElementBase;
 class VisualizeUnstructuredGrid;
 class VisualizeComponentBase;
@@ -126,6 +127,12 @@ public:
 
     //!@ brief reinterpret as moisture transport
     virtual const ConstitutiveStaticDataMoistureTransport* AsMoistureTransport()const;
+
+    //!@ brief reinterpret as multi physics
+    virtual ConstitutiveStaticDataMultiPhysics* AsMultiPhysics();
+
+    //!@ brief reinterpret as multi physics
+    virtual const ConstitutiveStaticDataMultiPhysics* AsMultiPhysics()const;
 
 #ifdef ENABLE_VISUALIZE
     //Visualize for all integration points the fine scale structure

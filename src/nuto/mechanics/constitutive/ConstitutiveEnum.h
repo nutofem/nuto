@@ -25,8 +25,17 @@ enum eConstitutiveType
     DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS,    //!< viscoplastic damage model
     DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS, //!< viscoplastic damage model with hardening
     MOISTURE_TRANSPORT,                             //!< moisture transport model
-    LINEAR_SPRING                                   //!< linear spring model
+    LINEAR_SPRING,                                   //!< linear spring model
+    MULTI_PHYSICS                                   //!< multi physics
 };
+
+enum class eConstitutiveStaticDataType
+{
+    MOISTURE_TRANSPORT,
+    MULTI_PHYSICS
+};
+
+
 
 enum eNonlocalDamageYieldSurface
 {
@@ -286,7 +295,10 @@ enum eOutput
 	FATIGUE_SAVE_STATIC_DATA,
 	FATIGUE_RESTORE_STATIC_DATA,
 	FATIGUE_EXTRAPOLATE_STATIC_DATA,
-	NONLOCAL_PARAMETER_XI
+        NONLOCAL_PARAMETER_XI,
+    RESIDUAL_NORM_FACTOR_DISPLACEMENTS,
+    RESIDUAL_NORM_FACTOR_RELATIVE_HUMIDITY,
+    RESIDUAL_NORM_FACTOR_WATER_VOLUME_FRACTION,
 };
 }
 
@@ -340,6 +352,24 @@ static inline std::string OutputToString( const Output::eOutput& e )
                               (Output::D_ENGINEERING_STRESS_REAL_D_NONLOCAL_TOTAL_STRAIN_REAL_1D,"D_ENGINEERING_STRESS_REAL_D_NONLOCAL_TOTAL_STRAIN_REAL_1D")
                               (Output::D_ENGINEERING_STRAIN_VIRT_D_STRESS_REAL_1D,"D_ENGINEERING_STRAIN_VIRT_D_STRESS_REAL_1D")
                               (Output::D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D,"D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D")
+                              (Output::RESIDUAL_WATER_PHASE_B, "RESIDUAL_WATER_PHASE_B")
+                              (Output::RESIDUAL_WATER_PHASE_N, "RESIDUAL_WATER_PHASE_N")
+                              (Output::RESIDUAL_VAPOR_PHASE_B, "RESIDUAL_VAPOR_PHASE_B")
+                              (Output::RESIDUAL_VAPOR_PHASE_N, "RESIDUAL_VAPOR_PHASE_N")
+                              (Output::D_RESIDUAL_RH_D_RH_H0_BB, "D_RESIDUAL_RH_D_RH_H0_BB")
+                              (Output::D_RESIDUAL_RH_D_RH_H0_NN, "D_RESIDUAL_RH_D_RH_H0_NN")
+                              (Output::D_RESIDUAL_RH_D_WV_H0_BN, "D_RESIDUAL_RH_D_WV_H0_BN")
+                              (Output::D_RESIDUAL_RH_D_WV_H0_NN, "D_RESIDUAL_RH_D_WV_H0_NN")
+                              (Output::D_RESIDUAL_WV_D_RH_H0_NN, "D_RESIDUAL_WV_D_RH_H0_NN")
+                              (Output::D_RESIDUAL_WV_D_WV_H0_BB, "D_RESIDUAL_WV_D_WV_H0_BB")
+                              (Output::D_RESIDUAL_WV_D_WV_H0_BN, "D_RESIDUAL_WV_D_WV_H0_BN")
+                              (Output::D_RESIDUAL_WV_D_WV_H0_NN, "D_RESIDUAL_WV_D_WV_H0_NN")
+                              (Output::D_RESIDUAL_RH_D_RH_H1_NN, "D_RESIDUAL_RH_D_RH_H1_NN")
+                              (Output::D_RESIDUAL_RH_D_WV_H1_NN, "D_RESIDUAL_RH_D_WV_H1_NN")
+                              (Output::D_RESIDUAL_WV_D_WV_H1_NN, "D_RESIDUAL_WV_D_WV_H1_NN")
+                              (Output::RESIDUAL_NORM_FACTOR_DISPLACEMENTS, "RESIDUAL_NORM_FACTOR_DISPLACEMENTS")
+                              (Output::RESIDUAL_NORM_FACTOR_RELATIVE_HUMIDITY, "RESIDUAL_NORM_FACTOR_RELATIVE_HUMIDITY")
+                              (Output::RESIDUAL_NORM_FACTOR_WATER_VOLUME_FRACTION, "RESIDUAL_NORM_FACTOR_WATER_VOLUME_FRACTION")
                               (Output::NONLOCAL_PARAMETER_XI, "NONLOCAL_PARAMETER_XI");
 
   std::map< Output::eOutput, std::string >::const_iterator it = lut.find( e );

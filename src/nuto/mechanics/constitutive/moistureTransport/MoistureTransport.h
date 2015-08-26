@@ -51,6 +51,11 @@ public:
     //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
     virtual bool                                    CheckElementCompatibility                                   (Element::eElementType rElementType) const override;
 
+    //! @brief ... checks if the constitutive law has a specific parameter
+    //! @param rIdentifier ... Enum to identify the requested parameter
+    //! @return ... true/false
+    virtual bool                                    CheckHaveParameter                                          (Constitutive::eConstitutiveParameter rIdentifier) const override;
+
     //! @brief ... check the gradient correction when changing from desorption to adsorption
     //! @param ... gradient correction when changing from desorption to adsorption
     void                                            CheckKa                                                     (double rKa) const;
@@ -62,6 +67,10 @@ public:
     //! @brief ... check if the mass exchange rate is non-negative
     //! @param rMassExchangeRate ... mass exchange rate
     void                                            CheckMassExchangeRate                                       (double rMassExchangeRate) const;
+
+    //! @brief ... gets a set of all constitutive output enums that are compatible with the constitutive law
+    //! @return ... set of all constitutive output enums that are compatible with the constitutive law
+    virtual bool                                    CheckOutputTypeCompatibility                                (Constitutive::Output::eOutput rOutputEnum) const override;
 
     //! @brief ... check parameters of the constitutive relationship
     //! if one check fails, an exception is thrwon
@@ -125,58 +134,56 @@ public:
                                                                                                                  int rIp,
                                                                                                                  const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
                                                                                                                  std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput) override;
-
-
-    //! @brief ... gets a variable of the constitutive law which is selected by an enum
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @brief ... gets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
-    virtual bool                                    GetParameterBool                                             (Constitutive::eConstitutiveParameter rIdentifier) const override;
+    virtual bool                                    GetParameterBool                                            (Constitutive::eConstitutiveParameter rIdentifier) const override;
 
-    //! @brief ... sets a variable of the constitutive law which is selected by an enum
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @brief ... sets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
-    virtual void                                    SetParameterBool                                             (Constitutive::eConstitutiveParameter rIdentifier, bool rValue) override;
+    virtual void                                    SetParameterBool                                            (Constitutive::eConstitutiveParameter rIdentifier, bool rValue) override;
 
-    //! @brief ... gets a variable of the constitutive law which is selected by an enum
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @brief ... gets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
-    virtual double                                  GetParameterDouble                                           (Constitutive::eConstitutiveParameter rIdentifier) const override;
+    virtual double                                  GetParameterDouble                                          (Constitutive::eConstitutiveParameter rIdentifier) const override;
 
-    //! @brief ... sets a variable of the constitutive law which is selected by an enum
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @brief ... sets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
-    virtual void                                    SetParameterDouble                                           (Constitutive::eConstitutiveParameter rIdentifier, double rValue) override;
+    virtual void                                    SetParameterDouble                                          (Constitutive::eConstitutiveParameter rIdentifier, double rValue) override;
 
-    //! @brief ... gets a variable of the constitutive law which is selected by an enum
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @brief ... gets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
-    virtual NuTo::FullVector<double,Eigen::Dynamic> GetParameterFullVectorDouble                                 (Constitutive::eConstitutiveParameter rIdentifier) const override;
+    virtual NuTo::FullVector<double,Eigen::Dynamic> GetParameterFullVectorDouble                                (Constitutive::eConstitutiveParameter rIdentifier) const override;
 
-    //! @brief ... sets a variable of the constitutive law which is selected by an enum
-    //! @param rIdentifier ... Enum to identify the requested variable
+    //! @brief ... sets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
-    virtual void                                    SetParameterFullVectorDouble                                 (Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double,Eigen::Dynamic> rValue) override;
+    virtual void                                    SetParameterFullVectorDouble                                (Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double,Eigen::Dynamic> rValue) override;
 
 
     //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
     //! @param rRelativeHumidity ... relative humidity
     //! @param rCoeffs ... polynomial coefficients of the sorption curve
     //! @return ... equilibrium water volume fraction
-    virtual double                                  GetEquilibriumWaterVolumeFraction                           (double rRelativeHumidity,
-                                                                                                                 NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const override;
+    virtual double                                  GetEquilibriumWaterVolumeFraction                          (double rRelativeHumidity,
+                                                                                                                NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const override;
 
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship
     //! @sa eConstitutiveType
-    virtual Constitutive::eConstitutiveType         GetType                                                     () const override;
+    virtual Constitutive::eConstitutiveType         GetType                                                    () const override;
 
     //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
     //! @return ... see brief explanation
-    virtual bool                                    HaveTmpStaticData                                           () const override;
+    virtual bool                                    HaveTmpStaticData                                          () const override;
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
-    void                                            Info                                                        (unsigned short rVerboseLevel, Logger& rLogger) const;
+    void                                            Info                                                       (unsigned short rVerboseLevel, Logger& rLogger) const;
 
 
 protected:
