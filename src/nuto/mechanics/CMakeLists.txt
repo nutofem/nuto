@@ -44,9 +44,11 @@ constitutive/mechanics/GradientDamagePlasticityEngineeringStress.cpp
 constitutive/mechanics/GreenLagrangeStrain1D.cpp
 constitutive/mechanics/GreenLagrangeStrain2D.cpp
 constitutive/mechanics/GreenLagrangeStrain3D.cpp
+constitutive/mechanics/InterfaceSlip.cpp
 constitutive/mechanics/InterfaceTractions1D.cpp
 constitutive/mechanics/InterfaceTractions2D.cpp
 constitutive/mechanics/InterfaceTractions3D.cpp
+constitutive/mechanics/InterfaceGoodman.cpp
 constitutive/mechanics/LinearElasticEngineeringStress.cpp
 constitutive/mechanics/LinearSpring.cpp
 constitutive/mechanics/LocalEqPlasticStrain.cpp
@@ -135,6 +137,7 @@ elements/Element1D.cpp
 elements/Element1DSpring.cpp
 elements/Element1DInXD.cpp
 elements/Element2D.cpp
+elements/Element2DInterface.cpp
 elements/Element3D.cpp
 elements/IpDataBase.cpp
 elements/IpDataEmpty.cpp
@@ -213,6 +216,7 @@ interpolationtypes/InterpolationType.cpp
 interpolationtypes/InterpolationBase.cpp
 interpolationtypes/Interpolation1D.cpp
 interpolationtypes/Interpolation1DTruss.cpp
+interpolationtypes/Interpolation1DInterface.cpp
 interpolationtypes/Interpolation2D.cpp
 interpolationtypes/Interpolation2DTriangle.cpp
 interpolationtypes/Interpolation2DQuad.cpp

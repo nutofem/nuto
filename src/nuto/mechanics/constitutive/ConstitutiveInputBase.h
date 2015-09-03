@@ -44,6 +44,7 @@ class RelativeHumidityGradient3D;
 class WaterVolumeFraction;
 class WaterVolumeFractionGradient2D;
 class WaterVolumeFractionGradient3D;
+class InterfaceSlip;
 
 //! @brief ... base class for the constitutive relationship, e.g. material laws
 //! @author Jörg F. Unger, BAM
@@ -78,6 +79,7 @@ public:
     virtual const WaterVolumeFractionGradient2D& GetWaterVolumeFractionGradient2D()const;
     virtual const WaterVolumeFractionGradient3D& GetWaterVolumeFractionGradient3D()const;
     virtual const EngineeringStress1D& GetEngineeringStress1D()const;
+    virtual const InterfaceSlip& GetInterfaceSlip() const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

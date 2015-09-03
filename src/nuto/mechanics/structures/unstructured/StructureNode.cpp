@@ -221,7 +221,7 @@ int NuTo::Structure::NodeCreate(NuTo::FullVector<double,Eigen::Dynamic> rCoordin
 }
 
 //! creates a node with rDofs degrees of freedom
-int NuTo::Structure::NodeCreate(NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates, std::set<NuTo::Node::eAttributes> rDofs)
+int NuTo::Structure::NodeCreate(NuTo::FullVector<double,Eigen::Dynamic> rCoordinates, std::set<NuTo::Node::eAttributes> rDofs)
 {
 
     //find unused integer id

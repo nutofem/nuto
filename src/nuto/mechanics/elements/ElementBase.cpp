@@ -231,6 +231,7 @@ const Eigen::VectorXd NuTo::ElementBase::InterpolateDofGlobal(int rTimeDerivativ
     const Eigen::MatrixXd nodalValues = ExtractNodeValues(rTimeDerivative, rDofType);
     const Eigen::VectorXd shapeFunctions = interpolationType.CalculateShapeFunctions(rNaturalCoordinates);
 
+
     return nodalValues * shapeFunctions;
 }
 
@@ -610,29 +611,8 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
         }
     }
 
-
-
-
-
-
-
-
-
-
     //calculate the element solution
     Evaluate(elementOutput);
-
-
-
-
-
-
-
-
-
-
-
-
 
     //assign the outputs
     NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>* damage(0);

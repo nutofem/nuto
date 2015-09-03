@@ -32,6 +32,7 @@ enum eElementType
     ELEMENT1DINXD,                  //!< one dimensional element in 2D or 3D
     ELEMENT1DSPRING,                //!< one dimensional spring element
     ELEMENT2D,                      //!< two dimensional element
+    ELEMENT2DINTERFACE,             //!< two dimensional element
     ELEMENT3D,                      //!< three dimensional element
     BOUNDARYELEMENT1D,              //!< boundary of 1D element --> 0D surface
     BOUNDARYELEMENT2D,              //!< boundary of 2D element --> 1D surface

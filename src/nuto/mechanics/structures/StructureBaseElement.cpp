@@ -513,6 +513,10 @@ bool NuTo::StructureBase::CheckCoefficientMatrix_0(double rDelta, bool rPrintRes
         this->BuildGlobalGradientInternalPotentialVector(gradIntPotential2);
 
         coeffMatrix_CDF.SetColumn(iCol,(gradIntPotential2-gradIntPotentialMod)*(1./rDelta));
+
+
+
+
         displacementsActiveDOFsCheck(iCol)-=rDelta;
         // the NodeMerge is called in the next loop-step and
         // (for the last step) right after this loop

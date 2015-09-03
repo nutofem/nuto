@@ -12,6 +12,7 @@
 #include "nuto/mechanics/interpolationtypes/Interpolation3DTetrahedron.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation3DBrick.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation1DTruss.h"
+#include "nuto/mechanics/interpolationtypes/Interpolation1DInterface.h"
 
 #include <boost/foreach.hpp>
 
@@ -72,6 +73,9 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eAttributes rDofType, Nu
         break;
     case Interpolation::eShapeType::BRICK3D:
         newType = new Interpolation3DBrick(mStructure, rDofType, rTypeOrder);
+        break;
+    case Interpolation::eShapeType::INTERFACE:
+        newType = new Interpolation1DInterface(mStructure, rDofType, rTypeOrder);
         break;
     default:
         throw NuTo::MechanicsException("[NuTo::InterpolationType::AddDofInterpolation] ShapeType " + NuTo::Interpolation::ShapeTypeToString(mShapeType) + " not implemented.");
@@ -415,6 +419,7 @@ void NuTo::InterpolationType::UpdateNodeRenumberingIndices()
         case Interpolation::SPRING:
         case Interpolation::TRUSS1D:
         case Interpolation::TRUSSXD:
+        case Interpolation::INTERFACE:
             // reflect at (0,0,0) n = (1,0,0)
             x_i_prime = -x_i;
             break;

@@ -596,25 +596,20 @@ Eigen::Matrix<double, 15, 1> ShapeFunctionsTriangleOrder4(const Eigen::VectorXd&
     double r(rCoordinates(0));
     double s(rCoordinates(1));
 
-    shapeFunctions(0) = +1.0 - 8.33333333333 * r - 8.33333333333 * s + 23.3333333333 * r * r + 46.6666666667 * r * s + 23.3333333333 * s * s - 26.6666666667 * r * r * r - 80.0 * r * r * s
-            - 80.0 * r * s * s - 26.6666666667 * s * s * s + 10.6666666667 * s * s * s * s + 42.6666666667 * r * s * s * s + 64.0 * r * r * s * s + 42.6666666667 * r * r * r * s
-            + 10.6666666667 * r * r * r * r;
-    shapeFunctions(1) = +16.0 * r - 69.3333333333 * r * r - 69.3333333333 * r * s + 96.0 * r * r * r + 192.0 * r * r * s + 96.0 * r * s * s - 42.6666666667 * r * s * s * s - 128.0 * r * r * s * s
-            - 128.0 * r * r * r * s - 42.6666666667 * r * r * r * r;
+    shapeFunctions(0) = +1.0 - 8.33333333333 * r - 8.33333333333 * s + 23.3333333333 * r * r + 46.6666666667 * r * s + 23.3333333333 * s * s - 26.6666666667 * r * r * r - 80.0 * r * r * s - 80.0 * r * s * s - 26.6666666667 * s * s * s + 10.6666666667 * s * s * s * s + 42.6666666667 * r * s * s * s
+            + 64.0 * r * r * s * s + 42.6666666667 * r * r * r * s + 10.6666666667 * r * r * r * r;
+    shapeFunctions(1) = +16.0 * r - 69.3333333333 * r * r - 69.3333333333 * r * s + 96.0 * r * r * r + 192.0 * r * r * s + 96.0 * r * s * s - 42.6666666667 * r * s * s * s - 128.0 * r * r * s * s - 128.0 * r * r * r * s - 42.6666666667 * r * r * r * r;
     shapeFunctions(2) = -12.0 * r + 76.0 * r * r + 28.0 * r * s - 128.0 * r * r * r - 144.0 * r * r * s - 16.0 * r * s * s + 64.0 * r * r * s * s + 128.0 * r * r * r * s + 64.0 * r * r * r * r;
-    shapeFunctions(3) = +5.33333333333 * r - 37.3333333333 * r * r - 5.33333333333 * r * s + 74.6666666667 * r * r * r + 32.0 * r * r * s - 42.6666666667 * r * r * r * s
-            - 42.6666666667 * r * r * r * r;
+    shapeFunctions(3) = +5.33333333333 * r - 37.3333333333 * r * r - 5.33333333333 * r * s + 74.6666666667 * r * r * r + 32.0 * r * r * s - 42.6666666667 * r * r * r * s - 42.6666666667 * r * r * r * r;
     shapeFunctions(4) = -1.0 * r + 7.33333333333 * r * r - 16.0 * r * r * r + 10.6666666667 * r * r * r * r;
-    shapeFunctions(5) = +16.0 * s - 69.3333333333 * r * s - 69.3333333333 * s * s + 96.0 * r * r * s + 192.0 * r * s * s + 96.0 * s * s * s - 42.6666666667 * s * s * s * s - 128.0 * r * s * s * s
-            - 128.0 * r * r * s * s - 42.6666666667 * r * r * r * s;
+    shapeFunctions(5) = +16.0 * s - 69.3333333333 * r * s - 69.3333333333 * s * s + 96.0 * r * r * s + 192.0 * r * s * s + 96.0 * s * s * s - 42.6666666667 * s * s * s * s - 128.0 * r * s * s * s - 128.0 * r * r * s * s - 42.6666666667 * r * r * r * s;
     shapeFunctions(6) = +96.0 * r * s - 224.0 * r * r * s - 224.0 * r * s * s + 128.0 * r * s * s * s + 256.0 * r * r * s * s + 128.0 * r * r * r * s;
     shapeFunctions(7) = -32.0 * r * s + 160.0 * r * r * s + 32.0 * r * s * s - 128.0 * r * r * s * s - 128.0 * r * r * r * s;
     shapeFunctions(8) = +5.33333333333 * r * s - 32.0 * r * r * s + 42.6666666667 * r * r * r * s;
     shapeFunctions(9) = -12.0 * s + 28.0 * r * s + 76.0 * s * s - 16.0 * r * r * s - 144.0 * r * s * s - 128.0 * s * s * s + 64.0 * s * s * s * s + 128.0 * r * s * s * s + 64.0 * r * r * s * s;
     shapeFunctions(10) = -32.0 * r * s + 32.0 * r * r * s + 160.0 * r * s * s - 128.0 * r * s * s * s - 128.0 * r * r * s * s;
     shapeFunctions(11) = +4.0 * r * s - 16.0 * r * r * s - 16.0 * r * s * s + 64.0 * r * r * s * s;
-    shapeFunctions(12) = +5.33333333333 * s - 5.33333333333 * r * s - 37.3333333333 * s * s + 32.0 * r * s * s + 74.6666666667 * s * s * s - 42.6666666667 * s * s * s * s
-            - 42.6666666667 * r * s * s * s;
+    shapeFunctions(12) = +5.33333333333 * s - 5.33333333333 * r * s - 37.3333333333 * s * s + 32.0 * r * s * s + 74.6666666667 * s * s * s - 42.6666666667 * s * s * s * s - 42.6666666667 * r * s * s * s;
     shapeFunctions(13) = +5.33333333333 * r * s - 32.0 * r * s * s + 42.6666666667 * r * s * s * s;
     shapeFunctions(14) = -1.0 * s + 7.33333333333 * s * s - 16.0 * s * s * s + 10.6666666667 * s * s * s * s;
 
@@ -627,13 +622,10 @@ Eigen::Matrix<double, 15, 2> DerivativeShapeFunctionsTriangleOrder4(const Eigen:
     double r(rCoordinates(0));
     double s(rCoordinates(1));
 
-    derivativeShapeFunctions(0, 0) = -8.33333333333 + 46.6666666667 * r + 46.6666666667 * s - 80.0 * r * r - 160.0 * r * s - 80.0 * s * s + 42.6666666667 * s * s * s + 128.0 * r * s * s
-            + 128.0 * r * r * s + 42.6666666667 * r * r * r;
-    derivativeShapeFunctions(0, 1) = -8.33333333333 + 46.6666666667 * r + 46.6666666667 * s - 80.0 * r * r - 160.0 * r * s - 80.0 * s * s + 42.6666666667 * s * s * s + 128.0 * r * s * s
-            + 128.0 * r * r * s + 42.6666666667 * r * r * r;
+    derivativeShapeFunctions(0, 0) = -8.33333333333 + 46.6666666667 * r + 46.6666666667 * s - 80.0 * r * r - 160.0 * r * s - 80.0 * s * s + 42.6666666667 * s * s * s + 128.0 * r * s * s + 128.0 * r * r * s + 42.6666666667 * r * r * r;
+    derivativeShapeFunctions(0, 1) = -8.33333333333 + 46.6666666667 * r + 46.6666666667 * s - 80.0 * r * r - 160.0 * r * s - 80.0 * s * s + 42.6666666667 * s * s * s + 128.0 * r * s * s + 128.0 * r * r * s + 42.6666666667 * r * r * r;
 
-    derivativeShapeFunctions(1, 0) = +16.0 - 138.666666667 * r - 69.3333333333 * s + 288.0 * r * r + 384.0 * r * s + 96.0 * s * s - 42.6666666667 * s * s * s - 256.0 * r * s * s - 384.0 * r * r * s
-            - 170.666666667 * r * r * r;
+    derivativeShapeFunctions(1, 0) = +16.0 - 138.666666667 * r - 69.3333333333 * s + 288.0 * r * r + 384.0 * r * s + 96.0 * s * s - 42.6666666667 * s * s * s - 256.0 * r * s * s - 384.0 * r * r * s - 170.666666667 * r * r * r;
     derivativeShapeFunctions(1, 1) = -69.3333333333 * r + 192.0 * r * r + 192.0 * r * s - 128.0 * r * s * s - 256.0 * r * r * s - 128.0 * r * r * r;
 
     derivativeShapeFunctions(2, 0) = -12.0 + 152.0 * r + 28.0 * s - 384.0 * r * r - 288.0 * r * s - 16.0 * s * s + 128.0 * r * s * s + 384.0 * r * r * s + 256.0 * r * r * r;
@@ -646,8 +638,7 @@ Eigen::Matrix<double, 15, 2> DerivativeShapeFunctionsTriangleOrder4(const Eigen:
     derivativeShapeFunctions(4, 1) = 0.;
 
     derivativeShapeFunctions(5, 0) = -69.3333333333 * s + 192.0 * r * s + 192.0 * s * s - 128.0 * s * s * s - 256.0 * r * s * s - 128.0 * r * r * s;
-    derivativeShapeFunctions(5, 1) = +16.0 - 69.3333333333 * r - 138.666666667 * s + 96.0 * r * r + 384.0 * r * s + 288.0 * s * s - 170.666666667 * s * s * s - 384.0 * r * s * s - 256.0 * r * r * s
-            - 42.6666666667 * r * r * r;
+    derivativeShapeFunctions(5, 1) = +16.0 - 69.3333333333 * r - 138.666666667 * s + 96.0 * r * r + 384.0 * r * s + 288.0 * s * s - 170.666666667 * s * s * s - 384.0 * r * s * s - 256.0 * r * r * s - 42.6666666667 * r * r * r;
 
     derivativeShapeFunctions(6, 0) = +96.0 * s - 448.0 * r * s - 224.0 * s * s + 128.0 * s * s * s + 512.0 * r * s * s + 384.0 * r * r * s;
     derivativeShapeFunctions(6, 1) = +96.0 * r - 224.0 * r * r - 448.0 * r * s + 384.0 * r * s * s + 512.0 * r * r * s + 128.0 * r * r * r;
@@ -748,10 +739,10 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesQuadOrder2(int rNodeIndex)
         return Eigen::Matrix<double, 2, 1>(-1.0, 1.0);
         break;
     case 4:
-        return Eigen::Matrix<double, 2, 1>( 0.0, -1.0);
+        return Eigen::Matrix<double, 2, 1>(0.0, -1.0);
         break;
     case 5:
-        return Eigen::Matrix<double, 2, 1>(1.0,  0.0);
+        return Eigen::Matrix<double, 2, 1>(1.0, 0.0);
         break;
     case 6:
         return Eigen::Matrix<double, 2, 1>(0.0, 1.0);
@@ -771,15 +762,14 @@ Eigen::Matrix<double, 8, 1> ShapeFunctionsQuadOrder2(const Eigen::VectorXd& rCoo
     double r = rCoordinates(0);
     double s = rCoordinates(1);
 
-    shapeFunctions(0) = -0.25*(r - 1)*(s - 1)*(r + s + 1);
-    shapeFunctions(1) = 0.25*(r + 1)*(s - 1)*(-r + s + 1);
-    shapeFunctions(2) = 0.25*(r + 1)*(s + 1)*(r + s - 1);
-    shapeFunctions(3) = 0.25*(r - 1)*(s + 1)*(r - s + 1);
-    shapeFunctions(4) = 0.5*(r*r - 1)*(s - 1);
-    shapeFunctions(5) = -0.5*(r + 1)*(s*s - 1);
-    shapeFunctions(6) = -0.5*(r*r - 1)*(s + 1);
-    shapeFunctions(7) = 0.5*(r - 1)*(s*s - 1);
-
+    shapeFunctions(0) = -0.25 * (r - 1) * (s - 1) * (r + s + 1);
+    shapeFunctions(1) = 0.25 * (r + 1) * (s - 1) * (-r + s + 1);
+    shapeFunctions(2) = 0.25 * (r + 1) * (s + 1) * (r + s - 1);
+    shapeFunctions(3) = 0.25 * (r - 1) * (s + 1) * (r - s + 1);
+    shapeFunctions(4) = 0.5 * (r * r - 1) * (s - 1);
+    shapeFunctions(5) = -0.5 * (r + 1) * (s * s - 1);
+    shapeFunctions(6) = -0.5 * (r * r - 1) * (s + 1);
+    shapeFunctions(7) = 0.5 * (r - 1) * (s * s - 1);
 
     return shapeFunctions;
 }
@@ -790,30 +780,29 @@ Eigen::Matrix<double, 8, 2> DerivativeShapeFunctionsQuadOrder2(const Eigen::Vect
     double r = rCoordinates(0);
     double s = rCoordinates(1);
 
-    derivativeShapeFunctions(0, 0) = (2*r + s)*(-0.25*s + 0.25);
-    derivativeShapeFunctions(0, 1) = (-0.25*r + 0.25)*(r + 2*s);
+    derivativeShapeFunctions(0, 0) = (2 * r + s) * (-0.25 * s + 0.25);
+    derivativeShapeFunctions(0, 1) = (-0.25 * r + 0.25) * (r + 2 * s);
 
-    derivativeShapeFunctions(1, 0) = (-0.5*r + 0.25*s)*(s - 1);
-    derivativeShapeFunctions(1, 1) = 0.25*(-r + 2*s)*(r + 1);
+    derivativeShapeFunctions(1, 0) = (-0.5 * r + 0.25 * s) * (s - 1);
+    derivativeShapeFunctions(1, 1) = 0.25 * (-r + 2 * s) * (r + 1);
 
-    derivativeShapeFunctions(2, 0) = 0.25*(2*r + s)*(s + 1);
-    derivativeShapeFunctions(2, 1) = 0.25*(r + 1)*(r + 2*s);
+    derivativeShapeFunctions(2, 0) = 0.25 * (2 * r + s) * (s + 1);
+    derivativeShapeFunctions(2, 1) = 0.25 * (r + 1) * (r + 2 * s);
 
-    derivativeShapeFunctions(3, 0) = 0.25*(2*r - s)*(s + 1);
-    derivativeShapeFunctions(3, 1) = (0.25*r - 0.5*s)*(r - 1);
+    derivativeShapeFunctions(3, 0) = 0.25 * (2 * r - s) * (s + 1);
+    derivativeShapeFunctions(3, 1) = (0.25 * r - 0.5 * s) * (r - 1);
 
-    derivativeShapeFunctions(4, 0) = r*(s - 1);
-    derivativeShapeFunctions(4, 1) = 0.5*r*r - 0.5;
+    derivativeShapeFunctions(4, 0) = r * (s - 1);
+    derivativeShapeFunctions(4, 1) = 0.5 * r * r - 0.5;
 
-    derivativeShapeFunctions(5, 0) = -0.5*s*s + 0.5;
-    derivativeShapeFunctions(5, 1) = -s*(r + 1);
+    derivativeShapeFunctions(5, 0) = -0.5 * s * s + 0.5;
+    derivativeShapeFunctions(5, 1) = -s * (r + 1);
 
-    derivativeShapeFunctions(6, 0) = -r*(s + 1);
-    derivativeShapeFunctions(6, 1) = -0.5*r*r + 0.5;
+    derivativeShapeFunctions(6, 0) = -r * (s + 1);
+    derivativeShapeFunctions(6, 1) = -0.5 * r * r + 0.5;
 
-    derivativeShapeFunctions(7, 0) = 0.5*s*s - 0.5;
-    derivativeShapeFunctions(7, 1) = s*(r - 1);
-
+    derivativeShapeFunctions(7, 0) = 0.5 * s * s - 0.5;
+    derivativeShapeFunctions(7, 1) = s * (r - 1);
 
     return derivativeShapeFunctions;
 }
@@ -823,7 +812,7 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesQuadSpectralOrder2(int rNodeIndex)
     const int d = 3;
 
     assert(rNodeIndex >= 0);
-    assert(rNodeIndex <  9);
+    assert(rNodeIndex < 9);
 
     double cX = ShapeFunctions1D::NodeCoordinatesTrussOrder2(rNodeIndex % d)(0, 0);
     double cY = ShapeFunctions1D::NodeCoordinatesTrussOrder2(rNodeIndex / d)(0, 0);
@@ -1137,45 +1126,45 @@ Eigen::Matrix<double, 10, 3> DerivativeShapeFunctionsTetrahedronOrder2(const Eig
     double s = rCoordinates[1];
     double t = rCoordinates[2];
 
-    derivativeShapeFunctions(0,0)  = -3.+ 4.*(r+s+t);
-    derivativeShapeFunctions(0,1)  = -3.+ 4.*(r+s+t);
-    derivativeShapeFunctions(0,2)  = -3.+ 4.*(r+s+t);
+    derivativeShapeFunctions(0, 0) = -3. + 4. * (r + s + t);
+    derivativeShapeFunctions(0, 1) = -3. + 4. * (r + s + t);
+    derivativeShapeFunctions(0, 2) = -3. + 4. * (r + s + t);
 
-    derivativeShapeFunctions(1,0)  = -1.+4.*r;
-    derivativeShapeFunctions(1,1)  =  0;
-    derivativeShapeFunctions(1,2)  =  0;
+    derivativeShapeFunctions(1, 0) = -1. + 4. * r;
+    derivativeShapeFunctions(1, 1) = 0;
+    derivativeShapeFunctions(1, 2) = 0;
 
-    derivativeShapeFunctions(2,0)  =  0;
-    derivativeShapeFunctions(2,1)  = -1.+4.*s;
-    derivativeShapeFunctions(2,2)  =  0;
+    derivativeShapeFunctions(2, 0) = 0;
+    derivativeShapeFunctions(2, 1) = -1. + 4. * s;
+    derivativeShapeFunctions(2, 2) = 0;
 
-    derivativeShapeFunctions(3,0)  =  0;
-    derivativeShapeFunctions(3,1) =  0;
-    derivativeShapeFunctions(3,2) = -1.+4.*t ;
+    derivativeShapeFunctions(3, 0) = 0;
+    derivativeShapeFunctions(3, 1) = 0;
+    derivativeShapeFunctions(3, 2) = -1. + 4. * t;
 
-    derivativeShapeFunctions(4,0) =  4.-8.*r-4.*s-4.*t;
-    derivativeShapeFunctions(4,1) = -4.*r;
-    derivativeShapeFunctions(4,2) = -4.*r;
+    derivativeShapeFunctions(4, 0) = 4. - 8. * r - 4. * s - 4. * t;
+    derivativeShapeFunctions(4, 1) = -4. * r;
+    derivativeShapeFunctions(4, 2) = -4. * r;
 
-    derivativeShapeFunctions(5,0) =  4.*s;
-    derivativeShapeFunctions(5,1) =  4.*r;
-    derivativeShapeFunctions(5,2) =  0.;
+    derivativeShapeFunctions(5, 0) = 4. * s;
+    derivativeShapeFunctions(5, 1) = 4. * r;
+    derivativeShapeFunctions(5, 2) = 0.;
 
-    derivativeShapeFunctions(6,0) = -4.*s ;
-    derivativeShapeFunctions(6,1) =  4.-8.*s-4.*r-4.*t;
-    derivativeShapeFunctions(6,2) = -4.*s;
+    derivativeShapeFunctions(6, 0) = -4. * s;
+    derivativeShapeFunctions(6, 1) = 4. - 8. * s - 4. * r - 4. * t;
+    derivativeShapeFunctions(6, 2) = -4. * s;
 
-    derivativeShapeFunctions(7,0) = -4.*t;
-    derivativeShapeFunctions(7,1) = -4.*t;
-    derivativeShapeFunctions(7,2) =  4.-8.*t-4.*r-4.*s;
+    derivativeShapeFunctions(7, 0) = -4. * t;
+    derivativeShapeFunctions(7, 1) = -4. * t;
+    derivativeShapeFunctions(7, 2) = 4. - 8. * t - 4. * r - 4. * s;
 
-    derivativeShapeFunctions(8,0) =  0.;
-    derivativeShapeFunctions(8,1) =  4.*t;
-    derivativeShapeFunctions(8,2) =  4.*s;
+    derivativeShapeFunctions(8, 0) = 0.;
+    derivativeShapeFunctions(8, 1) = 4. * t;
+    derivativeShapeFunctions(8, 2) = 4. * s;
 
-    derivativeShapeFunctions(9,0) =  4.*t;
-    derivativeShapeFunctions(9,1) =  0;
-    derivativeShapeFunctions(9,2) =  4.*r;
+    derivativeShapeFunctions(9, 0) = 4. * t;
+    derivativeShapeFunctions(9, 1) = 0;
+    derivativeShapeFunctions(9, 2) = 4. * r;
 
     return derivativeShapeFunctions;
 }
@@ -1188,19 +1177,19 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickOrder1(int rNodeIndex)
     case 0:
         return Eigen::Vector3d(-1., -1., -1.);
     case 1:
-        return Eigen::Vector3d( 1., -1., -1.);
+        return Eigen::Vector3d(1., -1., -1.);
     case 2:
-        return Eigen::Vector3d( 1.,  1., -1.);
+        return Eigen::Vector3d(1., 1., -1.);
     case 3:
-        return Eigen::Vector3d(-1.,  1., -1.);
+        return Eigen::Vector3d(-1., 1., -1.);
     case 4:
-        return Eigen::Vector3d(-1., -1.,  1.);
+        return Eigen::Vector3d(-1., -1., 1.);
     case 5:
-        return Eigen::Vector3d( 1., -1.,  1.);
+        return Eigen::Vector3d(1., -1., 1.);
     case 6:
-        return Eigen::Vector3d( 1.,  1.,  1.);
+        return Eigen::Vector3d(1., 1., 1.);
     case 7:
-        return Eigen::Vector3d(-1.,  1.,  1.);
+        return Eigen::Vector3d(-1., 1., 1.);
     default:
         throw NuTo::MechanicsException("[NodeCoordinatesBrickOrder1] node index out of range (0..7)");
         break;
@@ -1211,69 +1200,69 @@ Eigen::Matrix<double, 8, 1> ShapeFunctionsBrickOrder1(const Eigen::VectorXd& rCo
 {
     Eigen::Matrix<double, 8, 1> shapeFunctions;
 
-    double plus_r  = 1.0 + rCoordinates[0];
-    double plus_s  = 1.0 + rCoordinates[1];
-    double plus_t  = 1.0 + rCoordinates[2];
+    double plus_r = 1.0 + rCoordinates[0];
+    double plus_s = 1.0 + rCoordinates[1];
+    double plus_t = 1.0 + rCoordinates[2];
 
     double minus_r = 1.0 - rCoordinates[0];
     double minus_s = 1.0 - rCoordinates[1];
     double minus_t = 1.0 - rCoordinates[2];
 
     shapeFunctions[0] = 0.125 * minus_r * minus_s * minus_t;
-    shapeFunctions[1] = 0.125 * plus_r  * minus_s * minus_t;
-    shapeFunctions[2] = 0.125 * plus_r  * plus_s  * minus_t;
-    shapeFunctions[3] = 0.125 * minus_r * plus_s  * minus_t;
+    shapeFunctions[1] = 0.125 * plus_r * minus_s * minus_t;
+    shapeFunctions[2] = 0.125 * plus_r * plus_s * minus_t;
+    shapeFunctions[3] = 0.125 * minus_r * plus_s * minus_t;
     shapeFunctions[4] = 0.125 * minus_r * minus_s * plus_t;
-    shapeFunctions[5] = 0.125 * plus_r  * minus_s * plus_t;
-    shapeFunctions[6] = 0.125 * plus_r  * plus_s  * plus_t;
-    shapeFunctions[7] = 0.125 * minus_r * plus_s  * plus_t;
+    shapeFunctions[5] = 0.125 * plus_r * minus_s * plus_t;
+    shapeFunctions[6] = 0.125 * plus_r * plus_s * plus_t;
+    shapeFunctions[7] = 0.125 * minus_r * plus_s * plus_t;
 
     return shapeFunctions;
 }
 
 Eigen::Matrix<double, 8, 3> DerivativeShapeFunctionsBrickOrder1(const Eigen::VectorXd& rCoordinates)
 {
-    double plus_r  =1.0+rCoordinates[0];
-    double plus_s  =1.0+rCoordinates[1];
-    double plus_t  =1.0+rCoordinates[2];
+    double plus_r = 1.0 + rCoordinates[0];
+    double plus_s = 1.0 + rCoordinates[1];
+    double plus_t = 1.0 + rCoordinates[2];
 
-    double minus_r =1.0-rCoordinates[0];
-    double minus_s =1.0-rCoordinates[1];
-    double minus_t =1.0-rCoordinates[2];
+    double minus_r = 1.0 - rCoordinates[0];
+    double minus_s = 1.0 - rCoordinates[1];
+    double minus_t = 1.0 - rCoordinates[2];
 
     Eigen::Matrix<double, 8, 3> derivativeShapeFunctions;
 
-    derivativeShapeFunctions(0,0)  = -0.125 *minus_s *minus_t;
-    derivativeShapeFunctions(0,1)  = -0.125 *minus_r *minus_t;
-    derivativeShapeFunctions(0,2)  = -0.125 *minus_r *minus_s;
+    derivativeShapeFunctions(0, 0) = -0.125 * minus_s * minus_t;
+    derivativeShapeFunctions(0, 1) = -0.125 * minus_r * minus_t;
+    derivativeShapeFunctions(0, 2) = -0.125 * minus_r * minus_s;
 
-    derivativeShapeFunctions(1,0)  =  0.125 *minus_s *minus_t;
-    derivativeShapeFunctions(1,1)  = -0.125 *plus_r  *minus_t;
-    derivativeShapeFunctions(1,2)  = -0.125 *plus_r  *minus_s;
+    derivativeShapeFunctions(1, 0) = 0.125 * minus_s * minus_t;
+    derivativeShapeFunctions(1, 1) = -0.125 * plus_r * minus_t;
+    derivativeShapeFunctions(1, 2) = -0.125 * plus_r * minus_s;
 
-    derivativeShapeFunctions(2,0)  =  0.125 *plus_s  *minus_t;
-    derivativeShapeFunctions(2,1)  =  0.125 *plus_r  *minus_t;
-    derivativeShapeFunctions(2,2)  = -0.125 *plus_r  *plus_s;
+    derivativeShapeFunctions(2, 0) = 0.125 * plus_s * minus_t;
+    derivativeShapeFunctions(2, 1) = 0.125 * plus_r * minus_t;
+    derivativeShapeFunctions(2, 2) = -0.125 * plus_r * plus_s;
 
-    derivativeShapeFunctions(3,0)  = -0.125 *plus_s  *minus_t;
-    derivativeShapeFunctions(3,1) =  0.125 *minus_r *minus_t;
-    derivativeShapeFunctions(3,2) = -0.125 *minus_r *plus_s;
+    derivativeShapeFunctions(3, 0) = -0.125 * plus_s * minus_t;
+    derivativeShapeFunctions(3, 1) = 0.125 * minus_r * minus_t;
+    derivativeShapeFunctions(3, 2) = -0.125 * minus_r * plus_s;
 
-    derivativeShapeFunctions(4,0) = -0.125 *minus_s *plus_t;
-    derivativeShapeFunctions(4,1) = -0.125 *minus_r *plus_t;
-    derivativeShapeFunctions(4,2) =  0.125 *minus_r *minus_s;
+    derivativeShapeFunctions(4, 0) = -0.125 * minus_s * plus_t;
+    derivativeShapeFunctions(4, 1) = -0.125 * minus_r * plus_t;
+    derivativeShapeFunctions(4, 2) = 0.125 * minus_r * minus_s;
 
-    derivativeShapeFunctions(5,0) =  0.125 *minus_s *plus_t;
-    derivativeShapeFunctions(5,1) = -0.125 *plus_r  *plus_t;
-    derivativeShapeFunctions(5,2) =  0.125 *plus_r  *minus_s;
+    derivativeShapeFunctions(5, 0) = 0.125 * minus_s * plus_t;
+    derivativeShapeFunctions(5, 1) = -0.125 * plus_r * plus_t;
+    derivativeShapeFunctions(5, 2) = 0.125 * plus_r * minus_s;
 
-    derivativeShapeFunctions(6,0) =  0.125 *plus_s  *plus_t;
-    derivativeShapeFunctions(6,1) =  0.125 *plus_r  *plus_t;
-    derivativeShapeFunctions(6,2) =  0.125 *plus_r  *plus_s;
+    derivativeShapeFunctions(6, 0) = 0.125 * plus_s * plus_t;
+    derivativeShapeFunctions(6, 1) = 0.125 * plus_r * plus_t;
+    derivativeShapeFunctions(6, 2) = 0.125 * plus_r * plus_s;
 
-    derivativeShapeFunctions(7,0) = -0.125 *plus_s  *plus_t;
-    derivativeShapeFunctions(7,1) =  0.125 *minus_r *plus_t;
-    derivativeShapeFunctions(7,2) =  0.125 *minus_r *plus_s;
+    derivativeShapeFunctions(7, 0) = -0.125 * plus_s * plus_t;
+    derivativeShapeFunctions(7, 1) = 0.125 * minus_r * plus_t;
+    derivativeShapeFunctions(7, 2) = 0.125 * minus_r * plus_s;
 
     return derivativeShapeFunctions;
 }
@@ -1286,49 +1275,46 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickOrder2(int rNodeIndex)
     case 0:
         return Eigen::Vector3d(-1., -1., -1.);
     case 1:
-        return Eigen::Vector3d( 1., -1., -1.);
+        return Eigen::Vector3d(1., -1., -1.);
     case 2:
-        return Eigen::Vector3d( 1.,  1., -1.);
+        return Eigen::Vector3d(1., 1., -1.);
     case 3:
-        return Eigen::Vector3d(-1.,  1., -1.);
+        return Eigen::Vector3d(-1., 1., -1.);
     case 4:
-        return Eigen::Vector3d(-1., -1.,  1.);
+        return Eigen::Vector3d(-1., -1., 1.);
     case 5:
-        return Eigen::Vector3d( 1., -1.,  1.);
+        return Eigen::Vector3d(1., -1., 1.);
     case 6:
-        return Eigen::Vector3d( 1.,  1.,  1.);
+        return Eigen::Vector3d(1., 1., 1.);
     case 7:
-        return Eigen::Vector3d(-1.,  1.,  1.);
-
-
+        return Eigen::Vector3d(-1., 1., 1.);
 
     case 8:
-        return Eigen::Vector3d( 0., -1., -1.);
+        return Eigen::Vector3d(0., -1., -1.);
     case 9:
-        return Eigen::Vector3d( 1.,  0., -1.);
+        return Eigen::Vector3d(1., 0., -1.);
     case 10:
-        return Eigen::Vector3d( 0.,  1., -1.);
+        return Eigen::Vector3d(0., 1., -1.);
     case 11:
-        return Eigen::Vector3d(-1.,  0., -1.);
-
+        return Eigen::Vector3d(-1., 0., -1.);
 
     case 12:
-        return Eigen::Vector3d(-1., -1.,  0.);
+        return Eigen::Vector3d(-1., -1., 0.);
     case 13:
-        return Eigen::Vector3d( 1., -1.,  0.);
+        return Eigen::Vector3d(1., -1., 0.);
     case 14:
-        return Eigen::Vector3d( 1.,  1.,  0.);
+        return Eigen::Vector3d(1., 1., 0.);
     case 15:
-        return Eigen::Vector3d(-1.,  1.,  0.);
+        return Eigen::Vector3d(-1., 1., 0.);
 
     case 16:
-        return Eigen::Vector3d( 0., -1.,  1.);
+        return Eigen::Vector3d(0., -1., 1.);
     case 17:
-        return Eigen::Vector3d( 1.,  0.,  1.);
+        return Eigen::Vector3d(1., 0., 1.);
     case 18:
-        return Eigen::Vector3d( 0.,  1.,  1.);
+        return Eigen::Vector3d(0., 1., 1.);
     case 19:
-        return Eigen::Vector3d(-1.,  0.,  1.);
+        return Eigen::Vector3d(-1., 0., 1.);
 
     default:
         throw NuTo::MechanicsException("[NodeCoordinatesBrickOrder2] node index out of range (0..19)");
@@ -1336,217 +1322,196 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickOrder2(int rNodeIndex)
     }
 }
 
-Eigen::Matrix<double,20, 1> ShapeFunctionsBrickOrder2(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 20, 1> ShapeFunctionsBrickOrder2(const Eigen::VectorXd& rCoordinates)
 {
-    Eigen::Matrix<double,20, 1> shapeFunctions;
+    Eigen::Matrix<double, 20, 1> shapeFunctions;
 
-    double r  = rCoordinates[0];
-    double s  = rCoordinates[1];
-    double t  = rCoordinates[2];
+    double r = rCoordinates[0];
+    double s = rCoordinates[1];
+    double t = rCoordinates[2];
 
-
-    double plus_r  = 1.0 + r;
-    double plus_s  = 1.0 + s;
-    double plus_t  = 1.0 + t;
+    double plus_r = 1.0 + r;
+    double plus_s = 1.0 + s;
+    double plus_t = 1.0 + t;
 
     double minus_r = 1.0 - r;
     double minus_s = 1.0 - s;
     double minus_t = 1.0 - t;
 
-    double mid_r   = 1.0 - r * r;
-    double mid_s   = 1.0 - s * s;
-    double mid_t   = 1.0 - t * t;
+    double mid_r = 1.0 - r * r;
+    double mid_s = 1.0 - s * s;
+    double mid_t = 1.0 - t * t;
 
-    shapeFunctions[0] = 0.125 * minus_r * minus_s * minus_t * (-r-s-t-2);
-    shapeFunctions[1] = 0.125 * plus_r  * minus_s * minus_t * ( r-s-t-2);
-    shapeFunctions[2] = 0.125 * plus_r  * plus_s  * minus_t * ( r+s-t-2);
-    shapeFunctions[3] = 0.125 * minus_r * plus_s  * minus_t * (-r+s-t-2);
-    shapeFunctions[4] = 0.125 * minus_r * minus_s *  plus_t * (-r-s+t-2);
-    shapeFunctions[5] = 0.125 * plus_r  * minus_s *  plus_t * ( r-s+t-2);
-    shapeFunctions[6] = 0.125 * plus_r  * plus_s  *  plus_t * ( r+s+t-2);
-    shapeFunctions[7] = 0.125 * minus_r * plus_s  *  plus_t * (-r+s+t-2);
+    shapeFunctions[0] = 0.125 * minus_r * minus_s * minus_t * (-r - s - t - 2);
+    shapeFunctions[1] = 0.125 * plus_r * minus_s * minus_t * (r - s - t - 2);
+    shapeFunctions[2] = 0.125 * plus_r * plus_s * minus_t * (r + s - t - 2);
+    shapeFunctions[3] = 0.125 * minus_r * plus_s * minus_t * (-r + s - t - 2);
+    shapeFunctions[4] = 0.125 * minus_r * minus_s * plus_t * (-r - s + t - 2);
+    shapeFunctions[5] = 0.125 * plus_r * minus_s * plus_t * (r - s + t - 2);
+    shapeFunctions[6] = 0.125 * plus_r * plus_s * plus_t * (r + s + t - 2);
+    shapeFunctions[7] = 0.125 * minus_r * plus_s * plus_t * (-r + s + t - 2);
 
-    shapeFunctions[8] =  0.25 *   mid_r * minus_s * minus_t;
-    shapeFunctions[9] =  0.25 *  plus_r *   mid_s * minus_t;
-    shapeFunctions[10]=  0.25 *   mid_r *  plus_s * minus_t;
-    shapeFunctions[11]=  0.25 * minus_r *   mid_s * minus_t;
+    shapeFunctions[8] = 0.25 * mid_r * minus_s * minus_t;
+    shapeFunctions[9] = 0.25 * plus_r * mid_s * minus_t;
+    shapeFunctions[10] = 0.25 * mid_r * plus_s * minus_t;
+    shapeFunctions[11] = 0.25 * minus_r * mid_s * minus_t;
 
-    shapeFunctions[12]=  0.25 * minus_r * minus_s *   mid_t;
-    shapeFunctions[13]=  0.25 *  plus_r * minus_s *   mid_t;
-    shapeFunctions[14]=  0.25 *  plus_r *  plus_s *   mid_t;
-    shapeFunctions[15]=  0.25 * minus_r *  plus_s *   mid_t;
+    shapeFunctions[12] = 0.25 * minus_r * minus_s * mid_t;
+    shapeFunctions[13] = 0.25 * plus_r * minus_s * mid_t;
+    shapeFunctions[14] = 0.25 * plus_r * plus_s * mid_t;
+    shapeFunctions[15] = 0.25 * minus_r * plus_s * mid_t;
 
-    shapeFunctions[16]=  0.25 *   mid_r * minus_s *  plus_t;
-    shapeFunctions[17]=  0.25 *  plus_r *   mid_s *  plus_t;
-    shapeFunctions[18]=  0.25 *   mid_r *  plus_s *  plus_t;
-    shapeFunctions[19]=  0.25 * minus_r *   mid_s *  plus_t;
+    shapeFunctions[16] = 0.25 * mid_r * minus_s * plus_t;
+    shapeFunctions[17] = 0.25 * plus_r * mid_s * plus_t;
+    shapeFunctions[18] = 0.25 * mid_r * plus_s * plus_t;
+    shapeFunctions[19] = 0.25 * minus_r * mid_s * plus_t;
 
     return shapeFunctions;
 }
 
-Eigen::Matrix<double,20, 3> DerivativeShapeFunctionsBrickOrder2(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 20, 3> DerivativeShapeFunctionsBrickOrder2(const Eigen::VectorXd& rCoordinates)
 {
 
-    double r  = rCoordinates[0];
-    double s  = rCoordinates[1];
-    double t  = rCoordinates[2];
+    double r = rCoordinates[0];
+    double s = rCoordinates[1];
+    double t = rCoordinates[2];
 
-    double plus_r  = 1.0 + r;
-    double plus_s  = 1.0 + s;
-    double plus_t  = 1.0 + t;
+    double plus_r = 1.0 + r;
+    double plus_s = 1.0 + s;
+    double plus_t = 1.0 + t;
 
     double minus_r = 1.0 - r;
     double minus_s = 1.0 - s;
     double minus_t = 1.0 - t;
 
-    double mid_r   = 1.0 - r * r;
-    double mid_s   = 1.0 - s * s;
-    double mid_t   = 1.0 - t * t;
+    double mid_r = 1.0 - r * r;
+    double mid_s = 1.0 - s * s;
+    double mid_t = 1.0 - t * t;
 
-    Eigen::Matrix<double,20, 3> derivativeShapeFunctions;
+    Eigen::Matrix<double, 20, 3> derivativeShapeFunctions;
 
 //    shapeFunctions[0] = 0.125 * minus_r * minus_s * minus_t * (-r-s-t-2);
-    derivativeShapeFunctions(0,0)  =  0.125 *minus_s *minus_t*(2*r +  s +  t + 1);
-    derivativeShapeFunctions(0,1)  =  0.125 *minus_r *minus_t*(  r +2*s +  t + 1);
-    derivativeShapeFunctions(0,2)  =  0.125 *minus_r *minus_s*(  r +  s +2*t + 1);
+    derivativeShapeFunctions(0, 0) = 0.125 * minus_s * minus_t * (2 * r + s + t + 1);
+    derivativeShapeFunctions(0, 1) = 0.125 * minus_r * minus_t * (r + 2 * s + t + 1);
+    derivativeShapeFunctions(0, 2) = 0.125 * minus_r * minus_s * (r + s + 2 * t + 1);
 
 //    shapeFunctions[1] = 0.125 * plus_r  * minus_s * minus_t * ( r-s-t-2);
-    derivativeShapeFunctions(1,0)  =  0.125 *minus_s *minus_t*(2*r -  s -  t - 1);
-    derivativeShapeFunctions(1,1)  = -0.125 *plus_r  *minus_t*(  r -2*s -  t - 1);
-    derivativeShapeFunctions(1,2)  = -0.125 *plus_r  *minus_s*(  r -  s -2*t - 1);
+    derivativeShapeFunctions(1, 0) = 0.125 * minus_s * minus_t * (2 * r - s - t - 1);
+    derivativeShapeFunctions(1, 1) = -0.125 * plus_r * minus_t * (r - 2 * s - t - 1);
+    derivativeShapeFunctions(1, 2) = -0.125 * plus_r * minus_s * (r - s - 2 * t - 1);
 
 //    shapeFunctions[2] = 0.125 * plus_r  * plus_s  * minus_t * ( r+s-t-2);
-    derivativeShapeFunctions(2,0)  =  0.125 *plus_s  *minus_t*(2*r +  s -  t - 1);
-    derivativeShapeFunctions(2,1)  =  0.125 *plus_r  *minus_t*(  r +2*s -  t - 1);
-    derivativeShapeFunctions(2,2)  = -0.125 *plus_r  *plus_s *(  r +  s -2*t - 1);
+    derivativeShapeFunctions(2, 0) = 0.125 * plus_s * minus_t * (2 * r + s - t - 1);
+    derivativeShapeFunctions(2, 1) = 0.125 * plus_r * minus_t * (r + 2 * s - t - 1);
+    derivativeShapeFunctions(2, 2) = -0.125 * plus_r * plus_s * (r + s - 2 * t - 1);
 
 //    shapeFunctions[3] = 0.125 * minus_r * plus_s  * minus_t * (-r+s-t-2);
-    derivativeShapeFunctions(3,0)  =  0.125 *plus_s  *minus_t*(2*r -  s +  t + 1);
-    derivativeShapeFunctions(3,1)  = -0.125 *minus_r *minus_t*(  r -2*s +  t + 1);
-    derivativeShapeFunctions(3,2)  =  0.125 *minus_r *plus_s *(  r -  s +2*t + 1);
+    derivativeShapeFunctions(3, 0) = 0.125 * plus_s * minus_t * (2 * r - s + t + 1);
+    derivativeShapeFunctions(3, 1) = -0.125 * minus_r * minus_t * (r - 2 * s + t + 1);
+    derivativeShapeFunctions(3, 2) = 0.125 * minus_r * plus_s * (r - s + 2 * t + 1);
 
 //    shapeFunctions[4] = 0.125 * minus_r * minus_s *  plus_t * (-r-s+t-2);
-    derivativeShapeFunctions(4,0)  =  0.125 *minus_s *plus_t *(2*r +  s -  t + 1);
-    derivativeShapeFunctions(4,1)  =  0.125 *minus_r *plus_t *(  r +2*s -  t + 1);
-    derivativeShapeFunctions(4,2)  = -0.125 *minus_r *minus_s*(  r +  s -2*t + 1);
+    derivativeShapeFunctions(4, 0) = 0.125 * minus_s * plus_t * (2 * r + s - t + 1);
+    derivativeShapeFunctions(4, 1) = 0.125 * minus_r * plus_t * (r + 2 * s - t + 1);
+    derivativeShapeFunctions(4, 2) = -0.125 * minus_r * minus_s * (r + s - 2 * t + 1);
 
 //    shapeFunctions[5] = 0.125 * plus_r  * minus_s *  plus_t * ( r-s+t-2);
-    derivativeShapeFunctions(5,0) =   0.125 *minus_s *plus_t *(2*r -  s +  t - 1);
-    derivativeShapeFunctions(5,1) =  -0.125 *plus_r  *plus_t *(  r -2*s +  t - 1);
-    derivativeShapeFunctions(5,2) =   0.125 *plus_r  *minus_s*(  r -  s +2*t - 1);
+    derivativeShapeFunctions(5, 0) = 0.125 * minus_s * plus_t * (2 * r - s + t - 1);
+    derivativeShapeFunctions(5, 1) = -0.125 * plus_r * plus_t * (r - 2 * s + t - 1);
+    derivativeShapeFunctions(5, 2) = 0.125 * plus_r * minus_s * (r - s + 2 * t - 1);
 
 //    shapeFunctions[6] = 0.125 * plus_r  * plus_s  *  plus_t * ( r+s+t-2);
-    derivativeShapeFunctions(6,0) =   0.125 *plus_s  *plus_t *(2*r +  s +  t - 1);
-    derivativeShapeFunctions(6,1) =   0.125 *plus_r  *plus_t *(  r +2*s +  t - 1);
-    derivativeShapeFunctions(6,2) =   0.125 *plus_r  *plus_s *(  r +  s +2*t - 1);
+    derivativeShapeFunctions(6, 0) = 0.125 * plus_s * plus_t * (2 * r + s + t - 1);
+    derivativeShapeFunctions(6, 1) = 0.125 * plus_r * plus_t * (r + 2 * s + t - 1);
+    derivativeShapeFunctions(6, 2) = 0.125 * plus_r * plus_s * (r + s + 2 * t - 1);
 
 //    shapeFunctions[7] = 0.125 * minus_r * plus_s  *  plus_t * (-r+s+t-2);
-    derivativeShapeFunctions(7,0) =   0.125 *plus_s  *plus_t *(2*r -  s -  t + 1);
-    derivativeShapeFunctions(7,1) =  -0.125 *minus_r *plus_t *(  r -2*s -  t + 1);
-    derivativeShapeFunctions(7,2) =  -0.125 *minus_r *plus_s *(  r -  s -2*t + 1);
-
-
-
-
-
-
+    derivativeShapeFunctions(7, 0) = 0.125 * plus_s * plus_t * (2 * r - s - t + 1);
+    derivativeShapeFunctions(7, 1) = -0.125 * minus_r * plus_t * (r - 2 * s - t + 1);
+    derivativeShapeFunctions(7, 2) = -0.125 * minus_r * plus_s * (r - s - 2 * t + 1);
 
 //    shapeFunctions[8] =  0.25 *   mid_r * minus_s * minus_t;
-    derivativeShapeFunctions(8,0) = -0.5*r*minus_s*minus_t;
-    derivativeShapeFunctions(8,1) = -0.25 *  mid_r*minus_t;
-    derivativeShapeFunctions(8,2) = -0.25 *  mid_r*minus_s;
+    derivativeShapeFunctions(8, 0) = -0.5 * r * minus_s * minus_t;
+    derivativeShapeFunctions(8, 1) = -0.25 * mid_r * minus_t;
+    derivativeShapeFunctions(8, 2) = -0.25 * mid_r * minus_s;
 
 //    shapeFunctions[9] =  0.25 *  plus_r *   mid_s * minus_t;
-    derivativeShapeFunctions(9,0) = +0.25 *  mid_s*minus_t;
-    derivativeShapeFunctions(9,1) = -0.5*s* plus_r*minus_t;
-    derivativeShapeFunctions(9,2) = -0.25 * plus_r*  mid_s;
+    derivativeShapeFunctions(9, 0) = +0.25 * mid_s * minus_t;
+    derivativeShapeFunctions(9, 1) = -0.5 * s * plus_r * minus_t;
+    derivativeShapeFunctions(9, 2) = -0.25 * plus_r * mid_s;
 
 //    shapeFunctions[10]=  0.25 *   mid_r *  plus_s * minus_t;
-    derivativeShapeFunctions(10,0)= -0.5*r* plus_s*minus_t;
-    derivativeShapeFunctions(10,1)=  0.25 *  mid_r*minus_t;
-    derivativeShapeFunctions(10,2)= -0.25 *  mid_r* plus_s;
+    derivativeShapeFunctions(10, 0) = -0.5 * r * plus_s * minus_t;
+    derivativeShapeFunctions(10, 1) = 0.25 * mid_r * minus_t;
+    derivativeShapeFunctions(10, 2) = -0.25 * mid_r * plus_s;
 
 //    shapeFunctions[11]=  0.25 * minus_r *   mid_s * minus_t;
-    derivativeShapeFunctions(11,0)= -0.25 *  mid_s*minus_t;
-    derivativeShapeFunctions(11,1)= -0.5*s*minus_r*minus_t;
-    derivativeShapeFunctions(11,2)= -0.25 *minus_r*  mid_s;
-
-
-
-
-
-
+    derivativeShapeFunctions(11, 0) = -0.25 * mid_s * minus_t;
+    derivativeShapeFunctions(11, 1) = -0.5 * s * minus_r * minus_t;
+    derivativeShapeFunctions(11, 2) = -0.25 * minus_r * mid_s;
 
 //    shapeFunctions[12]=  0.25 * minus_r * minus_s *   mid_t;
-    derivativeShapeFunctions(12,0)= -0.25 *minus_s*  mid_t;
-    derivativeShapeFunctions(12,1)= -0.25 *minus_r*  mid_t;
-    derivativeShapeFunctions(12,2)= -0.5*t*minus_r*minus_s;
-
+    derivativeShapeFunctions(12, 0) = -0.25 * minus_s * mid_t;
+    derivativeShapeFunctions(12, 1) = -0.25 * minus_r * mid_t;
+    derivativeShapeFunctions(12, 2) = -0.5 * t * minus_r * minus_s;
 
 //    shapeFunctions[13]=  0.25 *  plus_r * minus_s *   mid_t;
-    derivativeShapeFunctions(13,0)=  0.25 *minus_s*  mid_t;
-    derivativeShapeFunctions(13,1)= -0.25 * plus_r*  mid_t;
-    derivativeShapeFunctions(13,2)= -0.5*t* plus_r*minus_s;
+    derivativeShapeFunctions(13, 0) = 0.25 * minus_s * mid_t;
+    derivativeShapeFunctions(13, 1) = -0.25 * plus_r * mid_t;
+    derivativeShapeFunctions(13, 2) = -0.5 * t * plus_r * minus_s;
 
 //    shapeFunctions[14]=  0.25 *  plus_r *  plus_s *   mid_t;
-    derivativeShapeFunctions(14,0)=  0.25 * plus_s*  mid_t;
-    derivativeShapeFunctions(14,1)=  0.25 * plus_r*  mid_t;
-    derivativeShapeFunctions(14,2)= -0.5*t* plus_r* plus_s;
+    derivativeShapeFunctions(14, 0) = 0.25 * plus_s * mid_t;
+    derivativeShapeFunctions(14, 1) = 0.25 * plus_r * mid_t;
+    derivativeShapeFunctions(14, 2) = -0.5 * t * plus_r * plus_s;
 
 //    shapeFunctions[15]=  0.25 * minus_r *  plus_s *   mid_t;
-    derivativeShapeFunctions(15,0)= -0.25 * plus_s*  mid_t;
-    derivativeShapeFunctions(15,1)=  0.25 *minus_r*  mid_t;
-    derivativeShapeFunctions(15,2)= -0.5*t*minus_r* plus_s;
-
-
-
-
-
-
+    derivativeShapeFunctions(15, 0) = -0.25 * plus_s * mid_t;
+    derivativeShapeFunctions(15, 1) = 0.25 * minus_r * mid_t;
+    derivativeShapeFunctions(15, 2) = -0.5 * t * minus_r * plus_s;
 
 //    shapeFunctions[16]=  0.25 *   mid_r * minus_s *  plus_t;
-    derivativeShapeFunctions(16,0)= -0.5*r*minus_s* plus_t;
-    derivativeShapeFunctions(16,1)= -0.25 *  mid_r* plus_t;
-    derivativeShapeFunctions(16,2)=  0.25 *  mid_r*minus_s;
+    derivativeShapeFunctions(16, 0) = -0.5 * r * minus_s * plus_t;
+    derivativeShapeFunctions(16, 1) = -0.25 * mid_r * plus_t;
+    derivativeShapeFunctions(16, 2) = 0.25 * mid_r * minus_s;
 
 //    shapeFunctions[17]=  0.25 *  plus_r *   mid_s *  plus_t;
-    derivativeShapeFunctions(17,0)=  0.25 *  mid_s* plus_t;
-    derivativeShapeFunctions(17,1)= -0.5*s* plus_r* plus_t;
-    derivativeShapeFunctions(17,2)=  0.25 * plus_r*  mid_s;
+    derivativeShapeFunctions(17, 0) = 0.25 * mid_s * plus_t;
+    derivativeShapeFunctions(17, 1) = -0.5 * s * plus_r * plus_t;
+    derivativeShapeFunctions(17, 2) = 0.25 * plus_r * mid_s;
 
 //    shapeFunctions[18]=  0.25 *   mid_r *  plus_s *  plus_t;
-    derivativeShapeFunctions(18,0)= -0.5*r* plus_s* plus_t;
-    derivativeShapeFunctions(18,1)=  0.25 *  mid_r* plus_t;
-    derivativeShapeFunctions(18,2)=  0.25 *  mid_r* plus_s;
+    derivativeShapeFunctions(18, 0) = -0.5 * r * plus_s * plus_t;
+    derivativeShapeFunctions(18, 1) = 0.25 * mid_r * plus_t;
+    derivativeShapeFunctions(18, 2) = 0.25 * mid_r * plus_s;
 
 //    shapeFunctions[19]=  0.25 * minus_r *   mid_s *  plus_t;
-    derivativeShapeFunctions(19,0)= -0.25 *  mid_s* plus_t;
-    derivativeShapeFunctions(19,1)= -0.5*s*minus_r* plus_t;
-    derivativeShapeFunctions(19,2)=  0.25 *minus_r*  mid_s;
+    derivativeShapeFunctions(19, 0) = -0.25 * mid_s * plus_t;
+    derivativeShapeFunctions(19, 1) = -0.5 * s * minus_r * plus_t;
+    derivativeShapeFunctions(19, 2) = 0.25 * minus_r * mid_s;
 
     return derivativeShapeFunctions;
 }
 
-
 Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickSpectralOrder2(int rNodeIndex)
 {
     const int d = 3;
-    const int dxd = d*d;
+    const int dxd = d * d;
 
     assert(rNodeIndex >= 0);
-    assert(rNodeIndex <  d*d*d);
+    assert(rNodeIndex < d * d * d);
 
     double cX = ShapeFunctions1D::NodeCoordinatesTrussOrder2(rNodeIndex % d)(0, 0);
-    double cY = ShapeFunctions1D::NodeCoordinatesTrussOrder2((rNodeIndex % dxd)/d)(0, 0);
+    double cY = ShapeFunctions1D::NodeCoordinatesTrussOrder2((rNodeIndex % dxd) / d)(0, 0);
     double cZ = ShapeFunctions1D::NodeCoordinatesTrussOrder2(rNodeIndex / dxd)(0, 0);
 
     return Eigen::Vector3d(cX, cY, cZ);
 }
 
-Eigen::Matrix<double,27, 1> ShapeFunctionsBrickSpectralOrder2(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 27, 1> ShapeFunctionsBrickSpectralOrder2(const Eigen::VectorXd& rCoordinates)
 {
     const int d = 3;
-    const int dxd = d*d;
+    const int dxd = d * d;
 
     const Eigen::Matrix<double, 1, 1>& cX = rCoordinates.row(0);
     const Eigen::Matrix<double, 1, 1>& cY = rCoordinates.row(1);
@@ -1557,17 +1522,17 @@ Eigen::Matrix<double,27, 1> ShapeFunctionsBrickSpectralOrder2(const Eigen::Vecto
 
     Eigen::Matrix<double, d, d> shapeFunctionsMatrix1 = shapeFunctions1Dx * shapeFunctions1Dy.transpose();
     Eigen::Matrix<double, d, dxd> shapeFunctionsMatrix;
-    for (int countZ=0; countZ<d; countZ++)
+    for (int countZ = 0; countZ < d; countZ++)
     {
-    	shapeFunctionsMatrix.block(0,countZ*d,d,d) = shapeFunctions1Dz(countZ)*shapeFunctionsMatrix1;
+        shapeFunctionsMatrix.block(0, countZ * d, d, d) = shapeFunctions1Dz(countZ) * shapeFunctionsMatrix1;
     }
-    return Eigen::Map<Eigen::Matrix<double, d*dxd, 1>>(shapeFunctionsMatrix.data(), d*dxd);
+    return Eigen::Map<Eigen::Matrix<double, d * dxd, 1>>(shapeFunctionsMatrix.data(), d * dxd);
 }
 
-Eigen::Matrix<double,27, 3> DerivativeShapeFunctionsBrickSpectralOrder2(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 27, 3> DerivativeShapeFunctionsBrickSpectralOrder2(const Eigen::VectorXd& rCoordinates)
 {
     const int d = 3;
-    const int dxd = d*d;
+    const int dxd = d * d;
 
     const Eigen::Matrix<double, 1, 1>& cX = rCoordinates.row(0);
     const Eigen::Matrix<double, 1, 1>& cY = rCoordinates.row(1);
@@ -1581,57 +1546,57 @@ Eigen::Matrix<double,27, 3> DerivativeShapeFunctionsBrickSpectralOrder2(const Ei
     const Eigen::Matrix<double, d, 1>& derShapeFunctions1Dy = ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder2(cY);
     const Eigen::Matrix<double, d, 1>& derShapeFunctions1Dz = ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder2(cZ);
 
-    Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctions;
+    Eigen::Matrix<double, dxd * d, 3> derivativeShapeFunctions;
 
     int theNode(0);
-    for (int countzNode=0; countzNode<d; countzNode++)
-        for (int countyNode=0; countyNode<d; countyNode++)
-            for (int countxNode=0; countxNode<d; countxNode++,theNode++)
+    for (int countzNode = 0; countzNode < d; countzNode++)
+        for (int countyNode = 0; countyNode < d; countyNode++)
+            for (int countxNode = 0; countxNode < d; countxNode++, theNode++)
             {
-            	//this can still be optimized, since the calculation of the product of the variables that are not derived is performed several times
-				derivativeShapeFunctions(theNode,0) = derShapeFunctions1Dx(countxNode)*shapeFunctions1Dy(countyNode)*shapeFunctions1Dz(countzNode);
-				derivativeShapeFunctions(theNode,1) = derShapeFunctions1Dy(countyNode)*shapeFunctions1Dz(countzNode)*shapeFunctions1Dx(countxNode);
-				derivativeShapeFunctions(theNode,2) = derShapeFunctions1Dz(countzNode)*shapeFunctions1Dx(countxNode)*shapeFunctions1Dy(countyNode);
+                //this can still be optimized, since the calculation of the product of the variables that are not derived is performed several times
+                derivativeShapeFunctions(theNode, 0) = derShapeFunctions1Dx(countxNode) * shapeFunctions1Dy(countyNode) * shapeFunctions1Dz(countzNode);
+                derivativeShapeFunctions(theNode, 1) = derShapeFunctions1Dy(countyNode) * shapeFunctions1Dz(countzNode) * shapeFunctions1Dx(countxNode);
+                derivativeShapeFunctions(theNode, 2) = derShapeFunctions1Dz(countzNode) * shapeFunctions1Dx(countxNode) * shapeFunctions1Dy(countyNode);
             }
-/*   Eigen::Matrix<double,27, 1>  shapeOrig = ShapeFunctionsBrickSpectralOrder2(rCoordinates);
-   Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctionsCDF;
-   double delta=1e-8;
-   for (int der=0; der<3; der++)
-   {
-	   Eigen::VectorXd coordinates(rCoordinates);
-	   coordinates(der)+=delta;
-	   Eigen::Matrix<double,27, 1>  shapeCDF = ShapeFunctionsBrickSpectralOrder2(coordinates);
-	   derivativeShapeFunctionsCDF.col(der) = 1./delta*(shapeCDF-shapeOrig);
-   }
-   std::cout << "DerShapeFunctions " << std::endl;
-   std::cout << derivativeShapeFunctions << std::endl;
-   std::cout << "DerShapeFunctions CDF" << std::endl;
-   std::cout << derivativeShapeFunctionsCDF << std::endl;
-   std::cout << "diff" << std::endl;
-   std::cout << derivativeShapeFunctionsCDF-derivativeShapeFunctions << std::endl;
-*/
-   return derivativeShapeFunctions;
+    /*   Eigen::Matrix<double,27, 1>  shapeOrig = ShapeFunctionsBrickSpectralOrder2(rCoordinates);
+     Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctionsCDF;
+     double delta=1e-8;
+     for (int der=0; der<3; der++)
+     {
+     Eigen::VectorXd coordinates(rCoordinates);
+     coordinates(der)+=delta;
+     Eigen::Matrix<double,27, 1>  shapeCDF = ShapeFunctionsBrickSpectralOrder2(coordinates);
+     derivativeShapeFunctionsCDF.col(der) = 1./delta*(shapeCDF-shapeOrig);
+     }
+     std::cout << "DerShapeFunctions " << std::endl;
+     std::cout << derivativeShapeFunctions << std::endl;
+     std::cout << "DerShapeFunctions CDF" << std::endl;
+     std::cout << derivativeShapeFunctionsCDF << std::endl;
+     std::cout << "diff" << std::endl;
+     std::cout << derivativeShapeFunctionsCDF-derivativeShapeFunctions << std::endl;
+     */
+    return derivativeShapeFunctions;
 }
 
 Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickSpectralOrder3(int rNodeIndex)
 {
     const int d = 4;
-    const int dxd = d*d;
+    const int dxd = d * d;
 
     assert(rNodeIndex >= 0);
-    assert(rNodeIndex <  d*d*d);
+    assert(rNodeIndex < d * d * d);
 
     double cX = ShapeFunctions1D::NodeCoordinatesTrussOrder3(rNodeIndex % d)(0, 0);
-    double cY = ShapeFunctions1D::NodeCoordinatesTrussOrder3((rNodeIndex % dxd)/d)(0, 0);
+    double cY = ShapeFunctions1D::NodeCoordinatesTrussOrder3((rNodeIndex % dxd) / d)(0, 0);
     double cZ = ShapeFunctions1D::NodeCoordinatesTrussOrder3(rNodeIndex / dxd)(0, 0);
 
     return Eigen::Vector3d(cX, cY, cZ);
 }
 
-Eigen::Matrix<double,64, 1> ShapeFunctionsBrickSpectralOrder3(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 64, 1> ShapeFunctionsBrickSpectralOrder3(const Eigen::VectorXd& rCoordinates)
 {
     const int d = 4;
-    const int dxd = d*d;
+    const int dxd = d * d;
 
     const Eigen::Matrix<double, 1, 1>& cX = rCoordinates.row(0);
     const Eigen::Matrix<double, 1, 1>& cY = rCoordinates.row(1);
@@ -1642,17 +1607,17 @@ Eigen::Matrix<double,64, 1> ShapeFunctionsBrickSpectralOrder3(const Eigen::Vecto
 
     Eigen::Matrix<double, d, d> shapeFunctionsMatrix1 = shapeFunctions1Dx * shapeFunctions1Dy.transpose();
     Eigen::Matrix<double, d, dxd> shapeFunctionsMatrix;
-    for (int countZ=0; countZ<d; countZ++)
+    for (int countZ = 0; countZ < d; countZ++)
     {
-    	shapeFunctionsMatrix.block(0,countZ*d,d,d) = shapeFunctions1Dz(countZ)*shapeFunctionsMatrix1;
+        shapeFunctionsMatrix.block(0, countZ * d, d, d) = shapeFunctions1Dz(countZ) * shapeFunctionsMatrix1;
     }
-    return Eigen::Map<Eigen::Matrix<double, d*dxd, 1>>(shapeFunctionsMatrix.data(), d*dxd);
+    return Eigen::Map<Eigen::Matrix<double, d * dxd, 1>>(shapeFunctionsMatrix.data(), d * dxd);
 }
 
-Eigen::Matrix<double,64, 3> DerivativeShapeFunctionsBrickSpectralOrder3(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 64, 3> DerivativeShapeFunctionsBrickSpectralOrder3(const Eigen::VectorXd& rCoordinates)
 {
     const int d = 4;
-    const int dxd = d*d;
+    const int dxd = d * d;
 
     const Eigen::Matrix<double, 1, 1>& cX = rCoordinates.row(0);
     const Eigen::Matrix<double, 1, 1>& cY = rCoordinates.row(1);
@@ -1666,57 +1631,57 @@ Eigen::Matrix<double,64, 3> DerivativeShapeFunctionsBrickSpectralOrder3(const Ei
     const Eigen::Matrix<double, d, 1>& derShapeFunctions1Dy = ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder3(cY);
     const Eigen::Matrix<double, d, 1>& derShapeFunctions1Dz = ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder3(cZ);
 
-    Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctions;
+    Eigen::Matrix<double, dxd * d, 3> derivativeShapeFunctions;
 
     int theNode(0);
-    for (int countzNode=0; countzNode<d; countzNode++)
-        for (int countyNode=0; countyNode<d; countyNode++)
-            for (int countxNode=0; countxNode<d; countxNode++,theNode++)
+    for (int countzNode = 0; countzNode < d; countzNode++)
+        for (int countyNode = 0; countyNode < d; countyNode++)
+            for (int countxNode = 0; countxNode < d; countxNode++, theNode++)
             {
-            	//this can still be optimized, since the calculation of the product of the variables that are not derived is performed several times
-				derivativeShapeFunctions(theNode,0) = derShapeFunctions1Dx(countxNode)*shapeFunctions1Dy(countyNode)*shapeFunctions1Dz(countzNode);
-				derivativeShapeFunctions(theNode,1) = derShapeFunctions1Dy(countyNode)*shapeFunctions1Dz(countzNode)*shapeFunctions1Dx(countxNode);
-				derivativeShapeFunctions(theNode,2) = derShapeFunctions1Dz(countzNode)*shapeFunctions1Dx(countxNode)*shapeFunctions1Dy(countyNode);
+                //this can still be optimized, since the calculation of the product of the variables that are not derived is performed several times
+                derivativeShapeFunctions(theNode, 0) = derShapeFunctions1Dx(countxNode) * shapeFunctions1Dy(countyNode) * shapeFunctions1Dz(countzNode);
+                derivativeShapeFunctions(theNode, 1) = derShapeFunctions1Dy(countyNode) * shapeFunctions1Dz(countzNode) * shapeFunctions1Dx(countxNode);
+                derivativeShapeFunctions(theNode, 2) = derShapeFunctions1Dz(countzNode) * shapeFunctions1Dx(countxNode) * shapeFunctions1Dy(countyNode);
             }
-/*   Eigen::Matrix<double,64, 1>  shapeOrig = ShapeFunctionsBrickSpectralOrder3(rCoordinates);
-   Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctionsCDF;
-   double delta=1e-8;
-   for (int der=0; der<3; der++)
-   {
-	   Eigen::VectorXd coordinates(rCoordinates);
-	   coordinates(der)+=delta;
-	   Eigen::Matrix<double,64, 1>  shapeCDF = ShapeFunctionsBrickSpectralOrder3(coordinates);
-	   derivativeShapeFunctionsCDF.col(der) = 1./delta*(shapeCDF-shapeOrig);
-   }
-   std::cout << "DerShapeFunctions " << std::endl;
-   std::cout << derivativeShapeFunctions << std::endl;
-   std::cout << "DerShapeFunctions CDF" << std::endl;
-   std::cout << derivativeShapeFunctionsCDF << std::endl;
-   std::cout << "diff" << std::endl;
-   std::cout << derivativeShapeFunctionsCDF-derivativeShapeFunctions << std::endl;
-*/
-   return derivativeShapeFunctions;
+    /*   Eigen::Matrix<double,64, 1>  shapeOrig = ShapeFunctionsBrickSpectralOrder3(rCoordinates);
+     Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctionsCDF;
+     double delta=1e-8;
+     for (int der=0; der<3; der++)
+     {
+     Eigen::VectorXd coordinates(rCoordinates);
+     coordinates(der)+=delta;
+     Eigen::Matrix<double,64, 1>  shapeCDF = ShapeFunctionsBrickSpectralOrder3(coordinates);
+     derivativeShapeFunctionsCDF.col(der) = 1./delta*(shapeCDF-shapeOrig);
+     }
+     std::cout << "DerShapeFunctions " << std::endl;
+     std::cout << derivativeShapeFunctions << std::endl;
+     std::cout << "DerShapeFunctions CDF" << std::endl;
+     std::cout << derivativeShapeFunctionsCDF << std::endl;
+     std::cout << "diff" << std::endl;
+     std::cout << derivativeShapeFunctionsCDF-derivativeShapeFunctions << std::endl;
+     */
+    return derivativeShapeFunctions;
 }
 
 Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickSpectralOrder4(int rNodeIndex)
 {
     const int d = 5;
-    const int dxd = d*d;
+    const int dxd = d * d;
 
     assert(rNodeIndex >= 0);
-    assert(rNodeIndex <  d*d*d);
+    assert(rNodeIndex < d * d * d);
 
     double cX = ShapeFunctions1D::NodeCoordinatesTrussOrder4(rNodeIndex % d)(0, 0);
-    double cY = ShapeFunctions1D::NodeCoordinatesTrussOrder4((rNodeIndex % dxd)/d)(0, 0);
+    double cY = ShapeFunctions1D::NodeCoordinatesTrussOrder4((rNodeIndex % dxd) / d)(0, 0);
     double cZ = ShapeFunctions1D::NodeCoordinatesTrussOrder4(rNodeIndex / dxd)(0, 0);
 
     return Eigen::Vector3d(cX, cY, cZ);
 }
 
-Eigen::Matrix<double,125, 1> ShapeFunctionsBrickSpectralOrder4(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 125, 1> ShapeFunctionsBrickSpectralOrder4(const Eigen::VectorXd& rCoordinates)
 {
     const int d = 5;
-    const int dxd = d*d;
+    const int dxd = d * d;
 
     const Eigen::Matrix<double, 1, 1>& cX = rCoordinates.row(0);
     const Eigen::Matrix<double, 1, 1>& cY = rCoordinates.row(1);
@@ -1727,17 +1692,17 @@ Eigen::Matrix<double,125, 1> ShapeFunctionsBrickSpectralOrder4(const Eigen::Vect
 
     Eigen::Matrix<double, d, d> shapeFunctionsMatrix1 = shapeFunctions1Dx * shapeFunctions1Dy.transpose();
     Eigen::Matrix<double, d, dxd> shapeFunctionsMatrix;
-    for (int countZ=0; countZ<d; countZ++)
+    for (int countZ = 0; countZ < d; countZ++)
     {
-    	shapeFunctionsMatrix.block(0,countZ*d,d,d) = shapeFunctions1Dz(countZ)*shapeFunctionsMatrix1;
+        shapeFunctionsMatrix.block(0, countZ * d, d, d) = shapeFunctions1Dz(countZ) * shapeFunctionsMatrix1;
     }
-    return Eigen::Map<Eigen::Matrix<double, d*dxd, 1>>(shapeFunctionsMatrix.data(), d*dxd);
+    return Eigen::Map<Eigen::Matrix<double, d * dxd, 1>>(shapeFunctionsMatrix.data(), d * dxd);
 }
 
-Eigen::Matrix<double,125, 3> DerivativeShapeFunctionsBrickSpectralOrder4(const Eigen::VectorXd& rCoordinates)
+Eigen::Matrix<double, 125, 3> DerivativeShapeFunctionsBrickSpectralOrder4(const Eigen::VectorXd& rCoordinates)
 {
     const int d = 5;
-    const int dxd = d*d;
+    const int dxd = d * d;
 
     const Eigen::Matrix<double, 1, 1>& cX = rCoordinates.row(0);
     const Eigen::Matrix<double, 1, 1>& cY = rCoordinates.row(1);
@@ -1751,39 +1716,80 @@ Eigen::Matrix<double,125, 3> DerivativeShapeFunctionsBrickSpectralOrder4(const E
     const Eigen::Matrix<double, d, 1>& derShapeFunctions1Dy = ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder4(cY);
     const Eigen::Matrix<double, d, 1>& derShapeFunctions1Dz = ShapeFunctions1D::DerivativeShapeFunctionsTrussOrder4(cZ);
 
-    Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctions;
+    Eigen::Matrix<double, dxd * d, 3> derivativeShapeFunctions;
 
     int theNode(0);
-    for (int countzNode=0; countzNode<d; countzNode++)
-        for (int countyNode=0; countyNode<d; countyNode++)
-            for (int countxNode=0; countxNode<d; countxNode++,theNode++)
+    for (int countzNode = 0; countzNode < d; countzNode++)
+        for (int countyNode = 0; countyNode < d; countyNode++)
+            for (int countxNode = 0; countxNode < d; countxNode++, theNode++)
             {
-            	//this can still be optimized, since the calculation of the product of the variables that are not derived is performed several times
-				derivativeShapeFunctions(theNode,0) = derShapeFunctions1Dx(countxNode)*shapeFunctions1Dy(countyNode)*shapeFunctions1Dz(countzNode);
-				derivativeShapeFunctions(theNode,1) = derShapeFunctions1Dy(countyNode)*shapeFunctions1Dz(countzNode)*shapeFunctions1Dx(countxNode);
-				derivativeShapeFunctions(theNode,2) = derShapeFunctions1Dz(countzNode)*shapeFunctions1Dx(countxNode)*shapeFunctions1Dy(countyNode);
+                //this can still be optimized, since the calculation of the product of the variables that are not derived is performed several times
+                derivativeShapeFunctions(theNode, 0) = derShapeFunctions1Dx(countxNode) * shapeFunctions1Dy(countyNode) * shapeFunctions1Dz(countzNode);
+                derivativeShapeFunctions(theNode, 1) = derShapeFunctions1Dy(countyNode) * shapeFunctions1Dz(countzNode) * shapeFunctions1Dx(countxNode);
+                derivativeShapeFunctions(theNode, 2) = derShapeFunctions1Dz(countzNode) * shapeFunctions1Dx(countxNode) * shapeFunctions1Dy(countyNode);
             }
-/*   Eigen::Matrix<double,125, 1>  shapeOrig = ShapeFunctionsBrickSpectralOrder4(rCoordinates);
-   Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctionsCDF;
-   double delta=1e-8;
-   for (int der=0; der<3; der++)
-   {
-	   Eigen::VectorXd coordinates(rCoordinates);
-	   coordinates(der)+=delta;
-	   Eigen::Matrix<double,125, 1>  shapeCDF = ShapeFunctionsBrickSpectralOrder4(coordinates);
-	   derivativeShapeFunctionsCDF.col(der) = 1./delta*(shapeCDF-shapeOrig);
-   }
-   std::cout << "DerShapeFunctions " << std::endl;
-   std::cout << derivativeShapeFunctions << std::endl;
-   std::cout << "DerShapeFunctions CDF" << std::endl;
-   std::cout << derivativeShapeFunctionsCDF << std::endl;
-   std::cout << "diff" << std::endl;
-   std::cout << derivativeShapeFunctionsCDF-derivativeShapeFunctions << std::endl;
-*/
-   return derivativeShapeFunctions;
+    /*   Eigen::Matrix<double,125, 1>  shapeOrig = ShapeFunctionsBrickSpectralOrder4(rCoordinates);
+     Eigen::Matrix<double, dxd*d, 3> derivativeShapeFunctionsCDF;
+     double delta=1e-8;
+     for (int der=0; der<3; der++)
+     {
+     Eigen::VectorXd coordinates(rCoordinates);
+     coordinates(der)+=delta;
+     Eigen::Matrix<double,125, 1>  shapeCDF = ShapeFunctionsBrickSpectralOrder4(coordinates);
+     derivativeShapeFunctionsCDF.col(der) = 1./delta*(shapeCDF-shapeOrig);
+     }
+     std::cout << "DerShapeFunctions " << std::endl;
+     std::cout << derivativeShapeFunctions << std::endl;
+     std::cout << "DerShapeFunctions CDF" << std::endl;
+     std::cout << derivativeShapeFunctionsCDF << std::endl;
+     std::cout << "diff" << std::endl;
+     std::cout << derivativeShapeFunctionsCDF-derivativeShapeFunctions << std::endl;
+     */
+    return derivativeShapeFunctions;
 }
 
 }
+
+namespace ShapeFunctionsInterface // interval -1 to 1
+{
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Eigen::MatrixXd NodeCoordinatesInterfaceOrder1(int rNodeIndex)
+{
+    switch (rNodeIndex)
+    {
+    case 0:
+        return Eigen::Vector2d(-1, -1);
+    case 1:
+        return Eigen::Vector2d(+1, -1);
+    case 2:
+        return Eigen::Vector2d(+1, +1);
+    case 3:
+        return Eigen::Vector2d(-1, +1);
+    default:
+        throw NuTo::MechanicsException("[NodeCoordinatesInterfaceOrder1] node index out of range (0..3)");
+        break;
+    }
+}
+
+Eigen::MatrixXd ShapeFunctionsInterfaceOrder1(const Eigen::VectorXd& rCoordinates)
+{
+    const double N00 = 0.5 * (1. - rCoordinates(0, 0));
+    const double N01 = 0.5 * (1. + rCoordinates(0, 0));
+
+    return (Eigen::MatrixXd(4,1) << N00, N01, N00, N01).finished();
+}
+
+Eigen::MatrixXd DerivativeShapeFunctionsInterfaceOrder1(const Eigen::VectorXd& rCoordinates)
+{
+    const double N00 = 0.5 * (1. - rCoordinates(0, 0));
+    const double N01 = 0.5 * (1. + rCoordinates(0, 0));
+
+    return (Eigen::MatrixXd(2, 8) << -N00, 0., -N01, 0., N01, 0., N00, 0, 0., -N00, 0., -N01, 0., N01, 0., N00).finished();
+}
+
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 }
 

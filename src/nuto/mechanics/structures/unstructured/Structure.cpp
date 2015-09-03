@@ -480,6 +480,8 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
 
             assert(static_cast<unsigned int>(elementMatrix.GetNumRows()) == elementVectorGlobalDofsRow.size());
             assert(static_cast<unsigned int>(elementMatrix.GetNumColumns()) == elementVectorGlobalDofsColumn.size());
+
+
             /*
              //check stiffness matrix
              FullVector<double, Eigen::Dynamic> check_disp_j1,check_disp_j2,check_disp_k1,check_disp_k2;
@@ -561,7 +563,6 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
         //write contribution of Lagrange Multipliers
         ConstraintsBuildGlobalCoefficientSubMatrices0General(rMatrixJJ, rMatrixJK);
     }
-
     return errorGlobal;
 }
 

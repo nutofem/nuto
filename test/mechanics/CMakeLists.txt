@@ -268,6 +268,16 @@ ADD_TEST(c::mechanics::NonlocalDamagePlasticityModel ${CMAKE_CURRENT_BUILD_DIR}/
   IF(MINGW)
     SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
+  
+    # InterfaceElements
+  ADD_EXECUTABLE(InterfaceElements InterfaceElements.cpp)
+    TARGET_LINK_LIBRARIES(InterfaceElements NuToMechanics NuToMath NuToBase)
+    ADD_TEST(c::mechanics::InterfaceElements ${CMAKE_CURRENT_BUILD_DIR}/InterfaceElements)
+  IF(MINGW)
+    SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  ENDIF(MINGW)
+  
+ 
 ENDIF(ENABLE_C++_TESTS)
   
 IF(ENABLE_C++_TESTS_WIP)  

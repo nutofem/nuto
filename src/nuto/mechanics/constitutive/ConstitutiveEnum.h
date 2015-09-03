@@ -26,7 +26,8 @@ enum eConstitutiveType
     DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS, //!< viscoplastic damage model with hardening
     MOISTURE_TRANSPORT,                             //!< moisture transport model
     LINEAR_SPRING,                                   //!< linear spring model
-    MULTI_PHYSICS                                   //!< multi physics
+    MULTI_PHYSICS,                                   //!< multi physics
+    INTERFACE_GOODMAN                               //!< interface model proposed by Goodman et al.
 };
 
 enum class eConstitutiveStaticDataType
@@ -90,13 +91,15 @@ enum class eConstitutiveParameter
     MASS_EXCHANGE_RATE,                         //!<
     NONLOCAL_RADIUS,                            //!<
     NONLOCAL_RADIUS_PARAMETER,                  //!<
-    POISSONS_RATIO,                              //!<
+    NORMAL_STIFFNESS,                           //!< normal stiffness for the Goodman et al. interface element
+    POISSONS_RATIO,                             //!<
     POLYNOMIAL_COEFFICIENTS_ADSORPTION,         //!<
     POLYNOMIAL_COEFFICIENTS_DESORPTION,         //!<
     POROSITY,                                   //!<
     SATURATION_DENSITY_GAS_PHASE,               //!<
     SPRING_STIFFNESS,                           //!<
     SPRING_DIRECTION,                           //!<
+    TANGENTIAL_STIFFNESS,                       //!< tangential stiffness for the Goodman et al. interface element
     TENSILE_STRENGTH,                           //!<
     THERMAL_EXPANSION_COEFFICIENT,              //!<
     VISCOPLASTIC_YIELD_SURFACE_OFFSET,          //!<
@@ -189,7 +192,8 @@ enum eInput
     WATER_VOLUME_FRACTION,              //!<
     WATER_VOLUME_FRACTION_BOUNDARY,     //!<
     WATER_VOLUME_FRACTION_D1,           //!< first time derivative
-    WATER_VOLUME_FRACTION_GRADIENT
+    WATER_VOLUME_FRACTION_GRADIENT,     //!<
+    INTERFACE_SLIP,                     //!<
 };
 }
 
@@ -295,10 +299,12 @@ enum eOutput
 	FATIGUE_SAVE_STATIC_DATA,
 	FATIGUE_RESTORE_STATIC_DATA,
 	FATIGUE_EXTRAPOLATE_STATIC_DATA,
-        NONLOCAL_PARAMETER_XI,
     RESIDUAL_NORM_FACTOR_DISPLACEMENTS,
     RESIDUAL_NORM_FACTOR_RELATIVE_HUMIDITY,
     RESIDUAL_NORM_FACTOR_WATER_VOLUME_FRACTION,
+	NONLOCAL_PARAMETER_XI,
+    INTERFACE_CONSTITUTIVE_MATRIX,
+    INTERFACE_STRESSES,
 };
 }
 

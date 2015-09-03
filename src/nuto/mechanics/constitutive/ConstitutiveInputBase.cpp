@@ -111,6 +111,13 @@ const NuTo::WaterVolumeFractionGradient3D &NuTo::ConstitutiveInputBase::GetWater
 {
     throw MechanicsException("[NuTo::ConstitutiveInputBase::GetWaterVolumeFractionGradient3D] not implemented for this input object.");
 }
+
+const NuTo::InterfaceSlip &NuTo::ConstitutiveInputBase::GetInterfaceSlip() const
+{
+    throw MechanicsException("[NuTo::ConstitutiveInputBase::GetInterfaceSlip] not implemented for this input object.");
+}
+
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::ConstitutiveInputBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);

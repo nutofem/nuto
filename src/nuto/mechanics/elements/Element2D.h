@@ -117,10 +117,10 @@ public:
     double CalculateArea() const override;
 
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
-    const Eigen::VectorXi CalculateGlobalRowDofs() const;
+    virtual const Eigen::VectorXi CalculateGlobalRowDofs() const;
 
     //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
-    const Eigen::VectorXi CalculateGlobalColumnDofs() const;
+    virtual const Eigen::VectorXi CalculateGlobalColumnDofs() const;
 
     //! @brief calculates the deformation gradient in 2D
     //! @param rDerivativeShapeFunctionsLocal derivatives of the shape functions with respect to local coordinates (plane world coordinates)
@@ -312,9 +312,6 @@ protected:
     void CheckElement() override;
 
 
-
-
-private:
     std::vector<NodeBase*> mNodes;
 
     const SectionBase *mSection;

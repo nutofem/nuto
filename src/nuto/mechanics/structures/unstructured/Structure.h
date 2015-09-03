@@ -286,7 +286,7 @@ public:
     //! @param rCoordinates coordinates of the node
     //! @param rDofs degrees of freedom of the node
     //! @return node number
-    int NodeCreate(NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates, std::set<Node::eAttributes> rDofs);
+    int NodeCreate(NuTo::FullVector<double,Eigen::Dynamic> rCoordinates, std::set<Node::eAttributes> rDofs);
 
 
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)

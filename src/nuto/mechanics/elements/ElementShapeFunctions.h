@@ -202,6 +202,21 @@ namespace ShapeFunctions3D
 	Eigen::Matrix<double, 125, 3> DerivativeShapeFunctionsBrickSpectralOrder4(const Eigen::VectorXd& rCoordinates);
 }
 
+namespace ShapeFunctionsInterface
+{
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    Eigen::MatrixXd NodeCoordinatesInterfaceOrder1(int rNodeIndex);
+
+    Eigen::MatrixXd ShapeFunctionsInterfaceOrder1(const Eigen::VectorXd& rCoordinates);
+
+    Eigen::MatrixXd DerivativeShapeFunctionsInterfaceOrder1(const Eigen::VectorXd& rCoordinates);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+}
+
+
 } /* namespace NuTo */
 
 #endif /* ELEMENTSHAPEFUNCTIONS_H_ */
