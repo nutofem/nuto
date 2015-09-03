@@ -201,7 +201,7 @@ NuTo::Error::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 				//update derivatives (ydot or k1,k2,k3,k4) for Runge Kutta
 				d_disp_j_tmp[countStage] = vel_j_tmp*mTimeStep;
 				//std::cout << "d_disp_j_tmp " << d_disp_j_tmp[countStage](0) << std::endl;
-				d_vel_j_tmp[countStage]  = (invMassMatrix_j.asDiagonal()*(extForce_j-intForce_j))*mTimeStep;
+                d_vel_j_tmp[countStage]  = (invMassMatrix_j.asDiagonal()*(extForce_j-intForce_j))*mTimeStep;
 				//std::cout << "d_vel_j_tmp " << d_vel_j_tmp[countStage](0) << std::endl;
 				//std::cout << "norm of acc " << (d_vel_j_tmp).norm() << std::endl;
 
