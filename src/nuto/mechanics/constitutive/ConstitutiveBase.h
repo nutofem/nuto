@@ -184,8 +184,8 @@ public:
     //! @param ... additional constitutive law
     virtual void  MultiPhysicsAddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw);
 
-    //! @brief ... gets a set of all constitutive output enums that are compatible with the constitutive law
-    //! @return ... set of all constitutive output enums that are compatible with the constitutive law
+    //! @brief ... checks if a constitutive law has an specific output
+    //! @return ... true/false
     virtual bool CheckOutputTypeCompatibility(NuTo::Constitutive::Output::eOutput rOutputEnum) const;
 
     ///////////////////////////////////////////////////////////////////////////

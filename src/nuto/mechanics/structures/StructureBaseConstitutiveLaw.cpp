@@ -12,9 +12,10 @@
 #include "nuto/mechanics/constitutive/mechanics/GradientDamageEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.h"
-#include "nuto/mechanics/constitutive/thermal/LinearHeatFlux.h"
 #include "nuto/mechanics/constitutive/moistureTransport/MoistureTransport.h"
 #include "nuto/mechanics/constitutive/multiPhysics/ConstitutiveMultiPhysics.h"
+#include <nuto/mechanics/constitutive/shrinkage/DryingShrinkage.h>
+#include "nuto/mechanics/constitutive/thermal/LinearHeatFlux.h"
 
 // create a new constitutive law
 int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
@@ -55,13 +56,13 @@ Constitutive    ::eConstitutiveType ConstitutiveLawType;
     } else if (ConstitutiveLawTypeString == "MOISTURETRANSPORT")
     {
         ConstitutiveLawType = Constitutive::MOISTURE_TRANSPORT;
-
-    }
-    else if (ConstitutiveLawTypeString == "MULTIPHYSICS")
+    } else if (ConstitutiveLawTypeString == "MULTIPHYSICS")
     {
         ConstitutiveLawType = Constitutive::MULTI_PHYSICS;
-    }
-    else
+    } else if (ConstitutiveLawTypeString == "DRYINGSHRINKAGE")
+    {
+        ConstitutiveLawType = Constitutive::DRYING_SHRINKAGE;
+    } else
     {
         throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] invalid type of constitutive law.");
     }
@@ -145,7 +146,10 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
         case NuTo::Constitutive::INTERFACE_GOODMAN:
             ConstitutiveLawPtr = new NuTo::InterfaceGoodman();
             break;
-        default:
+        case NuTo::Constitutive::DRYING_SHRINKAGE:
+            ConstitutiveLawPtr = new NuTo::DryingShrinkage();
+            break;
+         default:
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] invalid type of constitutive law.");
         }
 

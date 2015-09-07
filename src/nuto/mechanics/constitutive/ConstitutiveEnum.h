@@ -27,7 +27,8 @@ enum eConstitutiveType
     MOISTURE_TRANSPORT,                             //!< moisture transport model
     LINEAR_SPRING,                                   //!< linear spring model
     MULTI_PHYSICS,                                   //!< multi physics
-    INTERFACE_GOODMAN                               //!< interface model proposed by Goodman et al.
+    INTERFACE_GOODMAN,                              //!< interface model proposed by Goodman et al.
+    DRYING_SHRINKAGE                                //!< drying shrinkage
 };
 
 enum class eConstitutiveStaticDataType
@@ -237,6 +238,7 @@ enum eOutput
 	ENGINEERING_STRESS_1D,           //!<
 	ENGINEERING_STRESS_2D,           //!<
 	ENGINEERING_STRESS_3D,           //!<
+        ENGINEERING_STRESS_2D_PORE_PRESSURE, //!<
 	ENGINEERING_STRESS_ELASTIC_3D,	 //!<
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D,
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D,
@@ -250,6 +252,8 @@ enum eOutput
 	D_ENGINEERING_STRESS_D_TEMPERATURE_1D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_2D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_3D,
+    D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY_2D,
+    D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION_2D,
 	D_HEAT_FLUX_D_TEMPERATURE_RATE_1D,
 	D_HEAT_FLUX_D_TEMPERATURE_RATE_2D,
 	D_HEAT_FLUX_D_TEMPERATURE_RATE_3D,
@@ -320,6 +324,7 @@ static inline std::string OutputToString( const Output::eOutput& e )
                               (Output::ENGINEERING_STRESS_1D,"ENGINEERING_STRESS_1D")
                               (Output::ENGINEERING_STRESS_2D,"ENGINEERING_STRESS_2D")
                               (Output::ENGINEERING_STRESS_3D,"ENGINEERING_STRESS_3D")
+                              (Output::ENGINEERING_STRESS_2D_PORE_PRESSURE,"ENGINEERING_STRESS_2D_PORE_PRESSURE")
                               (Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D")
                               (Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D")
                               (Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D")

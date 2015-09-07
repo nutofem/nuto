@@ -51,8 +51,8 @@ int main()
         double Length           = 0.16;
         double Height           = 0.04;
 
-        unsigned int NumElementsX = 16;
-        unsigned int NumElementsY = 4;
+        unsigned int NumElementsX =  32;
+        unsigned int NumElementsY =   8;
 
         //double ElementHeight    = Height / static_cast<double>(NumElementsY);
         double ElementLength    = Length / static_cast<double>(NumElementsX);
@@ -68,7 +68,7 @@ int main()
         double          Thickness    = 0.04;
 
         double          delta_t                         = 1.0/1.0 *     1.0 * 24.0 * 60.0 * 60.0;
-        double          SimulationTime                  = 1.0/1.0 *     3.0 * 24.0 * 60.0 * 60.0;
+        double          SimulationTime                  = 1.0/1.0 *     1.0 * 24.0 * 60.0 * 60.0;
         double          BC_TransitionTime               =                     24.0 * 60.0 * 60.0;
 
         // initial node values
@@ -81,12 +81,12 @@ int main()
 
         // Linear Elastic
         double Density                                  = 1.0;      // N/mm³
-        double PoissonRatio                             = 0.0;
-        double YoungsModulus                            = 30000.0;
+        double PoissonRatio                             = 0.15;
+        double YoungsModulus                            = 30.0 * 10e9;  //N/m²
         // Moisture Transport
         double          MassExchangeRate                =    3.42e-7    ;
         double          Porosity                        =    0.25      ;
-        double          VaporPhaseDiffusionCoefficient  =    3.9e-10     ;
+        double          VaporPhaseDiffusionCoefficient  =    3.9e-12     ;
         double          VaporPhaseDiffusionExponent     =    1.0        ;
         double          VaporPhaseSaturationDensity     =    0.0173     ;
         double          WaterPhaseDensity               =  999.97       ;
@@ -94,7 +94,7 @@ int main()
         double          WaterPhaseDiffusionExponent     =    2.0        ;
 
         // Boundary Condition Values
-        double          BC_RelativeHumidity             =    0.45;
+        double          BC_RelativeHumidity             =    0.15;
         double          BC_Surface_Moisture_Transfer_RH =    1.0e-10 * delta_t;
         double          BC_Surface_Moisture_Transfer_WVF=    1.0e-7 * delta_t;
         bool            SorptionHistoryDesorption       =    true;
@@ -107,7 +107,7 @@ int main()
 
 
         // max residual
-        double          MaxResidual                     =    1.0e-9;
+        double          MaxResidual                     =    1.0e-6;
 
 
 
@@ -169,9 +169,11 @@ int main()
         // Create and set Constitutive Law
         // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+        int ConstLawDryingShrinkage   = myStructure.ConstitutiveLawCreate("DryingShrinkage");
         int ConstLawLinearElastic     = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
         int ConstLawMoistureTransport = myStructure.ConstitutiveLawCreate("MoistureTransport");
         int ConstLawMultiPhysics      = myStructure.ConstitutiveLawCreate("MultiPhysics");
+        myStructure.ConstitutiveLawMultiPhysicsAddConstitutiveLaw(ConstLawMultiPhysics,ConstLawDryingShrinkage);
         myStructure.ConstitutiveLawMultiPhysicsAddConstitutiveLaw(ConstLawMultiPhysics,ConstLawLinearElastic);
         myStructure.ConstitutiveLawMultiPhysicsAddConstitutiveLaw(ConstLawMultiPhysics,ConstLawMoistureTransport);
 
@@ -321,7 +323,7 @@ int main()
         Max = Length + 0.01 * ElementLength;
         myStructure.GroupAddNodeCoordinateRange(GRPNodes_Right,Direction,Min,Max);
 
-        int GRPNodes_Center = myStructure.GroupCreate("Nodes");
+
 
         auto PickNodeFunction = [Length,Height](NuTo::NodeBase* rNodePtr) -> bool
                                 {
@@ -338,8 +340,49 @@ int main()
                                     }
                                     return false;
                                 };
+
+        int GRPNodes_Center = myStructure.GroupCreate("Nodes");
         myStructure.GroupAddNodeFunction(GRPNodes_Center,PickNodeFunction);
 
+
+
+        auto PickSingleNodeLeftFunction = [Length,Height](NuTo::NodeBase* rNodePtr) -> bool
+                                {
+                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    {
+                                        double x = rNodePtr->GetCoordinate(0);
+                                        double y = rNodePtr->GetCoordinate(1);
+                                        if (x >= -1e-6 &&
+                                            x <= 1e-6 &&
+                                            y >= Height/2.0-1e-6 &&
+                                            y <= Height/2.0+1e-6)
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                };
+        int GRPNodes_SingleNodeLeft = myStructure.GroupCreate("Nodes");
+        myStructure.GroupAddNodeFunction(GRPNodes_SingleNodeLeft,PickSingleNodeLeftFunction);
+
+        auto PickSingleNodeRightFunction = [Length,Height](NuTo::NodeBase* rNodePtr) -> bool
+                                {
+                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    {
+                                        double x = rNodePtr->GetCoordinate(0);
+                                        double y = rNodePtr->GetCoordinate(1);
+                                        if (x >= Length-1e-6 &&
+                                            x <= Length+1e-6 &&
+                                            y >= Height/2.0-1e-6 &&
+                                            y <= Height/2.0+1e-6)
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                };
+        int GRPNodes_SingleNodeRight = myStructure.GroupCreate("Nodes");
+        myStructure.GroupAddNodeFunction(GRPNodes_SingleNodeRight,PickSingleNodeRightFunction);
 
         // %%%%%%%%%%%%%%%%%%%%%%%%
         // Create Boundary Elements
@@ -434,7 +477,7 @@ int main()
         int BoundaryConstraint = myStructure.ConstraintLinearSetRelativeHumidityNode(BoundaryNodeID,1.0);
         //myStructure.ConstraintLinearSetWaterVolumeFractionNode(BoundaryNodeID,1.0);
 
-        auto DispFunctionCenter = [SimulationTime](double rTime)->double
+        /*auto DispFunctionCenter = [SimulationTime](double rTime)->double
                                   {
                                         double QuarterTime = SimulationTime/4.0;
                                         double factor = 0.0;
@@ -453,7 +496,7 @@ int main()
                                         }
 
                                         return factor * sin(rTime)*0.2;
-                                  };
+                                  };*/
 
         NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DirectionX(2,1);
         DirectionX.SetValue(0,0,1.0);
@@ -462,10 +505,11 @@ int main()
         DirectionY.SetValue(1,0,1.0);
 
 
-        myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Left           ,DirectionX,0);
-        myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Left           ,DirectionY,0);
-        myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Right          ,DirectionY,0);
-        int ConstraintRightDisp = myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Right          ,DirectionX,0);
+        myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_SingleNodeLeft           ,DirectionX,0);
+        myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_SingleNodeLeft           ,DirectionY,0);
+        myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_SingleNodeRight          ,DirectionY,0);
+        //myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Right          ,DirectionY,0);
+        //int ConstraintRightDisp = myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Right          ,DirectionX,0);
         //int ConstraintCenterDisp = myStructure.ConstraintLinearSetDisplacementNodeGroup(GRPNodes_Center         ,DirectionY,0);
 
         // %%%%%%%%%%%%%%%%%%%%%
@@ -523,12 +567,12 @@ int main()
         //myTimeIntegrationScheme.SetMinTimeStep(delta_t);
 
         myTimeIntegrationScheme.SetPerformLineSearch(false);
-        myTimeIntegrationScheme.SetCheckEquilibriumOnStart(true);
+        myTimeIntegrationScheme.SetCheckEquilibriumOnStart(false);
         myTimeIntegrationScheme.SetToleranceForce(MaxResidual);
         myTimeIntegrationScheme.SetMaxNumIterations(40);
 
         myTimeIntegrationScheme.AddTimeDependentConstraint(BoundaryConstraint,  RelativeHumidityFunc);
-        myTimeIntegrationScheme.AddTimeDependentConstraint(ConstraintRightDisp, DispFunctionCenter);
+        //myTimeIntegrationScheme.AddTimeDependentConstraint(ConstraintRightDisp, DispFunctionCenter);
 
         //set result directory
         bool deleteResultDirectoryFirst(true);
@@ -545,6 +589,11 @@ int main()
     {
         std::cout << e.ErrorMessage() << std::endl;
         return 1;
+    }
+    catch(std::exception e)
+    {
+            std::cout << e.what() << std::endl;
+            return 1;
     }
 }
 

@@ -171,6 +171,14 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
         ConstitutiveTangentLocal<1,1> residualNormFactorRelativeHumidity;
         ConstitutiveTangentLocal<1,1> residualNormFactorWaterVolumeFraction;
 
+
+        // Drying Shrinkage Model
+        // ----------------------
+
+        EngineeringStress2D engineeringStressPorePressure;
+        ConstitutiveTangentLocal<2,1> tangent_D_EngineeringStress_D_RH;
+        ConstitutiveTangentLocal<2,1> tangent_D_EngineeringStress_D_WV;
+
         //for the lumped mass calculation
         double total_mass = 0.;
 
@@ -241,13 +249,18 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         {
                         case Node::DISPLACEMENTS:
                         {
-                            constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_STRESS_2D] = &(engineeringStress2D);
+                            constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_STRESS_2D]                                           = &(engineeringStress2D);
+                            if (activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end() &&
+                                activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                            {
+                                constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_STRESS_2D_PORE_PRESSURE]                         = &engineeringStressPorePressure;
+                            }
                         }
                             break;
                         case Node::NONLOCALEQSTRAIN:
                         {
-                            constitutiveOutputList[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN] = &localEqStrain;
-                            constitutiveOutputList[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI] = &nonlocalParameter;
+                            constitutiveOutputList[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN]                                                 = &localEqStrain;
+                            constitutiveOutputList[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI]                                           = &nonlocalParameter;
                         }
                             break;
                         case Node::RELATIVEHUMIDITY:
@@ -301,6 +314,12 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         if (activeDofs.find(Node::NONLOCALEQSTRAIN) != activeDofs.end())
                         {
                             constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_2D] = &tangentStressNonlocalEqStrain;
+                        }
+                        if (activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end() &&
+                            activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY_2D] = &tangent_D_EngineeringStress_D_RH;
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION_2D] = &tangent_D_EngineeringStress_D_WV;
                         }
                     }
                         break;
@@ -611,6 +630,12 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                             case Node::DISPLACEMENTS:
                             {
                                 AddDetJBtSigma(derivativeShapeFunctions.at(dof), engineeringStress2D, factor, startIndex, it->second->GetFullVectorDouble());
+
+                                if (activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end() &&
+                                    activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                                {
+                                    AddDetJBtSigma(derivativeShapeFunctions.at(dof), engineeringStressPorePressure, factor, startIndex, it->second->GetFullVectorDouble());
+                                }
                             }
                                 break;
                             case Node::NONLOCALEQSTRAIN:
@@ -768,6 +793,42 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                                 AddDetJBtdSigmadNonlocalEqStrainN(derivativeShapeFunctions.at(Node::DISPLACEMENTS), tangentStressNonlocalEqStrain, shapeFunctions.at(Node::NONLOCALEQSTRAIN), factor,
                                         startIndex, startIndexNonlocalEqStrain, it->second->GetFullMatrixDouble());
                             }
+                            if (activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end() &&
+                                activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                            {
+                                AddDetJBtXN(derivativeShapeFunctions.at(Node::DISPLACEMENTS),
+                                            shapeFunctions.at(Node::RELATIVEHUMIDITY),
+                                            tangent_D_EngineeringStress_D_RH,
+                                            factor,
+                                            startIndex,
+                                            mInterpolationType->Get(Node::RELATIVEHUMIDITY).GetLocalStartIndex(),
+                                            it->second->GetFullMatrixDouble());
+
+                                AddDetJBtXN(derivativeShapeFunctions.at(Node::DISPLACEMENTS),
+                                            shapeFunctions.at(Node::WATERVOLUMEFRACTION),
+                                            tangent_D_EngineeringStress_D_WV,
+                                            factor,
+                                            startIndex,
+                                            mInterpolationType->Get(Node::WATERVOLUMEFRACTION).GetLocalStartIndex(),
+                                            it->second->GetFullMatrixDouble());
+
+                                AddDetJBtXN(derivativeShapeFunctions.at(Node::DISPLACEMENTS),
+                                            shapeFunctions.at(Node::RELATIVEHUMIDITY),
+                                            tangent_D_EngineeringStress_D_RH,
+                                            factor,
+                                            startIndex+4,
+                                            mInterpolationType->Get(Node::RELATIVEHUMIDITY).GetLocalStartIndex(),
+                                            it->second->GetFullMatrixDouble());
+
+                                AddDetJBtXN(derivativeShapeFunctions.at(Node::DISPLACEMENTS),
+                                            shapeFunctions.at(Node::WATERVOLUMEFRACTION),
+                                            tangent_D_EngineeringStress_D_WV,
+                                            factor,
+                                            startIndex+4,
+                                            mInterpolationType->Get(Node::WATERVOLUMEFRACTION).GetLocalStartIndex(),
+                                            it->second->GetFullMatrixDouble());
+
+                            }
 
                         }
                             break;
@@ -849,13 +910,13 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                                 {
                                     it->second->SetConstant(false);
                                 }
-/*
+
                                 //it->second->GetFullMatrixDouble().Info();         // Check Element Matrix if needed
                                 //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> test = it->second->GetFullMatrixDouble();
                                 //test.Info(4,5,true);
                                 //int a=0;
                                 //a++;
-*/
+
                             }
                         }
                             break;

@@ -430,7 +430,7 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(ElementBase
         {
             ConstitutiveTangentLocal<1,1>& residualNormFactorDisplacements(itOutput->second->AsConstitutiveTangentLocal_1x1());
 
-            residualNormFactorDisplacements(0,0)=  mE;
+            residualNormFactorDisplacements(0,0)=  mE/10e12;
 
             residualNormFactorDisplacements.SetSymmetry(false);
             break;

@@ -68,8 +68,8 @@ public:
     //! @param rMassExchangeRate ... mass exchange rate
     void                                            CheckMassExchangeRate                                       (double rMassExchangeRate) const;
 
-    //! @brief ... gets a set of all constitutive output enums that are compatible with the constitutive law
-    //! @return ... set of all constitutive output enums that are compatible with the constitutive law
+    //! @brief ... checks if a constitutive law has an specific output
+    //! @return ... true/false
     virtual bool                                    CheckOutputTypeCompatibility                                (Constitutive::Output::eOutput rOutputEnum) const override;
 
     //! @brief ... check parameters of the constitutive relationship

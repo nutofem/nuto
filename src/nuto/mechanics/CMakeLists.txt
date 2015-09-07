@@ -74,6 +74,7 @@ constitutive/moistureTransport/RelativeHumidityGradient3D.cpp
 constitutive/moistureTransport/ConstitutiveStaticDataMoistureTransport.cpp
 constitutive/multiPhysics/ConstitutiveMultiPhysics.cpp
 constitutive/multiPhysics/ConstitutiveStaticDataMultiPhysics.cpp
+constitutive/shrinkage/DryingShrinkage.cpp
 )
 
 SET(NuToMechanicsConstraint_SOURCES
