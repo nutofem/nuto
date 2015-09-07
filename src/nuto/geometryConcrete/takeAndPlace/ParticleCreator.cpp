@@ -38,19 +38,6 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 			rSpheresBoundary,
 			rRelParticleVolume);
 
-	double volume = 0.;
-	double volumeShrinkage = 0.;
-
-	for (int i = 0; i < particles.GetNumRows(); ++i)
-	{
-		volume += GetVolume(particles.GetValue(i, 3));
-		particles(i, 3) = particles(i, 3) * (1 - mShrinkage);
-		volumeShrinkage += GetVolume(particles.GetValue(i, 3));
-	}
-
-	std::cout << "[Take-Phase: ] Created " << particles.GetNumRows() << " particles. ";
-	std::cout << "[Take-Phase: ] Phi = " << volume / mVolume << ", phi_shrinkage = " << volumeShrinkage / mVolume << std::endl;
-
 	PerformPlacePhase(
 			particles,
 			rRelativeDistance,
@@ -142,6 +129,19 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 	//sort
 	std::sort(((double*) &particles.data()[3 * particles.GetNumRows()]),
 			((double*) &particles.data()[3 * particles.GetNumRows() + numParticles]), std::greater<double>());
+
+    double volume = 0.;
+    double volumeShrinkage = 0.;
+
+    for (int i = 0; i < particles.GetNumRows(); ++i)
+    {
+        volume += GetVolume(particles.GetValue(i, 3));
+        particles(i, 3) = particles(i, 3) * (1 - mShrinkage);
+        volumeShrinkage += GetVolume(particles.GetValue(i, 3));
+    }
+
+    std::cout << "[Take-Phase: ] Created " << particles.GetNumRows() << " particles. ";
+    std::cout << "[Take-Phase: ] Phi = " << volume / mVolume << ", phi_shrinkage = " << volumeShrinkage / mVolume << std::endl;
 
 	return particles;
 

@@ -13,8 +13,8 @@
 #include <omp.h>
 #include <algorithm>
 
-NuTo::SubBox::SubBox(const int rIndex, const int rNumThreads)
-		: mIndex(rIndex), mNumThreads(rNumThreads)
+NuTo::SubBox::SubBox(const int rIndex)
+		: mIndex(rIndex)
 {
 }
 
@@ -75,35 +75,14 @@ void NuTo::SubBox::CreateEvents(EventListHandler& rEvents,
 
 	const unsigned int size(mCollidables.size());
 
-	// temporarily store event time and event type in vectors,
-	// otherwise parallel event creation fails due to local list data race
-	std::vector<double> newEvents(size);
-	std::vector<int> eventType(size);
-
-	// catch exceptions in parallel for
-	bool parallelThrow = false;
 	Exception parallelException("");
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic) default(shared) num_threads(mNumThreads)
-#endif
 	for (unsigned int i = 0; i < size; ++i)
 	{
-		try
-		{
-			newEvents[i] = rCollidable.PredictCollision(*mCollidables[i], eventType[i]);
-		}catch(Exception& e)
-		{
-			parallelException = e;
-			parallelThrow = true;
-		}
+	    int eventType;
+		double collisionTime = rCollidable.PredictCollision(*mCollidables[i], eventType);
+        if (collisionTime != Event::EVENTNULL)
+            rEvents.AddEvent(collisionTime, rCollidable, *mCollidables[i], eventType);
 	}
-
-	if (parallelThrow)
-		throw parallelException;
-
-	for (unsigned int i = 0; i < size; ++i)
-		if (newEvents[i] != Event::EVENTNULL)
-			rEvents.AddEvent(newEvents[i], rCollidable, *mCollidables[i], eventType[i]);
 
 }
 

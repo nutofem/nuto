@@ -30,6 +30,8 @@ NuTo::SubBoxHandler::SubBoxHandler(
 
 	mSpheres = &rSpheres;
 	mSubBoxes.clear();
+
+	Build();
 }
 
 NuTo::SubBoxHandler::SubBoxHandler(
@@ -47,6 +49,7 @@ NuTo::SubBoxHandler::SubBoxHandler(
 
 	std::cout << "[NuTo::SubBoxHandler::SubBoxHandler] Build " << numDivisions << " sub boxes." << std::endl;
 
+	Build();
 }
 
 NuTo::SubBoxHandler::~SubBoxHandler()
@@ -71,15 +74,15 @@ unsigned int NuTo::SubBoxHandler::GetBoxIndex(int rX, int rY, int rZ)
 	return mDivisions[1] * mDivisions[2] * rX + mDivisions[2] * rY + rZ;
 }
 
-void NuTo::SubBoxHandler::Build(const int rNumThreads)
+void NuTo::SubBoxHandler::Build()
 {
 	switch (mSpecimen.GetTypeOfSpecimen())
 	{
 	case 0:
-		BuildBox(rNumThreads);
+		BuildBox();
 		break;
 	case 2:
-		BuildCylinder(rNumThreads);
+		BuildCylinder();
 		break;
 	default:
 		throw Exception("[NuTo::SubBoxHandler::Build] Type not specimen not implemented yet.");
@@ -87,10 +90,10 @@ void NuTo::SubBoxHandler::Build(const int rNumThreads)
 	}
 }
 
-void NuTo::SubBoxHandler::BuildBox(const int rNumThreads)
+void NuTo::SubBoxHandler::BuildBox()
 {
 	std::cout << "[BuildBox] Building boxes..." << std::endl;
-	BuildSubBoxes(rNumThreads);
+	BuildSubBoxes();
 	AddSpheresToBoxes();
 }
 
@@ -103,7 +106,7 @@ NuTo::FullVector<double, Eigen::Dynamic> NuTo::SubBoxHandler::GetSubBoxLength()
 	return subBoxLength;
 }
 
-void NuTo::SubBoxHandler::BuildSubBoxes(const int rNumThreads)
+void NuTo::SubBoxHandler::BuildSubBoxes()
 {
 
 	mSubBoxes.clear();
@@ -116,7 +119,7 @@ void NuTo::SubBoxHandler::BuildSubBoxes(const int rNumThreads)
 
 	// create cell grid boxes
 	for (unsigned int i = 0; i < nDivisions; ++i)
-		mSubBoxes.push_back(new SubBox(i, rNumThreads));
+		mSubBoxes.push_back(new SubBox(i));
 
 	// TODO make this ugly method readable, ffs!
 	FullMatrix<int, 6, 3> neighborBox, direction;
@@ -231,7 +234,7 @@ std::vector<int> NuTo::SubBoxHandler::GetNInside(CollidableWallCylinder* rWallCy
 	return nInside;
 }
 
-void NuTo::SubBoxHandler::BuildCylinder(const int rNumThreads)
+void NuTo::SubBoxHandler::BuildCylinder()
 {
 	mSubBoxes.clear();
 
@@ -248,7 +251,7 @@ void NuTo::SubBoxHandler::BuildCylinder(const int rNumThreads)
 	CollidableWallCylinder* wallCylinder = new CollidableWallCylinder(origin, direction, radius, height, 1);
 
 	// create box
-	BuildSubBoxes(rNumThreads);
+	BuildSubBoxes();
 
 	AddSpheresToBoxes();
 

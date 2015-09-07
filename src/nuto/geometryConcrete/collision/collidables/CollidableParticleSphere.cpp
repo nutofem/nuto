@@ -135,33 +135,22 @@ const double NuTo::CollidableParticleSphere::PredictCollision(CollidableParticle
 
 	// sync both spheres to the more recent time
 	double baseTime;
-	FullVector<double, 3> p1, p2;
-	double r1, r2;
-	if (this->mTimeOfLastUpdate > rSphere.mTimeOfLastUpdate)
+
+	CollidableParticleSphere* s1 = this;
+	CollidableParticleSphere* s2 = &rSphere;
+
+	if (s1->mTimeOfLastUpdate <= s2->mTimeOfLastUpdate)
 	{
-		baseTime = this->mTimeOfLastUpdate;
-
-		p1 = this->mPosition;
-		r1 = this->mRadius;
-
-		p2 = rSphere.mPosition + rSphere.mVelocity * (this->mTimeOfLastUpdate - rSphere.mTimeOfLastUpdate);
-		r2 = rSphere.mRadius + rSphere.mGrowthRate * (this->mTimeOfLastUpdate - rSphere.mTimeOfLastUpdate);
+	    s1 = &rSphere;
+	    s2 = this;
 	}
-	else
-	{
-		baseTime = rSphere.mTimeOfLastUpdate;
+	baseTime = s1->mTimeOfLastUpdate;
 
-		p1 = this->mPosition + this->mVelocity * (rSphere.mTimeOfLastUpdate - this->mTimeOfLastUpdate);
-		r1 = this->mRadius + this->mGrowthRate * (rSphere.mTimeOfLastUpdate - this->mTimeOfLastUpdate);
+	FullVector<double, 3> dP = s1->mPosition - (s2->mPosition + s2->mVelocity * (s1->mTimeOfLastUpdate - s2->mTimeOfLastUpdate));
+    FullVector<double, 3> dV = s1->mVelocity - s2->mVelocity;
 
-		p2 = rSphere.mPosition;
-		r2 = rSphere.mRadius;
-	}
-
-	FullVector<double, 3> dP = p1 - p2;
-	FullVector<double, 3> dV = this->mVelocity - rSphere.mVelocity;
-	double dR = r1 + r2;
-	double dG = this->mGrowthRate + rSphere.mGrowthRate;
+    double dR = s1->mRadius + s2->mRadius + s2->mGrowthRate * (s1->mTimeOfLastUpdate - s2->mTimeOfLastUpdate);
+    double dG = s1->mGrowthRate + s2->mGrowthRate;
 
 	double a = dV.dot(dV) - dG * dG;
 	double b = 2 * (dV.dot(dP) - dR * dG);
@@ -170,7 +159,7 @@ const double NuTo::CollidableParticleSphere::PredictCollision(CollidableParticle
 //	std::cout << "a: " << a << " b: " << b << " c: " << c <<std::endl;
 	double timeCollision = 0.;
 
-	if (c < -2.e-10 * r1)
+	if (c < -2.e-10 * s1->mRadius)
 	{
 		std::stringstream exceptionStream;
 		exceptionStream << "[NuTo::CollidableSphere::CreateNewEvent] "

@@ -139,7 +139,7 @@ double NuTo::CollisionHandler::Simulate(
 		// print a status update
 		// a) at time print out
 		bool statusPrintOut = rTimePrintOut != 0 && WallTime::Get() - wStartTime > timePrintOut;
-		// b) at every 0.01 global time steps
+		// b) at every 0.1 global time steps
 		bool statusGlobalTime = globalTime > globalTimePrint;
 
 		if (statusPrintOut or statusGlobalTime)
@@ -147,7 +147,7 @@ double NuTo::CollisionHandler::Simulate(
 			LogStatus(logger, numEvents, globalTime, wStartTime);
 
 	        if (statusGlobalTime)
-	            globalTimePrint = globalTime + 0.01;
+	            globalTimePrint = globalTime + 0.1;
 
 	        if (statusPrintOut)
 	            timePrintOut += rTimePrintOut;

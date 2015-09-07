@@ -1298,24 +1298,39 @@ void NuTo::Structure::GetNodesTotal(std::vector<std::pair<int,NodeBase*> >& rNod
     }
 }
 
-//! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
+//! @brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
 //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
-void NuTo::Structure::NodeExchangePtr(int rId, NodeBase* rOldPtr, NodeBase* rNewPtr)
+//! @param rId ... old node id
+//! @param rOldPtr ... old node ptr
+//! @param rNewPtr ... new node ptr
+//! @param rElements (optional) ... vector of all elements that contain the node - speedup!
+void NuTo::Structure::NodeExchangePtr(int rId, NuTo::NodeBase* rOldPtr, NuTo::NodeBase* rNewPtr, std::vector<ElementBase*> rElements)
 {
     //in node map
     //find it
-    int nodeId = NodeGetId(rOldPtr);
-    if (mNodeMap.erase(nodeId)!=1)
+    if (mNodeMap.erase(rId)!=1)
     {
         throw MechanicsException("[NuTo::Structure::NodeExchangePtr] Pointer to node (to exchange) does not exist.");
     }
 
-    mNodeMap.insert(nodeId,rNewPtr);
+    mNodeMap.insert(rId,rNewPtr);
 
-    //in elements
-    for (boost::ptr_map<int,ElementBase>::iterator itElement = mElementMap.begin(); itElement!= mElementMap.end(); itElement++)
+    if (rElements.size() == 0)
     {
-        itElement->second->ExchangeNodePtr(rOldPtr, rNewPtr);
+        // in all elements
+        for (boost::ptr_map<int,ElementBase>::iterator itElement = mElementMap.begin(); itElement!= mElementMap.end(); itElement++)
+        {
+            itElement->second->ExchangeNodePtr(rOldPtr, rNewPtr);
+        }
+
+    }
+    else
+    {
+        // in specific elements:
+        for (ElementBase* element : rElements)
+        {
+            element->ExchangeNodePtr(rOldPtr, rNewPtr);
+        }
     }
 
     //in groups

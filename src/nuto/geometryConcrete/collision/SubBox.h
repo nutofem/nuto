@@ -25,14 +25,12 @@ public:
 
 	//! @brief ... constructor
 	//! @param rIndex ... name for debug
-	//! @param rNumThreads ... number of threads for parallelization
-	SubBox(const int rIndex, const int rNumThreads = 1);
+	SubBox(const int rIndex);
 
 	//! @brief ... destructor, Deletes mWalls on destruction
 	~SubBox();
 
 	//! @brief ... creates events between mCollidables and rCollidable
-	//! ... most time consuming method, parallelized
 	//! @param rEvents ... global event list
 	//! @param rCollidable ... collidable involved in this collision
 	void CreateEvents(EventListHandler& rEvents, CollidableBase& rCollidable);
@@ -69,7 +67,6 @@ public:
 
 private:
 	const int mIndex;
-	const int mNumThreads;
 	std::list<CollidableWallBase*> mWalls;
 	std::vector<CollidableBase*> mCollidables;
 };

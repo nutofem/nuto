@@ -26,7 +26,7 @@ IF(ENABLE_MKL AND MKLSolver_FOUND)
   IF(MINGW)
     SET_TARGET_PROPERTIES(SparseDirectSolverMKLPardiso PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
-  ADD_TEST(EXAMPLES::C++::SparseDirectSolverMKLPardiso ${CMAKE_CURRENT_BUILD_DIR}/SparseDirectSolverMKLPardiso)
+  ADD_TEST(EXAMPLES::Cpp::SparseDirectSolverMKLPardiso ${CMAKE_CURRENT_BUILD_DIR}/SparseDirectSolverMKLPardiso)
 ENDIF(ENABLE_MKL AND MKLSolver_FOUND)
  
 IF(ENABLE_MUMPS AND MUMPS_FOUND)
@@ -35,7 +35,7 @@ IF(ENABLE_MUMPS AND MUMPS_FOUND)
    IF(MINGW)
      SET_TARGET_PROPERTIES(SparseDirectSolverMUMPS PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
    ENDIF(MINGW)
-   ADD_TEST(EXAMPLES::C++::SparseDirectSolverMUMPS ${CMAKE_CURRENT_BUILD_DIR}/SparseDirectSolverMUMPS)
+   ADD_TEST(EXAMPLES::Cpp::SparseDirectSolverMUMPS ${CMAKE_CURRENT_BUILD_DIR}/SparseDirectSolverMUMPS)
 ENDIF(ENABLE_MUMPS AND MUMPS_FOUND)
 
 IF(ENABLE_VISUALIZE)
@@ -47,7 +47,7 @@ IF(ENABLE_VISUALIZE)
   IF(MINGW)
     SET_TARGET_PROPERTIES(VisualizeTruss1D2N PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
-  ADD_TEST(EXAMPLES::C++::VisualizeTruss1D2N ${CMAKE_CURRENT_BUILD_DIR}/VisualizeTruss1D2N)
+  ADD_TEST(EXAMPLES::Cpp::VisualizeTruss1D2N ${CMAKE_CURRENT_BUILD_DIR}/VisualizeTruss1D2N)
 ENDIF(ENABLE_VISUALIZE)
 
 # Brick8N
@@ -62,7 +62,7 @@ ENDIF(MUMPS_FOUND)
 IF(MINGW)
   SET_TARGET_PROPERTIES(Brick8N PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
-ADD_TEST(EXAMPLES::C++::Brick8N ${CMAKE_CURRENT_BUILD_DIR}/Brick8N)
+ADD_TEST(EXAMPLES::Cpp::Brick8N ${CMAKE_CURRENT_BUILD_DIR}/Brick8N)
 
 # Test ConstraintsLagrange1D
 ADD_EXECUTABLE(ConstraintsLagrange1D ConstraintsLagrange1D)
@@ -76,7 +76,7 @@ ENDIF(MUMPS_FOUND)
 IF(MINGW)
   SET_TARGET_PROPERTIES(ConstraintsLagrange1D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
-ADD_TEST(EXAMPLES::C++::ConstraintsLagrange1D ${CMAKE_CURRENT_BUILD_DIR}/ConstraintsLagrange1D)
+ADD_TEST(EXAMPLES::Cpp::ConstraintsLagrange1D ${CMAKE_CURRENT_BUILD_DIR}/ConstraintsLagrange1D)
 
 # NonlocalDamagePlasticity
 ADD_EXECUTABLE(NonlocalDamagePlasticity NonlocalDamagePlasticity.cpp)
@@ -90,7 +90,7 @@ ENDIF(MUMPS_FOUND)
 IF(MINGW)
   SET_TARGET_PROPERTIES(NonlocalDamagePlasticity PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
-ADD_TEST(EXAMPLES::C++::NonlocalDamagePlasticity ${CMAKE_CURRENT_BUILD_DIR}/NonlocalDamagePlasticity)
+ADD_TEST(EXAMPLES::Cpp::NonlocalDamagePlasticity ${CMAKE_CURRENT_BUILD_DIR}/NonlocalDamagePlasticity)
 
 # NonlocalDamagePlasticityBeam
 #ADD_EXECUTABLE(NonlocalDamagePlasticityBeam NonlocalDamagePlasticityBeam.cpp)
@@ -132,7 +132,7 @@ ENDIF(MUMPS_FOUND)
 IF(MINGW)
   SET_TARGET_PROPERTIES(ImportGmsh PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
-ADD_TEST(EXAMPLES::C++::ImportGmsh ${CMAKE_CURRENT_BUILD_DIR}/ImportGmsh)
+ADD_TEST(EXAMPLES::Cpp::ImportGmsh ${CMAKE_CURRENT_BUILD_DIR}/ImportGmsh)
 
 # Plane2D4NFreeHangingNode
 ADD_EXECUTABLE(Plane2D4NFreeHangingNode Plane2D4NFreeHangingNode.cpp)
@@ -140,7 +140,7 @@ TARGET_LINK_LIBRARIES(Plane2D4NFreeHangingNode NuToMechanics NuToMath NuToBase $
 IF (ENABLE_VISUALIZE)
   TARGET_LINK_LIBRARIES(Plane2D4NFreeHangingNode NuToVisualize)
 ENDIF (ENABLE_VISUALIZE)
-ADD_TEST(EXAMPLES::C++::Plane2D4NFreeHangingNode ${CMAKE_CURRENT_BUILD_DIR}/Plane2D4NFreeHangingNode)
+ADD_TEST(EXAMPLES::Cpp::Plane2D4NFreeHangingNode ${CMAKE_CURRENT_BUILD_DIR}/Plane2D4NFreeHangingNode)
 
  
 # # Plane2D4NFreeHangingNode
@@ -195,7 +195,7 @@ ENDIF(MUMPS_FOUND)
 IF(MINGW)
   SET_TARGET_PROPERTIES(Truss1D2NReference PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
-ADD_TEST(EXAMPLES::C++::Truss1D2NReference ${CMAKE_CURRENT_BUILD_DIR}/Truss1D2NReference)
+ADD_TEST(EXAMPLES::Cpp::Truss1D2NReference ${CMAKE_CURRENT_BUILD_DIR}/Truss1D2NReference)
 
 
 # Truss1D2N
@@ -241,7 +241,7 @@ ENDIF(MUMPS_FOUND)
 IF(MINGW)
   SET_TARGET_PROPERTIES(Grid3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
-ADD_TEST(EXAMPLES::C++::Grid3D ${CMAKE_CURRENT_BUILD_DIR}/Grid3D)
+ADD_TEST(EXAMPLES::Cpp::Grid3D ${CMAKE_CURRENT_BUILD_DIR}/Grid3D)
  
 # MultiGrid3D
 ADD_EXECUTABLE(MultiGrid3D MultiGrid3D.cpp)
@@ -275,8 +275,20 @@ ENDIF (ENABLE_VISUALIZE)
 IF(MINGW)
   SET_TARGET_PROPERTIES(CrackPlane2D4N PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
-ADD_TEST(EXAMPLES::C++::CrackPlane2D4N ${CMAKE_CURRENT_BUILD_DIR}/CrackPlane2D4N)
+ADD_TEST(EXAMPLES::Cpp::CrackPlane2D4N ${CMAKE_CURRENT_BUILD_DIR}/CrackPlane2D4N)
  
+IF (ENABLE_GEOMETRYCONCRETE)
+ADD_EXECUTABLE(GeometryConcrete2D GeometryConcrete2D.cpp)
+TARGET_LINK_LIBRARIES(GeometryConcrete2D NuToMechanics NuToMath NuToBase NuToGeometryConcrete ${Boost_LIBRARIES})
+IF (ENABLE_VISUALIZE)
+  TARGET_LINK_LIBRARIES(GeometryConcrete2D NuToVisualize)
+ENDIF (ENABLE_VISUALIZE)
+IF(MINGW)
+  SET_TARGET_PROPERTIES(GeometryConcrete2D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)
+ADD_TEST(EXAMPLES::Cpp::GeometryConcrete2D ${CMAKE_CURRENT_BUILD_DIR}/GeometryConcrete2D)
+ENDIF (ENABLE_GEOMETRYCONCRETE)
+
 # # PhantomNodeMethod
 # ADD_EXECUTABLE(PhantomNodeMethodPlane2D4N PhantomNodeMethodPlane2D4N.cpp)
 # TARGET_LINK_LIBRARIES(PhantomNodeMethodPlane2D4N NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES}  ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})

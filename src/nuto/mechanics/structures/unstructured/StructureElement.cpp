@@ -296,6 +296,24 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
 //            throw MechanicsException("[NuTo::Structure::ElementConvertToInterpolationType] All elements must have the same interpolation type.");
     }
 
+
+
+
+    // getting rid of the two biggest bottlenecks
+    // 1) always looping trough all elements when exchanging the node pointer
+    //    instead of just the ones containing the node
+    //    --> build a map: key-node; value list of elements containing the key;
+    // 2) finding the node id
+    //    --> build a reversed node map, NodeBase* --> NodeId
+    std::map<NodeBase*, std::vector<ElementBase*>> nodeToElement;
+    std::map<const NodeBase*, int> nodeToId;
+
+    for (boost::ptr_map<int,NodeBase>::const_iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
+    {
+        nodeToId[it->second] = it->first;
+    }
+
+
     // find the bounding box corners = max/min x,y,z coordinates, initialize with random node coordinates
     Eigen::VectorXd boundingBoxMax = elements[0]->GetNode(0)->GetCoordinates();
     Eigen::VectorXd boundingBoxMin = elements[0]->GetNode(0)->GetCoordinates();
@@ -310,8 +328,11 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
             assert(nodeCoordinates.rows() == mDimension);
             boundingBoxMax = boundingBoxMax.cwiseMax(nodeCoordinates);
             boundingBoxMin = boundingBoxMin.cwiseMin(nodeCoordinates);
+
+            nodeToElement[node].push_back(element);
         }
     }
+
 
     Eigen::Vector3i numBoxes = Eigen::Vector3i::Ones(); // initialize as 3D array with at least one box per dimension
     Eigen::VectorXd deltaBox(mDimension);
@@ -441,8 +462,9 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
                 NodeBase* newNode = NodePtrCreate(nodeDofs, nodeCoordinates);
 
                 // exchange the pointer in all elements, all groups, all constraints etc
-                int oldNodeIndex = NodeGetId(oldNode);
-                NodeExchangePtr(oldNodeIndex, oldNode, newNode); // from now on, newNode is nullPtr
+                int oldNodeIndex = nodeToId[oldNode];
+                std::vector<ElementBase*> elementsToChange = nodeToElement[oldNode];
+                NodeExchangePtr(oldNodeIndex, oldNode, newNode, elementsToChange); // from now on, newNode is nullPtr
 
             } else
             {

@@ -22,6 +22,7 @@ takeAndPlace/ParticleCreator.cpp
 )
 
 SET(NuToGeometryConcrete_SOURCES
+GeometryConcrete.cpp
 InputReader.cpp
 WallTime.cpp
 Specimen.cpp

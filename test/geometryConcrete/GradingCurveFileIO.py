@@ -54,7 +54,6 @@ def RunSimulationFromInputFile (rInputFile, rWorkDir, rVisuFileName):
   
   # sub box handler
   subBoxes = nuto.SubBoxHandler(spheres, specimen, 10)
-  subBoxes.Build(IN.GetNumThreads())
   subBoxes.VisualizeBorders(rWorkDir + "/borders.vtu")
 
   collisions = nuto.CollisionHandler(spheres, subBoxes, rWorkDir)

@@ -36,8 +36,6 @@ public:
 	//! @brief ... deletes all sub boxes
 	~SubBoxHandler();
 
-	void Build(const int rNumThreads = 1);
-
 	//! @brief ... getter for specimen volume
 	double GetVolume() const;
 
@@ -62,15 +60,15 @@ private:
 	Specimen mSpecimen;
 	NuTo::FullVector<int, Eigen::Dynamic> mDivisions;
 
+    void Build();
+
 	//! @brief ... build a cubic specimen
 	//! @param rBox ... size of the specimen
-	//! @param rNumThreads ... number of threads for parallelization
-	void BuildBox(const int rNumThreads = 1);
+	void BuildBox();
 
 	//! @brief ... build a cylindric specimen
 	//! @param rBox ... size of the specimen
-	//! @param rNumThreads ... number of threads for parallelization
-	void BuildCylinder(const int rNumThreads = 1);
+	void BuildCylinder();
 
 	void AddSpheresToBoxes();
 
@@ -78,7 +76,7 @@ private:
 	std::vector<CollidableWallBase*> GetXYWalls(unsigned int rIndex);
 
 	//! @brief ...
-	void BuildSubBoxes(const int rNumThreads);
+	void BuildSubBoxes();
 
 	//! @brief ...
 	std::vector<NuTo::FullVector<double,Eigen::Dynamic> > GetXYCorners(

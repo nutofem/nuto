@@ -1,0 +1,78 @@
+/*
+ * GeometryConcreteAPI.cpp
+ *
+ *  Created on: 4 Sep 2015
+ *      Author: ttitsche
+ */
+#include "nuto/geometryConcrete/GeometryConcrete.h"
+#include <boost/filesystem.hpp>
+#include "nuto/math/FullMatrix.h"
+
+
+void MaxDistanceMesh2D(std::string rGmshFile, double rLX, double rLY)
+{
+    // ***************************************************************************
+    // ***********   define the geometry      ************************************
+
+    NuTo::GeometryConcrete geometry;
+    geometry.SetSeed(1337);
+    geometry.SetSpecimenBox(0, rLX, 0, rLY, 0, rLY);
+    geometry.SetGradingCurve(NuTo::GeometryConcrete::B16, 3);
+    geometry.SetParticleVolumeFraction(0.4);
+    geometry.SetAbsoluteGrowthRate(0.1);
+
+    geometry.MaximizeParticleDistance(0.75);
+
+    geometry.ExportGmshGeo2D(rGmshFile, 0.75, rLY/2.);
+}
+
+void MaxVolumeFraction3D(std::string rGmshFile, double rLX, double rLY, double rLZ)
+{
+    // ***************************************************************************
+    // ***********   define the geometry      ************************************
+
+    NuTo::GeometryConcrete geometry;
+    geometry.SetSeed(1337);
+    geometry.SetSpecimenBox(0, rLX, 0, rLY, 0, rLZ);
+    geometry.SetGradingCurve(NuTo::GeometryConcrete::B16, 3);
+    geometry.SetParticleVolumeFraction(0.8);
+    geometry.SetRelativeGrowthRate(0.1);
+
+    geometry.MaximizeParticleVolumeFraction(0.05);
+
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> particles = geometry.GetParticles(false);
+    std::cout << "Created " << particles.GetNumRows() << " particles. " << std::endl;
+
+    geometry.ExportGmshGeo3D(rGmshFile, 0.75);
+}
+
+
+
+int main(int argc, char* argv[])
+{
+    boost::filesystem::path outputPath = std::string(argv[0]) + "Out/";
+    boost::filesystem::create_directory(outputPath);
+
+    // When running with ctest, argv[1] contains the gmsh binary, something like '/usr/bin/gmsh'
+    // However, 'gmsh' works fine in most cases.
+    std::string gmshBinary = "gmsh";
+    if (argc >= 2)
+        gmshBinary = argv[1];
+
+    std::cout << "Using gmsh binary: " << gmshBinary << std::endl;
+
+    std::string gmshFile2D = outputPath.string() + "geometry2D";
+    std::string gmshFile3D = outputPath.string() + "geometry3D";
+
+    std::cout << "Gmsh File 2D:  " << gmshFile2D << ".geo" << std::endl;
+    std::cout << "Gmsh File 3D:  " << gmshFile3D << ".geo" << std::endl;
+    MaxDistanceMesh2D(gmshFile2D, 32, 16);
+
+    std::cout << "Meshing..." << std::endl;
+    system((gmshBinary + " -3 -order 2 " + gmshFile2D + ".geo -o " + gmshFile2D + ".msh -v 2").c_str());
+
+    MaxVolumeFraction3D(gmshFile3D, 32, 16, 16);
+
+
+
+}

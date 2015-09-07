@@ -102,7 +102,6 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate1D(ElementBase
                     throw MechanicsException("[NuTo::LinearElasticEngineeringStress::Evaluate1D] temperature needed to evaluate thermal engineering strain1d.");
                 double temperature(itInput->second->GetTemperature());
                 double deltaStrain(mThermalExpansionCoefficient * temperature);
-                EngineeringStrain1D elasticEngineeringStrain;
                 elasticEngineeringStrain[0] -= deltaStrain;
             }
             EngineeringStress1D& engineeringStress(itOutput->second->GetEngineeringStress1D());

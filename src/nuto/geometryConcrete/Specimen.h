@@ -12,23 +12,28 @@
 
 namespace NuTo
 {
+
 //! @brief ... class for Specimen
 class Specimen
 {
 public:
+
+    enum eSpecimenType
+    {
+        Box=0,
+        Dogbone=1,
+        Cylinder=2
+    };
 
 	//! @brief ... constructor
 	//! @param rBoundingBox ... bounding box of the specimen
 	//! @param rTypeOfSpecimen ... element of enum Specimen::Type
 	Specimen(
 			NuTo::FullMatrix<double,Eigen::Dynamic, Eigen::Dynamic> rBoundingBox,
-            const int rTypeOfSpecimen);
+            const eSpecimenType rTypeOfSpecimen);
 
 	//! @brief ... copy constructor
 	Specimen(const NuTo::Specimen& rOther);
-
-	//! @brief ... instead of hard coded 0,1,2...
-	enum Type {Box=0, Dogbone=1, Cylinder=2};
 
 	const bool IsBox() const;
 
@@ -42,7 +47,7 @@ public:
 	const double GetLength(const int rIndex) const;
 
 	//! @brief ... getter of mTypeOfSpecimen
-	const int GetTypeOfSpecimen() const;
+	const eSpecimenType GetTypeOfSpecimen() const;
 
 	//! @brief ... calculates and returns specimen volume
 	const double GetVolume() const;
@@ -50,7 +55,7 @@ public:
 private:
 	NuTo::FullMatrix<double,Eigen::Dynamic, Eigen::Dynamic> mBoundingBox;
 	NuTo::FullVector<double,Eigen::Dynamic> mLength;
-	const int mTypeOfSpecimen;
+	const eSpecimenType mTypeOfSpecimen;
 
 	//! @brief ... calculates the length of the bounding box
 	void CalculateLength();

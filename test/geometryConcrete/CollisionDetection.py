@@ -106,7 +106,6 @@ spheres = nuto.ParticleHandler(rawSpheres,0.,0.,1.)
 
 # sub box handler
 subBoxes = nuto.SubBoxHandler(spheres, specimen, subBoxDivs)
-subBoxes.Build()
 
 events = nuto.EventListHandler()
 dummy = events.SetTimeBarrier(1000.,subBoxes)
@@ -168,7 +167,6 @@ specimen = nuto.Specimen(bBox, 0)
 spheres = nuto.ParticleHandler(numParticles, bBox, 1., 0.1)
 
 subBoxes = nuto.SubBoxHandler(spheres, specimen, 10)
-subBoxes.Build(4)
 
 collisions = nuto.CollisionHandler(spheres, subBoxes, "")
 
@@ -196,7 +194,6 @@ specimen = nuto.Specimen(bBox, 2)
 spheres = nuto.ParticleHandler(numParticles, bBoxCylPos, 1., 0.1)
 
 subBoxes = nuto.SubBoxHandler(spheres, specimen, 10)
-subBoxes.Build(4)
 
 collisions = nuto.CollisionHandler(spheres, subBoxes, "")
 

@@ -635,6 +635,10 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh2D(std::string rOutputFile,
     // call the circle function
 
     auto circles = GetParticles2D(rZCoord, rMinRadius);
+
+    if (circles.GetNumRows() == 0)
+        throw NuTo::Exception("[NuTo::ParticleHandler::ExportParticlesToGmsh2D] Found no aggregates for visualization. Change the z-Slice or increase rMin.");
+
     int objectCounter = 0;
 
     for (int i = 0; i < circles.rows(); i++)

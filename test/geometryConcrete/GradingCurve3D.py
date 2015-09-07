@@ -24,8 +24,6 @@ IN_velocityRange = 0.1
 IN_relativeGrowthRate = 1.
 IN_absoluteGrowthRate = 0.
 
-IN_numThreads = 4
-
 IN_InitialTimeBarrier = 0.1
 
 
@@ -47,7 +45,7 @@ spheres = nuto.ParticleHandler(spheresMatrix, IN_velocityRange, IN_relativeGrowt
 
 # sub box handler
 subBoxes = nuto.SubBoxHandler(spheres, specimen, 12)
-subBoxes.Build(IN_numThreads)
+
 
 collisions = nuto.CollisionHandler(spheres,subBoxes, "")
 

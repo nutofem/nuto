@@ -128,7 +128,7 @@ int main()
         double externalEnergy(0.);
 
         // start analysis
-        double maxDisp(30 * fct / YoungsModulusDamage * lX);
+        double maxDisp(10 * fct / YoungsModulusDamage * lX);
         double deltaDisp(0.05 * fct / YoungsModulusDamage * lX);
         double maxDeltaDisp(0.2 * fct / YoungsModulusDamage * lX);
         double curDisp(0.5 * fct / YoungsModulusDamage * lX);

@@ -8,7 +8,7 @@
 #include "nuto/geometryConcrete/Specimen.h"
 
 NuTo::Specimen::Specimen(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBoundingBox,
-		const int rTypeOfSpecimen)
+		const eSpecimenType rTypeOfSpecimen)
 		:
 				mBoundingBox(rBoundingBox),
                 mTypeOfSpecimen(rTypeOfSpecimen)
@@ -99,14 +99,14 @@ const NuTo::FullVector<double, Eigen::Dynamic>& NuTo::Specimen::GetLength() cons
 	return mLength;
 }
 
-const int NuTo::Specimen::GetTypeOfSpecimen() const
+const NuTo::Specimen::eSpecimenType NuTo::Specimen::GetTypeOfSpecimen() const
 {
 	return mTypeOfSpecimen;
 }
 
 const bool NuTo::Specimen::IsBox() const
 {
-	return mTypeOfSpecimen == Type::Box;
+	return mTypeOfSpecimen == eSpecimenType::Box;
 }
 
 const double NuTo::Specimen::GetLength(const int rIndex) const
