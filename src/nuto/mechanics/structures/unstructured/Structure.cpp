@@ -3088,10 +3088,10 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
 
         switch (elements[elementCount].type)
         {
-//        case 1: // 	2-node line. In a gmsh-context, you probably want a 1D line in a 2D space. This is not implemented at the moment...
-//            shapeType = Interpolation::TRUSS1D;
-//            typeOrder = Interpolation::EQUIDISTANT1;
-//            break;
+        case 1: // 	2-node line in 2d/3d
+            shapeType = Interpolation::TRUSSXD;
+            typeOrder = Interpolation::EQUIDISTANT1;
+            break;
         case 2: // 3-node triangle.
             shapeType = Interpolation::TRIANGLE2D;
             typeOrder = Interpolation::EQUIDISTANT1;

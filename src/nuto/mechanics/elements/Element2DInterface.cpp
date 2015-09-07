@@ -457,7 +457,7 @@ void NuTo::Element2DInterface::CheckElement()
 
     Eigen::MatrixXd elementCoords = ExtractNodeValues(0, Node::eAttributes::COORDINATES);
     assert(elementCoords.cols()==4 and "Only implemented for 4 nodes");
-    if (elementCoords.col(0) != elementCoords.col(3) and elementCoords.col(1) != elementCoords.col(2))
+    if ( (elementCoords.col(0) - elementCoords.col(3)).norm() > 1.e-6 or (elementCoords.col(1) - elementCoords.col(2)).norm() > 1.e-6 )
         std::cout << "[NuTo::Element2DInterface::CheckElement] Node 0 and node 3 should coincide. Node 1 and node 2 should coincide. Make sure you know what you are doing." << std::endl;
 }
 
