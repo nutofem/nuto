@@ -117,7 +117,7 @@ def Run(rStructure, rType, rOrder):
 		rStructure.ElementGetEngineeringStress(elementId, stress)
 		for iIP in range(0, stress.GetNumColumns()):
 			numericStress = stress.GetValue(0,iIP)
-			if (abs(numericStress-analyticStressX) > 1.e-8):
+			if (abs(numericStress-analyticStressX) > 1.e-6):
 				errorMsg += "[CheckSolution:" +rType+":"+rOrder+"] wrong stress calculation. \n"
 				error = True
 				return

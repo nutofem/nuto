@@ -27,6 +27,7 @@ enum eIntegrationType
     IntegrationType2D3NGauss4Ip,
     IntegrationType2D3NGauss6Ip,
     IntegrationType2D3NGauss12Ip,
+    IntegrationType2D3NGauss12IpDetail,
     IntegrationType2D3NGauss13Ip,
     IntegrationType2D3NGauss16Ip,
     IntegrationType2D3NLattice3Ip,

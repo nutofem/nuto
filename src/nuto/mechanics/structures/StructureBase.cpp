@@ -57,6 +57,7 @@ extern "C" {
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss6Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss12Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss12IpDetail.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss9Ip.h"
@@ -90,6 +91,7 @@ extern "C" {
 #include "nuto/visualize/VisualizeComponentHeatFlux.h"
 #include "nuto/visualize/VisualizeComponentNonlocalWeight.h"
 #include "nuto/visualize/VisualizeComponentNonlocalEqStrain.h"
+#include "nuto/visualize/VisualizeComponentLocalEqStrain.h"
 #include "nuto/visualize/VisualizeComponentParticleRadius.h"
 #include "nuto/visualize/VisualizeComponentPrincipalEngineeringStress.h"
 #include "nuto/visualize/VisualizeComponentRelativeHumidity.h"
@@ -145,7 +147,9 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss6Ip]=
             NuTo::IntegrationType2D3NGauss6Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss12Ip]=
-                NuTo::IntegrationType2D3NGauss6Ip::GetStrIdentifierStatic();
+                NuTo::IntegrationType2D3NGauss12Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss12IpDetail]=
+                NuTo::IntegrationType2D3NGauss12IpDetail::GetStrIdentifierStatic();
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D4NGauss1Ip]=
         NuTo::IntegrationType2D4NGauss1Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D4NGauss4Ip]=
@@ -492,6 +496,21 @@ void NuTo::StructureBase::AddVisualizationComponentNonlocalEqStrain()
 #endif
 }
 
+//! @brief ... Add visualization of ocal equivalent strain to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentLocalEqStrain()
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentLocalEqStrain());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentLocalEqStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+
 //! @brief ... Add the damage variable to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentDamage()
 {
@@ -808,6 +827,9 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
             break;
         case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
             rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::LOCAL_EQ_STRAIN:
+            rVisualize.DefineCellDataScalar(itWhat->GetComponentName());
             break;
         case NuTo::VisualizeBase::RELATIVE_HUMIDITY:
             rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
@@ -2917,14 +2939,13 @@ void NuTo::StructureBase::SetNumProcessors(int rNumProcessors)
 	mNumProcessors = rNumProcessors;
 #endif //_OPENMP
 }
-
+//@brief get the number of processors for openmp parallelization
 int NuTo::StructureBase::GetNumProcessors() const
 {
 #ifdef _OPENMP
     return mNumProcessors;
-#else
-    return 1;
 #endif //_OPENMP
+    return 1;
 }
 
 void NuTo::StructureBase::SetOMPNested(bool rNested)

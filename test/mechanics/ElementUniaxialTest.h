@@ -164,7 +164,7 @@ private:
                 double numericStress = stress(0,iIP);
                 if (DEBUG_PRINT)
                     std::cout << "numeric stress in element " << elementId << " at IP " << iIP << ": " << numericStress << std::endl;
-                if(std::abs(numericStress - analyticStressX) > 1.e-8 )
+                if(std::abs(numericStress - analyticStressX) > 1.e-6 )
                 {
                     std::cout << "sigma_xx analytical : " << analyticStressX << std::endl;
                     std::cout << "sigma_xx numerical  : " << numericStress << std::endl;

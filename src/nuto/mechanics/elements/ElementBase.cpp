@@ -562,46 +562,49 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
     {
         switch (WhatIter->GetComponentEnum())
         {
-        case NuTo::VisualizeBase::DAMAGE:
-            boost::assign::ptr_map_insert<ElementOutputIpData>(elementOutput)(Element::IP_DATA, IpData::DAMAGE);
-            break;
-        case NuTo::VisualizeBase::ENGINEERING_STRAIN:
-            boost::assign::ptr_map_insert<ElementOutputIpData>(elementOutput)(Element::IP_DATA, IpData::ENGINEERING_STRAIN);
-            break;
-        case NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN:
-            boost::assign::ptr_map_insert<ElementOutputIpData>(elementOutput)(Element::IP_DATA, IpData::ENGINEERING_PLASTIC_STRAIN);
-            break;
-        case NuTo::VisualizeBase::ENGINEERING_STRESS:
-            if (evaluateStress == false)
-            {
-                boost::assign::ptr_map_insert<ElementOutputIpData>(elementOutput)(Element::IP_DATA, IpData::ENGINEERING_STRESS);
-                evaluateStress = true;
-            }
-            break;
-        case NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS:
-            if (evaluateStress == false)
-            {
-                boost::assign::ptr_map_insert<ElementOutputIpData>(elementOutput)(Element::IP_DATA, IpData::ENGINEERING_STRESS);
-                evaluateStress = true;
-            }
-            break;
-        case NuTo::VisualizeBase::HEAT_FLUX:
-            boost::assign::ptr_map_insert<ElementOutputIpData>(elementOutput)(Element::IP_DATA, IpData::HEAT_FLUX);
-            break;
-        case NuTo::VisualizeBase::DISPLACEMENTS:
-        case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
-        case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
-        case NuTo::VisualizeBase::CONSTITUTIVE:
-        case NuTo::VisualizeBase::SECTION:
-        case NuTo::VisualizeBase::ELEMENT:
-        case NuTo::VisualizeBase::CRACK:
-        case NuTo::VisualizeBase::TEMPERATURE:
-        case NuTo::VisualizeBase::ROTATION:
-        case NuTo::VisualizeBase::VELOCITY:
-        case NuTo::VisualizeBase::ACCELERATION:
-        case NuTo::VisualizeBase::ANGULAR_VELOCITY:
-        case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
-        case NuTo::VisualizeBase::PARTICLE_RADIUS:
+		case NuTo::VisualizeBase::DAMAGE:
+			boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::DAMAGE);
+		break;
+		case NuTo::VisualizeBase::ENGINEERING_STRAIN:
+			boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::ENGINEERING_STRAIN);
+		break;
+        case NuTo::VisualizeBase::LOCAL_EQ_STRAIN:
+            boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::LOCAL_EQ_STRAIN);
+        break;
+		case NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN:
+			boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::ENGINEERING_PLASTIC_STRAIN);
+		break;
+		case NuTo::VisualizeBase::ENGINEERING_STRESS:
+			if (evaluateStress==false)
+			{
+				boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::ENGINEERING_STRESS);
+				evaluateStress=true;
+			}
+		break;
+		case NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS:
+			if (evaluateStress==false)
+			{
+				boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::ENGINEERING_STRESS);
+				evaluateStress=true;
+			}
+		break;
+		case NuTo::VisualizeBase::HEAT_FLUX:
+			boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::HEAT_FLUX);
+		break;
+		case NuTo::VisualizeBase::DISPLACEMENTS:
+		case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
+		case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
+		case NuTo::VisualizeBase::CONSTITUTIVE:
+		case NuTo::VisualizeBase::SECTION:
+		case NuTo::VisualizeBase::ELEMENT:
+		case NuTo::VisualizeBase::CRACK:
+		case NuTo::VisualizeBase::TEMPERATURE:
+		case NuTo::VisualizeBase::ROTATION:
+		case NuTo::VisualizeBase::VELOCITY:
+		case NuTo::VisualizeBase::ACCELERATION:
+		case NuTo::VisualizeBase::ANGULAR_VELOCITY:
+		case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
+		case NuTo::VisualizeBase::PARTICLE_RADIUS:
         case NuTo::VisualizeBase::RELATIVE_HUMIDITY:
         case NuTo::VisualizeBase::WATER_VOLUME_FRACTION:
         default:
@@ -615,32 +618,37 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
     Evaluate(elementOutput);
 
     //assign the outputs
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>* damage(0);
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>* engineeringStrain(0);
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>* engineeringPlasticStrain(0);
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>* engineeringStress(0);
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>* heatFlux(0);
-    for (auto itElementOutput = elementOutput.begin(); itElementOutput != elementOutput.end(); itElementOutput++)
+
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* damage(0);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* localEqStrain(0);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringStrain(0);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringPlasticStrain(0);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringStress(0);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* heatFlux(0);
+    for (auto itElementOutput=elementOutput.begin(); itElementOutput!=elementOutput.end(); itElementOutput++)
     {
         switch (itElementOutput->second->GetIpDataType())
         {
-        case NuTo::IpData::DAMAGE:
-            damage = &(itElementOutput->second->GetFullMatrixDouble());
-            break;
-        case NuTo::IpData::ENGINEERING_STRAIN:
-            engineeringStrain = &(itElementOutput->second->GetFullMatrixDouble());
-            break;
-        case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
-            engineeringPlasticStrain = &(itElementOutput->second->GetFullMatrixDouble());
-            break;
-        case NuTo::IpData::ENGINEERING_STRESS:
-            engineeringStress = &(itElementOutput->second->GetFullMatrixDouble());
-            break;
-        case NuTo::IpData::HEAT_FLUX:
-            heatFlux = &(itElementOutput->second->GetFullMatrixDouble());
-            break;
-        default:
-            throw MechanicsException("[NuTo::ElementBase::Visualize] other ipdatatypes not supported.");
+		case NuTo::IpData::DAMAGE:
+			damage = &(itElementOutput->second->GetFullMatrixDouble());
+		break;
+        case NuTo::IpData::LOCAL_EQ_STRAIN:
+            localEqStrain = &(itElementOutput->second->GetFullMatrixDouble());
+        break;
+		case NuTo::IpData::ENGINEERING_STRAIN:
+			engineeringStrain = &(itElementOutput->second->GetFullMatrixDouble());
+		break;
+		case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
+			engineeringPlasticStrain = &(itElementOutput->second->GetFullMatrixDouble());
+		break;
+		case NuTo::IpData::ENGINEERING_STRESS:
+			engineeringStress = &(itElementOutput->second->GetFullMatrixDouble());
+		break;
+		case NuTo::IpData::HEAT_FLUX:
+			heatFlux = &(itElementOutput->second->GetFullMatrixDouble());
+		break;
+		default:
+			throw MechanicsException("[NuTo::ElementBase::Visualize] other ipdatatypes not supported.");
         }
     }
 
@@ -659,7 +667,18 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
                 rVisualize.SetCellDataScalar(CellId, WhatIter->GetComponentName(), damage->data()[theIp]);
             }
         }
-            break;
+        break;
+        case NuTo::VisualizeBase::LOCAL_EQ_STRAIN:
+        {
+            assert(localEqStrain!=0);
+            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+            {
+                unsigned int theIp = VisualizationCellsIP[CellCount];
+                unsigned int CellId = CellIdVec[CellCount];
+                rVisualize.SetCellDataScalar(CellId, WhatIter->GetComponentName(), localEqStrain->data()[theIp]);
+            }
+        }
+        break;
         case NuTo::VisualizeBase::DISPLACEMENTS:
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {

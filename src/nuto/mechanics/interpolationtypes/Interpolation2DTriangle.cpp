@@ -22,9 +22,9 @@ NuTo::IntegrationType::eIntegrationType NuTo::Interpolation2DTriangle::GetStanda
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
         return NuTo::IntegrationType::IntegrationType2D3NGauss3Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT3:
-        return NuTo::IntegrationType::IntegrationType2D3NGauss13Ip;
+        return NuTo::IntegrationType::IntegrationType2D3NGauss6Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT4:
-        return NuTo::IntegrationType::IntegrationType2D3NGauss16Ip;
+        return NuTo::IntegrationType::IntegrationType2D3NGauss12Ip;
     default:
         throw MechanicsException("[NuTo::Interpolation2DTriangle::GetStandardIntegrationType] Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }

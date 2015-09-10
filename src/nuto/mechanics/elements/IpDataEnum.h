@@ -40,6 +40,7 @@ enum eIpStaticDataType
     LATTICE_PLASTIC_STRAIN,    //!< lattice plastic strain
     ENGINEERING_STRAIN,        //!< engineering strain
     ENGINEERING_STRESS,        //!< engineering stress
+    LOCAL_EQ_STRAIN,           //!< local equivalent strain
     DAMAGE,                    //!< isotropic damage variable
     ENGINEERING_PLASTIC_STRAIN,//!> plastic strain
     ELASTIC_ENERGY,            //!> elastic energy

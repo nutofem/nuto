@@ -17,6 +17,8 @@
 
 #include "nuto/math/SparseDirectSolverMUMPS.h"
 #include "nuto/math/SparseDirectSolverMKLPardiso.h"
+#include "nuto/math/SparseDirectSolverPardiso.h"
+
 
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/groups/Group.h"
@@ -27,10 +29,6 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/math/SparseMatrixCSRSymmetric.h"
-
-#include "nuto/mechanics/elements/ElementBase.h"  // delete me
-#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h" // delete me
-#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3D.h" // delete me
 
 
 //! @brief constructor
@@ -83,24 +81,13 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
     start=clock();
 #endif
 
-//#ifdef _OPENMP
-//    int numThreads = 4;
-//    mStructure->SetNumProcessors(numThreads);
-//#if defined HAVE_PARDISO
-//    NuTo::SparseDirectSolverPardiso mySolver(numThreads);
-//#else
-//    NuTo::SparseDirectSolverMUMPS mySolver;
-//#endif // PARDISO
-//#else
-//    NuTo::SparseDirectSolverMUMPS mySolver;
-//#endif // OPENMP
-
     //allocate solver
+#if defined(HAVE_PARDISO) && defined(_OPENMP)
+    NuTo::SparseDirectSolverPardiso mySolver(mStructure->GetNumProcessors(), mStructure->GetVerboseLevel()); // note: not the MKL version
+#else
     NuTo::SparseDirectSolverMUMPS mySolver;
-//    NuTo::SparseDirectSolverPardiso mySolver(4);
+#endif
 
-//    NuTo::SparseDirectSolverMKLPardiso mySolver;
-//    mySolver.SetVerboseLevel(3);
 #ifdef SHOW_TIME
         mySolver.SetShowTime(mStructure->GetShowTime());
 #endif

@@ -363,6 +363,10 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     //define outputs
                     constitutiveOutputList[NuTo::Constitutive::Output::DAMAGE] = &(damage);
                     break;
+                case NuTo::IpData::LOCAL_EQ_STRAIN:
+                    it->second->GetFullMatrixDouble().Resize(1, GetNumIntegrationPoints());
+                    constitutiveOutputList[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN] = &localEqStrain;
+                    break;
                 default:
                     throw MechanicsException("[NuTo::Plane::Evaluate] this ip data type is not implemented.");
                 }
@@ -822,6 +826,9 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     case NuTo::IpData::DAMAGE:
                         //error = constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
                         memcpy(&(it->second->GetFullMatrixDouble().data()[theIP]), damage.GetData(), sizeof(double));
+                        break;
+                    case NuTo::IpData::LOCAL_EQ_STRAIN:
+                        memcpy(&(it->second->GetFullMatrixDouble().data()[theIP]), localEqStrain.data(), sizeof(double));
                         break;
                     default:
                         throw MechanicsException("[NuTo::Plane::GetIpData] Ip data not implemented.");

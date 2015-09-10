@@ -933,7 +933,7 @@ void NuTo::Structure::ElementGroupDelete(int rGroupNumber, bool deleteNodes)
         throw MechanicsException("[NuTo::StructureBase::ElementGroupDelete] Group is not an element group.");
 
 //the group has to be copied, since the elements are removed from this group, which invalidates the iterators
-    Group<ElementBase> copyOfElementGroup = *(dynamic_cast<Group<ElementBase>*>(itGroup->second));
+    Group<ElementBase> copyOfElementGroup = Group<ElementBase>(*(itGroup->second->AsGroupElement()));
 
     std::set<NodeBase*> potentialNodesToBeRemoved;
     for (Group<ElementBase>::iterator itElement = copyOfElementGroup.begin(); itElement != copyOfElementGroup.end(); itElement++)
@@ -978,9 +978,13 @@ void NuTo::Structure::ElementGroupDelete(int rGroupNumber, bool deleteNodes)
         }
     }
 
-    for (std::set<NodeBase*>::iterator itNode = potentialNodesToBeRemoved.begin(); itNode != potentialNodesToBeRemoved.end(); itNode++)
+    std::map<NodeBase*, int> nodeToId;
+    for (auto it = mNodeMap.begin(); it != mNodeMap.end(); ++it)
+        nodeToId[it->second] = it->first;
+
+    for (auto node : potentialNodesToBeRemoved)
     {
-        int nodeId(NodeGetId(*itNode));
+        int nodeId = nodeToId[node];
         NodeDelete(nodeId, false);
     }
 #ifdef SHOW_TIME

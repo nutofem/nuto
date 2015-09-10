@@ -1,3 +1,5 @@
+#include <boost/filesystem.hpp>
+
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/sections/SectionTruss.h"
@@ -567,6 +569,18 @@ void GradientDamage2D()
     if (not elementStiffnessCorrect)
         throw NuTo::Exception("element stiffness matrices incorrect!");
 
+#ifdef ENABLE_VISUALIZE
+    myStructure.AddVisualizationComponentDamage();
+    myStructure.AddVisualizationComponentDisplacements();
+    myStructure.AddVisualizationComponentNonlocalEqStrain();
+
+    std::string resultDir = "./ResultsGradientDamage";
+    boost::filesystem::create_directory(resultDir);
+    myStructure.ExportVtkDataFileElements(resultDir+"/Elements.vtu", true);
+    myStructure.ExportVtkDataFileNodes(resultDir+"/Nodes.vtu", true);
+
+#endif
+
 }
 
 void GroupRemoveNodesWithoutDisplacements(NuTo::Structure& rStructure, int rGroupNodeId)
@@ -886,8 +900,8 @@ void Check1D2D()
 int main()
 {
 
-    try
-    {
+//    try
+//    {
         CheckLocalEqStrainDerivatives3D();
         CheckLocalEqStrainDerivatives();
         CheckDamageLaws();
@@ -895,15 +909,15 @@ int main()
         GradientDamage2D();
 //        Check1D2D();
 
-    } catch (NuTo::MechanicsException& e)
-    {
-        std::cout << e.ErrorMessage();
-        return -1;
-    } catch (...)
-    {
-        std::cout << "Something else went wrong." << std::endl;
-        return -1;
-    }
+//    } catch (NuTo::MechanicsException& e)
+//    {
+//        std::cout << e.ErrorMessage();
+//        return -1;
+//    } catch (...)
+//    {
+//        std::cout << "Something else went wrong." << std::endl;
+//        return -1;
+//    }
 
     std::cout << std::endl;
     std::cout << "#####################################" << std::endl;

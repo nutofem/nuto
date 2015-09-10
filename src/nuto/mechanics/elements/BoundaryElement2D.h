@@ -64,6 +64,10 @@ public:
     //! @brief returns true, if the boundary conditions are fulfilled, post-processing
     bool IsBoundaryConditionFulfilled() const;
 
+#ifdef ENABLE_VISUALIZE
+    void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) override;
+#endif // ENABLE_VISUALIZE
+
 protected:
     //! @brief ... just for serialization
     BoundaryElement2D()

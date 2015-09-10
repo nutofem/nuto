@@ -131,6 +131,9 @@ void NuTo::GeometryConcrete::ExportGmshGeo3D(std::string rGmshFile, double rMesh
 
 void NuTo::GeometryConcrete::SetSpecimenBox(double rXs, double rXe, double rYs, double rYe, double rZs, double rZe)
 {
+    if (mSpecimen)
+        delete mSpecimen;
+
     NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> bounds(3,2);
     bounds << rXs, rXe, rYs, rYe, rZs, rZe;
     mSpecimen = new NuTo::Specimen(bounds, NuTo::Specimen::Box);

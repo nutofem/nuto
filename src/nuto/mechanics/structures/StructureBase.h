@@ -157,6 +157,9 @@ public:
     //! @brief ... Add visualization of nonlocal equivalent strain to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentNonlocalEqStrain();
 
+    //! @brief ... Add visualization of local equivalent strain to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentLocalEqStrain();
+
     //! @brief ... Add visualization of relative humidity to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentRelativeHumidity();
 
@@ -1622,10 +1625,15 @@ public:
 
     //! @brief ... Adds all elements to a group whose nodes are in the given node group
     //! @param ... rElementGroupId identifier for the element group
-    //! @param ... rNodeGroupId idenbtifier for the node group
+    //! @param ... rNodeGroupId identifier for the node group
     //! @param ... rHaveAllNodes if set to true, the element is only selected when all element nodes are in the node group, if set
     //! to false, the element is select if at least one node is in the node group
     void GroupAddElementsFromNodes(int rElementGroupId, int rNodeGroupId, bool rHaveAllNodes);
+
+    //! @brief ... Adds all the nodes from the group-rElementGroupId to the group rNodeGroupId
+    //! @param ... rNodeGroupId id for the node group
+    //! @param ... rElementGroupId id for the element group
+    void GroupAddNodesFromElements(int rNodeGroupId, int rElementGroupId);
 
     //! @brief ... Adds all nodes to a group whose coordinates are in the specified range
     //! @param ... rIdentGroup identifier for the group

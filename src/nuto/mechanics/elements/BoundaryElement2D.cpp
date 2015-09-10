@@ -21,6 +21,8 @@
 #include "nuto/mechanics/constitutive/mechanics/NonlocalEqStrain.h"
 #include "nuto/mechanics/constitutive/mechanics/LocalEqStrain.h"
 
+#include "nuto/mechanics/nodes/NodeBase.h"
+
 NuTo::BoundaryElement2D::BoundaryElement2D(const ElementBase* rBaseElement, int rSurfaceId) :
         NuTo::BoundaryElementBase::BoundaryElementBase(rBaseElement, rSurfaceId)
 {
@@ -31,6 +33,7 @@ NuTo::Error::eError NuTo::BoundaryElement2D::Evaluate(boost::ptr_multimap<NuTo::
 {
     try
     {
+
         const SectionBase* section(GetSection());
         if (section == 0)
             throw MechanicsException("[NuTo::BoundaryElement2D::Evaluate] no section allocated for element.");
@@ -224,7 +227,7 @@ NuTo::Error::eError NuTo::BoundaryElement2D::Evaluate(boost::ptr_multimap<NuTo::
         Eigen::Matrix2d jacobian;
         Eigen::Matrix2d invJacobian;
 
-        double factor = section->GetThickness();
+        double factor;
 
         // loop over surface integration points
         for (int theIp = 0; theIp < GetNumIntegrationPoints(); theIp++)
@@ -248,7 +251,7 @@ NuTo::Error::eError NuTo::BoundaryElement2D::Evaluate(boost::ptr_multimap<NuTo::
             derivativeNaturalSurfaceCoordinates = mInterpolationType->Get(Node::COORDINATES).CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, mSurfaceId);
             // = || [dX / dXi] * [dXi / dAlpha] ||
             double detJacobian = (jacobian * derivativeNaturalSurfaceCoordinates).norm();
-            factor *= detJacobian;
+            factor = section->GetThickness() * detJacobian;
 
 
             for (auto dof : dofs)
@@ -564,6 +567,10 @@ bool NuTo::BoundaryElement2D::PointIsOnBoundary(const Eigen::VectorXd rA, const 
 bool NuTo::BoundaryElement2D::IsBoundaryConditionFulfilled() const
 {
 
+    int id = mStructure->ElementGetId(this);
+    if (id != 3300 and id != 3301 and id != 3302)
+        return false;
+
     std::cout << std::endl;
     std::cout << "[NuTo::BoundaryElement2D::CalculateStuffOnBoundary] ####################### " << std::endl;
     std::cout << "Calculating stuff of elementId " << GetStructure()->ElementGetId(this) << std::endl;
@@ -580,31 +587,15 @@ bool NuTo::BoundaryElement2D::IsBoundaryConditionFulfilled() const
     }
 
 
-    // get some points on the boundary
-    const InterpolationType& it = *(mBaseElement->GetInterpolationType());
-    const Eigen::VectorXi surfaceNodeIds = it.GetSurfaceNodeIndices(mSurfaceId);
-    assert(surfaceNodeIds.rows() == 2);
-
-    // get A and B as two points on the boundary
-    const Eigen::VectorXd& A = it.GetNaturalNodeCoordinates(surfaceNodeIds.at(0,0));
-    const Eigen::VectorXd& B = it.GetNaturalNodeCoordinates(surfaceNodeIds.at(1,0));
 
     // calculate some other points as linear combination of both
     int numPoints = 5;
-    std::vector<Eigen::VectorXd> boundaryPoints(numPoints);
     for (int i = 0; i < numPoints; ++i)
     {
-        double fraction = i/numPoints;
-        Eigen::VectorXd boundaryPoint = fraction * B + (1 - fraction) * A;
-        boundaryPoints.push_back(boundaryPoint);
-    }
-
-    // for each point on the boundary
-    for (const Eigen::VectorXd& boundaryPoint : boundaryPoints)
-    {
+        Eigen::VectorXd boundaryPoint(1);
+        boundaryPoint(0) = -1 + 2.*i/(numPoints-1.);
 
         Eigen::VectorXd ipCoordsNatural = mInterpolationType->Get(Node::COORDINATES).CalculateNaturalSurfaceCoordinates(boundaryPoint, mSurfaceId);
-
         Eigen::Vector3d globalCoordinates = InterpolateDof3D(ipCoordsNatural, Node::COORDINATES);
 
         std::cout << "Calculating stuff of Point " << globalCoordinates.transpose() << std::endl;
@@ -617,6 +608,8 @@ bool NuTo::BoundaryElement2D::IsBoundaryConditionFulfilled() const
         // ## = || [dX / dXi] * [dXi / dAlpha] ||
         // #######################################
         Eigen::MatrixXd derivativeShapeFunctionsNatural = mInterpolationType->Get(Node::COORDINATES).CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural);
+        Eigen::MatrixXd shapeFunctions = mInterpolationType->Get(Node::COORDINATES).CalculateShapeFunctions(ipCoordsNatural);
+
         // = [dX / dXi]
         Eigen::Matrix2d jacobian = nodalValues[Node::COORDINATES] * derivativeShapeFunctionsNatural;
         Eigen::Matrix2d invJacobian = jacobian.inverse();
@@ -625,23 +618,109 @@ bool NuTo::BoundaryElement2D::IsBoundaryConditionFulfilled() const
         Eigen::MatrixXd derivativeNaturalSurfaceCoordinates = mInterpolationType->Get(Node::COORDINATES).CalculateDerivativeNaturalSurfaceCoordinates(boundaryPoint, mSurfaceId);
         // = || [dX / dXi] * [dXi / dAlpha] ||
         Eigen::VectorXd surfaceTangentVector = jacobian * derivativeNaturalSurfaceCoordinates;
-        Eigen::VectorXd surfaceNormalVector;
+        Eigen::VectorXd surfaceNormalVector(2);
         surfaceNormalVector[0] = surfaceTangentVector[1];
         surfaceNormalVector[1] = - surfaceTangentVector[0];
+        surfaceNormalVector.normalize();
 
-        std::cout << "Surface normal vector: n = (" << surfaceNormalVector.transpose() << ")^T" << std::endl;
+//        std::cout << "Surface normal vector: n = (" << surfaceNormalVector.transpose() << ")^T" << std::endl;
 
         // calculate B
-        const InterpolationBase& interpolationType = mInterpolationType->Get(Node::DISPLACEMENTS);
+        const InterpolationBase& interpolationType = mInterpolationType->Get(Node::NONLOCALEQSTRAIN);
         Eigen::MatrixXd derivativeShapeFunctions = interpolationType.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural).lazyProduct(invJacobian);
 
         // calculate grad eeq
-
+        Eigen::MatrixXd gradEeq = nodalValues[Node::NONLOCALEQSTRAIN] * derivativeShapeFunctions;
+        std::cout << "grad eeq: \n" << gradEeq << std::endl;
+        double nTgradEeq = (gradEeq * surfaceNormalVector).at(0,0);
+        std::cout << "n.T * grad eeq: " << nTgradEeq << std::endl;
         //
 
     }
 
     return false;
+
+
+}
+
+void NuTo::BoundaryElement2D::Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)
+{
+    /*
+    rVisualize.DefinePointDataScalar("gradeeq");
+
+    const std::set<Node::eAttributes>& dofs = mInterpolationType->GetDofs();
+    const std::set<Node::eAttributes>& activeDofs = mInterpolationType->GetActiveDofs();
+
+    // extract all node values and store them
+    std::map<Node::eAttributes, Eigen::MatrixXd> nodalValues;
+    for (auto dof : dofs)
+    {
+        nodalValues[dof] = ExtractNodeValues(0, dof);
+    }
+
+    Eigen::Matrix<double, 1, 1> ipCoordsSurface;
+    Eigen::Matrix<double, 2, 1> ipCoordsNatural;
+
+    Eigen::VectorXd result = Eigen::VectorXd::Zero(mInterpolationType->Get(Node::NONLOCALEQSTRAIN).GetNumDofs());
+
+    for (int iIp = 0; iIp  < GetNumIntegrationPoints(); ++iIp )
+    {
+        double tmp;
+        GetIntegrationType()->GetLocalIntegrationPointCoordinates1D(iIp, tmp);
+        ipCoordsSurface(0) = tmp;
+        ipCoordsNatural = mInterpolationType->Get(Node::COORDINATES).CalculateNaturalSurfaceCoordinates(ipCoordsSurface, mSurfaceId);
+
+//        Eigen::Vector3d globalCoordinates = InterpolateDof3D(ipCoordsNatural, Node::COORDINATES);
+
+        Eigen::VectorXd shapeFunctions = mInterpolationType->Get(Node::COORDINATES).CalculateShapeFunctions(ipCoordsNatural);
+
+        // #######################################
+        // ##  Calculate the surface jacobian
+        // ## = || [dX / dXi] * [dXi / dAlpha] ||
+        // #######################################
+        Eigen::MatrixXd derivativeShapeFunctionsNatural = mInterpolationType->Get(Node::COORDINATES).CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural);
+        // = [dX / dXi]
+        Eigen::Matrix2d jacobian = nodalValues[Node::COORDINATES] * derivativeShapeFunctionsNatural;
+        Eigen::Matrix2d invJacobian = jacobian.inverse();
+
+        // = [dXi / dAlpha]
+        Eigen::MatrixXd derivativeNaturalSurfaceCoordinates = mInterpolationType->Get(Node::COORDINATES).CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, mSurfaceId);
+        // = || [dX / dXi] * [dXi / dAlpha] ||
+        Eigen::VectorXd surfaceTangentVector = jacobian * derivativeNaturalSurfaceCoordinates;
+        Eigen::VectorXd surfaceNormalVector(2);
+        surfaceNormalVector[0] = surfaceTangentVector[1];
+        surfaceNormalVector[1] = - surfaceTangentVector[0];
+        surfaceNormalVector.normalize();
+
+//        std::cout << "Surface normal vector: n = (" << surfaceNormalVector.transpose() << ")^T" << std::endl;
+
+        // calculate B
+        const InterpolationBase& interpolationType = mInterpolationType->Get(Node::NONLOCALEQSTRAIN);
+        Eigen::MatrixXd derivativeShapeFunctions = interpolationType.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural).lazyProduct(invJacobian);
+
+        // calculate grad eeq
+        Eigen::RowVector3d gradEeq = Eigen::RowVector3d::Zero();
+        gradEeq.block<1,2>(0,0)= nodalValues[Node::NONLOCALEQSTRAIN] * derivativeShapeFunctions;
+
+        double normalComponennt = surfaceNormalVector.dot(gradEeq.block<1,2>(0,0));
+
+
+        result += shapeFunctions*normalComponennt;
+    }
+
+//    for (int iNode = 0; iNode < mBaseElement->GetNumNodes(Node::NONLOCALEQSTRAIN); ++iNode)
+//    {
+//        const NodeBase* node = mBaseElement->GetNode(iNode, Node::NONLOCALEQSTRAIN);
+//        // get 3D coords
+//        Eigen::Vector3d coords = Eigen::Vector3d::Zero();
+//        coords.block<1,2>(0,0) = node->GetCoordinates2D();
+//
+//        unsigned int pointId = rVisualize.AddPoint(coords.data());
+//        rVisualize.SetPointDataScalar(pointId, "gradeeq", result.at(iNode,0));
+//
+//    }
+
+*/
 
 
 }

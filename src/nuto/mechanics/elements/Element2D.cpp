@@ -36,7 +36,6 @@
 
 #include "nuto/math/FullMatrix.h"
 
-
 NuTo::Element2D::Element2D(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType) :
         NuTo::ElementBase::ElementBase(rStructure, rElementDataType, rIpDataType, rInterpolationType),
         mNodes(rNodes),
@@ -433,6 +432,10 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     it->second->GetFullMatrixDouble().Resize(1, GetNumIntegrationPoints());
                     //define outputs
                     constitutiveOutputList[NuTo::Constitutive::Output::DAMAGE] = &(damage);
+                    break;
+                case NuTo::IpData::LOCAL_EQ_STRAIN:
+                    it->second->GetFullMatrixDouble().Resize(1, GetNumIntegrationPoints());
+                    constitutiveOutputList[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN] = &localEqStrain;
                     break;
                 default:
                     throw MechanicsException("[NuTo::Element2D::Evaluate] this ip data type is not implemented.");
@@ -1268,6 +1271,10 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         //error = constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
                         memcpy(&(it->second->GetFullMatrixDouble().data()[theIP]), damage.GetData(), sizeof(double));
                         break;
+                    case NuTo::IpData::LOCAL_EQ_STRAIN:
+                        //error = constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
+                        memcpy(&(it->second->GetFullMatrixDouble().data()[theIP]), localEqStrain.data(), sizeof(double));
+                        break;
                     default:
                         throw MechanicsException("[NuTo::Element2D::GetIpData] Ip data not implemented.");
                     }
@@ -1717,8 +1724,8 @@ void NuTo::Element2D::AddDetJRnonlocalEqStrain(const Eigen::VectorXd& rShapeFunc
     assert(rShapeFunctions.size() == rNodeNonlocalEqStrain.size());
 
     // perform Kee * nodeNonlocalEqStrain
-    rResult.segment(startIndexNonlocalEqStrain, rShapeFunctions.size()) += rKee * rNodeNonlocalEqStrain.transpose() - rLocalEqStrain.GetValue(0) * rFactor * rShapeFunctions;
 
+    rResult.segment(startIndexNonlocalEqStrain, rShapeFunctions.size()) += (rKee * rNodeNonlocalEqStrain.transpose() - rLocalEqStrain.GetValue(0) * rFactor * rShapeFunctions);
 }
 
 //! @brief add detJ B.T dSigma/dnonlocalEqStrain N
