@@ -642,7 +642,7 @@ bool NuTo::BoundaryElement2D::IsBoundaryConditionFulfilled() const
 
 
 }
-
+#ifdef ENABLE_VISUALIZE
 void NuTo::BoundaryElement2D::Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)
 {
     /*
@@ -724,3 +724,4 @@ void NuTo::BoundaryElement2D::Visualize(VisualizeUnstructuredGrid& rVisualize, c
 
 
 }
+#endif // ENABLE_VISUALIZE

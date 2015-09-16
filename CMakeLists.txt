@@ -29,7 +29,7 @@ OPTION(ENABLE_VERBOSELEVEL "enables status messages during the execution by sett
 OPTION(ENABLE_MECHANICS "enables the mechanics package" TRUE)
 OPTION(ENABLE_METAMODEL "enables the metamodel package" FALSE)
 OPTION(ENABLE_OPTIMIZE "enables the optimize package" FALSE)
-OPTION(ENABLE_VISUALIZE "enables the visualization package" TRUE)
+OPTION(ENABLE_VISUALIZE "enables the visualization package" FALSE)
 OPTION(ENABLE_EXAMPLES "enables examples" FALSE)
 OPTION(ENABLE_SHOW_TIME "shows for each python command the execution time" TRUE)
 OPTION(ENABLE_PYTHON_TESTS "create makefiles for python tests" TRUE)

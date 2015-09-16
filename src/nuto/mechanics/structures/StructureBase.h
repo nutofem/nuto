@@ -34,10 +34,10 @@
 #include "nuto/mechanics/structures/StructureBaseEnum.h"
 #include "nuto/mechanics/structures/StructureOutputBase.h"
 
-#ifdef ENABLE_VISUALIZE
+
 #include "nuto/visualize/VisualizeBase.h"
 #include "nuto/visualize/VisualizeComponentBase.h"
-#endif // ENABLE_VISUALIZE
+
 
 namespace NuTo
 {
@@ -57,10 +57,10 @@ class CrackBase;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain;
 
 
-#ifdef ENABLE_VISUALIZE
+
 class VisualizeUnstructuredGrid;
 class VisualizeComponentBase;
-#endif // ENABLE_VISUALIZE
+
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -94,7 +94,7 @@ public:
     //! @return Structural dimension (1,2 or 3)
     int GetDimension()const;
 
-#ifdef ENABLE_VISUALIZE
+
     //! @brief ... Add the damage variable to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentDamage();
 
@@ -219,7 +219,7 @@ public:
     void ElementGroupAddToVisualize(int rGroupId, VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat);
 
 #endif //SWIG
-#endif // ENABLE_VISUALIZE
+
 
 #ifndef SWIG
     //! @brief ... evaluates the structur
@@ -565,13 +565,12 @@ public:
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
     void NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullVector<double,Eigen::Dynamic>& rNodeForce);
 
-#ifdef ENABLE_VISUALIZE
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
     void NodeTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
 
     //! @brief ... adds all the nodes in the vector to the data structure that is finally visualized
     void NodeVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<const NodeBase*>& rNodes) const;
-#endif // ENABLE_VISUALIZE
+
 #endif //SWIG
 
 //*************************************************
@@ -1910,10 +1909,10 @@ protected:
 
     //! @brief ... a mapping from the enums of the predefined integration types to their corresponding string name
     std::vector<std::string> mMappingIntEnum2String;
-#ifdef ENABLE_VISUALIZE
+
     //! @brief ... map storing the components (displacements, strains, nonlocal weights etc) to be included in the output (VTK) file
     boost::ptr_list<NuTo::VisualizeComponentBase> mVisualizeComponents;
-#endif //ENABLE_VISUALIZE
+
     //! @brief ... total number of degrees of freedom of the structure
     int mNumDofs;
 

@@ -53,6 +53,7 @@ NuTo::IntegrationType2D3NGauss12IpDetail::IntegrationType2D3NGauss12IpDetail()
     mIntegrationPointWeights.push_back(g);
     mIntegrationPointWeights.push_back(g);
 
+#ifdef ENABLE_VISUALIZE
     DelaunayVoronoi voronoi(mIntegrationPointCoordinates, true);
 
     std::vector<Eigen::Vector2d> boundaryPoints(3);
@@ -94,9 +95,7 @@ NuTo::IntegrationType2D3NGauss12IpDetail::IntegrationType2D3NGauss12IpDetail()
 
 
 
-
-
-
+#endif // ENABLE_VISUALIZE
 
 }
 

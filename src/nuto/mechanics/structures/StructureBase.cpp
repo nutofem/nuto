@@ -12,10 +12,10 @@
 #include <boost/ptr_container/serialize_ptr_list.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#ifdef ENABLE_VISUALIZE
+
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
 #include <boost/ptr_container/ptr_list.hpp>
-#endif // ENABLE_VISUALIZE
+
 
 #ifdef SHOW_TIME
 #include <ctime>
@@ -229,9 +229,9 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
     & BOOST_SERIALIZATION_NVP(mIntegrationTypeMap)
     & BOOST_SERIALIZATION_NVP(mSectionMap)
     & BOOST_SERIALIZATION_NVP(mMappingIntEnum2String)
-#ifdef ENABLE_VISUALIZE
+
     & BOOST_SERIALIZATION_NVP(mVisualizeComponents)
-#endif //  ENABLE_VISUALIZE
+
     & BOOST_SERIALIZATION_NVP(mNumDofs)
     & BOOST_SERIALIZATION_NVP(mNumActiveDofs)
     & BOOST_SERIALIZATION_NVP(mNodeNumberingRequired)
@@ -343,10 +343,11 @@ void NuTo::StructureBase::GetElementsByGroup(Group<ElementBase>* rElementGroup, 
 }
 
 // Export to Vtk data file ////////////////////////////////////////////////////
-#ifdef ENABLE_VISUALIZE
+
 //! @brief ... Add visualization displacements to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentDisplacements()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -357,11 +358,13 @@ void NuTo::StructureBase::AddVisualizationComponentDisplacements()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentDisplacements] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add element ID to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentElement()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -372,11 +375,13 @@ void NuTo::StructureBase::AddVisualizationComponentElement()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentElement] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add engineering strains to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentEngineeringStrain()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -387,11 +392,13 @@ void NuTo::StructureBase::AddVisualizationComponentEngineeringStrain()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentEngineeringStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add engineering plastic strain stress to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentEngineeringPlasticStrain()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -402,11 +409,13 @@ void NuTo::StructureBase::AddVisualizationComponentEngineeringPlasticStrain()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentEngineeringPlasticStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add engineering stress to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentEngineeringStress()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -417,11 +426,13 @@ void NuTo::StructureBase::AddVisualizationComponentEngineeringStress()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentEngineeringStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add section to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentSection()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -432,10 +443,12 @@ void NuTo::StructureBase::AddVisualizationComponentSection()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentSection] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 //! @brief ... Add constitutive id to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentConstitutive()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -446,6 +459,7 @@ void NuTo::StructureBase::AddVisualizationComponentConstitutive()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentConstitutive] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add nonlocal weights to the internal list, which is finally exported via the ExportVtkDataFile command
@@ -453,6 +467,7 @@ void NuTo::StructureBase::AddVisualizationComponentConstitutive()
 //! @param rIp ... local ip number
 void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementId, int rIp)
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -479,11 +494,13 @@ void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementI
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add visualization of nonlocal equivalent strain to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentNonlocalEqStrain()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -494,11 +511,13 @@ void NuTo::StructureBase::AddVisualizationComponentNonlocalEqStrain()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalEqStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add visualization of ocal equivalent strain to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentLocalEqStrain()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -509,11 +528,13 @@ void NuTo::StructureBase::AddVisualizationComponentLocalEqStrain()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentLocalEqStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add the damage variable to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentDamage()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -524,11 +545,13 @@ void NuTo::StructureBase::AddVisualizationComponentDamage()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentDamage] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add visualization of principal stresses to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentPrincipalEngineeringStress()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -539,11 +562,13 @@ void NuTo::StructureBase::AddVisualizationComponentPrincipalEngineeringStress()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentPrincipalEngineeringStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add crack id vector to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentCracks()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -554,11 +579,13 @@ void NuTo::StructureBase::AddVisualizationComponentCracks()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentCracks] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add visualization particle radius to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentParticleRadius()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -569,11 +596,13 @@ void NuTo::StructureBase::AddVisualizationComponentParticleRadius()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentParticleRadius] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add rotation to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentRotation()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -584,11 +613,13 @@ void NuTo::StructureBase::AddVisualizationComponentRotation()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentRotation] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add velocity to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentVelocity()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -599,12 +630,14 @@ void NuTo::StructureBase::AddVisualizationComponentVelocity()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentVelocity] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 
 //! @brief ... Add accelaration to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentAcceleration()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -615,11 +648,13 @@ void NuTo::StructureBase::AddVisualizationComponentAcceleration()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::VisualizeComponentAcceleration] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add angular velocity to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentAngularVelocity()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -630,12 +665,14 @@ void NuTo::StructureBase::AddVisualizationComponentAngularVelocity()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentAngularVelocity] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 
 //! @brief ... Add angular acceleration to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentAngularAcceleration()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -646,11 +683,13 @@ void NuTo::StructureBase::AddVisualizationComponentAngularAcceleration()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::VisualizeComponentAngularAcceleration] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add temperature to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentTemperature()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -661,11 +700,13 @@ void NuTo::StructureBase::AddVisualizationComponentTemperature()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentTemperature] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add heat flux to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentHeatFlux()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -676,11 +717,13 @@ void NuTo::StructureBase::AddVisualizationComponentHeatFlux()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentHeatFlux] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add visualization of relative humidity to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentRelativeHumidity()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -691,11 +734,13 @@ void NuTo::StructureBase::AddVisualizationComponentRelativeHumidity()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentRelativeHumidity] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 //! @brief ... Add visualization of water volume fraction to the internal list, which is finally exported via the ExportVtkDataFile command
 void NuTo::StructureBase::AddVisualizationComponentWaterVolumeFraction()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -706,10 +751,12 @@ void NuTo::StructureBase::AddVisualizationComponentWaterVolumeFraction()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentWaterVolumeFraction] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 void NuTo::StructureBase::ClearVisualizationComponents()
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -720,25 +767,33 @@ void NuTo::StructureBase::ClearVisualizationComponents()
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::ClearVisualizationComponents] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 void NuTo::StructureBase::ExportVtkDataFile(const std::string& rFileName)
 {
+#ifdef ENABLE_VISUALIZE
     mLogger<<"[NuTo::StructureBase::ExportVtkDataFile] this routine is deprecated, use ExportVtkDataFileElements instead." << "\n";
+#endif // ENABLE_VISUALIZE
 }
 
 void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rFileName)
 {
+#ifdef ENABLE_VISUALIZE
 	ExportVtkDataFileNodes(rFileName, false);
+#endif // ENABLE_VISUALIZE
 }
 
 void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rFileName)
 {
+#ifdef ENABLE_VISUALIZE
 	ExportVtkDataFileElements(rFileName, false);
+#endif // ENABLE_VISUALIZE
 }
 
 void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rFileName, bool rXML)
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -755,10 +810,12 @@ void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rFileName, b
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::ExportVtkDataFile] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rFileName, bool rXML)
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -775,10 +832,12 @@ void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rFileName
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::ExportVtkDataFile] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName, bool rXML)
 {
+#ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
@@ -795,10 +854,12 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::ElementGroupExportVtkDataFile] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
+#endif // ENABLE_VISUALIZE
 }
 
 void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)const
 {
+#ifdef ENABLE_VISUALIZE
     boost::ptr_list<NuTo::VisualizeComponentBase>::const_iterator itWhat = mVisualizeComponents.begin();
     while (itWhat != mVisualizeComponents.end())
     {
@@ -884,10 +945,12 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
         }
         itWhat++;
     }
+#endif // ENABLE_VISUALIZE
 }
 
 void NuTo::StructureBase::DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)const
 {
+#ifdef ENABLE_VISUALIZE
     boost::ptr_list<NuTo::VisualizeComponentBase>::const_iterator itWhat = mVisualizeComponents.begin();
     while (itWhat != mVisualizeComponents.end())
     {
@@ -931,10 +994,11 @@ void NuTo::StructureBase::DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVi
          }
         itWhat++;
     }
+#endif // ENABLE_VISUALIZE
 }
 
 
-#endif // ENABLE_VISUALIZE
+
 
 
 //! @brief ... evaluates the structur

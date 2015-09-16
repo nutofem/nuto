@@ -455,10 +455,11 @@ double NuTo::Element2DInterface::CalculateDetJacobian(const Eigen::MatrixXd& rNo
     return 0.5 * (rNodeCoordinates.col(0) - rNodeCoordinates.col(0.5 * rNodeCoordinates.cols() - 1)).norm();
 }
 
+#ifdef ENABLE_VISUALIZE
 void NuTo::Element2DInterface::GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells,
         std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType, std::vector<unsigned int>& VisualizationCellsIncidence, std::vector<unsigned int>& VisualizationCellsIP) const
 {
-#ifdef ENABLE_VISUALIZE
+
     const IntegrationTypeBase* integrationType = this->mElementData->GetIntegrationType();
     switch (integrationType->GetNumIntegrationPoints())
     {
@@ -541,12 +542,12 @@ void NuTo::Element2DInterface::GetVisualizationCells(unsigned int& NumVisualizat
         throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Integration type not valid for this element.");
     }
 
-#endif // ENABLE_VISUALIZE
+
 }
 
 void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)
 {
-#ifdef ENABLE_VISUALIZE
+
     // get visualization cells from integration type
     unsigned int NumVisualizationPoints;
     std::vector<double> VisualizationPointLocalCoordinates;
@@ -690,6 +691,6 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
             throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t unsupported datatype for visualization.");
         }
     }
-#endif // ENABLE_VISUALIZE
-}
 
+}
+#endif // ENABLE_VISUALIZE

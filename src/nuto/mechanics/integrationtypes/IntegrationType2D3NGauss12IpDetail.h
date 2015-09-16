@@ -69,12 +69,12 @@ protected:
 
     std::vector<Eigen::Vector2d> mIntegrationPointCoordinates;
     std::vector<double> mIntegrationPointWeights;
-
+#ifdef ENABLE_VISUALIZE
     std::vector<double> mVisualizationPointCoordinates;
     std::vector<unsigned int> mVisualizationCellIndices;
     std::vector<unsigned int> mVisualizationCellIPIndices;
     std::vector<NuTo::CellBase::eCellTypes> mVisualizationCellTypes;
-
+#endif // ENABLE_VISUALIZE
 };
 }
 #ifdef ENABLE_SERIALIZATION
