@@ -1750,11 +1750,12 @@ Eigen::Matrix<double, 125, 3> DerivativeShapeFunctionsBrickSpectralOrder4(const 
 
 }
 
-namespace ShapeFunctionsInterface // interval -1 to 1
+
+namespace ShapeFunctionsInterface2D // interval -1 to 1
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Eigen::MatrixXd NodeCoordinatesInterfaceOrder1(int rNodeIndex)
+Eigen::MatrixXd NodeCoordinatesInterface2dOrder1(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
@@ -1767,26 +1768,64 @@ Eigen::MatrixXd NodeCoordinatesInterfaceOrder1(int rNodeIndex)
     case 3:
         return Eigen::Vector2d(-1, +1);
     default:
-        throw NuTo::MechanicsException("[NodeCoordinatesInterfaceOrder1] node index out of range (0..3)");
+        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t node index out of range (0..3)");
         break;
     }
 }
 
-Eigen::MatrixXd ShapeFunctionsInterfaceOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::MatrixXd ShapeFunctionsInterface2dOrder1(const Eigen::VectorXd& rCoordinates)
 {
     const double N00 = 0.5 * (1. - rCoordinates(0, 0));
     const double N01 = 0.5 * (1. + rCoordinates(0, 0));
 
-    return (Eigen::MatrixXd(4,1) << N00, N01, N00, N01).finished();
+    return (Eigen::MatrixXd(4,1) << -N00, -N01, N01, N00).finished();
 }
 
-Eigen::MatrixXd DerivativeShapeFunctionsInterfaceOrder1(const Eigen::VectorXd& rCoordinates)
+Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder1(const Eigen::VectorXd& rCoordinates)
 {
-    const double N00 = 0.5 * (1. - rCoordinates(0, 0));
-    const double N01 = 0.5 * (1. + rCoordinates(0, 0));
-
-    return (Eigen::MatrixXd(2, 8) << -N00, 0., -N01, 0., N01, 0., N00, 0, 0., -N00, 0., -N01, 0., N01, 0., N00).finished();
+    // this interface element does not need any shape function derivatives
+    return Eigen::Matrix2d::Zero();
 }
+
+Eigen::MatrixXd NodeCoordinatesInterface2dOrder2(int rNodeIndex)
+{
+    switch (rNodeIndex)
+    {
+    case 0:
+        return Eigen::Vector2d(-1., -1.);
+    case 1:
+        return Eigen::Vector2d(+0., -1);
+    case 2:
+        return Eigen::Vector2d(+1, -1);
+    case 3:
+        return Eigen::Vector2d(+1, +1);
+    case 4:
+        return Eigen::Vector2d(0, +1);
+    case 5:
+        return Eigen::Vector2d(-1, +1);
+    default:
+        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t node index out of range (0..5)");
+        break;
+    }
+}
+
+Eigen::MatrixXd ShapeFunctionsInterface2dOrder2(const Eigen::VectorXd& rCoordinates)
+{
+    const double xi = rCoordinates(0,0);
+
+    const double N00 = 0.5 * xi * (xi - 1.);
+    const double N01 = (1. - xi * xi);
+    const double N02 = 0.5 * xi * (xi + 1.);
+
+    return (Eigen::MatrixXd(6,1) << N00, N01, N02, -N02, -N01, -N00).finished();
+}
+
+Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder2(const Eigen::VectorXd& rCoordinates)
+{
+    // this interface element does not need any shape function derivatives
+    return Eigen::Matrix2d::Zero();
+}
+
 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

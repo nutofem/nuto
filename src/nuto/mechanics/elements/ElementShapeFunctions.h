@@ -5,8 +5,7 @@
  *      Author: ttitsche
  */
 
-#ifndef ELEMENTSHAPEFUNCTIONS_H_
-#define ELEMENTSHAPEFUNCTIONS_H_
+#pragma once
 
 #include <eigen3/Eigen/Dense>
 
@@ -202,16 +201,21 @@ namespace ShapeFunctions3D
 	Eigen::Matrix<double, 125, 3> DerivativeShapeFunctionsBrickSpectralOrder4(const Eigen::VectorXd& rCoordinates);
 }
 
-namespace ShapeFunctionsInterface
+namespace ShapeFunctionsInterface2D
 {
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    Eigen::MatrixXd NodeCoordinatesInterfaceOrder1(int rNodeIndex);
+Eigen::MatrixXd NodeCoordinatesInterface2dOrder1(int rNodeIndex);
 
-    Eigen::MatrixXd ShapeFunctionsInterfaceOrder1(const Eigen::VectorXd& rCoordinates);
+Eigen::MatrixXd ShapeFunctionsInterface2dOrder1(const Eigen::VectorXd& rCoordinates);
 
-    Eigen::MatrixXd DerivativeShapeFunctionsInterfaceOrder1(const Eigen::VectorXd& rCoordinates);
+Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder1(const Eigen::VectorXd& rCoordinates);
+
+Eigen::MatrixXd NodeCoordinatesInterface2dOrder2(int rNodeIndex);
+
+Eigen::MatrixXd ShapeFunctionsInterface2dOrder2(const Eigen::VectorXd& rCoordinates);
+
+Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder2(const Eigen::VectorXd& rCoordinates);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
@@ -219,4 +223,3 @@ namespace ShapeFunctionsInterface
 
 } /* namespace NuTo */
 
-#endif /* ELEMENTSHAPEFUNCTIONS_H_ */

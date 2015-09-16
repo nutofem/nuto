@@ -531,6 +531,7 @@ bool NuTo::StructureBase::CheckCoefficientMatrix_0(double rDelta, bool rPrintRes
 
 
     bool stiffnesIsCorrect = maxError < 1.e-1;
+
     if (not stiffnesIsCorrect)
     {
         mLogger << "[NuTo::StructureBase::CheckCoefficientMatrix_0] maximum error stiffness is " << maxError << " at (" << row << "," << col << ") with abs value in correct matrix " << coeffMatrix(row,col) << "\n";

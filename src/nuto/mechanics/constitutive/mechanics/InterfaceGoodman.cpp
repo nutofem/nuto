@@ -15,7 +15,7 @@ NuTo::InterfaceGoodman::InterfaceGoodman() :
 //! @brief ... evaluate the constitutive relation in 1D
 NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate1D(ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput, std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
-    throw MechanicsException("[NuTo::InterfaceGoodman::Evaluate1D] Not implemented.");
+    throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Not implemented.");
 }
 
 //! @brief ... evaluate the constitutive relation in 2D
@@ -24,7 +24,7 @@ NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate2D(ElementBase* rElement, in
 
     // calculate engineering strain
     if (rConstitutiveInput.find(NuTo::Constitutive::Input::INTERFACE_SLIP) == rConstitutiveInput.end())
-        throw MechanicsException("[NuTo::InterfaceGoodman::Evaluate2D] Interface slip needed to evaluate.");
+        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Interface slip needed to evaluate.");
     const InterfaceSlip& interfaceSlip(rConstitutiveInput.find(NuTo::Constitutive::Input::INTERFACE_SLIP)->second->GetInterfaceSlip());
     Eigen::VectorXd interfaceSlipVector = interfaceSlip.GetInterfaceSlipVector();
 
@@ -53,7 +53,7 @@ NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate2D(ElementBase* rElement, in
         }
             break;
         default:
-            throw MechanicsException(std::string("[NuTo::InterfaceGoodman::Evaluate2D] output object)") + NuTo::Constitutive::OutputToString(itOutput->first) + std::string(" culd not be calculated, check the allocated material law and the section behavior."));
+            throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t output object)" + NuTo::Constitutive::OutputToString(itOutput->first) + std::string(" culd not be calculated, check the allocated material law and the section behavior."));
         }
     }
 
@@ -64,7 +64,7 @@ NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate2D(ElementBase* rElement, in
 //! @brief ... evaluate the constitutive relation in 3D
 NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate3D(ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput, std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
-    throw MechanicsException("[NuTo::InterfaceGoodman::Evaluate3D] Not implemented.");
+    throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Not implemented.");
 }
 
 //! @brief ... gets a variable of the constitutive law which is selected by an enum
@@ -79,7 +79,7 @@ double NuTo::InterfaceGoodman::GetParameterDouble(NuTo::Constitutive::eConstitut
     case Constitutive::eConstitutiveParameter::TANGENTIAL_STIFFNESS:
         return this->mTangentialStiffness;
     default:
-        throw MechanicsException("[NuTo::InterfaceGoodman::GetParameterDouble] Constitutive law does not have the requested variable");
+        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Constitutive law does not have the requested variable");
     }
 }
 
@@ -99,7 +99,7 @@ void NuTo::InterfaceGoodman::SetParameterDouble(NuTo::Constitutive::eConstitutiv
         break;
     }
     default:
-        throw MechanicsException("[NuTo::InterfaceGoodman::SetParameterDouble] Constitutive law does not have the requested variable");
+        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Constitutive law does not have the requested variable");
     }
 
 }

@@ -41,16 +41,16 @@ public:
     int GetLocalDimension() const override;
 
     //! @brief calculates the interface slip of the element, i.e. the relative displacement of the top and bottom part
-    const InterfaceSlip CalculateInterfaceSlip(const Eigen::MatrixXd& rShapeFunctions, const Eigen::MatrixXd& rNodeDisplacements);
+    const InterfaceSlip CalculateInterfaceSlip(const Eigen::VectorXd& rShapeFunctions, const Eigen::MatrixXd& rNodeDisplacements);
 
     //! @brief calculates the element stiffness matrix at one integration point
-    void AddElementStiffnessMatrix(const ConstitutiveTangentLocal<2, 2>& rConstitutiveMatrix, const Eigen::MatrixXd& rShapeFunctionDerivatives, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoefficientMatrix, const double rGaussIntegrationFactor);
+    void AddElementStiffnessMatrix(const ConstitutiveTangentLocal<2, 2>& rConstitutiveMatrix, const Eigen::VectorXd& rShapefunctions, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoefficientMatrix, const double rGaussIntegrationFactor);
 
     //! @brief calculates the jacobian
-    double CalculateDetJacobian(const Eigen::MatrixXd& rDerivativeShapeFunctions, const Eigen::MatrixXd& rNodeCoordinates) const;
+    double CalculateDetJacobian(const Eigen::MatrixXd& rNodeCoordinates) const;
 
     //! @brief calculates the internal force vector
-    void AddInternalForceVector(const ConstitutiveTangentLocal<2, 1>& rInterfaceStresses, const Eigen::MatrixXd& rBMatrix, NuTo::FullVector<double, Eigen::Dynamic>& rInternalForceVector, const double rGaussIntegrationFactor);
+    void AddInternalForceVector(const ConstitutiveTangentLocal<2, 1>& rInterfaceStresses, const Eigen::VectorXd& rShapefunctions, NuTo::FullVector<double, Eigen::Dynamic>& rInternalForceVector, const double rGaussIntegrationFactor);
 
     //! @brief calculates the roation matirx based on the orientation of the element
     Eigen::MatrixXd CalculateRotationMatrix();
