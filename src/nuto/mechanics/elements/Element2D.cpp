@@ -1124,7 +1124,7 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         {
                         case Node::DISPLACEMENTS:
                         {
-
+                            int startIndex = mInterpolationType->Get(dof).GetLocalStartIndex();
                             double factor(mSection->GetThickness() * detJacobian
                                                                    * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))
                                                                    * constitutivePtr->GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY));
@@ -1134,10 +1134,21 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                             {
                                 for (int count2 = 0; count2 < tmpMatrix.cols(); count2++)
                                 {
-                                    result(2 * count, 2 * count2) += tmpMatrix(count, count2);
-                                    result(2 * count + 1, 2 * count2 + 1) += tmpMatrix(count, count2);
+                                    result(startIndex + 2 * count    , startIndex + 2 * count2    ) += tmpMatrix(count, count2);
+                                    result(startIndex + 2 * count + 1, startIndex + 2 * count2 + 1) += tmpMatrix(count, count2);
                                 }
                             }
+                        }
+                            break;
+                        case Node::NONLOCALEQSTRAIN:
+                        {
+                            int startIndex = mInterpolationType->Get(dof).GetLocalStartIndex();
+                            double factor(mSection->GetThickness() * detJacobian
+                                                                   * (mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP))
+                                                                   * constitutivePtr->GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY));
+                            const Eigen::MatrixXd tmpMatrix = shapeFunctions.at(dof) * shapeFunctions.at(dof).transpose() * factor;
+
+                            it->second->GetFullMatrixDouble().SetBlock(startIndex, startIndex, tmpMatrix);
                         }
                             break;
                         case Node::RELATIVEHUMIDITY:

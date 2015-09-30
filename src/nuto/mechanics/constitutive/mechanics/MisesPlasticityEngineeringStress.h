@@ -66,6 +66,20 @@ public:
     //! @return ... pointer to static data object
     ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain3D(const ElementBase* rElement) const;
 
+    //! @brief ... performs the return mapping procedure in 2D
+    //! @param rElement ... structure
+    //! @param rIp ... integration point
+    //! @param rEngineeringStrain ... engineering strain
+    //! @param rNewStress ... new stress (if a 0-pointer is given, no values are written)
+    //! @param rNewTangent ... new tangent matrix (if a 0-pointer is given, no values are written)
+    //! @param rNewStaticData ... new static data (if a 0-pointer is given, no values are written)
+    NuTo::Error::eError ReturnMapping2D(const ElementBase* rElement,int rIp,
+            const EngineeringStrain2D& rEngineeringStrain,
+            EngineeringStress2D* rNewStress,
+            ConstitutiveTangentLocal<3,3>* rNewTangent,
+            ConstitutiveStaticDataMisesPlasticity3D* rNewStaticData,
+            Logger& rLogger)const;
+
     //! @brief ... performs the return mapping procedure in 3D
     //! @param rElement ... structure
     //! @param rIp ... integration point

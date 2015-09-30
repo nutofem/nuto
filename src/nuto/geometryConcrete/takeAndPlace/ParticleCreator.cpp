@@ -380,6 +380,12 @@ const std::vector<double> NuTo::ParticleCreator::GetNumParticlesPerSizeClass(
 
 	std::vector<double> numParticlesPerSize(rSizes.size());
 
+	if (rSizes.size() == 1)
+	{
+	    numParticlesPerSize[0] = numParticles;
+	    return numParticlesPerSize;
+	}
+
 	unsigned int sizeCount = 0;
 	unsigned int sizeClass = 0;
 	for (unsigned int i = 0; i < numParticles; ++i)

@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 
     CreateMesoscaleGeometryMesh(gmshFile, lX, lY);
 
-    auto groupIndices = myStructure.ImportFromGmsh(gmshFile+".msh", NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::NOIPDATA);
+    auto groupIndices = myStructure.ImportFromGmsh(gmshFile+".msh", NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA);
     assert (groupIndices.GetNumRows() == 2); // two physical groups
     assert (groupIndices.GetNumColumns() == 2); // 1st col: group, 2nd col: interpolation type
 
@@ -82,24 +82,28 @@ int main(int argc, char* argv[])
     // **********  Define and set sections and constitutive laws    **************
     double thickness = 17;
 
-    int mySection = myStructure.SectionCreate(NuTo::Section::PLANE_STRESS);
+    int mySection = myStructure.SectionCreate(NuTo::Section::PLANE_STRAIN);
     myStructure.SectionSetThickness(mySection, thickness);
 
-    int myConstitutiveLawMatrix = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS);
     int myConstitutiveLawAggreg = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS);
-
-    myStructure.ConstitutiveLawSetParameterDouble(myConstitutiveLawMatrix, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 30000.);
-    myStructure.ConstitutiveLawSetParameterDouble(myConstitutiveLawAggreg, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 60000.);
-
-    myStructure.ConstitutiveLawSetParameterDouble(myConstitutiveLawMatrix, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, .2);
+    myStructure.ConstitutiveLawSetParameterDouble(myConstitutiveLawAggreg, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.);
     myStructure.ConstitutiveLawSetParameterDouble(myConstitutiveLawAggreg, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, .2);
+
+
+
+    int myConstitutiveLawMatrix = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::MISES_PLASTICITY_ENGINEERING_STRESS);
+    myStructure.ConstitutiveLawSetParameterDouble(myConstitutiveLawMatrix, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 75000.);
+    myStructure.ConstitutiveLawSetParameterDouble(myConstitutiveLawMatrix, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, .3);
+    myStructure.ConstitutiveLawSetParameterDouble(myConstitutiveLawMatrix,NuTo::Constitutive::eConstitutiveParameter::INITIAL_YIELD_STRENGTH,75);
+    myStructure.ConstitutiveLawSetParameterDouble(myConstitutiveLawMatrix,NuTo::Constitutive::eConstitutiveParameter::INITIAL_HARDENING_MODULUS,5000);
+
 
     myStructure.ElementTotalSetSection(mySection);
     myStructure.ElementGroupSetConstitutiveLaw(gMatrix, myConstitutiveLawMatrix);
     myStructure.ElementGroupSetConstitutiveLaw(gAggreg, myConstitutiveLawAggreg);
 
     // **********  Set boundary conditions  **************************************
-    double deltaD = 1;
+    double deltaD = 0.01;
 
     int gNodesWest = myStructure.GroupCreate(NuTo::Groups::Nodes);
     int gNodesEast = myStructure.GroupCreate(NuTo::Groups::Nodes);
@@ -117,13 +121,13 @@ int main(int argc, char* argv[])
     //**********************************************
     //          Visualisation
     //**********************************************
-#ifdef ENABLE_VISUALIZE
     myStructure.AddVisualizationComponentDisplacements();
     myStructure.AddVisualizationComponentEngineeringStrain();
     myStructure.AddVisualizationComponentSection();
     myStructure.AddVisualizationComponentEngineeringStress();
+    myStructure.AddVisualizationComponentEngineeringPlasticStrain();
+    myStructure.AddVisualizationComponentPrincipalEngineeringStress();
 
-#endif // ENABLE_VISUALIZE
 
     //**********************************************
     //          Solver
@@ -140,9 +144,9 @@ int main(int argc, char* argv[])
     dispRHS << 0, 0, simulationTime, deltaD;
 
     myIntegrationScheme.SetTimeDependentConstraint(bc, dispRHS);
-    myIntegrationScheme.SetTimeStep(simulationTime);
+    myIntegrationScheme.SetTimeStep(.1*simulationTime);
     myIntegrationScheme.SetToleranceForce(1e-6);
-    myIntegrationScheme.SetAutomaticTimeStepping(false);
+    myIntegrationScheme.SetAutomaticTimeStepping(true);
     myIntegrationScheme.SetVerboseLevel(0);
     myIntegrationScheme.SetShowTime(true);
 
