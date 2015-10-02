@@ -918,6 +918,46 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
     return boundaryElementGroup;
 }
 
+void NuTo::Structure::InterfaceElementsCreate(int rElementGroupId, int rInterpolationType)
+{
+
+    //find groups
+    boost::ptr_map<int, GroupBase>::iterator itGroupElements = mGroupMap.find(rElementGroupId);
+    if (itGroupElements == mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group with the given identifier does not exist.");
+    if (itGroupElements->second->GetType() != NuTo::Groups::Elements)
+        throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group is not an element group.");
+
+    auto elementIds = GroupGetMemberIds(rElementGroupId);
+
+    for (int elementId = 0; elementId < elementIds.size(); ++elementId)
+    {
+        auto nodeIds = ElementGetNodes(elementIds.at(elementId,0));
+
+        std::vector<int> nodesInterfaceElement(nodeIds.size());
+
+        for (int nodeId = 0; nodeId < nodeIds.size(); ++nodeId)
+        {
+            assert(nodeIds.size() == 2 and "Only implemented for the 4 node interface element");
+
+            FullVector<double, Eigen::Dynamic> nodeCoordinates;
+            NodeGetCoordinates(nodeIds.at(nodeId,0), nodeCoordinates);
+
+            nodesInterfaceElement[nodeId] = GroupCreate(Groups::eGroupId::Nodes);
+            GroupAddNodeRadiusRange(nodesInterfaceElement[nodeId], nodeCoordinates, 0, 1.0e-6);
+        }
+
+        NuTo::FullVector<int, Eigen::Dynamic> nodeIndicesInterface(4);
+        nodeIndicesInterface[0] = GroupGetMemberIds(nodesInterfaceElement[0]).at(0, 0);
+        nodeIndicesInterface[1] = GroupGetMemberIds(nodesInterfaceElement[1]).at(0, 0);
+        nodeIndicesInterface[2] = GroupGetMemberIds(nodesInterfaceElement[1]).at(1, 0);
+        nodeIndicesInterface[3] = GroupGetMemberIds(nodesInterfaceElement[0]).at(1, 0);
+
+        ElementCreate(rInterpolationType, nodeIndicesInterface, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::NOIPDATA);
+    }
+
+}
+
 //! @brief Deletes a group of elements element
 //! @param rGroupNumber group number
 void NuTo::Structure::ElementGroupDelete(int rGroupNumber, bool deleteNodes)
