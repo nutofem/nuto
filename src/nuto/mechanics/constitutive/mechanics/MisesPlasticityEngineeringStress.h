@@ -173,6 +173,9 @@ protected:
     //! @brief ... Poisson's ratio \f$ \nu \f$
     double mNu;
 
+    //! @brief ... density
+    double mRho;
+
     //! @brief ... energy flag (store prev stress and strain to calculate energy using trapezoidal rule
     bool mEnergyFlag;
 
@@ -188,6 +191,10 @@ protected:
     //! @brief ... check if Young's modulus is positive
     //! @param rE ... Young's modulus
     void CheckYoungsModulus(double rE) const;
+
+    //! @brief ... check if density is positive
+    //! @param rRho ... density
+    void CheckDensity(double rRho) const;
 
     //! @brief ... check if Poisson's ratio is valid \f$ (-1.0 < \nu < 0.5) \f$
     //! @param rNu ... Poisson's ratio

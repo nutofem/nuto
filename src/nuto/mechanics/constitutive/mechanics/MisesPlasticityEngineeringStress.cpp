@@ -828,6 +828,8 @@ double NuTo::MisesPlasticityEngineeringStress::GetParameterDouble(NuTo::Constitu
         return this->mThermalExpansionCoefficient;
     case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
         return this->mE;
+    case Constitutive::eConstitutiveParameter::DENSITY:
+    	return this->mRho;
     default:
     {
         throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::GetParameterDouble] Constitutive law does not have the requested variable");
@@ -881,6 +883,13 @@ void NuTo::MisesPlasticityEngineeringStress::SetParameterDouble(NuTo::Constituti
     {
         this->CheckYoungsModulus(rValue);
         this->mE = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::DENSITY:
+    {
+        this->CheckYoungsModulus(rValue);
+        this->mRho = rValue;
         this->SetParametersValid();
         break;
     }
@@ -996,6 +1005,17 @@ bool NuTo::MisesPlasticityEngineeringStress::CheckElementCompatibility(NuTo::Ele
         return false;
     }
 }
+
+//! @brief ... check if density is positive
+//! @param rRho ... density
+void NuTo::MisesPlasticityEngineeringStress::CheckDensity(double rRho) const
+{
+    if (rRho < 0.0)
+    {
+        throw NuTo::MechanicsException("[NuTo::MisesPlasticityEngineeringStress::CheckDensity] The density must be a positive value.");
+    }
+}
+
 
 //! @brief ... check if Young's modulus is positive
 //! @param rE ... Young's modulus
