@@ -1781,6 +1781,26 @@ int NuTo::StructureBase::GetNumActiveDofs()const
 #endif
 }
 
+//! @brief returns the number of dependent degrees of freedom
+//! @return ... number of active degrees of freedom
+int NuTo::StructureBase::GetNumDependentDofs()const
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    if (this->mNodeNumberingRequired)
+    {
+        throw MechanicsException("[NuTo::StructureBase::GetNumDependentDofs] Build global Dofs first.");
+    }
+    return mNumDofs-mNumActiveDofs;
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::GetNumDependentDofs] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+}
+
 //! @brief returns the a reference to the constraint matrix
 const NuTo::SparseMatrixCSRGeneral<double>& NuTo::StructureBase::GetConstraintMatrix()const
 {

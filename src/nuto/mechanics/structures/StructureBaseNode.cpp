@@ -419,7 +419,7 @@ void NuTo::StructureBase::NodeGroupGetDisplacements(int rGroupIdent, FullMatrix<
 		    if (numDisp != 1 and numDisp != 2 and numDisp != 3)
 		        throw MechanicsException("[NuTo::StructureBase::NodeGroupGetDisplacements] The number of displacement components is either 1, 2 or 3.");
 
-		    rDisplacements.SetRow(theNode, itNode->second->GetDisplacements());
+		    rDisplacements.SetRow(theNode, itNode->second->GetDisplacements().transpose());
 
 		}
 		catch(NuTo::MechanicsException & b)
@@ -498,16 +498,15 @@ void NuTo::StructureBase::NodeGroupGetCoordinates(int rGroupIdent, FullMatrix<do
     int numCoords= nodeGroup->begin()->second->GetNumCoordinates();
     //resize the matrix
     rCoordinates.Resize(nodeGroup->GetNumMembers(),numCoords);
-
 	int theNode(0);
     for (Group<NodeBase>::iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++, theNode++)
     {
 		try
 		{
-            if (numCoords != 1 and numCoords != 2 and numCoords != 3)
+			if (numCoords != 1 and numCoords != 2 and numCoords != 3)
                 throw MechanicsException("[NuTo::StructureBase::NodeGroupGetCoordinates] The number of coordinates components is either 1, 2 or 3.");
 
-            rCoordinates.SetRow(theNode, itNode->second->GetCoordinates());
+            rCoordinates.SetRow(theNode, itNode->second->GetCoordinates().transpose());
 
 		}
 		catch(NuTo::MechanicsException & b)

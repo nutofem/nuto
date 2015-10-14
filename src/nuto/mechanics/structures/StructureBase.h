@@ -1778,6 +1778,10 @@ public:
     //! @return ... number of active degrees of freedom
     int GetNumActiveDofs()const;
 
+    //! @brief returns the number of dependent degrees of freedom
+    //! @return ... number of dependent degrees of freedom
+    int GetNumDependentDofs()const;
+
     //! @brief returns the a reference to the constraint matrix
     const NuTo::SparseMatrixCSRGeneral<double>& GetConstraintMatrix()const;
 
