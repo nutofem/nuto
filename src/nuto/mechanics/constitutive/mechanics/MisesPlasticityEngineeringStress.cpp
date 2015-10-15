@@ -25,12 +25,6 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain1D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain3D.h"
-#include "nuto/mechanics/constitutive/mechanics/SecondPiolaKirchhoffStress1D.h"
-#include "nuto/mechanics/constitutive/mechanics/SecondPiolaKirchhoffStress2D.h"
-#include "nuto/mechanics/constitutive/mechanics/SecondPiolaKirchhoffStress3D.h"
-#include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain1D.h"
-#include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain2D.h"
-#include "nuto/mechanics/constitutive/mechanics/GreenLagrangeStrain3D.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataMisesPlasticityWithEnergy3D.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/elements/ElementBase.h"
@@ -98,7 +92,137 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate2D(ElementBa
 		const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
 		std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
-    throw NuTo::MechanicsException("[NuTo::MisesPlasticityEngineeringStress::Evaluate2D] not implemented for 2D.");
+    // get interpolation type information determining which input on the constitutive level should be used
+    const InterpolationType* interpolationType = rElement->GetInterpolationType();
+
+    // check if parameters are valid
+    if (this->mParametersValid == false)
+    {
+        //throw an exception giving information related to the wrong parameter
+        CheckParameters();
+    }
+
+    //Calculate strain
+    EngineeringStrain2D engineeringStrain;
+    // calculate engineering strain
+    auto itDeformationGradient = rConstitutiveInput.find(NuTo::Constitutive::Input::DEFORMATION_GRADIENT_2D);
+    if(itDeformationGradient==rConstitutiveInput.end())
+        throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::Evaluate2D] deformation gradient 2d needed to evaluate engineering strain2d.");
+    const DeformationGradient2D& deformationGradient(itDeformationGradient->second->GetDeformationGradient2D());
+    deformationGradient.GetEngineeringStrain(engineeringStrain);
+
+    //subtract thermal strain
+    EngineeringStrain2D elasticEngineeringStrain(engineeringStrain);
+    // if temperature is an input, subtract thermal strains to get elastic strains
+    if (interpolationType->IsConstitutiveInput(Node::TEMPERATURES))
+    {
+        throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::Evaluate2D] temperature not implemented.");
+    }
+
+    EngineeringStress2D engineeringStress;
+    ConstitutiveTangentLocal<3,3>* tangent(0);
+    ConstitutiveStaticDataMisesPlasticity3D newStaticData;
+
+    bool performReturnMapping(false);
+
+    auto itStress = rConstitutiveOutput.find(NuTo::Constitutive::Output::ENGINEERING_STRESS_2D);
+    if (itStress!=rConstitutiveOutput.end())
+    {
+        performReturnMapping = true;
+    }
+
+    auto itStress3D = rConstitutiveOutput.find(NuTo::Constitutive::Output::ENGINEERING_STRESS_3D);
+    if (itStress3D!=rConstitutiveOutput.end())
+    {
+        performReturnMapping = true;
+    }
+
+    auto itStiffness = rConstitutiveOutput.find(NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D);
+    if (itStiffness!=rConstitutiveOutput.end())
+    {
+        performReturnMapping = true;
+        tangent = &(itStiffness->second->AsConstitutiveTangentLocal_3x3());
+    }
+
+    auto itUpdate = rConstitutiveOutput.find(NuTo::Constitutive::Output::UPDATE_STATIC_DATA);
+    if (itUpdate!=rConstitutiveOutput.end())
+    {
+        performReturnMapping = true;
+    }
+
+    //check, if an nonlinear iteration has to be performed, in this simple case, just calculate the linear elastic coefficients
+    if (performReturnMapping)
+    {
+        // perform return mapping
+        NuTo::Error::eError errorReturnMapping = ReturnMapping2D(rElement, rIp, elasticEngineeringStrain, &engineeringStress, tangent, &newStaticData ,rElement->GetStructure()->GetLogger());
+        if (errorReturnMapping!=Error::SUCCESSFUL)
+            return errorReturnMapping;
+    }
+
+    for (std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>::iterator itOutput = rConstitutiveOutput.begin();
+            itOutput != rConstitutiveOutput.end(); itOutput++)
+    {
+        switch(itOutput->first)
+        {
+        case NuTo::Constitutive::Output::ENGINEERING_STRESS_2D:
+        {
+            if (rElement->GetSection()->GetType() != Section::PLANE_STRAIN)
+                throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::Evaluate2D] Only plane strain implemented!");
+
+            itOutput->second->GetEngineeringStress2D() = engineeringStress;
+        }
+        break;
+        case NuTo::Constitutive::Output::ENGINEERING_STRESS_3D:
+        {
+            itOutput->second->GetEngineeringStress3D()[0] = engineeringStress[0];
+            itOutput->second->GetEngineeringStress3D()[1] = engineeringStress[1];
+            itOutput->second->GetEngineeringStress3D()[3] = engineeringStress[2];
+        break;
+        }
+        case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D:
+        {
+            //tangent has already been calculated
+            itOutput->second->AsConstitutiveTangentLocal_3x3().SetSymmetry(true);
+            break;
+        }
+        case NuTo::Constitutive::Output::ENGINEERING_STRAIN_3D:
+            itOutput->second->GetEngineeringStrain3D()[0] = engineeringStrain[0];
+            itOutput->second->GetEngineeringStrain3D()[1] = engineeringStrain[1];
+            itOutput->second->GetEngineeringStrain3D()[3] = engineeringStrain[2];
+            break;
+        case NuTo::Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_3D:
+        {
+            EngineeringStrain3D& engineeringPlasticStrain(itOutput->second->GetEngineeringStrain3D());
+            engineeringPlasticStrain[0] = newStaticData.mEpsilonP[0] ;
+            engineeringPlasticStrain[1] = newStaticData.mEpsilonP[1] ;
+            engineeringPlasticStrain[2] = newStaticData.mEpsilonP[2] ;
+            engineeringPlasticStrain[3] = newStaticData.mEpsilonP[3] ;
+            engineeringPlasticStrain[4] = newStaticData.mEpsilonP[4] ;
+            engineeringPlasticStrain[5] = newStaticData.mEpsilonP[5] ;
+            break;
+        }
+        case NuTo::Constitutive::Output::DAMAGE:
+        {
+            itOutput->second->GetDamage().SetDamage(0.);
+        break;
+        }
+        case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
+        break;
+        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
+        {
+            *(rElement->GetStaticData(rIp)->AsConstitutiveStaticDataMisesPlasticity3D()) = newStaticData;
+        }
+        break;
+        default:
+            throw MechanicsException(std::string("[NuTo::MisesPlasticityEngineeringStress::Evaluate2D] output object)") +
+                    NuTo::Constitutive::OutputToString(itOutput->first) +
+                    std::string(" culd not be calculated, check the allocated material law and the section behavior."));
+        }
+    }
+
+    //update history variables but for linear elastic, there is nothing to do
+
+    return Error::SUCCESSFUL;
 }
 
 //! @brief ... evaluate the constitutive relation in 2D
@@ -246,7 +370,7 @@ NuTo::ConstitutiveStaticDataBase* NuTo::MisesPlasticityEngineeringStress::Alloca
 NuTo::ConstitutiveStaticDataBase* NuTo::MisesPlasticityEngineeringStress::AllocateStaticDataEngineeringStress_EngineeringStrain2D(
 		const ElementBase* rElement) const
 {
-	throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::AllocateStaticDataEngineeringStress_EngineeringStrain2D] To be implemented.");
+	return AllocateStaticDataEngineeringStress_EngineeringStrain3D(rElement);
 }
 
 
@@ -264,6 +388,60 @@ NuTo::ConstitutiveStaticDataBase* NuTo::MisesPlasticityEngineeringStress::Alloca
 		return new NuTo::ConstitutiveStaticDataMisesPlasticity3D();
 	}
 }
+
+
+NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping2D(const ElementBase* rElement,int rIp,
+        const EngineeringStrain2D& rEngineeringStrain,
+        EngineeringStress2D* rNewStress,
+        ConstitutiveTangentLocal<3,3>* rNewTangent,
+        ConstitutiveStaticDataMisesPlasticity3D* rNewStaticData,
+        Logger& rLogger)const
+{
+
+    EngineeringStrain3D engineeringStrain3D;
+    engineeringStrain3D.setZero();
+
+    engineeringStrain3D[0] = rEngineeringStrain[0];
+    engineeringStrain3D[1] = rEngineeringStrain[1];
+    engineeringStrain3D[3] = rEngineeringStrain[2];
+
+
+
+
+    EngineeringStress3D newStress3D;
+    ConstitutiveTangentLocal<6,6> newTangent3D;
+
+    NuTo::Error::eError error = ReturnMapping3D(rElement, rIp, engineeringStrain3D, &newStress3D, &newTangent3D, rNewStaticData, rLogger);
+
+
+    if (rNewStress)
+    {
+        rNewStress->SetValue(0, newStress3D.GetValue(0));
+        rNewStress->SetValue(1, newStress3D.GetValue(1));
+        rNewStress->SetValue(2, newStress3D.GetValue(3));
+    }
+
+
+    if (rNewTangent)
+    {
+        rNewTangent->SetValue(0,0, newTangent3D.GetValue(0,0));
+        rNewTangent->SetValue(0,1, newTangent3D.GetValue(0,1));
+        rNewTangent->SetValue(0,2, newTangent3D.GetValue(0,3));
+
+        rNewTangent->SetValue(1,0, newTangent3D.GetValue(1,0));
+        rNewTangent->SetValue(1,1, newTangent3D.GetValue(1,1));
+        rNewTangent->SetValue(1,2, newTangent3D.GetValue(1,3));
+
+        rNewTangent->SetValue(2,0, newTangent3D.GetValue(3,0));
+        rNewTangent->SetValue(2,1, newTangent3D.GetValue(3,1));
+        rNewTangent->SetValue(2,2, newTangent3D.GetValue(3,3));
+    }
+
+
+
+    return error;
+}
+
 
 //! @brief ... performs the return mapping procedure in 3D
 //! @param rElement ... structure
@@ -650,6 +828,8 @@ double NuTo::MisesPlasticityEngineeringStress::GetParameterDouble(NuTo::Constitu
         return this->mThermalExpansionCoefficient;
     case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
         return this->mE;
+    case Constitutive::eConstitutiveParameter::DENSITY:
+    	return this->mRho;
     default:
     {
         throw MechanicsException("[NuTo::MisesPlasticityEngineeringStress::GetParameterDouble] Constitutive law does not have the requested variable");
@@ -703,6 +883,13 @@ void NuTo::MisesPlasticityEngineeringStress::SetParameterDouble(NuTo::Constituti
     {
         this->CheckYoungsModulus(rValue);
         this->mE = rValue;
+        this->SetParametersValid();
+        break;
+    }
+    case Constitutive::eConstitutiveParameter::DENSITY:
+    {
+        this->CheckYoungsModulus(rValue);
+        this->mRho = rValue;
         this->SetParametersValid();
         break;
     }
@@ -810,11 +997,7 @@ bool NuTo::MisesPlasticityEngineeringStress::CheckElementCompatibility(NuTo::Ele
 {
     switch (rElementType)
     {
-    case NuTo::Element::TETRAHEDRON4N:
-        return true;
-    case NuTo::Element::TETRAHEDRON10N:
-        return true;
-    case NuTo::Element::BRICK8N:
+    case NuTo::Element::ELEMENT2D:
         return true;
     case NuTo::Element::ELEMENT3D:
         return true;
@@ -822,6 +1005,17 @@ bool NuTo::MisesPlasticityEngineeringStress::CheckElementCompatibility(NuTo::Ele
         return false;
     }
 }
+
+//! @brief ... check if density is positive
+//! @param rRho ... density
+void NuTo::MisesPlasticityEngineeringStress::CheckDensity(double rRho) const
+{
+    if (rRho < 0.0)
+    {
+        throw NuTo::MechanicsException("[NuTo::MisesPlasticityEngineeringStress::CheckDensity] The density must be a positive value.");
+    }
+}
+
 
 //! @brief ... check if Young's modulus is positive
 //! @param rE ... Young's modulus

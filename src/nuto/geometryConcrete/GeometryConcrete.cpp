@@ -114,7 +114,7 @@ void NuTo::GeometryConcrete::ExportGmshGeo2D(std::string rGmshFile, double rMesh
         throw NuTo::Exception("[NuTo::GeometryConcrete::ExportGmsh2D] The rZSlice does not intersect the specimen!");
 
 
-    double minRadius = rMeshSize;
+    double minRadius = rMeshSize/4.;
     mParticleHandler->ExportParticlesToGmsh2D(rGmshFile+".geo", *mSpecimen, rMeshSize, rZSlice, minRadius);
 }
 
