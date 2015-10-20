@@ -166,6 +166,9 @@ public:
     //! @brief ... Add visualization of water volume fraction to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentWaterVolumeFraction();
 
+    //! @brief ... Add visualization of the bond stress to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentBondStress();
+
     //! @brief ... clear all visualization components
     void ClearVisualizationComponents();
 

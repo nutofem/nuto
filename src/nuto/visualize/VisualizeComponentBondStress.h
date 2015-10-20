@@ -1,6 +1,4 @@
-// $Id$
-#ifndef VISUALIZECOMPONENTENGINEERINGSTRESS_H_
-#define VISUALIZECOMPONENTENGINEERINGSTRESS_H_
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -11,25 +9,25 @@
 
 namespace NuTo
 {
-//! @author Joerg F. Unger
-//! @date Apr 27, 2010
+//! @author Philip Huschke
+//! @date October 2015
 //! @brief ...
-class VisualizeComponentEngineeringStress : public VisualizeComponentBase
+class VisualizeComponentBondStress : public VisualizeComponentBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-	VisualizeComponentEngineeringStress();
+    VisualizeComponentBondStress();
 
     inline NuTo::VisualizeBase::eVisualizeWhat GetComponentEnum()const
     {
-    	return NuTo::VisualizeBase::ENGINEERING_STRESS;
+    	return NuTo::VisualizeBase::BOND_STRESS;
     }
 
     inline std::string GetComponentName()const
     {
-    	return std::string("EngineeringStress");
+    	return std::string("BondStress");
     }
 
 #ifdef ENABLE_SERIALIZATION
@@ -42,7 +40,5 @@ public:
 };
 }
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::VisualizeComponentEngineeringStress)
+BOOST_CLASS_EXPORT_KEY(NuTo::VisualizeComponentBondStress)
 #endif // ENABLE_SERIALIZATION
-
-#endif /* VISUALIZECOMPONENTENGINEERINGSTRESS_H_ */

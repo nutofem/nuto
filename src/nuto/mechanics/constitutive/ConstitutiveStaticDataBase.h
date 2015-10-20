@@ -33,6 +33,7 @@ class ConstitutiveStaticDataDamageViscoPlasticity3D;
 class ConstitutiveStaticDataDamageViscoPlasticity3DFatigue;
 class ConstitutiveStaticDataMoistureTransport;
 class ConstitutiveStaticDataMultiPhysics;
+class ConstitutiveStaticDataBondStressSlip;
 class ElementBase;
 class VisualizeUnstructuredGrid;
 class VisualizeComponentBase;
@@ -85,6 +86,12 @@ public:
 
     //!@ brief reinterpret as gradient damage 1d static data
     virtual const ConstitutiveStaticDataGradientDamage1D* AsGradientDamage1D() const;
+
+    //!@ brief reinterpret as bond stress slip static data
+    virtual ConstitutiveStaticDataBondStressSlip* AsBondStressSlip();
+
+    //!@ brief reinterpret as bond stress slip static data
+    virtual const ConstitutiveStaticDataBondStressSlip* AsBondStressSlip() const;
 
     //!@ brief reinterpret as lattice concrete 2D static data
     virtual NuTo::ConstitutiveStaticDataLatticeConcrete2D* AsConstitutiveStaticDataLatticeConcrete2D();

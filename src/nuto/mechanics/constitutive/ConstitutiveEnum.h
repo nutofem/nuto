@@ -67,6 +67,7 @@ enum eDamageLawType
 
 enum class eConstitutiveParameter
 {
+    ALPHA,                                      //!<
     BIAXIAL_COMPRESSIVE_STRENGTH,               //!<
     BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE,      //!<
     BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE,    //!<
@@ -90,17 +91,20 @@ enum class eConstitutiveParameter
     INITIAL_HARDENING_MODULUS,                  //!<
     INITIAL_YIELD_STRENGTH,                     //!<
     MASS_EXCHANGE_RATE,                         //!<
+    MAX_BOND_STRESS,                            //!<
     NONLOCAL_RADIUS,                            //!<
     NONLOCAL_RADIUS_PARAMETER,                  //!<
-    NORMAL_STIFFNESS,                           //!< normal stiffness for the Goodman et al. interface element
+    NORMAL_STIFFNESS,                           //!<
     POISSONS_RATIO,                             //!<
     POLYNOMIAL_COEFFICIENTS_ADSORPTION,         //!<
     POLYNOMIAL_COEFFICIENTS_DESORPTION,         //!<
     POROSITY,                                   //!<
+    RESIDUAL_BOND_STRESS,                       //!<
     SATURATION_DENSITY_GAS_PHASE,               //!<
+    SLIP_AT_MAX_BOND_STRESS,                    //!<
+    SLIP_AT_RESIDUAL_BOND_STRESS,               //!<
     SPRING_STIFFNESS,                           //!<
     SPRING_DIRECTION,                           //!<
-    TANGENTIAL_STIFFNESS,                       //!< tangential stiffness for the Goodman et al. interface element
     TENSILE_STRENGTH,                           //!<
     THERMAL_EXPANSION_COEFFICIENT,              //!<
     VISCOPLASTIC_YIELD_SURFACE_OFFSET,          //!<

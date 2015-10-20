@@ -547,7 +547,7 @@ void NuTo::TimeIntegrationBase::ExportVisualizationFiles(const std::string& rRes
         resultFile = rResultDir;
         resultFile /= std::string("Elements") + ssTimeStepVTK.str()
                 + std::string(".vtu");
-        mStructure->ExportVtkDataFileElements(resultFile.string(), true);
+        mStructure->ExportVtkDataFileElements(resultFile.string(), true);        
         //write an additional pvd file
         resultFile = rResultDir;
         resultFile /= std::string("Elements.pvd");

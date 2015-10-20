@@ -14,6 +14,7 @@ constitutive/thermal/Temperature.cpp
 constitutive/thermal/TemperatureGradient1D.cpp
 constitutive/thermal/TemperatureGradient2D.cpp
 constitutive/thermal/TemperatureGradient3D.cpp
+constitutive/mechanics/ConstitutiveStaticDataBondStressSlip.cpp
 constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3D.cpp
 constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3DFatigue.cpp
 constitutive/mechanics/ConstitutiveStaticDataGradientDamage1D.cpp

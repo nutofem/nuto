@@ -241,7 +241,6 @@ void NuTo::Element1DInXD::AddDetJBtSigma(const Eigen::MatrixXd& rDerivativeShape
 
 void NuTo::Element1DInXD::CheckElement()
 {
-
     unsigned int numIntegrationPoints = GetNumIntegrationPoints();
 
     // check number of integration points
@@ -261,5 +260,6 @@ void NuTo::Element1DInXD::CheckElement()
 
     // check element length
     assert(length > 1e-14 and "element with zero length (check nodes)");
+
 }
 

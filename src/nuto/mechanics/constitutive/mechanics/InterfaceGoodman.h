@@ -66,6 +66,10 @@ public:
     //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
     bool CheckElementCompatibility(Element::eElementType rElementType) const override;
 
+    //! @brief ... create new static data object for an integration point
+    //! @return ... pointer to static data object
+    ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain2D(const ElementBase* rElement) const override;
+
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
     //! @param rLogger stream for the output
@@ -79,12 +83,24 @@ public:
     }
 
 private:
-    //! @brief ... normal stiffness
+
+    //! @brief ... maximum bond stress
+    double mMaxBondStress;
+
+    //! @brief ... residual bond stress
+    double mResidualBondStress;
+
+    //! @brief ... slip at maximum bond stress
+    double mSlipAtMaxBondStress;
+
+    //! @brief ... slip at residual bond stress (bond stress stays constant for greater slips)
+    double mSlipAtResidualBondStress;
+
+    //! @brief ... parameter that controls the pre peak shape of the bond stress-slip curve
+    double mAlpha;
+
+    //! @brief ... normal penalty stiffness to avoid penetration
     double mNormalStiffness;
-
-    //! @brief ... normal stiffness
-    double mTangentialStiffness;
-
 };
 
 }

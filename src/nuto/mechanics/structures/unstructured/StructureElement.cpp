@@ -918,43 +918,95 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
     return boundaryElementGroup;
 }
 
-void NuTo::Structure::InterfaceElementsCreate(int rElementGroupId, int rInterpolationType)
+void NuTo::Structure::InterfaceElementsCreate(int rElementGroupId, int rInterfaceInterpolationType, int rInterfaceConstitutiveLaw, int rFibreInterpolationType, int rFibreConstitutiveLaw, int rFibreSection)
 {
 
-    //find groups
+    // find element group
     boost::ptr_map<int, GroupBase>::iterator itGroupElements = mGroupMap.find(rElementGroupId);
     if (itGroupElements == mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group with the given identifier does not exist.");
     if (itGroupElements->second->GetType() != NuTo::Groups::Elements)
         throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group is not an element group.");
 
+
+    // gets member ids from an element group. The element group must only contain truss elements
     auto elementIds = GroupGetMemberIds(rElementGroupId);
 
-    for (int elementId = 0; elementId < elementIds.size(); ++elementId)
+    int groupElementsInterface = GroupCreate(NuTo::Groups::eGroupId::Elements);
+    int groupElementsFibre = GroupCreate(NuTo::Groups::eGroupId::Elements);
+
+    // loop over elements in element group
+    for (int i = 0; i < elementIds.size(); ++i)
     {
-        auto nodeIds = ElementGetNodes(elementIds.at(elementId,0));
+        auto nodeIds = ElementGetNodes(elementIds.at(i,0));
 
-        std::vector<int> nodesInterfaceElement(nodeIds.size());
+        assert( (nodeIds.size() == 2 or nodeIds.size() == 3) and "Only implemented for the 4 node and 6 node interface element");
 
-        for (int nodeId = 0; nodeId < nodeIds.size(); ++nodeId)
+        NuTo::FullVector<int, Eigen::Dynamic> nodeIdsFibre(nodeIds.size());
+        NuTo::FullVector<int, Eigen::Dynamic> nodeIdsMatrix(nodeIds.size());
+
+        // loop over nodes of element
+        for (int k = 0; k < nodeIds.size(); ++k)
         {
-            assert(nodeIds.size() == 2 and "Only implemented for the 4 node interface element");
-
             FullVector<double, Eigen::Dynamic> nodeCoordinates;
-            NodeGetCoordinates(nodeIds.at(nodeId,0), nodeCoordinates);
+            NodeGetCoordinates(nodeIds.at(k,0), nodeCoordinates);
 
-            nodesInterfaceElement[nodeId] = GroupCreate(Groups::eGroupId::Nodes);
-            GroupAddNodeRadiusRange(nodesInterfaceElement[nodeId], nodeCoordinates, 0, 1.0e-6);
+            int groupNodes = GroupCreate(NuTo::Groups::eGroupId::Nodes);
+            GroupAddNodeRadiusRange(groupNodes, nodeCoordinates, 0.0, 1e-6);
+
+            // create an additional node at the same position if it has not been created already
+            if (GroupGetNumMembers(groupNodes) > 1)
+            {
+                assert(GroupGetNumMembers(groupNodes) == 2 and "This group should have exactly two members. Check what went wrong!");
+                auto groupNodeMemberIds = GroupGetMemberIds(groupNodes);
+                if (groupNodeMemberIds.at(0,0) == nodeIds.at(k,0))
+                {
+                    nodeIdsFibre[k] = groupNodeMemberIds.at(1,0);
+
+                } else
+                {
+                    nodeIdsFibre[k] = groupNodeMemberIds.at(0,0);
+                }
+            }
+            else
+            {
+                std::set<NuTo::Node::eAttributes> dofs;
+                dofs.insert(NuTo::Node::COORDINATES);
+                dofs.insert(NuTo::Node::DISPLACEMENTS);
+
+                nodeIdsFibre[k] = NodeCreate(nodeCoordinates, dofs);
+
+
+            }
+
+            nodeIdsMatrix[k] = nodeIds(k,0);
+
         }
 
-        NuTo::FullVector<int, Eigen::Dynamic> nodeIndicesInterface(4);
-        nodeIndicesInterface[0] = GroupGetMemberIds(nodesInterfaceElement[0]).at(0, 0);
-        nodeIndicesInterface[1] = GroupGetMemberIds(nodesInterfaceElement[1]).at(0, 0);
-        nodeIndicesInterface[2] = GroupGetMemberIds(nodesInterfaceElement[1]).at(1, 0);
-        nodeIndicesInterface[3] = GroupGetMemberIds(nodesInterfaceElement[0]).at(1, 0);
+        // create interface element
+        NuTo::FullVector<int, Eigen::Dynamic> nodeIndicesInterface(2 * nodeIds.size());
+        for (int iIndex = 0; iIndex < nodeIds.size(); ++iIndex)
+        {
+            nodeIndicesInterface[iIndex] = nodeIdsMatrix[iIndex];
+            nodeIndicesInterface[nodeIndicesInterface.size() - iIndex - 1] = nodeIdsFibre[iIndex];
+        }
 
-        ElementCreate(rInterpolationType, nodeIndicesInterface, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::NOIPDATA);
+        int newElementInterface = ElementCreate(rInterfaceInterpolationType, nodeIndicesInterface, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+        GroupAddElement(groupElementsInterface, newElementInterface);
+        ElementSetConstitutiveLaw(newElementInterface, rInterfaceConstitutiveLaw);
+
+
+        // create new truss element with duplicated nodes
+        int newElementFibre = ElementCreate(rFibreInterpolationType, nodeIdsFibre, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::NOIPDATA);
+        GroupAddElement(groupElementsFibre, newElementFibre);
+        ElementSetSection(newElementFibre, rFibreConstitutiveLaw);
+        ElementSetConstitutiveLaw(newElementFibre, rFibreSection);
+
+        // delete  old element
+        ElementDelete(elementIds.at(i,0));
+
     }
+
 
 }
 

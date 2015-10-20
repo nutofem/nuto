@@ -562,6 +562,9 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
     {
         switch (WhatIter->GetComponentEnum())
         {
+        case NuTo::VisualizeBase::BOND_STRESS:
+            boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::BOND_STRESS);
+        break;
 		case NuTo::VisualizeBase::DAMAGE:
 			boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::DAMAGE);
 		break;
@@ -619,16 +622,20 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
 
     //assign the outputs
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* damage(0);
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* localEqStrain(0);
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringStrain(0);
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringPlasticStrain(0);
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringStress(0);
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* heatFlux(0);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* bondStress(nullptr);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* damage(nullptr);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* localEqStrain(nullptr);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringStrain(nullptr);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringPlasticStrain(nullptr);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringStress(nullptr);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* heatFlux(nullptr);
     for (auto itElementOutput=elementOutput.begin(); itElementOutput!=elementOutput.end(); itElementOutput++)
     {
         switch (itElementOutput->second->GetIpDataType())
         {
+        case NuTo::IpData::BOND_STRESS:
+            bondStress = &(itElementOutput->second->GetFullMatrixDouble());
+        break;
 		case NuTo::IpData::DAMAGE:
 			damage = &(itElementOutput->second->GetFullMatrixDouble());
 		break;
@@ -773,6 +780,29 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
                 //std::cout<<"[NuTo::ElementBase::VisualizeEngineeringStressTensor]" << EngineeringStressTensor[0] << EngineeringStressTensor[1] << std::endl;
                 unsigned int CellId = CellIdVec[CellCount];
                 rVisualize.SetCellDataTensor(CellId, WhatIter->GetComponentName(), EngineeringStressTensor);
+            }
+        }
+            break;
+        case NuTo::VisualizeBase::BOND_STRESS:
+        {
+            assert(bondStress != nullptr);
+            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+            {
+                unsigned int theIp = VisualizationCellsIP[CellCount];
+                const double* bondStressVector = &(bondStress->data()[theIp * 2]);
+                double bondStressTensor[9];
+                bondStressTensor[0] = bondStressVector[0];
+                bondStressTensor[1] = bondStressVector[1];
+                bondStressTensor[2] = 0.0;
+                bondStressTensor[3] = 0.0;
+                bondStressTensor[4] = 0.0;
+                bondStressTensor[5] = 0.0;
+                bondStressTensor[6] = 0.0;
+                bondStressTensor[7] = 0.0;
+                bondStressTensor[8] = 0.0;
+
+                unsigned int CellId = CellIdVec[CellCount];
+                rVisualize.SetCellDataTensor(CellId, WhatIter->GetComponentName(), bondStressTensor);
             }
         }
             break;

@@ -458,8 +458,12 @@ public:
 
     //! @brief Creates interface elements from an element group.
     //! @param rElementGroupId: group id including the base elements
-    //! @param rInterpolationType: interpolation type of the interface elements
-    void InterfaceElementsCreate(int rElementGroupId, int rInterpolationType);
+    //! @param rInterfaceInterpolationType: interpolation type of the interface elements
+    //! @param rInterfaceConstitutiveLaw: constitutive law of the interface elements
+    //! @param rFibreInterpolationType: interpolation type of the interface elements
+    //! @param rFibreConstitutiveLaw: constitutive law of the interface elements
+    //! @param rFibreSection: section of the interface elements
+    void InterfaceElementsCreate(int rElementGroupId, int rInterfaceInterpolationType, int rInterfaceConstitutiveLaw, int rFibreInterpolationType, int rFibreConstitutiveLaw, int rFibreSection);
 
 #ifndef SWIG
     //! @brief import from gmsh, creates groups according to gmsh's physical entities and creates an interpolation types for each group

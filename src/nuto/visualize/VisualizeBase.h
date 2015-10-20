@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef VISUALIZEBASE_H_
-#define VISUALIZEBASE_H_
+#pragma once
 
 #include <string>
 
@@ -16,19 +15,20 @@ class VisualizeBase
 public:
     enum eVisualizeWhat
     {
-        DISPLACEMENTS,					//!< visualize displacements
-        ENGINEERING_STRESS,				//!< visualize engineering stress tensor
-        ENGINEERING_STRAIN,				//!< visualize engineering strain tensor
+        BOND_STRESS,                    //!< visualize bond stress
+        DISPLACEMENTS,                  //!< visualize displacements
+        ENGINEERING_STRESS,             //!< visualize engineering stress tensor
+        ENGINEERING_STRAIN,             //!< visualize engineering strain tensor
         NONLOCAL_WEIGHT,                //!< visualize nonlocal weights
         NONLOCAL_EQ_STRAIN,             //!< visualize nonlocal equivalent strains
         LOCAL_EQ_STRAIN,                //!< visualize local equivalent strains
-        DAMAGE,							//!< visualize damage
-        ENGINEERING_PLASTIC_STRAIN,		//!< visualize engineering plastic strain
-        CONSTITUTIVE,					//!< visualize constitutive id
-        SECTION,						//!< visualize section id
-        ELEMENT,						//!< visualize element id
-        CRACK,							//!< visualize crack id
-        PRINCIPAL_ENGINEERING_STRESS,	//!< visualize principal stresses
+        DAMAGE,                         //!< visualize damage
+        ENGINEERING_PLASTIC_STRAIN,     //!< visualize engineering plastic strain
+        CONSTITUTIVE,                   //!< visualize constitutive id
+        SECTION,                        //!< visualize section id
+        ELEMENT,                        //!< visualize element id
+        CRACK,                          //!< visualize crack id
+        PRINCIPAL_ENGINEERING_STRESS,   //!< visualize principal stresses
         PARTICLE_RADIUS,                //!< visualize radius of particles/nodes
         LATTICE_STRAIN,                 //!< visualize strain of lattice models
         LATTICE_STRESS,                 //!< visualize stress of lattice models
@@ -51,4 +51,3 @@ public:
 
 }
 
-#endif // VISUALIZEBASE_H_ 

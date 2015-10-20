@@ -98,6 +98,7 @@ const Group<NodeBase>* Group<NodeBase>::AsGroupNode()const
 template<>
 void Group<NodeBase>::Info(int rVerboseLevel, const NuTo::StructureBase* rStructure)const
 {
+    std::cout << "    Type              : Nodes" << std::endl;
 	std::cout << "    Number of members : " << this->size() << std::endl;
     if (rVerboseLevel>2)
     {
@@ -115,6 +116,7 @@ void Group<NodeBase>::Info(int rVerboseLevel, const NuTo::StructureBase* rStruct
 template<>
 void Group<ElementBase>::Info(int rVerboseLevel, const NuTo::StructureBase* rStructure)const
 {
+    std::cout << "    Type              : Elements" << std::endl;
 	std::cout << "    Number of members : " << this->size() << std::endl;
     if (rVerboseLevel>2)
     {

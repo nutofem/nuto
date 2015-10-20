@@ -35,6 +35,7 @@ static inline std::map<eIpDataType, std::string> GetIpDataTypeMap()
 //! @brief this is mainly used in Get routines for visualization purposes
 enum eIpStaticDataType
 {
+    BOND_STRESS,               //!< bond stress
     LATTICE_STRAIN,            //!< lattice strain
     LATTICE_STRESS,            //!< lattice stress
     LATTICE_PLASTIC_STRAIN,    //!< lattice plastic strain

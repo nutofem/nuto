@@ -80,6 +80,18 @@ const NuTo::ConstitutiveStaticDataGradientDamage1D* NuTo::ConstitutiveStaticData
     throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamage1D] Static data is not of type GradientDamage1D.");
 }
 
+//!@ brief reinterpret as bond stress slip static data
+NuTo::ConstitutiveStaticDataBondStressSlip* NuTo::ConstitutiveStaticDataBase::AsBondStressSlip()
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::AsBondStressSlip] Static data is not of type BondStressSlip.");
+}
+
+//!@ brief reinterpret as bond stress slip static data
+const NuTo::ConstitutiveStaticDataBondStressSlip* NuTo::ConstitutiveStaticDataBase::AsBondStressSlip()const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::AsBondStressSlip] Static data is not of type BondStressSlip.");
+}
+
 //!@ brief reinterpret as multiscale2d static data
 NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain* NuTo::ConstitutiveStaticDataBase::AsMultiscale2DPlaneStrain()
 {

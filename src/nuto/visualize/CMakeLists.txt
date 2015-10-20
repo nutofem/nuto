@@ -13,6 +13,7 @@ SET(NuToVisualize_SOURCES
   VisualizeComponentAngularAcceleration.cpp
   VisualizeComponentAngularVelocity.cpp
   VisualizeComponentBase.cpp
+  VisualizeComponentBondStress.cpp
   VisualizeComponentConstitutive.cpp
   VisualizeComponentDamage.cpp
   VisualizeComponentDisplacement.cpp

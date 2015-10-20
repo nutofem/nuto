@@ -80,6 +80,7 @@ extern "C" {
 #include "nuto/visualize/VisualizeComponentAcceleration.h"
 #include "nuto/visualize/VisualizeComponentAngularAcceleration.h"
 #include "nuto/visualize/VisualizeComponentAngularVelocity.h"
+#include "nuto/visualize/VisualizeComponentBondStress.h"
 #include "nuto/visualize/VisualizeComponentConstitutive.h"
 #include "nuto/visualize/VisualizeComponentCrack.h"
 #include "nuto/visualize/VisualizeComponentDamage.h"
@@ -754,6 +755,23 @@ void NuTo::StructureBase::AddVisualizationComponentWaterVolumeFraction()
 #endif // ENABLE_VISUALIZE
 }
 
+//! @brief ... Add bond stress to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentBondStress()
+{
+#ifdef ENABLE_VISUALIZE
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentBondStress());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentBondStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+#endif // ENABLE_VISUALIZE
+}
+
 void NuTo::StructureBase::ClearVisualizationComponents()
 {
 #ifdef ENABLE_VISUALIZE
@@ -865,6 +883,9 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
     {
         switch (itWhat->GetComponentEnum())
         {
+        case NuTo::VisualizeBase::BOND_STRESS:
+            rVisualize.DefineCellDataTensor(itWhat->GetComponentName());
+            break;
         case NuTo::VisualizeBase::DAMAGE:
             rVisualize.DefineCellDataScalar(itWhat->GetComponentName());
             break;

@@ -3116,8 +3116,17 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
 
 //    	case 7: // 5-node pyramid.
 
-//    	case 8: // 3-node second order line (2 nodes associated with the vertices and 1 with the edge).
-
+    	case 8: // 3-node second order line (2 nodes associated with the vertices and 1 with the edge).
+            shapeType = Interpolation::TRUSSXD;
+            typeOrder = Interpolation::EQUIDISTANT2;
+            //ordering is different than in gmsh, fix this first
+            {
+            NuTo::FullVector<int, Eigen::Dynamic> nodeNumbersCopy(nodeNumbers);
+            nodeNumbers(0)  = nodeNumbersCopy(0);
+            nodeNumbers(1)  = nodeNumbersCopy(2);
+            nodeNumbers(2)  = nodeNumbersCopy(1);
+            }
+            break;
         case 9: // 6-node second order triangle (3 nodes associated with the vertices and 3 with the edges).
             shapeType = Interpolation::TRIANGLE2D;
             typeOrder = Interpolation::EQUIDISTANT2;
