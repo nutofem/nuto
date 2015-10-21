@@ -246,6 +246,7 @@ ADD_TEST(c::mechanics::NonlocalDamagePlasticityModel ${CMAKE_CURRENT_BUILD_DIR}/
 
 
     # structure evaluate
+  CONFIGURE_FILE(InterfaceElements.msh ${CMAKE_CURRENT_BINARY_DIR})
   ADD_EXECUTABLE(StructureEvaluate StructureEvaluate.cpp)
     TARGET_LINK_LIBRARIES(StructureEvaluate NuToMechanics NuToMath NuToBase)
     ADD_TEST(c::mechanics::StructureEvaluate ${CMAKE_CURRENT_BUILD_DIR}/StructureEvaluate)
@@ -276,7 +277,7 @@ ADD_TEST(c::mechanics::NonlocalDamagePlasticityModel ${CMAKE_CURRENT_BUILD_DIR}/
   IF(MINGW)
     SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
-  
+ 
   # IntegrationPointVoronoiCells
   IF (ENABLE_VISUALIZE)
     ADD_EXECUTABLE(IntegrationPointVoronoiCells IntegrationPointVoronoiCells.cpp)
