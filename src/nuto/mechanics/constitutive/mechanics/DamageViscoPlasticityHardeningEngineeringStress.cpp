@@ -20,6 +20,7 @@
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3D.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3DFatigue.h"
 #include "nuto/mechanics/constitutive/mechanics/Damage.h"
+#include "nuto/mechanics/constitutive/mechanics/LocalEqTotalInelasticStrain.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient1D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient3D.h"
@@ -635,6 +636,11 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
 //    		std::cout << "	*** DAMAGE = " << newStaticData.mOmegaCompr << " at time end =" << rElement->GetStructure()->GetTime() << std::endl;
     		}
    		break;
+    	}
+    	case NuTo::Constitutive::Output::LOCAL_EQ_TOTAL_INELASTIC_STRAIN:
+    	{
+    		itOutput->second->GetLocalEqTotalInelasticStrain().SetData(newStaticData.mKappaInelastic);
+    		break;
     	}
     	case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
     	break;

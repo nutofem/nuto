@@ -577,6 +577,9 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
 		case NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN:
 			boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::ENGINEERING_PLASTIC_STRAIN);
 		break;
+        case NuTo::VisualizeBase::TOTAL_INELASTIC_EQ_STRAIN:
+            boost::assign::ptr_map_insert<ElementOutputIpData>(elementOutput)(Element::IP_DATA, IpData::TOTAL_INELASTIC_EQ_STRAIN);
+        break;
 		case NuTo::VisualizeBase::ENGINEERING_STRESS:
 			if (evaluateStress==false)
 			{
@@ -629,6 +632,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringPlasticStrain(nullptr);
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringStress(nullptr);
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* heatFlux(nullptr);
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* totalInelasticEqStrain(nullptr);
     for (auto itElementOutput=elementOutput.begin(); itElementOutput!=elementOutput.end(); itElementOutput++)
     {
         switch (itElementOutput->second->GetIpDataType())
@@ -648,6 +652,9 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
 		case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
 			engineeringPlasticStrain = &(itElementOutput->second->GetFullMatrixDouble());
 		break;
+        case NuTo::IpData::TOTAL_INELASTIC_EQ_STRAIN:
+            totalInelasticEqStrain = &(itElementOutput->second->GetFullMatrixDouble());
+        break;
 		case NuTo::IpData::ENGINEERING_STRESS:
 			engineeringStress = &(itElementOutput->second->GetFullMatrixDouble());
 		break;
@@ -756,6 +763,17 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const b
 
                 unsigned int CellId = CellIdVec[CellCount];
                 rVisualize.SetCellDataTensor(CellId, WhatIter->GetComponentName(), EngineeringStrainTensor);
+            }
+        }
+            break;
+        case NuTo::VisualizeBase::TOTAL_INELASTIC_EQ_STRAIN:
+        {
+            assert(totalInelasticEqStrain != 0);
+            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+            {
+                unsigned int theIp = VisualizationCellsIP[CellCount];
+                unsigned int CellId = CellIdVec[CellCount];
+                rVisualize.SetCellDataScalar(CellId, WhatIter->GetComponentName(), totalInelasticEqStrain->data()[theIp]);
             }
         }
             break;

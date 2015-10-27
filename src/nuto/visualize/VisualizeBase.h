@@ -22,6 +22,7 @@ public:
         NONLOCAL_WEIGHT,                //!< visualize nonlocal weights
         NONLOCAL_EQ_STRAIN,             //!< visualize nonlocal equivalent strains
         LOCAL_EQ_STRAIN,                //!< visualize local equivalent strains
+		TOTAL_INELASTIC_EQ_STRAIN,		//!< visualize inelastic equivalent strain
         DAMAGE,                         //!< visualize damage
         ENGINEERING_PLASTIC_STRAIN,     //!< visualize engineering plastic strain
         CONSTITUTIVE,                   //!< visualize constitutive id

@@ -359,8 +359,8 @@ try
     result_top.Info(15,12,true);
 
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_topRef(3,2);
-    result_topRef(1,1) = 1.521153610923e+04;
-    result_topRef(2,1) = 3.200333480953e+04;
+    result_topRef(1,1) = 1.521153610930e+04;
+    result_topRef(2,1) = 3.195964551079e+04;
 
     if ((result_topRef-result_top).cwiseAbs().maxCoeff()>1e-4)
     {
@@ -384,10 +384,10 @@ try
     result_bottom.Info(15,12,true);
 
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_bottomRef(3,2);
-    result_bottomRef(1,0) = -2.854085980428e+00;
-    result_bottomRef(1,1) = -1.519676408942e+04;
-    result_bottomRef(2,0) = -6.004761196833e+00;
-    result_bottomRef(2,1) = -3.197225601362e+04;
+    result_bottomRef(1,0) = -2.854085995369e+00;
+    result_bottomRef(1,1) = -1.519676408944e+04;
+    result_bottomRef(2,0) = 5.359488129914e+00;
+    result_bottomRef(2,1) = -3.198764727981e+04;
 
     if ((result_bottomRef-result_bottom).cwiseAbs().maxCoeff()>1e-4)
     {

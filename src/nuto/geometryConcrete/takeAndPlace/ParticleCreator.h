@@ -19,7 +19,7 @@ class ParticleCreator
 public:
 
 	//! @param rSpecimen ... Specimen object
-	ParticleCreator(NuTo::Specimen rSpecimen, const double rShrinkage, const long rNumMaxTries = 1e7);
+	ParticleCreator(NuTo::Specimen rSpecimen, const double rShrinkage, const long rNumMaxTries = 10000000);
 
 	//! @brief ... creates randomly distributed, non-overlapping particles
 	//! @param rRelParticleVolume ... percentage of particle volume inside the box

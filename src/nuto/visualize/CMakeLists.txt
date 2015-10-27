@@ -20,6 +20,7 @@ SET(NuToVisualize_SOURCES
   VisualizeComponentCrack.cpp
   VisualizeComponentElement.cpp
   VisualizeComponentEngineeringPlasticStrain.cpp
+  VisualizeComponentTotalInelasticEqStrain.cpp
   VisualizeComponentEngineeringStrain.cpp
   VisualizeComponentEngineeringStress.cpp
   VisualizeComponentHeatFlux.cpp

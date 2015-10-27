@@ -54,6 +54,7 @@ constitutive/mechanics/LinearElasticEngineeringStress.cpp
 constitutive/mechanics/LinearSpring.cpp
 constitutive/mechanics/LocalEqPlasticStrain.cpp
 constitutive/mechanics/LocalEqStrain.cpp
+constitutive/mechanics/LocalEqTotalInelasticStrain.cpp
 constitutive/mechanics/MisesPlasticityEngineeringStress.cpp
 constitutive/mechanics/NonlocalEqPlasticStrain.cpp
 constitutive/mechanics/NonlocalEqStrain.cpp

@@ -87,6 +87,7 @@ extern "C" {
 #include "nuto/visualize/VisualizeComponentDisplacement.h"
 #include "nuto/visualize/VisualizeComponentElement.h"
 #include "nuto/visualize/VisualizeComponentEngineeringPlasticStrain.h"
+#include "nuto/visualize/VisualizeComponentTotalInelasticEqStrain.h"
 #include "nuto/visualize/VisualizeComponentEngineeringStrain.h"
 #include "nuto/visualize/VisualizeComponentEngineeringStress.h"
 #include "nuto/visualize/VisualizeComponentHeatFlux.h"
@@ -409,6 +410,23 @@ void NuTo::StructureBase::AddVisualizationComponentEngineeringPlasticStrain()
     end=clock();
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::AddVisualizationComponentEngineeringPlasticStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+#endif
+#endif // ENABLE_VISUALIZE
+}
+
+//! @brief ... Add total inelastic equivalent strain to the internal list, which is finally exported via the ExportVtkDataFile command
+void NuTo::StructureBase::AddVisualizationComponentTotalInelasticEqStrain()
+{
+#ifdef ENABLE_VISUALIZE
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+    mVisualizeComponents.push_back(new NuTo::VisualizeComponentTotalInelasticEqStrain());
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentTotalInelasticEqStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif // ENABLE_VISUALIZE
 }
@@ -903,6 +921,9 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
             break;
         case NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN:
             rVisualize.DefineCellDataTensor(itWhat->GetComponentName());
+            break;
+        case NuTo::VisualizeBase::TOTAL_INELASTIC_EQ_STRAIN:
+            rVisualize.DefineCellDataScalar(itWhat->GetComponentName());
             break;
         case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
             rVisualize.DefineCellDataScalar(itWhat->GetComponentName());

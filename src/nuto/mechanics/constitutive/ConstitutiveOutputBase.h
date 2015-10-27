@@ -39,6 +39,7 @@ class EngineeringStress3D;
 class HeatFlux3D;
 class LocalEqPlasticStrain;
 class LocalEqStrain;
+class LocalEqTotalInelasticStrain;
 class Logger;
 class SecondPiolaKirchhoffStress3D;
 class StructureBase;
@@ -71,6 +72,7 @@ public:
     virtual ConstitutiveTangentLocal6x6& GetConstitutiveTangentLocal6x6();
     virtual LocalEqPlasticStrain& GetLocalEqPlasticStrain();
     virtual LocalEqStrain& GetLocalEqStrain();
+    virtual LocalEqTotalInelasticStrain& GetLocalEqTotalInelasticStrain();
     virtual HeatFlux3D& GetHeatFlux3D();
     virtual Damage& GetDamage();
 

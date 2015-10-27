@@ -31,6 +31,12 @@
 #include "nuto/math/SparseMatrixCSRSymmetric.h"
 
 
+//#include "nuto/mechanics/elements/ElementBase.h"  // delete me
+//#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h" // delete me
+//#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3D.h" // delete me
+
+
+
 //! @brief constructor
 //! @param mDimension number of nodes
 NuTo::NewmarkDirect::NewmarkDirect (StructureBase* rStructure)  : NewmarkBase (rStructure)
@@ -286,9 +292,10 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             plotVector0.AppendColumns(reactionForce);
         }
 */
-//        std::ofstream DamageFile;
-//        DamageFile.open("DamageJump.txt", std::ios::app);
-//    	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // bulo ElementGetElementPtr(9) dlya Brick8N and ElementGetElementPtr(141) dlya Brick8Nhole;
+//        std::ofstream DamageFile; std::ofstream TotalInelasticEqStrainFile;
+//        DamageFile.open("DamageJump.txt", std::ios::app); TotalInelasticEqStrainFile.open("TotalInelasticEqStrainJump.txt", std::ios::app);
+//     	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(14)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // bulo ElementGetElementPtr(9) dlya Brick8N and ElementGetElementPtr(141) dlya Brick8Nhole;
+//    	TotalInelasticEqStrainFile << mTime << " " << mStructure->ElementGetElementPtr(14)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetKappaInelastic() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
 
         PostProcess(prevResidual_j, prevResidual_k);
 
@@ -494,11 +501,20 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             if (mStructure->GetNumTimeDerivatives()>1)
             {
             	delta_disp_k = disp_k - lastConverged_disp_k;
-            	acc_j  = lastConverged_acc_j + delta_disp_j * (1./(timeStep*timeStep*mBeta));
-                vel_j  = lastConverged_vel_j + delta_disp_j * (mGamma/(timeStep*mBeta));
 
-            	acc_k  = lastConverged_acc_k + delta_disp_k * (1./(timeStep*timeStep*mBeta));
-                vel_k  = lastConverged_vel_k + delta_disp_k * (mGamma/(timeStep*mBeta));
+            	acc_j = delta_disp_j * (1./(timeStep*timeStep*mBeta)) - lastConverged_vel_j * (1./(timeStep*mBeta)) -
+            			lastConverged_acc_j * (0.5 - mBeta)/mBeta;
+            	vel_j = lastConverged_vel_j + lastConverged_acc_j * timeStep * (1 - mGamma) + acc_j * timeStep *mGamma;
+
+            	acc_k = delta_disp_k * (1./(timeStep*timeStep*mBeta)) - lastConverged_vel_k * (1./(timeStep*mBeta)) -
+            			lastConverged_acc_k * (0.5 - mBeta)/mBeta;
+            	vel_k = lastConverged_vel_k + lastConverged_acc_k * timeStep * (1 - mGamma) + acc_k * timeStep *mGamma;
+
+//            	acc_j  = lastConverged_acc_j + delta_disp_j * (1./(timeStep*timeStep*mBeta));
+//                vel_j  = lastConverged_vel_j + delta_disp_j * (mGamma/(timeStep*mBeta));
+//
+//            	acc_k  = lastConverged_acc_k + delta_disp_k * (1./(timeStep*timeStep*mBeta));
+//                vel_k  = lastConverged_vel_k + delta_disp_k * (mGamma/(timeStep*mBeta));
             }
 
             //apply displacements
@@ -908,7 +924,8 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
 				//perform Postprocessing
                 mStructure->GetLogger() << " *** PostProcess *** from NewMarkDirect \n";
 
-//            	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(141)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // bulo ElementGetElementPtr(9) dlya Brick8N and ElementGetElementPtr(141) dlya Brick8Nhole;
+//            	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(14)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // bulo ElementGetElementPtr(9) dlya Brick8N and ElementGetElementPtr(141) dlya Brick8Nhole;
+//            	TotalInelasticEqStrainFile << mTime << " " << mStructure->ElementGetElementPtr(14)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetKappaInelastic() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
 
                 PostProcess(prevResidual_j, prevResidual_k);
 
@@ -941,7 +958,7 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
                 }
             }
         }
-//        DamageFile.close();
+//        DamageFile.close(); TotalInelasticEqStrainFile.close();
     }
     catch (MechanicsException& e)
     {

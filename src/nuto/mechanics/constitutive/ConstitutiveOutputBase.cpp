@@ -20,6 +20,7 @@
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStress3D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain3D.h"
 #include "nuto/mechanics/constitutive/mechanics/LocalEqPlasticStrain.h"
+#include "nuto/mechanics/constitutive/mechanics/LocalEqTotalInelasticStrain.h"
 #include "nuto/mechanics/constitutive/thermal/HeatFlux3D.h"
 
 // constructor
@@ -65,6 +66,11 @@ NuTo::LocalEqPlasticStrain& NuTo::ConstitutiveOutputBase::GetLocalEqPlasticStrai
 NuTo::LocalEqStrain& NuTo::ConstitutiveOutputBase::GetLocalEqStrain()
 {
     throw MechanicsException("[NuTo::ConstitutiveOutputBase::GetLocalEqStrain] not implemented for this output object.");
+}
+
+NuTo::LocalEqTotalInelasticStrain& NuTo::ConstitutiveOutputBase::GetLocalEqTotalInelasticStrain()
+{
+    throw MechanicsException("[NuTo::ConstitutiveOutputBase::GetLocalEqTotalInelasticStrain] not implemented for this output object.");
 }
 
 NuTo::ConstitutiveTangentLocal6x6& NuTo::ConstitutiveOutputBase::GetConstitutiveTangentLocal6x6()

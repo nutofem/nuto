@@ -15,6 +15,7 @@
 #include "nuto/mechanics/constitutive/thermal/TemperatureGradient3D.h"
 #include "nuto/mechanics/constitutive/mechanics/LocalEqStrain.h"
 #include "nuto/mechanics/constitutive/mechanics/NonlocalEqStrain.h"
+#include "nuto/mechanics/constitutive/mechanics/LocalEqTotalInelasticStrain.h"
 #include "nuto/mechanics/constitutive/moistureTransport/RelativeHumidity.h"
 #include "nuto/mechanics/constitutive/moistureTransport/RelativeHumidityGradient3D.h"
 #include "nuto/mechanics/constitutive/moistureTransport/WaterVolumeFraction.h"
@@ -106,6 +107,9 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
 
         //allocate local eq strain
         LocalEqStrain localEqStrain;
+
+        //allocate local eq total inelastic strain
+        LocalEqTotalInelasticStrain localEqTotlalInelasticStrain;
 
         //allocate transient nonlocal parameter
         ConstitutiveTangentLocal<1, 1> nonlocalParameter;
@@ -424,6 +428,11 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     it->second->GetFullMatrixDouble().Resize(1, GetNumIntegrationPoints());
                     //define outputs
                     constitutiveOutputList[NuTo::Constitutive::Output::DAMAGE] = &(damage);
+                    break;
+                case NuTo::IpData::TOTAL_INELASTIC_EQ_STRAIN:
+                    it->second->GetFullMatrixDouble().Resize(1, GetNumIntegrationPoints());
+                    //define outputs
+                    constitutiveOutputList[NuTo::Constitutive::Output::LOCAL_EQ_TOTAL_INELASTIC_STRAIN] = &(localEqTotlalInelasticStrain);
                     break;
                 default:
                     throw MechanicsException("[NuTo::Element3D::Evaluate] this ip data type is not implemented.");
@@ -1098,6 +1107,10 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     case NuTo::IpData::DAMAGE:
                         //error = constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
                         memcpy(&(it->second->GetFullMatrixDouble().data()[theIP]), damage.GetData(), sizeof(double));
+                        break;
+                    case NuTo::IpData::TOTAL_INELASTIC_EQ_STRAIN:
+                        //error = constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
+                        memcpy(&(it->second->GetFullMatrixDouble().data()[theIP]), localEqTotlalInelasticStrain.GetData(), sizeof(double));
                         break;
                     default:
                         throw MechanicsException("[NuTo::Element3D::GetIpData] Ip data not implemented.");

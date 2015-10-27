@@ -58,10 +58,13 @@ public:
 
     //! @brief if mHarmonicExtrapolation == false then performs a Newmark, otherwise performs Newmark till 3 cycles and then cycle jump
     //! @param if mHarmonicExtrapolation == false then performs a Newmark, otherwise performs Newmark till 3 cycles and then cycle jump
-    void SetHarmonicExtrapolation(bool rHarmonicExtrapolation)
+    void SetHarmonicExtrapolation(bool rHarmonicExtrapolation, double* rHarmonicExtrapolationTolerance = 0)
     {
     	if (mHarmonicExcitation == true) {
     		mHarmonicExtrapolation = rHarmonicExtrapolation;
+    		if (mHarmonicExtrapolation && rHarmonicExtrapolationTolerance != 0) {
+    			mHarmonicExtrapolationTolerance = *rHarmonicExtrapolationTolerance;
+			}
 		} else {
 			throw MechanicsException("[NuTo::JumpDirect::SetHarmonicConstraint] Set HarmonicConstraint at first!");
 		}
@@ -201,7 +204,7 @@ public:
     void SetTimeAndTimeStep(double &curTime, double &timeStep, double rTimeDelta)
     {
     	// calculate time and time step close to the end time of the integration interval
-        if (rTimeDelta-curTime<0.5*timeStep)
+        if (rTimeDelta-curTime<0.2*timeStep)
         {
             timeStep += rTimeDelta-curTime;
             curTime = rTimeDelta;
@@ -313,7 +316,9 @@ public:
     // rDisp_Ampl_j ... displacement amplitude (active DOF, rFourier = 1)
     // rDisp_Mean_k ... displacement amplitude (dependent DOF, rFourier = 1)
     void CalculateFourierCofficients(NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_k,
-    		NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_k);
+    		NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_k,
+			const NuTo::FullVector<double,Eigen::Dynamic>* rIntForce_Mean_j, const NuTo::FullVector<double,Eigen::Dynamic>* rIntForce_Mean_k,
+			const NuTo::FullVector<double,Eigen::Dynamic>* rIntForce_Max_j,  const NuTo::FullVector<double,Eigen::Dynamic>* rIntForce_Max_k);
 
     //!@brief straight-forward integration of a single cycle with a prescribed Fourier coefficients
     // the displacement fields have the same meaning as above, see CalculateFourierCoefficients
@@ -361,6 +366,7 @@ protected:
 	double mMinLineSearchStep;
 	bool mHarmonicExcitation;
 	bool mHarmonicExtrapolation;
+	double mHarmonicExtrapolationTolerance;
 	int mHarmonicIncrementation;
 	NuTo::FullMatrix<double,Eigen::Dynamic,3> mHarmonicFactor;
 };

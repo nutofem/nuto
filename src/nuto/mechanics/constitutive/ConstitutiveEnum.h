@@ -271,6 +271,7 @@ enum eOutput
 	UPDATE_STATIC_DATA,
 	UPDATE_TMP_STATIC_DATA,
     LOCAL_EQ_PLASTIC_STRAIN,
+	LOCAL_EQ_TOTAL_INELASTIC_STRAIN,
     LOCAL_EQ_STRAIN,
     D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D,
     D_LOCAL_EQ_STRAIN_D_STRAIN_1D,
@@ -353,6 +354,7 @@ static inline std::string OutputToString( const Output::eOutput& e )
                               (Output::UPDATE_STATIC_DATA,"UPDATE_STATIC_DATA")
                               (Output::UPDATE_TMP_STATIC_DATA,"UPDATE_TMP_STATIC_DATA")
                               (Output::LOCAL_EQ_PLASTIC_STRAIN,"LOCAL_EQ_PLASTIC_STRAIN")
+                              (Output::LOCAL_EQ_TOTAL_INELASTIC_STRAIN,"LOCAL_EQ_TOTAL_INELASTIC_STRAIN")
                               (Output::LOCAL_EQ_STRAIN,"LOCAL_EQ_STRAIN")
                               (Output::D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D,"D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D")
                               (Output::D_LOCAL_EQ_STRAIN_D_STRAIN_1D,"D_LOCAL_EQ_STRAIN_D_STRAIN_1D")

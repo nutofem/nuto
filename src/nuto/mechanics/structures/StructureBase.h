@@ -110,6 +110,9 @@ public:
     //! @brief ... Add engineering plastic strains to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentEngineeringPlasticStrain();
 
+    //! @brief ... Add total inelastic equivalent strain to the internal list, which is finally exported via the ExportVtkDataFile command
+    void AddVisualizationComponentTotalInelasticEqStrain();
+
     //! @brief ... Add engineering stress to the internal list, which is finally exported via the ExportVtkDataFile command
     void AddVisualizationComponentEngineeringStress();
 

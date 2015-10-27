@@ -12,7 +12,7 @@ NuTo::ConstitutiveStaticDataMultiPhysics::ConstitutiveStaticDataMultiPhysics(con
     for (auto StaticData_it : rOther.mStaticData)
     {
         ConstitutiveStaticDataBase* ConstStaticData = StaticData_it.second->Clone();
-        mStaticData.emplace(StaticData_it.first,ConstStaticData);
+        mStaticData.insert(std::pair<Constitutive::eConstitutiveStaticDataType,ConstitutiveStaticDataBase*>(StaticData_it.first,ConstStaticData));
     }
 }
 
@@ -35,7 +35,7 @@ void NuTo::ConstitutiveStaticDataMultiPhysics::AddNewStaticData(NuTo::Constituti
     {
     case Constitutive::eConstitutiveStaticDataType::MOISTURE_TRANSPORT:
     {
-        mStaticData.emplace(rStaticDataType,new ConstitutiveStaticDataMoistureTransport);
+        mStaticData.insert(std::pair<Constitutive::eConstitutiveStaticDataType,ConstitutiveStaticDataBase*>(rStaticDataType,new ConstitutiveStaticDataMoistureTransport));
         break;
     }
     default:
