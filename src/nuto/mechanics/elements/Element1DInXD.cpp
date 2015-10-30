@@ -84,8 +84,6 @@ Eigen::MatrixXd NuTo::Element1DInXD::CalculateTransformationMatrix(unsigned int 
 const Eigen::MatrixXd NuTo::Element1DInXD::ExtractNodeValues(int rTimeDerivative, Node::eAttributes rDofType) const
 {
     Eigen::MatrixXd globalNodeCoordinates = ExtractGlobalNodeValues(rTimeDerivative, rDofType);
-    Eigen::MatrixXd nodeCoordinates;
-
     return (mRotationMatrix.transpose() * globalNodeCoordinates).row(0);
 }
 
@@ -106,7 +104,6 @@ const Eigen::MatrixXd NuTo::Element1DInXD::ExtractGlobalNodeValues(int rTimeDeri
         case Node::COORDINATES:
             globalNodeValues.block(0, iNode, numDofsPerNode, 1) = node->GetCoordinates();
             break;
-
         case Node::DISPLACEMENTS:
             globalNodeValues.block(0, iNode, numDofsPerNode, 1) = node->GetDisplacements(rTimeDerivative);
             break;

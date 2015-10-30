@@ -5,6 +5,8 @@
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/ElementOutputIpData.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
+
 
 NuTo::Element2DInterface::Element2DInterface(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType) :
         NuTo::Element2D::Element2D(rStructure, rNodes, rElementDataType, rIpDataType, rInterpolationType)
@@ -15,7 +17,7 @@ NuTo::Error::eError NuTo::Element2DInterface::Evaluate(boost::ptr_multimap<NuTo:
 {
     try
     {
-
+    	const unsigned int globalDimension = GetStructure()->GetDimension();
         const std::set<Node::eAttributes>& dofs = mInterpolationType->GetDofs();
         const std::set<Node::eAttributes>& activeDofs = mInterpolationType->GetActiveDofs();
         unsigned int numActiveDofs = mInterpolationType->GetNumActiveDofs();
@@ -40,8 +42,12 @@ NuTo::Error::eError NuTo::Element2DInterface::Evaluate(boost::ptr_multimap<NuTo:
 
         std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*> constitutiveOutputList;
 
-        ConstitutiveTangentLocal<2, 2> constitutiveMatrix;
-        ConstitutiveTangentLocal<2, 1> interfaceStresses;
+
+        ConstitutiveTangentLocal<Eigen::Dynamic, Eigen::Dynamic> constitutiveMatrix;
+        constitutiveMatrix.Resize(globalDimension,globalDimension);
+
+        ConstitutiveTangentLocal<Eigen::Dynamic, 1> interfaceStresses;
+        interfaceStresses.Resize(globalDimension,1);
 
         //****************************************//
         //     FILL CONSTITUTIVE INPUT LIST       //
@@ -77,7 +83,7 @@ NuTo::Error::eError NuTo::Element2DInterface::Evaluate(boost::ptr_multimap<NuTo:
                     switch (dof)
                     {
                     case Node::DISPLACEMENTS:
-                        constitutiveOutputList[NuTo::Constitutive::Output::INTERFACE_STRESSES] = &(interfaceStresses);
+                        constitutiveOutputList[NuTo::Constitutive::Output::BOND_STRESS] = &(interfaceStresses);
                         break;
                     default:
                         throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Constitutive output INTERNAL_GRADIENT for " + Node::AttributeToString(dof) + " not implemented.");
@@ -145,9 +151,14 @@ NuTo::Error::eError NuTo::Element2DInterface::Evaluate(boost::ptr_multimap<NuTo:
                 case NuTo::IpData::ENGINEERING_STRESS:
                     break;
                 case NuTo::IpData::BOND_STRESS:
-                    it->second->GetFullMatrixDouble().Resize(2, GetNumIntegrationPoints());
+                    it->second->GetFullMatrixDouble().Resize(globalDimension, GetNumIntegrationPoints());
                     //define outputs
-                    constitutiveOutputList[NuTo::Constitutive::Output::INTERFACE_STRESSES] = &(interfaceStresses);
+                    constitutiveOutputList[NuTo::Constitutive::Output::BOND_STRESS] = &(interfaceStresses);
+                    break;
+                case NuTo::IpData::SLIP:
+                    it->second->GetFullMatrixDouble().Resize(globalDimension, GetNumIntegrationPoints());
+                    //define outputs
+                    constitutiveOutputList[NuTo::Constitutive::Output::SLIP] = &(interfaceSlip);
                     break;
                 default:
                     throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t this ip data type is not implemented.");
@@ -289,8 +300,10 @@ NuTo::Error::eError NuTo::Element2DInterface::Evaluate(boost::ptr_multimap<NuTo:
                     switch (it->second->GetIpDataType())
                     {
                     case NuTo::IpData::BOND_STRESS:
-                        //error = constitutivePtr->GetEngineeringStressFromEngineeringStrain(this, theIP, deformationGradient, engineeringStress);
-                        memcpy(&(it->second->GetFullMatrixDouble().data()[theIP * 2]), interfaceStresses.data(), 2 * sizeof(double));
+                        memcpy(&(it->second->GetFullMatrixDouble().data()[theIP * globalDimension]), interfaceStresses.data(), globalDimension * sizeof(double));
+                        break;
+                    case NuTo::IpData::SLIP:
+                        memcpy(&(it->second->GetFullMatrixDouble().data()[theIP * globalDimension]), interfaceSlip.GetInterfaceSlipVector().data() , globalDimension * sizeof(double));
                         break;
                     default:
                         throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Ip data not implemented.");
@@ -340,7 +353,8 @@ int NuTo::Element2DInterface::GetLocalDimension() const
 
 const NuTo::InterfaceSlip NuTo::Element2DInterface::CalculateInterfaceSlip(const Eigen::VectorXd& rShapeFunctions, const Eigen::MatrixXd& rNodeDisplacements)
 {
-    assert(rNodeDisplacements.rows() == 2 and "2d interface elements needs 2d coordinates");
+
+    assert((rNodeDisplacements.rows() == 2  or rNodeDisplacements.rows() == 3) and "2d interface elements need 2d or 3d coordinates");
     assert(rShapeFunctions.cols() == 1 and "rShapeFunctions needs 1d interpolation functions");
 
     const unsigned int globalDimension = GetStructure()->GetDimension();
@@ -350,8 +364,10 @@ const NuTo::InterfaceSlip NuTo::Element2DInterface::CalculateInterfaceSlip(const
     Eigen::VectorXd interfaceSlipEigen(globalDimension);
     interfaceSlipEigen.setZero();
 
-    interfaceSlipEigen(0, 0) = rShapeFunctions.dot(rNodeDisplacements.row(0));
-    interfaceSlipEigen(1, 0) = rShapeFunctions.dot(rNodeDisplacements.row(1));
+    for (unsigned int iDim = 0; iDim < globalDimension; ++iDim)
+    {
+    	interfaceSlipEigen(iDim, 0) = rShapeFunctions.dot(rNodeDisplacements.row(iDim));
+	}
 
     Eigen::MatrixXd rotationMatrix = CalculateRotationMatrix();
     interfaceSlipEigen = rotationMatrix * interfaceSlipEigen;
@@ -420,7 +436,7 @@ Eigen::MatrixXd NuTo::Element2DInterface::CalculateTransformationMatrix(unsigned
 
 }
 
-void NuTo::Element2DInterface::AddInternalForceVector(const ConstitutiveTangentLocal<2, 1>& rInterfaceStresses, const Eigen::VectorXd& rShapefunctions, NuTo::FullVector<double, Eigen::Dynamic>& rInternalForceVector, const double rGaussIntegrationFactor)
+void NuTo::Element2DInterface::AddInternalForceVector(const ConstitutiveTangentLocal<Eigen::Dynamic, 1>& rInterfaceStresses, const Eigen::VectorXd& rShapefunctions, NuTo::FullVector<double, Eigen::Dynamic>& rInternalForceVector, const double rGaussIntegrationFactor)
 {
     const unsigned int globalDimension = GetStructure()->GetDimension();
     const unsigned int numberOfNodes = mInterpolationType->Get(Node::DISPLACEMENTS).GetNumNodes();
@@ -432,15 +448,18 @@ void NuTo::Element2DInterface::AddInternalForceVector(const ConstitutiveTangentL
     for (unsigned int iNode = 0; iNode < numberOfNodes; ++iNode)
     {
         const unsigned int index = globalDimension * iNode;
-        BMatrix(0, index + 0) = rShapefunctions(iNode);
-        BMatrix(1, index + 1) = rShapefunctions(iNode);
+        for (unsigned int iDim = 0; iDim < globalDimension; ++iDim)
+        {
+        	BMatrix(iDim, index + iDim) = rShapefunctions(iNode);
+		}
+
     }
 
     rInternalForceVector += transformationMatrix * BMatrix.transpose() * rInterfaceStresses * rGaussIntegrationFactor;
 
 }
 
-void NuTo::Element2DInterface::AddElementStiffnessMatrix(const ConstitutiveTangentLocal<2, 2>& rConstitutiveMatrix, const Eigen::VectorXd& rShapefunctions, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rElementStiffnessMatrix, const double rGaussIntegrationFactor)
+void NuTo::Element2DInterface::AddElementStiffnessMatrix(const ConstitutiveTangentLocal<Eigen::Dynamic, Eigen::Dynamic>& rConstitutiveMatrix, const Eigen::VectorXd& rShapefunctions, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rElementStiffnessMatrix, const double rGaussIntegrationFactor)
 {
     const unsigned int globalDimension = GetStructure()->GetDimension();
     const unsigned int numberOfNodes = mInterpolationType->Get(Node::DISPLACEMENTS).GetNumNodes();
@@ -452,12 +471,98 @@ void NuTo::Element2DInterface::AddElementStiffnessMatrix(const ConstitutiveTange
     for (unsigned int iNode = 0; iNode < numberOfNodes; ++iNode)
     {
         const unsigned int index = globalDimension * iNode;
-        BMatrix(0, index + 0) = rShapefunctions(iNode);
-        BMatrix(1, index + 1) = rShapefunctions(iNode);
+        for (unsigned int iDim = 0; iDim < globalDimension; ++iDim)
+        {
+        	BMatrix(iDim, index + iDim) = rShapefunctions(iNode);
+		}
+
     }
 
     rElementStiffnessMatrix += transformationMatrix * BMatrix.transpose() * rConstitutiveMatrix * BMatrix * rGaussIntegrationFactor * transformationMatrix.transpose();
 
+}
+
+void NuTo::Element2DInterface::ExtractNodeValues(Eigen::MatrixXd& rNodeValues, int rTimeDerivative, Node::eAttributes rDofType) const
+{
+    const InterpolationBase& interpolationTypeDof = GetInterpolationType()->Get(rDofType);
+
+    int numNodes = interpolationTypeDof.GetNumNodes();
+    int numDofs = interpolationTypeDof.GetNumDofs();
+    int numDofsPerNode = numDofs / numNodes;
+
+    rNodeValues.resize(numDofsPerNode, numNodes);
+
+    for (int iNode = 0; iNode < numNodes; ++iNode)
+    {
+        const NodeBase* node = mNodes[interpolationTypeDof.GetNodeIndex(iNode)];
+
+        switch (rDofType)
+        {
+        case Node::COORDINATES:
+            rNodeValues.block(0, iNode, numDofsPerNode, 1) = node->GetCoordinates();
+            break;
+        case Node::DISPLACEMENTS:
+			rNodeValues.block(0, iNode, numDofsPerNode, 1) = node->GetDisplacements();
+            break;
+        default:
+            throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Not implemented for " + Node::AttributeToString(rDofType) + ".");
+        }
+    }
+}
+
+const Eigen::VectorXi NuTo::Element2DInterface::CalculateGlobalRowDofs() const
+{
+
+
+	const unsigned int globalDimension = GetStructure()->GetDimension();
+    int numActiveDos = mInterpolationType->GetNumActiveDofs();
+    Eigen::VectorXi globalRowDofs(numActiveDos);
+
+    for (auto dof : mInterpolationType->GetActiveDofs())
+    {
+        const InterpolationBase& interpolationType = mInterpolationType->Get(dof);
+        int index = interpolationType.GetLocalStartIndex(); //
+
+        for (int iNodeDof = 0; iNodeDof < interpolationType.GetNumNodes(); ++iNodeDof)
+        {
+            const NodeBase* nodePtr = mNodes[interpolationType.GetNodeIndex(iNodeDof)];
+            switch (dof)
+            {
+            case Node::DISPLACEMENTS:
+            {
+                globalRowDofs[index++] = nodePtr->GetDofDisplacement(0);
+                globalRowDofs[index++] = nodePtr->GetDofDisplacement(1);
+                if (globalDimension == 3)
+                	globalRowDofs[index++] = nodePtr->GetDofDisplacement(2);
+            }
+                break;
+            case Node::TEMPERATURES:
+            {
+                globalRowDofs[index++] = nodePtr->GetDofTemperature();
+            }
+                break;
+            case Node::NONLOCALEQSTRAIN:
+            {
+                globalRowDofs[index++] = nodePtr->GetDofNonlocalEqStrain();
+            }
+                break;
+            case Node::WATERVOLUMEFRACTION:
+            {
+                globalRowDofs[index++] = nodePtr->GetDofWaterVolumeFraction();
+            }
+                break;
+            case Node::RELATIVEHUMIDITY:
+            {
+                globalRowDofs[index++] = nodePtr->GetDofRelativeHumidity();
+            }
+                break;
+            default:
+                throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Not implemented for " + Node::AttributeToString(dof) + ".");
+
+            }
+        }
+    }
+    return globalRowDofs;
 }
 
 void NuTo::Element2DInterface::CheckElement()
@@ -478,6 +583,7 @@ void NuTo::Element2DInterface::GetVisualizationCells(unsigned int& NumVisualizat
 {
 
     const IntegrationTypeBase* integrationType = this->mElementData->GetIntegrationType();
+    const unsigned int globalDimension = GetStructure()->GetDimension();
     switch (integrationType->GetNumIntegrationPoints())
     {
     case 2:
@@ -486,18 +592,24 @@ void NuTo::Element2DInterface::GetVisualizationCells(unsigned int& NumVisualizat
         // Point 0
         VisualizationPointLocalCoordinates.push_back(-1);
         VisualizationPointLocalCoordinates.push_back(-1);
+        if (globalDimension == 3)
+        	VisualizationPointLocalCoordinates.push_back(0);
 
         // Point 1
         VisualizationPointLocalCoordinates.push_back(+1);
         VisualizationPointLocalCoordinates.push_back(-1);
-
+        if (globalDimension == 3)
+                	VisualizationPointLocalCoordinates.push_back(0);
         // Point 2
         VisualizationPointLocalCoordinates.push_back(+1);
         VisualizationPointLocalCoordinates.push_back(+1);
-
+        if (globalDimension == 3)
+                	VisualizationPointLocalCoordinates.push_back(0);
         // Point 3
         VisualizationPointLocalCoordinates.push_back(-1);
         VisualizationPointLocalCoordinates.push_back(+1);
+        if (globalDimension == 3)
+                	VisualizationPointLocalCoordinates.push_back(0);
 
         NumVisualizationCells = 1;
 
@@ -588,7 +700,7 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
         assert(dimension == 1 or dimension == 2 or dimension == 3);
         Eigen::Vector3d GlobalPointCoor = Eigen::Vector3d::Zero();
 
-        GlobalPointCoor.head<2>() = ExtractNodeValues(0, Node::eAttributes::COORDINATES).col(PointCount);
+        GlobalPointCoor.head(dimension) = ExtractNodeValues(0, Node::eAttributes::COORDINATES).col(PointCount);
 
         unsigned int PointId = rVisualize.AddPoint(GlobalPointCoor.data());
         PointIdVec.push_back(PointId);
@@ -653,7 +765,6 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
         {
         case NuTo::IpData::BOND_STRESS:
             bondStress = &(itElementOutput->second->GetFullMatrixDouble());
-            std::cout << "bond strees \t " << *bondStress << std::endl;
             break;
         case NuTo::IpData::ENGINEERING_STRESS:
             break;
@@ -671,7 +782,7 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
                 Eigen::Vector3d GlobalDisplacements = Eigen::Vector3d::Zero();
-                GlobalDisplacements.head<2>() = ExtractNodeValues(0, Node::eAttributes::DISPLACEMENTS).col(PointCount);
+                GlobalDisplacements.head(dimension) = ExtractNodeValues(0, Node::eAttributes::DISPLACEMENTS).col(PointCount);
                 unsigned int PointId = PointIdVec[PointCount];
                 rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), GlobalDisplacements.data());
             }
@@ -734,7 +845,6 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
         }
             break;
         default:
-            std::cout << WhatIter->GetComponentEnum() << "\n";
             throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t unsupported datatype for visualization.");
         }
     }

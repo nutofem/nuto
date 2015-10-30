@@ -20,6 +20,7 @@
 #include "nuto/math/FullVector.h"
 #include "nuto/mechanics/timeIntegration/ResultBase.h"
 #include "nuto/mechanics/timeIntegration/TimeDependencyBase.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
 
 namespace NuTo
 {
@@ -174,11 +175,11 @@ public:
     //! @return id of the result, so that it could be modified afterwards
     int AddResultTime(const std::string& rResultStr);
 
-    //! @brief monitor the stress of all ips in an element (always 6 components times number of integration points)
+    //! @brief monitor the integration point values in an element
     //! @param rResultId string identifying the result, this is used for the output file
     //! @param rElementId id of the element to be monitored
     //! @return id of the result, so that it could be modified afterwards
-    int AddResultElementIpStress(const std::string& rResultStr, int rElementId);
+    int AddResultElementIpData(const std::string& rResultStr, int rElementId, NuTo::IpData::eIpStaticDataType rIpDataType);
 
     //! @brief sets the result directory
     //! @param if delete is set, all the content of the directory will be removed

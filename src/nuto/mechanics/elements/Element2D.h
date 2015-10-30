@@ -100,9 +100,9 @@ public:
     //! @return rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
     const Eigen::VectorXd GetIntegrationPointVolume() const override;
 
-    const Eigen::MatrixXd ExtractNodeValues(int rTimeDerivative, Node::eAttributes) const override;
+    virtual const Eigen::MatrixXd ExtractNodeValues(int rTimeDerivative, Node::eAttributes rDofType) const override;
 
-    void ExtractNodeValues(Eigen::MatrixXd& rNodeValues, int rTimeDerivative, Node::eAttributes rDofType) const;
+    virtual void ExtractNodeValues(Eigen::MatrixXd& rNodeValues, int rTimeDerivative, Node::eAttributes rDofType) const;
 
     //! @brief Calculates the the inverse of the Jacobian and its determinant
     //! @param rDerivativeShapeFunctions Derivatives of the shape functions (dN1dx, dN1dy, dN1dz, dN2dx, ..

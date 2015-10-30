@@ -16,6 +16,7 @@ public:
     enum eVisualizeWhat
     {
         BOND_STRESS,                    //!< visualize bond stress
+        SLIP,                           //!< visualize slip (relative displacement)
         DISPLACEMENTS,                  //!< visualize displacements
         ENGINEERING_STRESS,             //!< visualize engineering stress tensor
         ENGINEERING_STRAIN,             //!< visualize engineering strain tensor

@@ -44,19 +44,25 @@ public:
     const InterfaceSlip CalculateInterfaceSlip(const Eigen::VectorXd& rShapeFunctions, const Eigen::MatrixXd& rNodeDisplacements);
 
     //! @brief calculates the element stiffness matrix at one integration point
-    void AddElementStiffnessMatrix(const ConstitutiveTangentLocal<2, 2>& rConstitutiveMatrix, const Eigen::VectorXd& rShapefunctions, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoefficientMatrix, const double rGaussIntegrationFactor);
+    void AddElementStiffnessMatrix(const ConstitutiveTangentLocal<Eigen::Dynamic, Eigen::Dynamic>& rConstitutiveMatrix, const Eigen::VectorXd& rShapefunctions, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoefficientMatrix, const double rGaussIntegrationFactor);
 
     //! @brief calculates the jacobian
     double CalculateDetJacobian(const Eigen::MatrixXd& rNodeCoordinates) const;
 
     //! @brief calculates the internal force vector
-    void AddInternalForceVector(const ConstitutiveTangentLocal<2, 1>& rInterfaceStresses, const Eigen::VectorXd& rShapefunctions, NuTo::FullVector<double, Eigen::Dynamic>& rInternalForceVector, const double rGaussIntegrationFactor);
+    void AddInternalForceVector(const ConstitutiveTangentLocal<Eigen::Dynamic, 1>& rInterfaceStresses, const Eigen::VectorXd& rShapefunctions, NuTo::FullVector<double, Eigen::Dynamic>& rInternalForceVector, const double rGaussIntegrationFactor);
 
     //! @brief calculates the roation matirx based on the orientation of the element
     Eigen::MatrixXd CalculateRotationMatrix();
 
     //! @brief calculates the transformation matrix, i.e. blows up the rotation matrix
     Eigen::MatrixXd CalculateTransformationMatrix(unsigned int rGlobalDimension, unsigned int rNumberOfNodes);
+
+//    virtual const Eigen::MatrixXd ExtractNodeValues(int rTimeDerivative, Node::eAttributes) const override;
+    using Element2D::ExtractNodeValues;
+    void ExtractNodeValues(Eigen::MatrixXd& rNodeValues, int rTimeDerivative, Node::eAttributes rDofType) const override;
+
+    const Eigen::VectorXi CalculateGlobalRowDofs() const;
 
 #ifdef ENABLE_VISUALIZE
     virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) override;

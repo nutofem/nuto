@@ -27,7 +27,7 @@
 #include "nuto/mechanics/timeIntegration/TimeIntegrationBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/timeIntegration/ResultElementIpStress.h"
+#include <nuto/mechanics/timeIntegration/ResultElementIpData.h>
 #include "nuto/mechanics/timeIntegration/ResultGroupNodeForce.h"
 #include "nuto/mechanics/timeIntegration/ResultNodeDisp.h"
 #include "nuto/mechanics/timeIntegration/ResultNodeAcceleration.h"
@@ -294,24 +294,23 @@ int NuTo::TimeIntegrationBase::AddResultTime(const std::string& rResultStr)
 	return resultNumber;
 }
 
-//! @brief monitor the stress of all ips in an element (always 6 components times number of integration points)
-//! @param rResultId string identifying the result, this is used for the output file
-//! @return id of the result, so that it could be modified afterwards
-int NuTo::TimeIntegrationBase::AddResultElementIpStress(const std::string& rResultStr, int rElementId)
+
+int NuTo::TimeIntegrationBase::AddResultElementIpData(const std::string& rResultStr, int rElementId, NuTo::IpData::eIpStaticDataType rIpDataType)
 {
-	//find unused integer id
-	int resultNumber(mResultMap.size());
-	boost::ptr_map<int,ResultBase>::iterator it = mResultMap.find(resultNumber);
-	while (it!=mResultMap.end())
-	{
-		resultNumber++;
-		it = mResultMap.find(resultNumber);
-	}
+    //find unused integer id
+    int resultNumber(mResultMap.size());
+    boost::ptr_map<int,ResultBase>::iterator it = mResultMap.find(resultNumber);
+    while (it!=mResultMap.end())
+    {
+        resultNumber++;
+        it = mResultMap.find(resultNumber);
+    }
 
-	mResultMap.insert(resultNumber, new ResultElementIpStress(rResultStr, rElementId));
+    mResultMap.insert(resultNumber, new ResultElementIpData(rResultStr, rElementId, rIpDataType));
 
-	return resultNumber;
+    return resultNumber;
 }
+
 
 //! @brief monitor the time
 //! @param rResultId string identifying the result, this is used for the output file
@@ -379,11 +378,15 @@ void NuTo::TimeIntegrationBase::PostProcess(const FullVector<double, Eigen::Dyna
 
 			}
 			case TimeIntegration::ELEMENT_IP_STRESS:
-			{
-				ResultElementIpBase* resultPtr(itResult->second->AsResultElementIpBase());
-				resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult);
-				break;
-			}
+            case TimeIntegration::ELEMENT_IP_STRAIN:
+            case TimeIntegration::ELEMENT_IP_DAMAGE:
+            case TimeIntegration::ELEMENT_IP_BOND_STRESS:
+            case TimeIntegration::ELEMENT_IP_SLIP:
+            {
+                ResultElementIpData* resultPtr(itResult->second->AsResultElementIpData());
+                resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult);
+                break;
+            }
 			default:
                 throw MechanicsException("[NuTo::TimeIntegrationBase::PostProcess] Unknown component in postprocessing.");
 			}
@@ -547,7 +550,8 @@ void NuTo::TimeIntegrationBase::ExportVisualizationFiles(const std::string& rRes
         resultFile = rResultDir;
         resultFile /= std::string("Elements") + ssTimeStepVTK.str()
                 + std::string(".vtu");
-        mStructure->ExportVtkDataFileElements(resultFile.string(), true);        
+        mStructure->ExportVtkDataFileElements(resultFile.string(), true);
+
         //write an additional pvd file
         resultFile = rResultDir;
         resultFile /= std::string("Elements.pvd");

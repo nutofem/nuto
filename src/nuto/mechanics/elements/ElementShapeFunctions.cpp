@@ -1828,7 +1828,46 @@ Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder2(const Eigen::VectorXd&
 
 
 }
+
+namespace ShapeFunctionsInterface3D // interval -1 to 1
+{
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Eigen::MatrixXd NodeCoordinatesInterface3dOrder1(int rNodeIndex)
+{
+    switch (rNodeIndex)
+    {
+    case 0:
+        return Eigen::Vector3d(-1, -1, 0);
+    case 1:
+        return Eigen::Vector3d(+1, -1, 0);
+    case 2:
+        return Eigen::Vector3d(+1, +1, 0);
+    case 3:
+        return Eigen::Vector3d(-1, +1, 0);
+    default:
+        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t node index out of range (0..3)");
+        break;
+    }
+}
+
+Eigen::MatrixXd ShapeFunctionsInterface3dOrder1(const Eigen::VectorXd& rCoordinates)
+{
+    const double N00 = 0.5 * (1. - rCoordinates(0, 0));
+    const double N01 = 0.5 * (1. + rCoordinates(0, 0));
+
+    return (Eigen::MatrixXd(4,1) << -N00, -N01, N01, N00).finished();
+}
+
+Eigen::MatrixXd DerivativeShapeFunctionsInterface3dOrder1(const Eigen::VectorXd& rCoordinates)
+{
+    // this interface element does not need any shape function derivatives
+    return Eigen::Matrix3d::Zero();
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+}// namespace ShapeFunctionsInterface3D
+
 
 }
 

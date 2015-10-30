@@ -24,7 +24,7 @@ NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate2D(ElementBase* rElement, in
 {
 
     CheckParameters();
-
+    const unsigned int globalDimension = rElement->GetStructure()->GetDimension();
     assert(mAlpha==1.0 and "Not implemented for arbitrary alpha yet");
 
     // interface slip
@@ -54,7 +54,10 @@ NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate2D(ElementBase* rElement, in
         {
         case NuTo::Constitutive::Output::INTERFACE_CONSTITUTIVE_MATRIX:
         {
-            ConstitutiveTangentLocal<2, 2>& constitutiveMatrix(itOutput->second->AsConstitutiveTangentLocal_2x2());
+
+       	    ConstitutiveTangentLocal<Eigen::Dynamic, Eigen::Dynamic>& constitutiveMatrix = dynamic_cast<ConstitutiveTangentLocal<Eigen::Dynamic, Eigen::Dynamic>&>(*itOutput->second);
+       	    assert(constitutiveMatrix.rows() == globalDimension and constitutiveMatrix.cols() == globalDimension);
+
 
             constitutiveMatrix.setZero();
 
@@ -63,11 +66,7 @@ NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate2D(ElementBase* rElement, in
             {
                 constitutiveMatrix(0, 0) = mAlpha * mMaxBondStress * std::pow(interfaceSlipVector.at(0, 0) / mSlipAtMaxBondStress, mAlpha - 1) / mSlipAtMaxBondStress;
 
-            } else if (interfaceSlipVector.at(0, 0) > mSlipAtMaxBondStress and interfaceSlipVector.at(0, 0) <= mSlipAtResidualBondStress)
-            {
-                constitutiveMatrix(0, 0) = (mMaxBondStress - mResidualBondStress) / (mSlipAtMaxBondStress - mSlipAtResidualBondStress);
-
-            } else if (interfaceSlipVector.at(0, 0) < -mSlipAtMaxBondStress and interfaceSlipVector.at(0, 0) >= -mSlipAtResidualBondStress)
+            } else if (std::abs(interfaceSlipVector.at(0, 0)) > mSlipAtMaxBondStress and std::abs(interfaceSlipVector.at(0, 0)) <= mSlipAtResidualBondStress)
             {
                 constitutiveMatrix(0, 0) = (mMaxBondStress - mResidualBondStress) / (mSlipAtMaxBondStress - mSlipAtResidualBondStress);
 
@@ -77,8 +76,7 @@ NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate2D(ElementBase* rElement, in
             }
 
 
-            // the normal component of the interface slip is equal to the penalty stiffness to avoid penetration
-            constitutiveMatrix(1, 1) = mNormalStiffness;
+
 
 
             // the bond stress-slip relationship needs to be adjusted if unloading occurs
@@ -130,11 +128,20 @@ NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate2D(ElementBase* rElement, in
             }
 
 
+
+            // the normal component of the interface slip is equal to the penalty stiffness to avoid penetration
+            for (unsigned int iDim = 1; iDim < globalDimension; ++iDim)
+  	            constitutiveMatrix(iDim, iDim) = mNormalStiffness;
+
+
+
         }
             break;
-        case NuTo::Constitutive::Output::INTERFACE_STRESSES:
+        case NuTo::Constitutive::Output::BOND_STRESS:
         {
-            ConstitutiveTangentLocal<2, 1>& interfaceStresses(itOutput->second->AsConstitutiveTangentLocal_2x1());
+
+            ConstitutiveTangentLocal<Eigen::Dynamic, 1>& interfaceStresses = dynamic_cast<ConstitutiveTangentLocal<Eigen::Dynamic, 1>&>(*itOutput->second);
+            assert(interfaceStresses.rows() == globalDimension and interfaceStresses.cols() == 1);
 
             interfaceStresses.setZero();
 
@@ -151,9 +158,13 @@ NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate2D(ElementBase* rElement, in
             {
                 interfaceStresses(0, 0) = -mMaxBondStress - (-mMaxBondStress + mResidualBondStress) * (interfaceSlipVector(0, 0) + mSlipAtMaxBondStress) / (-mSlipAtResidualBondStress + mSlipAtMaxBondStress);
 
-            } else if (interfaceSlipVector.at(0, 0) > mSlipAtResidualBondStress or interfaceSlipVector.at(0, 0) < -mSlipAtResidualBondStress)
+            } else if (interfaceSlipVector.at(0, 0) > mSlipAtResidualBondStress)
             {
                 interfaceStresses(0, 0) = mResidualBondStress;
+
+            } else if (interfaceSlipVector.at(0, 0) < -mSlipAtResidualBondStress)
+            {
+                interfaceStresses(0, 0) = -mResidualBondStress;
 
             } else
             {
@@ -185,7 +196,7 @@ NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate2D(ElementBase* rElement, in
 
                 } else if (slip < -mSlipAtResidualBondStress)
                 {
-                    newMaxBondStress = mResidualBondStress;
+                    newMaxBondStress = -mResidualBondStress;
                 } else
                 {
                     throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Check if clause. This branch should never be executed!");
@@ -210,7 +221,7 @@ NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate2D(ElementBase* rElement, in
 
                 } else if (interfaceSlipVector(0, 0) < -mSlipAtResidualBondStress)
                 {
-                    interfaceStresses(0, 0) = mResidualBondStress;
+                    interfaceStresses(0, 0) = -mResidualBondStress;
                 } else
                 {
                     throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Check if clause. This branch should never be executed!");
@@ -224,13 +235,15 @@ NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate2D(ElementBase* rElement, in
 
         }
             break;
+        case NuTo::Constitutive::Output::SLIP:
+            break;
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
         {
             performUpdateAtEnd = true;
         }
             break;
         default:
-            throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t output object)" + NuTo::Constitutive::OutputToString(itOutput->first) + std::string(" culd not be calculated, check the allocated material law and the section behavior."));
+            throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t output object " + NuTo::Constitutive::OutputToString(itOutput->first) + std::string(" culd not be calculated, check the allocated material law and the section behavior."));
         }
     }
 

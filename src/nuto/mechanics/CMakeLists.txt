@@ -294,8 +294,7 @@ timeIntegration/JumpDirect.cpp
 timeIntegration/NystroemBase.cpp
 timeIntegration/NystroemQinZhu.cpp
 timeIntegration/ResultBase.cpp
-timeIntegration/ResultElementIpBase.cpp
-timeIntegration/ResultElementIpStress.cpp
+timeIntegration/ResultElementIpData.cpp
 timeIntegration/ResultGroupNodeForce.cpp
 timeIntegration/ResultGroupNodeDof.cpp
 timeIntegration/ResultNodeAcceleration.cpp

@@ -9,11 +9,12 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/ConstitutiveInputBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
 
 namespace NuTo
 {
 
-class InterfaceSlip: public ConstitutiveInputBase
+class InterfaceSlip: public ConstitutiveInputBase, public ConstitutiveOutputBase
 {
 
 public:

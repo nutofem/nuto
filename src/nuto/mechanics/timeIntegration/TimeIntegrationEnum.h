@@ -1,6 +1,5 @@
 // $Id$
-#ifndef TIMEINTEGRATIONENUM_H_
-#define TIMEINTEGRATIONENUM_H_
+#pragma once
 
 namespace NuTo
 {
@@ -15,13 +14,18 @@ enum eConvergenceState
 
 enum eResultType
 {
-	TIME=0,                         //!< time
-	NODE_DISPLACEMENT,              //!< nodal diplacement
-	NODE_ACCELERATION,              //!< nodal accelerations
-	GROUP_NODE_FORCE,               //!< nodal forces
-	ELEMENT_IP_STRESS               //!> ip (stress)
+    TIME = 0,                         //!< time
+    NODE_DISPLACEMENT,              //!< nodal diplacement
+    NODE_ACCELERATION,              //!< nodal accelerations
+    GROUP_NODE_FORCE,               //!< nodal forces
+    ELEMENT_IP_STRESS,               //!> ip (stress)
+    ELEMENT_IP_STRAIN,               //!> ip (strain)
+    ELEMENT_IP_DAMAGE,               //!> ip (damage)
+    ELEMENT_IP_BOND_STRESS,          //!> ip (bond stress)
+    ELEMENT_IP_SLIP,            //!> ip (slip)
+
 };
 
-}
-}
-#endif /* TIMEINTEGRATIONENUM_H_ */
+}// namespace TimeIntegration
+}// namespace NuTo
+

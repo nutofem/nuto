@@ -925,6 +925,9 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
         case NuTo::VisualizeBase::TOTAL_INELASTIC_EQ_STRAIN:
             rVisualize.DefineCellDataScalar(itWhat->GetComponentName());
             break;
+        case NuTo::VisualizeBase::SLIP:
+             rVisualize.DefineCellDataVector(itWhat->GetComponentName());
+             break;
         case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
             rVisualize.DefineCellDataScalar(itWhat->GetComponentName());
             break;

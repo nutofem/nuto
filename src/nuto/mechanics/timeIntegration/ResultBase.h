@@ -1,8 +1,6 @@
 // $Id: $
 
-#ifndef RESULTBASE_H
-#define RESULTBASE_H
-
+#pragma once
 #include <ctime>
 #include <array>
 
@@ -22,7 +20,7 @@ namespace NuTo
 class ResultNodeDof;
 class ResultGroupNodeDof;
 class ResultTime;
-class ResultElementIpBase;
+class ResultElementIpData;
 class StructureBase;
 //! @author Jörg F. Unger, BAM
 //! @date December 2013
@@ -54,24 +52,24 @@ public:
 
     virtual ResultNodeDof* AsResultNodeDof()
     {
-    	throw MechanicsException("[NutO::ResultBase::AsResultNodeDof] object is not of this type.");
+    	throw MechanicsException(std::string(__PRETTY_FUNCTION__) +"\t: object is not of this type.");
     }
 
     virtual ResultTime* AsResultTime()
     {
-    	throw MechanicsException("[NutO::ResultBase::AsResultTime] object is not of this type.");
+    	throw MechanicsException(std::string(__PRETTY_FUNCTION__) +"\t: object is not of this type.");
     }
 
     virtual ResultGroupNodeDof* AsResultGroupNodeDof()
     {
-    	throw MechanicsException("[NutO::ResultBase::ResultNodeGroupDof] object is not of this type.");
+    	throw MechanicsException(std::string(__PRETTY_FUNCTION__) +"\t: object is not of this type.");
     }
 
-    virtual ResultElementIpBase* AsResultElementIpBase()
+
+    virtual ResultElementIpData* AsResultElementIpData()
     {
-    	throw MechanicsException("[NutO::ResultBase::AsResultElementIpBase] object is not of this type.");
+        throw MechanicsException(std::string(__PRETTY_FUNCTION__) +"\t: object is not of this type.");
     }
-
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -98,4 +96,3 @@ protected:
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ResultBase)
 #endif // SWIG
 #endif  // ENABLE_SERIALIZATION
-#endif // RESULTBASE_H
