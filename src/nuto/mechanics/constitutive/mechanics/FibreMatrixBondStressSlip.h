@@ -1,9 +1,9 @@
 //============================================================================
-// Name        : InterfaceGoodman.cpp
+// Name        : FibreMatrixBondStressSlip.cpp
 // Author      : Philip Huschke
 // Version     : 26 Aug 2015
 // Copyright   :
-// Description : Constitutive law for the interface element proposed by Goodman et al.
+// Description : Constitutive law for the interface between fibre and matrix
 //============================================================================
 
 #pragma once
@@ -13,11 +13,11 @@
 namespace NuTo
 {
 
-class InterfaceGoodman: public ConstitutiveBase
+class FibreMatrixBondStressSlip: public ConstitutiveBase
 {
 
 public:
-    InterfaceGoodman();
+    FibreMatrixBondStressSlip();
 
     //! @brief ... evaluate the constitutive relation in 1D
     //! @param rElement ... element

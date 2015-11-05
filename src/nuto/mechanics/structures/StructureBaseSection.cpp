@@ -7,6 +7,7 @@
 #include "nuto/mechanics/sections/SectionTruss.h"
 #include "nuto/mechanics/sections/SectionPlane.h"
 #include "nuto/mechanics/sections/SectionVolume.h"
+#include "nuto/mechanics/sections/SectionFibreMatrixBond.h"
 
 // create a new section
 int NuTo::StructureBase::SectionCreate(const std::string& rType)
@@ -64,6 +65,9 @@ int NuTo::StructureBase::SectionCreate(Section::eSectionType rType)
         break;
     case Section::VOLUME:
         SectionPtr = new SectionVolume();
+        break;
+    case Section::FIBRE_MATRIX_BOND:
+        SectionPtr = new SectionFibreMatrixBond();
         break;
     default:
         throw NuTo::MechanicsException("[NuTo::StructureBase::SectionCreate] invalid section type.");
@@ -200,3 +204,32 @@ double NuTo::StructureBase::SectionGetThickness(int rId) const
     }
     return thickness;
 }
+
+void NuTo::StructureBase::SectionSetCircumference(int rId, double rCircumference)
+{
+    try
+    {
+        SectionBase* SectionPtr = this->SectionGetSectionPtr(rId);
+        SectionPtr->SetCircumference(rCircumference);
+    } catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage(std::string(__PRETTY_FUNCTION__) + ":\t error setting section circumference.");
+        throw e;
+    }
+}
+
+double NuTo::StructureBase::SectionGetCircumference(int rId) const
+{
+    double circumference;
+    try
+    {
+        const SectionBase* SectionPtr = this->SectionGetSectionPtr(rId);
+        circumference = SectionPtr->GetCircumference();
+    } catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage(std::string(__PRETTY_FUNCTION__) + ":\t error getting section circumference.");
+        throw e;
+    }
+    return circumference;
+}
+

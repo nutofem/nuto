@@ -35,6 +35,7 @@ public:
     static constexpr double mFibreYoungsModulus = 2.1e5;
     static constexpr double mFibrePoissonsRatio = 0.2;
     static constexpr double mFibreCrossSection = 0.1;
+    static constexpr double mFibreCircumference = 1.1;
 
     static constexpr double mInterfaceNormalStiffness = 1e6;
     static constexpr double mAlpha = 1;
@@ -100,6 +101,9 @@ int main(int argc, char* argv[])
         int fibreSection = myStructure.SectionCreate(NuTo::Section::TRUSS);
         myStructure.SectionSetArea(fibreSection, Parameters::mFibreCrossSection);
 
+        int fibreMatrixBond = myStructure.SectionCreate(NuTo::Section::FIBRE_MATRIX_BOND);
+        myStructure.SectionSetCircumference(fibreMatrixBond, Parameters::mFibreCircumference);
+
         std::cout << "***********************************" << std::endl;
         std::cout << "**      Material                 **" << std::endl;
         std::cout << "***********************************" << std::endl;
@@ -112,7 +116,7 @@ int main(int argc, char* argv[])
         myStructure.ConstitutiveLawSetParameterDouble(fibreMaterial, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, Parameters::mFibreYoungsModulus);
         myStructure.ConstitutiveLawSetParameterDouble(fibreMaterial, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, Parameters::mFibrePoissonsRatio);
 
-        int interfaceMaterial = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::INTERFACE_GOODMAN);
+        int interfaceMaterial = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::FIBRE_MATRIX_BOND_STRESS_SLIP);
         myStructure.ConstitutiveLawSetParameterDouble(interfaceMaterial, NuTo::Constitutive::eConstitutiveParameter::NORMAL_STIFFNESS, Parameters::mInterfaceNormalStiffness);
         myStructure.ConstitutiveLawSetParameterDouble(interfaceMaterial, NuTo::Constitutive::eConstitutiveParameter::ALPHA, Parameters::mAlpha);
         myStructure.ConstitutiveLawSetParameterDouble(interfaceMaterial, NuTo::Constitutive::eConstitutiveParameter::MAX_BOND_STRESS, Parameters::mMaxBondStress);
@@ -167,7 +171,7 @@ int main(int argc, char* argv[])
         std::cout << "**      Interface                **" << std::endl;
         std::cout << "***********************************" << std::endl;
 
-        myStructure.InterfaceElementsCreate(groupIdFibre, interfaceInterpolationType, interfaceMaterial, fibreInterpolationType, fibreMaterial, fibreSection);
+        myStructure.InterfaceElementsCreate(groupIdFibre, interfaceInterpolationType, interfaceMaterial, fibreMatrixBond, fibreInterpolationType, fibreMaterial, fibreSection);
 
         std::cout << "***********************************" << std::endl;
         std::cout << "**      Boundary Conditions      **" << std::endl;

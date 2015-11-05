@@ -1052,7 +1052,6 @@ void NuTo::StructureBase::Evaluate(std::map<StructureEnum::eOutput, StructureOut
     throw MechanicsException("[NuTo::StructureBase::Evaluate] Not implemented.");
 }
 
-
 void NuTo::StructureBase::BuildGlobalCoefficientMatrixCheck()
 {
     // build global dof numbering if required

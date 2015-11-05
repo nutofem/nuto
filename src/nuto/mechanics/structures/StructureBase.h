@@ -1496,13 +1496,23 @@ public:
 
     //! @brief ... set section thickness
     //! @param rIdent ... section identifier
-    //! @param rThickness ... cross-section thickness
+    //! @param rThickness ... thickness
     void SectionSetThickness(int rId, double rThickness);
 
     //! @brief ... get section thickness
     //! @param rIdent ... section identifier
     //! @return section thickness
     double SectionGetThickness(int rId) const;
+
+    //! @brief ... set section circumference for interface bewteen matrix and fibre
+    //! @param rIdent ... section identifier
+    //! @param rThickness ... circumference of the fibre
+    void SectionSetCircumference(int rId, double rCircumference);
+
+    //! @brief ... get section thickness
+    //! @param rIdent ... section identifier
+    //! @return section circumference of the fibre
+    double SectionGetCircumference(int rId) const;
 
     //! @brief ... print information about all sections
     //! @param rVerboseLevel ... controls the verbosity of the information

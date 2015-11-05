@@ -17,6 +17,11 @@ NuTo::Error::eError NuTo::Element2DInterface::Evaluate(boost::ptr_multimap<NuTo:
 {
     try
     {
+        const SectionBase* section(GetSection());
+        if (section == nullptr)
+            throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t no section allocated for element.");
+
+
     	const unsigned int globalDimension = GetStructure()->GetDimension();
         const std::set<Node::eAttributes>& dofs = mInterpolationType->GetDofs();
         const std::set<Node::eAttributes>& activeDofs = mInterpolationType->GetActiveDofs();
@@ -197,7 +202,7 @@ NuTo::Error::eError NuTo::Element2DInterface::Evaluate(boost::ptr_multimap<NuTo:
 
             detJacobian = CalculateDetJacobian(nodalValues.at(Node::eAttributes::COORDINATES));
 
-            double gaussIntegrationFactor = mElementData->GetIntegrationPointWeight(theIP) * detJacobian;
+            double gaussIntegrationFactor = mElementData->GetIntegrationPointWeight(theIP) * detJacobian * section->GetCircumference();
 
             // calculate shape functions and their derivatives
             for (auto dof : dofs)
@@ -666,6 +671,68 @@ void NuTo::Element2DInterface::GetVisualizationCells(unsigned int& NumVisualizat
         VisualizationCellsIncidence.push_back(4);
         VisualizationCellsIP.push_back(1);
 
+        break;
+
+    case 4:// lobatto
+
+        NumVisualizationPoints = 8;
+        // Point 0
+        VisualizationPointLocalCoordinates.push_back(-1);
+        VisualizationPointLocalCoordinates.push_back(-1);
+
+        // Point 1
+        VisualizationPointLocalCoordinates.push_back(-1. + 2. / 3.);
+        VisualizationPointLocalCoordinates.push_back(-1);
+
+        // Point 2
+        VisualizationPointLocalCoordinates.push_back(-1. + 4. / 3.);
+        VisualizationPointLocalCoordinates.push_back(-1);
+
+        // Point 3
+        VisualizationPointLocalCoordinates.push_back(+1);
+        VisualizationPointLocalCoordinates.push_back(-1);
+
+        // Point 4
+        VisualizationPointLocalCoordinates.push_back(+1);
+        VisualizationPointLocalCoordinates.push_back(+1);
+
+        // Point 5
+        VisualizationPointLocalCoordinates.push_back(-1. + 4. / 3.);
+        VisualizationPointLocalCoordinates.push_back(+1);
+
+        // Point 6
+        VisualizationPointLocalCoordinates.push_back(-1. + 2. / 3.);
+        VisualizationPointLocalCoordinates.push_back(+1);
+
+        // Point 7
+        VisualizationPointLocalCoordinates.push_back(-1);
+        VisualizationPointLocalCoordinates.push_back(+1);
+
+        NumVisualizationCells = 3;
+
+        // cell 0
+        VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+        VisualizationCellsIncidence.push_back(0);
+        VisualizationCellsIncidence.push_back(1);
+        VisualizationCellsIncidence.push_back(6);
+        VisualizationCellsIncidence.push_back(7);
+        VisualizationCellsIP.push_back(0);
+
+        // cell 1
+        VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+        VisualizationCellsIncidence.push_back(1);
+        VisualizationCellsIncidence.push_back(2);
+        VisualizationCellsIncidence.push_back(5);
+        VisualizationCellsIncidence.push_back(6);
+        VisualizationCellsIP.push_back(1);
+
+        // cell 2
+        VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+        VisualizationCellsIncidence.push_back(2);
+        VisualizationCellsIncidence.push_back(3);
+        VisualizationCellsIncidence.push_back(4);
+        VisualizationCellsIncidence.push_back(5);
+        VisualizationCellsIP.push_back(1);
         break;
     default:
         throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Integration type not valid for this element.");

@@ -40,7 +40,7 @@ NuTo::ConstitutiveStaticDataBondStressSlip* NuTo::ConstitutiveStaticDataBondStre
 
 bool NuTo::ConstitutiveStaticDataBondStressSlip::CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType rConstitutiveType, NuTo::Element::eElementType rElementType) const
 {
-    if (rConstitutiveType == NuTo::Constitutive::INTERFACE_GOODMAN)
+    if (rConstitutiveType == NuTo::Constitutive::FIBRE_MATRIX_BOND_STRESS_SLIP)
     {
         if (rElementType == NuTo::Element::ELEMENT2DINTERFACE)
             return true;

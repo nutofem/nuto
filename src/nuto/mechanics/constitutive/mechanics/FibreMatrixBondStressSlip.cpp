@@ -1,4 +1,4 @@
-#include "nuto/mechanics/constitutive/mechanics/InterfaceGoodman.h"
+#include "nuto/mechanics/constitutive/mechanics/FibreMatrixBondStressSlip.h"
 #include "nuto/mechanics/constitutive/ConstitutiveTangentLocal.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataBondStressSlip.h"
 #include "nuto/mechanics/constitutive/mechanics/InterfaceSlip.h"
@@ -8,19 +8,19 @@
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/sections/SectionEnum.h"
 
-NuTo::InterfaceGoodman::InterfaceGoodman() :
+NuTo::FibreMatrixBondStressSlip::FibreMatrixBondStressSlip() :
         ConstitutiveBase(), mMaxBondStress(0), mResidualBondStress(0), mSlipAtMaxBondStress(0), mSlipAtResidualBondStress(0), mAlpha(0), mNormalStiffness(0)
 {
 }
 
 //! @brief ... evaluate the constitutive relation in 1D
-NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate1D(ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput, std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
+NuTo::Error::eError NuTo::FibreMatrixBondStressSlip::Evaluate1D(ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput, std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
     throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Not implemented.");
 }
 
 //! @brief ... evaluate the constitutive relation in 2D
-NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate2D(ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput, std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
+NuTo::Error::eError NuTo::FibreMatrixBondStressSlip::Evaluate2D(ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput, std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
 
     CheckParameters();
@@ -257,13 +257,13 @@ NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate2D(ElementBase* rElement, in
 }
 
 //! @brief ... evaluate the constitutive relation in 3D
-NuTo::Error::eError NuTo::InterfaceGoodman::Evaluate3D(ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput, std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
+NuTo::Error::eError NuTo::FibreMatrixBondStressSlip::Evaluate3D(ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput, std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
     throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Not implemented.");
 }
 
 //! @brief ... gets a variable of the constitutive law which is selected by an enum
-double NuTo::InterfaceGoodman::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+double NuTo::FibreMatrixBondStressSlip::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     CheckParameters();
 
@@ -287,7 +287,7 @@ double NuTo::InterfaceGoodman::GetParameterDouble(NuTo::Constitutive::eConstitut
 }
 
 //! @brief ... sets a variable of the constitutive law which is selected by an enum
-void NuTo::InterfaceGoodman::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
+void NuTo::FibreMatrixBondStressSlip::SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
     switch (rIdentifier)
     {
@@ -328,13 +328,13 @@ void NuTo::InterfaceGoodman::SetParameterDouble(NuTo::Constitutive::eConstitutiv
 }
 
 //! @brief ... get type of constitutive relationship
-NuTo::Constitutive::eConstitutiveType NuTo::InterfaceGoodman::GetType() const
+NuTo::Constitutive::eConstitutiveType NuTo::FibreMatrixBondStressSlip::GetType() const
 {
-    return NuTo::Constitutive::INTERFACE_GOODMAN;
+    return NuTo::Constitutive::FIBRE_MATRIX_BOND_STRESS_SLIP;
 }
 
 //! @brief ... check compatibility between element type and type of constitutive relationship
-bool NuTo::InterfaceGoodman::CheckElementCompatibility(NuTo::Element::eElementType rElementType) const
+bool NuTo::FibreMatrixBondStressSlip::CheckElementCompatibility(NuTo::Element::eElementType rElementType) const
 {
     switch (rElementType)
     {
@@ -345,14 +345,14 @@ bool NuTo::InterfaceGoodman::CheckElementCompatibility(NuTo::Element::eElementTy
     }
 }
 
-NuTo::ConstitutiveStaticDataBase* NuTo::InterfaceGoodman::AllocateStaticDataEngineeringStress_EngineeringStrain2D(const ElementBase* rElement) const
+NuTo::ConstitutiveStaticDataBase* NuTo::FibreMatrixBondStressSlip::AllocateStaticDataEngineeringStress_EngineeringStrain2D(const ElementBase* rElement) const
 {
     return new ConstitutiveStaticDataBondStressSlip();
 }
 
 //! @brief ... print information about the object
 //! @param rVerboseLevel ... verbosity of the information
-void NuTo::InterfaceGoodman::Info(unsigned short rVerboseLevel, Logger& rLogger) const
+void NuTo::FibreMatrixBondStressSlip::Info(unsigned short rVerboseLevel, Logger& rLogger) const
 {
     this->ConstitutiveBase::Info(rVerboseLevel, rLogger);
     rLogger << "    Normal stiffness               : " << mNormalStiffness << "\n";
@@ -364,7 +364,7 @@ void NuTo::InterfaceGoodman::Info(unsigned short rVerboseLevel, Logger& rLogger)
 }
 
 // check parameters
-void NuTo::InterfaceGoodman::CheckParameters() const
+void NuTo::FibreMatrixBondStressSlip::CheckParameters() const
 {
     assert(mNormalStiffness > 0.0 and "Normal stiffnes is <= 0 or not initialized properly");
     assert(mResidualBondStress >= 0.0 and "Residual bond stress is <= 0 or not initialized properly");

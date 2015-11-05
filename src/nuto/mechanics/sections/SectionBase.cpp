@@ -39,6 +39,16 @@ void NuTo::SectionBase::SetThickness(double rThickness)
     throw NuTo::MechanicsException("[NuTo::SectionBase::SetThickness] section type has no thickness.");
 }
 
+double NuTo::SectionBase::GetCircumference() const
+{
+    throw NuTo::MechanicsException("[NuTo::SectionBase::GetCircumference] section type has no circumfrerence.");
+}
+
+void NuTo::SectionBase::SetCircumference(double rCircumference)
+{
+    throw NuTo::MechanicsException("[NuTo::SectionBase::SetCircumference] section type has no circumference.");
+}
+
 void NuTo::SectionBase::Info(unsigned short rVerboseLevel) const
 {
     std::cout << "    section pointer: " << this << std::endl;

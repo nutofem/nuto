@@ -1,14 +1,15 @@
 // $Id$
 
+
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/mechanics/LinearSpring.h"
-#include "nuto/mechanics/constitutive/mechanics/InterfaceGoodman.h"
 #include "nuto/mechanics/constitutive/mechanics/LinearElasticEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/DamageViscoPlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/DamageViscoPlasticityHardeningEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/MisesPlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/GradientDamagePlasticityEngineeringStress.h"
+#include "nuto/mechanics/constitutive/mechanics/FibreMatrixBondStressSlip.h"
 #include "nuto/mechanics/constitutive/mechanics/GradientDamageEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.h"
@@ -143,8 +144,8 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
         case NuTo::Constitutive::MULTI_PHYSICS:
             ConstitutiveLawPtr = new NuTo::ConstitutiveMultiPhysics();
             break;
-        case NuTo::Constitutive::INTERFACE_GOODMAN:
-            ConstitutiveLawPtr = new NuTo::InterfaceGoodman();
+        case NuTo::Constitutive::FIBRE_MATRIX_BOND_STRESS_SLIP:
+            ConstitutiveLawPtr = new NuTo::FibreMatrixBondStressSlip();
             break;
         case NuTo::Constitutive::DRYING_SHRINKAGE:
             ConstitutiveLawPtr = new NuTo::DryingShrinkage();

@@ -49,7 +49,7 @@ constitutive/mechanics/InterfaceSlip.cpp
 constitutive/mechanics/InterfaceTractions1D.cpp
 constitutive/mechanics/InterfaceTractions2D.cpp
 constitutive/mechanics/InterfaceTractions3D.cpp
-constitutive/mechanics/InterfaceGoodman.cpp
+constitutive/mechanics/FibreMatrixBondStressSlip.cpp
 constitutive/mechanics/LinearElasticEngineeringStress.cpp
 constitutive/mechanics/LinearSpring.cpp
 constitutive/mechanics/LocalEqPlasticStrain.cpp
@@ -259,6 +259,7 @@ sections/SectionTruss.cpp
 sections/SectionPlane.cpp
 sections/SectionVolume.cpp
 sections/SectionSpring.cpp
+sections/SectionFibreMatrixBond.cpp
 )
 
 SET(NuToMechanicsStructures_SOURCES

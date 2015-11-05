@@ -46,9 +46,17 @@ public:
     //! @return ... section thickness
     virtual double GetThickness() const;
 
-    //! @brief ... get the thickness of the section
+    //! @brief ... set the thickness of the section
     //! @return ... section thickness
     virtual void SetThickness(double rThickness);
+
+    //! @brief ... get the circumference of the section
+    //! @return ... section circumference
+    virtual double GetCircumference() const;
+
+    //! @brief ... set the circumference of the section
+    //! @return ... section circumference
+    virtual void SetCircumference(double rCircumference);
 
     //! @brief ... print information about the section
     //! @param rVerboseLevel ... verbosity of the information

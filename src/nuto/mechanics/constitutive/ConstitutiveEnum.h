@@ -27,7 +27,7 @@ enum eConstitutiveType
     MOISTURE_TRANSPORT,                             //!< moisture transport model
     LINEAR_SPRING,                                   //!< linear spring model
     MULTI_PHYSICS,                                   //!< multi physics
-    INTERFACE_GOODMAN,                              //!< interface model proposed by Goodman et al.
+    FIBRE_MATRIX_BOND_STRESS_SLIP,                   //!< material model for the matrix-fibre interface
     DRYING_SHRINKAGE                                //!< drying shrinkage
 };
 
