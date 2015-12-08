@@ -429,6 +429,10 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     //define outputs
                     constitutiveOutputList[NuTo::Constitutive::Output::DAMAGE] = &(damage);
                     break;
+                case NuTo::IpData::LOCAL_EQ_STRAIN:
+                    it->second->GetFullMatrixDouble().Resize(1, GetNumIntegrationPoints());
+                    constitutiveOutputList[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN] = &localEqStrain;
+                    break;
                 case NuTo::IpData::TOTAL_INELASTIC_EQ_STRAIN:
                     it->second->GetFullMatrixDouble().Resize(1, GetNumIntegrationPoints());
                     //define outputs
@@ -1108,6 +1112,10 @@ NuTo::Error::eError NuTo::Element3D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         //error = constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
                         memcpy(&(it->second->GetFullMatrixDouble().data()[theIP]), damage.GetData(), sizeof(double));
                         break;
+                    case NuTo::IpData::LOCAL_EQ_STRAIN:
+                        //error = constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
+                        memcpy(&(it->second->GetFullMatrixDouble().data()[theIP]), localEqStrain.data(), sizeof(double));
+                        break;
                     case NuTo::IpData::TOTAL_INELASTIC_EQ_STRAIN:
                         //error = constitutivePtr->GetDamage(this, theIP, deformationGradient, rIpData.mEigenMatrix.data()[theIP]);
                         memcpy(&(it->second->GetFullMatrixDouble().data()[theIP]), localEqTotlalInelasticStrain.GetData(), sizeof(double));
@@ -1437,7 +1445,8 @@ void NuTo::Element3D::AddDetJBtCB(const Eigen::MatrixXd& rDerivativeShapeFunctio
         FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoefficientMatrix) const
 {
 	Eigen::Matrix<double, 6 , Eigen::Dynamic> Bmat;
-	Bmat.setZero(6,3*GetNumNodes());
+	int numDofs = 3*GetNumNodes();
+	Bmat.setZero(6,numDofs);
 	int theColumn(0);
     for (int theNode1 = 0; theNode1 < GetNumNodes(); theNode1++, theColumn+=3)
     {
@@ -1452,8 +1461,8 @@ void NuTo::Element3D::AddDetJBtCB(const Eigen::MatrixXd& rDerivativeShapeFunctio
     	Bmat(5,theColumn+1)= rDerivativeShapeFunctionsGlobal(theNode1, 0);
     }
 
-    Eigen::Matrix<double, 6 , 6> Cmod(rConstitutiveTangent*rFactor);
-    rCoefficientMatrix.noalias() += Bmat.transpose()*Cmod*Bmat;
+    const Eigen::Matrix<double, 6 , 6>& Cmod(rConstitutiveTangent*rFactor);
+    rCoefficientMatrix.block(rRow, rCol, numDofs, numDofs).noalias() += Bmat.transpose()*Cmod*Bmat;
 
     /*const double *C = rConstitutiveTangent.data();
     double x1, x2, y1, y2, z1, z2, x2x1, y2x1, z2x1, x2y1, y2y1, z2y1, x2z1, y2z1, z2z1;

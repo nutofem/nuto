@@ -583,6 +583,88 @@ void GradientDamage2D()
 
 }
 
+
+void GradientDamage3D()
+{
+    NuTo::Structure myStructure(3);
+    myStructure.SetShowTime(false);
+
+    double lX = 3, lY = 4, lZ = 5;
+    NuTo::FullVector<int, Eigen::Dynamic> nodeIds(8);
+    nodeIds[0] = myStructure.NodeCreate(NuTo::FullVector<double, 3> ({ 0, 0, 0}));
+    nodeIds[1] = myStructure.NodeCreate(NuTo::FullVector<double, 3> ({lX, 0, 0}));
+    nodeIds[2] = myStructure.NodeCreate(NuTo::FullVector<double, 3> ({lX,lY, 0}));
+    nodeIds[3] = myStructure.NodeCreate(NuTo::FullVector<double, 3> ({ 0,lY, 0}));
+    nodeIds[4] = myStructure.NodeCreate(NuTo::FullVector<double, 3> ({ 0, 0,lZ}));
+    nodeIds[5] = myStructure.NodeCreate(NuTo::FullVector<double, 3> ({lX, 0,lZ}));
+    nodeIds[6] = myStructure.NodeCreate(NuTo::FullVector<double, 3> ({lX,lY,lZ}));
+    nodeIds[7] = myStructure.NodeCreate(NuTo::FullVector<double, 3> ({ 0,lY,lZ}));
+
+    int myInterpolationType = myStructure.InterpolationTypeCreate("Brick3D");
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+
+    myStructure.ElementCreate(myInterpolationType, nodeIds, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA);
+
+    myStructure.ElementTotalConvertToInterpolationType();
+
+    myStructure.SetVerboseLevel(10);
+    myStructure.SetShowTime(true);
+    myStructure.ElementTotalConvertToInterpolationType();
+
+    int mySection = myStructure.SectionCreate("VOLUME");
+    int myConstitutiveLaw = SetConstitutiveLaw(myStructure);
+
+
+    myStructure.ElementTotalSetConstitutiveLaw(myConstitutiveLaw);
+    myStructure.ElementTotalSetSection(mySection);
+
+    myStructure.NodeBuildGlobalDofs();
+
+    myStructure.Info();
+    myStructure.CalculateMaximumIndependentSets();
+
+
+    // apply some displacements
+    double boundaryDisplacement = 1.;
+
+    int allNodes = myStructure.GroupCreate("NODES");
+    myStructure.GroupAddNodeCoordinateRange(allNodes, 0, -1, lX + 1);
+    nodeIds = myStructure.GroupGetMemberIds(allNodes);
+    for (int i = 0; i < nodeIds.GetNumRows(); ++i)
+    {
+        NuTo::NodeBase* node = myStructure.NodeGetNodePtr(nodeIds.GetValue(i));
+        auto disps = node->GetCoordinates3D() / lX * boundaryDisplacement;
+        node->SetDisplacements3D(disps);
+
+        if (node->GetNumNonlocalEqStrain() > 0)
+            node->SetNonlocalEqStrain(disps.at(0, 0) / 10);
+    }
+
+    bool globalStiffnessCorrect = myStructure.CheckCoefficientMatrix_0(1.e-8, true);
+    bool elementStiffnessCorrect = myStructure.ElementCheckCoefficientMatrix_0(1.e-8);
+
+    if (not globalStiffnessCorrect)
+        throw NuTo::Exception("global stiffness matrix incorrect!");
+    if (not elementStiffnessCorrect)
+        throw NuTo::Exception("element stiffness matrices incorrect!");
+
+#ifdef ENABLE_VISUALIZE
+    myStructure.AddVisualizationComponentDamage();
+    myStructure.AddVisualizationComponentDisplacements();
+    myStructure.AddVisualizationComponentNonlocalEqStrain();
+
+    std::string resultDir = "./ResultsGradientDamage";
+    boost::filesystem::create_directory(resultDir);
+    myStructure.ExportVtkDataFileElements(resultDir+"/Elements.vtu", true);
+    myStructure.ExportVtkDataFileNodes(resultDir+"/Nodes.vtu", true);
+
+#endif
+
+}
+
+
 void GroupRemoveNodesWithoutDisplacements(NuTo::Structure& rStructure, int rGroupNodeId)
 {
     auto ids = rStructure.GroupGetMemberIds(rGroupNodeId);
@@ -907,6 +989,7 @@ int main()
         CheckDamageLaws();
         GradientDamage1D();
         GradientDamage2D();
+        GradientDamage3D();
 //        Check1D2D();
 
 //    } catch (NuTo::MechanicsException& e)
