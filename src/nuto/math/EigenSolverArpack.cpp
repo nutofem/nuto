@@ -145,7 +145,9 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
     FullVector<double, Eigen::Dynamic> solution;
 
     SparseDirectSolverMUMPS solver;
+#ifdef SHOW_TIME
     solver.SetShowTime(mShowTime);
+#endif
 
     if (rK.IsSymmetric())
     {
@@ -416,7 +418,9 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
     {
     	solveMatrix->SetOneBasedIndexing();
     	solver.Factorization(*solveMatrix);
+#ifdef SHOW_TIME
         solver.SetShowTime(false);
+#endif
     }
 
     do

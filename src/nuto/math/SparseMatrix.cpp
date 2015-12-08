@@ -20,4 +20,6 @@ std::string SparseMatrix<int>::GetTypeId() const
 {
     return std::string("SparseMatrixInt");
 }
+
 }
+

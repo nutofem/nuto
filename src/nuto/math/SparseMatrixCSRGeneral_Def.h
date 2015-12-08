@@ -145,6 +145,12 @@ public:
     //! @param rRelativeTolerance ... relative tolerance for zero matrix entries
     void Gauss(NuTo::SparseMatrixCSRGeneral<T>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance = 1e-14);
 
+    //! @brief ... compute the maximum eigenvalue and eigenvector
+    //! @param rStart ... starting vector for the iteration should be ||rStart|| = 1
+    //! @param tol ... relative error for the iteration
+    //! @return the maximum eigenvalue, rStart will become the eigenvector to the maximum eigenvalue
+    void GetMaximumEigenvalueAndEigenvector(NuTo::FullVector<T, Eigen::Dynamic> &rStart, T &maximumEigenvalue, double tol=1.e-6);
+
     //! @brief ... reorder columns of the matrix
     //! @param rMappingInitialToNewOrdering ... mapping fron initial to new ordering
     void ReorderColumns(const std::vector<int>& rMappingInitialToNewOrdering);

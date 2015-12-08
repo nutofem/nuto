@@ -608,6 +608,52 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
     this->ReorderColumns(rMappingInitialToNewOrdering);
 }
 
+template<>
+void SparseMatrixCSRGeneral<int>::GetMaximumEigenvalueAndEigenvector(NuTo::FullVector<int, Eigen::Dynamic> &rStart, int &maximumEigenvalue, double tol)
+{
+	throw MathException("[SparseMatrixCSRGeneral::importFromSLang] not implemented for this data-type.");
+}
+
+template<>
+void SparseMatrixCSRGeneral<double>::GetMaximumEigenvalueAndEigenvector(NuTo::FullVector<double, Eigen::Dynamic> &rStart, double &maximumEigenvalue, double tol)
+{
+	int numRows = this->GetNumRows();
+	int numCols = this->GetNumColumns();
+
+	assert(numRows != numCols);
+
+	if(rStart.rows() != numRows)
+	{
+		rStart.Resize(numRows);
+		rStart.fill(1./std::sqrt(numRows + 1));
+		rStart(numRows - 1) = std::sqrt(1 - (numRows - 1)/(numRows + 1));
+	}
+
+	NuTo::FullVector<double, Eigen::Dynamic> y_k_1_star(rStart.rows());
+	NuTo::FullVector<double, Eigen::Dynamic> y_k_1(rStart.rows());
+	double lambda_k_1 = 0., lambda_k_2 = 0.;
+	double error = 0.;
+	int i = 1;
+	while(error > tol && i > 3)
+	{
+		y_k_1_star = this->operator*(rStart);
+		maximumEigenvalue = rStart.dot(y_k_1_star);
+		y_k_1 = y_k_1_star*(1./y_k_1_star.Norm());
+
+		rStart = y_k_1;
+
+		if(i > 3)
+		{
+			double qk = (maximumEigenvalue - lambda_k_1)/(lambda_k_1 - lambda_k_2);
+			double temp = fabs((qk/(1-qk))*(maximumEigenvalue - lambda_k_1));
+			error = temp/(temp+maximumEigenvalue);
+		}
+
+		lambda_k_2 = lambda_k_1;
+		lambda_k_1 = maximumEigenvalue;
+		i++;
+	}
+}
 
 #ifdef ENABLE_SERIALIZATION
 template <class T>

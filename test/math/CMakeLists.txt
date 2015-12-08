@@ -31,4 +31,14 @@ IF(ENABLE_ARPACK)
  ENDIF(MINGW)#
  ADD_TEST(c::math::Arpack ${CMAKE_CURRENT_BUILD_DIR}/Arpack)
 ENDIF(ENABLE_ARPACK) 
+
+ADD_EXECUTABLE(PowerIteration PowerIteration.cpp)
+TARGET_LINK_LIBRARIES(PowerIteration NuToMath NuToBase ${Boost_LIBRARIES} ${OpenBLAS_LIBRARIES} )
+
+IF(MINGW)
+	SET_TARGET_PROPERTIES(PowerIteration PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)#
+ADD_TEST(c::math::PowerIteration ${CMAKE_CURRENT_BUILD_DIR}/PowerIteration)
+
+
 ENDIF(ENABLE_C++_TESTS)
