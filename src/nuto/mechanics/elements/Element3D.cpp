@@ -1444,6 +1444,7 @@ const NuTo::DeformationGradient3D NuTo::Element3D::CalculateDeformationGradient(
 void NuTo::Element3D::AddDetJBtCB(const Eigen::MatrixXd& rDerivativeShapeFunctionsGlobal, const ConstitutiveTangentLocal<6, 6>& rConstitutiveTangent, double rFactor, int rRow, int rCol,
         FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoefficientMatrix) const
 {
+
 	Eigen::Matrix<double, 6 , Eigen::Dynamic> Bmat;
 	int numDofs = 3*GetNumNodes();
 	Bmat.setZero(6,numDofs);
@@ -1464,59 +1465,6 @@ void NuTo::Element3D::AddDetJBtCB(const Eigen::MatrixXd& rDerivativeShapeFunctio
     const Eigen::Matrix<double, 6 , 6>& Cmod(rConstitutiveTangent*rFactor);
     rCoefficientMatrix.block(rRow, rCol, numDofs, numDofs).noalias() += Bmat.transpose()*Cmod*Bmat;
 
-    /*const double *C = rConstitutiveTangent.data();
-    double x1, x2, y1, y2, z1, z2, x2x1, y2x1, z2x1, x2y1, y2y1, z2y1, x2z1, y2z1, z2z1;
-    for (int theNode1 = 0; theNode1 < GetNumNodes(); theNode1++)
-    {
-        int node1mul3 = 3 * theNode1;
-        int node1mul3plus1 = node1mul3 + 1;
-        int node1mul3plus2 = node1mul3plus1 + 1;
-
-        assert((int )rDerivativeShapeFunctionsGlobal.size() > node1mul3plus2);
-        x1 = rFactor * rDerivativeShapeFunctionsGlobal(theNode1, 0);
-        y1 = rFactor * rDerivativeShapeFunctionsGlobal(theNode1, 1);
-        z1 = rFactor * rDerivativeShapeFunctionsGlobal(theNode1, 2);
-        node1mul3 += rRow;
-        node1mul3plus1 += rRow;
-        node1mul3plus2 += rRow;
-        for (int theNode2 = 0; theNode2 < GetNumNodes(); theNode2++)
-        {
-            int node2mul3 = 3 * theNode2;
-            int node2mul3plus1 = node2mul3 + 1;
-            int node2mul3plus2 = node2mul3plus1 + 1;
-            node2mul3 += rCol;
-            node2mul3plus1 += rCol;
-            node2mul3plus2 += rCol;
-
-            assert((int )rDerivativeShapeFunctionsGlobal.size() > node2mul3plus2);
-            x2 = rDerivativeShapeFunctionsGlobal(theNode2, 0);
-            y2 = rDerivativeShapeFunctionsGlobal(theNode2, 1);
-            z2 = rDerivativeShapeFunctionsGlobal(theNode2, 2);
-
-            x2x1 = x2 * x1;
-            y2x1 = y2 * x1;
-            z2x1 = z2 * x1;
-            x2y1 = x2 * y1;
-            y2y1 = y2 * y1;
-            z2y1 = z2 * y1;
-            x2z1 = x2 * z1;
-            y2z1 = y2 * z1;
-            z2z1 = z2 * z1;
-            assert(rCoefficientMatrix.GetNumRows() > node1mul3plus2 && rCoefficientMatrix.GetNumColumns() > node1mul3plus2);
-            assert(rCoefficientMatrix.GetNumRows() > node2mul3plus2 && rCoefficientMatrix.GetNumColumns() > node2mul3plus2);
-
-            rCoefficientMatrix(node1mul3, node2mul3) += x2x1 * C[0] + x2y1 * C[3] + x2z1 * C[5] + y2x1 * C[18] + y2y1 * C[21] + y2z1 * C[23] + z2x1 * C[30] + z2y1 * C[33] + z2z1 * C[35];
-            rCoefficientMatrix(node1mul3, node2mul3plus1) += y2x1 * C[6] + y2y1 * C[9] + y2z1 * C[11] + x2x1 * C[18] + x2y1 * C[21] + x2z1 * C[23] + z2x1 * C[24] + z2y1 * C[27] + z2z1 * C[29];
-            rCoefficientMatrix(node1mul3, node2mul3plus2) += z2x1 * C[12] + z2y1 * C[15] + z2z1 * C[17] + y2x1 * C[24] + y2y1 * C[27] + y2z1 * C[29] + x2x1 * C[30] + x2y1 * C[33] + x2z1 * C[35];
-            rCoefficientMatrix(node1mul3plus1, node2mul3) += x2y1 * C[1] + x2x1 * C[3] + x2z1 * C[4] + y2y1 * C[19] + y2x1 * C[21] + y2z1 * C[22] + z2y1 * C[31] + z2x1 * C[33] + z2z1 * C[34];
-            rCoefficientMatrix(node1mul3plus1, node2mul3plus1) += y2y1 * C[7] + y2x1 * C[9] + y2z1 * C[10] + x2y1 * C[19] + x2x1 * C[21] + x2z1 * C[22] + z2y1 * C[25] + z2x1 * C[27] + z2z1 * C[28];
-            rCoefficientMatrix(node1mul3plus1, node2mul3plus2) += z2y1 * C[13] + z2x1 * C[15] + z2z1 * C[16] + y2y1 * C[25] + y2x1 * C[27] + y2z1 * C[28] + x2y1 * C[31] + x2x1 * C[33] + x2z1 * C[34];
-            rCoefficientMatrix(node1mul3plus2, node2mul3) += x2z1 * C[2] + x2y1 * C[4] + x2x1 * C[5] + y2z1 * C[20] + y2y1 * C[22] + y2x1 * C[23] + z2z1 * C[32] + z2y1 * C[34] + z2x1 * C[35];
-            rCoefficientMatrix(node1mul3plus2, node2mul3plus1) += y2z1 * C[8] + y2y1 * C[10] + y2x1 * C[11] + x2z1 * C[20] + x2y1 * C[22] + x2x1 * C[23] + z2z1 * C[26] + z2y1 * C[28] + z2x1 * C[29];
-            rCoefficientMatrix(node1mul3plus2, node2mul3plus2) += z2z1 * C[14] + z2y1 * C[16] + z2x1 * C[17] + y2z1 * C[26] + y2y1 * C[28] + y2x1 * C[29] + x2z1 * C[32] + x2y1 * C[34] + x2x1 * C[35];
-        }
-    }
-    */
 }
 
 //! @brief adds up the internal force vector

@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef CONSTRAINTEQUATION_H_
-#define CONSTRAINTEQUATION_H_
+#pragma once
 
 #include <vector>
 #include "nuto/mechanics/constraints/ConstraintBase.h"
@@ -86,4 +85,3 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLinearEquation)
 #endif // ENABLE_SERIALIZATION
 
-#endif // CONSTRAINTEQUATION_H_

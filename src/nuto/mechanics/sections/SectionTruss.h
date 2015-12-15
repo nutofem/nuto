@@ -54,10 +54,10 @@ public:
     virtual void Info(unsigned short rVerboseLevel) const;
 
     //! @brief ... cast the base pointer to an SectionTruss, otherwise throws an exception
-    SectionTruss* AsSectionTruss();
+    SectionTruss* AsSectionTruss() override;
 
     //! @brief ... cast the base pointer to an SectionTruss, otherwise throws an exception
-    const SectionTruss* AsSectionTruss() const;
+    const SectionTruss* AsSectionTruss() const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

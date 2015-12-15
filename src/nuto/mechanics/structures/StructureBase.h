@@ -1100,6 +1100,15 @@ public:
     //! @param rCoefficient ... weight factor of this term
     //! @param rRHS ... prescribed right hand side value
     void ConstraintLinearEquationCreate(int rConstraint, int rNode, NuTo::Node::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRHS = 0);
+
+    //! @brief Creates a constraint equation that couples the degrees of freedom of an arbitrary node to a point in an element
+    //! @param rNode ... node id in the first constraint equation term
+    //! @param rElement ... element group id
+    //! @param rDofType ... type of dof in the first constraint equation term (e.g DISPLACEMENTS, ROTATIONS, TEMPERATURES)
+    //! @param rDofComponent ... 0,1,2 for x,y,z respectively
+    //! @param numNearestNeighbours ... number of nearest neighbours to be found by the approximate nearest neighbour algorithm
+    void ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup, NuTo::Node::eAttributes rDofType, int rDofComponent, int rNumNearestNeighbours, double rTolerance = 1.0e-6);
+
 #endif
 
     //! @brief ... add a term to a constraint equation

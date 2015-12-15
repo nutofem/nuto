@@ -430,9 +430,6 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(ElementBas
             default:
                 throw MechanicsException("[NuTo::GradientDamageEngineeringStress::ENGENEERING_STRESS_2D] Invalid type of 2D section behavoir found!!!");
             }
-            // calculate coefficients of the material matrix
-            double C11, C12, C33;
-            this->CalculateCoefficients3D(C11, C12, C33);
         }
             break;
         case NuTo::Constitutive::Output::ENGINEERING_STRESS_3D:

@@ -62,6 +62,12 @@ int NuTo::Structure::NodeGetId(const NodeBase* rNode)const
     throw MechanicsException("[NuTo::Structure::GetNodeId] Node does not exist.");
 }
 
+const boost::ptr_map<int, NuTo::NodeBase>& NuTo::Structure::NodeGetNodeMap() const
+{
+    return mNodeMap;
+}
+
+
 //! @brief ... return the global dof number of the displacement component of a node
 //! @param rNodeId (Input) 			... node id
 //! @param rDispDof 	... local disp dof (0,1 or 2 for x,y or z)

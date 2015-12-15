@@ -182,6 +182,10 @@ public:
     //! @param pointer to a node
     //! @return id
     int NodeGetId(const NodeBase* rNode) const;
+
+    //! @brief returns const reference to mNodeMap
+    //! @return mNodeMap
+    const boost::ptr_map<int, NodeBase>& NodeGetNodeMap() const;
 #endif //SWIG
 
     //! @brief ... return the global dof number of the displacement component of a node
