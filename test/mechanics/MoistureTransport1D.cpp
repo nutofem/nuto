@@ -552,8 +552,12 @@ int main()
         //dis.Info(12,5,true);
 */
 #ifdef ENABLE_VISUALIZE
-        MTStructure1D.AddVisualizationComponentRelativeHumidity();
-        MTStructure1D.AddVisualizationComponentWaterVolumeFraction();
+        int visualizationGroup = MTStructure1D.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        MTStructure1D.GroupAddElementsTotal(visualizationGroup);
+
+        MTStructure1D.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::RELATIVE_HUMIDITY);
+        MTStructure1D.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::WATER_VOLUME_FRACTION);
+
 #endif // ENABLE_VISUALIZE
 
 

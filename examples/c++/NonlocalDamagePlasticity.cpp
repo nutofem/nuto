@@ -128,11 +128,14 @@ int main()
 
 	// visualize results
 #ifdef ENABLE_VISUALIZE
-	myStructure.AddVisualizationComponentNonlocalWeights(myElement1,0);
-	myStructure.AddVisualizationComponentNonlocalWeights(myElement2,0);
-	myStructure.AddVisualizationComponentNonlocalWeights(myElement2,1);
-	myStructure.AddVisualizationComponentNonlocalWeights(myElement2,2);
-	myStructure.AddVisualizationComponentNonlocalWeights(myElement2,3);
+    int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    myStructure.GroupAddElementsTotal(visualizationGroup);
+
+	myStructure.AddVisualizationComponentNonlocalWeights(visualizationGroup, myElement1,0);
+	myStructure.AddVisualizationComponentNonlocalWeights(visualizationGroup, myElement2,0);
+	myStructure.AddVisualizationComponentNonlocalWeights(visualizationGroup, myElement2,1);
+	myStructure.AddVisualizationComponentNonlocalWeights(visualizationGroup, myElement2,2);
+	myStructure.AddVisualizationComponentNonlocalWeights(visualizationGroup, myElement2,3);
 #endif // ENABLE_VISUALIZE
 	myStructure.ElementTotalUpdateTmpStaticData();
 	//myStructure.ExportVtkDataFileElements("PlaneNonlocalWeights.vtk");
@@ -292,12 +295,13 @@ int main()
 		}
     }
 #ifdef ENABLE_VISUALIZE
-	myStructure.AddVisualizationComponentDisplacements();
-	myStructure.AddVisualizationComponentEngineeringStrain();
-	myStructure.AddVisualizationComponentEngineeringStress();
-	myStructure.AddVisualizationComponentDamage();
-	myStructure.AddVisualizationComponentEngineeringPlasticStrain();
-	myStructure.ExportVtkDataFileElements("NonlocalDamagePlasticity.vtk");
+
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DAMAGE);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN);
+    myStructure.ExportVtkDataFileElements("NonlocalDamagePlasticity.vtk");
 #endif // ENABLE_VISUALIZE
 
     }

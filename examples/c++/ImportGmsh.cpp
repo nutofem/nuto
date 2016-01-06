@@ -112,14 +112,19 @@ int main()
         myStructure.CalculateMaximumIndependentSets();
 
 #ifdef ENABLE_VISUALIZE
-        myStructure.AddVisualizationComponentSection();
-        myStructure.AddVisualizationComponentConstitutive();
-        myStructure.AddVisualizationComponentDisplacements();
-        myStructure.AddVisualizationComponentEngineeringStrain();
-        myStructure.AddVisualizationComponentEngineeringStress();
+
+        int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        myStructure.GroupAddElementsTotal(visualizationGroup);
+
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::SECTION);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::CONSTITUTIVE);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DAMAGE);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN);
+
         myStructure.ElementTotalUpdateTmpStaticData();
-        myStructure.AddVisualizationComponentDamage();
-        myStructure.AddVisualizationComponentEngineeringPlasticStrain();
         myStructure.ExportVtkDataFileElements("ImportGmsh.vtk");
 #endif
 

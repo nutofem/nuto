@@ -92,11 +92,14 @@ myStructure.BuildNonlocalData(myMatDamage)
 myStructure.CalculateMaximumIndependentSets();
 
 #visualize results (nonlocal weights)
-myStructure.AddVisualizationComponentNonlocalWeights(element1,0)
-myStructure.AddVisualizationComponentNonlocalWeights(element2,0)
-myStructure.AddVisualizationComponentNonlocalWeights(element2,1)
-myStructure.AddVisualizationComponentNonlocalWeights(element2,2)
-myStructure.AddVisualizationComponentNonlocalWeights(element2,3)
+visualizationGroup = myStructure.GroupCreate("Elements");
+myStructure.GroupAddElementsTotal(visualizationGroup)
+
+myStructure.AddVisualizationComponentNonlocalWeights(visualizationGroup,element1,0)
+myStructure.AddVisualizationComponentNonlocalWeights(visualizationGroup,element2,0)
+myStructure.AddVisualizationComponentNonlocalWeights(visualizationGroup,element2,1)
+myStructure.AddVisualizationComponentNonlocalWeights(visualizationGroup,element2,2)
+myStructure.AddVisualizationComponentNonlocalWeights(visualizationGroup,element2,3)
 
 #calculate linear elastic matrix
 stiffnessMatrix = nuto.DoubleSparseMatrixCSRVector2General(0,0)
@@ -232,11 +235,12 @@ for theLoadStep in range(0,1):
     #update the structure, and then recalculate stiffness
     myStructure.ElementTotalUpdateStaticData()
 
-myStructure.AddVisualizationComponentDisplacements()
-myStructure.AddVisualizationComponentEngineeringStrain()
-myStructure.AddVisualizationComponentEngineeringStress()
-myStructure.AddVisualizationComponentDamage()
-myStructure.AddVisualizationComponentEngineeringPlasticStrain()
+myStructure.AddVisualizationComponent(visualizationGroup, "Displacements");
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStrain");
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStress");
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringPlasticStrain");
+myStructure.AddVisualizationComponent(visualizationGroup, "Damage");
+
 myStructure.ExportVtkDataFileElements("NonlocalDamagePlasticityModel.vtk")
 
 if (error):

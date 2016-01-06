@@ -179,12 +179,13 @@ try
 
 #ifdef ENABLE_VISUALIZE
     //add visualization
-    //myStructure.AddVisualizationComponentSection();
-    //myStructure.AddVisualizationComponentConstitutive();
-	myStructure.AddVisualizationComponentDisplacements();
-	myStructure.AddVisualizationComponentEngineeringStrain();
-	myStructure.AddVisualizationComponentEngineeringStress();
-    //myStructure.AddVisualizationComponentDamage();
+    int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    myStructure.GroupAddElementsTotal(visualizationGroup);
+
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
+
 #endif
 
     //set constraints

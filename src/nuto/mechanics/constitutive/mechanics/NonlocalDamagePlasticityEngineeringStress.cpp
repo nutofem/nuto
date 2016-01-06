@@ -58,7 +58,6 @@ NuTo::NonlocalDamagePlasticityEngineeringStress::NonlocalDamagePlasticityEnginee
     mYieldSurface = Constitutive::COMBINED_ROUNDED;
     mDamage = true;
     mThermalExpansionCoefficient = 0.;
-    SetParametersValid();
 }
 
 #ifdef ENABLE_SERIALIZATION

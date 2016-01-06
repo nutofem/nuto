@@ -92,14 +92,17 @@ constraintRHS = myStructure.ConstraintLagrangeSetDisplacementNodeGroup(GrpNodesR
 myStructure.ConstraintLagrangeSetPenaltyStiffness(constraintRHS,1.);
 
 #ifdef ENABLE_VISUALIZE
-myStructure.AddVisualizationComponentSection();
-myStructure.AddVisualizationComponentConstitutive();
-myStructure.AddVisualizationComponentDisplacements();
-myStructure.AddVisualizationComponentEngineeringStrain();
-myStructure.AddVisualizationComponentEngineeringStress();
-myStructure.AddVisualizationComponentDamage();
-myStructure.AddVisualizationComponentEngineeringPlasticStrain();
-myStructure.AddVisualizationComponentPrincipalEngineeringStress();
+visualizationGroup = myStructure.GroupCreate("Elements");
+myStructure.GroupAddElementsTotal(visualizationGroup)
+
+myStructure.AddVisualizationComponent(visualizationGroup, "ConstitutiveModel");
+myStructure.AddVisualizationComponent(visualizationGroup, "Displacements");
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStrain");
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStress");
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringPlasticStrain");
+myStructure.AddVisualizationComponent(visualizationGroup, "PrincipalEngineeringStress");
+myStructure.AddVisualizationComponent(visualizationGroup, "Section");
+
 myStructure.ElementTotalUpdateTmpStaticData();
 myStructure.ExportVtkDataFileElements("ConstraintsLagrange1D.vtk");
 #endif

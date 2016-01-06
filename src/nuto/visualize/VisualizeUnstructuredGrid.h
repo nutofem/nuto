@@ -32,6 +32,11 @@ public:
     //! @return ... point identifier (zero based indexing)
     unsigned int AddPoint(const double* rCoordinates);
 
+    //! @brief ... add vertex cell
+    //! @param rPoints ... point id's (zero based indexing)
+    //! @return ... cell identifier (zero based indexing)
+    unsigned int AddVertexCell(const unsigned int* rPoints);
+
     //! @brief ... add line cell
     //! @param rPoints ... point id's (zero based indexing)
     //! @return ... cell identifier (zero based indexing)

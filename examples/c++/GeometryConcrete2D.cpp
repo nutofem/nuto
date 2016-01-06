@@ -121,13 +121,16 @@ int main(int argc, char* argv[])
     //**********************************************
     //          Visualisation
     //**********************************************
-    myStructure.AddVisualizationComponentDisplacements();
-    myStructure.AddVisualizationComponentEngineeringStrain();
-    myStructure.AddVisualizationComponentSection();
-    myStructure.AddVisualizationComponentEngineeringStress();
-    myStructure.AddVisualizationComponentEngineeringPlasticStrain();
-    myStructure.AddVisualizationComponentPrincipalEngineeringStress();
+    int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    myStructure.GroupAddElementsTotal(visualizationGroup);
 
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
+
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::SECTION);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS);
 
     //**********************************************
     //          Solver

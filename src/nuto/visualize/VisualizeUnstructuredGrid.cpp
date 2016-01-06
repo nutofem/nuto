@@ -6,6 +6,7 @@
 #include <boost/tokenizer.hpp>
 
 #include "nuto/visualize/CellHexahedron.h"
+#include "nuto/visualize/CellVertex.h"
 #include "nuto/visualize/CellLine.h"
 #include "nuto/visualize/CellPyramid.h"
 #include "nuto/visualize/CellQuad.h"
@@ -41,6 +42,14 @@ unsigned int NuTo::VisualizeUnstructuredGrid::AddPoint(const double* rCoordinate
         }
     }
     return PointId;
+}
+
+// add vertex cell
+unsigned int NuTo::VisualizeUnstructuredGrid::AddVertexCell(const unsigned int* rPoints)
+{
+    this->CheckPoints(1,rPoints);
+    this->mCells.push_back(new CellVertex(rPoints,this->mCellData));
+    return this->mCells.size() - 1;
 }
 
 // add line cell

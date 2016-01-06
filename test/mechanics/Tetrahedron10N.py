@@ -234,9 +234,12 @@ if (abs(sumY-2.5)>1e-8):
 
         
 # visualize results
-myStructure.AddVisualizationComponentDisplacements()
-myStructure.AddVisualizationComponentEngineeringStrain()
-myStructure.AddVisualizationComponentEngineeringStress()
+visualizationGroup = myStructure.GroupCreate("Elements");
+myStructure.GroupAddElementsTotal(visualizationGroup)
+
+myStructure.AddVisualizationComponent(visualizationGroup, "Displacements");
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStrain");
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStress");
 myStructure.ExportVtkDataFileElements("Tetrahedron10N.vtk")
 
        

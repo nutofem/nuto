@@ -92,7 +92,10 @@ residualVector = extForceVector - intForceVector
 print "residual: " + str(residualVector.Norm())
 
 # visualize results
-myStructure.AddVisualizationComponentDisplacements()
-myStructure.AddVisualizationComponentEngineeringStrain()
-myStructure.AddVisualizationComponentEngineeringStress()
+visualizationGroup = myStructure.GroupCreate("Elements");
+myStructure.GroupAddElementsTotal(visualizationGroup)
+
+myStructure.AddVisualizationComponent(visualizationGroup, "Displacements");
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStrain");
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStress");
 myStructure.ExportVtkDataFileElements("Truss1D2N.vtk")

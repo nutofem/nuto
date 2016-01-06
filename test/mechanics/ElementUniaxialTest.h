@@ -256,9 +256,12 @@ private:
         fileName += ".vtu";
         directory /= fileName;
 
-        rStructure.AddVisualizationComponentDisplacements();
-        rStructure.AddVisualizationComponentEngineeringStrain();
-        rStructure.AddVisualizationComponentEngineeringStress();
+        int visualizationGroup = rStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        rStructure.GroupAddElementsTotal(visualizationGroup);
+
+        rStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+        rStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+        rStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
 
         rStructure.ExportVtkDataFileElements(directory.string(),true);
 

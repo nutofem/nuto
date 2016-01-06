@@ -551,11 +551,15 @@ int main()
         // %%%%%%%%%%%%%%%%
 
 #ifdef ENABLE_VISUALIZE
-        myStructure.AddVisualizationComponentRelativeHumidity();
-        myStructure.AddVisualizationComponentWaterVolumeFraction();
-        myStructure.AddVisualizationComponentDisplacements();
-        myStructure.AddVisualizationComponentEngineeringStrain();
-        myStructure.AddVisualizationComponentEngineeringStress();
+
+        int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        myStructure.GroupAddElementsTotal(visualizationGroup);
+
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::RELATIVE_HUMIDITY);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::WATER_VOLUME_FRACTION);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
 
 #endif // ENABLE_VISUALIZE
 

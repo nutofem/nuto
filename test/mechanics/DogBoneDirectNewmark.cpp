@@ -244,15 +244,17 @@ try
 	myStructure.CalculateMaximumIndependentSets();
 
 #ifdef ENABLE_VISUALIZE
-    //add visualization
-    //myStructure.AddVisualizationComponentSection();
-    //myStructure.AddVisualizationComponentConstitutive();
-	myStructure.AddVisualizationComponentDisplacements();
-	myStructure.AddVisualizationComponentVelocity();
-	myStructure.AddVisualizationComponentAcceleration();
-	myStructure.AddVisualizationComponentEngineeringStrain();
-	myStructure.AddVisualizationComponentEngineeringStress();
-	myStructure.AddVisualizationComponentDamage();
+
+    int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    myStructure.GroupAddElementsTotal(visualizationGroup);
+
+	myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+	myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::VELOCITY);
+	myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ACCELERATION);
+	myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+	myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
+	myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DAMAGE);
+
 #endif
 
 	//directionX

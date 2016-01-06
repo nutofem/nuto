@@ -716,6 +716,10 @@ public:
     //! @param ... rIdentElement  identifier for the element
     void GroupAddElement(int rIdentGroup, int rIdElement);
 
+    //! @brief ... Adds all elements to an element group
+    //! @param ... rIdentGroup identifier for the group
+    void GroupAddElementsTotal(int rIdentGroup);
+
     //! @brief ... Adds all elements to a group based on the type
     //! @param ... rIdentGroup identifier for the group
     //! @param ... rInterpolationType  identifier for the interpolation type

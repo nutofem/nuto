@@ -72,3 +72,29 @@ void NuTo::Structure::GroupAddElement(int rIdentGroup, int rIdElement)
         std::cout<<"[NuTo::Structure::GroupAddElement] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 }
+
+void NuTo::Structure::GroupAddElementsTotal(int rIdentGroup)
+{
+#ifdef SHOW_TIME
+    std::clock_t start,end;
+    start=clock();
+#endif
+
+    boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
+
+    if (itGroup==mGroupMap.end())
+        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Group with the given identifier does not exist.");
+
+    if (itGroup->second->GetType()!=Groups::Elements)
+        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t An element can be added only to an element group.");
+
+    for (auto const& iPair : mElementMap)
+        itGroup->second->AddMember(iPair.first, ElementGetElementPtr(iPair.first));
+
+
+#ifdef SHOW_TIME
+    end=clock();
+    if (mShowTime)
+        std::cout<< __PRETTY_FUNCTION__ << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}

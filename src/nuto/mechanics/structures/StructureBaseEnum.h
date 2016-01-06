@@ -1,6 +1,5 @@
 // $Id$
-#ifndef STRUCTUREBASEENUM_H_
-#define STRUCTUREBASEENUM_H_
+#pragma once
 
 namespace NuTo
 {
@@ -41,4 +40,4 @@ enum class eOutput
 
 }
 }
-#endif /* STRUCTUREBASEENUM_H_ */
+

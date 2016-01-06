@@ -1,12 +1,13 @@
 // $Id$
 
-#ifndef STRUCTUREBASE_H
-#define STRUCTUREBASE_H
+#pragma once
 
 #include <ctime>
 #include <map>
 #include <array>
 #include <functional>
+#include <string>
+#include <memory>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -16,7 +17,7 @@
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/ptr_container/ptr_list.hpp>
 
-#include <string>
+
 #include "nuto/base/Logger.h"
 #include "nuto/base/NuToObject.h"
 #include "nuto/math/FullMatrix_Def.h"
@@ -36,7 +37,6 @@
 
 
 #include "nuto/visualize/VisualizeBase.h"
-#include "nuto/visualize/VisualizeComponentBase.h"
 
 
 namespace NuTo
@@ -57,9 +57,8 @@ class CrackBase;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain;
 
 
-
 class VisualizeUnstructuredGrid;
-class VisualizeComponentBase;
+class VisualizeComponent;
 
 
 //! @author Jörg F. Unger, ISM
@@ -95,135 +94,67 @@ public:
     int GetDimension()const;
 
 
-    //! @brief ... Add the damage variable to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentDamage();
-
-    //! @brief ... Add visualization displacements to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentDisplacements();
-
-    //! @brief ... Add element id to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentElement();
-
-    //! @brief ... Add engineering strains to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentEngineeringStrain();
-
-    //! @brief ... Add engineering plastic strains to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentEngineeringPlasticStrain();
-
-    //! @brief ... Add total inelastic equivalent strain to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentTotalInelasticEqStrain();
-
-    //! @brief ... Add engineering stress to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentEngineeringStress();
-
-    //! @brief ... Add section id to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentSection();
-
-    //! @brief ... Add constitutive id to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentConstitutive();
-
-    //! @brief ... Add crack id vector to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentCracks();
-
-    //! @brief ... Add visualization particle radius to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentParticleRadius();
-
-    //! @brief ... Add visualization of principal stresses to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentPrincipalEngineeringStress();
-
-    //! @brief ... Add nonlocal weights to the internal list, which is finally exported via the ExportVtkDataFile command
-    //! @param rElementId ... Element id
-    //! @param rIp ... local ip number
-    void AddVisualizationComponentNonlocalWeights(int rElementId, int rIp);
-
-    //! @brief ... Add visualization of rotations to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentRotation();
-
-    //! @brief ... Add visualization of velocity to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentVelocity();
-
-    //! @brief ... Add visualization of acceration to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentAcceleration();
-
-    //! @brief ... Add visualization of angular velocity to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentAngularVelocity();
-
-    //! @brief ... Add visualization of angular velocity to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentAngularAcceleration();
-
-    //! @brief ... Add visualization of temperature to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentTemperature();
-
-    //! @brief ... Add visualization of heat flux to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentHeatFlux();
-
-    //! @brief ... Add visualization of nonlocal equivalent strain to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentNonlocalEqStrain();
-
-    //! @brief ... Add visualization of local equivalent strain to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentLocalEqStrain();
-
-    //! @brief ... Add visualization of relative humidity to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentRelativeHumidity();
-
-    //! @brief ... Add visualization of water volume fraction to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentWaterVolumeFraction();
-
-    //! @brief ... Add visualization of the bond stress to the internal list, which is finally exported via the ExportVtkDataFile command
-    void AddVisualizationComponentBondStress();
-
     //! @brief ... clear all visualization components
     void ClearVisualizationComponents();
 
     //! @brief ... export the entire structure to Vtk data file
-    //! @param rFileName ... file name
-    //! @param rWhat ... string which describes what to plot
-    void ExportVtkDataFile(const std::string& rFileName);
-
-    //! @brief ... export the entire structure to Vtk data file
-    //! @param rFileName ... file name
-    //! @param rWhat ... string which describes what to plot
-    void ExportVtkDataFileElements(const std::string& rFileName);
-
-    //! @brief ... export the entire structure to Vtk data file
-    //! @param rFileName ... file name
-    //! @param rWhat ... string which describes what to plot
-    void ExportVtkDataFileNodes(const std::string& rFileName);
-
-    //! @brief ... export the entire structure to Vtk data file
-    //! @param rFileName ... file name
-    //! @param rWhat ... string which describes what to plot
+    //! @param rResultFileName ... file name
+    //! @param rTimeStep ... time step for the output files
     //! @param rXML ... if true, a vtu file is exported, otherwise a legacy vtk file is produced
-    void ExportVtkDataFileElements(const std::string& rFileName, bool rXML);
+    void ExportVtkDataFileElements(const std::string& rResultFileName, bool rXML = false);
 
     //! @brief ... export the entire structure to Vtk data file
-    //! @param rFileName ... file name
-    //! @param rWhat ... string which describes what to plot
+    //! @param rResultFileName ... file name
+    //! @param rTimeStep ... time step for the output files
     //! @param rXML ... if true, a vtu file is exported, otherwise a legacy vtk file is produced
-    void ExportVtkDataFileNodes(const std::string& rFileName, bool rXML);
+    void ExportVtkDataFileNodes(const std::string& rResultFileName, bool rXML = false);
 
     //! @brief ... export an element group to Vtk/xml data file
     //! @param rGroupIdent ... group ident
-    //! @param rFileName ... file name
+    //! @param rResultFileName ... file name
+    //! @param rTimeStep ... time step for the output files
     //! @param rXML ... use xml or vtk format (true for xml)
-    void ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName, bool rXML);
+    void ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rResultFileName, bool rXML);
+
+    //! @brief Add rVisualizeComponent to an element group for the visualization
+    //! @param rElementGroup: element group
+    //! @param rVisualizeComponent: visualization component, i.e. displacements, stresses...
+    void AddVisualizationComponent(int rElementGroup, const std::string& rVisualizeComponent);
+
+    //! @brief Add nonlocal weights to an element group for the visualization
+    //! @param rElementGroup: element group
+    //! @param rElementId: element id
+    //! @param rIp: integration point
+    void AddVisualizationComponentNonlocalWeights(int rElementGroup, int rElementId, int rIp);
 
 #ifndef SWIG
+    //! @brief Add rVisualizeComponent to an element group for the visualization
+    //! @param rElementGroup: element group
+    //! @param rVisualizeComponent: visualization component, i.e. displacements, stresses...
+    void AddVisualizationComponent(int rElementGroup, VisualizeBase::eVisualizeWhat rVisualizeComponent);
+
+    //! @brief Set tje visualization type for an element group
+    //! @param rElementGroup: element group
+    //! @param rVisualizeComponent: visualization type, i.e. voronoi cell, extrapolated...
+    void SetVisualizationType(const int rElementGroup, const VisualizeBase::eVisualizationType rVisualizationType);
+
     //! @brief ... define the data sets (scalar, vector etc for the visualize routine based on the mVisualizecomponents for an element plot
-    void DefineVisualizeElementData(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)const;
+    void DefineVisualizeElementData(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)const;
 
     //! @brief ... define the data sets (scalar, vector etc for the visualize routine based on the mVisualizecomponents for a node plot
-    void DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)const;
+    void DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)const;
 
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void ElementVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<ElementBase*>& rElements);
+    void ElementVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList, const std::vector<ElementBase*>& rElements, const VisualizeBase::eVisualizationType rVisualizationType = VisualizeBase::VORONOI_CELL);
 
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void ElementTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat);
+    void ElementTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList);
 
     //! @brief ... adds all the elements in a group to the data structure that is finally visualized
-    void ElementGroupAddToVisualize(int rGroupId, VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat);
+    void ElementGroupAddToVisualize(int rGroupId, VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList);
 
+    //! @brief ... returns the map that contains the visualization components to be exported for each element group
+    std::map<int, std::list<std::shared_ptr<VisualizeComponent>>>& GetGroupVisualizeComponentsMap(void);
 #endif //SWIG
 
 
@@ -572,10 +503,10 @@ public:
     void NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullVector<double,Eigen::Dynamic>& rNodeForce);
 
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void NodeTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
+    void NodeTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) const;
 
     //! @brief ... adds all the nodes in the vector to the data structure that is finally visualized
-    void NodeVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<const NodeBase*>& rNodes) const;
+    void NodeVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList, const std::vector<const NodeBase*>& rNodes) const;
 
 #endif //SWIG
 
@@ -1940,7 +1871,10 @@ protected:
     std::vector<std::string> mMappingIntEnum2String;
 
     //! @brief ... map storing the components (displacements, strains, nonlocal weights etc) to be included in the output (VTK) file
-    boost::ptr_list<NuTo::VisualizeComponentBase> mVisualizeComponents;
+    std::map<int, std::list<std::shared_ptr<VisualizeComponent>>> mGroupVisualizeComponentsMap;
+
+    //! @brief ... map storing the type of visualization for the output (VTK) file
+    std::map<int, VisualizeBase::eVisualizationType> mGroupVisualizationType;
 
     //! @brief ... total number of degrees of freedom of the structure
     int mNumDofs;
@@ -2064,4 +1998,3 @@ protected:
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::StructureBase)
 #endif // SWIG
 #endif  // ENABLE_SERIALIZATION
-#endif // STRUCTUREBASE_H

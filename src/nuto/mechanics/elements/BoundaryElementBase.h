@@ -137,7 +137,7 @@ public:
 
 
 #ifdef ENABLE_VISUALIZE
-    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) override;
+    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList ) override;
 #endif // ENABLE_VISUALIZE
 
 protected:

@@ -801,19 +801,19 @@ int NuTo::StructureBase::NodeGetIdAtCoordinate(FullVector<double, Eigen::Dynamic
 
 #ifdef ENABLE_VISUALIZE
 //! @brief ... adds all the nodes in the vector to the data structure that is finally visualized
-void NuTo::StructureBase::NodeTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const
+void NuTo::StructureBase::NodeTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) const
 {
     std::vector<const NodeBase*> nodeVec;
     this->GetNodesTotal(nodeVec);
-    NodeVectorAddToVisualize(rVisualize,rWhat,nodeVec);
+    NodeVectorAddToVisualize(rVisualize,rVisualizationList,nodeVec);
 }
 
 //! @brief ... adds all the nodes in the vector to the data structure that is finally visualized
-void NuTo::StructureBase::NodeVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, const std::vector<const NodeBase*>& rNodes) const
+void NuTo::StructureBase::NodeVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList, const std::vector<const NodeBase*>& rNodes) const
 {
     for (unsigned int nodeCount = 0; nodeCount < rNodes.size(); nodeCount++)
     {
-    	rNodes[nodeCount]->Visualize(rVisualize, rWhat);
+    	rNodes[nodeCount]->Visualize(rVisualize, rVisualizationList);
     }
 }
 #endif //ENABLE_VISUALIZE

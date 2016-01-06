@@ -65,7 +65,7 @@ public:
     const Eigen::VectorXi CalculateGlobalRowDofs() const;
 
 #ifdef ENABLE_VISUALIZE
-    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) override;
+    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) override;
 
     void GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType, std::vector<unsigned int>& VisualizationCellsIncidence,
             std::vector<unsigned int>& VisualizationCellsIP) const;

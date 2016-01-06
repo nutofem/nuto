@@ -340,9 +340,12 @@ int main()
 
 #ifdef ENABLE_VISUALIZE
         //mkdir(VTKFolder.c_str(),0777);
-        myStructure.AddVisualizationComponentDisplacements();
-        myStructure.AddVisualizationComponentEngineeringStrain();
-        myStructure.AddVisualizationComponentEngineeringStress();
+        int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        myStructure.GroupAddElementsTotal(visualizationGroup);
+
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
         //myStructure.ExportVtkDataFileElements(VTKFolder+"/"+VTKFile,false);
 #endif
 
@@ -396,7 +399,7 @@ int main()
         myStructure.Info();
 
     }
-    catch (NuTo::Exception e)
+    catch (NuTo::Exception &e)
     {
         std::cout << e.what() << std::endl;
         return 1;

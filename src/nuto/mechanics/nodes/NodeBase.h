@@ -20,7 +20,7 @@
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeBase.h"
-#include "nuto/visualize/VisualizeComponentBase.h"
+#include "nuto/visualize/VisualizeComponent.h"
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
 #include <boost/ptr_container/ptr_list.hpp>
 #endif // ENABLE_VISUALIZE
@@ -252,7 +252,7 @@ public:
     virtual std::string GetNodeTypeStr()const=0;
 
 #ifdef ENABLE_VISUALIZE
-    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const;
+    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) const;
 
 #endif // ENABLE_VISUALIZE
 

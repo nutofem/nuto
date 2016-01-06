@@ -79,16 +79,20 @@ try
     myStructure.ConstraintLagrangeSetPenaltyStiffness(constraintRHS,1.);
 
 #ifdef ENABLE_VISUALIZE
-    myStructure.AddVisualizationComponentSection();
-    myStructure.AddVisualizationComponentConstitutive();
-    myStructure.AddVisualizationComponentDisplacements();
-    myStructure.AddVisualizationComponentEngineeringStrain();
-    myStructure.AddVisualizationComponentEngineeringStress();
-    myStructure.AddVisualizationComponentDamage();
-    myStructure.AddVisualizationComponentEngineeringPlasticStrain();
-    myStructure.AddVisualizationComponentPrincipalEngineeringStress();
-	myStructure.ElementTotalUpdateTmpStaticData();
-    myStructure.ExportVtkDataFile("ConstraintsLagrange1D.vtk");
+        int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        myStructure.GroupAddElementsTotal(visualizationGroup);
+
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::SECTION);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::CONSTITUTIVE);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DAMAGE);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS);
+
+        myStructure.ElementTotalUpdateTmpStaticData();
+        myStructure.ExportVtkDataFileElements("ConstraintsLagrange1D.vtk");
 #endif
 
     // init some result data
@@ -306,7 +310,7 @@ try
 #ifdef ENABLE_VISUALIZE
             std::stringstream ss;
             ss << "ConstraintsLagrange1D" << loadstep << ".vtk";
-            myStructure.ExportVtkDataFile(ss.str());
+            myStructure.ExportVtkDataFileElements(ss.str());
 #endif
  			//store result/plot data
             NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> SinglePlotData(1,7);

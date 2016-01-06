@@ -50,6 +50,7 @@ class Structure;
 class StructureBase;
 class Truss;
 class VisualizeComponentBase;
+class VisualizeComponent;
 class IpDataBase;
 class ElementOutputBase;
 class Element1D;
@@ -449,7 +450,20 @@ public:
 
 #ifdef ENABLE_VISUALIZE
 
-    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat);
+    //! @brief Computes all data in rVisualizationList for the visualization. Decomposes the element into small cells for the cisualization.
+    //! @param rVisualize
+    //! @param rVisualizationList: a list of visualization components to be visualized
+    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList);
+
+    //! @brief Computes all data in rVisualizationList for the visualization. Extrapolates integration point data to element nodes
+    //! @param rVisualize
+    //! @param rVisualizationList: a list of visualization components to be visualized
+    virtual void VisualizeExtrapolateToNodes(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList);
+
+    //! @brief Computes all data in rVisualizationList for the visualization. Visualizes integration point data as vertiex elements
+    //! @param rVisualize
+    //! @param rVisualizationList: a list of visualization components to be visualized
+    virtual void VisualizeIntegrationPointData(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList);
 
     virtual void GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType, std::vector<unsigned int>& VisualizationCellsIncidence,
             std::vector<unsigned int>& VisualizationCellsIP) const;

@@ -66,8 +66,11 @@ void CheckTriangle(NuTo::IntegrationType::eIntegrationType rIntegrationType)
 
     }
 
-    myStructure.AddVisualizationComponentDisplacements();
-    myStructure.AddVisualizationComponentEngineeringStrain();
+    int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    myStructure.GroupAddElementsTotal(visualizationGroup);
+
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
 
     myStructure.ExportVtkDataFileElements("./voronoi.vtk");
 

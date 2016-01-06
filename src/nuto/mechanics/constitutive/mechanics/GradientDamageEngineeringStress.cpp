@@ -43,7 +43,6 @@ NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress() :
         ConstitutiveBase(), mRho(0.), mE(0.), mNu(0.), mNonlocalRadius(0.), mNonlocalRadiusParameter(0.), mThermalExpansionCoefficient(0.), mTensileStrength(0.), mCompressiveStrength(0.), mFractureEnergy(
                 0.), mDamageLawType(Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING)
 {
-    SetParametersValid();
 
 #ifdef ENABLE_DEBUG
     std::cout << "NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress debug active" << std::endl;

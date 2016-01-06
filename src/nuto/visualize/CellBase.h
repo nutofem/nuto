@@ -16,6 +16,7 @@ class CellBase
 public:
     enum eCellTypes
     {
+        VERTEX,
         LINE,
         TRIANGLE,
         QUAD,

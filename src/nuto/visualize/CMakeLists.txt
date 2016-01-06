@@ -2,6 +2,7 @@
 SET(NuToVisualize_SOURCES
   CellBase.cpp
   CellHexahedron.cpp
+  CellVertex.cpp
   CellLine.cpp
   CellPyramid.cpp
   CellQuad.cpp
@@ -9,35 +10,9 @@ SET(NuToVisualize_SOURCES
   CellTriangle.cpp
   Point.cpp
   VisualizeBase.cpp
-  VisualizeComponentAcceleration.cpp
-  VisualizeComponentAngularAcceleration.cpp
-  VisualizeComponentAngularVelocity.cpp
+  VisualizeComponent.cpp
   VisualizeComponentBase.cpp
-  VisualizeComponentBondStress.cpp
-  VisualizeComponentSlip.cpp
-  VisualizeComponentConstitutive.cpp
-  VisualizeComponentDamage.cpp
-  VisualizeComponentDisplacement.cpp
-  VisualizeComponentCrack.cpp
-  VisualizeComponentElement.cpp
-  VisualizeComponentEngineeringPlasticStrain.cpp
-  VisualizeComponentTotalInelasticEqStrain.cpp
-  VisualizeComponentEngineeringStrain.cpp
-  VisualizeComponentEngineeringStress.cpp
-  VisualizeComponentHeatFlux.cpp
-  VisualizeComponentLatticeStrain.cpp
-  VisualizeComponentLatticeStress.cpp
-  VisualizeComponentNonlocalEqStrain.cpp
-  VisualizeComponentLocalEqStrain.cpp
-  VisualizeComponentRelativeHumidity.cpp
   VisualizeComponentNonlocalWeight.cpp
-  VisualizeComponentParticleRadius.cpp
-  VisualizeComponentPrincipalEngineeringStress.cpp
-  VisualizeComponentRotation.cpp
-  VisualizeComponentSection.cpp
-  VisualizeComponentTemperature.cpp
-  VisualizeComponentVelocity.cpp
-  VisualizeComponentWaterVolumeFraction.cpp
   VisualizeDataBase.cpp
   VisualizeDataField.cpp
   VisualizeDataScalar.cpp

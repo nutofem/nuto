@@ -201,8 +201,12 @@ int main(int argc, char* argv[])
         std::cout << "**      Visualization            **" << std::endl;
         std::cout << "***********************************" << std::endl;
 
-        myStructure.AddVisualizationComponentDisplacements();
-        myStructure.AddVisualizationComponentConstitutive();
+        int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        myStructure.GroupAddElementsTotal(visualizationGroup);
+
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::CONSTITUTIVE);
+
 
         std::cout << "***********************************" << std::endl;
         std::cout << "**      Solver                   **" << std::endl;

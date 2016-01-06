@@ -77,31 +77,8 @@ extern "C" {
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
-#include "nuto/visualize/VisualizeComponentAcceleration.h"
-#include "nuto/visualize/VisualizeComponentAngularAcceleration.h"
-#include "nuto/visualize/VisualizeComponentAngularVelocity.h"
-#include "nuto/visualize/VisualizeComponentBondStress.h"
-#include "nuto/visualize/VisualizeComponentConstitutive.h"
-#include "nuto/visualize/VisualizeComponentCrack.h"
-#include "nuto/visualize/VisualizeComponentDamage.h"
-#include "nuto/visualize/VisualizeComponentDisplacement.h"
-#include "nuto/visualize/VisualizeComponentElement.h"
-#include "nuto/visualize/VisualizeComponentEngineeringPlasticStrain.h"
-#include "nuto/visualize/VisualizeComponentTotalInelasticEqStrain.h"
-#include "nuto/visualize/VisualizeComponentEngineeringStrain.h"
-#include "nuto/visualize/VisualizeComponentEngineeringStress.h"
-#include "nuto/visualize/VisualizeComponentHeatFlux.h"
+#include "nuto/visualize/VisualizeComponent.h"
 #include "nuto/visualize/VisualizeComponentNonlocalWeight.h"
-#include "nuto/visualize/VisualizeComponentNonlocalEqStrain.h"
-#include "nuto/visualize/VisualizeComponentLocalEqStrain.h"
-#include "nuto/visualize/VisualizeComponentParticleRadius.h"
-#include "nuto/visualize/VisualizeComponentPrincipalEngineeringStress.h"
-#include "nuto/visualize/VisualizeComponentRelativeHumidity.h"
-#include "nuto/visualize/VisualizeComponentRotation.h"
-#include "nuto/visualize/VisualizeComponentTemperature.h"
-#include "nuto/visualize/VisualizeComponentSection.h"
-#include "nuto/visualize/VisualizeComponentVelocity.h"
-#include "nuto/visualize/VisualizeComponentWaterVolumeFraction.h"
 #endif // ENABLE_VISUALIZE
 
 
@@ -344,451 +321,188 @@ void NuTo::StructureBase::GetElementsByGroup(Group<ElementBase>* rElementGroup, 
     }
 }
 
-// Export to Vtk data file ////////////////////////////////////////////////////
 
-//! @brief ... Add visualization displacements to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentDisplacements()
+// add visualization components for an element group
+void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, VisualizeBase::eVisualizeWhat rVisualizeComponent)
 {
 #ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
 #endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentDisplacement());
+
+    // check if the element group exists
+    if (mGroupMap.find(rElementGroup) == mGroupMap.end())
+        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Element group does not exist.");
+
+    // create a new visualization list for an element group or add components to an already existing list
+    if (mGroupVisualizeComponentsMap.find(rElementGroup) == mGroupVisualizeComponentsMap.end())
+    {
+        std::list<std::shared_ptr<VisualizeComponent>> visualizationPtrList;
+        visualizationPtrList.push_back(std::make_shared<VisualizeComponent>(VisualizeComponent(rVisualizeComponent)));
+
+        mGroupVisualizeComponentsMap.insert(std::pair<int,std::list<std::shared_ptr<VisualizeComponent>>>(rElementGroup, visualizationPtrList));
+        // mGroupVisualizeComponentsMap.emplace(rElementGroup, visualizationPtrList);       //<- use this for gcc version 4.9 or higher!
+
+        mGroupVisualizationType.insert(std::pair<int, VisualizeBase::eVisualizationType>(rElementGroup, VisualizeBase::VORONOI_CELL));
+        // mGroupVisualizationType.emplace(rElementGroup, VisualizeBase::VORONOI_CELL);     //<- use this for gcc version 4.9 or higher!
+    } else
+    {
+        mGroupVisualizeComponentsMap.at(rElementGroup).push_back(std::make_shared<VisualizeComponent>(VisualizeComponent(rVisualizeComponent)));
+    }
+
+    for (auto const &iPair : mGroupVisualizeComponentsMap)
+    {
+        std::cout << "ele group: \t" << iPair.first << std::endl;
+        for (auto const &iComponentPtr : iPair.second)
+        {
+            std::cout << "components: \t " << iComponentPtr->GetComponentName() << std::endl;
+        }
+    }
+
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentDisplacements] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+        mLogger<< __PRETTY_FUNCTION__ << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif // ENABLE_VISUALIZE
 }
 
-//! @brief ... Add element ID to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentElement()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentElement());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentElement] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
 
-//! @brief ... Add engineering strains to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentEngineeringStrain()
+// add visualization components for an element group
+void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, const std::string& rVisualizeComponent)
 {
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentEngineeringStrain());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentEngineeringStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
 
-//! @brief ... Add engineering plastic strain stress to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentEngineeringPlasticStrain()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentEngineeringPlasticStrain());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentEngineeringPlasticStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
+    if (rVisualizeComponent == "Accelerations")
+        AddVisualizationComponent(rElementGroup, VisualizeBase::ACCELERATION);
+    else if (rVisualizeComponent.compare("AngularAccelerations"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::ANGULAR_ACCELERATION);
+    else if (rVisualizeComponent.compare("AngularVelocities"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::ANGULAR_VELOCITY);
+    else if (rVisualizeComponent.compare("BondStress"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::BOND_STRESS);
+    else if (rVisualizeComponent.compare("BondStress"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::CONSTITUTIVE);
+    else if (rVisualizeComponent.compare("Crack"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::CRACK);
+    else if (rVisualizeComponent.compare("Damage"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::DAMAGE);
+    else if (rVisualizeComponent.compare("Displacements"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::DISPLACEMENTS);
+    else if (rVisualizeComponent.compare("Element"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::ELEMENT);
+    else if (rVisualizeComponent.compare("EngineeringPlasticStrain"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::ENGINEERING_PLASTIC_STRAIN);
+    else if (rVisualizeComponent.compare("EngineeringStrain"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::ENGINEERING_STRAIN);
+    else if (rVisualizeComponent.compare("EngineeringStress"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::ENGINEERING_STRESS);
+    else if (rVisualizeComponent.compare("HeatFlux"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::HEAT_FLUX);
+    else if (rVisualizeComponent.compare("LatticeStrain"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::LATTICE_STRAIN);
+    else if (rVisualizeComponent.compare("LatticeStress"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::LATTICE_STRESS);
+    else if (rVisualizeComponent.compare("LocalEqStrain"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::LOCAL_EQ_STRAIN);
+    else if (rVisualizeComponent.compare("NonlocalEqStrain"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::NONLOCAL_EQ_STRAIN);
+    else if (rVisualizeComponent.compare("ParticleRadius"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::PARTICLE_RADIUS);
+    else if (rVisualizeComponent.compare("PrincipalEngineeringStress"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::PRINCIPAL_ENGINEERING_STRESS);
+    else if (rVisualizeComponent.compare("RelativeHumidity"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::RELATIVE_HUMIDITY);
+    else if (rVisualizeComponent.compare("Rotations"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::ROTATION);
+    else if (rVisualizeComponent.compare("Section"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::SECTION);
+    else if (rVisualizeComponent.compare("Slip"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::SLIP);
+    else if (rVisualizeComponent.compare("Temperature"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::TEMPERATURE);
+    else if (rVisualizeComponent.compare("TotalInelasticEqStrain"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::TOTAL_INELASTIC_EQ_STRAIN);
+    else if (rVisualizeComponent.compare("Velocities"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::VELOCITY);
+    else if (rVisualizeComponent.compare("WaterVolumeFraction"))
+        AddVisualizationComponent(rElementGroup, VisualizeBase::WATER_VOLUME_FRACTION);
+    else
+        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Visualization component not implemented or misspelled.");
 
-//! @brief ... Add total inelastic equivalent strain to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentTotalInelasticEqStrain()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentTotalInelasticEqStrain());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentTotalInelasticEqStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
 
-//! @brief ... Add engineering stress to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentEngineeringStress()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentEngineeringStress());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentEngineeringStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
 
-//! @brief ... Add section to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentSection()
+}
+void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementGroup, int rElementId, int rIp)
 {
 #ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
 #endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentSection());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentSection] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
-//! @brief ... Add constitutive id to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentConstitutive()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentConstitutive());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentConstitutive] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
 
-//! @brief ... Add nonlocal weights to the internal list, which is finally exported via the ExportVtkDataFile command
-//! @param rElementId ... Element id
-//! @param rIp ... local ip number
-void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementId, int rIp)
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
+    // check if the element group exists
+    if (mGroupMap.find(rElementGroup) == mGroupMap.end())
+        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Element group does not exist.");
+
+    const ElementBase *elementBase = ElementGetElementPtr(rElementId);
+    int numIp = elementBase->GetNumIntegrationPoints();
+
+    if (rIp < 0 or rIp >= numIp)
+        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Integration point number is out of range.");
+
     try
     {
-        const ElementBase *elementBase = ElementGetElementPtr(rElementId);
-        int numIp = elementBase->GetNumIntegrationPoints();
-        if (rIp<0 || rIp>=numIp)
-            throw MechanicsException("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] Integration point number is out of range.");
-        mVisualizeComponents.push_back(new NuTo::VisualizeComponentNonlocalWeight(elementBase,rElementId,rIp));
+        // create a new visualization list for an element group or add components to an already existing list
+        if (mGroupVisualizeComponentsMap.find(rElementGroup) == mGroupVisualizeComponentsMap.end())
+        {
+            std::list<std::shared_ptr<VisualizeComponent>> visualizationPtrList;
+            visualizationPtrList.push_back(std::make_shared<VisualizeComponentNonlocalWeight>(VisualizeComponentNonlocalWeight(elementBase, rElementId, rIp)));
+
+            mGroupVisualizeComponentsMap.insert(std::pair<int,std::list<std::shared_ptr<VisualizeComponent>>>(rElementGroup, visualizationPtrList));
+            // mGroupVisualizeComponentsMap.emplace(rElementGroup, visualizationPtrList);       //<- use this for gcc version 4.9 or higher!
+
+            mGroupVisualizationType.insert(std::pair<int, VisualizeBase::eVisualizationType>(rElementGroup, VisualizeBase::VORONOI_CELL));
+            // mGroupVisualizationType.emplace(rElementGroup, VisualizeBase::VORONOI_CELL);     //<- use this for gcc version 4.9 or higher!
+
+
+        } else
+        {
+            mGroupVisualizeComponentsMap.at(rElementGroup).push_back(std::make_shared<VisualizeComponentNonlocalWeight>(VisualizeComponentNonlocalWeight(elementBase, rElementId, rIp)));
+        }
+
     }
     catch (NuTo::MechanicsException &e)
-    {
-        e.AddMessage("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] error setting element and local ip number.");
+     {
+        e.AddMessage(std::string(__PRETTY_FUNCTION__) + "\t: error setting element and local ip number.");
         throw e;
-    }
+     }
     catch(...)
-    {
-        throw NuTo::MechanicsException("[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] error setting element and local ip number.");
-    }
+     {
+        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: error setting element and local ip number.");
+     }
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalWeights] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+        mLogger<< __PRETTY_FUNCTION__ << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif // ENABLE_VISUALIZE
 }
 
-//! @brief ... Add visualization of nonlocal equivalent strain to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentNonlocalEqStrain()
+
+void NuTo::StructureBase::SetVisualizationType(const int rElementGroup, const VisualizeBase::eVisualizationType rVisualizationType)
 {
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentNonlocalEqStrain());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentNonlocalEqStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
+    // check if the element group exists
+    if (mGroupMap.find(rElementGroup) == mGroupMap.end())
+        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Element group does not exist.");
+
+    // check if the element group exists
+    if (mGroupVisualizationType.find(rElementGroup) == mGroupVisualizationType.end())
+        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Please add a visualization component first before setting the visualization type.");
+
+    mGroupVisualizationType.at(rElementGroup) = rVisualizationType;
 }
 
-//! @brief ... Add visualization of ocal equivalent strain to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentLocalEqStrain()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentLocalEqStrain());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentLocalEqStrain] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
-
-//! @brief ... Add the damage variable to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentDamage()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentDamage());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentDamage] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
-
-//! @brief ... Add visualization of principal stresses to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentPrincipalEngineeringStress()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentPrincipalEngineeringStress());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentPrincipalEngineeringStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
-
-//! @brief ... Add crack id vector to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentCracks()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentCrack());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentCracks] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
-
-//! @brief ... Add visualization particle radius to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentParticleRadius()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentParticleRadius());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentParticleRadius] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
-
-//! @brief ... Add rotation to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentRotation()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentRotation());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentRotation] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
-
-//! @brief ... Add velocity to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentVelocity()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentVelocity());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentVelocity] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
-
-
-//! @brief ... Add accelaration to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentAcceleration()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentAcceleration());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::VisualizeComponentAcceleration] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
-
-//! @brief ... Add angular velocity to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentAngularVelocity()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentAngularVelocity());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentAngularVelocity] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
-
-
-//! @brief ... Add angular acceleration to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentAngularAcceleration()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentAngularAcceleration());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::VisualizeComponentAngularAcceleration] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
-
-//! @brief ... Add temperature to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentTemperature()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentTemperature());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentTemperature] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
-
-//! @brief ... Add heat flux to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentHeatFlux()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentHeatFlux());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentHeatFlux] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
-
-//! @brief ... Add visualization of relative humidity to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentRelativeHumidity()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentRelativeHumidity());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentRelativeHumidity] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
-
-//! @brief ... Add visualization of water volume fraction to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentWaterVolumeFraction()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentWaterVolumeFraction());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentWaterVolumeFraction] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
-
-//! @brief ... Add bond stress to the internal list, which is finally exported via the ExportVtkDataFile command
-void NuTo::StructureBase::AddVisualizationComponentBondStress()
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    mVisualizeComponents.push_back(new NuTo::VisualizeComponentBondStress());
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::AddVisualizationComponentBondStress] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
 
 void NuTo::StructureBase::ClearVisualizationComponents()
 {
@@ -797,7 +511,8 @@ void NuTo::StructureBase::ClearVisualizationComponents()
     std::clock_t start,end;
     start=clock();
 #endif
-    mVisualizeComponents.clear();
+//    mVisualizeComponents.clear();
+    mGroupVisualizeComponentsMap.clear();
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -806,42 +521,61 @@ void NuTo::StructureBase::ClearVisualizationComponents()
 #endif // ENABLE_VISUALIZE
 }
 
-void NuTo::StructureBase::ExportVtkDataFile(const std::string& rFileName)
+void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rResultFileName, bool rXML)
 {
 #ifdef ENABLE_VISUALIZE
-    mLogger<<"[NuTo::StructureBase::ExportVtkDataFile] this routine is deprecated, use ExportVtkDataFileElements instead." << "\n";
+#ifdef SHOW_TIME
+    std::clock_t start, end;
+    start = clock();
+#endif
+
+    for (auto const &it : mGroupVisualizeComponentsMap)
+    {
+        VisualizeUnstructuredGrid visualize;
+        this->DefineVisualizeNodeData(visualize, it.second);
+        this->NodeTotalAddToVisualize(visualize, it.second);
+
+        if (rXML)
+            visualize.ExportVtuDataFile(rResultFileName);
+        else
+            visualize.ExportVtkDataFile(rResultFileName);
+    }
+
+#ifdef SHOW_TIME
+    end = clock();
+    if (mShowTime)
+        mLogger << "[NuTo::StructureBase::ExportVtkDataFile] " << difftime(end, start) / CLOCKS_PER_SEC << "sec" << "\n";
+#endif
 #endif // ENABLE_VISUALIZE
 }
 
-void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rFileName)
-{
-#ifdef ENABLE_VISUALIZE
-	ExportVtkDataFileNodes(rFileName, false);
-#endif // ENABLE_VISUALIZE
-}
 
-void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rFileName)
-{
-#ifdef ENABLE_VISUALIZE
-	ExportVtkDataFileElements(rFileName, false);
-#endif // ENABLE_VISUALIZE
-}
 
-void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rFileName, bool rXML)
+void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rResultFileName, bool rXML)
 {
 #ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
 #endif
-    VisualizeUnstructuredGrid visualize;
-    this->DefineVisualizeNodeData(visualize,mVisualizeComponents);
-    this->NodeTotalAddToVisualize(visualize,mVisualizeComponents);
-    if (rXML)
-        visualize.ExportVtuDataFile(rFileName);
-    else
-        visualize.ExportVtkDataFile(rFileName);
-#ifdef SHOW_TIME
+
+    for (auto const &it : mGroupVisualizeComponentsMap)
+    {
+        VisualizeUnstructuredGrid visualize;
+
+        this->DefineVisualizeElementData(visualize, it.second);
+        ElementGroupAddToVisualize(it.first, visualize, it.second);
+
+        if (rXML)
+            visualize.ExportVtuDataFile(rResultFileName);
+        else
+            visualize.ExportVtkDataFile(rResultFileName);
+    }
+
+
+
+
+    #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
         mLogger<<"[NuTo::StructureBase::ExportVtkDataFile] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
@@ -849,42 +583,25 @@ void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rFileName, b
 #endif // ENABLE_VISUALIZE
 }
 
-void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rFileName, bool rXML)
+void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rResultFileName, bool rXML)
 {
 #ifdef ENABLE_VISUALIZE
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
 #endif
-    VisualizeUnstructuredGrid visualize;
-    this->DefineVisualizeElementData(visualize,mVisualizeComponents);
-    this->ElementTotalAddToVisualize(visualize,mVisualizeComponents);
-    if (rXML)
-        visualize.ExportVtuDataFile(rFileName);
-    else
-        visualize.ExportVtkDataFile(rFileName);
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::ExportVtkDataFile] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif // ENABLE_VISUALIZE
-}
 
-void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rFileName, bool rXML)
-{
-#ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
+
     VisualizeUnstructuredGrid visualize;
-    this->DefineVisualizeElementData(visualize,mVisualizeComponents);
-    this->ElementGroupAddToVisualize(rGroupIdent,visualize,mVisualizeComponents);
+    this->DefineVisualizeElementData(visualize,mGroupVisualizeComponentsMap.at(rGroupIdent));
+    this->ElementGroupAddToVisualize(rGroupIdent,visualize,mGroupVisualizeComponentsMap.at(rGroupIdent));
+
     if (rXML)
-        visualize.ExportVtuDataFile(rFileName);
+        visualize.ExportVtuDataFile(rResultFileName);
     else
-        visualize.ExportVtkDataFile(rFileName);
+        visualize.ExportVtkDataFile(rResultFileName);
+
+
 #ifdef SHOW_TIME
     end=clock();
     if (mShowTime)
@@ -893,151 +610,105 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
 #endif // ENABLE_VISUALIZE
 }
 
-void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)const
+std::map<int, std::list<std::shared_ptr<NuTo::VisualizeComponent>>>& NuTo::StructureBase::GetGroupVisualizeComponentsMap(void)
 {
 #ifdef ENABLE_VISUALIZE
-    boost::ptr_list<NuTo::VisualizeComponentBase>::const_iterator itWhat = mVisualizeComponents.begin();
-    while (itWhat != mVisualizeComponents.end())
+    return mGroupVisualizeComponentsMap;
+#endif // ENABLE_VISUALIZE
+}
+
+void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)const
+{
+#ifdef ENABLE_VISUALIZE
+
+    for (auto const &it : rVisualizationList)
     {
-        switch (itWhat->GetComponentEnum())
+        switch (it.get()->GetComponentEnum())
         {
-        case NuTo::VisualizeBase::BOND_STRESS:
-            rVisualize.DefineCellDataTensor(itWhat->GetComponentName());
-            break;
-        case NuTo::VisualizeBase::DAMAGE:
-            rVisualize.DefineCellDataScalar(itWhat->GetComponentName());
-            break;
-        case NuTo::VisualizeBase::DISPLACEMENTS:
-            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
-            break;
-        case NuTo::VisualizeBase::ELEMENT:
-            rVisualize.DefineCellDataScalar(itWhat->GetComponentName());
-            break;
-        case NuTo::VisualizeBase::ENGINEERING_STRESS:
-            rVisualize.DefineCellDataTensor(itWhat->GetComponentName());
-            break;
-        case NuTo::VisualizeBase::ENGINEERING_STRAIN:
-            rVisualize.DefineCellDataTensor(itWhat->GetComponentName());
-            break;
-        case NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN:
-            rVisualize.DefineCellDataTensor(itWhat->GetComponentName());
-            break;
-        case NuTo::VisualizeBase::TOTAL_INELASTIC_EQ_STRAIN:
-            rVisualize.DefineCellDataScalar(itWhat->GetComponentName());
-            break;
-        case NuTo::VisualizeBase::SLIP:
-             rVisualize.DefineCellDataVector(itWhat->GetComponentName());
-             break;
-        case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
-            rVisualize.DefineCellDataScalar(itWhat->GetComponentName());
-            break;
-        case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
-            rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
-            break;
-        case NuTo::VisualizeBase::LOCAL_EQ_STRAIN:
-            rVisualize.DefineCellDataScalar(itWhat->GetComponentName());
-            break;
-        case NuTo::VisualizeBase::RELATIVE_HUMIDITY:
-            rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
-            break;
+
         case NuTo::VisualizeBase::SECTION:
-            rVisualize.DefineCellDataScalar(itWhat->GetComponentName());
-            break;
         case NuTo::VisualizeBase::CONSTITUTIVE:
-            rVisualize.DefineCellDataScalar(itWhat->GetComponentName());
+        case NuTo::VisualizeBase::TOTAL_INELASTIC_EQ_STRAIN:
+        case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
+        case NuTo::VisualizeBase::LOCAL_EQ_STRAIN:
+        case NuTo::VisualizeBase::ELEMENT:
+        case NuTo::VisualizeBase::DAMAGE:
+            rVisualize.DefineCellDataScalar(it.get()->GetComponentName());
             break;
+
+        case NuTo::VisualizeBase::SLIP:
         case NuTo::VisualizeBase::CRACK:
-            rVisualize.DefineCellDataVector(itWhat->GetComponentName());
-            break;
         case NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS:
-            rVisualize.DefineCellDataVector(itWhat->GetComponentName());
-            break;
         case NuTo::VisualizeBase::LATTICE_STRESS:
-            rVisualize.DefineCellDataVector(itWhat->GetComponentName());
-            break;
         case NuTo::VisualizeBase::LATTICE_STRAIN:
-            rVisualize.DefineCellDataVector(itWhat->GetComponentName());
-            break;
         case NuTo::VisualizeBase::LATTICE_PLASTIC_STRAIN:
-            rVisualize.DefineCellDataVector(itWhat->GetComponentName());
+            rVisualize.DefineCellDataVector(it.get()->GetComponentName());
             break;
-        case NuTo::VisualizeBase::PARTICLE_RADIUS:
-            //do nothing;
+
+        case NuTo::VisualizeBase::ENGINEERING_STRESS:
+        case NuTo::VisualizeBase::ENGINEERING_STRAIN:
+        case NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN:
+        case NuTo::VisualizeBase::BOND_STRESS:
+            rVisualize.DefineCellDataTensor(it.get()->GetComponentName());
             break;
-        case NuTo::VisualizeBase::ROTATION:
-            //do nothing;
-            break;
-        case NuTo::VisualizeBase::VELOCITY:
-            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
-            break;
+
+        case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
+        case NuTo::VisualizeBase::RELATIVE_HUMIDITY:
         case NuTo::VisualizeBase::WATER_VOLUME_FRACTION:
-            rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
+        case NuTo::VisualizeBase::TEMPERATURE:
+            rVisualize.DefinePointDataScalar(it.get()->GetComponentName());
             break;
+
+        case NuTo::VisualizeBase::DISPLACEMENTS:
+//        case NuTo::VisualizeBase::ENGINEERING_STRAIN: // this is a test
+        case NuTo::VisualizeBase::VELOCITY:
         case NuTo::VisualizeBase::ACCELERATION:
-            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
+            rVisualize.DefinePointDataVector(it.get()->GetComponentName());
             break;
+
+        case NuTo::VisualizeBase::PARTICLE_RADIUS:
+        case NuTo::VisualizeBase::ROTATION:
         case NuTo::VisualizeBase::ANGULAR_VELOCITY:
-            //do nothing;
-            break;
         case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
             //do nothing;
             break;
-        case NuTo::VisualizeBase::TEMPERATURE:
-            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
-            break;
+
         default:
-        	throw MechanicsException("[NuTo::StructureBase::DefineVisualizeElementData] undefined visualize components.");
+        	throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: undefined visualize components.");
         }
-        itWhat++;
+
     }
 #endif // ENABLE_VISUALIZE
 }
 
-void NuTo::StructureBase::DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)const
+void NuTo::StructureBase::DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)const
 {
 #ifdef ENABLE_VISUALIZE
-    boost::ptr_list<NuTo::VisualizeComponentBase>::const_iterator itWhat = mVisualizeComponents.begin();
-    while (itWhat != mVisualizeComponents.end())
+
+    for (auto const &it : rVisualizationList)
     {
-        switch (itWhat->GetComponentEnum())
+        switch (it.get()->GetComponentEnum())
         {
         case NuTo::VisualizeBase::DISPLACEMENTS:
-            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
+        case NuTo::VisualizeBase::ROTATION:
+        case NuTo::VisualizeBase::VELOCITY:
+        case NuTo::VisualizeBase::ACCELERATION:
+        case NuTo::VisualizeBase::ANGULAR_VELOCITY:
+        case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
+            rVisualize.DefinePointDataVector(it.get()->GetComponentName());
             break;
         case NuTo::VisualizeBase::PARTICLE_RADIUS:
-        	rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
-            break;
-        case NuTo::VisualizeBase::ROTATION:
-            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
-            break;
-        case NuTo::VisualizeBase::VELOCITY:
-            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
-            break;
-        case NuTo::VisualizeBase::ACCELERATION:
-            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
-            break;
-        case NuTo::VisualizeBase::ANGULAR_VELOCITY:
-            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
-            break;
-        case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
-            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
-            break;
         case NuTo::VisualizeBase::TEMPERATURE:
-            rVisualize.DefinePointDataVector(itWhat->GetComponentName());
-            break;
         case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
-            rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
-            break;
         case NuTo::VisualizeBase::RELATIVE_HUMIDITY:
-            rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
-            break;
         case NuTo::VisualizeBase::WATER_VOLUME_FRACTION:
-            rVisualize.DefinePointDataScalar(itWhat->GetComponentName());
+            rVisualize.DefinePointDataScalar(it.get()->GetComponentName());
             break;
         default:
+            // do nothing for integration point data in the visualization list. However, the visualization of new dofs needs to be added here!
         	break;
          }
-        itWhat++;
+
     }
 #endif // ENABLE_VISUALIZE
 }
@@ -2082,7 +1753,7 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Crea
 	case 1:
 	{
 		double D = rBoundingBox(0,1) - rBoundingBox(1,0);
-		if (fabs(rBoundingBox(1,1) - rBoundingBox(1,0)-1.5*D)>1e-10)
+		if (fabs(rBoundingBox.at(1,1) - rBoundingBox.at(1,0)-1.5*D)>1e-10)
 			throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] for the dog bone specimen, the y dimension should be 1.5 times the x dimension.");
 		//dogbone specimen
 		switch (mDimension)
@@ -2191,7 +1862,7 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Crea
 	{
 		//brazilian splitting (cylinder)
 		double D = rBoundingBox(0,1) - rBoundingBox(1,0);
-		if (fabs(rBoundingBox(1,1) - rBoundingBox(1,0)-D)>1e-10)
+		if (fabs(rBoundingBox.at(1,1) - rBoundingBox.at(1,0)-D)>1e-10)
 			throw MechanicsException("[NuTo::StructureBase::CreateSpheresOnSpecimenBoundary] for the cylinder specimen, the y dimension should be the same as the x-dimension.");
 		//dogbone specimen
 		switch (mDimension)
@@ -2555,7 +2226,7 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Crea
 		{
 			double D = rBoundingBox(0,1) - rBoundingBox(0,0);
 			double lArea = 1.5*D*D;
-			if (fabs(rBoundingBox(1,1) - rBoundingBox(1,0)-1.5*D)>1e-10)
+			if (fabs(rBoundingBox.at(1,1) - rBoundingBox.at(1,0)-1.5*D)>1e-10)
 				throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] for the dog bone specimen, the y dimension should be 1.5 times the x dimension.");
 			//subtract the circles
 			double radius = 0.725*D; ;
@@ -2639,7 +2310,7 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Crea
 		{
 			double D = rBoundingBox(0,1) - rBoundingBox(0,0);
 			double lArea = 0.25*M_PI*D*D;
-			if (fabs(rBoundingBox(1,1) - rBoundingBox(1,0)-D)>1e-10)
+			if (fabs(rBoundingBox.at(1,1) - rBoundingBox.at(1,0)-D)>1e-10)
 				throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] for the dog bone specimen, the y dimension should be 1.5 times the x dimension.");
 
 			int numParticlesPerFace = lArea/(rDistanceBoundaryParticles*rDistanceBoundaryParticles);
@@ -2768,7 +2439,7 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Crea
     {
     	Vspecimen = lBox[0] * lBox[1] * lBox[2];
 		double D = rBoundingBox(0,1) - rBoundingBox(0,0);
-		if (fabs(rBoundingBox(1,1) - rBoundingBox(1,0)-1.5*D)>1e-10)
+		if (fabs(rBoundingBox.at(1,1) - rBoundingBox.at(1,0)-1.5*D)>1e-10)
 			throw MechanicsException("[NuTo::StructureBase::CreateSpheresInBox] for the dog bone specimen, the y dimension should be 1.5 times the x dimension.");
 		//subtract the circles
 		double radius = 0.725*D; ;
@@ -2997,7 +2668,7 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::CutS
         double delta=rSpheres(countSphere,2)-rZCoord;
 		if (fabs(delta)<rSpheres(countSphere,3))
         {
-			double radius=sqrt(rSpheres(countSphere,3)*rSpheres(countSphere,3)-delta*delta);
+			double radius=sqrt(rSpheres.at(countSphere,3)*rSpheres.at(countSphere,3)-delta*delta);
         	if (radius>rMinRadius)
         	{
         		//add circle

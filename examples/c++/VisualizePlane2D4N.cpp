@@ -94,9 +94,12 @@ int main()
 
 #ifdef ENABLE_VISUALIZE
         // visualize element
-        myStructure.AddVisualizationComponentDisplacements();
-        myStructure.AddVisualizationComponentEngineeringStrain();
-        myStructure.AddVisualizationComponentEngineeringStress();
+        int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        myStructure.GroupAddElementsTotal(visualizationGroup);
+
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
         myStructure.ExportVtkDataFileElements("Plane2D4N.vtk");
 #endif
     } catch (NuTo::MathException& e)

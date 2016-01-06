@@ -16,7 +16,7 @@
 #include "nuto/visualize/VisualizeException.h"
 #include <sstream>
 
-NuTo::VisualizeComponentNonlocalWeight::VisualizeComponentNonlocalWeight(const ElementBase* rElement, int rElementId, int rIp) : VisualizeComponentBase::VisualizeComponentBase()
+NuTo::VisualizeComponentNonlocalWeight::VisualizeComponentNonlocalWeight(const ElementBase* rElement, int rElementId, int rIp) : VisualizeComponent::VisualizeComponent(NuTo::VisualizeBase::NONLOCAL_WEIGHT)
 {
     mElement = rElement;
     mElementId = rElementId;
@@ -41,9 +41,16 @@ int NuTo::VisualizeComponentNonlocalWeight::GetIp()const
 std::string NuTo::VisualizeComponentNonlocalWeight::GetComponentName()const
 {
 	std::stringstream out;
-	out << "NonlocalWeight_Element" << mElementId << "_Ip_" << mIp;
+	out << "NonlocalWeight_Element_" << mElementId << "_Ip_" << mIp;
 	return out.str();
 }
+
+NuTo::VisualizeBase::eVisualizeWhat NuTo::VisualizeComponentNonlocalWeight::GetComponentEnum(void) const
+{
+    return NuTo::VisualizeBase::NONLOCAL_WEIGHT;
+}
+
+
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class

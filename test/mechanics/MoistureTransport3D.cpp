@@ -620,8 +620,11 @@ int main()
         \*------------------------------------*/
 
 #ifdef ENABLE_VISUALIZE
-        myStructure.AddVisualizationComponentRelativeHumidity();
-        myStructure.AddVisualizationComponentWaterVolumeFraction();
+        int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        myStructure.GroupAddElementsTotal(visualizationGroup);
+
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::RELATIVE_HUMIDITY);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::WATER_VOLUME_FRACTION);
 #endif // ENABLE_VISUALIZE
 
         NuTo::CrankNicolsonEvaluate myTimeIntegrationScheme(&myStructure);
@@ -647,7 +650,7 @@ int main()
 
 
     }
-    catch(NuTo::Exception e)
+    catch(NuTo::Exception& e)
     {
         std::cout << e.ErrorMessage() << std::endl;
         return 1;

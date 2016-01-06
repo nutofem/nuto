@@ -423,7 +423,7 @@ void NuTo::NodeBase::SetRelativeHumidity(int rTimeDerivative, double rRelativeHu
 
 
 #ifdef ENABLE_VISUALIZE
-void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) const
+void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) const
 {
     Eigen::Matrix<double, 3, 1> coordinates = Eigen::Matrix<double, 3, 1>::Zero();
 	switch (this->GetNumCoordinates())
@@ -444,10 +444,9 @@ void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boos
 //	std::cout << "add point " << PointId << std::endl;
 
     // store data
-    boost::ptr_list<VisualizeComponentBase>::const_iterator WhatIter = rWhat.begin();
-    while (WhatIter != rWhat.end())
+    for (auto const &it : rVisualizationList)
     {
-        switch (WhatIter->GetComponentEnum())
+        switch (it.get()->GetComponentEnum())
         {
 			case NuTo::VisualizeBase::DISPLACEMENTS:
 			{
@@ -468,7 +467,7 @@ void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boos
 				default:
 					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither displacements in 1D, 2D or 3D.");
 				}
-					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), displacements.data());
+					rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), displacements.data());
 			}
 				break;
 			case NuTo::VisualizeBase::ROTATION:
@@ -485,7 +484,7 @@ void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boos
 				default:
 					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither rotations in 2D or 3D.");
 				}
-					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), rotations.data());
+					rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), rotations.data());
 			}
 				break;
 			case NuTo::VisualizeBase::VELOCITY:
@@ -505,7 +504,7 @@ void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boos
 				default:
 					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither velocities in 1D, 2D or 3D.");
 				}
-					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), velocities.data());
+					rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), velocities.data());
 			}
 				break;
 			case NuTo::VisualizeBase::ANGULAR_VELOCITY:
@@ -522,7 +521,7 @@ void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boos
 				default:
 					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither angular velocities in 2D or 3D.");
 				}
-					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), angularVelocities.data());
+					rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), angularVelocities.data());
 			}
 				break;
 			case NuTo::VisualizeBase::ACCELERATION:
@@ -542,7 +541,7 @@ void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boos
 				default:
 					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither accelerations in 1D, 2D or 3D.");
 				}
-					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), accelerations.data());
+					rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), accelerations.data());
 			}
 				break;
 			case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
@@ -559,13 +558,12 @@ void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boos
 				default:
 					throw MechanicsException("[NuTo::NodeBase::Visualize] node has neither angular accelerations in 2D or 3D.");
 				}
-					rVisualize.SetPointDataVector(PointId, WhatIter->GetComponentName(), angularAccelerations.data());
+					rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), angularAccelerations.data());
 			}
 				break;
 			default:
 				break;
         }
-        WhatIter++;
     }
 }
 #endif // ENABLE_VISUALIZE

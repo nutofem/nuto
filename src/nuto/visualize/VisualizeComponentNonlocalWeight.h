@@ -1,13 +1,12 @@
 // $Id$ 
-#ifndef VISUALIZECOMPONENTNONLOCALWEIGHT_H_
-#define VISUALIZECOMPONENTNONLOCALWEIGHT_H_
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/visualize/VisualizeComponentBase.h"
+#include "nuto/visualize/VisualizeComponent.h"
 
 namespace NuTo
 {
@@ -16,7 +15,7 @@ class ElementBase;
 //! @author Joerg F. Unger
 //! @date Apr 27, 2010
 //! @brief visualize the nonlocal weights for integration point mIp in element mElement
-class VisualizeComponentNonlocalWeight : public VisualizeComponentBase
+class VisualizeComponentNonlocalWeight : public VisualizeComponent
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -24,18 +23,15 @@ class VisualizeComponentNonlocalWeight : public VisualizeComponentBase
 public:
 	VisualizeComponentNonlocalWeight(const ElementBase* rElement, int rElementId, int rIp);
 
-    std::string GetComponentName()const;
+    std::string GetComponentName(void) const override;
 
-    int GetElementId()const;
+    int GetElementId(void) const override;
 
-    const NuTo::ElementBase* GetElement()const;
+    const NuTo::ElementBase* GetElement(void) const override;
 
-    int GetIp()const;
+    int GetIp(void) const override;
 
-    inline NuTo::VisualizeBase::eVisualizeWhat GetComponentEnum()const
-    {
-    	return NuTo::VisualizeBase::NONLOCAL_WEIGHT;
-    }
+    NuTo::VisualizeBase::eVisualizeWhat GetComponentEnum(void) const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -57,4 +53,3 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::VisualizeComponentNonlocalWeight)
 #endif // ENABLE_SERIALIZATION
 
-#endif /* VISUALIZECOMPONENTNONLOCALWEIGHT_H_ */

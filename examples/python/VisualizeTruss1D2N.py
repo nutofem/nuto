@@ -38,9 +38,12 @@ try:
     myStructure.ElementSetSection(myElement2,mySection1)
 
     #visualize element
-    myStructure.AddVisualizationComponentDisplacements()
-    myStructure.AddVisualizationComponentEngineeringStrain()
-    myStructure.AddVisualizationComponentEngineeringStress()
+    visualizationGroup = myStructure.GroupCreate("Elements");
+    myStructure.GroupAddElementsTotal(visualizationGroup)
+
+    myStructure.AddVisualizationComponent(visualizationGroup, "Displacements");
+    myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStrain");
+    myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStress");
     myStructure.ExportVtkDataFileElements("Truss1D2N.vtk")
 except nuto.Exception, e:
     print e.ErrorMessage()

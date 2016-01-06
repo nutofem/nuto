@@ -127,13 +127,16 @@ int main()
     myStructure.BuildNonlocalData(myMatDamage);
 
 #ifdef ENABLE_VISUALIZE
-    // visualize results
-    myStructure.AddVisualizationComponentNonlocalWeights(myElement1,0);
+        // visualize results
+        int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        myStructure.GroupAddElementsTotal(visualizationGroup);
 
-    myStructure.AddVisualizationComponentNonlocalWeights(myElement2,0);
-    myStructure.AddVisualizationComponentNonlocalWeights(myElement2,1);
-    myStructure.AddVisualizationComponentNonlocalWeights(myElement2,2);
-    myStructure.AddVisualizationComponentNonlocalWeights(myElement2,3);
+        myStructure.AddVisualizationComponentNonlocalWeights(visualizationGroup, myElement1, 0);
+        myStructure.AddVisualizationComponentNonlocalWeights(visualizationGroup, myElement2, 0);
+        myStructure.AddVisualizationComponentNonlocalWeights(visualizationGroup, myElement2, 1);
+        myStructure.AddVisualizationComponentNonlocalWeights(visualizationGroup, myElement2, 2);
+        myStructure.AddVisualizationComponentNonlocalWeights(visualizationGroup, myElement2, 3);
+
 #endif
 
     //build maximum independent sets for openmp parallel assembly
@@ -269,11 +272,11 @@ int main()
     }
 
 #ifdef ENABLE_VISUALIZE
-    myStructure.AddVisualizationComponentDisplacements();
-    myStructure.AddVisualizationComponentEngineeringStrain();
-    myStructure.AddVisualizationComponentEngineeringStress();
-    myStructure.AddVisualizationComponentDamage();
-    myStructure.AddVisualizationComponentEngineeringPlasticStrain();
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DAMAGE);
     myStructure.ExportVtkDataFileElements("NonlocalDamagePlasticityModel.vtk");
 #endif
 
@@ -290,6 +293,9 @@ int main()
     catch (NuTo::Exception& e)
     {
         std::cout << e.ErrorMessage() << std::endl;
+        std::cout << "Test failed" << std::endl;
+        return EXIT_FAILURE;
     }
-    return 0;
+    std::cout << "Test successful" << std::endl;
+    return EXIT_SUCCESS;
 }

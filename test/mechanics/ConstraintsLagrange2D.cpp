@@ -103,16 +103,22 @@ try
     myStructure.ConstraintLinearSetDisplacementNodeGroup(GrpNodesBottomLeftNodeBoundary,DirectionY, 0);
 
 #ifdef ENABLE_VISUALIZE
-    myStructure.AddVisualizationComponentSection();
-    myStructure.AddVisualizationComponentConstitutive();
-    myStructure.AddVisualizationComponentDisplacements();
-    myStructure.AddVisualizationComponentEngineeringStrain();
-    myStructure.AddVisualizationComponentEngineeringStress();
-    myStructure.AddVisualizationComponentDamage();
-    myStructure.AddVisualizationComponentEngineeringPlasticStrain();
-    myStructure.AddVisualizationComponentPrincipalEngineeringStress();
+
+    int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    myStructure.GroupAddElementsTotal(visualizationGroup);
+
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::eVisualizeWhat::SECTION);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::eVisualizeWhat::CONSTITUTIVE);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::eVisualizeWhat::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::eVisualizeWhat::ENGINEERING_STRAIN);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::eVisualizeWhat::ENGINEERING_STRESS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::eVisualizeWhat::DAMAGE);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::eVisualizeWhat::ENGINEERING_PLASTIC_STRAIN);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
+
     myStructure.ElementTotalUpdateTmpStaticData();
-    myStructure.ExportVtkDataFile("ConstraintsLagrange2D.vtk");
+    myStructure.ExportVtkDataFileElements("ConstraintsLagrange2D.vtk");
+
 #endif
 
     // init some result data
@@ -359,7 +365,7 @@ try
 #ifdef ENABLE_VISUALIZE
             std::stringstream ss;
             ss << "ConstraintsLagrange2D" << loadstep << ".vtk";
-            myStructure.ExportVtkDataFile(ss.str());
+            myStructure.ExportVtkDataFileElements(ss.str());
 #endif
              //store result/plot data
             NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> SinglePlotData(1,7);

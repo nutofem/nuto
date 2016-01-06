@@ -119,7 +119,7 @@ myStructure.NodeDelete(2*(NumElementsX+1))
 numNodes=myStructure.GetNumNodes()
 numElements=myStructure.GetNumElements()
 
-myStructure.ExportVtkDataFile("ElementDelete.vtk")
+myStructure.ExportVtkDataFileElements("ElementDelete.vtk")
 
 if(printResult):
     myStructure.ElementInfo(5)

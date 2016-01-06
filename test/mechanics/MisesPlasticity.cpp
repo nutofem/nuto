@@ -27,10 +27,14 @@ void SetConstitutiveLaw(NuTo::Structure& rStructure)
 
     rStructure.ElementTotalSetConstitutiveLaw(myMat);
 
-    rStructure.AddVisualizationComponentEngineeringStrain();
-    rStructure.AddVisualizationComponentDisplacements();
-    rStructure.AddVisualizationComponentEngineeringStress();
-    rStructure.AddVisualizationComponentEngineeringPlasticStrain();
+    int visualizationGroup = rStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    rStructure.GroupAddElementsTotal(visualizationGroup);
+
+    rStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+    rStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+    rStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
+    rStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN);
+
 
 }
 

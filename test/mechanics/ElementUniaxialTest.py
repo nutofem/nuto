@@ -180,9 +180,12 @@ def Run(rStructure, rType, rOrder):
 	#  Visualize
 	# **********************
 	
-	rStructure.AddVisualizationComponentDisplacements();
-	rStructure.AddVisualizationComponentEngineeringStrain();
-	rStructure.AddVisualizationComponentEngineeringStress();
+	visualizationGroup = rStructure.GroupCreate("Elements");
+	rStructure.GroupAddElementsTotal(visualizationGroup)
+
+	rStructure.AddVisualizationComponent(visualizationGroup, "Displacements");
+	rStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStrain");
+	rStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStress");
 
 	rStructure.ExportVtkDataFileElements(resultFile,True);
 	

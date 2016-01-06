@@ -570,9 +570,14 @@ void GradientDamage2D()
         throw NuTo::Exception("element stiffness matrices incorrect!");
 
 #ifdef ENABLE_VISUALIZE
-    myStructure.AddVisualizationComponentDamage();
-    myStructure.AddVisualizationComponentDisplacements();
-    myStructure.AddVisualizationComponentNonlocalEqStrain();
+
+    int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    myStructure.GroupAddElementsTotal(visualizationGroup);
+
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DAMAGE);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN);
+
 
     std::string resultDir = "./ResultsGradientDamage";
     boost::filesystem::create_directory(resultDir);
@@ -651,9 +656,12 @@ void GradientDamage3D()
         throw NuTo::Exception("element stiffness matrices incorrect!");
 
 #ifdef ENABLE_VISUALIZE
-    myStructure.AddVisualizationComponentDamage();
-    myStructure.AddVisualizationComponentDisplacements();
-    myStructure.AddVisualizationComponentNonlocalEqStrain();
+    int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    myStructure.GroupAddElementsTotal(visualizationGroup);
+
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DAMAGE);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN);
 
     std::string resultDir = "./ResultsGradientDamage";
     boost::filesystem::create_directory(resultDir);
@@ -844,19 +852,27 @@ void Check1D2D()
     myStructure2D.ConstraintLinearSetDisplacementNode(0, directionY, 0.);
 
 #ifdef ENABLE_VISUALIZE
-    myStructure1D.AddVisualizationComponentDisplacements();
-    myStructure1D.AddVisualizationComponentEngineeringStrain();
-    myStructure1D.AddVisualizationComponentEngineeringStress();
-    myStructure1D.AddVisualizationComponentSection();
-    myStructure1D.AddVisualizationComponentDamage();
-    myStructure1D.AddVisualizationComponentNonlocalEqStrain();
 
-    myStructure2D.AddVisualizationComponentDisplacements();
-    myStructure2D.AddVisualizationComponentEngineeringStrain();
-    myStructure2D.AddVisualizationComponentEngineeringStress();
-    myStructure2D.AddVisualizationComponentSection();
-    myStructure2D.AddVisualizationComponentDamage();
-    myStructure2D.AddVisualizationComponentNonlocalEqStrain();
+    int visualizationGroup1D = myStructure1D.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    myStructure1D.GroupAddElementsTotal(visualizationGroup1D);
+
+    myStructure1D.AddVisualizationComponent(visualizationGroup1D, NuTo::VisualizeBase::DAMAGE);
+    myStructure1D.AddVisualizationComponent(visualizationGroup1D, NuTo::VisualizeBase::DISPLACEMENTS);
+    myStructure1D.AddVisualizationComponent(visualizationGroup1D, NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN);
+    myStructure1D.AddVisualizationComponent(visualizationGroup1D, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+    myStructure1D.AddVisualizationComponent(visualizationGroup1D, NuTo::VisualizeBase::ENGINEERING_STRESS);
+    myStructure1D.AddVisualizationComponent(visualizationGroup1D, NuTo::VisualizeBase::SECTION);
+
+
+    int visualizationGroup2D = myStructure2D.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    myStructure2D.GroupAddElementsTotal(visualizationGroup2D);
+
+    myStructure2D.AddVisualizationComponent(visualizationGroup2D, NuTo::VisualizeBase::DAMAGE);
+    myStructure2D.AddVisualizationComponent(visualizationGroup2D, NuTo::VisualizeBase::DISPLACEMENTS);
+    myStructure2D.AddVisualizationComponent(visualizationGroup2D, NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN);
+    myStructure2D.AddVisualizationComponent(visualizationGroup2D, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+    myStructure2D.AddVisualizationComponent(visualizationGroup2D, NuTo::VisualizeBase::ENGINEERING_STRESS);
+    myStructure2D.AddVisualizationComponent(visualizationGroup2D, NuTo::VisualizeBase::SECTION);
 
     myStructure1D.NodeBuildGlobalDofs();
     myStructure2D.NodeBuildGlobalDofs();

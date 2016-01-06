@@ -54,7 +54,7 @@ int buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
     // first node
     nodeCoordinates(0) = factor*nodeCoordinatesFirstElement(0);
     myStructure.NodeCreate(node, nodeCoordinates);
-    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) << std::endl;
+    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) << std::endl;
     node++;
     // following nodes
     for(int i = 0; i < NumElements; i++)
@@ -62,7 +62,7 @@ int buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
         for (int j = 1; j < nodeCoordinatesFirstElement.size(); j++)
         {
             nodeCoordinates(0) = factor*(nodeCoordinatesFirstElement(j) + elementBegin);
-            if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) << std::endl;
+            if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) << std::endl;
             myStructure.NodeCreate(node, nodeCoordinates);
             node++;
         }
@@ -169,10 +169,14 @@ int buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
 
 #ifdef ENABLE_VISUALIZE
     // visualize results
-    myStructure.AddVisualizationComponentDisplacements();
-    myStructure.AddVisualizationComponentEngineeringStrain();
-    myStructure.AddVisualizationComponentEngineeringStress();
-    myStructure.ExportVtkDataFile("LobattoTruss1D2N.vtk");
+    int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    myStructure.GroupAddElementsTotal(visualizationGroup);
+
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
+
+    myStructure.ExportVtkDataFileElements("LobattoTruss1D2N.vtk");
 #endif // ENABLE_VISUALIZE
 
     double DisplacementCorrect = (Force*Length)/(Area*YoungsModulus);
@@ -233,7 +237,7 @@ int buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
     nodeCoordinates(1) = factorY*nodeCoordinatesFirstElement(0);
     //myStructure.NodeCreateDOFs(node, "Displacements", nodeCoordinates);
     myStructure.NodeCreate(node, nodeCoordinates);
-    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) <<", "<< nodeCoordinates(1) << std::endl;
+    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) <<", "<< nodeCoordinates.at(1,0) << std::endl;
     node++;
 
     for(int y = 0; y < NumElementsY; y++)
@@ -246,7 +250,7 @@ int buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
                 nodeCoordinates(1) = factorY*(nodeCoordinatesFirstElement(i) + elementBeginY);
                 //myStructure.NodeCreateDOFs(node, "Displacements", nodeCoordinates);
                 myStructure.NodeCreate(node, nodeCoordinates);
-                if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) <<", "<< nodeCoordinates(1)  << std::endl;
+                if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) <<", "<< nodeCoordinates.at(1,0)  << std::endl;
                 node++;
             }
 
@@ -259,7 +263,7 @@ int buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
                     nodeCoordinates(1) = factorY*(nodeCoordinatesFirstElement(i) + elementBeginY);
                     //myStructure.NodeCreateDOFs(node, "Displacements", nodeCoordinates);
                     myStructure.NodeCreate(node, nodeCoordinates);
-                    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0) <<", "<< nodeCoordinates(1)  << std::endl;
+                    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) <<", "<< nodeCoordinates.at(1,0)  << std::endl;
                     node++;
                 }
                 elementBeginX += elementSize;

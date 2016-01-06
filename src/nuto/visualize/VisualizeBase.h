@@ -46,6 +46,13 @@ public:
         WATER_VOLUME_FRACTION           //!< visualize water volume fraction
     };
 
+    enum eVisualizationType
+    {
+        VORONOI_CELL,                   //!< Decomposes the element into smaller cells
+        EXTRAPOLATION_TO_NODES,         //!< Extrapolates integration point data to nodes
+        POINTS,                         //!< Visualize integration point data as vertex elements
+    };
+
     //! @brief ... export to Vtk datafile
     //! @param rFilename ... filename
     void ExportVtkDataFile(const std::string& rFilename) const;

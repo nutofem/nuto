@@ -5,8 +5,7 @@
  *      Author: ttitsche
  */
 
-#ifndef BOUNDARYELEMENT2D_H_
-#define BOUNDARYELEMENT2D_H_
+#pragma once
 
 #include "nuto/mechanics/elements/BoundaryElementBase.h"
 
@@ -65,7 +64,7 @@ public:
     bool IsBoundaryConditionFulfilled() const;
 
 #ifdef ENABLE_VISUALIZE
-    void Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat) override;
+    void Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) override;
 #endif // ENABLE_VISUALIZE
 
 protected:
@@ -96,4 +95,3 @@ private:
 
 } /* namespace NuTo */
 
-#endif /* BOUNDARYELEMENT1D_H_ */

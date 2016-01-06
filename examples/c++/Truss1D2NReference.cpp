@@ -256,10 +256,15 @@ int main()
 
 #ifdef ENABLE_VISUALIZE
 	// visualize results
-    myStructure.AddVisualizationComponentDisplacements();
-    myStructure.AddVisualizationComponentEngineeringStrain();
-    myStructure.AddVisualizationComponentEngineeringStress();
-    myStructure.AddVisualizationComponentConstitutive();
+    int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    myStructure.GroupAddElementsTotal(visualizationGroup);
+
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::SECTION);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::CONSTITUTIVE);
+
 	myStructure.ExportVtkDataFileElements("Truss1D2NReference.vtk");
 #endif
 

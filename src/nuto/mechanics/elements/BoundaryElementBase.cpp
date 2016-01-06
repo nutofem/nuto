@@ -111,7 +111,7 @@ void NuTo::BoundaryElementBase::SetBoundaryConditionType(BoundaryType::eType rBo
 }
 
 #ifdef ENABLE_VISUALIZE
-void NuTo::BoundaryElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat)
+void NuTo::BoundaryElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)
 {
     if (GetStructure()->GetVerboseLevel() > 10)
         std::cout << "[NuTo::BoundaryElementBase::Visualize] Pleeeaaase, implement the visualization for me!!!" << std::endl;

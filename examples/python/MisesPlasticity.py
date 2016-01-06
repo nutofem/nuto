@@ -98,10 +98,16 @@ boundaryForceVector = nuto.DoubleFullVector()
 numActiveDofs = 0
 plotMatrixLoadDisp = nuto.DoubleFullMatrix(2,1)
 plotVectorLoadDisp = nuto.DoubleFullVector(2)
-myStructure.AddVisualizationComponentDisplacements()
-myStructure.AddVisualizationComponentEngineeringStrain()
-myStructure.AddVisualizationComponentEngineeringPlasticStrain()
-myStructure.AddVisualizationComponentEngineeringStress()
+
+visualizationGroup = myStructure.GroupCreate("Elements");
+myStructure.GroupAddElementsTotal(visualizationGroup)
+
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringPlasticStrain");
+myStructure.AddVisualizationComponent(visualizationGroup, "Displacements");
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStrain");
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStress");
+
+
 myStructure.CalculateMaximumIndependentSets()
 for i in range(0, num_steps):
     boundaryDisplacement = max_disp*(i+1)/num_steps
