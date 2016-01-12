@@ -538,17 +538,17 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
                 {
                     for (unsigned int colCount = 0; colCount < elementVectorGlobalDofsColumn.size(); colCount++)
                     {
-                        if (fabs(elementMatrix(rowCount, colCount)) > mToleranceStiffnessEntries)
+                        if (fabs(elementMatrix.at(rowCount, colCount)) > mToleranceStiffnessEntries)
                         {
                             int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
                             if (globalColumnDof < this->mNumActiveDofs)
                             {
-                                rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+                                rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix.at(rowCount, colCount));
                                 //std::cout << "add at (" << globalRowDof << "," << globalColumnDof << ") " << elementMatrix(rowCount, colCount) << std::endl;
                             }
                             else
                             {
-                                rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+                                rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix.at(rowCount, colCount));
                             }
                         }
                     }
@@ -828,11 +828,11 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
                         int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
                         if (globalColumnDof < this->mNumActiveDofs)
                         {
-                            rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+                            rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix.at(rowCount, colCount));
                         }
                         else
                         {
-                            rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+                            rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix.at(rowCount, colCount));
                         }
 
                     }
@@ -844,11 +844,11 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesGeneral(Nu
                         int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
                         if (globalColumnDof < this->mNumActiveDofs)
                         {
-                            rMatrixKJ.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof, elementMatrix(rowCount, colCount));
+                            rMatrixKJ.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof, elementMatrix.at(rowCount, colCount));
                         }
                         else
                         {
-                            rMatrixKK.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+                            rMatrixKK.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix.at(rowCount, colCount));
                         }
                     }
                 }
@@ -1098,11 +1098,11 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalElasticStiffnessSubMatricesGener
                         int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
                         if (globalColumnDof < this->mNumActiveDofs)
                         {
-                            rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+                            rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix.at(rowCount, colCount));
                         }
                         else
                         {
-                            rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+                            rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix.at(rowCount, colCount));
                         }
 
                     }
@@ -1114,11 +1114,11 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalElasticStiffnessSubMatricesGener
                         int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
                         if (globalColumnDof < this->mNumActiveDofs)
                         {
-                            rMatrixKJ.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof, elementMatrix(rowCount, colCount));
+                            rMatrixKJ.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof, elementMatrix.at(rowCount, colCount));
                         }
                         else
                         {
-                            rMatrixKK.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+                            rMatrixKK.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix.at(rowCount, colCount));
                         }
                     }
                 }
@@ -1234,12 +1234,12 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
                             // add upper triangle and diagonal
                             if (globalColumnDof >= globalRowDof)
                             {
-                                rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+                                rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix.at(rowCount, colCount));
                             }
                         }
                         else
                         {
-                            rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+                            rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix.at(rowCount, colCount));
                         }
                     }
                 }
@@ -1365,12 +1365,12 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
                             // add upper triangle and diagonal
                             if (globalColumnDof >= globalRowDof)
                             {
-                                rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+                                rMatrixJJ.AddValue(globalRowDof, globalColumnDof, elementMatrix.at(rowCount, colCount));
                             }
                         }
                         else
                         {
-                            rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+                            rMatrixJK.AddValue(globalRowDof, globalColumnDof - this->mNumActiveDofs, elementMatrix.at(rowCount, colCount));
                         }
 
                     }
@@ -1385,7 +1385,7 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalCoefficientSubMatricesSymmetric(
                             // add upper triangle and diagonal
                             if (globalColumnDof >= globalRowDof)
                             {
-                                rMatrixKK.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix(rowCount, colCount));
+                                rMatrixKK.AddValue(globalRowDof - this->mNumActiveDofs, globalColumnDof - this->mNumActiveDofs, elementMatrix.at(rowCount, colCount));
                             }
                         }
                     }
@@ -2282,7 +2282,7 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
                                                     {
                                                         int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
 
-                                                        iteratorOutput.second->GetSparseMatrixDouble().AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+                                                        iteratorOutput.second->GetSparseMatrixDouble().AddValue(globalRowDof, globalColumnDof, elementMatrix.at(rowCount, colCount));
                                                     }
                                                 }
                                                 break;
@@ -2301,11 +2301,11 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
                                                             int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
                                                             if (globalColumnDof < activeDofs)
                                                             {
-                                                                iteratorOutput.second->GetSparseMatrixDouble(StructureEnum::eSubMatrix::JJ).AddValue(globalRowDof, globalColumnDof, elementMatrix(rowCount, colCount));
+                                                                iteratorOutput.second->GetSparseMatrixDouble(StructureEnum::eSubMatrix::JJ).AddValue(globalRowDof, globalColumnDof, elementMatrix.at(rowCount, colCount));
                                                             }
                                                             else
                                                             {
-                                                                iteratorOutput.second->GetSparseMatrixDouble(StructureEnum::eSubMatrix::JK).AddValue(globalRowDof, globalColumnDof - activeDofs, elementMatrix(rowCount, colCount));
+                                                                iteratorOutput.second->GetSparseMatrixDouble(StructureEnum::eSubMatrix::JK).AddValue(globalRowDof, globalColumnDof - activeDofs, elementMatrix.at(rowCount, colCount));
                                                             }
                                                         }
                                                     }
@@ -2316,11 +2316,11 @@ void NuTo::Structure::Evaluate(std::map<StructureEnum::eOutput, StructureOutputB
                                                             int globalColumnDof = elementVectorGlobalDofsColumn[colCount];
                                                             if (globalColumnDof < activeDofs)
                                                             {
-                                                                iteratorOutput.second->GetSparseMatrixDouble(StructureEnum::eSubMatrix::KJ).AddValue(globalRowDof - activeDofs, globalColumnDof, elementMatrix(rowCount, colCount));
+                                                                iteratorOutput.second->GetSparseMatrixDouble(StructureEnum::eSubMatrix::KJ).AddValue(globalRowDof - activeDofs, globalColumnDof, elementMatrix.at(rowCount, colCount));
                                                             }
                                                             else
                                                             {
-                                                                iteratorOutput.second->GetSparseMatrixDouble(StructureEnum::eSubMatrix::KK).AddValue(globalRowDof - activeDofs, globalColumnDof - activeDofs, elementMatrix(rowCount, colCount));
+                                                                iteratorOutput.second->GetSparseMatrixDouble(StructureEnum::eSubMatrix::KK).AddValue(globalRowDof - activeDofs, globalColumnDof - activeDofs, elementMatrix.at(rowCount, colCount));
                                                             }
                                                         }
                                                     }
@@ -2516,7 +2516,7 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
                 elementPtr->DeleteNonlocalElements();
                 indexElement.push_back(elementPtr);
                 indexIp.push_back(theIp);
-                indexIpVolume.push_back(ipVolume[theIp]);
+                indexIpVolume.push_back(ipVolume.at(theIp,0));
             }
         }
     }

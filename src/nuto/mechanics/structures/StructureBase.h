@@ -1036,9 +1036,8 @@ public:
     //! @param rNode ... node id in the first constraint equation term
     //! @param rElement ... element group id
     //! @param rDofType ... type of dof in the first constraint equation term (e.g DISPLACEMENTS, ROTATIONS, TEMPERATURES)
-    //! @param rDofComponent ... 0,1,2 for x,y,z respectively
     //! @param numNearestNeighbours ... number of nearest neighbours to be found by the approximate nearest neighbour algorithm
-    void ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup, NuTo::Node::eAttributes rDofType, int rDofComponent, int rNumNearestNeighbours, double rTolerance = 1.0e-6);
+    void ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup, NuTo::Node::eAttributes rDofType, int rNumNearestNeighbours, double rTolerance = 1.0e-6);
 
 #endif
 
@@ -1563,7 +1562,7 @@ public:
     //! @param ... rDirection either 0,1,2 for x,y, or z
     //! @param ... rMin ... minimum value
     //! @param ... rMax ... maximum value
-    void GroupAddNodeCoordinateRange(int rIdentGroup, int rDirection, double rMin, double rMax);
+    virtual void GroupAddNodeCoordinateRange(int rIdentGroup, int rDirection, double rMin, double rMax);
 
 #ifndef SWIG
     //! @brief ... Adds all nodes which fulfill the conditions specified in a std::function

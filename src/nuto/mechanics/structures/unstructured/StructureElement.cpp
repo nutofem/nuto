@@ -103,7 +103,7 @@ void NuTo::Structure::ElementInfo(const ElementBase* rElement, int rVerboseLevel
                 for (int iIp = 0; iIp < rElement->GetNumIntegrationPoints(); ++iIp)
                 {
                     Eigen::Vector3d coor = rElement->GetGlobalIntegrationPointCoordinates(iIp);
-                    std::cout << "\t\t" << iIp << ": [" << coor[0] << ";" << coor[1] << ";" << coor[2] << "]" << std::endl;
+                    std::cout << "\t\t" << iIp << ": [" << coor.at(0,0) << ";" << coor.at(1,0) << ";" << coor.at(2,0) << "]" << std::endl;
                 }
             }
         }
@@ -394,7 +394,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
 
             Eigen::Vector3i boxIndex3D = Eigen::Vector3i::Zero(); // default access is the first box
             for (int iDim = 0; iDim < mDimension; ++iDim)
-                boxIndex3D[iDim] = std::floor((globalNodeCoordinates[iDim] - boundingBoxMin[iDim]) / deltaBox[iDim]);
+                boxIndex3D[iDim] = std::floor((globalNodeCoordinates.at(iDim,0) - boundingBoxMin.at(iDim,0)) / deltaBox.at(iDim,0));
 
             // 3D-index --> 1D-index mapping
             int boxIndex1D = boxIndex3D[0] + boxIndex3D[1] * numBoxes[0] + boxIndex3D[2] * numBoxes[0] * numBoxes[1];

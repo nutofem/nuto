@@ -730,7 +730,7 @@ void NuTo::StructureBase::ConstraintLinearEquationCreate(int rConstraint, int rN
     }
 }
 
-void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup, NuTo::Node::eAttributes rDofType, int rDofComponent, int rNumNearestNeighbours, double rTolerance)
+void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup, NuTo::Node::eAttributes rDofType, int rNumNearestNeighbours, double rTolerance)
 {
     this->mNodeNumberingRequired = true;
 
@@ -795,36 +795,15 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     kdTree = new ANNkd_tree(dataPoints, GroupGetNumMembers(nodeGroup), dim);
     kdTree->annkSearch(queryPoint, rNumNearestNeighbours, nearestNeighbourIds, distances, rTolerance);
 
-//    std::cout << "NN: Index Distance\n";
-//    for (int i = 0; i < rNumNearestNeighbours; i++) { // print summary
-//        distances[i] = sqrt(distances[i]); // unsquare distance
-//    std::cout << i << " " << nearestNeighbourIds[i] << " " << distances[i] << "\n";
-//    }
-
-
-
-
     delete [] nearestNeighbourIds; // clean things up
     delete [] distances;
     delete kdTree;
 
     annDeallocPts(dataPoints);
     annDeallocPt(queryPoint);
-//    delete [] queryPoint;
-//    delete [] dataPoints[0];
-//    delete [] dataPoints;
     annClose(); // done with ANN
 
-std::cout << "end of ANN" << std::endl;
-
-//    annDeallocPt(queryPoint);
-//    annDeallocPts(dataPoints);
-
-//    delete [] queryPoint;
-//    queryPoint = nullptr;
-
-
-
+    std::cout << "end of ANN" << std::endl;
 
 
     //////////////////////////////////////
@@ -853,12 +832,12 @@ std::cout << "end of ANN" << std::endl;
                     pointInsideElement = !pointInsideElement;
             }
 
-//            std::cout << "inside polygon" << pointInsideElement << std::endl;
 
             if (pointInsideElement)
             {
                 correctElementId = iElementId;
                 std::cout << "inside element id: \t" << correctElementId << std::endl;
+                std::cout << "-----------------------------------------------------" << std::endl;
                 break;
             }
         }
@@ -943,45 +922,34 @@ std::cout << "end of ANN" << std::endl;
         break;
 
     default:
-        throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate] Only implemented for 2 and 3 dimensions.");
+        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Only implemented for 2 and 3 dimensions.");
     }
 
 
     auto shapeFunctions = elementPtr->GetInterpolationType()->Get(NuTo::Node::eAttributes::DISPLACEMENTS).CalculateShapeFunctions(elementNaturalNodeCoords);
 
     //find unused integer id
-//    int unusedId = mConstraintMap.rbegin()->first + 1;
+    std::vector<int> unusedId(dim);
+    for (int iDim = 0; iDim < dim; ++iDim)
+    {
+        unusedId[iDim] = mConstraintMap.rbegin()->first + 1;
+        ConstraintLinearEquationCreate(unusedId[iDim], rNode, NuTo::Node::eAttributes::DISPLACEMENTS, iDim, 1.0, 0.0);
+    }
 
-//    ConstraintLinearEquationCreate(unusedId, rNode, NuTo::Node::eAttributes::DISPLACEMENTS, rDofComponent, 1.0, 0.0);
-
-    int unusedId00 = mConstraintMap.rbegin()->first + 1;
-    ConstraintLinearEquationCreate(unusedId00, rNode, NuTo::Node::eAttributes::DISPLACEMENTS, 0, 1.0, 0.0);
-    int unusedId01 = mConstraintMap.rbegin()->first + 1;
-    ConstraintLinearEquationCreate(unusedId01, rNode, NuTo::Node::eAttributes::DISPLACEMENTS, 1, 1.0, 0.0);
-    int unusedId02 = mConstraintMap.rbegin()->first + 1;
-    ConstraintLinearEquationCreate(unusedId02, rNode, NuTo::Node::eAttributes::DISPLACEMENTS, 2, 1.0, 0.0);
 
     for (int iNode = 0; iNode < shapeFunctions.rows(); ++iNode)
     {
         int localNodeId = elementPtr->GetInterpolationType()->Get(NuTo::Node::eAttributes::DISPLACEMENTS).GetNodeIndex(iNode);
         int globalNodeId = NodeGetId(elementPtr->GetNode(localNodeId, Node::eAttributes::DISPLACEMENTS));
+        std::cout << "globalNodeId \t" << globalNodeId << std::endl;
         double coefficient = -shapeFunctions(iNode, 0);
-//        ConstraintLinearEquationAddTerm(unusedId, globalNodeId, Node::eAttributes::DISPLACEMENTS, rDofComponent, coefficient);
-          ConstraintLinearEquationAddTerm(unusedId00, globalNodeId, Node::eAttributes::DISPLACEMENTS, 0, coefficient);
-          ConstraintLinearEquationAddTerm(unusedId01, globalNodeId, Node::eAttributes::DISPLACEMENTS, 1, coefficient);
-          ConstraintLinearEquationAddTerm(unusedId02, globalNodeId, Node::eAttributes::DISPLACEMENTS, 2, coefficient);
+
+
+
+        for (int iDim = 0; iDim < dim; ++iDim)
+            ConstraintLinearEquationAddTerm(unusedId[iDim], globalNodeId, Node::eAttributes::DISPLACEMENTS, iDim, coefficient);
 
     }
-
-
-
-
-
-
-
-
-
-
 
 
 }

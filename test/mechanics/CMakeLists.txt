@@ -277,6 +277,18 @@ ADD_TEST(c::mechanics::NonlocalDamagePlasticityModel ${CMAKE_CURRENT_BUILD_DIR}/
   IF(MINGW)
     SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
+  
+  # ConstraintsNodeToElement
+  CONFIGURE_FILE(ConstraintsNodeToElementMatrixMesh2d.msh ${CMAKE_CURRENT_BINARY_DIR})
+  CONFIGURE_FILE(ConstraintsNodeToElementFiberMesh2d.msh ${CMAKE_CURRENT_BINARY_DIR})
+  CONFIGURE_FILE(ConstraintsNodeToElementMatrixMesh3d.msh ${CMAKE_CURRENT_BINARY_DIR})
+  CONFIGURE_FILE(ConstraintsNodeToElementFiberMesh3d.msh ${CMAKE_CURRENT_BINARY_DIR})
+  ADD_EXECUTABLE(ConstraintsNodeToElement ConstraintsNodeToElement.cpp)
+    TARGET_LINK_LIBRARIES(ConstraintsNodeToElement NuToMechanics NuToMath NuToBase)
+    ADD_TEST(c::mechanics::ConstraintsNodeToElement ${CMAKE_CURRENT_BUILD_DIR}/ConstraintsNodeToElement)
+  IF(MINGW)
+    SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  ENDIF(MINGW)
  
   # IntegrationPointVoronoiCells
   IF (ENABLE_VISUALIZE)

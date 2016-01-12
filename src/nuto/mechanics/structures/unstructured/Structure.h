@@ -725,6 +725,14 @@ public:
     //! @param ... rInterpolationType  identifier for the interpolation type
     void GroupAddElementFromType(int rIdentGroup, int rInterpolationType);
 
+    //! @brief ... Adds all nodes in rSearchIdenGroup to rIdentGroup whose coordinates are in the specified range
+    //! @param ... rIdentNodeGroup identifier for the group
+    //! @param ... rSearchIdentElementGroup identifier for the group
+    //! @param ... rDirection either 0,1,2 for x,y, or z
+    //! @param ... rMin ... minimum value
+    //! @param ... rMax ... maximum value
+    void GroupAddNodeFromElementGroupCoordinateRange(int rIdentNodeGroup, int rSearchIdentElementGroup, int rDirection, double rMin, double rMax);
+
     //*************************************************
     //************ Info routine         ***************
     //**  defined in structures/Structure.cpp *********

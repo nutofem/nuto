@@ -98,3 +98,54 @@ void NuTo::Structure::GroupAddElementsTotal(int rIdentGroup)
         std::cout<< __PRETTY_FUNCTION__ << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
 }
+
+void NuTo::Structure::GroupAddNodeFromElementGroupCoordinateRange(int rIdentNodeGroup, int rSearchIdentElementGroup, int rDirection, double rMin, double rMax)
+{
+#ifdef SHOW_TIME
+    std::clock_t start, end;
+    start = clock();
+#endif
+
+    boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentNodeGroup);
+    if (itGroup == mGroupMap.end())
+        throw MechanicsException(std::string(__PRETTY_FUNCTION__) +": \t Group with the given identifier does not exist.");
+    if (itGroup->second->GetType() != Groups::Nodes)
+        throw MechanicsException(std::string(__PRETTY_FUNCTION__) +": \t A node can be added only to a node group.");
+
+    if (rDirection < 0 || rDirection > mDimension)
+        throw MechanicsException(std::string(__PRETTY_FUNCTION__) +": \t The direction is either 0(x),1(Y) or 2(Z) and has to be smaller than the dimension of the structure.");
+
+    auto elementsInGroup = GroupGetMemberIds(rSearchIdentElementGroup);
+
+    std::set<int> nodesInGroup;
+    for (unsigned int iElement = 0; iElement < elementsInGroup.rows(); ++iElement)
+    {
+
+        auto nodesInElement = ElementGetNodes(elementsInGroup.at(iElement,0));
+
+        for (int iNode = 0; iNode < nodesInElement.rows(); ++iNode)
+        {
+            int nodeId = nodesInElement.at(iNode,0);
+            nodesInGroup.insert(nodeId);
+        }
+    }
+
+
+    for (auto const & iNodeId : nodesInGroup)
+    {
+        auto nodePtr = NodeGetNodePtr(iNodeId);
+        double coordinate = nodePtr->GetCoordinate(rDirection);
+
+        if (coordinate >= rMin and coordinate <= rMax)
+            itGroup->second->AddMember(iNodeId, nodePtr);
+    }
+
+
+
+#ifdef SHOW_TIME
+    end = clock();
+    if (mShowTime)
+        std::cout << "__PRETTY_FUNCTION__ " << difftime(end, start) / CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
