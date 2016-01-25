@@ -11,6 +11,7 @@
 #include "nuto/mechanics/constitutive/mechanics/GradientDamagePlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/FibreMatrixBondStressSlip.h"
 #include "nuto/mechanics/constitutive/mechanics/GradientDamageEngineeringStress.h"
+#include "nuto/mechanics/constitutive/mechanics/GradientDamageEngineeringStressFatigue.h"
 #include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/moistureTransport/MoistureTransport.h"
@@ -128,6 +129,9 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             break;
         case NuTo::Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS:
             ConstitutiveLawPtr = new NuTo::GradientDamageEngineeringStress();
+            break;
+        case NuTo::Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE:
+            ConstitutiveLawPtr = new NuTo::GradientDamageEngineeringStressFatigue();
             break;
         case NuTo::Constitutive::STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS:
             ConstitutiveLawPtr = new NuTo::StrainGradientDamagePlasticityEngineeringStress();

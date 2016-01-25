@@ -327,6 +327,12 @@ public:
     // Postprocessing should be done if the jump is acceptable; in this case the IntegrateSinleCycle should be repeated with a true option
     void IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_k,
     		NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_k, bool rIncludePostProcess);
+
+    //!@brief updates DofTypes after the CalculateFourierCoefficients routine
+    // The CalculateFourierCoefficients routine determines the DISPLACEMENTS Dof only. For a coupled problem DISPLACEMENTS/DofType, the another DofType
+    // has to be updated too. This routine updates the DofTypesfor the following list of Dofs:
+    // NONLOCALEQSTRAIN
+    void CalculateFourierCoefficientsCoupledDofs();
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
     //! @brief serializes the class

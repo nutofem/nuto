@@ -80,6 +80,30 @@ const NuTo::ConstitutiveStaticDataGradientDamage1D* NuTo::ConstitutiveStaticData
     throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamage1D] Static data is not of type GradientDamage1D.");
 }
 
+//!@ brief reinterpret as gradient damage 1d static data
+NuTo::ConstitutiveStaticDataGradientDamage1DFatigue* NuTo::ConstitutiveStaticDataBase::AsGradientDamage1DFatigue()
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamage1DFatigue] Static data is not of type GradientDamage1DFatigue.");
+}
+
+//!@ brief reinterpret as nonlocal damage 1d static data
+const NuTo::ConstitutiveStaticDataGradientDamage1DFatigue* NuTo::ConstitutiveStaticDataBase::AsGradientDamage1DFatigue()const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamage1D] Static data is not of type GradientDamage1D.");
+}
+
+//!@ brief reinterpret as gradient damage 2d static data
+NuTo::ConstitutiveStaticDataGradientDamage2DFatigue* NuTo::ConstitutiveStaticDataBase::AsGradientDamage2DFatigue()
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamage2DFatigue] Static data is not of type GradientDamage2DFatigue.");
+}
+
+//!@ brief reinterpret as nonlocal damage 2d static data
+const NuTo::ConstitutiveStaticDataGradientDamage2DFatigue* NuTo::ConstitutiveStaticDataBase::AsGradientDamage2DFatigue()const
+{
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamage2DFatigue] Static data is not of type GradientDamage2DFatigue.");
+}
+
 //!@ brief reinterpret as bond stress slip static data
 NuTo::ConstitutiveStaticDataBondStressSlip* NuTo::ConstitutiveStaticDataBase::AsBondStressSlip()
 {

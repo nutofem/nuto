@@ -227,7 +227,6 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
 
 
 
-
         /*****************************************\
          *    FILL CONSTITUTIVE OUTPUT LIST      *
         \*****************************************/
@@ -288,6 +287,58 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     }
                 }
                 break;
+            case Element::INTERNAL_GRADIENT_ELASTIC:
+                it->second->GetFullVectorDouble().Resize(numActiveDofs);
+                //if the stiffness matrix is constant, the corresponding internal force is calculated via the Kd
+                //on the global level
+                if (mStructure->GetHessianConstant(0) == false)
+                {
+                    for (auto dof : activeDofs)
+                    {
+                        switch (dof)
+                        {
+                        case Node::DISPLACEMENTS:
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_STRESS_ELASTIC_2D]              	                    = &(engineeringStress2D);
+                            if (activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end() &&
+                                activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                            {
+                                constitutiveOutputList[NuTo::Constitutive::Output::ENGINEERING_STRESS_2D_PORE_PRESSURE]                         = &engineeringStressPorePressure;
+                            }
+                        }
+                            break;
+                        case Node::NONLOCALEQSTRAIN:
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN]                                                 = &localEqStrain;
+                            constitutiveOutputList[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI]                                           = &nonlocalParameter;
+                        }
+                            break;
+                        case Node::RELATIVEHUMIDITY:
+                        {
+                            if (activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                            {
+                                constitutiveOutputList[NuTo::Constitutive::Output::RESIDUAL_VAPOR_PHASE_N]                                      = &residualVaporPhaseN;
+                                constitutiveOutputList[NuTo::Constitutive::Output::RESIDUAL_VAPOR_PHASE_B]                                      = &residualVaporPhaseB;
+                            }
+                        }
+                            break;
+
+                        case Node::WATERVOLUMEFRACTION:
+                        {
+                            if (activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end())
+                            {
+                                constitutiveOutputList[NuTo::Constitutive::Output::RESIDUAL_WATER_PHASE_N]                                      = &residualWaterPhaseN;
+                                constitutiveOutputList[NuTo::Constitutive::Output::RESIDUAL_WATER_PHASE_B]                                      = &residualWaterPhaseB;
+                            }
+                        }
+                            break;
+                        default:
+                            throw MechanicsException("[NuTo::Element2D::Evaluate] Constitutive output INTERNAL_GRADIENT_ELASTIC for " + Node::AttributeToString(dof) + " not implemented.");
+
+                        }
+                    }
+                }
+                break;
             case Element::HESSIAN_0_TIME_DERIVATIVE:
             {
                 it->second->GetFullMatrixDouble().Resize(numActiveDofs, NumActiveDofsNonlocal);
@@ -308,6 +359,75 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         {
                             nonlocalTangentStressStrain.SetNumSubMatrices(NumNonlocalIps);
                             constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D] = &nonlocalTangentStressStrain;
+                        }
+
+                        if (activeDofs.find(Node::NONLOCALEQSTRAIN) != activeDofs.end())
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_2D] = &tangentStressNonlocalEqStrain;
+                        }
+                        if (activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end() &&
+                            activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY_2D] = &tangent_D_EngineeringStress_D_RH;
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION_2D] = &tangent_D_EngineeringStress_D_WV;
+                        }
+                    }
+                        break;
+                    case Node::NONLOCALEQSTRAIN:
+                    {
+                        constitutiveOutputList[NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_XI_D_STRAIN_2D] = &tangentLocalEqStrainStrain;
+                        constitutiveOutputList[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI] = &nonlocalParameter;
+                    }
+                        break;
+                    case Node::RELATIVEHUMIDITY:
+                    {
+                        if (activeDofs.find(Node::WATERVOLUMEFRACTION) != activeDofs.end())
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_RH_D_RH_H0_BB]                                            = &tangent_D_Residual_RH_D_RH_H0_BB;
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_RH_D_RH_H0_NN]                                            = &tangent_D_Residual_RH_D_RH_H0_NN;
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_RH_D_WV_H0_BN]                                            = &tangent_D_Residual_RH_D_WV_H0_BN;
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_RH_D_WV_H0_NN]                                            = &tangent_D_Residual_RH_D_WV_H0_NN;
+                        }
+                    }
+                        break;
+                    case Node::WATERVOLUMEFRACTION:
+                    {
+                        if (activeDofs.find(Node::RELATIVEHUMIDITY) != activeDofs.end())
+                        {
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_WV_D_RH_H0_NN]                                            = &tangent_D_Residual_WV_D_RH_H0_NN;
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_WV_D_WV_H0_BB]                                            = &tangent_D_Residual_WV_D_WV_H0_BB;
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_WV_D_WV_H0_BN]                                            = &tangent_D_Residual_WV_D_WV_H0_BN;
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_RESIDUAL_WV_D_WV_H0_NN]                                            = &tangent_D_Residual_WV_D_WV_H0_NN;
+                        }
+                    }
+                        break;
+                    default:
+                        throw MechanicsException("[NuTo::Element2D::Evaluate] Constitutive output HESSIAN_0_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
+
+                    }
+                }
+            }
+                break;
+            case Element::HESSIAN_0_TIME_DERIVATIVE_ELASTIC:
+            {
+                it->second->GetFullMatrixDouble().Resize(numActiveDofs, NumActiveDofsNonlocal);
+                it->second->GetFullMatrixDouble().setZero();
+                it->second->SetSymmetry(true);
+                it->second->SetConstant(true);
+                for (auto dof : activeDofs)
+                {
+                    switch (dof)
+                    {
+                    case Node::DISPLACEMENTS:
+                    {
+                        if (NumNonlocalElements == 0)
+                        {
+                            nonlocalTangentStressStrain.SetNumSubMatrices(1);
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_2D] = &(nonlocalTangentStressStrain.GetSubMatrix_3x3(0));
+                        } else
+                        {
+                            nonlocalTangentStressStrain.SetNumSubMatrices(NumNonlocalIps);
+                            constitutiveOutputList[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_2D] = &nonlocalTangentStressStrain;
                         }
 
                         if (activeDofs.find(Node::NONLOCALEQSTRAIN) != activeDofs.end())
@@ -410,6 +530,15 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
             case Element::UPDATE_TMP_STATIC_DATA:
                 constitutiveOutputList[NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA] = 0;
                 break;
+			case Element::FATIGUE_SAVE_STATIC_DATA:
+				constitutiveOutputList[NuTo::Constitutive::Output::FATIGUE_SAVE_STATIC_DATA] = 0;
+			break;
+			case Element::FATIGUE_RESTORE_STATIC_DATA:
+				constitutiveOutputList[NuTo::Constitutive::Output::FATIGUE_RESTORE_STATIC_DATA] = 0;
+			break;
+			case Element::FATIGUE_EXTRAPOLATE_STATIC_DATA:
+				constitutiveOutputList[NuTo::Constitutive::Output::FATIGUE_EXTRAPOLATE_STATIC_DATA] = 0;
+			break;
             case Element::IP_DATA:
                 switch (it->second->GetIpDataType())
                 {
@@ -495,7 +624,6 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                 throw MechanicsException("[NuTo::Element2D::Evaluate] element output not implemented.");
             }
         }
-
 
 
 
@@ -618,6 +746,7 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
             {
                 switch (it->first)
                 {
+                case Element::INTERNAL_GRADIENT_ELASTIC:
                 case Element::INTERNAL_GRADIENT:
                 {
                     //if the stiffness matrix is constant, the corresponding internal force is calculated via the Kd
@@ -685,13 +814,14 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                             }
                                 break;
                             default:
-                                throw MechanicsException("[NuTo::Element2D::Evaluate] Element output INTERNAL_GRADIENT for " + Node::AttributeToString(dof) + " not implemented.");
+                                throw MechanicsException("[NuTo::Element2D::Evaluate] Element output INTERNAL_GRADIENT or INTERNAL_GRADIENT_ELASTIC for " + Node::AttributeToString(dof) + " not implemented.");
 
                             }
                         }
                     }
                 }
                     break;
+                case Element::HESSIAN_0_TIME_DERIVATIVE_ELASTIC:
                 case Element::HESSIAN_0_TIME_DERIVATIVE:
                  {
                      //factor for the numerical integration
@@ -996,7 +1126,7 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         }
                             break;
                         default:
-                            throw MechanicsException("[NuTo::Element2D::Evaluate] Element output HESSIAN_0_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
+                            throw MechanicsException("[NuTo::Element2D::Evaluate] Element output HESSIAN_0_TIME_DERIVATIVE or HESSIAN_0_TIME_DERIVATIVE_ELASTIC for " + Node::AttributeToString(dof) + " not implemented.");
 
                         }
                     }
@@ -1263,6 +1393,12 @@ NuTo::Error::eError NuTo::Element2D::Evaluate(boost::ptr_multimap<NuTo::Element:
                 case Element::UPDATE_STATIC_DATA:
                 case Element::UPDATE_TMP_STATIC_DATA:
                     break;
+				case Element::FATIGUE_SAVE_STATIC_DATA:
+				break;
+				case Element::FATIGUE_RESTORE_STATIC_DATA:
+				break;
+				case Element::FATIGUE_EXTRAPOLATE_STATIC_DATA:
+				break;
                 case Element::IP_DATA:
                     switch (it->second->GetIpDataType())
                     {

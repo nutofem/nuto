@@ -84,7 +84,7 @@ public:
     	return *this;
     }
 
-    //! @brief ... calculates the norm of the stress tensor in 3D case
+    //! @brief ... calculates the norm of the strain tensor in 3D case
     double Norm() const;
 
 #ifdef ENABLE_SERIALIZATION

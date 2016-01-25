@@ -11,6 +11,10 @@
 #include "nuto/math/FullVector.h"
 #include "nuto/mechanics/constitutive/ConstitutiveInputBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
+#include "nuto/mechanics/constitutive/mechanics/LocalEqStrain.h"
+#include "nuto/mechanics/constitutive/ConstitutiveTangentLocal.h"
+
+#include <math.h>
 
 namespace NuTo
 {
@@ -80,6 +84,28 @@ class EngineeringStrain1D: public ConstitutiveOutputBase, public ConstitutiveInp
     const NuTo::EngineeringStrain1D& GetEngineeringStrain1D()const
     {
     	return *this;
+    }
+
+    //! @brief ... calculates the norm of the strain tensor in 1D case = equivalent strain
+    NuTo::LocalEqStrain Norm() const
+    {
+    	NuTo::LocalEqStrain localEqStrain;
+    	localEqStrain[0] = std::abs((*this)[0]);
+    	return localEqStrain;
+    }
+
+    //! @brief ... calculates the norm derivative of the strain tensor in 1D case = derivative of the equivalent strain by strain
+    NuTo::ConstitutiveTangentLocal<1, 1> DNorm() const
+    {
+    	NuTo::ConstitutiveTangentLocal<1, 1> tangent;
+    	NuTo::LocalEqStrain localEqStrain((*this).Norm());
+    	double localEqStrainDerivative(1.);
+        if (localEqStrain[0] < 0)
+        {
+            localEqStrainDerivative = -1.;
+        }
+        tangent(0, 0) = localEqStrainDerivative;
+        return tangent;
     }
 
 #ifdef ENABLE_SERIALIZATION

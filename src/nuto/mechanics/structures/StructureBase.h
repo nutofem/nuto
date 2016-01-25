@@ -1821,6 +1821,11 @@ public:
     //! @brief calculate the critical time step for a vector of elements solving the generalized eigenvalue problem Ku=lambda Mu
     double ElementCalculateLargestElementEigenvalue(const std::vector< ElementBase*>& rElementVector);
 
+	//! @brief returns whether or not the dof is constitutive input at least in one InrepolationType
+	//! @param rInterpolationTypeId ... interpolation type id
+	//! @param rDofType ... dof type
+	bool InterpolationTypeIsConstitutiveInput(NuTo::Node::eAttributes rDofType);
+
 
 protected:
     //! @brief ... number of time derivatives (0 : static, 1: velocities, 2: accelerations)

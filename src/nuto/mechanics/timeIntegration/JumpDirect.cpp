@@ -34,6 +34,7 @@
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 #include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3D.h"
+#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataGradientDamage2DFatigue.h"
 
 //! @brief constructor
 //! @param mDimension number of nodes
@@ -202,6 +203,20 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
         NuTo::FullVector<double,Eigen::Dynamic> save_disp_j, save_disp_k, save_vel_j, save_vel_k, save_acc_j, save_acc_k;
     	double SaveTime(mStructure->GetTime());
     	mStructure->ElementFatigueSaveStaticData();
+//    	std::cout << "Saved statevs =======================" <<std::endl;		// delete me
+//    	if (mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() == NuTo::Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE){
+//    	 		std::cout << "Constitutive law = " << mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() << std::endl;
+//    	 		std::cout << "Damage  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega() << std::endl;
+//    	 		std::cout << "DamageF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmegaFatigue() << std::endl;
+//    	 		std::cout << "Kappa   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << std::endl;
+//    	 		std::cout << "KappaF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappaFatigue() << std::endl;
+//    	 		std::cout << "NonLEq  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain() << std::endl;
+//    	 		std::cout << "NonLEqF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrainFatigue() << std::endl;
+//    	 		std::cout << "PrevEp  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrain() << std::endl;
+//    	 		std::cout << "PrevEpF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrainFatigue() << std::endl;
+//    	 		std::cout << "PrevS   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStress() << std::endl;
+//    	 		std::cout << "PrevSF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStressFatigue() << std::endl;
+//    	}
     	mStructure->NodeExtractDofValues(0,save_disp_j, save_disp_k);
         if (mStructure->GetNumTimeDerivatives()>1)
 	    {
@@ -247,6 +262,7 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
     	NuTo::FullVector<double,Eigen::Dynamic> disp_Max_j, disp_Max_k, disp_Min_j, disp_Min_k;
 
     	Error = NuTo::NewmarkDirect::Solve(SaveTime + 0.25/mHarmonicFactor(0,1));
+//    	std::cout << "0.25 READY ==================" <<std::endl;		// delete me
     	mStructure->NodeExtractDofValues(0,disp_Max_j, disp_Max_k);
         if (mStructure->GetNumTimeDerivatives()>1)
 	    {
@@ -259,11 +275,27 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 	    }
 
     	Error = NuTo::NewmarkDirect::Solve(SaveTime + 0.75/mHarmonicFactor(0,1));
+//    	std::cout << "0.75 READY ==================" <<std::endl;		// delete me
     	mStructure->NodeExtractDofValues(0,disp_Min_j, disp_Min_k);
 
     	NuTo::FullVector<double,Eigen::Dynamic> disp_Mean_j, disp_Mean_k, disp_Ampl_j, disp_Ampl_k;
 
     	Error = NuTo::NewmarkDirect::Solve(SaveTime + 1./mHarmonicFactor(0,1));
+//    	std::cout << "1 READY ==================" <<std::endl;		// delete me
+//    	if (mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() == NuTo::Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE){
+//    	 		std::cout << "Constitutive law = " << mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() << std::endl;
+//    	 		std::cout << "Damage  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega() << std::endl;
+//    	 		std::cout << "DamageF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmegaFatigue() << std::endl;
+//    	 		std::cout << "Kappa   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << std::endl;
+//    	 		std::cout << "KappaF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappaFatigue() << std::endl;
+//    	 		std::cout << "NonLEq  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain() << std::endl;
+//    	 		std::cout << "NonLEqF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrainFatigue() << std::endl;
+//    	 		std::cout << "PrevEp  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrain() << std::endl;
+//    	 		std::cout << "PrevEpF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrainFatigue() << std::endl;
+//    	 		std::cout << "PrevS   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStress() << std::endl;
+//    	 		std::cout << "PrevSF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStressFatigue() << std::endl;
+//    	}
+
     	mStructure->NodeExtractDofValues(0,disp_Mean_j, disp_Mean_k);
 
     	disp_Ampl_j = 0.5*(disp_Max_j - disp_Min_j);
@@ -286,9 +318,65 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
         //no postprocessing, therefore=>false
         //when calculating the internal force, update of history variables=false
         this->IntegrateSingleCycle(&disp_Mean_j,&disp_Mean_k,&disp_Ampl_j,&disp_Ampl_k,false);						    	//the statevs and structure time evolve through the cycle
+//    	std::cout << "IntSingCycleReady ==================" <<std::endl;		// delete me
+//    	if (mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() == NuTo::Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE){
+//    	 		std::cout << "Constitutive law = " << mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() << std::endl;
+//    	 		std::cout << "Damage  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega() << std::endl;
+//    	 		std::cout << "DamageF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmegaFatigue() << std::endl;
+//    	 		std::cout << "Kappa   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << std::endl;
+//    	 		std::cout << "KappaF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappaFatigue() << std::endl;
+//    	 		std::cout << "NonLEq  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain() << std::endl;
+//    	 		std::cout << "NonLEqF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrainFatigue() << std::endl;
+//    	 		std::cout << "PrevEp  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrain() << std::endl;
+//    	 		std::cout << "PrevEpF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrainFatigue() << std::endl;
+//    	 		std::cout << "PrevS   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStress() << std::endl;
+//    	 		std::cout << "PrevSF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStressFatigue() << std::endl;
+//    	}
         mStructure->BuildGlobalGradientInternalPotentialSubVectors(cyclicPreJumpIntForce_j,cyclicPreJumpIntForce_k,false);	//calculate cyclic change of the internal forces within the 5th cycle
+//    	std::cout << "Build Global Gradient Int Pot READY ==================" <<std::endl;		// delete me
+//    	if (mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() == NuTo::Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE){
+//    	 		std::cout << "Constitutive law = " << mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() << std::endl;
+//    	 		std::cout << "Damage  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega() << std::endl;
+//    	 		std::cout << "DamageF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmegaFatigue() << std::endl;
+//    	 		std::cout << "Kappa   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << std::endl;
+//    	 		std::cout << "KappaF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappaFatigue() << std::endl;
+//    	 		std::cout << "NonLEq  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain() << std::endl;
+//    	 		std::cout << "NonLEqF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrainFatigue() << std::endl;
+//    	 		std::cout << "PrevEp  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrain() << std::endl;
+//    	 		std::cout << "PrevEpF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrainFatigue() << std::endl;
+//    	 		std::cout << "PrevS   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStress() << std::endl;
+//    	 		std::cout << "PrevSF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStressFatigue() << std::endl;
+//    	}
         this->IntegrateSingleCycle(&disp_Mean_j,&disp_Mean_k,&disp_Ampl_j,&disp_Ampl_k,false);
+//    	std::cout << "IntSingCycleReady2 ==================" <<std::endl;		// delete me
+//    	if (mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() == NuTo::Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE){
+//    	 		std::cout << "Constitutive law = " << mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() << std::endl;
+//    	 		std::cout << "Damage  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega() << std::endl;
+//    	 		std::cout << "DamageF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmegaFatigue() << std::endl;
+//    	 		std::cout << "Kappa   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << std::endl;
+//    	 		std::cout << "KappaF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappaFatigue() << std::endl;
+//    	 		std::cout << "NonLEq  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain() << std::endl;
+//    	 		std::cout << "NonLEqF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrainFatigue() << std::endl;
+//    	 		std::cout << "PrevEp  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrain() << std::endl;
+//    	 		std::cout << "PrevEpF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrainFatigue() << std::endl;
+//    	 		std::cout << "PrevS   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStress() << std::endl;
+//    	 		std::cout << "PrevSF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStressFatigue() << std::endl;
+//    	}
         mStructure->BuildGlobalGradientInternalPotentialSubVectors(cyclicPreJumpIntForceNext_j,cyclicPreJumpIntForceNext_k,false);	//calculate cyclic change within the 6th cycle
+//    	std::cout << "Build Global Gradient Int Pot READY2 ==================" <<std::endl;		// delete me
+//    	if (mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() == NuTo::Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE){
+//    	 		std::cout << "Constitutive law = " << mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() << std::endl;
+//    	 		std::cout << "Damage  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega() << std::endl;
+//    	 		std::cout << "DamageF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmegaFatigue() << std::endl;
+//    	 		std::cout << "Kappa   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << std::endl;
+//    	 		std::cout << "KappaF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappaFatigue() << std::endl;
+//    	 		std::cout << "NonLEq  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain() << std::endl;
+//    	 		std::cout << "NonLEqF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrainFatigue() << std::endl;
+//    	 		std::cout << "PrevEp  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrain() << std::endl;
+//    	 		std::cout << "PrevEpF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrainFatigue() << std::endl;
+//    	 		std::cout << "PrevS   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStress() << std::endl;
+//    	 		std::cout << "PrevSF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStressFatigue() << std::endl;
+//    	}
         cyclicPreJumpIntForceNext_j -= cyclicPreJumpIntForce_j;
         cyclicPreJumpIntForceNext_k -= cyclicPreJumpIntForce_k;
 
@@ -306,7 +394,35 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
         mStructure->SetPrevTime(SaveTime);
         mStructure->SetTime(SaveTime);
         mTime = SaveTime; 																								//postprocessing time
+//    	std::cout << "Before starting restoring =======================" <<std::endl;		// delete me
+//    	if (mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() == NuTo::Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE){
+//    	 		std::cout << "Constitutive law = " << mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() << std::endl;
+//    	 		std::cout << "Damage  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega() << std::endl;
+//    	 		std::cout << "DamageF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmegaFatigue() << std::endl;
+//    	 		std::cout << "Kappa   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << std::endl;
+//    	 		std::cout << "KappaF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappaFatigue() << std::endl;
+//    	 		std::cout << "NonLEq  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain() << std::endl;
+//    	 		std::cout << "NonLEqF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrainFatigue() << std::endl;
+//    	 		std::cout << "PrevEp  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrain() << std::endl;
+//    	 		std::cout << "PrevEpF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrainFatigue() << std::endl;
+//    	 		std::cout << "PrevS   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStress() << std::endl;
+//    	 		std::cout << "PrevSF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStressFatigue() << std::endl;
+//    	}
         mStructure->ElementFatigueRestoreStaticData();
+//    	std::cout << "Restored to the Third cycle =======================" <<std::endl;		// delete me
+//    	if (mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() == NuTo::Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE){
+//    	 		std::cout << "Constitutive law = " << mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() << std::endl;
+//    	 		std::cout << "Damage  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega() << std::endl;
+//    	 		std::cout << "DamageF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmegaFatigue() << std::endl;
+//    	 		std::cout << "Kappa   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << std::endl;
+//    	 		std::cout << "KappaF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappaFatigue() << std::endl;
+//    	 		std::cout << "NonLEq  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain() << std::endl;
+//    	 		std::cout << "NonLEqF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrainFatigue() << std::endl;
+//    	 		std::cout << "PrevEp  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrain() << std::endl;
+//    	 		std::cout << "PrevEpF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrainFatigue() << std::endl;
+//    	 		std::cout << "PrevS   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStress() << std::endl;
+//    	 		std::cout << "PrevSF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStressFatigue() << std::endl;
+//    	}
         if (mStructure->GetNumTimeDerivatives()>1)
         {
         	mStructure->NodeMergeDofValues(1,save_vel_j,save_vel_k);
@@ -367,6 +483,20 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 
 			//extrapolate state variables: statev += (statev - saved_statev) * Njump;
 			mStructure->ElementFatigueExtrapolateStaticData();
+//	    	std::cout << "Extrapolation READY =======================" <<std::endl;		// delete me
+//	    	if (mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() == NuTo::Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE){
+//	    	 		std::cout << "Constitutive law = " << mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() << std::endl;
+//	    	 		std::cout << "Damage  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega() << std::endl;
+//	    	 		std::cout << "DamageF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmegaFatigue() << std::endl;
+//	    	 		std::cout << "Kappa   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << std::endl;
+//	    	 		std::cout << "KappaF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappaFatigue() << std::endl;
+//	    	 		std::cout << "NonLEq  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain() << std::endl;
+//	    	 		std::cout << "NonLEqF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrainFatigue() << std::endl;
+//	    	 		std::cout << "PrevEp  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrain() << std::endl;
+//	    	 		std::cout << "PrevEpF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrainFatigue() << std::endl;
+//	    	 		std::cout << "PrevS   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStress() << std::endl;
+//	    	 		std::cout << "PrevSF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStressFatigue() << std::endl;
+//	    	}
 
             //find equilibrium: update mean and amplitude displacements																					//new place
 			this->CalculateFourierCofficients(&disp_Mean_j,&disp_Mean_k,&disp_Ampl_j,&disp_Ampl_k,
@@ -375,6 +505,20 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 			//call UpdateStaticData in order to update mPrevStrain and mPrevSigma too (this has to
 			//be done after the equilibrium has been found)
 	        mStructure->ElementTotalUpdateStaticData();
+//	    	std::cout << "After update static data =======================" <<std::endl;		// delete me
+//	    	if (mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() == NuTo::Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE){
+//	    	 		std::cout << "Constitutive law = " << mStructure->ElementGetElementPtr(189)->GetConstitutiveLaw(0)->GetType() << std::endl;
+//	    	 		std::cout << "Damage  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega() << std::endl;
+//	    	 		std::cout << "DamageF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmegaFatigue() << std::endl;
+//	    	 		std::cout << "Kappa   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << std::endl;
+//	    	 		std::cout << "KappaF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappaFatigue() << std::endl;
+//	    	 		std::cout << "NonLEq  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain() << std::endl;
+//	    	 		std::cout << "NonLEqF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrainFatigue() << std::endl;
+//	    	 		std::cout << "PrevEp  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrain() << std::endl;
+//	    	 		std::cout << "PrevEpF = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStrainFatigue() << std::endl;
+//	    	 		std::cout << "PrevS   = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStress() << std::endl;
+//	    	 		std::cout << "PrevSF  = " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevStressFatigue() << std::endl;
+//	    	}
 
 	        //evaluate cyclic increase of the out-of-balance intForce => integrate the subsequent single cycle (ISC)
 	        //no postprocessing, therefore=>false
@@ -745,6 +889,7 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
 	}
 
 	this->CalculateGlobalModifiedStiffness(&stiffMatrix_jj,0);
+	std::cout << "CFC: prior mean solver ===================================" << std::endl;
 
 	// solve for the mean displacement
 	NuTo::SparseMatrixCSRGeneral<double> hessianModSolver(stiffMatrix_jj);
@@ -755,6 +900,8 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
 	mySolver.Solve(hessianModSolver, residual_mod, delta_disp_j);
 	delta_disp_j*=-1;
 
+	std::cout << "CFC: after mean solver ===================================" << std::endl;
+
 	// calculate mean displacement
 	*rDisp_Mean_j += delta_disp_j;
 	*rDisp_Mean_k = bRHS - Cmat*(*rDisp_Mean_j);
@@ -763,7 +910,7 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
 	// the previous calculation of disp_j is based on the update scheme
 	// the following calculation is based on direct calculation, that is:
 	// Kmod * rDisp_mean_j = -( (K12 - CmatT*K22)*bRHS - Fext ), Fint = 0
-	bool DirectCalculation(true);
+	bool DirectCalculation(false);
     // allocate space for stiffness matrix
     SparseMatrixCSRVector2General<double> K_jj(mStructure->GetNumActiveDofs(), mStructure->GetNumActiveDofs());
     SparseMatrixCSRVector2General<double> K_jk(mStructure->GetNumActiveDofs(), mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
@@ -931,7 +1078,7 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
 	stiffMatrix_jj.SetZeroEntries();
 
 	this->CalculateGlobalModifiedStiffness(&stiffMatrix_jj,1);
-
+	std::cout << "CFC: prior ampl. solver ===================================" << std::endl;
 	// solve for the ampl displacement
 	hessianModSolver = stiffMatrix_jj;
 
@@ -939,6 +1086,8 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
 	delta_disp_j.Zero(mStructure->GetNumActiveDofs());
 	mySolver.Solve(hessianModSolver, residual_mod, delta_disp_j);
 	delta_disp_j*=-1;
+	std::cout << "CFC: after ampl. solver ===================================" << std::endl;
+
 
 	// calculate ampl displacement
 	*rDisp_Ampl_j += delta_disp_j;
@@ -1026,6 +1175,44 @@ void NuTo::JumpDirect::CalculateFourierCofficients(NuTo::FullVector<double,Eigen
 	// set mean displacement field
 	mStructure->NodeMergeActiveDofValues(0,*rDisp_Mean_j);
 	mStructure->ElementTotalUpdateTmpStaticData();
+}
+
+//!@brief updates DofTypes after the CalculateFourierCoefficients routine
+// The CalculateFourierCoefficients routine determines the DISPLACEMENTS Dof only. For a coupled problem DISPLACEMENTS/DofType, the another DofType
+// has to be updated too. This routine updates the following list of Dofs:
+// NONLOCALEQSTRAIN
+void NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs()
+{
+	std::map<NuTo::Node::eAttributes, bool> updatedDofs;
+	bool updateCoupledDofs(false);
+
+	// creating the map of those Dofs, which can be updated by this routine
+	updatedDofs[NuTo::Node::NONLOCALEQSTRAIN] = false;
+	// here add further Dofs
+
+	// loop over those updatedDofs, which can be updated by this routine, in order to find out whether at least one Dof from updatedDofs is active in the structure
+	for (auto it = updatedDofs.begin(); it != updatedDofs.end(); it++){
+		if(mStructure->InterpolationTypeIsConstitutiveInput(it->first)){
+			it->second = true;
+			updateCoupledDofs = true;
+			std::cout<< "[NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs] the following Dof will be updated: " << NuTo::Node::AttributeToString(it->first) <<std::endl;
+		}
+	}
+
+    // if any Dof has to be updated, do nothing and return
+    if (updateCoupledDofs == false) {
+		return;
+	}
+
+//    // print the Dofs to be updated
+//	for (auto it = updatedDofs.begin(); it != updatedDofs.end(); it++){
+//		if(it->second){
+//			std::cout<< "[NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs] the following Dof will be updated" << NuTo::Node::AttributeToString(it->first) <<std::endl;
+//		}
+//	}
+
+	// starting update the Dofs
+
 }
 
 //!@brief straight-forward integration of a single cycle with a prescribed Fourier coefficients
@@ -1181,11 +1368,25 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
 //    DamageFile.open("DamageJump.txt", std::ios::app);
 //    TotalInelasticEqStrainFile.open("TotalInelasticEqStrainJump.txt", std::ios::app);
 
+    // for 2d gradient model
+//    std::ofstream DamageFile;
+//    DamageFile.open("Damage.txt", std::ios::app);
+
+
     if (rIncludePostProcess){
     	mTime = curTime;
     	NuTo::NewmarkDirect::PostProcess(prevResidual_j, prevResidual_k);
 //    	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(14)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
 //    	TotalInelasticEqStrainFile << mTime << " " << mStructure->ElementGetElementPtr(14)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetKappaInelastic() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
+        // for 2d gradient model
+//    	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega()
+//                       		<< " " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " " << std::endl;
+//        DamageFile << mTime << " " << mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega()
+//        		<< " " << mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " "
+//				<< mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain() <<
+//				" " << mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega() << " "
+//				<< mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " "
+//				<< mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain()<< std::endl;
     }
 
     // iterate over the increments within the cycle
@@ -1307,6 +1508,15 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
         	NuTo::NewmarkDirect::PostProcess(prevResidual_j, prevResidual_k);
 //        	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(14)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
 //        	TotalInelasticEqStrainFile << mTime << " " << mStructure->ElementGetElementPtr(14)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetKappaInelastic() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
+            // for 2d gradient model
+//        	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega()
+//                           		<< " " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " " << std::endl;
+//            DamageFile << mTime << " " << mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega()
+//            		<< " " << mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " "
+//    				<< mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain() <<
+//    				" " << mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega() << " "
+//    				<< mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " "
+//    				<< mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain()<< std::endl;
 
             // update previous BC and displacements
         	bRHSprev = bRHSend;
@@ -1325,6 +1535,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
         mStructure->SetPrevTime(curTime);
 	}
 //    DamageFile.close(); TotalInelasticEqStrainFile.close();
+//    DamageFile.close();
 }
 
 

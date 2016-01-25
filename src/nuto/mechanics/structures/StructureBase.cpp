@@ -2774,7 +2774,18 @@ bool NuTo::StructureBase::GetHessianConstant(int rTimeDerivative)const
 	return mHessianConstant[rTimeDerivative];
 }
 
+bool NuTo::StructureBase::InterpolationTypeIsConstitutiveInput(NuTo::Node::eAttributes rDofType)
+{
+	InterpolationType* interpolationType;
+    for (auto interpolation = mInterpolationTypeMap.begin(); interpolation != mInterpolationTypeMap.end(); interpolation++){
+    	interpolationType = interpolation->second;
+    	if(interpolationType->IsConstitutiveInput(rDofType)){
+    		return true;
+    	}
+    }
 
+    return false;
+}
 
 
 #ifdef ENABLE_SERIALIZATION

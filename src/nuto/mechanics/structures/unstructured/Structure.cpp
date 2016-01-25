@@ -1673,7 +1673,6 @@ NuTo::Error::eError NuTo::Structure::BuildGlobalGradientInternalPotentialSubVect
                 ElementBase* elementPtr = elementIter->second;
                 // calculate element contribution
                 Error::eError error = elementPtr->Evaluate(elementOutput);
-
                 if (error!=Error::SUCCESSFUL)
 
                 {

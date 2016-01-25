@@ -35,6 +35,16 @@
 //#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h" // delete me
 //#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3D.h" // delete me
 
+#include "nuto/mechanics/elements/ElementBase.h"  // delete me
+#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h" // delete me
+#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataGradientDamage1DFatigue.h" // delete me
+#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataGradientDamage2DFatigue.h" // delete me
+#include "nuto/mechanics/constitutive/mechanics/NonlocalEqStrain.h"
+
+//#include "nuto/mechanics/elements/ElementBase.h"  // delete me
+//#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h" // delete me
+//#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataGradientDamage2DFatigue.h" // delete me
+//#include "nuto/mechanics/constitutive/mechanics/NonlocalEqStrain.h"
 
 
 //! @brief constructor
@@ -296,6 +306,23 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 //        DamageFile.open("DamageJump.txt", std::ios::app); TotalInelasticEqStrainFile.open("TotalInelasticEqStrainJump.txt", std::ios::app);
 //     	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(14)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // bulo ElementGetElementPtr(9) dlya Brick8N and ElementGetElementPtr(141) dlya Brick8Nhole;
 //    	TotalInelasticEqStrainFile << mTime << " " << mStructure->ElementGetElementPtr(14)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetKappaInelastic() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
+
+//        std::ofstream DamageFile;
+//        DamageFile.open("Damage.txt", std::ios::app);
+//        DamageFile << " time     omega     kappa     nonLocalEqStrain" << std::endl;
+//        DamageFile << mTime << " " << mStructure->ElementGetElementPtr(49)->GetStaticData(0)->AsGradientDamage1DFatigue()->GetOmega()
+//        		<< " " << mStructure->ElementGetElementPtr(49)->GetStaticData(0)->AsGradientDamage1DFatigue()->GetKappa() << " " << std::endl;
+
+        // 2D nonlocal test
+//        std::ofstream DamageFile;
+//        DamageFile.open("Damage.txt", std::ios::app);
+//        DamageFile << " time     omega     kappa     nonLocalEqStrain" << std::endl;
+//        DamageFile << mTime << " " << mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega()
+//        		<< " " << mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " "
+//				<< mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain() <<
+//				" " << mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega() << " "
+//				<< mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " "
+//				<< mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain()<< std::endl;
 
         PostProcess(prevResidual_j, prevResidual_k);
 
@@ -927,6 +954,18 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
 //            	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(14)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // bulo ElementGetElementPtr(9) dlya Brick8N and ElementGetElementPtr(141) dlya Brick8Nhole;
 //            	TotalInelasticEqStrainFile << mTime << " " << mStructure->ElementGetElementPtr(14)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetKappaInelastic() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
 
+//                DamageFile << mTime << " " << mStructure->ElementGetElementPtr(49)->GetStaticData(0)->AsGradientDamage1DFatigue()->GetOmega()
+//                		<< " " << mStructure->ElementGetElementPtr(49)->GetStaticData(0)->AsGradientDamage1DFatigue()->GetKappa() << " " << std::endl;
+
+//                DamageFile << mTime << " " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega()
+//                               		<< " " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " " << std::endl;
+//                DamageFile << mTime << " " << mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega()
+//                		<< " " << mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " "
+//        				<< mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain() <<
+//        				" " << mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega() << " "
+//        				<< mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " "
+//        				<< mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain()<< std::endl;
+
                 PostProcess(prevResidual_j, prevResidual_k);
 
 
@@ -959,6 +998,7 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
             }
         }
 //        DamageFile.close(); TotalInelasticEqStrainFile.close();
+//        DamageFile.close();
     }
     catch (MechanicsException& e)
     {

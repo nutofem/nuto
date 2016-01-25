@@ -7,6 +7,8 @@ SET(NuToOptimize_SOURCES
   Jacobi.cpp
   OptimizeException.cpp
   MisesWielandt.cpp
+  NonlinearSolverBase.cpp
+  NewtonRaphson.cpp
 )
 
 SET(NuToOptimize_SWIG_MODULES
