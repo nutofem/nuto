@@ -369,8 +369,11 @@ int buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
     myStructure.Info();
 
     /** start analysis **/
-#ifdef _OPENMP
+#ifdef HAVE_PARDISO
     int numThreads = 4;
+#endif
+#ifdef _OPENMP
+
     myStructure.SetNumProcessors(numThreads);
 #endif
 
@@ -419,9 +422,9 @@ int buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
     std::cout << "residual: " << residualVectorPardiso.Norm() << std::endl;
 
     // visualize results
-    myStructure.AddVisualizationComponentDisplacements();
-    myStructure.AddVisualizationComponentEngineeringStrain();
-    myStructure.AddVisualizationComponentEngineeringStress();
+//    myStructure.AddVisualizationComponentDisplacements();
+//    myStructure.AddVisualizationComponentEngineeringStrain();
+//    myStructure.AddVisualizationComponentEngineeringStress();
     myStructure.ExportVtkDataFileElements("Lobatto2D.vtk");
 #elif defined HAVE_MUMPS
     NuTo::SparseDirectSolverMUMPS mySolverMUMPS;
