@@ -39,8 +39,8 @@ void NuTo::NewtonRaphson::serialize(Archive & ar, const unsigned int version)
     #ifdef DEBUG_SERIALIZATION
         std::cout << "start serialization of NewtonRaphson" << "\n";
     #endif
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NewtonRaphson)
-           & BOOST_SERIALIZATION_NVP(mResidualDerivativeFunction);
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NonlinearSolverBase);
+//           & BOOST_SERIALIZATION_NVP(mResidualDerivativeFunction);
     #ifdef DEBUG_SERIALIZATION
         std::cout << "finish serialization of NewtonRaphson" << "\n";
     #endif

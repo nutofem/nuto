@@ -20,7 +20,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss2x2x2Ip.h"
 
 #include "nuto/base/Exception.h"
-#include <boost-1_55/boost/filesystem.hpp>
+#include <boost/filesystem.hpp>
 
 #include <map>
 #include <string>

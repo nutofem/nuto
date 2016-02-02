@@ -390,8 +390,8 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping1
 	        // start Newton solver
 	        try
 	        {
+#ifdef ENABLE_OPTIMIZE
 	        	NuTo::NewtonRaphson myNonlinearSolver;
-
 	        	// provide the solver with the pointers to the (!) residual, (!!) jacobi and (!!!) parameters necessary to evaluate the  both
 	        	myNonlinearSolver.SetParameters(Parameter);
 	        	myNonlinearSolver.SetResidualFunction(residualFunction);
@@ -401,6 +401,9 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping1
 
 	        	// solve
 	        	myNonlinearSolver.Solve(Unknown);
+#else
+    std::cout << "OPTIMIZE module not enabled - NewtonRaphson solver not available." << std::endl;
+#endif // ENABLE_OPTIMIZE
 
 //	        	// is the solution spurious?
 //		        bool check;
@@ -895,6 +898,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping2
 	        // start Newton solver
 	        try
 	        {
+#ifdef ENABLE_OPTIMIZE
 	        	NuTo::NewtonRaphson myNonlinearSolver;
 
 	        	// provide the solver with the pointers to the (!) residual, (!!) jacobi and (!!!) parameters necessary to evaluate the  both
@@ -908,6 +912,10 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping2
 //	        	// is the solution spurious?
 //		        bool check;
 //	        	check = myNonlinearSolver.GetCheckNewtonRaphson();
+#else
+    std::cout << "OPTIMIZE module not enabled - NewtonRaphson solver not available." << std::endl;
+#endif // ENABLE_OPTIMIZE
+
 	        }
 	        catch (...)
 	        {

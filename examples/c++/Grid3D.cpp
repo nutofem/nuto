@@ -416,16 +416,16 @@ end=clock();
 
 	myGrid.ExportVTKStructuredDataFile("./outputFile.vtk");
 
-//	std::ofstream file;
-	file.precision(precision);
-	file.open("displacements.txt");
-	for(size_t i=0;i<numNodes;++i)
-	{
-			file<<rDisplVector[3*i]<<"\n";
-			file<<rDisplVector[3*i+1]<<"\n";
-			file<<rDisplVector[3*i+2]<<"\n";
-	}
-	file.close();
+//  std::ofstream file;
+//  file.precision(precision);
+//	file.open("displacements.txt");
+//	for(size_t i=0;i<numNodes;++i)
+//	{
+//			file<<rDisplVector[3*i]<<"\n";
+//			file<<rDisplVector[3*i+1]<<"\n";
+//			file<<rDisplVector[3*i+2]<<"\n";
+//	}
+//	file.close();
 
 //    file.open("strains.txt");
 //    size_t it_end=rStrainVector.size();

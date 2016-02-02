@@ -105,8 +105,8 @@ void NuTo::NonlinearSolverBase::serialize(Archive & ar, const unsigned int versi
        & BOOST_SERIALIZATION_NVP(mTolResidual)
        & BOOST_SERIALIZATION_NVP(mTolSolution)
        & BOOST_SERIALIZATION_NVP(mMaxIterationsNumber)
-       & BOOST_SERIALIZATION_NVP(mParameter)
-       & BOOST_SERIALIZATION_NVP(mResidualFunction);
+       & BOOST_SERIALIZATION_NVP(mParameter);
+//       & BOOST_SERIALIZATION_NVP(mResidualFunction);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialization of NonlinearSolverBase" << "\n";
 #endif

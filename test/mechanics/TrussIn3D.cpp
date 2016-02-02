@@ -15,7 +15,7 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 
-#include <boost-1_55/boost/filesystem.hpp>
+#include <boost/filesystem.hpp>
 #include <iostream>
 #include <fstream>
 #include <string>

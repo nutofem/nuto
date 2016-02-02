@@ -312,7 +312,7 @@ private:
 #define Plus(rVP) ((rVP >= 0.)?rVP:0.)				// define McCauley brackets
 #define Sgn(rVP) ((rVP >= 0.)?1.:0.)				// define positive sgn function
 #define DELTA(i, j) ((i==j)?1:0)					// define Kronecker Symbol
-#define mTOLF 1.0e-12								// define tolerance for Newton
+//#define mTOLF 1.0e-12								// define tolerance for Newton
 
     //! @brief ... calculates the residual vector of an incremental formulation
     NuTo::FullVector<double,Eigen::Dynamic> Residual(
