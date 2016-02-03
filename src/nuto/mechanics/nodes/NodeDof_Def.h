@@ -1,6 +1,6 @@
 // $Id$
-#ifndef NODET_DEF_H
-#define NODET_DEF_H
+#ifndef NodeDof_DEF_H
+#define NodeDof_DEF_H
 
 #ifdef ENABLE_SERIALIZATION
 // serialize
@@ -70,9 +70,9 @@ public:
 //    void serialize(Archive & ar, const unsigned int version)
 //    {
 //#ifdef DEBUG_SERIALIZATION
-//    std::cout << "start serialize NodeT" << std::endl;
+//    std::cout << "start serialize NodeDof" << std::endl;
 //#endif
-//        ar & boost::serialization::make_nvp("NodeT",boost::serialization::base_object< NodeBase >(*this));
+//        ar & boost::serialization::make_nvp("NodeDof",boost::serialization::base_object< NodeBase >(*this));
 //
 ///*    	ar & BOOST_SERIALIZATION_NVP(mDisplacements);
 //   	    ar & BOOST_SERIALIZATION_NVP(mDofDisplacements);
@@ -90,7 +90,7 @@ public:
 //    	ar & BOOST_SERIALIZATION_NVP(mDofNonlocalTotalStrain);
 //*/
 //#ifdef DEBUG_SERIALIZATION
-//    std::cout << "finish serialize NodeT" << std::endl;
+//    std::cout << "finish serialize NodeDof" << std::endl;
 //#endif
 //    }
 //#endif // ENABLE_SERIALIZATION
@@ -216,11 +216,11 @@ public:
 
     //! @brief returns the type of node as a string (all the data stored at the node)
     //! @return string
-    std::string GetNodeTypeStr()const override;
+    std::string GetNodeDofypeStr()const override;
 
     //! @brief returns the type of node as an enum (all the data stored at the node)
     //! @return enum
-    //Node::eNodeType GetNodeType()const;
+    //Node::eNodeDofype GetNodeDofype()const;
 
     //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
     NodeBase* Clone() const override;
@@ -250,25 +250,25 @@ protected:
 }//namespace NuTo
 
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,1,0,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,2,0,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,3,0,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<2,1,0,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<2,2,0,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<2,3,0,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,2,1,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,3,3,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<2,2,1,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<2,3,3,0,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,0,0,1,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<1,0,0,1,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,1,0,1,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,2,0,1,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<0,3,0,1,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<2,1,0,1,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<2,2,0,1,0,0,0,0,0>)))
-BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeT<2,3,0,1,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,1,0,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,2,0,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,3,0,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2,1,0,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2,2,0,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2,3,0,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,2,1,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,3,3,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2,2,1,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2,3,3,0,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,0,0,1,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1,0,0,1,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,1,0,1,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,2,0,1,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<0,3,0,1,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2,1,0,1,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2,2,0,1,0,0,0,0,0>)))
+BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2,3,0,1,0,0,0,0,0>)))
 #endif // ENABLE_SERIALIZATION
 
-#endif //NODET_DEF_H
+#endif //NodeDof_DEF_H
 

@@ -62,6 +62,18 @@ public:
 #endif// SWIG
 #endif // ENABLE_SERIALIZATION
 
+//#ifdef ENABLE_SERIALIZATION
+////! @brief ... save the object to a file
+////! @param filename ... filename
+////! @param rType ... type of file, either BINARY, XML or TEXT
+//void NuTo::NewtonRaphson::Save ( const std::string &filename, std::string rType)const;
+////! @brief ... restore the object from a file
+////! @param filename ... filename
+////! @param aType ... type of file, either BINARY, XML or TEXT
+//void NuTo::NewtonRaphson::Restore ( const std::string &filename,  std::string rType);
+//#endif // ENABLE_SERIALIZATION
+
+
     //! @brief perform iteration
     //! @param rUnknown ... unknown vector
     NuTo::Error::eError Solve(NuTo::FullVector<double,Eigen::Dynamic> &rUnknown);

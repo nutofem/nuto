@@ -47,6 +47,121 @@ void NuTo::NewtonRaphson::serialize(Archive & ar, const unsigned int version)
 }
 #endif // ENABLE_SERIALIZATION
 
+//#ifdef ENABLE_SERIALIZATION
+//void NuTo::NewtonRaphson::Save ( const std::string &filename, std::string rType)const
+//{
+//    try
+//    {
+//        //transform to uppercase
+//        std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
+//        std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
+//        std::string tmpStr ( GetTypeId() );
+//        std::string baseClassStr = tmpStr.substr ( 4,100 );
+//        if (rType=="BINARY")
+//        {
+//            boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
+//            oba & boost::serialization::make_nvp ( "Object_type", tmpStr );
+//            // ........
+//        }
+//        else if (rType=="XML")
+//        {
+//            boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
+//            oxa & boost::serialization::make_nvp ( "Object_type", tmpStr );
+//            // ........
+//        }
+//        else if (rType=="TEXT")
+//        {
+//            boost::archive::text_oarchive ota ( ofs, std::ios::binary );
+//            ota & boost::serialization::make_nvp ( "Object_type", tmpStr );
+//            // ........
+//        }
+//        else
+//        {
+//            throw MathException ( "[NewtonRaphson::Save]File type not implemented." );
+//        }
+//    }
+//    catch ( boost::archive::archive_exception &e )
+//    {
+//        std::string s ( std::string ( "[NewtonRaphson::Save]File save exception in boost - " ) +std::string ( e.what() ) );
+//        std::cout << s << "\n";
+//        throw MathException ( s );
+//    }
+//    catch ( MathException &e )
+//    {
+//        throw e;
+//    }
+//    catch ( std::exception &e )
+//    {
+//        throw MathException ( e.what() );
+//    }
+//    catch ( ... )
+//    {
+//        throw MathException ( "[Matrix::Save]Unhandled exception." );
+//    }
+//}
+
+
+//void NuTo::NewtonRaphson::Restore ( const std::string &filename,  std::string rType)
+//{
+//    try
+//    {
+//        //transform to uppercase
+//        std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
+//        std::ifstream ifs ( filename.c_str(), std::ios_base::binary );
+//        std::string tmpString;
+//        if (rType=="BINARY")
+//        {
+//            boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
+//            oba & boost::serialization::make_nvp ( "Object_type", tmpString );
+//            if ( tmpString!=GetTypeId() )
+//                throw OptimizeException ( "[NuTo::NewtonRaphson::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+
+//             // ........
+//        }
+//        else if (rType=="XML")
+//        {
+//            boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
+//            oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
+//            if ( tmpString!=GetTypeId() )
+//                throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+
+//            if ( tmpString!=GetTypeId() )
+//                throw OptimizeException ( "[NuTo::NewtonRaphson::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+
+//             // ........
+//        }
+//        else if (rType=="TEXT")
+//        {
+//            boost::archive::text_iarchive ota ( ifs, std::ios::binary );
+//            ota & boost::serialization::make_nvp ( "Object_type", tmpString );
+//            if ( tmpString!=GetTypeId() )
+//                throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+
+//            if ( tmpString!=GetTypeId() )
+//                throw OptimizeException ( "[NuTo::NewtonRaphson::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+
+//            // ........
+//        }
+//        else
+//        {
+//            throw MathException ( "[Matrix::Restore]File type not implemented" );
+//        }
+//    }
+//    catch ( MathException &e )
+//    {
+//        throw e;
+//    }
+//    catch ( std::exception &e )
+//    {
+//        throw MathException ( e.what() );
+//    }
+//    catch ( ... )
+//    {
+//        throw MathException ( "[Matrix::Restore]Unhandled exception." );
+//    }
+//}
+//#endif // ENABLE_SERIALIZATION
+
 
 NuTo::Error::eError NuTo::NewtonRaphson::Solve(NuTo::FullVector<double,Eigen::Dynamic> &rUnknown)
 {
