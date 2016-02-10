@@ -161,12 +161,12 @@ void NuTo::IntegrationType2D3NGauss12IpDetail::GetVisualizationCells(unsigned in
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
-template void NuTo::IntegrationType2D3NGauss12Ip::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D3NGauss12Ip::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D3NGauss12Ip::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D3NGauss12Ip::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D3NGauss12Ip::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::IntegrationType2D3NGauss12Ip::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+//template void NuTo::IntegrationType2D3NGauss12Ip::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+//template void NuTo::IntegrationType2D3NGauss12Ip::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+//template void NuTo::IntegrationType2D3NGauss12Ip::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+//template void NuTo::IntegrationType2D3NGauss12Ip::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+//template void NuTo::IntegrationType2D3NGauss12Ip::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+//template void NuTo::IntegrationType2D3NGauss12Ip::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
 void NuTo::IntegrationType2D3NGauss12IpDetail::serialize(Archive & ar, const unsigned int version)
 {
@@ -174,6 +174,14 @@ void NuTo::IntegrationType2D3NGauss12IpDetail::serialize(Archive & ar, const uns
     std::cout << "start serialize IntegrationType2D3NGauss12Ip" << std::endl;
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(IntegrationType2D);
+    ar & boost::serialization::make_array(mIntegrationPointCoordinates.data(), mIntegrationPointCoordinates.size());
+    ar & boost::serialization::make_array(mIntegrationPointWeights.data(), mIntegrationPointWeights.size());
+#ifdef ENABLE_VISUALIZE
+    ar & boost::serialization::make_array(mVisualizationPointCoordinates.data(), mVisualizationPointCoordinates.size());
+    ar & boost::serialization::make_array(mVisualizationCellIndices.data(), mVisualizationCellIndices.size());
+    ar & boost::serialization::make_array(mVisualizationCellIPIndices.data(), mVisualizationCellIPIndices.size());
+    ar & boost::serialization::make_array(mVisualizationCellTypes.data(), mVisualizationCellTypes.size());
+#endif // ENABLE_VISUALIZE
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize IntegrationType2D3NGauss12Ip" << std::endl;
 #endif

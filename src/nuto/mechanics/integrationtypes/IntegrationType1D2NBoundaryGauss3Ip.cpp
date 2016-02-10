@@ -75,6 +75,20 @@ std::string NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetStrIdentifierStatic()
     return std::string("1D2NBOUNDARYGAUSS3IP");
 }
 
+#ifdef ENABLE_SERIALIZATION
+    template<class Archive>
+    void NuTo::IntegrationType1D2NBoundaryGauss3Ip::serialize(Archive & ar, const unsigned int version)
+    {
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "start serialize IntegrationType1D2NBoundaryGauss3Ip" << std::endl;
+#endif
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuTo::IntegrationType1D);
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "finish serialize IntegrationType1D2NBoundaryGauss3Ip" << std::endl;
+#endif
+    }
+#endif // ENABLE_SERIALIZATION
+
 #ifdef ENABLE_VISUALIZE
 void NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetVisualizationCells(
     unsigned int& NumVisualizationPoints,

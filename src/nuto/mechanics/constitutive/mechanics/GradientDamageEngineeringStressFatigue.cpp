@@ -8,7 +8,6 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-
 #endif // ENABLE_SERIALIZATION
 
 #include <eigen3/Eigen/LU>

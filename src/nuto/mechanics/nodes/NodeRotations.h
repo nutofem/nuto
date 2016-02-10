@@ -86,7 +86,12 @@ private:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuTo::NodeBase);
+        ar & boost::serialization::make_array(mRotations.data(), mRotations.size());
+        ar & boost::serialization::make_array(mDofRotations.data(), mDofRotations.size());
+    }
 #endif // ENABLE_SERIALIZATION
 };
 

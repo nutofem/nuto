@@ -107,4 +107,18 @@ bool NuTo::IntegrationType0DBoundary::CheckElementCompatibility(
     }
 }
 
+#ifdef ENABLE_SERIALIZATION
+    template<class Archive>
+    void NuTo::IntegrationType0DBoundary::serialize(Archive & ar, const unsigned int version)
+    {
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "start serialize IntegrationType0DBoundary" << std::endl;
+#endif
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuTo::IntegrationTypeBase);
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "finish serialize IntegrationType0DBoundary" << std::endl;
+#endif
+    }
+#endif // ENABLE_SERIALIZATION
+
 

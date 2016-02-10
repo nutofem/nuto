@@ -6,6 +6,8 @@
 #include <string>
 
 #ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
@@ -16,8 +18,13 @@
 
 namespace NuTo {
 class NuToObject {
+
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif// ENABLE_SERIALIZATION
+
 public:
-	NuToObject()
+    NuToObject()
 	{
 		mVerboseLevel = 0;
 #ifdef SHOW_TIME
@@ -281,7 +288,7 @@ public:
     virtual std::string GetTypeId()const=0;
 
 protected:
-	unsigned short mVerboseLevel; //!< verbose level between 0 (no output) and 10 (all actions are commented on the console)
+    unsigned short mVerboseLevel; //!< verbose level between 0 (no output) and 10 (all actions are commented on the console)
 
 #ifdef SHOW_TIME
     //! @brief ... show for each executed command the time required for the execution

@@ -26,6 +26,7 @@
 #include <boost/archive/archive_exception.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
+
 #endif  // ENABLE_SERIALIZATION
 
 #include <eigen3/Eigen/QR>

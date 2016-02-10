@@ -59,7 +59,7 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataVariableConstitutiveIp)
 namespace boost{
 template<>
-struct is_virtual_base_of<NuTo::ElementDataConstitutiveBase, NuTo::ElementDataVariableConstitutiveIp>: public mpl::true_ {};
+struct is_virtual_base_of<NuTo::ElementDataVariableConstitutiveBase, NuTo::ElementDataVariableConstitutiveIp>: public mpl::true_ {};
 template<>
 struct is_virtual_base_of<NuTo::ElementDataIpBase, NuTo::ElementDataVariableConstitutiveIp>: public mpl::true_ {};
 }

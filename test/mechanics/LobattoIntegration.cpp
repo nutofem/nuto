@@ -1,7 +1,9 @@
 ﻿#include <iostream>
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
+
 #include <eigen3/Eigen/Core>
+
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/math/SparseMatrixCSRSymmetric.h"

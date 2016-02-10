@@ -80,15 +80,6 @@ void NuTo::SectionBase::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize SectionBase" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsNonlocalEqPlasticStrain)
-       & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsNonlocalTotalStrain)
-       & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsTemperature)
-       & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsTemperatureGradient)
-       & BOOST_SERIALIZATION_NVP(mInputConstitutiveIsDeformationGradient)
-       & BOOST_SERIALIZATION_NVP(mNonlocalEqPlasticStrainDof)
-       & BOOST_SERIALIZATION_NVP(mNonlocalTotalStrainDof)
-       & BOOST_SERIALIZATION_NVP(mDisplacementDof)
-       & BOOST_SERIALIZATION_NVP(mTemperatureDof);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize SectionBase" << std::endl;
 #endif

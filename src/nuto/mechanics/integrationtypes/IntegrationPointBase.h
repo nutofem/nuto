@@ -7,6 +7,7 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/serialization/array.hpp>
 #else
 #include <vector>
 #endif //ENABLE_SERIALIZATION
@@ -115,6 +116,7 @@ protected:
 }//namespace NuTo
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationPointBase)
+BOOST_CLASS_TRACKING(NuTo::IntegrationPointBase, track_always)
 #endif // ENABLE_SERIALIZATION
 
 #endif //INTEGRATIONPOINTBASE_H

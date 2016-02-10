@@ -783,8 +783,7 @@ GetNumTimeDerivatives()const
 //! @brief returns the type of node as a string (all the data stored at the node)
 //! @return string
 template <NODE_DOF_TEMPLATE_PARAMETERS>
-std::string NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::
-GetNodeTypeStr() const
+std::string NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::GetNodeTypeStr() const
 {
     std::stringstream NodeDofype;
 

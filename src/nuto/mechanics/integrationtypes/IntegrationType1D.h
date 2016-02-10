@@ -33,8 +33,7 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {}
+    void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
     //! @brief returns the dimension of the integration type
@@ -50,9 +49,7 @@ public:
     virtual bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const;
 
 protected:
-
-
 };
-}
+} // namespace nuto
 
 #endif //IntegrationType1D_H

@@ -76,7 +76,13 @@ private:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuTo::NodeBase);
+        ar & boost::serialization::make_array(mNonlocalEqPlasticStrain.data(), mNonlocalEqPlasticStrain.size());
+        ar & boost::serialization::make_array(mDofNonlocalEqPlasticStrain.data(), mDofNonlocalEqPlasticStrain.size());
+    }
+
 #endif // ENABLE_SERIALIZATION
 
 };
@@ -126,13 +132,6 @@ inline void NodeNonlocalEqPlasticStrain<2,2>::SetNonlocalEqPlasticStrain(int rTi
     mNonlocalEqPlasticStrain[rTimeDerivative] = rNonlocalEqPlasticStrain;
 }
 
-
-
-
-
-
-
-
-
 } /* namespace NuTo */
+
 #endif /* NODENONLOCALEQPLASTICSTRAIN_H_ */

@@ -14,8 +14,7 @@ inline Scalar at(uint i, uint j) const { return this->operator()(i,j); }
 template<typename OtherDerived>
 inline const Eigen::MatrixBase<OtherDerived> abs() const
 {
-	return this->array().abs();
+    return this->array().abs();
 }
-
 
 #endif /* MATRIXBASEADDONS_H_ */

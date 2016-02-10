@@ -35,4 +35,6 @@ public:
     Exception* Clone();
 };
 } //namespace NuTo
+
+
 #endif //NUTO_MECHANICS_EXCEPTION_H

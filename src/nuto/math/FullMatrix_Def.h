@@ -11,13 +11,13 @@
 #include <boost/serialization/split_free.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/serialization/array.hpp>
 #include <boost/utility/identity_type.hpp>
 #endif  // ENABLE_SERIALIZATION
 
 
 #include "nuto/math/Matrix.h"
 #include <eigen3/Eigen/Core>
-
 
 namespace NuTo
 {
@@ -511,6 +511,18 @@ private:
 #ifndef SWIG
 BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>)))
 BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>)))
+
+#ifdef ENABLE_SERIALIZATION
+//namespace boost
+//{
+//    //! @brief tell boost how to serialize an Eigen::Matrix
+//    template<class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+//    inline void serialize(Archive & ar, Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> & t,const unsigned int file_version)
+//    {
+//        ar & boost::serialization::make_array(t.data(), t.size());
+//    }
+//}
+#endif // ENABLE_SERIALIZATION
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 

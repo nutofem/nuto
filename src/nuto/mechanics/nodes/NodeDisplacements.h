@@ -101,7 +101,12 @@ private:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuTo::NodeBase);
+        ar & boost::serialization::make_array(mDisplacements.data(), mDisplacements.size());
+        ar & boost::serialization::make_array(mDofDisplacements.data(), mDofDisplacements.size());
+    }
 #endif // ENABLE_SERIALIZATION
 
 };
@@ -236,4 +241,6 @@ inline void NodeDisplacements<3,2>::SetDisplacements3D(int rTimeDerivative, cons
 
 
 } /* namespace NuTo */
+
+
 #endif /* NODEDISPLACEMENTS_H_ */

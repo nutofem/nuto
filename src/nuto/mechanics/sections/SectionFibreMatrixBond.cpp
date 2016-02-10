@@ -62,8 +62,7 @@ void NuTo::SectionFibreMatrixBond::serialize(Archive & ar, const unsigned int ve
     std::cout << "start serialize SectionFibreMatrixBond" << std::endl;
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(SectionBase)
-       & BOOST_SERIALIZATION_NVP(mCircumference)
-       & BOOST_SERIALIZATION_NVP(mSectionType);
+       & BOOST_SERIALIZATION_NVP(mCircumference);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize SectionFibreMatrixBond" << std::endl;
 #endif

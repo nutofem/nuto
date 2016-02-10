@@ -6,6 +6,7 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/array.hpp>
+#include "nuto/math/EigenBoostSerialization.h"
 #else
 #include <boost/array.hpp>
 #endif  // ENABLE_SERIALIZATION
@@ -319,21 +320,21 @@ public:
 };
 
 }//namespace NuTo
-#ifdef ENABLE_SERIALIZATION
 
-namespace boost
-{
-    //! @brief tell boost how to serialize an Eigen::Matrix
-    template<class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-    inline void serialize(
-        Archive & ar,
-        Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> & t,
-        const unsigned int file_version
-    )
-    {
-        ar & boost::serialization::make_array(t.data(), t.size());
-    }
-}
+#ifdef ENABLE_SERIALIZATION
+//namespace boost
+//{
+//    //! @brief tell boost how to serialize an Eigen::Matrix
+//    template<class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+//    inline void serialize(
+//        Archive & ar,
+//        Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> & t,
+//        const unsigned int file_version
+//    )
+//    {
+//        ar & boost::serialization::make_array(t.data(), t.size());
+//    }
+//}
 BOOST_CLASS_EXPORT_KEY(NuTo::NodeBase)
 #endif // ENABLE_SERIALIZATION
 #endif //NODEBASE_H

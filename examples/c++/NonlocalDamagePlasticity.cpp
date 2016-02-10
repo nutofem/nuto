@@ -6,6 +6,7 @@
 #include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
 #include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
 #include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.h"
+
 #include <eigen3/Eigen/Core>
 
 #define printResult false

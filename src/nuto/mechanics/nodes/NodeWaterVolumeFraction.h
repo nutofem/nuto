@@ -68,9 +68,23 @@ protected:
     std::array<Eigen::Matrix<double, TNumWaterVolumeFraction, 1>, TNumTimeDerivatives + 1> mWaterVolumeFraction;
     std::array<int, TNumWaterVolumeFraction> mDofWaterVolumeFraction;
 
-
+private:
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuTo::NodeBase);
+        ar & boost::serialization::make_array(mWaterVolumeFraction.data(), mWaterVolumeFraction.size());
+        ar & boost::serialization::make_array(mDofWaterVolumeFraction.data(), mDofWaterVolumeFraction.size());
+    }
+#endif // ENABLE_SERIALIZATION
 
 };
 } // namespace NuTo
+
 
 #endif // NODEWATERVOLUMEFRACTION_H

@@ -4,13 +4,13 @@
 #define SPARSE_MATRIX_H
 
 #ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/export.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/math/Matrix.h"
@@ -31,7 +31,7 @@ template <class T>
 class SparseMatrix : public Matrix<T>
 {
 #ifdef ENABLE_SERIALIZATION
-	friend class boost::serialization::access;
+    friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 
 public:

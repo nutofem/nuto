@@ -42,7 +42,7 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
+    void serialize(Archive & ar, const unsigned int version){}
 #endif // ENABLE_SERIALIZATION
 
     //! @brief returns the dimension of the integration type
@@ -114,6 +114,7 @@ protected:
 }//namespace NuTo
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationTypeBase)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::IntegrationTypeBase)
 #endif // ENABLE_SERIALIZATION
 
 #endif //INTEGRATIONTYPEBASE_H

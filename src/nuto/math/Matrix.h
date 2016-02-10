@@ -17,7 +17,6 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/export.hpp>
 #endif// ENABLE_SERIALIZATION
 
 #include <boost/spirit/include/classic_core.hpp>
@@ -37,8 +36,9 @@ namespace NuTo
 template <class T>
 class Matrix : public NuToObject
 {
+
 #ifdef ENABLE_SERIALIZATION
-	friend class boost::serialization::access;
+    friend class boost::serialization::access;
 #endif// ENABLE_SERIALIZATION
 public:
     Matrix() : NuToObject()

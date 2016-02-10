@@ -75,11 +75,17 @@ private:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuTo::NodeBase);
+        ar & boost::serialization::make_array(mNonlocalEqStrain.data(), mNonlocalEqStrain.size());
+        ar & boost::serialization::make_array(mDofNonlocalEqStrain.data(), mDofNonlocalEqStrain.size());
+    }
 #endif // ENABLE_SERIALIZATION
 
 };
-
-
 } /* namespace NuTo */
+
+
+
 #endif /* NODENONLOCALEQSTRAIN_H_ */

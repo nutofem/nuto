@@ -3,6 +3,7 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 
 #include "nuto/math/SparseMatrixCSRGeneral.h"
+
 #include <eigen3/Eigen/Core>
 
 

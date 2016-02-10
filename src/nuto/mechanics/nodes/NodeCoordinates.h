@@ -82,7 +82,12 @@ private:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuTo::NodeBase);
+        ar & BOOST_SERIALIZATION_NVP(mCoordinates);
+    }
+
 #endif // ENABLE_SERIALIZATION
 
 };
@@ -128,5 +133,7 @@ inline void NodeCoordinates<3>::SetCoordinates3D(const Eigen::Matrix<double, 3, 
 }
 
 } /* namespace NuTo */
+
+
 
 #endif /* NODECOORDINATES_H_ */

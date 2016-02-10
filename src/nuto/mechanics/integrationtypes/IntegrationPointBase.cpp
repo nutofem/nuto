@@ -67,6 +67,27 @@ void NuTo::IntegrationPointBase::GetLocalCoords(std::vector<double>& rCoords)
 	rCoords=mCoords;
 }
 
+#ifdef ENABLE_SERIALIZATION
+template<class Archive> void NuTo::IntegrationPointBase::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize NodeBase" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_NVP(mWeight);
+    ar & boost::serialization::make_array(mCoords.data(), mCoords.size());
+#ifdef ENABLE_VISUALIZE
+    ar & BOOST_SERIALIZATION_NVP(mNumVisualizationPoints);
+    ar & BOOST_SERIALIZATION_NVP(mVisualizationCellType);
+    ar & boost::serialization::make_array(mVisualizationPointLocalCoordinates.data(), mVisualizationPointLocalCoordinates.size());
+    ar & boost::serialization::make_array(mVisualizationCellsIncidence.data(), mVisualizationCellsIncidence.size());
+#endif // ENABLE_VISUALIZE
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize NodeBase" << std::endl;
+#endif
+}
+
+#endif // ENABLE_SERIALIZATION
+
 #ifdef ENABLE_VISUALIZE
 void NuTo::IntegrationPointBase::GetVisualizationCell( 	unsigned int& rNumVisualizationPoints,
 														NuTo::CellBase::eCellTypes& rVisualizationCellType,

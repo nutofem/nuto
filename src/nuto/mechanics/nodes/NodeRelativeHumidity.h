@@ -68,6 +68,20 @@ protected:
     std::array<Eigen::Matrix<double, TNumRelativeHumidity, 1>, TNumTimeDerivatives + 1> mRelativeHumidity;
     std::array<int, TNumRelativeHumidity> mDofRelativeHumidity;
 
+private:
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuTo::NodeBase);
+        ar & boost::serialization::make_array(mRelativeHumidity.data(), mRelativeHumidity.size());
+        ar & boost::serialization::make_array(mDofRelativeHumidity.data(), mDofRelativeHumidity.size());
+    }
+#endif // ENABLE_SERIALIZATION
 
 
 

@@ -3,9 +3,12 @@
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/serialization/array.hpp>
+#include "nuto/math/EigenBoostSerialization.h"
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/integrationtypes/IntegrationType2D.h"
+
 #include <eigen3/Eigen/Dense>
 
 namespace NuTo
@@ -78,6 +81,19 @@ protected:
 };
 }
 #ifdef ENABLE_SERIALIZATION
+//namespace boost
+//{
+//    //! @brief tell boost how to serialize an Eigen::Matrix
+//    template<class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+//    inline void serialize(
+//        Archive & ar,
+//        Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> & t,
+//        const unsigned int file_version
+//    )
+//    {
+//        ar & boost::serialization::make_array(t.data(), t.size());
+//    }
+//}
 BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType2D3NGauss12IpDetail)
 #endif // ENABLE_SERIALIZATION
 
