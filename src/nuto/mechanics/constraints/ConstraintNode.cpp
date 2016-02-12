@@ -11,6 +11,8 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeDof_Def.h"
+#include "nuto/mechanics/nodes/NodeDof.h"
 #include "nuto/mechanics/constraints/ConstraintNode.h"
 
 
@@ -38,6 +40,6 @@ void NuTo::ConstraintNode::serialize(Archive & ar, const unsigned int version)
     std::cout << "finish serialize ConstraintNode" << std::endl;
 #endif
 }
-//BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintNode)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstraintNode)
+BOOST_CLASS_EXPORT_IMPLEMENT(BOOST_IDENTITY_TYPE((NuTo::ConstraintNode)))
+//BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstraintNode)
 #endif // ENABLE_SERIALIZATION

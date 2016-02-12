@@ -72,6 +72,7 @@ template void NuTo::NodeBase::serialize(boost::archive::text_iarchive & ar, cons
 template<class Archive>
 void NuTo::NodeBase::serialize(Archive & ar, const unsigned int version)
 {
+
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize NodeBase" << std::endl;
 #endif

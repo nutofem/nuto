@@ -12,7 +12,6 @@
 #include <boost/array.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/mechanics/nodes/NodeCoordinates.h"
 #include "nuto/mechanics/nodes/NodeDisplacements.h"
 #include "nuto/mechanics/nodes/NodeRotations.h"
@@ -23,6 +22,7 @@
 
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
+#include "nuto/math/FullMatrix_Def.h"
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeBase.h"
 #include "nuto/visualize/VisualizeComponentBase.h"
@@ -273,9 +273,7 @@ protected:
 }//namespace NuTo
 
 #ifdef ENABLE_SERIALIZATION
-
 namespace boost{
-
 template<NODE_DOF_TEMPLATE_PARAMETERS>
     struct is_virtual_base_of<NuTo::NodeCoordinates<TNumCoordinates>, NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>>: public mpl::true_ {};
 
@@ -297,7 +295,6 @@ template<NODE_DOF_TEMPLATE_PARAMETERS>
 template<NODE_DOF_TEMPLATE_PARAMETERS>
     struct is_virtual_base_of<NuTo::NodeWaterVolumeFraction<TNumWaterVolumeFraction,TNumTimeDerivatives>, NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>>: public mpl::true_ {};
 }
-
 BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>)))
 BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 0, 0, 0>)))
 BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 0, 0, 0>)))
