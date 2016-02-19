@@ -3,6 +3,8 @@
 #define LOADNODE_H
 
 #ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
@@ -28,6 +30,9 @@ class LoadNode : public LoadBase
 
 public:
     //! @brief constructor
+    LoadNode(){}
+
+    //! @brief constructor
     LoadNode(int rLoadCase, const NodeBase* rNode);
 
 #ifdef ENABLE_SERIALIZATION
@@ -37,8 +42,10 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase)
-        & BOOST_SERIALIZATION_NVP(mNode);
+//        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase);
+        ar & boost::serialization::make_nvp("LoadNode_LoadBase", boost::serialization::base_object<LoadBase >(*this));
+//        ar & BOOST_SERIALIZATION_NVP(const_cast<NodeBase*&>(mNode));
+        ar & boost::serialization::make_nvp ("LoadNode_mNode", const_cast<NodeBase*&>(mNode));
     }
 #endif // ENABLE_SERIALIZATION
 
@@ -46,5 +53,10 @@ protected:
     const NodeBase* mNode;
 };
 }//namespace NuTo
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::LoadNode)
+#endif
+
 #endif //LOADNODE_H
 

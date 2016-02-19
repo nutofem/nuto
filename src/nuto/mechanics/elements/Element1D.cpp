@@ -1360,4 +1360,20 @@ void NuTo::Element1D::CheckElement()
 
 }
 
+#ifdef ENABLE_SERIALIZATION
+// serializes the class
+template<class Archive>
+void NuTo::Element1D::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "==========>start serialize Element1D " << std::endl;
+#endif
+    ar & boost::serialization::make_nvp("Element1D_ElementBase",boost::serialization::base_object<ElementBase >(*this));
+    ar & boost::serialization::make_nvp("Element1D_mNodes", boost::serialization::make_array(mNodes.data(), mNodes.size()));
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize Element1D" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Element1D)
+#endif // ENABLE_SERIALIZATION
 

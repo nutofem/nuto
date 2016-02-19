@@ -3,6 +3,8 @@
 #define LOADBASE_H
 
 #ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
@@ -30,10 +32,13 @@ class LoadBase
 
 public:
     //! @brief constructor
+    LoadBase(){}
+
+    //! @brief constructor
     LoadBase(int rLoadCase);
 
     //! @brief ... destructor
-    virtual ~LoadBase(){};
+    virtual ~LoadBase(){}
 
     //! @brief adds the load to global sub-vectors
     //! @param rLoadCase number of the current load case
@@ -55,7 +60,12 @@ public:
 
 protected:
     int mLoadCase;
+
 };
 }//namespace NuTo
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::LoadBase)
+#endif // ENABLE_SERIALIZATION
+
 #endif //LOADBASE_H
 

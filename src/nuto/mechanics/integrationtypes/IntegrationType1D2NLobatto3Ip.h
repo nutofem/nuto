@@ -34,7 +34,11 @@ public:
     //! @param version    version
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
-    {}
+    {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(IntegrationType1D)
+        & BOOST_SERIALIZATION_NVP(iPts)
+        & BOOST_SERIALIZATION_NVP(weights);
+    }
 #endif // ENABLE_SERIALIZATION
 
     //! @brief returns the local coordinates of an integration point
@@ -75,5 +79,10 @@ private:
     //! @brief ... weights for the integration
     double weights[3];
 };
-}
+} //namespace NuTo
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType1D2NLobatto3Ip)
+#endif
+
 #endif //IntegrationType1D2NLobatto3Ip_H

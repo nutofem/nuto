@@ -54,4 +54,8 @@ protected:
 };
 }//namespace NuTo
 
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataConstitutiveBase)
+#endif // ENABLE_SERIALIZATION
+
 #endif /* ELEMENTDATACONSTITUTIVEBASE_H_ */

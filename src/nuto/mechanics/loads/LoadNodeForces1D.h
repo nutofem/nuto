@@ -3,6 +3,8 @@
 #define LOADNODEFORCES1D_H
 
 #ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
@@ -43,14 +45,23 @@ public:
     void serialize(Archive & ar, const unsigned int version)
     {
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadNode)
-        & BOOST_SERIALIZATION_NVP(mValue);
+        & BOOST_SERIALIZATION_NVP(mValue)
+        & BOOST_SERIALIZATION_NVP(mDirection);
     }
 #endif // ENABLE_SERIALIZATION
 
 protected:
     double mValue;     //!< prescribed force of the node
     double mDirection; //!< direction of the force
+
+private:
+    LoadNodeForces1D(){}
 };
 }//namespace NuTo
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::LoadNodeForces1D)
+#endif
+
 #endif //LOADNODEFORCES1D_H
 

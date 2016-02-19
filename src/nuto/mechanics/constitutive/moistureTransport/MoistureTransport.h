@@ -218,7 +218,7 @@ protected:
     //! @brief ... Controls if the sorption hysteresis model should be used
     bool                                mEnableSorptionHysteresis           = false;
 
-    //! @brief ... Porosity of the specimen \f$ \Epsilon_p \f$
+    //! @brief ... Porosity of the specimen \f$ \epsilon_{p} \f$
     double                              mEpsP                               = 0.5;
 
     //! @brief ... gradient correction when switching to adsorption

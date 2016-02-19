@@ -67,16 +67,21 @@ public:
     void serialize(Archive & ar, const unsigned int version)
     {
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(SectionBase)
-           & BOOST_SERIALIZATION_NVP(this->mArea)
-           & BOOST_SERIALIZATION_NVP(mAreaParameters);
+           & BOOST_SERIALIZATION_NVP(mArea)
+           & boost::serialization::make_array(mAreaParameters.data(), mAreaParameters.size());
     }
 #endif // ENABLE_SERIALIZATION
 private:
     //! @brief ... cross-section area
     double mArea;
-    double* mAreaParameters;
+    std::vector<double> mAreaParameters;
 };
 
-}
+} // namespace
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::SectionTruss)
+#endif // ENABLE_SERIALIZATION
+
 
 #endif // SECTIONTRUSS_H

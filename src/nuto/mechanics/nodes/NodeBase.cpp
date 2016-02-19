@@ -10,6 +10,20 @@
 #endif  // ENABLE_SERIALIZATION
 #include "nuto/mechanics/nodes/NodeBase.h"
 
+
+// For serialization we need to include the classes below
+// the export_implement command (part of export_guid) has to be triggered
+// only once, else linking errors will occur. This file is able to maintain
+// that strategy, thatswhy the inludes below and the export routines at the end of the file
+#include "nuto/mechanics/nodes/NodeDof_Def.h"
+#include "nuto/mechanics/nodes/NodeCoordinates.h"
+#include "nuto/mechanics/nodes/NodeDisplacements.h"
+#include "nuto/mechanics/nodes/NodeWaterVolumeFraction.h"
+#include "nuto/mechanics/nodes/NodeNonlocalEqPlasticStrain.h"
+#include "nuto/mechanics/nodes/NodeNonlocalEqStrain.h"
+#include "nuto/mechanics/nodes/NodeRelativeHumidity.h"
+#include "nuto/mechanics/nodes/NodeRotations.h"
+
 //! @brief constructor
 NuTo::NodeBase::NodeBase()
 {
@@ -569,3 +583,110 @@ void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const std:
 }
 #endif // ENABLE_VISUALIZE
 
+#ifdef ENABLE_SERIALIZATION
+namespace boost{
+template<NODE_DOF_TEMPLATE_PARAMETERS>
+    struct is_virtual_base_of<NuTo::NodeCoordinates<TNumCoordinates>, NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>>: public mpl::true_ {};
+
+template<NODE_DOF_TEMPLATE_PARAMETERS>
+    struct is_virtual_base_of<NuTo::NodeDisplacements<TNumDisplacements, TNumTimeDerivatives>, NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>>: public mpl::true_ {};
+
+template<NODE_DOF_TEMPLATE_PARAMETERS>
+    struct is_virtual_base_of<NuTo::NodeRotations<TNumRotations, TNumTimeDerivatives>, NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>>: public mpl::true_ {};
+
+template<NODE_DOF_TEMPLATE_PARAMETERS>
+    struct is_virtual_base_of<NuTo::NodeNonlocalEqPlasticStrain<TNumNonlocalEqPlasticStrain, TNumTimeDerivatives>, NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>>: public mpl::true_ {};
+
+template<NODE_DOF_TEMPLATE_PARAMETERS>
+    struct is_virtual_base_of<NuTo::NodeNonlocalEqStrain<TNumNonlocalEqStrain, TNumTimeDerivatives>, NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>>: public mpl::true_ {};
+
+template<NODE_DOF_TEMPLATE_PARAMETERS>
+    struct is_virtual_base_of<NuTo::NodeRelativeHumidity<TNumRelativeHumidity, TNumTimeDerivatives>, NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>>: public mpl::true_ {};
+
+template<NODE_DOF_TEMPLATE_PARAMETERS>
+    struct is_virtual_base_of<NuTo::NodeWaterVolumeFraction<TNumWaterVolumeFraction,TNumTimeDerivatives>, NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>>: public mpl::true_ {};
+}
+
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 1, 0, 0, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 1, 0, 0, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 2, 0, 0, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 2, 0, 0, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 3, 0, 0, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 3, 0, 0, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 1, 1, 0, 0, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 1, 1, 0, 0, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 1, 2, 0, 0, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 1, 2, 0, 0, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 1, 3, 0, 0, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 1, 3, 0, 0, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 1, 0, 0, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 1, 0, 0, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 2, 0, 0, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 2, 0, 0, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 3, 0, 0, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 3, 0, 0, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 2, 1, 0, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 2, 1, 0, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 3, 3, 0, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 3, 3, 0, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 2, 1, 0, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 2, 1, 0, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 3, 3, 0, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 3, 3, 0, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 0, 0, 1, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 0, 0, 1, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 0, 0, 1, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 0, 0, 1, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 0, 0, 1, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 0, 0, 1, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 1, 0, 0, 1, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 1, 0, 0, 1, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 1, 0, 0, 1, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 1, 0, 0, 1, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 1, 0, 0, 1, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 1, 0, 0, 1, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 0, 0, 1, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 0, 0, 1, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 0, 0, 1, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 0, 0, 1, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 0, 0, 1, 0, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 0, 0, 1, 0, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 1, 0, 0, 2, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 1, 0, 0, 2, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 2, 0, 0, 2, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 2, 0, 0, 2, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 3, 0, 0, 2, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 3, 0, 0, 2, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 1, 0, 0, 2, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 1, 0, 0, 2, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 2, 0, 0, 2, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 2, 0, 0, 2, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 3, 0, 0, 2, 0, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 3, 0, 0, 2, 0, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 1, 0, 0, 0, 1, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 1, 0, 0, 0, 1, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 2, 0, 0, 0, 3, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 2, 0, 0, 0, 3, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 3, 0, 0, 0, 6, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 3, 0, 0, 0, 6, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 1, 0, 0, 0, 1, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 1, 0, 0, 0, 1, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 2, 0, 0, 0, 3, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 2, 0, 0, 0, 3, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 3, 0, 0, 0, 6, 0, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 3, 0, 0, 0, 6, 0, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 1, 0, 0, 0, 0, 1, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 1, 0, 0, 0, 0, 1, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 2, 0, 0, 0, 0, 1, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 2, 0, 0, 0, 0, 1, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 3, 0, 0, 0, 0, 1, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 3, 0, 0, 0, 0, 1, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 1, 0, 0, 0, 0, 1, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 1, 0, 0, 0, 0, 1, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 2, 0, 0, 0, 0, 1, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 2, 0, 0, 0, 0, 1, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 3, 0, 0, 0, 0, 1, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 3, 0, 0, 0, 0, 1, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 1, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 1, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 1, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 1, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 1, 0, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 1, 0, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 1, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 1, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 2, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 2, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 3, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 3, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 1, 1, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 1, 1, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 1, 2, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 1, 2, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 1, 3, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 1, 3, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 1, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 1, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 2, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 2, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 3, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 3, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 1, 0, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 1, 0, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 1, 0, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 1, 0, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 1, 0, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 1, 0, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 0, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 0, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 0, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 0, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 0, 0, 0, 0, 0, 0, 1, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 0, 0, 0, 0, 0, 0, 1, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 0, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 0, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 0, 0, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 0, 0, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 0, 0, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 0, 0, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 1, 0, 0, 0, 0, 0, 0, 0, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 1, 0, 0, 0, 0, 0, 0, 0, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 1, 0, 0, 0, 0, 0, 0, 0, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 1, 0, 0, 0, 0, 0, 0, 0, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 1, 0, 0, 0, 0, 0, 0, 0, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 1, 0, 0, 0, 0, 0, 0, 0, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 0, 0, 0, 0, 0, 0, 0, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 0, 0, 0, 0, 0, 0, 0, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 0, 0, 0, 0, 0, 0, 0, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 0, 0, 0, 0, 0, 0, 0, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 0, 0, 0, 0, 0, 0, 0, 1>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 0, 0, 0, 0, 0, 0, 0, 1>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 1, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 1, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 0, 1, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 0, 1, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 0, 1, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 0, 1, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 1, 0, 0, 0, 0, 0, 0, 1, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 1, 0, 0, 0, 0, 0, 0, 1, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 1, 0, 0, 0, 0, 0, 0, 1, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 1, 0, 0, 0, 0, 0, 0, 1, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 1, 0, 0, 0, 0, 0, 0, 1, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 1, 0, 0, 0, 0, 0, 0, 1, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 0, 0, 0, 0, 0, 0, 1, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<1, 2, 0, 0, 0, 0, 0, 0, 1, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 0, 0, 0, 0, 0, 0, 1, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<2, 2, 0, 0, 0, 0, 0, 0, 1, 0>))))
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 0, 0, 0, 0, 0, 0, 1, 0>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::NodeDof<3, 2, 0, 0, 0, 0, 0, 0, 1, 0>))))
+#endif

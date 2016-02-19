@@ -58,3 +58,8 @@ void NuTo::LoadNodeForces2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Full
         throw MechanicsException("[NuTo::LoadNodeGroupForces2D::AddLoad] Error getting displacements of node (unspecified exception).");
     }
 }
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LoadNodeForces2D)
+BOOST_CLASS_TRACKING(NuTo::LoadNodeForces2D, track_always)
+#endif

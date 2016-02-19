@@ -38,15 +38,6 @@ bool NuTo::IntegrationType1D::CheckElementCompatibility(NuTo::Element::eElementT
 }
 
 #ifdef ENABLE_SERIALIZATION
-template<class Archive>
-void NuTo::IntegrationType1D::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "start serialize IntegrationType0DBoundary" << std::endl;
-#endif
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuTo::IntegrationTypeBase);
-#ifdef DEBUG_SERIALIZATION
-        std::cout << "finish serialize IntegrationType0DBoundary" << std::endl;
-#endif
-}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::IntegrationType1D)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::IntegrationType1D)
 #endif

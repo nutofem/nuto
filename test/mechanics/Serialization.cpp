@@ -7,8 +7,7 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 
 #include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/nodes/NodeDof.h"
-//#include "nuto/mechanics/nodes/NodeDof_Def.h"
+#include "nuto/mechanics/nodes/NodeDof_Def.h"
 
 
 #include <eigen3/Eigen/Core>
@@ -77,23 +76,6 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
             nodeCoordinates(0) = factor*(nodeCoordinatesFirstElement(j) + elementBegin);
             if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) << std::endl;
             myStructure->NodeCreate(node, nodeCoordinates);
-
-            {
-                std::string file = "NodeOut.peter";
-                std::cout << "\n\n\nWriting a node to " << file << "\n\n\n";
-                const NuTo::NodeBase* myNodePtr = myStructure->NodeGetNodePtr(node);
-                // serialize it
-                std::ofstream outFileStream(file);
-                boost::archive::text_oarchive outArchive(outFileStream);
-
-                NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 0, 0> myNodeDofDef;
-                const NuTo::NodeBase* myNodePtrLoc = &myNodeDofDef;
-
-                outArchive << const_cast<NuTo::NodeBase*&>(myNodePtrLoc);
-
-                outArchive << const_cast<NuTo::NodeBase*&>(myNodePtr);
-            }
-
             node++;
         }
         elementBegin+=elementLength;
@@ -236,18 +218,25 @@ int main(int argc, char* argv[])
 
     NuTo::Structure *myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, 10);
 
-    std::string file = "StructureOut";
-    std::ofstream outFileStream(file);
-    boost::archive::text_oarchive outArchive(outFileStream);
-    myStructure->save(outArchive, 1);
+    std::ofstream outFileStream("StructureOut");
+//    boost::archive::text_oarchive outArchivetext(outFileStream);
+    boost::archive::xml_oarchive outArchivexml(outFileStream);
+    myStructure->save(outArchivexml, 1);
 
-    myStructure->Save("StructureOut", "TEXT");
+    outFileStream.close();
 
-    std::cout << "*** Extracting a NuTo-Structure from StructureOut ***\n";
+//    myStructure->Save("StructureOut", "XML");
 
-    NuTo::Structure* myStructureImported;
 
-    myStructureImported->Restore("StructureOut", "TEXT");
+
+    std::cout << "\n\n\n\n\n*** Extracting a NuTo-Structure from StructureOut ***\n\n\n\n\n";
+
+    NuTo::Structure *myStructureImported = new NuTo::Structure(1);
+
+    std::ifstream iFileStreamxml("StructureOut");
+    boost::archive::xml_iarchive inArchivexml(iFileStreamxml);
+    myStructureImported->load(inArchivexml, 1);
+//    myStructureImported->Restore("StructureOut", "XML");
 
     return EXIT_FAILURE;
 }

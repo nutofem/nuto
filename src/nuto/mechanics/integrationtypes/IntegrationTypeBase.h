@@ -108,13 +108,12 @@ public:
         std::vector<unsigned int>& VisualizationCellsIP) const = 0;
 #endif // ENABLE_VISUALIZE
 protected:
-
 };
-
 }//namespace NuTo
+
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationTypeBase)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::IntegrationTypeBase)
 #endif // ENABLE_SERIALIZATION
+
 
 #endif //INTEGRATIONTYPEBASE_H

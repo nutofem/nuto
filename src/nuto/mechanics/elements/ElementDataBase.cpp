@@ -279,5 +279,6 @@ void NuTo::ElementDataBase::serialize(Archive & ar, const unsigned int version)
     std::cout << "finish serialize ElementDataBase" << std::endl;
 #endif
 }
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ElementDataBase)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ElementDataBase)
 #endif // ENABLE_SERIALIZATION

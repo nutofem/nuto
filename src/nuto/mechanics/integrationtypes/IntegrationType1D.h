@@ -26,14 +26,17 @@ class IntegrationType1D : public IntegrationTypeBase
 
 public:
     //! @brief constructor
-    IntegrationType1D() {};
+    IntegrationType1D() {}
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(IntegrationTypeBase);
+    }
 #endif // ENABLE_SERIALIZATION
 
     //! @brief returns the dimension of the integration type
@@ -52,4 +55,9 @@ protected:
 };
 } // namespace nuto
 
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType1D)
+#endif
+
 #endif //IntegrationType1D_H
+

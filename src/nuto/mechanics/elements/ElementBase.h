@@ -493,7 +493,6 @@ protected:
     {
         mElementData = 0;
     }
-    ;
 
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
     virtual void ReorderNodes();
@@ -518,5 +517,10 @@ protected:
     const InterpolationType* mInterpolationType;
 };
 }    //namespace NuTo
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ElementBase)
+#endif // ENABLE_SERIALIZATION
+
 #endif //ELEMENT_BASE_H
 

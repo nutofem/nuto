@@ -197,35 +197,35 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     mLogger << "start serialization of structure base" << "\n";
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
-    & BOOST_SERIALIZATION_NVP(mNumTimeDerivatives)
-    & BOOST_SERIALIZATION_NVP(mDimension)
-    & BOOST_SERIALIZATION_NVP(mConstitutiveLawMap)
-    & BOOST_SERIALIZATION_NVP(mConstraintMap)
-    & BOOST_SERIALIZATION_NVP(mNumLoadCases)
-    & BOOST_SERIALIZATION_NVP(mLoadMap)
-    & BOOST_SERIALIZATION_NVP(mGroupMap)
-    & BOOST_SERIALIZATION_NVP(mIntegrationTypeMap)
-    & BOOST_SERIALIZATION_NVP(mSectionMap)
-    & BOOST_SERIALIZATION_NVP(mMappingIntEnum2String)
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject);
+    ar & BOOST_SERIALIZATION_NVP(mNumTimeDerivatives);
+    ar & BOOST_SERIALIZATION_NVP(mDimension);
+    ar & BOOST_SERIALIZATION_NVP(mConstitutiveLawMap);
+    ar & BOOST_SERIALIZATION_NVP(mConstraintMap);
+    ar & BOOST_SERIALIZATION_NVP(mNumLoadCases);
+    ar & BOOST_SERIALIZATION_NVP(mLoadMap);
+    ar & BOOST_SERIALIZATION_NVP(mGroupMap);
+    ar & BOOST_SERIALIZATION_NVP(mIntegrationTypeMap);
+    ar & BOOST_SERIALIZATION_NVP(mSectionMap);
+    ar & BOOST_SERIALIZATION_NVP(mMappingIntEnum2String);
 
 //    & BOOST_SERIALIZATION_NVP(mVisualizeComponents)
 
-    & BOOST_SERIALIZATION_NVP(mNumDofs)
-    & BOOST_SERIALIZATION_NVP(mNumActiveDofs)
-    & BOOST_SERIALIZATION_NVP(mNodeNumberingRequired)
-    & BOOST_SERIALIZATION_NVP(mConstraintMatrix)
-    & BOOST_SERIALIZATION_NVP(mConstraintRHS)
-    & BOOST_SERIALIZATION_NVP(mHaveTmpStaticData)
-    & BOOST_SERIALIZATION_NVP(mUpdateTmpStaticDataRequired)
-    & BOOST_SERIALIZATION_NVP(mToleranceStiffnessEntries)
+    ar & BOOST_SERIALIZATION_NVP(mNumDofs);
+    ar & BOOST_SERIALIZATION_NVP(mNumActiveDofs);
+    ar & BOOST_SERIALIZATION_NVP(mNodeNumberingRequired);
+    ar & BOOST_SERIALIZATION_NVP(mConstraintMatrix);
+    ar & BOOST_SERIALIZATION_NVP(mConstraintRHS);
+    ar & BOOST_SERIALIZATION_NVP(mHaveTmpStaticData);
+    ar & BOOST_SERIALIZATION_NVP(mUpdateTmpStaticDataRequired);
+    ar & BOOST_SERIALIZATION_NVP(mToleranceStiffnessEntries);
 #ifdef _OPENMP
-    & BOOST_SERIALIZATION_NVP(mUseMIS)
-    & BOOST_SERIALIZATION_NVP(mMIS)
-    & BOOST_SERIALIZATION_NVP(mNumProcessors)
+    ar & BOOST_SERIALIZATION_NVP(mUseMIS);
+    ar & BOOST_SERIALIZATION_NVP(mMIS);
+    ar & BOOST_SERIALIZATION_NVP(mNumProcessors);
 #endif // _OPENMP
-    & BOOST_SERIALIZATION_NVP(mLogger)
-    & BOOST_SERIALIZATION_NVP(mHessianConstant);
+    ar & BOOST_SERIALIZATION_NVP(mLogger);
+    ar & BOOST_SERIALIZATION_NVP(mHessianConstant);
 #ifdef DEBUG_SERIALIZATION
     mLogger << "finish serialization of structure base" << "\n";
 #endif

@@ -28,11 +28,17 @@ template <int TNumRows, int TNumColumns> class ConstitutiveTangentNonlocal;
 class Element1D: public ElementBase
 {
 
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif // ENABLE_SERIALIZATION
+
 public:
     Element1D(const NuTo::StructureBase* rStructure,  const std::vector<NuTo::NodeBase* >& rNodes,
             ElementData::eElementDataType rElementDataType,IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType);
 
-    virtual ~Element1D() {};
+    Element1D(){}
+
+    virtual ~Element1D() {}
 
     //! @brief calculates output data for the element
     //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
@@ -69,7 +75,7 @@ public:
     //! @param local node number
     //! @brief rDofType dof type
     //! @return pointer to the node
-    const NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType)const override;
+    const NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType) const override;
 
     //! @brief sets the rLocalNodeNumber-th node of the element
     //! @param local node number
@@ -287,6 +293,14 @@ public:
         return this;
     }
 
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+#endif  // ENABLE_SERIALIZATION
+
 
 protected:
 
@@ -299,5 +313,10 @@ protected:
 };
 
 } /* namespace NuTo */
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::Element1D)
+#endif // ENABLE_SERIALIZATION
+
 
 #endif /* ELEMENT1D_H_ */

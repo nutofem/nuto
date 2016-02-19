@@ -11,7 +11,6 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/nodes/NodeDof_Def.h"
 #include "nuto/mechanics/nodes/NodeDof.h"
 #include "nuto/mechanics/constraints/ConstraintNode.h"
 
@@ -24,10 +23,10 @@ NuTo::ConstraintNode::ConstraintNode(const NodeBase* rNode) : mNode(rNode)
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::ConstraintNode::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::ConstraintNode::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::ConstraintNode::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
 template void NuTo::ConstraintNode::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::ConstraintNode::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
 template void NuTo::ConstraintNode::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::ConstraintNode::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
 template void NuTo::ConstraintNode::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
 void NuTo::ConstraintNode::serialize(Archive & ar, const unsigned int version)
@@ -35,11 +34,11 @@ void NuTo::ConstraintNode::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ConstraintNode" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_NVP(const_cast<NodeBase*&>(mNode));
+//    ar & BOOST_SERIALIZATION_NVP(const_cast<NodeBase*&>(mNode));
+    ar & boost::serialization::make_nvp("ConstrainedNode_mNode", const_cast<NodeBase*&>(mNode));
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintNode" << std::endl;
 #endif
 }
-BOOST_CLASS_EXPORT_IMPLEMENT(BOOST_IDENTITY_TYPE((NuTo::ConstraintNode)))
-//BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstraintNode)
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintNode)
 #endif // ENABLE_SERIALIZATION

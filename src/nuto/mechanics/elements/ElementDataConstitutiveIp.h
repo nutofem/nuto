@@ -58,13 +58,13 @@ protected:
 };
 }
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataConstitutiveIp)
 namespace boost{
 template<>
 struct is_virtual_base_of<NuTo::ElementDataConstitutiveBase, NuTo::ElementDataConstitutiveIp>: public mpl::true_ {};
 template<>
 struct is_virtual_base_of<NuTo::ElementDataIpBase, NuTo::ElementDataConstitutiveIp>: public mpl::true_ {};
 }
+BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataConstitutiveIp)
 #endif // ENABLE_SERIALIZATION
 
 #endif //ElementDataConstitutiveIp_H

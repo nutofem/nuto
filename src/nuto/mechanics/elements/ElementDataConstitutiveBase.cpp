@@ -80,11 +80,12 @@ void NuTo::ElementDataConstitutiveBase::serialize(Archive & ar, const unsigned i
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ElementDataConstitutiveBase" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataBase)
-       & BOOST_SERIALIZATION_NVP(mConstitutiveLaw);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataBase);
+    ar & BOOST_SERIALIZATION_NVP(mConstitutiveLaw);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ElementDataConstitutiveBase" << std::endl;
 #endif
 }
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ElementDataConstitutiveBase)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ElementDataConstitutiveBase)
 #endif // ENABLE_SERIALIZATION

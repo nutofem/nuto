@@ -110,10 +110,10 @@ NuTo::ElementBase::~ElementBase()
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::ElementBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::ElementBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::ElementBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
 template void NuTo::ElementBase::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::ElementBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
 template void NuTo::ElementBase::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::ElementBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
 template void NuTo::ElementBase::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
 void NuTo::ElementBase::serialize(Archive & ar, const unsigned int version)
@@ -121,7 +121,10 @@ void NuTo::ElementBase::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ElementBase " << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_NVP(mStructure);
+
+    ar & boost::serialization::make_nvp ("ElementBase_mStructure", const_cast<StructureBase*&>(mStructure));
+//    ar & BOOST_SERIALIZATION_NVP(const_cast<StructureBase*&>(mStructure));
+//    ar & BOOST_SERIALIZATION_NVP(mStructure);
     // the element data has to be saved on the main structure due to problems with a recursion on the stack (nonlocal data contains ptr to elements)
     // the idea is to first serialize all the elements in the table, and afterwards update the pointers of the element data in the element data routine
 #ifdef DEBUG_SERIALIZATION
@@ -129,6 +132,7 @@ void NuTo::ElementBase::serialize(Archive & ar, const unsigned int version)
 #endif
 }
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ElementBase)
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ElementBase)
 #endif // ENABLE_SERIALIZATION
 
 //! @brief returns the id number of the element

@@ -3,6 +3,8 @@
 #define LOADNODEFORCES2D_H
 
 #ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
+#include <boost/serialization/export.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
@@ -52,7 +54,14 @@ public:
 protected:
     double mValue;  //!< prescribed absolute value of the force at the node
     double mDirection[2]; //!< direction of the applied force (normalized)
+
+private:
+    LoadNodeForces2D(){}
 };
 }//namespace NuTo
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::LoadNodeForces2D)
+#endif
 #endif //LOADNODEFORCES2D_H
 

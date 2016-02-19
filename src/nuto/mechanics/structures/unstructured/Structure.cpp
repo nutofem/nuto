@@ -67,10 +67,10 @@ void NuTo::Structure::load(Archive & ar, const unsigned int version)
     std::cout << "start serialization of structure" << std::endl;
 #endif
     std::vector<ElementDataBase*> elementDataVector;
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase)
-    & boost::serialization::make_nvp ("elementMap", mElementMap)
-    & boost::serialization::make_nvp ("nodeMap", mNodeMap)
-    & BOOST_SERIALIZATION_NVP(elementDataVector);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase);
+    ar & boost::serialization::make_nvp ("elementMap", mElementMap);
+    ar & boost::serialization::make_nvp ("nodeMap", mNodeMap);
+    ar & BOOST_SERIALIZATION_NVP(elementDataVector);
     std::vector<ElementDataBase*>::iterator itElementData = elementDataVector.begin();
     for (boost::ptr_map<int,ElementBase>::iterator itElement=mElementMap.begin(); itElement!=mElementMap.end(); itElement++,itElementData++)
     {
@@ -96,10 +96,10 @@ void NuTo::Structure::save(Archive & ar, const unsigned int version)const
     {
         *itElementData = itElement->second->GetDataPtr();
     }
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase)
-    & boost::serialization::make_nvp ("elementMap", mElementMap)
-    & boost::serialization::make_nvp ("nodeMap", mNodeMap)
-    & BOOST_SERIALIZATION_NVP(elementDataVector);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase);
+    ar & boost::serialization::make_nvp ("elementMap", mElementMap);
+    ar & boost::serialization::make_nvp ("nodeMap", mNodeMap);
+    ar & BOOST_SERIALIZATION_NVP(elementDataVector);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialization of structure" << std::endl;
 #endif

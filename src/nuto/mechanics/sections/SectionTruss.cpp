@@ -8,8 +8,8 @@
 // constructor
 NuTo::SectionTruss::SectionTruss()
 {
-    this->mArea = 0.0;
-    this->mAreaParameters = nullptr;
+    mArea = 0.0;
+    mAreaParameters.resize(0);
 }
 
 // set cross-section area
@@ -33,7 +33,7 @@ double NuTo::SectionTruss::GetArea() const
 //! @return ... x-dependent area factor
 double NuTo::SectionTruss::GetAreaFactor(double rXCoordinate) const
 {
-    if (mAreaParameters == nullptr)
+    if (mAreaParameters.size() == 0)
     {
         return 1.;
 //        throw NuTo::MechanicsException("[NuTo::SectionTruss::GetAreaFactor] Call NuTo::SectionTruss::SetAreaParameters first!") ;
@@ -64,7 +64,7 @@ double NuTo::SectionTruss::GetAreaFactor(double rXCoordinate) const
 //! @param rAreaParameter ... area parameters [0]-xWeakSpot [1]-lWeakSpot [2]-alpha [3]-exponent
 void NuTo::SectionTruss::SetAreaParameters(double* rAreaParameters)
 {
-    mAreaParameters = rAreaParameters;
+    for (int i = 0; i < 4; i++) mAreaParameters.push_back(rAreaParameters[i]);
 }
 
 // get section type
@@ -91,3 +91,7 @@ const NuTo::SectionTruss* NuTo::SectionTruss::AsSectionTruss() const
 {
     return this;
 }
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::SectionTruss)
+#endif // ENABLE_SERIALIZATION

@@ -1,9 +1,16 @@
-#include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/nodes/NodeDof.h"
-
-#include <fstream>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
+
+#include "nuto/mechanics/nodes/NodeBase.h"
+
+#include "nuto/mechanics/nodes/NodeDof.h"
+//#include "nuto/mechanics/constraints/ConstraintLinearDisplacementsPeriodic2D.h"
+//#include "nuto/mechanics/constraints/ConstraintNode.h"
+
+#include <fstream>
+
+#include <string>
+
 
 int main(int argc, char* argv[])
 {
@@ -16,12 +23,15 @@ int main(int argc, char* argv[])
 
     NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 0, 0> myNodeDofDef;
 
-    const NuTo::NodeBase* myNodePtr2 = &myNodeDofDef;
-    outArchive << const_cast<NuTo::NodeBase*&>(myNodePtr2);
+    NuTo::NodeBase* myNodePtr = &myNodeDofDef;
+    outArchive << myNodePtr;
 
-    NuTo::NodeBase* myNodePtr1 = &myNodeDofDef;
-    outArchive << myNodePtr1;
+//    NuTo::NodeBase& myNodeAdr = myNodeDofDef;
+//    std::cout << "Reference to (reference): " << typeid(myNodeAdr).name() << std::endl;
+//    outArchive << myNodeAdr;
 
+    const NuTo::NodeBase* myNodePtrConst = &myNodeDofDef;
+    outArchive << const_cast<NuTo::NodeBase*&>(myNodePtrConst);
 
     return 0;
 }
