@@ -1,5 +1,7 @@
 // $Id: CrankNicolsonEvaluate.cpp 575 2011-09-20 18:05:35Z unger3 $
 
+#include <iostream>
+
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -17,10 +19,8 @@
 
 #if defined HAVE_PARDISO
     #include <nuto/math/SparseDirectSolverPardiso.h>
-#elif defined HAVE_MUMPS
-    #include <nuto/math/SparseDirectSolverMUMPS.h>
 #else
-    std::cout << "Solver not available - can't solve system of equations " << std::endl;
+    #include <nuto/math/SparseDirectSolverMUMPS.h>
 #endif
 
 #include "nuto/mechanics/nodes/NodeBase.h"
@@ -101,7 +101,8 @@ NuTo::Error::eError NuTo::CrankNicolsonEvaluate::Solve(double rFinalTime)
 #elif defined HAVE_MUMPS
         NuTo::SparseDirectSolverMUMPS mySolver;
 #else
-        std::cout << "Solver not available - can't solve system of equations " << std::endl;
+        NuTo::SparseDirectSolverMUMPS mySolver; //the solver interface exists but the solve is not implemented
+        throw MechanicsException("[NuTo::CrankNicolsonEvaluate::Solve] No solver available (MUMPS/PARDISO) - can't solve system of equations.");
 #endif
 #ifdef SHOW_TIME
         mySolver.SetShowTime(mStructure->GetShowTime());
