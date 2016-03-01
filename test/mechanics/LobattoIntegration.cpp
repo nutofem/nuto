@@ -110,14 +110,11 @@ int buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
 #ifdef _OPENMP
     int numThreads = 4;
     myStructure.SetNumProcessors(numThreads);
-#endif // OPENMP
-
-#if defined HAVE_PARDISO
-
-#ifndef _OPENMP
+#else// _OPENMP
     int numThreads = 1;
 #endif
 
+#if defined HAVE_PARDISO
     NuTo::SparseDirectSolverPardiso mySolverPardiso(numThreads);
 #endif // PARDISO
     myStructure.CalculateMaximumIndependentSets();
@@ -373,10 +370,9 @@ int buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
     /** start analysis **/
 #ifdef HAVE_PARDISO
     int numThreads = 4;
-#endif
 #ifdef _OPENMP
-
     myStructure.SetNumProcessors(numThreads);
+#endif
 #endif
 
     myStructure.CalculateMaximumIndependentSets();
