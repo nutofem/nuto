@@ -11,7 +11,7 @@
     std::cout << "Solver not available - can't solve system of equations " << std::endl;
 #endif
 
-#include <boost-1_55/boost/progress.hpp>
+#include <boost/progress.hpp>
 
 #include <nuto/math/SparseMatrixCSRGeneral.h>
 
