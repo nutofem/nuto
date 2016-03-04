@@ -59,6 +59,11 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
     /** Structure 2D **/
     NuTo::Structure *myStructure = new NuTo::Structure(2);
 
+#ifdef _OPENMP
+    int numThreads = 4;
+    myStructure->SetNumProcessors(numThreads);
+#endif
+
     /** Nodes **/
     NuTo::FullVector<double,Eigen::Dynamic> nodeCoordinates(2);
     int node = 0;
@@ -198,6 +203,9 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
     //myStructure->LoadSurfaceConstDirectionCreate2D(0, groupNumberElementsRight, groupNumberNodesRight, ForceVecRight);
     myStructure->LoadSurfacePressureCreate2D(0, groupNumberElementsRight, groupNumberNodesRight, -Stress);
 
+    myStructure->CalculateMaximumIndependentSets();
+    myStructure->NodeBuildGlobalDofs();
+
     myStructure->Info();
 
     return myStructure;
@@ -207,15 +215,8 @@ void solve2d(NuTo::Structure* myStructure, int NumElementsX, int NumElementsY, d
 {
     /** start analysis **/
 #ifdef HAVE_PARDISO
-    int numThreads = 4;
-#endif
-#ifdef _OPENMP
-
-    myStructure.SetNumProcessors(numThreads);
-#endif
-
-    myStructure->CalculateMaximumIndependentSets();
-    myStructure->NodeBuildGlobalDofs();
+    myStructure->SetNumProcessors(numThreads);
+#endif // HAVE_PARDISO
 
     // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
 
@@ -242,22 +243,17 @@ void solve2d(NuTo::Structure* myStructure, int NumElementsX, int NumElementsY, d
 
 
 #ifdef HAVE_PARDISO
-
     NuTo::SparseDirectSolverPardiso mySolverPardiso(numThreads);
-
     NuTo::FullVector<double,Eigen::Dynamic> displacementVectorPardiso;
-
     //mySolverPardiso.Solve(stiffnessMatrix, rhsVector, displacementVectorPardiso);
     mySolverPardiso.Solve(stiffnessMatrixSymmetric, rhsVector, displacementVectorPardiso);
     // write displacements to node
     myStructure->NodeMergeActiveDofValues(displacementVectorPardiso);
-
     // calculate residual
     NuTo::FullVector<double,Eigen::Dynamic> intForceVectorPardiso;
     myStructure->BuildGlobalGradientInternalPotentialVector(intForceVectorPardiso);
     NuTo::FullVector<double,Eigen::Dynamic> residualVectorPardiso = extForceVector - intForceVectorPardiso;
     std::cout << "residual: " << residualVectorPardiso.Norm() << std::endl;
-
     // visualize results
 //    myStructure->AddVisualizationComponentDisplacements();
 //    myStructure->AddVisualizationComponentEngineeringStrain();
@@ -328,6 +324,11 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
 {
     /** Structure 1D **/
     NuTo::Structure *myStructure = new NuTo::Structure(1);
+
+#ifdef _OPENMP
+    int numThreads = 4;
+    myStructure->SetNumProcessors(numThreads);
+#endif // OPENMP
 
     /** create section **/
     int Section = myStructure->SectionCreate("Truss");
@@ -400,6 +401,9 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
     myStructure->SetNumLoadCases(1);
     myStructure->LoadCreateNodeForce(0, numNodes-1, direction, Force);
 
+    myStructure->CalculateMaximumIndependentSets();
+    myStructure->NodeBuildGlobalDofs();
+
     return myStructure;
 }
 
@@ -412,22 +416,9 @@ void solve1d(NuTo::Structure* myStructure,
            double  tol = 1.e-6)
 {
     /** start analysis **/
-
-#ifdef _OPENMP
-    int numThreads = 4;
-    myStructure->SetNumProcessors(numThreads);
-#endif // OPENMP
-
-#if defined HAVE_PARDISO
-
-#ifndef _OPENMP
-    int numThreads = 1;
-#endif
-
+#ifdef HAVE_PARDISO
     NuTo::SparseDirectSolverPardiso mySolverPardiso(numThreads);
 #endif // PARDISO
-    myStructure->CalculateMaximumIndependentSets();
-    myStructure->NodeBuildGlobalDofs();
 
     // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
     NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2(0,0);
@@ -444,7 +435,7 @@ void solve1d(NuTo::Structure* myStructure,
     // calculate right hand side
     NuTo::FullVector<double,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;
 
-#if defined HAVE_PARDISO
+#ifdef HAVE_PARDISO
     NuTo::FullVector<double,Eigen::Dynamic> displacementVectorPardiso;
     stiffnessMatrix.SetOneBasedIndexing();
 
@@ -556,7 +547,7 @@ void serialize2d()
         nodeCoordinates += ones;
 
         NuTo::Structure* myStructure2D = buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, numElementsX, numElementsY);
-        solve2d(myStructure2D, numElementsX, numElementsY);
+//        solve2d(myStructure2D, numElementsX, numElementsY);
 
 
 //        std::ofstream outFileStream("StructureOut2D");

@@ -208,9 +208,10 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_NVP(mIntegrationTypeMap);
     ar & BOOST_SERIALIZATION_NVP(mSectionMap);
     ar & BOOST_SERIALIZATION_NVP(mMappingIntEnum2String);
-
-//    & BOOST_SERIALIZATION_NVP(mVisualizeComponents)
-
+#ifdef ENABLE_VISUALIZE
+//    ar & BOOST_SERIALIZATION_NVP(mGroupVisualizeComponentsMap);
+    std::cout << "WARNING: Visualization components are not serialized!\n";
+#endif
     ar & BOOST_SERIALIZATION_NVP(mNumDofs);
     ar & BOOST_SERIALIZATION_NVP(mNumActiveDofs);
     ar & BOOST_SERIALIZATION_NVP(mNodeNumberingRequired);
@@ -220,8 +221,9 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_NVP(mUpdateTmpStaticDataRequired);
     ar & BOOST_SERIALIZATION_NVP(mToleranceStiffnessEntries);
 #ifdef _OPENMP
+    // mMIS contains Element-Ptr, so its serialized, by serializing the Pointer-Adresses and updating them
+    // see Structure::loadImplement and Structure::saveImplement
     ar & BOOST_SERIALIZATION_NVP(mUseMIS);
-    ar & BOOST_SERIALIZATION_NVP(mMIS);
     ar & BOOST_SERIALIZATION_NVP(mNumProcessors);
 #endif // _OPENMP
     ar & BOOST_SERIALIZATION_NVP(mLogger);
