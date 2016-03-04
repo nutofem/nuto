@@ -66,7 +66,7 @@ void NuTo::VisualizeComponentNonlocalWeight::serialize(Archive & ar, const unsig
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize VisualizeComponentNonlocalWeight" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(VisualizeComponentBase)
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(VisualizeComponent)
        & BOOST_SERIALIZATION_NVP(mElementId)
        & BOOST_SERIALIZATION_NVP(mElement)
        & BOOST_SERIALIZATION_NVP(mIp);

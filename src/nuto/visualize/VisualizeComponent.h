@@ -50,6 +50,6 @@ private:
 }
 
 #ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::VisualizeComponentBase)
+BOOST_CLASS_EXPORT_KEY(NuTo::VisualizeComponent)
 #endif // ENABLE_SERIALIZATION
 

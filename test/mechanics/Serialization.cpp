@@ -477,7 +477,7 @@ void solve1d(NuTo::Structure* myStructure,
 
 #ifdef ENABLE_VISUALIZE
     // visualize results
-    int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    int visualizationGroup = myStructure->GroupCreate(NuTo::Groups::eGroupId::Elements);
     myStructure->GroupAddElementsTotal(visualizationGroup);
 
     myStructure->AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
