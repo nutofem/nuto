@@ -1361,19 +1361,63 @@ void NuTo::Element1D::CheckElement()
 }
 
 #ifdef ENABLE_SERIALIZATION
-// serializes the class
+template void NuTo::Element1D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::Element1D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::Element1D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
 template<class Archive>
-void NuTo::Element1D::serialize(Archive & ar, const unsigned int version)
+void NuTo::Element1D::save(Archive & ar, const unsigned int version)const
 {
 #ifdef DEBUG_SERIALIZATION
-    std::cout << "==========>start serialize Element1D " << std::endl;
+    std::cout << "start serialize Element1D " << std::endl;
 #endif
     ar & boost::serialization::make_nvp("Element1D_ElementBase",boost::serialization::base_object<ElementBase >(*this));
-    ar & boost::serialization::make_nvp("Element1D_mNodes", boost::serialization::make_array(mNodes.data(), mNodes.size()));
+    ar & boost::serialization::make_nvp("mSection", const_cast<SectionBase*&>(mSection));
+
+    const std::uintptr_t* mNodesAdress = reinterpret_cast<const std::uintptr_t*>(mNodes.data());
+    int size = mNodes.size();
+    ar & boost::serialization::make_nvp("mNodes_size", size);
+    ar & boost::serialization::make_nvp("mNodes", boost::serialization::make_array(mNodesAdress, size));
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize Element1D" << std::endl;
 #endif
 }
+
+template void NuTo::Element1D::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::Element1D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::Element1D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::Element1D::load(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start deserialize Element1D " << std::endl;
+#endif
+    ar & boost::serialization::make_nvp("Element1D_ElementBase",boost::serialization::base_object<ElementBase >(*this));
+    ar & boost::serialization::make_nvp("mSection", const_cast<SectionBase*&>(mSection));
+
+    int size = 0;
+    ar & boost::serialization::make_nvp("mNodes_size", size);
+    std::uintptr_t* mNodesAdress = new std::uintptr_t[size];
+    ar & boost::serialization::make_nvp("mNodes", boost::serialization::make_array(mNodesAdress, size));
+    mNodes.assign(reinterpret_cast<NodeBase**>(&mNodesAdress[0]), reinterpret_cast<NodeBase**>(&mNodesAdress[size]));
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish deserialize Element1D" << std::endl;
+#endif
+}
+
+void NuTo::Element1D::SetNodePtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mNodeMapCast)
+{
+    for(std::vector<NodeBase*>::iterator it = mNodes.begin(); it != mNodes.end(); it++)
+    {
+        std::map<std::uintptr_t, std::uintptr_t>::const_iterator itCast = mNodeMapCast.find(reinterpret_cast<std::uintptr_t>(*it));
+        if (itCast!=mNodeMapCast.end())
+        {
+            *it = reinterpret_cast<NodeBase*>(itCast->second);
+        }
+        else
+            throw MechanicsException("[NuTo::Element1D] The NodeBase-Pointer could not be updated.");
+    }
+}
+
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Element1D)
 #endif // ENABLE_SERIALIZATION
 

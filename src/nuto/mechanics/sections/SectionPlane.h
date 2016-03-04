@@ -51,7 +51,7 @@ public:
 
 private:
     //! @brief just for serialization
-    SectionPlane(){};
+    SectionPlane(){}
     //! @brief ... section thickness
     double        mThickness;
     Section::eSectionType   mSectionType;

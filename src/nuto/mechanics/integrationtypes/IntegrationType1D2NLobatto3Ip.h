@@ -35,9 +35,13 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(IntegrationType1D)
-        & BOOST_SERIALIZATION_NVP(iPts)
-        & BOOST_SERIALIZATION_NVP(weights);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize IntegrationType1D2NLobatto3Ip" << std::endl;
+#endif
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(IntegrationType1D);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize IntegrationType1D2NLobatto3Ip" << std::endl;
+#endif
     }
 #endif // ENABLE_SERIALIZATION
 

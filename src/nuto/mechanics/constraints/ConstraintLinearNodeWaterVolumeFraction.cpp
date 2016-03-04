@@ -67,3 +67,28 @@ void NuTo::ConstraintLinearNodeWaterVolumeFraction::Info(unsigned short rVerbose
 {
     throw MechanicsException("[NuTo::ConstraintLinearNodeWaterVolumeFraction::Info] to be implemented.");
 }
+
+
+#ifdef ENABLE_SERIALIZATION
+// serialize
+template<class Archive>
+void NuTo::ConstraintLinearNodeWaterVolumeFraction::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize ConstraintLinearNodeWaterVolumeFraction" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNode);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear);
+    ar & BOOST_SERIALIZATION_NVP(mRHS);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize ConstraintLinearNodeWaterVolumeFraction" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintLinearNodeWaterVolumeFraction)
+
+void NuTo::ConstraintLinearNodeWaterVolumeFraction::SetNodePtrAfterSerialization(const std::map<uintptr_t, uintptr_t>& mNodeMapCast)
+{
+    NuTo::ConstraintNode::SetNodePtrAfterSerialization(mNodeMapCast);
+}
+
+#endif // ENABLE_SERIALIZATION

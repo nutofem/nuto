@@ -34,8 +34,17 @@ public:
     //! @param version    version
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
-    {}
+    {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize IntegrationType1D2NLobatto5Ip" << std::endl;
+#endif
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(IntegrationType1D);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize IntegrationType1D2NLobatto5Ip" << std::endl;
+#endif
+    }
 #endif // ENABLE_SERIALIZATION
+
 
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
@@ -75,5 +84,10 @@ private:
     //! @brief ... weights for the integration
     double weights[5];
 };
-}
+} // namespace
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType1D2NLobatto5Ip)
+#endif
+
 #endif //IntegrationType1D2NLobatto5Ip_H

@@ -233,3 +233,8 @@ void NuTo::LoadSurfaceBase3D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
         }
     }
 }
+
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LoadSurfaceBase3D)
+#endif

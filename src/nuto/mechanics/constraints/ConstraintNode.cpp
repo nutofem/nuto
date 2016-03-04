@@ -20,6 +20,11 @@ NuTo::ConstraintNode::ConstraintNode(const NodeBase* rNode) : mNode(rNode)
 {
 }
 
+//! @brief destructor
+NuTo::ConstraintNode::~ConstraintNode()
+{
+}
+
 #ifdef ENABLE_SERIALIZATION
 // serializes the class
 template void NuTo::ConstraintNode::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
@@ -34,11 +39,25 @@ void NuTo::ConstraintNode::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ConstraintNode" << std::endl;
 #endif
-//    ar & BOOST_SERIALIZATION_NVP(const_cast<NodeBase*&>(mNode));
-    ar & boost::serialization::make_nvp("ConstrainedNode_mNode", const_cast<NodeBase*&>(mNode));
+    std::uintptr_t& mNodeAdress = reinterpret_cast<std::uintptr_t&>(mNode);
+    ar & boost::serialization::make_nvp("mNode", mNodeAdress);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintNode" << std::endl;
 #endif
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintNode)
+
+void NuTo::ConstraintNode::SetNodePtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mNodeMapCast)
+{
+    int t = reinterpret_cast<std::uintptr_t>(mNode);
+    std::map<std::uintptr_t, std::uintptr_t>::const_iterator it = mNodeMapCast.find(reinterpret_cast<std::uintptr_t>(mNode));
+    if (it!=mNodeMapCast.end())
+    {
+        NodeBase** temp = const_cast<NodeBase**>(&mNode);
+        *temp = reinterpret_cast<NodeBase*>(it->second);
+    }
+    else
+        throw MechanicsException("[NuTo::ConstraintNode] The NodeBase-Pointer could not be updated.");
+}
+
 #endif // ENABLE_SERIALIZATION

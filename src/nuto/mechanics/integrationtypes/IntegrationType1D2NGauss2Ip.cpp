@@ -82,3 +82,7 @@ void NuTo::IntegrationType1D2NGauss2Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(1);
 }
 #endif // ENABLE_VISUALIZE
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::IntegrationType1D2NGauss2Ip)
+#endif

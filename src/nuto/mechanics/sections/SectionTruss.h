@@ -60,16 +60,20 @@ public:
     const SectionTruss* AsSectionTruss() const override;
 
 #ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
+    //! @brief save (serialize) the class
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(SectionBase)
-           & BOOST_SERIALIZATION_NVP(mArea)
-           & boost::serialization::make_array(mAreaParameters.data(), mAreaParameters.size());
-    }
+    void save(Archive & ar, const unsigned int version) const;
+
+    //! @brief load (serializes) the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void load(Archive & ar, const unsigned int version);
+
+
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 #endif // ENABLE_SERIALIZATION
 private:
     //! @brief ... cross-section area

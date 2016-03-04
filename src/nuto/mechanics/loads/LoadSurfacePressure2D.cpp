@@ -21,3 +21,8 @@ void NuTo::LoadSurfacePressure2D::CalculateSurfaceLoad(NuTo::FullVector<double,2
 	assert(fabs(rNormal.Norm()-1.)<1e-5);
 	rLoadVector = rNormal*(-mPressure);
 }
+
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LoadSurfacePressure2D)
+#endif

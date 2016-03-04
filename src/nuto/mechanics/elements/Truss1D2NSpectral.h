@@ -49,7 +49,17 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Truss1D);
+
+        for(int i = 0; i < TOrder+1; i++)
+        {
+            std::uintptr_t& temp = reinterpret_cast<std::uintptr_t&>(mNodes[i]);
+            ar & boost::serialization::make_nvp("mNode"+i, temp);
+        }
+    }
+
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief returns the enum (type of the element)

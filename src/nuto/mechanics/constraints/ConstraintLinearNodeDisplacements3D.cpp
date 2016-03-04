@@ -1,14 +1,4 @@
 // $Id$
-
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif  // ENABLE_SERIALIZATION
-
 #include <iostream>
 
 #include "nuto/mechanics/MechanicsException.h"
@@ -85,12 +75,6 @@ void NuTo::ConstraintLinearNodeDisplacements3D::GetRHS(int& curConstraintEquatio
 
 #ifdef ENABLE_SERIALIZATION
 // serialize
-template void NuTo::ConstraintLinearNodeDisplacements3D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::ConstraintLinearNodeDisplacements3D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::ConstraintLinearNodeDisplacements3D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::ConstraintLinearNodeDisplacements3D::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::ConstraintLinearNodeDisplacements3D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::ConstraintLinearNodeDisplacements3D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
 void NuTo::ConstraintLinearNodeDisplacements3D::serialize(Archive & ar, const unsigned int version)
 {
@@ -107,4 +91,9 @@ void NuTo::ConstraintLinearNodeDisplacements3D::serialize(Archive & ar, const un
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintLinearNodeDisplacements3D)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstraintLinearNodeDisplacements3D)
+
+void NuTo::ConstraintLinearNodeDisplacements3D::SetNodePtrAfterSerialization(const std::map<uintptr_t, uintptr_t>& mNodeMapCast)
+{
+    NuTo::ConstraintNode::SetNodePtrAfterSerialization(mNodeMapCast);
+}
 #endif // ENABLE_SERIALIZATION

@@ -47,17 +47,56 @@ public:
     		NuTo::FullVector<double,3>& rLoadVector)const=0;
 
 #ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
+    //! @brief deserializes (loads) the class
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
+    void load(Archive & ar, const unsigned int version)
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase)
-           & BOOST_SERIALIZATION_NVP(mVolumeElements)
-           & BOOST_SERIALIZATION_NVP(mIntegrationType3NPtr)
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "start load LoadSurface3D\n";
+#endif
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase);
+
+        std::vector<std::pair<std::uintptr_t, int> >  mVolumeElementsAdress;
+        ar & boost::serialization::make_nvp("mNodesAdress", mVolumeElementsAdress);
+        for(std::vector<std::pair<std::uintptr_t, int> >::const_iterator it = mVolumeElementsAdress.begin(); it != mVolumeElementsAdress.end(); it++)
+        {
+            mVolumeElements.push_back(reinterpret_cast<std::pair<const Element3D*, int> >(*it));
+        }
+
+        ar & BOOST_SERIALIZATION_NVP(mIntegrationType3NPtr)
            & BOOST_SERIALIZATION_NVP(mIntegrationType4NPtr)
            & BOOST_SERIALIZATION_NVP(mIntegrationType6NPtr);
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "finish load LoadSurface3D\n";
+#endif
+    }
+
+    //! @brief serializes (saves) the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void save(Archive & ar, const unsigned int version) const
+    {
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "start save LoadSurface3D\n";
+#endif
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase);
+
+        std::vector<std::pair<std::uintptr_t, int> >  mVolumeElementsAdress;
+        for(std::vector<std::pair<const Element3D*, int> >::const_iterator it = mVolumeElements.begin(); it != mVolumeElements.end(); it++)
+        {
+            mVolumeElementsAdress.push_back(reinterpret_cast<std::pair<std::uintptr_t, int> >(*it));
+        }
+        ar & boost::serialization::make_nvp("mNodesAdress", mVolumeElementsAdress);
+
+        ar & BOOST_SERIALIZATION_NVP(mIntegrationType3NPtr)
+           & BOOST_SERIALIZATION_NVP(mIntegrationType4NPtr)
+           & BOOST_SERIALIZATION_NVP(mIntegrationType6NPtr);
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "finish save LoadSurface3D\n";
+#endif
     }
 #endif // ENABLE_SERIALIZATION
 
@@ -68,5 +107,10 @@ protected:
     IntegrationTypeBase* mIntegrationType6NPtr;
 };
 }//namespace NuTo
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::LoadSurfaceBase3D)
+#endif
+
 #endif //LoadSurfaceBase3D_H
 

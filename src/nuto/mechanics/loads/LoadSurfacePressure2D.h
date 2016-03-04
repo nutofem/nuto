@@ -30,7 +30,7 @@ class LoadSurfacePressure2D : public LoadSurfaceBase2D
 public:
     //! @brief constructor
     LoadSurfacePressure2D(int rLoadCase, StructureBase* rStructure, int rElementGroupId, int rNodeGroupId,
-    		double rPressure);
+            double rPressure);
 
     //! @brief calculates the surface load as a function of the coordinates and the normal (for pressure)
     //! @param rCoordinates ... global coordinates
@@ -49,11 +49,29 @@ public:
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadSurfaceBase2D)
            & BOOST_SERIALIZATION_NVP(mPressure);
     }
+
+
+    //! @brief NodeBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Adress (uintptr_t)
+    //! Deserialization of the NodeBase-Pointer is done by searching and casting back the adress in the map
+    //! @param mNodeMapCast   std::map containing the old and new adresses
+    virtual void SetElementPtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mElementMapCast) override
+    {
+            NuTo::LoadSurfaceBase2D::SetElementPtrAfterSerialization(mElementMapCast);
+    }
 #endif // ENABLE_SERIALIZATION
 
 protected:
     double mPressure;
+
+private:
+    //! @brief just for serialization
+    LoadSurfacePressure2D(){ }
 };
 }//namespace NuTo
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::LoadSurfacePressure2D)
+#endif
+
 #endif //LoadSurfacePressure2D_H
 

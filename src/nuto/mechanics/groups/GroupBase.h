@@ -7,6 +7,7 @@
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
+#include <map>
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/groups/GroupEnum.h"
@@ -34,7 +35,7 @@ public:
 	GroupBase();
 
 	//! @brief ... destructor
-    virtual ~GroupBase(){};
+    virtual ~GroupBase(){}
 
 #ifdef ENABLE_SERIALIZATION
 	//! @brief serializes the class
@@ -42,6 +43,11 @@ public:
 	//! @param version    version
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int version);
+
+    //! @brief NodeBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Adress (uintptr_t)
+    //! Deserialization of the NodeBase-Pointer is done by searching and casting back the adress in the map
+    //! @param mNodeMapCast   std::map containing the old and new adresses
+    virtual void SetNodePtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mNodeMapCast)=0;
 #endif // ENABLE_SERIALIZATION
 
 	//! @brief gives the number of group members

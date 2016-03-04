@@ -285,10 +285,28 @@ void NuTo::Brick8N::serialize(Archive & ar, const unsigned int version)
     {
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Solid)
            & BOOST_SERIALIZATION_NVP(mNodes);
+
+//        std::uintptr_t* mNodesAdresses = reinterpret_cast<std::uintptr_t*>(&(mNodes[0]));
+//        ar & boost::serialization::make_nvp("mNodes",  boost::serialization::make_array(mNodesAdresses, 8));
     }
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize Brick8N" << std::endl;
 #endif
 }
+
+void NuTo::Brick8N::SetNodePtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mNodeMapCast)
+{
+    for(int i = 0; i < 8; i++)
+    {
+        std::map<std::uintptr_t, std::uintptr_t>::const_iterator itCast = mNodeMapCast.find(reinterpret_cast<std::uintptr_t>(mNodes[i]));
+        if (itCast!=mNodeMapCast.end())
+        {
+            mNodes[i] = reinterpret_cast<NodeBase*>(itCast->second);
+        }
+        else
+            throw MechanicsException("[NuTo::Brick8N] The NodeBase-Pointer could not be updated.");
+    }
+}
+
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Brick8N)
 #endif // ENABLE_SERIALIZATION

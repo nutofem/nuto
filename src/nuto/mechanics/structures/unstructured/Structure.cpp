@@ -9,6 +9,8 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
 #include <boost/ptr_container/serialize_ptr_map.hpp>
+#include <boost/serialization/map.hpp>
+#include <cstdint>
 #endif // ENABLE_SERIALIZATION
 
 #include <boost/assign/ptr_map_inserter.hpp>
@@ -56,59 +58,53 @@ void NuTo::Structure::Info() const
 }
 
 #ifdef ENABLE_SERIALIZATION
-// serializes the class
-template void NuTo::Structure::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::Structure::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::Structure::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::Structure::load(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialization of structure" << std::endl;
-#endif
-    std::vector<ElementDataBase*> elementDataVector;
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase);
-    ar & boost::serialization::make_nvp ("elementMap", mElementMap);
-    ar & boost::serialization::make_nvp ("nodeMap", mNodeMap);
-    ar & BOOST_SERIALIZATION_NVP(elementDataVector);
-    std::vector<ElementDataBase*>::iterator itElementData = elementDataVector.begin();
-    for (boost::ptr_map<int,ElementBase>::iterator itElement=mElementMap.begin(); itElement!=mElementMap.end(); itElement++,itElementData++)
-    {
-        itElement->second->SetDataPtr(*itElementData);
-    }
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialization of structure" << std::endl;
-#endif
-}
-
 template void NuTo::Structure::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
 template void NuTo::Structure::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
 template void NuTo::Structure::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
 template<class Archive>
-void NuTo::Structure::save(Archive & ar, const unsigned int version)const
+void NuTo::Structure::save(Archive & ar, const unsigned int version) const
 {
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialization of structure" << std::endl;
 #endif
-    std::vector<ElementDataBase*> elementDataVector(mElementMap.size());
-    std::vector<ElementDataBase*>::iterator itElementData = elementDataVector.begin();
-    for (boost::ptr_map<int,ElementBase>::const_iterator itElement=mElementMap.begin(); itElement!=mElementMap.end(); itElement++,itElementData++)
-    {
-        *itElementData = itElement->second->GetDataPtr();
-    }
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase);
-    ar & boost::serialization::make_nvp ("elementMap", mElementMap);
-    ar & boost::serialization::make_nvp ("nodeMap", mNodeMap);
-    ar & BOOST_SERIALIZATION_NVP(elementDataVector);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialization of structure" << std::endl;
 #endif
 }
 
+template<class Archive>
+void NuTo::Structure::saveImplement(Archive & ar, bool light) const
+{
+    if (!light) ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase);
+    ar & boost::serialization::make_nvp ("elementMap", mElementMap);
+    ar & boost::serialization::make_nvp ("nodeMap", mNodeMap);
+
+    /***************************** Pointer update *****************************/
+
+    // cast the 'mNodeMap' to a map containing pairs (int,uintptr_t)
+    // the  uintptr_t will not be serialized
+    std::map<int, std::uintptr_t> mNodeMapCast;
+    for (boost::ptr_map<int,NodeBase>::const_iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
+    {
+        mNodeMapCast.insert(std::pair<int, std::uintptr_t>(it->first, reinterpret_cast<std::uintptr_t>(it->second)));
+    }
+    ar & boost::serialization::make_nvp("mNodeMapCast", mNodeMapCast);
+
+    // cast the 'mElementMap' to a map containing pairs (int,uintptr_t)
+    // the  uintptr_t will not be serialized
+    std::map<int, std::uintptr_t> mElementMapCast;
+    for (boost::ptr_map<int,ElementBase>::const_iterator it = mElementMap.begin(); it!= mElementMap.end(); it++)
+    {
+        mElementMapCast.insert(std::pair<int, std::uintptr_t>(it->first, reinterpret_cast<std::uintptr_t>(it->second)));
+    }
+    ar & boost::serialization::make_nvp("mElementMapCast", mElementMapCast);
+}
+
+
 //! @brief ... save the object to a file
 //! @param filename ... filename
 //! @param aType ... type of file, either BINARY, XML or TEXT
-void NuTo::Structure::Save (const std::string &filename, std::string rType )const
+void NuTo::Structure::Save (const std::string &filename, std::string rType ) const
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -125,7 +121,6 @@ void NuTo::Structure::Save (const std::string &filename, std::string rType )cons
         {
             throw MechanicsException("[NuTo::Structure::Save] Error opening file.");
         }
-
         // write data to file
         std::string typeIdString(this->GetTypeId());
         if (rType=="BINARY")
@@ -133,19 +128,25 @@ void NuTo::Structure::Save (const std::string &filename, std::string rType )cons
             boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
             oba & boost::serialization::make_nvp ("Object_type", typeIdString );
             oba & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+
+            saveImplement(oba, false);
         }
         else if (rType=="XML")
         {
             boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
             std::string tmpString(this->GetTypeId());
             oxa & boost::serialization::make_nvp ("Object_type", typeIdString );
-            oxa & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+            oxa & boost::serialization::make_nvp(typeIdString.c_str(), *this);            
+
+            saveImplement(oxa, false);
         }
         else if (rType=="TEXT")
         {
             boost::archive::text_oarchive ota ( ofs, std::ios::binary );
             ota & boost::serialization::make_nvp("Object_type", typeIdString );
             ota & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+
+            saveImplement(ota, false);
         }
         else
         {
@@ -175,6 +176,95 @@ void NuTo::Structure::Save (const std::string &filename, std::string rType )cons
 #endif
 }
 
+// serializes the class
+template void NuTo::Structure::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::Structure::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::Structure::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::Structure::load(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialization of structure" << std::endl;
+#endif
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialization of structure" << std::endl;
+#endif
+}
+
+template<class Archive>
+void NuTo::Structure::loadImplement(Archive & ar, bool light)
+{
+    if (!light) ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StructureBase);
+
+    ar & boost::serialization::make_nvp ("elementMap", mElementMap);
+    ar & boost::serialization::make_nvp ("nodeMap", mNodeMap);
+
+    /***************************** Pointer update *****************************/
+
+    // node
+    std::map<int, std::uintptr_t> mNodeMapCast;
+    ar & boost::serialization::make_nvp("mNodeMapCast", mNodeMapCast);
+    std::map<std::uintptr_t, std::uintptr_t> mNodeMapOldNewPtr;
+    std::map<int, std::uintptr_t>::iterator itCastNode = mNodeMapCast.begin();
+    for (boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++, itCastNode++)
+    {
+        mNodeMapOldNewPtr.insert(std::pair<std::uintptr_t, std::uintptr_t>(itCastNode->second, reinterpret_cast<std::uintptr_t>(it->second)));
+    }
+
+    // element
+    std::map<int, std::uintptr_t> mElementMapCast;
+    ar & boost::serialization::make_nvp("mElementMapCast", mElementMapCast);
+    std::map<std::uintptr_t, std::uintptr_t> mElementMapOldNewPtr;
+    std::map<int, std::uintptr_t>::iterator itCastElement = mElementMapCast.begin();
+    for (boost::ptr_map<int,ElementBase>::iterator it = mElementMap.begin(); it!= mElementMap.end(); it++, itCastElement++)
+    {
+        mElementMapOldNewPtr.insert(std::pair<std::uintptr_t, std::uintptr_t>(itCastElement->second, reinterpret_cast<std::uintptr_t>(it->second)));
+    }
+
+    // update the node ptr in elements
+    for(boost::ptr_map<int, ElementBase>::iterator itElements = mElementMap.begin(); itElements!=mElementMap.end(); itElements++)
+    {
+        itElements->second->SetNodePtrAfterSerialization(mNodeMapOldNewPtr);
+    }
+
+    // update the nonlocal elements in elementData
+    for(boost::ptr_map<int, ElementBase>::iterator itElements = mElementMap.begin(); itElements!=mElementMap.end(); itElements++)
+    {
+        itElements->second->GetDataPtr()->SetElementPtrAfterSerialization(mElementMapOldNewPtr);
+    }
+
+    // exchange node pointer in constraints
+    for (boost::ptr_map<int,ConstraintBase>::iterator itConstraints=mConstraintMap.begin(); itConstraints!=mConstraintMap.end(); itConstraints++)
+    {
+        // cast the adress to a NodeBase-Pointer
+        itConstraints->second->SetNodePtrAfterSerialization(mNodeMapOldNewPtr);
+    }
+
+    // exchange node pointer in loads
+    for (boost::ptr_map<int,LoadBase>::iterator itLoads=mLoadMap.begin(); itLoads!=mLoadMap.end(); itLoads++)
+    {
+        // cast the adress to a NodeBase-Pointer
+        itLoads->second->SetNodePtrAfterSerialization(mNodeMapOldNewPtr);
+    }
+
+    // exchange element pointer in loads
+    for (boost::ptr_map<int,LoadBase>::iterator itLoads=mLoadMap.begin(); itLoads!=mLoadMap.end(); itLoads++)
+    {
+        // cast the adress to a NodeBase-Pointer
+        itLoads->second->SetElementPtrAfterSerialization(mElementMapOldNewPtr);
+    }
+
+    /** GROUPS **/
+    // exchange node AND element pointer in groups
+    std::map<std::uintptr_t, std::uintptr_t> mNodeAndElementMapOldNewPtr(mNodeMapOldNewPtr);
+    mNodeAndElementMapOldNewPtr.insert(mElementMapOldNewPtr.begin(), mElementMapOldNewPtr.end());
+    for (boost::ptr_map<int,GroupBase>::iterator itGroups=mGroupMap.begin(); itGroups!=mGroupMap.end(); itGroups++)
+    {
+        // cast the adress to a NodeBase-Pointer
+        itGroups->second->SetNodePtrAfterSerialization(mNodeAndElementMapOldNewPtr);
+    }
+}
+
 //! @brief ... restore the object from a file
 //! @param filename ... filename
 //! @param aType ... type of file, either BINARY, XML or TEXT
@@ -195,7 +285,6 @@ void NuTo::Structure::Restore (const std::string &filename, std::string rType )
         {
             throw MechanicsException("[NuTo::Structure::Restore] Error opening file.");
         }
-
         std::string typeIdString;
         if (rType=="BINARY")
         {
@@ -206,6 +295,8 @@ void NuTo::Structure::Restore (const std::string &filename, std::string rType )
                 throw MechanicsException ( "[NuTo::Structure::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
             }
             oba & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+
+            loadImplement(oba, false);
         }
         else if (rType=="XML")
         {
@@ -216,6 +307,8 @@ void NuTo::Structure::Restore (const std::string &filename, std::string rType )
                 throw MechanicsException ( "[NuTo::Structure::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
             }
             oxa & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+
+            loadImplement(oxa, false);
         }
         else if (rType=="TEXT")
         {
@@ -226,6 +319,8 @@ void NuTo::Structure::Restore (const std::string &filename, std::string rType )
                 throw MechanicsException ( "[NuTo::Structure::Restore] Data type of object in file ("+typeIdString+") is not identical to data type of object to read ("+this->GetTypeId() +")." );
             }
             ota & boost::serialization::make_nvp(typeIdString.c_str(), *this);
+
+            loadImplement(ota, false);
         }
         else
         {

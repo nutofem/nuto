@@ -28,11 +28,19 @@ public:
     IntegrationType2D3NGauss12IpDetail();
 
 #ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
+    //! @brief save (serializes) the class
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
+    void save(Archive & ar, const unsigned int version) const;
+
+    //! @brief load (deserializes) the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void load(Archive & ar, const unsigned int version);
+
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 #endif // ENABLE_SERIALIZATION
 
     //! @brief returns the local coordinates of an integration point

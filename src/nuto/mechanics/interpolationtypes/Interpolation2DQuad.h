@@ -31,6 +31,9 @@ namespace NuTo
 **/
 class Interpolation2DQuad: public Interpolation2D
 {
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif  // ENABLE_SERIALIZATION
 public:
     Interpolation2DQuad(const StructureBase* rStructure, Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
 
@@ -73,11 +76,26 @@ public:
         return 4;
     }
 
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+#endif  // ENABLE_SERIALIZATION
+
 private:
     //! @brief return the number node depending the shape and the order
     int CalculateNumNodes() const override;
+
+    //! @brief just for serialization
+    Interpolation2DQuad(){}
 };
 
 } /* namespace NuTo */
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::Interpolation2DQuad)
+#endif
 
 #endif /* INTERPOLATION2DQUAD_H_ */

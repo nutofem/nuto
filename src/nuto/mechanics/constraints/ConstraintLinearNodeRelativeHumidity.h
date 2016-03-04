@@ -9,8 +9,12 @@ namespace NuTo
 
 class ConstraintLinearNodeRelativeHumidity : public ConstraintLinear, public ConstraintNode
 {
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif  // ENABLE_SERIALIZATION
 public:
                                 ConstraintLinearNodeRelativeHumidity            (const NodeBase* rNode, double rValue);
+
 
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)
@@ -39,7 +43,23 @@ public:
     //! @param rVerboseLevel ... verbosity of the information
     virtual void                Info                                            (unsigned short rVerboseLevel) const override;
 
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+
+    //! @brief NodeBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Adress (uintptr_t)
+    //! Deserialization of the NodeBase-Pointer is done by searching and casting back the adress in the map
+    //! @param mNodeMapCast std::map containing the old and new adresses
+    virtual void SetNodePtrAfterSerialization(const std::map<uintptr_t, uintptr_t>& mNodeMapCast) override;
+#endif // ENABLE_SERIALIZATION
+
 protected:
+    //! @brief ... just for serialize
+                                ConstraintLinearNodeRelativeHumidity()                                                 {}
+
     double mRHS = 0.0;
 
 };

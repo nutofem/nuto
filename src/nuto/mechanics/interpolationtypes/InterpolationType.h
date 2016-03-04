@@ -8,6 +8,9 @@
 #ifndef INTERPOLATIONTYPE_H_
 #define INTERPOLATIONTYPE_H_
 
+#ifdef ENABLE_SERIALIZATION
+#include <boost/serialization/access.hpp>
+#endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
@@ -25,10 +28,15 @@ class InterpolationBase;
 
 class InterpolationType
 {
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif  // ENABLE_SERIALIZATION
+
 public:
-
-
     InterpolationType(const StructureBase* rStructure, NuTo::Interpolation::eShapeType rShapeType);
+
+    //! @brief standard constructor for serialization (const member is set to SPRING)
+    InterpolationType():mShapeType(NuTo::Interpolation::eShapeType::SPRING) {}
 
     virtual ~InterpolationType();
 
@@ -119,6 +127,14 @@ public:
     void PrintNodeCoordinates() const;
     const Eigen::MatrixX2i& GetNodeRenumberingIndices() const;
 
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+#endif  // ENABLE_SERIALIZATION
+
 private:
 
     //! @brief returns a nonconst reference to the object, stress that with the name
@@ -173,5 +189,9 @@ private:
 };
 
 } /* namespace NuTo */
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::InterpolationType)
+#endif
 
 #endif /* INTERPOLATIONTYPE_H_ */

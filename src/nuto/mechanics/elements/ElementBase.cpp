@@ -121,10 +121,10 @@ void NuTo::ElementBase::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ElementBase " << std::endl;
 #endif
+    ar & boost::serialization::make_nvp ("mStructure", const_cast<StructureBase*&>(mStructure));
+    ar & boost::serialization::make_nvp ("mInterpolationType", const_cast<InterpolationType*&>(mInterpolationType));
+    ar & boost::serialization::make_nvp ("mElementData", mElementData);
 
-    ar & boost::serialization::make_nvp ("ElementBase_mStructure", const_cast<StructureBase*&>(mStructure));
-//    ar & BOOST_SERIALIZATION_NVP(const_cast<StructureBase*&>(mStructure));
-//    ar & BOOST_SERIALIZATION_NVP(mStructure);
     // the element data has to be saved on the main structure due to problems with a recursion on the stack (nonlocal data contains ptr to elements)
     // the idea is to first serialize all the elements in the table, and afterwards update the pointers of the element data in the element data routine
 #ifdef DEBUG_SERIALIZATION
@@ -1394,7 +1394,7 @@ const std::vector<double>& NuTo::ElementBase::GetNonlocalWeights(int rIp, int rN
 }
 
 //! @brief returns a vector of the nonlocal elements
-//! @retrun nonlocal elements
+//! @return nonlocal elements
 const std::vector<const NuTo::ElementBase*>& NuTo::ElementBase::GetNonlocalElements() const
 {
     return this->mElementData->GetNonlocalElements();
@@ -1408,7 +1408,7 @@ void NuTo::ElementBase::DeleteNonlocalElements()
 
 //! @brief returns a vector of the nonlocal elements
 //! @param rConstitutive constitutive model for the nonlocale elements
-//! @retrun nonlocal elements
+//! @return nonlocal elements
 int NuTo::ElementBase::GetNumNonlocalElements() const
 {
     return this->mElementData->GetNumNonlocalElements();

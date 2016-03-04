@@ -82,4 +82,9 @@ void NuTo::ConstraintLinearNodeRotations2D::serialize(Archive & ar, const unsign
 #endif
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintLinearNodeRotations2D)
+
+void NuTo::ConstraintLinearNodeRotations2D::SetNodePtrAfterSerialization(const std::map<uintptr_t, uintptr_t>& mNodeMapCast)
+{
+    NuTo::ConstraintNode::SetNodePtrAfterSerialization(mNodeMapCast);
+}
 #endif // ENABLE_SERIALIZATION

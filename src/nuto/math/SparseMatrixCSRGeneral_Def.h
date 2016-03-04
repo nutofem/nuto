@@ -170,8 +170,14 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "start serialize SparseMatrixCSRGeneral \n";
+#endif
     	ar & boost::serialization::make_nvp("SparseMatrixCSRGeneral",boost::serialization::base_object< SparseMatrixCSR<T> >(*this));
     	ar & BOOST_SERIALIZATION_NVP(mNumColumns);
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "finish serialize SparseMatrixCSRGeneral \n";
+#endif
     }
 
     //! @brief ... save the object to a file

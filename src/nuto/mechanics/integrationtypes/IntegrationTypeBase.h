@@ -42,7 +42,16 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version){}
+    void serialize(Archive & ar, const unsigned int version)
+    {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize IntegrationTypeBase" << std::endl;
+#endif
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize IntegrationTypeBase" << std::endl;
+#endif
+
+    }
 #endif // ENABLE_SERIALIZATION
 
     //! @brief returns the dimension of the integration type

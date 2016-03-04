@@ -42,10 +42,21 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-//        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase);
         ar & boost::serialization::make_nvp("LoadNode_LoadBase", boost::serialization::base_object<LoadBase >(*this));
-//        ar & BOOST_SERIALIZATION_NVP(const_cast<NodeBase*&>(mNode));
-        ar & boost::serialization::make_nvp ("LoadNode_mNode", const_cast<NodeBase*&>(mNode));
+        std::uintptr_t& temp = reinterpret_cast<std::uintptr_t&>(mNode);
+        ar & boost::serialization::make_nvp("mNode", temp);
+    }
+
+    void SetNodePtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mNodeMapCast) override
+    {
+        std::map<std::uintptr_t, std::uintptr_t>::const_iterator it = mNodeMapCast.find(reinterpret_cast<std::uintptr_t>(mNode));
+        if (it!=mNodeMapCast.end())
+        {
+            NodeBase** temp = const_cast<NodeBase**>(&mNode);
+            *temp = reinterpret_cast<NodeBase*>(it->second);
+        }
+        else
+            throw MechanicsException("[NuTo::LoadBase::LoadNode] The NodeBase-Pointer could not be updated.");
     }
 #endif // ENABLE_SERIALIZATION
 

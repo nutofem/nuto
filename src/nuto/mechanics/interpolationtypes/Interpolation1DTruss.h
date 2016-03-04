@@ -23,7 +23,14 @@ namespace NuTo
 **/
 class Interpolation1DTruss: public Interpolation1D
 {
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif  // ENABLE_SERIALIZATION
+
 public:
+
+    //! @brief default constructor for serialization
+    Interpolation1DTruss(){}
 
     Interpolation1DTruss(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
 
@@ -65,6 +72,13 @@ public:
     {
         return 2;
     }
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+#endif  // ENABLE_SERIALIZATION
 
 private:
 
@@ -74,5 +88,14 @@ private:
 };
 
 } /* namespace NuTo */
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::Interpolation1DTruss)
+namespace boost
+{
+template<>
+struct is_virtual_base_of<NuTo::Interpolation1D, NuTo::Interpolation1DTruss>: public mpl::true_ {};
+}
+#endif
 
 #endif /* INTERPOLATION1DTRUSS_H_ */

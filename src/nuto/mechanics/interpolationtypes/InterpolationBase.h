@@ -31,10 +31,17 @@ class IntegrationTypeBase;
 class InterpolationBase
 {
 friend class InterpolationType;
+
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif
+
 public:
     InterpolationBase(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
 
-    virtual ~InterpolationBase() {};
+    InterpolationBase();
+
+    virtual ~InterpolationBase() {}
 
     const NuTo::Interpolation::eTypeOrder GetTypeOrder() const;
 
@@ -132,6 +139,26 @@ public:
     //! @brief return the number of dofs per node depending on dimension
     virtual int GetNumDofsPerNode() const = 0;
 
+#ifdef ENABLE_SERIALIZATION
+//    //! @brief serializes the class, this is the load routine
+//    //! @param ar         archive
+//    //! @param version    version
+//    template<class Archive>
+//    void load(Archive & ar, const unsigned int version);
+
+//    //! @brief serializes the class, this is the save routine
+//    //! @param ar         archive
+//    //! @param version    version
+//    template<class Archive>
+//    void save(Archive & ar, const unsigned int version) const;
+
+//    BOOST_SERIALIZATION_SPLIT_MEMBER()
+
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+
+#endif  // ENABLE_SERIALIZATION
+
 protected:
 
     //! @brief returns the natural coordinates of the nodes that span the surface
@@ -179,12 +206,11 @@ protected:
 
     //! @brief StructureBase pointer
     const StructureBase* mStructure;
-
-
 };
-
-
-
 } /* namespace NuTo */
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::InterpolationBase)
+#endif
 
 #endif /* INTERPOLATIONBASE_H_ */

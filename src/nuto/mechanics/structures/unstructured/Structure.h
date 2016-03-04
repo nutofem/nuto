@@ -60,11 +60,17 @@ public:
     template<class Archive>
     void load(Archive & ar, const unsigned int version);
 
+    template<class Archive>
+    void loadImplement(Archive & ar, bool light);
+
     //! @brief serializes the class, this is the save routine
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
     void save(Archive & ar, const unsigned int version) const;
+
+    template<class Archive>
+    void saveImplement(Archive & ar, bool light) const;
 
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 
@@ -73,7 +79,7 @@ public:
     //! @brief ... save the object to a file
     //! @param filename ... filename
     //! @param aType ... type of file, either BINARY, XML or TEXT
-    void Save (const std::string &filename, std::string rType )const;
+    void Save (const std::string &filename, std::string rType ) const;
 
     //! @brief ... restore the object from a file
     //! @param filename ... filename

@@ -4,8 +4,6 @@
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 
 
-
-
 NuTo::ConstraintLinearNodeRelativeHumidity::ConstraintLinearNodeRelativeHumidity(const NodeBase* rNode, double rValue)
     :   ConstraintLinear(),
 		ConstraintNode(rNode),
@@ -73,3 +71,27 @@ void NuTo::ConstraintLinearNodeRelativeHumidity::Info(unsigned short rVerboseLev
 {
     throw MechanicsException("[NuTo::ConstraintLinearNodeRelativeHumidity::Info] to be implemented.");
 }
+
+#ifdef ENABLE_SERIALIZATION
+// serialize
+template<class Archive>
+void NuTo::ConstraintLinearNodeRelativeHumidity::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize ConstraintLinearNodeDisplacements1D" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNode);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear);
+    ar & BOOST_SERIALIZATION_NVP(mRHS);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize ConstraintLinearNodeDisplacements1D" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintLinearNodeRelativeHumidity)
+
+void NuTo::ConstraintLinearNodeRelativeHumidity::SetNodePtrAfterSerialization(const std::map<uintptr_t, uintptr_t>& mNodeMapCast)
+{
+    NuTo::ConstraintNode::SetNodePtrAfterSerialization(mNodeMapCast);
+}
+
+#endif // ENABLE_SERIALIZATION

@@ -6,6 +6,7 @@
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
+#include <map>
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/math/FullMatrix_Def.h"
@@ -88,7 +89,7 @@ public:
 
     //! @brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
     //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
-    virtual void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr){};
+    virtual void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr){}
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
@@ -100,6 +101,25 @@ public:
     //! @param version    version
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
+
+    //! @brief NodeBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Adress (uintptr_t)
+    //! Deserialization of the NodeBase-Pointer is done by searching and casting back the adress in the map
+    //! @param mNodeMapCast   std::map containing the old and new adresses
+    virtual void SetNodePtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mNodeMapCast)
+    {
+        (void)mNodeMapCast;
+        /* Do nothing until needed, see e.g. ConstraintNode-class*/
+    }
+
+    //! @brief ElementBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Adress (uintptr_t)
+    //! Deserialization of the ElementBase-Pointer is done by searching and casting back the adress in the map
+    //! @param mNodeMapCast std::map containing the old and new adresses
+    virtual void SetElementPtrAfterSerialization(const std::map<uintptr_t, uintptr_t>& mElementMapCast)
+    {
+        (void)mElementMapCast;
+        /* Do nothing until needed, see e.g. ConstraintLinearDerivativeNonlocalTotalStrain1D-class*/
+    }
+
 #endif // ENABLE_SERIALIZATION
 
 

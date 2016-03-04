@@ -43,7 +43,14 @@ public:
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
+    void load(Archive & ar, const unsigned int version);
+
+    template<class Archive>
+    void save(Archive & ar, const unsigned int version) const;
+
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
+
+    virtual void SetElementPtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mElementMapCast) override;
 #endif  // ENABLE_SERIALIZATION
 
 protected:

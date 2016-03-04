@@ -57,11 +57,16 @@ public:
     //! @param version    version
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
+
+    //! @brief ElementBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Adress (uintptr_t)
+    //! Deserialization of the ElementBase-Pointer is done by searching and casting back the adress in the map
+    //! @param mNodeMapCast std::map containing the old and new adresses
+    virtual void SetElementPtrAfterSerialization(const std::map<uintptr_t, uintptr_t>& mElementMapCast) override;
 #endif // ENABLE_SERIALIZATION
 
 protected:
     //! @brief ... just for serialize
-    ConstraintLinearDerivativeNonlocalTotalStrain1D(){};
+    ConstraintLinearDerivativeNonlocalTotalStrain1D(){}
 
     //! @brief parent element
     const ElementBase* mParentElement;

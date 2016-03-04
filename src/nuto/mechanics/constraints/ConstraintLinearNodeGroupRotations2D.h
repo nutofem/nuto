@@ -63,7 +63,7 @@ public:
 
 protected:
     //! @brief ... just for serialize
-    ConstraintLinearNodeGroupRotations2D(){};
+    ConstraintLinearNodeGroupRotations2D(){}
 
     double mRHS;
 };

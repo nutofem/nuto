@@ -5,6 +5,18 @@
  *      Author: ttitsche
  */
 
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/ptr_container/serialize_ptr_map.hpp>
+#include <boost/serialization/set.hpp>
+#include "nuto/math/EigenBoostSerialization.h"
+#endif
+
 #include "nuto/mechanics/interpolationtypes/InterpolationType.h"
 
 #include "nuto/mechanics/interpolationtypes/Interpolation2DTriangle.h"
@@ -26,7 +38,6 @@ NuTo::InterpolationType::InterpolationType(const StructureBase* rStructure, NuTo
 NuTo::InterpolationType::~InterpolationType()
 {
 }
-
 const NuTo::InterpolationBase& NuTo::InterpolationType::Get(const Node::eAttributes& rDofType) const
 {
     try
@@ -452,3 +463,34 @@ void NuTo::InterpolationType::UpdateNodeRenumberingIndices()
         }
     }
 }
+
+#ifdef ENABLE_SERIALIZATION
+template void NuTo::InterpolationType::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::InterpolationType::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::InterpolationType::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::InterpolationType::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::InterpolationType::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template void NuTo::InterpolationType::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::InterpolationType::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize InterpolationType" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_NVP(mInterpolations);
+    ar & boost::serialization::make_nvp("mShapeType", const_cast<NuTo::Interpolation::eShapeType&>(mShapeType));
+    ar & BOOST_SERIALIZATION_NVP(mDofs);
+    ar & BOOST_SERIALIZATION_NVP(mActiveDofs);
+    ar & BOOST_SERIALIZATION_NVP(mNumDofs);
+    ar & BOOST_SERIALIZATION_NVP(mNumActiveDofs);
+    ar & BOOST_SERIALIZATION_NVP(mNodeDofs);
+    ar & BOOST_SERIALIZATION_NVP(mNodeCoordinates);
+    ar & boost::serialization::make_nvp("mIntegrationType", const_cast<NuTo::IntegrationTypeBase*&>(mIntegrationType));
+    ar & BOOST_SERIALIZATION_NVP(mNodeRenumberingIndices);
+    ar & boost::serialization::make_nvp("mStructure", const_cast<NuTo::StructureBase*&>(mStructure));
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize InterpolationType" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::InterpolationType)
+#endif

@@ -446,6 +446,15 @@ public:
     //! @param version    version
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
+
+    //! @brief NodeBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Adress (uintptr_t)
+    //! Deserialization of the NodeBase-Pointer is done by searching and casting back the adress in the map
+    //! @param mNodeMapCast   std::map containing the old and new adresses
+    virtual void SetNodePtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mNodeMapCast)
+    {
+        (void)mNodeMapCast;
+        /* Do nothing until needed, see e.g. ConstraintNode-class*/
+    }
 #endif  // ENABLE_SERIALIZATION
 
 #ifdef ENABLE_VISUALIZE

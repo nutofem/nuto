@@ -150,3 +150,18 @@ int NuTo::Interpolation1DTruss::CalculateNumNodes() const
     }
 
 }
+
+#ifdef ENABLE_SERIALIZATION
+template<class Archive>
+void NuTo::Interpolation1DTruss::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize Interpolation1D" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Interpolation1D);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize Interpolation1D" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Interpolation1DTruss)
+#endif  // ENABLE_SERIALIZATION

@@ -143,13 +143,30 @@ void NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D::serialize(Archive & 
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ConstraintLinearDerivativeNonlocalTotalStrain1D" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
-       & BOOST_SERIALIZATION_NVP(mParentElement)
-       & BOOST_SERIALIZATION_NVP(mLocalIpCoordinate);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear);
+
+    std::uintptr_t& temp = reinterpret_cast<std::uintptr_t&>(mParentElement);
+    ar & boost::serialization::make_nvp("mParentElement", temp);
+
+    ar & BOOST_SERIALIZATION_NVP(mLocalIpCoordinate);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearDerivativeNonlocalTotalStrain1D" << std::endl;
 #endif
 }
+
+void NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D::SetElementPtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mElementMapCast)
+{
+    std::map<std::uintptr_t, std::uintptr_t>::const_iterator it = mElementMapCast.find(reinterpret_cast<std::uintptr_t>(mParentElement));
+    if (it!=mElementMapCast.end())
+    {
+        ElementBase** temp = const_cast<ElementBase**>(&mParentElement);
+        *temp = reinterpret_cast<ElementBase*>(it->second);
+    }
+    else
+        throw MechanicsException("[NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D] The ElementBase-Pointer could not be updated.");
+}
+
+
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D)
 #endif // ENABLE_SERIALIZATION

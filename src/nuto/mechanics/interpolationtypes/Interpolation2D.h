@@ -15,7 +15,14 @@ namespace NuTo
 
 class Interpolation2D: public InterpolationBase
 {
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif  // ENABLE_SERIALIZATION
+
 public:
+    //! @brief just for serialization
+    Interpolation2D(){}
+
     Interpolation2D(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
 
     //! @brief returns the natural coordinates of the nodes that span the surface
@@ -26,8 +33,20 @@ public:
     //! @brief return the number of dofs per node depending on dimension
     int GetNumDofsPerNode() const override;
 
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+#endif  // ENABLE_SERIALIZATION
+
 };
 
 } /* namespace NuTo */
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::Interpolation2D)
+#endif
 
 #endif /*INTERPOLATION2D_H_ */

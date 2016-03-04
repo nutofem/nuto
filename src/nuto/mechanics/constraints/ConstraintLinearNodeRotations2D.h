@@ -43,6 +43,14 @@ public:
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
     void GetRHS(int& curConstraintEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const;
 
+    //! @brief returns the node ptr in the full data set (elements, groups, loads, constraints etc.)
+    //! this routine is used, if e.g. for the deserialization the pointers needs to be updated, since this pointer are not serialized
+    virtual void SetNodePtr(NodeBase* rNode)
+    {
+        NodeBase** temp = const_cast<NodeBase**>(&mNode);
+        *temp = rNode;
+    }
+
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
     void Info(unsigned short rVerboseLevel) const
@@ -56,11 +64,16 @@ public:
     //! @param version    version
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
+
+    //! @brief NodeBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Adress (uintptr_t)
+    //! Deserialization of the NodeBase-Pointer is done by searching and casting back the adress in the map
+    //! @param mNodeMapCast std::map containing the old and new adresses
+    virtual void SetNodePtrAfterSerialization(const std::map<uintptr_t, uintptr_t>& mNodeMapCast) override;
 #endif // ENABLE_SERIALIZATION
 
 protected:
     //! @brief just for serialization
-    ConstraintLinearNodeRotations2D(){};
+    ConstraintLinearNodeRotations2D(){}
 
     double mRHS;
 };

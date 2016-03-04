@@ -87,3 +87,8 @@ void NuTo::IntegrationType1D2NLobatto4Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(3);
 }
 #endif // ENABLE_VISUALIZE
+
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::IntegrationType1D2NLobatto4Ip)
+#endif

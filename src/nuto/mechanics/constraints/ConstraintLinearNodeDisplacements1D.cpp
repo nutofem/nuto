@@ -1,14 +1,4 @@
 // $Id$
-
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif  // ENABLE_SERIALIZATION
-
 #include <iostream>
 
 #include "nuto/mechanics/MechanicsException.h"
@@ -85,26 +75,25 @@ void NuTo::ConstraintLinearNodeDisplacements1D::GetRHS(int& curConstraintEquatio
 
 #ifdef ENABLE_SERIALIZATION
 // serialize
-template void NuTo::ConstraintLinearNodeDisplacements1D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::ConstraintLinearNodeDisplacements1D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::ConstraintLinearNodeDisplacements1D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::ConstraintLinearNodeDisplacements1D::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::ConstraintLinearNodeDisplacements1D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::ConstraintLinearNodeDisplacements1D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
 void NuTo::ConstraintLinearNodeDisplacements1D::serialize(Archive & ar, const unsigned int version)
 {
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ConstraintLinearNodeDisplacements1D" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNode)
-       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
-       & BOOST_SERIALIZATION_NVP(mRHS)
-       & BOOST_SERIALIZATION_NVP(mDirection);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintNode);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear);
+    ar & BOOST_SERIALIZATION_NVP(mRHS);
+    ar & BOOST_SERIALIZATION_NVP(mDirection);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearNodeDisplacements1D" << std::endl;
 #endif
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintLinearNodeDisplacements1D)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstraintLinearNodeDisplacements1D)
+
+void NuTo::ConstraintLinearNodeDisplacements1D::SetNodePtrAfterSerialization(const std::map<uintptr_t, uintptr_t>& mNodeMapCast)
+{
+    NuTo::ConstraintNode::SetNodePtrAfterSerialization(mNodeMapCast);
+}
+
 #endif // ENABLE_SERIALIZATION

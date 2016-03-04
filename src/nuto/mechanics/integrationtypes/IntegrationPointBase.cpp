@@ -74,12 +74,12 @@ template<class Archive> void NuTo::IntegrationPointBase::serialize(Archive & ar,
     std::cout << "start serialize NodeBase" << std::endl;
 #endif
     ar & BOOST_SERIALIZATION_NVP(mWeight);
-    ar & boost::serialization::make_array(mCoords.data(), mCoords.size());
+    ar & BOOST_SERIALIZATION_NVP(mCoords);
 #ifdef ENABLE_VISUALIZE
     ar & BOOST_SERIALIZATION_NVP(mNumVisualizationPoints);
     ar & BOOST_SERIALIZATION_NVP(mVisualizationCellType);
-    ar & boost::serialization::make_array(mVisualizationPointLocalCoordinates.data(), mVisualizationPointLocalCoordinates.size());
-    ar & boost::serialization::make_array(mVisualizationCellsIncidence.data(), mVisualizationCellsIncidence.size());
+    ar & BOOST_SERIALIZATION_NVP(mVisualizationPointLocalCoordinates);
+    ar & BOOST_SERIALIZATION_NVP(mVisualizationCellsIncidence);
 #endif // ENABLE_VISUALIZE
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize NodeBase" << std::endl;

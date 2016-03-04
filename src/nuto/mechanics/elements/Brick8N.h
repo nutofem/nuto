@@ -35,8 +35,12 @@ public:
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
-    template<class Archive> void serialize(Archive & ar,
-                                           const unsigned int version);
+    template<class Archive> void serialize(Archive & ar, const unsigned int version);
+
+    //! @brief NodeBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Adress (uintptr_t)
+    //! Deserialization of the NodeBase-Pointer is done by searching and casting back the adress in the map
+    //! @param mNodeMapCast   std::map containing the old and new adresses
+    void SetNodePtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mNodeMapCast) override;
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief returns the enum (type of the element)

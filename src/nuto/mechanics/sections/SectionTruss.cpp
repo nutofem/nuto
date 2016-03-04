@@ -93,5 +93,26 @@ const NuTo::SectionTruss* NuTo::SectionTruss::AsSectionTruss() const
 }
 
 #ifdef ENABLE_SERIALIZATION
+template<class Archive>
+void NuTo::SectionTruss::load(Archive & ar, const unsigned int version)
+{
+    int size = 0;
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(SectionBase);
+    ar & BOOST_SERIALIZATION_NVP(mArea);
+    ar & BOOST_SERIALIZATION_NVP(size);
+    mAreaParameters.resize(size);
+    ar & boost::serialization::make_nvp("mAreaParameters", boost::serialization::make_array(mAreaParameters.data(), size));
+}
+
+template<class Archive>
+void NuTo::SectionTruss::save(Archive & ar, const unsigned int version)const
+{
+    int size = 0;
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(SectionBase);
+    ar & BOOST_SERIALIZATION_NVP(mArea);
+    size = mAreaParameters.size();
+    ar & BOOST_SERIALIZATION_NVP(size);
+    ar & boost::serialization::make_nvp("mAreaParameters", boost::serialization::make_array(mAreaParameters.data(), size));
+}
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::SectionTruss)
 #endif // ENABLE_SERIALIZATION

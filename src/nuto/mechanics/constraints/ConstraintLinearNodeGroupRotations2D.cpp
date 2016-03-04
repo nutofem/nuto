@@ -1,12 +1,4 @@
 // $Id: ConstraintLinearNodeGroupRotations2D.cpp 530 2011-04-22 16:50:18Z unger3 $
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif  // ENABLE_SERIALIZATION
 
 #include <iostream>
 
@@ -73,12 +65,6 @@ void NuTo::ConstraintLinearNodeGroupRotations2D::GetRHS(int& curConstraintEquati
 
 #ifdef ENABLE_SERIALIZATION
 // serialize
-template void NuTo::ConstraintLinearNodeGroupRotations2D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::ConstraintLinearNodeGroupRotations2D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::ConstraintLinearNodeGroupRotations2D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::ConstraintLinearNodeGroupRotations2D::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::ConstraintLinearNodeGroupRotations2D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::ConstraintLinearNodeGroupRotations2D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
 void NuTo::ConstraintLinearNodeGroupRotations2D::serialize(Archive & ar, const unsigned int version)
 {

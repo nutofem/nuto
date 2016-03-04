@@ -68,7 +68,7 @@ protected:
 
     double mRHS;
     //! @brief ... just for serialize
-    ConstraintLinearNodeGroupDisplacements1D(){};
+    ConstraintLinearNodeGroupDisplacements1D(){}
 };
 }//namespace NuTo
 #ifdef ENABLE_SERIALIZATION

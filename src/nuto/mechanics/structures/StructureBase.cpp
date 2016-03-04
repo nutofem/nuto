@@ -225,6 +225,7 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_NVP(mNumProcessors);
 #endif // _OPENMP
     ar & BOOST_SERIALIZATION_NVP(mLogger);
+    ar & boost::serialization::make_nvp("mLogger", mLogger);
     ar & BOOST_SERIALIZATION_NVP(mHessianConstant);
 #ifdef DEBUG_SERIALIZATION
     mLogger << "finish serialization of structure base" << "\n";

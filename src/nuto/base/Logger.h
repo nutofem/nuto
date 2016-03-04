@@ -44,16 +44,16 @@ void load(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialization of Logger" << std::endl;
 #endif
-    bool wasOpen;
-    ar & BOOST_SERIALIZATION_NVP(mQuiet)
-       & BOOST_SERIALIZATION_NVP(mLogFileName)
-       & BOOST_SERIALIZATION_NVP(wasOpen);
+    bool wasOpen = false;
+    ar & BOOST_SERIALIZATION_NVP(mQuiet);
+    ar & BOOST_SERIALIZATION_NVP(mLogFileName);
+    ar & boost::serialization::make_nvp("isOpen", wasOpen);
     if (wasOpen)
     {
-    	//make sure it has been closed before, otherwise do nothing
-    	mLogFile.close();
+        //make sure it has been closed before, otherwise do nothing
+        mLogFile.close();
         mLogFile.clear();
-    	mLogFile.open(mLogFileName.c_str(),std::ios_base::app);
+        mLogFile.open(mLogFileName.c_str(),std::ios_base::app);
     }
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialization of Logger" << std::endl;
@@ -67,9 +67,9 @@ void save(Archive & ar, const unsigned int version)const
     std::cout << "start serialization of Logger" << std::endl;
 #endif
     bool isOpen(mLogFile.is_open());
-    ar & BOOST_SERIALIZATION_NVP(mQuiet)
-       & BOOST_SERIALIZATION_NVP(mLogFileName)
-       & BOOST_SERIALIZATION_NVP(isOpen);
+    ar & BOOST_SERIALIZATION_NVP(mQuiet);
+    ar & BOOST_SERIALIZATION_NVP(mLogFileName);
+    ar & boost::serialization::make_nvp("isOpen", isOpen);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialization of Logger" << std::endl;
 #endif

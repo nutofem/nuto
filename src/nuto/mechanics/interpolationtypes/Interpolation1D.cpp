@@ -42,3 +42,24 @@ int NuTo::Interpolation1D::GetNumDofsPerNode() const
     }
 }
 
+#ifdef ENABLE_SERIALIZATION
+template void NuTo::Interpolation1D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::Interpolation1D::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::Interpolation1D::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::Interpolation1D::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::Interpolation1D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template void NuTo::Interpolation1D::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::Interpolation1D::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize Interpolation1D" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(InterpolationBase);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize Interpolation1D" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Interpolation1D)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Interpolation1D)
+#endif  // ENABLE_SERIALIZATION

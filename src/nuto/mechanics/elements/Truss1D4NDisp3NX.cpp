@@ -234,8 +234,13 @@ void NuTo::Truss1D4NDisp3NX::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize Truss1D4NDisp3NX" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Truss1D)
-       & BOOST_SERIALIZATION_NVP(mNodes);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Truss1D);
+
+    for(int i = 0; i < 5; i++)
+    {
+        std::uintptr_t& temp = reinterpret_cast<std::uintptr_t&>(mNodes[i]);
+        ar & boost::serialization::make_nvp("mNode"+i, temp);
+    }
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize Truss1D4NDisp3NX" << std::endl;
 #endif

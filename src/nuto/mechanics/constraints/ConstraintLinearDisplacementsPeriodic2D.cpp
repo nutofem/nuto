@@ -1110,18 +1110,203 @@ template void NuTo::ConstraintLinearDisplacementsPeriodic2D::serialize(boost::ar
 template void NuTo::ConstraintLinearDisplacementsPeriodic2D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
 template void NuTo::ConstraintLinearDisplacementsPeriodic2D::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
-void NuTo::ConstraintLinearDisplacementsPeriodic2D::serialize(Archive & ar, const unsigned int version)
+void NuTo::ConstraintLinearDisplacementsPeriodic2D::save(Archive & ar, const unsigned int version) const
 {
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ConstraintLinearDisplacementsPeriodic2D" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintBase)
-       & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear)
-       & BOOST_SERIALIZATION_NVP(mAngle)
-       & BOOST_SERIALIZATION_NVP(mStrain);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintBase);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear);
+    ar & BOOST_SERIALIZATION_NVP(mAngle);
+    ar & BOOST_SERIALIZATION_NVP(mStrain);
+
+    std::uintptr_t mLeftUpperCornerAdress = reinterpret_cast<std::uintptr_t>(mLeftUpperCorner);
+    ar & boost::serialization::make_nvp("mNode", mLeftUpperCornerAdress);
+
+    std::uintptr_t mLeftLowerCornerAdress = reinterpret_cast<std::uintptr_t>(mLeftLowerCorner);
+    ar & boost::serialization::make_nvp("mNode", mLeftLowerCornerAdress);
+
+    std::uintptr_t mRightUpperCornerAdress = reinterpret_cast<std::uintptr_t>(mRightUpperCorner);
+    ar & boost::serialization::make_nvp("mNode", mRightUpperCornerAdress);
+
+    std::uintptr_t mRightLowerCornerAdress = reinterpret_cast<std::uintptr_t>(mRightLowerCorner);
+    ar & boost::serialization::make_nvp("mNode", mRightLowerCornerAdress);
+
+    std::vector<std::uintptr_t>  mSlaveNodesRightBoundaryAdress;
+    for(std::vector<NodeBase*>::const_iterator it = mSlaveNodesRightBoundary.begin(); it != mSlaveNodesRightBoundary.end(); it++)
+    {
+        mSlaveNodesRightBoundaryAdress.push_back(reinterpret_cast<std::uintptr_t>(*it));
+    }
+    ar & boost::serialization::make_nvp("mSlaveNodesRightBoundaryAdress", mSlaveNodesRightBoundaryAdress);
+
+    std::vector<std::uintptr_t>  mSlaveNodesTopBoundaryAdress;
+    for(std::vector<NodeBase*>::const_iterator it = mSlaveNodesTopBoundary.begin(); it != mSlaveNodesTopBoundary.end(); it++)
+    {
+        mSlaveNodesTopBoundaryAdress.push_back(reinterpret_cast<std::uintptr_t>(*it));
+    }
+    ar & boost::serialization::make_nvp("mSlaveNodesTopBoundaryAdress", mSlaveNodesTopBoundaryAdress);
+
+    std::vector<std::uintptr_t>  mMasterNodesLeftBoundaryAdress;
+    for(std::vector<NodeBase*>::const_iterator it = mMasterNodesLeftBoundary.begin(); it != mMasterNodesLeftBoundary.end(); it++)
+    {
+        mMasterNodesLeftBoundaryAdress.push_back(reinterpret_cast<std::uintptr_t>(*it));
+    }
+    ar & boost::serialization::make_nvp("mMasterNodesLeftBoundaryAdress", mMasterNodesLeftBoundaryAdress);
+
+    std::vector<std::uintptr_t>  mMasterNodesBottomBoundaryAdress;
+    for(std::vector<NodeBase*>::const_iterator it = mMasterNodesBottomBoundary.begin(); it != mMasterNodesBottomBoundary.end(); it++)
+    {
+        mMasterNodesBottomBoundaryAdress.push_back(reinterpret_cast<std::uintptr_t>(*it));
+    }
+    ar & boost::serialization::make_nvp("mMasterNodesBottomBoundaryAdress", mMasterNodesBottomBoundaryAdress);
+
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearDisplacementsPeriodic2D" << std::endl;
 #endif
 }
+template<class Archive>
+void NuTo::ConstraintLinearDisplacementsPeriodic2D::load(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize ConstraintLinearDisplacementsPeriodic2D" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintBase);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear);
+    ar & BOOST_SERIALIZATION_NVP(mAngle);
+    ar & BOOST_SERIALIZATION_NVP(mStrain);
+
+    std::uintptr_t& mLeftUpperCornerAdress = reinterpret_cast<std::uintptr_t&>(mLeftUpperCorner);
+    ar & boost::serialization::make_nvp("mNode", mLeftUpperCornerAdress);
+
+    std::uintptr_t& mLeftLowerCornerAdress = reinterpret_cast<std::uintptr_t&>(mLeftLowerCorner);
+    ar & boost::serialization::make_nvp("mNode", mLeftLowerCornerAdress);
+
+    std::uintptr_t& mRightUpperCornerAdress = reinterpret_cast<std::uintptr_t&>(mRightUpperCorner);
+    ar & boost::serialization::make_nvp("mNode", mRightUpperCornerAdress);
+
+    std::uintptr_t& mRightLowerCornerAdress = reinterpret_cast<std::uintptr_t&>(mRightLowerCorner);
+    ar & boost::serialization::make_nvp("mNode", mRightLowerCornerAdress);
+
+    std::vector<std::uintptr_t>  mSlaveNodesRightBoundaryAdress;
+    ar & boost::serialization::make_nvp("mSlaveNodesRightBoundaryAdress", mSlaveNodesRightBoundaryAdress);
+    for(std::vector<std::uintptr_t>::const_iterator it = mSlaveNodesRightBoundaryAdress.begin(); it != mSlaveNodesRightBoundaryAdress.end(); it++)
+    {
+        mSlaveNodesRightBoundary.push_back(reinterpret_cast<NodeBase*>(*it));
+    }
+
+    std::vector<std::uintptr_t>   mSlaveNodesTopBoundaryAdress;
+    ar & boost::serialization::make_nvp(" mSlaveNodesTopBoundaryAdress",  mSlaveNodesTopBoundaryAdress);
+    for(std::vector<std::uintptr_t>::const_iterator it =  mSlaveNodesTopBoundaryAdress.begin(); it !=  mSlaveNodesTopBoundaryAdress.end(); it++)
+    {
+         mSlaveNodesTopBoundary.push_back(reinterpret_cast<NodeBase*>(*it));
+    }
+
+    std::vector<std::uintptr_t>   mMasterNodesLeftBoundaryAdress;
+    ar & boost::serialization::make_nvp(" mMasterNodesLeftBoundaryAdress",  mMasterNodesLeftBoundaryAdress);
+    for(std::vector<std::uintptr_t>::const_iterator it =  mMasterNodesLeftBoundaryAdress.begin(); it !=  mMasterNodesLeftBoundaryAdress.end(); it++)
+    {
+         mMasterNodesLeftBoundary.push_back(reinterpret_cast<NodeBase*>(*it));
+    }
+
+    std::vector<std::uintptr_t>  mMasterNodesBottomBoundaryAdress;
+    ar & boost::serialization::make_nvp("mMasterNodesBottomBoundaryAdress", mMasterNodesBottomBoundaryAdress);
+    for(std::vector<std::uintptr_t>::const_iterator it = mMasterNodesBottomBoundaryAdress.begin(); it != mMasterNodesBottomBoundaryAdress.end(); it++)
+    {
+        mMasterNodesBottomBoundary.push_back(reinterpret_cast<NodeBase*>(*it));
+    }
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize ConstraintLinearDisplacementsPeriodic2D" << std::endl;
+#endif
+}
+
+void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetNodePtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mNodeMapCast)
+{
+    std::map<std::uintptr_t, std::uintptr_t>::const_iterator it = mNodeMapCast.find(reinterpret_cast<std::uintptr_t>(mLeftUpperCorner));
+    if (it!=mNodeMapCast.end())
+    {
+        NodeBase** temp = const_cast<NodeBase**>(&mLeftUpperCorner);
+        *temp = reinterpret_cast<NodeBase*>(it->second);
+    }
+    else
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D] The mLeftUpperCorner NodeBase-Pointer could not be updated.");
+
+    it = mNodeMapCast.find(reinterpret_cast<std::uintptr_t>(mLeftLowerCorner));
+    if (it!=mNodeMapCast.end())
+    {
+        NodeBase** temp = const_cast<NodeBase**>(&mLeftLowerCorner);
+        *temp = reinterpret_cast<NodeBase*>(it->second);
+    }
+    else
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D] The mLeftLowerCorner NodeBase-Pointer could not be updated.");
+
+    it = mNodeMapCast.find(reinterpret_cast<std::uintptr_t>(mRightUpperCorner));
+    if (it!=mNodeMapCast.end())
+    {
+        NodeBase** temp = const_cast<NodeBase**>(&mRightUpperCorner);
+        *temp = reinterpret_cast<NodeBase*>(it->second);
+    }
+    else
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D] The mRightUpperCorner NodeBase-Pointer could not be updated.");
+
+    it = mNodeMapCast.find(reinterpret_cast<std::uintptr_t>(mRightLowerCorner));
+    if (it!=mNodeMapCast.end())
+    {
+        NodeBase** temp = const_cast<NodeBase**>(&mRightLowerCorner);
+        *temp = reinterpret_cast<NodeBase*>(it->second);
+    }
+    else
+        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D] The mRightLowerCorner NodeBase-Pointer could not be updated.");
+
+    for(std::vector<NodeBase*>::iterator it = mSlaveNodesRightBoundary.begin(); it != mSlaveNodesRightBoundary.end(); it++)
+    {
+        std::map<std::uintptr_t, std::uintptr_t>::const_iterator itCast = mNodeMapCast.find(reinterpret_cast<std::uintptr_t>(*it));
+        if (itCast!=mNodeMapCast.end())
+        {
+            NodeBase** temp = const_cast<NodeBase**>(&(*it));
+            *temp = reinterpret_cast<NodeBase*>(itCast->second);
+        }
+        else
+            throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D] A NodeBase-Pointer in mSlaveNodesRightBoundary could not be updated.");
+    }
+
+    for(std::vector<NodeBase*>::iterator it = mSlaveNodesTopBoundary.begin(); it != mSlaveNodesTopBoundary.end(); it++)
+    {
+        std::map<std::uintptr_t, std::uintptr_t>::const_iterator itCast = mNodeMapCast.find(reinterpret_cast<std::uintptr_t>(*it));
+        if (itCast!=mNodeMapCast.end())
+        {
+            NodeBase** temp = const_cast<NodeBase**>(&(*it));
+            *temp = reinterpret_cast<NodeBase*>(itCast->second);
+        }
+        else
+            throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D] A NodeBase-Pointer in mSlaveNodesTopBoundary could not be updated.");
+    }
+
+    for(std::vector<NodeBase*>::iterator it = mMasterNodesLeftBoundary.begin(); it != mMasterNodesLeftBoundary.end(); it++)
+    {
+        std::map<std::uintptr_t, std::uintptr_t>::const_iterator itCast = mNodeMapCast.find(reinterpret_cast<std::uintptr_t>(*it));
+        if (itCast!=mNodeMapCast.end())
+        {
+            NodeBase** temp = const_cast<NodeBase**>(&(*it));
+            *temp = reinterpret_cast<NodeBase*>(itCast->second);
+        }
+        else
+            throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D] A NodeBase-Pointer in mMasterNodesLeftBoundary could not be updated.");
+    }
+
+    for(std::vector<NodeBase*>::iterator it = mMasterNodesBottomBoundary.begin(); it != mMasterNodesBottomBoundary.end(); it++)
+    {
+        std::map<std::uintptr_t, std::uintptr_t>::const_iterator itCast = mNodeMapCast.find(reinterpret_cast<std::uintptr_t>(*it));
+        if (itCast!=mNodeMapCast.end())
+        {
+            NodeBase** temp = const_cast<NodeBase**>(&(*it));
+            *temp = reinterpret_cast<NodeBase*>(itCast->second);
+        }
+        else
+            throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D] A NodeBase-Pointer in mMasterNodesBottomBoundary could not be updated.");
+    }
+
+}
+
+
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintLinearDisplacementsPeriodic2D)
 #endif // ENABLE_SERIALIZATION
