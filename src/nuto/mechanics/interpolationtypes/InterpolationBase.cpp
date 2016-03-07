@@ -36,7 +36,7 @@ NuTo::InterpolationBase::InterpolationBase(Node::eAttributes rDofType, NuTo::Int
 NuTo::InterpolationBase::InterpolationBase():
     mTypeOrder(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1),
     mDofType(NuTo::Node::eAttributes::COORDINATES),
-    mStructure(NULL)
+    mDimension(0)
 {
 }
 
@@ -249,7 +249,6 @@ void NuTo::InterpolationBase::serialize(Archive & ar, const unsigned int version
     ar & boost::serialization::make_nvp("mShapeFunctions", mShapeFunctions);
     ar & boost::serialization::make_nvp("mNodeCoordinates", mDerivativeShapeFunctionsNatural);
     ar & BOOST_SERIALIZATION_NVP(mUpdateRequired);
-    ar & boost::serialization::make_nvp("mStructure", const_cast<StructureBase*&>(mStructure));
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize InterpolationBase" << std::endl;
 #endif

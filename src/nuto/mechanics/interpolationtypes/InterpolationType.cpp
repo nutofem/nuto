@@ -519,7 +519,6 @@ void NuTo::InterpolationType::serialize(Archive & ar, const unsigned int version
     ar & BOOST_SERIALIZATION_NVP(mNodeCoordinates);
     ar & boost::serialization::make_nvp("mIntegrationType", const_cast<NuTo::IntegrationTypeBase*&>(mIntegrationType));
     ar & BOOST_SERIALIZATION_NVP(mNodeRenumberingIndices);
-    ar & boost::serialization::make_nvp("mStructure", const_cast<NuTo::StructureBase*&>(mStructure));
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize InterpolationType" << std::endl;
 #endif
