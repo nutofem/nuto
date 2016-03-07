@@ -32,7 +32,7 @@ class InterpolationBase
 {
 friend class InterpolationType;
 public:
-    InterpolationBase(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
+    InterpolationBase(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
 
     virtual ~InterpolationBase() {};
 
@@ -73,6 +73,15 @@ public:
     //! @param rNodeDofIndex ... node dof index
     int GetNodeIndex(int rNodeDofIndex) const;
 
+    //! @brief returns the total number of nodes on a surface
+    //! @param rSurface ... surface id
+    int GetNumSurfaceNodes(int rSurface) const;
+
+    //! @brief returns the node index of a specific DOF node on the surface
+    //! @param rSurface ... surface id
+    //! @param rNodeDofIndex ... node dof index
+    int GetSurfaceNodeIndex(int rSurface, int rNodeDofIndex) const;
+
     //! @brief returns the natural coordinates of the dof node
     //! @param rNodeIndex ... node index
     const Eigen::VectorXd& GetNaturalNodeCoordinates(int rNodeIndex) const;
@@ -80,6 +89,9 @@ public:
     //! @brief returns the natural coordinates of the dof node
     //! @param rNodeIndex ... node index
     virtual const Eigen::VectorXd CalculateNaturalNodeCoordinates(int rNodeIndex) const = 0;
+
+
+    void CalculateSurfaceNodeIds();
 
     //********************************************
     //       SHAPE FUNCTIONS
@@ -139,6 +151,11 @@ protected:
     //! @return ... natural surface edge coordinates
     virtual const std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const = 0;
 
+    //! @brief returns true if a node is on the surface
+    //! @param rSurface ... surface id
+    //! @param rNaturalNodeCoordinate ... natural coordinate of the node to test
+    bool NodeIsOnSurface(int rSurface, const Eigen::VectorXd& rNaturalNodeCoordinate) const;
+
     //! @brief calculate and store the shape functions and their derivatives
     //! @param rIntegrationType ... integration type
     void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType);
@@ -175,11 +192,13 @@ protected:
     std::vector<Eigen::VectorXd> mShapeFunctions;
     std::vector<Eigen::MatrixXd> mDerivativeShapeFunctionsNatural;
 
+    // members for each surface
+    std::vector<std::vector<int>> mSurfaceNodeIndices;
+
     bool mUpdateRequired;
 
-    //! @brief StructureBase pointer
-    const StructureBase* mStructure;
-
+    //! @brief dimension = Structure.GetDimension()
+    const int mDimension;
 
 };
 

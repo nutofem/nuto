@@ -55,7 +55,7 @@ namespace NuTo
 class Interpolation3DTetrahedron: public Interpolation3D
 {
 public:
-    Interpolation3DTetrahedron(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
+    Interpolation3DTetrahedron(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
 
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type

@@ -121,7 +121,7 @@ void NuTo::Structure::InterpolationTypeCreate(int rInterpolationTypeId, NuTo::In
     if (mInterpolationTypeMap.find(rInterpolationTypeId) != mInterpolationTypeMap.end())
         throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeCreate] Interpolation type already exists.");
 
-    mInterpolationTypeMap.insert(rInterpolationTypeId, new InterpolationType(this, rShape));
+    mInterpolationTypeMap.insert(rInterpolationTypeId, new InterpolationType(rShape, GetDimension()));
 
 }
 

@@ -70,7 +70,7 @@ namespace NuTo
 class Interpolation3DBrick: public Interpolation3D
 {
 public:
-    Interpolation3DBrick(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
+    Interpolation3DBrick(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
 
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type

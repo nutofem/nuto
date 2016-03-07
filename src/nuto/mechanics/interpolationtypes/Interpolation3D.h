@@ -16,7 +16,7 @@ namespace NuTo
 class Interpolation3D: public InterpolationBase
 {
 public:
-    Interpolation3D(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
+    Interpolation3D(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
 
     //! @brief return the number of dofs per node depending on dimension
     virtual int GetNumDofsPerNode() const override;
