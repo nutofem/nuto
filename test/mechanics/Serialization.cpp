@@ -6,10 +6,6 @@
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 
-#include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/nodes/NodeDof_Def.h"
-
-
 #include <eigen3/Eigen/Core>
 
 #include "nuto/math/FullMatrix.h"
@@ -502,40 +498,38 @@ void serialize1d()
         NuTo::IntegrationType1D2NLobatto3Ip Lobatto1D2N3Ip;
         for (int i = 0; i < 3; i++) Lobatto1D2N3Ip.GetLocalIntegrationPointCoordinates1D(i, nodeCoordinates(i));
         nodeCoordinates += ones;
-
         NuTo::Structure *myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, 2);
-        solve1d(myStructure);
 
-    //    std::ofstream outFileStream("StructureOut");
-    ////    boost::archive::text_oarchive outArchivetext(outFileStream);
-    //    boost::archive::xml_oarchive outArchivexml(outFileStream);
-    //    myStructure->save(outArchivexml, 1);
-    //    outFileStream.close();
-
+#ifdef ENABLE_SERIALIZATION
+//        std::ofstream outFileStream("StructureOut");
+//        boost::archive::xml_oarchive outArchivexml(outFileStream);
+//        myStructure->save(outArchivexml, 1);
+//        outFileStream.close();
         myStructure->Save("StructureOut", "XML");
+#endif
     }
 
 
 
+#ifdef ENABLE_SERIALIZATION
     {
-        std::cout << "\n\n\n\n\n*** Extracting a NuTo-Structure from StructureOut ***\n\n\n\n\n";
+        std::cout << "\n************************** Extracting a NuTo-Structure from StructureOut **************************\n";
         NuTo::Structure *myStructureImported = new NuTo::Structure(1);
-
     //    std::ifstream iFileStreamxml("StructureOut");
     //    boost::archive::xml_iarchive inArchivexml(iFileStreamxml);
     //    myStructureImported->load(inArchivexml, 1);
         myStructureImported->Restore("StructureOut", "XML");
         myStructureImported->GroupInfo(3);
-
         std::cout << "\n\n\n\n\n*** Solve extracted structure ***\n\n\n\n\n";
         solve1d(myStructureImported);
+#endif
     }
 }
 
 void serialize2d()
 {
-    int numElementsX = 1;
-    int numElementsY = 1;
+    int numElementsX = 10;
+    int numElementsY = 10;
     {
         //  3Nodes 2D
         NuTo::FullVector<double, Eigen::Dynamic> ones(3); ones.fill(1);
@@ -545,33 +539,31 @@ void serialize2d()
         nodeCoordinates.resize(3);
         for (int i = 0; i < 3; i++) Lobatto1D2N3Ip.GetLocalIntegrationPointCoordinates1D(i, nodeCoordinates(i));
         nodeCoordinates += ones;
-
         NuTo::Structure* myStructure2D = buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, numElementsX, numElementsY);
-//        solve2d(myStructure2D, numElementsX, numElementsY);
 
-
+#ifdef ENABLE_SERIALIZATION
 //        std::ofstream outFileStream("StructureOut2D");
 //        boost::archive::xml_oarchive outArchivexml(outFileStream);
 //        myStructure2D->save(outArchivexml, 1);
 //        outFileStream.close();
-
         myStructure2D->Save("StructureOut2D", "XML");
+#endif
     }
 
+#ifdef ENABLE_SERIALIZATION
     {
-        std::cout << "\n\n\n\n\n*** Extracting a NuTo-Structure from StructureOut2D ***\n\n\n\n\n";
+        std::cout << "\n************************** Extracting a NuTo-Structure from StructureOut2D **************************\n";
         NuTo::Structure *myStructureImported = new NuTo::Structure(2);
-
 //        std::ifstream iFileStreamxml("StructureOut2D");
 //        boost::archive::xml_iarchive inArchivexml(iFileStreamxml);
 //        myStructureImported->load(inArchivexml, 1);
-
         myStructureImported->Restore("StructureOut2D", "XML");
-//        myStructureImported->GroupInfo(3);
 
-        std::cout << "\n\n\n\n\n*** Solve extracted structure 2D***\n\n\n\n\n";
+        std::cout << "\n************************** Solve extracted structure 2D **************************\n";
         solve2d(myStructureImported,numElementsX,numElementsY);
     }
+#endif
+
 }
 
 int main(int argc, char* argv[])
@@ -579,7 +571,7 @@ int main(int argc, char* argv[])
     serialize1d();
     serialize2d();
 
-    return EXIT_FAILURE;
+    return EXIT_SUCCESS;
 }
 
 

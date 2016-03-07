@@ -6,6 +6,7 @@
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/serialization/split_member.hpp>
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/constraints/ConstraintEnum.h"
@@ -30,11 +31,45 @@ public:
     virtual ~ConstraintNode();
 
 #ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
+    //! @brief serializes (save) the class
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
+    void save(Archive & ar, const unsigned int version) const
+    {
+    #ifdef DEBUG_SERIALIZATION
+        std::cout << "start serialize ConstraintNode" << std::endl;
+    #endif
+    // The commented code gives warnings in release compile, so split of serialize in save and load
+    // needs to be done to avoid those
+    /* std::uintptr_t& mNodeAdress = reinterpret_cast<std::uintptr_t&>(mNode);
+       ar & boost::serialization::make_nvp("mNode", mNodeAdress);*/
+
+        std::uintptr_t mNodeAdress = reinterpret_cast<std::uintptr_t>(mNode);
+        ar & boost::serialization::make_nvp("mNode", mNodeAdress);
+    #ifdef DEBUG_SERIALIZATION
+        std::cout << "finish serialize ConstraintNode" << std::endl;
+    #endif
+    }
+
+    //! @brief deserializes (loads) the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void load(Archive & ar, const unsigned int version)
+    {
+    #ifdef DEBUG_SERIALIZATION
+        std::cout << "start serialize ConstraintNode" << std::endl;
+    #endif
+        std::uintptr_t mNodeAdress;
+        ar & boost::serialization::make_nvp("mNode", mNodeAdress);
+        mNode = reinterpret_cast<const NodeBase*>(mNodeAdress);
+    #ifdef DEBUG_SERIALIZATION
+        std::cout << "finish serialize ConstraintNode" << std::endl;
+    #endif
+    }
+
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 
     //! @brief NodeBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Adress (uintptr_t)
     //! Deserialization of the NodeBase-Pointer is done by searching and casting back the adress in the map

@@ -27,7 +27,6 @@
 #include "nuto/mechanics/elements/ElementOutputFullMatrixInt.h"
 #include "nuto/mechanics/elements/ElementOutputFullMatrixDouble.h"
 #include "nuto/mechanics/elements/ElementOutputVectorInt.h"
-#include "nuto/mechanics/elements/Plane.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/sections/SectionBase.h"

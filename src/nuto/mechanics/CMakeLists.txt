@@ -117,16 +117,12 @@ structures/unstructured/StructureCrack.cpp
 )
 
 SET(NuToMechanicsElements_SOURCES
-#elements/BoundaryGradientDamage1D.cpp
-#elements/BoundaryMoistureTransport1D.cpp
 elements/BoundaryElementBase.cpp
 elements/BoundaryElement1D.cpp
 elements/BoundaryElement2D.cpp
 elements/BoundaryElement2DAdditionalNode.cpp
 elements/BoundaryElement3D.cpp
 elements/BoundaryElement3DAdditionalNode.cpp
-elements/Brick8N.cpp
-elements/Brick20N.cpp
 elements/ElementBase.cpp
 elements/ElementDataBase.cpp
 elements/ElementDataConstitutiveBase.cpp
@@ -154,21 +150,6 @@ elements/IpDataStaticDataBase.cpp
 elements/IpDataStaticDataWeightCoordinates2D.cpp
 elements/IpDataStaticDataNonlocal.cpp
 elements/IpDataWeightBase.cpp
-#elements/Plane.cpp
-#elements/Plane2D.cpp
-#elements/Plane2D10N.cpp
-#elements/Plane2D15N.cpp
-#elements/Plane2D3N.cpp
-#elements/Plane2D4N.cpp
-#elements/Plane2D6N.cpp
-#elements/Solid.cpp
-#elements/Tetrahedron10N.cpp
-#elements/Truss.cpp
-#elements/Truss1D.cpp
-#elements/Truss1D2N.cpp
-#elements/Truss1D3N.cpp
-#elements/Truss1D4NDisp3NX.cpp
-#elements/Tetrahedron4N.cpp
 )
 
 SET(NuToMechanicsGroups_SOURCES
@@ -252,7 +233,6 @@ loads/LoadSurfacePressure3D.cpp
 
 SET(NuToMechanicsNodes_SOURCES
 nodes/NodeBase.cpp
-#nodes/NodeDof.cpp
 )
 
 SET(NuToMechanicsSection_SOURCES
@@ -282,12 +262,8 @@ structures/unstructured/StructureGroup.cpp
 structures/unstructured/StructureInterpolationType.cpp
 structures/unstructured/StructureMesh.cpp
 structures/unstructured/StructureNode.cpp
-structures/grid/OctreeGrid.cpp
-structures/grid/MultiGridStructure.cpp
-structures/grid/StructureGrid.cpp
-structures/grid/StructureGridNode.cpp
-structures/grid/StructureGridElement.cpp
 )
+
 SET(NuToMechanicsTimeIntegration_SOURCES
 timeIntegration/CrankNicolson.cpp
 timeIntegration/CrankNicolsonEvaluate.cpp
@@ -331,10 +307,8 @@ SET(NuToMechanics_SWIG_MODULES
 )
 
 SET(SWIG_MODULE_ModulMechanics_EXTRA_DEPS 
-  structures/grid/MultiGridStructure.h
   structures/StructureBase.h
   structures/unstructured/Structure.h
-  structures/grid/StructureGrid.h
   elements/ElementEnum.h
 )
 

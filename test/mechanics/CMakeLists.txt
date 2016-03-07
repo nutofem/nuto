@@ -189,7 +189,7 @@ IF(ENABLE_C++_TESTS)
   ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoIntegration)
   
   ADD_EXECUTABLE(Serialization Serialization.cpp)
-  TARGET_LINK_LIBRARIES(Serialization NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )
+  TARGET_LINK_LIBRARIES(Serialization NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES})
   IF (ENABLE_VISUALIZE)
     TARGET_LINK_LIBRARIES(Serialization NuToVisualize)
   ENDIF (ENABLE_VISUALIZE)

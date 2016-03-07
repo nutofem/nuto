@@ -52,11 +52,19 @@ public:
     }
 
 #ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
+    //! @brief serializes (saves) the class
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
+    void save(Archive & ar, const unsigned int version) const;
+
+    //! @brief deserializes (loads) the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void load(Archive & ar, const unsigned int version);
+
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 
     //! @brief ElementBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Adress (uintptr_t)
     //! Deserialization of the ElementBase-Pointer is done by searching and casting back the adress in the map

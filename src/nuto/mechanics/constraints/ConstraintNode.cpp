@@ -26,27 +26,7 @@ NuTo::ConstraintNode::~ConstraintNode()
 }
 
 #ifdef ENABLE_SERIALIZATION
-// serializes the class
-template void NuTo::ConstraintNode::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::ConstraintNode::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::ConstraintNode::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::ConstraintNode::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::ConstraintNode::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::ConstraintNode::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::ConstraintNode::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize ConstraintNode" << std::endl;
-#endif
-    std::uintptr_t& mNodeAdress = reinterpret_cast<std::uintptr_t&>(mNode);
-    ar & boost::serialization::make_nvp("mNode", mNodeAdress);
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize ConstraintNode" << std::endl;
-#endif
-}
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintNode)
-
 void NuTo::ConstraintNode::SetNodePtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mNodeMapCast)
 {
     std::map<std::uintptr_t, std::uintptr_t>::const_iterator it = mNodeMapCast.find(reinterpret_cast<std::uintptr_t>(mNode));

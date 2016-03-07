@@ -13,6 +13,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/sections/SectionBase.h"
+#include "nuto/math/Matrix.h"
 
 namespace NuTo
 {

@@ -106,11 +106,13 @@ int buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
     myStructure.LoadCreateNodeForce(0, numNodes-1, direction, Force);
 
     /** start analysis **/
-
 #ifdef _OPENMP
     int numThreads = 4;
     myStructure.SetNumProcessors(numThreads);
-#endif // OPENMP
+#else// _OPENMP
+    int numThreads = 1;
+#endif
+
     myStructure.CalculateMaximumIndependentSets();
     myStructure.NodeBuildGlobalDofs();
 
@@ -366,7 +368,10 @@ int buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
 #ifdef _OPENMP
     int numThreads = 4;
     myStructure.SetNumProcessors(numThreads);
+#else
+    int numThreads = 1;
 #endif
+
     myStructure.CalculateMaximumIndependentSets();
     myStructure.NodeBuildGlobalDofs();
 

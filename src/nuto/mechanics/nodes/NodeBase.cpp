@@ -15,7 +15,7 @@
 // the export_implement command (part of export_guid) has to be triggered
 // only once, else linking errors will occur. This file is able to maintain
 // that strategy, thatswhy the inludes below and the export routines at the end of the file
-#include "nuto/mechanics/nodes/NodeDof_Def.h"
+#include "nuto/mechanics/nodes/NodeDof.h"
 #include "nuto/mechanics/nodes/NodeCoordinates.h"
 #include "nuto/mechanics/nodes/NodeDisplacements.h"
 #include "nuto/mechanics/nodes/NodeWaterVolumeFraction.h"

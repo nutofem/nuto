@@ -43,7 +43,7 @@ public:
     NodeBase();
 
     //! @brief destructor
-    virtual ~NodeBase(){};
+    virtual ~NodeBase(){}
 
     //! @brief assignment operator
     NodeBase& operator=(NodeBase const& rOther) = default;

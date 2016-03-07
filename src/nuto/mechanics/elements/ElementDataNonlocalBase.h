@@ -39,14 +39,46 @@ public:
     int AddNonlocalElement(const ElementBase* rElement);
 
 #ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
+    //! @brief serializes (saves) the class
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void load(Archive & ar, const unsigned int version);
+    void save(Archive & ar, const unsigned int version) const
+    {
+    #ifdef DEBUG_SERIALIZATION
+        std::cout << "start save ElementDataNonlocalBase" << std::endl;
+    #endif
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataBase);
 
+        const std::uintptr_t* mNonlocalElementsAdress = reinterpret_cast<const std::uintptr_t*>(mNonlocalElements.data());
+        int size = mNonlocalElements.size();
+        ar & boost::serialization::make_nvp("mNonlocalElements_size", size);
+        ar & boost::serialization::make_nvp("mNonlocalElements", boost::serialization::make_array(mNonlocalElementsAdress, size));
+    #ifdef DEBUG_SERIALIZATION
+        std::cout << "finish save ElementDataNonlocalBase" << std::endl;
+    #endif
+    }
+
+    //! @brief deserializes(loads) the class
+    //! @param ar         archive
+    //! @param version    version
     template<class Archive>
-    void save(Archive & ar, const unsigned int version) const;
+    void load(Archive & ar, const unsigned int version)
+    {
+    #ifdef DEBUG_SERIALIZATION
+        std::cout << "start load ElementDataNonlocalBase" << std::endl;
+    #endif
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataBase);
+
+        int size = 0;
+        ar & boost::serialization::make_nvp("mNonlocalElements_size", size);
+        std::uintptr_t* mNonlocalElementsAdress = new std::uintptr_t[size];
+        ar & boost::serialization::make_nvp("mNonlocalElements", boost::serialization::make_array(mNonlocalElementsAdress, size));
+        mNonlocalElements.assign(reinterpret_cast<ElementBase**>(&mNonlocalElementsAdress[0]), reinterpret_cast<ElementBase**>(&mNonlocalElementsAdress[size]));
+    #ifdef DEBUG_SERIALIZATION
+        std::cout << "finish load ElementDataNonlocalBase" << std::endl;
+    #endif
+    }
 
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 
@@ -56,5 +88,7 @@ public:
 protected:
     std::vector<const ElementBase*> mNonlocalElements;
 };
-}
+} // namespace NuTo
+
+BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataNonlocalBase)
 #endif /* ELEMENTDATANONLOCALBASE_H_ */

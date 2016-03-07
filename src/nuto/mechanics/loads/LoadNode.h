@@ -36,16 +36,45 @@ public:
     LoadNode(int rLoadCase, const NodeBase* rNode);
 
 #ifdef ENABLE_SERIALIZATION
-    //! @brief serializes the class
+    //! @brief serializes (saves) the class
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
+    void save(Archive & ar, const unsigned int version) const
     {
-        ar & boost::serialization::make_nvp("LoadNode_LoadBase", boost::serialization::base_object<LoadBase >(*this));
-        std::uintptr_t& temp = reinterpret_cast<std::uintptr_t&>(mNode);
-        ar & boost::serialization::make_nvp("mNode", temp);
+    #ifdef DEBUG_SERIALIZATION
+        std::cout << "start serialize LoadNode" << std::endl;
+    #endif
+        ar & boost::serialization::make_nvp("LoadBase", boost::serialization::base_object<LoadBase >(*this));
+
+        std::uintptr_t mNodeAdress = reinterpret_cast<std::uintptr_t>(mNode);
+        ar & boost::serialization::make_nvp("mNode", mNodeAdress);
+    #ifdef DEBUG_SERIALIZATION
+        std::cout << "finish serialize LoadNode" << std::endl;
+    #endif
     }
+
+    //! @brief deserializes (loads) the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void load(Archive & ar, const unsigned int version)
+    {
+    #ifdef DEBUG_SERIALIZATION
+        std::cout << "start serialize LoadNode" << std::endl;
+    #endif
+        ar & boost::serialization::make_nvp("LoadBase", boost::serialization::base_object<LoadBase >(*this));
+
+        std::uintptr_t mNodeAdress;
+        ar & boost::serialization::make_nvp("mNode", mNodeAdress);
+        mNode = reinterpret_cast<const NodeBase*>(mNodeAdress);
+    #ifdef DEBUG_SERIALIZATION
+        std::cout << "finish serialize LoadNode" << std::endl;
+    #endif
+    }
+
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
+
 
     void SetNodePtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mNodeMapCast) override
     {
