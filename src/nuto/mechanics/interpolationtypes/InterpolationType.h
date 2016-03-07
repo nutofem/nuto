@@ -31,12 +31,11 @@ class InterpolationType
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif  // ENABLE_SERIALIZATION
-
 public:
-    InterpolationType(const StructureBase* rStructure, NuTo::Interpolation::eShapeType rShapeType);
+    InterpolationType(NuTo::Interpolation::eShapeType rShapeType, int rDimension);
 
     //! @brief standard constructor for serialization (const member is set to SPRING)
-    InterpolationType():mShapeType(NuTo::Interpolation::eShapeType::SPRING) {}
+    InterpolationType():mShapeType(NuTo::Interpolation::eShapeType::SPRING), mDimension(0) {}
 
     virtual ~InterpolationType();
 
@@ -105,6 +104,15 @@ public:
     const Eigen::VectorXd& GetNaturalNodeCoordinates(int rNodeIndex) const;
 
     int GetNumNodes() const;
+
+    //! @brief returns the total number of nodes on a surface
+    //! @param rSurface ... surface id
+    int GetNumSurfaceNodes(int rSurface) const;
+
+    //! @brief returns the node index of a specific DOF node on the surface
+    //! @param rNodeIndex ... node index
+    //! @param rSurface ... surface id
+    int GetSurfaceNodeIndex(int rSurface, int rNodeIndex) const;
 
     //! @brief returns the node indices that span the surface
     //! 2 nodes for a 1D surface, 3 to 4 nodes on a 2D surface, (1 node for a 0D surface)
@@ -183,8 +191,11 @@ private:
     //! @brief node renumbering indices that (if applied) change the orientation of the element
     Eigen::MatrixX2i mNodeRenumberingIndices;
 
-    //! @brief StructureBase pointer
-    const StructureBase* mStructure;
+    //! @brief vector (for each surface) of vectors (for each surface node) of surface node indices
+    std::vector<std::vector<int>> mSurfaceNodeIndices;
+
+    //! @brief dimension = Structure.GetDimension()
+    const int mDimension;
 
 };
 

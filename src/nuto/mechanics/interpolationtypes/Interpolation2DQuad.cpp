@@ -7,8 +7,8 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation2DQuad.h"
 
-NuTo::Interpolation2DQuad::Interpolation2DQuad(const StructureBase* rStructure, Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
-        Interpolation2D::Interpolation2D(rStructure, rDofType, rTypeOrder)
+NuTo::Interpolation2DQuad::Interpolation2DQuad(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
+        Interpolation2D::Interpolation2D(rDofType, rTypeOrder, rDimension)
 {
     Initialize();
 }

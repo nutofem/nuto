@@ -30,8 +30,8 @@
 
 #include <iomanip>
 
-NuTo::InterpolationType::InterpolationType(const StructureBase* rStructure, NuTo::Interpolation::eShapeType rShapeType) :
-        mShapeType(rShapeType), mNumDofs(0), mNumActiveDofs(0), mIntegrationType(nullptr), mStructure(rStructure)
+NuTo::InterpolationType::InterpolationType(NuTo::Interpolation::eShapeType rShapeType, int rDimension) :
+        mShapeType(rShapeType), mNumDofs(0), mNumActiveDofs(0), mIntegrationType(nullptr), mDimension(rDimension)
 {
 }
 
@@ -71,22 +71,22 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eAttributes rDofType, Nu
     case Interpolation::eShapeType::SPRING:
     case Interpolation::eShapeType::TRUSS1D:
     case Interpolation::eShapeType::TRUSSXD:
-        newType = new Interpolation1DTruss(mStructure, rDofType, rTypeOrder);
+        newType = new Interpolation1DTruss(rDofType, rTypeOrder, mDimension);
         break;
     case Interpolation::eShapeType::TRIANGLE2D:
-        newType = new Interpolation2DTriangle(mStructure, rDofType, rTypeOrder);
+        newType = new Interpolation2DTriangle(rDofType, rTypeOrder, mDimension);
         break;
     case Interpolation::eShapeType::QUAD2D:
-        newType = new Interpolation2DQuad(mStructure, rDofType, rTypeOrder);
+        newType = new Interpolation2DQuad(rDofType, rTypeOrder, mDimension);
         break;
     case Interpolation::eShapeType::TETRAHEDRON3D:
-        newType = new Interpolation3DTetrahedron(mStructure, rDofType, rTypeOrder);
+        newType = new Interpolation3DTetrahedron(rDofType, rTypeOrder, mDimension);
         break;
     case Interpolation::eShapeType::BRICK3D:
-        newType = new Interpolation3DBrick(mStructure, rDofType, rTypeOrder);
+        newType = new Interpolation3DBrick(rDofType, rTypeOrder, mDimension);
         break;
     case Interpolation::eShapeType::INTERFACE:
-        newType = new Interpolation1DInterface(mStructure, rDofType, rTypeOrder);
+        newType = new Interpolation1DInterface(rDofType, rTypeOrder, mDimension);
         break;
     default:
         throw NuTo::MechanicsException("[NuTo::InterpolationType::AddDofInterpolation] ShapeType " + NuTo::Interpolation::ShapeTypeToString(mShapeType) + " not implemented.");
@@ -150,6 +150,25 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eAttributes rDofType, Nu
 
     if (mIntegrationType != nullptr)
         newType->UpdateIntegrationType(*mIntegrationType);
+
+
+    if (mShapeType != Interpolation::eShapeType::INTERFACE)
+    {
+        // update the surface node ids for each dof
+        newType->CalculateSurfaceNodeIds();
+
+        // update the surface node ids for all nodes
+        mSurfaceNodeIndices.clear();
+        mSurfaceNodeIndices.resize(GetNumSurfaces());
+        for (int iSurface = 0; iSurface < GetNumSurfaces(); ++iSurface)
+        {
+            auto& surfaceNodeIndices = mSurfaceNodeIndices[iSurface];
+
+            for (int iNode = 0; iNode < GetNumNodes(); ++iNode)
+                if (newType->NodeIsOnSurface(iSurface, GetNaturalNodeCoordinates(iNode)))
+                    surfaceNodeIndices.push_back(iNode);
+        }
+    }
 }
 
 void NuTo::InterpolationType::UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType)
@@ -351,6 +370,20 @@ int NuTo::InterpolationType::GetNumNodes() const
     return mNodeCoordinates.size();
 }
 
+int NuTo::InterpolationType::GetNumSurfaceNodes(int rSurface) const
+{
+    assert((unsigned int) rSurface < mSurfaceNodeIndices.size() && "Surface node indices not build.");
+    return mSurfaceNodeIndices[rSurface].size();
+}
+
+int NuTo::InterpolationType::GetSurfaceNodeIndex(int rSurface, int rNodeIndex) const
+{
+    assert((unsigned int) rSurface < mSurfaceNodeIndices.size() && "Surface node indices not build.");
+    assert((unsigned int) rNodeIndex < mSurfaceNodeIndices[rSurface].size() &&  "Surface node indices not build.");
+
+    return mSurfaceNodeIndices[rSurface][rNodeIndex];
+}
+
 std::string NuTo::InterpolationType::Info() const
 {
     std::stringstream out;
@@ -399,9 +432,8 @@ void NuTo::InterpolationType::PrintNodeCoordinates() const
 bool NuTo::InterpolationType::CoordinatesAreEqual(const Eigen::VectorXd& rC1, const Eigen::VectorXd& rC2) const
 {
     assert(rC1.rows() == rC2.rows());
-    for (unsigned int iDim = 0; iDim < rC1.rows(); ++iDim)
-        if ((rC1 - rC2).norm() > 1.e-10)
-            return false;
+    if ((rC1 - rC2).norm() > 1.e-10)
+        return false;
     return true;
 }
 

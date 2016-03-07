@@ -15,22 +15,6 @@ NuTo::BoundaryElementBase::BoundaryElementBase(const ElementBase* rBaseElement, 
 {
 
 }
-
-int NuTo::BoundaryElementBase::GetNumNodes(Node::eAttributes rDofType) const
-{
-    throw MechanicsException("[NuTo::BoundaryElementBase::GetNumNodes] The number of nodes cannot be determined.");
-}
-
-NuTo::NodeBase* NuTo::BoundaryElementBase::GetNode(int rLocalNodeNumber, Node::eAttributes rDofType)
-{
-    throw MechanicsException("[NuTo::BoundaryElementBase::GetNode] Node cannot be determined.");
-}
-
-const NuTo::NodeBase* NuTo::BoundaryElementBase::GetNode(int rLocalNodeNumber, Node::eAttributes rDofType) const
-{
-    throw MechanicsException("[NuTo::BoundaryElementBase::GetNode] Node cannot be determined.");
-}
-
 void NuTo::BoundaryElementBase::SetSection(const SectionBase* rSection)
 {
 }

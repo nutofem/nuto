@@ -7,8 +7,8 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation2DTriangle.h"
 
-NuTo::Interpolation2DTriangle::Interpolation2DTriangle(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
-        Interpolation2D::Interpolation2D(rStructure, rDofType, rTypeOrder)
+NuTo::Interpolation2DTriangle::Interpolation2DTriangle(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
+        Interpolation2D::Interpolation2D(rDofType, rTypeOrder, rDimension)
 {
     Initialize();
 }

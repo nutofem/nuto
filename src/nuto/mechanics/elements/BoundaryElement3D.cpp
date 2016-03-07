@@ -508,67 +508,6 @@ NuTo::BoundaryElement3D* NuTo::BoundaryElement3D::AsBoundaryElement3D()
     return this;
 }
 
-int NuTo::BoundaryElement3D::GetNumNodes() const
-{
-    return GetBoundaryNodeIndices().rows();
-}
-
-
-
-int NuTo::BoundaryElement3D::GetBoundaryNodeIndex(int rBoundaryNodeIndex) const
-{
-    return GetBoundaryNodeIndices()[rBoundaryNodeIndex];
-}
-
-
-
-
-const Eigen::VectorXi NuTo::BoundaryElement3D::GetBoundaryNodeIndices() const
-{
-    // temporarily use a std::vector for its push_back() method
-    std::vector<int> boundaryNodeIndices;
-
-    const InterpolationType& it = *(mBaseElement->GetInterpolationType());
-    const Eigen::VectorXi surfaceNodeIds = it.GetSurfaceNodeIndices(mSurfaceId);
-    assert(surfaceNodeIds.rows() == 3);
-
-
-    throw NuTo::MechanicsException("[BoundaryElement3D::GetBoundaryNodeIndices] Implementation needed");
-//    // get A and B as two points on the boundary
-//    const Eigen::VectorXd& A = it.GetNaturalNodeCoordinates(surfaceNodeIds.at(0,0));
-//    const Eigen::VectorXd& B = it.GetNaturalNodeCoordinates(surfaceNodeIds.at(1,0));
-
-//    // check every node of the element if its natural coordinates are inbetween those of A and B
-//    int numNodes = it.GetNumNodes();
-//    for (int iNode = 0; iNode < numNodes; ++iNode)
-//    {
-//        const Eigen::VectorXd& P = it.GetNaturalNodeCoordinates(iNode);
-//        if (PointIsOnBoundary(A,B,P))
-//            boundaryNodeIndices.push_back(iNode);
-//    }
-
-//    // map back to Eigen::VectorXi as return value
-//    return Eigen::Map<Eigen::VectorXi>(boundaryNodeIndices.data(), boundaryNodeIndices.size());
-}
-
-bool NuTo::BoundaryElement3D::PointIsOnBoundary(const Eigen::VectorXd rA, const Eigen::VectorXd rB, const Eigen::VectorXd rP) const
-{
-    assert(rA.rows() == 3);
-    assert(rB.rows() == 3);
-    assert(rP.rows() == 3);
-
-    throw NuTo::MechanicsException("[BoundaryElement3D::PointIsOnBoundary] Implementation needed");
-// //    Eigen::Matrix2d matr;
-// //    matr.block<2,1>(0,0) = (rB - rA).block<2,1>(0,0);
-// //    matr.block<2,1>(0,1) = (rA - rP).block<2,1>(0,0);
-// //
-// //    double det = matr.determinant();
-
-//    double det = ( (rB(0)-rA(0))  * (rA(1)-rP(1)) )  - ( (rA(0)-rP(0)) * (rB(1)-rA(1)) );
-
-//    return std::abs(det) < 1.e-10;
-}
-
 bool NuTo::BoundaryElement3D::IsBoundaryConditionFulfilled() const
 {
 

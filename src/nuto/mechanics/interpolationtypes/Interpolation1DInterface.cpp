@@ -1,8 +1,8 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation1DInterface.h"
 
-NuTo::Interpolation1DInterface::Interpolation1DInterface(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
-        NuTo::Interpolation1DTruss::Interpolation1DTruss(rStructure, rDofType, rTypeOrder)
+NuTo::Interpolation1DInterface::Interpolation1DInterface(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
+        NuTo::Interpolation1DTruss::Interpolation1DTruss(rDofType, rTypeOrder, rDimension)
 {
     Initialize();
 }

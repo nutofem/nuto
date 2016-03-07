@@ -19,7 +19,7 @@
 #include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 
-NuTo::InterpolationBase::InterpolationBase(const StructureBase* rStructure, Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
+NuTo::InterpolationBase::InterpolationBase(Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
     mTypeOrder(rTypeOrder),
     mDofType(rDofType),
     mIsConstitutiveInput(true),
@@ -28,7 +28,7 @@ NuTo::InterpolationBase::InterpolationBase(const StructureBase* rStructure, Node
     mNumNodes(-1),
     mLocalStartIndex(0),
     mUpdateRequired(true),
-    mStructure(rStructure)
+    mDimension(rDimension)
 {
 }
 
@@ -130,6 +130,21 @@ int NuTo::InterpolationBase::GetNodeIndex(int rNodeDofIndex) const
     return mNodeIndices[rNodeDofIndex];
 }
 
+int NuTo::InterpolationBase::GetNumSurfaceNodes(int rSurface) const
+{
+    assert((unsigned int) rSurface < mSurfaceNodeIndices.size() && "Surface node indices not build.");
+    return mSurfaceNodeIndices[rSurface].size();
+}
+
+int NuTo::InterpolationBase::GetSurfaceNodeIndex(int rSurface, int rNodeDofIndex) const
+{
+    assert((unsigned int) rSurface < mSurfaceNodeIndices.size() && "Surface node indices not build.");
+    assert((unsigned int) rNodeDofIndex < mSurfaceNodeIndices[rSurface].size() &&  "Surface node indices not build.");
+    assert(not mUpdateRequired);
+
+    return mSurfaceNodeIndices[rSurface][rNodeDofIndex];
+}
+
 const Eigen::VectorXd& NuTo::InterpolationBase::GetNaturalNodeCoordinates(int rNodeIndex) const
 {
     assert(rNodeIndex < mNumNodes);
@@ -149,6 +164,51 @@ const Eigen::MatrixXd& NuTo::InterpolationBase::GetDerivativeShapeFunctionsNatur
     assert(rIP < (int )mDerivativeShapeFunctionsNatural.size());
     assert(not mUpdateRequired);
     return mDerivativeShapeFunctionsNatural.at(rIP);
+}
+
+void NuTo::InterpolationBase::CalculateSurfaceNodeIds()
+{
+    mSurfaceNodeIndices.clear();
+    mSurfaceNodeIndices.resize(GetNumSurfaces());
+    for (int iSurface = 0; iSurface < GetNumSurfaces(); ++iSurface)
+    {
+        auto& surfaceNodeIndices = mSurfaceNodeIndices[iSurface];
+        surfaceNodeIndices.reserve(GetNumSurfaceNodes(iSurface));
+
+        for (int iNode = 0; iNode < GetNumNodes(); ++iNode)
+        {
+            if (NodeIsOnSurface(iSurface, GetNaturalNodeCoordinates(iNode)))
+            {
+                surfaceNodeIndices.push_back(iNode);
+            }
+        }
+    }
+}
+
+bool NuTo::InterpolationBase::NodeIsOnSurface(int rSurface, const Eigen::VectorXd& rNaturalNodeCoordinate) const
+{
+    auto surfaceEdgeCoordinates = GetSurfaceEdgesCoordinates(rSurface);
+
+    int unsigned dim = rNaturalNodeCoordinate.rows(); // bit of a hack to get the global dimension
+
+    // the following calculations require at least
+    // 1 surface egde for 1D  (distance point to point)
+    // 2 surface egdes for 2D (distance point to line)
+    // 3 surface edges for 3D (distance point to plane)
+    assert (surfaceEdgeCoordinates.size() >= dim);
+
+    const auto& pP = rNaturalNodeCoordinate;
+
+    // using the determinant equation
+    Eigen::MatrixXd matrix(dim, dim);
+
+    matrix.col(0) = pP - surfaceEdgeCoordinates[0];         // dimension 0 outside the loop, since it involves pP
+    for (unsigned int iDim = 1; iDim < dim; ++iDim)                  // note: loop starting at 1
+        matrix.col(iDim) = surfaceEdgeCoordinates[iDim] - surfaceEdgeCoordinates[0];
+
+    double det = matrix.determinant(); // determinant is the distance of the point to point/line/plane
+
+    return std::abs(det) < 1.e-10;
 }
 
 void NuTo::InterpolationBase::Initialize()

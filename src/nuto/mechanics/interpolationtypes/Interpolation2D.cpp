@@ -16,8 +16,8 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation2D.h"
 
-NuTo::Interpolation2D::Interpolation2D(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
-        InterpolationBase::InterpolationBase(rStructure, rDofType, rTypeOrder)
+NuTo::Interpolation2D::Interpolation2D(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
+        InterpolationBase::InterpolationBase(rDofType, rTypeOrder, rDimension)
 {
 
 }

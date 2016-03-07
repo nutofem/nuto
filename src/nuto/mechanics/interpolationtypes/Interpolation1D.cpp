@@ -7,8 +7,8 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation1D.h"
 
-NuTo::Interpolation1D::Interpolation1D(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder) :
-        InterpolationBase::InterpolationBase(rStructure, rDofType, rTypeOrder)
+NuTo::Interpolation1D::Interpolation1D(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
+        InterpolationBase::InterpolationBase(rDofType, rTypeOrder, rDimension)
 {
 
 }
@@ -16,7 +16,7 @@ NuTo::Interpolation1D::Interpolation1D(const StructureBase* rStructure, NuTo::No
 const std::vector<Eigen::VectorXd> NuTo::Interpolation1D::GetSurfaceEdgesCoordinates(int rSurface) const
 {
     Eigen::VectorXd dummy; // has no influence in 1D
-    return std::vector<Eigen::VectorXd>(1, CalculateNaturalSurfaceCoordinates(dummy, rSurface));
+    return std::vector<Eigen::VectorXd>(1, this->CalculateNaturalSurfaceCoordinates(dummy, rSurface));
 }
 
 int NuTo::Interpolation1D::GetNumDofsPerNode() const
@@ -24,9 +24,9 @@ int NuTo::Interpolation1D::GetNumDofsPerNode() const
     switch (mDofType)
     {
     case NuTo::Node::COORDINATES:
-        return mStructure->GetDimension();
+        return mDimension;
     case NuTo::Node::DISPLACEMENTS:
-        return mStructure->GetDimension();
+        return mDimension;
     case NuTo::Node::TEMPERATURES:
         return 1;
     case NuTo::Node::NONLOCALEQSTRAIN:

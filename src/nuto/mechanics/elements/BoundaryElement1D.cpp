@@ -502,17 +502,3 @@ NuTo::BoundaryElement1D* NuTo::BoundaryElement1D::AsBoundaryElement1D()
 {
     return this;
 }
-
-int NuTo::BoundaryElement1D::GetNumNodes() const
-{
-    return 1;
-}
-
-
-int NuTo::BoundaryElement1D::GetBoundaryNodeIndex(int rBoundaryNodeIndex) const
-{
-    Eigen::VectorXi surfaceNodeIndices = mBaseElement->GetInterpolationType()->GetSurfaceNodeIndices(mSurfaceId);
-    assert(surfaceNodeIndices.rows() == 1);
-
-    return surfaceNodeIndices(0);
-}

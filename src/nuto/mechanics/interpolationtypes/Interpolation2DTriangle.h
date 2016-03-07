@@ -27,7 +27,7 @@ namespace NuTo
 class Interpolation2DTriangle: public Interpolation2D
 {
 public:
-    Interpolation2DTriangle(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
+    Interpolation2DTriangle(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
 
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type

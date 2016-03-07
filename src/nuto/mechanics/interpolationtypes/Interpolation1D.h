@@ -23,7 +23,7 @@ public:
     //! @brief default constructor for serialization
     Interpolation1D(){}
 
-    Interpolation1D(const StructureBase* rStructure, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
+    Interpolation1D(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
 
     //! @brief returns the natural coordinates of the nodes that span the surface
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType

@@ -39,14 +39,18 @@ public:
 
     //! @brief returns the number of nodes in this element
     //! @return number of nodes
-    virtual int GetNumNodes() const override = 0;
+    int GetNumNodes() const override
+    {
+        return mInterpolationType->GetNumSurfaceNodes(mSurfaceId);
+    }
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @return pointer to the node
     NodeBase* GetNode(int rLocalNodeNumber) override
     {
-        return const_cast<NodeBase*>(mBaseElement->GetNode(GetBoundaryNodeIndex(rLocalNodeNumber)));
+        int nodeId = mInterpolationType->GetSurfaceNodeIndex(mSurfaceId, rLocalNodeNumber);
+        return const_cast<NodeBase*>(mBaseElement->GetNode(nodeId));
     }
 
     //! @brief returns a pointer to the i-th node of the element
@@ -54,7 +58,8 @@ public:
     //! @return pointer to the node
     const NodeBase* GetNode(int rLocalNodeNumber) const override
     {
-        return mBaseElement->GetNode(GetBoundaryNodeIndex(rLocalNodeNumber));
+        int nodeId = mInterpolationType->GetSurfaceNodeIndex(mSurfaceId, rLocalNodeNumber);
+        return mBaseElement->GetNode(nodeId);
     }
 
 
@@ -77,19 +82,30 @@ public:
     //! @brief returns the number of nodes in this element of a specific dof
     //! @brief rDofType dof type
     //! @return number of nodes
-    virtual int GetNumNodes(Node::eAttributes rDofType) const override;
+    int GetNumNodes(Node::eAttributes rDofType) const override
+    {
+        return mInterpolationType->Get(rDofType).GetNumSurfaceNodes(mSurfaceId);
+    }
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @brief rDofType dof type
     //! @return pointer to the node
-    virtual NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType) override;
+    NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType) override
+    {
+        int nodeId = mInterpolationType->Get(rDofType).GetSurfaceNodeIndex(mSurfaceId, rLocalNodeNumber);
+        return const_cast<NodeBase*>(mBaseElement->GetNode(nodeId));
+    }
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @brief rDofType dof type
     //! @return pointer to the node
-    virtual const NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType) const override;
+    const NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType) const override
+    {
+        int nodeId = mInterpolationType->Get(rDofType).GetSurfaceNodeIndex(mSurfaceId, rLocalNodeNumber);
+        return mBaseElement->GetNode(nodeId);
+    }
 
     //! @brief sets the rLocalNodeNumber-th node of the element
     //! @param local node number
@@ -145,10 +161,6 @@ protected:
     BoundaryElementBase()
     {
     }
-
-    //! @brief calculates the base element's node index on the boundary
-    //! @param rBoundaryNodeNumber node index of the boundary
-    virtual int GetBoundaryNodeIndex(int rBoundaryNodeIndex) const = 0;
 
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
     void ReorderNodes() override
