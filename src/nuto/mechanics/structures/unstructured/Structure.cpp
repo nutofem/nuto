@@ -213,10 +213,10 @@ void NuTo::Structure::loadImplement(Archive & ar, bool light)
     ar & boost::serialization::make_nvp ("nodeMap", mNodeMap);
 
     /***************************** Pointer update *****************************/
+#ifdef _OPENMP
     int size = 0;
     ar & boost::serialization::make_nvp("mMIS_size", size);
     mMIS.resize(size);
-#ifdef _OPENMP
     for (std::vector<std::vector<ElementBase*>>::iterator it =  mMIS.begin(); it!=mMIS.end(); it++)
     {
         int size = 0;

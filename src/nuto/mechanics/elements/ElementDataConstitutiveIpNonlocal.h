@@ -75,8 +75,10 @@ protected:
 	//! @brief ... just for serialization
     ElementDataConstitutiveIpNonlocal(){}
 };
-}
+} // namespace NuTo
+
 #ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataConstitutiveIpNonlocal)
 namespace boost{
 template<>
 struct is_virtual_base_of<NuTo::ElementDataConstitutiveBase, NuTo::ElementDataConstitutiveIpNonlocal>: public mpl::true_ {};
@@ -85,7 +87,6 @@ struct is_virtual_base_of<NuTo::ElementDataNonlocalBase, NuTo::ElementDataConsti
 template<>
 struct is_virtual_base_of<NuTo::ElementDataIpBase, NuTo::ElementDataConstitutiveIpNonlocal>: public mpl::true_ {};
 }
-BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataConstitutiveIpNonlocal)
 #endif // ENABLE_SERIALIZATION
 
 #endif /* ELEMENTDATACONSTITUTIVEIPNONLOCAL_H_ */

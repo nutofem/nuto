@@ -109,8 +109,6 @@ int buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
 #ifdef _OPENMP
     int numThreads = 4;
     myStructure.SetNumProcessors(numThreads);
-#else// _OPENMP
-    int numThreads = 1;
 #endif
 
     myStructure.CalculateMaximumIndependentSets();
@@ -132,7 +130,7 @@ int buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
     NuTo::FullVector<double,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;
 
 #if defined HAVE_PARDISO
-    NuTo::SparseDirectSolverPardiso mySolverPardiso(numThreads);
+    NuTo::SparseDirectSolverPardiso mySolverPardiso(myStructure.GetNumProcessors());
     NuTo::FullVector<double,Eigen::Dynamic> displacementVectorPardiso;
     stiffnessMatrix.SetOneBasedIndexing();
 
@@ -368,8 +366,6 @@ int buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
 #ifdef _OPENMP
     int numThreads = 4;
     myStructure.SetNumProcessors(numThreads);
-#else
-    int numThreads = 1;
 #endif
 
     myStructure.CalculateMaximumIndependentSets();
@@ -401,7 +397,7 @@ int buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
 
 #ifdef HAVE_PARDISO
 
-    NuTo::SparseDirectSolverPardiso mySolverPardiso(numThreads);
+    NuTo::SparseDirectSolverPardiso mySolverPardiso(myStructure.GetNumProcessors());
 
     NuTo::FullVector<double,Eigen::Dynamic> displacementVectorPardiso;
 

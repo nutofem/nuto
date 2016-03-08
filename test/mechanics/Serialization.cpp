@@ -207,13 +207,15 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
     return myStructure;
 }
 
-void solve2d(NuTo::Structure* myStructure, int NumElementsX, int NumElementsY, double  YoungsModulus = 20000., double  Stress = 10., double  Length = 10.0,double  tol = 1.e-6)
+void solve2d(NuTo::Structure* myStructure,
+             int NumElementsX,
+             int NumElementsY,
+             double  YoungsModulus = 20000.,
+             double  Stress = 10.,
+             double  Length = 10.0,
+             double  tol = 1.e-6)
 {
     /** start analysis **/
-#ifdef HAVE_PARDISO
-    myStructure->SetNumProcessors(numThreads);
-#endif // HAVE_PARDISO
-
     // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
 
     //NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2(0,0);
@@ -239,7 +241,7 @@ void solve2d(NuTo::Structure* myStructure, int NumElementsX, int NumElementsY, d
 
 
 #ifdef HAVE_PARDISO
-    NuTo::SparseDirectSolverPardiso mySolverPardiso(numThreads);
+    NuTo::SparseDirectSolverPardiso mySolverPardiso(myStructure->GetNumProcessors());
     NuTo::FullVector<double,Eigen::Dynamic> displacementVectorPardiso;
     //mySolverPardiso.Solve(stiffnessMatrix, rhsVector, displacementVectorPardiso);
     mySolverPardiso.Solve(stiffnessMatrixSymmetric, rhsVector, displacementVectorPardiso);
@@ -404,7 +406,6 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
 }
 
 void solve1d(NuTo::Structure* myStructure,
-           int     NumElements = 10,
            double  YoungsModulus = 20000.,
            double  Area = 100.0*0.1,
            double  Length = 1000.0,
@@ -412,10 +413,6 @@ void solve1d(NuTo::Structure* myStructure,
            double  tol = 1.e-6)
 {
     /** start analysis **/
-#ifdef HAVE_PARDISO
-    NuTo::SparseDirectSolverPardiso mySolverPardiso(numThreads);
-#endif // PARDISO
-
     // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
     NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2(0,0);
     NuTo::FullVector<double,Eigen::Dynamic> dispForceVector;
@@ -432,6 +429,7 @@ void solve1d(NuTo::Structure* myStructure,
     NuTo::FullVector<double,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;
 
 #ifdef HAVE_PARDISO
+    NuTo::SparseDirectSolverPardiso mySolverPardiso(myStructure->GetNumProcessors());
     NuTo::FullVector<double,Eigen::Dynamic> displacementVectorPardiso;
     stiffnessMatrix.SetOneBasedIndexing();
 
@@ -489,6 +487,7 @@ void solve1d(NuTo::Structure* myStructure,
 
 }
 
+#ifdef ENABLE_SERIALIZATION
 void serialize1d()
 {
     {
@@ -500,18 +499,15 @@ void serialize1d()
         nodeCoordinates += ones;
         NuTo::Structure *myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, 2);
 
-#ifdef ENABLE_SERIALIZATION
 //        std::ofstream outFileStream("StructureOut");
 //        boost::archive::xml_oarchive outArchivexml(outFileStream);
 //        myStructure->save(outArchivexml, 1);
 //        outFileStream.close();
         myStructure->Save("StructureOut", "XML");
-#endif
     }
 
 
 
-#ifdef ENABLE_SERIALIZATION
     {
         std::cout << "\n************************** Extracting a NuTo-Structure from StructureOut **************************\n";
         NuTo::Structure *myStructureImported = new NuTo::Structure(1);
@@ -522,7 +518,6 @@ void serialize1d()
         myStructureImported->GroupInfo(3);
         std::cout << "\n\n\n\n\n*** Solve extracted structure ***\n\n\n\n\n";
         solve1d(myStructureImported);
-#endif
     }
 }
 
@@ -541,16 +536,13 @@ void serialize2d()
         nodeCoordinates += ones;
         NuTo::Structure* myStructure2D = buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, numElementsX, numElementsY);
 
-#ifdef ENABLE_SERIALIZATION
 //        std::ofstream outFileStream("StructureOut2D");
 //        boost::archive::xml_oarchive outArchivexml(outFileStream);
 //        myStructure2D->save(outArchivexml, 1);
 //        outFileStream.close();
         myStructure2D->Save("StructureOut2D", "XML");
-#endif
     }
 
-#ifdef ENABLE_SERIALIZATION
     {
         std::cout << "\n************************** Extracting a NuTo-Structure from StructureOut2D **************************\n";
         NuTo::Structure *myStructureImported = new NuTo::Structure(2);
@@ -562,14 +554,16 @@ void serialize2d()
         std::cout << "\n************************** Solve extracted structure 2D **************************\n";
         solve2d(myStructureImported,numElementsX,numElementsY);
     }
-#endif
-
 }
+#endif
 
 int main(int argc, char* argv[])
 {
+
+#ifdef ENABLE_SERIALIZATION
     serialize1d();
     serialize2d();
+#endif
 
     return EXIT_SUCCESS;
 }
