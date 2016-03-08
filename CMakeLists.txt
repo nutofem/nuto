@@ -39,6 +39,11 @@ OPTION(ENABLE_GUI "enable building the GUI application" FALSE)
 OPTION(ENABLE_MY_EXAMPLES "enable building private examples in a separate directory (nuto/myNutoExamples)" FALSE)
 OPTION(ENABLE_CGAL "enables CGAL libraries (for cracks only)" FALSE)
 OPTION(ENABLE_ARPACK "enables ARPACK libraries (for the solution of eigenvalue problems)" FALSE)
+OPTION(ENABLE_MPI "enables the message passing interface MPI (for distributed memory systems)" FALSE)
+
+if(ENABLE_MPI)
+  find_package(MPI REQUIRED)
+endif(ENABLE_MPI)
 
 IF(ENABLE_METAMODEL)
     SET(ENABLE_OPTIMIZE TRUE)
