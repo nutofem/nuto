@@ -1120,37 +1120,37 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::save(Archive & ar, const uns
     ar & BOOST_SERIALIZATION_NVP(mAngle);
     ar & BOOST_SERIALIZATION_NVP(mStrain);
 
-    std::uintptr_t mLeftUpperCornerAdress = reinterpret_cast<std::uintptr_t>(mLeftUpperCorner);
-    ar & boost::serialization::make_nvp("mLeftUpperCorner", mLeftUpperCornerAdress);
+    std::uintptr_t mLeftUpperCornerAddress = reinterpret_cast<std::uintptr_t>(mLeftUpperCorner);
+    ar & boost::serialization::make_nvp("mLeftUpperCorner", mLeftUpperCornerAddress);
 
-    std::uintptr_t mLeftLowerCornerAdress = reinterpret_cast<std::uintptr_t>(mLeftLowerCorner);
-    ar & boost::serialization::make_nvp("mLeftLowerCorner", mLeftLowerCornerAdress);
+    std::uintptr_t mLeftLowerCornerAddress = reinterpret_cast<std::uintptr_t>(mLeftLowerCorner);
+    ar & boost::serialization::make_nvp("mLeftLowerCorner", mLeftLowerCornerAddress);
 
-    std::uintptr_t mRightUpperCornerAdress = reinterpret_cast<std::uintptr_t>(mRightUpperCorner);
-    ar & boost::serialization::make_nvp("mRightUpperCorner", mRightUpperCornerAdress);
+    std::uintptr_t mRightUpperCornerAddress = reinterpret_cast<std::uintptr_t>(mRightUpperCorner);
+    ar & boost::serialization::make_nvp("mRightUpperCorner", mRightUpperCornerAddress);
 
-    std::uintptr_t mRightLowerCornerAdress = reinterpret_cast<std::uintptr_t>(mRightLowerCorner);
-    ar & boost::serialization::make_nvp("mRightLowerCorner", mRightLowerCornerAdress);
+    std::uintptr_t mRightLowerCornerAddress = reinterpret_cast<std::uintptr_t>(mRightLowerCorner);
+    ar & boost::serialization::make_nvp("mRightLowerCorner", mRightLowerCornerAddress);
 
-    const std::uintptr_t* mSlaveNodesRightBoundaryAdress = reinterpret_cast<const std::uintptr_t*>(mSlaveNodesRightBoundary.data());
+    const std::uintptr_t* mSlaveNodesRightBoundaryAddress = reinterpret_cast<const std::uintptr_t*>(mSlaveNodesRightBoundary.data());
     int size = mSlaveNodesRightBoundary.size();
     ar & boost::serialization::make_nvp("mSlaveNodesRightBoundary_size", size);
-    ar & boost::serialization::make_nvp("mSlaveNodesRightBoundary", boost::serialization::make_array(mSlaveNodesRightBoundaryAdress, size));
+    ar & boost::serialization::make_nvp("mSlaveNodesRightBoundary", boost::serialization::make_array(mSlaveNodesRightBoundaryAddress, size));
 
-    const std::uintptr_t* mSlaveNodesTopBoundaryAdress = reinterpret_cast<const std::uintptr_t*>(mSlaveNodesTopBoundary.data());
+    const std::uintptr_t* mSlaveNodesTopBoundaryAddress = reinterpret_cast<const std::uintptr_t*>(mSlaveNodesTopBoundary.data());
     size = mSlaveNodesTopBoundary.size();
     ar & boost::serialization::make_nvp("mSlaveNodesTopBoundary_size", size);
-    ar & boost::serialization::make_nvp("mSlaveNodesTopBoundary", boost::serialization::make_array(mSlaveNodesTopBoundaryAdress, size));
+    ar & boost::serialization::make_nvp("mSlaveNodesTopBoundary", boost::serialization::make_array(mSlaveNodesTopBoundaryAddress, size));
 
-    const std::uintptr_t* mMasterNodesLeftBoundaryAdress = reinterpret_cast<const std::uintptr_t*>(mMasterNodesLeftBoundary.data());
+    const std::uintptr_t* mMasterNodesLeftBoundaryAddress = reinterpret_cast<const std::uintptr_t*>(mMasterNodesLeftBoundary.data());
     size = mMasterNodesLeftBoundary.size();
     ar & boost::serialization::make_nvp("mMasterNodesLeftBoundary_size", size);
-    ar & boost::serialization::make_nvp("mMasterNodesLeftBoundary", boost::serialization::make_array(mMasterNodesLeftBoundaryAdress, size));
+    ar & boost::serialization::make_nvp("mMasterNodesLeftBoundary", boost::serialization::make_array(mMasterNodesLeftBoundaryAddress, size));
 
-    const std::uintptr_t*  mMasterNodesBottomBoundaryAdress = reinterpret_cast<const std::uintptr_t*>( mMasterNodesBottomBoundary.data());
+    const std::uintptr_t*  mMasterNodesBottomBoundaryAddress = reinterpret_cast<const std::uintptr_t*>( mMasterNodesBottomBoundary.data());
     size =  mMasterNodesBottomBoundary.size();
     ar & boost::serialization::make_nvp(" mMasterNodesBottomBoundary_size", size);
-    ar & boost::serialization::make_nvp(" mMasterNodesBottomBoundary", boost::serialization::make_array( mMasterNodesBottomBoundaryAdress, size));
+    ar & boost::serialization::make_nvp(" mMasterNodesBottomBoundary", boost::serialization::make_array( mMasterNodesBottomBoundaryAddress, size));
 
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearDisplacementsPeriodic2D" << std::endl;
@@ -1167,45 +1167,45 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::load(Archive & ar, const uns
     ar & BOOST_SERIALIZATION_NVP(mAngle);
     ar & BOOST_SERIALIZATION_NVP(mStrain);
 
-    std::uintptr_t mLeftUpperCornerAdress;
-    ar & boost::serialization::make_nvp("mLeftUpperCorner", mLeftUpperCornerAdress);
-    mLeftUpperCorner = reinterpret_cast<const NodeBase*>(mLeftUpperCornerAdress);
+    std::uintptr_t mLeftUpperCornerAddress;
+    ar & boost::serialization::make_nvp("mLeftUpperCorner", mLeftUpperCornerAddress);
+    mLeftUpperCorner = reinterpret_cast<const NodeBase*>(mLeftUpperCornerAddress);
 
-    std::uintptr_t mLeftLowerCornerAdress;
-    ar & boost::serialization::make_nvp("mLeftLowerCorner", mLeftLowerCornerAdress);
-    mLeftLowerCorner = reinterpret_cast<const NodeBase*>(mLeftLowerCornerAdress);
+    std::uintptr_t mLeftLowerCornerAddress;
+    ar & boost::serialization::make_nvp("mLeftLowerCorner", mLeftLowerCornerAddress);
+    mLeftLowerCorner = reinterpret_cast<const NodeBase*>(mLeftLowerCornerAddress);
 
-    std::uintptr_t mRightUpperCornerAdress;
-    ar & boost::serialization::make_nvp("mRightUpperCorner", mRightUpperCornerAdress);
-    mRightUpperCorner = reinterpret_cast<const NodeBase*>(mRightUpperCornerAdress);
+    std::uintptr_t mRightUpperCornerAddress;
+    ar & boost::serialization::make_nvp("mRightUpperCorner", mRightUpperCornerAddress);
+    mRightUpperCorner = reinterpret_cast<const NodeBase*>(mRightUpperCornerAddress);
 
-    std::uintptr_t mRightLowerCornerAdress;
-    ar & boost::serialization::make_nvp("mRightLowerCorner", mRightLowerCornerAdress);
-    mRightLowerCorner = reinterpret_cast<const NodeBase*>(mRightLowerCornerAdress);
+    std::uintptr_t mRightLowerCornerAddress;
+    ar & boost::serialization::make_nvp("mRightLowerCorner", mRightLowerCornerAddress);
+    mRightLowerCorner = reinterpret_cast<const NodeBase*>(mRightLowerCornerAddress);
 
     int size = 0;
     ar & boost::serialization::make_nvp("mSlaveNodesRightBoundary_size", size);
-    std::uintptr_t* mSlaveNodesRightBoundaryAdress = new std::uintptr_t[size];
-    ar & boost::serialization::make_nvp("mSlaveNodesRightBoundary", boost::serialization::make_array(mSlaveNodesRightBoundaryAdress, size));
-    mSlaveNodesRightBoundary.assign(reinterpret_cast<NodeBase**>(&mSlaveNodesRightBoundaryAdress[0]), reinterpret_cast<NodeBase**>(&mSlaveNodesRightBoundaryAdress[size]));
+    std::uintptr_t* mSlaveNodesRightBoundaryAddress = new std::uintptr_t[size];
+    ar & boost::serialization::make_nvp("mSlaveNodesRightBoundary", boost::serialization::make_array(mSlaveNodesRightBoundaryAddress, size));
+    mSlaveNodesRightBoundary.assign(reinterpret_cast<NodeBase**>(&mSlaveNodesRightBoundaryAddress[0]), reinterpret_cast<NodeBase**>(&mSlaveNodesRightBoundaryAddress[size]));
 
     size = 0;
     ar & boost::serialization::make_nvp("mSlaveNodesTopBoundary_size", size);
-    std::uintptr_t*  mSlaveNodesTopBoundaryAdress = new std::uintptr_t[size];
-    ar & boost::serialization::make_nvp("mSlaveNodesTopBoundary", boost::serialization::make_array( mSlaveNodesTopBoundaryAdress, size));
-     mSlaveNodesTopBoundary.assign(reinterpret_cast<NodeBase**>(& mSlaveNodesTopBoundaryAdress[0]), reinterpret_cast<NodeBase**>(& mSlaveNodesTopBoundaryAdress[size]));
+    std::uintptr_t*  mSlaveNodesTopBoundaryAddress = new std::uintptr_t[size];
+    ar & boost::serialization::make_nvp("mSlaveNodesTopBoundary", boost::serialization::make_array( mSlaveNodesTopBoundaryAddress, size));
+     mSlaveNodesTopBoundary.assign(reinterpret_cast<NodeBase**>(& mSlaveNodesTopBoundaryAddress[0]), reinterpret_cast<NodeBase**>(& mSlaveNodesTopBoundaryAddress[size]));
 
     size = 0;
     ar & boost::serialization::make_nvp("mMasterNodesLeftBoundary_size", size);
-    std::uintptr_t*  mMasterNodesLeftBoundaryAdress = new std::uintptr_t[size];
-    ar & boost::serialization::make_nvp("mMasterNodesLeftBoundary", boost::serialization::make_array( mMasterNodesLeftBoundaryAdress, size));
-     mMasterNodesLeftBoundary.assign(reinterpret_cast<NodeBase**>(& mMasterNodesLeftBoundaryAdress[0]), reinterpret_cast<NodeBase**>(& mMasterNodesLeftBoundaryAdress[size]));
+    std::uintptr_t*  mMasterNodesLeftBoundaryAddress = new std::uintptr_t[size];
+    ar & boost::serialization::make_nvp("mMasterNodesLeftBoundary", boost::serialization::make_array( mMasterNodesLeftBoundaryAddress, size));
+     mMasterNodesLeftBoundary.assign(reinterpret_cast<NodeBase**>(& mMasterNodesLeftBoundaryAddress[0]), reinterpret_cast<NodeBase**>(& mMasterNodesLeftBoundaryAddress[size]));
 
     size = 0;
     ar & boost::serialization::make_nvp("mMasterNodesBottomBoundary_size", size);
-    std::uintptr_t*  mMasterNodesBottomBoundaryAdress = new std::uintptr_t[size];
-    ar & boost::serialization::make_nvp("mMasterNodesBottomBoundary", boost::serialization::make_array( mMasterNodesBottomBoundaryAdress, size));
-     mMasterNodesBottomBoundary.assign(reinterpret_cast<NodeBase**>(& mMasterNodesBottomBoundaryAdress[0]), reinterpret_cast<NodeBase**>(& mMasterNodesBottomBoundaryAdress[size]));
+    std::uintptr_t*  mMasterNodesBottomBoundaryAddress = new std::uintptr_t[size];
+    ar & boost::serialization::make_nvp("mMasterNodesBottomBoundary", boost::serialization::make_array( mMasterNodesBottomBoundaryAddress, size));
+     mMasterNodesBottomBoundary.assign(reinterpret_cast<NodeBase**>(& mMasterNodesBottomBoundaryAddress[0]), reinterpret_cast<NodeBase**>(& mMasterNodesBottomBoundaryAddress[size]));
 
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstraintLinearDisplacementsPeriodic2D" << std::endl;

@@ -66,9 +66,9 @@ public:
 
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 
-    //! @brief ElementBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Adress (uintptr_t)
-    //! Deserialization of the ElementBase-Pointer is done by searching and casting back the adress in the map
-    //! @param mNodeMapCast std::map containing the old and new adresses
+    //! @brief ElementBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Address (uintptr_t)
+    //! Deserialization of the ElementBase-Pointer is done by searching and casting back the address in the map
+    //! @param mNodeMapCast std::map containing the old and new addresses
     virtual void SetElementPtrAfterSerialization(const std::map<uintptr_t, uintptr_t>& mElementMapCast) override;
 #endif // ENABLE_SERIALIZATION
 

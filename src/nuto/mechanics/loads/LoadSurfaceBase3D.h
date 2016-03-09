@@ -58,9 +58,9 @@ public:
 #endif
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase);
 
-        std::vector<std::pair<std::uintptr_t, int> >  mVolumeElementsAdress;
-        ar & boost::serialization::make_nvp("mNodesAdress", mVolumeElementsAdress);
-        for(std::vector<std::pair<std::uintptr_t, int> >::const_iterator it = mVolumeElementsAdress.begin(); it != mVolumeElementsAdress.end(); it++)
+        std::vector<std::pair<std::uintptr_t, int> >  mVolumeElementsAddress;
+        ar & boost::serialization::make_nvp("mVolumeElements", mVolumeElementsAddress);
+        for(std::vector<std::pair<std::uintptr_t, int> >::const_iterator it = mVolumeElementsAddress.begin(); it != mVolumeElementsAddress.end(); it++)
         {
             mVolumeElements.push_back(reinterpret_cast<std::pair<const Element3D*, int> >(*it));
         }
@@ -84,12 +84,12 @@ public:
 #endif
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase);
 
-        std::vector<std::pair<std::uintptr_t, int> >  mVolumeElementsAdress;
+        std::vector<std::pair<std::uintptr_t, int> >  mVolumeElementsAddress;
         for(std::vector<std::pair<const Element3D*, int> >::const_iterator it = mVolumeElements.begin(); it != mVolumeElements.end(); it++)
         {
-            mVolumeElementsAdress.push_back(reinterpret_cast<std::pair<std::uintptr_t, int> >(*it));
+            mVolumeElementsAddress.push_back(reinterpret_cast<std::pair<std::uintptr_t, int> >(*it));
         }
-        ar & boost::serialization::make_nvp("mNodesAdress", mVolumeElementsAdress);
+        ar & boost::serialization::make_nvp("mVolumeElements", mVolumeElementsAddress);
 
         ar & BOOST_SERIALIZATION_NVP(mIntegrationType3NPtr)
            & BOOST_SERIALIZATION_NVP(mIntegrationType4NPtr)

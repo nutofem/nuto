@@ -1796,10 +1796,10 @@ void NuTo::Element3D::save(Archive & ar, const unsigned int version)const
     ar & boost::serialization::make_nvp("Element1D_ElementBase",boost::serialization::base_object<ElementBase >(*this));
     ar & boost::serialization::make_nvp("mSection", const_cast<SectionBase*&>(mSection));
 
-    const std::uintptr_t* mNodesAdress = reinterpret_cast<const std::uintptr_t*>(mNodes.data());
+    const std::uintptr_t* mNodesAddress = reinterpret_cast<const std::uintptr_t*>(mNodes.data());
     int size = mNodes.size();
     ar & boost::serialization::make_nvp("mNodes_size", size);
-    ar & boost::serialization::make_nvp("mNodes", boost::serialization::make_array(mNodesAdress, size));
+    ar & boost::serialization::make_nvp("mNodes", boost::serialization::make_array(mNodesAddress, size));
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize Element1D" << std::endl;
 #endif
@@ -1819,9 +1819,9 @@ void NuTo::Element3D::load(Archive & ar, const unsigned int version)
 
     int size = 0;
     ar & boost::serialization::make_nvp("mNodes_size", size);
-    std::uintptr_t* mNodesAdress = new std::uintptr_t[size];
-    ar & boost::serialization::make_nvp("mNodes", boost::serialization::make_array(mNodesAdress, size));
-    mNodes.assign(reinterpret_cast<NodeBase**>(&mNodesAdress[0]), reinterpret_cast<NodeBase**>(&mNodesAdress[size]));
+    std::uintptr_t* mNodesAddress = new std::uintptr_t[size];
+    ar & boost::serialization::make_nvp("mNodes", boost::serialization::make_array(mNodesAddress, size));
+    mNodes.assign(reinterpret_cast<NodeBase**>(&mNodesAddress[0]), reinterpret_cast<NodeBase**>(&mNodesAddress[size]));
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish deserialize Element1D" << std::endl;
 #endif

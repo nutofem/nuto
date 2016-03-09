@@ -47,8 +47,8 @@ public:
     #endif
         ar & boost::serialization::make_nvp("LoadBase", boost::serialization::base_object<LoadBase >(*this));
 
-        std::uintptr_t mNodeAdress = reinterpret_cast<std::uintptr_t>(mNode);
-        ar & boost::serialization::make_nvp("mNode", mNodeAdress);
+        std::uintptr_t mNodeAddress = reinterpret_cast<std::uintptr_t>(mNode);
+        ar & boost::serialization::make_nvp("mNode", mNodeAddress);
     #ifdef DEBUG_SERIALIZATION
         std::cout << "finish serialize LoadNode" << std::endl;
     #endif
@@ -65,9 +65,9 @@ public:
     #endif
         ar & boost::serialization::make_nvp("LoadBase", boost::serialization::base_object<LoadBase >(*this));
 
-        std::uintptr_t mNodeAdress;
-        ar & boost::serialization::make_nvp("mNode", mNodeAdress);
-        mNode = reinterpret_cast<const NodeBase*>(mNodeAdress);
+        std::uintptr_t mNodeAddress;
+        ar & boost::serialization::make_nvp("mNode", mNodeAddress);
+        mNode = reinterpret_cast<const NodeBase*>(mNodeAddress);
     #ifdef DEBUG_SERIALIZATION
         std::cout << "finish serialize LoadNode" << std::endl;
     #endif

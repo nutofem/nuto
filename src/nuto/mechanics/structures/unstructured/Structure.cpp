@@ -87,9 +87,9 @@ void NuTo::Structure::saveImplement(Archive & ar, bool light) const
     for (std::vector<std::vector<ElementBase*>>::iterator it =  mMIS.begin(); it!=mMIS.end(); it++)
     {
         int size = it->size();
-        const std::uintptr_t* mMISAdress = reinterpret_cast<const std::uintptr_t*>(it->data());
+        const std::uintptr_t* mMISAddress = reinterpret_cast<const std::uintptr_t*>(it->data());
         ar & boost::serialization::make_nvp("size", size);
-        ar & boost::serialization::make_nvp("mMIS", boost::serialization::make_array(mMISAdress, size));
+        ar & boost::serialization::make_nvp("mMIS", boost::serialization::make_array(mMISAddress, size));
     }
 #endif
 
@@ -221,10 +221,10 @@ void NuTo::Structure::loadImplement(Archive & ar, bool light)
     {
         int size = 0;
         ar & boost::serialization::make_nvp("size", size);
-        std::uintptr_t* mMISAdress = new std::uintptr_t[size];
+        std::uintptr_t* mMISAddress = new std::uintptr_t[size];
 
-        ar & boost::serialization::make_nvp("mMIS", boost::serialization::make_array(mMISAdress, size));
-        it->assign(reinterpret_cast<ElementBase**>(&mMISAdress[0]), reinterpret_cast<ElementBase**>(&mMISAdress[size]));
+        ar & boost::serialization::make_nvp("mMIS", boost::serialization::make_array(mMISAddress, size));
+        it->assign(reinterpret_cast<ElementBase**>(&mMISAddress[0]), reinterpret_cast<ElementBase**>(&mMISAddress[size]));
     }
 #endif
 
@@ -260,29 +260,24 @@ void NuTo::Structure::loadImplement(Archive & ar, bool light)
         itElements->second->GetDataPtr()->SetElementPtrAfterSerialization(mElementMapOldNewPtr);
     }
 
-//#ifdef _OPENMP
-//    for (std::vector<std::vector<ElementBase*>>::iterator it =  mMIS)
-//    mMIS
-//#endif
-
     // exchange node pointer in constraints
     for (boost::ptr_map<int,ConstraintBase>::iterator itConstraints=mConstraintMap.begin(); itConstraints!=mConstraintMap.end(); itConstraints++)
     {
-        // cast the adress to a NodeBase-Pointer
+        // cast the Address to a NodeBase-Pointer
         itConstraints->second->SetNodePtrAfterSerialization(mNodeMapOldNewPtr);
     }
 
     // exchange node pointer in loads
     for (boost::ptr_map<int,LoadBase>::iterator itLoads=mLoadMap.begin(); itLoads!=mLoadMap.end(); itLoads++)
     {
-        // cast the adress to a NodeBase-Pointer
+        // cast the Address to a NodeBase-Pointer
         itLoads->second->SetNodePtrAfterSerialization(mNodeMapOldNewPtr);
     }
 
     // exchange element pointer in loads
     for (boost::ptr_map<int,LoadBase>::iterator itLoads=mLoadMap.begin(); itLoads!=mLoadMap.end(); itLoads++)
     {
-        // cast the adress to a NodeBase-Pointer
+        // cast the Address to a NodeBase-Pointer
         itLoads->second->SetElementPtrAfterSerialization(mElementMapOldNewPtr);
     }
 
@@ -292,7 +287,7 @@ void NuTo::Structure::loadImplement(Archive & ar, bool light)
     mNodeAndElementMapOldNewPtr.insert(mElementMapOldNewPtr.begin(), mElementMapOldNewPtr.end());
     for (boost::ptr_map<int,GroupBase>::iterator itGroups=mGroupMap.begin(); itGroups!=mGroupMap.end(); itGroups++)
     {
-        // cast the adress to a NodeBase-Pointer
+        // cast the Address to a NodeBase-Pointer
         itGroups->second->SetNodePtrAfterSerialization(mNodeAndElementMapOldNewPtr);
     }
 }

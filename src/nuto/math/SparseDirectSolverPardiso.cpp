@@ -115,7 +115,7 @@ void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>&
 #endif
 
     /** checks the current license in the file pardiso.lic and initializes the internal
-    timer and the adress pointer pt. It sets the solver default values according to the matrix type. **/
+    timer and the address pointer pt. It sets the solver default values according to the matrix type. **/
 
     pardisoinit (pt,  &matrixType, &mSolver, parameters, dparameters, &error);
 

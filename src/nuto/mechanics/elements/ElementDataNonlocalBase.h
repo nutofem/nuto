@@ -50,10 +50,10 @@ public:
     #endif
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ElementDataBase);
 
-        const std::uintptr_t* mNonlocalElementsAdress = reinterpret_cast<const std::uintptr_t*>(mNonlocalElements.data());
+        const std::uintptr_t* mNonlocalElementsAddress = reinterpret_cast<const std::uintptr_t*>(mNonlocalElements.data());
         int size = mNonlocalElements.size();
         ar & boost::serialization::make_nvp("mNonlocalElements_size", size);
-        ar & boost::serialization::make_nvp("mNonlocalElements", boost::serialization::make_array(mNonlocalElementsAdress, size));
+        ar & boost::serialization::make_nvp("mNonlocalElements", boost::serialization::make_array(mNonlocalElementsAddress, size));
     #ifdef DEBUG_SERIALIZATION
         std::cout << "finish save ElementDataNonlocalBase" << std::endl;
     #endif
@@ -72,9 +72,9 @@ public:
 
         int size = 0;
         ar & boost::serialization::make_nvp("mNonlocalElements_size", size);
-        std::uintptr_t* mNonlocalElementsAdress = new std::uintptr_t[size];
-        ar & boost::serialization::make_nvp("mNonlocalElements", boost::serialization::make_array(mNonlocalElementsAdress, size));
-        mNonlocalElements.assign(reinterpret_cast<ElementBase**>(&mNonlocalElementsAdress[0]), reinterpret_cast<ElementBase**>(&mNonlocalElementsAdress[size]));
+        std::uintptr_t* mNonlocalElementsAddress = new std::uintptr_t[size];
+        ar & boost::serialization::make_nvp("mNonlocalElements", boost::serialization::make_array(mNonlocalElementsAddress, size));
+        mNonlocalElements.assign(reinterpret_cast<ElementBase**>(&mNonlocalElementsAddress[0]), reinterpret_cast<ElementBase**>(&mNonlocalElementsAddress[size]));
     #ifdef DEBUG_SERIALIZATION
         std::cout << "finish load ElementDataNonlocalBase" << std::endl;
     #endif

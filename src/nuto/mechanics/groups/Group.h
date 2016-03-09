@@ -49,14 +49,14 @@ public:
 #ifdef DEBUG_SERIALIZATION
         std::cout << "start saving Group<T>" << std::endl;
 #endif
-        // save the adresses in another map
+        // save the Addresses in another map
         std::map<int, std::uintptr_t> mapCast;
         for (typename std::map<int,T*>::const_iterator it = this->begin(); it!= this->end(); it++)
         {
             mapCast.insert(std::pair<int, std::uintptr_t>(it->first, reinterpret_cast<std::uintptr_t>(it->second)));
         }
 
-        // serialize this map containing adresses
+        // serialize this map containing Addresses
         ar & boost::serialization::make_nvp ("map", mapCast );
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(GroupBase);
 #ifdef DEBUG_SERIALIZATION

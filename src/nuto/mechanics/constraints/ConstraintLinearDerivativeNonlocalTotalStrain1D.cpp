@@ -109,8 +109,8 @@ void NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D::save(Archive & ar, c
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear);
 
-    std::uintptr_t mParentElementAdress = reinterpret_cast<std::uintptr_t>(mParentElement);
-    ar & boost::serialization::make_nvp("mParentElement", mParentElementAdress);
+    std::uintptr_t mParentElementAddress = reinterpret_cast<std::uintptr_t>(mParentElement);
+    ar & boost::serialization::make_nvp("mParentElement", mParentElementAddress);
 
     ar & BOOST_SERIALIZATION_NVP(mLocalIpCoordinate);
 #ifdef DEBUG_SERIALIZATION
@@ -126,9 +126,9 @@ void NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D::load(Archive & ar, c
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstraintLinear);
 
-    std::uintptr_t mParentElementAdress;
-    ar & boost::serialization::make_nvp("mParentElement", mParentElementAdress);
-    mParentElement = reinterpret_cast<const ElementBase*>(mParentElementAdress);
+    std::uintptr_t mParentElementAddress;
+    ar & boost::serialization::make_nvp("mParentElement", mParentElementAddress);
+    mParentElement = reinterpret_cast<const ElementBase*>(mParentElementAddress);
 
     ar & BOOST_SERIALIZATION_NVP(mLocalIpCoordinate);
 #ifdef DEBUG_SERIALIZATION

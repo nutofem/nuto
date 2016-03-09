@@ -224,9 +224,9 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
 
-    //! @brief ElementBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Adress (uintptr_t)
-    //! Deserialization of the ElementBase-Pointer is done by searching and casting back the adress in the map
-    //! @param mElementMapCast   std::map containing the old and new adresses
+    //! @brief ElementBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Address (uintptr_t)
+    //! Deserialization of the ElementBase-Pointer is done by searching and casting back the Address in the map
+    //! @param mElementMapCast   std::map containing the old and new Addresses
     virtual void SetElementPtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mElementMapCast)
     {
         (void)mElementMapCast;

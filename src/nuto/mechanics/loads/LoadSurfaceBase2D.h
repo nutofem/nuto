@@ -62,9 +62,9 @@ public:
 #endif
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase);
 
-        std::vector<std::pair<std::uintptr_t, int> >  mElements2DAdress;
-        ar & boost::serialization::make_nvp("mNodesAdress", mElements2DAdress);
-        for(std::vector<std::pair<std::uintptr_t, int> >::const_iterator it = mElements2DAdress.begin(); it != mElements2DAdress.end(); it++)
+        std::vector<std::pair<std::uintptr_t, int> >  mElements2DAddress;
+        ar & boost::serialization::make_nvp("mElements2D", mElements2DAddress);
+        for(std::vector<std::pair<std::uintptr_t, int> >::const_iterator it = mElements2DAddress.begin(); it != mElements2DAddress.end(); it++)
         {
             const Element2D* tempElement2D = reinterpret_cast<const Element2D* >(it->first);
             std::pair<const Element2D*, int> tempPair(tempElement2D, it->second);
@@ -94,14 +94,14 @@ public:
 #endif
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase);
 
-        std::vector<std::pair<std::uintptr_t, int> >  mElements2DAdress;
+        std::vector<std::pair<std::uintptr_t, int> >  mElements2DAddress;
         for(std::vector<std::pair<const Element2D*, int> >::const_iterator it = mElements2D.begin(); it != mElements2D.end(); it++)
         {
-            std::uintptr_t tempAdressElement2D = reinterpret_cast<std::uintptr_t >(it->first);
-            std::pair<std::uintptr_t, int> tempPair(tempAdressElement2D, it->second);
-            mElements2DAdress.push_back(tempPair);
+            std::uintptr_t tempAddressElement2D = reinterpret_cast<std::uintptr_t >(it->first);
+            std::pair<std::uintptr_t, int> tempPair(tempAddressElement2D, it->second);
+            mElements2DAddress.push_back(tempPair);
         }
-        ar & boost::serialization::make_nvp("mNodesAdress", mElements2DAdress);
+        ar & boost::serialization::make_nvp("mElements2D", mElements2DAddress);
 
         ar & BOOST_SERIALIZATION_NVP(mIntegrationType2NPtr)
            & BOOST_SERIALIZATION_NVP(mIntegrationType3NPtr)
@@ -117,9 +117,9 @@ public:
 
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 
-    //! @brief NodeBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Adress (uintptr_t)
-    //! Deserialization of the NodeBase-Pointer is done by searching and casting back the adress in the map
-    //! @param mNodeMapCast   std::map containing the old and new adresses
+    //! @brief NodeBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Address (uintptr_t)
+    //! Deserialization of the NodeBase-Pointer is done by searching and casting back the Address in the map
+    //! @param mNodeMapCast   std::map containing the old and new Addresses
     virtual void SetElementPtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mElementMapCast) override
     {
         for(std::vector<std::pair<const Element2D*, int> >::const_iterator it = mElements2D.begin(); it != mElements2D.end(); it++)

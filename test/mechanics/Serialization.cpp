@@ -503,7 +503,7 @@ void serialize1d()
 //        boost::archive::xml_oarchive outArchivexml(outFileStream);
 //        myStructure->save(outArchivexml, 1);
 //        outFileStream.close();
-        myStructure->Save("StructureOut", "XML");
+        myStructure->Save("StructureOut", "BINARY");
     }
 
 
@@ -514,7 +514,7 @@ void serialize1d()
     //    std::ifstream iFileStreamxml("StructureOut");
     //    boost::archive::xml_iarchive inArchivexml(iFileStreamxml);
     //    myStructureImported->load(inArchivexml, 1);
-        myStructureImported->Restore("StructureOut", "XML");
+        myStructureImported->Restore("StructureOut", "BINARY");
         myStructureImported->GroupInfo(3);
         std::cout << "\n\n\n\n\n*** Solve extracted structure ***\n\n\n\n\n";
         solve1d(myStructureImported);
@@ -540,7 +540,7 @@ void serialize2d()
 //        boost::archive::xml_oarchive outArchivexml(outFileStream);
 //        myStructure2D->save(outArchivexml, 1);
 //        outFileStream.close();
-        myStructure2D->Save("StructureOut2D", "XML");
+        myStructure2D->Save("StructureOut2D", "BINARY");
     }
 
     {
@@ -549,7 +549,7 @@ void serialize2d()
 //        std::ifstream iFileStreamxml("StructureOut2D");
 //        boost::archive::xml_iarchive inArchivexml(iFileStreamxml);
 //        myStructureImported->load(inArchivexml, 1);
-        myStructureImported->Restore("StructureOut2D", "XML");
+        myStructureImported->Restore("StructureOut2D", "BINARY");
 
         std::cout << "\n************************** Solve extracted structure 2D **************************\n";
         solve2d(myStructureImported,numElementsX,numElementsY);
