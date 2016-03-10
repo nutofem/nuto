@@ -187,20 +187,6 @@ IF(ENABLE_C++_TESTS)
     SET_TARGET_PROPERTIES(LobattoIntegration PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
   ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoIntegration)
-  
-  ADD_EXECUTABLE(Serialization Serialization.cpp)
-  TARGET_LINK_LIBRARIES(Serialization NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES})
-  IF (ENABLE_VISUALIZE)
-    TARGET_LINK_LIBRARIES(Serialization NuToVisualize)
-  ENDIF (ENABLE_VISUALIZE)
-  IF(MUMPS_FOUND)
-    TARGET_LINK_LIBRARIES(Serialization ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  ENDIF(MUMPS_FOUND)
-  IF(MINGW)
-    SET_TARGET_PROPERTIES(Serialization PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  ENDIF(MINGW)
-  ADD_TEST(c::mechanics::Serialization ${CMAKE_CURRENT_BUILD_DIR}/Serialization)
-
 
 # NonlocalDamagePlasticityModel
 ADD_EXECUTABLE(NonlocalDamagePlasticityModel NonlocalDamagePlasticityModel.cpp)

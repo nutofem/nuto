@@ -95,7 +95,6 @@ void NuTo::Structure::saveImplement(Archive & ar, bool light) const
 
 
     // cast the 'mNodeMap' to a map containing pairs (int,uintptr_t)
-    // the  uintptr_t will not be serialized
     std::map<int, std::uintptr_t> mNodeMapCast;
     for (boost::ptr_map<int,NodeBase>::const_iterator it = mNodeMap.begin(); it!= mNodeMap.end(); it++)
     {
@@ -104,7 +103,6 @@ void NuTo::Structure::saveImplement(Archive & ar, bool light) const
     ar & boost::serialization::make_nvp("mNodeMapCast", mNodeMapCast);
 
     // cast the 'mElementMap' to a map containing pairs (int,uintptr_t)
-    // the  uintptr_t will not be serialized
     std::map<int, std::uintptr_t> mElementMapCast;
     for (boost::ptr_map<int,ElementBase>::const_iterator it = mElementMap.begin(); it!= mElementMap.end(); it++)
     {
@@ -281,7 +279,6 @@ void NuTo::Structure::loadImplement(Archive & ar, bool light)
         itLoads->second->SetElementPtrAfterSerialization(mElementMapOldNewPtr);
     }
 
-    /** GROUPS **/
     // exchange node AND element pointer in groups
     std::map<std::uintptr_t, std::uintptr_t> mNodeAndElementMapOldNewPtr(mNodeMapOldNewPtr);
     mNodeAndElementMapOldNewPtr.insert(mElementMapOldNewPtr.begin(), mElementMapOldNewPtr.end());
