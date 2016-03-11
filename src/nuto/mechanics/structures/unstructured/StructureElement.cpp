@@ -136,8 +136,10 @@ void NuTo::Structure::ElementInfo(int rVerboseLevel) const
 void NuTo::Structure::ElementTotalConvertToInterpolationType()
 {
     // create a group with all elements
+#ifdef SHOW_TIME
     bool showTime = mShowTime;
     mShowTime = false;
+#endif
 
     // create element group containing the new elements
     int groupNumber = GroupCreate("Elements");
@@ -149,7 +151,9 @@ void NuTo::Structure::ElementTotalConvertToInterpolationType()
         ElementBase* elementPtr = itElement->second;
         group->AddMember(elementId, elementPtr);
     }
+#ifdef SHOW_TIME
     mShowTime = showTime;
+#endif
 
     // convert elements
     ElementConvertToInterpolationType(groupNumber);
@@ -228,8 +232,11 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
 void NuTo::Structure::ElementTotalConvertToInterpolationType(double rNodeDistanceMerge, double rMeshSize)
 {
     // create a group with all elements
+
+#ifdef SHOW_TIME
     bool showTime = mShowTime;
     mShowTime = false;
+#endif
 
     // create element group containing the new elements
     int groupNumber = GroupCreate("Elements");
@@ -241,7 +248,9 @@ void NuTo::Structure::ElementTotalConvertToInterpolationType(double rNodeDistanc
         ElementBase* elementPtr = itElement->second;
         group->AddMember(elementId, elementPtr);
     }
+#ifdef SHOW_TIME
     mShowTime = showTime;
+#endif
 
     // convert elements
     ElementConvertToInterpolationType(groupNumber, rNodeDistanceMerge, rMeshSize);
@@ -743,15 +752,19 @@ int NuTo::Structure::ElementsCreate(int rInterpolationTypeId, NuTo::FullMatrix<i
         newElementIds.push_back(newElementId);
     }
 
+#ifdef SHOW_TIME
     bool showTime = mShowTime;
     mShowTime = false;
+#endif
 
     // create element group containing the new elements
     int newElementGroup = GroupCreate("Elements");
     for (int newElementId : newElementIds)
         GroupAddElement(newElementGroup, newElementId);
 
+#ifdef SHOW_TIME
     mShowTime = showTime;
+#endif
     return newElementGroup;
 }
 

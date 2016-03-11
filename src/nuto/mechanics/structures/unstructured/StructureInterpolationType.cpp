@@ -79,6 +79,7 @@ void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationType
 
     // update all elements
     // disable show time
+
     bool showTime = GetShowTime();
     SetShowTime(false);
 
@@ -158,6 +159,7 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node:
 
     // update all elements
     // disable show time
+
     bool showTime = GetShowTime();
     SetShowTime(false);
 

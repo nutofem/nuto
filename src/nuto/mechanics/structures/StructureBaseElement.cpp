@@ -482,8 +482,10 @@ bool NuTo::StructureBase::CheckCoefficientMatrix_0(double rDelta, bool rPrintRes
     NuTo::FullVector<double,Eigen::Dynamic> displacementsActiveDOFsCheck;
     NuTo::FullVector<double,Eigen::Dynamic> displacementsDependentDOFsCheck;
 
+#ifdef SHOW_TIME
     bool oldShowtime = mShowTime;
     mShowTime = false;
+#endif
 
     // calculate stiffness
     this->NodeExtractDofValues(0,displacementsActiveDOFsCheck, displacementsDependentDOFsCheck);
@@ -524,7 +526,9 @@ bool NuTo::StructureBase::CheckCoefficientMatrix_0(double rDelta, bool rPrintRes
     this->NodeMergeActiveDofValues(0,displacementsActiveDOFsCheck);
     this->ElementTotalUpdateTmpStaticData();
 
+#ifdef SHOW_TIME
     mShowTime=oldShowtime;
+#endif
 
     int row,col;
     double maxError =(coeffMatrix_CDF-coeffMatrix).cwiseAbs().maxCoeff(&row,&col);
@@ -574,10 +578,9 @@ bool NuTo::StructureBase::ElementCheckCoefficientMatrix_0(double rDelta)
 #ifdef SHOW_TIME
     std::clock_t start,end;
     start=clock();
-#endif
-
     bool oldShowtime = mShowTime;
     mShowTime = false;
+#endif
 
     // get all element pointers
     std::vector<ElementBase*> elementVector;
@@ -609,7 +612,9 @@ bool NuTo::StructureBase::ElementCheckCoefficientMatrix_0(double rDelta)
         elementDiffs(iElement) = maxDiff;
     }
 
+#ifdef SHOW_TIME
     mShowTime=oldShowtime;
+#endif
 
     int maxElementIndex, maxCol;
     double maxCoeff = elementDiffs.Max(maxElementIndex, maxCol);

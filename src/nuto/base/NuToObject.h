@@ -52,21 +52,29 @@ public:
 
 
 
+        //! @brief ... sets the showtime option
+        //! @param rShowTime ... show time option
+        void SetShowTime(bool rShowTime)
+        {
 #ifdef SHOW_TIME
-	//! @brief ... sets the showtime option
-    //! @param rShowTime ... show time option
-	void SetShowTime(bool rShowTime)
-	{
-		mShowTime=rShowTime;
-	}
+            mShowTime=rShowTime;
+#else
+            (void)rShowTime;
+#endif
+        }
 
-    //! @brief ... returns the show time optionl
-    //! @return show time
-	bool GetShowTime()const
-	{
-		return mShowTime;
-	}
+        //! @brief ... returns the show time optionl
+        //! @return show time
+        bool GetShowTime()const
+        {
+#ifdef SHOW_TIME
+            return mShowTime;
+#else
+            return false;
+#endif
+        }
 
+#ifdef SHOW_TIME
 	//! @brief ...get the difference for exact time function in timespec format for testing purpose
 	//! @param start, end ... time of begin and end
 	//! @return  ... difference of times
