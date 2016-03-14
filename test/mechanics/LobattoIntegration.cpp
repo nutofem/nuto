@@ -23,7 +23,6 @@
 /*
  |>*----*----*----*----*  -->F
 */
-
 NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
                                   int rNumNodesPerElement,
                                   NuTo::FullVector<double, Eigen::Dynamic>& nodeCoordinatesFirstElement,
@@ -404,27 +403,26 @@ int main()
 
         // 3Nodes 1D
         myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, 10, 2, DisplacementCorrectSerialization1D);
-        solve(myStructure, DisplacementCorrectSerialization1D);
-
 #ifdef ENABLE_SERIALIZATION
         std::cout << "\n************************** Saving a NuTo-Structure (StructureOut1D3NLobatto)**************************\n";
-        myStructure->Save("StructureOut1D3NLobatto", "BINARY");
+        myStructure->Save("StructureOut1D3NLobatto", "XML");
 #endif
+        solve(myStructure, DisplacementCorrectSerialization1D);
+
         // 3Nodes 2D
         myStructure = buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, 4, 2, DisplacementCorrectSerialization2D);
-        solve(myStructure, DisplacementCorrectSerialization2D);
-
 #ifdef ENABLE_SERIALIZATION
         std::cout << "\n************************** Saving a NuTo-Structure (StructureOut2D3NLobatto)**************************\n";
         myStructure->Save("StructureOut2D3NLobatto", "XML");
 #endif
+        solve(myStructure, DisplacementCorrectSerialization2D);
     }
 
 #ifdef ENABLE_SERIALIZATION
     {
         NuTo::Structure *myStructureImported1D = new NuTo::Structure(1);
         std::cout << "\n************************** Extracting a NuTo-Structure (StructureOut1D3NLobatto)**************************\n";
-        myStructureImported1D->Restore("StructureOut1D3NLobatto", "BINARY");
+        myStructureImported1D->Restore("StructureOut1D3NLobatto", "XML");
         std::cout << "\n************************** Solve extracted structure (StructureOut1D3NLobatto) **************************\n";
         solve(myStructureImported1D, DisplacementCorrectSerialization1D);
 
@@ -450,33 +448,32 @@ int main()
 
         // 4Nodes 1D
         myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO3, 4, nodeCoordinates, 10, 2, DisplacementCorrectSerialization1D);
-        solve(myStructure, DisplacementCorrectSerialization1D);
-
 #ifdef ENABLE_SERIALIZATION
         std::cout << "\n************************** Saving a NuTo-Structure (StructureOut1D4NLobatto)**************************\n";
-        myStructure->Save("StructureOut1D4NLobatto", "BINARY");
+        myStructure->Save("StructureOut1D4NLobatto", "TEXT");
 #endif
+        solve(myStructure, DisplacementCorrectSerialization1D);
+
         // 3Nodes 2D
         myStructure = buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO3, 4, nodeCoordinates, 4, 2, DisplacementCorrectSerialization2D);
-        solve(myStructure, DisplacementCorrectSerialization2D);
-
 #ifdef ENABLE_SERIALIZATION
         std::cout << "\n************************** Saving a NuTo-Structure (StructureOut2D4NLobatto)**************************\n";
-        myStructure->Save("StructureOut2D4NLobatto", "XML");
+        myStructure->Save("StructureOut2D4NLobatto", "TEXT");
 #endif
+        solve(myStructure, DisplacementCorrectSerialization2D);
     }
 
 #ifdef ENABLE_SERIALIZATION
     {
         NuTo::Structure *myStructureImported1D = new NuTo::Structure(1);
         std::cout << "\n************************** Extracting a NuTo-Structure (StructureOut1D4NLobatto)**************************\n";
-        myStructureImported1D->Restore("StructureOut1D4NLobatto", "BINARY");
+        myStructureImported1D->Restore("StructureOut1D4NLobatto", "TEXT");
         std::cout << "\n************************** Solve extracted structure (StructureOut1D4NLobatto) **************************\n";
         solve(myStructureImported1D, DisplacementCorrectSerialization1D);
 
         NuTo::Structure *myStructureImported2D = new NuTo::Structure(2);
         std::cout << "\n************************** Extracting a NuTo-Structure (StructureOut2D4NLobatto)**************************\n";
-        myStructureImported2D->Restore("StructureOut2D4NLobatto", "XML");
+        myStructureImported2D->Restore("StructureOut2D4NLobatto", "TEXT");
         std::cout << "\n************************** Solve extracted structure (StructureOut2D4NLobatto) **************************\n";
         solve(myStructureImported2D, DisplacementCorrectSerialization2D);
     }
@@ -496,27 +493,26 @@ int main()
 
         // 5Nodes 1D
         myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO4, 5, nodeCoordinates, 10, 2, DisplacementCorrectSerialization1D);
-        solve(myStructure, DisplacementCorrectSerialization1D);
-
 #ifdef ENABLE_SERIALIZATION
         std::cout << "\n************************** Saving a NuTo-Structure (StructureOut1D5NLobatto)**************************\n";
-        myStructure->Save("StructureOut1D5NLobatto", "XML");
+        myStructure->Save("StructureOut1D5NLobatto", "BINARY");
 #endif
+        solve(myStructure, DisplacementCorrectSerialization1D);
+
         // 5Nodes 2D
         myStructure = buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO4, 5, nodeCoordinates, 4, 2, DisplacementCorrectSerialization2D);
-        solve(myStructure, DisplacementCorrectSerialization2D);
-
 #ifdef ENABLE_SERIALIZATION
         std::cout << "\n************************** Saving a NuTo-Structure (StructureOut2D5NLobatto)**************************\n";
         myStructure->Save("StructureOut2D5NLobatto", "BINARY");
 #endif
+        solve(myStructure, DisplacementCorrectSerialization2D);
     }
 
 #ifdef ENABLE_SERIALIZATION
     {
         NuTo::Structure *myStructureImported1D = new NuTo::Structure(1);
         std::cout << "\n************************** Extracting a NuTo-Structure (StructureOut1D5NLobatto)**************************\n";
-        myStructureImported1D->Restore("StructureOut1D5NLobatto", "XML");
+        myStructureImported1D->Restore("StructureOut1D5NLobatto", "BINARY");
         std::cout << "\n************************** Solve extracted structure (StructureOut1D5NLobatto) **************************\n";
         solve(myStructureImported1D, DisplacementCorrectSerialization1D);
 
