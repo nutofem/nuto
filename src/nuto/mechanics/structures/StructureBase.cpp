@@ -221,7 +221,7 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_NVP(mUpdateTmpStaticDataRequired);
     ar & BOOST_SERIALIZATION_NVP(mToleranceStiffnessEntries);
 #ifdef _OPENMP
-    // mMIS contains Element-Ptr, so its serialized, by serializing the Pointer-Addresses and updating them
+    // mMIS contains Element-Ptr, so its serialized, by serializing the Pointer-Addresses and updating them afterwards
     // see Structure::loadImplement and Structure::saveImplement
     ar & BOOST_SERIALIZATION_NVP(mUseMIS);
     ar & BOOST_SERIALIZATION_NVP(mNumProcessors);

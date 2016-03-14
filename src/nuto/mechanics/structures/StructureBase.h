@@ -87,12 +87,31 @@ public:
     //! @param version    version
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
+
+
+    //! @brief ... save the object to a file
+    //! @param filename ... filename
+    //! @param aType ... type of file, either BINARY, XML or TEXT
+    virtual void SaveUpdate (const std::string &filename, std::string rType ) const
+    {
+        (void)filename;
+        (void)rType;
+    }
+
+    //! @brief ... restore the object from a file
+    //! @param filename ... filename
+    //! @param aType ... type of file, either BINARY, XML or TEXT
+    virtual void RestoreUpdate (const std::string &filename, std::string rType )
+    {
+        (void)filename;
+        (void)rType;
+    }
+
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief gives the dimension of the Structure
     //! @return Structural dimension (1,2 or 3)
     int GetDimension()const;
-
 
     //! @brief ... clear all visualization components
     void ClearVisualizationComponents();

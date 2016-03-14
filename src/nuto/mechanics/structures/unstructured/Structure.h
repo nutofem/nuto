@@ -61,7 +61,7 @@ public:
     void load(Archive & ar, const unsigned int version);
 
     template<class Archive>
-    void loadImplement(Archive & ar, bool light);
+    void loadImplement(Archive & ar);
 
     //! @brief serializes the class, this is the save routine
     //! @param ar         archive
@@ -70,7 +70,7 @@ public:
     void save(Archive & ar, const unsigned int version) const;
 
     template<class Archive>
-    void saveImplement(Archive & ar, bool light) const;
+    void saveImplement(Archive & ar) const;
 
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 
@@ -79,12 +79,23 @@ public:
     //! @brief ... save the object to a file
     //! @param filename ... filename
     //! @param aType ... type of file, either BINARY, XML or TEXT
-    void Save (const std::string &filename, std::string rType ) const;
+    void Save (const std::string &filename, std::string rType ) const override;
 
     //! @brief ... restore the object from a file
     //! @param filename ... filename
     //! @param aType ... type of file, either BINARY, XML or TEXT
-    void Restore (const std::string &filename, std::string rType );
+    void Restore (const std::string &filename, std::string rType ) override;
+
+    //! @brief ... save the object to a file
+    //! @param filename ... filename
+    //! @param aType ... type of file, either BINARY, XML or TEXT
+    virtual void SaveUpdate (const std::string &filename, std::string rType ) const override;
+
+    //! @brief ... restore the object from a file
+    //! @param filename ... filename
+    //! @param aType ... type of file, either BINARY, XML or TEXT
+    virtual void RestoreUpdate (const std::string &filename, std::string rType ) override;
+
 #endif // ENABLE_SERIALIZATION
 
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
