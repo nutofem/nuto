@@ -11,7 +11,7 @@
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include "nuto/mechanics/timeIntegration/JumpDirect.h"
 #include "nuto/mechanics/timeIntegration/TimeIntegrationBase.h"
-#include <boost-1_55/boost/filesystem.hpp>
+#include <boost/filesystem.hpp>
 
 // AmplFraction = AmplValue/rMeanValue
 // returns a vector [TimeToLoadTillMeanValue,ValueAt(Time=rTime)]
