@@ -290,14 +290,34 @@ double NuTo::StructureBase::GetTime() const
 	return mTime;
 }
 
-//! @brief set number of cycles to be extrapolated
-void NuTo::StructureBase::SetNumExtrapolatedCycles(int rNumber)
+//! @brief set number of cycles to be extrapolated in the cycle jump routine
+//! @brief ... rNumber[0] is the number of extrapolated cycles itself Njump
+//! @brief ... rNumber[1] is the weighting coefficient of the implicit term
+//! @brief ... rNumber[2] is the weighting coefficient of the explicit term
+//! @brief ... rNumber[3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
+void NuTo::StructureBase::SetNumExtrapolatedCycles(NuTo::FullVector<double,Eigen::Dynamic> rNumber)
 {
+	if (rNumber.size()<3)
+	        throw NuTo::MechanicsException("[NuTo::StructureBase::SetNumExtrapolatedCycles] at least number of extrapolation cycles and weighting coefficient for explicit and implicit terms are required.");
+
+	// check the number of extrapolation cycles
+	if (rNumber[0] < 0)
+			throw NuTo::MechanicsException("[NuTo::StructureBase::SetNumExtrapolatedCycles] number of extrapolation cycles is negative.");
+
+	// check the weighting coefficients
+	for (int i = 1; i < rNumber.size(); ++i) {
+		if (rNumber[i] < 0 || rNumber[i]>1)
+				throw NuTo::MechanicsException("[NuTo::StructureBase::SetNumExtrapolatedCycles] the " + std::to_string(i) + " weighting coefficient is out of the [0,1] range.");
+	}
 	mNumExtrapolatedCycles = rNumber;
 }
 
-//! @brief get the number of cycles to be extrapolated
-int NuTo::StructureBase::GetNumExtrapolatedCycles() const
+//! @brief get the number of cycles to be extrapolated. Returns
+//! @brief ... [0] is the number of extrapolated cycles itself Njump
+//! @brief ... [1] is the weighting coefficient of the implicit term
+//! @brief ... [2] is the weighting coefficient of the explicit term
+//! @brief ... [3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
+NuTo::FullVector<double,Eigen::Dynamic> NuTo::StructureBase::GetNumExtrapolatedCycles() const
 {
 	return mNumExtrapolatedCycles;
 }

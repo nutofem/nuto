@@ -359,10 +359,10 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping1
 	    	// compose vector of known Parameter, which are necessary for ResidualAn
 	    	NuTo::FullVector<double,Eigen::Dynamic> Parameter(4);
 
-	    	Parameter[0] = oldStaticData->mOmega;		// omega at the beginning of the time increment
-	    	Parameter[1] = oldStaticData->mKappa;		// kappa at the beginning of the time increment
-	    	Parameter[2] = prevNonlocalEqStrain;		// nonlocal eq strain at the beginning of the time increment
-	    	Parameter[3] = rNonlocalEqStrain;			// current nonlocal eq strain
+	    	Parameter[0] = oldStaticData->mOmega;									// omega at the beginning of the time increment
+	    	Parameter[1] = std::max(oldStaticData->mKappa, e_0 + e_0*1.0e-5);		// kappa at the beginning of the time increment
+	    	Parameter[2] = prevNonlocalEqStrain;									// nonlocal eq strain at the beginning of the time increment
+	    	Parameter[3] = rNonlocalEqStrain;										// current nonlocal eq strain
 
 	    	const NuTo::FullVector<double,Eigen::Dynamic> ParameterList(Parameter);
 
@@ -705,7 +705,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::Evaluate2D(Ele
         }
             break;
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
-        {	// the statevs for storing (like mOmegaFatigue ...) should not be updated, cause they willbe set to zero, what is wrong
+        {	// the statevs for storing (like mOmegaFatigue ...) should not be updated, cause they will be set to zero, what is wrong
 //    	    *(rElement->GetStaticData(rIp)->AsGradientDamage2DFatigue()) = newStaticData;
     	    rElement->GetStaticData(rIp)->AsGradientDamage2DFatigue()->mPrevStrain = engineeringStrain2D;
     	    rElement->GetStaticData(rIp)->AsGradientDamage2DFatigue()->mPrevSigma = engineeringStress2D;
@@ -770,7 +770,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::Evaluate2D(Ele
     		// get static data
     		ConstitutiveStaticDataGradientDamage2DFatigue *ExtrapolatedStaticData = rElement->GetStaticData(rIp)->AsGradientDamage2DFatigue();
 
-    		if (rElement->GetStructure()->GetNumExtrapolatedCycles() > 1) {
+    		if (rElement->GetStructure()->GetNumExtrapolatedCycles()[0] > 1) {
     			// make extrapolation of state variables, except of mPrevStrain, mPrevSigma and mPrevNonlocalStrain, because this should be calculated after the equilibrium is found
         		ExtrapolatedStaticData->FatigueExtrapolateStaticData(rElement->GetStructure()->GetNumExtrapolatedCycles());	// linear extrapolation of kappa
         		ExtrapolatedStaticData->SetOmega(this->CalculateDamage(ExtrapolatedStaticData->mKappa));					// calculate omega from kappa
@@ -866,10 +866,10 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping2
 	    	// compose vector of known Parameter, which are necessary for ResidualAn
 	    	NuTo::FullVector<double,Eigen::Dynamic> Parameter(4);
 
-	    	Parameter[0] = oldStaticData->mOmega;		// omega at the beginning of the time increment
-	    	Parameter[1] = oldStaticData->mKappa;		// kappa at the beginning of the time increment
-	    	Parameter[2] = prevNonlocalEqStrain;		// nonlocal eq strain at the beginning of the time increment
-	    	Parameter[3] = rNonlocalEqStrain;			// current nonlocal eq strain
+	    	Parameter[0] = oldStaticData->mOmega;									// omega at the beginning of the time increment
+	    	Parameter[1] = std::max(oldStaticData->mKappa, e_0 + e_0*1.0e-5);		// kappa at the beginning of the time increment
+	    	Parameter[2] = prevNonlocalEqStrain;									// nonlocal eq strain at the beginning of the time increment
+	    	Parameter[3] = rNonlocalEqStrain;										// current nonlocal eq strain
 
 	    	const NuTo::FullVector<double,Eigen::Dynamic> ParameterList(Parameter);
 

@@ -315,7 +315,7 @@ public:
     // rDisp_Mean_k ... mean displacement (dependent DOF, rFourier = 0)
     // rDisp_Ampl_j ... displacement amplitude (active DOF, rFourier = 1)
     // rDisp_Mean_k ... displacement amplitude (dependent DOF, rFourier = 1)
-    void CalculateFourierCofficients(NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_k,
+    void CalculateFourierCoefficients(NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_k,
     		NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_k,
 			const NuTo::FullVector<double,Eigen::Dynamic>* rIntForce_Mean_j, const NuTo::FullVector<double,Eigen::Dynamic>* rIntForce_Mean_k,
 			const NuTo::FullVector<double,Eigen::Dynamic>* rIntForce_Max_j,  const NuTo::FullVector<double,Eigen::Dynamic>* rIntForce_Max_k);
@@ -332,7 +332,12 @@ public:
     // The CalculateFourierCoefficients routine determines the DISPLACEMENTS Dof only. For a coupled problem DISPLACEMENTS/DofType, the another DofType
     // has to be updated too. This routine updates the DofTypesfor the following list of Dofs:
     // NONLOCALEQSTRAIN
-    void CalculateFourierCoefficientsCoupledDofs();
+    // rDisp_Mean_j ... mean displacement (active DOF, rFourier = 0)
+    // rDisp_Mean_k ... mean displacement (dependent DOF, rFourier = 0)
+    // rDisp_Ampl_j ... displacement amplitude (active DOF, rFourier = 1)
+    // rDisp_Mean_k ... displacement amplitude (dependent DOF, rFourier = 1)
+    void CalculateFourierCoefficientsCoupledDofs(NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_k,
+    		NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_k);
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
     //! @brief serializes the class

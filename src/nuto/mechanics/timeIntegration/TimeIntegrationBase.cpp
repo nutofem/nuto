@@ -188,7 +188,7 @@ void NuTo::TimeIntegrationBase::CalculateExternalLoad(StructureBase& rStructure,
 		for (int count=0; count<rStructure.GetNumLoadCases(); count++)
 		{
 			rStructure.BuildGlobalExternalLoadVector(count,tmp_j,tmp_k);
-			mStructure->GetLogger()<<"TIB_CEL1, mTimeDeoendentLoadCase = " << mTimeDependentLoadCase << "\n";
+			mStructure->GetLogger()<<"TIB_CEL1, mTimeDependentLoadCase = " << mTimeDependentLoadCase << "\n";
 			if (count==mTimeDependentLoadCase)
 			{
 			    mStructure->GetLogger() << "TIB TimeDependent \n";

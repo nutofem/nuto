@@ -16,6 +16,13 @@ NuTo::ConstitutiveStaticDataGradientDamage2DFatigue::ConstitutiveStaticDataGradi
 {
     mKappaFatigue = 0;
     mOmegaFatigue = 0;
+
+    mKappaExtrapolated = 0;
+    mOmegaExtrapolated = 0.;
+
+    mKappaDeltaImplicit = 0.;
+    mOmegaDeltaImplicit = 0.;
+
     mKappa = 0.;
     mOmega = 0;
 
@@ -37,6 +44,10 @@ NuTo::ConstitutiveStaticDataGradientDamage2DFatigue& NuTo::ConstitutiveStaticDat
     NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain::operator= (rOther);
     mKappaFatigue = rOther.mKappaFatigue;
     mOmegaFatigue = rOther.mOmegaFatigue;
+    mKappaExtrapolated = rOther.mKappaExtrapolated;
+    mOmegaExtrapolated = rOther.mOmegaExtrapolated;
+    mKappaDeltaImplicit = rOther.mKappaDeltaImplicit;
+    mOmegaDeltaImplicit = rOther.mOmegaDeltaImplicit;
     mKappa        = rOther.mKappa;
     mOmega        = rOther.mOmega;
 
@@ -79,6 +90,10 @@ void NuTo::ConstitutiveStaticDataGradientDamage2DFatigue::serialize(Archive & ar
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain)
        & BOOST_SERIALIZATION_NVP(mKappaFatigue)
 	   & BOOST_SERIALIZATION_NVP(mOmegaFatigue)
+       & BOOST_SERIALIZATION_NVP(mKappaExtrapolated)
+	   & BOOST_SERIALIZATION_NVP(mOmegaExtrapolated)
+       & BOOST_SERIALIZATION_NVP(mKappaDeltaImplicit)
+	   & BOOST_SERIALIZATION_NVP(mOmegaDeltaImplicit)
        & BOOST_SERIALIZATION_NVP(mKappa)
 	   & BOOST_SERIALIZATION_NVP(mOmega)
        & BOOST_SERIALIZATION_NVP(mPrevStrainFatigue)

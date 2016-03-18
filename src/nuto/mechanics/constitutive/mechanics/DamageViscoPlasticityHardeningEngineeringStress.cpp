@@ -721,7 +721,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
 		break;
     	case NuTo::Constitutive::Output::FATIGUE_EXTRAPOLATE_STATIC_DATA:
     	{
-    		if (rElement->GetStructure()->GetNumExtrapolatedCycles() > 1) {
+    		if (rElement->GetStructure()->GetNumExtrapolatedCycles()[0] > 1) {
     			// make extrapolation of state variables, except of mPrevStrain and mPrevSigma, because this should be calculated after the equilibrium is found
         		rElement->GetStaticData(rIp)->AsDamageViscoPlasticity3DFatigue()->FatigueExtrapolateStaticData(rElement->GetStructure()->GetNumExtrapolatedCycles());
 			} else {

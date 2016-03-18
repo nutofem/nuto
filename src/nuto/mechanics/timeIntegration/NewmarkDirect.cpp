@@ -959,6 +959,8 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
 
 //                DamageFile << mTime << " " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega()
 //                               		<< " " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " " << std::endl;
+
+                // 2D nonlocal test
 //                DamageFile << mTime << " " << mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega()
 //                		<< " " << mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " "
 //        				<< mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain() <<
@@ -998,6 +1000,7 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
             }
         }
 //        DamageFile.close(); TotalInelasticEqStrainFile.close();
+        // 2D nonlocal test
 //        DamageFile.close();
     }
     catch (MechanicsException& e)

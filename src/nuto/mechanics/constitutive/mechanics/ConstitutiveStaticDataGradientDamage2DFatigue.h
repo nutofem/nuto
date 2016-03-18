@@ -122,11 +122,24 @@ public:
     	this->mPrevStrainFatigue = this->mPrevStrain;
     	this->mPrevStressFatigue = this->mPrevSigma;
     	this->mPrevNonlocalEqStrainFatigue = this->mPrevNonlocalEqStrain;
+
+    	// re-initiate statevs which have to be extrapolated. This happens preor to the next jump.
+    	this->mKappaExtrapolated = this->mKappa;
+    	this->mKappaDeltaImplicit = 0.;
+
+    	this->mOmegaExtrapolated = this->mOmega;
+    	this->mOmegaDeltaImplicit = 0.;
+
     }
 
     //!@brief save static data to their relevant fatigue counterparts
     void FatigueRestoreStaticData()
     {
+    	// save cyclic change after the jump
+    	this->mKappaDeltaImplicit = this->mKappa - this->mKappaExtrapolated;
+    	this->mOmegaDeltaImplicit = this->mOmega - this->mOmegaExtrapolated;
+
+    	// restore statevs
     	this->SetOmega(this->mOmegaFatigue);
     	this->SetKappa(this->mKappaFatigue);
     	this->mPrevStrain = this->mPrevStrainFatigue;
@@ -136,16 +149,28 @@ public:
 
     //!@brief extrapolate static data except of mPrevSigma and mPrevStrain
     //!@brief mPrevSigma and mPrevStrain should be calculated after finding the equilibrium with the extrapolated static data
-    void FatigueExtrapolateStaticData(int rNumber)
+    // ... rNumber[0] is the number of extrapolated cycles itself Njump
+    // ... rNumber[1] is the weighting coefficient of the implicit term
+    // ... rNumber[2] is the weighting coefficient of the explicit term
+    // ... rNumber[3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
+    // the first three components are mandatory
+    void FatigueExtrapolateStaticData(NuTo::FullVector<double,Eigen::Dynamic> rNumber)
 	{
     	// the kappa should be extrapolated, damage should be calculated from kappa in the IP->Evaluate
-    	double DeltaKappa;
+    	double DeltaKappaExplicit, DeltaOmegaExplicit;
+    	double Njump(rNumber[0]);
 
-    	// calculate cyclic change of kappa
-    	DeltaKappa = this->mKappa - this->mKappaFatigue;
+    	// calculate cyclic change of kappa prior the jump
+    	DeltaKappaExplicit = this->mKappa - this->mKappaFatigue;
+    	DeltaOmegaExplicit = this->mOmega - this->mOmegaFatigue;
 
     	// linear extrapolation of kappa
-    	this->mKappa += rNumber*DeltaKappa;
+    	this->mKappa += Njump*(rNumber[1]*this->mKappaDeltaImplicit + rNumber[2]*DeltaKappaExplicit);
+    	this->mOmega += Njump*(rNumber[1]*this->mOmegaDeltaImplicit + rNumber[2]*DeltaOmegaExplicit);
+
+    	this->mKappaExtrapolated = this->mKappa;
+    	this->mOmegaExtrapolated = this->mOmega;
+
 	}
 
 #ifdef ENABLE_SERIALIZATION
@@ -168,9 +193,21 @@ protected:
     //! @brief fatigue damage variable
     double mOmegaFatigue;
 
+    //! @brief maximal value of nonlocal eq strain, stores the extrapolated value
+    double mOmegaExtrapolated;
 
-    //! @brief maximal value of nonlocal eq strain
+    //! @brief stores the cyclic growth of kappa after extrapolation (that is implicit)
+    double mOmegaDeltaImplicit;
+
+
+    //! @brief maximal value of nonlocal eq strain, stores the pre-jump value
     double mKappaFatigue;
+
+    //! @brief maximal value of nonlocal eq strain, stores the extrapolated value
+    double mKappaExtrapolated;
+
+    //! @brief stores the cyclic growth of kappa after extrapolation (that is implicit)
+    double mKappaDeltaImplicit;
 
     //! @brief previous strain
     EngineeringStrain2D mPrevStrainFatigue;
