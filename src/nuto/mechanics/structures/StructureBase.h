@@ -1803,38 +1803,6 @@ public:
     	mUpdateTmpStaticDataRequired = true;
     }
 
-    //! @brief is only true for structure used as multiscale (structure in a structure)
-    //! @parameters rTypeOfSpecimen 0 box, 1 dogbone
-    //! @parameters rBoundingBox box for the spheres (3*2 matrix)
-    //! @parameters rSeed seed for the random number generator
-    //! @parameters rRadiusBoundaryParticles radius particles simulated on the boundary
-    //! @parameters rDistanceBoundaryParticles distance of the boundary particles
-    //! @parameters rTypeOfSpecimen 0 box, 1 dogbone
-    //! @return ... matrix with spheres (coordinates x y z and radius)
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> CreateSpheresOnSpecimenBoundary(int rTypeOfSpecimen, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rBoundingBox, int rSeed,
-    		double rRadiusBoundaryParticles, double rDistanceBoundaryParticles);
-
-
-    //! @brief is only true for structure used as multiscale (structure in a structure)
-    //! @parameters rTypeOfSpecimen 0 box, 1 dogbone
-    //! @parameters rBoundingBox box for the spheres (3*2 matrix)
-    //! @parameters rRelParticleVolume percentage of particle volume inside the specimen
-    //! @parameters rGradingCurve matrix with each line min_diameter, max_diameter, volume percentage of that sieve size
-    //! @parameters relativeDistance scaling factor to increase the diameter when inserting the sphere to ensure a minimum distance
-    //! @parameters absoluteDistance distance to increase the diameter when inserting the sphere to ensure a minimum distance
-    //! @parameters rSeed seed for the random number generator
-    //! @parameters rSpheresBoundary particles simulated on the boundary e.g. created with CreateSpheresOnBoxBoundary (they do not contribute to the grading curve)
-    //! @return ... matrix with spheres (coordinates x y z and radius)
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> CreateSpheresInSpecimen(int rTypeOfSpecimen, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rBoundingBox, double rRelParticleVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rGradingCurve,
-    		double relativeDistance, double absoluteDistance, int rSeed, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rSpheresBoundary);
-
-    //! @brief cut spheres at a given z-coordinate to create circles (in 2D)
-    //! @parameters rSpheres matrix with the spheres (x,y,z,r)
-    //! @parameters rZCoord z coordinate (where to cut)
-    //! @parameters rMinRadius minimal radius of the circle
-    //! @return ... matrix with the circles (x,y,r)
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> CutSpheresZ(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rSpheres, double rZCoord, double rMinRadius);
-
     //! @brief sets the Hessian to be constant or variable
     //! @parameters rTimeDerivative (0 = stiffness, 1 damping, 2 mass)
     //! @parameters rValue (true = const false=variable)
@@ -2022,10 +1990,6 @@ protected:
 
     //! @brief ... check for dof numbering and build of tmpStaticData
     void BuildGlobalCoefficientMatrixCheck();
-
-
-    //! @brief ... inserts a particle into subboxes to increase efficiency when performing overlap checks
-    void InsertParticleIntoBox(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rParticles, int rTheParticle, std::vector<std::vector<int > >& rSubBox, std::array<int,3>& rNSubBox,std::array<double,3>& rLSubBox, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rBoundingBox);
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

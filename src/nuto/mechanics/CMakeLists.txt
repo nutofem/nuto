@@ -195,7 +195,6 @@ integrationtypes/IntegrationType3D4NGauss1Ip.cpp
 integrationtypes/IntegrationType3D4NGauss4Ip.cpp
 integrationtypes/IntegrationType3D8NGauss1Ip.cpp
 integrationtypes/IntegrationType3D8NGauss2x2x2Ip.cpp
-integrationtypes/IntegrationType3D20NGauss3x3x3Ip.cpp
 integrationtypes/IntegrationTypeBase.cpp
 )
 
