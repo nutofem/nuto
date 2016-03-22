@@ -149,29 +149,24 @@ ELSE(ENABLE_OPENMP)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 ENDIF(ENABLE_OPENMP)
 
-IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU") 
+# use newer c++ standard, enable additional warnings, support for sse4
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall -msse4")
+
+# there is an error in the numpy headers, which produces a warning that is
+# fatal when using pedantic-errors
+if(ENABLE_NUMPY)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic")
+else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic-errors")
+endif()
+# gcc specific options
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU") 
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.7.0")
     message(FATAL_ERROR "Insufficient gcc version (at least 4.7.0)")
   endif()
-
   #-Wfatal-errors for not so long error messages
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -msse4")
-  # ISO standards mode does not work well on MinGW
-  # (they don't define certain things that are defined on other platforms in standard mode,
-  # like M_PI)
-  if(WIN32)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
-  else()
-    if (ENABLE_NUMPY)
-  #there is an error in the numpy headers, which produces are warning that is fatal when using pedantic-errors
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wno-unused-local-typedefs -Wunknown-pragmas -pedantic")
-    else()
-        SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wno-unused-local-typedefs -Wunknown-pragmas -pedantic-errors")
-    endif()
-
-  endif()
-ENDIF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
-
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-long-long -Wno-unused-local-typedefs -Wunknown-pragmas")
+endif()
 
 IF(ENABLE_NUMPY)
 FIND_PACKAGE(Numpy REQUIRED)
