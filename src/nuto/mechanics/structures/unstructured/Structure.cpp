@@ -2999,8 +2999,8 @@ public:
 
 NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFromGmshAux(const std::string& rFileName, ElementData::eElementDataType rElementData, IpData::eIpDataType rIPData)
 {
-    const unsigned int num_elm_nodes[21] =
-    { 0, 2, 3, 4, 4, 8, 6, 5, 3, 6, 9, 10, 27, 18, 14, 1, 8, 20, 15, 13 };
+    const unsigned int num_elm_nodes[24] =
+    { 0, 2, 3, 4, 4, 8, 6, 5, 3, 6, 9, 10, 27, 18, 14, 1, 8, 20, 15, 13, 0, 10, 0, 15 };
 
     namespace qi = boost::spirit::qi;
     namespace ascii = boost::spirit::ascii;

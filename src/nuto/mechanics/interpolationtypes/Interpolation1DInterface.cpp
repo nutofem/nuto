@@ -12,9 +12,14 @@ NuTo::IntegrationType::eIntegrationType NuTo::Interpolation1DInterface::GetStand
     switch (mTypeOrder)
     {
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT1:
-        return NuTo::IntegrationType::IntegrationType1D2NGauss2Ip;
+    {
+//        return NuTo::IntegrationType::IntegrationType1D2NGauss2Ip;
+        return NuTo::IntegrationType::IntegrationType1D2NLobatto3Ip;
+    }
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
+    {
         return NuTo::IntegrationType::IntegrationType1D2NGauss3Ip;
+    }
     default:
         throw MechanicsException("[NuTo::Interpolation1DInterface::GetStandardIntegrationType] Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }

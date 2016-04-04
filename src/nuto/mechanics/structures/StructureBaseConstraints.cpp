@@ -745,7 +745,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     //////////////////////////////////////
 
 
-    std::cout << "Query Node Id: \t " << rNode << std::endl;
+//    std::cout << "Query Node Id: \t " << rNode << std::endl;
 
     // quueryPoint stores the coordinates of rNode in an ANN container
     ANNcoord* queryPoint;
@@ -756,7 +756,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     dataPoints = annAllocPts(GroupGetNumMembers(nodeGroup), dim);
 
 
-    std::cout << "GroupGetNumMembers(nodeGroup)" << GroupGetNumMembers(nodeGroup) << std::endl;
+//    std::cout << "GroupGetNumMembers(nodeGroup)" << GroupGetNumMembers(nodeGroup) << std::endl;
 
 
     for (int iNode = 0; iNode < GroupGetNumMembers(nodeGroup); ++iNode)
@@ -803,7 +803,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     annDeallocPt(queryPoint);
     annClose(); // done with ANN
 
-    std::cout << "end of ANN" << std::endl;
+//    std::cout << "end of ANN" << std::endl;
 
 
     //////////////////////////////////////
@@ -836,8 +836,8 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
             if (pointInsideElement)
             {
                 correctElementId = iElementId;
-                std::cout << "inside element id: \t" << correctElementId << std::endl;
-                std::cout << "-----------------------------------------------------" << std::endl;
+//                std::cout << "inside element id: \t" << correctElementId << std::endl;
+//                std::cout << "-----------------------------------------------------" << std::endl;
                 break;
             }
         }
@@ -873,8 +873,8 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
             if (pointInsideElement)
             {
                 correctElementId = iElementId;
-                std::cout << "inside element id: \t" << correctElementId << std::endl;
-                std::cout << "-----------------------------------------------------" << std::endl;
+//                std::cout << "inside element id: \t" << correctElementId << std::endl;
+//                std::cout << "-----------------------------------------------------" << std::endl;
                 break;
             }
 
@@ -941,7 +941,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     {
         int localNodeId = elementPtr->GetInterpolationType()->Get(NuTo::Node::eAttributes::DISPLACEMENTS).GetNodeIndex(iNode);
         int globalNodeId = NodeGetId(elementPtr->GetNode(localNodeId, Node::eAttributes::DISPLACEMENTS));
-        std::cout << "globalNodeId \t" << globalNodeId << std::endl;
+//        std::cout << "globalNodeId \t" << globalNodeId << std::endl;
         double coefficient = -shapeFunctions(iNode, 0);
 
 
