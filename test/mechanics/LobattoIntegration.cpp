@@ -393,6 +393,8 @@ int main()
     // 3 IP
     NuTo::FullVector<double, Eigen::Dynamic> ones(3); ones.fill(1);
     NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(3);
+
+
     {
         NuTo::Structure* myStructure;
 

@@ -61,20 +61,12 @@ public:
     const SectionTruss* AsSectionTruss() const override;
 
 #ifdef ENABLE_SERIALIZATION
-    //! @brief save (serialize) the class
+    //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void save(Archive & ar, const unsigned int version) const;
+    void serialize(Archive & ar, const unsigned int version);
 
-    //! @brief load (serializes) the class
-    //! @param ar         archive
-    //! @param version    version
-    template<class Archive>
-    void load(Archive & ar, const unsigned int version);
-
-
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
 #endif // ENABLE_SERIALIZATION
 private:
     //! @brief ... cross-section area
