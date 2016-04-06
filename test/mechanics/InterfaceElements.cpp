@@ -171,7 +171,16 @@ int main(int argc, char* argv[])
         std::cout << "**      Interface                **" << std::endl;
         std::cout << "***********************************" << std::endl;
 
-        myStructure.InterfaceElementsCreate(groupIdFibre, interfaceInterpolationType, interfaceMaterial, fibreMatrixBond, fibreInterpolationType, fibreMaterial, fibreSection);
+        auto pairGroupFiberGroupBond = myStructure.InterfaceElementsCreate(groupIdFibre, interfaceInterpolationType, fibreInterpolationType);
+
+        int groupEleFiber   = pairGroupFiberGroupBond.first;
+        int groupEleBond    = pairGroupFiberGroupBond.second;
+
+        myStructure.ElementGroupSetConstitutiveLaw(groupEleFiber, fibreMaterial);
+        myStructure.ElementGroupSetSection(groupEleFiber, fibreSection);
+
+        myStructure.ElementGroupSetConstitutiveLaw(groupEleBond, interfaceMaterial);
+        myStructure.ElementGroupSetSection(groupEleBond, fibreMatrixBond);
 
         std::cout << "***********************************" << std::endl;
         std::cout << "**      Boundary Conditions      **" << std::endl;
