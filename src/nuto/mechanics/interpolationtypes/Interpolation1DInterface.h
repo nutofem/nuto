@@ -14,9 +14,34 @@ namespace NuTo
 
 class Interpolation1DInterface: public Interpolation1DTruss
 {
+
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif  // ENABLE_SERIALIZATION
+
 public:
 
+    //! @brief default constructor for serialization
+    Interpolation1DInterface() = default;
+
     Interpolation1DInterface(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
+
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize Interpolation1DInterface" << std::endl;
+#endif
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Interpolation1DTruss);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize Interpolation1DInterface" << std::endl;
+#endif
+    }
+#endif // ENABLE_SERIALIZATION
 
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type
@@ -66,4 +91,6 @@ private:
 
 } /* namespace NuTo */
 
-
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::Interpolation1DInterface)
+#endif

@@ -11,6 +11,11 @@
 
 #include "nuto/math/FullMatrix.h"
 
+#ifdef ENABLE_SERIALIZATION
+#include "nuto/math/EigenBoostSerialization.h"
+#endif
+
+
 NuTo::Element1DInXD::Element1DInXD(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType) :
         NuTo::Element1D::Element1D(rStructure, rNodes, rElementDataType, rIpDataType, rInterpolationType)
 {
@@ -260,3 +265,26 @@ void NuTo::Element1DInXD::CheckElement()
 
 }
 
+
+
+#ifdef ENABLE_SERIALIZATION
+template void NuTo::Element1DInXD::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::Element1DInXD::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::Element1DInXD::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::Element1DInXD::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::Element1DInXD::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template void NuTo::Element1DInXD::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::Element1DInXD::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize Element1DInXD" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Element1D);
+    ar & BOOST_SERIALIZATION_NVP(mRotationMatrix);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize Element1DInXD" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Element1DInXD)
+#endif

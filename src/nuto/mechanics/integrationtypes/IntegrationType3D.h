@@ -1,6 +1,5 @@
 // $Id$
-#ifndef IntegrationType3D_H
-#define IntegrationType3D_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -34,12 +33,20 @@ public:
     //! @param version    version
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
-    {}
+    {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize IntegrationType3D" << std::endl;
+#endif
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(IntegrationTypeBase);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize IntegrationType3D" << std::endl;
+#endif
+    }
 #endif // ENABLE_SERIALIZATION
 
     //! @brief returns the dimension of the integration type
     //! @return dimension = 1, 2 or 3
-    int GetCoordinateDimension()const
+    inline int GetCoordinateDimension()const
     {
         return 3;
     }
@@ -53,6 +60,10 @@ protected:
 
 
 };
-}
+} // namespace nuto
 
-#endif //IntegrationType3D_H
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType3D)
+#endif
+
+

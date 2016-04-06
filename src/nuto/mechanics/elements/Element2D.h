@@ -341,9 +341,8 @@ protected:
 
     const SectionBase *mSection;
 
-private:
     //! @brief just for serialization
-    Element2D(){}
+    Element2D() = default;
 };
 
 } /* namespace NuTo */

@@ -87,3 +87,9 @@ int NuTo::Interpolation1DInterface::CalculateNumNodes() const
     }
 
 }
+
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Interpolation1DInterface)
+#endif
+

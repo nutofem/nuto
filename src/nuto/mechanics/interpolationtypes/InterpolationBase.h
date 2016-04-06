@@ -5,8 +5,7 @@
  *      Author: ttitsche
  */
 
-#ifndef INTERPOLATIONBASE_H_
-#define INTERPOLATIONBASE_H_
+#pragma once
 
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/MechanicsException.h"
@@ -233,4 +232,4 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::InterpolationBase)
 #endif
 
-#endif /* INTERPOLATIONBASE_H_ */
+

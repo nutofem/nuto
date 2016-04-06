@@ -919,3 +919,8 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
 
 }
 #endif // ENABLE_VISUALIZE
+
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Element2DInterface)
+#endif

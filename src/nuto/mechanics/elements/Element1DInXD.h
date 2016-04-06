@@ -26,6 +26,10 @@ template<int TNumRows, int TNumColumns> class ConstitutiveTangentNonlocal;
 class Element1DInXD: public Element1D
 {
 
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif  // ENABLE_SERIALIZATION
+
 public:
     Element1DInXD(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType);
 
@@ -33,6 +37,14 @@ public:
     {
     }
     ;
+
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+#endif  // ENABLE_SERIALIZATION
 
     //! @brief returns the enum (type of the element)
     //! @return enum
@@ -83,6 +95,9 @@ protected:
 
 private:
 
+    //! @brief constructor for serialization
+    Element1DInXD() = default;
+
     //! @brief Calculates the rotation matrix. 2x2 in 2D, 3x3 in 3D
     //! @return mRotationMatrix
     Eigen::MatrixXd CalculateRotationMatrix();
@@ -102,3 +117,6 @@ private:
 
 } /* namespace NuTo */
 
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::Element1DInXD)
+#endif

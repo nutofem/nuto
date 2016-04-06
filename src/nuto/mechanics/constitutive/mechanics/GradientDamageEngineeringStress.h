@@ -5,8 +5,7 @@
  *      Author: ttitsche
  */
 
-#ifndef CONSTITUTIVEGRADIENTDAMAGEENGINEERINGSTRESS_H_
-#define CONSTITUTIVEGRADIENTDAMAGEENGINEERINGSTRESS_H_
+#pragma once
 
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
@@ -262,4 +261,4 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::GradientDamageEngineeringStress)
 #endif // ENABLE_SERIALIZATION
 
-#endif /* CONSTITUTIVEGRADIENTDAMAGEENGINEERINGSTRESS_H_ */
+

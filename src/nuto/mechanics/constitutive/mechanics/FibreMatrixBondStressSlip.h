@@ -10,14 +10,36 @@
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif // ENABLE_SERIALIZATION
+
 namespace NuTo
 {
 
 class FibreMatrixBondStressSlip: public ConstitutiveBase
 {
 
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif // ENABLE_SERIALIZATION
+
 public:
     FibreMatrixBondStressSlip();
+
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+#endif // ENABLE_SERIALIZATION
+
 
     //! @brief ... evaluate the constitutive relation in 1D
     //! @param rElement ... element
@@ -105,3 +127,6 @@ private:
 
 }
 
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::FibreMatrixBondStressSlip)
+#endif // ENABLE_SERIALIZATION

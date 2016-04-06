@@ -927,12 +927,20 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
 
 
     auto shapeFunctions = elementPtr->GetInterpolationType()->Get(NuTo::Node::eAttributes::DISPLACEMENTS).CalculateShapeFunctions(elementNaturalNodeCoords);
-
+    std::cout << "shapeFunctions" << shapeFunctions << std::endl;
     //find unused integer id
     std::vector<int> unusedId(dim);
     for (int iDim = 0; iDim < dim; ++iDim)
     {
-        unusedId[iDim] = mConstraintMap.rbegin()->first + 1;
+//        unusedId[iDim] = mConstraintMap.rbegin()->first + 1;
+        //find unused integer id
+        unusedId[iDim] =  0;
+        boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(unusedId[iDim]);
+        while (it!=mConstraintMap.end())
+        {
+            unusedId[iDim]++;
+            it = mConstraintMap.find(unusedId[iDim]);
+        }
         ConstraintLinearEquationCreate(unusedId[iDim], rNode, NuTo::Node::eAttributes::DISPLACEMENTS, iDim, 1.0, 0.0);
     }
 

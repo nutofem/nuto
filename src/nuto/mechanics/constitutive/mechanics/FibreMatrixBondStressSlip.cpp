@@ -373,3 +373,32 @@ void NuTo::FibreMatrixBondStressSlip::CheckParameters() const
     assert(mSlipAtResidualBondStress > 0.0 and "Slip at residual bond stress is <= 0 or not initialized properly");
 }
 
+#ifdef ENABLE_SERIALIZATION
+//! @brief serializes the class
+//! @param ar         archive
+//! @param version    version
+template void NuTo::FibreMatrixBondStressSlip::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::FibreMatrixBondStressSlip::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::FibreMatrixBondStressSlip::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::FibreMatrixBondStressSlip::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::FibreMatrixBondStressSlip::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::FibreMatrixBondStressSlip::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::FibreMatrixBondStressSlip::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize FibreMatrixBondStressSlip" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase)
+    & BOOST_SERIALIZATION_NVP(mMaxBondStress)
+    & BOOST_SERIALIZATION_NVP(mResidualBondStress)
+    & BOOST_SERIALIZATION_NVP(mSlipAtMaxBondStress)
+    & BOOST_SERIALIZATION_NVP(mSlipAtResidualBondStress)
+    & BOOST_SERIALIZATION_NVP(mNormalStiffness)
+    & BOOST_SERIALIZATION_NVP(mAlpha);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize FibreMatrixBondStressSlip" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::FibreMatrixBondStressSlip)
+#endif // ENABLE_SERIALIZATION

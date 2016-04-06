@@ -33,3 +33,8 @@ int NuTo::Interpolation3D::GetNumDofsPerNode() const
         throw NuTo::MechanicsException("[NuTo::Interpolation3D::GetNumDofsPerNode] dof type not found.");
     }
 }
+
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Interpolation3D)
+#endif

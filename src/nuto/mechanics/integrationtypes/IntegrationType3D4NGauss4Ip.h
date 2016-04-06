@@ -1,15 +1,5 @@
 // $Id$
-#ifndef IntegrationType3D4NGauss4Ip_H
-#define IntegrationType3D4NGauss4Ip_H
-
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif //ENABLE_SERIALIZATION
+#pragma once
 
 #include "nuto/mechanics/integrationtypes/IntegrationType3D.h"
 
@@ -34,7 +24,15 @@ public:
     //! @param version    version
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
-    {}
+    {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize IntegrationType3D4NGauss4Ip" << std::endl;
+#endif
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(IntegrationType3D);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize IntegrationType3D4NGauss4Ip" << std::endl;
+#endif
+    }
 #endif // ENABLE_SERIALIZATION
 
     //! @brief returns the local coordinates of an integration point
@@ -74,6 +72,10 @@ protected:
 
 
 };
-}
+} // namespace NuTo
 
-#endif //IntegrationType3D4NGauss4Ip_H
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType3D4NGauss4Ip)
+#endif
+

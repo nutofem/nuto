@@ -1,6 +1,5 @@
 // $Id$
-#ifndef IntegrationType1D_H
-#define IntegrationType1D_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -47,7 +46,7 @@ public:
 
     //! @brief returns the dimension of the integration type
     //! @return dimension = 1, 2 or 3
-    int GetCoordinateDimension()const
+    inline int GetCoordinateDimension()const
     {
         return 1;
     }
@@ -65,5 +64,4 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType1D)
 #endif
 
-#endif //IntegrationType1D_H
 

@@ -68,6 +68,9 @@ void NuTo::GradientDamageEngineeringStress::serialize(Archive & ar, const unsign
     & BOOST_SERIALIZATION_NVP(mNu)
     & BOOST_SERIALIZATION_NVP(mNonlocalRadius)
     & BOOST_SERIALIZATION_NVP(mThermalExpansionCoefficient)
+    & BOOST_SERIALIZATION_NVP(mTensileStrength)
+    & BOOST_SERIALIZATION_NVP(mCompressiveStrength)
+    & BOOST_SERIALIZATION_NVP(mFractureEnergy)
     & BOOST_SERIALIZATION_NVP(mDamageLawType)
     & BOOST_SERIALIZATION_NVP(mDamageLawParameters);
 #ifdef DEBUG_SERIALIZATION

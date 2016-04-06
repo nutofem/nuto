@@ -5,8 +5,7 @@
  *      Author: ttitsche
  */
 
-#ifndef INTERPOLATION1DTRUSS_H_
-#define INTERPOLATION1DTRUSS_H_
+#pragma once
 
 #include "nuto/mechanics/interpolationtypes/Interpolation1D.h"
 
@@ -68,7 +67,7 @@ public:
     const Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const override;
 
     //! @brief returns the number of surfaces
-    int GetNumSurfaces() const override
+    inline int GetNumSurfaces() const override
     {
         return 2;
     }
@@ -98,4 +97,4 @@ struct is_virtual_base_of<NuTo::Interpolation1D, NuTo::Interpolation1DTruss>: pu
 }
 #endif
 
-#endif /* INTERPOLATION1DTRUSS_H_ */
+

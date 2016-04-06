@@ -18,6 +18,10 @@ class InterfaceSlip;
 class Element2DInterface: public Element2D
 {
 
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif  // ENABLE_SERIALIZATION
+
 public:
     Element2DInterface(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType);
 
@@ -25,6 +29,23 @@ public:
     {
     }
     ;
+
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize Element2DInterface" << std::endl;
+#endif
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Element2D);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize Element2DInterface" << std::endl;
+#endif
+    }
+#endif // ENABLE_SERIALIZATION
 
     //! @brief calculates output data for the element
     //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
@@ -75,6 +96,12 @@ protected:
     //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
     void CheckElement() override;
 
+    Element2DInterface() = default;
+
 };
 
 } /* namespace NuTo */
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::Element2DInterface)
+#endif

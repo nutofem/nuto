@@ -5,8 +5,7 @@
  *      Author: ttitsche
  */
 
-#ifndef INTERPOLATIONTYPE_H_
-#define INTERPOLATIONTYPE_H_
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -205,4 +204,4 @@ private:
 BOOST_CLASS_EXPORT_KEY(NuTo::InterpolationType)
 #endif
 
-#endif /* INTERPOLATIONTYPE_H_ */
+

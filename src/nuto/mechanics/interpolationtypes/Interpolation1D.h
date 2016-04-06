@@ -5,8 +5,7 @@
  *      Author: ttitsche
  */
 
-#ifndef INTERPOLATION1D_H_
-#define INTERPOLATION1D_H_
+#pragma once
 
 #include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
 
@@ -49,4 +48,4 @@ public:
 BOOST_CLASS_EXPORT_KEY(NuTo::Interpolation1D)
 #endif
 
-#endif /* INTERPOLATION1D_H_ */
+

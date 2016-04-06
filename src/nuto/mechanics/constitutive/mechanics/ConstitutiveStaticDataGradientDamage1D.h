@@ -1,7 +1,6 @@
 
 
-#ifndef CONSTITUTIVESTATICDATAGRADIENTDAMAGE1D_H
-#define CONSTITUTIVESTATICDATAGRADIENTDAMAGE1D_H
+#pragma once
 
 #include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 
@@ -69,4 +68,4 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::ConstitutiveStaticDataGradientDamage1D)
 #endif // ENABLE_SERIALIZATION
 
-#endif // CONSTITUTIVESTATICDATAGRADIENTDAMAGE1D_H
+

@@ -5,8 +5,7 @@
  *      Author: ttitsche
  */
 
-#ifndef INTERPOLATION3DTETRAHEDRON_H_
-#define INTERPOLATION3DTETRAHEDRON_H_
+#pragma once
 
 #include "nuto/mechanics/interpolationtypes/Interpolation3D.h"
 
@@ -54,8 +53,33 @@ namespace NuTo
 **/
 class Interpolation3DTetrahedron: public Interpolation3D
 {
+
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif  // ENABLE_SERIALIZATION
+
 public:
+    //! @brief default constructor for serialization
+    Interpolation3DTetrahedron(){}
+
     Interpolation3DTetrahedron(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
+
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize Interpolation3DTetrahedron" << std::endl;
+#endif
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Interpolation3D);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize Interpolation3DTetrahedron" << std::endl;
+#endif
+    }
+#endif // ENABLE_SERIALIZATION
 
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type
@@ -91,7 +115,7 @@ public:
     const Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const override;
 
     //! @brief returns the number of surfaces
-    int GetNumSurfaces() const override
+    inline int GetNumSurfaces() const override
     {
         return 4;
     }
@@ -108,4 +132,6 @@ private:
 
 } /* namespace NuTo */
 
-#endif /* INTERPOLATION3DTETRAHEDRON_H_ */
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::Interpolation3DTetrahedron)
+#endif

@@ -1,6 +1,5 @@
 // $Id$
-#ifndef IntegrationType1D2NGauss1Ip_H
-#define IntegrationType1D2NGauss1Ip_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -88,4 +87,4 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType1D2NGauss1Ip)
 #endif
 
-#endif //IntegrationType1D2NGauss1Ip_H
+

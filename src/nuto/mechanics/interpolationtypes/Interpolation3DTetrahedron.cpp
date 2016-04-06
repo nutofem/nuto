@@ -145,3 +145,8 @@ const std::vector<Eigen::VectorXd> NuTo::Interpolation3DTetrahedron::GetSurfaceE
     }
     return surfaceEdgeCoordinates;
 }
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Interpolation3DTetrahedron)
+#endif
+

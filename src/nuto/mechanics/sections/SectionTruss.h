@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef SECTIONTRUSS_H
-#define SECTIONTRUSS_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -81,4 +80,4 @@ BOOST_CLASS_EXPORT_KEY(NuTo::SectionTruss)
 #endif // ENABLE_SERIALIZATION
 
 
-#endif // SECTIONTRUSS_H
+

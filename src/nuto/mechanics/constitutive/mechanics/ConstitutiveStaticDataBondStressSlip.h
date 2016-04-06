@@ -11,6 +11,11 @@ class IpDataStaticDataBase;
 
 class ConstitutiveStaticDataBondStressSlip: public ConstitutiveStaticDataBase
 {
+
+#ifdef ENABLE_SERIALIZATION
+    friend class boost::serialization::access;
+#endif // ENABLE_SERIALIZATION
+
 public:
     //! @brief constructor
     ConstitutiveStaticDataBondStressSlip();
@@ -35,6 +40,15 @@ public:
     //! @brief gets the slip
     const double GetSlip() const;
 
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version);
+#endif // ENABLE_SERIALIZATION
+
+
 private:
     //! @brief maximum slip in loading history
     double mSlip;
@@ -43,3 +57,6 @@ private:
 
 }
 
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstitutiveStaticDataBondStressSlip)
+#endif // ENABLE_SERIALIZATION

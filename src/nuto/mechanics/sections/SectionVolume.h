@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef SECTIONVOLUME_H
-#define SECTIONVOLUME_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -36,6 +35,8 @@ public:
     //! @param rVerboseLevel ... verbosity of the information
     virtual void Info(unsigned short rVerboseLevel) const;
 
+
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -43,12 +44,23 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize SectionVolume" << std::endl;
+#endif
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(SectionBase);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize SectionVolume" << std::endl;
+#endif
     }
 #endif // ENABLE_SERIALIZATION
+
 private:
 };
 
-}
+}// namespace NuTo
 
-#endif // SECTIONVOLUME_H
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::SectionVolume)
+#endif
+

@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef SectionPlane_H_
-#define SectionPlane_H_
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -62,4 +61,3 @@ private:
 BOOST_CLASS_EXPORT_KEY(NuTo::SectionPlane)
 #endif // ENABLE_SERIALIZATION
 
-#endif // SectionPlane_H_
