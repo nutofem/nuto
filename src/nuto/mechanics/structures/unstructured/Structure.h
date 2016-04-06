@@ -477,15 +477,12 @@ public:
     //! @return ... ids of the created boundary element group
     int BoundaryElementsCreate(int rElementGroupId, int rNodeGroupId, NodeBase* rNodeDependency = nullptr);
 
-    //! @brief Creates interface elements from an element group.
-    //! @param rElementGroupId: group id including the base elements
-    //! @param rInterfaceInterpolationType: interpolation type of the interface elements
-    //! @param rInterfaceConstitutiveLaw: constitutive law of the interface elements
-    //! @param rInterfaceSection: constitutive law of the interface elements
-    //! @param rFibreInterpolationType: interpolation type of the interface elements
-    //! @param rFibreConstitutiveLaw: constitutive law of the interface elements
-    //! @param rFibreSection: section of the interface elements
-    FullMatrix<int, Eigen::Dynamic, 2> InterfaceElementsCreate(int rElementGroupId, int rInterfaceInterpolationType, int rInterfaceConstitutiveLaw, int rInterfaceSection, int rFibreInterpolationType, int rFibreConstitutiveLaw, int rFibreSection);
+    //! @brief  Creates interface elements from an element group.
+    //! @param  rElementGroupId: group id including the base elements
+    //! @param  rInterfaceInterpolationType: interpolation type of the interface elements
+    //! @param  rFibreInterpolationType: interpolation type of the interface elements
+    //! @return returns a pair with the group ids of the new fiber and interface elements
+    std::pair<int,int> InterfaceElementsCreate(int rElementGroupId, int rInterfaceInterpolationType, int rFibreInterpolationType);
 
 #ifndef SWIG
     //! @brief import from gmsh, creates groups according to gmsh's physical entities and creates an interpolation types for each group

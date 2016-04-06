@@ -931,7 +931,7 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
     return boundaryElementGroup;
 }
 
-NuTo::FullMatrix<int, Eigen::Dynamic, 2> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId, int rInterfaceInterpolationType, int rInterfaceConstitutiveLaw, int rInterfaceSection, int rFibreInterpolationType, int rFibreConstitutiveLaw, int rFibreSection)
+std::pair<int,int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId, int rInterfaceInterpolationType, int rFibreInterpolationType)
 {
 
     // find element group
@@ -944,10 +944,6 @@ NuTo::FullMatrix<int, Eigen::Dynamic, 2> NuTo::Structure::InterfaceElementsCreat
 
     // gets member ids from an element group. The element group must only contain truss elements
     auto elementIds = GroupGetMemberIds(rElementGroupId);
-
-    // matrix that stores the ids of the new interface elements and the fibre elements
-    NuTo::FullMatrix<int, Eigen::Dynamic, 2> newElementIds;
-    newElementIds.Resize(elementIds.rows(),2);
 
     int groupElementsInterface = GroupCreate(NuTo::Groups::eGroupId::Elements);
     int groupElementsFibre = GroupCreate(NuTo::Groups::eGroupId::Elements);
@@ -1010,16 +1006,10 @@ NuTo::FullMatrix<int, Eigen::Dynamic, 2> NuTo::Structure::InterfaceElementsCreat
 
         int newElementInterface = ElementCreate(rInterfaceInterpolationType, nodeIndicesInterface, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
         GroupAddElement(groupElementsInterface, newElementInterface);
-        ElementSetSection(newElementInterface, rInterfaceSection);
-        ElementSetConstitutiveLaw(newElementInterface, rInterfaceConstitutiveLaw);
-        newElementIds(i,0) = newElementInterface;
 
         // create new truss element with duplicated nodes
         int newElementFibre = ElementCreate(rFibreInterpolationType, nodeIdsFibre, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::NOIPDATA);
         GroupAddElement(groupElementsFibre, newElementFibre);
-        ElementSetSection(newElementFibre, rFibreConstitutiveLaw);
-        ElementSetConstitutiveLaw(newElementFibre, rFibreSection);
-        newElementIds(i,1) = newElementFibre;
 
         // delete  old element
         ElementDelete(elementIds.at(i,0));
@@ -1027,7 +1017,7 @@ NuTo::FullMatrix<int, Eigen::Dynamic, 2> NuTo::Structure::InterfaceElementsCreat
     }
 
 
-    return newElementIds;
+    return std::make_pair(groupElementsFibre, groupElementsInterface);
 
 }
 

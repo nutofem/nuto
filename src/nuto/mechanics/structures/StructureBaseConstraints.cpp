@@ -777,9 +777,9 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
         queryPoint[iDim] = queryNodeCoords.at(iDim,0);
 
 
-    std::cout << "queryPoint: \n" << queryPoint[0] << std::endl;
-    std::cout << queryPoint[1] << std::endl;
-    std::cout << queryPoint[2] << std::endl;
+//    std::cout << "queryPoint: \n" << queryPoint[0] << std::endl;
+//    std::cout << queryPoint[1] << std::endl;
+//    std::cout << queryPoint[2] << std::endl;
 
 
     // distances stores the sorted distances in an ANN container
@@ -927,7 +927,6 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
 
 
     auto shapeFunctions = elementPtr->GetInterpolationType()->Get(NuTo::Node::eAttributes::DISPLACEMENTS).CalculateShapeFunctions(elementNaturalNodeCoords);
-    std::cout << "shapeFunctions" << shapeFunctions << std::endl;
     //find unused integer id
     std::vector<int> unusedId(dim);
     for (int iDim = 0; iDim < dim; ++iDim)
