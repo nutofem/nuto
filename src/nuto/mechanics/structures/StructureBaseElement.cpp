@@ -414,11 +414,11 @@ bool NuTo::StructureBase::CheckStiffness()
         if (stiffnessMatrixCSRVector2Full.GetNumRows()<100)
         {
 			mLogger << "globalStiffnessMatrix algo" << "\n";
-			mLogger.Out(stiffnessMatrixCSRVector2Full,10,3,false);
+			mLogger << stiffnessMatrixCSRVector2Full;
 			mLogger << "\n" << "globalStiffnessMatrix cdf" << "\n";
-			mLogger.Out(stiffnessMatrixCSRVector2_CDF,10,3,false);
-			mLogger<< "\n" << "error" << "\n";
-			mLogger.Out((stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full),10,3,false);
+			mLogger << stiffnessMatrixCSRVector2_CDF;
+			mLogger << "\n" << "error" << "\n";
+			mLogger << (stiffnessMatrixCSRVector2_CDF-stiffnessMatrixCSRVector2Full);
         }
         //extract the first 5x5 block
         //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> blockAlgo(stiffnessMatrixCSRVector2Full.GetBlock(0,0,5,5));
@@ -432,12 +432,12 @@ bool NuTo::StructureBase::CheckStiffness()
 
         if (stiffnessMatrixCSRVector2Full.GetNumRows()<100)
         {
-			mLogger<< "\n" << "intForceVector algo" << "\n";
-			mLogger.Out(intForceVector1.Trans(),10,3,false);
-			mLogger<< "\n" << "intForceVector cdf" << "\n";
-			mLogger.Out(intForceVectorCDF.Trans(),10,3,false);
+			mLogger << "\n" << "intForceVector algo" << "\n";
+			mLogger << intForceVector1.Trans();
+			mLogger << "\n" << "intForceVector cdf" << "\n";
+			mLogger << intForceVectorCDF.Trans();
 			mLogger << "\n" << "error" << "\n";
-			mLogger.Out(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(intForceVector1-intForceVectorCDF).cwiseAbs().transpose(),10,3);
+			mLogger << NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(intForceVector1-intForceVectorCDF).cwiseAbs().transpose();
         }
         maxError = (intForceVector1-intForceVectorCDF).cwiseAbs().maxCoeff(&row,&col);
         mLogger << "maximum error resforce is " << maxError << " at (" << row << "," << col << ") " << "\n";
@@ -543,13 +543,13 @@ bool NuTo::StructureBase::CheckCoefficientMatrix_0(double rDelta, bool rPrintRes
         if (mNumActiveDofs < 100 and rPrintResult)
         {
             mLogger << "global coefficient matrix algo" << "\n";
-            mLogger.Out(coeffMatrix,10,3,false);
+            mLogger << coeffMatrix;
             mLogger << "\n";
             mLogger << "global coefficient matrix cdf" << "\n";
-            mLogger.Out(coeffMatrix_CDF,10,3,false);
+            mLogger << coeffMatrix_CDF;
             mLogger << "\n";
             mLogger << "error" << "\n";
-            mLogger.Out((coeffMatrix_CDF-coeffMatrix),10,3,false);
+            mLogger << (coeffMatrix_CDF-coeffMatrix);
             NodeInfo(10);
         }
         mLogger << "[NuTo::StructureBase::CheckCoefficientMatrix_0]               !!! WRONG !!! "<< "\n";
@@ -708,13 +708,13 @@ bool NuTo::StructureBase::ElementCheckCoefficientMatrix_0(
         {
             mLogger << "[NuTo::StructureBase::ElementCheckCoefficientMatrix_0] Element ID: " << rElementId << " WRONG \n";
             mLogger << "element coefficient matrix algo" << "\n";
-            mLogger.Out(coeffMatrix,10,3,true);
+            mLogger << coeffMatrix;
             mLogger << "\n";
             mLogger << "element coefficient matrix CDF" << "\n";
-            mLogger.Out(coeffMatrix_CDF,10,3,true);
+            mLogger << coeffMatrix_CDF;
             mLogger << "\n";
             mLogger << "error" << "\n";
-            mLogger.Out(rDifference,10,3,true);
+            mLogger << rDifference;
         }
     }
 
