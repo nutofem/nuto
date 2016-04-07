@@ -11,7 +11,7 @@ import os
 createResult = False
 
 #show the results on the screen
-printResult = True
+printResult = False
 
 #system name and processor
 system = sys.argv[1]+sys.argv[2]
@@ -40,7 +40,7 @@ random.seed(randomSeed)
 minCoordinate = -3
 maxCoordinate =  3
 meanNoise = 0
-sigmaNoise = 1e-1
+sigmaNoise = 5e-1
 dimInput = 2
 dimOutput = 2
 numSamples = 10
@@ -189,6 +189,46 @@ else:
         error = True;
 
 
+plotResult = False
+
+if plotResult:
+    from mpl_toolkits.mplot3d import Axes3D
+    import matplotlib.pyplot as plt
+    import numpy
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    x =[1,2,3,4,5,6,7,8,9,10]
+    y =[5,6,2,3,13,4,1,2,4,8]
+    z =[2,3,3,3,5,7,9,11,9,10]
+
+    #ax.scatter(x, y, z, c='r', marker='o')
+
+    ax.set_xlabel('X Label')
+    ax.set_ylabel('Y Label')
+    ax.set_zlabel('Z Label')
+
+    SupportPointsInputNumpy = numpy.empty([dimInput,numSamples],dtype='float64')
+    SupportPointsInput.convrtMatrixToNumpy(SupportPointsInputNumpy)
+
+    SupportPointsOutputExactNumpy = numpy.empty([dimOutput,numSamples],dtype='float64')
+    SupportPointsOutputExact.convrtMatrixToNumpy(SupportPointsOutputExactNumpy)
+
+    SupportPointsOutputWithNoiseNumpy = numpy.empty([dimOutput,numSamples],dtype='float64')
+    SupportPointsOutputWithNoise.convrtMatrixToNumpy(SupportPointsOutputWithNoiseNumpy)
+
+    SupportPointsApproximationNumpy = numpy.empty([dimOutput,numSamples],dtype='float64')
+    SupportPointsApproximation.convrtMatrixToNumpy(SupportPointsApproximationNumpy)
+
+    SupportPointsApproximation
+    ax.scatter(SupportPointsInputNumpy[0,:], SupportPointsInputNumpy[1,:], SupportPointsOutputExactNumpy[1,:] , c='r', marker='o')
+    ax.scatter(SupportPointsInputNumpy[0,:], SupportPointsInputNumpy[1,:], SupportPointsOutputWithNoiseNumpy[1,:] , c='g', marker='o')
+    ax.scatter(SupportPointsInputNumpy[0,:], SupportPointsInputNumpy[1,:], SupportPointsApproximationNumpy[1,:] , c='b', marker='o')
+
+    plt.show()
+
+    programPause = raw_input("Press the <ENTER> key to continue...")
 
 
 if (error):
