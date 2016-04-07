@@ -160,7 +160,19 @@ IF(ENABLE_MECHANICS)
     SET_TARGET_PROPERTIES(VisualizePlane2D4N PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
 ENDIF(ENABLE_MECHANICS)
- 
+
+ # Temperature1D
+if(ENABLE_MECHANICS)
+  add_executable(Temperature1D Temperature1D.cpp)
+  target_link_libraries(Temperature1D NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+  if(ENABLE_VISUALIZE)
+    target_link_libraries(Temperature1D NuToVisualize)
+  endif()
+  if(MUMPS_FOUND)
+    target_link_libraries(Temperature1D ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+  endif()
+endif()
+
 # Tetrahedron 10N
 IF(ENABLE_MECHANICS)
   ADD_EXECUTABLE(Tetrahedron10N Tetrahedron10N.cpp)

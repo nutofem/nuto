@@ -60,7 +60,7 @@ public:
     //! @return dof type
     Node::eDof GetDofType() const override
     {
-        return Node::eDof::TEMPERATURES;
+        return Node::eDof::TEMPERATURE;
     }
 
 #ifdef ENABLE_SERIALIZATION

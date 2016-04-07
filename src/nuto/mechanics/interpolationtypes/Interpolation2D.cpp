@@ -44,7 +44,7 @@ int NuTo::Interpolation2D::GetNumDofsPerNode() const
         return 2;
     case NuTo::Node::DISPLACEMENTS:
         return 2;
-    case NuTo::Node::TEMPERATURES:
+    case NuTo::Node::TEMPERATURE:
         return 1;
     case NuTo::Node::NONLOCALEQSTRAIN:
         return 1;

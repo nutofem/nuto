@@ -127,7 +127,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::Evaluate1D(
         ConstitutiveStaticDataGradientDamagePlasticity1D *oldStaticData = (rElement->GetStaticData(rIp))->AsGradientDamagePlasticity1D();
 
         // subtract thermal strain
-        if (interpolationType->IsConstitutiveInput(Node::TEMPERATURES))
+        if (interpolationType->IsConstitutiveInput(Node::TEMPERATURE))
         {
             std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>::const_iterator itInput(rConstitutiveInput.find(NuTo::Constitutive::Input::TEMPERATURE));
             if (itInput==rConstitutiveInput.end())

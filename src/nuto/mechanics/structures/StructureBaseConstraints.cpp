@@ -19,6 +19,7 @@
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupTemperature.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeRelativeHumidity.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeRotations2D.h"
+#include "nuto/mechanics/constraints/ConstraintLinearNodeTemperature.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeWaterVolumeFraction.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "ANN/ANN.h"
@@ -191,6 +192,53 @@ int NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode(int rIdent, dou
     }
 
     return ConstraintLinearSetRelativeHumidityNode(nodePtr, rValue);
+}
+
+
+int NuTo::StructureBase::ConstraintLinearSetTemperatureNode(NodeBase* rNode, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
+    while (it!=mConstraintMap.end())
+    {
+        id++;
+        it = mConstraintMap.find(id);
+    }
+
+    switch (mDimension)
+    {
+    case 1:
+    case 2:
+    case 3:
+        mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeTemperature(rNode,rValue));
+        break;
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__,"Incorrect dimension of the structure.");
+    }
+    return id;
+}
+
+int NuTo::StructureBase::ConstraintLinearSetTemperatureNode(int rIdent, double rValue)
+{
+    this->mNodeNumberingRequired = true;
+    NodeBase* nodePtr;
+    try
+    {
+        nodePtr = NodeGetNodePtr(rIdent);
+    }
+    catch (NuTo::MechanicsException &e)
+    {
+        e.AddMessage(__PRETTY_FUNCTION__,"Node with the given identifier could not be found.");
+        throw e;
+    }
+    catch (...)
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__,"Node with the given identifier could not be found.");
+    }
+
+    return ConstraintLinearSetTemperatureNode(nodePtr, rValue);
 }
 
 
@@ -976,7 +1024,7 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
     }
     else if(dofString == "TEMPERATURE")
     {
-        rDofType = NuTo::Node::TEMPERATURES;
+        rDofType = NuTo::Node::TEMPERATURE;
         rDofComponent = 0;
     }
     else if(dofString == "NONLOCALEQSTRAIN")
@@ -1157,6 +1205,9 @@ int NuTo::StructureBase::ConstraintLinearSetNode(NuTo::Node::eDof rDOFType,
 
     case Node::RELATIVEHUMIDITY:
         return ConstraintLinearSetRelativeHumidityNode(rNode,rValue);
+
+    case Node::TEMPERATURE:
+        return ConstraintLinearSetTemperatureNode(rNode, rValue);
 
     default:
         throw MechanicsException(__PRETTY_FUNCTION__,std::string("not implemented for dof ")+Node::DofToString(rDOFType));

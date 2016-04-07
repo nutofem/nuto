@@ -68,6 +68,12 @@ public:
     ConstitutiveScalar          mInternalGradientRH_dWV_NN_H1;
     ConstitutiveScalar          mInternalGradientWV_dWV_NN_H1;
 
+    // Heat conduction
+    // ------------------------------------------------------------------------
+    ConstitutiveMatrix<TDim, TDim> mTangentHeatFluxTemperatureGradient;
+    ConstitutiveVector<TDim> mHeatFlux;
+    ConstitutiveVector<TDim> mTemperatureGradient;
+
     // Nodal Values
     // --------------------------------------------------------------------------------------------
 

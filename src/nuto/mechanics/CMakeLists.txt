@@ -42,6 +42,7 @@ constitutive/inputoutput/EngineeringStrain.cpp
 constitutive/inputoutput/EngineeringStress.cpp
 constitutive/inputoutput/EquivalentStrain.cpp
 constitutive/laws/EngineeringStressHelper.cpp
+constitutive/laws/HeatConduction.cpp
 constitutive/laws/LinearElasticEngineeringStress.cpp
 constitutive/laws/MisesPlasticityEngineeringStress.cpp
 constitutive/laws/MoistureTransport.cpp
@@ -69,6 +70,7 @@ constraints/ConstraintLinearNodeGroupRotations2D.cpp
 constraints/ConstraintLinearNodeGroupTemperature.cpp
 constraints/ConstraintLinearNodeRelativeHumidity.cpp
 constraints/ConstraintLinearNodeRotations2D.cpp
+constraints/ConstraintLinearNodeTemperature.cpp
 constraints/ConstraintLinearNodeWaterVolumeFraction.cpp
 constraints/ConstraintNode.cpp
 constraints/ConstraintNodeGroup.cpp
@@ -186,6 +188,7 @@ loads/LoadNodeForces3D.cpp
 loads/LoadNodeGroupForces1D.cpp
 loads/LoadNodeGroupForces2D.cpp
 loads/LoadNodeGroupForces3D.cpp
+loads/LoadNodeHeatFlux1D.cpp
 loads/LoadSurfaceBase2D.cpp
 loads/LoadSurfaceBase3D.cpp
 loads/LoadSurfaceConstDirection2D.cpp

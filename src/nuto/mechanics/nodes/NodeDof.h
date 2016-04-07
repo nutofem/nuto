@@ -27,10 +27,10 @@ SetGlobalDofs(int& rDOF)
     {
         this->mDofRotations[count] = rDOF++;
     }
-//    for (int count=0; count<TNumTemperatures; count++)
-//    {
-//    	mDofTemperatures[count]=rDOF++;
-//    }
+    for (int count=0; count<TNumTemperature; count++)
+    {
+        this->mDofTemperature[count] = rDOF++;
+    }
     for (int count = 0; count < TNumNonlocalEqPlasticStrain; count++)
     {
         this->mDofNonlocalEqPlasticStrain[count] = rDOF++;
@@ -67,8 +67,8 @@ SetGlobalDofsNumbers(std::map<Node::eDof, int>& rDofNumbers)
     for (int i = 0; i < TNumRotations; ++i)
         this->mDofRotations[i] = rDofNumbers[Node::ROTATIONS]++;
 
-//  for (int i = 0; i < TNumTemperatures; ++i)
-//      this->mDofTemperatures[i]               = rDofNumbers[Node::TEMPERATURES]++;
+    for (int i = 0; i < TNumTemperature; ++i)
+        this->mDofTemperature[i] = rDofNumbers[Node::TEMPERATURE]++;
 
     for (int i = 0; i < TNumNonlocalEqPlasticStrain; ++i)
         this->mDofNonlocalEqPlasticStrain[i] = rDofNumbers[Node::NONLOCALEQPLASTICSTRAIN]++;
@@ -103,10 +103,10 @@ SetGlobalDofValues(int rTimeDerivative, const NuTo::FullVector<double, Eigen::Dy
     for (int i = 0; i < TNumRotations; ++i)
         this->mRotations[rTimeDerivative][i] = GetDofValueFromVector(this->mDofRotations[i], rActiveDofValues, rDependentDofValues);
 
-//
-//    for (int i=0; i<TNumTemperatures; ++i)
-//        this->mTemperatures[rTimeDerivative][i] = GetDofValueFromVector(this->mDofTemperatures[i], rActiveDofValues, rDependentDofValues);
-//
+
+    for (int i = 0; i < TNumTemperature; ++i)
+        this->mTemperature[rTimeDerivative][i] = GetDofValueFromVector(this->mDofTemperature[i], rActiveDofValues, rDependentDofValues);
+
     for (int i = 0; i < TNumNonlocalEqPlasticStrain; ++i)
     {
         double value = GetDofValueFromVector(this->mDofNonlocalEqPlasticStrain[i], rActiveDofValues, rDependentDofValues);
@@ -145,10 +145,10 @@ GetGlobalDofValues(int rTimeDerivative, NuTo::FullVector<double, Eigen::Dynamic>
 
     for (int i = 0; i < TNumRotations; ++i)
         WriteNodeValueToVector(this->mDofRotations[i], this->mRotations[rTimeDerivative][i], rActiveDofValues, rDependentDofValues);
-//
-//    for (int i=0; i<TNumTemperatures; ++i)
-//        WriteNodeValueToVector(this->mDofTemperatures[i], this->mTemperatures[rTimeDerivative][i], rActiveDofValues, rDependentDofValues);
-//
+
+    for (int i = 0; i < TNumTemperature; ++i)
+        WriteNodeValueToVector(this->mDofTemperature[i], this->mTemperature[rTimeDerivative][i], rActiveDofValues, rDependentDofValues);
+
     for (int i = 0; i < TNumNonlocalEqPlasticStrain; ++i)
         WriteNodeValueToVector(this->mDofNonlocalEqPlasticStrain[i], this->mNonlocalEqPlasticStrain[rTimeDerivative][i], rActiveDofValues, rDependentDofValues);
 
@@ -191,10 +191,10 @@ SetGlobalDofValues(
             this->mRotations[rTimeDerivative][i] = GetDofValueFromVector(this->mDofRotations[i], rActiveDofValues, rDependentDofValues);
         break;
 
-//        case Node::TEMPERATURES:
-        //    for (int i=0; i<TNumTemperatures; ++i)
-        //        this->mTemperatures[rTimeDerivative][i] = GetDofValueFromVector(this->mDofTemperatures[i], rActiveDofValues, rDependentDofValues);
-//            break;
+    case Node::TEMPERATURE:
+        for (int i = 0; i < TNumTemperature; ++i)
+            this->mTemperature[rTimeDerivative][i] = GetDofValueFromVector(this->mDofTemperature[i], rActiveDofValues, rDependentDofValues);
+        break;
 
     case Node::NONLOCALEQPLASTICSTRAIN:
         for (int i = 0; i < TNumNonlocalEqPlasticStrain; ++i)
@@ -259,10 +259,10 @@ GetGlobalDofValues(
             WriteNodeValueToVector(this->mDofRotations[i], this->mRotations[rTimeDerivative][i], rActiveDofValues, rDependentDofValues);
         break;
 
-//        case Node::TEMPERATURES:
-        //    for (int i=0; i<TNumTemperatures; ++i)
-        //        WriteNodeValueToVector(this->mDofTemperatures[i], this->mTemperatures[rTimeDerivative][i], rActiveDofValues, rDependentDofValues);
-//            break;
+    case Node::TEMPERATURE:
+        for (int i = 0; i < TNumTemperature; ++i)
+            WriteNodeValueToVector(this->mDofTemperature[i], this->mTemperature[rTimeDerivative][i], rActiveDofValues, rDependentDofValues);
+        break;
 
     case Node::NONLOCALEQPLASTICSTRAIN:
         for (int i = 0; i < TNumNonlocalEqPlasticStrain; ++i)
@@ -307,9 +307,9 @@ RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering)
     for (int i = 0; i < TNumRotations; ++i)
         this->mDofRotations[i] = rMappingInitialToNewOrdering[this->mDofRotations[i]];
 
-//    for (int i=0; i<TNumTemperatures; ++i)
-//    	this->mDofTemperatures[i]=rMappingInitialToNewOrdering[this->mDofTemperatures[i]];
-//
+    for (int i = 0; i < TNumTemperature; ++i)
+        this->mDofTemperature[i] = rMappingInitialToNewOrdering[this->mDofTemperature[i]];
+
     for (int i = 0; i < TNumNonlocalEqPlasticStrain; ++i)
         this->mDofNonlocalEqPlasticStrain[i] = rMappingInitialToNewOrdering[this->mDofNonlocalEqPlasticStrain[i]];
 //
@@ -346,10 +346,10 @@ RenumberGlobalDofs(Node::eDof rDofType, std::vector<int>& rMappingInitialToNewOr
             this->mDofRotations[i] = rMappingInitialToNewOrdering[this->mDofRotations[i]];
         break;
 
-//        case Node::TEMPERATURES:
-//            for (int i=0; i<TNumTemperatures; ++i)
-//                this->mDofTemperatures[i]=rMappingInitialToNewOrdering[this->mDofTemperatures[i]];
-//            break;
+    case Node::TEMPERATURE:
+        for (int i = 0; i < TNumTemperature; ++i)
+            this->mDofTemperature[i]=rMappingInitialToNewOrdering[this->mDofTemperature[i]];
+        break;
 
     case Node::NONLOCALEQPLASTICSTRAIN:
         for (int i = 0; i < TNumNonlocalEqPlasticStrain; ++i)
@@ -411,8 +411,8 @@ std::string NuTo::NodeDof<NODE_DOF_TEMPLATE_INITIALIZATION>::GetNodeTypeStr() co
     if (TNumRotations > 0)
         NodeDofype << "Rotations:" << TNumRotations << "\n";
 
-    if (TNumTemperatures > 0)
-        NodeDofype << "Temperatures:" << TNumTemperatures << "\n";
+    if (TNumTemperature > 0)
+        NodeDofype << "Temperature:" << TNumTemperature << "\n";
 
     if (TNumNonlocalEqPlasticStrain > 0)
         NodeDofype << "NonlocalEqPlasticStrain:" << TNumNonlocalEqPlasticStrain << "\n";

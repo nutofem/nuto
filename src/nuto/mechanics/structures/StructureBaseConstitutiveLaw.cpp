@@ -6,6 +6,7 @@
 //#include "nuto/mechanics/constitutive/mechanics/LinearSpring.h"
 #include "nuto/mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "nuto/mechanics/constitutive/laws/LinearElasticEngineeringStress.h"
+#include "nuto/mechanics/constitutive/laws/HeatConduction.h"
 #include "nuto/mechanics/constitutive/laws/MoistureTransport.h"
 #include "nuto/mechanics/constitutive/laws/MisesPlasticityEngineeringStress.h"
 //#include "nuto/mechanics/constitutive/mechanics/DamageViscoPlasticityEngineeringStress.h"
@@ -75,9 +76,8 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
 //            ConstitutiveLawPtr = new NuTo::NonlocalDamagePlasticityEngineeringStress();
             break;
 
-        case NuTo::Constitutive::LINEAR_HEAT_FLUX:
-            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
-//            ConstitutiveLawPtr = new NuTo::LinearHeatFlux();
+        case NuTo::Constitutive::HEAT_CONDUCTION:
+            ConstitutiveLawPtr = new NuTo::HeatConduction();
             break;
 
         case NuTo::Constitutive::GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS:

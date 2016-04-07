@@ -21,7 +21,7 @@ enum eDof : unsigned char
 {
     COORDINATES,
     ROTATIONS,
-    TEMPERATURES,
+    TEMPERATURE,
     DISPLACEMENTS,
     FINESCALEDISPLACEMENTS,
     NONLOCALDATA,
@@ -44,7 +44,7 @@ static inline std::map<eDof, std::string> GetDofMap()
     std::map<eDof, std::string> attributeMap;
     attributeMap[eDof::COORDINATES]             = "COORDINATES";
     attributeMap[eDof::ROTATIONS]               = "ROTATIONS";
-    attributeMap[eDof::TEMPERATURES]            = "TEMPERATURES";
+    attributeMap[eDof::TEMPERATURE]             = "TEMPERATURE";
     attributeMap[eDof::DISPLACEMENTS]           = "DISPLACEMENTS";
     attributeMap[eDof::FINESCALEDISPLACEMENTS]  = "FINESCALEDISPLACEMENTS";
     attributeMap[eDof::NONLOCALDATA]            = "NONLOCALDATA";

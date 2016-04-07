@@ -17,6 +17,7 @@
 #include "nuto/mechanics/nodes/NodeNonlocalEqPlasticStrain.h"
 #include "nuto/mechanics/nodes/NodeNonlocalEqStrain.h"
 #include "nuto/mechanics/nodes/NodeRelativeHumidity.h"
+#include "nuto/mechanics/nodes/NodeTemperature.h"
 #include "nuto/mechanics/nodes/NodeWaterVolumeFraction.h"
 
 #include "nuto/mechanics/nodes/NodeEnum.h"
@@ -29,15 +30,15 @@
 #include <boost/ptr_container/ptr_list.hpp>
 #endif // ENABLE_VISUALIZE
 
-#define NODE_DOF_TEMPLATE_PARAMETERS int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain, int TNumWaterVolumeFraction, int TNumRelativeHumidity
-#define NODE_DOF_TEMPLATE_INITIALIZATION TNumCoordinates, TNumTimeDerivatives,TNumDisplacements,TNumRotations,TNumTemperatures, TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain, TNumNonlocalEqStrain, TNumWaterVolumeFraction, TNumRelativeHumidity
+#define NODE_DOF_TEMPLATE_PARAMETERS int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperature, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain, int TNumWaterVolumeFraction, int TNumRelativeHumidity
+#define NODE_DOF_TEMPLATE_INITIALIZATION TNumCoordinates, TNumTimeDerivatives, TNumDisplacements, TNumRotations, TNumTemperature, TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain, TNumNonlocalEqStrain, TNumWaterVolumeFraction, TNumRelativeHumidity
 
 namespace NuTo
 {
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for all nodes
-template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperatures, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain, int TNumWaterVolumeFraction, int TNumRelativeHumidity>
+template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperature, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain, int TNumWaterVolumeFraction, int TNumRelativeHumidity>
 class NodeDof:
         public NodeCoordinates<TNumCoordinates>,
         public NodeDisplacements<TNumDisplacements, TNumTimeDerivatives>,
@@ -45,6 +46,7 @@ class NodeDof:
         public NodeNonlocalEqPlasticStrain<TNumNonlocalEqPlasticStrain, TNumTimeDerivatives>,
         public NodeNonlocalEqStrain<TNumNonlocalEqStrain, TNumTimeDerivatives>,
         public NodeRelativeHumidity<TNumRelativeHumidity,TNumTimeDerivatives>,
+        public NodeTemperature<TNumTemperature, TNumTimeDerivatives>,
         public NodeWaterVolumeFraction<TNumWaterVolumeFraction,TNumTimeDerivatives>
 {
 #ifdef ENABLE_SERIALIZATION
@@ -97,8 +99,8 @@ public:
         ar & BOOST_SERIALIZATION_NVP(mRotations);
         ar & BOOST_SERIALIZATION_NVP(mDofRotations);
 
-        ar & BOOST_SERIALIZATION_NVP(mTemperatures);
-        ar & BOOST_SERIALIZATION_NVP(mDofTemperatures);
+        ar & BOOST_SERIALIZATION_NVP(mTemperature);
+        ar & BOOST_SERIALIZATION_NVP(mDofTemperature);
 
         ar & BOOST_SERIALIZATION_NVP(mNonlocalEqPlasticStrain);
         ar & BOOST_SERIALIZATION_NVP(mDofNonlocalEqPlasticStrain);

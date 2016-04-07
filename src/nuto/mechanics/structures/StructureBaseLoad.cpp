@@ -10,6 +10,7 @@
 #include "nuto/mechanics/loads/LoadNodeGroupForces1D.h"
 #include "nuto/mechanics/loads/LoadNodeGroupForces2D.h"
 #include "nuto/mechanics/loads/LoadNodeGroupForces3D.h"
+#include "nuto/mechanics/loads/LoadNodeHeatFlux1D.h"
 #include "nuto/mechanics/loads/LoadSurfaceConstDirection2D.h"
 #include "nuto/mechanics/loads/LoadSurfaceConstDirection3D.h"
 #include "nuto/mechanics/loads/LoadSurfacePressure2D.h"
@@ -65,6 +66,65 @@ int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, const NodeBase* rNod
         break;
     default:
         throw MechanicsException("[NuTo::StructureBase::LoadCreateNodeForce] Incorrect dimension of the structure.");
+    }
+    // insert load in load map
+    this->mLoadMap.insert(id,loadPtr);
+    return id;
+}
+
+int NuTo::StructureBase::LoadCreateNodeHeatFlux(int rLoadCase, int rNodeIdent,
+        const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+{
+    // find node
+    NodeBase* nodePtr;
+    try
+    {
+        nodePtr = NodeGetNodePtr(rNodeIdent);
+    }
+    catch (NuTo::MechanicsException &e)
+    {
+        e.AddMessage(__PRETTY_FUNCTION__, "Node with the given identifier could not be found.");
+        throw e;
+    }
+    catch (...)
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "Node with the given identifier could not be found.");
+    }
+
+    return this->LoadCreateNodeHeatFlux(rLoadCase,nodePtr,rDirection, rValue);
+}
+
+int NuTo::StructureBase::LoadCreateNodeHeatFlux(int rLoadCase, const NodeBase* rNode,
+        const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+{
+    if (rLoadCase>=mNumLoadCases)
+        throw MechanicsException(__PRETTY_FUNCTION__, "Load case number larger than total number of load cases. Use myStructure.SetNumLoadCases(num) to set the maximum number");
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,LoadBase>::iterator it = this->mLoadMap.find(id);
+    while (it != this->mLoadMap.end())
+    {
+        id++;
+        it = this->mLoadMap.find(id);
+    }
+
+    // create load
+    LoadNode* loadPtr;
+    switch (this->mDimension)
+    {
+    case 1:
+        loadPtr = new NuTo::LoadNodeHeatFlux1D(rLoadCase, rNode, rDirection(0,0), rValue);
+        break;
+    case 2:
+        //loadPtr = new NuTo::LoadNodeForces2D(rLoadCase, rNode, rDirection, rValue);
+        throw MechanicsException(__PRETTY_FUNCTION__, "Boundary heat flux for 2D not yet implemented.");
+        break;
+    case 3:
+        //loadPtr = new NuTo::LoadNodeForces3D(rLoadCase, rNode, rDirection, rValue);
+        throw MechanicsException(__PRETTY_FUNCTION__, "Boundary heat flux for 3D not yet implemented.");
+        break;
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__, "Incorrect dimension of the structure.");
     }
     // insert load in load map
     this->mLoadMap.insert(id,loadPtr);

@@ -834,6 +834,18 @@ public:
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     int  ConstraintLinearSetRotationNode(int rIdent, double rValue);
 
+    //! @brief Adds a temperature constraint equation for node.
+    //! @param rNode Pointer to node
+    //! @param rValue Prescribed value (e.g. zero to fix a displacement to zero)
+    //! @return Integer id to delete or modify the constraint
+    int ConstraintLinearSetTemperatureNode(NodeBase* rNode, double rValue);
+
+    //! @brief Adds a relative humidity constraint for a node.
+    //! @param rIdent Identifier for node
+    //! @param rValue Prescribed value (e.g. zero to fix a displacement to zero)
+    //! @return Integer id to delete or modify the constraint
+    int ConstraintLinearSetTemperatureNode(int rIdent, double rValue);
+
     //! @brief adds a water volume fraction constraint for a node
     //! @param rNode pointer to node
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
@@ -1016,7 +1028,7 @@ private:
 public:
     //*************************************************
     //************ Load routines        ***************
-    //***  defined in structures/StructureLoad.cpp  ***
+    //***  defined in structures/StructureBaseLoad.cpp  ***
     //*************************************************
 
     //! @brief adds a force for a node
@@ -1032,6 +1044,13 @@ public:
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
     int LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+
+    //! @brief Adds a heat flux to a node.
+    //! @param rNodeIdent Identifier for node
+    //! @param rDirection Direction of the flux
+    //! @param rValue Value of the flux
+    //! @return Integer id to delete or modify the load
+    int LoadCreateNodeHeatFlux(int rLoadCase, int rNodeIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
 
     //! @brief adds a surface load to 2D plane elements (2D)
     //! @param rElementGroupId ... specifies the elements with surface loads
@@ -1090,6 +1109,13 @@ public:
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
     int LoadCreateNodeForce(int rLoadCase, const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+
+    //! @brief Adds a heat flux to a node.
+    //! @param rNode Pointer to node
+    //! @param rDirection Direction of the heat flux
+    //! @param rValue Value of the flux
+    //! @return Integer id to delete or modify the load
+    int LoadCreateNodeHeatFlux(int rLoadCase, const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
 
     //! @brief adds a force for a node grpup
     //! @param rNodeGroup ... pointer to node group

@@ -748,7 +748,7 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         {
                         }
                             break;
-                        case Node::TEMPERATURES:
+                        case Node::TEMPERATURE:
                             break;
                         default:
                             throw MechanicsException("[NuTo::Element1D::Evaluate] Element output HESSIAN_2_TIME_DERIVATIVE for " + Node::DofToString(dof) + " not implemented.");
@@ -996,7 +996,7 @@ const Eigen::MatrixXd NuTo::Element1D::ExtractNodeValues(int rTimeDerivative, No
             nodalValues.block(0, iNode, numDofsPerNode, 1) = node->GetDisplacements1D(rTimeDerivative);
             break;
 
-        case Node::TEMPERATURES:
+        case Node::TEMPERATURE:
             nodalValues(0, iNode) = node->GetTemperature(rTimeDerivative);
             break;
 
@@ -1039,7 +1039,7 @@ const Eigen::VectorXi NuTo::Element1D::CalculateGlobalRowDofs() const
                 globalRowDofs[index++] = nodePtr->GetDofDisplacement(0);
             }
                 break;
-            case Node::TEMPERATURES:
+            case Node::TEMPERATURE:
             {
                 globalRowDofs[index++] = nodePtr->GetDofTemperature();
             }

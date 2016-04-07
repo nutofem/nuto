@@ -20,7 +20,7 @@ enum eConstitutiveType
     NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< nonlocal damage model with plasticity in the effective stress space
     MULTISCALE,                                    //!< multiscale model, where the average stress is calculated from a full fine scale model
     LATTICE_CONCRETE,                              //!< material law for lattice model
-    LINEAR_HEAT_FLUX,                              //!< material law for lattice model
+    HEAT_CONDUCTION,                               //!< Heat conduction
     GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< gradient damage plasticity model
     GRADIENT_DAMAGE_ENGINEERING_STRESS,            //!< gradient damage model
     GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE,    //!< gradient damage model for fatigued
@@ -42,7 +42,7 @@ static inline std::map<eConstitutiveType, std::string> GetConstitutiveTypeMap()
     map[NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS]         = "NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
     map[MULTISCALE]                                            = "MULTISCALE";
     map[LATTICE_CONCRETE]                                      = "LATTICE_CONCRETE";
-    map[LINEAR_HEAT_FLUX]                                      = "LINEAR_HEAT_FLUX";
+    map[HEAT_CONDUCTION]                                       = "HEAT_CONDUCTION";
     map[GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS]         = "GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
     map[GRADIENT_DAMAGE_ENGINEERING_STRESS]                    = "GRADIENT_DAMAGE_ENGINEERING_STRESS";
     map[GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE]            = "GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE";
@@ -169,6 +169,7 @@ enum class eConstitutiveParameter
     GRADIENT_CORRECTION_DESORPTION_ADSORPTION,  //!<
     HARDENING_EXPONENT,                         //!<
     HARDENING_VALUE,                            //!<
+    HEAT_CAPACITY,                              //!< specific heat capacity \f$c_T\f$
     INITIAL_HARDENING_MODULUS,                  //!<
     INITIAL_YIELD_STRENGTH,                     //!<
     MASS_EXCHANGE_RATE,                         //!<
@@ -188,6 +189,7 @@ enum class eConstitutiveParameter
     SPRING_DIRECTION,                           //!<
     TENSILE_STRENGTH,                           //!<
     THERMAL_EXPANSION_COEFFICIENT,              //!<
+    THERMAL_CONDUCTIVITY,                       //!< \f$k \text{ in } \mathbf{q} = - k \nabla \vartheta \f$
     VISCOPLASTIC_YIELD_SURFACE_OFFSET,          //!<
     VISCOSITY,                                  //!<
     VISCOSITY_EXPONENT,                         //!<
@@ -219,6 +221,7 @@ static inline std::map<eConstitutiveParameter, std::string> GetConstitutiveParam
     map[eConstitutiveParameter::GRADIENT_CORRECTION_DESORPTION_ADSORPTION]  = "GRADIENT_CORRECTION_DESORPTION_ADSORPTION";
     map[eConstitutiveParameter::HARDENING_EXPONENT]                         = "HARDENING_EXPONENT";
     map[eConstitutiveParameter::HARDENING_VALUE]                            = "HARDENING_VALUE";
+    map[eConstitutiveParameter::HEAT_CAPACITY]                              = "HEAT_CAPACITY";
     map[eConstitutiveParameter::INITIAL_HARDENING_MODULUS]                  = "INITIAL_HARDENING_MODULUS";
     map[eConstitutiveParameter::INITIAL_YIELD_STRENGTH]                     = "INITIAL_YIELD_STRENGTH";
     map[eConstitutiveParameter::MASS_EXCHANGE_RATE]                         = "MASS_EXCHANGE_RATE";
@@ -232,6 +235,7 @@ static inline std::map<eConstitutiveParameter, std::string> GetConstitutiveParam
     map[eConstitutiveParameter::SPRING_STIFFNESS]                           = "SPRING_STIFFNESS";
     map[eConstitutiveParameter::TENSILE_STRENGTH]                           = "TENSILE_STRENGTH";
     map[eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT]              = "THERMAL_EXPANSION_COEFFICIENT";
+    map[eConstitutiveParameter::THERMAL_CONDUCTIVITY]                       = "THERMAL_CONDUCTIVITY";
     map[eConstitutiveParameter::VISCOPLASTIC_YIELD_SURFACE_OFFSET]          = "VISCOPLASTIC_YIELD_SURFACE_OFFSET";
     map[eConstitutiveParameter::VISCOSITY]                                  = "VISCOSITY";
     map[eConstitutiveParameter::VISCOSITY_EXPONENT]                         = "VISCOSITY_EXPONENT";
@@ -353,15 +357,8 @@ enum eOutput
 	D_ENGINEERING_STRESS_D_TEMPERATURE_3D,
     D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY_2D,
     D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION_2D,
-	D_HEAT_FLUX_D_TEMPERATURE_RATE_1D,
-	D_HEAT_FLUX_D_TEMPERATURE_RATE_2D,
-	D_HEAT_FLUX_D_TEMPERATURE_RATE_3D,
-	HEAT_FLUX_1D,
-	HEAT_FLUX_2D,
-	HEAT_FLUX_3D,
-	D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_1D,
-	D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_2D,
-	D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_3D,
+    HEAT_FLUX,
+    D_HEAT_FLUX_D_TEMPERATURE_GRADIENT,
 	DAMAGE,
 	UPDATE_STATIC_DATA,
 	UPDATE_TMP_STATIC_DATA,
@@ -432,15 +429,8 @@ static inline std::string OutputToString( const Output::eOutput& e )
                               (Output::D_ENGINEERING_STRESS_D_TEMPERATURE_1D,"D_ENGINEERING_STRESS_D_TEMPERATURE_1D")
                               (Output::D_ENGINEERING_STRESS_D_TEMPERATURE_2D,"D_ENGINEERING_STRESS_D_TEMPERATURE_2D")
                               (Output::D_ENGINEERING_STRESS_D_TEMPERATURE_3D,"D_ENGINEERING_STRESS_D_TEMPERATURE_3D")
-                              (Output::D_HEAT_FLUX_D_TEMPERATURE_RATE_1D,"D_HEAT_FLUX_D_TEMPERATURE_RATE_1D")
-                              (Output::D_HEAT_FLUX_D_TEMPERATURE_RATE_2D,"D_HEAT_FLUX_D_TEMPERATURE_RATE_2D")
-                              (Output::D_HEAT_FLUX_D_TEMPERATURE_RATE_3D,"D_HEAT_FLUX_D_TEMPERATURE_RATE_3D")
-                              (Output::HEAT_FLUX_1D,"HEAT_FLUX_1D")
-                              (Output::HEAT_FLUX_2D,"HEAT_FLUX_2D")
-                              (Output::HEAT_FLUX_3D,"HEAT_FLUX_3D")
-                              (Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_1D,"D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_1D")
-                              (Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_2D,"D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_2D")
-                              (Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_3D,"D_HEAT_FLUX_D_TEMPERATURE_GRADIENT_3D")
+                              (Output::HEAT_FLUX,"HEAT_FLUX")
+                              (Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT,"D_HEAT_FLUX_D_TEMPERATURE_GRADIENT")
                               (Output::DAMAGE,"DAMAGE")
                               (Output::UPDATE_STATIC_DATA,"UPDATE_STATIC_DATA")
                               (Output::UPDATE_TMP_STATIC_DATA,"UPDATE_TMP_STATIC_DATA")

@@ -69,7 +69,7 @@ NuTo::ConstitutiveInputMap NuTo::MisesPlasticityEngineeringStress::GetConstituti
     ConstitutiveInputMap constitutiveInputMap;
 
     constitutiveInputMap[Constitutive::Input::ENGINEERING_STRAIN];
-    if (rInterpolationType.IsConstitutiveInput(Node::TEMPERATURES))
+    if (rInterpolationType.IsConstitutiveInput(Node::TEMPERATURE))
         constitutiveInputMap[Constitutive::Input::TEMPERATURE];
 
 

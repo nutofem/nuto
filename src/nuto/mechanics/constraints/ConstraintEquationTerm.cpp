@@ -41,10 +41,10 @@ NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node
         }
     }
     break;
-    case Node::TEMPERATURES:
+    case Node::TEMPERATURE:
     {
-        int numTemperatures = rNode->GetNumTemperatures();
-        if (rDofComponent < 0 || rDofComponent >= numTemperatures)
+        int numTemperature = rNode->GetNumTemperature();
+        if (rDofComponent < 0 || rDofComponent >= numTemperature)
         {
             throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid temerature component.");
         }
@@ -103,7 +103,7 @@ int NuTo::ConstraintEquationTerm::GetDof() const
     	return mNode->GetDofRotation(this->mDofComponent);
     }
     break;
-    case Node::TEMPERATURES:
+    case Node::TEMPERATURE:
     {
     	return mNode->GetDofTemperature();
     }

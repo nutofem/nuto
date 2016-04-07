@@ -525,7 +525,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityEngineeringStress::Evaluate3D(Ele
 //    deformationGradient.Info();
 //    cout << "Eval.: eing Strain" << engineeringStrain.transpose() << endl;
 	// if temperature is an input, subtract thermal strains to get elastic strains
-	if (interpolationType->IsConstitutiveInput(Node::TEMPERATURES))
+	if (interpolationType->IsConstitutiveInput(Node::TEMPERATURE))
 	{
 		std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>::const_iterator itInput(rConstitutiveInput.find(NuTo::Constitutive::Input::TEMPERATURE));
 		if (itInput==rConstitutiveInput.end())

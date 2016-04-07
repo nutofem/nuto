@@ -284,7 +284,7 @@ void NuTo::NodeBase::SetRotations(int rTimeDerivative, const Eigen::Matrix<doubl
 //************      TEMPERATURE     ***************
 //*************************************************
 
-int NuTo::NodeBase::GetNumTemperatures() const
+int NuTo::NodeBase::GetNumTemperature() const
 {
     return 0;
 }

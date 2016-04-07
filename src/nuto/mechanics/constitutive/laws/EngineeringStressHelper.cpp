@@ -10,7 +10,7 @@ NuTo::EngineeringStrain<TDim> NuTo::EngineeringStressHelper::CalculateElasticEng
 {
     NuTo::EngineeringStrain<TDim> elasticEngineeringStrain = rEngineeringStrain;
 
-    if (rInterpolationType.IsConstitutiveInput(Node::TEMPERATURES))
+    if (rInterpolationType.IsConstitutiveInput(Node::TEMPERATURE))
     {
         const ConstitutiveIOBase& temperature = *(rConstitutiveInput.at(Constitutive::Input::TEMPERATURE));
         double temperatureStrain = rThermalExpansionCoefficient * temperature[0];

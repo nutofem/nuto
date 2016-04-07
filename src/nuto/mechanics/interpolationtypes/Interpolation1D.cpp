@@ -27,7 +27,7 @@ int NuTo::Interpolation1D::GetNumDofsPerNode() const
         return mDimension;
     case NuTo::Node::DISPLACEMENTS:
         return mDimension;
-    case NuTo::Node::TEMPERATURES:
+    case NuTo::Node::TEMPERATURE:
         return 1;
     case NuTo::Node::NONLOCALEQSTRAIN:
         return 1;

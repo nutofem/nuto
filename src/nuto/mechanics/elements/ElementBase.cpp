@@ -987,7 +987,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
                 const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
-                Eigen::VectorXd temperature = InterpolateDofGlobal(coords, Node::eDof::TEMPERATURES);
+                Eigen::VectorXd temperature = InterpolateDofGlobal(coords, Node::eDof::TEMPERATURE);
                 unsigned int PointId = PointIdVec[PointCount];
                 rVisualize.SetPointDataScalar(PointId, it.get()->GetComponentName(), temperature[0]);
             }

@@ -165,7 +165,7 @@ void CheckTriangle()
 
     NuTo::InterpolationType myIT(NuTo::Interpolation::eShapeType::TRIANGLE2D, 2);
     myIT.AddDofInterpolation(NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    myIT.AddDofInterpolation(NuTo::Node::TEMPERATURES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT4);
+    myIT.AddDofInterpolation(NuTo::Node::TEMPERATURE, NuTo::Interpolation::eTypeOrder::EQUIDISTANT4);
     myIT.AddDofInterpolation(NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT3);
     myIT.AddDofInterpolation(NuTo::Node::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
     myIT.UpdateIntegrationType(myIntegrationType);
@@ -186,7 +186,7 @@ void CheckTriangle()
     if (myIT.Get(NuTo::Node::DISPLACEMENTS).GetLocalStartIndex() != 0) // displacement is always first
         throw NuTo::MechanicsException("[CheckTriangle] Wrong GetNumPreviousActiveDofs for DISPLACEMENTS");
 
-    if (myIT.Get(NuTo::Node::TEMPERATURES).GetLocalStartIndex() != 20) // 10x2 previous displacement dofs
+    if (myIT.Get(NuTo::Node::TEMPERATURE).GetLocalStartIndex() != 20) // 10x2 previous displacement dofs
         throw NuTo::MechanicsException("[CheckTriangle] Wrong GetNumPreviousActiveDofs for TEMPERATURE");
 
     if (myIT.Get(NuTo::Node::NONLOCALEQSTRAIN).GetLocalStartIndex() != 35) // + 15x1 previous temperature dofs

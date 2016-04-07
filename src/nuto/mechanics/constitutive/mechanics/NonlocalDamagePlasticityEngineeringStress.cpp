@@ -142,7 +142,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
     elastStrain[3] =  - oldStaticData->mTmpEpsilonP[3];
 
     // subtract thermal strain
-    if (interpolationType->IsConstitutiveInput(Node::TEMPERATURES))
+    if (interpolationType->IsConstitutiveInput(Node::TEMPERATURE))
     {
         std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>::const_iterator itInput(rConstitutiveInput.find(NuTo::Constitutive::Input::TEMPERATURE));
         if (itInput==rConstitutiveInput.end())

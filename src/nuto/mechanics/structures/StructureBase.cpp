@@ -385,57 +385,57 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, const std
     std::cout << rVisualizeComponent << std::endl;
     if (rVisualizeComponent == "Accelerations")
         AddVisualizationComponent(rElementGroup, VisualizeBase::ACCELERATION);
-    else if (rVisualizeComponent.compare("AngularAccelerations"))
+    else if (rVisualizeComponent == "AngularAccelerations")
         AddVisualizationComponent(rElementGroup, VisualizeBase::ANGULAR_ACCELERATION);
-    else if (rVisualizeComponent.compare("AngularVelocities"))
+    else if (rVisualizeComponent == "AngularVelocities")
         AddVisualizationComponent(rElementGroup, VisualizeBase::ANGULAR_VELOCITY);
-    else if (rVisualizeComponent.compare("BondStress"))
+    else if (rVisualizeComponent == "BondStress")
         AddVisualizationComponent(rElementGroup, VisualizeBase::BOND_STRESS);
-    else if (rVisualizeComponent.compare("BondStress"))
+    else if (rVisualizeComponent == "BondStress")
         AddVisualizationComponent(rElementGroup, VisualizeBase::CONSTITUTIVE);
-    else if (rVisualizeComponent.compare("Crack"))
+    else if (rVisualizeComponent == "Crack")
         AddVisualizationComponent(rElementGroup, VisualizeBase::CRACK);
-    else if (rVisualizeComponent.compare("Damage"))
+    else if (rVisualizeComponent == "Damage")
         AddVisualizationComponent(rElementGroup, VisualizeBase::DAMAGE);
-    else if (rVisualizeComponent.compare("Displacements"))
+    else if (rVisualizeComponent == "Displacements")
         AddVisualizationComponent(rElementGroup, VisualizeBase::DISPLACEMENTS);
-    else if (rVisualizeComponent.compare("Element"))
+    else if (rVisualizeComponent == "Element")
         AddVisualizationComponent(rElementGroup, VisualizeBase::ELEMENT);
-    else if (rVisualizeComponent.compare("EngineeringPlasticStrain"))
+    else if (rVisualizeComponent == "EngineeringPlasticStrain")
         AddVisualizationComponent(rElementGroup, VisualizeBase::ENGINEERING_PLASTIC_STRAIN);
-    else if (rVisualizeComponent.compare("EngineeringStrain"))
+    else if (rVisualizeComponent == "EngineeringStrain")
         AddVisualizationComponent(rElementGroup, VisualizeBase::ENGINEERING_STRAIN);
-    else if (rVisualizeComponent.compare("EngineeringStress"))
+    else if (rVisualizeComponent == "EngineeringStress")
         AddVisualizationComponent(rElementGroup, VisualizeBase::ENGINEERING_STRESS);
-    else if (rVisualizeComponent.compare("HeatFlux"))
+    else if (rVisualizeComponent == "HeatFlux")
         AddVisualizationComponent(rElementGroup, VisualizeBase::HEAT_FLUX);
-    else if (rVisualizeComponent.compare("LatticeStrain"))
+    else if (rVisualizeComponent == "LatticeStrain")
         AddVisualizationComponent(rElementGroup, VisualizeBase::LATTICE_STRAIN);
-    else if (rVisualizeComponent.compare("LatticeStress"))
+    else if (rVisualizeComponent == "LatticeStress")
         AddVisualizationComponent(rElementGroup, VisualizeBase::LATTICE_STRESS);
-    else if (rVisualizeComponent.compare("LocalEqStrain"))
+    else if (rVisualizeComponent == "LocalEqStrain")
         AddVisualizationComponent(rElementGroup, VisualizeBase::LOCAL_EQ_STRAIN);
-    else if (rVisualizeComponent.compare("NonlocalEqStrain"))
+    else if (rVisualizeComponent == "NonlocalEqStrain")
         AddVisualizationComponent(rElementGroup, VisualizeBase::NONLOCAL_EQ_STRAIN);
-    else if (rVisualizeComponent.compare("ParticleRadius"))
+    else if (rVisualizeComponent == "ParticleRadius")
         AddVisualizationComponent(rElementGroup, VisualizeBase::PARTICLE_RADIUS);
-    else if (rVisualizeComponent.compare("PrincipalEngineeringStress"))
+    else if (rVisualizeComponent == "PrincipalEngineeringStress")
         AddVisualizationComponent(rElementGroup, VisualizeBase::PRINCIPAL_ENGINEERING_STRESS);
-    else if (rVisualizeComponent.compare("RelativeHumidity"))
+    else if (rVisualizeComponent == "RelativeHumidity")
         AddVisualizationComponent(rElementGroup, VisualizeBase::RELATIVE_HUMIDITY);
-    else if (rVisualizeComponent.compare("Rotations"))
+    else if (rVisualizeComponent == "Rotations")
         AddVisualizationComponent(rElementGroup, VisualizeBase::ROTATION);
-    else if (rVisualizeComponent.compare("Section"))
+    else if (rVisualizeComponent == "Section")
         AddVisualizationComponent(rElementGroup, VisualizeBase::SECTION);
-    else if (rVisualizeComponent.compare("Slip"))
+    else if (rVisualizeComponent == "Slip")
         AddVisualizationComponent(rElementGroup, VisualizeBase::SLIP);
-    else if (rVisualizeComponent.compare("Temperature"))
+    else if (rVisualizeComponent == "Temperature")
         AddVisualizationComponent(rElementGroup, VisualizeBase::TEMPERATURE);
-    else if (rVisualizeComponent.compare("TotalInelasticEqStrain"))
+    else if (rVisualizeComponent == "TotalInelasticEqStrain")
         AddVisualizationComponent(rElementGroup, VisualizeBase::TOTAL_INELASTIC_EQ_STRAIN);
-    else if (rVisualizeComponent.compare("Velocities"))
+    else if (rVisualizeComponent == "Velocities")
         AddVisualizationComponent(rElementGroup, VisualizeBase::VELOCITY);
-    else if (rVisualizeComponent.compare("WaterVolumeFraction"))
+    else if (rVisualizeComponent == "WaterVolumeFraction")
         AddVisualizationComponent(rElementGroup, VisualizeBase::WATER_VOLUME_FRACTION);
     else
         throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Visualization component not implemented or misspelled.");
@@ -948,6 +948,19 @@ NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalExternalLoadVec
         auto& vectorJ = externalLoad.J[Node::DISPLACEMENTS];
         auto& vectorK = externalLoad.K[Node::DISPLACEMENTS];
 
+
+        // loop over all loads
+        boost::ptr_map<int,LoadBase>::const_iterator loadIter = this->mLoadMap.begin();
+        while (loadIter != this->mLoadMap.end())
+        {
+            loadIter->second->AddLoadToGlobalSubVectors(rLoadCase, vectorJ, vectorK);
+            loadIter++;
+        }
+    }
+    if (DofTypeIsActive(Node::TEMPERATURE))
+    {
+        auto& vectorJ = externalLoad.J[Node::TEMPERATURE];
+        auto& vectorK = externalLoad.K[Node::TEMPERATURE];
 
         // loop over all loads
         boost::ptr_map<int,LoadBase>::const_iterator loadIter = this->mLoadMap.begin();

@@ -163,13 +163,13 @@ void NuTo::Structure::NodeInfo(int rVerboseLevel)const
                         mLogger << "("<< it->second->GetDofRotation(iDof)<< ")" ;
                     }
                 }
-                if (it->second->GetNumTemperatures()>0 )
+                if (it->second->GetNumTemperature()>0)
                 {
-                	mLogger << "\t temperatures:";
-                    for(unsigned short iDof=0; iDof<it->second->GetNumTemperatures(); ++iDof)
+                    mLogger << "\t Temperature:";
+                    for(unsigned short iDof=0; iDof < it->second->GetNumTemperature(); ++iDof)
                     {
-                    	mLogger << "\t" << it->second->GetTemperature() ;
-                        mLogger << "("<< it->second->GetDofTemperature()<< ")" ;
+                    	mLogger << "\t" << it->second->GetTemperature();
+                        mLogger << "("<< it->second->GetDofTemperature() << ")";
                     }
                 }
                 if (it->second->GetNumNonlocalTotalStrain()>0 )
@@ -386,7 +386,7 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             throw MechanicsException("[NuTo::Structure::NodeCreate] Coordinates, Displacements and Rotations only implemented for 0 and 2 time derivatives.");
         }
         break;
-    case (1 << Node::COORDINATES) | (1 << Node::TEMPERATURES):
+    case (1 << Node::COORDINATES) | (1 << Node::TEMPERATURE):
         // coordinates and temperatures
         switch (mNumTimeDerivatives)
         {

@@ -11,7 +11,7 @@ enum eDof
     COORDINATES=0,
     DISPLACEMENTS,
     ROTATIONS,
-    TEMPERATURES
+    TEMPERATURE
 };
 
 enum eSolutionProcedure

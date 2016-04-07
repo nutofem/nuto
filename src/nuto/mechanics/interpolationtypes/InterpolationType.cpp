@@ -279,7 +279,7 @@ void NuTo::InterpolationType::UpdateLocalStartIndices()
     // prescribe a specific order
 
     std::vector<Node::eDof> orderedDofs(
-    { Node::COORDINATES, Node::DISPLACEMENTS, Node::TEMPERATURES, Node::NONLOCALEQPLASTICSTRAIN, Node::NONLOCALEQSTRAIN, Node::RELATIVEHUMIDITY, Node::WATERVOLUMEFRACTION });
+    { Node::COORDINATES, Node::DISPLACEMENTS, Node::TEMPERATURE, Node::NONLOCALEQPLASTICSTRAIN, Node::NONLOCALEQSTRAIN, Node::RELATIVEHUMIDITY, Node::WATERVOLUMEFRACTION });
 
     int currentStartIndex = 0;
     for (unsigned int i = 0; i < orderedDofs.size(); ++i)

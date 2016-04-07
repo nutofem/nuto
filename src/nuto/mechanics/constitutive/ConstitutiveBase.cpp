@@ -90,6 +90,8 @@ void NuTo::ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutivePar
     case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
     case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
     case Constitutive::eConstitutiveParameter::DENSITY:
+    case Constitutive::eConstitutiveParameter::HEAT_CAPACITY:
+    case Constitutive::eConstitutiveParameter::THERMAL_CONDUCTIVITY:
     {
         if (rValue < 0.)
             throw NuTo::MechanicsException(__PRETTY_FUNCTION__, Constitutive::ConstitutiveParameterToString(rIdentifier) + " must be > 0. (value: " + std::to_string(rValue) + ").");

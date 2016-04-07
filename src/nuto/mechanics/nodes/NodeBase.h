@@ -183,7 +183,7 @@ public:
     //************      TEMPERATURE     ***************
     //*************************************************
 
-    virtual int GetNumTemperatures() const;
+    virtual int GetNumTemperature() const;
     virtual int GetDofTemperature() const;
 
     double GetTemperature() const;
