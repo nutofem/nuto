@@ -18,7 +18,7 @@
 #include "nuto/mechanics/nodes/NodeBase.h"
 
 // constructor
-NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node::eAttributes rDofType, int rDofComponent, double rCoefficient)
+NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node::eDof rDofType, int rDofComponent, double rCoefficient)
 {
     assert(rNode != 0);
     switch (rDofType)
@@ -79,7 +79,7 @@ NuTo::ConstraintEquationTerm::ConstraintEquationTerm()
     this->mCoefficient = 0;
 }
 
-void NuTo::ConstraintEquationTerm::AddToConstraintMatrix(int rRow, NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix) const
+void NuTo::ConstraintEquationTerm::AddToConstraintMatrix(int rRow, NuTo::SparseMatrix<double>& rConstraintMatrix) const
 {
     assert(rRow >= 0);
     assert(rRow < rConstraintMatrix.GetNumRows());

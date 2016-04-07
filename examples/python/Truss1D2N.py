@@ -20,8 +20,8 @@ Section1 = myStructure.SectionCreate("TRUSS")
 myStructure.SectionSetArea(Section1, Area)
 
 # create material law
-Material1 = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
-myStructure.ConstitutiveLawSetParameterDouble(Material1,"YoungsModulus", YoungsModulus)
+Material1 = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress")
+myStructure.ConstitutiveLawSetParameterDouble(Material1,"Youngs_Modulus", YoungsModulus)
 
 # create nodes
 nodeCoordinates = nuto.DoubleFullVector(1)
@@ -60,42 +60,19 @@ else:
 myStructure.CalculateMaximumIndependentSets()
 
 # start analysis
-# build global dof numbering
-myStructure.NodeBuildGlobalDofs()
+myStructure.SolveGlobalSystemStaticElastic(0)
+intGradient = myStructure.BuildGlobalInternalGradient().J.Get("Displacements")
+extGradient = myStructure.BuildGlobalExternalLoadVector(0).J.Get("Displacements")
+residual = nuto.DoubleFullVector(intGradient - extGradient)
 
-# build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-stiffnessMatrix = nuto.DoubleSparseMatrixCSRVector2General()
-dispForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
 
-# build global external load vector
-extForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalExternalLoadVector(0,extForceVector)
+print "residual: " + str(residual.Norm())
 
-# calculate right hand side
-rhsVector = dispForceVector + extForceVector
-
-# solve
-mySolver = nuto.SparseDirectSolverMUMPS()
-displacementVector = nuto.DoubleFullVector()
-stiffnessMatrixCSR = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrix)
-stiffnessMatrixCSR.SetOneBasedIndexing()
-mySolver.Solve(stiffnessMatrixCSR, rhsVector, displacementVector)
-
-# write displacements to node
-myStructure.NodeMergeActiveDofValues(displacementVector)
-
-# calculate residual
-intForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector)
-residualVector = extForceVector - intForceVector
-print "residual: " + str(residualVector.Norm())
-
-# visualize results
+## visualize results
 visualizationGroup = myStructure.GroupCreate("Elements");
 myStructure.GroupAddElementsTotal(visualizationGroup)
 
 myStructure.AddVisualizationComponent(visualizationGroup, "Displacements");
 myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStrain");
 myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStress");
-myStructure.ExportVtkDataFileElements("Truss1D2N.vtk")
+#myStructure.ExportVtkDataFileElements("Truss1D2N.vtk")

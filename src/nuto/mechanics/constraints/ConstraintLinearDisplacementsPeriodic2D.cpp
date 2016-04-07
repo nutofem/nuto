@@ -30,7 +30,7 @@ int NuTo::ConstraintLinearDisplacementsPeriodic2D::GetNumLinearConstraints()cons
 
  //! @brief constructor
 NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D(const StructureBase* rStructure, double rAngle,
-        const EngineeringStrain2D& rStrain,NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rCrackOpening, double rRadiusToCrackWithoutConstraints,
+        const EngineeringStrain<2>& rStrain,NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rCrackOpening, double rRadiusToCrackWithoutConstraints,
         const Group<NodeBase>* rGroupTop,const Group<NodeBase>* rGroupBottom,
         const Group<NodeBase>* rGroupLeft, const Group<NodeBase>* rGroupRight) :  ConstraintLinear()
 {
@@ -157,7 +157,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetCrackOpening(const NuTo::
 
 //!@brief set the strain of the periodic boundary conditions
 //!@param rStrain strain (e_xx,e_yy,gamma_xy)
-void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetStrain(const EngineeringStrain2D& rStrain)
+void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetStrain(const EngineeringStrain<2>& rStrain)
 {
     mStrain = rStrain;
 }
@@ -218,7 +218,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
             if (itNode->second!=mRightLowerCorner)
             {
                 double coordinate = itNode->second->GetCoordinate(1);
-                if (fabs(coordinate-(length+crackShift)*0.5)>=mRadiusToCrackWithoutConstraints)
+                if (std::abs(coordinate-(length+crackShift)*0.5)>=mRadiusToCrackWithoutConstraints)
                     mSlaveNodesRightBoundary.push_back(itNode->second);
             }
         }
@@ -239,7 +239,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
             {
                 NodeBase* nodePtr = itNode->second;
                 double coordinate = nodePtr->GetCoordinate(0);
-                if (fabs(coordinate-(length+crackShift)*0.5)>=mRadiusToCrackWithoutConstraints)
+                if (std::abs(coordinate-(length+crackShift)*0.5)>=mRadiusToCrackWithoutConstraints)
                     mSlaveNodesTopBoundary.push_back(nodePtr);
             }
         }
@@ -303,7 +303,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetBoundaryVectors()
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
 #define MIN_CONSTRAINT 1e-6
 void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& curConstraintEquation,
-        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const
+        NuTo::SparseMatrix<double>& rConstraintMatrix)const
 {
     Eigen::Matrix<double, 2, 1> LeftUpperCoordinates = mLeftUpperCorner->GetCoordinates2D();
     Eigen::Matrix<double, 2, 1> LeftLowerCoordinates = mLeftLowerCorner->GetCoordinates2D();
@@ -363,18 +363,18 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
 */
             //constrain x direction
             rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
-            if (fabs(w)>MIN_CONSTRAINT)
+            if (std::abs(w)>MIN_CONSTRAINT)
                 rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
-            if (fabs(w-1.)>MIN_CONSTRAINT)
+            if (std::abs(w-1.)>MIN_CONSTRAINT)
                 rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
             //rRHS(curConstraintEquation,0) = deltaDisp[0];
             curConstraintEquation++;
 
             //constrain y direction
             rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
-            if (fabs(w)>MIN_CONSTRAINT)
+            if (std::abs(w)>MIN_CONSTRAINT)
                 rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
-            if (fabs(w-1.)>MIN_CONSTRAINT)
+            if (std::abs(w-1.)>MIN_CONSTRAINT)
                 rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
             //rRHS(curConstraintEquation,0) = deltaDisp[1];
             curConstraintEquation++;
@@ -478,18 +478,18 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
 */
             //constrain x direction
             rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
-            if (fabs(w)>MIN_CONSTRAINT)
+            if (std::abs(w)>MIN_CONSTRAINT)
                 rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
-            if (fabs(w-1.)>MIN_CONSTRAINT)
+            if (std::abs(w-1.)>MIN_CONSTRAINT)
                 rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
             //rRHS(curConstraintEquation,0) = deltaDisp[0];
             curConstraintEquation++;
 
             //constrain y direction
             rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
-            if (fabs(w)>MIN_CONSTRAINT)
+            if (std::abs(w)>MIN_CONSTRAINT)
                 rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
-            if (fabs(w-1.)>MIN_CONSTRAINT)
+            if (std::abs(w-1.)>MIN_CONSTRAINT)
                 rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
             //rRHS(curConstraintEquation,0) = deltaDisp[1];
             curConstraintEquation++;
@@ -549,18 +549,18 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
 */
             //constrain x direction
             rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
-            if (fabs(w)>MIN_CONSTRAINT)
+            if (std::abs(w)>MIN_CONSTRAINT)
                 rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
-            if (fabs(w-1.)>MIN_CONSTRAINT)
+            if (std::abs(w-1.)>MIN_CONSTRAINT)
                 rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
             //rRHS(curConstraintEquation,0) = deltaDisp[0];
             curConstraintEquation++;
 
             //constrain y direction
             rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
-            if (fabs(w)>MIN_CONSTRAINT)
+            if (std::abs(w)>MIN_CONSTRAINT)
                 rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
-            if (fabs(w-1.)>MIN_CONSTRAINT)
+            if (std::abs(w-1.)>MIN_CONSTRAINT)
                 rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
             //rRHS(curConstraintEquation,0) = deltaDisp[1];
             curConstraintEquation++;
@@ -664,18 +664,18 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
 */
             //constrain x direction
             rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
-            if (fabs(w)>MIN_CONSTRAINT)
+            if (std::abs(w)>MIN_CONSTRAINT)
                 rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
-            if (fabs(w-1.)>MIN_CONSTRAINT)
+            if (std::abs(w-1.)>MIN_CONSTRAINT)
                 rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
             //rRHS(curConstraintEquation,0) = deltaDisp[0];
             curConstraintEquation++;
 
             //constrain y direction
             rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
-            if (fabs(w)>MIN_CONSTRAINT)
+            if (std::abs(w)>MIN_CONSTRAINT)
                 rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
-            if (fabs(w-1.)>MIN_CONSTRAINT)
+            if (std::abs(w-1.)>MIN_CONSTRAINT)
                 rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
             //rRHS(curConstraintEquation,0) = deltaDisp[1];
             curConstraintEquation++;
@@ -748,18 +748,18 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
 */
             //constrain x direction
             //rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
-            //if (fabs(w)>MIN_CONSTRAINT)
+            //if (std::abs(w)>MIN_CONSTRAINT)
             //    rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
-            //if (fabs(w-1.)>MIN_CONSTRAINT)
+            //if (std::abs(w-1.)>MIN_CONSTRAINT)
             //    rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
             rRHS(curConstraintEquation) = deltaDisp[0];
             curConstraintEquation++;
 
             //constrain y direction
             //rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
-            //if (fabs(w)>MIN_CONSTRAINT)
+            //if (std::abs(w)>MIN_CONSTRAINT)
             //    rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
-            //if (fabs(w-1.)>MIN_CONSTRAINT)
+            //if (std::abs(w-1.)>MIN_CONSTRAINT)
             //    rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
             rRHS(curConstraintEquation) = deltaDisp[1];
             curConstraintEquation++;
@@ -863,18 +863,18 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
 */
             //constrain x direction
             //rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
-            //if (fabs(w)>MIN_CONSTRAINT)
+            //if (std::abs(w)>MIN_CONSTRAINT)
             //    rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
-            //if (fabs(w-1.)>MIN_CONSTRAINT)
+            //if (std::abs(w-1.)>MIN_CONSTRAINT)
             //    rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
             rRHS(curConstraintEquation) = deltaDisp[0];
             curConstraintEquation++;
 
             //constrain y direction
             //rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
-            //if (fabs(w)>MIN_CONSTRAINT)
+            //if (std::abs(w)>MIN_CONSTRAINT)
             //    rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
-            //if (fabs(w-1.)>MIN_CONSTRAINT)
+            //if (std::abs(w-1.)>MIN_CONSTRAINT)
             //    rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
             rRHS(curConstraintEquation) = deltaDisp[1];
             curConstraintEquation++;
@@ -934,18 +934,18 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
 */
             //constrain x direction
             //rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
-            //if (fabs(w)>MIN_CONSTRAINT)
+            //if (std::abs(w)>MIN_CONSTRAINT)
             //    rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
-            //if (fabs(w-1.)>MIN_CONSTRAINT)
+            //if (std::abs(w-1.)>MIN_CONSTRAINT)
             //    rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
             rRHS(curConstraintEquation) = deltaDisp[0];
             curConstraintEquation++;
 
             //constrain y direction
             //rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
-            //if (fabs(w)>MIN_CONSTRAINT)
+            //if (std::abs(w)>MIN_CONSTRAINT)
             //    rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
-            //if (fabs(w-1.)>MIN_CONSTRAINT)
+            //if (std::abs(w-1.)>MIN_CONSTRAINT)
             //    rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
             rRHS(curConstraintEquation) = deltaDisp[1];
             curConstraintEquation++;
@@ -1049,18 +1049,18 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
 */
             //constrain x direction
             //rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
-            //if (fabs(w)>MIN_CONSTRAINT)
+            //if (std::abs(w)>MIN_CONSTRAINT)
             //    rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
-            //if (fabs(w-1.)>MIN_CONSTRAINT)
+            //if (std::abs(w-1.)>MIN_CONSTRAINT)
             //    rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
             rRHS(curConstraintEquation) = deltaDisp[0];
             curConstraintEquation++;
 
             //constrain y direction
             //rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
-            //if (fabs(w)>MIN_CONSTRAINT)
+            //if (std::abs(w)>MIN_CONSTRAINT)
             //    rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
-            //if (fabs(w-1.)>MIN_CONSTRAINT)
+            //if (std::abs(w-1.)>MIN_CONSTRAINT)
             //    rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
             rRHS(curConstraintEquation) = deltaDisp[1];
             curConstraintEquation++;

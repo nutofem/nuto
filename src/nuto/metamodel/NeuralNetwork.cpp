@@ -742,10 +742,10 @@ void NuTo::NeuralNetwork::BuildDerived()
                 cutbackFactor = 0.001;
 
 
-            if (fabs(myOptimizer.GetObjective()-prevObjective)/myOptimizer.GetObjective() < this->mMinDeltaObjectiveBayesianIteration)
+            if (std::abs(myOptimizer.GetObjective()-prevObjective)/myOptimizer.GetObjective() < this->mMinDeltaObjectiveBayesianIteration)
             {
                 if (mVerboseLevel>0)
-                    std::cout << "[NeuralNetwork::BuildDerived] Bayesian loop converged due to delta of "<< fabs(myOptimizer.GetObjective()-prevObjective) << " between iterations." << std::endl;
+                    std::cout << "[NeuralNetwork::BuildDerived] Bayesian loop converged due to delta of "<< std::abs(myOptimizer.GetObjective()-prevObjective) << " between iterations." << std::endl;
                 converged = true;
 
                 // Perform final optimization procedure with constant hyperparameters
@@ -759,7 +759,7 @@ void NuTo::NeuralNetwork::BuildDerived()
             {
                 if(this->mVerboseLevel > 0)
                 {
-                    std::cout << "[NeuralNetwork::BuildDerived] Bayes iteration step " << theGlobalIteration << ": delta in objective between two bayes iterations: " << fabs(myOptimizer.GetObjective()-prevObjective) << " (" << this->mMinDeltaObjectiveBayesianIteration * myOptimizer.GetObjective()<< ")" << std::endl;
+                    std::cout << "[NeuralNetwork::BuildDerived] Bayes iteration step " << theGlobalIteration << ": delta in objective between two bayes iterations: " << std::abs(myOptimizer.GetObjective()-prevObjective) << " (" << this->mMinDeltaObjectiveBayesianIteration * myOptimizer.GetObjective()<< ")" << std::endl;
                 }
             }
 

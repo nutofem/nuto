@@ -19,7 +19,7 @@ public:
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-    virtual void                AddToConstraintMatrix                           (int& curConstraintEquation, NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix) const override;
+    virtual void                AddToConstraintMatrix                           (int& curConstraintEquation, NuTo::SparseMatrix<double>& rConstraintMatrix) const override;
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
@@ -43,6 +43,13 @@ public:
     //! @param rVerboseLevel ... verbosity of the information
     virtual void                Info                                            (unsigned short rVerboseLevel) const override;
 
+    //! @brief determines the dof type affected by the constraint
+    //! @return dof type
+    Node::eDof GetDofType() const override
+    { // @Volker: you forgot to align the "const"s and "override"s ... :)
+        return Node::eDof::RELATIVEHUMIDITY;
+    }
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -55,6 +62,7 @@ public:
     //! @param mNodeMapCast std::map containing the old and new Addresses
     virtual void SetNodePtrAfterSerialization(const std::map<uintptr_t, uintptr_t>& mNodeMapCast) override;
 #endif // ENABLE_SERIALIZATION
+
 
 protected:
     //! @brief ... just for serialize

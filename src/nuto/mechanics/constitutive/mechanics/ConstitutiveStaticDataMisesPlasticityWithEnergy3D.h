@@ -16,7 +16,7 @@ namespace NuTo
 class MisesPlasticityEngineeringStress;
 
 class ConstitutiveStaticDataMisesPlasticityWithEnergy3D :
-	public ConstitutiveStaticDataMisesPlasticity3D ,
+	public ConstitutiveStaticDataMisesPlasticity ,
     public ConstitutiveStaticDataPrevEngineeringStressStrain3D
 {
 #ifdef ENABLE_SERIALIZATION
@@ -60,7 +60,7 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::ConstitutiveStaticDataMisesPlasticityWithEnergy3D)
 namespace boost{
 template<>
-struct is_virtual_base_of<NuTo::ConstitutiveStaticDataMisesPlasticity3D, NuTo::ConstitutiveStaticDataMisesPlasticityWithEnergy3D>: public mpl::true_ {};
+struct is_virtual_base_of<NuTo::ConstitutiveStaticDataMisesPlasticity, NuTo::ConstitutiveStaticDataMisesPlasticityWithEnergy3D>: public mpl::true_ {};
 template<>
 struct is_virtual_base_of<NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D, NuTo::ConstitutiveStaticDataMisesPlasticityWithEnergy3D>: public mpl::true_ {};
 }

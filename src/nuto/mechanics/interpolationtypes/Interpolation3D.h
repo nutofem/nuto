@@ -14,17 +14,14 @@ namespace NuTo
 
 class Interpolation3D: public InterpolationBase
 {
-
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
+    //! @brief just for serialization
+protected:
+    Interpolation3D(){}
 #endif  // ENABLE_SERIALIZATION
-
-
 public:
-    //! @brief default constructor for serialization
-    Interpolation3D() = default;
-
-    Interpolation3D(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
+    Interpolation3D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

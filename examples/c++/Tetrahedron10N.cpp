@@ -8,8 +8,8 @@ int main()
     // create structure
     NuTo::Structure myStructure(3);
     int myInterpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TETRAHEDRON3D);
-    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eAttributes::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eAttributes::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
     // create nodes
     NuTo::FullVector<double,Eigen::Dynamic> Coordinates(3);
@@ -71,9 +71,9 @@ int main()
     myStructure.ElementTotalConvertToInterpolationType(1e-6,10);
 
     //create constitutive law
-    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
-    myStructure.ConstitutiveLawSetYoungsModulus(myMatLin,1);
-    myStructure.ConstitutiveLawSetPoissonsRatio(myMatLin,0);
+    int myMatLin = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1);
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0);
 
 	// create section
 	int mySection = myStructure.SectionCreate("Volume");
@@ -83,19 +83,17 @@ int main()
     // assign section
     myStructure.ElementSetSection(myElement1,mySection);
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> Ke;
-    NuTo::FullVector<int,Eigen::Dynamic> rowIndex;
-    NuTo::FullVector<int,Eigen::Dynamic> colIndex;
-    myStructure.ElementStiffness(myElement1,Ke,rowIndex,colIndex);
+    auto Ke = myStructure.ElementBuildHessian0(myElement1);
 
-    #ifdef ENABLE_VISUALIZE
 	// visualize results
-    myStructure.AddVisualizationComponentDisplacements();
-    myStructure.AddVisualizationComponentEngineeringStrain();
-    myStructure.AddVisualizationComponentEngineeringStress();
+    int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    myStructure.GroupAddElementsTotal(visualizationGroup);
+
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
 	myStructure.ExportVtkDataFileElements("TetrahedronElements10N.vtu",true);
 	myStructure.ExportVtkDataFileNodes("TetrahedronNodes10N.vtu",true);
-#endif
 
 	return 0;
 }

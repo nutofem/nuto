@@ -5,10 +5,13 @@
 #include <vector>
 #include "nuto/math/FullMatrix_Def.h"
 #include "nuto/math/FullVector_Def.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 
 namespace NuTo
 {
+class ElementOutputIpData;
 //! @author Joerg F. Unger
 //! @date Apr 29, 2010
 //! @brief ...
@@ -32,15 +35,21 @@ public:
 
     virtual FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixDouble();
 
+    virtual BlockFullMatrix<double>& GetBlockFullMatrixDouble();
+
     virtual FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixInt();
 
     virtual FullVector<double,Eigen::Dynamic>& GetFullVectorDouble();
+
+    virtual BlockFullVector<double>& GetBlockFullVectorDouble();
+
+    virtual BlockFullVector<int>& GetBlockFullVectorInt();
 
     virtual FullVector<int,Eigen::Dynamic>& GetFullVectorInt();
 
     virtual std::vector<int>& GetVectorInt();
 
-    virtual NuTo::IpData::eIpStaticDataType GetIpDataType();
+    virtual ElementOutputIpData& GetIpData();
 
     virtual void SetSymmetry(bool rSymmetric);
 

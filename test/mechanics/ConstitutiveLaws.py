@@ -33,17 +33,17 @@ error = False
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 structure=nuto.Structure(3)
 
-Material1 = structure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
-structure.ConstitutiveLawSetParameterDouble(Material1,"YoungsModulus", 20000)
-structure.ConstitutiveLawSetParameterDouble(Material1,"PoissonsRatio", 0.2)
+Material1 = structure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress")
+structure.ConstitutiveLawSetParameterDouble(Material1,"Youngs_Modulus", 20000)
+structure.ConstitutiveLawSetParameterDouble(Material1,"Poissons_Ratio", 0.2)
 structure.ConstitutiveLawSetParameterDouble(Material1,"Density", 0.5)
 if(printResult):
     structure.ConstitutiveLawInfo(Material1, 0)
-E = structure.ConstitutiveLawGetParameterDouble(Material1,"YoungsModulus")
+E = structure.ConstitutiveLawGetParameterDouble(Material1,"Youngs_Modulus")
 if(E != 20000):
     print '[' + system,sys.argv[0] + '] : Young\'s modulus is not correct.'
     error = True
-Nu = structure.ConstitutiveLawGetParameterDouble(Material1,"PoissonsRatio")
+Nu = structure.ConstitutiveLawGetParameterDouble(Material1,"Poissons_Ratio")
 if(Nu != 0.2):
     print '[' + system,sys.argv[0] + '] : Poisson\'s ratio is not correct.'
     error = True

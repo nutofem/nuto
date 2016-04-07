@@ -188,7 +188,11 @@ else:
         RelError.Info(12,3)
         error = True;
 
+
+
+
 if (error):
+    print "This test fails because the random number generator in NuTo::Metamodel was changed from a mersenne twister implementation from an external lib to the c++11 version in lib<random>. Maybe with different parameters/seed/idk. However, the results are in the same order of magnitude. \nI suggest updating the reference files. \nOver and Out. TT\n"
     sys.exit(-1)
 else:
     sys.exit(0)

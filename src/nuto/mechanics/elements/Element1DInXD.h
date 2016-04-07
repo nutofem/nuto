@@ -50,11 +50,11 @@ public:
     //! @return enum
     NuTo::Element::eElementType GetEnumType() const override;
 
-    const Eigen::MatrixXd ExtractNodeValues(int rTimeDerivative, Node::eAttributes) const override;
-    const Eigen::MatrixXd ExtractGlobalNodeValues(int rTimeDerivative, Node::eAttributes rDofType) const;
+    const Eigen::MatrixXd ExtractNodeValues(int rTimeDerivative, Node::eDof) const override;
+    const Eigen::MatrixXd ExtractGlobalNodeValues(int rTimeDerivative, Node::eDof rDofType) const;
 
-    const Eigen::VectorXd InterpolateDofGlobal(const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const override;
-    const Eigen::VectorXd InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const override;
+    const Eigen::VectorXd InterpolateDofGlobal(const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const override;
+    const Eigen::VectorXd InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const override;
 
     //! @brief adds to a matrix the product B^tCB, where B contains the derivatives of the shape functions and C is the constitutive tangent
     //! eventually include also area/width of an element (that's the thermal solution)
@@ -110,7 +110,7 @@ private:
 
     //! @brief Returns the number of dofs for each node depending on the dof type, i.e. scalar or vector quantity
     //! @return number of dofs per node
-    int GetNumDofsPerNode(Node::eAttributes rDofType) const;
+    int GetNumDofsPerNode(Node::eDof rDofType) const;
 
     Eigen::MatrixXd mRotationMatrix;
 };

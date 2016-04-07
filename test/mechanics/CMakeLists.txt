@@ -5,9 +5,8 @@ IF(ENABLE_PYTHON_TESTS)
   ADD_TEST(p::mechanics::Brick8N                           ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Brick8N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(p::mechanics::ConstitutiveLaws                  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/ConstitutiveLaws.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(p::mechanics::CreateNodesAndGroupOperations     ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/CreateNodesAndGroupOperations.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  ADD_TEST(p::mechanics::ConstraintsLagrange1D             ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/ConstraintsLagrange1D.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(p::mechanics::GlobalDofs                        ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/GlobalDofs.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  ADD_TEST(p::mechanics::NonlocalDamagePlasticity          ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/NonlocalDamagePlasticity.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+  # ADD_TEST(p::mechanics::NonlocalDamagePlasticity          ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/NonlocalDamagePlasticity.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(p::mechanics::Section                           ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Sections.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(p::mechanics::Tetrahedron10N                    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Tetrahedron10N.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(p::mechanics::DeleteElemNode                    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/DeleteElemNode.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -16,13 +15,12 @@ IF(ENABLE_PYTHON_TESTS)
 
   # set PYTHONPATH environment for all examples
 
-  SET(MYTESTS 
+  SET(MYTESTS
   p::mechanics::Brick8N
   p::mechanics::ConstitutiveLaws
   p::mechanics::CreateNodesAndGroupOperations
-  p::mechanics::ConstraintsLagrange1D
   p::mechanics::GlobalDofs
-  p::mechanics::NonlocalDamagePlasticity
+  #p::mechanics::NonlocalDamagePlasticity
   p::mechanics::Section
   p::mechanics::Tetrahedron10N
   p::mechanics::DeleteElemNode
@@ -33,20 +31,16 @@ IF(ENABLE_PYTHON_TESTS)
 ENDIF(ENABLE_PYTHON_TESTS)
 
 
-IF(ENABLE_C++_TESTS)
-  # Test ConstraintsLagrange
-  ADD_EXECUTABLE(ConstraintsLagrange2D ConstraintsLagrange2D.cpp)
-  TARGET_LINK_LIBRARIES(ConstraintsLagrange2D NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${BLAS_LIBRARIES} ${ANN_LIBRARIES})
-  IF (ENABLE_VISUALIZE)
-    TARGET_LINK_LIBRARIES(ConstraintsLagrange2D NuToVisualize)
-  ENDIF (ENABLE_VISUALIZE)
-  IF(MUMPS_FOUND)
-    TARGET_LINK_LIBRARIES(ConstraintsLagrange2D ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  ENDIF(MUMPS_FOUND)
+IF (ENABLE_OPENMP AND OPENMP_FOUND AND NOT ENABLE_DEBUG)
+  ADD_EXECUTABLE(ParallelAssembly ParallelAssembly.cpp)
+  TARGET_LINK_LIBRARIES(ParallelAssembly NuToMath NuToMechanics NuToBase)
   IF(MINGW)
-    SET_TARGET_PROPERTIES(ConstraintsLagrange2D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+    SET_TARGET_PROPERTIES(OpenMP PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
-  ADD_TEST(c::mechanics::ConstraintsLagrange2D ${CMAKE_CURRENT_BUILD_DIR}/ConstraintsLagrange2D)
+   ADD_TEST(c::mechanics::ParallelAssembly ${CMAKE_CURRENT_BUILD_DIR}/ParallelAssembly)
+ENDIF (ENABLE_OPENMP AND OPENMP_FOUND AND NOT ENABLE_DEBUG)
+
+IF(ENABLE_C++_TESTS)
 
 # GradientDamage
   ADD_EXECUTABLE(GradientDamage GradientDamage.cpp)
@@ -77,50 +71,84 @@ IF(ENABLE_C++_TESTS)
   ADD_TEST(c::mechanics::NewmarkPlane2D4N ${CMAKE_CURRENT_BUILD_DIR}/NewmarkPlane2D4N)
   
   # cycle jump local
-  ADD_EXECUTABLE(Brick8NcycleJump Brick8NcycleJump.cpp)
-  TARGET_LINK_LIBRARIES(Brick8NcycleJump NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-  IF (ENABLE_VISUALIZE)
-    TARGET_LINK_LIBRARIES(Brick8NcycleJump NuToVisualize)
-  ENDIF (ENABLE_VISUALIZE)
-  IF(MUMPS_FOUND)
-    TARGET_LINK_LIBRARIES(Brick8NcycleJump ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  ENDIF(MUMPS_FOUND)
-  IF(MINGW)
-    SET_TARGET_PROPERTIES(Brick8NcycleJump PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  ENDIF(MINGW)
-  ADD_TEST(c::mechanics::Brick8NcycleJump ${CMAKE_CURRENT_BUILD_DIR}/Brick8NcycleJump)
+  #  ADD_EXECUTABLE(Brick8NcycleJump Brick8NcycleJump.cpp)
+  #TARGET_LINK_LIBRARIES(Brick8NcycleJump NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+  #IF (ENABLE_VISUALIZE)
+  #  TARGET_LINK_LIBRARIES(Brick8NcycleJump NuToVisualize)
+  #ENDIF (ENABLE_VISUALIZE)
+  #IF(MUMPS_FOUND)
+  #  TARGET_LINK_LIBRARIES(Brick8NcycleJump ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+  #ENDIF(MUMPS_FOUND)
+  #IF(MINGW)
+  #  SET_TARGET_PROPERTIES(Brick8NcycleJump PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  #ENDIF(MINGW)
+  #ADD_TEST(c::mechanics::Brick8NcycleJump ${CMAKE_CURRENT_BUILD_DIR}/Brick8NcycleJump)
   
   # cycle jump nonlocal 
-  ADD_EXECUTABLE(CycleJumpNonlocal CycleJumpNonlocal.cpp)
-  TARGET_LINK_LIBRARIES(CycleJumpNonlocal NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+  #ADD_EXECUTABLE(CycleJumpNonlocal CycleJumpNonlocal.cpp)
+  #TARGET_LINK_LIBRARIES(CycleJumpNonlocal NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+  #IF (ENABLE_VISUALIZE)
+  #  TARGET_LINK_LIBRARIES(CycleJumpNonlocal NuToVisualize)
+  #ENDIF (ENABLE_VISUALIZE)
+  #IF(MUMPS_FOUND)
+  #  TARGET_LINK_LIBRARIES(CycleJumpNonlocal ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+  #ENDIF(MUMPS_FOUND)
+  #IF(MINGW)
+  #  SET_TARGET_PROPERTIES(Brick8NcycleJump PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  #ENDIF(MINGW)
+  #ADD_TEST(c::mechanics::CycleJumpNonlocal ${CMAKE_CURRENT_BUILD_DIR}/CycleJumpNonlocal)
+
+ADD_EXECUTABLE(RungeKutta RungeKutta.cpp)
+  TARGET_LINK_LIBRARIES(RungeKutta NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
   IF (ENABLE_VISUALIZE)
-    TARGET_LINK_LIBRARIES(CycleJumpNonlocal NuToVisualize)
+    TARGET_LINK_LIBRARIES(RungeKutta NuToVisualize)
   ENDIF (ENABLE_VISUALIZE)
   IF(MUMPS_FOUND)
-    TARGET_LINK_LIBRARIES(CycleJumpNonlocal ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+    TARGET_LINK_LIBRARIES(RungeKutta ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
   ENDIF(MUMPS_FOUND)
   IF(MINGW)
-    SET_TARGET_PROPERTIES(Brick8NcycleJump PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+    SET_TARGET_PROPERTIES(RungeKutta PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
-  ADD_TEST(c::mechanics::CycleJumpNonlocal ${CMAKE_CURRENT_BUILD_DIR}/CycleJumpNonlocal)
+  ADD_TEST(c::mechanics::RungeKutta ${CMAKE_CURRENT_BUILD_DIR}/RungeKutta)
+  
+  ADD_EXECUTABLE(ImplEx ImplEx.cpp)
+  TARGET_LINK_LIBRARIES(ImplEx NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+  IF (ENABLE_VISUALIZE)
+    TARGET_LINK_LIBRARIES(ImplEx NuToVisualize)
+  ENDIF (ENABLE_VISUALIZE)
+  IF(MUMPS_FOUND)
+    TARGET_LINK_LIBRARIES(ImplEx ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+  ENDIF(MUMPS_FOUND)
+  IF(MINGW)
+    SET_TARGET_PROPERTIES(ImplEx PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  ENDIF(MINGW)
+  ADD_TEST(c::mechanics::ImplEx ${CMAKE_CURRENT_BUILD_DIR}/ImplEx)
+
+  ADD_EXECUTABLE(EngineeringInvariants EngineeringInvariants.cpp)
+  TARGET_LINK_LIBRARIES(EngineeringInvariants NuToMechanics NuToMath NuToBase)
+  IF(MINGW)
+    SET_TARGET_PROPERTIES(EngineeringInvariants PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  ENDIF(MINGW)
+  ADD_TEST(c::mechanics::EngineeringInvariants ${CMAKE_CURRENT_BUILD_DIR}/EngineeringInvariants)
+
 
   # test Newmark time integration with a dogbone specimen
-  ADD_EXECUTABLE(DogBoneDirectNewmark DogBoneDirectNewmark.cpp)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DogBoneDirectNewmarkGeometry.geo ${CMAKE_CURRENT_BINARY_DIR}/DogBoneDirectNewmarkGeometry.geo  COPYONLY)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DogBoneDirectNewmarkGeometry.msh ${CMAKE_CURRENT_BINARY_DIR}/DogBoneDirectNewmarkGeometry.msh  COPYONLY)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/results/Linuxx86_64/DogboneDirectNewmarkresultAllLoadStepsRef.dat ${CMAKE_CURRENT_BINARY_DIR}/DogboneDirectNewmarkresultAllLoadStepsRef.dat  COPYONLY)
-  
-  TARGET_LINK_LIBRARIES(DogBoneDirectNewmark NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-  IF (ENABLE_VISUALIZE)
-    TARGET_LINK_LIBRARIES(DogBoneDirectNewmark NuToVisualize)
-  ENDIF (ENABLE_VISUALIZE)
-  IF(MUMPS_FOUND)
-    TARGET_LINK_LIBRARIES(DogBoneDirectNewmark ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  ENDIF(MUMPS_FOUND)
-  IF(MINGW)
-    SET_TARGET_PROPERTIES(DogBoneDirectNewmark PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  ENDIF(MINGW)
-  ADD_TEST(c::mechanics::DogBoneDirectNewmark ${CMAKE_CURRENT_BUILD_DIR}/DogBoneDirectNewmark)
+  # ADD_EXECUTABLE(DogBoneDirectNewmark DogBoneDirectNewmark.cpp)
+  # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DogBoneDirectNewmarkGeometry.geo ${CMAKE_CURRENT_BINARY_DIR}/DogBoneDirectNewmarkGeometry.geo  COPYONLY)
+  # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DogBoneDirectNewmarkGeometry.msh ${CMAKE_CURRENT_BINARY_DIR}/DogBoneDirectNewmarkGeometry.msh  COPYONLY)
+  # configure_file(${CMAKE_CURRENT_SOURCE_DIR}/results/Linuxx86_64/DogboneDirectNewmarkresultAllLoadStepsRef.dat ${CMAKE_CURRENT_BINARY_DIR}/DogboneDirectNewmarkresultAllLoadStepsRef.dat  COPYONLY)
+
+  # TARGET_LINK_LIBRARIES(DogBoneDirectNewmark NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+  # IF (ENABLE_VISUALIZE)
+  #   TARGET_LINK_LIBRARIES(DogBoneDirectNewmark NuToVisualize)
+  # ENDIF (ENABLE_VISUALIZE)
+  # IF(MUMPS_FOUND)
+  #   TARGET_LINK_LIBRARIES(DogBoneDirectNewmark ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+  # ENDIF(MUMPS_FOUND)
+  # IF(MINGW)
+  #   SET_TARGET_PROPERTIES(DogBoneDirectNewmark PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  # ENDIF(MINGW)
+  # ADD_TEST(c::mechanics::DogBoneDirectNewmark ${CMAKE_CURRENT_BUILD_DIR}/DogBoneDirectNewmark)
 
   # test surface load integration in 2D
   ADD_EXECUTABLE(SurfaceLoad SurfaceLoad.cpp)
@@ -203,62 +231,62 @@ IF(ENABLE_C++_TESTS)
   ENDIF(MINGW)
   ADD_TEST(c::mechanics::ElementUniaxialBrick3D ${CMAKE_CURRENT_BUILD_DIR}/ElementUniaxialBrick3D)
 
-  ADD_EXECUTABLE(LobattoIntegration LobattoIntegration.cpp)
-  TARGET_LINK_LIBRARIES(LobattoIntegration NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )
-  IF (ENABLE_VISUALIZE)
-    TARGET_LINK_LIBRARIES(LobattoIntegration NuToVisualize)
-  ENDIF (ENABLE_VISUALIZE)
-  IF(MUMPS_FOUND)
-    TARGET_LINK_LIBRARIES(LobattoIntegration ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  ENDIF(MUMPS_FOUND)
-  IF(MINGW)
-    SET_TARGET_PROPERTIES(LobattoIntegration PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  ENDIF(MINGW)
-  ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoIntegration)
-
-# NonlocalDamagePlasticityModel
-ADD_EXECUTABLE(NonlocalDamagePlasticityModel NonlocalDamagePlasticityModel.cpp)
-TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityModel NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+ADD_EXECUTABLE(LobattoIntegration LobattoIntegration.cpp)
+TARGET_LINK_LIBRARIES(LobattoIntegration NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )
 IF (ENABLE_VISUALIZE)
-  TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityModel NuToVisualize)
+  TARGET_LINK_LIBRARIES(LobattoIntegration NuToVisualize)
 ENDIF (ENABLE_VISUALIZE)
 IF(MUMPS_FOUND)
-  TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityModel ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+  TARGET_LINK_LIBRARIES(LobattoIntegration ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 ENDIF(MUMPS_FOUND)
 IF(MINGW)
-  SET_TARGET_PROPERTIES(NonlocalDamagePlasticityModel PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  SET_TARGET_PROPERTIES(LobattoIntegration PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
-ADD_TEST(c::mechanics::NonlocalDamagePlasticityModel ${CMAKE_CURRENT_BUILD_DIR}/NonlocalDamagePlasticityModel)
+ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoIntegration)
 
-  # MoistureTransport
-  IF(ENABLE_METAMODEL)
-    ADD_EXECUTABLE(MoistureTransport1D MoistureTransport1D.cpp)
-    TARGET_LINK_LIBRARIES(MoistureTransport1D NuToMetamodel NuToMechanics NuToMath NuToBase)
-    ADD_TEST(c::mechanics::MoistureTransport1D ${CMAKE_CURRENT_BUILD_DIR}/MoistureTransport1D)
-  IF(MINGW)
-    SET_TARGET_PROPERTIES(MoistureTransport1D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  ENDIF(MINGW)
-  ENDIF(ENABLE_METAMODEL)
+# NonlocalDamagePlasticityModel
+# ADD_EXECUTABLE(NonlocalDamagePlasticityModel NonlocalDamagePlasticityModel.cpp)
+# TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityModel NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+# IF (ENABLE_VISUALIZE)
+#   TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityModel NuToVisualize)
+# ENDIF (ENABLE_VISUALIZE)
+# IF(MUMPS_FOUND)
+#   TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityModel ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+# ENDIF(MUMPS_FOUND)
+# IF(MINGW)
+#   SET_TARGET_PROPERTIES(NonlocalDamagePlasticityModel PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+# ENDIF(MINGW)
+# ADD_TEST(c::mechanics::NonlocalDamagePlasticityModel ${CMAKE_CURRENT_BUILD_DIR}/NonlocalDamagePlasticityModel)
 
-  # MoistureTransport
-  IF(ENABLE_METAMODEL)
-    ADD_EXECUTABLE(MoistureTransport3D MoistureTransport3D.cpp)
-    TARGET_LINK_LIBRARIES(MoistureTransport3D NuToMetamodel NuToMechanics NuToMath NuToBase)
-    ADD_TEST(c::mechanics::MoistureTransport3D ${CMAKE_CURRENT_BUILD_DIR}/MoistureTransport3D)
-  IF(MINGW)
-    SET_TARGET_PROPERTIES(MoistureTransport3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  ENDIF(MINGW)
-  ENDIF(ENABLE_METAMODEL)
+#   # MoistureTransport
+#   IF(ENABLE_METAMODEL)
+#     ADD_EXECUTABLE(MoistureTransport1D MoistureTransport1D.cpp)
+#     TARGET_LINK_LIBRARIES(MoistureTransport1D NuToMetamodel NuToMechanics NuToMath NuToBase)
+#     ADD_TEST(c::mechanics::MoistureTransport1D ${CMAKE_CURRENT_BUILD_DIR}/MoistureTransport1D)
+#   IF(MINGW)
+#     SET_TARGET_PROPERTIES(MoistureTransport1D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+#   ENDIF(MINGW)
+#   ENDIF(ENABLE_METAMODEL)
 
-  # MultiPhysics2D
-  IF(ENABLE_METAMODEL)
-    ADD_EXECUTABLE(MultiPhysics2D MultiPhysics2D.cpp)
-    TARGET_LINK_LIBRARIES(MultiPhysics2D NuToMetamodel NuToMechanics NuToMath NuToBase)
-    ADD_TEST(c::mechanics::MultiPhysics2D ${CMAKE_CURRENT_BUILD_DIR}/MultiPhysics2D)
-  IF(MINGW)
-    SET_TARGET_PROPERTIES(MultiPhysics2D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  ENDIF(MINGW)
-  ENDIF(ENABLE_METAMODEL)
+#   # MoistureTransport
+#   IF(ENABLE_METAMODEL)
+#     ADD_EXECUTABLE(MoistureTransport3D MoistureTransport3D.cpp)
+#     TARGET_LINK_LIBRARIES(MoistureTransport3D NuToMetamodel NuToMechanics NuToMath NuToBase)
+#     ADD_TEST(c::mechanics::MoistureTransport3D ${CMAKE_CURRENT_BUILD_DIR}/MoistureTransport3D)
+#   IF(MINGW)
+#     SET_TARGET_PROPERTIES(MoistureTransport3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+#   ENDIF(MINGW)
+#   ENDIF(ENABLE_METAMODEL)
+
+#   # MultiPhysics2D
+#   IF(ENABLE_METAMODEL)
+#     ADD_EXECUTABLE(MultiPhysics2D MultiPhysics2D.cpp)
+#     TARGET_LINK_LIBRARIES(MultiPhysics2D NuToMetamodel NuToMechanics NuToMath NuToBase)
+#     ADD_TEST(c::mechanics::MultiPhysics2D ${CMAKE_CURRENT_BUILD_DIR}/MultiPhysics2D)
+#   IF(MINGW)
+#     SET_TARGET_PROPERTIES(MultiPhysics2D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+#   ENDIF(MINGW)
+#   ENDIF(ENABLE_METAMODEL)
 
   #  new interpolation type tests
   CONFIGURE_FILE(2D.msh ${CMAKE_CURRENT_BINARY_DIR})
@@ -274,38 +302,47 @@ ADD_TEST(c::mechanics::NonlocalDamagePlasticityModel ${CMAKE_CURRENT_BUILD_DIR}/
 
 
     # structure evaluate
-  CONFIGURE_FILE(InterfaceElements.msh ${CMAKE_CURRENT_BINARY_DIR})
-  ADD_EXECUTABLE(StructureEvaluate StructureEvaluate.cpp)
-    TARGET_LINK_LIBRARIES(StructureEvaluate NuToMechanics NuToMath NuToBase)
-    ADD_TEST(c::mechanics::StructureEvaluate ${CMAKE_CURRENT_BUILD_DIR}/StructureEvaluate)
+  # CONFIGURE_FILE(InterfaceElements.msh ${CMAKE_CURRENT_BINARY_DIR})
+  # ADD_EXECUTABLE(StructureEvaluate StructureEvaluate.cpp)
+  #   TARGET_LINK_LIBRARIES(StructureEvaluate NuToMechanics NuToMath NuToBase)
+  #   ADD_TEST(c::mechanics::StructureEvaluate ${CMAKE_CURRENT_BUILD_DIR}/StructureEvaluate)
+  # IF(MINGW)
+  #   SET_TARGET_PROPERTIES(StructureEvaluate PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  # ENDIF(MINGW)
+
+  # # TrussIn2D
+  # ADD_EXECUTABLE(TrussIn2D TrussIn2D.cpp)
+  #   TARGET_LINK_LIBRARIES(TrussIn2D NuToMechanics NuToMath NuToBase)
+  #   ADD_TEST(c::mechanics::TrussIn2D ${CMAKE_CURRENT_BUILD_DIR}/TrussIn2D)
+  # IF(MINGW)
+  #   SET_TARGET_PROPERTIES(TrussIn2D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  # ENDIF(MINGW)
+
+  # # TrussIn3D
+  # ADD_EXECUTABLE(TrussIn3D TrussIn3D.cpp)
+  #   TARGET_LINK_LIBRARIES(TrussIn3D NuToMechanics NuToMath NuToBase)
+  #   ADD_TEST(c::mechanics::TrussIn3D ${CMAKE_CURRENT_BUILD_DIR}/TrussIn3D)
+  # IF(MINGW)
+  #   SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  # ENDIF(MINGW)
+
+  # # InterfaceElements
+  # ADD_EXECUTABLE(InterfaceElements InterfaceElements.cpp)
+  #   TARGET_LINK_LIBRARIES(InterfaceElements NuToMechanics NuToMath NuToBase)
+  #   ADD_TEST(c::mechanics::InterfaceElements ${CMAKE_CURRENT_BUILD_DIR}/InterfaceElements)
+  # IF(MINGW)
+  #   SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  # ENDIF(MINGW)
+
+  # BlockMatrices
+  ADD_EXECUTABLE(BlockMatrices BlockMatrices.cpp)
+  TARGET_LINK_LIBRARIES(BlockMatrices NuToMechanics NuToMath NuToBase)
+     ADD_TEST(c::mechanics::BlockMatrices ${CMAKE_CURRENT_BUILD_DIR}/BlockMatrices)
   IF(MINGW)
-    SET_TARGET_PROPERTIES(StructureEvaluate PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+    SET_TARGET_PROPERTIES(BlockMatrices PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
-  
-  # TrussIn2D
-  ADD_EXECUTABLE(TrussIn2D TrussIn2D.cpp)
-    TARGET_LINK_LIBRARIES(TrussIn2D NuToMechanics NuToMath NuToBase)
-    ADD_TEST(c::mechanics::TrussIn2D ${CMAKE_CURRENT_BUILD_DIR}/TrussIn2D)
-  IF(MINGW)
-    SET_TARGET_PROPERTIES(TrussIn2D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  ENDIF(MINGW)
-  
-  # TrussIn3D
-  ADD_EXECUTABLE(TrussIn3D TrussIn3D.cpp)
-    TARGET_LINK_LIBRARIES(TrussIn3D NuToMechanics NuToMath NuToBase)
-    ADD_TEST(c::mechanics::TrussIn3D ${CMAKE_CURRENT_BUILD_DIR}/TrussIn3D)
-  IF(MINGW)
-    SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  ENDIF(MINGW)
- 
-  # InterfaceElements
-  ADD_EXECUTABLE(InterfaceElements InterfaceElements.cpp)
-    TARGET_LINK_LIBRARIES(InterfaceElements NuToMechanics NuToMath NuToBase)
-    ADD_TEST(c::mechanics::InterfaceElements ${CMAKE_CURRENT_BUILD_DIR}/InterfaceElements)
-  IF(MINGW)
-    SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  ENDIF(MINGW)
-  
+  ADD_TEST(c::mechanics::BlockMatrices ${CMAKE_CURRENT_BUILD_DIR}/BlockMatrices)
+
   # ConstraintsNodeToElement
   CONFIGURE_FILE(ConstraintsNodeToElementMatrixMesh2d.msh ${CMAKE_CURRENT_BINARY_DIR})
   CONFIGURE_FILE(ConstraintsNodeToElementFiberMesh2d.msh ${CMAKE_CURRENT_BINARY_DIR})
@@ -313,11 +350,9 @@ ADD_TEST(c::mechanics::NonlocalDamagePlasticityModel ${CMAKE_CURRENT_BUILD_DIR}/
   CONFIGURE_FILE(ConstraintsNodeToElementFiberMesh3d.msh ${CMAKE_CURRENT_BINARY_DIR})
   ADD_EXECUTABLE(ConstraintsNodeToElement ConstraintsNodeToElement.cpp)
     TARGET_LINK_LIBRARIES(ConstraintsNodeToElement NuToMechanics NuToMath NuToBase)
-    ADD_TEST(c::mechanics::ConstraintsNodeToElement ${CMAKE_CURRENT_BUILD_DIR}/ConstraintsNodeToElement)
-  IF(MINGW)
-    SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  ENDIF(MINGW)
- 
+  #  ADD_TEST(c::mechanics::ConstraintsNodeToElement ${CMAKE_CURRENT_BUILD_DIR}/ConstraintsNodeToElement)
+
+
   # IntegrationPointVoronoiCells
   IF (ENABLE_VISUALIZE)
     ADD_EXECUTABLE(IntegrationPointVoronoiCells IntegrationPointVoronoiCells.cpp)
@@ -327,22 +362,34 @@ ADD_TEST(c::mechanics::NonlocalDamagePlasticityModel ${CMAKE_CURRENT_BUILD_DIR}/
       SET_TARGET_PROPERTIES(IntegrationPointVoronoiCells PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
     ENDIF(MINGW)
   ENDIF (ENABLE_VISUALIZE)
+    ADD_TEST(c::mechanics::IntegrationPointVoronoiCells ${CMAKE_CURRENT_BUILD_DIR}/IntegrationPointVoronoiCells)
 
-# MisesPlasticity
+#MisesPlasticity
 ADD_EXECUTABLE(MisesPlasticity MisesPlasticity.cpp)
 TARGET_LINK_LIBRARIES(MisesPlasticity NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES})
 IF (ENABLE_VISUALIZE)
   TARGET_LINK_LIBRARIES(MisesPlasticity NuToVisualize)
 ENDIF (ENABLE_VISUALIZE)
 IF(MUMPS_FOUND)
-  TARGET_LINK_LIBRARIES(MisesPlasticity ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+	TARGET_LINK_LIBRARIES(MisesPlasticity ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 ENDIF(MUMPS_FOUND)
 IF(MINGW)
   SET_TARGET_PROPERTIES(MisesPlasticity PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
+    ADD_TEST(c::mechanics::MisesPlasticity ${CMAKE_CURRENT_BUILD_DIR}/MisesPlasticity)
+
+
+ADD_EXECUTABLE(ConstitutiveLawMoistureTransport ConstitutiveLawMoistureTransport.cpp)
+TARGET_LINK_LIBRARIES(ConstitutiveLawMoistureTransport NuToMechanics NuToMath NuToBase)
+ADD_TEST(c::mechanics::ConstitutiveLawMoistureTransport ${CMAKE_CURRENT_BUILD_DIR}/ConstitutiveLawMoistureTransport)
+IF(MINGW)
+    SET_TARGET_PROPERTIES(ConstitutiveLawMoistureTransport PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)
+    ADD_TEST(c::mechanics::ConstitutiveLawMoistureTransport ${CMAKE_CURRENT_BUILD_DIR}/ConstitutiveLawMoistureTransport)
+
 
 ENDIF(ENABLE_C++_TESTS)
-  
-IF(ENABLE_C++_TESTS_WIP)  
- 
+
+IF(ENABLE_C++_TESTS_WIP)
+
 ENDIF(ENABLE_C++_TESTS_WIP)

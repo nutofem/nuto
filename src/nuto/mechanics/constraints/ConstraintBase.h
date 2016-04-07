@@ -12,14 +12,16 @@
 #include "nuto/math/FullMatrix_Def.h"
 #include "nuto/math/FullVector_Def.h"
 #include "nuto/mechanics/constraints/ConstraintEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+
 
 namespace NuTo
 {
-class EngineeringStrain2D;
 class NodeBase;
 class ConstraintLinear;
 class ConstraintNonlinear;
 class ConstraintLagrange;
+template<int TDim> class EngineeringStrain;
 template<class T> class SparseMatrixCSRGeneral;
 
 //! @author Jörg F. Unger, ISM
@@ -77,11 +79,11 @@ public:
 
     //!@brief set the strain of the periodic boundary conditions
     //!@param rStrain strain (e_xx,e_yy,gamma_xy)
-    virtual void SetStrain(const EngineeringStrain2D& rStrain);
+    virtual void SetStrain(const EngineeringStrain<2>& rStrain);
 
     //!@brief get the strain of a constrain equation
     //!@param rStrain strain (e_xx,e_yy,gamma_xy)
-    virtual const EngineeringStrain2D& GetStrain()const;
+    virtual const EngineeringStrain<2>& GetStrain()const;
 
     //!@brief set the strain of the periodic boundary conditions
     //!@param rStrain strain (e_xx,e_yy,gamma_xy)
@@ -94,6 +96,10 @@ public:
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
     virtual void Info(unsigned short rVerboseLevel) const=0;
+
+    //! @brief determines the dof type affected by the constraint
+    //! @return dof type
+    virtual Node::eDof GetDofType() const = 0;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

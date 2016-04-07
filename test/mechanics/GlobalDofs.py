@@ -12,7 +12,7 @@ from math import sqrt
 createResult = False
 
 #show the results on the screen
-printResult = False
+printResult = True
 
 #system name and processor
 system = sys.argv[1]+sys.argv[2]
@@ -30,29 +30,42 @@ pathToResultFiles = pathToResultFiles.replace(fileExt,'')
 error = False
 
 #create structure
-myStructure = nuto.Structure(3)
+myStructure = nuto.Structure(1)
 
+c = nuto.DoubleFullVector(1)
 #create nodes
-myNode1 = myStructure.NodeCreateDOFs("displacements",nuto.DoubleFullVector((0,0,0)))
-myNode2 = myStructure.NodeCreateDOFs("displacements rotations",nuto.DoubleFullVector((5,0,0)))
-myNode3 = myStructure.NodeCreateDOFs("displacements rotations",nuto.DoubleFullVector((10,0,0)))
+c.SetValue(0,0) 
+myNode1 = myStructure.NodeCreate(c)
+c.SetValue(0,5) 
+myNode2 = myStructure.NodeCreate(c)
+c.SetValue(0,10) 
+myNode3 = myStructure.NodeCreate(c)
+
+myInterpolationType = myStructure.InterpolationTypeCreate("Truss1D");
+myStructure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistant2");
+myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant2");
+
+myElement1 =  myStructure.ElementCreate(myInterpolationType,nuto.IntFullVector((myNode1,myNode2,myNode3)))
+myStructure.ElementTotalConvertToInterpolationType();
 
 #create group of nodes
 myNodeGroup = myStructure.GroupCreate("Nodes")
 myStructure.GroupAddNode(myNodeGroup,myNode1)
 myStructure.GroupAddNode(myNodeGroup,myNode3)
 
+
 #create constitutive law
-myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
-myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"YoungsModulus",10)
-myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"PoissonsRatio",0.1)
+myMatLin = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress")
+myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"Youngs_Modulus",10)
+myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"Poissons_Ratio",0.1)
 
 #add constraints for a single node
 Constraint1 = myStructure.ConstraintLinearSetDisplacementNode(myNode2,nuto.DoubleFullMatrix(3,1,(1,1,-1)),0.5)
 
 #add constraints for a group of nodes
 Constraint2 = myStructure.ConstraintLinearSetDisplacementNodeGroup(myNodeGroup,nuto.DoubleFullMatrix(3,1,(1,0,0)),2)
-numConstraints = myStructure.ConstraintGetNumLinearConstraints()
+numConstraints = myStructure.ConstraintGetNumLinearConstraints("Displacements")
+
 if (printResult):
     print "Number of constraints : " + str(numConstraints) 
 if (numConstraints!=3):
@@ -61,27 +74,23 @@ if (numConstraints!=3):
 
 #number global dofs of the nodes
 myStructure.NodeBuildGlobalDofs()
-numberGlobalDofs = myStructure.GetNumDofs()
+
+numberGlobalDofs = myStructure.GetNumDofs("Displacements")
 if (printResult):
     print "Number of global dofs: " + str(numberGlobalDofs) 
-if (numberGlobalDofs!=15):
+if (numberGlobalDofs!=3):
         print '[' + system,sys.argv[0] + '] : number of global dofs is not correct.'
         error = True;
 
 #build constraint matrix and rhs
-constraintMatrixSparse = nuto.DoubleSparseMatrixCSRGeneral(numConstraints,numberGlobalDofs)
-rhs = nuto.DoubleFullVector(numConstraints)
-myStructure.ConstraintGetConstraintMatrixBeforeGaussElimination(constraintMatrixSparse)
-myStructure.ConstraintGetRHSBeforeGaussElimination(rhs)
-constraintMatrixFull = nuto.DoubleFullMatrix(constraintMatrixSparse)
+rhs = myStructure.ConstraintGetRHSBeforeGaussElimination().Export()
+constraintMatrixFull = myStructure.ConstraintGetConstraintMatrixBeforeGaussElimination().ExportToFullMatrix()
 
 #correct constraint matrix
-constraintMatrixFullCorrect = nuto.DoubleFullMatrix(3,15)
-constraintMatrixFullCorrect.SetValue(0,1,1./sqrt(3))
-constraintMatrixFullCorrect.SetValue(0,2,-1./sqrt(3))
-constraintMatrixFullCorrect.SetValue(0,12,1./sqrt(3))
-constraintMatrixFullCorrect.SetValue(1,13,1)
-constraintMatrixFullCorrect.SetValue(2,14,1)
+constraintMatrixFullCorrect = nuto.DoubleFullMatrix(3,3)
+constraintMatrixFullCorrect.SetValue(0,0,1)
+constraintMatrixFullCorrect.SetValue(1,1,1)
+constraintMatrixFullCorrect.SetValue(2,2,1)
 
 #correct rhs
 rhsCorrect = nuto.DoubleFullVector((0.5,2,2))

@@ -2,7 +2,7 @@
 #define CONSTITUTIVESTATICDATAMULTIPHYSICS_H
 
 #include "nuto/mechanics/constitutive/moistureTransport/ConstitutiveStaticDataMoistureTransport.h"
-#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
+#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataMoistureTransport.h"
 
 #include <map>
 //#include <memory>

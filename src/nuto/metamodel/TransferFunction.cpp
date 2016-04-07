@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include "nuto/metamodel/TransferFunction.h"
 #include "nuto/metamodel/MetamodelException.h"
-#include "math.h"
+#include <cmath>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -416,7 +416,7 @@ BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LogSigTransferFunction)
 double NuTo::TanSigTransferFunction::evaluate(double x)
 {
     x*=2./3.;
-    if (fabs(x)<20)
+    if (std::abs(x)<20)
     {
         double epx = exp(x);
         double emx = exp(-x);
@@ -435,7 +435,7 @@ double NuTo::TanSigTransferFunction::evaluate(double x)
 double NuTo::TanSigTransferFunction::derivative(double x)
 {
     x*=2./3.;
-    if (fabs(x)<20)
+    if (std::abs(x)<20)
     {
 		double epx = exp(x);
         double emx = exp(-x);
@@ -451,7 +451,7 @@ double NuTo::TanSigTransferFunction::derivative(double x)
 double NuTo::TanSigTransferFunction::second_derivative(double x)
 {
     x*=2./3.;
-    if (fabs(x)<20)
+    if (std::abs(x)<20)
     {
         double epx = exp(x);
         double emx = exp(-x);

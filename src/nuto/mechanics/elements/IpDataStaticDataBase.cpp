@@ -9,30 +9,52 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/ptr_container/serialize_ptr_vector.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 #include "nuto/mechanics/elements/IpDataStaticDataBase.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 
 NuTo::IpDataStaticDataBase::IpDataStaticDataBase() : IpDataBase()
 {
-    mStaticData=0;
 }
 
 NuTo::IpDataStaticDataBase::~IpDataStaticDataBase()
 {
-	if (mStaticData!=0)
-		delete mStaticData;
+}
+
+void NuTo::IpDataStaticDataBase::Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive)
+{
+    mStaticData.clear();
+
+    if (rConstitutive != nullptr)
+    {
+        auto staticDataRawPtr = rElement->AllocateStaticData(rConstitutive);
+        if (staticDataRawPtr != nullptr)
+            mStaticData.push_back(staticDataRawPtr);
+    }
+}
+
+void NuTo::IpDataStaticDataBase::AllocateAdditionalStaticData(int rNumAdditionalStaticData)
+{
+    if (mStaticData.empty())
+        throw MechanicsException(__PRETTY_FUNCTION__, "No static data allocated.");
+
+    for (int i = 0; i < rNumAdditionalStaticData; ++i)
+    {
+        mStaticData.push_back(GetStaticData(0)->Clone());
+    }
+
 }
 
 //! @brief sets the fine scale model (deserialization from a binary file)
 void NuTo::IpDataStaticDataBase::SetFineScaleModel(std::string rFileName, double rMacroLength, double rCoordinates[2], std::string rIpName)
 {
-    if (mStaticData!=0)
-	    mStaticData->SetFineScaleModel(rFileName, rMacroLength, rCoordinates, rIpName);
+    if (not mStaticData.empty())
+	    mStaticData[0].SetFineScaleModel(rFileName, rMacroLength, rCoordinates, rIpName);
     else
-    	throw NuTo::MechanicsException("[NuTo::IpDataStaticDataBase::SetFineScaleModel] Static data for Ip is not allocated. Either you forgot to assign a material to the ip, or the material law has no static data");
+    	throw MechanicsException(__PRETTY_FUNCTION__, "Static data for Ip is not allocated. Either you forgot to assign a material to the ip, or the material law has no static data");
 }
 
 //! @brief sets the fine scale parameter for all ips
@@ -40,10 +62,10 @@ void NuTo::IpDataStaticDataBase::SetFineScaleModel(std::string rFileName, double
 //! @parameter rParameter value of the parameter
 void NuTo::IpDataStaticDataBase::SetFineScaleParameter(const std::string& rName, double rParameter)
 {
-    if (mStaticData!=0)
-        mStaticData->SetFineScaleParameter(rName, rParameter);
+    if (not mStaticData.empty())
+        mStaticData[0].SetFineScaleParameter(rName, rParameter);
     else
-    	throw NuTo::MechanicsException("[NuTo::IpDataStaticDataBase::SetFineScaleParameter] Static data for Ip is not allocated. Either you forgot to assign a material to the ip, or the material law has no static data");
+    	throw MechanicsException(__PRETTY_FUNCTION__, "Static data for Ip is not allocated. Either you forgot to assign a material to the ip, or the material law has no static data");
 
 }
 
@@ -52,11 +74,36 @@ void NuTo::IpDataStaticDataBase::SetFineScaleParameter(const std::string& rName,
 //! @parameter rParameter value of the parameter
 void NuTo::IpDataStaticDataBase::SetFineScaleParameter(const std::string& rName, std::string rParameter)
 {
-    if (mStaticData!=0)
-        mStaticData->SetFineScaleParameter(rName, rParameter);
+    if (not mStaticData.empty())
+        mStaticData[0].SetFineScaleParameter(rName, rParameter);
     else
-    	throw NuTo::MechanicsException("[NuTo::IpDataStaticDataBase::SetFineScaleParameter] Static data for Ip is not allocated. Either you forgot to assign a material to the ip, or the material law has no static data");
+    	throw MechanicsException(__PRETTY_FUNCTION__, "Static data for Ip is not allocated. Either you forgot to assign a material to the ip, or the material law has no static data");
 
+}
+
+
+//! @brief puts current static data to previous static data, previous to pre-previous, etc.
+void NuTo::IpDataStaticDataBase::SaveStaticData()
+{
+    assert(mStaticData.size() > 1);
+    mStaticData.pop_back(); // thanks Sebastian!
+    mStaticData.insert(mStaticData.begin(), mStaticData[0].Clone());
+}
+
+//! @brief puts current static data to previous static data, previous to pre-previous, etc.
+void NuTo::IpDataStaticDataBase::RestoreStaticData()
+{
+    assert(mStaticData.size() > 1);
+    unsigned int numStaticData = mStaticData.size();
+
+    mStaticData.erase(mStaticData.begin());
+    // copy the last one
+    mStaticData.push_back(mStaticData[numStaticData-2].Clone());
+}
+
+int NuTo::IpDataStaticDataBase::GetNumStaticData() const
+{
+    return mStaticData.size();
 }
 
 #ifdef ENABLE_VISUALIZE
@@ -64,8 +111,8 @@ void NuTo::IpDataStaticDataBase::SetFineScaleParameter(const std::string& rName,
 void NuTo::IpDataStaticDataBase::VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
 		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const
 {
-    if (mStaticData!=0)
-        mStaticData->VisualizeIpMultiscale(rVisualize, rWhat, rVisualizeDamage);
+    if (not mStaticData.empty())
+        mStaticData[0].VisualizeIpMultiscale(rVisualize, rWhat, rVisualizeDamage);
 }
 #endif
 

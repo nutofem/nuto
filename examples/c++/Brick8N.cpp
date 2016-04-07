@@ -13,24 +13,24 @@ int main()
 {
 try
 {
-    int readFlag = false;
-    if(readFlag)
-    {
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> a;
-    a.ReadFromFile("stiffnessMatrix.txt");
-    NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixVector2(a);
-    NuTo::FullVector<double,Eigen::Dynamic> rhsVector;
-    rhsVector.ReadFromFile("rhsVector.txt");
-    NuTo::SparseDirectSolverMUMPS mySolver;
-    NuTo::FullVector<double,Eigen::Dynamic> displacementVector;
-    //stiffnessMatrix.SetOneBasedIndexing();
-    NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix(stiffnessMatrixVector2);
-    mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector);
-    displacementVector.WriteToFile("disp.txt"," ");
-    a = rhsVector - stiffnessMatrix * displacementVector;
-    std::cout << "residual: " << a.Norm() << std::endl;
-    }
-    else
+//    int readFlag = false;
+//    if(readFlag)
+//    {
+//    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> a;
+//    a.ReadFromFile("stiffnessMatrix.txt");
+//    NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixVector2(a);
+//    NuTo::FullVector<double,Eigen::Dynamic> rhsVector;
+//    rhsVector.ReadFromFile("rhsVector.txt");
+//    NuTo::SparseDirectSolverMUMPS mySolver;
+//    NuTo::FullVector<double,Eigen::Dynamic> displacementVector;
+//    //stiffnessMatrix.SetOneBasedIndexing();
+//    NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix(stiffnessMatrixVector2);
+//    mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector);
+//    displacementVector.WriteToFile("disp.txt"," ");
+//    a = rhsVector - stiffnessMatrix * displacementVector;
+//    std::cout << "residual: " << a.Norm() << std::endl;
+//    }
+//    else
     {
         // definitions
         double YoungsModulus = 20000.;
@@ -49,7 +49,7 @@ try
         NuTo::Structure myStructure(3);
 
         // create material law
-        int Material1 = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
+        int Material1 = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
         myStructure.ConstitutiveLawSetParameterDouble(Material1,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
         myStructure.ConstitutiveLawSetParameterDouble(Material1,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, PoissonsRatio);
 
@@ -186,47 +186,12 @@ try
         }
 
         // start analysis
-        // build global dof numbering
-        myStructure.NodeBuildGlobalDofs();
-
-        // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-        NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixVector2;
-        NuTo::FullVector<double,Eigen::Dynamic> dispForceVector;
         myStructure.CalculateMaximumIndependentSets();
-        myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixVector2, dispForceVector);
-        stiffnessMatrixVector2.RemoveZeroEntries(0,1e-14);
-        //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> A(stiffnessMatrix);
-        //A.WriteToFile("stiffnessMatrix.txt"," ");
-        //stiffnessMatrix.Info();
-        //dispForceVector.Info();
+        myStructure.SolveGlobalSystemStaticElastic(1);
+        auto residual = myStructure.BuildGlobalInternalGradient() - myStructure.BuildGlobalExternalLoadVector(1);
 
-        // build global external load vector
-        NuTo::FullVector<double,Eigen::Dynamic> extForceVector;
-        myStructure.BuildGlobalExternalLoadVector(1,extForceVector);
-        //extForceVector.Info();
+        std::cout << "residual: " << residual.J.CalculateNormL2() << std::endl;
 
-        // calculate right hand side
-        NuTo::FullVector<double,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;
-        rhsVector.WriteToFile("rhsVector.txt"," ");
-
-        // solve
-        NuTo::SparseDirectSolverMUMPS mySolver;
-        NuTo::FullVector<double,Eigen::Dynamic> displacementVector;
-        NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix(stiffnessMatrixVector2);
-        stiffnessMatrix.SetOneBasedIndexing();
-        mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector);
-        displacementVector.WriteToFile("displacementVector.txt"," ");
-
-        // write displacements to node
-        myStructure.NodeMergeActiveDofValues(displacementVector);
-
-        // calculate residual
-        NuTo::FullVector<double,Eigen::Dynamic> intForceVector;
-        myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector);
-        NuTo::FullVector<double,Eigen::Dynamic> residualVector = extForceVector - intForceVector;
-        std::cout << "residual: " << residualVector.Norm() << std::endl;
-
-#ifdef ENABLE_VISUALIZE
         // visualize results
         int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
         myStructure.GroupAddElementsTotal(visualizationGroup);
@@ -236,7 +201,6 @@ try
         myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
 
         myStructure.ExportVtkDataFileElements("Brick8N.vtk");
-#endif // ENABLE_VISUALIZE
     }
 }
 catch (NuTo::Exception& e)

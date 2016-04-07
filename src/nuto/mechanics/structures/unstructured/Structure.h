@@ -116,58 +116,11 @@ public:
     void BuildNonlocalData(const ConstitutiveBase* rConstitutive);
 #endif //SWIG
 
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    NuTo::Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK);
-
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    //! @param rMatrixKJ ... submatrix kj (number of dependent dof x number of active dof)
-    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
-    NuTo::Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK);
-
-    //! @brief ... based on the global dofs build submatrices of the global stiffness matrix0
-    //! @brief ... presumes elastic deformation, that is the state variables remain constant
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    //! @param rMatrixKJ ... submatrix kj (number of dependent dof x number of active dof)
-    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
-    NuTo::Error::eError BuildGlobalElasticStiffnessSubMatricesGeneral(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK);
-
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    NuTo::Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK);
-
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
-    NuTo::Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK);
-
-    //! @brief ... based on the global dofs build sub-vectors of the global lumped mass
-    //! @param rActiveDofVector ... global lumped mass which corresponds to the active dofs
-    //! @param rDependentDofVector ... global lumped mass which corresponds to the dependent dofs
-    Error::eError BuildGlobalLumpedHession2(NuTo::FullVector<double, Eigen::Dynamic>& rActiveDofVector, NuTo::FullVector<double, Eigen::Dynamic>& rDependentDofVector);
-
-    //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
-    //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
-    //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
-    //! @param rUpdateHistoryVariables (update history variables after having calculated the response)
-    NuTo::Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullVector<double, Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullVector<double, Eigen::Dynamic>& rDependentDofGradientVector, bool rUpdateHistoryVariables);
-
-    //! @brief ...calculates the sub-vectors of the global internal potential gradient
-    //! @brief ...presumes that state variables remain constant during the return mapping
-    //! @brief ...used for calculation of the Fourier modes in the cycle jump method
-    //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
-    //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
-    NuTo::Error::eError BuildGlobalElasticGradientInternalPotentialSubVectors(NuTo::FullVector<double, Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullVector<double, Eigen::Dynamic>& rDependentDofGradientVector);
-
 #ifndef SWIG
-    //! @brief ... evaluates the structur
-    virtual void Evaluate(std::map<StructureEnum::eOutput, StructureOutputBase*>& rStructureOutput) override;
+
+    //! @brief ... evaluates the structure
+    virtual void Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<StructureEnum::eOutput, StructureOutputBase*> &rStructureOutput) override;
+
 #endif
 
 
@@ -193,7 +146,7 @@ public:
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNode (Input) 		... node pointer
     //! @param rElements (Output) 	... vector of element pointers
-    void NodeGetElements(const NodeBase* rNodePtr, std::vector<ElementBase*>& rElements);
+    void NodeGetElements(const NodeBase* rNodePtr, std::vector<ElementBase*>& rElements) override;
 
     //! @brief gives the identifier of a node
     //! @param pointer to a node
@@ -253,6 +206,26 @@ public:
     //! @param rCoordinates ...  node coordinates
     void NodeCreateDOFs(int rNodeNumber, std::string rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
 
+#ifndef SWIG
+    //! @brief creates a node with specific dofs at coordinate's origin
+    //! @param rDOFs ... set containing the node dof enums (e.g. displacements, rotations, temperatures)
+    //! @param rCoordinates ...  node coordinates
+    //! @return node number
+    int NodeCreateDOFs(std::set<Node::eDof> rDOFs);
+
+    //! @brief creates a node with specific dofs
+    //! @param rDOFs ... set containing the node dof enums (e.g. displacements, rotations, temperatures)
+    //! @param rCoordinates ...  node coordinates
+    //! @return node number
+    int NodeCreateDOFs(std::set<Node::eDof> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+
+    //! @brief creates a node with specific dofs
+    //! @param node number
+    //! @param rDOFs ... set containing the node dof enums (e.g. displacements, rotations, temperatures)
+    //! @param rCoordinates ...  node coordinates
+    void NodeCreateDOFs(int rNodeNumber, std::set<Node::eDof>rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+#endif //SWIG
+
     //! @brief deletes a node
     //! @param rNodeNumber ... node number
     void NodeDelete(const int rNodeNumber);
@@ -261,53 +234,33 @@ public:
     void NodeInfo(int mVerboseLevel) const;
 
     //! @brief numbers the dofs in the structure
-    void NodeBuildGlobalDofs();
+    //! @param rCallerName ... if the method throws it is nice to know by whom it was called.
+    void NodeBuildGlobalDofs(std::string rCallerName = "") override;
 
-    //! @brief write dof values (e.g. displacements, temperatures to the nodes)
+    //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
-    //! @param rActiveDofValues ... vector of global dof values (ordering according to global dofs, size is number of active dofs)
-    virtual void NodeMergeActiveDofValues(int rTimeDerivative, const NuTo::FullVector<double, Eigen::Dynamic>& rActiveDofValues);
-
-    using StructureBase::NodeMergeActiveDofValues;
+    //! @return ... StructureBlockVector containing the dofs (J and K)
+    virtual NuTo::StructureOutputBlockVector NodeExtractDofValues(int rTimeDerivative) const override;
 
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
-    //! @param rDependentDofValuess ... vector of global dependent values (ordering according to global dofs, size is number of active dofs)
-    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::FullVector<double, Eigen::Dynamic>& rActiveDofValues, const NuTo::FullVector<double, Eigen::Dynamic>& rDependentDofValuess);
+    //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
+    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockFullVector<double>& rActiveDofValues, const NuTo::BlockFullVector<double>& rDependentDofValues) override;
 
-    using StructureBase::NodeMergeDofValues;
-
-    //! @brief ...merge additional dof values
-    //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
-    //! empty in the standard case, is used in StructureIp
-    virtual void NodeMergeAdditionalGlobalDofValues(int rTimeDerivative, const NuTo::FullVector<double, Eigen::Dynamic>& rActiveDofValues, const NuTo::FullVector<double, Eigen::Dynamic>& rDependentDofValues)
-    {
-    }
-
-    //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
-    //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
-    //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
-    //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
-    virtual void NodeExtractDofValues(int rTimeDerivative, NuTo::FullVector<double, Eigen::Dynamic>& rActiveDofValues, NuTo::FullVector<double, Eigen::Dynamic>& rDependentDofValues) const;
-
-    using StructureBase::NodeExtractDofValues;
-
-    //! @brief extract dof values additional dof values
-    //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
-    //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
-    //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
-    virtual void NodeExtractAdditionalGlobalDofValues(int rTimeDerivative, NuTo::FullVector<double, Eigen::Dynamic>& rActiveDofValues, NuTo::FullVector<double, Eigen::Dynamic>& rDependentDofValues) const
-    {
-    }
+    //! @brief calculate dependent dof values (for the zeroth time derivative)
+    //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
+    //! @return  ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
+    virtual NuTo::BlockFullVector<double> NodeCalculateDependentDofValues(const NuTo::BlockFullVector<double>& rActiveDofValues) const override;
 
 #ifndef SWIG
+
 
     //! @brief creates a node with rDofs degrees of freedom
     //! @param rCoordinates coordinates of the node
     //! @param rDofs degrees of freedom of the node
     //! @return node number
-    int NodeCreate(NuTo::FullVector<double,Eigen::Dynamic> rCoordinates, std::set<Node::eAttributes> rDofs);
+    int NodeCreate(NuTo::FullVector<double,Eigen::Dynamic> rCoordinates, std::set<Node::eDof> rDofs);
 
 
     //! @brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
@@ -358,15 +311,6 @@ public:
 
     //! @brief info about the elements in the Structure
     void ElementInfo(int rVerboseLevel) const;
-
-    //! @brief Creates an element
-    //! @param rElementType element type
-    //! @param rNodeIdents Identifier for the corresponding nodes
-    //! @return element number
-    int ElementCreate(const std::string& rElementType, const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers)
-    {
-        throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] deprecated.");
-    }
 
     //! @brief Creates an element
     //! @param rInterpolationTypeId interpolation type id
@@ -473,9 +417,10 @@ public:
     //! @brief creates boundary elements and add them to an element group
     //! @param rElementGroupId ... group id including the base elements
     //! @param rNodeGroupId ... node group id that includes the surface nodes
-    //! @param rNodeDependency ... if not nullptr (default) a boundary element of type BoundaryElementXNodeDependent will be created instead of a normal one
+    //! @param rControlNode if not nullptr, then a boundary element with control node will be created
     //! @return ... ids of the created boundary element group
-    int BoundaryElementsCreate(int rElementGroupId, int rNodeGroupId, NodeBase* rNodeDependency = nullptr);
+    int BoundaryElementsCreate(int rElementGroupId, int rNodeGroupId, NodeBase* rControlNode = nullptr);
+
 
     //! @brief  Creates interface elements from an element group.
     //! @param  rElementGroupId: group id including the base elements
@@ -526,7 +471,7 @@ public:
 
     //! @brief prints the info to the interpolation type
     //! @param rInterpolationTypeId ... interpolation type id
-    void InterpolationTypeInfo(int rInterpolationTypeId);
+    void InterpolationTypeInfo(int rInterpolationTypeId) const;
 
     //! @brief adds a dof to a interpolation type, calls the enum method
     //! @param rInterpolationTypeId ... interpolation type id
@@ -534,27 +479,6 @@ public:
     //! @param rTypeOrder ... type and order of interpolation
     void InterpolationTypeAdd(int rInterpolationTypeId, const std::string& rDofType, const std::string& rTypeOrder);
 
-    //! @brief returns whether or not the dof is active, calls the enum method
-    //! @param rInterpolationTypeId ... interpolation type id
-    //! @param rDofType ... dof type
-    bool InterpolationTypeIsActive(int rInterpolationTypeId, const std::string& rDofType) const;
-
-    //! @brief returns whether or not the dof is constitutive input, calls the enum method
-    //! @param rInterpolationTypeId ... interpolation type id
-    //! @param rDofType ... dof type
-    bool InterpolationTypeIsConstitutiveInput(int rInterpolationTypeId, const std::string& rDofType) const;
-
-    //! @brief defines whether or not the dof is active, calls the enum method
-    //! @param rInterpolationTypeId ... interpolation type id
-    //! @param rDofType ... dof type
-    //! @param rIsActive ... true if active
-    void InterpolationTypeSetIsActive(int rInterpolationTypeId, const std::string& rDofType, bool rIsActive);
-
-    //! @brief defines whether or not the dof is constitutive input, calls the enum method
-    //! @param rInterpolationTypeId ... interpolation type id
-    //! @param rDofType ... dof type
-    //! @param rIsConstitutiveInput ... true if constitutive input
-    void InterpolationTypeSetIsConstitutiveInput(int rInterpolationTypeId, const std::string& rDofType, bool rIsConstitutiveInput);
 
 #ifndef SWIG
 
@@ -579,29 +503,8 @@ public:
     //! @param rInterpolationTypeId ... interpolation type id
     //! @param rDofType ... dof type
     //! @param rTypeOrder ... type and order of interpolation
-    void InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
+    void InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
 
-    //! @brief returns whether or not the dof is active
-    //! @param rInterpolationTypeId ... interpolation type id
-    //! @param rDofType ... dof type
-    bool InterpolationTypeIsActive(int rInterpolationTypeId, NuTo::Node::eAttributes rDofType) const;
-
-    //! @brief returns whether or not the dof is constitutive input
-    //! @param rInterpolationTypeId ... interpolation type id
-    //! @param rDofType ... dof type
-    bool InterpolationTypeIsConstitutiveInput(int rInterpolationTypeId, NuTo::Node::eAttributes rDofType) const;
-
-    //! @brief defines whether or not the dof is active
-    //! @param rInterpolationTypeId ... interpolation type id
-    //! @param rDofType ... dof type
-    //! @param rIsActive ... true if active
-    void InterpolationTypeSetIsActive(int rInterpolationTypeId, NuTo::Node::eAttributes rDofType, bool rIsActive);
-
-    //! @brief defines whether or not the dof is constitutive input
-    //! @param rInterpolationTypeId ... interpolation type id
-    //! @param rDofType ... dof type
-    //! @param rIsConstitutiveInput ... true if constitutive input
-    void InterpolationTypeSetIsConstitutiveInput(int rInterpolationTypeId, NuTo::Node::eAttributes rDofType, bool rIsConstitutiveInput);
 
 #endif //SWIG
 
@@ -747,6 +650,12 @@ public:
     //! @param ... rMax ... maximum value
     void GroupAddNodeFromElementGroupCoordinateRange(int rIdentNodeGroup, int rSearchIdentElementGroup, int rDirection, double rMin, double rMax);
 
+    //! @brief adds all elements to an element group and returns its id
+    int GroupGetElementsTotal();
+
+    //! @brief adds all ndoes to an element group and returns its id
+    int GroupGetNodesTotal();
+
     //*************************************************
     //************ Info routine         ***************
     //**  defined in structures/Structure.cpp *********
@@ -755,10 +664,12 @@ public:
     void Info() const;
 
 protected:
+#ifdef ENABLE_SERIALIZATION
     //! @brief ... standard constructor just for the serialization routine
     Structure()
     {
     }
+#endif  // ENABLE_SERIALIZATION
 
 #ifndef SWIG
     //! @brief ... store all elements of a structure in a vector
@@ -829,7 +740,7 @@ private:
     //! @param rDOFs
     //! @param rCoordinates coordinates of the node
     //! @return node pointer
-    NodeBase* NodePtrCreate(std::set<Node::eAttributes> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+    NodeBase* NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

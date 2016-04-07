@@ -38,7 +38,8 @@ NuTo::InterpolationType::InterpolationType(NuTo::Interpolation::eShapeType rShap
 NuTo::InterpolationType::~InterpolationType()
 {
 }
-const NuTo::InterpolationBase& NuTo::InterpolationType::Get(const Node::eAttributes& rDofType) const
+
+const NuTo::InterpolationBase& NuTo::InterpolationType::Get(const Node::eDof& rDofType) const
 {
     try
     {
@@ -46,24 +47,24 @@ const NuTo::InterpolationBase& NuTo::InterpolationType::Get(const Node::eAttribu
     } catch (boost::bad_ptr_container_operation& e)
     {
         std::cout << e.what() << std::endl;
-        throw NuTo::MechanicsException("[NuTo::InterpolationType::Get] Dof " + Node::AttributeToString(rDofType) + " is not a member of this interpolation type. Add it first.");
+        throw NuTo::MechanicsException("[NuTo::InterpolationType::Get] Dof " + Node::DofToString(rDofType) + " is not a member of this interpolation type. Add it first.");
     }
 }
 
-NuTo::InterpolationBase& NuTo::InterpolationType::GetNonConst(Node::eAttributes rDofType)
+NuTo::InterpolationBase& NuTo::InterpolationType::GetNonConst(Node::eDof rDofType)
 {
     auto interpolationTypeIterator = mInterpolations.find(rDofType);
 
     if (interpolationTypeIterator == mInterpolations.end())
-        throw NuTo::MechanicsException("[NuTo::InterpolationType::Get] Dof " + Node::AttributeToString(rDofType) + " is not a member of this interpolation type. Add it first.");
+        throw NuTo::MechanicsException("[NuTo::InterpolationType::Get] Dof " + Node::DofToString(rDofType) + " is not a member of this interpolation type. Add it first.");
 
     return *(interpolationTypeIterator->second);
 }
 
-void NuTo::InterpolationType::AddDofInterpolation(Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder)
+void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder)
 {
     if (IsDof(rDofType))
-        throw NuTo::MechanicsException("[NuTo::InterpolationTypeBase::AddDofInterpolation] Dof " + NuTo::Node::AttributeToString(rDofType) + " exists.");
+        throw NuTo::MechanicsException("[NuTo::InterpolationTypeBase::AddDofInterpolation] Dof " + NuTo::Node::DofToString(rDofType) + " exists.");
 
     InterpolationBase* newType;
     switch (mShapeType)
@@ -195,10 +196,14 @@ const NuTo::Interpolation::eShapeType NuTo::InterpolationType::GetShapeType() co
 
 NuTo::IntegrationType::eIntegrationType NuTo::InterpolationType::GetStandardIntegrationType() const
 {
-    NuTo::IntegrationType::eIntegrationType integrationType = IntegrationType::eIntegrationType::NotSet;
-    int maxOrder = 0;
+    return Get(GetDofWithHighestStandardIntegrationOrder()).GetStandardIntegrationType();
+}
 
-    for (Node::eAttributes dof : GetDofs())
+NuTo::Node::eDof NuTo::InterpolationType::GetDofWithHighestStandardIntegrationOrder() const
+{
+    int maxOrder = 0;
+    Node::eDof maxDof;
+    for (Node::eDof dof : GetDofs())
     {
         Interpolation::eTypeOrder order = Get(dof).GetTypeOrder();
         int currentOrder = 0;
@@ -220,20 +225,19 @@ NuTo::IntegrationType::eIntegrationType NuTo::InterpolationType::GetStandardInte
             currentOrder = 4;
             break;
         default:
-            throw NuTo::MechanicsException("[NuTo::InterpolationType::GetStandardIntegrationType] Standard integration type for " + Interpolation::TypeOrderToString(order) + " is not implemented.");
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Standard integration type for " + Interpolation::TypeOrderToString(order) + " is not implemented.");
         }
 
         if (currentOrder > maxOrder)
         {
             maxOrder = currentOrder;
-            integrationType = Get(dof).GetStandardIntegrationType();
+            maxDof = dof;
         }
     }
-
-    return integrationType;
+    return maxDof;
 }
 
-const Eigen::VectorXi NuTo::InterpolationType::GetSurfaceNodeIndices(int rSurface) const
+Eigen::VectorXi NuTo::InterpolationType::GetSurfaceNodeIndices(int rSurface) const
 {
     assert(IsDof(Node::COORDINATES));
     const InterpolationBase& interpolationType = Get(Node::COORDINATES);
@@ -274,7 +278,7 @@ void NuTo::InterpolationType::UpdateLocalStartIndices()
     // calculate local start indices
     // prescribe a specific order
 
-    std::vector<Node::eAttributes> orderedDofs(
+    std::vector<Node::eDof> orderedDofs(
     { Node::COORDINATES, Node::DISPLACEMENTS, Node::TEMPERATURES, Node::NONLOCALEQPLASTICSTRAIN, Node::NONLOCALEQSTRAIN, Node::RELATIVEHUMIDITY, Node::WATERVOLUMEFRACTION });
 
     int currentStartIndex = 0;
@@ -288,12 +292,18 @@ void NuTo::InterpolationType::UpdateLocalStartIndices()
                 currentStartIndex += GetNonConst(dof).GetNumDofs();
         }
     }
+
+    mNumActiveDofs = 0;
+    for (auto dof : mActiveDofs)
+    {
+        mNumActiveDofs += Get(dof).GetNumDofs();
+    }
 }
 
-void NuTo::InterpolationType::SetIsActive(bool rIsActiveDof, Node::eAttributes rDofType)
+void NuTo::InterpolationType::SetIsActive(bool rIsActiveDof, Node::eDof rDofType)
 {
     if (not IsDof(rDofType))
-        throw NuTo::MechanicsException("[NuTo::InterpolationType::SetIsActive] Dof " + Node::AttributeToString(rDofType) + " is not a member of this interpolation type. Add it first.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Dof " + Node::DofToString(rDofType) + " is not a member of this interpolation type. Add it first.");
 
     if (rIsActiveDof)
         mActiveDofs.insert(rDofType);
@@ -304,31 +314,27 @@ void NuTo::InterpolationType::SetIsActive(bool rIsActiveDof, Node::eAttributes r
 
     UpdateLocalStartIndices();
 
-    mNumActiveDofs = 0;
-    for (auto dof : mActiveDofs)
-    {
-        mNumActiveDofs += Get(dof).GetNumDofs();
-    }
+
 }
 
-bool NuTo::InterpolationType::IsActive(const Node::eAttributes& rDofType) const
+bool NuTo::InterpolationType::IsActive(const Node::eDof& rDofType) const
 {
     return Get(rDofType).IsActive();
 }
 
-void NuTo::InterpolationType::SetIsConstitutiveInput(bool rIsConstitutiveInput, Node::eAttributes rDofType)
+void NuTo::InterpolationType::SetIsConstitutiveInput(bool rIsConstitutiveInput, Node::eDof rDofType)
 {
     GetNonConst(rDofType).mIsConstitutiveInput = rIsConstitutiveInput;
 }
 
-bool NuTo::InterpolationType::IsConstitutiveInput(const Node::eAttributes& rDofType) const
+bool NuTo::InterpolationType::IsConstitutiveInput(const Node::eDof& rDofType) const
 {
     if (not IsDof(rDofType))
         return false;
     return Get(rDofType).IsConstitutiveInput();
 }
 
-bool NuTo::InterpolationType::IsDof(const Node::eAttributes& rDofType) const
+bool NuTo::InterpolationType::IsDof(const Node::eDof& rDofType) const
 {
     return mDofs.find(rDofType) != mDofs.end();
 }
@@ -344,17 +350,17 @@ int NuTo::InterpolationType::GetNumActiveDofs() const
     return mNumActiveDofs;
 }
 
-const std::set<NuTo::Node::eAttributes>& NuTo::InterpolationType::GetActiveDofs() const
+const std::set<NuTo::Node::eDof>& NuTo::InterpolationType::GetActiveDofs() const
 {
     return mActiveDofs;
 }
 
-const std::set<NuTo::Node::eAttributes>& NuTo::InterpolationType::GetDofs() const
+const std::set<NuTo::Node::eDof>& NuTo::InterpolationType::GetDofs() const
 {
     return mDofs;
 }
 
-std::set<NuTo::Node::eAttributes> NuTo::InterpolationType::GetNodeDofs(int rNodeIndex) const
+std::set<NuTo::Node::eDof> NuTo::InterpolationType::GetNodeDofs(int rNodeIndex) const
 {
     assert((unsigned int )rNodeIndex < mNodeDofs.size());
     return mNodeDofs[rNodeIndex];
@@ -390,7 +396,7 @@ std::string NuTo::InterpolationType::Info() const
 
     for (auto dofType : mDofs)
     {
-        out << Node::AttributeToString(dofType) << ": " << Get(dofType).GetNumDofs() << "|\t|" << "Type and Order: " << Interpolation::TypeOrderToString(Get(dofType).GetTypeOrder()) << "|\n";
+        out << Node::DofToString(dofType) << ": " << Get(dofType).GetNumDofs() << "|\t|" << "Type and Order: " << Interpolation::TypeOrderToString(Get(dofType).GetTypeOrder()) << "|\n";
     }
 
     return out.str();
@@ -402,7 +408,7 @@ void NuTo::InterpolationType::PrintNodeIndices() const
     std::cout << " ============ NODE INDICES ============ " << std::endl;
     for (auto dofType : mDofs)
     {
-        std::cout << "dof type: " << Node::AttributeToString(dofType) << " with " << Get(dofType).GetNumNodes() << " nodes:" << std::endl;
+        std::cout << "dof type: " << Node::DofToString(dofType) << " with " << Get(dofType).GetNumNodes() << " nodes:" << std::endl;
         for (int iNode = 0; iNode < Get(dofType).GetNumNodes(); ++iNode)
         {
             std::cout << "Node " << iNode << " = global node " << Get(dofType).GetNodeIndex(iNode) << std::endl;
@@ -423,7 +429,7 @@ void NuTo::InterpolationType::PrintNodeCoordinates() const
             std::cout << std::setprecision(3) << std::setw(5) << nodeCoordinate[iDim] << " ";
         std::cout << ") with ";
         for (auto dofType : GetNodeDofs(iNode))
-            std::cout << Node::AttributeToString(dofType) << " ";
+            std::cout << Node::DofToString(dofType) << " ";
         std::cout << std::endl;
     }
 

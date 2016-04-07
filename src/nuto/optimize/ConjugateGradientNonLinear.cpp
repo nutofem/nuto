@@ -6,7 +6,7 @@
 #define goldenSect 0.38196601125
 #define ZEPS 1e-10 //absolute tolerance
 #define SHFT(a,b,c,d) (a)=(b);(b)=(c);(c)=(d);
-#define SIGN(a,b) ((b) >= 0.0 ? fabs(a) : -fabs(a))
+#define SIGN(a,b) ((b) >= 0.0 ? std::abs(a) : -std::abs(a))
 #define golden_sec 0.38196601125
 
 // @brief
@@ -127,11 +127,11 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
             normProjection = gradientScaled.dot(prevGradientScaled);
             normPrevGradient = prevGradientScaled.dot(prevGradientScaled);
             //Powell-Beale Restarts
-            //printf("restart criterion %g>%g\n",fabs(normProjection),0.2*normPrevGradient);
-            if (fabs(normProjection)>0.2*normPrevGradient)
+            //printf("restart criterion %g>%g\n",std::abs(normProjection),0.2*normPrevGradient);
+            if (std::abs(normProjection)>0.2*normPrevGradient)
             {
                 // check for convergence
-                if (fabs(objectiveLastRestart-objective)/objective<mMinDeltaObjBetweenRestarts)
+                if (std::abs(objectiveLastRestart-objective)/objective<mMinDeltaObjBetweenRestarts)
                 {
                     converged = true;
                     returnValue = DELTAOBJECTIVEBETWEENCYCLES;
@@ -140,7 +140,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                 }
                 else
                 {
-                    if (fabs(objectiveLastRestart-objective)<mMinDeltaObjBetweenRestarts)
+                    if (std::abs(objectiveLastRestart-objective)<mMinDeltaObjBetweenRestarts)
                     {
                         {
                             converged = true;
@@ -355,7 +355,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                     returnValue = MAXFUNCTIONCALLS;
                     break;
                 }
-                if (fabs(objective-intermediateObjective)<machine_precision)
+                if (std::abs(objective-intermediateObjective)<machine_precision)
                 {
                     converged = true;
                     returnValue = REACHINGMACHINEPRECISION;
@@ -427,8 +427,8 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
             // Done with housekeeping. Back for another iteration
             double tol1, tol2;
             double xm = 0.5*(alpha+prevAlpha);
-            tol2 = 2.0*(tol1=tol*fabs(intermediateAlpha+ZEPS));
-            if (fabs(intermediateAlpha-xm)<=tol2-0.5*(alpha-prevAlpha))
+            tol2 = 2.0*(tol1=tol*std::abs(intermediateAlpha+ZEPS));
+            if (std::abs(intermediateAlpha-xm)<=tol2-0.5*(alpha-prevAlpha))
             {
                 //line search converged
                 objective = intermediateObjective;
@@ -439,7 +439,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
             }
             else
             {
-                if (fabs(e) > tol1)
+                if (std::abs(e) > tol1)
                 {
                     // Construct a trial parabolic t.
                     double r=(intermediateAlpha-w)*(intermediateObjective-fv);
@@ -450,10 +450,10 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                     {
                         p = -p;
                     }
-                    q=fabs(q);
+                    q=std::abs(q);
                     double etemp=e;
                     e=d;
-                    if (fabs(p) >= fabs(0.5*q*etemp) || p <= q*(prevAlpha-intermediateAlpha) || p >= q*(alpha-intermediateAlpha))
+                    if (std::abs(p) >= std::abs(0.5*q*etemp) || p <= q*(prevAlpha-intermediateAlpha) || p >= q*(alpha-intermediateAlpha))
                     {
                         d=golden_sec*(e=(intermediateAlpha >= xm ? prevAlpha-intermediateAlpha : alpha-intermediateAlpha));
                     }
@@ -471,7 +471,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                 {
                     d=golden_sec*(e=(intermediateAlpha >= xm ? prevAlpha - intermediateAlpha : alpha - intermediateAlpha));
                 }
-                u=(fabs(d) >= tol1 ? intermediateAlpha+d : intermediateAlpha+SIGN(tol1,d));
+                u=(std::abs(d) >= tol1 ? intermediateAlpha+d : intermediateAlpha+SIGN(tol1,d));
                 mvParameters=prevParameters+u*searchDirectionOrig;
                 mpCallbackHandler->SetParameters(mvParameters);
             }

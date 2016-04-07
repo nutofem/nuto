@@ -6,18 +6,9 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 
-#include "nuto/mechanics/elements/Element1D.h"
-#include "nuto/mechanics/elements/Element1DInXD.h"
-#include "nuto/mechanics/elements/Element1DSpring.h"
-#include "nuto/mechanics/elements/Element2D.h"
-#include "nuto/mechanics/elements/Element2DInterface.h"
-#include "nuto/mechanics/elements/Element3D.h"
-
-#include "nuto/mechanics/elements/BoundaryElement1D.h"
-#include "nuto/mechanics/elements/BoundaryElement2D.h"
-#include "nuto/mechanics/elements/BoundaryElement2DAdditionalNode.h"
-#include "nuto/mechanics/elements/BoundaryElement3D.h"
-#include "nuto/mechanics/elements/BoundaryElement3DAdditionalNode.h"
+#include "nuto/mechanics/elements/ContinuumElement.h"
+#include "nuto/mechanics/elements/ContinuumBoundaryElement.h"
+#include "nuto/mechanics/elements/ContinuumBoundaryElementConstrainedControlNode.h"
 
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/nodes/NodeDof.h"
@@ -449,7 +440,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
             TmpNode& tmpNode = singleSameNode[0]; // the first one always exists
 
             // check if all same nodes (= nodes with the same global coordinates) have the same dofs
-            std::set<Node::eAttributes> nodeDofs;
+            std::set<Node::eDof> nodeDofs;
             for (TmpNode& singleUniqueNode : singleSameNode)
             {
                 auto nodeDofsOther = singleUniqueNode.element->GetInterpolationType()->GetNodeDofs(singleUniqueNode.elementNodeId);
@@ -681,30 +672,33 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
         switch (interpolationType->GetShapeType())
         {
         case NuTo::Interpolation::eShapeType::SPRING:
-            ptrElement = new Element1DSpring(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
-            ptrElement->CheckElement();
+            throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] Element1DSpring currently not implemented.");
+//            ptrElement = new Element1DSpring(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
+//            ptrElement->CheckElement();
             break;
         case NuTo::Interpolation::eShapeType::TRUSS1D:
-            ptrElement = new Element1D(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
+            ptrElement = new ContinuumElement<1>(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
             ptrElement->CheckElement();
             break;
         case NuTo::Interpolation::eShapeType::TRUSSXD:
-            ptrElement = new Element1DInXD(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
-            ptrElement->CheckElement();
+            throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] Element1DInXD currently not implemented.");
+//            ptrElement = new Element1DInXD(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
+//            ptrElement->CheckElement();
             break;
         case NuTo::Interpolation::eShapeType::TRIANGLE2D:
         case NuTo::Interpolation::eShapeType::QUAD2D:
-            ptrElement = new Element2D(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
+            ptrElement = new ContinuumElement<2>(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
             ptrElement->CheckElement();
             break;
         case NuTo::Interpolation::eShapeType::TETRAHEDRON3D:
         case NuTo::Interpolation::eShapeType::BRICK3D:
-            ptrElement = new Element3D(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
+            ptrElement = new ContinuumElement<3>(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
             ptrElement->CheckElement();
             break;
         case NuTo::Interpolation::eShapeType::INTERFACE:
-            ptrElement = new Element2DInterface(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
-            ptrElement->CheckElement();
+            throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] Element2DInterface currently not implemented.");
+//            ptrElement = new Element2DInterface(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
+//            ptrElement->CheckElement();
             break;
         default:
             throw MechanicsException("[NuTo::Structure::ElementCreate] invalid dimension.");
@@ -771,9 +765,9 @@ int NuTo::Structure::ElementsCreate(int rInterpolationTypeId, NuTo::FullMatrix<i
 //! @brief creates boundary elements and add them to an element group
 //! @param rElementGroupId ... group id including the base elements
 //! @param rNodeGroupId ... node group id that includes the surface nodes
-//! @param rNodeDependency ... if not nullptr (default) a boundary element of type BoundaryElementXNodeDependent will be created instead of a normal one
+//! @param rControlNode if not nullptr, then a boundary element with control node will be created
 //! @return ... ids of the created boundary element group
-int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupId, NodeBase* rNodeDependency)
+int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupId, NodeBase* rControlNode)
 {
 #ifdef SHOW_TIME
     std::clock_t start, end;
@@ -793,8 +787,8 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
     if (itGroupBoundaryNodes->second->GetType() != NuTo::Groups::Nodes)
         throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group is not a node group.");
 
-    Group<ElementBase>& elementGroup = *(itGroupElements->second->AsGroupElement());
-    Group<NodeBase>& nodeGroup = *(itGroupBoundaryNodes->second->AsGroupNode());
+    Group<ElementBase>& elementGroup    = *(itGroupElements->second->AsGroupElement());
+    Group<NodeBase>&    nodeGroup       = *(itGroupBoundaryNodes->second->AsGroupNode());
 
     // since the search is done via the id's, the surface nodes are ptr, so make another set with the node ptrs
     std::set<const NodeBase*> nodePtrSet;
@@ -809,16 +803,16 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
     for (auto itElement : elementGroup)
     {
         ElementBase* elementPtr = itElement.second;
-        const InterpolationType* InterpolationType = elementPtr->GetInterpolationType();
+        const InterpolationType* interpolationType = elementPtr->GetInterpolationType();
 
         try
         {
 
             //loop over all surfaces
-            for (int iSurface = 0; iSurface < InterpolationType->GetNumSurfaces(); iSurface++)
+            for (int iSurface = 0; iSurface < interpolationType->GetNumSurfaces(); ++iSurface)
             {
                 bool elementSurfaceNodesMatchBoundaryNodes = true;
-                Eigen::VectorXi surfaceNodeIndices = InterpolationType->GetSurfaceNodeIndices(iSurface);
+                Eigen::VectorXi surfaceNodeIndices = interpolationType->GetSurfaceNodeIndices(iSurface);
 
                 int numSurfaceNodes = surfaceNodeIndices.rows();
                 std::vector<const NodeBase*> surfaceNodes(numSurfaceNodes);
@@ -835,6 +829,7 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
                     {
                         //this surface has at least one node that is not in the list, continue
                         elementSurfaceNodesMatchBoundaryNodes = false;
+                        break;
                     }
                 }
 
@@ -857,37 +852,135 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
                     ElementBase* boundaryElement = nullptr;
                     ConstitutiveBase* constitutiveLaw = elementPtr->GetConstitutiveLaw(0);
 
-                    IntegrationType::eIntegrationType integrationType;
+                    IntegrationType::eIntegrationType integrationType = IntegrationType::NotSet;
 
                     switch (elementPtr->GetEnumType())
                     {
-                    case Element::ELEMENT1D:
-                        // create BoundaryElement1D
+                    case Element::CONTINUUMELEMENT:
+                        switch (elementPtr->GetLocalDimension())
+                        {
+                        case 1:
+                        {
+                            if(rControlNode == nullptr)
+                            {
+                                boundaryElement = new ContinuumBoundaryElement<1>(&elementPtr->AsContinuumElement1D(), surfaceId);
+                            }
+                            else
+                            {
+                                boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<1>(&elementPtr->AsContinuumElement1D(), surfaceId,rControlNode);
+                            }
+                            integrationType = IntegrationType::IntegrationType0DBoundary;
+                            break;
+                        }
+                        case 2:
+                        {
+                            if(rControlNode == nullptr)
+                            {
+                                boundaryElement = new ContinuumBoundaryElement<2>(&elementPtr->AsContinuumElement2D(), surfaceId);
+                            }
+                            else
+                            {
+                                boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<2>(&elementPtr->AsContinuumElement2D(), surfaceId,rControlNode);
+                            }
+                            // check for 2D types
+                            auto it = std::find(mMappingIntEnum2String.begin(), mMappingIntEnum2String.end(), interpolationType->GetCurrentIntegrationType()->GetStrIdentifier());
+                            if (it == mMappingIntEnum2String.end()) break;
 
-                        boundaryElement = new BoundaryElement1D(elementPtr, surfaceId);
-                        integrationType = IntegrationType::IntegrationType0DBoundary;
-                        break;
-                    case Element::ELEMENT2D:
-                        if (rNodeDependency == nullptr)
-                        {
-                            boundaryElement = new BoundaryElement2D(elementPtr, surfaceId);
-                        } else
-                        {
-                            boundaryElement = new BoundaryElement2DAdditionalNode(elementPtr, surfaceId, rNodeDependency);
+                            switch ((int)std::distance(mMappingIntEnum2String.begin(), it)) // Oh my god. Someone please remove this "map"
+                            {
+                            case IntegrationType::IntegrationType2D3NGauss1Ip:
+                            case IntegrationType::IntegrationType2D4NGauss1Ip:
+                                integrationType = IntegrationType::IntegrationType1D2NGauss1Ip;
+                                break;
+                            case IntegrationType::IntegrationType2D3NGauss3Ip:
+                            case IntegrationType::IntegrationType2D4NGauss4Ip:
+                                integrationType = IntegrationType::IntegrationType1D2NGauss2Ip;
+                                break;
+                            case IntegrationType::IntegrationType2D3NGauss6Ip:
+                            case IntegrationType::IntegrationType2D4NGauss9Ip:
+                                integrationType = IntegrationType::IntegrationType1D2NGauss3Ip;
+                                break;
+                            case IntegrationType::IntegrationType2D3NGauss12Ip:
+                                integrationType = IntegrationType::IntegrationType1D2NGauss5Ip;
+                                break;
+
+                            case IntegrationType::IntegrationType2D4NLobatto9Ip:
+                                integrationType = IntegrationType::IntegrationType1D2NLobatto3Ip;
+                                break;
+
+                            case IntegrationType::IntegrationType2D4NLobatto16Ip:
+                                integrationType = IntegrationType::IntegrationType1D2NLobatto4Ip;
+                                break;
+
+                            case IntegrationType::IntegrationType2D4NLobatto25Ip:
+                                integrationType = IntegrationType::IntegrationType1D2NLobatto5Ip;
+                                break;
+
+                                default:
+                                    break;
+                            }
+
+
+                            break;
                         }
-                        integrationType = IntegrationType::IntegrationType1D2NGauss3Ip; // TODO, esp. for 3D. Maybe InterpolationType::GetSurfaceInterpolationType
-                        break;
-                    case Element::ELEMENT3D:
-                        if (rNodeDependency == nullptr)
+                        case 3:
                         {
-                            boundaryElement = new BoundaryElement3D(elementPtr, surfaceId);
-                        } else
-                        {
-                            boundaryElement = new BoundaryElement3DAdditionalNode(elementPtr, surfaceId, rNodeDependency);
+                            if(rControlNode == nullptr)
+                            {
+                                boundaryElement = new ContinuumBoundaryElement<3>(&elementPtr->AsContinuumElement3D(), surfaceId);
+                            }
+                            else
+                            {
+                                boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<3>(&elementPtr->AsContinuumElement3D(), surfaceId,rControlNode);
+                            }
+
+                            // check for 3D types
+                            auto it = std::find(mMappingIntEnum2String.begin(), mMappingIntEnum2String.end(), interpolationType->GetCurrentIntegrationType()->GetStrIdentifier());
+                            if (it == mMappingIntEnum2String.end()) break;
+
+                            switch ((int)std::distance(mMappingIntEnum2String.begin(), it))
+                            {
+                            case IntegrationType::IntegrationType3D4NGauss1Ip:
+                                integrationType = IntegrationType::IntegrationType2D3NGauss1Ip;
+                                break;
+
+                            case IntegrationType::IntegrationType3D4NGauss4Ip:
+                                integrationType = IntegrationType::IntegrationType2D3NGauss3Ip;
+                                break;
+
+                            case IntegrationType::IntegrationType3D8NGauss1Ip:
+                                integrationType = IntegrationType::IntegrationType2D4NGauss1Ip;
+                                break;
+
+                            case IntegrationType::IntegrationType3D8NGauss2x2x2Ip:
+                                integrationType = IntegrationType::IntegrationType2D4NGauss4Ip;
+                                break;
+
+                            case IntegrationType::IntegrationType3D8NLobatto3x3x3Ip:
+                                integrationType = IntegrationType::IntegrationType2D4NLobatto9Ip;
+                                break;
+
+                            case IntegrationType::IntegrationType3D8NLobatto4x4x4Ip:
+                                integrationType = IntegrationType::IntegrationType2D4NLobatto16Ip;
+                                break;
+
+                            case IntegrationType::IntegrationType3D8NLobatto5x5x5Ip:
+                                integrationType = IntegrationType::IntegrationType2D4NLobatto16Ip;
+                                break;
+
+                            default:
+                                    break;
+                            }
+
+                            break;
                         }
-                        integrationType = IntegrationType::IntegrationType2D4NGauss4Ip; // TODO, esp. for 3D. Maybe InterpolationType::GetSurfaceInterpolationType
-                                                                                        // Differ between surface types 3N / 4N
+                        default:
+                            throw MechanicsException(__PRETTY_FUNCTION__,"Boundary element for Continuum element with dimension "+
+                                                     std::to_string(elementPtr->GetLocalDimension()) + "not implemented");
+                        }
                         break;
+
+
                     default:
 
                         break;
@@ -895,6 +988,9 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
 
                     mElementMap.insert(elementId, boundaryElement);
                     newBoundaryElementIds.push_back(elementId);
+
+                    if (integrationType == IntegrationType::NotSet)
+                        throw MechanicsException(__PRETTY_FUNCTION__, "Could not automatically determine integration type of the boundary element.");
 
                     boundaryElement->SetIntegrationType(GetPtrIntegrationType(integrationType), ipDataType);
                     boundaryElement->SetConstitutiveLaw(constitutiveLaw);
@@ -983,7 +1079,7 @@ std::pair<int,int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId,
             }
             else
             {
-                std::set<NuTo::Node::eAttributes> dofs;
+                std::set<NuTo::Node::eDof> dofs;
                 dofs.insert(NuTo::Node::COORDINATES);
                 dofs.insert(NuTo::Node::DISPLACEMENTS);
 

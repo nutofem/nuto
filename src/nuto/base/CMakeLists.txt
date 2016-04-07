@@ -2,6 +2,7 @@
 SET(NuToBase_SOURCES
   Exception.cpp
   Logger.cpp
+  CallbackInterface.cpp
 )
 
 SET(NuToBase_SWIG_MODULES

@@ -103,7 +103,7 @@ void NuTo::IntegrationType2D4NModTriangle::AddIntegrationPoints(std::vector< std
 				\f[ d = \frac{1}{2}\left( \left(x_1-x_0\right)\left(y_2-x_0\right) - \left(x_2-x_0\right)\left(y_1-x_0\right)\right)
 				\f]
 			**/
-			const double faceArea=0.5*fabs(	 (fiter->vertex(1)->point()[0]-fiter->vertex(0)->point()[0])*(fiter->vertex(2)->point()[1]-fiter->vertex(0)->point()[1])
+			const double faceArea=0.5*std::abs(	 (fiter->vertex(1)->point()[0]-fiter->vertex(0)->point()[0])*(fiter->vertex(2)->point()[1]-fiter->vertex(0)->point()[1])
 											-(fiter->vertex(2)->point()[0]-fiter->vertex(0)->point()[0])*(fiter->vertex(1)->point()[1]-fiter->vertex(0)->point()[1]));
 			const double ipWeight=2*intTypeRef.GetIntegrationPointWeight(ip)*faceArea;
 //~ DBG_PRINT_VAL(ipWeight)

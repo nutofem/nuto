@@ -18,7 +18,6 @@
 #include "nuto/mechanics/elements/IpDataEmpty.h"
 #include "nuto/mechanics/elements/IpDataStaticData.h"
 #include "nuto/mechanics/elements/IpDataStaticDataNonlocal.h"
-#include "nuto/mechanics/elements/IpDataStaticDataWeightCoordinates2D.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 
 
@@ -81,10 +80,6 @@ NuTo::ElementDataIpBase::ElementDataIpBase(const ElementBase *rElement, int rNum
 		case NuTo::IpData::STATICDATANONLOCAL:
 			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]STATICDATANONLOCAL\n");
 			mIpData.push_back(new IpDataStaticDataNonlocal());
-			break;
-		case NuTo::IpData::STATICDATAWEIGHTCOORDINATES2D:
-			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]STATICDATAWEIGHTCOORDINATES2D\n");
-			mIpData.push_back(new IpDataStaticDataWeightCoordinates2D());
 			break;
 		default:
 			throw MechanicsException("[NuTo::ElementDataIpBase::ElementDataIpBase] Ip data type not known.");
@@ -213,6 +208,24 @@ const NuTo::ConstitutiveStaticDataBase* NuTo::ElementDataIpBase::GetStaticData(i
 {
     assert(rIp<(int)mIpData.size() && rIp>=0);
 	return mIpData[rIp].GetStaticData();
+}
+
+//! @brief returns the static data of an integration point
+//! @param rIp integration point
+//! @return static data
+NuTo::IpDataStaticDataBase& NuTo::ElementDataIpBase::GetStaticDataBase(int rIp)
+{
+    assert(rIp<(int)mIpData.size() && rIp>=0);
+    return mIpData[rIp].GetStaticDataBase();
+}
+
+//! @brief returns the static data of an integration point
+//! @param rIp integration point
+//! @return static data
+const NuTo::IpDataStaticDataBase& NuTo::ElementDataIpBase::GetStaticDataBase(int rIp)const
+{
+    assert(rIp<(int)mIpData.size() && rIp>=0);
+    return mIpData[rIp].GetStaticDataBase();
 }
 
 //! @brief sets the static data for an integration point of an element

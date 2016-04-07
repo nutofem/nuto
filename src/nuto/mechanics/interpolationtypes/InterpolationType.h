@@ -29,21 +29,20 @@ class InterpolationType
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
+    //! @brief standard constructor for serialization (const member is set to SPRING)
+    InterpolationType():mShapeType(NuTo::Interpolation::eShapeType::SPRING), mDimension(0) {}
 #endif  // ENABLE_SERIALIZATION
 public:
     InterpolationType(NuTo::Interpolation::eShapeType rShapeType, int rDimension);
 
-    //! @brief standard constructor for serialization (const member is set to SPRING)
-    InterpolationType():mShapeType(NuTo::Interpolation::eShapeType::SPRING), mDimension(0) {}
-
     virtual ~InterpolationType();
 
-    const InterpolationBase& Get(const Node::eAttributes& rDofType) const;
+    const InterpolationBase& Get(const Node::eDof& rDofType) const;
 
     //! @brief adds a dof type and the corresponding interpolation order, calculate and store
     //! @param rDofType ... dof type
     //! @param rTypeOrder ... type and order of interpolation
-    void AddDofInterpolation(Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
+    void AddDofInterpolation(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
 
     //! @brief calculate and store the shape functions and their derivatives
     //! and stores the pointer
@@ -67,24 +66,24 @@ public:
     //! @brief defines whether or not the dof is active
     //! @param rIsActive ... true if active
     //! @param rDofType ... dof type
-    void SetIsActive(bool rIsActive, Node::eAttributes rDofType);
+    void SetIsActive(bool rIsActive, Node::eDof rDofType);
 
     //! @brief returns whether or not the dof is active
     //! @param rDofType ... dof type
-    bool IsActive(const Node::eAttributes& rDofType) const;
+    bool IsActive(const Node::eDof& rDofType) const;
 
     //! @brief defines whether or not the dof is constitutive input
     //! @param rIsConstitutiveInput ... true if constitutive input
     //! @param rDofType ... dof type
-    void SetIsConstitutiveInput(bool rIsConstitutiveInput, Node::eAttributes rDofType);
+    void SetIsConstitutiveInput(bool rIsConstitutiveInput, Node::eDof rDofType);
 
     //! @brief returns whether or not the dof is constitutive input
     //! @param rDofType ... dof type
-    bool IsConstitutiveInput(const Node::eAttributes& rDofType) const;
+    bool IsConstitutiveInput(const Node::eDof& rDofType) const;
 
     //! @brief returns true, if rDofType exists
     //! @param rDofType ... dof type
-    bool IsDof(const Node::eAttributes& rDofType) const;
+    bool IsDof(const Node::eDof& rDofType) const;
 
     //! @brief returns the number of dofs
     int GetNumDofs() const;
@@ -92,11 +91,11 @@ public:
     //! @brief returns the number of active
     int GetNumActiveDofs() const;
 
-    const std::set<Node::eAttributes>& GetActiveDofs() const;
+    const std::set<Node::eDof>& GetActiveDofs() const;
 
-    const std::set<Node::eAttributes>& GetDofs() const;
+    const std::set<Node::eDof>& GetDofs() const;
 
-    std::set<Node::eAttributes> GetNodeDofs(int rNodeIndex) const;
+    std::set<Node::eDof> GetNodeDofs(int rNodeIndex) const;
 
     //! @brief returns the natural coordinates of the dof node
     //! @param rNodeIndex ... node index
@@ -118,7 +117,7 @@ public:
     //! calculates the shape functions of the parametrized surface and returns the index, where the value is 1
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... surface node indices
-    const Eigen::VectorXi GetSurfaceNodeIndices(int rSurface) const;
+    Eigen::VectorXi GetSurfaceNodeIndices(int rSurface) const;
 
     //! @brief returns the number of surfaces
     int GetNumSurfaces() const;
@@ -146,7 +145,7 @@ private:
 
     //! @brief returns a nonconst reference to the object, stress that with the name
     //! @param rDofType ... dof type
-    InterpolationBase& GetNonConst(Node::eAttributes rDofType);
+    InterpolationBase& GetNonConst(Node::eDof rDofType);
 
     //! @brief returns whether or not the coordinate vectors rC1 and rC2 are equal
     //! @param rC1,rC2 ... coordinate vectors
@@ -159,18 +158,19 @@ private:
     //! @remark Different behavior for 1D: xi' = -xi. This could be done using polymorphism, but I think that bundling it here is sufficient.
     void UpdateNodeRenumberingIndices();
 
+    Node::eDof GetDofWithHighestStandardIntegrationOrder() const;
 
     //! @brief map of single dof interpolations
-    boost::ptr_map<Node::eAttributes, InterpolationBase> mInterpolations;
+    boost::ptr_map<Node::eDof, InterpolationBase> mInterpolations;
 
     //! @brief shape of the interpolation type
     const Interpolation::eShapeType mShapeType;
 
     //! @brief set of all dofs
-    std::set<Node::eAttributes> mDofs;
+    std::set<Node::eDof> mDofs;
 
     //! @brief set of active dofs
-    std::set<Node::eAttributes> mActiveDofs;
+    std::set<Node::eDof> mActiveDofs;
 
     //! @brief number of dofs
     int mNumDofs;
@@ -179,7 +179,7 @@ private:
     int mNumActiveDofs;
 
     //! @brief contains a set of dofs for each local node
-    std::vector<std::set<Node::eAttributes>> mNodeDofs;
+    std::vector<std::set<Node::eDof>> mNodeDofs;
 
     //! @brief contains local node coordinates
     std::vector<Eigen::VectorXd> mNodeCoordinates;

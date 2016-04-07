@@ -34,7 +34,7 @@ void NuTo::ConstraintLinearNodeGroupRotations2D::SetRHS(double rRHS)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
 void NuTo::ConstraintLinearNodeGroupRotations2D::AddToConstraintMatrix(int& curConstraintEquation,
-        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const
+        NuTo::SparseMatrix<double>& rConstraintMatrix)const
 {
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {

@@ -56,9 +56,9 @@ myElement1 = myStructure.ElementCreate(myInterpolationType,nuto.IntFullVector((m
 myStructure.ElementTotalConvertToInterpolationType();
 
 #create constitutive law
-myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
-myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"YoungsModulus",10)
-myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"PoissonsRatio",0.25)
+myMatLin = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress")
+myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"Youngs_Modulus",10)
+myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"Poissons_Ratio",0.25)
 
 #assign constitutive law 
 #myStructure.ElementSetIntegrationType(myElement1,"3D4NGauss4Ip")
@@ -89,11 +89,7 @@ myStructure.NodeSetDisplacements(myNode6,nuto.DoubleFullVector((0.2,0.2,0.2)))
 myStructure.NodeSetDisplacements(myNode7,nuto.DoubleFullVector((0.2,0.2,0.2)))
 
 #calculate element stiffness matrix                                          
-Ke = nuto.DoubleFullMatrix(0,0)
-rowIndex = nuto.IntFullVector(0)
-colIndex = nuto.IntFullVector(0)
-
-myStructure.ElementStiffness(myElement1,Ke,rowIndex,colIndex)
+Ke = myStructure.ElementBuildHessian0(myElement1).Export()
 if (printResult):
     print "Ke"
     Ke.Info()
@@ -113,9 +109,7 @@ else:
         error = True;
 
 #calculate internal force vector
-Fi = nuto.DoubleFullVector(0)
-rowIndex = nuto.IntFullVector(0)
-myStructure.ElementGradientInternalPotential(myElement1,Fi,rowIndex)
+Fi = myStructure.ElementBuildInternalGradient(myElement1).Export()
 
 #correct resforce vector
 if createResult:
@@ -140,11 +134,10 @@ KeApprox = nuto.DoubleFullMatrix(Ke.GetNumRows(),Ke.GetNumColumns())
 curColumn=0
 for theNode in range(0, Ke.GetNumColumns()/myStructure.GetDimension()):
    for theDof in range(0,myStructure.GetDimension()):
-      Fi_new = nuto.DoubleFullVector(0)
       myStructure.NodeGetDisplacements(theNode,prevDisp)
       prevDisp.AddValue(theDof,0,delta)
       myStructure.NodeSetDisplacements(theNode,prevDisp)
-      myStructure.ElementGradientInternalPotential(myElement1,Fi_new,rowIndex)
+      Fi_new = myStructure.ElementBuildInternalGradient(myElement1).Export()
       prevDisp.AddValue(theDof,0,-delta)
       myStructure.NodeSetDisplacements(theNode,prevDisp)
       KeApprox.SetColumn (curColumn, (Fi_new-Fi)*(1./delta))
@@ -162,72 +155,68 @@ if ((KeApprox-Ke).Abs().Max()>1e-8):
 
 #calculate engineering strain of myelement1 at all integration points
 #the size the matrix is not important and reallocated within the procedure
-EngineeringStrain = nuto.DoubleFullMatrix(6,1)
-myStructure.ElementGetEngineeringStrain(myElement1, EngineeringStrain)
+EngineeringStrain = myStructure.ElementGetEngineeringStrain(myElement1)
 
 #correct strain
 EngineeringStrainCorrect = nuto.DoubleFullMatrix(6,4,(
- -0.08944272, 0.37888544, -0.11055728,  0.28944272,  0.26832816, -0.20000000, 
-  0.26832816, 0.37888544, -0.11055728,  0.64721360,  0.26832816,  0.15777088, 
- -0.08944272, 0.02111456, -0.46832816, -0.06832816, -0.44721360, -0.55777088, 
- -0.08944272, 0.02111456, -0.11055728, -0.06832816, -0.08944272, -0.20000000 
+ -0.08944272, 0.37888544, -0.11055728,  0.26832816, -0.20000000, 0.28944272,  
+  0.26832816, 0.37888544, -0.11055728,  0.26832816,  0.15777088, 0.64721360,
+ -0.08944272, 0.02111456, -0.46832816, -0.44721360, -0.55777088,-0.06832816,
+ -0.08944272, 0.02111456, -0.11055728, -0.08944272, -0.20000000,-0.06832816 
 ))
 
 if (printResult):
     print "EngineeringStrainCorrect"
-    EngineeringStrainCorrect.Info(10,8)
+    EngineeringStrainCorrect.Info()
     print "EngineeringStrain"
-    EngineeringStrain.Trans().Info(10,8)
+    EngineeringStrain.Info()
 
 if ((EngineeringStrain-EngineeringStrainCorrect).Abs().Max()>1e-5):
         print '[' + system,sys.argv[0] + '] : strain is not correct.'
         error = True;
 
 #calculate engineering strain of myelement1 at all integration points
-EngineeringStress = nuto.DoubleFullMatrix(6,1)
-myStructure.ElementGetEngineeringStress(myElement1, EngineeringStress)
+EngineeringStress = myStructure.ElementGetEngineeringStress(myElement1)
 #correct stress
 EngineeringStressCorrect = nuto.DoubleFullMatrix(6,4,(
- 0.00000000, 3.74662528 , -0.16891648 , 1.15777088 , 1.07331264 ,-0.80000000,
- 4.29325056, 5.17770880 ,  1.26216704 , 2.58885440 , 1.07331264 , 0.63108352, 
--2.86216704, -1.97770880, -5.89325056 ,-0.27331264 ,-1.78885440 ,-2.23108352, 
--1.43108352, -0.54662528, -1.60000000 ,-0.27331264 ,-0.35777088 ,-0.80000000
+ 0.00000000, 3.74662528 , -0.16891648 , 1.07331264 ,-0.80000000, 1.15777088, 
+ 4.29325056, 5.17770880 ,  1.26216704 , 1.07331264 , 0.63108352, 2.58885440,
+-2.86216704, -1.97770880, -5.89325056 ,-1.78885440 ,-2.23108352,-0.27331264,
+-1.43108352, -0.54662528, -1.60000000 ,-0.35777088 ,-0.80000000,-0.27331264
 ))
 
 if (printResult):
     print "EngineeringStressCorrect"
-    EngineeringStressCorrect.Info(10,8)
+    EngineeringStressCorrect.Info()
     print "EngineeringStress"
-    EngineeringStress.Trans().Info(10,8)
+    EngineeringStress.Info()
 
 if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()>1e-5):
         print '[' + system,sys.argv[0] + '] : stress is not correct.'
         error = True;
 
 #calculate external force vector for the first load case (pressure)
-Fe1 = nuto.DoubleFullVector(0)
-Fe2 = nuto.DoubleFullVector(0) # no displacements are constrained so this vector is empty
-myStructure.BuildGlobalExternalLoadVector(0,Fe1,Fe2)
+Fe = myStructure.BuildGlobalExternalLoadVector(0)
 
 if (printResult):
-    print "Fe1 for pressure load"
-    Fe1.Info()
+    print "Fe.J for pressure load"
+    Fe.J.Get("Displacements").Info()
 
 #correct external force for pressure load vector (sum up the load in x direction eveything else should be zero
-sumX = Fe1.Sum()
+sumX = Fe.J.Get("Displacements").Sum()
 if (abs(sumX-1.)>1e-8):
         print '[' + system,sys.argv[0] + '] : pressure load is not correct.'
         error = True;
         
 #calculate external force vector for the second load cases (constDirection)
-myStructure.BuildGlobalExternalLoadVector(1,Fe1,Fe2)
+Fe = myStructure.BuildGlobalExternalLoadVector(1)
 
 if (printResult):
-    print "Fe1 const direction load"
-    Fe1.Info()
+    print "Fe.J const direction load"
+    Fe.J.Get("Displacements").Info()
 
 #correct external force for pressure load vector (sum up the load in x direction eveything else should be zero
-sumY = Fe1.Sum()
+sumY = Fe.J.Get("Displacements").Sum()
 if (abs(sumY-2.5)>1e-8):
         print '[' + system,sys.argv[0] + '] : const direction load is not correct.'
         error = True; 

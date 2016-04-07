@@ -11,9 +11,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 #include "nuto/mechanics/elements/IpDataStaticDataNonlocal.h"
-#include "nuto/mechanics/elements/ElementBase.h"
 NuTo::IpDataStaticDataNonlocal::IpDataStaticDataNonlocal() :NuTo::IpDataBase::IpDataBase() ,
     NuTo::IpDataStaticDataBase::IpDataStaticDataBase() , NuTo::IpDataNonlocalBase::IpDataNonlocalBase()
 {
@@ -22,16 +20,6 @@ NuTo::IpDataStaticDataNonlocal::IpDataStaticDataNonlocal() :NuTo::IpDataBase::Ip
 
 NuTo::IpDataStaticDataNonlocal::~IpDataStaticDataNonlocal()
 {
-}
-
-void NuTo::IpDataStaticDataNonlocal::Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive)
-{
-	if (mStaticData!=0)
-		delete mStaticData;
-	if (rConstitutive!=0)
-	    mStaticData = rElement->AllocateStaticData(rConstitutive);
-	else
-		mStaticData = 0;
 }
 
 //! @brief returns the enum of IP data type

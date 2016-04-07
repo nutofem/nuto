@@ -7,7 +7,7 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation2DTriangle.h"
 
-NuTo::Interpolation2DTriangle::Interpolation2DTriangle(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
+NuTo::Interpolation2DTriangle::Interpolation2DTriangle(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
         Interpolation2D::Interpolation2D(rDofType, rTypeOrder, rDimension)
 {
     Initialize();
@@ -26,12 +26,11 @@ NuTo::IntegrationType::eIntegrationType NuTo::Interpolation2DTriangle::GetStanda
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT4:
         return NuTo::IntegrationType::IntegrationType2D3NGauss12Ip;
     default:
-        throw MechanicsException("[NuTo::Interpolation2DTriangle::GetStandardIntegrationType] Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
-
 }
 
-const Eigen::VectorXd NuTo::Interpolation2DTriangle::CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const
+Eigen::VectorXd NuTo::Interpolation2DTriangle::CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const
 {
     switch (mTypeOrder)
     {
@@ -44,11 +43,11 @@ const Eigen::VectorXd NuTo::Interpolation2DTriangle::CalculateShapeFunctions(con
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT4:
         return ShapeFunctions2D::ShapeFunctionsTriangleOrder4(rCoordinates);
     default:
-        throw MechanicsException("[NuTo::Interpolation2DTriangle::CalculateShapeFunctions] Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
-const Eigen::MatrixXd NuTo::Interpolation2DTriangle::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
+Eigen::MatrixXd NuTo::Interpolation2DTriangle::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
 {
     switch (mTypeOrder)
     {
@@ -61,11 +60,11 @@ const Eigen::MatrixXd NuTo::Interpolation2DTriangle::CalculateDerivativeShapeFun
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT4:
         return ShapeFunctions2D::DerivativeShapeFunctionsTriangleOrder4(rCoordinates);
     default:
-        throw MechanicsException("[NuTo::Interpolation2DTriangle::CalculateDerivativeShapeFunctionsNatural] Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
-const Eigen::VectorXd NuTo::Interpolation2DTriangle::CalculateNaturalNodeCoordinates(int rNodeIndexDof) const
+Eigen::VectorXd NuTo::Interpolation2DTriangle::CalculateNaturalNodeCoordinates(int rNodeIndexDof) const
 {
     switch (mTypeOrder)
     {
@@ -78,7 +77,7 @@ const Eigen::VectorXd NuTo::Interpolation2DTriangle::CalculateNaturalNodeCoordin
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT4:
         return ShapeFunctions2D::NodeCoordinatesTriangleOrder4(rNodeIndexDof);
     default:
-        throw MechanicsException("[NuTo::Interpolation2DTriangle::CalculateNaturalNodeCoordinates] Node arrangement for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Node arrangement for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -96,11 +95,11 @@ int NuTo::Interpolation2DTriangle::CalculateNumNodes() const
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT4:
         return 15;
     default:
-        throw MechanicsException("[NuTo::Interpolation2DTriangle::GetNumNodes] Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
-const Eigen::VectorXd NuTo::Interpolation2DTriangle::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::VectorXd NuTo::Interpolation2DTriangle::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
 {
     assert(rNaturalSurfaceCoordinates.rows() == 1);
     switch (rSurface)
@@ -112,11 +111,11 @@ const Eigen::VectorXd NuTo::Interpolation2DTriangle::CalculateNaturalSurfaceCoor
     case 2:
         return Eigen::Vector2d(0, .5 * (1 - rNaturalSurfaceCoordinates(0)));
     default:
-        throw MechanicsException("[NuTo::Interpolation2DTriangle::CalculateNaturalSurfaceCoordinates] TRIANGLE2D has exactly three surfaces, 0 to 2. You tried to access " + std::to_string(rSurface) + ".");
+        throw MechanicsException(__PRETTY_FUNCTION__, "TRIANGLE2D has exactly three surfaces, 0 to 2. You tried to access " + std::to_string(rSurface) + ".");
     }
 }
 
-const Eigen::MatrixXd NuTo::Interpolation2DTriangle::CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::MatrixXd NuTo::Interpolation2DTriangle::CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
 {
     assert(rNaturalSurfaceCoordinates.rows() == 1);
     switch (rSurface)
@@ -128,6 +127,6 @@ const Eigen::MatrixXd NuTo::Interpolation2DTriangle::CalculateDerivativeNaturalS
     case 2:
         return Eigen::Vector2d(0, -.5);
     default:
-        throw MechanicsException("[NuTo::Interpolation2DTriangle::CalculateDerivativeNaturalSurfaceCoordinates] TRIANGLE2D has exactly three surfaces, 0 to 2. You tried to access " + std::to_string(rSurface) + ".");
+        throw MechanicsException(__PRETTY_FUNCTION__, "TRIANGLE2D has exactly three surfaces, 0 to 2. You tried to access " + std::to_string(rSurface) + ".");
     }
 }

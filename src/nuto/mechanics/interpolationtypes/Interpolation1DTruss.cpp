@@ -7,7 +7,7 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation1DTruss.h"
 
-NuTo::Interpolation1DTruss::Interpolation1DTruss(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
+NuTo::Interpolation1DTruss::Interpolation1DTruss(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
         NuTo::Interpolation1D::Interpolation1D(rDofType, rTypeOrder, rDimension)
 {
     Initialize();
@@ -32,12 +32,11 @@ NuTo::IntegrationType::eIntegrationType NuTo::Interpolation1DTruss::GetStandardI
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return NuTo::IntegrationType::IntegrationType1D2NLobatto5Ip;
     default:
-        throw MechanicsException("[NuTo::Interpolation1DTruss::GetStandardIntegrationType] Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
-    return NuTo::IntegrationType::IntegrationType1D2NGauss2Ip;
 }
 
-const Eigen::VectorXd NuTo::Interpolation1DTruss::CalculateNaturalNodeCoordinates(int rNodeIndexDof) const
+Eigen::VectorXd NuTo::Interpolation1DTruss::CalculateNaturalNodeCoordinates(int rNodeIndexDof) const
 {
     switch (mTypeOrder)
     {
@@ -55,11 +54,11 @@ const Eigen::VectorXd NuTo::Interpolation1DTruss::CalculateNaturalNodeCoordinate
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return ShapeFunctions1D::NodeCoordinatesTrussSpectralOrder4(rNodeIndexDof);
     default:
-        throw MechanicsException("[NuTo::Interpolation1DTruss::CalculateNaturalNodeCoordinates] Node arrangement for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Node arrangement for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
-const Eigen::VectorXd NuTo::Interpolation1DTruss::CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const
+Eigen::VectorXd NuTo::Interpolation1DTruss::CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const
 {
     switch (mTypeOrder)
     {
@@ -77,11 +76,11 @@ const Eigen::VectorXd NuTo::Interpolation1DTruss::CalculateShapeFunctions(const 
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return ShapeFunctions1D::ShapeFunctionsTrussSpectralOrder4(rCoordinates);
     default:
-        throw MechanicsException("[NuTo::Interpolation1DTruss::CalculateShapeFunctions] Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
-const Eigen::MatrixXd NuTo::Interpolation1DTruss::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
+Eigen::MatrixXd NuTo::Interpolation1DTruss::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
 {
     switch (mTypeOrder)
     {
@@ -99,11 +98,11 @@ const Eigen::MatrixXd NuTo::Interpolation1DTruss::CalculateDerivativeShapeFuncti
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return ShapeFunctions1D::DerivativeShapeFunctionsTrussSpectralOrder4(rCoordinates);
     default:
-        throw MechanicsException("[NuTo::Interpolation1DTruss::CalculateDerivativeShapeFunctionsNatural] Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
-const Eigen::VectorXd NuTo::Interpolation1DTruss::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::VectorXd NuTo::Interpolation1DTruss::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
 {
     Eigen::VectorXd naturalCoordinates(1);
     switch (rSurface)
@@ -115,12 +114,12 @@ const Eigen::VectorXd NuTo::Interpolation1DTruss::CalculateNaturalSurfaceCoordin
         naturalCoordinates(0, 0) = 1;
         break;
     default:
-        throw("[NuTo::Interpolation1DTruss::CalculateNaturalSurfaceCoordinates] TRUSS1D has exactly two surfaces, 0 or 1. You tried to access " + std::to_string(rSurface) + ".");
+        throw MechanicsException(__PRETTY_FUNCTION__, "TRUSS1D has exactly two surfaces, 0 or 1. You tried to access " + std::to_string(rSurface) + ".");
     }
     return naturalCoordinates;
 }
 
-const Eigen::MatrixXd NuTo::Interpolation1DTruss::CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::MatrixXd NuTo::Interpolation1DTruss::CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
 {
     Eigen::VectorXd naturalSurfaceCoordinates(1);
     // calculating a transformation from 1D --> 0D returns 0
@@ -146,7 +145,7 @@ int NuTo::Interpolation1DTruss::CalculateNumNodes() const
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return 5;
     default:
-        throw MechanicsException("[NuTo::Interpolation1DTruss::GetNumNodes] Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 
 }

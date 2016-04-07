@@ -43,6 +43,18 @@ public:
     //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
     virtual Error::eError Evaluate(boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase>& rElementOutput) override;
 
+    // VHIRTHAM TODO TEMP BEGIN
+
+    //! @brief calculates output data for the element
+    //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
+    //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
+    Error::eError Evaluate(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) override
+    {
+        throw NuTo::MechanicsException(std::string("[")+__PRETTY_FUNCTION__ + "] --- temp implementation missing");
+    }
+
+    // VHIRTHAM TODO TEMP END
+
 
     //! @brief returns the enum (type of the element)
     //! @return enum
@@ -67,13 +79,13 @@ public:
     //! @param local node number
     //! @brief rDofType dof type
     //! @return pointer to the node
-    NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType) override;
+    NodeBase* GetNode(int rLocalNodeNumber, Node::eDof rDofType) override;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @brief rDofType dof type
     //! @return pointer to the node
-    const NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType) const override;
+    const NodeBase* GetNode(int rLocalNodeNumber, Node::eDof rDofType)const override;
 
     //! @brief sets the rLocalNodeNumber-th node of the element
     //! @param local node number
@@ -104,9 +116,9 @@ public:
     //! @return rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
     const Eigen::VectorXd GetIntegrationPointVolume() const override;
 
-    const Eigen::MatrixXd ExtractNodeValues(int rTimeDerivative, Node::eAttributes) const override;
+    const Eigen::MatrixXd ExtractNodeValues(int rTimeDerivative, Node::eDof) const override;
 
-//    void ExtractNodeValues(Eigen::MatrixXd& rNodeValues, int rTimeDerivative, Node::eAttributes rDofType) const;
+//    void ExtractNodeValues(Eigen::MatrixXd& rNodeValues, int rTimeDerivative, Node::eDof rDofType) const;
 
     //! @brief Calculates the the inverse of the Jacobian and its determinant
     //! @param rDerivativeShapeFunctions Derivatives of the shape functions

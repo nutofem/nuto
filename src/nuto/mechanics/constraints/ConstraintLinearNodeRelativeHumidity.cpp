@@ -13,7 +13,7 @@ NuTo::ConstraintLinearNodeRelativeHumidity::ConstraintLinearNodeRelativeHumidity
 //! @brief adds the constraint equations to the matrix
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void  NuTo::ConstraintLinearNodeRelativeHumidity::AddToConstraintMatrix(int& curConstraintEquation, NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix) const
+void  NuTo::ConstraintLinearNodeRelativeHumidity::AddToConstraintMatrix(int& curConstraintEquation, NuTo::SparseMatrix<double>& rConstraintMatrix) const
 {
     // add constraint to constrain matrix
     if (mNode->GetNumRelativeHumidity()!=1)

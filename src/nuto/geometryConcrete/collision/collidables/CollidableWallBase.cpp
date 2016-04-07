@@ -20,7 +20,7 @@ NuTo::CollidableWallBase::CollidableWallBase(
 		  mInsideBox(nullptr),
 		  mOutsideBox(nullptr),
 		  mNonNullAxis(GetNonNullAxis()),
-		  mIsAxisAligned(abs(mDirection.Sum()) == 1)
+		  mIsAxisAligned(std::abs(mDirection.Sum()) == 1)
 {
 	mDirection.normalize();
 }

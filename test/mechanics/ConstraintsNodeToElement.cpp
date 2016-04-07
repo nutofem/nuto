@@ -197,7 +197,7 @@ void run2d()
 
             for (int iNode = 0; iNode < nodeIds.rows(); ++iNode)
             {
-                myStructure.ConstraintLinearEquationNodeToElementCreate(nodeIds.at(iNode, 0), groupMatrixElements, NuTo::Node::eAttributes::DISPLACEMENTS, numNearestNeighbours);
+                myStructure.ConstraintLinearEquationNodeToElementCreate(nodeIds.at(iNode, 0), groupMatrixElements, NuTo::Node::DISPLACEMENTS, numNearestNeighbours);
             }
         }
 
@@ -235,7 +235,7 @@ void run2d()
         timeDependentLoad(0, 1) = 0;
         timeDependentLoad(1, 1) = Parameters::mLoad;
 
-        myIntegrationScheme.SetTimeDependentConstraint(timeDependentConstraint, timeDependentLoad);
+        myIntegrationScheme.AddTimeDependentConstraint(timeDependentConstraint, timeDependentLoad);
 
         myIntegrationScheme.Solve(Parameters::mSimulationTime);
 
@@ -431,7 +431,7 @@ void run3d()
 
         for (int iNode = 0; iNode < nodeIds.rows(); ++iNode)
         {
-            myStructure.ConstraintLinearEquationNodeToElementCreate(nodeIds.at(iNode, 0), groupMatrixElements, NuTo::Node::eAttributes::DISPLACEMENTS, numNearestNeighbours);
+            myStructure.ConstraintLinearEquationNodeToElementCreate(nodeIds.at(iNode, 0), groupMatrixElements, NuTo::Node::DISPLACEMENTS, numNearestNeighbours);
         }
     }
 
@@ -473,7 +473,7 @@ void run3d()
     timeDependentLoad(0, 1) = 0;
     timeDependentLoad(1, 1) = Parameters::mLoad;
 
-    myIntegrationScheme.SetTimeDependentConstraint(timeDependentConstraint, timeDependentLoad);
+    myIntegrationScheme.AddTimeDependentConstraint(timeDependentConstraint, timeDependentLoad);
 
     myIntegrationScheme.Solve(Parameters::mSimulationTime);
 

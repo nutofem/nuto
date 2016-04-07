@@ -3,6 +3,7 @@
 #define ELEMENTDATAIPBASE_H_
 
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <vector>
 
 #include "nuto/mechanics/elements/IpDataBase.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
@@ -88,6 +89,16 @@ public:
     //! @param rIp integration point
     //! @return static data
     const ConstitutiveStaticDataBase* GetStaticData(int rIp)const;
+
+    //! @brief returns the static data of an integration point
+    //! @param rIp integration point
+    //! @return static data
+    IpDataStaticDataBase& GetStaticDataBase(int rIp);
+
+    //! @brief returns the static data of an integration point
+    //! @param rIp integration point
+    //! @return static data
+    const IpDataStaticDataBase& GetStaticDataBase(int rIp)const;
 
     //! @brief sets the static data for an integration point of an element
     //! @param rIp integration point

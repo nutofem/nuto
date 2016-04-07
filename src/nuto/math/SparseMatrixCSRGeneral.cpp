@@ -18,6 +18,7 @@ template<>
 SparseMatrixCSRGeneral<int>::SparseMatrixCSRGeneral(const FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance): SparseMatrixCSR<int>(0,0)
 {
     throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] conversion from full matrix not implemented for integers.");
+    mNumColumns = 0;
 }
 
 template<>
@@ -31,9 +32,9 @@ SparseMatrixCSRGeneral<double>::SparseMatrixCSRGeneral(const FullMatrix<double, 
         const double* values = rFullMatrix.data();
         for (int count = 0; count < rFullMatrix.GetNumRows() * rFullMatrix.GetNumColumns(); count++)
         {
-            if (fabs(values[count]) > maxValue)
+            if (std::abs(values[count]) > maxValue)
             {
-                maxValue = fabs(values[count]);
+                maxValue = std::abs(values[count]);
             }
         }
         tolerance += rRelativeTolerance * maxValue;
@@ -44,15 +45,16 @@ SparseMatrixCSRGeneral<double>::SparseMatrixCSRGeneral(const FullMatrix<double, 
     {
         for (int col = 0; col < rFullMatrix.GetNumColumns(); col++)
         {
-        	if (fabs(rFullMatrix(row,col)) > tolerance)
+        	if (std::abs(rFullMatrix.at(row,col)) > tolerance)
             {
-                this->mValues.push_back(rFullMatrix(row,col));
+                this->mValues.push_back(rFullMatrix.at(row,col));
                 this->mColumns.push_back(col);
             }
         }
         assert(this->mValues.size() == this->mColumns.size());
         this->mRowIndex[row + 1] = this->mValues.size();
     }
+    mNumColumns = rFullMatrix.GetNumColumns();
 }
 
 //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
@@ -192,9 +194,9 @@ void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double, Eigen::Dynamic, Ei
     double tolerance = 0;
     for (unsigned int valCount = 0; valCount < this->mValues.size(); valCount++)
     {
-        if (fabs(this->mValues[valCount]) > tolerance)
+        if (std::abs(this->mValues[valCount]) > tolerance)
         {
-            tolerance = fabs(this->mValues[valCount]);
+            tolerance = std::abs(this->mValues[valCount]);
         }
     }
     tolerance *= rRelativeTolerance;
@@ -211,13 +213,13 @@ void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double, Eigen::Dynamic, Ei
         int swapCol = 0;
         for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
         {
-            if (fabs(this->mValues[pos]) > fabs(pivot))
+            if (std::abs(this->mValues[pos]) > std::abs(pivot))
             {
                 pivot = this->mValues[pos];
                 swapCol = rMappingInitialToNewOrdering[this->mColumns[pos]];
             }
         }
-        if (fabs(pivot) < tolerance)
+        if (std::abs(pivot) < tolerance)
         {
             throw MathException("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
         }
@@ -288,7 +290,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double, Eigen::Dynamic, Ei
         {
             for (int pos = this->mRowIndex[tmpRow]; pos < this->mRowIndex[tmpRow + 1]; pos++)
             {
-                if (fabs(this->mValues[pos]) < tolerance)
+                if (std::abs(this->mValues[pos]) < tolerance)
                 {
                     this->RemoveEntry(tmpRow, this->mColumns[pos]);
                     pos--;
@@ -351,7 +353,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double, Eigen::Dynamic, Ei
         // remove zero entries
         for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
         {
-        	if (fabs(this->mValues[pos]) < tolerance)
+        	if (std::abs(this->mValues[pos]) < tolerance)
             {
                 this->RemoveEntry(row, this->mColumns[pos]);
                 pos--;
@@ -395,9 +397,9 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
     double tolerance = 0;
     for (unsigned int valCount = 0; valCount < this->mValues.size(); valCount++)
     {
-        if (fabs(this->mValues[valCount]) > tolerance)
+        if (std::abs(this->mValues[valCount]) > tolerance)
         {
-            tolerance = fabs(this->mValues[valCount]);
+            tolerance = std::abs(this->mValues[valCount]);
         }
     }
     tolerance *= rRelativeTolerance;
@@ -414,13 +416,13 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
         int swapCol = 0;
         for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
         {
-            if (fabs(this->mValues[pos]) > fabs(pivot))
+            if (std::abs(this->mValues[pos]) > std::abs(pivot))
             {
                 pivot = this->mValues[pos];
                 swapCol = rMappingInitialToNewOrdering[this->mColumns[pos]];
             }
         }
-        if (fabs(pivot) < tolerance)
+        if (std::abs(pivot) < tolerance)
         {
             throw MathException("[SparseMatrixCSRGeneral<double>::Gauss] equation system is linear dependent.");
         }
@@ -492,7 +494,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
         {
             for (int pos = this->mRowIndex[tmpRow]; pos < this->mRowIndex[tmpRow + 1]; pos++)
             {
-                if (fabs(this->mValues[pos]) < tolerance)
+                if (std::abs(this->mValues[pos]) < tolerance)
                 {
                     this->RemoveEntry(tmpRow, this->mColumns[pos]);
                     pos--;
@@ -504,7 +506,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
         {
             for (int pos = rRhs.mRowIndex[tmpRow]; pos < rRhs.mRowIndex[tmpRow + 1]; pos++)
             {
-                if (fabs(rRhs.mValues[pos]) < tolerance)
+                if (std::abs(rRhs.mValues[pos]) < tolerance)
                 {
                 	rRhs.RemoveEntry(tmpRow, rRhs.mColumns[pos]);
                     pos--;
@@ -572,7 +574,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
         // remove zero entries
         for (int pos = this->mRowIndex[row]; pos < this->mRowIndex[row + 1]; pos++)
         {
-        	if (fabs(this->mValues[pos]) < tolerance)
+        	if (std::abs(this->mValues[pos]) < tolerance)
             {
                 this->RemoveEntry(row, this->mColumns[pos]);
                 pos--;
@@ -581,7 +583,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
         // remove zero entries
         for (int pos = rRhs.mRowIndex[row]; pos < rRhs.mRowIndex[row + 1]; pos++)
         {
-        	if (fabs(rRhs.mValues[pos]) < tolerance)
+        	if (std::abs(rRhs.mValues[pos]) < tolerance)
             {
         		rRhs.RemoveEntry(row, rRhs.mColumns[pos]);
                 pos--;
@@ -618,9 +620,8 @@ template<>
 void SparseMatrixCSRGeneral<double>::GetMaximumEigenvalueAndEigenvector(NuTo::FullVector<double, Eigen::Dynamic> &rStart, double &maximumEigenvalue, double tol)
 {
 	int numRows = this->GetNumRows();
-	int numCols = this->GetNumColumns();
 
-	assert(numRows != numCols);
+	assert(numRows != this->GetNumColumns());
 
 	if(rStart.rows() != numRows)
 	{
@@ -645,7 +646,7 @@ void SparseMatrixCSRGeneral<double>::GetMaximumEigenvalueAndEigenvector(NuTo::Fu
 		if(i > 3)
 		{
 			double qk = (maximumEigenvalue - lambda_k_1)/(lambda_k_1 - lambda_k_2);
-			double temp = fabs((qk/(1-qk))*(maximumEigenvalue - lambda_k_1));
+			double temp = std::abs((qk/(1-qk))*(maximumEigenvalue - lambda_k_1));
 			error = temp/(temp+maximumEigenvalue);
 		}
 

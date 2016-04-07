@@ -86,13 +86,13 @@ Eigen::MatrixXd NuTo::Element1DInXD::CalculateTransformationMatrix(unsigned int 
 
 }
 
-const Eigen::MatrixXd NuTo::Element1DInXD::ExtractNodeValues(int rTimeDerivative, Node::eAttributes rDofType) const
+const Eigen::MatrixXd NuTo::Element1DInXD::ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const
 {
     Eigen::MatrixXd globalNodeCoordinates = ExtractGlobalNodeValues(rTimeDerivative, rDofType);
     return (mRotationMatrix.transpose() * globalNodeCoordinates).row(0);
 }
 
-const Eigen::MatrixXd NuTo::Element1DInXD::ExtractGlobalNodeValues(int rTimeDerivative, Node::eAttributes rDofType) const
+const Eigen::MatrixXd NuTo::Element1DInXD::ExtractGlobalNodeValues(int rTimeDerivative, Node::eDof rDofType) const
 {
     const InterpolationBase& interpolationTypeDof = GetInterpolationType()->Get(rDofType);
     int numNodes = interpolationTypeDof.GetNumNodes();
@@ -113,7 +113,7 @@ const Eigen::MatrixXd NuTo::Element1DInXD::ExtractGlobalNodeValues(int rTimeDeri
             globalNodeValues.block(0, iNode, numDofsPerNode, 1) = node->GetDisplacements(rTimeDerivative);
             break;
         default:
-            throw MechanicsException("[NuTo::Element1DInXD::ExtractNodeValues] Not implemented for " + Node::AttributeToString(rDofType) + ".");
+            throw MechanicsException("[NuTo::Element1DInXD::ExtractNodeValues] Not implemented for " + Node::DofToString(rDofType) + ".");
         }
     }
 
@@ -121,7 +121,7 @@ const Eigen::MatrixXd NuTo::Element1DInXD::ExtractGlobalNodeValues(int rTimeDeri
 
 }
 
-int NuTo::Element1DInXD::GetNumDofsPerNode(Node::eAttributes rDofType) const
+int NuTo::Element1DInXD::GetNumDofsPerNode(Node::eDof rDofType) const
 {
     switch (rDofType)
     {
@@ -134,19 +134,19 @@ int NuTo::Element1DInXD::GetNumDofsPerNode(Node::eAttributes rDofType) const
     }
 }
 
-const Eigen::VectorXd NuTo::Element1DInXD::InterpolateDofGlobal(const Eigen::VectorXd& rNaturalCoordinates, NuTo::Node::eAttributes rDofType) const
+const Eigen::VectorXd NuTo::Element1DInXD::InterpolateDofGlobal(const Eigen::VectorXd& rNaturalCoordinates, NuTo::Node::eDof rDofType) const
 {
     return InterpolateDofGlobal(0, rNaturalCoordinates, rDofType);
 
 }
-const Eigen::VectorXd NuTo::Element1DInXD::InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, NuTo::Node::eAttributes rDofType) const
+const Eigen::VectorXd NuTo::Element1DInXD::InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, NuTo::Node::eDof rDofType) const
 {
 
     const InterpolationBase& interpolationType = mInterpolationType->Get(rDofType);
     const Eigen::MatrixXd nodalValues = ExtractGlobalNodeValues(rTimeDerivative, rDofType);
-    const Eigen::VectorXd shapeFunctions = interpolationType.CalculateShapeFunctions(rNaturalCoordinates);
+    const Eigen::VectorXd N = interpolationType.CalculateMatrixN(rNaturalCoordinates);
 
-    return nodalValues * shapeFunctions;
+    return N * nodalValues;
 
 }
 
@@ -185,7 +185,7 @@ const Eigen::VectorXi NuTo::Element1DInXD::CalculateGlobalRowDofs() const
             }
                 break;
             default:
-                throw MechanicsException("[NuTo::Element1DInXD::CalculateGlobalRowDofs] Not implemented for " + Node::AttributeToString(dof) + ".");
+                throw MechanicsException("[NuTo::Element1DInXD::CalculateGlobalRowDofs] Not implemented for " + Node::DofToString(dof) + ".");
 
             }
         }

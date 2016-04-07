@@ -3,16 +3,18 @@
 #define CONSTITUTIVEENUM_H_
 
 #include <map>
+#include <set>
+#include <algorithm>
 #include <boost/assign/list_of.hpp>
 #include "nuto/mechanics/MechanicsException.h"
 
 namespace NuTo
 {
+
 namespace Constitutive
 {
 enum eConstitutiveType
 {
-    LINEAR_ELASTIC,                                //!< linear-elastic behavior
     LINEAR_ELASTIC_ENGINEERING_STRESS,             //!< linear-elastic behavior
     MISES_PLASTICITY_ENGINEERING_STRESS,           //!< mises plasticity with isotropic and kinematic hardening
     NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< nonlocal damage model with plasticity in the effective stress space
@@ -31,6 +33,53 @@ enum eConstitutiveType
     FIBRE_MATRIX_BOND_STRESS_SLIP,                   //!< material model for the matrix-fibre interface
     DRYING_SHRINKAGE                                //!< drying shrinkage
 };
+
+static inline std::map<eConstitutiveType, std::string> GetConstitutiveTypeMap()
+{
+    std::map<eConstitutiveType, std::string> map;
+    map[LINEAR_ELASTIC_ENGINEERING_STRESS]                     = "LINEAR_ELASTIC_ENGINEERING_STRESS";
+    map[MISES_PLASTICITY_ENGINEERING_STRESS]                   = "MISES_PLASTICITY_ENGINEERING_STRESS";
+    map[NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS]         = "NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
+    map[MULTISCALE]                                            = "MULTISCALE";
+    map[LATTICE_CONCRETE]                                      = "LATTICE_CONCRETE";
+    map[LINEAR_HEAT_FLUX]                                      = "LINEAR_HEAT_FLUX";
+    map[GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS]         = "GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
+    map[GRADIENT_DAMAGE_ENGINEERING_STRESS]                    = "GRADIENT_DAMAGE_ENGINEERING_STRESS";
+    map[GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE]            = "GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE";
+    map[STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS]  = "STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
+    map[DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS]            = "DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS";
+    map[DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS]  = "DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS";
+    map[MOISTURE_TRANSPORT]                                    = "MOISTURE_TRANSPORT";
+    map[LINEAR_SPRING]                                         = "LINEAR_SPRING";
+    map[MULTI_PHYSICS]                                         = "MULTI_PHYSICS";
+    map[FIBRE_MATRIX_BOND_STRESS_SLIP]                         = "FIBRE_MATRIX_BOND_STRESS_SLIP";
+    map[DRYING_SHRINKAGE]                                      = "DRYING_SHRINKAGE";
+    return map;
+}
+
+static inline std::string ConstitutiveTypeToString(eConstitutiveType rOutput)
+{
+    try
+    {
+        return GetConstitutiveTypeMap().find(rOutput)->second;
+    }
+    catch (const std::out_of_range& e)
+    {
+        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Enum undefined or not implemented.");
+    }
+}
+
+static inline eConstitutiveType ConstitutiveTypeToEnum(std::string rOutput)
+{
+    std::transform(rOutput.begin(), rOutput.end(),rOutput.begin(), ::toupper);
+
+    for(auto entry : GetConstitutiveTypeMap())
+        if (entry.second == rOutput)
+            return entry.first;
+
+    throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Enum undefined or not implemented.");
+}
+
 
 enum class eConstitutiveStaticDataType
 {
@@ -62,25 +111,56 @@ enum eDamageLawType
     ISOTROPIC_LINEAR_SOFTENING,                     //!< linear
     ISOTROPIC_EXPONENTIAL_SOFTENING,                //!< exponential
     ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD,       //!< exponential with residual loading capacity
-    ISOTROPIC_EXPONENTIAL_SOFTENING_SMOOTH,         //!< exponential with polynomial smoothing near peak
     ISOTROPIC_CUBIC_HERMITE                         //!< cubic hermite h00
 };
+
+static inline std::map<eDamageLawType, std::string> GetDamageLawMap()
+{
+    std::map<eDamageLawType, std::string> map;
+    map[ISOTROPIC_NO_SOFTENING]                     = "ISOTROPIC_NO_SOFTENING";
+    map[ISOTROPIC_LINEAR_SOFTENING]                 = "ISOTROPIC_LINEAR_SOFTENING";
+    map[ISOTROPIC_EXPONENTIAL_SOFTENING]            = "ISOTROPIC_EXPONENTIAL_SOFTENING";
+    map[ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD]   = "ISOTROPIC_EXPONENTIAL_SOFTENING_RES_LOAD";
+    map[ISOTROPIC_CUBIC_HERMITE]                    = "ISOTROPIC_CUBIC_HERMITE";
+    return map;
+}
+static inline std::string DamageLawToString(eDamageLawType rDamageLaw)
+{
+    try
+    {
+        return GetDamageLawMap().at(rDamageLaw);
+    }
+    catch (const std::out_of_range& e)
+    {
+        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Enum undefined or not implemented.");
+    }
+}
+
+static inline eDamageLawType DamageLawToEnum(std::string rDamageLaw)
+{
+    std::transform(rDamageLaw.begin(), rDamageLaw.end(),rDamageLaw.begin(), ::toupper);
+
+    for(auto entry : GetDamageLawMap())
+        if (entry.second == rDamageLaw)
+            return entry.first;
+    throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Enum undefined or not implemented.");
+}
 
 enum class eConstitutiveParameter
 {
     ALPHA,                                      //!<
     BIAXIAL_COMPRESSIVE_STRENGTH,               //!<
-    BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE,      //!<
-    BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE,    //!<
+    BOUNDARY_DIFFUSION_COEFFICIENT_RH,          //!<
+    BOUNDARY_DIFFUSION_COEFFICIENT_WV,          //!<
     COMPRESSIVE_STRENGTH,                       //!<
     DAMAGE_DISTRIBUTION,                        //!<
     DAMAGE_LAW,                                 //!<
     DENSITY,                                    //!<
-    DENSITY_WATER_PHASE,                        //!<
-    DIFFUSION_CONSTANT_GAS_PHASE,               //!<
-    DIFFUSION_CONSTANT_WATER_PHASE,             //!<
-    DIFFUSION_EXPONENT_GAS_PHASE,               //!<
-    DIFFUSION_EXPONENT_WATER_PHASE,             //!<
+    DENSITY_WATER,                              //!<
+    DIFFUSION_COEFFICIENT_RH,                   //!<
+    DIFFUSION_COEFFICIENT_WV,                   //!<
+    DIFFUSION_EXPONENT_RH,                      //!<
+    DIFFUSION_EXPONENT_WV,                      //!<
     ENABLE_MODIFIED_TANGENTIAL_STIFFNESS,       //!<
     ENABLE_SORPTION_HYSTERESIS,                 //!<
     FATIGUE_EXTRAPOLATION,                      //!<
@@ -99,9 +179,9 @@ enum class eConstitutiveParameter
     POISSONS_RATIO,                             //!<
     POLYNOMIAL_COEFFICIENTS_ADSORPTION,         //!<
     POLYNOMIAL_COEFFICIENTS_DESORPTION,         //!<
-    POROSITY,                                   //!<
+    PORE_VOLUME_FRACTION,                       //!<
     RESIDUAL_BOND_STRESS,                       //!<
-    SATURATION_DENSITY_GAS_PHASE,               //!<
+    DENSITY_SATURATED_WATER_VAPOR,              //!<
     SLIP_AT_MAX_BOND_STRESS,                    //!<
     SLIP_AT_RESIDUAL_BOND_STRESS,               //!<
     SPRING_STIFFNESS,                           //!<
@@ -115,75 +195,82 @@ enum class eConstitutiveParameter
 
 };
 
-static inline eConstitutiveParameter GetConstitutiveVariableFromString(const std::string& rVariableName)
+static inline std::map<eConstitutiveParameter, std::string> GetConstitutiveParameterMap()
 {
-    std::map<std::string,eConstitutiveParameter> MapStringToConstitutiveVariable;
+    std::map<eConstitutiveParameter, std::string> map;
 
-    MapStringToConstitutiveVariable["BIAXIALCOMPRESSIVESTRENGTH"]                   = eConstitutiveParameter::BIAXIAL_COMPRESSIVE_STRENGTH;
-    MapStringToConstitutiveVariable["BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE"]        = eConstitutiveParameter::BOUNDARY_TRANSPORT_CONSTANT_GAS_PHASE;
-    MapStringToConstitutiveVariable["BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE"]      = eConstitutiveParameter::BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE;
-    MapStringToConstitutiveVariable["COMPRESSIVESTRENGTH"]                          = eConstitutiveParameter::COMPRESSIVE_STRENGTH;
-    MapStringToConstitutiveVariable["DAMAGEDISTRIBUTION"]                           = eConstitutiveParameter::DAMAGE_DISTRIBUTION;
-    MapStringToConstitutiveVariable["DAMAGELAW"]                                    = eConstitutiveParameter::DAMAGE_LAW;
-    MapStringToConstitutiveVariable["DENSITY"]                                      = eConstitutiveParameter::DENSITY;
-    MapStringToConstitutiveVariable["DENSITY_WATER_PHASE"]                          = eConstitutiveParameter::DENSITY_WATER_PHASE;
-    MapStringToConstitutiveVariable["DIFFUSION_CONSTANT_GAS_PHASE"]                 = eConstitutiveParameter::DIFFUSION_CONSTANT_GAS_PHASE;
-    MapStringToConstitutiveVariable["DIFFUSION_CONSTANT_WATER_PHASE"]               = eConstitutiveParameter::DIFFUSION_CONSTANT_WATER_PHASE;
-    MapStringToConstitutiveVariable["DIFFUSION_EXPONENT_GAS_PHASE"]                 = eConstitutiveParameter::DIFFUSION_EXPONENT_GAS_PHASE;
-    MapStringToConstitutiveVariable["DIFFUSION_EXPONENT_WATER_PHASE"]               = eConstitutiveParameter::DIFFUSION_EXPONENT_WATER_PHASE;
-    MapStringToConstitutiveVariable["ENABLE_MODIFIED_TANGENTIAL_STIFFNESS"]         = eConstitutiveParameter::ENABLE_MODIFIED_TANGENTIAL_STIFFNESS;
-    MapStringToConstitutiveVariable["ENABLE_SORPTION_HYSTERESIS"]                   = eConstitutiveParameter::ENABLE_SORPTION_HYSTERESIS;
-    MapStringToConstitutiveVariable["FATIGUEEXTRAPOLATION"]                         = eConstitutiveParameter::FATIGUE_EXTRAPOLATION;
-    MapStringToConstitutiveVariable["FRACTUREENERGY"]                               = eConstitutiveParameter::FRACTURE_ENERGY;
-    MapStringToConstitutiveVariable["GRADIENT_CORRECTION_ADSORPTION_DESORPTION"]    = eConstitutiveParameter::GRADIENT_CORRECTION_ADSORPTION_DESORPTION;
-    MapStringToConstitutiveVariable["GRADIENT_CORRECTION_DESORPTION_ADSORPTION"]    = eConstitutiveParameter::GRADIENT_CORRECTION_DESORPTION_ADSORPTION;
-    MapStringToConstitutiveVariable["HARDENINGEXPONENT"]                            = eConstitutiveParameter::HARDENING_EXPONENT;
-    MapStringToConstitutiveVariable["HARDENINGVALUE"]                               = eConstitutiveParameter::HARDENING_VALUE;
-    MapStringToConstitutiveVariable["INITIALHARDENINGMODULUS"]                      = eConstitutiveParameter::INITIAL_HARDENING_MODULUS;
-    MapStringToConstitutiveVariable["INITIALYIELDSTRENGTH"]                         = eConstitutiveParameter::INITIAL_YIELD_STRENGTH;
-    MapStringToConstitutiveVariable["MASS_EXCHANGE_RATE"]                           = eConstitutiveParameter::MASS_EXCHANGE_RATE;
-    MapStringToConstitutiveVariable["NONLOCALRADIUS"]                               = eConstitutiveParameter::NONLOCAL_RADIUS;
-    MapStringToConstitutiveVariable["NONLOCALRADIUSPARAMETER"]                      = eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER;
-    MapStringToConstitutiveVariable["POISSONSRATIO"]                                = eConstitutiveParameter::POISSONS_RATIO;
-    MapStringToConstitutiveVariable["POLYNOMIAL_COEFFICIENTS_ADSORPTION"]           = eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_ADSORPTION;
-    MapStringToConstitutiveVariable["POLYNOMIAL_COEFFICIENTS_DESORPTION"]           = eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION;
-    MapStringToConstitutiveVariable["POROSITY"]                                     = eConstitutiveParameter::POROSITY;
-    MapStringToConstitutiveVariable["SATURATION_DENSITY_GAS_PHASE"]                 = eConstitutiveParameter::SATURATION_DENSITY_GAS_PHASE;
-    MapStringToConstitutiveVariable["SPRING_STIFFNESS"]                             = eConstitutiveParameter::SPRING_STIFFNESS;
-    MapStringToConstitutiveVariable["TENSILESTRENGTH"]                              = eConstitutiveParameter::TENSILE_STRENGTH;
-    MapStringToConstitutiveVariable["THERMALEXPANSIONCOEFFICIENT"]                  = eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT;
-    MapStringToConstitutiveVariable["VISCOPLASTICYIELDSURFACEOFFSET"]               = eConstitutiveParameter::VISCOPLASTIC_YIELD_SURFACE_OFFSET;
-    MapStringToConstitutiveVariable["VISCOSITY"]                                    = eConstitutiveParameter::VISCOSITY;
-    MapStringToConstitutiveVariable["VISCOSITYEXPONENT"]                            = eConstitutiveParameter::VISCOSITY_EXPONENT;
-    MapStringToConstitutiveVariable["YOUNGSMODULUS"]                                = eConstitutiveParameter::YOUNGS_MODULUS;
-    // find element in map
+    map[eConstitutiveParameter::BIAXIAL_COMPRESSIVE_STRENGTH]               = "BIAXIAL_COMPRESSIVE_STRENGTH";
+    map[eConstitutiveParameter::BOUNDARY_DIFFUSION_COEFFICIENT_RH]          = "BOUNDARY_DIFFUSION_COEFFICIENT_RH";
+    map[eConstitutiveParameter::BOUNDARY_DIFFUSION_COEFFICIENT_WV]          = "BOUNDARY_DIFFUSION_COEFFICIENT_WV";
+    map[eConstitutiveParameter::COMPRESSIVE_STRENGTH]                       = "COMPRESSIVE_STRENGTH";
+    map[eConstitutiveParameter::DAMAGE_DISTRIBUTION]                        = "DAMAGE_DISTRIBUTION";
+    map[eConstitutiveParameter::DAMAGE_LAW]                                 = "DAMAGE_LAW";
+    map[eConstitutiveParameter::DENSITY]                                    = "DENSITY";
+    map[eConstitutiveParameter::DENSITY_WATER]                              = "DENSITY_WATER";
+    map[eConstitutiveParameter::DIFFUSION_COEFFICIENT_RH]                   = "DIFFUSION_COEFFICIENT_RH";
+    map[eConstitutiveParameter::DIFFUSION_COEFFICIENT_WV]                   = "DIFFUSION_COEFFICIENT_WV";
+    map[eConstitutiveParameter::DIFFUSION_EXPONENT_RH]                      = "DIFFUSION_EXPONENT_RH";
+    map[eConstitutiveParameter::DIFFUSION_EXPONENT_WV]                      = "DIFFUSION_EXPONENT_WV";
+    map[eConstitutiveParameter::ENABLE_MODIFIED_TANGENTIAL_STIFFNESS]       = "ENABLE_MODIFIED_TANGENTIAL_STIFFNESS";
+    map[eConstitutiveParameter::ENABLE_SORPTION_HYSTERESIS]                 = "ENABLE_SORPTION_HYSTERESIS";
+    map[eConstitutiveParameter::FATIGUE_EXTRAPOLATION]                      = "FATIGUE_EXTRAPOLATION";
+    map[eConstitutiveParameter::FRACTURE_ENERGY]                            = "FRACTURE_ENERGY";
+    map[eConstitutiveParameter::GRADIENT_CORRECTION_ADSORPTION_DESORPTION]  = "GRADIENT_CORRECTION_ADSORPTION_DESORPTION";
+    map[eConstitutiveParameter::GRADIENT_CORRECTION_DESORPTION_ADSORPTION]  = "GRADIENT_CORRECTION_DESORPTION_ADSORPTION";
+    map[eConstitutiveParameter::HARDENING_EXPONENT]                         = "HARDENING_EXPONENT";
+    map[eConstitutiveParameter::HARDENING_VALUE]                            = "HARDENING_VALUE";
+    map[eConstitutiveParameter::INITIAL_HARDENING_MODULUS]                  = "INITIAL_HARDENING_MODULUS";
+    map[eConstitutiveParameter::INITIAL_YIELD_STRENGTH]                     = "INITIAL_YIELD_STRENGTH";
+    map[eConstitutiveParameter::MASS_EXCHANGE_RATE]                         = "MASS_EXCHANGE_RATE";
+    map[eConstitutiveParameter::NONLOCAL_RADIUS]                            = "NONLOCAL_RADIUS";
+    map[eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER]                  = "NONLOCAL_RADIUS_PARAMETER";
+    map[eConstitutiveParameter::POISSONS_RATIO]                             = "POISSONS_RATIO";
+    map[eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_ADSORPTION]         = "POLYNOMIAL_COEFFICIENTS_ADSORPTION";
+    map[eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION]         = "POLYNOMIAL_COEFFICIENTS_DESORPTION";
+    map[eConstitutiveParameter::PORE_VOLUME_FRACTION]                       = "PORE_VOLUME_FRACTION";
+    map[eConstitutiveParameter::DENSITY_SATURATED_WATER_VAPOR]              = "DENSITY_SATURATED_WATER_VAPOR";
+    map[eConstitutiveParameter::SPRING_STIFFNESS]                           = "SPRING_STIFFNESS";
+    map[eConstitutiveParameter::TENSILE_STRENGTH]                           = "TENSILE_STRENGTH";
+    map[eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT]              = "THERMAL_EXPANSION_COEFFICIENT";
+    map[eConstitutiveParameter::VISCOPLASTIC_YIELD_SURFACE_OFFSET]          = "VISCOPLASTIC_YIELD_SURFACE_OFFSET";
+    map[eConstitutiveParameter::VISCOSITY]                                  = "VISCOSITY";
+    map[eConstitutiveParameter::VISCOSITY_EXPONENT]                         = "VISCOSITY_EXPONENT";
+    map[eConstitutiveParameter::YOUNGS_MODULUS]                             = "YOUNGS_MODULUS";
 
-    auto itResult = MapStringToConstitutiveVariable.find(rVariableName);
-    if (itResult!=MapStringToConstitutiveVariable.end())
+    return map;
+}
+
+static inline std::string ConstitutiveParameterToString(eConstitutiveParameter rParameter)
+{
+    try
     {
-        return itResult->second;
+        return GetConstitutiveParameterMap().find(rParameter)->second;
     }
-    else
+    catch (const std::out_of_range& e)
     {
-        throw NuTo::MechanicsException("[NuTo::Constitutive::GetConstitutiveVariableFromString] There is no entry for constitutive variable identifier " +
-                                       rVariableName + " in file ConstitutiveEnum.h.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Enum undefined or not implemented.");
     }
 }
+
+static inline eConstitutiveParameter ConstitutiveParameterToEnum(std::string rParameter)
+{
+    std::transform(rParameter.begin(), rParameter.end(), rParameter.begin(), ::toupper);
+    auto map = GetConstitutiveParameterMap();
+    for(auto entry : map)
+        if (entry.second == rParameter)
+            return entry.first;
+
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, rParameter + " has no enum equivalent or is not implemented.");
+}
+
 
 namespace Input
 {
 enum eInput
 {
-    DEFORMATION_GRADIENT_1D,            //!<
-    DEFORMATION_GRADIENT_2D,            //!<
-    DEFORMATION_GRADIENT_3D,            //!<
-    ENGINEERING_STRAIN_1D,              //!<
-    ENGINEERING_STRAIN_2D,              //!<
-    ENGINEERING_STRAIN_3D,              //!<
+    ENGINEERING_STRAIN,                 //!<
     TEMPERATURE,                        //!<
-    TEMPERATURE_GRADIENT_1D,            //!<
-    TEMPERATURE_GRADIENT_2D,            //!<
-    TEMPERATURE_GRADIENT_3D,            //!<
+    TEMPERATURE_GRADIENT,               //!<
     NONLOCAL_EQ_PLASTIC_STRAIN,         //!<
     NONLOCAL_EQ_STRAIN,                 //!<
     NONLOCAL_TOTAL_STRAIN_1D,           //!<
@@ -193,36 +280,41 @@ enum eInput
     NONLOCAL_TOTAL_STRAIN_VIRT_1D,      //!<
     RELATIVE_HUMIDITY,                  //!<
     RELATIVE_HUMIDITY_BOUNDARY,         //!<
-    RELATIVE_HUMIDITY_D1,               //!< first time derivative
+    RELATIVE_HUMIDITY_DT1,              //!< first time derivative
     RELATIVE_HUMIDITY_GRADIENT,         //!<
     WATER_VOLUME_FRACTION,              //!<
     WATER_VOLUME_FRACTION_BOUNDARY,     //!<
-    WATER_VOLUME_FRACTION_D1,           //!< first time derivative
+    WATER_VOLUME_FRACTION_DT1,          //!< first time derivative
     WATER_VOLUME_FRACTION_GRADIENT,     //!<
     INTERFACE_SLIP,                     //!<
+    CALCULATE_STATIC_DATA,
+    TIME_STEP
 };
 }
 
 static inline std::string InputToString ( const Input::eInput& e )
 {
-	const std::map< Input::eInput, std::string > lut =
-    boost::assign::map_list_of(Input::DEFORMATION_GRADIENT_1D, "DEFORMATION_GRADIENT_1D")
-                              (Input::DEFORMATION_GRADIENT_2D, "DEFORMATION_GRADIENT_2D")
-                              (Input::DEFORMATION_GRADIENT_3D,"DEFORMATION_GRADIENT_3D")
-                              (Input::ENGINEERING_STRAIN_1D, "ENGINEERING_STRAIN_1D")
-                              (Input::ENGINEERING_STRAIN_2D, "ENGINEERING_STRAIN_2D")
-                              (Input::ENGINEERING_STRAIN_3D,"ENGINEERING_STRAIN_3D")
+    const std::map< Input::eInput, std::string > lut =
+    boost::assign::map_list_of(Input::ENGINEERING_STRAIN, "ENGINEERING_STRAIN")
                               (Input::TEMPERATURE,"TEMPERATURE")
-                              (Input::TEMPERATURE_GRADIENT_1D,"TEMPERATURE_GRADIENT_1D")
-                              (Input::TEMPERATURE_GRADIENT_2D,"TEMPERATURE_GRADIENT_2D")
-                              (Input::TEMPERATURE_GRADIENT_3D,"TEMPERATURE_GRADIENT_3D")
+                              (Input::TEMPERATURE_GRADIENT,"TEMPERATURE_GRADIENT")
                               (Input::NONLOCAL_EQ_PLASTIC_STRAIN,"NONLOCAL_EQ_PLASTIC_STRAIN")
                               (Input::NONLOCAL_EQ_STRAIN,"NONLOCAL_EQ_STRAIN")
                               (Input::NONLOCAL_TOTAL_STRAIN_1D,"NONLOCAL_TOTAL_STRAIN_1D")
                               (Input::ENGINEERING_STRESS_1D,"ENGINEERING_STRESS_1D")
                               (Input::DEFORMATION_GRADIENT_REAL_1D,"DEFORMATION_GRADIENT_REAL_1D")
                               (Input::NONLOCAL_TOTAL_STRAIN_REAL_1D,"NONLOCAL_TOTAL_STRAIN_REAL_1D")
-                              (Input::NONLOCAL_TOTAL_STRAIN_VIRT_1D,"NONLOCAL_TOTAL_STRAIN_VIRT_1D");
+                              (Input::NONLOCAL_TOTAL_STRAIN_VIRT_1D,"NONLOCAL_TOTAL_STRAIN_VIRT_1D")
+                              (Input::RELATIVE_HUMIDITY,"RELATIVE_HUMIDITY")
+                              (Input::RELATIVE_HUMIDITY_BOUNDARY,"RELATIVE_HUMIDITY_BOUNDARY")
+                              (Input::RELATIVE_HUMIDITY_DT1,"RELATIVE_HUMIDITY_DT1")
+                              (Input::RELATIVE_HUMIDITY_GRADIENT,"RELATIVE_HUMIDITY_GRADIENT")
+                              (Input::WATER_VOLUME_FRACTION,"WATER_VOLUME_FRACTION")
+                              (Input::WATER_VOLUME_FRACTION_BOUNDARY,"WATER_VOLUME_FRACTION_BOUNDARY")
+                              (Input::WATER_VOLUME_FRACTION_DT1,"WATER_VOLUME_FRACTION_DT1")
+                              (Input::WATER_VOLUME_FRACTION_GRADIENT,"WATER_VOLUME_FRACTION_GRADIENT")
+                              (Input::CALCULATE_STATIC_DATA, "CALCULATE_STATIC_DATA")
+                              (Input::TIME_STEP,"TIME_STEP");
  std::map< Input::eInput, std::string >::const_iterator it = lut.find( e );
   if ( lut.end() != it )
     return it->second;
@@ -234,29 +326,27 @@ namespace Output
 {
 enum eOutput
 {
-	ENGINEERING_STRAIN_1D,           //!<
-	ENGINEERING_STRAIN_2D,           //!<
-	ENGINEERING_STRAIN_3D,           //!<
-	ENGINEERING_PLASTIC_STRAIN_3D,   //!<
+    ENGINEERING_STRESS,
+    ENGINEERING_STRESS_VISUALIZE,
+    ENGINEERING_STRAIN,
+    ENGINEERING_STRAIN_VISUALIZE,
+    D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,
+    ENGINEERING_PLASTIC_STRAIN_VISUALIZE,
+
+    D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN,
+    D_LOCAL_EQ_STRAIN_D_STRAIN,
+    D_LOCAL_EQ_STRAIN_XI_D_STRAIN,
+
 	ENGINEERING_VISCOPLASTIC_STRAIN_3D,  	//!<
 	ENGINEERING_TOTAL_INELASTIC_STRAIN_3D,  //!<
-	ENGINEERING_STRESS_1D,           //!<
-	ENGINEERING_STRESS_2D,           //!<
-	ENGINEERING_STRESS_3D,           //!<
     ENGINEERING_STRESS_2D_PORE_PRESSURE, //!<
 	ENGINEERING_STRESS_ELASTIC_1D,	 //!<
 	ENGINEERING_STRESS_ELASTIC_2D,	 //!<
 	ENGINEERING_STRESS_ELASTIC_3D,	 //!<
-	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D,
-	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D,
-	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D,
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_1D,
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_2D,
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_3D,
     D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D,
-    D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_1D,
-    D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_2D,
-    D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_3D,
     D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_1D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_2D,
@@ -279,43 +369,38 @@ enum eOutput
 	LOCAL_EQ_TOTAL_INELASTIC_STRAIN,
     LOCAL_EQ_STRAIN,
     D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D,
-    D_LOCAL_EQ_STRAIN_D_STRAIN_1D,
-    D_LOCAL_EQ_STRAIN_D_STRAIN_2D,
-    D_LOCAL_EQ_STRAIN_D_STRAIN_3D,
-    D_LOCAL_EQ_STRAIN_XI_D_STRAIN_1D,
-    D_LOCAL_EQ_STRAIN_XI_D_STRAIN_2D,
-    D_LOCAL_EQ_STRAIN_XI_D_STRAIN_3D,
     ENGINEERING_STRESS_REAL_1D,
 	ENGINEERING_STRAIN_VIRT_1D,
 	D_ENGINEERING_STRESS_REAL_D_ENGINEERING_STRAIN_REAL_1D,
 	D_ENGINEERING_STRESS_REAL_D_NONLOCAL_TOTAL_STRAIN_REAL_1D,
 	D_ENGINEERING_STRAIN_VIRT_D_STRESS_REAL_1D,
     D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D,
-    BOUNDARY_SURFACE_RELATIVE_HUMIDIY_TRANSPORT_COEFFICIENT,
-    BOUNDARY_SURFACE_WATER_VOLUME_FRACTION_TRANSPORT_COEFFICIENT,
-    BOUNDARY_SURFACE_VAPOR_PHASE_RESIDUAL,
-    BOUNDARY_SURFACE_WATER_PHASE_RESIDUAL,
-    RESIDUAL_WATER_PHASE_B,
-    RESIDUAL_WATER_PHASE_N,
-    RESIDUAL_VAPOR_PHASE_B,
-    RESIDUAL_VAPOR_PHASE_N,
-    D_RESIDUAL_RH_D_RH_H0_BB,
-    D_RESIDUAL_RH_D_RH_H0_NN,
-    D_RESIDUAL_RH_D_WV_H0_BN,
-    D_RESIDUAL_RH_D_WV_H0_NN,
-    D_RESIDUAL_WV_D_RH_H0_NN,
-    D_RESIDUAL_WV_D_WV_H0_BB,
-    D_RESIDUAL_WV_D_WV_H0_BN,
-    D_RESIDUAL_WV_D_WV_H0_NN,
-    D_RESIDUAL_RH_D_RH_H1_NN,
-    D_RESIDUAL_RH_D_WV_H1_NN,
-    D_RESIDUAL_WV_D_WV_H1_NN,
+//    BOUNDARY_SURFACE_RELATIVE_HUMIDIY_TRANSPORT_COEFFICIENT,
+//    BOUNDARY_SURFACE_WATER_VOLUME_FRACTION_TRANSPORT_COEFFICIENT,
+//    BOUNDARY_SURFACE_VAPOR_PHASE_RESIDUAL,
+//    BOUNDARY_SURFACE_WATER_PHASE_RESIDUAL,
+    D_INTERNAL_GRADIENT_RH_D_RH_BB_H0,
+    D_INTERNAL_GRADIENT_RH_D_RH_NN_H0,
+    D_INTERNAL_GRADIENT_RH_D_WV_BN_H0,
+    D_INTERNAL_GRADIENT_RH_D_WV_NN_H0,
+    D_INTERNAL_GRADIENT_WV_D_RH_NN_H0,
+    D_INTERNAL_GRADIENT_WV_D_WV_BB_H0,
+    D_INTERNAL_GRADIENT_WV_D_WV_BN_H0,
+    D_INTERNAL_GRADIENT_WV_D_WV_NN_H0,
+    D_INTERNAL_GRADIENT_RH_D_RH_NN_H1,
+    D_INTERNAL_GRADIENT_RH_D_WV_NN_H1,
+    D_INTERNAL_GRADIENT_WV_D_WV_NN_H1,
+    INTERNAL_GRADIENT_RELATIVE_HUMIDITY_B,
+    INTERNAL_GRADIENT_RELATIVE_HUMIDITY_N,
+    INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_B,
+    INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_N,
+    D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0,
+    D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0,
+    INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N,
+    INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N,
 	FATIGUE_SAVE_STATIC_DATA,
 	FATIGUE_RESTORE_STATIC_DATA,
 	FATIGUE_EXTRAPOLATE_STATIC_DATA,
-    RESIDUAL_NORM_FACTOR_DISPLACEMENTS,
-    RESIDUAL_NORM_FACTOR_RELATIVE_HUMIDITY,
-    RESIDUAL_NORM_FACTOR_WATER_VOLUME_FRACTION,
 	NONLOCAL_PARAMETER_XI,
     INTERFACE_CONSTITUTIVE_MATRIX,
     BOND_STRESS,
@@ -326,29 +411,23 @@ enum eOutput
 static inline std::string OutputToString( const Output::eOutput& e )
 {
 	const std::map< Output::eOutput, std::string > lut =
-    boost::assign::map_list_of(Output::ENGINEERING_STRAIN_1D, "ENGINEERING_STRAIN_1D" )
-                              (Output::ENGINEERING_STRAIN_2D, "ENGINEERING_STRAIN_2D" )
-                              (Output::ENGINEERING_STRAIN_3D, "ENGINEERING_STRAIN_3D" )
-                              (Output::ENGINEERING_PLASTIC_STRAIN_3D, "ENGINEERING_PLASTIC_STRAIN_3D" )
+    boost::assign::map_list_of(Output::ENGINEERING_STRAIN, "ENGINEERING_STRAIN" )
+	                          (Output::ENGINEERING_STRAIN_VISUALIZE, "ENGINEERING_STRAIN_VISUALIZE" )
+                              (Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE, "ENGINEERING_PLASTIC_STRAIN_VISUALIZE" )
                               (Output::ENGINEERING_VISCOPLASTIC_STRAIN_3D, "ENGINEERING_VISCOPLASTIC_STRAIN_3D" )
                               (Output::ENGINEERING_TOTAL_INELASTIC_STRAIN_3D, "ENGINEERING_TOTAL_INELASTIC_STRAIN_3D" )
-                              (Output::ENGINEERING_STRESS_1D,"ENGINEERING_STRESS_1D")
-                              (Output::ENGINEERING_STRESS_2D,"ENGINEERING_STRESS_2D")
-                              (Output::ENGINEERING_STRESS_3D,"ENGINEERING_STRESS_3D")
+                              (Output::ENGINEERING_STRESS,"ENGINEERING_STRESS")
+                              (Output::ENGINEERING_STRESS_VISUALIZE,"ENGINEERING_STRESS_VISUALIZE")
                               (Output::ENGINEERING_STRESS_ELASTIC_1D,"ENGINEERING_STRESS_ELASTIC_1D")
                               (Output::ENGINEERING_STRESS_ELASTIC_2D,"ENGINEERING_STRESS_ELASTIC_2D")
                               (Output::ENGINEERING_STRESS_ELASTIC_3D,"ENGINEERING_STRESS_ELASTIC_3D")
                               (Output::ENGINEERING_STRESS_2D_PORE_PRESSURE,"ENGINEERING_STRESS_2D_PORE_PRESSURE")
-                              (Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_1D")
-                              (Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_2D")
-                              (Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_3D")
+                              (Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN")
                               (Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_1D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_1D")
                               (Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_2D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_2D")
                               (Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_3D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_3D")
                               (Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D,"D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D")
-                              (Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_1D,"D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_1D")
-                              (Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_2D,"D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_2D")
-                              (Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_3D,"D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN_3D")
+                              (Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN,"D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN")
                               (Output::D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D,"D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D")
                               (Output::D_ENGINEERING_STRESS_D_TEMPERATURE_1D,"D_ENGINEERING_STRESS_D_TEMPERATURE_1D")
                               (Output::D_ENGINEERING_STRESS_D_TEMPERATURE_2D,"D_ENGINEERING_STRESS_D_TEMPERATURE_2D")
@@ -369,36 +448,33 @@ static inline std::string OutputToString( const Output::eOutput& e )
                               (Output::LOCAL_EQ_TOTAL_INELASTIC_STRAIN,"LOCAL_EQ_TOTAL_INELASTIC_STRAIN")
                               (Output::LOCAL_EQ_STRAIN,"LOCAL_EQ_STRAIN")
                               (Output::D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D,"D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D")
-                              (Output::D_LOCAL_EQ_STRAIN_D_STRAIN_1D,"D_LOCAL_EQ_STRAIN_D_STRAIN_1D")
-                              (Output::D_LOCAL_EQ_STRAIN_D_STRAIN_2D,"D_LOCAL_EQ_STRAIN_D_STRAIN_2D")
-                              (Output::D_LOCAL_EQ_STRAIN_D_STRAIN_3D,"D_LOCAL_EQ_STRAIN_D_STRAIN_3D")
-                              (Output::D_LOCAL_EQ_STRAIN_XI_D_STRAIN_1D,"D_LOCAL_EQ_STRAIN_XI_D_STRAIN_1D")
-                              (Output::D_LOCAL_EQ_STRAIN_XI_D_STRAIN_2D,"D_LOCAL_EQ_STRAIN_XI_D_STRAIN_2D")
-                              (Output::D_LOCAL_EQ_STRAIN_XI_D_STRAIN_3D,"D_LOCAL_EQ_STRAIN_XI_D_STRAIN_3D")
+                              (Output::D_LOCAL_EQ_STRAIN_D_STRAIN,"D_LOCAL_EQ_STRAIN_D_STRAIN")
+                              (Output::D_LOCAL_EQ_STRAIN_XI_D_STRAIN,"D_LOCAL_EQ_STRAIN_XI_D_STRAIN")
                               (Output::ENGINEERING_STRESS_REAL_1D,"ENGINEERING_STRESS_REAL_1D")
                               (Output::ENGINEERING_STRAIN_VIRT_1D,"ENGINEERING_STRAIN_VIRT_1D")
                               (Output::D_ENGINEERING_STRESS_REAL_D_ENGINEERING_STRAIN_REAL_1D,"D_ENGINEERING_STRESS_REAL_D_ENGINEERING_STRAIN_REAL_1D")
                               (Output::D_ENGINEERING_STRESS_REAL_D_NONLOCAL_TOTAL_STRAIN_REAL_1D,"D_ENGINEERING_STRESS_REAL_D_NONLOCAL_TOTAL_STRAIN_REAL_1D")
                               (Output::D_ENGINEERING_STRAIN_VIRT_D_STRESS_REAL_1D,"D_ENGINEERING_STRAIN_VIRT_D_STRESS_REAL_1D")
                               (Output::D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D,"D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D")
-                              (Output::RESIDUAL_WATER_PHASE_B, "RESIDUAL_WATER_PHASE_B")
-                              (Output::RESIDUAL_WATER_PHASE_N, "RESIDUAL_WATER_PHASE_N")
-                              (Output::RESIDUAL_VAPOR_PHASE_B, "RESIDUAL_VAPOR_PHASE_B")
-                              (Output::RESIDUAL_VAPOR_PHASE_N, "RESIDUAL_VAPOR_PHASE_N")
-                              (Output::D_RESIDUAL_RH_D_RH_H0_BB, "D_RESIDUAL_RH_D_RH_H0_BB")
-                              (Output::D_RESIDUAL_RH_D_RH_H0_NN, "D_RESIDUAL_RH_D_RH_H0_NN")
-                              (Output::D_RESIDUAL_RH_D_WV_H0_BN, "D_RESIDUAL_RH_D_WV_H0_BN")
-                              (Output::D_RESIDUAL_RH_D_WV_H0_NN, "D_RESIDUAL_RH_D_WV_H0_NN")
-                              (Output::D_RESIDUAL_WV_D_RH_H0_NN, "D_RESIDUAL_WV_D_RH_H0_NN")
-                              (Output::D_RESIDUAL_WV_D_WV_H0_BB, "D_RESIDUAL_WV_D_WV_H0_BB")
-                              (Output::D_RESIDUAL_WV_D_WV_H0_BN, "D_RESIDUAL_WV_D_WV_H0_BN")
-                              (Output::D_RESIDUAL_WV_D_WV_H0_NN, "D_RESIDUAL_WV_D_WV_H0_NN")
-                              (Output::D_RESIDUAL_RH_D_RH_H1_NN, "D_RESIDUAL_RH_D_RH_H1_NN")
-                              (Output::D_RESIDUAL_RH_D_WV_H1_NN, "D_RESIDUAL_RH_D_WV_H1_NN")
-                              (Output::D_RESIDUAL_WV_D_WV_H1_NN, "D_RESIDUAL_WV_D_WV_H1_NN")
-                              (Output::RESIDUAL_NORM_FACTOR_DISPLACEMENTS, "RESIDUAL_NORM_FACTOR_DISPLACEMENTS")
-                              (Output::RESIDUAL_NORM_FACTOR_RELATIVE_HUMIDITY, "RESIDUAL_NORM_FACTOR_RELATIVE_HUMIDITY")
-                              (Output::RESIDUAL_NORM_FACTOR_WATER_VOLUME_FRACTION, "RESIDUAL_NORM_FACTOR_WATER_VOLUME_FRACTION")
+                              (Output::D_INTERNAL_GRADIENT_RH_D_RH_BB_H0, "D_INTERNAL_GRADIENT_RH_D_RH_BB_H0")
+                              (Output::D_INTERNAL_GRADIENT_RH_D_RH_NN_H0, "D_INTERNAL_GRADIENT_RH_D_RH_NN_H0")
+                              (Output::D_INTERNAL_GRADIENT_RH_D_WV_BN_H0, "D_INTERNAL_GRADIENT_RH_D_WV_BN_H0")
+                              (Output::D_INTERNAL_GRADIENT_RH_D_WV_NN_H0, "D_INTERNAL_GRADIENT_RH_D_WV_NN_H0")
+                              (Output::D_INTERNAL_GRADIENT_WV_D_RH_NN_H0, "D_INTERNAL_GRADIENT_WV_D_RH_NN_H0")
+                              (Output::D_INTERNAL_GRADIENT_WV_D_WV_BB_H0, "D_INTERNAL_GRADIENT_WV_D_WV_BB_H0")
+                              (Output::D_INTERNAL_GRADIENT_WV_D_WV_BN_H0, "D_INTERNAL_GRADIENT_WV_D_WV_BN_H0")
+                              (Output::D_INTERNAL_GRADIENT_WV_D_WV_NN_H0, "D_INTERNAL_GRADIENT_WV_D_WV_NN_H0")
+                              (Output::D_INTERNAL_GRADIENT_RH_D_RH_NN_H1, "D_INTERNAL_GRADIENT_RH_D_RH_NN_H1")
+                              (Output::D_INTERNAL_GRADIENT_RH_D_WV_NN_H1, "D_INTERNAL_GRADIENT_RH_D_WV_NN_H1")
+                              (Output::D_INTERNAL_GRADIENT_WV_D_WV_NN_H1, "D_INTERNAL_GRADIENT_WV_D_WV_NN_H1")
+                              (Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_B,     "INTERNAL_GRADIENT_RELATIVE_HUMIDITY_B")
+                              (Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_N,     "INTERNAL_GRADIENT_RELATIVE_HUMIDITY_N")
+                              (Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_B, "INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_B")
+                              (Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_N, "INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_N")
+                              (Output::D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0, "D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0")
+                              (Output::D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0, "D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0")
+                              (Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N,     "INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N")
+                              (Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N, "INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N")
                               (Output::NONLOCAL_PARAMETER_XI, "NONLOCAL_PARAMETER_XI");
 
   std::map< Output::eOutput, std::string >::const_iterator it = lut.find( e );
@@ -408,5 +484,12 @@ static inline std::string OutputToString( const Output::eOutput& e )
   return std::string("undefined");
 }
 }//Constitutive
-}//Nuto
+
+class ConstitutiveIOBase;
+using ConstitutiveInputMap = std::map<Constitutive::Input::eInput, ConstitutiveIOBase*>;
+using ConstitutiveOutputMap = std::map<Constitutive::Output::eOutput, ConstitutiveIOBase*>;
+
+
+
+}//NuTo
 #endif /* CONSTITUTIVEENUM_H_ */

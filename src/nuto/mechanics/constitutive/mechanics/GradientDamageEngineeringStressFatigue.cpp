@@ -457,9 +457,6 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::Evaluate2D(Ele
         const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput,
         std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
-    // get section information determining which input on the constitutive level should be used
-    //const SectionBase* section(rElement->GetSection());
-	const StructureBase* structure(rElement->GetStructure());
 
     // check if parameters are valid
     if (this->mParametersValid == false)

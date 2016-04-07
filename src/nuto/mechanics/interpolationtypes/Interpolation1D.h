@@ -16,18 +16,19 @@ class Interpolation1D: public InterpolationBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
+    //! @brief default constructor for serialization
+protected:
+    Interpolation1D(){}
 #endif  // ENABLE_SERIALIZATION
 
 public:
-    //! @brief default constructor for serialization
-    Interpolation1D(){}
 
-    Interpolation1D(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
+    Interpolation1D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
 
     //! @brief returns the natural coordinates of the nodes that span the surface
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... natural surface edge coordinates
-    const std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const override;
+    std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const override;
 
     //! @brief return the number of dofs per node depending on dimension
     virtual int GetNumDofsPerNode() const override;

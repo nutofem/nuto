@@ -18,6 +18,6 @@ NuTo::LoadSurfacePressure3D::LoadSurfacePressure3D(int rLoadCase, StructureBase*
 void NuTo::LoadSurfacePressure3D::CalculateSurfaceLoad(NuTo::FullVector<double,3>& rCoordinates,NuTo::FullVector<double,3>& rNormal,
 		NuTo::FullVector<double,3>& rLoadVector)const
 {
-	assert(fabs(rNormal.Norm()-1.)<1e-5);
+	assert(std::abs(rNormal.Norm()-1.)<1e-5);
 	rLoadVector = rNormal*(-mPressure);
 }

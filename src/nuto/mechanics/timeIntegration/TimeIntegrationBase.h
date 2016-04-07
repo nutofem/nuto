@@ -14,6 +14,7 @@
 #include <boost/ptr_container/ptr_map.hpp>
 
 #include "nuto/base/NuToObject.h"
+#include "nuto/base/CallbackInterface.h"
 #include "nuto/base/ErrorEnum.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/math/FullMatrix.h"
@@ -21,6 +22,8 @@
 #include "nuto/mechanics/timeIntegration/ResultBase.h"
 #include "nuto/mechanics/timeIntegration/TimeDependencyBase.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
+#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
 
 namespace NuTo
 {
@@ -57,8 +60,12 @@ public:
     //! @brief Adds the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
     //! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
     //! @param rTimeDependentConstraintFunction ... function that calculates the time dependent constraint factor for the current time step
-    void AddTimeDependentConstraint(int rTimeDependentConstraint, const std::function<double (double rTime)>& rTimeDependentConstraintFunction);
+    void AddTimeDependentConstraintFunction(int rTimeDependentConstraint, const std::function<double (double rTime)>& rTimeDependentConstraintFunction);
 
+    //! @brief Updates the Rhs for all constraints
+    //! @param rCurrentTime ... current time
+    //! @remark remove the second argument rDof
+    void UpdateConstraints(double rCurrentTime);
 
     //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
     //! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
@@ -72,28 +79,31 @@ public:
     //! @brief apply calculate the new rhs of the constraints as a function of the current time delta
     virtual double CalculateTimeDependentConstraintFactor(double rTimeDelta);
 
-    //! @brief calculate the external force as a function of time delta
+    //! @brief calculate the external force vector (mStatic and m) as a function of time delta
+    virtual void CalculateStaticAndTimeDependentExternalLoad();
+
+    //! @brief calculate the current external force as a function of time delta
     //! @param curTime ... current time in the load step
-    //! @param rLoad_j ... external load vector for the independent dofs
-    //! @param rLoad_k ... external load vector for the dependent dofs
-    virtual void CalculateExternalLoad(StructureBase& rStructure, double curTime, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_j, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_k);
+    //! @return ... external load vector
+    virtual StructureOutputBlockVector CalculateCurrentExternalLoad(double curTime);
+
 
     //! @brief sets the nodes, for which displacements are to be monitored
     void CalculateOutputDispNodesPtr(StructureBase& rStructure);
 
-    //! @brief postprocess (nodal dofs etc. and visualize a vtk file)
-    //! @param rOutOfBalance_j ... out of balance values of the independent dofs (for disp dofs, this is the out of balance force)
-    //! @param rOutOfBalance_k ... residual of the  dependent dofs
-    void PostProcess(const FullVector<double,Eigen::Dynamic>& rOutOfBalance_j,
-    		         const FullVector<double,Eigen::Dynamic>& rOutOfBalance_k);
+    //! @brief extracts all dof values
+    //! @param rDof_dt0 ... 0th time derivative
+    //! @param rDof_dt1 ... 1st time derivative
+    //! @param rDof_dt2 ... 2nd time derivative
+    void ExtractDofValues(StructureOutputBlockVector& rDof_dt0, StructureOutputBlockVector& rDof_dt1, StructureOutputBlockVector& rDof_dt2) const;
 
-    //! @brief visualizes the residual by merging it to the nodes, exporting the vtu file and restoring the inital state
-    //! @param rResidual_j ... residual vector
-    //! @param rActiveDofValues ... vector of active dof values
-    //! @param rTimeStep ... time step number for file names
-    void VisualizeResidual(
-            const FullVector<double,Eigen::Dynamic>& rResidual_j,
-            const FullVector<double, Eigen::Dynamic>& rActiveDofValues, int rTimeStep);
+    //! @brief calculates the norm of the residual, can include weighting
+    //! @param rResidual ... residual
+    double CalculateNorm(const BlockFullVector<double>& rResidual) const;
+
+    //! @brief postprocess (nodal dofs etc. and visualize a vtk file)
+    //! @param rOutOfBalance ... out of balance values of the independent dofs (for disp dofs, this is the out of balance force)
+    void PostProcess(const StructureOutputBlockVector& rOutOfBalance);
 
     //! @brief sets the  time step for the time integration procedure (initial value)
     void SetTimeStep(double rTimeStep)
@@ -215,24 +225,17 @@ public:
         return mCheckCoefficientMatrix;
     }
 
-    //! @brief sets the visualize residual flag (on or off)
-    void SetVisualizeResidual(bool rVisualizeResidual)
-    {
-        mVisualizeResidual = rVisualizeResidual;
-    }
-
-    //! @brief returns if the visualize residual flag is turned on
-    bool GetVisualizeResidual() const
-    {
-        return mVisualizeResidual;
-    }
-
     //! @brief returns true, if the method is only conditionally stable (for unconditional stable, this is false)
     virtual bool HasCriticalTimeStep()const = 0;
 
     //! @brief calculate the critical time step for explicit routines
     //! for implicit routines, this will simply return zero (cmp HasCriticalTimeStep())
     virtual double CalculateCriticalTimeStep()const = 0;
+
+    void ConnectCallback(CallbackInterface* rCallback)
+    {
+        mCallback = rCallback;
+    }
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -246,10 +249,16 @@ public:
     virtual void Info()const;
 protected:
     //empty private construct required for serialization
-    TimeIntegrationBase(){};
+
+#ifdef ENABLE_SERIALIZATION
+    TimeIntegrationBase() : mLoadVectorStatic(DofStatus()), mLoadVectorTimeDependent(DofStatus()) {};
+#endif  // ENABLE_SERIALIZATION
 
     void ExportVisualizationFiles(const std::string& rResultDir, double rTime, int timeStep);
 
+    const BlockFullVector<double>& UpdateAndGetConstraintRHS(double rCurrentTime);
+
+    const BlockFullVector<double>& UpdateAndGetAndMergeConstraintRHS(double rCurrentTime, StructureOutputBlockVector& rDof_dt0);
 
     //structure belonging to the time integration scheme
     StructureBase* mStructure;
@@ -276,7 +285,9 @@ protected:
     //the time step is given relative to mTimeDelta
 	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mTimeDependentLoadFactor;
     //external load vectors (static and time dependent)
-	NuTo::FullVector<double,Eigen::Dynamic> mLoadVectorStatic_j,mLoadVectorStatic_k,mLoadVectorTimeDependent_j,mLoadVectorTimeDependent_k;
+	NuTo::StructureOutputBlockVector mLoadVectorStatic;
+	NuTo::StructureOutputBlockVector mLoadVectorTimeDependent;
+
 	//accumulated time (in case several loadings are looked at, one after another)
 	double mTime;
     //adapt the time step based on the number of iterations required (or decrease, if no convergence can be achieved)
@@ -314,9 +325,6 @@ protected:
     //last time when a vtk file was plotted
     double mLastTimePlot;
 
-    //if set to true, prints an additional result files with residual values
-    bool mVisualizeResidual;
-
     //groups of elements to be plotted separately
     FullVector<int,Eigen::Dynamic> mPlotElementGroups;
 
@@ -325,6 +333,8 @@ protected:
     // vector of nodes for the output of the dofs
     std::vector<NodeBase*> mVecOutputDispNodesPtr;
     NuTo::FullVector<int,Eigen::Dynamic> mVecOutputDispNodesInt;
+
+    CallbackInterface* mCallback;
 
 
 };

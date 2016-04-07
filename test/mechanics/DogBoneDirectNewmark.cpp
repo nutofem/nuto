@@ -327,7 +327,7 @@ try
 	//std::cout << "velocity " << velocity.Trans() << "\n";
 	//myStructure.NodeGroupSetVelocities(grpNodes_Top,velocity);
 
-    myIntegrationScheme.SetTimeDependentConstraint(constraintTopDisp, dispRHS);
+    myIntegrationScheme.AddTimeDependentConstraint(constraintTopDisp, dispRHS);
     myIntegrationScheme.SetMaxTimeStep(simulationTime/numLoadSteps);
     myIntegrationScheme.SetTimeStep(simulationTime/numLoadSteps);
     myIntegrationScheme.SetAutomaticTimeStepping(true);

@@ -61,16 +61,16 @@ double NuTo::ConstraintLinearNodeGroupDisplacements2D::GetRHS()const
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
 void NuTo::ConstraintLinearNodeGroupDisplacements2D::AddToConstraintMatrix(int& curConstraintEquation,
-        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const
+        NuTo::SparseMatrix<double>& rConstraintMatrix)const
 {
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {
         if (itNode->second->GetNumDisplacements()==0)
             throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements2D::AddToConstraintMatrix] Node does not have displacements or has more than two displacement components.");
 
-        if (fabs(mDirection[0])>1e-18)
+        if (std::abs(mDirection[0])>1e-18)
             rConstraintMatrix.AddValue(curConstraintEquation,itNode->second->GetDofDisplacement(0),mDirection[0]);
-        if (fabs(mDirection[1])>1e-18)
+        if (std::abs(mDirection[1])>1e-18)
             rConstraintMatrix.AddValue(curConstraintEquation,itNode->second->GetDofDisplacement(1),mDirection[1]);
 
         curConstraintEquation++;

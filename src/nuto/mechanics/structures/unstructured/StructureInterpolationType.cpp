@@ -101,9 +101,9 @@ void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationType
 
 //! @brief prints the info to the interpolation type
 //! @param rInterpolationTypeId ... interpolation type id
-void NuTo::Structure::InterpolationTypeInfo(int rInterpolationTypeId)
+void NuTo::Structure::InterpolationTypeInfo(int rInterpolationTypeId) const
 {
-    boost::ptr_map<int,InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
+    boost::ptr_map<int,InterpolationType>::const_iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
     // check if identifier exists
     if (itIterator == mInterpolationTypeMap.end())
         throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeSetIsConstitutiveInput] Interpolation type does not exist.");
@@ -132,14 +132,14 @@ void NuTo::Structure::InterpolationTypeCreate(int rInterpolationTypeId, NuTo::In
 //! @param rTypeOrder ... type and order of interpolation
 void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, const std::string& rDofType, const std::string& rTypeOrder)
 {
-    InterpolationTypeAdd(rInterpolationTypeId,Node::AttributeToEnum(rDofType), Interpolation::TypeOrderToEnum(rTypeOrder));
+    InterpolationTypeAdd(rInterpolationTypeId,Node::DofToEnum(rDofType), Interpolation::TypeOrderToEnum(rTypeOrder));
 }
 
 //! @brief adds a dof to a interpolation type
 //! @param rInterpolationTypeId ... interpolation type id
 //! @param rDofType ... dof type
 //! @param rTypeOrder ... type and order of interpolation
-void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder)
+void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder)
 {
 
     boost::ptr_map<int,InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
@@ -174,95 +174,7 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node:
     }
 
     GroupDelete(elementGroupId);
+    UpdateDofStatus();
     SetShowTime(showTime);
 
 }
-
-//! @brief returns whether or not the dof is active, calls the enum method
-//! @param rInterpolationTypeId ... interpolation type id
-//! @param rDofType ... dof type
-bool NuTo::Structure::InterpolationTypeIsActive(int rInterpolationTypeId, const std::string& rDofType) const
-{
-    return InterpolationTypeIsActive(rInterpolationTypeId,Node::AttributeToEnum(rDofType));
-}
-
-//! @brief returns whether or not the dof is active
-//! @param rInterpolationTypeId ... interpolation type id
-//! @param rDofType ... dof type
-bool NuTo::Structure::InterpolationTypeIsActive(int rInterpolationTypeId, NuTo::Node::eAttributes rDofType) const
-{
-    // check if identifier exists
-    if (mInterpolationTypeMap.find(rInterpolationTypeId) == mInterpolationTypeMap.end())
-        throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeIsActive] Interpolation type does not exist.");
-
-    return mInterpolationTypeMap.at(rInterpolationTypeId).IsActive(rDofType);
-}
-
-//! @brief returns whether or not the dof is constitutive input, calls the enum method
-//! @param rInterpolationTypeId ... interpolation type id
-//! @param rDofType ... dof type
-bool NuTo::Structure::InterpolationTypeIsConstitutiveInput(int rInterpolationTypeId, const std::string& rDofType) const
-{
-    return InterpolationTypeIsConstitutiveInput(rInterpolationTypeId,Node::AttributeToEnum(rDofType));
-}
-
-//! @brief returns whether or not the dof is constitutive input
-//! @param rInterpolationTypeId ... interpolation type id
-//! @param rDofType ... dof type
-bool NuTo::Structure::InterpolationTypeIsConstitutiveInput(int rInterpolationTypeId, NuTo::Node::eAttributes rDofType) const
-{
-    // check if identifier exists
-    if (mInterpolationTypeMap.find(rInterpolationTypeId) == mInterpolationTypeMap.end())
-        throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeIsConstitutiveInput] Interpolation type does not exist.");
-
-    return mInterpolationTypeMap.at(rInterpolationTypeId).IsConstitutiveInput(rDofType);
-}
-
-//! @brief defines whether or not the dof is active, calls the enum method
-//! @param rInterpolationTypeId ... interpolation type id
-//! @param rDofType ... dof type
-//! @param rIsActive ... true if active
-void NuTo::Structure::InterpolationTypeSetIsActive(int rInterpolationTypeId, const std::string& rDofType, bool rIsActive)
-{
-    InterpolationTypeSetIsActive(rInterpolationTypeId,Node::AttributeToEnum(rDofType), rIsActive);
-}
-
-//! @brief defines whether or not the dof is active
-//! @param rInterpolationTypeId ... interpolation type id
-//! @param rDofType ... dof type
-//! @param rIsActive ... true if active
-void NuTo::Structure::InterpolationTypeSetIsActive(int rInterpolationTypeId, NuTo::Node::eAttributes rDofType, bool rIsActive)
-{
-    boost::ptr_map<int,InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
-    // check if identifier exists
-    if (itIterator == mInterpolationTypeMap.end())
-        throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeSetIsActive] Interpolation type does not exist.");
-
-    itIterator->second->SetIsActive(rIsActive, rDofType);
-}
-
-
-//! @brief defines whether or not the dof is constitutive input, calls the enum method
-//! @param rInterpolationTypeId ... interpolation type id
-//! @param rDofType ... dof type
-//! @param rIsConstitutiveInput ... true if constitutive input
-void NuTo::Structure::InterpolationTypeSetIsConstitutiveInput(int rInterpolationTypeId, const std::string& rDofType, bool rIsConstitutiveInput)
-{
-    InterpolationTypeSetIsConstitutiveInput(rInterpolationTypeId,Node::AttributeToEnum(rDofType), rIsConstitutiveInput);
-}
-
-//! @brief defines whether or not the dof is constitutive input
-//! @param rInterpolationTypeId ... interpolation type id
-//! @param rDofType ... dof type
-//! @param rIsConstitutiveInput ... true if constitutive input
-void NuTo::Structure::InterpolationTypeSetIsConstitutiveInput(int rInterpolationTypeId, NuTo::Node::eAttributes rDofType, bool rIsConstitutiveInput)
-{
-    boost::ptr_map<int,InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
-    // check if identifier exists
-    if (itIterator == mInterpolationTypeMap.end())
-        throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeSetIsConstitutiveInput] Interpolation type does not exist.");
-
-    itIterator->second->SetIsConstitutiveInput(rIsConstitutiveInput, rDofType);
-}
-
-

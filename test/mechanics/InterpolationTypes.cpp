@@ -284,7 +284,7 @@ void CheckAPI()
     double ly = 5;
 
     //create constitutive law
-    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
+    int myMatLin = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
     myStructure.ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 10);
     myStructure.ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.2);
 
@@ -330,19 +330,14 @@ void CheckAPI()
     //assign constitutive law
     myStructure.ElementTotalSetSection(mySection);
 
-    NuTo::SparseMatrixCSRVector2General<double> hessian;
-    NuTo::FullVector<double, Eigen::Dynamic> internalGradient, dummy;
-
     myStructure.NodeBuildGlobalDofs();
     myStructure.CalculateMaximumIndependentSets();
 
-    myStructure.BuildGlobalCoefficientMatrix0(hessian, dummy);
-    myStructure.BuildGlobalGradientInternalPotentialVector(internalGradient);
+    auto hessian = myStructure.BuildGlobalHessian0();
+    auto internalGradient = myStructure.BuildGlobalInternalGradient();
 
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> hessian_full(hessian);
-
-//    hessian_full.Info(10,3, true);
-//    internalGradient.Info(10,3, true);
+//    hessian.JJ.ExportToFullMatrix().Info(10,3, true);
+//    internalGradient.J.Export().Info(10,3, true);
 
 }
 
@@ -370,19 +365,14 @@ void ImportFromGmsh(std::string rMeshFile)
 
     myStructure.ElementTotalSetSection(section);
 
-    int constitutiveLaw = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
+    int constitutiveLaw = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
     myStructure.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 42);
     myStructure.ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, .25);
     myStructure.ElementTotalSetConstitutiveLaw(constitutiveLaw);
 
-    myStructure.NodeBuildGlobalDofs();
     myStructure.CalculateMaximumIndependentSets();
-    NuTo::FullVector<double, Eigen::Dynamic> actDofValues, depDofValues, internalGradient, dummy;
-    NuTo::SparseMatrixCSRVector2General<double> hessian0_CSR;
-
-    myStructure.BuildGlobalGradientInternalPotentialVector(internalGradient);
-    myStructure.BuildGlobalCoefficientMatrix0(hessian0_CSR, dummy);
-
+    auto hessian = myStructure.BuildGlobalHessian0();
+    auto internalGradient = myStructure.BuildGlobalInternalGradient();
 }
 
 

@@ -56,7 +56,7 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::NonlinearSolverBase
 
 	for (int j=0;j<n;j++) {
 		double temp=xh[j];
-		double h=EPS*fabs(temp);
+		double h=EPS*std::abs(temp);
 	   	if (h == 0.0) h=EPS;
 	   		xh[j]=temp+h;
 	   		h=xh[j]-temp;

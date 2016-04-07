@@ -19,7 +19,6 @@ SET(NuToVisualize_SOURCES
   VisualizeDataTensor.cpp
   VisualizeDataVector.cpp
   VisualizeDataType.cpp
-  VisualizeException.cpp
   VisualizeUnstructuredGrid.cpp
 )
 

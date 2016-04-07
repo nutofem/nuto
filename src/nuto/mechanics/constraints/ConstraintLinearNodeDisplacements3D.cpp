@@ -45,15 +45,15 @@ void NuTo::ConstraintLinearNodeDisplacements3D::SetRHS(double rRHS)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
 void NuTo::ConstraintLinearNodeDisplacements3D::AddToConstraintMatrix(int& curConstraintEquation,
-        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const
+        NuTo::SparseMatrix<double>& rConstraintMatrix)const
 {
     if (mNode->GetNumDisplacements()!=3)
         throw MechanicsException("[NuTo::ConstraintLinearNodeDisplacements3D::ConstraintBase] Node does not have displacements or has more than one displacement component.");
-    if (fabs(mDirection[0])>1e-18)
+    if (std::abs(mDirection[0])>1e-18)
         rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDofDisplacement(0),mDirection[0]);
-    if (fabs(mDirection[1])>1e-18)
+    if (std::abs(mDirection[1])>1e-18)
         rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDofDisplacement(1),mDirection[1]);
-    if (fabs(mDirection[2])>1e-18)
+    if (std::abs(mDirection[2])>1e-18)
         rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDofDisplacement(2),mDirection[2]);
 
     curConstraintEquation++;

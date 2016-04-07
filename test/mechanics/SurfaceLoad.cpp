@@ -12,8 +12,7 @@ double pressure = 42.;
 
 void CheckHydrostaticPressure(NuTo::Structure& rStructure)
 {
-    NuTo::FullVector<double, Eigen::Dynamic> extLoadVector;
-    rStructure.BuildGlobalExternalLoadVector(0, extLoadVector);
+    auto extLoadVector = rStructure.BuildGlobalExternalLoadVector(0).J[NuTo::Node::DISPLACEMENTS];
 
     int dimension = rStructure.GetDimension();
     int numNodes = rStructure.GetNumNodes();
@@ -26,21 +25,22 @@ void CheckHydrostaticPressure(NuTo::Structure& rStructure)
     for (int iNode = 0; iNode < numNodes; ++iNode)
         resForce += extLoadVector.block(dimension*iNode,0, dimension,1);
 
-    if (extLoadVector.Abs().Max() < 1.e-8)
+    if (extLoadVector.Abs().Max() < 1.e-6)
         throw NuTo::MechanicsException("[SurfaceLoad::CheckHydrostaticPressure] No external load at all!");
 
-    if (resForce.Abs().Max() > 1.e-8)
+    double relativeError = resForce.Abs().Max() / extLoadVector.Abs().Max();
+    std::cout << "Relative error: " << std::setw(10) << relativeError << "\t";
+    if (relativeError > 1.e-8)
     {
-        std::cout << "Resultant Load != 0:" << std::endl;
-        resForce.Info();
+        std::cout << "Result Load != 0:" << std::endl;
+        resForce.Info(20,10,false);
         std::cout << "Total external load vector:" << std::endl;
-        extLoadVector.Info();
+        extLoadVector.Info(20,10,false);
         throw NuTo::MechanicsException("[SurfaceLoad::CheckHydrostaticPressure] The resulting forces should cancel out. But they don't.");
     }
 }
 
-void HydrostaticPressureTriangle2D(NuTo::Interpolation::eTypeOrder rInterpolationCoords,
-                                   NuTo::Interpolation::eTypeOrder rInterpolationDisp)
+void HydrostaticPressureTriangle2D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
 {
     NuTo::Structure myStructure(2);
     myStructure.SetShowTime(false);
@@ -72,7 +72,7 @@ void HydrostaticPressureTriangle2D(NuTo::Interpolation::eTypeOrder rInterpolatio
 
     myStructure.InterpolationTypeCreate(0, NuTo::Interpolation::TRIANGLE2D);
 
-    myStructure.InterpolationTypeAdd(0, NuTo::Node::COORDINATES, rInterpolationCoords);
+    myStructure.InterpolationTypeAdd(0, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::DISPLACEMENTS, rInterpolationDisp);
 
     int elementGroup = myStructure.ElementsCreate(0,nodeIds);
@@ -86,12 +86,11 @@ void HydrostaticPressureTriangle2D(NuTo::Interpolation::eTypeOrder rInterpolatio
     myStructure.ElementTotalSetSection(section);
 
     CheckHydrostaticPressure(myStructure);
-    std::cout << "[SurfaceLoad::HydrostaticPressureTriangle2D] done." << std::endl;
+    std::cout << "[SurfaceLoad::HydrostaticPressureTriangle2D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;
 }
 
 
-void HydrostaticPressureQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationCoords,
-                               NuTo::Interpolation::eTypeOrder rInterpolationDisp)
+void HydrostaticPressureQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
 {
     NuTo::Structure myStructure(2);
     myStructure.SetShowTime(false);
@@ -126,7 +125,7 @@ void HydrostaticPressureQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationCoo
     myStructure.GroupAddNode(s.GetValue(3), nodeIds.GetValue(0));
 
     myStructure.InterpolationTypeCreate(0, NuTo::Interpolation::QUAD2D);
-    myStructure.InterpolationTypeAdd(0, NuTo::Node::COORDINATES, rInterpolationCoords);
+    myStructure.InterpolationTypeAdd(0, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::DISPLACEMENTS, rInterpolationDisp);
 
     int elementGroup = myStructure.ElementsCreate(0,nodeIds);
@@ -140,11 +139,10 @@ void HydrostaticPressureQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationCoo
     myStructure.ElementTotalSetSection(section);
 
     CheckHydrostaticPressure(myStructure);
-    std::cout << "[SurfaceLoad::HydrostaticPressureQuad2D] done." << std::endl;
+    std::cout << "[SurfaceLoad::HydrostaticPressureQuad2D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;
 }
 
-void HydrostaticPressureTetrahedron3D(NuTo::Interpolation::eTypeOrder rInterpolationCoords,
-                                      NuTo::Interpolation::eTypeOrder rInterpolationDisp)
+void HydrostaticPressureTetrahedron3D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
 {
     NuTo::Structure myStructure(3);
     myStructure.SetShowTime(false);
@@ -190,7 +188,7 @@ void HydrostaticPressureTetrahedron3D(NuTo::Interpolation::eTypeOrder rInterpola
 
 
     myStructure.InterpolationTypeCreate(0, NuTo::Interpolation::TETRAHEDRON3D);
-    myStructure.InterpolationTypeAdd(0, NuTo::Node::COORDINATES, rInterpolationCoords);
+    myStructure.InterpolationTypeAdd(0, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::DISPLACEMENTS, rInterpolationDisp);
 
     int elementGroup = myStructure.ElementsCreate(0,nodeIds);
@@ -200,11 +198,10 @@ void HydrostaticPressureTetrahedron3D(NuTo::Interpolation::eTypeOrder rInterpola
         myStructure.LoadSurfacePressureCreate3D(0, elementGroup, s.GetValue(iSurface), pressure);
 
     CheckHydrostaticPressure(myStructure);
-    std::cout << "[SurfaceLoad::HydrostaticPressureTetrahedron3D] done." << std::endl;
+    std::cout << "[SurfaceLoad::HydrostaticPressureTetrahedron3D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;
 }
 
-void HydrostaticPressureBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationCoords,
-                                NuTo::Interpolation::eTypeOrder rInterpolationDisp)
+void HydrostaticPressureBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
 {
     NuTo::Structure myStructure(3);
     myStructure.SetShowTime(false);
@@ -266,7 +263,7 @@ void HydrostaticPressureBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationCo
 
 
     myStructure.InterpolationTypeCreate(0, NuTo::Interpolation::BRICK3D);
-    myStructure.InterpolationTypeAdd(0, NuTo::Node::COORDINATES, rInterpolationCoords);
+    myStructure.InterpolationTypeAdd(0, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::DISPLACEMENTS, rInterpolationDisp);
 
     int elementGroup = myStructure.ElementsCreate(0,nodeIds);
@@ -277,41 +274,42 @@ void HydrostaticPressureBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationCo
 
 
     CheckHydrostaticPressure(myStructure);
-    std::cout << "[SurfaceLoad::HydrostaticPressureBrick3D] done." << std::endl;
+    std::cout << "[SurfaceLoad::HydrostaticPressureBrick3D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;
 }
 
 void CheckSurfaceLoad(NuTo::Structure& rStructure, const NuTo::FullVector<double, Eigen::Dynamic>& rLoad, double rSurfaceArea)
 {
-    NuTo::FullVector<double, Eigen::Dynamic> extLoadVector;
-    rStructure.BuildGlobalExternalLoadVector(0, extLoadVector);
+    auto extLoadVector = rStructure.BuildGlobalExternalLoadVector(0).J[NuTo::Node::DISPLACEMENTS];
 
     int dimension = rStructure.GetDimension();
     int numNodes = rStructure.GetNumNodes();
     if (extLoadVector.GetNumRows() != numNodes*dimension)
         throw NuTo::MechanicsException("[SurfaceLoad::CheckSurfaceLoad] F_ext.GetNumRows() != dimension * numNodes. Maybe you (mistakenly) applied constraints.");
 
-    NuTo::FullVector<double, Eigen::Dynamic> resForce(dimension), resForceCorrect(dimension);
+    NuTo::FullVector<double, Eigen::Dynamic> resForce(dimension);
 
     resForce.setZero();
     for (int iNode = 0; iNode < numNodes; ++iNode)
         resForce += extLoadVector.block(dimension*iNode,0, dimension,1);
 
 
-    resForceCorrect = rLoad * rSurfaceArea;
-    if ((resForce - resForceCorrect).cwiseAbs().maxCoeff() > 1.e-8)
+    NuTo::FullVector<double, Eigen::Dynamic> resForceCorrect = rLoad * rSurfaceArea;
+
+    double relativeError = (resForce - resForceCorrect).cwiseAbs().maxCoeff() / extLoadVector.Abs().Max();
+    std::cout << "Relative error: " << std::setw(10) << relativeError << "\t";
+    if (relativeError > 1.e-6)
     {
-        std::cout << "Resultant Load:" << std::endl;
-        resForce.Info();
-        std::cout << "Resultant Load correct:" << std::endl;
-        resForceCorrect.Info();
+        std::cout << "Result Load:" << std::endl;
+        resForce.Info(20,10,true);
+        std::cout << "Result Load correct:" << std::endl;
+        resForceCorrect.Info(20,10,true);
         std::cout << "Total external load vector:" << std::endl;
-        extLoadVector.Info();
+        extLoadVector.Info(20,10,true);
         throw NuTo::MechanicsException("[SurfaceLoad::CheckSurfaceLoad] Wrong external load calculation!");
     }
 }
 
-void SurfaceLoadTriangle2D(NuTo::Interpolation::eTypeOrder rInterpolationCoords,
-                           NuTo::Interpolation::eTypeOrder rInterpolationDisp)
+void SurfaceLoadTriangle2D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
 {
     NuTo::Structure myStructure(2);
     myStructure.SetShowTime(false);
@@ -335,7 +333,7 @@ void SurfaceLoadTriangle2D(NuTo::Interpolation::eTypeOrder rInterpolationCoords,
     double surfaceArea = thickness*std::sqrt(lx*lx + ly*ly);
 
     myStructure.InterpolationTypeCreate(0, NuTo::Interpolation::TRIANGLE2D);
-    myStructure.InterpolationTypeAdd(0, NuTo::Node::COORDINATES, rInterpolationCoords);
+    myStructure.InterpolationTypeAdd(0, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::DISPLACEMENTS, rInterpolationDisp);
 
     int elementGroup = myStructure.ElementsCreate(0,nodeIds);
@@ -351,12 +349,11 @@ void SurfaceLoadTriangle2D(NuTo::Interpolation::eTypeOrder rInterpolationCoords,
     myStructure.LoadSurfaceConstDirectionCreate2D(0, elementGroup, s, load);
 
     CheckSurfaceLoad(myStructure, load, surfaceArea);
-    std::cout << "[SurfaceLoad::SurfaceLoadTriangle2D] done." << std::endl;
+    std::cout << "[SurfaceLoad::SurfaceLoadTriangle2D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;
 }
 
 
-void SurfaceLoadQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationCoords,
-                       NuTo::Interpolation::eTypeOrder rInterpolationDisp)
+void SurfaceLoadQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
 {
     NuTo::Structure myStructure(2);
     myStructure.SetShowTime(false);
@@ -380,7 +377,7 @@ void SurfaceLoadQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationCoords,
     double surfaceArea = thickness*std::sqrt(lx*lx + ly*ly);
 
     myStructure.InterpolationTypeCreate(0, NuTo::Interpolation::QUAD2D);
-    myStructure.InterpolationTypeAdd(0, NuTo::Node::COORDINATES, rInterpolationCoords);
+    myStructure.InterpolationTypeAdd(0, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::DISPLACEMENTS, rInterpolationDisp);
 
     int elementGroup = myStructure.ElementsCreate(0,nodeIds);
@@ -396,11 +393,10 @@ void SurfaceLoadQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationCoords,
     myStructure.LoadSurfaceConstDirectionCreate2D(0, elementGroup, s, load);
 
     CheckSurfaceLoad(myStructure, load, surfaceArea);
-    std::cout << "[SurfaceLoad::SurfaceLoadQuad2D] done." << std::endl;
+    std::cout << "[SurfaceLoad::SurfaceLoadQuad2D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;
 }
 
-void SurfaceLoadTetrahedron3D(NuTo::Interpolation::eTypeOrder rInterpolationCoords,
-                              NuTo::Interpolation::eTypeOrder rInterpolationDisp)
+void SurfaceLoadTetrahedron3D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
 {
     NuTo::Structure myStructure(3);
     myStructure.SetShowTime(false);
@@ -434,7 +430,7 @@ void SurfaceLoadTetrahedron3D(NuTo::Interpolation::eTypeOrder rInterpolationCoor
     double surfaceArea = .5*lx*lz;
 
     myStructure.InterpolationTypeCreate(0, NuTo::Interpolation::TETRAHEDRON3D);
-    myStructure.InterpolationTypeAdd(0, NuTo::Node::COORDINATES, rInterpolationCoords);
+    myStructure.InterpolationTypeAdd(0, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::DISPLACEMENTS, rInterpolationDisp);
 
     int elementGroup = myStructure.ElementsCreate(0,nodeIds);
@@ -446,11 +442,10 @@ void SurfaceLoadTetrahedron3D(NuTo::Interpolation::eTypeOrder rInterpolationCoor
     myStructure.LoadSurfaceConstDirectionCreate3D(0, elementGroup, s, load);
 
     CheckSurfaceLoad(myStructure, load, surfaceArea);
-    std::cout << "[SurfaceLoad::SurfaceLoadTetrahedron3D] done." << std::endl;
+    std::cout << "[SurfaceLoad::SurfaceLoadTetrahedron3D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;
 }
 
-void SurfaceLoadBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationCoords,
-                        NuTo::Interpolation::eTypeOrder rInterpolationDisp)
+void SurfaceLoadBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
 {
     NuTo::Structure myStructure(3);
     myStructure.SetShowTime(false);
@@ -485,7 +480,7 @@ void SurfaceLoadBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationCoords,
     double surfaceArea = lx*lz;
 
     myStructure.InterpolationTypeCreate(0, NuTo::Interpolation::BRICK3D);
-    myStructure.InterpolationTypeAdd(0, NuTo::Node::COORDINATES, rInterpolationCoords);
+    myStructure.InterpolationTypeAdd(0, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::DISPLACEMENTS, rInterpolationDisp);
 
     int elementGroup = myStructure.ElementsCreate(0,nodeIds);
@@ -497,7 +492,7 @@ void SurfaceLoadBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationCoords,
     myStructure.LoadSurfaceConstDirectionCreate3D(0, elementGroup, s, load);
 
     CheckSurfaceLoad(myStructure, load, surfaceArea);
-    std::cout << "[SurfaceLoad::SurfaceLoadBrick3D] done." << std::endl;
+    std::cout << "[SurfaceLoad::SurfaceLoadBrick3D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;
 }
 
 
@@ -508,28 +503,57 @@ int main()
     // 2) pressure (normal) and surface load (certain direction) to be tested
     // 3) not axis aligned
     // 4) analytical solution as reference
-//    try
-//    {
+    try
+    {
 
-        HydrostaticPressureTriangle2D(NuTo::Interpolation::EQUIDISTANT1, NuTo::Interpolation::EQUIDISTANT3);
-        HydrostaticPressureQuad2D(NuTo::Interpolation::EQUIDISTANT1, NuTo::Interpolation::EQUIDISTANT1);
-        HydrostaticPressureBrick3D(NuTo::Interpolation::EQUIDISTANT1, NuTo::Interpolation::EQUIDISTANT1);
-        HydrostaticPressureTetrahedron3D(NuTo::Interpolation::EQUIDISTANT1, NuTo::Interpolation::EQUIDISTANT2);
+        HydrostaticPressureTriangle2D(      NuTo::Interpolation::EQUIDISTANT1);
+        HydrostaticPressureTriangle2D(      NuTo::Interpolation::EQUIDISTANT2);
+        HydrostaticPressureTriangle2D(      NuTo::Interpolation::EQUIDISTANT3);
+        HydrostaticPressureTriangle2D(      NuTo::Interpolation::EQUIDISTANT4);
 
-        SurfaceLoadTriangle2D(NuTo::Interpolation::EQUIDISTANT1, NuTo::Interpolation::EQUIDISTANT1);
+        HydrostaticPressureQuad2D(          NuTo::Interpolation::EQUIDISTANT1);
+        HydrostaticPressureQuad2D(          NuTo::Interpolation::EQUIDISTANT2);
+        HydrostaticPressureQuad2D(          NuTo::Interpolation::LOBATTO2);
+        HydrostaticPressureQuad2D(          NuTo::Interpolation::LOBATTO3);
+        HydrostaticPressureQuad2D(          NuTo::Interpolation::LOBATTO4);
 
-        SurfaceLoadQuad2D(NuTo::Interpolation::EQUIDISTANT1,NuTo::Interpolation::EQUIDISTANT1);
-        SurfaceLoadQuad2D(NuTo::Interpolation::EQUIDISTANT1,NuTo::Interpolation::EQUIDISTANT2);
+        HydrostaticPressureTetrahedron3D(   NuTo::Interpolation::EQUIDISTANT1);
+        HydrostaticPressureTetrahedron3D(   NuTo::Interpolation::EQUIDISTANT2);
 
-        SurfaceLoadTetrahedron3D(NuTo::Interpolation::EQUIDISTANT1,NuTo::Interpolation::EQUIDISTANT2);
-        SurfaceLoadBrick3D(NuTo::Interpolation::EQUIDISTANT1,NuTo::Interpolation::EQUIDISTANT1);
+        HydrostaticPressureBrick3D(         NuTo::Interpolation::EQUIDISTANT1);
+        HydrostaticPressureBrick3D(         NuTo::Interpolation::EQUIDISTANT2);
+        HydrostaticPressureBrick3D(         NuTo::Interpolation::LOBATTO2);
+        HydrostaticPressureBrick3D(         NuTo::Interpolation::LOBATTO3);
+        HydrostaticPressureBrick3D(         NuTo::Interpolation::LOBATTO4);
 
-//    }
-//    catch (NuTo::Exception& e)
-//    {
-//        std::cout << e.ErrorMessage() << std::endl;
-//        return -1;
-//    }
+        SurfaceLoadTriangle2D(              NuTo::Interpolation::EQUIDISTANT1);
+        SurfaceLoadTriangle2D(              NuTo::Interpolation::EQUIDISTANT2);
+        SurfaceLoadTriangle2D(              NuTo::Interpolation::EQUIDISTANT3);
+        SurfaceLoadTriangle2D(              NuTo::Interpolation::EQUIDISTANT4);
 
-    return 0;
+        SurfaceLoadQuad2D(                  NuTo::Interpolation::EQUIDISTANT1);
+        SurfaceLoadQuad2D(                  NuTo::Interpolation::EQUIDISTANT2);
+        SurfaceLoadQuad2D(                  NuTo::Interpolation::LOBATTO2);
+        SurfaceLoadQuad2D(                  NuTo::Interpolation::LOBATTO3);
+        SurfaceLoadQuad2D(                  NuTo::Interpolation::LOBATTO4);
+
+        SurfaceLoadTetrahedron3D(           NuTo::Interpolation::EQUIDISTANT1);
+        SurfaceLoadTetrahedron3D(           NuTo::Interpolation::EQUIDISTANT2);
+
+        SurfaceLoadBrick3D(                 NuTo::Interpolation::EQUIDISTANT1);
+        SurfaceLoadBrick3D(                 NuTo::Interpolation::EQUIDISTANT2);
+        SurfaceLoadBrick3D(                 NuTo::Interpolation::LOBATTO2);
+        SurfaceLoadBrick3D(                 NuTo::Interpolation::LOBATTO3);
+        SurfaceLoadBrick3D(                 NuTo::Interpolation::LOBATTO4);
+
+
+
+    }
+    catch (NuTo::Exception& e)
+    {
+        std::cout << e.ErrorMessage() << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
 }

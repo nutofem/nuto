@@ -1,14 +1,13 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/base/Timer.h"
+#include "nuto/mechanics/groups/Group.h"
 
 //! @brief ... Adds all elements to a group based on the type
 //! @param ... rIdentGroup identifier for the group
 //! @param ... rInterpolationType  identifier for the interpolation type
 void NuTo::Structure::GroupAddElementFromType(int rIdentGroup, int rInterpolationType)
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
+    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
     try
     {
 		boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
@@ -41,12 +40,6 @@ void NuTo::Structure::GroupAddElementFromType(int rIdentGroup, int rInterpolatio
         throw NuTo::MechanicsException
            ("[NuTo::Structure::GroupAddElementFromType] Error adding element.");
     }
-
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::Structure::GroupAddElementFromType] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-#endif
 }
 
 
@@ -55,10 +48,8 @@ void NuTo::Structure::GroupAddElementFromType(int rIdentGroup, int rInterpolatio
 //! @param ... rIdentNode  identifier for the node
 void NuTo::Structure::GroupAddElement(int rIdentGroup, int rIdElement)
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
+    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
+
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::GroupAddElement] Group with the given identifier does not exist.");
@@ -66,19 +57,11 @@ void NuTo::Structure::GroupAddElement(int rIdentGroup, int rIdElement)
         throw MechanicsException("[NuTo::Structure::GroupAddElement] An element can be added only to an element group.");
 
     itGroup->second->AddMember(rIdElement, ElementGetElementPtr(rIdElement));
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::Structure::GroupAddElement] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-#endif
 }
 
 void NuTo::Structure::GroupAddElementsTotal(int rIdentGroup)
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
+    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
 
@@ -89,22 +72,34 @@ void NuTo::Structure::GroupAddElementsTotal(int rIdentGroup)
         throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t An element can be added only to an element group.");
 
     for (auto const& iPair : mElementMap)
-        itGroup->second->AddMember(iPair.first, ElementGetElementPtr(iPair.first));
+        itGroup->second->AddMember(iPair.first, iPair.second);
+}
 
+int NuTo::Structure::GroupGetElementsTotal()
+{
+    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<< __PRETTY_FUNCTION__ << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-#endif
+    int groupId = GroupCreate(Groups::Elements);
+    auto& elementGroup = *(mGroupMap.at(groupId).AsGroupElement());
+    for (auto const& iPair : mElementMap)
+        elementGroup.AddMember(iPair.first, iPair.second);
+    return groupId;
+}
+
+int NuTo::Structure::GroupGetNodesTotal()
+{
+    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
+
+    int groupId = GroupCreate(Groups::Nodes);
+    auto& elementGroup = *(mGroupMap.at(groupId).AsGroupNode());
+    for (auto const& iPair : mNodeMap)
+        elementGroup.AddMember(iPair.first, iPair.second);
+    return groupId;
 }
 
 void NuTo::Structure::GroupAddNodeFromElementGroupCoordinateRange(int rIdentNodeGroup, int rSearchIdentElementGroup, int rDirection, double rMin, double rMax)
 {
-#ifdef SHOW_TIME
-    std::clock_t start, end;
-    start = clock();
-#endif
+    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentNodeGroup);
     if (itGroup == mGroupMap.end())
@@ -139,13 +134,5 @@ void NuTo::Structure::GroupAddNodeFromElementGroupCoordinateRange(int rIdentNode
         if (coordinate >= rMin and coordinate <= rMax)
             itGroup->second->AddMember(iNodeId, nodePtr);
     }
-
-
-
-#ifdef SHOW_TIME
-    end = clock();
-    if (mShowTime)
-        std::cout << "__PRETTY_FUNCTION__ " << difftime(end, start) / CLOCKS_PER_SEC << "sec" << std::endl;
-#endif
 }
 

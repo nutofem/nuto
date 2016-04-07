@@ -84,20 +84,13 @@ public:
     //! @brief ... add sparse matrix
     //! @param rMatrix ... sparse matrix
     //! @return ... this
-#ifndef SWIG
 	SparseMatrix<T>& operator += (const SparseMatrixCSRVector2Symmetric<T>& rMatrix) override;
-#else
-	SparseMatrix<T>& operator += (const SparseMatrixCSRVector2Symmetric<T>& rMatrix);
-#endif// SWIG
 
 	//! @brief ... add sparse matrix
     //! @param rMatrix ... sparse matrix
     //! @return ... this
-#ifndef SWIG
 	SparseMatrix<T>& operator += (const SparseMatrixCSRSymmetric<T>& rMatrix) override;
-#else
-	SparseMatrix<T>& operator += (const SparseMatrixCSRSymmetric<T>& rMatrix);
-#endif
+
 
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
@@ -107,22 +100,16 @@ public:
     //! @brief ... resize the matrix and initialize everything to zero
     //! @param  rRow ... number of rows
     //! @param  rCol ... number of columns
-    virtual void Resize(int rRow, int rCol) override;
+    void Resize(int rRow, int rCol) override;
 
     //! @brief ... resize the matrix and initialize everything to zero
     //! @param  rRow ... number of rows=number of columns
     void Resize(int rRow);
 
-#ifndef SWIG
     SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric()override;
-#else
-    SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric();
-#endif
 
 #ifndef SWIG
     const SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric()const override;
-#else
-    const SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric()const;
 #endif
 
 #ifdef ENABLE_SERIALIZATION

@@ -19,23 +19,9 @@ bool NuTo::IntegrationType2D::CheckElementCompatibility(NuTo::Element::eElementT
 {
     switch (rElementType)
     {
-    case NuTo::Element::BOUNDARYELEMENT3D:
-        return true;
-    case NuTo::Element::BOUNDARYELEMENT3DADDITIONALNODE:
-        return true;
-    case NuTo::Element::ELEMENT2D:
-        return true;
-    case NuTo::Element::PLANE2D3N:
-        return true;
-    case NuTo::Element::PLANE2D4N:
-        return true;
-    case NuTo::Element::PLANE2D4NSPECTRALORDER2:
-        return true;
-    case NuTo::Element::PLANE2D4NSPECTRALORDER3:
-        return true;
-    case NuTo::Element::PLANE2D4NSPECTRALORDER4:
-        return true;
-    case NuTo::Element::PLANE2D6N:
+    case NuTo::Element::CONTINUUMELEMENT:
+    case NuTo::Element::CONTINUUMBOUNDARYELEMENT:
+    case NuTo::Element::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
         return true;
     default:
         return false;

@@ -8,6 +8,7 @@
 #include <sstream>
 #include <iostream>
 #include <string>
+#include <random>
 #include <assert.h>
 
 #ifdef ENABLE_SERIALIZATION
@@ -125,14 +126,30 @@ public:
         format_message << std::setprecision(12) << std::setw(15) << std::showpoint << value;
         return format_message.str();
     }
+
 protected:
 
+    //! @brief ... resizes and fills the matrix rMatrix with rNumValues random values
+    //! @param rMatrix ... Matrix<T>
+    //! @param rDensity ... approximate density = numValues / (rNumRows*rNumColumns)
+    //! @param rSeed ... random seed
+    static void FillMatrixRandom(Matrix& rMatrix, double rDensity, int rSeed)
+    {
+        std::mt19937 gen(rSeed);
+        std::uniform_real_distribution<double> value_distribution(0., 10.);
+        std::uniform_int_distribution<int> row_distribution(0, rMatrix.GetNumRows() - 1);
+        std::uniform_int_distribution<int> col_distribution(0, rMatrix.GetNumColumns() - 1);
 
+        int numValues = (int) (rDensity * rMatrix.GetNumRows() * rMatrix.GetNumColumns());
 
-    //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
-    //!            in case of restoring from a file with the wrong object type, the file id is printed
-    //! @return    class name
-    std::string GetTypeId();
+        for (int i = 0; i < numValues; ++i)
+        {
+            int row = row_distribution(gen);
+            int col = col_distribution(gen);
+            double val = value_distribution(gen);
+            rMatrix.AddValue(row, col, val);
+        }
+    }
 
     enum SLangObjectKind
     {

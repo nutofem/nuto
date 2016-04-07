@@ -1,6 +1,5 @@
-// $Id$
-#ifndef NodeDof_DEF_H
-#define NodeDof_DEF_H
+#pragma once
+
 
 #ifdef ENABLE_SERIALIZATION
 // serialize
@@ -117,8 +116,11 @@ public:
     //! @param rDOF current maximum DOF, this variable is increased within the routine
     void SetGlobalDofs(int& rDOF) override ;
 
+    //! @brief sets the global dofs numbers for each dof type
+    //! @param rDofNumbers ... map containing the dof type and the current number
+    void SetGlobalDofsNumbers(std::map<Node::eDof, int>& rDofNumbers) override;
+
     //! @brief write dof values to the node (based on global dof number)
-    //! @param  rTimeDerivative (set eq. displacements=0, velocities=1, accelerations=2
     //! @param  rTimeDerivative (set eq. displacements=0, velocities=1, accelerations=2
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
@@ -126,14 +128,32 @@ public:
 
     //! @brief extract dof values from the node (based on global dof number)
     //! @param  rTimeDerivative (set eq. displacements=0, velocities=1, accelerations=2
-    //! @param  rTimeDerivative (set eq. displacements=0, velocities=1, accelerations=2
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
     void GetGlobalDofValues(int rTimeDerivative, FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const override;
 
+    //! @brief write dof values to the node (based on global dof number)
+    //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
+    //! @param rDofType ... specific dof type
+    //! @param rActiveDofValues ... active dof values
+    //! @param rDependentDofValues ... dependent dof values
+    void SetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues) override;
+
+    //! @brief extract dof values from the node (based on global dof number)
+    //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
+    //! @param rDofType ... specific dof type
+    //! @param rActiveDofValues ... active dof values
+    //! @param rDependentDofValues ... dependent dof values
+    void GetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const override;
+
     //! @brief renumber the global dofs according to predefined ordering
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
     void RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering) override;
+
+    //! @brief renumber the global dofs according to predefined ordering
+    //! @param rDofType ... specific dof type
+    //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
+    void RenumberGlobalDofs(Node::eDof rDofType, std::vector<int>& rMappingInitialToNewOrdering) override;
 
     //! @brief returns the number of time derivatives stored at the node
     //! @return number of derivatives
@@ -144,133 +164,26 @@ public:
     //! @return string
     std::string GetNodeTypeStr() const override;
 
-
-//    //*************************************************
-//    //************      TEMPERATURE     ***************
-//    //*************************************************
-//
-//    int GetNumTemperatures() const override;
-//    int GetDofTemperature() const override;
-//
-//    double GetTemperature() const override;
-//    double GetTemperature(int rTimeDerivative) const override;
-//
-//    void SetTemperature(double rTemperature) override;
-//    void SetTemperature(int rTimeDerivative, double rTemperature) override;
-//
-//    //*************************************************
-//    //********  NONLOCAL EQ PLASTIC STRAIN  ***********
-//    //*************************************************
-//
-//    int GetNumNonlocalEqPlasticStrain() const override;
-//    int GetDofNonlocalEqPlasticStrain(int rComponent) const override;
-//
-//    const Eigen::Matrix<double, 2, 1>& GetNonlocalEqPlasticStrain() const override;
-//    const Eigen::Matrix<double, 2, 1>& GetNonlocalEqPlasticStrain(int rTimeDerivative) const override;
-//
-//    void SetNonlocalEqPlasticStrain(const Eigen::Matrix<double, 2, 1>& rNonlocalEqPlasticStrain) override;
-//    void SetNonlocalEqPlasticStrain(int rTimeDerivative, const Eigen::Matrix<double, 2, 1>& rNonlocalEqPlasticStrain) override;
-//
-//    //*************************************************
-//    //********    NONLOCAL TOTAL STRAIN     ***********
-//    //*************************************************
-//
-//    int GetNumNonlocalTotalStrain()const override;
-//    int GetDofNonlocalTotalStrain(int rComponent)const override;
-//    double GetNonlocalTotalStrain(short rIndex)const override;
-//
-//    const Eigen::Matrix<double, 1, 1>& GetNonlocalTotalStrain1D() const override;
-//    const Eigen::Matrix<double, 3, 1>& GetNonlocalTotalStrain2D() const override;
-//    const Eigen::Matrix<double, 6, 1>& GetNonlocalTotalStrain3D() const override;
-//    const Eigen::Matrix<double, Eigen::Dynamic, 1>& GetNonlocalTotalStrains() const override;
-//
-//    const Eigen::Matrix<double, 1, 1>& GetNonlocalTotalStrain1D(int rTimeDerivative) const override;
-//    const Eigen::Matrix<double, 3, 1>& GetNonlocalTotalStrain2D(int rTimeDerivative) const override;
-//    const Eigen::Matrix<double, 6, 1>& GetNonlocalTotalStrain3D(int rTimeDerivative) const override;
-//    const Eigen::Matrix<double, Eigen::Dynamic, 1>& GetNonlocalTotalStrains(int rTimeDerivative) const override;
-//
-//    void SetNonlocalTotalStrain1D(const Eigen::Matrix<double, 1, 1>& rNonlocalTotalStrain) override;
-//    void SetNonlocalTotalStrain2D(const Eigen::Matrix<double, 3, 1>& rNonlocalTotalStrain) override;
-//    void SetNonlocalTotalStrain3D(const Eigen::Matrix<double, 6, 1>& rNonlocalTotalStrain) override;
-//
-//    void SetNonlocalTotalStrain1D(int rTimeDerivative, const Eigen::Matrix<double, 1, 1>& rNonlocalTotalStrain) override;
-//    void SetNonlocalTotalStrain2D(int rTimeDerivative, const Eigen::Matrix<double, 3, 1>& rNonlocalTotalStrain) override;
-//    void SetNonlocalTotalStrain3D(int rTimeDerivative, const Eigen::Matrix<double, 6, 1>& rNonlocalTotalStrain) override;
-//
-//    //*************************************************
-//    //*******   NONLOCAL EQUIVALENT STRAIN   **********
-//    //*************************************************
-//
-//    int GetNumNonlocalEqStrain() const override;
-//    int GetDofNonlocalEqStrain() const override;
-//
-//    double GetNonlocalEqStrain() const override;
-//    double GetNonlocalEqStrain(int rTimeDerivative) const override;
-//
-//    void SetNonlocalEqStrain(double rNonlocalEqStrain) override;
-//    void SetNonlocalEqStrain(int rTimeDerivative, double rNonlocalEqStrain) override;
-//
-//    //*************************************************
-//    //*******      WATER PHASE FRACTION      **********
-//    //*************************************************
-//
-//    int GetNumWaterPhaseFraction() const override;
-//    int GetDofWaterPhaseFraction() const override;
-//
-//    double GetWaterPhaseFraction() const override;
-//    double GetWaterPhaseFraction(int rTimeDerivative) const override;
-//
-//    void SetWaterPhaseFraction(double rWaterPhaseFraction) override;
-//    void SetWaterPhaseFraction(int rTimeDerivative, double rWaterPhaseFraction) override;
-//
-//    //*************************************************
-//    //*******       RELATIVE HUMIDITY        **********
-//    //*************************************************
-//
-//    int GetNumRelativeHumidity() const override;
-//    int GetDofRelativeHumidity() const override;
-//
-//    double GetRelativeHumidity() const override;
-//    double GetRelativeHumidity(int rTimeDerivative) const override;
-//
-//    void SetRelativeHumidity(double rRelativeHumidity) override;
-//    void SetRelativeHumidity(int rTimeDerivative, double rRelativeHumidity) override;
-
-
-    //! @brief returns the type of node as a string (all the data stored at the node)
-    //! @return string
-    //std::string GetNodeDofypeStr()const override;
-
-    //! @brief returns the type of node as an enum (all the data stored at the node)
-    //! @return enum
-    //Node::eNodeDofype GetNodeDofype()const;
-
     //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
     NodeBase* Clone() const override;
 
-protected:
+private:
 
-//    std::array<Eigen::Matrix<double, TNumTemperatures, 1>,TNumTimeDerivatives+1> mTemperatures;
-//    std::array<int, TNumTemperatures> mDofTemperatures;
-//
-//    std::array<Eigen::Matrix<double, TNumNonlocalEqPlasticStrain, 1>,TNumTimeDerivatives+1> mNonlocalEqPlasticStrain;
-//    std::array<int, TNumNonlocalEqPlasticStrain> mDofNonlocalEqPlasticStrain;
-//
-//    std::array<Eigen::Matrix<double, TNumNonlocalTotalStrain, 1>,TNumTimeDerivatives+1> mNonlocalTotalStrain;
-//    std::array<int, TNumNonlocalTotalStrain> mDofNonlocalTotalStrain;
-//
-//    std::array<Eigen::Matrix<double, TNumNonlocalEqStrain, 1>,TNumTimeDerivatives+1> mNonlocalEqStrain;
-//    std::array<int, TNumNonlocalEqStrain> mDofNonlocalEqStrain;
-//
-//    std::array<Eigen::Matrix<double, TNumWaterPhaseFraction, 1>,TNumTimeDerivatives+1> mWaterPhaseFraction;
-//    std::array<int, TNumWaterPhaseFraction> mDofWaterPhaseFraction;
-//
-//    std::array<Eigen::Matrix<double, TNumRelativeHumidity, 1>,TNumTimeDerivatives+1> mRelativeHumidity;
-//    std::array<int, TNumRelativeHumidity> mDofRelativeHumidity;
+    //! @brief extracts the appropriate dof value from the active dof vector or the dependent dof vector
+    //! @param rDofNumber ... dof number
+    //! @param rActiveDofValues ... active dof values
+    //! @param rDependentDofValues ... dependent dof values
+    //! @return dof value that corresponds to the rDofNumber
+    inline double GetDofValueFromVector(int rDofNumber, const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues) const;
+
+    //! @brief writes the appropriate dof value to the active dof vector or the dependent dof vector
+    //! @param rDofNumber ... dof number
+    //! @param rDofValue ... dof value
+    //! @param rActiveDofValues ... active dof values
+    //! @param rDependentDofValues ... dependent dof values
+    inline void WriteNodeValueToVector(int rDofNumber, double rDofValue, FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const;
+
 
 };
 
 }//namespace NuTo
-
-#endif //NodeDof_DEF_H
-

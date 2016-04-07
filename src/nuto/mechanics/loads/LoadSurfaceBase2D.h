@@ -19,7 +19,7 @@
 namespace NuTo
 {
 class NodeBase;
-class Element2D;
+template<int TDim> class ContinuumElement;
 class StructureBase;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -64,10 +64,10 @@ public:
 
         std::vector<std::pair<std::uintptr_t, int> >  mElements2DAddress;
         ar & boost::serialization::make_nvp("mElements2D", mElements2DAddress);
-        for(std::vector<std::pair<std::uintptr_t, int> >::const_iterator it = mElements2DAddress.begin(); it != mElements2DAddress.end(); it++)
+        for(auto it : mElements2DAddress)
         {
-            const Element2D* tempElement2D = reinterpret_cast<const Element2D* >(it->first);
-            std::pair<const Element2D*, int> tempPair(tempElement2D, it->second);
+            const ContinuumElement<2>* tempElement2D = reinterpret_cast<const ContinuumElement<2>* >(it.first);
+            std::pair<const ContinuumElement<2>*, int> tempPair(tempElement2D, it.second);
             mElements2D.push_back(tempPair);
         }
 
@@ -95,10 +95,10 @@ public:
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase);
 
         std::vector<std::pair<std::uintptr_t, int> >  mElements2DAddress;
-        for(std::vector<std::pair<const Element2D*, int> >::const_iterator it = mElements2D.begin(); it != mElements2D.end(); it++)
+        for(auto it : mElements2D)
         {
-            std::uintptr_t tempAddressElement2D = reinterpret_cast<std::uintptr_t >(it->first);
-            std::pair<std::uintptr_t, int> tempPair(tempAddressElement2D, it->second);
+            std::uintptr_t tempAddressElement2D = reinterpret_cast<std::uintptr_t >(it.first);
+            std::pair<std::uintptr_t, int> tempPair(tempAddressElement2D, it.second);
             mElements2DAddress.push_back(tempPair);
         }
         ar & boost::serialization::make_nvp("mElements2D", mElements2DAddress);
@@ -122,14 +122,14 @@ public:
     //! @param mNodeMapCast   std::map containing the old and new Addresses
     virtual void SetElementPtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mElementMapCast) override
     {
-        for(std::vector<std::pair<const Element2D*, int> >::const_iterator it = mElements2D.begin(); it != mElements2D.end(); it++)
+        for(auto it : mElements2D)
         {
-            std::uintptr_t temp = reinterpret_cast<std::uintptr_t>(it->first);
+            std::uintptr_t temp = reinterpret_cast<std::uintptr_t>(it.first);
             std::map<std::uintptr_t, std::uintptr_t>::const_iterator itCast = mElementMapCast.find(temp);
             if(itCast!=mElementMapCast.end())
             {
-                Element2D** tempPtr = const_cast<Element2D**>(&(it->first));
-                *tempPtr = reinterpret_cast<Element2D*>(itCast->second);
+                ContinuumElement<2>** tempPtr = const_cast<ContinuumElement<2>**>(&(it.first));
+                *tempPtr = reinterpret_cast<ContinuumElement<2>*>(itCast->second);
             }
             else
                 throw MechanicsException("[NuTo::LoadSurfaceBase2D] The Element2D-Pointer could not be updated.");
@@ -138,7 +138,7 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
-    std::vector<std::pair<const Element2D*, int> > mElements2D;
+    std::vector<std::pair<const ContinuumElement<2>*, int> > mElements2D;
     IntegrationTypeBase* mIntegrationType2NPtr;
     IntegrationTypeBase* mIntegrationType3NPtr;
     IntegrationTypeBase* mIntegrationType4NPtr;

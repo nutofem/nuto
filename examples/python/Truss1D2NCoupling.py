@@ -8,8 +8,8 @@ Section1 = myStructure.SectionCreate("TRUSS")
 myStructure.SectionSetArea(Section1, 1)
 
 # create material law
-Material1 = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
-myStructure.ConstitutiveLawSetParameterDouble(Material1,"YoungsModulus", 1)
+Material1 = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress")
+myStructure.ConstitutiveLawSetParameterDouble(Material1,"Youngs_Modulus", 1)
 
 # create nodes
 nodeCoordinates = nuto.DoubleFullVector(1)
@@ -53,41 +53,12 @@ myStructure.LoadCreateNodeForce(loadCase, 4, direction, 1)
 myStructure.CalculateMaximumIndependentSets()
 
 # start analysis
-myStructure.NodeBuildGlobalDofs()
+myStructure.SolveGlobalSystemStaticElastic(loadCase)
+intGradient = myStructure.BuildGlobalInternalGradient().J
+extGradient = myStructure.BuildGlobalExternalLoadVector(loadCase).J
+residual = intGradient.Get("Displacements") - extGradient.Get("Displacements")
 
-# build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-print "build stiffness matrix"
-stiffnessMatrix = nuto.DoubleSparseMatrixCSRVector2General()
-dispForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
-stiffnessMatrix.RemoveZeroEntries(0,1e-14)
 
-# build global external load vector
-print "build external force vector"
-extForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalExternalLoadVector(loadCase, extForceVector)
-
-# calculate right hand side
-print "build right-hand-side vector"
-rhsVector = dispForceVector + extForceVector
-
-# solve
-print "solve"
-mySolver = nuto.SparseDirectSolverMUMPS()
-displacementVector = nuto.DoubleFullVector()
-stiffnessMatrixCSR = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrix)
-stiffnessMatrixCSR.SetOneBasedIndexing()
-mySolver.Solve(stiffnessMatrixCSR, rhsVector, displacementVector)
-
-# write displacements to node
-print "merge displacements"
-myStructure.NodeMergeActiveDofValues(displacementVector)
-
-# calculate residual
-print "calculate residual"
-intForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector)
-residualVector = extForceVector - intForceVector
-print "residual: " + str(residualVector.Norm())
+print "residual: " + str(residual.Norm())
 
 

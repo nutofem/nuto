@@ -18,17 +18,24 @@
 #include "nuto/mechanics/nodes/NodeBase.h"
 
 // constructor
-NuTo::ConstraintLinearEquation::ConstraintLinearEquation(const NodeBase* rNode, Node::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRhsValue)
+NuTo::ConstraintLinearEquation::ConstraintLinearEquation(const NodeBase* rNode, Node::eDof rDofType, int rDofComponent, double rCoefficient, double rRhsValue)
 {
     this->AddTerm(rNode, rDofType, rDofComponent, rCoefficient);
     this->mRhsValue = rRhsValue;
 }
 
 // add term
-void NuTo::ConstraintLinearEquation::AddTerm(const NodeBase* rNode, Node::eAttributes rDofType, int rDofComponent, double rCoefficient)
+void NuTo::ConstraintLinearEquation::AddTerm(const NodeBase* rNode, Node::eDof rDofType, int rDofComponent, double rCoefficient)
 {
     try
     {
+        if (mTerms.size() != 0)
+            if (mTerms[0].GetDofType() != rDofType)
+            {
+                throw NuTo::MechanicsException(std::string("[NuTo::ConstraintLinearEquation::AddTerm] Constraints between different dof types (")
+                + Node::DofToString(mTerms[0].GetDofType()) + " and " + Node::DofToString(rDofType) + ") currently not supported. Please (pleeeaaaaase!!!), feel free to implement it.");
+            }
+
         ConstraintEquationTerm term(rNode, rDofType, rDofComponent, rCoefficient);
         this->mTerms.push_back(term);
     }
@@ -41,7 +48,7 @@ void NuTo::ConstraintLinearEquation::AddTerm(const NodeBase* rNode, Node::eAttri
 
 // add constraint equation to constraint matrix
 void NuTo::ConstraintLinearEquation::AddToConstraintMatrix(int& rConstraintLinearEquation,
-		NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix) const
+		NuTo::SparseMatrix<double>& rConstraintMatrix) const
 {
     // loop over constraint terms
     for (unsigned int termCount = 0; termCount < this->mTerms.size(); termCount++)

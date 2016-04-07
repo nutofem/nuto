@@ -17,10 +17,6 @@
 #include <boost/ptr_container/ptr_list.hpp>
 
 
-#ifdef SHOW_TIME
-#include <ctime>
-#endif
-
 # ifdef _OPENMP
 #include <omp.h>
 # endif
@@ -31,8 +27,11 @@
 #include <string>
 
 #include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/base/Timer.h"
 #include "nuto/math/SparseDirectSolverMUMPS.h"
 #include "nuto/math/SparseDirectSolverMKLPardiso.h"
+#include "nuto/math/SparseDirectSolverPardiso.h"
+
 #include "nuto/math/SparseMatrixCSRSymmetric.h"
 #include "nuto/math/SparseMatrixCSRVector2General.h"
 #include "nuto/mechanics/elements/ElementBase.h"
@@ -69,6 +68,7 @@
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/structures/StructureOutputBase.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
@@ -77,7 +77,10 @@
 #endif // ENABLE_VISUALIZE
 
 
-NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObject()
+NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObject(),
+        mConstraintMatrix(mDofStatus, false),
+        mConstraintMappingRHS(mDofStatus, false),
+        mConstraintRHS(mDofStatus)
 {
     if (rDimension!=1 && rDimension!=2 && rDimension!=3)
     {
@@ -86,8 +89,6 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
     mDimension = rDimension;
     mPrevTime = 0.;
     mTime = 0.;
-    mNumActiveDofs = 0;
-    mNumDofs   = 0;
     mNodeNumberingRequired = true;
     mNumExtrapolatedCycles = 0;
 
@@ -162,12 +163,8 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
     mHaveTmpStaticData = false;
     mUpdateTmpStaticDataRequired = true;
     mToleranceStiffnessEntries = 0.;
-    mHessianConstant[0] = false;  // consider only the stiffness matrix to be variable, damping and mass are constant
-    mHessianConstant[1] = true;   // as a consequence, the inertia term is not considered in the internal gradient routine
-    mHessianConstant[2] = true;   // similar the damping term
 
 #ifdef _OPENMP
-    mUseMIS = true;
     // then the environment variable is used
     mNumProcessors = 1;
 #endif // _OPENMP
@@ -192,8 +189,11 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     mLogger << "start serialization of structure base" << "\n";
 #endif
+
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject);
     ar & BOOST_SERIALIZATION_NVP(mNumTimeDerivatives);
+    ar & BOOST_SERIALIZATION_NVP(mPrevTime);
+    ar & BOOST_SERIALIZATION_NVP(mTime);
     ar & BOOST_SERIALIZATION_NVP(mDimension);
     ar & BOOST_SERIALIZATION_NVP(mConstitutiveLawMap);
     ar & BOOST_SERIALIZATION_NVP(mConstraintMap);
@@ -202,15 +202,16 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_NVP(mGroupMap);
     ar & BOOST_SERIALIZATION_NVP(mIntegrationTypeMap);
     ar & BOOST_SERIALIZATION_NVP(mSectionMap);
+    ar & BOOST_SERIALIZATION_NVP(mInterpolationTypeMap);
     ar & BOOST_SERIALIZATION_NVP(mMappingIntEnum2String);
 #ifdef ENABLE_VISUALIZE
 //    ar & BOOST_SERIALIZATION_NVP(mGroupVisualizeComponentsMap);
     std::cout << "WARNING: Visualization components are not serialized!\n";
 #endif
-    ar & BOOST_SERIALIZATION_NVP(mNumDofs);
-    ar & BOOST_SERIALIZATION_NVP(mNumActiveDofs);
+    ar & BOOST_SERIALIZATION_NVP(mDofStatus);
     ar & BOOST_SERIALIZATION_NVP(mNodeNumberingRequired);
     ar & BOOST_SERIALIZATION_NVP(mConstraintMatrix);
+    ar & BOOST_SERIALIZATION_NVP(mConstraintMappingRHS);
     ar & BOOST_SERIALIZATION_NVP(mConstraintRHS);
     ar & BOOST_SERIALIZATION_NVP(mHaveTmpStaticData);
     ar & BOOST_SERIALIZATION_NVP(mUpdateTmpStaticDataRequired);
@@ -218,12 +219,9 @@ void NuTo::StructureBase::serialize(Archive & ar, const unsigned int version)
 #ifdef _OPENMP
     // mMIS contains Element-Ptr, so its serialized, by serializing the Pointer-Addresses and updating them afterwards
     // see Structure::loadImplement and Structure::saveImplement
-    ar & BOOST_SERIALIZATION_NVP(mUseMIS);
     ar & BOOST_SERIALIZATION_NVP(mNumProcessors);
 #endif // _OPENMP
-    ar & BOOST_SERIALIZATION_NVP(mLogger);
     ar & boost::serialization::make_nvp("mLogger", mLogger);
-    ar & BOOST_SERIALIZATION_NVP(mHessianConstant);
 #ifdef DEBUG_SERIALIZATION
     mLogger << "finish serialization of structure base" << "\n";
 #endif
@@ -237,8 +235,8 @@ void NuTo::StructureBase::Info()const
 
     mLogger << "number of time derivatives : " << mNumTimeDerivatives << "\n";
 
-    mLogger << "num dofs : " << mNumDofs << "\n";
-    mLogger << "num active dofs : " << mNumActiveDofs << "\n";
+    mLogger << "num dofs : " << GetNumTotalDofs() << "\n";
+    mLogger << "num active dofs : " << GetNumTotalActiveDofs() << "\n";
     // print info for sections
     SectionInfo(mVerboseLevel);
 
@@ -344,14 +342,11 @@ void NuTo::StructureBase::GetElementsByGroup(Group<ElementBase>* rElementGroup, 
 void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, VisualizeBase::eVisualizeWhat rVisualizeComponent)
 {
 #ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
+    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     // check if the element group exists
     if (mGroupMap.find(rElementGroup) == mGroupMap.end())
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Element group does not exist.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Element group does not exist.");
 
     // create a new visualization list for an element group or add components to an already existing list
     if (mGroupVisualizeComponentsMap.find(rElementGroup) == mGroupVisualizeComponentsMap.end())
@@ -369,20 +364,17 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, Visualize
         mGroupVisualizeComponentsMap.at(rElementGroup).push_back(std::make_shared<VisualizeComponent>(VisualizeComponent(rVisualizeComponent)));
     }
 
-    for (auto const &iPair : mGroupVisualizeComponentsMap)
+    if (mVerboseLevel > 5)
     {
-        std::cout << "ele group: \t" << iPair.first << std::endl;
-        for (auto const &iComponentPtr : iPair.second)
+        for (auto const &iPair : mGroupVisualizeComponentsMap)
         {
-            std::cout << "components: \t " << iComponentPtr->GetComponentName() << std::endl;
+            std::cout << "ele group: \t" << iPair.first << std::endl;
+            for (auto const &iComponentPtr : iPair.second)
+            {
+                std::cout << "components: \t " << iComponentPtr->GetComponentName() << std::endl;
+            }
         }
     }
-
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<< __PRETTY_FUNCTION__ << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
 #endif // ENABLE_VISUALIZE
 }
 
@@ -390,7 +382,7 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, Visualize
 // add visualization components for an element group
 void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, const std::string& rVisualizeComponent)
 {
-
+    std::cout << rVisualizeComponent << std::endl;
     if (rVisualizeComponent == "Accelerations")
         AddVisualizationComponent(rElementGroup, VisualizeBase::ACCELERATION);
     else if (rVisualizeComponent.compare("AngularAccelerations"))
@@ -454,10 +446,7 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, const std
 void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementGroup, int rElementId, int rIp)
 {
 #ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
+    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     // check if the element group exists
     if (mGroupMap.find(rElementGroup) == mGroupMap.end())
@@ -499,11 +488,6 @@ void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementG
      {
         throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: error setting element and local ip number.");
      }
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<< __PRETTY_FUNCTION__ << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
 #endif // ENABLE_VISUALIZE
 }
 
@@ -525,27 +509,17 @@ void NuTo::StructureBase::SetVisualizationType(const int rElementGroup, const Vi
 void NuTo::StructureBase::ClearVisualizationComponents()
 {
 #ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-//    mVisualizeComponents.clear();
+    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
+
     mGroupVisualizeComponentsMap.clear();
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::ClearVisualizationComponents] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
+
 #endif // ENABLE_VISUALIZE
 }
 
 void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rResultFileName, bool rXML)
 {
 #ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start, end;
-    start = clock();
-#endif
+    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     for (auto const &it : mGroupVisualizeComponentsMap)
     {
@@ -558,12 +532,6 @@ void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rResultFileN
         else
             visualize.ExportVtkDataFile(rResultFileName);
     }
-
-#ifdef SHOW_TIME
-    end = clock();
-    if (mShowTime)
-        mLogger << "[NuTo::StructureBase::ExportVtkDataFile] " << difftime(end, start) / CLOCKS_PER_SEC << "sec" << "\n";
-#endif
 #endif // ENABLE_VISUALIZE
 }
 
@@ -572,10 +540,7 @@ void NuTo::StructureBase::ExportVtkDataFileNodes(const std::string& rResultFileN
 void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rResultFileName, bool rXML)
 {
 #ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
+    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     for (auto const &it : mGroupVisualizeComponentsMap)
     {
@@ -590,25 +555,13 @@ void NuTo::StructureBase::ExportVtkDataFileElements(const std::string& rResultFi
             visualize.ExportVtkDataFile(rResultFileName);
     }
 
-
-
-
-    #ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::ExportVtkDataFile] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
 #endif // ENABLE_VISUALIZE
 }
 
 void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const std::string& rResultFileName, bool rXML)
 {
 #ifdef ENABLE_VISUALIZE
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-
+    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
     VisualizeUnstructuredGrid visualize;
     this->DefineVisualizeElementData(visualize,mGroupVisualizeComponentsMap.at(rGroupIdent));
@@ -619,12 +572,6 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
     else
         visualize.ExportVtkDataFile(rResultFileName);
 
-
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::ElementGroupExportVtkDataFile] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
 #endif // ENABLE_VISUALIZE
 }
 
@@ -735,729 +682,282 @@ void NuTo::StructureBase::DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVi
 
 
 
-//! @brief ... evaluates the structur
-void NuTo::StructureBase::Evaluate(std::map<StructureEnum::eOutput, StructureOutputBase *> &rStructureOutput)
+//! @brief ... evaluates the structure
+void NuTo::StructureBase::Evaluate(const ConstitutiveInputMap& rInput, std::map<StructureEnum::eOutput, StructureOutputBase *> &rStructureOutput)
 {
     throw MechanicsException("[NuTo::StructureBase::Evaluate] Not implemented.");
 }
 
-void NuTo::StructureBase::BuildGlobalCoefficientMatrixCheck()
+NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian(StructureEnum::eOutput rOutput)
 {
-    // build global dof numbering if required
-    if (this->mNodeNumberingRequired)
+    Timer timer(std::string(__FUNCTION__) + ": " + StructureEnum::OutputToString(rOutput), GetShowTime(), GetLogger());
+    if (mNodeNumberingRequired) NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+
+    std::set<StructureEnum::eOutput> supportedTypes({StructureEnum::HESSIAN0, StructureEnum::HESSIAN1, StructureEnum::HESSIAN2, StructureEnum::HESSIAN2_LUMPED});
+    if (supportedTypes.find(rOutput) == supportedTypes.end())
+        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] " + StructureEnum::OutputToString(rOutput) + " is not a matrix type or is not supported right now.");
+
+    StructureOutputBlockMatrix hessian(mDofStatus, true);
+
+    std::map<StructureEnum::eOutput, StructureOutputBase *> evaluateMap;
+    evaluateMap[rOutput] = &hessian;
+
+    ConstitutiveInputMap input;
+    ConstitutiveCalculateStaticData calculateImplicitly(CalculateStaticData::EULER_BACKWARD);
+    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateImplicitly;
+
+    Evaluate(input, evaluateMap);
+
+    return hessian;
+}
+
+
+NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalInternalGradient()
+{
+    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
+    if (mNodeNumberingRequired) NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+
+    StructureOutputBlockVector internalGradient(mDofStatus, true);
+
+    std::map<StructureEnum::eOutput, StructureOutputBase *> evaluateMap;
+    evaluateMap[StructureEnum::INTERNAL_GRADIENT] = &internalGradient;
+
+    ConstitutiveInputMap input;
+    ConstitutiveCalculateStaticData calculateImplicitly(CalculateStaticData::EULER_BACKWARD);
+    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateImplicitly;
+
+    Evaluate(input, evaluateMap);
+
+    return internalGradient;
+}
+
+NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian0_CDF(double rDelta)
+{
+    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
+    bool showTime = GetShowTime();
+    SetShowTime(false);
+
+
+    /*
+     * TT:
+     * Warning: this code is ugly, repetitive and error-prone.
+     * This is mainly due to the J/K  and JJ, JK, KJ, KK stuff.
+     * Please be very careful and test properly.
+     */
+
+    StructureOutputBlockMatrix hessian0_CDF(GetDofStatus(), true);
+    auto internalGradient0 = BuildGlobalInternalGradient();
+    auto dofValues = NodeExtractDofValues(0);
+
+
+    for (auto dofCol : GetDofStatus().GetActiveDofTypes())
     {
-        try
+        // modify active dof values --> entries JJ (R.J) and KJ (R.K)
+        auto& columnDofValues = dofValues.J[dofCol];
+
+        for (int iCol = 0; iCol < columnDofValues.rows(); ++iCol)
         {
-            this->NodeBuildGlobalDofs();
+            columnDofValues[iCol] += rDelta;
+            NodeMergeDofValues(0, dofValues);
+            auto internalGradient1 = BuildGlobalInternalGradient();
+
+            StructureOutputBlockVector column = (internalGradient1 - internalGradient0) * (1/rDelta);
+            for (auto dofRow : GetDofStatus().GetActiveDofTypes())
+            {
+                // set JJ entries
+                auto& colJ = column.J[dofRow];
+                auto& matrixJJ = hessian0_CDF.JJ(dofRow, dofCol);
+                for (int i = 0; i < colJ.rows(); ++i)
+                    matrixJJ.AddValue(i, iCol, colJ.at(i,0));
+
+                // set KJ entries
+                auto& colK = column.K[dofRow];
+                auto& matrixKJ = hessian0_CDF.KJ(dofRow, dofCol);
+                for (int i = 0; i < colK.rows(); ++i)
+                    matrixKJ.AddValue(i, iCol, colK.at(i,0));
+            }
+            columnDofValues[iCol] -= rDelta;
         }
-        catch (MechanicsException& e)
+
+
+        // modify dependent dof values --> entries JK (R.J) and KK (R.K)
+        auto& rowDofValues = dofValues.K[dofCol];
+
+        for (int iCol = 0; iCol < rowDofValues.rows(); ++iCol)
         {
-            e.AddMessage("[NuTo::StructureBase::BuildGlobalCoefficientMatrixCheck] error building global dof numbering.");
-            throw e;
-        }
-    }
-
-    // build global tmp static data
-    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
-    {
-        throw MechanicsException("[NuTo::StructureBase::BuildGlobalCoefficientMatrixCheck] First update of tmp static data required.");
-    }
-}
-
-// build global coefficient matrix0
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType rType, SparseMatrixCSRGeneral<double>& rMatrix, FullVector<double,Eigen::Dynamic>& rVector)
-{
-    //check for dof numbering and build of tmp static data
-    BuildGlobalCoefficientMatrixCheck();
-
-    // get dof values stored at the nodes
-    FullVector<double,Eigen::Dynamic> activeDofValues;
-    FullVector<double,Eigen::Dynamic> dependentDofValues;
-    try
-    {
-        this->NodeExtractDofValues(0,activeDofValues, dependentDofValues);
-    }
-    catch (MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] error extracting dof values from node.");
-        throw e;
-    }
-
-//    rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
-    // resize output objects
-    if (rMatrix.GetNumColumns()!=this->mNumActiveDofs || rMatrix.GetNumRows()!=this->mNumActiveDofs)
-    {
-        rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
-    }
-    else
-    {
-        rMatrix.SetZeroEntries();
-    }
-
-    rVector.Resize(this->mNumActiveDofs);
-    if (this->mConstraintMatrix.GetNumEntries() == 0)
-    {
-        //mLogger << "non-symmetric, zero constraint matrix" << "\n";
-
-        // define additional submatrix
-        SparseMatrixCSRGeneral<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
-
-        // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatricesGeneral(rType, rMatrix, coefficientMatrixJK);
-        if (error!=Error::SUCCESSFUL)
-            return error;
-
-        // build equivalent load vector
-        rVector = coefficientMatrixJK * NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(dependentDofValues - this->mConstraintRHS);
-    }
-    else
-    {
-        //mLogger << "non-symmetric, non-zero constraint matrix" << "\n";
-
-        // define additional submatrix
-        SparseMatrixCSRGeneral<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
-        SparseMatrixCSRGeneral<double> coefficientMatrixKJ(this->mNumDofs - this->mNumActiveDofs, this->mNumActiveDofs);
-        SparseMatrixCSRGeneral<double> coefficientMatrixKK(this->mNumDofs - this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
-
-        // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatricesGeneral(rType, rMatrix, coefficientMatrixJK, coefficientMatrixKJ, coefficientMatrixKK);
-        if (error!=Error::SUCCESSFUL)
-            return error;
-
-        // build global matrix
-        SparseMatrixCSRGeneral<double> transConstraintMatrix = this->mConstraintMatrix.Transpose();
-        rMatrix -= transConstraintMatrix * coefficientMatrixKJ + coefficientMatrixJK * this->mConstraintMatrix;
-        rMatrix += transConstraintMatrix * coefficientMatrixKK * this->mConstraintMatrix;
-
-        // build equivalent load vector
-        rVector = (transConstraintMatrix * coefficientMatrixKK - coefficientMatrixJK) * (this->mConstraintRHS - dependentDofValues - this->mConstraintMatrix * activeDofValues);
-    }
-    return Error::SUCCESSFUL;
-}
-
-// build global coefficient matrix0
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType rType, SparseMatrixCSRSymmetric<double>& rMatrix, FullVector<double,Eigen::Dynamic>& rVector)
-{
-    //check for dof numbering and build of tmp static data
-    BuildGlobalCoefficientMatrixCheck();
-
-    // get dof values stored at the nodes
-    FullVector<double,Eigen::Dynamic> activeDofValues;
-    FullVector<double,Eigen::Dynamic> dependentDofValues;
-    try
-    {
-        this->NodeExtractDofValues(0,activeDofValues, dependentDofValues);
-    }
-    catch (MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] error extracting dof values from node.");
-        throw e;
-    }
-
-    // resize output objects
-    // resize output objects
-    if (rMatrix.GetNumColumns()!=this->mNumActiveDofs || rMatrix.GetNumRows()!=this->mNumActiveDofs)
-    {
-        rMatrix.Resize(this->mNumActiveDofs);
-    }
-    else
-    {
-        rMatrix.SetZeroEntries();
-    }
-    rVector.Resize(this->mNumActiveDofs);
-    if (this->mConstraintMatrix.GetNumEntries() == 0)
-    {
-        //mLogger << "symmetric, zero constraint matrix" << "\n";
-
-        // define additional submatrix
-        SparseMatrixCSRGeneral<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
-
-        // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatricesSymmetric(rType, rMatrix, coefficientMatrixJK);
-        if (error!=Error::SUCCESSFUL)
-            return error;
-
-        // build equivalent load vector
-        rVector = coefficientMatrixJK * (dependentDofValues - this->mConstraintRHS);
-    }
-    else
-    {
-        //mLogger << "symmetric, non-zero constraint matrix" << "\n";
-
-        // define additional submatrix
-        SparseMatrixCSRGeneral<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
-        SparseMatrixCSRSymmetric<double> coefficientMatrixKK(this->mNumDofs - this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
-
-        // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatricesSymmetric(rType, rMatrix, coefficientMatrixJK, coefficientMatrixKK);
-        if (error!=Error::SUCCESSFUL)
-            return error;
-
-        // build global matrix
-        rMatrix.Sub_TransA_Mult_TransB_Plus_B_Mult_A(this->mConstraintMatrix, coefficientMatrixJK);
-        rMatrix.Add_TransA_Mult_B_Mult_A(this->mConstraintMatrix, coefficientMatrixKK);
-
-        // build equivalent load vector
-        FullVector<double,Eigen::Dynamic> deltaRHS = this->mConstraintRHS - dependentDofValues - this->mConstraintMatrix * activeDofValues;
-        FullVector<double,Eigen::Dynamic> Kdd_Mult_DeltaRHS = coefficientMatrixKK * deltaRHS;
-        rVector = this->mConstraintMatrix.TransMult(Kdd_Mult_DeltaRHS) - coefficientMatrixJK * deltaRHS;
-    }
-    return Error::SUCCESSFUL;
-}
-
-// build global coefficient matrix0
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType rType, SparseMatrixCSRVector2General<double>& rMatrix, FullVector<double,Eigen::Dynamic>& rVector)
-{
-    //check for dof numbering and build of tmp static data
-    BuildGlobalCoefficientMatrixCheck();
-
-    // get dof values stored at the nodes
-    FullVector<double,Eigen::Dynamic> activeDofValues;
-    FullVector<double,Eigen::Dynamic> dependentDofValues;
-    try
-    {
-        this->NodeExtractDofValues(0,activeDofValues, dependentDofValues);
-    }
-    catch (MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] error extracting dof values from node.");
-        throw e;
-    }
-
-//    rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
-    // resize output objects
-    if (rMatrix.GetNumColumns()!=this->mNumActiveDofs || rMatrix.GetNumRows()!=this->mNumActiveDofs)
-    {
-        rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
-    }
-    else
-    {
-        rMatrix.SetZeroEntries();
-    }
-
-    rVector.Resize(this->mNumActiveDofs);
-    if (this->mConstraintMatrix.GetNumEntries() == 0)
-    {
-        //mLogger << "non-symmetric, zero constraint matrix" << "\n";
-
-        // define additional submatrix
-        SparseMatrixCSRVector2General<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
-
-        // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatricesGeneral(rType, rMatrix, coefficientMatrixJK);
-        if (error!=Error::SUCCESSFUL)
-            return error;
-
-        // build equivalent load vector
-        rVector = coefficientMatrixJK * (dependentDofValues - this->mConstraintRHS);
-        /*        mLogger << "dependent " << "\n";
-                dependentDofValues.Trans().Info(12,10);
-                mLogger << "mConstraintRHS " << "\n";
-                mConstraintRHS.Trans().Info(12,10);
-                mLogger << "delta " << "\n";
-                (dependentDofValues - this->mConstraintRHS).Trans().Info(12,10);
-                mLogger << "coefficientMatrixJK" << "\n";
-                (NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(coefficientMatrixJK)).Info(12,3);
-        */
-    }
-    else
-    {
-        //mLogger << "non-symmetric, non-zero constraint matrix" << "\n";
-
-        // define additional submatrix
-        SparseMatrixCSRVector2General<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
-        SparseMatrixCSRVector2General<double> coefficientMatrixKJ(this->mNumDofs - this->mNumActiveDofs, this->mNumActiveDofs);
-        SparseMatrixCSRVector2General<double> coefficientMatrixKK(this->mNumDofs - this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
-
-        // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatricesGeneral(rType, rMatrix, coefficientMatrixJK, coefficientMatrixKJ, coefficientMatrixKK);
-        if (error!=Error::SUCCESSFUL)
-            return error;
-
-        // build global matrix
-        SparseMatrixCSRVector2General<double> constraintMatrixVector2 (this->mConstraintMatrix);
-        SparseMatrixCSRVector2General<double> transConstraintMatrixVector2 (constraintMatrixVector2.Transpose());
-        rMatrix -= transConstraintMatrixVector2 * coefficientMatrixKJ + coefficientMatrixJK * constraintMatrixVector2;
-        rMatrix += transConstraintMatrixVector2 * coefficientMatrixKK * constraintMatrixVector2;
-
-        // build equivalent load vector
-        rVector = (transConstraintMatrixVector2 * coefficientMatrixKK - coefficientMatrixJK) * (this->mConstraintRHS - dependentDofValues - constraintMatrixVector2 * activeDofValues);
-    }
-    return Error::SUCCESSFUL;
-}
-
-// build global coefficient matrix0
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType rType, SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullVector<double,Eigen::Dynamic>& rVector)
-{
-    //check for dof numbering and build of tmp static data
-    BuildGlobalCoefficientMatrixCheck();
-
-    // get dof values stored at the nodes
-    FullVector<double,Eigen::Dynamic> activeDofValues;
-    FullVector<double,Eigen::Dynamic> dependentDofValues;
-    try
-    {
-        this->NodeExtractDofValues(0,activeDofValues, dependentDofValues);
-    }
-    catch (MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] error extracting dof values from node.");
-        throw e;
-    }
-
-//    rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
-    // resize output objects
-    if (rMatrix.GetNumColumns()!=this->mNumActiveDofs || rMatrix.GetNumRows()!=this->mNumActiveDofs)
-    {
-        rMatrix.Resize(this->mNumActiveDofs, this->mNumActiveDofs);
-    }
-    else
-    {
-        rMatrix.SetZeroEntries();
-    }
-
-    rVector.Resize(this->mNumActiveDofs);
-    if (this->mConstraintMatrix.GetNumEntries() == 0)
-    {
-        //mLogger << "non-symmetric, zero constraint matrix" << "\n";
-
-        // define additional submatrix
-        SparseMatrixCSRVector2General<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
-
-        // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatricesSymmetric(rType, rMatrix, coefficientMatrixJK);
-        if (error!=Error::SUCCESSFUL)
-            return error;
-
-        // build equivalent load vector
-        rVector = coefficientMatrixJK * (dependentDofValues - this->mConstraintRHS);
-    }
-    else
-    {
-        //mLogger << "non-symmetric, non-zero constraint matrix" << "\n";
-
-        // define additional submatrix
-        SparseMatrixCSRVector2General<double> coefficientMatrixJK(this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
-        //TODO this should actually be a symmetric matrix, but the multiplications are not implemented
-        SparseMatrixCSRVector2General<double> coefficientMatrixKK(this->mNumDofs - this->mNumActiveDofs, this->mNumDofs - this->mNumActiveDofs);
-
-        // build submatrices
-        Error::eError error = this->BuildGlobalCoefficientSubMatricesSymmetric(rType, rMatrix, coefficientMatrixJK, coefficientMatrixKK);
-        if (error!=Error::SUCCESSFUL)
-            return error;
-
-        // build global matrix
-        SparseMatrixCSRVector2General<double> constraintMatrixVector2 (this->mConstraintMatrix);
-        SparseMatrixCSRVector2General<double> transConstraintMatrixVector2 (constraintMatrixVector2.Transpose());
-        rMatrix -= (coefficientMatrixJK * constraintMatrixVector2).SymmetricPart();
-
-        //this should be optimized to actually be performed as C^TKC returning a symmetric matrix - just don't have time right now to do that
-        rMatrix += (transConstraintMatrixVector2 * coefficientMatrixKK * constraintMatrixVector2).SymmetricPart();
-
-        // build equivalent load vector
-        rVector = (transConstraintMatrixVector2 * coefficientMatrixKK - coefficientMatrixJK) * (this->mConstraintRHS - dependentDofValues - constraintMatrixVector2 * activeDofValues);
-    }
-    return Error::SUCCESSFUL;
-}
-
-
-//! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
-//! @param rMatrix ... global coefficient matrix (nonsymmetric)
-//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::STIFFNESS, rMatrix, rVector);
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
-    return error;
-}
-
-//! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
-//! @param rMatrix ... global coefficient matrix (symmetric)
-//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::STIFFNESS, rMatrix, rVector);
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
-    return error;
-}
-
-
-//! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
-//! @param rMatrix ... global coefficient matrix (nonsymmetric)
-//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::STIFFNESS, rMatrix, rVector);
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
-    return error;
-}
-
-
-//! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
-//! @param rMatrix ... global coefficient matrix
-//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix0(SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullVector<double,Eigen::Dynamic>& rVector)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::STIFFNESS, rMatrix, rVector);
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix0] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
-    return error;
-}
-
-
-//! @brief ... build global coefficient matrix (damping) for primary dofs (e.g displacements, rotations, temperature)
-//! @param rMatrix ... global coefficient matrix (symmetric)
-//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix1(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::DAMPING, rMatrix, rVector);
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix1] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix1] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
-    return error;
-}
-
-
-//! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
-//! @param rMatrix ... global coefficient matrix (nonsymmetric)
-//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::MASS, rMatrix, rVector);
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
-    return error;
-}
-
-
-//! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
-//! @param rMatrix ... global coefficient matrix (symmetric)
-//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::MASS, rMatrix, rVector);
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
-    return error;
-}
-
-
-//! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
-//! @param rMatrix ... global coefficient matrix (nonsymmetric)
-//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::MASS, rMatrix, rVector);
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
-    return error;
-}
-
-
-//! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
-//! @param rMatrix ... global coefficient matrix
-//! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalCoefficientMatrix2(SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullVector<double,Eigen::Dynamic>& rVector)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
-    Error::eError error = BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType::MASS, rMatrix, rVector);
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalCoefficientMatrix2] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
-    return error;
-}
-
-
-
-
-
-
-// build global external load vector
-void NuTo::StructureBase::BuildGlobalExternalLoadVector(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rVector)
-{
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    // check dof numbering
-    if (this->mNodeNumberingRequired)
-    {
-        try
-        {
-            this->NodeBuildGlobalDofs();
-        }
-        catch (MechanicsException& e)
-        {
-            e.AddMessage("[NuTo::StructureBase::BuildGlobalExternalLoadVector] error building global dof numbering.");
-            throw e;
+            rowDofValues[iCol] += rDelta;
+            NodeMergeDofValues(0, dofValues);
+            auto internalGradient1 = BuildGlobalInternalGradient();
+
+            StructureOutputBlockVector column = (internalGradient1 - internalGradient0) * (1/rDelta);
+            for (auto dofRow : GetDofStatus().GetActiveDofTypes())
+            {
+                // set JK entries
+                auto& colJ = column.J[dofRow];
+                auto& matrixJK = hessian0_CDF.JK(dofRow, dofCol);
+                for (int i = 0; i < colJ.rows(); ++i)
+                    matrixJK.AddValue(i, iCol, colJ.at(i,0));
+
+                // set KJ entries
+                auto& colK = column.K[dofRow];
+                auto& matrixKK = hessian0_CDF.KK(dofRow, dofCol);
+                for (int i = 0; i < colK.rows(); ++i)
+                    matrixKK.AddValue(i, iCol, colK.at(i,0));
+            }
+            rowDofValues[iCol] -= rDelta;
         }
     }
+    NodeMergeDofValues(0, dofValues);
 
-    rVector.Resize(this->mNumActiveDofs);
-    FullVector<double,Eigen::Dynamic> dependentDofLoadVector(this->mNumDofs - this->mNumActiveDofs);
 
-    // loop over all loads
-    boost::ptr_map<int,LoadBase>::const_iterator loadIter = this->mLoadMap.begin();
-    while (loadIter != this->mLoadMap.end())
-    {
-        loadIter->second->AddLoadToGlobalSubVectors(rLoadCase, rVector, dependentDofLoadVector);
-        loadIter++;
-    }
-    if (this->mConstraintMatrix.GetNumEntries() != 0)
-    {
-        rVector -=  this->mConstraintMatrix.TransMult(dependentDofLoadVector);
-    }
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalExternalLoadVector] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
+
+
+    SetShowTime(showTime);
+
+    return hessian0_CDF;
 }
 
-// build global external load vector
-void NuTo::StructureBase::BuildGlobalExternalLoadVector(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rVector_j, NuTo::FullVector<double,Eigen::Dynamic>& rVector_k)
+bool NuTo::StructureBase::CheckHessian0(double rDelta, double rRelativeTolerance, bool rPrintWrongMatrices)
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    // check dof numbering
-    if (this->mNodeNumberingRequired)
+    bool isHessianCorrect = true;
+
+    NodeBuildGlobalDofs(__FUNCTION__);
+
+    bool hasInteractingConstraints = mDofStatus.HasInteractingConstraints();
+    mDofStatus.SetHasInteractingConstraints(true); // this ensures the full assembly of KJ and KK, which could be skipped if CMat.Entries = 0
+
+
+    auto hessian0 = BuildGlobalHessian0();
+    auto hessian0_CDF = BuildGlobalHessian0_CDF(rDelta);
+
+    isHessianCorrect = isHessianCorrect && CheckHessian0_Submatrix(hessian0.JJ, hessian0_CDF.JJ, rRelativeTolerance, rPrintWrongMatrices);
+    isHessianCorrect = isHessianCorrect && CheckHessian0_Submatrix(hessian0.JK, hessian0_CDF.JK, rRelativeTolerance, rPrintWrongMatrices);
+    isHessianCorrect = isHessianCorrect && CheckHessian0_Submatrix(hessian0.KJ, hessian0_CDF.KJ, rRelativeTolerance, rPrintWrongMatrices);
+    isHessianCorrect = isHessianCorrect && CheckHessian0_Submatrix(hessian0.KK, hessian0_CDF.KK, rRelativeTolerance, rPrintWrongMatrices);
+
+    mDofStatus.SetHasInteractingConstraints(hasInteractingConstraints);
+
+    return isHessianCorrect;
+}
+
+bool NuTo::StructureBase::CheckHessian0_Submatrix(const BlockSparseMatrix& rHessian0, BlockSparseMatrix& rHessian0_CDF, double rRelativeTolerance, bool rPrintWrongMatrices)
+{
+    int row, col;
+    assert(rHessian0.GetNumRows() == rHessian0_CDF.GetNumRows());
+    assert(rHessian0.GetNumColumns() == rHessian0_CDF.GetNumColumns());
+
+    if (rHessian0.GetNumRows() == 0 or rHessian0.GetNumColumns() == 0)
+        return true;
+
+    bool isSubmatrixCorrect = true;
+    Eigen::IOFormat fmt(Eigen::StreamPrecision, 0, " ", "\n", "|", " |");
+    for (auto dofRow : GetDofStatus().GetActiveDofTypes())
     {
-        try
+        for (auto dofCol : GetDofStatus().GetActiveDofTypes())
         {
-            this->NodeBuildGlobalDofs();
-        }
-        catch (MechanicsException& e)
-        {
-            e.AddMessage("[NuTo::StructureBase::BuildGlobalExternalLoadVector] error building global dof numbering.");
-            throw e;
+            FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> hessian0_CDF_Full(rHessian0_CDF(dofRow, dofCol));
+
+            double scaling = 1./rHessian0_CDF(dofRow, dofCol).AbsMax();
+
+            auto& diff = rHessian0_CDF(dofRow, dofCol);
+            diff.AddScal(rHessian0(dofRow, dofCol), -1.);
+
+            diff *= scaling;
+            double error = diff.AbsMax(row, col);
+            if (error > rRelativeTolerance)
+            {
+                GetLogger() << "[" << __FUNCTION__ << "] max error in (" << Node::DofToString(dofRow)<< "," << Node::DofToString(dofCol) << ") "
+                        << error << " at entry (" << row << "," << col << ")\n";
+                GetLogger() << "hessian0(" << row << "," << col <<") = " << FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>(rHessian0(dofRow, dofCol))(row, col) << "\n";
+                GetLogger() << "hessian0_CDF(" << row << "," << col <<") = " << hessian0_CDF_Full(row, col) << "\n";
+                isSubmatrixCorrect = false;
+                if (rPrintWrongMatrices)
+                {
+                    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> diffPrint(diff);
+                    diffPrint.SetSmallEntriesZero(1.e-10);
+                    GetLogger() << "####### relative difference\n" << diffPrint.format(fmt) << "\n";
+                    GetLogger() << "####### hessian0\n" << FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>(rHessian0(dofRow, dofCol)).format(fmt) << "\n";
+                    GetLogger() << "####### hessian0_CDF\n" << hessian0_CDF_Full.format(fmt) << "\n";
+                }
+            }
         }
     }
+    return isSubmatrixCorrect;
+}
 
-    rVector_j.Resize(this->mNumActiveDofs);
-    rVector_k.Resize(this->mNumDofs - this->mNumActiveDofs);
+void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int rLoadCase)
+{
+    NuTo::Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    // loop over all loads
-    boost::ptr_map<int,LoadBase>::const_iterator loadIter = this->mLoadMap.begin();
-    while (loadIter != this->mLoadMap.end())
-    {
-        loadIter->second->AddLoadToGlobalSubVectors(rLoadCase, rVector_j, rVector_k);
-        loadIter++;
-    }
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalExternalLoadVector] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
+    if (GetNumTimeDerivatives() > 0)
+        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Only use this method for a system with 0 time derivatives.");
+
+    if (mNodeNumberingRequired) NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+
+
+    StructureOutputBlockVector deltaDof_dt0(GetDofStatus(), true);
+    deltaDof_dt0.J.SetZero();
+    deltaDof_dt0.K = ConstraintGetRHSAfterGaussElimination();
+
+    auto hessian0 = BuildGlobalHessian0();
+    auto residual = hessian0 * deltaDof_dt0 - BuildGlobalExternalLoadVector(rLoadCase) + BuildGlobalInternalGradient();
+
+    hessian0.ApplyCMatrix(GetConstraintMatrix());
+    residual.ApplyCMatrix(GetConstraintMatrix());
+
+    // reuse deltaDof_dt0
+    deltaDof_dt0.J = SolveBlockSystem(hessian0.JJ, residual.J);
+
+    deltaDof_dt0.K = NodeCalculateDependentDofValues(deltaDof_dt0.J);
+    NodeMergeDofValues(0, deltaDof_dt0);
 }
 
 
-// build global gradient of the internal potential (e.g. the internal forces)
-NuTo::Error::eError NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector(NuTo::FullVector<double,Eigen::Dynamic>& rVector)
+NuTo::BlockFullVector<double> NuTo::StructureBase::SolveBlockSystem(const BlockSparseMatrix& rMatrix, const BlockFullVector<double>& rVector) const
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
-    // check dof numbering
-    if (this->mNodeNumberingRequired)
-    {
-        try
-        {
-            this->NodeBuildGlobalDofs();
-        }
-        catch (MechanicsException& e)
-        {
-            e.AddMessage("[NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector] error building global dof numbering.");
-            throw e;
-        }
-    }
-    // build global tmp static data
-    if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
-    {
-        throw MechanicsException("[NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector] First update of tmp static data required.");
-    }
+    NuTo::FullVector<double, Eigen::Dynamic> resultForSolver;
+    NuTo::SparseMatrixCSRGeneral<double>     matrixForSolver = rMatrix.ExportToCSRGeneral();
+    matrixForSolver.SetOneBasedIndexing();
 
-
-    rVector.Resize(this->mNumActiveDofs);
-    FullVector<double,Eigen::Dynamic> dependentDofGradientVector(this->mNumDofs - this->mNumActiveDofs);
-
-    try
-    {
-        // build sub vectors, update of history variables afterwards=false
-        Error::eError error = this->BuildGlobalGradientInternalPotentialSubVectors(rVector, dependentDofGradientVector, false);
-        if (error!=Error::SUCCESSFUL)
-            return error;
-    }
-    catch (MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector] error building sub vectors.");
-        throw e;
-    }
-    if (this->mConstraintMatrix.GetNumEntries() != 0)
-    {
-        rVector -=  this->mConstraintMatrix.TransMult(dependentDofGradientVector);
-    }
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
+    //allocate solver
+#if defined(HAVE_PARDISO) && defined(_OPENMP)
+    NuTo::SparseDirectSolverPardiso mySolver(GetNumProcessors(), GetVerboseLevel()); // note: not the MKL version
 #else
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::BuildGlobalGradientInternalPotentialVector] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
+    NuTo::SparseDirectSolverMUMPS mySolver;
 #endif
+
+#ifdef SHOW_TIME
+    mySolver.SetShowTime(GetShowTime());
 #endif
-    return Error::SUCCESSFUL;
+
+    mySolver.Solve(matrixForSolver, rVector.Export(), resultForSolver);
+
+    return BlockFullVector<double>(-resultForSolver, GetDofStatus());
+}
+
+
+NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalExternalLoadVector(int rLoadCase)
+{
+    NuTo::Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
+    if (mNodeNumberingRequired) NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+
+    StructureOutputBlockVector externalLoad(GetDofStatus(), true);
+
+    if (DofTypeIsActive(Node::DISPLACEMENTS))
+    {
+        auto& vectorJ = externalLoad.J[Node::DISPLACEMENTS];
+        auto& vectorK = externalLoad.K[Node::DISPLACEMENTS];
+
+
+        // loop over all loads
+        boost::ptr_map<int,LoadBase>::const_iterator loadIter = this->mLoadMap.begin();
+        while (loadIter != this->mLoadMap.end())
+        {
+            loadIter->second->AddLoadToGlobalSubVectors(rLoadCase, vectorJ, vectorK);
+            loadIter++;
+        }
+    }
+    return externalLoad;
 }
 
 //! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
@@ -1474,71 +974,230 @@ double NuTo::StructureBase::GetToleranceStiffnessEntries()const
     return mToleranceStiffnessEntries;
 }
 
+//! @brief returns all dof types of the structure
+//! @return ... set of active dof types
+std::set<NuTo::Node::eDof> NuTo::StructureBase::DofTypesGet() const
+{
+    return GetDofStatus().GetDofTypes();
+}
+
+//! @brief Sets all dofs inactive
+void NuTo::StructureBase::DofTypeDeactivateAll()
+{
+    std::set<NuTo::Node::eDof> activeDofs = DofTypesGetActive();
+    for (auto dof : activeDofs)
+        DofTypeSetIsActive(dof, false);
+
+    assert(DofTypesGetActive().empty());
+}
+
+//! @brief forwards the property to all interpolation types. Inactive dofs are not solved for
+//! @param rDofType ... dof type
+//! @param rIsActive ... active/inactive
+void NuTo::StructureBase::DofTypeSetIsActive(Node::eDof rDofType, bool rIsActive)
+{
+    BOOST_FOREACH(auto interpolationTypePair, mInterpolationTypeMap)
+    {
+        auto& interpolationType = interpolationTypePair.second;
+        if (interpolationType->IsDof(rDofType))
+            interpolationType->SetIsActive(rIsActive, rDofType);
+    }
+    UpdateDofStatus();
+}
+
+//! @brief Sets a set of active dofs, deactivates others
+//! @param rActiveDofTypes ... dof type
+void NuTo::StructureBase::DofTypeSetIsActive(const std::set<Node::eDof>& rActiveDofTypes)
+{
+    DofTypeDeactivateAll();
+    for (auto activeDofType : rActiveDofTypes)
+        DofTypeSetIsActive(activeDofType, true);
+}
+
+//! @brief returns true if rDofType is an active dof type
+//! @param rDofType ... dof type
+bool NuTo::StructureBase::DofTypeIsActive(Node::eDof rDofType) const
+{
+	const auto& activeDofTypes = DofTypesGetActive();
+	return activeDofTypes.find(rDofType) != activeDofTypes.end();
+}
+
+//! @brief forwards the property to all interpolation types
+//! @param rDofType ... dof type
+//! @param rIsConstitutiveInput ... is/is not constitutive input
+void NuTo::StructureBase::DofTypeSetIsConstitutiveInput(Node::eDof rDofType, bool rIsConstitutiveInput)
+{
+    BOOST_FOREACH(auto interpolationTypePair, mInterpolationTypeMap)
+    {
+        auto& interpolationType = interpolationTypePair.second;
+        if (interpolationType->IsDof(rDofType))
+            interpolationType->SetIsConstitutiveInput(rIsConstitutiveInput, rDofType);
+    }
+}
+
+//! @brief adds/removes the dof type from the mDofTypesSymmetric-set
+//! @param rDofType ... dof type
+//! @param rIsSymmetric ... is/is not symmetric input
+//! TODO: move to constitutive law somehow
+void NuTo::StructureBase::DofTypeSetIsSymmetric(Node::eDof rDofType, bool rIsSymmetric)
+{
+    mDofStatus.SetIsSymmetric(rDofType, rIsSymmetric);
+}
+
+//! @brief returns if rDof is symmetric
+bool NuTo::StructureBase::DofTypeIsSymmetric(Node::eDof rDofType) const
+{
+    return mDofStatus.IsSymmetric(rDofType);
+}
+
+/// !!!!!! IMPORTANT ------------------------------------------
+/// DofStatus-Geter should never get a non-const version
+/// Use Structure to change dofStatus
+const NuTo::DofStatus& NuTo::StructureBase::GetDofStatus() const
+{
+    return mDofStatus;
+}
+
+//! @brief updates the mDofStatus with current information from the interpolation types
+void NuTo::StructureBase::UpdateDofStatus()
+{
+    std::set<Node::eDof> dofTypes;
+    std::set<Node::eDof> activeDofTypes;
+    BOOST_FOREACH(auto interpolationTypePair, mInterpolationTypeMap)
+    {
+        const std::set<Node::eDof>& dofs = interpolationTypePair.second->GetDofs();
+        dofTypes.insert(dofs.begin(), dofs.end());
+
+        const std::set<Node::eDof>& activeDofs = interpolationTypePair.second->GetActiveDofs();
+        activeDofTypes.insert(activeDofs.begin(), activeDofs.end());
+
+    }
+    dofTypes.erase(Node::COORDINATES);
+    activeDofTypes.erase(Node::COORDINATES);
+
+    mDofStatus.SetDofTypes(dofTypes);
+    mDofStatus.SetActiveDofTypes(activeDofTypes);
+
+//    std::cout << "CMat entries : " << mConstraintMatrixDof.GetNumActiveEntires() << std::endl;
+    //std::cout << "CMat entries : " << mConstraintMatrixDof.GetNumActiveEntires() << std::endl;
+    mDofStatus.SetHasInteractingConstraints(mConstraintMatrix.GetNumActiveEntires() != 0);
+//    mDofStatus.SetHasInteractingConstraints(true);
+}
+
 //! @brief returns the number of degrees of freedom
 //! @return ... number of degrees of freedom
-int NuTo::StructureBase::GetNumDofs()const
+int NuTo::StructureBase::GetNumTotalDofs() const
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    if (this->mNodeNumberingRequired)
-    {
-        throw MechanicsException("[NuTo::StructureBase::GetNumDofs] Build global Dofs first.");
-    }
-    return mNumDofs;
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::GetNumDofs] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
+    return GetNumTotalActiveDofs() + GetNumTotalDependentDofs();
 }
 
 //! @brief returns the number of active degrees of freedom
 //! @return ... number of active degrees of freedom
-int NuTo::StructureBase::GetNumActiveDofs()const
+int NuTo::StructureBase::GetNumTotalActiveDofs() const
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    if (this->mNodeNumberingRequired)
-    {
-        throw MechanicsException("[NuTo::StructureBase::GetNumActiveDofs] Build global Dofs first.");
-    }
-    return mNumActiveDofs;
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::GetNumActiveDofs] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
+    int numTotalActiveDofs = 0;
+    for (auto pair : mDofStatus.GetNumActiveDofsMap())
+        numTotalActiveDofs += pair.second;
+    return numTotalActiveDofs;
 }
 
 //! @brief returns the number of dependent degrees of freedom
-//! @return ... number of active degrees of freedom
-int NuTo::StructureBase::GetNumDependentDofs()const
+//! @return ... number of dependent degrees of freedom
+int NuTo::StructureBase::GetNumTotalDependentDofs() const
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
-    if (this->mNodeNumberingRequired)
-    {
-        throw MechanicsException("[NuTo::StructureBase::GetNumDependentDofs] Build global Dofs first.");
-    }
-    return mNumDofs-mNumActiveDofs;
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        mLogger<<"[NuTo::StructureBase::GetNumDependentDofs] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
+    int numTotalActiveDofs = 0;
+    for (auto pair : mDofStatus.GetNumDependentDofsMap())
+        numTotalActiveDofs += pair.second;
+    return numTotalActiveDofs;
+}
+
+//! @brief returns all active dof types
+//! @return ... set of active dof types
+std::set<NuTo::Node::eDof> NuTo::StructureBase::DofTypesGetActive() const
+{
+    return GetDofStatus().GetActiveDofTypes();
+}
+
+
+//! @brief returns the number of degrees of freedom for dof type rDof
+//! @param rDofType ... dof type
+//! @return ... number of degrees of freedom
+int NuTo::StructureBase::GetNumDofs(Node::eDof rDofType) const
+{
+    return GetNumActiveDofs(rDofType) + GetNumDependentDofs(rDofType);
+}
+
+//! @brief returns the number of active degrees of freedom for dof type rDof
+//! @param rDofType ... dof type
+//! @return ... number of active degrees of freedom
+int NuTo::StructureBase::GetNumActiveDofs(Node::eDof rDofType) const
+{
+    auto it = mDofStatus.GetNumActiveDofsMap().find(rDofType);
+    if (it == mDofStatus.GetNumActiveDofsMap().end())
+        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] There are no " + Node::DofToString(rDofType) + " dofs.");
+
+    return it->second;
+}
+
+//! @brief returns the number of dependent degrees of freedom for dof type rDof
+//! @param rDofType ... dof type
+//! @return ... number of dependent degrees of freedom
+int NuTo::StructureBase::GetNumDependentDofs(Node::eDof rDofType) const
+{
+    auto it = mDofStatus.GetNumDependentDofsMap().find(rDofType);
+    if (it == mDofStatus.GetNumDependentDofsMap().end())
+        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] There are no " + Node::DofToString(rDofType) + " dofs.");
+
+    return it->second;
+}
+
+//! @brief returns the number of degrees of freedom for dof type rDof
+//! @param rDofType ... dof type
+//! @return ... number of degrees of freedom
+int NuTo::StructureBase::GetNumDofs(std::string rDofType) const
+{
+    return GetNumDofs(Node::DofToEnum(rDofType));
+}
+
+//! @brief returns the number of active degrees of freedom for dof type rDof
+//! @param rDofType ... dof type
+//! @return ... number of active degrees of freedom
+int NuTo::StructureBase::GetNumActiveDofs(std::string rDofType) const
+{
+    return GetNumActiveDofs(Node::DofToEnum(rDofType));
+}
+
+//! @brief returns the number of dependent degrees of freedom for dof type rDof
+//! @param rDofType ... dof type
+//! @return ... number of dependent degrees of freedom
+int NuTo::StructureBase::GetNumDependentDofs(std::string rDofType) const
+{
+    return GetNumDependentDofs(Node::DofToEnum(rDofType));
 }
 
 //! @brief returns the a reference to the constraint matrix
-const NuTo::SparseMatrixCSRGeneral<double>& NuTo::StructureBase::GetConstraintMatrix()const
+const NuTo::BlockSparseMatrix& NuTo::StructureBase::GetConstraintMatrix() const
 {
     return mConstraintMatrix;
 }
+
+//! @brief adds/removes the dof type from the mDofTypesActive-set. Inactive dofs are not solved for
+//! @param rDofType ... dof type
+//! @param rIsActive ... active/inactive
+void NuTo::StructureBase::DofTypeSetIsActive(std::string rDofType, bool rIsActive)
+{
+    DofTypeSetIsActive(Node::DofToEnum(rDofType), rIsActive);
+}
+
+//! @brief adds/removes the dof type from the mDofTypesConstitutiveInput-set
+//! @param rDofType ... dof type
+//! @param rIsConstitutiveInput ... is/is not constitutive input
+void NuTo::StructureBase::DofTypeSetIsConstitutiveInput(std::string rDofType, bool rIsConstitutiveInput)
+{
+    DofTypeSetIsConstitutiveInput(Node::DofToEnum(rDofType), rIsConstitutiveInput);
+}
+
+
 
 #ifdef _OPENMP
 //@brief determines the maximum independent sets and stores it at the structure
@@ -1553,6 +1212,7 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
 #endif
     try
     {
+        mMIS.clear();
         std::vector<ElementBase*> elementVector;
         GetElementsTotal(elementVector);
 
@@ -1631,15 +1291,15 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
             curMIS++;
         }
         mMIS.resize(curMIS);
-        /*    std::cout << "maximum number of independent sets " << mMIS.size() << std::endl;
-            for (unsigned int count=0; count<mMIS.size(); count++)
-            {
-            	std::cout << "MIS " << count << " with " << mMIS[count].size() << " elements " << std::endl;
-            	for (unsigned int count2=0 ; count2<mMIS[count].size(); count2++)
-            		std::cout << ElementGetId(mMIS[count][count2]) << " ";
-            	std::cout << std::endl;
-            }
-        */
+//            std::cout << "maximum number of independent sets " << mMIS.size() << std::endl;
+//            for (unsigned int count=0; count<mMIS.size(); count++)
+//            {
+//            	std::cout << "MIS " << count << " with " << mMIS[count].size() << " elements " << std::endl;
+//            	for (unsigned int count2=0 ; count2<mMIS[count].size(); count2++)
+//            		std::cout << ElementGetId(mMIS[count][count2]) << " ";
+//            	std::cout << std::endl;
+//            }
+
     }
     catch (MechanicsException& e)
     {
@@ -1658,16 +1318,6 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
 {
 }
 #endif
-
-//@brief determines if in the omp parallelization the maximum independent sets are used (parallel assembly of the stiffness, generally faster)
-// or sequential insertion of the element stiffness using a barrier (faster for different load balancing of the elements)
-// is only relevant for openmp, otherwise the routine is just empty
-void NuTo::StructureBase::UseMaximumIndependentSets(bool rUseMIS)
-{
-#ifdef _OPENMP
-	mUseMIS=rUseMIS;
-#endif //_OPENMP
-}
 
 //@brief set the number of processors for openmp parallelization
 void NuTo::StructureBase::SetNumProcessors(int rNumProcessors)
@@ -1692,27 +1342,7 @@ void NuTo::StructureBase::SetOMPNested(bool rNested)
 #endif //_OPENMP
 }
 
-//! @brief sets the Hessian to be constant or variable
-//! @parameters rTimeDerivative (0 = stiffness, 1 damping, 2 mass)
-//! @parameters rValue (true = const false=variable)
-void NuTo::StructureBase::SetHessianConstant(int rTimeDerivative, bool rValue)
-{
-	assert(rTimeDerivative>=0);
-	assert(rTimeDerivative<3);
-	mHessianConstant[rTimeDerivative] = rValue;
-}
-
-//! @brief sets the Hessian to be constant or variable
-//! @parameters rTimeDerivative (0 = stiffness, 1 damping, 2 mass)
-//! @return (true = const false=variable)
-bool NuTo::StructureBase::GetHessianConstant(int rTimeDerivative)const
-{
-	assert(rTimeDerivative>=0);
-	assert(rTimeDerivative<3);
-	return mHessianConstant[rTimeDerivative];
-}
-
-bool NuTo::StructureBase::InterpolationTypeIsConstitutiveInput(NuTo::Node::eAttributes rDofType)
+bool NuTo::StructureBase::InterpolationTypeIsConstitutiveInput(NuTo::Node::eDof rDofType)
 {
 	InterpolationType* interpolationType;
     for (auto interpolation = mInterpolationTypeMap.begin(); interpolation != mInterpolationTypeMap.end(); interpolation++){
@@ -1724,7 +1354,6 @@ bool NuTo::StructureBase::InterpolationTypeIsConstitutiveInput(NuTo::Node::eAttr
 
     return false;
 }
-
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG

@@ -11,49 +11,34 @@
 #include <boost/ptr_container/serialize_ptr_map.hpp>
 #endif // ENABLE_SERIALIZATION
 
-# ifdef _OPENMP
-#include <omp.h>
-# endif
 
-#include "nuto/math/SparseDirectSolverMUMPS.h"
-#include "nuto/math/SparseDirectSolverMKLPardiso.h"
-#include "nuto/math/SparseDirectSolverPardiso.h"
-
-
+#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "nuto/base/Timer.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include "nuto/mechanics/timeIntegration/ResultGroupNodeForce.h"
 #include "nuto/mechanics/timeIntegration/TimeIntegrationEnum.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/SparseMatrixCSRGeneral.h"
-#include "nuto/math/SparseMatrixCSRSymmetric.h"
-
-
-//#include "nuto/mechanics/elements/ElementBase.h"  // delete me
-//#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h" // delete me
-//#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3D.h" // delete me
-
-#include "nuto/mechanics/elements/ElementBase.h"  // delete me
-#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h" // delete me
-#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataGradientDamage1DFatigue.h" // delete me
-#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataGradientDamage2DFatigue.h" // delete me
-#include "nuto/mechanics/constitutive/mechanics/NonlocalEqStrain.h"
-
-//#include "nuto/mechanics/elements/ElementBase.h"  // delete me
-//#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h" // delete me
-//#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataGradientDamage2DFatigue.h" // delete me
-//#include "nuto/mechanics/constitutive/mechanics/NonlocalEqStrain.h"
-
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 
 //! @brief constructor
 //! @param mDimension number of nodes
-NuTo::NewmarkDirect::NewmarkDirect (StructureBase* rStructure)  : NewmarkBase (rStructure)
+NuTo::NewmarkDirect::NewmarkDirect (StructureBase* rStructure)
+    : NewmarkBase (rStructure),
+      mToleranceResidual(rStructure->GetDofStatus())
 {
     mMinLineSearchStep = 0.01;
     mVisualizeResidualTimeStep = 0;
     mPerformLineSearch = true;
+}
+
+//! @brief Sets the residual tolerance for a specific DOF
+//! param rDof: degree of freedom
+//! param rTolerance: tolerance
+void NuTo::NewmarkDirect::SetToleranceResidual(NuTo::Node::eDof rDof, double rTolerance)
+{
+    mToleranceResidual[rDof] = rTolerance;
 }
 
 
@@ -86,939 +71,362 @@ void NuTo::NewmarkDirect::serialize(Archive & ar, const unsigned int version)
 
 #endif // ENABLE_SERIALIZATION
 
-
 NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
+    NuTo::Timer timerFull(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
-    //allocate solver
-#if defined(HAVE_PARDISO) && defined(_OPENMP)
-    NuTo::SparseDirectSolverPardiso mySolver(mStructure->GetNumProcessors(), mStructure->GetVerboseLevel()); // note: not the MKL version
-#else
-    NuTo::SparseDirectSolverMUMPS mySolver;
-#endif
-
-#ifdef SHOW_TIME
-        mySolver.SetShowTime(mStructure->GetShowTime());
-#endif
     try
     {
-    	NuTo::Error::eError Error;
+        //renumber dofs and build constraint matrix
+        mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+
+        CalculateStaticAndTimeDependentExternalLoad();
+
+
+        mToleranceResidual.DefineDefaultValueToIninitializedDofTypes(mToleranceForce);
 
         if (mMaxTimeStep==0)
-            throw MechanicsException("[NuTo::NewmarkDirect::Solve] max time step is set to zero.");
+            throw MechanicsException(__PRETTY_FUNCTION__, "max time step is set to zero.");
 
-        //renumber dofs and build constraint matrix
-        mStructure->NodeBuildGlobalDofs();
-
-        //calculate constraint matrix
-
-        /*
-        // ConstraintGetConstraintMatrixAfterGaussElimination(const NuTo::SparseMatrixCSRGeneral<double>& ... ) replaced by
-        // const NuTo::SparseMatrixCSRGeneral<double> ConstraintGetConstraintMatrixAfterGaussElimination() const;
-        // ---> No need for CmatTmp anymore! --- vhirtham
-
-        NuTo::SparseMatrixCSRGeneral<double> CmatTmp;
-        mStructure->ConstraintGetConstraintMatrixAfterGaussElimination(CmatTmp);*/
-
-        NuTo::SparseMatrixCSRVector2General<double> Cmat(mStructure->ConstraintGetConstraintMatrixAfterGaussElimination());
-        int numEntriesCMat = Cmat.GetNumEntries();
-        SparseMatrixCSRVector2General<double> CmatT (Cmat.Transpose());
-        FullVector<double,Eigen::Dynamic> bRHSprev, bRHS;
-
-        // allocate space for stiffness matrix
-        SparseMatrixCSRVector2General<double> stiffMatrix_jj(mStructure->GetNumActiveDofs(), mStructure->GetNumActiveDofs());
-        SparseMatrixCSRVector2General<double> stiffMatrix_jk(mStructure->GetNumActiveDofs(), mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-        SparseMatrixCSRVector2General<double> stiffMatrix_kj(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(), mStructure->GetNumActiveDofs());
-        SparseMatrixCSRVector2General<double> stiffMatrix_kk(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(), mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-
-        //calculate individual mass matrix (I was lazy here and have just used general matrices, but symmetric is certainly better here)
-        NuTo::SparseMatrixCSRVector2General<double> massMatrix_jj,massMatrix_jk,massMatrix_kj,massMatrix_kk;
-        NuTo::FullVector<double, Eigen::Dynamic> lumped_massMatrix_j(mStructure->GetNumDofs()),
-        		                                 lumped_massMatrix_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-
-        if (mStructure->GetNumTimeDerivatives()>1)
-        {
-        	if (mUseLumpedMass)
-        	{
-        		mStructure->BuildGlobalLumpedHession2(lumped_massMatrix_j,lumped_massMatrix_k);
-        		std::cout << "use lumped mass matrix " << std::endl;
-        	}
-        	else
-        	{
-				massMatrix_jj.Resize(mStructure->GetNumActiveDofs(),mStructure->GetNumActiveDofs());
-				massMatrix_jk.Resize(mStructure->GetNumActiveDofs(),mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-				massMatrix_kj.Resize(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(),mStructure->GetNumActiveDofs());
-				massMatrix_kk.Resize(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(),mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-                mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::MASS,massMatrix_jj,massMatrix_jk,massMatrix_kj,massMatrix_kk);
-        		std::cout << "use full mass matrix " << std::endl;
-        	}
-            //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> m11Full(massMatrix_jj);
-            //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenValues;
-            //m11Full.EigenValuesSymmetric(eigenValues);
-            //std::cout << "eigenvalues mass" << "\n";
-            //std::cout << eigenValues.Trans() << "\n";
-        }
-
-        //extract displacements, velocities and accelerations
-        NuTo::FullVector<double,Eigen::Dynamic> disp_j,disp_k, vel_j, vel_k, acc_j, acc_k, delta_disp_j, delta_disp_k;
-        NuTo::FullVector<double,Eigen::Dynamic> trial_disp_j,trial_disp_k, trial_vel_j, trial_vel_k, trial_acc_j, trial_acc_k;
-        NuTo::FullVector<double,Eigen::Dynamic> extForce_j, extForce_k, prevExtForce_j, prevExtForce_k;
-        NuTo::FullVector<double,Eigen::Dynamic> intForce_j(mStructure->GetNumActiveDofs()), intForce_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs()),
-                                 prevIntForce_j(mStructure->GetNumActiveDofs()), prevIntForce_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-        NuTo::FullVector<double,Eigen::Dynamic> residual_j, residual_k, residual_mod, prevResidual_j, prevResidual_k;
-
-        //store last converged displacements, velocities and accelerations
-        NuTo::FullVector<double,Eigen::Dynamic> lastConverged_disp_j,lastConverged_disp_k, lastConverged_vel_j, lastConverged_vel_k, lastConverged_acc_j, lastConverged_acc_k;
-        mStructure->NodeExtractDofValues(0,lastConverged_disp_j, lastConverged_disp_k);
-//        mInternalEnergy = mStructure->ElementTotalGetInternalEnergy();
-//        FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> plotHistory(1,7);
-//        plotHistory(0,0) = mTime;
-//        plotHistory(0,2) = mInternalEnergy;
-//        plotHistory(0,6) = mInternalEnergy;
-        if (mStructure->GetNumTimeDerivatives()>1)
-        {
-            mStructure->NodeExtractDofValues(1,lastConverged_vel_j,lastConverged_vel_k);
-           	mStructure->NodeExtractDofValues(2,lastConverged_acc_j,lastConverged_acc_k);
-
-//            mKineticEnergy = 0.5*(lastConverged_vel_j.Dot(massMatrix_jj*lastConverged_vel_j+massMatrix_jk*lastConverged_vel_k)+lastConverged_vel_k.Dot(massMatrix_kj*lastConverged_vel_j+massMatrix_kk*lastConverged_vel_k));
-//            mExternalEnergy = 0;
-//            mDampedEnergy = 0.;
-
-//            plotHistory(0,3) = mKineticEnergy;
-//            plotHistory(0,4) = mDampedEnergy;
-//            plotHistory(0,5) = mExternalEnergy;
-//            plotHistory(0,6)+= mKineticEnergy ;
-        }
-
-        double curTime(mTime);
-        // initialize the structure times
+        double curTime  = mTime;
+        double timeStep = mTimeStep;
         mStructure->SetPrevTime(curTime);
         mStructure->SetTime(curTime);
 
-        //apply constraints for last converged time step
-        double timeDependentConstraintFactor(0);
-        if (mTimeDependentConstraint!=-1)
-        {
-            timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
-            mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
-        }
-//        plotHistory(0,1) = timeDependentConstraintFactor;
-            bRHSprev = mStructure->ConstraintGetRHSAfterGaussElimination();
-        mStructure->NodeMergeActiveDofValues(0,lastConverged_disp_j); //disp_k is internally calculated from the previous constraint matrix
-        mStructure->ElementTotalUpdateTmpStaticData();
+        const DofStatus& dofStatus = mStructure->GetDofStatus();
 
-        //calculate internal force, update of history variables=false
-        mStructure->BuildGlobalGradientInternalPotentialSubVectors(prevIntForce_j,prevIntForce_k,false);
-        prevResidual_j = prevIntForce_j;
-        prevResidual_k = prevIntForce_k;
+        /*---------------------------------*\
+        | Check number of calculation steps |
+        \*---------------------------------*/
 
-        if (mStructure->GetNumTimeDerivatives()>1)
+        if(mStepActiveDofs.empty())
         {
-            if (mMuDampingMass>0)
-            {
-                //add damping terme
-            	if (mUseLumpedMass)
-            	{
-            		prevResidual_j += lumped_massMatrix_j.asDiagonal()*lastConverged_vel_j * mMuDampingMass;
-            		prevResidual_k += lumped_massMatrix_k.asDiagonal()*lastConverged_vel_k * mMuDampingMass;
-            	}
-            	else
-            	{
-					prevResidual_j += (massMatrix_jj*lastConverged_vel_j+massMatrix_jk*lastConverged_vel_k) *mMuDampingMass;
-					prevResidual_k += (massMatrix_kj*lastConverged_vel_j+massMatrix_kk*lastConverged_vel_k) *mMuDampingMass;
-            	}
-            }
-			if (mUseLumpedMass)
-			{
-				prevResidual_j += lumped_massMatrix_j.asDiagonal()*lastConverged_acc_j;
-				prevResidual_k += lumped_massMatrix_k.asDiagonal()*lastConverged_acc_k;
-			}
-			else
-			{
-				//add mass terme
-				prevResidual_j += (massMatrix_jj*lastConverged_acc_j+massMatrix_jk*lastConverged_acc_k);
-				prevResidual_k += (massMatrix_kj*lastConverged_acc_j+massMatrix_kk*lastConverged_acc_k);
-        	}
-        }
-        //add external force
-        CalculateExternalLoad(*mStructure, curTime, prevExtForce_j, prevExtForce_k);
-        prevResidual_j -= prevExtForce_j;
-        prevResidual_k -= prevExtForce_k;
-
-        if (numEntriesCMat>0)
-        {
-            residual_mod=prevResidual_j - CmatT*prevResidual_k;
+            mStepActiveDofs.push_back(mStructure->DofTypesGetActive());
         }
         else
         {
-            residual_mod=prevResidual_j;
-        }
-
-        mStructure->GetLogger() << "residual in initial configuration " << residual_mod.Norm() << "\n";
-        if (residual_mod.Norm()>mToleranceForce)
-            throw MechanicsException("[NuTo::NewmarkDirect::Solve] Initial configuration is not in (dynamic) equilibrium.");
-
-/*        FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> plotVector0(plotHistory);
-        for (int countGroup=0; countGroup<mVecGroupNodesReactionForces.GetNumRows(); countGroup++)
-        {
-            FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> reactionForce(1,mStructure->GetDimension());
-
-            boost::ptr_map<int,GroupBase>::iterator itGroup = mStructure->mGroupMap.find(mVecGroupNodesReactionForces(countGroup,0));
-            if (itGroup==mStructure->mGroupMap.end())
-                throw MechanicsException("[NuTo::NewmarkDirect::Solve] node group with the given identifier for the reaction forces does not exist.");
-            if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
-                throw MechanicsException("[NuTo::NewmarkDirect::Solve] Group is not a node group (reaction forces).");
-            Group<NodeBase> *nodeGroup = itGroup->second->AsGroupNode();
-            assert(nodeGroup!=0);
-
-            //all nodes have to have the same dimension
-            if(nodeGroup->GetNumMembers()<1)
-                throw MechanicsException("[NuTo::StructureBase::NodeGroupGetCoordinates] Group has no members.");
-
-            //std::cout << "residual k " << residual_k.transpose() << std::endl;
-            for (Group<NodeBase>::iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++)
+            for(unsigned int i=0; i<mStepActiveDofs.size();++i)
             {
-                for (int countDimension=0; countDimension<mStructure->GetDimension(); countDimension++)
+                if(mStepActiveDofs[i].empty())
                 {
-                    int theDof = itNode->second->GetDofDisplacement(countDimension);
-                    if (theDof<mStructure->GetNumActiveDofs())
-                    {
-                        reactionForce(0,countDimension)+=prevResidual_j(theDof);
-                    }
-                    else
-                    {
-                        reactionForce(0,countDimension)+=prevResidual_k(theDof-mStructure->GetNumActiveDofs());
-                    }
+                    throw MechanicsException(__PRETTY_FUNCTION__, "Calculation step " +std::to_string(i)+ " has no active DOFs.");
                 }
             }
-            //std::cout << "reaction force for node group " <<  countGroup << " : " << reactionForce.Trans() << std::endl;
-            plotVector0.AppendColumns(reactionForce);
         }
-*/
-//        std::ofstream DamageFile; std::ofstream TotalInelasticEqStrainFile;
-//        DamageFile.open("DamageJump.txt", std::ios::app); TotalInelasticEqStrainFile.open("TotalInelasticEqStrainJump.txt", std::ios::app);
-//     	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(14)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // bulo ElementGetElementPtr(9) dlya Brick8N and ElementGetElementPtr(141) dlya Brick8Nhole;
-//    	TotalInelasticEqStrainFile << mTime << " " << mStructure->ElementGetElementPtr(14)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetKappaInelastic() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
-
-//        std::ofstream DamageFile;
-//        DamageFile.open("Damage.txt", std::ios::app);
-//        DamageFile << " time     omega     kappa     nonLocalEqStrain" << std::endl;
-//        DamageFile << mTime << " " << mStructure->ElementGetElementPtr(49)->GetStaticData(0)->AsGradientDamage1DFatigue()->GetOmega()
-//        		<< " " << mStructure->ElementGetElementPtr(49)->GetStaticData(0)->AsGradientDamage1DFatigue()->GetKappa() << " " << std::endl;
-
-        // 2D nonlocal test
-//        std::ofstream DamageFile;
-//        DamageFile.open("Damage.txt", std::ios::app);
-//        DamageFile << " time     omega     kappa     nonLocalEqStrain" << std::endl;
-//        DamageFile << mTime << " " << mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega()
-//        		<< " " << mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " "
-//				<< mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain() <<
-//				" " << mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega() << " "
-//				<< mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " "
-//				<< mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain()<< std::endl;
-
-        PostProcess(prevResidual_j, prevResidual_k);
 
 
-        double timeStep = mTimeStep;
+
+        /*---------------------------------*\
+        |        Allocate Variables         |
+        \*---------------------------------*/
+
+        StructureOutputBlockMatrix  hessian0(dofStatus, true);
+        StructureOutputBlockMatrix  hessian1(dofStatus);
+        StructureOutputBlockMatrix  hessian2(dofStatus);
+
+        // Vectors
+        // -------
+
+        StructureOutputBlockVector  delta_dof_dt0(dofStatus, true);
+
+        StructureOutputBlockVector  dof_dt0(dofStatus, true); // e.g. disp
+        StructureOutputBlockVector  dof_dt1(dofStatus, true); // e.g. velocity
+        StructureOutputBlockVector  dof_dt2(dofStatus, true); // e.g. accelerations
+
+        StructureOutputBlockVector  trial_dof_dt0(dofStatus, true); // e.g. disp
+        StructureOutputBlockVector  trial_dof_dt1(dofStatus, true); // e.g. velocity
+        StructureOutputBlockVector  trial_dof_dt2(dofStatus, true); // e.g. accelerations
+
+        StructureOutputBlockVector  lastConverged_dof_dt0(dofStatus, true); // e.g. disp
+        StructureOutputBlockVector  lastConverged_dof_dt1(dofStatus, true); // e.g. velocity
+        StructureOutputBlockVector  lastConverged_dof_dt2(dofStatus, true); // e.g. accelerations
+
+
+        StructureOutputBlockVector  extForce(dofStatus, true);
+        StructureOutputBlockVector  intForce(dofStatus, true);
+        StructureOutputBlockVector  residual(dofStatus, true);
+
+        StructureOutputBlockVector  prevIntForce(dofStatus, true);
+        StructureOutputBlockVector  prevExtForce(dofStatus, true);
+        StructureOutputBlockVector  prevResidual(dofStatus, true);
+
+
+        // for constraints
+        // ---------------
+
+        BlockFullVector<double> residual_mod(dofStatus);
+        BlockFullVector<double> bRHS(dofStatus);
+        BlockFullVector<double> deltaBRHS(dofStatus);
+
+        const auto& cmat = mStructure->GetConstraintMatrix();
+
+        /*---------------------------------*\
+        |    Declare and fill Output Maps   |
+        \*---------------------------------*/
+
+        // Declare output maps
+        std::map<NuTo::StructureEnum::eOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient;
+        std::map<NuTo::StructureEnum::eOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient_Hessian0Hessian1;
+        std::map<NuTo::StructureEnum::eOutput, NuTo::StructureOutputBase*> evaluate_Hessian0_Hessian1;
+
+        evaluate_InternalGradient                       [StructureEnum::INTERNAL_GRADIENT] = &intForce;
+        evaluate_InternalGradient_Hessian0Hessian1      [StructureEnum::INTERNAL_GRADIENT] = &intForce;
+
+        evaluate_InternalGradient_Hessian0Hessian1      [StructureEnum::HESSIAN0] = &hessian0;
+        evaluate_Hessian0_Hessian1                      [StructureEnum::HESSIAN0] = &hessian0;
+
+        if (mStructure->GetNumTimeDerivatives() >= 1 && mMuDampingMass == 0.)
+        {
+            hessian1.Resize(dofStatus.GetNumActiveDofsMap(), dofStatus.GetNumDependentDofsMap());
+            evaluate_InternalGradient_Hessian0Hessian1  [StructureEnum::HESSIAN1] = &hessian1;
+            evaluate_Hessian0_Hessian1                  [StructureEnum::HESSIAN1] = &hessian1;
+        }
+
+        if (mStructure->GetNumTimeDerivatives() >= 2)
+        {
+            hessian2.Resize(dofStatus.GetNumActiveDofsMap(), dofStatus.GetNumDependentDofsMap());
+            if (mUseLumpedMass)
+            {
+                hessian2 = mStructure->BuildGlobalHessian2Lumped();
+            }
+            else
+            {
+                hessian2 = mStructure->BuildGlobalHessian2();
+            }
+            CalculateMuDampingMatrix(hessian1, hessian2);
+        }
+
+        ConstitutiveInputMap inputMap;
+        ConstitutiveCalculateStaticData calculateImplicitly(CalculateStaticData::EULER_BACKWARD);
+        inputMap[Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateImplicitly;
+
+        ExtractDofValues(lastConverged_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2);
+        UpdateAndGetAndMergeConstraintRHS(curTime, lastConverged_dof_dt0);
+
+        // ******************************************************
+        mStructure->Evaluate(inputMap, evaluate_InternalGradient);
+        // ******************************************************
+
+        StructureOutputBlockVector initialExtForce = CalculateCurrentExternalLoad(curTime);  // put this in element evaluate soon!
+
+        residual = CalculateResidual(intForce, initialExtForce, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2);
+        residual.ApplyCMatrix(residual_mod, cmat);
+
+
+        if (mToleranceResidual < residual_mod.CalculateInfNorm())
+        {
+            mStructure->GetLogger() << residual_mod.CalculateInfNorm();
+            throw MechanicsException(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
+        }
+
+        CalculateResidualKForPostprocessing(residual, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2);
+        PostProcess(residual);
+
 
         // the minimal time step defined, which is equivalent to six cut-backs
-        if (mAutomaticTimeStepping) {
-			SetMinTimeStep(mMinTimeStep > 0. ? mMinTimeStep : mTimeStep*pow(0.5,6.));
+        if (mAutomaticTimeStepping)
+        {
+            SetMinTimeStep(mMinTimeStep > 0. ? mMinTimeStep : mTimeStep*pow(0.5,6.));
         }
 
         while (curTime < rTimeDelta)
         {
-            //apply constraints for last converged time step
-            if (mTimeDependentConstraint!=-1)
+            for(auto dof : dofStatus.GetDofTypes())
             {
-				timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
-				mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
+                mStructure->DofTypeSetIsActive(dof,true);
             }
-            bRHSprev = mStructure->ConstraintGetRHSAfterGaussElimination();
-            mStructure->NodeMergeActiveDofValues(0,lastConverged_disp_j); //disp_k is internally calculated from the previous constraint matrix
-            mStructure->ElementTotalUpdateTmpStaticData();
-
-            //calculate previous external force
-            CalculateExternalLoad(*mStructure, curTime, prevExtForce_j, prevExtForce_k);
-
-            //reset displacement state to previous state to calculate Hessian at the last equilibrium state
-            mStructure->NodeMergeActiveDofValues(0,lastConverged_disp_j);
-            mStructure->ElementTotalUpdateTmpStaticData();
-
-            //increase time step
-            curTime += timeStep;
 
             if (timeStep<mMinTimeStep)
-                throw MechanicsException("[NuTo::NewmarkDirect::Solve] time step is smaller than minimum - no convergence is obtained.");
+                throw MechanicsException(__PRETTY_FUNCTION__, "time step is smaller than minimum - no convergence is obtained.");
 
-            //check whether harmonic excitation, check whether curTime is too close to the time data
-            this->SetTimeAndTimeStep(curTime, timeStep, rTimeDelta);
+            // calculate Delta_BRhs and Delta_ExtForce
+            bRHS = UpdateAndGetAndMergeConstraintRHS(curTime, lastConverged_dof_dt0);
+            prevExtForce = CalculateCurrentExternalLoad(curTime);
 
-            // set new structure time at the end of the time increment
+            curTime += timeStep;
+            this->SetTimeAndTimeStep(curTime, timeStep, rTimeDelta);     //check whether harmonic excitation, check whether curTime is too close to the time data
             mStructure->SetTime(curTime);
 
-            //add residual contribution from external force
-            CalculateExternalLoad(*mStructure, curTime, extForce_j, extForce_k);
-            residual_j = prevExtForce_j-extForce_j;
-            residual_k = prevExtForce_k-extForce_k;
+            deltaBRHS = UpdateAndGetConstraintRHS(curTime) - bRHS;
 
-            //apply constraints for the new time step (modified bRHS)
-            if (mTimeDependentConstraint!=-1)
+
+            for (const auto& activeDofs : mStepActiveDofs)
             {
-				timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
-				mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
-            }
-            bRHS = mStructure->ConstraintGetRHSAfterGaussElimination();
-            FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deltaBRHS(bRHS-bRHSprev);
+                mStructure->DofTypeSetIsActive(activeDofs);
 
-			//calculate the residual contribution from stiffness
-			stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();stiffMatrix_kj.SetZeroEntries();stiffMatrix_kk.SetZeroEntries();
-            Error = mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk, stiffMatrix_kj, stiffMatrix_kk);
 
-            // if the stiffness evaluation is failed, go to the beginning of the while loop and decreases the time step
-    		if (Error != NuTo::Error::SUCCESSFUL && mAutomaticTimeStepping) {
-                curTime -= timeStep;
-                timeStep*=0.5;
-                if (timeStep < mMinTimeStep) {
-                    mStructure->GetLogger() << "The minimal time step achieved, the actual time step is " << timeStep << "\n";
-                    throw MechanicsException("[NuTo::NewmarkDirect::Solve] no convergence, the current time step is too short.");
-                }
-    			continue;
-    		}
+                PrintInfoStagger();
 
-			residual_j += stiffMatrix_jk * deltaBRHS;
-			if (mStructure->GetNumTimeDerivatives()>1)
-			{
-                if (mMuDampingMass>0)
+                // ******************************************************
+                mStructure->Evaluate(inputMap, evaluate_Hessian0_Hessian1);
+                // ******************************************************
+
+                extForce = CalculateCurrentExternalLoad(curTime);
+
+                /*------------------------------------------------*\
+                |         Calculate Residual for trail state       |
+                \*------------------------------------------------*/
+                residual = prevExtForce - extForce;
+                CalculateResidualTrial(residual, deltaBRHS, hessian0, hessian1, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
+                residual.ApplyCMatrix(residual_mod, cmat);
+
+                mStructure->GetLogger() << "Initial trial residual:               " << residual_mod.CalculateInfNorm() << "\n";
+
+                // ******************************************************
+                delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessian0, hessian1, hessian2, residual_mod, timeStep);
+                delta_dof_dt0.K = deltaBRHS - cmat*delta_dof_dt0.J;
+                // ******************************************************
+
+                //calculate trial state
+                dof_dt0 = lastConverged_dof_dt0 + delta_dof_dt0;
+                if (mStructure->GetNumTimeDerivatives() >= 1) dof_dt1 = CalculateDof1(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
+                if (mStructure->GetNumTimeDerivatives() >= 2) dof_dt2 = CalculateDof2(delta_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
+
+
+                MergeDofValues(dof_dt0, dof_dt1, dof_dt2, false);
+
+                // ******************************************************
+                mStructure->Evaluate(inputMap, evaluate_InternalGradient);
+                // ******************************************************
+
+                residual = CalculateResidual(intForce, extForce, hessian2, dof_dt1, dof_dt2);
+                residual.ApplyCMatrix(residual_mod, cmat);
+
+
+                BlockScalar normResidual = residual_mod.CalculateInfNorm();
+
+                int iteration = 0;
+                while(!(normResidual < mToleranceResidual) && iteration < mMaxNumIterations)
                 {
-                    if (mUseLumpedMass)
+
+                    // ******************************************************
+                    mStructure->Evaluate(inputMap, evaluate_Hessian0_Hessian1);
+                    // ******************************************************
+
+                    if (mCheckCoefficientMatrix)    mStructure->ElementCheckHessian0(1.e-6, 1.e-8);
+
+
+                    // ******************************************************
+                    delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessian0, hessian1, hessian2, residual_mod, timeStep);
+                    delta_dof_dt0.K = cmat*delta_dof_dt0.J*(-1.);
+                    // ******************************************************
+
+
+                    //perform a line search
+                    double alpha = 1;
+                    BlockScalar trialNormResidual(mStructure->GetDofStatus());
+                    do
                     {
-        				residual_j -= lumped_massMatrix_j.asDiagonal()*lastConverged_vel_j*(mMuDampingMass*mGamma/mBeta);
+                        //calculate line search trial state
+                        trial_dof_dt0 = dof_dt0 + delta_dof_dt0 * alpha;
+                        if (mStructure->GetNumTimeDerivatives() >= 1) trial_dof_dt1 = dof_dt1 + delta_dof_dt0 * (alpha*mGamma/(timeStep*mBeta));
+                        if (mStructure->GetNumTimeDerivatives() >= 2) trial_dof_dt2 = dof_dt2 + delta_dof_dt0 * (alpha/(timeStep*timeStep*mBeta));
+
+                        MergeDofValues(trial_dof_dt0, trial_dof_dt1, trial_dof_dt2, false);
+
+                        // ******************************************************
+                        mStructure->Evaluate(inputMap, evaluate_InternalGradient);
+                        // ******************************************************
+
+                        residual = CalculateResidual(intForce, prevExtForce, hessian2, trial_dof_dt1, trial_dof_dt2);
+                        residual.ApplyCMatrix(residual_mod, cmat);
+
+                        trialNormResidual = residual_mod.CalculateInfNorm();
+
+                        mStructure->GetLogger() << "[Linesearch a=" << std::to_string(alpha).substr(0, 6) << "] Trial residual: " << trialNormResidual <<  "\n";
+
+                        alpha*=0.5;
+
+                    }
+                    while(mPerformLineSearch && alpha > mMinLineSearchStep && trialNormResidual > (1. - alpha) * normResidual);
+
+                    if (alpha > mMinLineSearchStep || !mPerformLineSearch)
+                    {
+                        //improvement is achieved, go to next Newton step
+                        dof_dt0 = trial_dof_dt0;
+                        if (mStructure->GetNumTimeDerivatives() >= 1) dof_dt1 = trial_dof_dt1;
+                        if (mStructure->GetNumTimeDerivatives() >= 2) dof_dt2 = trial_dof_dt2;
+                        normResidual = trialNormResidual;
+
+                        PrintInfoIteration(normResidual,iteration);
+                        iteration++;
                     }
                     else
                     {
-						//add damping terme
-						residual_j -= (massMatrix_jj*lastConverged_vel_j*(mMuDampingMass*mGamma/mBeta) + (massMatrix_jk * (deltaBRHS *(-1./timeStep)+lastConverged_vel_k)))*(mMuDampingMass*mGamma/mBeta);
+                        //and leave
+                        iteration = mMaxNumIterations;
                     }
-                }
 
-				residual_j -= massMatrix_jj * (lastConverged_vel_j*(1./(mBeta*timeStep))+lastConverged_acc_j*(1./(2.*mBeta)))+
-							  massMatrix_jk * (deltaBRHS *(-1./(mBeta*timeStep*timeStep))+lastConverged_vel_k*(1./(mBeta*timeStep))+lastConverged_acc_k*(1./(2.*mBeta)));
-			}
+                } // end of while(normResidual<mToleranceForce && iteration<mMaxNumIterations)
 
-			if (numEntriesCMat==0)
-			{
-				residual_mod = residual_j;
-			}
-			else
-			{
-				//add residual contribution from external force
-				residual_k = prevExtForce_k-extForce_k;
-
-				//calculate the residual contribution from stiffness
-				residual_k += stiffMatrix_kk * deltaBRHS;
-
-				if (mStructure->GetNumTimeDerivatives()>1)
-				{
-	                if (mMuDampingMass>0)
-	                {
-	                    if (mUseLumpedMass)
-	                    {
-	        				residual_k -= (lumped_massMatrix_k.asDiagonal() * (deltaBRHS *(-1./timeStep)+lastConverged_vel_k))*(mMuDampingMass*mGamma/mBeta);
-	                    }
-	                    else
-	                    {
-							//add damping terme
-	        				residual_k -= (massMatrix_kj*lastConverged_vel_j*(mMuDampingMass*mGamma/mBeta) + (massMatrix_kk * (deltaBRHS *(-1./timeStep)+lastConverged_vel_k)))*(mMuDampingMass*mGamma/mBeta);
-	                    }
-	                }
-
-					//add residual contribution from mass
-					residual_k -= massMatrix_kj * (lastConverged_vel_j*(1./(mBeta*timeStep))+lastConverged_acc_j*(1./(2.*mBeta)))+
-							massMatrix_kk * (deltaBRHS *(-1./(mBeta*timeStep*timeStep))+lastConverged_vel_k*(1./(mBeta*timeStep))+lastConverged_acc_k*(1./(2.*mBeta)));
-				}
-
-				//add residual contribution from dependent dofs
-				residual_mod = residual_j - CmatT*residual_k;
-			}
-			//std::cout << "expected rhs for trial state\n" << residual_mod.transpose() << std::endl<< std::endl;
-			mStructure->GetLogger() << "norm of predicted residual in trial state:" << residual_mod.Norm() << "\n";
-
-			//calculate stiffness and disp force vector (the displacements of the dependent dofs do not take into account the modified rhs)
-			if (numEntriesCMat>0)
-			{
-		        if (mStructure->GetNumTimeDerivatives()>1)
-				{
-					double factor((1.+mGamma*mMuDampingMass*timeStep)/(timeStep*timeStep*mBeta));
-					if (mUseLumpedMass)
-					{
-						stiffMatrix_jj.AddScalDiag(lumped_massMatrix_j,factor);
-						stiffMatrix_kk.AddScalDiag(lumped_massMatrix_k,factor);
-					}
-					else
-					{
-						stiffMatrix_jj.AddScal(massMatrix_jj,factor);
-						stiffMatrix_jk.AddScal(massMatrix_jk,factor);
-						stiffMatrix_kj.AddScal(massMatrix_kj,factor);
-						stiffMatrix_kk.AddScal(massMatrix_kk,factor);
-					}
-				}
-				//calculate the residual for the zero time step
-				residual_j += stiffMatrix_jk * deltaBRHS;
-				residual_k += stiffMatrix_kk * deltaBRHS;
-
-				residual_mod=residual_j - CmatT*residual_k;
-
-				//add damping and mass to full hessian
-				stiffMatrix_jj -= CmatT * stiffMatrix_kj + stiffMatrix_jk * Cmat;
-				stiffMatrix_jj += CmatT * stiffMatrix_kk * Cmat;
-			}
-			else
-			{
-				stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();
-                Error = mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk);
-
-                // if the stiffness evaluation is failed, go to the beginning of the while loop and decreases the time step
-        		if (Error != NuTo::Error::SUCCESSFUL && mAutomaticTimeStepping) {
-                    curTime -= timeStep;
-                    timeStep*=0.5;
-                    if (timeStep < mMinTimeStep) {
-                        mStructure->GetLogger() << "The minimal time step achieved, the actual time step is " << timeStep << "\n";
-                        throw MechanicsException("[NuTo::NewmarkDirect::Solve] no convergence, the current time step is too short.");
-                    }
-        			continue;
-        		}
-
-				//calculate the residual for the zero time step
-				residual_j += stiffMatrix_jk * deltaBRHS;
-				residual_mod=residual_j;
-
-				//add damping and mass to full hessian
-		        if (mStructure->GetNumTimeDerivatives()>1)
-				{
-					double factor((1.+mGamma*mMuDampingMass*timeStep)/(timeStep*timeStep*mBeta));
-					if (mUseLumpedMass)
-					{
-						stiffMatrix_jj.AddScalDiag(lumped_massMatrix_j,factor);
-					}
-					else
-					{
-						stiffMatrix_jj.AddScal(massMatrix_jj,factor);
-						stiffMatrix_jk.AddScal(massMatrix_jk,factor);
-					}
-				}
-			}
-			//solve for trial state
-			NuTo::SparseMatrixCSRGeneral<double> hessianModSolver(stiffMatrix_jj);
-			hessianModSolver.SetOneBasedIndexing();
-			mySolver.Solve(hessianModSolver, residual_mod, delta_disp_j);
-			delta_disp_j*=-1;
-
-            //calculate trial state
-            disp_j = lastConverged_disp_j + delta_disp_j;
-            disp_k = bRHS - Cmat*disp_j;
-            if (mStructure->GetNumTimeDerivatives()>1)
-            {
-            	delta_disp_k = disp_k - lastConverged_disp_k;
-
-            	acc_j = delta_disp_j * (1./(timeStep*timeStep*mBeta)) - lastConverged_vel_j * (1./(timeStep*mBeta)) -
-            			lastConverged_acc_j * (0.5 - mBeta)/mBeta;
-            	vel_j = lastConverged_vel_j + lastConverged_acc_j * timeStep * (1 - mGamma) + acc_j * timeStep *mGamma;
-
-            	acc_k = delta_disp_k * (1./(timeStep*timeStep*mBeta)) - lastConverged_vel_k * (1./(timeStep*mBeta)) -
-            			lastConverged_acc_k * (0.5 - mBeta)/mBeta;
-            	vel_k = lastConverged_vel_k + lastConverged_acc_k * timeStep * (1 - mGamma) + acc_k * timeStep *mGamma;
-
-//            	acc_j  = lastConverged_acc_j + delta_disp_j * (1./(timeStep*timeStep*mBeta));
-//                vel_j  = lastConverged_vel_j + delta_disp_j * (mGamma/(timeStep*mBeta));
-//
-//            	acc_k  = lastConverged_acc_k + delta_disp_k * (1./(timeStep*timeStep*mBeta));
-//                vel_k  = lastConverged_vel_k + delta_disp_k * (mGamma/(timeStep*mBeta));
-            }
-
-            //apply displacements
-            //std::cout << "norm of delta disp " << delta_disp_j.Norm() << std::endl;
-            mStructure->NodeMergeActiveDofValues(0,disp_j);
-            mStructure->ElementTotalUpdateTmpStaticData();
-
-            //calculate internal force, update of history variables=false
-            mStructure->BuildGlobalGradientInternalPotentialSubVectors(intForce_j, intForce_k,false);
-            residual_j = intForce_j;
-            residual_k = intForce_k;
-            if (mStructure->GetNumTimeDerivatives()>1)
-            {
-                if (mMuDampingMass>0)
+                if (normResidual < mToleranceResidual)
                 {
-                    if (mUseLumpedMass)
+                    //converged solution
+                    if(mVerboseLevel>2)  mStructure->GetLogger() << "\n *** UpdateStaticData *** from NewMarkDirect \n";
+                    mStructure->ElementTotalUpdateStaticData();
+
+                    //store converged step
+                    lastConverged_dof_dt0 = dof_dt0;
+                    if (mStructure->GetNumTimeDerivatives() >= 1) lastConverged_dof_dt1 = dof_dt1;
+                    if (mStructure->GetNumTimeDerivatives() >= 1) lastConverged_dof_dt2 = dof_dt2;
+
+                    prevResidual = residual;
+
+
+                    MergeDofValues(dof_dt0, dof_dt1, dof_dt2, true);
+
+
+                    //update structure time
+                    mStructure->SetPrevTime(curTime);
+
+                    mTime+=timeStep;
+
+                    mStructure->GetLogger() << "Convergence after " << iteration << " iterations at time " << mTime << "(timestep " << timeStep << ").\n";
+
+                    //perform Postprocessing
+                    CalculateResidualKForPostprocessing(prevResidual, hessian2, dof_dt1, dof_dt2);
+                    PostProcess(prevResidual);
+
+
+                    //eventually increase next time step
+                    if (mAutomaticTimeStepping && iteration<0.25*mMaxNumIterations)
                     {
-                    	residual_j += (lumped_massMatrix_j.asDiagonal()*vel_j) *mMuDampingMass;
+                        timeStep*=1.5;
+                        if (timeStep>mMaxTimeStep)
+                            timeStep = mMaxTimeStep;
+                    }
+
+                    if (mCallback && mCallback->Exit(*mStructure))
+                        return NuTo::Error::SUCCESSFUL;
+
+                }
+                else
+                {
+                    mStructure->GetLogger() << "No convergence with timestep " << timeStep << "\n";
+                    //no convergence
+                    if (mAutomaticTimeStepping)
+                    {
+                        //no convergence, reduce the time step and start from scratch
+                        curTime -= timeStep;
+                        timeStep *= 0.5;
+                        if (timeStep < mMinTimeStep) {
+                            mStructure->GetLogger() << "The minimal time step achieved, the actual time step is " << timeStep << "\n";
+                            throw MechanicsException("[NuTo::NewmarkDirect::Solve] no convergence, the current time step is too short.");
+                        }
                     }
                     else
                     {
-						//add damping terme
-						residual_j += (massMatrix_jj*vel_j+massMatrix_jk*vel_k) *mMuDampingMass;
-						residual_k += (massMatrix_kj*vel_j+massMatrix_kk*vel_k) *mMuDampingMass;
+                        throw MechanicsException("[NuTo::NewmarkDirect::Solve] no convergence with the current maximum number of iterations, either use automatic time stepping, reduce the time step or the minimal line search cut back factor.");
                     }
-                }
-
-                if (mUseLumpedMass)
-                {
-					residual_j += lumped_massMatrix_j.asDiagonal()*acc_j;
-
-                }
-                else
-                {
-					//add mass terme
-					residual_j += massMatrix_jj*acc_j+massMatrix_jk*acc_k;
-					residual_k += massMatrix_kj*acc_j+massMatrix_kk*acc_k;
-                }
-            }
-
-            //add external force
-            residual_j -= extForce_j;
-            residual_k -= extForce_k;
-
-            //calculate the initial residual
-            if (numEntriesCMat>0)
-            {
-                residual_mod=residual_j - CmatT*residual_k;
-            }
-            else
-            {
-                residual_mod=residual_j;
-            }
-
-            //calculate norm of initial residual (first time step)
-            double normResidual(residual_mod.Norm());
-            //std::cout << "max Residual " << residual_mod.Max() << std::endl;
-
-            int iteration(0);
-            while(normResidual>mToleranceForce && iteration<mMaxNumIterations)
-            {
-                //calculate stiffness
-                if (numEntriesCMat>0)
-                {
-                    stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();stiffMatrix_kj.SetZeroEntries();stiffMatrix_kk.SetZeroEntries();
-                    Error = mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk, stiffMatrix_kj, stiffMatrix_kk);
-                    if (mStructure->GetNumTimeDerivatives()>1)
-                    {
-                        //add damping and mass to full hessian
-                        double factor((1.+mGamma*mMuDampingMass*timeStep)/(timeStep*timeStep*mBeta));
-                        if (mUseLumpedMass)
-                        {
-                        	stiffMatrix_jj.AddScalDiag(lumped_massMatrix_j,factor);
-                        }
-                        else
-                        {
-                            stiffMatrix_jj.AddScal(massMatrix_jj,factor);
-                            stiffMatrix_jk.AddScal(massMatrix_jk,factor);
-                        }
-                    }
-
-                    stiffMatrix_jj -= CmatT * stiffMatrix_kj + stiffMatrix_jk * Cmat;
-                    stiffMatrix_jj += CmatT * stiffMatrix_kk * Cmat;
-                }
-                else
-                {
-                    stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();
-                    Error = mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk);
-
-                    if (mStructure->GetNumTimeDerivatives()>1)
-                    {
-                        //add damping and mass to full hessian
-                        double factor((1.+mGamma*mMuDampingMass*timeStep)/(timeStep*timeStep*mBeta));
-                        if (mUseLumpedMass)
-                        {
-                        	stiffMatrix_jj.AddScalDiag(lumped_massMatrix_j,factor);
-                        }
-                        else
-                        {
-							stiffMatrix_jj.AddScal(massMatrix_jj,factor);
-							stiffMatrix_jk.AddScal(massMatrix_jk,factor);
-                        }
-                    }
-                }
-
-                // if the stiffness evaluation is failed, leaves the while loop and decreases the time step
-        		if (Error != NuTo::Error::SUCCESSFUL && mAutomaticTimeStepping) {
-        			break;
-        		}
-
-                if (mCheckCoefficientMatrix)
-                {
-//                    mStructure->CheckCoefficientMatrix_0(1.e-6, false);
-                    mStructure->ElementCheckCoefficientMatrix_0(1.e-6);
-
-//                    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> tmp;
-//                    mStructure->ElementCheckCoefficientMatrix_0(1.e-6, 2,tmp ,true);
-                }
-
-/*
-//check stiffness matrix
-stiffMatrix_jj.SetZeroEntries();stiffMatrix_jk.SetZeroEntries();
-mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::STIFFNESS, stiffMatrix_jj, stiffMatrix_jk);
-//std::cout << "stiffness exact1\n" <<  FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(stiffMatrix_jj) << std::endl;
-FullVector<double, Eigen::Dynamic> check_disp_j1,check_disp_j2,check_disp_k1,check_disp_k2;
-mStructure->NodeExtractDofValues(0,check_disp_j1,check_disp_k1);
-//std::cout << "active dof values " << check_disp_j1 << std::endl;
-FullVector<double, Eigen::Dynamic> check_intforce_j1(check_disp_j1),check_intforce_k1(check_disp_k1),
-		check_intforce_j2(check_disp_j1),check_intforce_k2(check_disp_k1);
-FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> stiffMatrix_jj_cdf(stiffMatrix_jj);
-stiffMatrix_jj_cdf.setZero();
-
-mStructure->BuildGlobalGradientInternalPotentialSubVectors(check_intforce_j1,check_intforce_k1);
-//std::cout << "check_intforce_j1 \n" << check_intforce_j1 << std::endl;
-double delta(1e-8);
-for (int count=0; count<check_disp_j1.GetNumRows(); count++)
-{
-	check_disp_j2 = check_disp_j1;
-	check_disp_j2(count)+=delta;
-	//mStructure->NodeMergeActiveDofValues(0,check_disp_j2);
-	mStructure->NodeMergeDofValues(0,check_disp_j2,check_disp_k1);
-	mStructure->ElementTotalUpdateTmpStaticData();
-	mStructure->BuildGlobalGradientInternalPotentialSubVectors(check_intforce_j2,check_intforce_k2);
-	//std::cout << "check_intforce_j2 \n" << check_intforce_j2 << std::endl;
-	stiffMatrix_jj_cdf.col(count) = ((check_intforce_j2-check_intforce_j1).transpose())*(1./delta);
-}
-if ((stiffMatrix_jj_cdf-FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(stiffMatrix_jj)).cwiseAbs().maxCoeff()>1e-3)
-{
-	std::cout << "stiffness exact2\n" <<  FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(stiffMatrix_jj) << std::endl;
-	std::cout << "stiffness cdf\n" <<  stiffMatrix_jj_cdf << std::endl;
-	std::cout << "delta \n" <<  stiffMatrix_jj_cdf-FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(stiffMatrix_jj) << std::endl;
-}
-else
-{
-	std::cout << "error stiffness is " << (stiffMatrix_jj_cdf-FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(stiffMatrix_jj)).cwiseAbs().maxCoeff() << std::endl;
-}
-mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
-*/
-
-                //solve for new state
-                NuTo::SparseMatrixCSRGeneral<double> hessianModSolver(stiffMatrix_jj);
-                hessianModSolver.SetOneBasedIndexing();
-//                residual_mod.Info(10,10,true);
-                mySolver.Solve(hessianModSolver, residual_mod, delta_disp_j);
-                delta_disp_j*=-1;
-
-                //std::cout << "norm of delta disp " << delta_disp_j.Norm() <<  std::endl;
-                //std::cout << "delta disp " << std::endl;
-                //std::cout << delta_disp_j.Trans() << std::endl;
-
-                //perform a line search
-                double alpha(1);
-                double trialNormResidual(0);
-                do
-                {
-                     //calculate trial state
-                    trial_disp_j = disp_j + delta_disp_j * alpha;
-                    delta_disp_k = (Cmat*delta_disp_j)*(-1.);
-                    trial_disp_k = disp_k + delta_disp_k * alpha;
-
-                    if (mStructure->GetNumTimeDerivatives()>1)
-                    {
-                        trial_acc_j  = acc_j+delta_disp_j * (alpha/(timeStep*timeStep*mBeta));
-                        trial_acc_k  = acc_k+delta_disp_k * (alpha/(timeStep*timeStep*mBeta));
-
-                        trial_vel_j  = vel_j+delta_disp_j * (alpha*mGamma/(timeStep*mBeta));
-                        trial_vel_k  = vel_k+delta_disp_k * (alpha*mGamma/(timeStep*mBeta));
-                    }
-
-                    //apply displacements
-                    mStructure->NodeMergeActiveDofValues(0,trial_disp_j);
-                    mStructure->ElementTotalUpdateTmpStaticData();
-
-                    //calculate internal force, update of history variables=false
-                    mStructure->BuildGlobalGradientInternalPotentialSubVectors(intForce_j, intForce_k,false);
-                    residual_j = intForce_j;
-                    residual_k = intForce_k;
-
-                    if (mStructure->GetNumTimeDerivatives()>1)
-                    {
-                        if (mMuDampingMass>0)
-                        {
-                            if (mUseLumpedMass)
-                            {
-								residual_j += (lumped_massMatrix_j.asDiagonal()*trial_vel_j) *mMuDampingMass;
-								residual_k += (lumped_massMatrix_k.asDiagonal()*trial_vel_k) *mMuDampingMass;
-                            }
-                            else
-                            {
-								//add damping terme
-								residual_j += (massMatrix_jj*trial_vel_j+massMatrix_jk*trial_vel_k) *mMuDampingMass;
-								residual_k += (massMatrix_jk.TransMult(trial_vel_j)+massMatrix_kk*trial_vel_k) *mMuDampingMass;
-                            }
-                        }
-
-                        //add mass terme
-                        if (mUseLumpedMass)
-                        {
-							residual_j += lumped_massMatrix_j.asDiagonal()*trial_acc_j;
-							residual_k += lumped_massMatrix_k.asDiagonal()*trial_acc_k;
-                        }
-                        else
-                        {
-                            residual_j += (massMatrix_jj*trial_acc_j+massMatrix_jk*trial_acc_k);
-                            residual_k += (massMatrix_jk.TransMult(trial_acc_j)+massMatrix_kk*trial_acc_k);
-                        }
-                    }
-
-                    //add external force (assumed to be independent of the deformation)
-                    residual_j -=extForce_j;
-                    residual_k -=extForce_k;
-
-                    //std::cout << "residual_j\n " << residual_j << std::endl;
-                    //std::cout << "residual_k\n " << residual_k << std::endl;
-
-                    //calculate the initial residual
-                    if (numEntriesCMat>0)
-                    {
-                        residual_mod = residual_j - CmatT*residual_k;
-                    }
-                    else
-                    {
-                        residual_mod = residual_j;
-                    }
-
-
-//                    std::vector<double> residual_disp_vec, residual_nonloc_vec;
-//                    int numActiveDofs = mStructure->GetNumActiveDofs();
-//
-//                    // loop all nodes
-//                    for (int iNode = 0; iNode < mStructure->GetNumNodes(); ++iNode)
-//                    {
-//                        NodeBase* node = mStructure->NodeGetNodePtr(iNode);
-//                        int dofDisp = node->GetDofDisplacement(0);
-//                        if (dofDisp < numActiveDofs)
-//                            residual_disp_vec.push_back(residual_mod[dofDisp]);
-//
-//                        if (node->GetNumNonlocalEqStrain() != 0)
-//                        {
-//                            int dofNonloc = node->GetDofNonlocalEqStrain();
-//
-//                            if (dofNonloc < numActiveDofs)
-//                                residual_nonloc_vec.push_back(residual_mod[dofNonloc]);
-//                        }
-//                    }
-//                    // convert to full vectors for functionality
-//                    NuTo::FullVector<double, Eigen::Dynamic> residual_disp(residual_disp_vec);
-//                    NuTo::FullVector<double, Eigen::Dynamic> residual_nonloc(residual_nonloc_vec);
-//
-//                    std::cout << "res_mod maxval: " << residual_mod.cwiseAbs().maxCoeff() << std::endl;
-//                    std::cout << "res_disp maxval: " << residual_disp.cwiseAbs().maxCoeff() << std::endl;
-//                    std::cout << "res_nonl maxval: " << residual_nonloc.cwiseAbs().maxCoeff() << std::endl << std::endl;
-//
-
-
-
-
-
-
-                    //std::cout << "residual_mod\n " << residual_mod << std::endl;
-
-                    trialNormResidual=residual_mod.Norm();
-
-                    mStructure->GetLogger() << "  linesearch alpha " << alpha <<" previous residual " << normResidual << " trial residual " << trialNormResidual <<  "\n";
-
-                    alpha*=0.5;
-
-                    if (mVisualizeResidual)
-                    {
-                        VisualizeResidual(residual_mod,trial_disp_j, mVisualizeResidualTimeStep);
-                        mVisualizeResidualTimeStep++;
-
-                    }
-
-                }
-                while(mPerformLineSearch && alpha>mMinLineSearchStep && trialNormResidual>(1.-alpha)*normResidual);
-
-                if (alpha>mMinLineSearchStep || !mPerformLineSearch)
-                {
-                    //improvement is achieved, go to next Newton step
-                    disp_j = trial_disp_j;
-                    disp_k = trial_disp_k;
-
-                    if (mStructure->GetNumTimeDerivatives()>1)
-                    {
-                        acc_j  = trial_acc_j;
-                        acc_k  = trial_acc_k;
-
-                        vel_j  = trial_vel_j;
-                        vel_k  = trial_vel_k;
-                    }
-
-                    normResidual = trialNormResidual;
-
-                    iteration++;
-                }
-                else
-                {
-                    //and leave
-                    iteration = mMaxNumIterations;
-                }
-
-            } // end of while(normResidual<mToleranceForce && iteration<mMaxNumIterations)
-
-            if (normResidual<=mToleranceForce)
-            {
-                //converged solution
-                mStructure->GetLogger() << " *** UpdateStaticData *** from NewMarkDirect \n";
-                mStructure->ElementTotalUpdateStaticData();
-
-                //calculate energies (at this point, use the trapezoidal rule for all energies, for some energies, you can compare that to the direct calculation
-                // e.g. internal energy for elastic materials or the kinetic energy
-                //double internalEnergyExact = mStructure->ElementTotalGetInternalEnergy();
-                //FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> delta_disp_j(disp_j-lastConverged_disp_j);
-                //FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> delta_disp_k(disp_k-lastConverged_disp_k);
-
-                //mInternalEnergy+= 0.5*(delta_disp_j.Dot(intForce_j+prevIntForce_j)+
-                //                       delta_disp_k.Dot(intForce_k+prevIntForce_k));
-
-                //if (this->IsDynamic())
-                //{
-                    //double kineticEnergyExact = 0.5*(vel_j.Dot(massMatrix_jj*vel_j+massMatrix_jk*vel_k)+vel_k.Dot(massMatrix_kj*vel_j+massMatrix_kk*vel_k));
-                //    mKineticEnergy+= 0.5*(delta_disp_j.Dot(massMatrix_jj*(acc_j+lastConverged_acc_j)+massMatrix_jk*(acc_k+lastConverged_acc_k))+
-                //                      delta_disp_k.Dot(massMatrix_kj*(acc_j+lastConverged_acc_j)+massMatrix_kk*(acc_k+lastConverged_acc_k)));
-
-                //    if (mMuDampingMass>0)
-                //    {
-                //        mDampedEnergy+=mMuDampingMass*0.5*(delta_disp_j.Dot(massMatrix_jj*(vel_j+lastConverged_vel_j)+massMatrix_jk*(vel_k+lastConverged_vel_k))+
-                //                                           delta_disp_k.Dot(massMatrix_kj*(vel_j+lastConverged_vel_j)+massMatrix_kk*(vel_k +lastConverged_vel_k)));
-                //    }
-                //}
-
-                //mExternalEnergy += 0.5*(delta_disp_j.Dot(extForce_j+prevExtForce_j) + delta_disp_k.Dot(extForce_k+prevExtForce_k)+
-                //                        delta_disp_j.Dot(residual_j+prevResidual_j) + delta_disp_k.Dot(residual_k+prevResidual_k));
-
-                //this is should be moved to the general postprocessing routine
-                //FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> plotVector(1,7);
-                //plotVector(0,0) = mTime+timeStep;
-                //plotVector(0,1) = timeDependentConstraintFactor;
-                //plotVector(0,2) = mInternalEnergy;
-                //plotVector(0,3) = mKineticEnergy;
-                //plotVector(0,4) = mDampedEnergy;
-                //plotVector(0,5) = mExternalEnergy;
-                //plotVector(0,6) = mInternalEnergy + mKineticEnergy + mDampedEnergy - mExternalEnergy;
-
-                //plotHistory.AppendRows(plotVector);
-
-                //std::cout << "mInternalEnergy " << mInternalEnergy << "(exact " << internalEnergyExact << "), kinetic energy " << mKineticEnergy << "(exact " << kineticEnergyExact << "), damped energy " << mDampedEnergy ;
-                //std::cout << ", external energy " << mExternalEnergy << "\n";
-                //std::cout << "energy stored in the system (internal + kinetic) " << mInternalEnergy+mKineticEnergy << "\n";
-                //std::cout << "energy removed from the system (damping - external) " << mDampedEnergy-mExternalEnergy << "\n";
-                //std::cout << "total energy " << mInternalEnergy+mKineticEnergy + mDampedEnergy-mExternalEnergy << "\n";
-
-
-                //store converged step
-                lastConverged_disp_j = disp_j;
-                lastConverged_disp_k = disp_k;
-                if (mStructure->GetNumTimeDerivatives()>1)
-                {
-                    lastConverged_vel_j = vel_j;
-                    lastConverged_vel_k = vel_k;
-                    lastConverged_acc_j = acc_j;
-                    lastConverged_acc_k = acc_k;
-                }
-
-                prevResidual_j = residual_j;
-                prevResidual_k = residual_k;
-
-                //update nodal data
-                mStructure->NodeMergeActiveDofValues(0,disp_j);
-                if (mStructure->GetNumTimeDerivatives()>1)
-                {
-                    mStructure->NodeMergeDofValues(1,vel_j,vel_k);
-                    mStructure->NodeMergeDofValues(2,acc_j,acc_k);
-                }
-                mStructure->ElementTotalUpdateTmpStaticData();
-
-                //update structure time
-                mStructure->SetPrevTime(curTime);
-
-                //postprocess
-                mTime+=timeStep;
-
-                mStructure->GetLogger() << "Convergence after " << iteration << " iterations at time " << mTime << "(timestep " << timeStep << ").\n";
-                //std::cout << "plot Vector " << plotVector << std::endl;
-
-				//perform Postprocessing
-                mStructure->GetLogger() << " *** PostProcess *** from NewMarkDirect \n";
-
-//            	DamageFile << mTime << " " << mStructure->ElementGetElementPtr(14)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetOmegaCompr() << std::endl; // bulo ElementGetElementPtr(9) dlya Brick8N and ElementGetElementPtr(141) dlya Brick8Nhole;
-//            	TotalInelasticEqStrainFile << mTime << " " << mStructure->ElementGetElementPtr(14)->GetStaticData(0)->AsDamageViscoPlasticity3D()->GetKappaInelastic() << std::endl; // for Brick8N was ElementGetElementPtr(9) and ElementGetElementPtr(141) dlya Brick8Nhole;
-
-//                DamageFile << mTime << " " << mStructure->ElementGetElementPtr(49)->GetStaticData(0)->AsGradientDamage1DFatigue()->GetOmega()
-//                		<< " " << mStructure->ElementGetElementPtr(49)->GetStaticData(0)->AsGradientDamage1DFatigue()->GetKappa() << " " << std::endl;
-
-//                DamageFile << mTime << " " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega()
-//                               		<< " " << mStructure->ElementGetElementPtr(189)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " " << std::endl;
-
-                // 2D nonlocal test
-//                DamageFile << mTime << " " << mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega()
-//                		<< " " << mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " "
-//        				<< mStructure->ElementGetElementPtr(339)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain() <<
-//        				" " << mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetOmega() << " "
-//        				<< mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetKappa() << " "
-//        				<< mStructure->ElementGetElementPtr(406)->GetStaticData(0)->AsGradientDamage2DFatigue()->GetPrevNonlocalEqStrain()<< std::endl;
-
-                PostProcess(prevResidual_j, prevResidual_k);
-
-
-                //eventually increase next time step
-                if (mAutomaticTimeStepping && iteration<0.25*mMaxNumIterations)
-                {
-                    timeStep*=1.5;
-                    if (timeStep>mMaxTimeStep)
-                        timeStep = mMaxTimeStep;
-                }
-            }
-            else
-            {
-                mStructure->GetLogger() << "No convergence with timestep " << timeStep << "\n";
-                //no convergence
-                if (mAutomaticTimeStepping)
-                {
-                    //no convergence, reduce the time step and start from scratch
-                    curTime -= timeStep;
-                    timeStep*=0.5;
-                    if (timeStep < mMinTimeStep) {
-                        mStructure->GetLogger() << "The minimal time step achieved, the actual time step is " << timeStep << "\n";
-                        throw MechanicsException("[NuTo::NewmarkDirect::Solve] no convergence, the current time step is too short.");
-                    }
-                }
-                else
-                {
-                    throw MechanicsException("[NuTo::NewmarkDirect::Solve] no convergence with the current maximum number of iterations, either use automatic time stepping, reduce the time step or the minimal line search cut back factor.");
                 }
             }
         }
-//        DamageFile.close(); TotalInelasticEqStrainFile.close();
-        // 2D nonlocal test
-//        DamageFile.close();
     }
     catch (MechanicsException& e)
     {
         e.AddMessage("[NuTo::NewmarkDirect::Solve] performing Newton-Raphson iteration.");
         throw e;
     }
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mStructure->GetLogger()<<"[NuTo::NewmarkDirect::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mStructure->GetLogger()<< "[NuTo::NewmarkDirect::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
     return NuTo::Error::SUCCESSFUL;
 
 }
@@ -1029,6 +437,238 @@ mStructure->NodeMergeDofValues(0,check_disp_j1,check_disp_k1);
 std::string NuTo::NewmarkDirect::GetTypeId()const
 {
     return std::string("NewmarkDirect");
+}
+
+
+//! @brief ... Adds a calculation step to each timestep
+//! param rActiveDofs ... active Dofs of the calculation step
+void NuTo::NewmarkDirect::AddCalculationStep(const std::set<NuTo::Node::eDof>& rActiveDofs)
+{
+    mStepActiveDofs.push_back(rActiveDofs);
+}
+
+
+//! @brief ... Sets the number of calculation steps per timestep
+//! param rNumSteps ... number of calculation steps per timestep
+void NuTo::NewmarkDirect::SetNumCalculationSteps(int rNumSteps)
+{
+    mStepActiveDofs.resize(rNumSteps);
+}
+
+
+//! @brief ... Sets the active Dofs of a calculation step
+//! param rStepNum ... step number
+//! param rActiveDofs ... active Dofs of a calculation step
+void NuTo::NewmarkDirect::SetActiveDofsCalculationStep(int rStepNum,
+                                                       const std::set<NuTo::Node::eDof>& rActiveDofs)
+{
+    mStepActiveDofs[rStepNum] = rActiveDofs;
+}
+
+void NuTo::NewmarkDirect::CalculateMuDampingMatrix(StructureOutputBlockMatrix& rHessian_dt1, const StructureOutputBlockMatrix& rHessian_dt2) const
+{
+    if (mMuDampingMass != 0)
+    {
+        if (mStructure->GetNumTimeDerivatives() < 2)
+            throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] MuDampingMass requires a mass matrix (2nd time derivatives).");
+//        if (!rHessian2.IsConstant())
+//            throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] MuDampingMass requires a constant mass matrix.");
+
+        rHessian_dt1.Resize(mStructure->GetDofStatus().GetNumActiveDofsMap(), mStructure->GetDofStatus().GetNumDependentDofsMap());
+        rHessian_dt1.SetZero();
+        rHessian_dt1.AddScal(rHessian_dt2, mMuDampingMass);
+    }
+}
+
+NuTo::StructureOutputBlockVector NuTo::NewmarkDirect::CalculateDof1(const StructureOutputBlockVector& rDeltaDof_dt0, const StructureOutputBlockVector& rDof_dt1, const StructureOutputBlockVector& rDof_dt2, double rTimeStep) const
+{
+    return  rDeltaDof_dt0 * (mGamma / (rTimeStep * mBeta))
+          + rDof_dt1       * (1. - mGamma / mBeta)
+          + rDof_dt2       * (rTimeStep * (1. - mGamma / ( 2. * mBeta)));
+}
+
+
+NuTo::StructureOutputBlockVector NuTo::NewmarkDirect::CalculateDof2(const StructureOutputBlockVector& rDeltaDof_dt0, const StructureOutputBlockVector& rDof_dt1, const StructureOutputBlockVector& rDof_dt2, double rTimeStep) const
+{
+    return  rDeltaDof_dt0 * (1. / (rTimeStep * rTimeStep * mBeta))
+          - rDof_dt1       * (1. / (rTimeStep * mBeta))
+          - rDof_dt2       * ((0.5 - mBeta) / mBeta);
+}
+
+
+NuTo::StructureOutputBlockVector NuTo::NewmarkDirect::CalculateResidual(
+        const StructureOutputBlockVector& rIntForce,
+        const StructureOutputBlockVector& rExtForce,
+        const StructureOutputBlockMatrix& rHessian_dt2,
+        const StructureOutputBlockVector& rDof_dt1,
+        const StructureOutputBlockVector& rDof_dt2) const
+{
+    StructureOutputBlockVector residual = rIntForce - rExtForce;
+
+    // The residual for numTimeDerivatives = 1 is included in the internal forces.
+    // If there is muDamping, there must be a rHessian2.
+    if (mStructure->GetNumTimeDerivatives() >= 2)
+    {
+        residual += rHessian_dt2 * (rDof_dt1 * mMuDampingMass + rDof_dt2);
+    }
+    return residual;
+}
+
+void NuTo::NewmarkDirect::CalculateResidualKForPostprocessing(
+        StructureOutputBlockVector& rResidual,
+        const StructureOutputBlockMatrix& rHessian_dt2,
+        const StructureOutputBlockVector& rDof_dt1,
+        const StructureOutputBlockVector& rDof_dt2) const
+{
+    if (mStructure->GetDofStatus().HasInteractingConstraints())
+        return; // in this case, residual.K is needed for the calculation of residual mod and it is already calculated.
+
+    bool hasNodeForce = false;
+    for (const auto& it : mResultMap)
+        if(it.second->GetResultType() == TimeIntegration::GROUP_NODE_FORCE)
+        {
+            hasNodeForce = true;
+            break; // exit loop
+        }
+    if (hasNodeForce && mStructure->GetNumTimeDerivatives() >= 2)
+    {
+        auto dof = rDof_dt1 * mMuDampingMass + rDof_dt2;
+        rResidual.K += rHessian_dt2.KJ * dof.J + rHessian_dt2.KK * dof.K;
+    }
+    // else:  no need to calculate forces if they are not needed in the post processing
+}
+
+void NuTo::NewmarkDirect::CalculateResidualTrial(
+        StructureOutputBlockVector& rResidual,
+        const BlockFullVector<double>& rDeltaBRHS,
+        const StructureOutputBlockMatrix& rHessian_dt0,
+        const StructureOutputBlockMatrix& rHessian_dt1,
+        const StructureOutputBlockMatrix& rHessian_dt2,
+        const StructureOutputBlockVector& rDof_dt1,
+        const StructureOutputBlockVector& rDof_dt2, double rTimeStep) const
+{
+
+
+    StructureOutputBlockVector deltaDof_dt0(mStructure->GetDofStatus(), true);
+    deltaDof_dt0.J.SetZero();
+    deltaDof_dt0.K = rDeltaBRHS;
+
+
+    rResidual += rHessian_dt0 * deltaDof_dt0;
+
+    if (mStructure->GetNumTimeDerivatives() >= 1)
+    {
+        StructureOutputBlockVector delta_dof1 = CalculateDof1(deltaDof_dt0, rDof_dt1, rDof_dt2, rTimeStep) - rDof_dt1;
+        rResidual += rHessian_dt1 * delta_dof1;
+    }
+
+    if (mStructure->GetNumTimeDerivatives() >= 2)
+    {
+        StructureOutputBlockVector delta_dof2 = CalculateDof2(deltaDof_dt0, rDof_dt1, rDof_dt2, rTimeStep) - rDof_dt2;
+        rResidual += rHessian_dt2 * delta_dof2;
+    }
+}
+
+//! @brief Prints Info about the current calculation stage
+void NuTo::NewmarkDirect::PrintInfoStagger() const
+{
+    if (mStepActiveDofs.size() == 1) // equals unstaggered solution, no info needed
+        return;
+
+    NuTo::Logger& logger = mStructure->GetLogger();
+    logger << "\n" <<"Activated Dofs: | ";
+    for(auto dof : mStructure->GetDofStatus().GetActiveDofTypes())
+    {
+        logger << Node::DofToString(dof) << " | ";
+    }
+    logger << "\n";
+}
+
+
+    //! @brief Prints Info about the current iteration
+void NuTo::NewmarkDirect::PrintInfoIteration(const BlockScalar& rNormResidual, int rIteration) const
+{
+    if (mStructure->GetDofStatus().GetDofTypes().find(Node::NONLOCALEQSTRAIN) != mStructure->GetDofStatus().GetDofTypes().end())
+        return; // Hi Volker. Nothing wrong with the 1 line iteration output in the Solve() method. IMO.
+                // And please consider line search...
+
+    NuTo::Logger& logger = mStructure->GetLogger();
+
+    switch(mVerboseLevel)
+    {
+    case 0:
+    {
+        if(rIteration == 0)
+        {
+            logger << "Iteration:" ;
+        }
+        else
+        {
+            logger << "*";
+        }
+        return;
+    }
+
+    case 1:
+    {
+        logger << "Iteration: " << rIteration << "\n";
+        for(auto dof :mStructure->GetDofStatus().GetActiveDofTypes())
+        {
+            logger << "Residual " << Node::DofToString(dof) << ": " << rNormResidual[dof] << "\n";
+        }
+        logger << "--------------------------\n";
+        return;
+    }
+
+    default:
+    {
+        return;
+    }
+    }
+}
+
+
+
+
+
+NuTo::BlockFullVector<double> NuTo::NewmarkDirect::BuildHessianModAndSolveSystem(
+        StructureOutputBlockMatrix& rHessian_dt0,
+        const StructureOutputBlockMatrix& rHessian_dt1,
+        const StructureOutputBlockMatrix& rHessian_dt2,
+        const BlockFullVector<double>& rResidualMod, double rTimeStep) const
+{
+    Timer timer(__FUNCTION__, GetShowTime(), mStructure->GetLogger());
+    bool structureShowTime = mStructure->GetShowTime();
+    mStructure->SetShowTime(false); // does not show the output of the solver
+
+//    if (rHessian_dt0.IsConstant())
+//    {
+//        // save the values in rHessian0 for later evaluation and allocate a new hessian object
+//        StructureOutputBlockMatrix hessian(mStructure->GetDofStatus());
+//        hessian = rHessian_dt0;
+//        if (mStructure->GetNumTimeDerivatives() >= 1)
+//            hessian.AddScal(rHessian_dt1, mGamma / (mBeta * rTimeStep));
+//
+//        if (mStructure->GetNumTimeDerivatives() >= 2)
+//            hessian.AddScal(rHessian_dt2, 1. / (mBeta * rTimeStep * rTimeStep));
+//
+//        hessian.ApplyCMatrix(mStructure->GetConstraintMatrix());
+//        return mStructure->SolveBlockSystem(hessian.JJ, rResidualMod);
+//    }
+//    else
+    {
+        // since rHessian0 will change in the next iteration, the rHessian0 will be the hessian for the solver
+        if (mStructure->GetNumTimeDerivatives() >= 1)
+            rHessian_dt0.AddScal(rHessian_dt1, mGamma / (mBeta * rTimeStep));
+
+        if (mStructure->GetNumTimeDerivatives() >= 2)
+            rHessian_dt0.AddScal(rHessian_dt2, 1. / (mBeta * rTimeStep * rTimeStep));
+
+        rHessian_dt0.ApplyCMatrix(mStructure->GetConstraintMatrix());
+        auto result =  mStructure->SolveBlockSystem(rHessian_dt0.JJ, rResidualMod);
+        mStructure->SetShowTime(structureShowTime);
+        return result;
+    }
 }
 
 

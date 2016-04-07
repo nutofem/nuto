@@ -155,11 +155,9 @@ public:
     //! @param rMappingInitialToNewOrdering ... mapping fron initial to new ordering
     void ReorderColumns(const std::vector<int>& rMappingInitialToNewOrdering);
 
-#ifndef SWIG
     SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()override;
+#ifndef SWIG
     const SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()const override;
-#else
-    SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral();
 #endif
 
 

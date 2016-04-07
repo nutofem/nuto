@@ -27,7 +27,6 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
                                   int rNumNodesPerElement,
                                   NuTo::FullVector<double, Eigen::Dynamic>& nodeCoordinatesFirstElement,
                                   int NumElements,
-                                  int timeDers,
                                   double& DisplacementCorrect)
 {
     /** paramaters **/
@@ -40,7 +39,6 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
 
     /** Structure 1D **/
     NuTo::Structure* myStructure = new NuTo::Structure(1);
-    myStructure->SetNumTimeDerivatives(timeDers);
 
 #ifdef _OPENMP
     int numThreads = 4;
@@ -52,7 +50,7 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
     myStructure->SectionSetArea(Section, Area);
 
     /** create material law **/
-    int Material = myStructure->ConstitutiveLawCreate("LinearElasticEngineeringStress");
+    int Material = myStructure->ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
     myStructure->ConstitutiveLawSetParameterDouble(Material, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
 
     /** create nodes **/
@@ -230,7 +228,7 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
 
     myStructure->Info();
     /** create constitutive law **/
-    int myMatLin = myStructure->ConstitutiveLawCreate("LinearElasticEngineeringStress");
+    int myMatLin = myStructure->ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
     myStructure->ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,YoungsModulus);
     myStructure->ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,PoissonRatio);
 
@@ -312,64 +310,7 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
 
 void solve(NuTo::Structure *myStructure, double solution, double tol = 1.e-6)
 {
-    // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-    NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2(0,0);
-    NuTo::FullVector<double,Eigen::Dynamic> dispForceVector;
-    myStructure->BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
-    NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix (stiffnessMatrixCSRVector2);
-
-    stiffnessMatrixCSRVector2.IsSymmetric();
-
-    // build global external load vector
-    NuTo::FullVector<double,Eigen::Dynamic> extForceVector;
-    myStructure->BuildGlobalExternalLoadVector(0,extForceVector);
-
-    // calculate right hand side
-    NuTo::FullVector<double,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;
-
-    #if defined HAVE_PARDISO
-    NuTo::SparseDirectSolverPardiso mySolverPardiso(myStructure->GetNumProcessors());
-    NuTo::FullVector<double,Eigen::Dynamic> displacementVectorPardiso;
-    stiffnessMatrix.SetOneBasedIndexing();
-
-    mySolverPardiso.Solve(stiffnessMatrix, rhsVector, displacementVectorPardiso);
-    // write displacements to node
-    myStructure->NodeMergeActiveDofValues(displacementVectorPardiso);
-
-    // calculate residual
-    NuTo::FullVector<double,Eigen::Dynamic> intForceVectorPardiso;
-    myStructure->BuildGlobalGradientInternalPotentialVector(intForceVectorPardiso);
-    NuTo::FullVector<double,Eigen::Dynamic> residualVectorPardiso = extForceVector - intForceVectorPardiso;
-    std::cout << "residual: " << residualVectorPardiso.Norm() << std::endl;
-    #elif defined HAVE_MUMPS
-    NuTo::SparseDirectSolverMUMPS mySolverMUMPS;
-    NuTo::FullVector<double,Eigen::Dynamic> displacementVectorMUMPS;
-    stiffnessMatrix.SetOneBasedIndexing();
-
-    mySolverMUMPS.Solve(stiffnessMatrix, rhsVector, displacementVectorMUMPS);
-    // write displacements to node
-    myStructure->NodeMergeActiveDofValues(displacementVectorMUMPS);
-
-    // calculate residual
-    NuTo::FullVector<double,Eigen::Dynamic> intForceVectorMUMPS;
-    myStructure->BuildGlobalGradientInternalPotentialVector(intForceVectorMUMPS);
-    NuTo::FullVector<double,Eigen::Dynamic> residualVectorMUMPS = extForceVector - intForceVectorMUMPS;
-    std::cout << "residual: " << residualVectorMUMPS.Norm() << std::endl;
-    #else
-    std::cout << "Solver not available - can't solve system of equations " << std::endl;
-    #endif
-
-    #ifdef ENABLE_VISUALIZE
-    // visualize results
-    int visualizationGroup = myStructure->GroupCreate(NuTo::Groups::eGroupId::Elements);
-    myStructure->GroupAddElementsTotal(visualizationGroup);
-
-    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
-    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
-    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
-
-    myStructure->ExportVtkDataFileElements("LobattoTruss1D2N.vtk");
-    #endif // ENABLE_VISUALIZE
+    myStructure->SolveGlobalSystemStaticElastic();
 
 //    double DisplacementCorrect = (Force*Length)/(Area*YoungsModulus);
 
@@ -404,10 +345,18 @@ int main()
         nodeCoordinates += ones;
 
         // 3Nodes 1D
-        myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, 10, 2, DisplacementCorrectSerialization1D);
+        myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, 10, DisplacementCorrectSerialization1D);
 #ifdef ENABLE_SERIALIZATION
         std::cout << "\n************************** Saving a NuTo-Structure (StructureOut1D3NLobatto)**************************\n";
-        myStructure->Save("StructureOut1D3NLobatto", "XML");
+
+        // open file
+        std::ofstream ofs ( "StructureOut1D3NLobatto", std::ios_base::binary );
+
+        boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
+        oba & boost::serialization::make_nvp("StructureOut1D3NLobatto", myStructure);
+
+        myStructure->saveImplement(oba);
+
 #endif
         solve(myStructure, DisplacementCorrectSerialization1D);
 
@@ -449,7 +398,7 @@ int main()
 
 
         // 4Nodes 1D
-        myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO3, 4, nodeCoordinates, 10, 2, DisplacementCorrectSerialization1D);
+        myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO3, 4, nodeCoordinates, 10, DisplacementCorrectSerialization1D);
 #ifdef ENABLE_SERIALIZATION
         std::cout << "\n************************** Saving a NuTo-Structure (StructureOut1D4NLobatto)**************************\n";
         myStructure->Save("StructureOut1D4NLobatto", "TEXT");
@@ -494,7 +443,7 @@ int main()
 
 
         // 5Nodes 1D
-        myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO4, 5, nodeCoordinates, 10, 2, DisplacementCorrectSerialization1D);
+        myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO4, 5, nodeCoordinates, 10, DisplacementCorrectSerialization1D);
 #ifdef ENABLE_SERIALIZATION
         std::cout << "\n************************** Saving a NuTo-Structure (StructureOut1D5NLobatto)**************************\n";
         myStructure->Save("StructureOut1D5NLobatto", "BINARY");

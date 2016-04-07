@@ -36,9 +36,9 @@ def Run(rStructure, rType, rOrder):
 	# **********************
 	# set constitutive law
 	# **********************
-	lawId = rStructure.ConstitutiveLawCreate("LINEARELASTICENGINEERINGSTRESS")
-        rStructure.ConstitutiveLawSetParameterDouble(lawId,"YoungsModulus", E)
-        rStructure.ConstitutiveLawSetParameterDouble(lawId,"PoissonsRatio",nu)
+	lawId = rStructure.ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS")
+        rStructure.ConstitutiveLawSetParameterDouble(lawId,"Youngs_Modulus", E)
+        rStructure.ConstitutiveLawSetParameterDouble(lawId,"Poissons_Ratio",nu)
         rStructure.ConstitutiveLawSetParameterDouble(lawId,"Density",rho)
 	
 	rStructure.ElementTotalSetConstitutiveLaw(lawId)
@@ -78,23 +78,12 @@ def Run(rStructure, rType, rOrder):
 	# **********************
 	#  SOLVE
 	# **********************
-	rStructure.NodeBuildGlobalDofs()
 	rStructure.CalculateMaximumIndependentSets();
+	rStructure.SolveGlobalSystemStaticElastic()
 
-	stiffnessMatrixCSRVector2 = nuto.DoubleSparseMatrixCSRVector2General(0,0)
-	dispForceVector = nuto.DoubleFullVector()
-	rStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector)
-	stiffnessMatrix = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrixCSRVector2)
-
-	mySolver = nuto.SparseDirectSolverMUMPS()
-	displacementVector = nuto.DoubleFullVector()
-	stiffnessMatrix.SetOneBasedIndexing()
-	mySolver.Solve(stiffnessMatrix, dispForceVector, displacementVector)
-
-	rStructure.NodeMergeActiveDofValues(displacementVector);
-	intForceVector = nuto.DoubleFullVector()
-	rStructure.BuildGlobalGradientInternalPotentialVector(intForceVector)
-	if ((intForceVector).Abs().Max()>1e-8):
+	internalGradient = rStructure.BuildGlobalInternalGradient()
+	if ((internalGradient.J.Export()).Abs().Max()>1e-8):
+		internalGradient.J.Export()
 		errorMsg += "[SetBoundaryConditions:" +rType+":"+rOrder+"] residual force vector is not zero. \n"
 		error = True
 		return
@@ -113,8 +102,7 @@ def Run(rStructure, rType, rOrder):
 	elementIds = rStructure.GroupGetMemberIds(allElements);
 	for iElement in range(0, elementIds.GetNumRows()):
 		elementId = elementIds.GetValue(iElement)
-		stress = nuto.DoubleFullMatrix()
-		rStructure.ElementGetEngineeringStress(elementId, stress)
+		stress = rStructure.ElementGetEngineeringStress(elementId)
 		for iIP in range(0, stress.GetNumColumns()):
 			numericStress = stress.GetValue(0,iIP)
 			if (abs(numericStress-analyticStressX) > 1.e-6):
@@ -141,40 +129,41 @@ def Run(rStructure, rType, rOrder):
 	##  Check Total Mass via Mass matrix
 	## **********************
 	
-	#analyticMass = lX*lY*lZ*rho
+	analyticMass = lX*lY*lZ*rho
 
-	#numActDofs = rStructure.GetNumActiveDofs()
-	#numDepDofs = rStructure.GetNumDofs() - numActDofs
-
-	#jj = nuto.DoubleSparseMatrixCSRGeneral(numActDofs,numActDofs)
-	#jk = nuto.DoubleSparseMatrixCSRGeneral(numActDofs,numDepDofs)
-	#kj = nuto.DoubleSparseMatrixCSRGeneral(numDepDofs,numActDofs)
-	#kk = nuto.DoubleSparseMatrixCSRGeneral(numDepDofs,numDepDofs)
-	#dummy = nuto.DoubleFullVector()
-
-	#nutoStructureBaseEnumMass = 2
-
-	#rStructure.BuildGlobalCoefficientSubMatricesGeneral(nutoStructureBaseEnumMass, jj, jk, kj, kk)
-
-	#jjFull = nuto.DoubleFullMatrix(jj)
-	#jkFull = nuto.DoubleFullMatrix(jk)
-	#kjFull = nuto.DoubleFullMatrix(kj)
-	#kkFull = nuto.DoubleFullMatrix(kk)
+	hessian2 = rStructure.BuildGlobalHessian2()
 	
-	#numericMass = 0.
-	#numericMass += jjFull.Sum()
-	#numericMass += jkFull.Sum()
-	#numericMass += kjFull.Sum()
-	#numericMass += kkFull.Sum()
+	numericMass = 0.
+	numericMass += hessian2.JJ.ExportToFullMatrix().Sum()
+	numericMass += hessian2.JK.ExportToFullMatrix().Sum()
+	numericMass += hessian2.KJ.ExportToFullMatrix().Sum()
+	numericMass += hessian2.KK.ExportToFullMatrix().Sum()
 
-	#numericMass = numericMass / dimension # since the mass is added to nodes in every direction
+	numericMass = numericMass / dimension # since the mass is added to nodes in every direction
 
-	#if(abs(numericMass - analyticMass)/numericMass > 1.e-6 ):
-		#print "mass analytical : ", analyticMass
-		#print "mass numerical  : ", numericMass
-		#errorMsg += "[CheckSolution:" +rType+":"+rOrder+"] wrong mass calculation. \n"
-		#error = True
-		#return
+	if(abs(numericMass - analyticMass)/numericMass > 1.e-6 ):
+		print "mass analytical : ", analyticMass
+		print "mass numerical  : ", numericMass
+		errorMsg += "[CheckSolution:" +rType+":"+rOrder+"] wrong mass calculation. \n"
+		error = True
+		return
+	
+	hessian2 = rStructure.BuildGlobalHessian2Lumped()
+	
+	numericMass = 0.
+	numericMass += hessian2.JJ.ExportToFullMatrix().Sum()
+	numericMass += hessian2.JK.ExportToFullMatrix().Sum()
+	numericMass += hessian2.KJ.ExportToFullMatrix().Sum()
+	numericMass += hessian2.KK.ExportToFullMatrix().Sum()
+
+	numericMass = numericMass / dimension # since the mass is added to nodes in every direction
+
+	if(abs(numericMass - analyticMass)/numericMass > 1.e-6 ):
+		print "mass analytical : ", analyticMass
+		print "mass numerical  : ", numericMass
+		errorMsg += "[CheckSolution:" +rType+":"+rOrder+"] wrong lumped mass calculation. \n"
+		error = True
+		return
 	
 	# **********************
 	#  Visualize
@@ -200,9 +189,9 @@ def Run3D(r3DShape, rTypeOrder):
 	myStructure = nuto.Structure(3)
 	myStructure.SetShowTime(False)
 
-	numElementsX = 5
-	numElementsY = 2
-	numElementsZ = 2
+	numElementsX = 2
+	numElementsY = 1
+	numElementsZ = 1
 
 	# create nodes
 	numNodesX = numElementsX+1

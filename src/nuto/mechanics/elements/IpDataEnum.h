@@ -15,8 +15,6 @@ enum eIpDataType
     NOIPDATA,                //!< no additional ip data
     STATICDATA,              //!< static data
     STATICDATANONLOCAL,      //!< nonlocal and static data
-    STATICDATAWEIGHTCOORDINATES2D, //!< static data, local weight and coordinates stored at the integration point level
-    STATICDATAWEIGHTCOORDINATES3D, //!< static data, local weight and coordinates stored at the integration point level
     MULTISCALE               //!< multiscale - a full structure on the fine scale whose average values are used
 };
 static inline std::map<eIpDataType, std::string> GetIpDataTypeMap()
@@ -25,8 +23,6 @@ static inline std::map<eIpDataType, std::string> GetIpDataTypeMap()
     shapeTypeMap[eIpDataType::NOIPDATA]                      = "NOIPDATA";
     shapeTypeMap[eIpDataType::STATICDATA]                    = "STATICDATA";
     shapeTypeMap[eIpDataType::STATICDATANONLOCAL]            = "STATICDATANONLOCAL";
-    shapeTypeMap[eIpDataType::STATICDATAWEIGHTCOORDINATES2D] = "STATICDATAWEIGHTCOORDINATES2D";
-    shapeTypeMap[eIpDataType::STATICDATAWEIGHTCOORDINATES3D] = "STATICDATAWEIGHTCOORDINATES3D";
     shapeTypeMap[eIpDataType::MULTISCALE]                    = "MULTISCALE";
     return shapeTypeMap;
 }

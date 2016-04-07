@@ -61,7 +61,7 @@ void NuTo::ElementDataVariableConstitutiveBase::SetConstitutiveLaw(const Element
 	InitializeUpdatedConstitutiveLaw(rElement,rIp);
 }
 
-bool NuTo::ElementDataVariableConstitutiveBase::HasConstitutiveLawAssigned(int rIp)
+bool NuTo::ElementDataVariableConstitutiveBase::HasConstitutiveLawAssigned(int rIp) const
 {
 	bool check=true;
 	if(mVarConstitutiveLaw[rIp]==0)

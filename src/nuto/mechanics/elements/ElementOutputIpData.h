@@ -17,10 +17,13 @@ class ElementOutputIpData : public ElementOutputBase
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-    ElementOutputIpData(NuTo::IpData::eIpStaticDataType rIpDataType)
+    ElementOutputIpData() {}
+
+    ElementOutputIpData(IpData::eIpStaticDataType rIpDataType)
     {
-    	mIpDataType = rIpDataType;
+        mIpData[rIpDataType].Resize(0,0);
     }
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -32,22 +35,21 @@ public:
 
     ElementOutputIpData* Clone() const
     {
-    	return new ElementOutputIpData(*this);
+        return new ElementOutputIpData(*this);
     }
 
-    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixDouble()
-	{
-        return mMatrix;
-	}
+    std::map<IpData::eIpStaticDataType, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>>& GetIpDataMap()
+    {
+        return mIpData;
+    }
 
-    NuTo::IpData::eIpStaticDataType GetIpDataType()
-	{
-        return mIpDataType;
-	}
+    ElementOutputIpData& GetIpData() override
+    {
+        return *this;
+    }
 
 private:
-    NuTo::IpData::eIpStaticDataType mIpDataType;
-    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mMatrix;
+    std::map<IpData::eIpStaticDataType, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>> mIpData;
 };
 }
 #ifdef ENABLE_SERIALIZATION

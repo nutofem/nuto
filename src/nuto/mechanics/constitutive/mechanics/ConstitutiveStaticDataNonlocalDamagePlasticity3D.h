@@ -17,7 +17,7 @@ class ConstitutiveStaticDataNonlocalDamagePlasticity3D : public ConstitutiveStat
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
-    friend class ConstitutiveStaticDataMisesPlasticity3D;
+    friend class ConstitutiveStaticDataMisesPlasticity;
 public:
 	//! @brief constructor
     ConstitutiveStaticDataNonlocalDamagePlasticity3D();

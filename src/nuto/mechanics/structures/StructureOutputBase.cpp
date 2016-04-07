@@ -8,35 +8,14 @@ NuTo::StructureOutputBase::StructureOutputBase()
 NuTo::StructureOutputBase::~StructureOutputBase()
 {}
 
-NuTo::SparseMatrix<double> &NuTo::StructureOutputBase::GetSparseMatrixDouble()
+NuTo::StructureOutputBlockMatrix& NuTo::StructureOutputBase::AsStructureOutputBlockMatrix()
 {
-    throw MechanicsException("[StructureOutputBase::GetSparseMatrixDouble] output matrix is not of type NuTo::SparseMatrix<double>& >");
+    throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "[ StructureOutput is not of type BlockMatrix" );
 }
 
-NuTo::SparseMatrix<double> &NuTo::StructureOutputBase::GetSparseMatrixDouble(NuTo::StructureEnum::eSubMatrix rSubmatrixEnum)
+NuTo::StructureOutputBlockVector& NuTo::StructureOutputBase::AsStructureOutputBlockVector()
 {
-    throw MechanicsException("[StructureOutputBase::GetSparseMatrixDouble] output matrix is not of type NuTo::SparseMatrix<double>& >");
-}
-
-
-NuTo::FullVector<double,Eigen::Dynamic>& NuTo::StructureOutputBase::GetFullVectorDouble()
-{
-    throw MechanicsException("[StructureOutputBase::GetFullVectorDouble] output vector is not of type FullVector<double,Eigen::Dynamic>");
-}
-
-NuTo::FullVector<double, Eigen::Dynamic> &NuTo::StructureOutputBase::GetFullVectorDouble(NuTo::StructureEnum::eSubVector rSubvectorEnum)
-{
-    throw MechanicsException("[StructureOutputBase::GetFullVectorDouble] output vector is not of type FullVector<double,Eigen::Dynamic>");
-}
-
-int NuTo::StructureOutputBase::GetNumSubmatrices() const
-{
-    throw MechanicsException("[StructureOutputBase::GetNumSubmatrices] structure output has no submatrices.");
-}
-
-int NuTo::StructureOutputBase::GetNumSubvectors() const
-{
-    throw MechanicsException("[StructureOutputBase::GetNumSubvectors] structure output has no subvectors.");
+    throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "[ StructureOutput is not of type BlockVector" );
 }
 
 void NuTo::StructureOutputBase::SetSymmetry(bool rSymmetric)
@@ -44,17 +23,12 @@ void NuTo::StructureOutputBase::SetSymmetry(bool rSymmetric)
     throw MechanicsException("[StructureOutputBase::SetSymmetry] symmetry is not stored.");
 }
 
-bool NuTo::StructureOutputBase::GetSymmetry()const
+bool NuTo::StructureOutputBase::IsSymmetric()const
 {
     throw MechanicsException("[StructureOutputBase::SetSymmetry] symmetry is not stored.");
 }
 
-void NuTo::StructureOutputBase::SetConstant(bool rConstant)
+void NuTo::StructureOutputBase::SetZero()
 {
-    throw MechanicsException("[StructureOutputBase::SetConstant] constness is not stored.");
-}
-
-bool NuTo::StructureOutputBase::GetConstant()const
-{
-    throw MechanicsException("[StructureOutputBase::GetConstant] constness is not stored.");
+    throw MechanicsException("[StructureOutputBase::SetZero] not implemented.");
 }

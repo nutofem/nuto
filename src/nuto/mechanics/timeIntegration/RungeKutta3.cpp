@@ -69,7 +69,7 @@ double NuTo::RungeKutta3::GetStageTimeFactor(int rStage)const
 // so essentially it's c_n-c_(n-1)
 bool NuTo::RungeKutta3::HasTimeChanged(int rStage)const
 {
-	assert(rStage<4);
+	assert(rStage<3);
 	bool s;
 	switch(rStage)
 	{
@@ -82,9 +82,6 @@ bool NuTo::RungeKutta3::HasTimeChanged(int rStage)const
 	case 2:
 		s = false;
 		break;
-	case 3:
-		s = true;
-		break;
 	default:
         throw MechanicsException ( "[NuTo::RungeKutta3::HasTimeChanged] rStage>3 not implemented." );
 	}
@@ -95,8 +92,8 @@ bool NuTo::RungeKutta3::HasTimeChanged(int rStage)const
 //! @brief ... return scaling for the intermediate stage for y (a in Butcher tableau)
 void NuTo::RungeKutta3::GetStageDerivativeFactor(std::vector<double>& rWeight, int rStage)const
 {
-	assert(rStage<4);
-	assert(rWeight.size()==3);
+	assert(rStage<3);
+	assert(rWeight.size()==2);
 	switch(rStage)
 	{
 	case 0:
@@ -105,13 +102,8 @@ void NuTo::RungeKutta3::GetStageDerivativeFactor(std::vector<double>& rWeight, i
 		rWeight[0] = 0.5;
 		break;
 	case 2:
-		rWeight[0] = 0.0;
-		rWeight[1] = 0.5;
-		break;
-	case 3:
-		rWeight[0] = 0.0;
-		rWeight[1] = 0.0;
-		rWeight[2] = 1.0;
+		rWeight[0] = -1.0;
+		rWeight[1] = 2.0;
 		break;
 	default:
         throw MechanicsException ( "[NuTo::RungeKutta3::GetStageDerivativeFactor] rStage>3 not implemented." );
@@ -121,7 +113,7 @@ void NuTo::RungeKutta3::GetStageDerivativeFactor(std::vector<double>& rWeight, i
 //! @brief ... return weights for the intermediate stage for y (b in Butcher tableau)
 double NuTo::RungeKutta3::GetStageWeights(int rStage)const
 {
-	assert(rStage<4);
+	assert(rStage<3);
 	double s;
 	switch(rStage)
 	{
@@ -129,12 +121,9 @@ double NuTo::RungeKutta3::GetStageWeights(int rStage)const
 		s = 1./6.;
 		break;
 	case 1:
-		s = 1./3.;
+		s = 2./3.;
 		break;
 	case 2:
-		s = 1./3.;
-		break;
-	case 3:
 		s = 1./6.;
 		break;
 	default:

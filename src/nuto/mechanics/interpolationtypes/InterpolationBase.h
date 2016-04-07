@@ -33,16 +33,16 @@ friend class InterpolationType;
 
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
+protected:
+    InterpolationBase();
 #endif
 
 public:
-    InterpolationBase(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
-
-    InterpolationBase();
+    InterpolationBase(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
 
     virtual ~InterpolationBase() {}
 
-    const NuTo::Interpolation::eTypeOrder GetTypeOrder() const;
+    NuTo::Interpolation::eTypeOrder GetTypeOrder() const;
 
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type
@@ -94,7 +94,7 @@ public:
 
     //! @brief returns the natural coordinates of the dof node
     //! @param rNodeIndex ... node index
-    virtual const Eigen::VectorXd CalculateNaturalNodeCoordinates(int rNodeIndex) const = 0;
+    virtual Eigen::VectorXd CalculateNaturalNodeCoordinates(int rNodeIndex) const = 0;
 
 
     void CalculateSurfaceNodeIds();
@@ -108,11 +108,19 @@ public:
     //! @return ... specific shape functions
     const Eigen::VectorXd& GetShapeFunctions(int rIP) const;
 
+    //! @brief returns specific N-matrix via the IP index
+    //! @param rIP ... integration point index
+    //! @return ... specific N-matrix
+    const Eigen::MatrixXd& GetMatrixN(int rIP) const;
+
     //! @brief calculates the shape functions for a specific dof
     //! @param rCoordinates ... integration point coordinates
     //! @param rDofType ... dof type
     //! @return ... shape functions for the specific dof type
-    virtual const Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const = 0;
+    virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const = 0;
+
+    //! @brief calculates the N-Matrix, blows up the shape functions to the correct format (e.g. 3D: N & 0 & 0 \\ 0 & N & \\ 0 & 0 & N ...)
+    Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const;
 
     //********************************************
     //       DERIVATIVE SHAPE FUNCTIONS NATURAL
@@ -126,7 +134,7 @@ public:
     //! @brief returns specific derivative shape functions natural via coordinates
     //! @param rCoordinates ... integration point coordinates
     //! @return ... specific derivative shape functions natural
-    virtual const Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const = 0;
+    virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const = 0;
 
     //********************************************
     //       SURFACE PARAMETRIZATION
@@ -136,13 +144,13 @@ public:
     //! @param rNaturalSurfaceCoordinates ... natural surface coordinates
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... natural coordinates of the elements surface
-    virtual const Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const = 0;
+    virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const = 0;
 
     //! @brief returns the derivative of the surface parametrization
     //! @param rNaturalSurfaceCoordinates ... natural surface coordinates
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... derivative of the surface parametrization
-    virtual const Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const = 0;
+    virtual Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const = 0;
 
     //! @brief returns the number of surfaces
     virtual int GetNumSurfaces() const = 0;
@@ -175,7 +183,7 @@ protected:
     //! @brief returns the natural coordinates of the nodes that span the surface
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... natural surface edge coordinates
-    virtual const std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const = 0;
+    virtual std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const = 0;
 
     //! @brief returns true if a node is on the surface
     //! @param rSurface ... surface id
@@ -201,7 +209,7 @@ protected:
 
     // dof members - simple storage
     const NuTo::Interpolation::eTypeOrder mTypeOrder;
-    const NuTo::Node::eAttributes mDofType;
+    const NuTo::Node::eDof mDofType;
 
     bool mIsConstitutiveInput;
     bool mIsActive;
@@ -216,6 +224,7 @@ protected:
     // members for each integration point
     std::vector<Eigen::VectorXd> mNodeCoordinates;
     std::vector<Eigen::VectorXd> mShapeFunctions;
+    std::vector<Eigen::MatrixXd> mMatrixN;
     std::vector<Eigen::MatrixXd> mDerivativeShapeFunctionsNatural;
 
     // members for each surface

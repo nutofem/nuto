@@ -4,6 +4,8 @@
 #define NuToObject_H
 
 #include <string>
+#include "nuto/base/Exception.h"
+#include <fstream>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -117,177 +119,112 @@ public:
 	//  @brief this routine has to be implemented in the final derived classes, which are no longer abstract
     //! @param filename ... filename
     //! @param aType ... type of file, either BINARY, XML or TEXT
-	virtual void Save (const std::string &filename, std::string rType )const=0;
-/*	{
-		try
-		{
-			//transform to uppercase
-			std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
-			std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
-			std::string tmpStr ( GetTypeId() );
-			std::string baseClassStr = tmpStr.substr ( 4,100 );
-			if (rType=="BINARY")
-			{
-				boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
-				oba & boost::serialization::make_nvp ( "Object_type", tmpStr );
-				///    & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Matrix<T>)
-				// work around for BOOST_SERIALIZATION_BASE_OBJECT_NVP
-				oba & boost::serialization::make_nvp ( baseClassStr.c_str(),boost::serialization::base_object< Matrix<T> > ( *this ) );
-				std::vector<T> dataVec ( GetNumRows() *GetNumColumns() );
-				int numRows = mEigenMatrix.rows(),
-						numColumns = mEigenMatrix.cols();
-				memcpy ( & ( dataVec[0] ),mEigenMatrix.data(),GetNumRows() *GetNumColumns() *sizeof ( T ) );
-				oba & BOOST_SERIALIZATION_NVP ( dataVec )
-				& BOOST_SERIALIZATION_NVP ( numRows )
-				& BOOST_SERIALIZATION_NVP ( numColumns );
-			}
-			else if (rType=="XML")
-			{
-				boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
-				oxa & boost::serialization::make_nvp ( "Object_type", tmpStr );
-				// work around for BOOST_SERIALIZATION_BASE_OBJECT_NVP
-				//oxa & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Matrix<T>);
-				oxa & boost::serialization::make_nvp ( baseClassStr.c_str(),boost::serialization::base_object< Matrix<T> > ( *this ) );
-				std::vector<T> dataVec ( GetNumRows() *GetNumColumns() );
-				int numRows = mEigenMatrix.rows(),
-						numColumns = mEigenMatrix.cols();
-				memcpy ( & ( dataVec[0] ),mEigenMatrix.data(),GetNumRows() *GetNumColumns() *sizeof ( T ) );
-				oxa & BOOST_SERIALIZATION_NVP ( dataVec )
-				& BOOST_SERIALIZATION_NVP ( numRows )
-				& BOOST_SERIALIZATION_NVP ( numColumns );
-			}
-			else if (rType=="TEXT")
-			{
-				boost::archive::text_oarchive ota ( ofs, std::ios::binary );
-				ota & boost::serialization::make_nvp ( "Object_type", tmpStr );
-				// work around for BOOST_SERIALIZATION_BASE_OBJECT_NVP
-				//ota & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Matrix<T>);
-				ota & boost::serialization::make_nvp ( baseClassStr.c_str(),boost::serialization::base_object< Matrix<T> > ( *this ) );
-				std::vector<T> dataVec ( GetNumRows() *GetNumColumns() );
-				int numRows = mEigenMatrix.rows(),
-						numColumns = mEigenMatrix.cols();
-				memcpy ( & ( dataVec[0] ),mEigenMatrix.data(),GetNumRows() *GetNumColumns() *sizeof ( T ) );
-				ota & BOOST_SERIALIZATION_NVP ( dataVec )
-				& BOOST_SERIALIZATION_NVP ( numRows )
-				& BOOST_SERIALIZATION_NVP ( numColumns );
-			}
-			else
-			{
-				throw MathException ( "[FullMatrix::Save]File type not implemented." );
-			}
-		}
-		catch ( boost::archive::archive_exception e )
-		{
-			std::string s ( std::string ( "[FullMatrix::Save]File save exception in boost - " ) +std::string ( e.what() ) );
-			std::cout << s << "\n";
-			throw MathException ( s );
-		}
-		catch ( MathException &e )
-		{
-			throw e;
-		}
-		catch ( std::exception &e )
-		{
-			throw MathException ( e.what() );
-		}
-		catch ( ... )
-		{
-			throw MathException ( "[Matrix::Save]Unhandled exception." );
-		}
-    }
-    */
+	virtual void Save (const std::string &filename, std::string rType )const
+	{
+	    try
+	    {
+	        //transform to uppercase
+	        std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
+	        std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
+	        std::string tmpStr ( GetTypeId() );
+	        std::string baseClassStr = tmpStr.substr ( 4,100 );
+	        if (rType=="BINARY")
+	        {
+	            boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
+	            oba & boost::serialization::make_nvp ( "Object_type", tmpStr );
+	            oba & boost::serialization::make_nvp(tmpStr.c_str(), *this);
+	        }
+	        else if (rType=="XML")
+	        {
+	            boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
+	            oxa & boost::serialization::make_nvp ( "Object_type", tmpStr );
+	            oxa & boost::serialization::make_nvp(tmpStr.c_str(), *this);
+	        }
+	        else if (rType=="TEXT")
+	        {
+	            boost::archive::text_oarchive ota ( ofs, std::ios::binary );
+	            ota & boost::serialization::make_nvp ( "Object_type", tmpStr );
+	            ota & boost::serialization::make_nvp(tmpStr.c_str(), *this);
+	        }
+	        else
+	        {
+	            throw Exception ( "[NewmarkDirect::Save]File type not implemented." );
+	        }
+	    }
+	    catch ( boost::archive::archive_exception e )
+	    {
+	        std::string s ( std::string ( "[NewmarkDirect::Save]File save exception in boost - " ) +std::string ( e.what() ) );
+	        std::cout << s << "\n";
+	        throw Exception ( s );
+	    }
+	    catch ( Exception &e )
+	    {
+	        throw e;
+	    }
+	    catch ( std::exception &e )
+	    {
+	        throw Exception ( e.what() );
+	    }
+	    catch ( ... )
+	    {
+	        throw Exception ( "[NewmarkDirect::Save]Unhandled exception." );
+	    }
+	}
 
     //! @brief ... restore the object from a file
     //! @param filename ... filename
     //! @param aType ... type of file, either BINARY, XML or TEXT
-    virtual void Restore (const std::string &filename, std::string rType )=0;
-/*
+    virtual void Restore (const std::string &filename, std::string rType )
     {
-    	try
-		{
-			//transform to uppercase
-			std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
-			std::ifstream ifs ( filename.c_str(), std::ios_base::binary );
-			std::string tmpString;
-			if (rType=="BINARY")
-			{
-				boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
-				oba & boost::serialization::make_nvp ( "Object_type", tmpString );
-				if ( tmpString!=GetTypeId() )
-					throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-
-				// work around for BOOST_SERIALIZATION_BASE_OBJECT_NVP
-				//    & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Matrix<T>)
-				std::string baseClassStr = tmpString.substr ( 4,100 );
-				oba & boost::serialization::make_nvp ( baseClassStr.c_str(),boost::serialization::base_object< Matrix<T> > ( *this ) );
-
-				std::vector<T> dataVec;
-				int numRows, numColumns;
-				oba & BOOST_SERIALIZATION_NVP ( dataVec )
-				& BOOST_SERIALIZATION_NVP ( numRows )
-				& BOOST_SERIALIZATION_NVP ( numColumns );
-				mEigenMatrix.resize ( numRows,numColumns );
-				memcpy ( mEigenMatrix.data(),& ( dataVec[0] ),numRows*numColumns*sizeof ( T ) );
-			}
-			else if (rType=="XML")
-			{
-				boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
-				oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
-				if ( tmpString!=GetTypeId() )
-					throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-
-				// work around for BOOST_SERIALIZATION_BASE_OBJECT_NVP
-				//    & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Matrix<T>)
-				std::string baseClassStr = tmpString.substr ( 4,100 );
-				oxa & boost::serialization::make_nvp ( baseClassStr.c_str(),boost::serialization::base_object< Matrix<T> > ( *this ) );
-
-				std::vector<T> dataVec;
-				int numRows, numColumns;
-				oxa & BOOST_SERIALIZATION_NVP ( dataVec )
-				& BOOST_SERIALIZATION_NVP ( numRows )
-				& BOOST_SERIALIZATION_NVP ( numColumns );
-				mEigenMatrix.resize ( numRows,numColumns );
-				memcpy ( mEigenMatrix.data(),& ( dataVec[0] ),numRows*numColumns*sizeof ( T ) );
-			}
-			else if (rType=="TEXT")
-			{
-				boost::archive::text_iarchive ota ( ifs, std::ios::binary );
-				ota & boost::serialization::make_nvp ( "Object_type", tmpString );
-				if ( tmpString!=GetTypeId() )
-					throw MathException ( "[Matrix::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-
-				// work around for BOOST_SERIALIZATION_BASE_OBJECT_NVP
-				//    & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Matrix<T>)
-				std::string baseClassStr = tmpString.substr ( 4,100 );
-				ota & boost::serialization::make_nvp ( baseClassStr.c_str(),boost::serialization::base_object< Matrix<T> > ( *this ) );
-
-				std::vector<T> dataVec;
-				int numRows, numColumns;
-				ota & BOOST_SERIALIZATION_NVP ( dataVec )
-				& BOOST_SERIALIZATION_NVP ( numRows )
-				& BOOST_SERIALIZATION_NVP ( numColumns );
-				mEigenMatrix.resize ( numRows,numColumns );
-				memcpy ( mEigenMatrix.data(),& ( dataVec[0] ),numRows*numColumns*sizeof ( T ) );
-			}
-			else
-			{
-				throw MathException ( "[Matrix::Restore]File type not implemented" );
-			}
-		}
-		catch ( MathException &e )
-		{
-			throw e;
-		}
-		catch ( std::exception &e )
-		{
-			throw MathException ( e.what() );
-		}
-		catch ( ... )
-		{
-			throw MathException ( "[Matrix::Restore]Unhandled exception." );
-		}
+        try
+        {
+            //transform to uppercase
+            std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
+            std::ifstream ifs ( filename.c_str(), std::ios_base::binary );
+            std::string tmpString;
+            if (rType=="BINARY")
+            {
+                boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
+                oba & boost::serialization::make_nvp ( "Object_type", tmpString );
+                if ( tmpString!=GetTypeId() )
+                    throw Exception ( "[NewmarkDirect::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                oba & boost::serialization::make_nvp(tmpString.c_str(), *this);
+            }
+            else if (rType=="XML")
+            {
+                boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
+                oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
+                if ( tmpString!=GetTypeId() )
+                    throw Exception ( "[NewmarkDirect::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                oxa & boost::serialization::make_nvp(tmpString.c_str(), *this);
+            }
+            else if (rType=="TEXT")
+            {
+                boost::archive::text_iarchive ota ( ifs, std::ios::binary );
+                ota & boost::serialization::make_nvp ( "Object_type", tmpString );
+                if ( tmpString!=GetTypeId() )
+                    throw Exception ( "[NewmarkDirect::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+                ota & boost::serialization::make_nvp(tmpString.c_str(), *this);
+            }
+            else
+            {
+                throw Exception ( "[Matrix::Restore]File type not implemented" );
+            }
+        }
+        catch ( Exception &e )
+        {
+            throw e;
+        }
+        catch ( std::exception &e )
+        {
+            throw Exception ( e.what() );
+        }
+        catch ( ... )
+        {
+            throw Exception ( "[NewmarkDirect::Restore]Unhandled exception." );
+        }
     }
-*/
+
 #endif //serialization
 
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file

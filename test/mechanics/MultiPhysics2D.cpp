@@ -575,7 +575,7 @@ int main()
         myTimeIntegrationScheme.SetToleranceForce(MaxResidual);
         myTimeIntegrationScheme.SetMaxNumIterations(40);
 
-        myTimeIntegrationScheme.AddTimeDependentConstraint(BoundaryConstraint,  RelativeHumidityFunc);
+        myTimeIntegrationScheme.AddTimeDependentConstraintFunction(BoundaryConstraint,  RelativeHumidityFunc);
         //myTimeIntegrationScheme.AddTimeDependentConstraint(ConstraintRightDisp, DispFunctionCenter);
 
         //set result directory

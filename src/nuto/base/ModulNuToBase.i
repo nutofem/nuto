@@ -6,6 +6,7 @@
 #include "nuto/base/ErrorEnum.h"
 #include "nuto/base/Exception.h"
 #include "nuto/base/NuToObject.h"
+#include <string>
 #include <iostream>
 %}
 
@@ -31,8 +32,8 @@ class exception
     catch(NuTo::Exception& e)
     {
         std::cout << e.ErrorMessage() << std::endl << std::endl;
-        NuTo::Exception *ecopy = e.Clone();  //new NuToException(e);
-        PyObject *err = SWIG_NewPointerObj(ecopy, SWIGTYPE_p_NuTo__Exception, 1);
+        NuTo::Exception *ecopy = e.Clone();  //new NuToException(e);   
+        PyObject *err = SWIG_NewPointerObj(&ecopy, SWIGTYPE_p_NuTo__Exception, 1);
         PyErr_SetObject(SWIG_Python_ExceptionType(SWIGTYPE_p_NuTo__Exception), err);
         SWIG_fail;
     }

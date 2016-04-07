@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include <ctime>
 #include <map>
+#include <set>
 #include <array>
 #include <functional>
 #include <string>
@@ -33,8 +33,14 @@
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/mechanics/structures/StructureBaseEnum.h"
-#include "nuto/mechanics/structures/StructureOutputBase.h"
 
+
+#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
+#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
+#include "nuto/mechanics/dofSubMatrixStorage/DofStatus.h"
 
 #include "nuto/visualize/VisualizeBase.h"
 
@@ -45,6 +51,7 @@ class ElementBase;
 class NodeBase;
 class InterpolationBase;
 class InterpolationType;
+//template <typename T> class BlockFullMatrix;
 template<class T, int rows> class FullVector;
 template<class T, int rows, int cols> class FullMatrix;
 template<class T> class SparseMatrixCSRSymmetric;
@@ -55,7 +62,7 @@ class EngineeringStrain2D;
 class NewtonRaphsonAuxRoutinesBase;
 class CrackBase;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain;
-
+class StructureOutputBase;
 
 class VisualizeUnstructuredGrid;
 class VisualizeComponent;
@@ -178,18 +185,16 @@ public:
 
 
 #ifndef SWIG
-    //! @brief ... evaluates the structur
-    virtual void Evaluate(std::map<StructureEnum::eOutput, StructureOutputBase*> &rStructureOutput);
+
+    //! @brief ... evaluates the structure
+    virtual void Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<StructureEnum::eOutput, StructureOutputBase*> &rStructureOutput);
+
+
 #endif // SWIG
 
     //@brief determines the maximum independent sets and stores it at the structure
     // is only relevant for openmp, otherwise the routine is just empty
     void CalculateMaximumIndependentSets();
-
-    //@brief determines if in the omp parallelization the maximum independent sets are used (parallel assembly of the stiffness, generally faster)
-    // or sequential insertion of the element stiffness using a barrier (faster for different load balancing of the elements)
-    // is only relevant for openmp, otherwise the routine is just empty
-    void UseMaximumIndependentSets(bool rUseMIS);
 
     //@brief set the number of processors for openmp parallelization
     void SetNumProcessors(int rNumProcessors);
@@ -201,141 +206,50 @@ public:
     void SetOMPNested(bool rNested);
 
 #ifndef SWIG
-    //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
-    //! @param rType ... matrix type (stiffness or mass)
-    //! @param rMatrix ... global coefficient matrix (nonsymmetric)
-    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType rType, NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
 
-    //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
-    //! @param rMatrix ... global coefficient matrix (symmetric)
-    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType rType, NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
+    NuTo::StructureOutputBlockMatrix BuildGlobalHessian(StructureEnum::eOutput rOutput);
 
-    //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
-    //! @param rMatrix ... global coefficient matrix (nonsymmetric)
-    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType rType, NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
-
-    //! @brief ... build global coefficient matrix (e.g stiffness) for primary dofs (e.g displacements, rotations, temperature)
-    //! @param rMatrix ... global coefficient matrix
-    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix(NuTo::StructureEnum::eMatrixType rType, NuTo::SparseMatrixCSRVector2Symmetric<double>& rMatrix, FullVector<double,Eigen::Dynamic>& rVector);
 #endif //SWIG
 
-    //! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
-    //! @param rMatrix ... global coefficient matrix (nonsymmetric)
-    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
+    NuTo::StructureOutputBlockMatrix BuildGlobalHessian0()
+    {
+        return BuildGlobalHessian(StructureEnum::eOutput::HESSIAN0);
+    }
 
-    //! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
-    //! @param rMatrix ... global coefficient matrix (symmetric)
-    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
+    NuTo::StructureOutputBlockMatrix BuildGlobalHessian1()
+    {
+        return BuildGlobalHessian(StructureEnum::eOutput::HESSIAN1);
+    }
 
-    //! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
-    //! @param rMatrix ... global coefficient matrix (nonsymmetric)
-    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
+    NuTo::StructureOutputBlockMatrix BuildGlobalHessian2()
+    {
+        return BuildGlobalHessian(StructureEnum::eOutput::HESSIAN2);
+    }
 
-    //! @brief ... build global coefficient matrix (stiffness) for primary dofs (e.g displacements, rotations, temperature)
-    //! @param rMatrix ... global coefficient matrix
-    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix0(NuTo::SparseMatrixCSRVector2Symmetric<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
+    NuTo::StructureOutputBlockMatrix BuildGlobalHessian2Lumped()
+    {
+        return BuildGlobalHessian(StructureEnum::eOutput::HESSIAN2_LUMPED);
+    }
 
-    //! @brief ... build global coefficient matrix (damping) for primary dofs (e.g displacements, rotations, temperature)
-    //! @param rMatrix ... global coefficient matrix (symmetric)
-    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix1(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
+    NuTo::StructureOutputBlockVector BuildGlobalInternalGradient();
 
-    //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
-    //! @param rMatrix ... global coefficient matrix (nonsymmetric)
-    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRGeneral<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
+    //! @brief ... build global external load vector (currently for displacements only)
+    //! @param rLoadCase ... load case
+    //! @return  ... StructureOutputBlockVector containing the external loads
+    NuTo::StructureOutputBlockVector BuildGlobalExternalLoadVector(int rLoadCase);
 
-    //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
-    //! @param rMatrix ... global coefficient matrix (symmetric)
-    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRSymmetric<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
+    NuTo::BlockFullVector<double> SolveBlockSystem(const NuTo::BlockSparseMatrix& rMatrix, const NuTo::BlockFullVector<double>& rVector) const;
 
-    //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
-    //! @param rMatrix ... global coefficient matrix (nonsymmetric)
-    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRVector2General<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
 
-    //! @brief ... build global coefficient matrix (mass) for primary dofs (e.g displacements, rotations, temperature)
-    //! @param rMatrix ... global coefficient matrix
-    //! @param rVector ... global equivalent load vector (e.g. due to prescribed displacements)
-    NuTo::Error::eError BuildGlobalCoefficientMatrix2(NuTo::SparseMatrixCSRVector2Symmetric<double>& rMatrix, NuTo::FullVector<double,Eigen::Dynamic>& rVector);
+    void SolveGlobalSystemStaticElastic(int rLoadCase = 0);
 
-    //! @brief ... build global external load vector
-    //! @param rVector ... external load vector on independent dofs - C external load vector on dependent dofs
-    void BuildGlobalExternalLoadVector(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rVector_j);
+    NuTo::StructureOutputBlockMatrix BuildGlobalHessian0_CDF(double rDelta);
 
-    //! @brief ... build global external load vector
-    //! @param rVector ... external load vector on independent dofs
-    //! @param rVector ... external load vector on dependent dofs
-    void BuildGlobalExternalLoadVector(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rVector_j, NuTo::FullVector<double,Eigen::Dynamic>& rVector_k);
+    bool CheckHessian0(double rDelta, double rRelativeTolerance, bool rPrintWrongMatrices = true);
 
-    //! @brief ... build global gradient of the internal potential (e.g. the internal forces)
-    //! @param rVector ... global gradient of the internal potential (e.g. internal force vector)
-    NuTo::Error::eError BuildGlobalGradientInternalPotentialVector(NuTo::FullVector<double,Eigen::Dynamic>& rVector);
-
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
-    //! @param rType   ... matrix type (stiffness damping mass)
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    virtual Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) = 0;
-
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix0
-    //! @param rType   ... matrix type (stiffness damping mass)
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    //! @param rMatrixKJ ... submatrix kj (number of dependent dof x number of active dof)
-    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
-    virtual Error::eError BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK) = 0;
-
-    //! @brief ... based on the global dofs build submatrices of the global stiffness matrix0
-    //! @brief ... presumes elastic deformation, that is the state variables remain constant
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    //! @param rMatrixKJ ... submatrix kj (number of dependent dof x number of active dof)
-    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
-    virtual Error::eError BuildGlobalElasticStiffnessSubMatricesGeneral(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK) = 0;
-
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
-    //! @param rType   ... matrix type (stiffness damping mass)
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    virtual Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK) = 0;
-
-    //! @brief ... based on the global dofs build submatrices of the global coefficent matrix
-    //! @param rType   ... matrix type (stiffness damping mass)
-    //! @param rMatrixJJ ... submatrix jj (number of active dof x number of active dof)
-    //! @param rMatrixJK ... submatrix jk (number of active dof x number of dependent dof)
-    //! @param rMatrixKK ... submatrix kk (number of dependent dof x number of dependent dof)
-    virtual Error::eError BuildGlobalCoefficientSubMatricesSymmetric(NuTo::StructureEnum::eMatrixType rType, NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK) = 0;
-
-    //! @brief ... based on the global dofs build sub-vectors of the global lumped mass
-    //! @param rActiveDofVector ... global lumped mass which corresponds to the active dofs
-    //! @param rDependentDofVector ... global lumped mass which corresponds to the dependent dofs
-    virtual Error::eError BuildGlobalLumpedHession2(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofVector,
-    		NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofVector) = 0;
-
-    //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
-    //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
-    //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
-    //! @param rUpdateHistoryVariables (update history variables after having calculated the response)
-    virtual Error::eError BuildGlobalGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector,
-    		NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector, bool rUpdateHistoryVariables) = 0;
-
-    //! @brief ... based on the global dofs build sub-vectors of the global internal potential gradient
-    //! @brief ... presumes elastic deformation, that is the state variables remain constant
-    //! @param rActiveDofGradientVector ... global internal potential gradient which corresponds to the active dofs
-    //! @param rDependentDofGradientVector ... global internal potential gradient which corresponds to the dependent dofs
-    //! @param update of history variables is not performed
-    virtual Error::eError BuildGlobalElasticGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector,
-    		NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector) = 0;
+private: // keep the method definitions close together
+    bool CheckHessian0_Submatrix(const BlockSparseMatrix& rHessian0, BlockSparseMatrix& rDiff, double rRelativeTolerance, bool rPrintWrongMatrices);
+public:
 
 //*************************************************
 //************ Node routines        ***************
@@ -359,7 +273,7 @@ public:
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNode (Input) 		... node pointer
     //! @param rElements (Output) 	... vector of element pointers
-    void NodeGetElements(const NodeBase* rNodePtr, std::vector<ElementBase*>& rElements);
+    virtual void NodeGetElements(const NodeBase* rNodePtr, std::vector<ElementBase*>& rElements);
 
     //! @brief gives the identifier of a node
     //! @param reference to a node
@@ -385,7 +299,8 @@ public:
     virtual void NodeInfo(int mVerboseLevel)const=0;
 
     //! @brief numbers the dofs in the structure
-    virtual void NodeBuildGlobalDofs()=0;
+    //! @param rCallerName ... if the method throws it is nice to know by whom it was called.
+    virtual void NodeBuildGlobalDofs(std::string rCallerName = "")=0;
 
     //! @brief sets the displacements of a node
     //! @param rIdent node identifier
@@ -467,43 +382,42 @@ public:
 
     //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
-    //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
-    //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
-    virtual void NodeExtractDofValues(int rTimeDerivative, NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues) const = 0;
+    //! @return ... StructureBlockVector containing the dofs (J and K)
+    virtual NuTo::StructureOutputBlockVector NodeExtractDofValues(int rTimeDerivative) const = 0;
 
-    //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
-    //! @param rActiveDofValues ... vector of global active dof values (ordering according to global dofs, size is number of active dofs)
-    //! @param rDependentDofValues ... vector of global dependent dof values (ordering according to (global dofs) - (number of active dofs), size is (total number of dofs) - (number of active dofs))
-    inline void NodeExtractDofValues(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues) const
+    //! @brief extract dof values (e.g. displacements, temperatures to the nodes) (time derivative = 0)
+    //! @return ... StructureBlockVector containing the dofs (J and K)
+    NuTo::StructureOutputBlockVector NodeExtractDofValues() const
     {
-    	NodeExtractDofValues(0,rActiveDofValues,rDependentDofValues);
+        return NodeExtractDofValues(0);
     }
 
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
-    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, const NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues)=0;
+    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockFullVector<double>& rActiveDofValues, const NuTo::BlockFullVector<double>& rDependentDofValues) = 0;
+
+    //! @brief write dof values (e.g. displacements, temperatures to the nodes)
+    //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
+    //! @param rDofValues ... StructureBlockVector containing the dofs (J and K)
+    void NodeMergeDofValues(int rTimeDerivative, const NuTo::StructureOutputBlockVector& rDofValues)
+    {
+        NodeMergeDofValues(rTimeDerivative, rDofValues.J, rDofValues.K);
+    }
 
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
-    inline void NodeMergeDofValues(const NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, const NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues)
+    inline void NodeMergeDofValues(NuTo::StructureOutputBlockVector& rDofValues)
     {
-    	NodeMergeDofValues(0,rActiveDofValues,rDependentDofValues);
+        NodeMergeDofValues(0,rDofValues);
     }
 
-    //! @brief write dof values (e.g. displacements, temperatures to the nodes)
-    //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
-    //! @param rActiveDofValues ... vector of global dof values (ordering according to global dofs, size is number of active dofs)
-    virtual void NodeMergeActiveDofValues(int rTimeDerivative, const NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues)=0;
-
-    //! @brief write dof values (e.g. displacements, temperatures to the nodes)
-    //! @param rActiveDofValues ... vector of global dof values (ordering according to global dofs, size is number of active dofs)
-    inline void NodeMergeActiveDofValues(const NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues)
-    {
-    	NodeMergeActiveDofValues(0,rActiveDofValues);
-    }
+    //! @brief calculate dependent dof values (for the zeroth time derivative)
+    //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
+    //! @return  ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
+    virtual NuTo::BlockFullVector<double> NodeCalculateDependentDofValues(const NuTo::BlockFullVector<double>& rActiveDofValues) const = 0;
 
     //! @brief calculate the internal force vector for a node
     //! @param rId ... node id
@@ -567,80 +481,68 @@ public:
     //! @brief info about the elements in the Structure
     virtual void ElementInfo(int rVerboseLevel)const=0;
 
-    //! @brief calls ElementCoefficientMatrix_0,
-    //! renaming only for clarification in mechanical problems for the end user
-    void ElementStiffness(int rElementId, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult ,
-                          NuTo::FullVector<int,Eigen::Dynamic>& rGlobalDofsRow,
-                          NuTo::FullVector<int,Eigen::Dynamic>& rGlobalDofsColumn);
-
-    //! @brief calculates the coefficient matrix for the rTimeDerivative derivative in the differential equation
-    //! for a mechanical problem, this corresponds to the stiffness, damping or mass matrix (rTimeDerivative=0,1,2)
-    void ElementCoefficientMatrix(int rElementId,
-    		                        int rTimeDerivative,
-                                    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult,
-                                    NuTo::FullVector<int,Eigen::Dynamic>& rGlobalDofsRow,
-                                    NuTo::FullVector<int,Eigen::Dynamic>& rGlobalDofsColumn);
-
-    //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
-    //! and compares it to the matrix using central differences
-    //! for a mechanical problem, this corresponds to the stiffness matrix
-    //! @param rElementId element
-    //! @param rDelta  delta step for finite differences
-    //! @return maximum difference between analytical and central difference method
-    double ElementCoefficientMatrix_0_Check(int rElementId, double rDelta, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDifference);
-
 #ifndef SWIG
-    //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation using central differences
-    //! @param rElementPtr element
-    //! @param rDelta  delta step for finite differences
-    //! @param stiffnessCDF  stiffness from central differences (return value, size should be allocated correctly before entering the routine)
-    //! @return maximum difference between analytical and central difference method
-    void ElementCoefficientMatrix_0_Resforce(ElementBase* rElementPtr, double rDelta, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& stiffnessCDF);
-#endif //SWIG
 
-    //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
-    //! @param rElementId elementId
-    //! @param rDelta  delta step for finite differences
-    //! @param stiffnessCDF  stiffness from central differences (return value, size should be allocated correctly before entering the routine)
-    //! @return maximum difference between analytical and central difference method
-    void ElementCoefficientMatrix_0_Resforce(int rElementId, double rDelta, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& stiffnessCDF);
+    //! @brief duilds the element hessian0 using the central differences of the internal force vector
+    //! @param rElement ... element
+    //! @param rDelta ... step of the central differences
+    //! @return BlockFullMatrix containing the hessian0_cdf
+    BlockFullMatrix<double> ElementBuildHessian0_CDF(ElementBase* rElement, double rDelta);
 
-    //! @brief calculates the coefficient matrix for the 0-th derivative in the differential equation
-    //! and compares it to the matrix using central differences
-    //! for a mechanical problem, this corresponds to the stiffness matrix
-    //! @param rDelta  delta step for finite differences
-    //! @return element with maximum error
-    int ElementTotalCoefficientMatrix_0_Check(double rDelta, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDifference);
+    //! @brief builds the element internal gradient
+    //! @param rElement ... element
+    //! @return BlockFullVector containing the internal gradient
+    BlockFullVector<double> ElementBuildInternalGradient(ElementBase* rElement);
 
-    //! @brief Checks the global CoefficientMatrix_0 and the internal forces vector by the internal energy
-    //! @return false, if stiffness is not correct
-    virtual bool CheckStiffness();
+    //! @brief builds the element hessian
+    //! @param rHessianType ... hessian0 hessian1 hessian2
+    //! @param rElement ... element
+    //! @return BlockFullMatrix containing the hessian
+    BlockFullMatrix<double> ElementBuildHessian(Element::eOutput rHessianType, ElementBase* rElement);
 
+    //! @brief builds the element hessian0
+    //! @param rElement ... element
+    //! @return BlockFullMatrix containing the hessian
+    BlockFullMatrix<double> ElementBuildHessian0(ElementBase* rElement) { return ElementBuildHessian(Element::HESSIAN_0_TIME_DERIVATIVE, rElement); }
 
-    //! @brief Compares the global CoefficientMatrix_0 to the matrix using central differences
-    //! @param rDelta delta step for finite differences
-    //! @param rPrintResult 'true' prints the result
-    bool CheckCoefficientMatrix_0(double rDelta, bool rPrintResult);
+    //! @brief builds the element hessian1
+    //! @param rElement ... element
+    //! @return BlockFullMatrix containing the hessian
+    BlockFullMatrix<double> ElementBuildHessian1(ElementBase* rElement) { return ElementBuildHessian(Element::HESSIAN_1_TIME_DERIVATIVE, rElement); }
 
-    //! @brief Compares the element CoefficientMatrix_0 to the matrix using central differences
-    //! for all elements
-    //! @param rDelta delta step for finite differences
-    bool ElementCheckCoefficientMatrix_0(double rDelta);
+    //! @brief builds the element hessian2
+    //! @param rElement ... element
+    //! @return BlockFullMatrix containing the hessian
+    BlockFullMatrix<double> ElementBuildHessian2(ElementBase* rElement) { return ElementBuildHessian(Element::HESSIAN_2_TIME_DERIVATIVE, rElement); }
 
-    //! @brief Compares the element CoefficientMatrix_0 to the matrix using central differences
-    //! for a specific element
-    //! @param rDelta delta step for finite differences
-    //! @param rElementId element id
-    //! @param rDifference difference to CDF solution
-    //! @param rPrintResult 'true' prints the result
-    bool ElementCheckCoefficientMatrix_0(double rDelta,
-            int rElementId, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rDifference, bool rPrintResult);
+    //! @brief builds the element vector of global row dofs
+    //! @param rElement ... element
+    //! @return BlockFullVector containing the global row dofs
+    BlockFullVector<int> ElementBuildGlobalDofsRow(ElementBase* rElement);
 
-    //! @brief calculates the gradient of the internal potential
-    //! for a mechanical problem, this corresponds to the internal force vector
-    void ElementGradientInternalPotential(int rElementId,
-                                          NuTo::FullVector<double, Eigen::Dynamic>& rResult,
-                                          NuTo::FullVector<int, Eigen::Dynamic>& rGlobalDofsRow);
+    //! @brief builds the element vector of global column dofs
+    //! @param rElement ... element
+    //! @return BlockFullVector containing the global column dofs
+    BlockFullVector<int> ElementBuildGlobalDofsColumn(ElementBase* rElement);
+
+    bool ElementCheckHessian0(ElementBase* rElement, double rDelta, double rRelativeTolerance, bool rPrintWrongMatrices = true);
+
+#endif // SWIG
+
+    NuTo::BlockFullMatrix<double> ElementBuildHessian0        (int rElementId) { return ElementBuildHessian0 (ElementGetElementPtr(rElementId)); }
+    NuTo::BlockFullMatrix<double> ElementBuildHessian1        (int rElementId) { return ElementBuildHessian1 (ElementGetElementPtr(rElementId)); }
+    NuTo::BlockFullMatrix<double> ElementBuildHessian2        (int rElementId) { return ElementBuildHessian2 (ElementGetElementPtr(rElementId)); }
+
+    NuTo::BlockFullVector<double> ElementBuildInternalGradient(int rElementId) { return ElementBuildInternalGradient(ElementGetElementPtr(rElementId)); }
+    NuTo::BlockFullVector<int>    ElementBuildGlobalDofsRow   (int rElementId) { return ElementBuildGlobalDofsRow   (ElementGetElementPtr(rElementId)); }
+    NuTo::BlockFullVector<int>    ElementBuildGlobalDofsColumn(int rElementId) { return ElementBuildGlobalDofsColumn(ElementGetElementPtr(rElementId)); }
+
+    bool ElementCheckHessian0(int rElementId, double rDelta, double rRelativeTolerance, bool rPrintWrongMatrices = true)
+    {
+        return ElementCheckHessian0(ElementGetElementPtr(rElementId), rDelta, rRelativeTolerance, rPrintWrongMatrices);
+    }
+
+    bool ElementCheckHessian0(double rDelta, double rRelativeTolerance, bool rPrintWrongMatrices = true);
 
     //! @brief modifies the constitutive law of a single element
     //! @param rElementIdent identifier for the element
@@ -716,40 +618,72 @@ public:
     //! @param rElement element pointer
     //! @param rInterpolationType interpolation type
     void ElementSetInterpolationType(ElementBase* rElement, InterpolationType* rInterpolationType);
+
+
+    //! @brief calculates static ip data
+    //! @param rElemIdent  element number
+    //! @param rType static ip data type
+    //! @param rIPData matrix with (... x numIP), x varies depending on IPData type
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetStaticIPData(int rElementId, IpData::eIpStaticDataType rType);
+
 #endif //SWIG
 
-
-
+    //! @brief calculates static ip data
+    //! @param rElemIdent  element number
+    //! @param rType static ip data type
+    //! @param rIPData matrix with (... x numIP), x varies depending on IPData type
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetStaticIPData(int rElementId, std::string rType)
+    {
+        return ElementGetStaticIPData(rElementId, IpData::IpStaticDataTypeToEnum(rType));
+    }
 
     //! @brief calculates the engineering strain
     //! @param rElemIdent  element number
     //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
-    void ElementGetEngineeringStrain(int rElementId, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStrain);
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetEngineeringStrain(int rElementId)
+    {
+        return ElementGetStaticIPData(rElementId, IpData::ENGINEERING_STRAIN);
+    }
 
     //! @brief calculates the engineering plastic strain
     //! @param rElemIdent  element number
     //! @param rEngineerungStrain engineering plastic strain (return value, always 6xnumIp matrix)
-    void ElementGetEngineeringPlasticStrain(int rElementId, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringPlasticStrain);
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetEngineeringPlasticStrain(int rElementId)
+    {
+        return ElementGetStaticIPData(rElementId, IpData::ENGINEERING_PLASTIC_STRAIN);
+    }
 
     //! @brief calculates the engineering stress
     //! @param rElemIdent  element number
     //! @param rEingineeringStress Engineering Stress (return value, always 6xnumIp matrix)
-    void ElementGetEngineeringStress(int rElementId, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStress);
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetEngineeringStress(int rElementId)
+    {
+        return ElementGetStaticIPData(rElementId, IpData::ENGINEERING_STRESS);
+    }
 
     //! @brief calculates the damage
     //! @param rElemIdent  identifier for the element
     //! @param rDamage (return value, always 1xnumIp matrix)
-    void ElementGetDamage(int rElementId, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDamage);
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetDamage(int rElementId)
+    {
+        return ElementGetStaticIPData(rElementId, IpData::DAMAGE);
+    }
 
     //! @brief calculates the global integration point coordinates
     //! @param rElemIdent  identifier for the element
     //! @param rCoordinates integration point coordinates (return value, always 3xnumIp matrix)
-    void ElementGetIntegrationPointCoordinates(int rElementId, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates);
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetIntegrationPointCoordinates(int rElementId);
+
 
     //! @brief calculates the maximum damage in all elements
     //! @param rElemIdent  identifier for the element
     //! @return max damage value
     double ElementTotalGetMaxDamage();
+
+    //! @brief allocates additional static data for an element group
+    //! @param rElementGroupId ... element group id
+    //! @param rNumAdditionalStaticData ... number of addidional static data objects
+    void ElementGroupAllocateAdditionalStaticData(int rElementGroupId, int rNumAdditionalStaticData);
 
     //! @brief updates the history data of a all elements
     NuTo::Error::eError ElementTotalUpdateStaticData();
@@ -759,13 +693,13 @@ public:
     NuTo::Error::eError ElementTotalUpdateTmpStaticData();
 
     //! @brief saves static data of a all elements
-    NuTo::Error::eError ElementFatigueSaveStaticData();
+    void ElementTotalSaveStaticData();
 
     //! @brief restores static data of a all elements
-    NuTo::Error::eError ElementFatigueRestoreStaticData();
+    void ElementTotalRestoreStaticData();
 
     //! @brief extrapolates static data of a all elements
-    NuTo::Error::eError ElementFatigueExtrapolateStaticData();
+    void ElementTotalExtrapolateStaticData();
 
     //! @brief calculates the average stress
     //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
@@ -844,30 +778,22 @@ public:
     //! @brief releases a constraint, (remove from the list but don't delete it)
     NuTo::ConstraintBase* ConstraintRelease(int rConstraintId);
 
-    //! @brief writes the Lagrange multiplier and Slack variables (inequalities) of a constraint to the prescribed matrix
-    //! @param ConstraintId constraint id
-    //! @param rMultiplier Lagrange multiplier (first col Lagrange, evtl. second col Slackvariables)
-    void ConstraintLagrangeGetMultiplier(int ConstraintId, NuTo::FullVector<double,Eigen::Dynamic>& rMultiplier)const;
-
-    //! @brief sets the penalty stiffness of the augmented Lagragian to the prescribed value
-    //! @param ConstraintId constraint id
-    //! @param rPenalty penalty parameter
-    void ConstraintLagrangeSetPenaltyStiffness(int ConstraintId, double rPenalty);
-
-    //! @brief adds a displacement constraint equation for a node group solved using Lagrange multiplier
-    //! @param rGroupId group id
-    //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
-    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    //! @return integer id to delete or modify the constraint
-    int ConstraintLagrangeSetDisplacementNodeGroup(int rGroupId, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, const std::string& rSign, double rValue);
-
 #ifndef SWIG
-    //! @brief adds a displacement constraint equation for a node group solved using Lagrange multiplier
-    //! @param rGroup group pointer
+
+    //! @brief adds a displacement constraint equation for a node
+    //! @param rDOFType Type of the DOF that should be constrained (displacements, relativehumidity etc.)
+    //! @param rNode pointer to node
+    //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
+    //! @return integer id to delete or modify the constraint
+    int ConstraintLinearSetNode(Node::eDof rDOFType,NodeBase* rNode, double rValue);
+
+    //! @brief adds a displacement constraint equation for a node
+    //! @param rDOFType Type of the DOF that should be constrained (displacements, relativehumidity etc.)
+    //! @param rNode pointer to node
     //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLagrangeSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, NuTo::Constraint::eEquationSign rEquationSign, double rValue);
+    int ConstraintLinearSetNode(Node::eDof rDOFType,NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
 
     //! @brief adds a displacement constraint equation for a node
     //! @param rNode pointer to node
@@ -931,7 +857,7 @@ public:
 
     //! @brief adds a constraint equation for a group of nodes
     //! @param rGroupIdent identifier for group of nodes
-    //! @param rAttribute displacements, rotations, temperatures
+    //! @param rDof displacements, rotations, temperatures
     //! @param rComponent e.g. the first (count from zero) displacement component
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     int ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
@@ -962,32 +888,40 @@ public:
     //! @param rValue prescribed value (e.g. zero to fix a temperature to zero)
     int ConstraintLinearSetTemperatureNodeGroup(int rGroupIdent, double rValue);
 
-    //! @brief returns the number of constraint equations
+
+    // ######################################
+    // ##                                  ##
+    // ##    CONSTRAINT CALCULATION        ##
+    // ##                                  ##
+    // ######################################
+
+#ifndef SWIG
+    //! @brief returns the number of constraint equations for a specific dof type
     //! @return number of constraints
-    int ConstraintGetNumLinearConstraints()const;
+    //! @param rDofType  dof type
+    int ConstraintGetNumLinearConstraints(Node::eDof rDof) const;
 
-    //! @brief calculates the constraint matrix that builds relations between the nodal dagrees of freedom (before gauss elimination)
+#endif
+
+    //! @brief returns the number of constraint equations for a specific dof type
+    //! @return number of constraints
+    //! @param rDofType  dof type
+    int ConstraintGetNumLinearConstraints(std::string rDof) const {return ConstraintGetNumLinearConstraints(Node::DofToEnum(rDof));}
+
+
+    //! @brief calculates the constraint matrix that builds relations between the nodal degrees of freedom (before gauss elimination)
     //! @param rConstraintMatrix constraint matrix
-    void ConstraintGetConstraintMatrixBeforeGaussElimination(NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix);
-
-    /*
-    //! @brief returns the constraint matrix  (after gauss elimination)
-    //! @param rConstraintMatrix constraint matrix
-    void ConstraintGetConstraintMatrixAfterGaussElimination(NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix);*/
-
-    //! @brief returns the constraint matrix  (after gauss elimination)
-    //! @return constraint matrix  (after gauss elimination)
-    const NuTo::SparseMatrixCSRGeneral<double>& ConstraintGetConstraintMatrixAfterGaussElimination() const;
+    NuTo::BlockSparseMatrix ConstraintGetConstraintMatrixBeforeGaussElimination() const;
 
     //! @brief returns the constraint vector after gauss elimination
     //! rConstraintMatrix*DOFS = RHS
     //! @return rhs
-    const NuTo::FullVector<double,Eigen::Dynamic>& ConstraintGetRHSAfterGaussElimination() const;
+    const NuTo::BlockFullVector<double>& ConstraintGetRHSAfterGaussElimination() const;
 
     //! @brief returns the constraint vector after gauss elimination
     //! rConstraintMatrix*DOFS = RHS
-    //! @param rConstraintMatrix constraint matrix
-    void ConstraintGetRHSBeforeGaussElimination(NuTo::FullVector<double,Eigen::Dynamic>& rhsBeforeGaussElimination);
+    NuTo::BlockFullVector<double> ConstraintGetRHSBeforeGaussElimination();
+
 
     //! @brief calculates the right hand side of the constraint equations based on the mapping matrix and the rhs before the gauss elimination
     //! the result is stored internally in mConstraintRHS
@@ -1002,27 +936,6 @@ public:
     //!@param rConstraintEquation constraint equation
     //!@return rRHS
     double ConstraintGetRHS(int rConstraintEquation)const;
-
-#ifndef SWIG
-    //!@brief number the free DOFS in the constraints (Lagrange multipliers)
-    //!@param rDOF current maximum DOF number, increased in the number
-    void ConstraintNumberGlobalDofs(int& rDOF);
-
-    //! @brief renumber the dofs of the Lagrange multipliers according to predefined ordering
-    //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
-    void ConstraintRenumberGlobalDofs(const std::vector<int>& mappingInitialToNewOrdering);
-
-    //! @brief extract dof values from the node (based on global dof number)
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    void ConstraintExtractGlobalDofValues(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofValues)const;
-
-    //! @brief write dof values to the Lagrange multipliers (based on global dof number)
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    void ConstraintMergeGlobalDofValues(const NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofValues, const NuTo::FullVector<double,Eigen::Dynamic>& dependentDofValues);
-
-#endif
 
 
     //! @brief ... create a constraint equation
@@ -1049,14 +962,15 @@ public:
     //! @param rDofComponent ... dof component (0, 1, 2)
     //! @param rCoefficient ... weight factor of this term
     //! @param rRHS ... prescribed right hand side value
-    void ConstraintLinearEquationCreate(int rConstraint, int rNode, NuTo::Node::eAttributes rDofType, int rDofComponent, double rCoefficient, double rRHS = 0);
+    void ConstraintLinearEquationCreate(int rConstraint, int rNode, NuTo::Node::eDof rDofType, int rDofComponent, double rCoefficient, double rRHS = 0);
 
     //! @brief Creates a constraint equation that couples the degrees of freedom of an arbitrary node to a point in an element
     //! @param rNode ... node id in the first constraint equation term
     //! @param rElement ... element group id
     //! @param rDofType ... type of dof in the first constraint equation term (e.g DISPLACEMENTS, ROTATIONS, TEMPERATURES)
     //! @param numNearestNeighbours ... number of nearest neighbours to be found by the approximate nearest neighbour algorithm
-    void ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup, NuTo::Node::eAttributes rDofType, int rNumNearestNeighbours, double rTolerance = 1.0e-6);
+    void ConstraintLinearEquationNodeToElementCreate(int rNode, int rElementGroup, NuTo::Node::eDof rDofType, int rNumNearestNeighbours, double rTolerance = 1.0e-6);
+
 
 #endif
 
@@ -1085,38 +999,7 @@ public:
     //! @param rDofType ... type of dof (e.g DISPLACEMENTS, ROTATIONS, TEMPERATURES)
     //! @param rDofComponent ... dof component (0, 1, 2)
     //! @param rCoefficient ... weight factor of this term
-    void ConstraintLinearEquationAddTerm(int rConstraint, int rNode, NuTo::Node::eAttributes rDofType, int rDofComponent, double rCoefficient);
-
-    //! @brief ... add the contribution of Lagrange multipliers to the global system of equations
-    //! @param rMatrixJJ ... matrix jj
-    //! @param rMatrixJK ... matrix jk
-    void ConstraintsBuildGlobalCoefficientSubMatrices0General(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK)const;
-
-    //! @brief ... add the contribution of Lagrange multipliers to the global system of equations
-    //! @param rMatrixJJ ... matrix jj
-    //! @param rMatrixJK ... matrix jk
-    //! @param rMatrixKJ ... matrix kj
-    //! @param rMatrixKK ... matrix kk
-    void ConstraintBuildGlobalCoefficientSubMatrices0General(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKJ, NuTo::SparseMatrix<double>& rMatrixKK)const;
-
-    //! @brief ... add the contribution of Lagrange multipliers to the global system of equations
-    //! @param rMatrixJJ ... matrix jj
-    //! @param rMatrixJK ... matrix jk
-    void ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK)const;
-
-    //! @brief ... add the contribution of Lagrange multipliers to the global system of equations
-    //! @param rMatrixJJ ... matrix jj
-    //! @param rMatrixJK ... matrix jk
-    //! @param rMatrixKK ... matrix kk
-    void ConstraintBuildGlobalCoefficientSubMatrices0Symmetric(NuTo::SparseMatrix<double>& rMatrixJJ, NuTo::SparseMatrix<double>& rMatrixJK, NuTo::SparseMatrix<double>& rMatrixKK) const;
-
-    //! @brief ... add the contribution of Lagrange multipliers to the global system of equations
-    //! @param rActiveDofGradientVector ... gradient of active dofs
-    //! @param rDependentDofGradientVector ... gradient of dependent dofs
-    void ConstraintBuildGlobalGradientInternalPotentialSubVectors(NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofGradientVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofGradientVector) const;
-
-    //! @brief ... calculates the potential due to the addition of Lagrange terms
-    double ConstraintTotalGetTotalEnergy()const;
+    void ConstraintLinearEquationAddTerm(int rConstraint, int rNode, NuTo::Node::eDof rDofType, int rDofComponent, double rCoefficient);
 
     //! @brief info about the nodes in the Structure
     void ConstraintInfo(int mVerboseLevel)const;
@@ -1128,7 +1011,7 @@ private:
     //! @brief rDof ... input string
     //! @param rDofType ... type of dof (e.g DISPLACEMENTS, ROTATIONS, TEMPERATURES)
     //! @param rDofComponent ... dof component (0, 1, 2)
-    void ConstraintEquationGetDofInformationFromString(const std::string& rDof, NuTo::Node::eAttributes& rDofType, int& rDofComponent);
+    void ConstraintEquationGetDofInformationFromString(const std::string& rDof, NuTo::Node::eDof& rDofType, int& rDofComponent);
 
 public:
     //*************************************************
@@ -1354,31 +1237,20 @@ public:
     void ConstitutiveLawAddHardeningModulus(int rIdent, double rEpsilon, double rH);
 
 
-
-
-
-
-    //! @brief ... get damage law
-    //! @return ... damage law
-    NuTo::FullVector<double, Eigen::Dynamic> ConstitutiveLawGetDamageLaw(int rIdent) const;
+#ifndef SWIG
+    //! @brief ... set damage law
+    //! @param rDamageLaw ... damage law
+    void ConstitutiveLawSetDamageLaw(int rIdent, Constitutive::eDamageLawType rDamageLaw);
+#endif
 
     //! @brief ... set damage law
-    //! @param rDamageLaw ... damage law <BR>
-    //! ============================================================================================<BR>
-    //! rDamageLaw[0] = Constitutive::Constitutive::eDamageLawType::ISOTROPIC_NO_SOFTENING <BR>
-    //! w(k) = 1 - e_0/k <BR>
-    //! rDamageLaw[1] = e_0 // strain at elastic limit <BR>
-    //! ============================================================================================<BR>
-    //! rDamageLaw[0] = Constitutive::Constitutive::eDamageLawType::ISOTROPIC_LINEAR_SOFTENING <BR>
-    //! w(k) = e_c/k * (k-e_0) / (e_c-e_0) <BR>
-    //! rDamageLaw[1] = e_0 // strain at elastic limit <BR>
-    //! rDamageLaw[1] = e_c // strain at full damage <BR>
-    //! ============================================================================================<BR>
-    //! rDamageLaw[0] = Constitutive::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING <BR>
-    //! w(k) = 1 - e_0/k exp{ (e_0 - k) / e_f } <BR>
-    //! rDamageLaw[1] = e_0 // strain at elastic limit <BR>
-    //! rDamageLaw[1] = e_f // post-peak slope parameter <BR>
-    void ConstitutiveLawSetDamageLaw(int rIdent, const NuTo::FullVector<double, Eigen::Dynamic> rDamageLaw);
+    //! @param rDamageLaw ... damage law
+    void ConstitutiveLawSetDamageLaw(int rIdent, std::string rDamageLaw)
+    {
+        ConstitutiveLawSetDamageLaw(rIdent, Constitutive::DamageLawToEnum(rDamageLaw));
+    }
+
+
 
 
     //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
@@ -1754,18 +1626,111 @@ public:
 
     //! @brief returns the number of degrees of freedom
     //! @return ... number of degrees of freedom
-    int GetNumDofs()const;
+    int GetNumTotalDofs() const;
 
     //! @brief returns the number of active degrees of freedom
     //! @return ... number of active degrees of freedom
-    int GetNumActiveDofs()const;
+    int GetNumTotalActiveDofs() const;
 
     //! @brief returns the number of dependent degrees of freedom
     //! @return ... number of dependent degrees of freedom
-    int GetNumDependentDofs()const;
+    int GetNumTotalDependentDofs() const;
+
+#ifndef SWIG
+    //! @brief returns the number of degrees of freedom for dof type rDof
+    //! @param rDofType ... dof type
+    //! @return ... number of degrees of freedom
+    int GetNumDofs(Node::eDof rDofType) const;
+
+    //! @brief returns the number of active degrees of freedom for dof type rDof
+    //! @param rDofType ... dof type
+    //! @return ... number of active degrees of freedom
+    int GetNumActiveDofs(Node::eDof rDofType) const;
+
+    //! @brief returns the number of dependent degrees of freedom for dof type rDof
+    //! @param rDofType ... dof type
+    //! @return ... number of dependent degrees of freedom
+    int GetNumDependentDofs(Node::eDof rDofType) const;
+
+    //! @brief returns all dof types of the structure
+    //! @return ... set of active dof types
+    std::set<Node::eDof> DofTypesGet() const;
+
+    //! @brief Sets all dofs inactive
+    void DofTypeDeactivateAll();
+
+    //! @brief forwards the property to all interpolation types. Inactive dofs are not solved for
+    //! @param rDofType ... dof type
+    //! @param rIsActive ... active/inactive
+    void DofTypeSetIsActive(Node::eDof rDofType, bool rIsActive);
+
+    //! @brief Sets a set of active dofs, deactivates others
+    //! @param rActiveDofTypes ... dof type
+    void DofTypeSetIsActive(const std::set<Node::eDof>& rActiveDofTypes);
+
+    //! @brief returns true if rDofType is an active dof type
+    //! @param rDofType ... dof type
+    bool DofTypeIsActive(Node::eDof rDofType) const;
+
+    //! @brief forwards the property to all interpolation types
+    //! @param rDofType ... dof type
+    //! @param rIsConstitutiveInput ... is/is not constitutive input
+    void DofTypeSetIsConstitutiveInput(Node::eDof rDofType, bool rIsConstitutiveInput);
+
+    //! @brief adds/removes the dof type from the mDofTypesSymmetric-set
+    //! @param rDofType ... dof type
+    //! @param rIsSymmetric ... is/is not symmetric input
+    //! TODO: move to constitutive law somehow
+    void DofTypeSetIsSymmetric(Node::eDof rDofType, bool rIsSymmetric);
+
+    //! @brief returns if rDof is symmetric
+    //! @param rDofType ... dof type
+    //! @return mSymmetricDof contains rDof
+    bool DofTypeIsSymmetric(Node::eDof rDofType) const;
+
+    //! @brief returns all active dof types
+    //! @return ... set of active dof types
+    std::set<Node::eDof> DofTypesGetActive() const;
+
+    //! @brief updates the mDofStatus with current information from the interpolation types
+    void UpdateDofStatus();
+
+#endif // SWIG
+
+    /// !!!!!! IMPORTANT ------------------------------------------
+    /// DofStatus-Geter should never get a non-const version
+    /// Use Structure to change dofStatus
+    const NuTo::DofStatus& GetDofStatus() const;
+
+
+
+    //! @brief returns the number of degrees of freedom for dof type rDof
+    //! @param rDofType ... dof type
+    //! @return ... number of degrees of freedom
+    int GetNumDofs(std::string rDofType) const;
+
+    //! @brief returns the number of active degrees of freedom for dof type rDof
+    //! @param rDofType ... dof type
+    //! @return ... number of active degrees of freedom
+    int GetNumActiveDofs(std::string rDofType) const;
+
+    //! @brief returns the number of dependent degrees of freedom for dof type rDof
+    //! @param rDofType ... dof type
+    //! @return ... number of dependent degrees of freedom
+    int GetNumDependentDofs(std::string rDofType) const;
+
+    //! @brief adds/removes the dof type from the mDofTypesActive-set. Inactive dofs are not solved for
+    //! @param rDofType ... dof type
+    //! @param rIsActive ... active/inactive
+    void DofTypeSetIsActive(std::string rDofType, bool rIsActive);
+
+    //! @brief adds/removes the dof type from the mDofTypesConstitutiveInput-set
+    //! @param rDofType ... dof type
+    //! @param rIsConstitutiveInput ... is/is not constitutive input
+    void DofTypeSetIsConstitutiveInput(std::string rDofType, bool rIsConstitutiveInput);
 
     //! @brief returns the a reference to the constraint matrix
-    const NuTo::SparseMatrixCSRGeneral<double>& GetConstraintMatrix()const;
+    const NuTo::BlockSparseMatrix& GetConstraintMatrix() const;
 
     //! @brief this routine is only relevant for the multiscale model, since an update on the fine scale should only be performed
     //for an update on the coarse scale
@@ -1782,36 +1747,10 @@ public:
     	throw MechanicsException("[StructureBase::RestoreStructure] Saving of the structure not implemented in derived class.");
     }
 
-    //! @brief do a postprocessing step after each converged load step (for Newton Raphson iteration) overload this function to use Newton Raphson
-    //virtual void PostProcessDataAfterUpdate(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor, double rResidual);
-
-    //! @brief do a postprocessing step after each converged load step (for Newton Raphson iteration) overload this function to use Newton Raphson
-    //virtual void PostProcessDataAfterConvergence(int rLoadStep, int rNumNewtonIterations, double rLoadFactor, double rDeltaLoadFactor, double rResidual);
-
-    //! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
-    //virtual void PostProcessDataAfterLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, const NuTo::FullVector<double,Eigen::Dynamic>& rResidualVector);
-
-    //! @brief do a postprocessing step after each line search within the load step(for Newton Raphson iteration) overload this function to use Newton Raphson
-    //virtual void PostProcessDataInLineSearch(int rLoadStep, int rNewtonIteration, double rLineSearchFactor, double rLoadFactor, double rResidual, double rPrevResidual);
-
-    //! @brief initialize some stuff before a new load step (e.g. output directories for visualization, if required)
-    //virtual void InitBeforeNewLoadStep(int rLoadStep);
-
-
     void SetUpdateTmpStaticDataRequired()
     {
     	mUpdateTmpStaticDataRequired = true;
     }
-
-    //! @brief sets the Hessian to be constant or variable
-    //! @parameters rTimeDerivative (0 = stiffness, 1 damping, 2 mass)
-    //! @parameters rValue (true = const false=variable)
-    void SetHessianConstant(int rTimeDerivative, bool rValue);
-
-	//! @brief sets the Hessian to be constant or variable
-	//! @parameters rTimeDerivative (0 = stiffness, 1 damping, 2 mass)
-    //! @return (true = const false=variable)
-	bool GetHessianConstant(int rTimeDerivative)const;
 
     //! @brief calculate the critical time step for a vector of elements solving the generalized eigenvalue problem Ku=lambda Mu
     double ElementCalculateLargestElementEigenvalue(const std::vector< ElementBase*>& rElementVector);
@@ -1819,8 +1758,7 @@ public:
 	//! @brief returns whether or not the dof is constitutive input at least in one InrepolationType
 	//! @param rInterpolationTypeId ... interpolation type id
 	//! @param rDofType ... dof type
-	bool InterpolationTypeIsConstitutiveInput(NuTo::Node::eAttributes rDofType);
-
+	bool InterpolationTypeIsConstitutiveInput(NuTo::Node::eDof rDofType);
 
 protected:
     //! @brief ... number of time derivatives (0 : static, 1: velocities, 2: accelerations)
@@ -1880,17 +1818,14 @@ protected:
     //! @brief ... map storing the type of visualization for the output (VTK) file
     std::map<int, VisualizeBase::eVisualizationType> mGroupVisualizationType;
 
-    //! @brief ... total number of degrees of freedom of the structure
-    int mNumDofs;
-
-    //! @brief ... active dofs
-    int mNumActiveDofs;
+    //! @brief summarizes information to dof numbering, active dof types, symmetric dof types, constant dof types
+    DofStatus mDofStatus;
 
     //!brief ... renumbering of nodal DOFs required or not
     bool mNodeNumberingRequired;
 
     //! @brief constraint matrix relating the prescibed nodal unknowns to the free parameters
-    SparseMatrixCSRGeneral<double> mConstraintMatrix;
+    BlockSparseMatrix mConstraintMatrix;
 
     //! @brief mapping matrix of the rhs to relate the rhs before the gauss elimination to the constraint matrix after
     // (mConstraintRHS (after elimination) = mConstraintMappingRHS *  mConstraintRHS (before elimination)
@@ -1907,10 +1842,10 @@ protected:
     //as a consequence, the gauss elimination has only to be performed for a change of the constraint matrix
     //for a change of the rhs it is sufficient to recalculate the rhs from the above vectors
     //the mapping matrix [1,0; 0,0.5] is stored and the rhs is calculated from mConstraintMappingRHS*mConstraintRHSBeforGaussElimination
-    SparseMatrixCSRGeneral<double> mConstraintMappingRHS;
+    BlockSparseMatrix mConstraintMappingRHS;
 
     //! @brief right hand side of the constraint equations
-    FullVector<double,Eigen::Dynamic> mConstraintRHS;
+    BlockFullVector<double> mConstraintRHS;
 
     //! @brief is set to true, if at least one constitutive model requires an update of tmpStaticData before stress and stiffness routines are called
     bool mHaveTmpStaticData;
@@ -1922,17 +1857,9 @@ protected:
     //! values smaller than that one will not be added to the global matrix
     double mToleranceStiffnessEntries;
 
-    //! @brief parameters of the time integration scheme indicating, if the hessian is constant (0 stiffness, 1 damping, 2 mass)
-    //! note that if a matrix is constant, the corresponding term is no longer considered in the gradient calculation
-    //! because the term can be obtained from the global solution procedure
-    bool mHessianConstant[3];
-
 #ifdef _OPENMP
     //@brief maximum independent sets used for parallel assembly of the stiffness resforce etc.
     mutable std::vector<std::vector<ElementBase*> > mMIS;
-    //set to true to use MIS (enables parallel adding of element matrices to the global matrix - faster for elements with almost identical effort)
-    //set to false to assemble the global stiffness matrix using a barrier in OMP - faster for elements with very uneven effort)
-    bool mUseMIS;
     //@brief number of processors used in an openmp simulation
     int mNumProcessors;
 #endif
@@ -1940,9 +1867,15 @@ protected:
     //! @brief logger class to redirect the output to some file or the console (or both), can be changed even for const routines
     mutable Logger mLogger;
 
+
+#ifdef ENABLE_SERIALIZATION
     //! @brief ... standard constructor just for the serialization routine
-    StructureBase()
+    StructureBase() :
+            mConstraintMatrix(mDofStatus, false),
+            mConstraintMappingRHS(mDofStatus, false),
+            mConstraintRHS(mDofStatus)
     {}
+#endif  // ENABLE_SERIALIZATION
 
 #ifndef SWIG
     //! @brief ... store all elements of a structure in a vector
@@ -1988,8 +1921,6 @@ protected:
     //! @param rElements ... vector of element pointer
     void GetElementsByGroup(Group<ElementBase>* rElementGroup, std::vector< ElementBase*>& rElements);
 
-    //! @brief ... check for dof numbering and build of tmpStaticData
-    void BuildGlobalCoefficientMatrixCheck();
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

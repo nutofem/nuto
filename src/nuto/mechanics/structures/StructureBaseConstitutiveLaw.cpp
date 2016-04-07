@@ -3,82 +3,30 @@
 
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/constitutive/mechanics/LinearSpring.h"
-#include "nuto/mechanics/constitutive/mechanics/LinearElasticEngineeringStress.h"
-#include "nuto/mechanics/constitutive/mechanics/DamageViscoPlasticityEngineeringStress.h"
-#include "nuto/mechanics/constitutive/mechanics/DamageViscoPlasticityHardeningEngineeringStress.h"
-#include "nuto/mechanics/constitutive/mechanics/MisesPlasticityEngineeringStress.h"
-#include "nuto/mechanics/constitutive/mechanics/GradientDamagePlasticityEngineeringStress.h"
-#include "nuto/mechanics/constitutive/mechanics/FibreMatrixBondStressSlip.h"
-#include "nuto/mechanics/constitutive/mechanics/GradientDamageEngineeringStress.h"
-#include "nuto/mechanics/constitutive/mechanics/GradientDamageEngineeringStressFatigue.h"
-#include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.h"
-#include "nuto/mechanics/constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.h"
-#include "nuto/mechanics/constitutive/moistureTransport/MoistureTransport.h"
-#include "nuto/mechanics/constitutive/multiPhysics/ConstitutiveMultiPhysics.h"
-#include <nuto/mechanics/constitutive/shrinkage/DryingShrinkage.h>
-#include "nuto/mechanics/constitutive/thermal/LinearHeatFlux.h"
+//#include "nuto/mechanics/constitutive/mechanics/LinearSpring.h"
+#include "nuto/mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
+#include "nuto/mechanics/constitutive/laws/LinearElasticEngineeringStress.h"
+#include "nuto/mechanics/constitutive/laws/MoistureTransport.h"
+#include "nuto/mechanics/constitutive/laws/MisesPlasticityEngineeringStress.h"
+//#include "nuto/mechanics/constitutive/mechanics/DamageViscoPlasticityEngineeringStress.h"
+//#include "nuto/mechanics/constitutive/mechanics/DamageViscoPlasticityHardeningEngineeringStress.h"
+
+//#include "nuto/mechanics/constitutive/mechanics/GradientDamagePlasticityEngineeringStress.h"
+//#include "nuto/mechanics/constitutive/mechanics/FibreMatrixBondStressSlip.h"
+//#include "nuto/mechanics/constitutive/mechanics/GradientDamageEngineeringStressFatigue.h"
+//#include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.h"
+//#include "nuto/mechanics/constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.h"
+//#include "nuto/mechanics/constitutive/multiPhysics/ConstitutiveMultiPhysics.h"
+//#include "nuto/mechanics/constitutive/shrinkage/DryingShrinkage.h"
+//#include "nuto/mechanics/constitutive/thermal/LinearHeatFlux.h"
 
 // create a new constitutive law
 int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
 {
-    // convert section type string to upper case
-    std::string ConstitutiveLawTypeString;
-    std::transform(rType.begin(), rType.end(), std::back_inserter(ConstitutiveLawTypeString), (int (*)(int)) toupper);
-
-    // get section type from string
-Constitutive    ::eConstitutiveType ConstitutiveLawType;
-    if (ConstitutiveLawTypeString == "LINEARELASTICENGINEERINGSTRESS")
-    {
-        ConstitutiveLawType = Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS;
-    } else if (ConstitutiveLawTypeString == "MISESPLASTICITYENGINEERINGSTRESS")
-    {
-        ConstitutiveLawType = Constitutive::MISES_PLASTICITY_ENGINEERING_STRESS;
-    } else if (ConstitutiveLawTypeString == "NONLOCALDAMAGEPLASTICITYENGINEERINGSTRESS")
-    {
-        ConstitutiveLawType = Constitutive::NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS;
-    } else if (ConstitutiveLawTypeString == "GRADIENTDAMAGEPLASTICITYENGINEERINGSTRESS")
-    {
-        ConstitutiveLawType = Constitutive::GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS;
-    } else if (ConstitutiveLawTypeString == "GRADIENTDAMAGEENGINEERINGSTRESS")
-    {
-        ConstitutiveLawType = Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS;
-    } else if (ConstitutiveLawTypeString == "LINEARHEATFLUX")
-    {
-        ConstitutiveLawType = Constitutive::LINEAR_HEAT_FLUX;
-    } else if (ConstitutiveLawTypeString == "STRAINGRADIENTDAMAGEPLASTICITYENGINEERINGSTRESS")
-    {
-        ConstitutiveLawType = Constitutive::STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS;
-    } else if (ConstitutiveLawTypeString == "DAMAGEVISCOPLASTICITYENGINEERINGSTRESS")
-    {
-        ConstitutiveLawType = Constitutive::DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS;
-    } else if (ConstitutiveLawTypeString == "DAMAGEVISCOPLASTICITYHARDENINGENGINEERINGSTRESS")
-    {
-        ConstitutiveLawType = Constitutive::DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS;
-    } else if (ConstitutiveLawTypeString == "MOISTURETRANSPORT")
-    {
-        ConstitutiveLawType = Constitutive::MOISTURE_TRANSPORT;
-    } else if (ConstitutiveLawTypeString == "MULTIPHYSICS")
-    {
-        ConstitutiveLawType = Constitutive::MULTI_PHYSICS;
-    } else if (ConstitutiveLawTypeString == "DRYINGSHRINKAGE")
-    {
-        ConstitutiveLawType = Constitutive::DRYING_SHRINKAGE;
-    } else
-    {
-        throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] invalid type of constitutive law.");
-    }
-
     //find unused integer id
-    int constitutiveNumber(mConstitutiveLawMap.size());
-    boost::ptr_map<int, ConstitutiveBase>::iterator it = mConstitutiveLawMap.find(constitutiveNumber);
-    while (it != mConstitutiveLawMap.end())
-    {
-        constitutiveNumber++;
-        it = mConstitutiveLawMap.find(constitutiveNumber);
-    }
+    int constitutiveNumber = mConstitutiveLawMap.size() == 0 ? 0 : mConstitutiveLawMap.rbegin()->first +1;
 
-    this->ConstitutiveLawCreate(constitutiveNumber, ConstitutiveLawType);
+    this->ConstitutiveLawCreate(constitutiveNumber, Constitutive::ConstitutiveTypeToEnum(rType));
     return constitutiveNumber;
 }
 
@@ -112,48 +60,74 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
         case NuTo::Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS:
             ConstitutiveLawPtr = new NuTo::LinearElasticEngineeringStress();
             break;
+
         case NuTo::Constitutive::LINEAR_SPRING:
-            ConstitutiveLawPtr = new NuTo::LinearSpring();
+            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
+//            ConstitutiveLawPtr = new NuTo::LinearSpring();
             break;
+
         case NuTo::Constitutive::MISES_PLASTICITY_ENGINEERING_STRESS:
             ConstitutiveLawPtr = new NuTo::MisesPlasticityEngineeringStress();
             break;
+
         case NuTo::Constitutive::NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS:
-            ConstitutiveLawPtr = new NuTo::NonlocalDamagePlasticityEngineeringStress();
+            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
+//            ConstitutiveLawPtr = new NuTo::NonlocalDamagePlasticityEngineeringStress();
             break;
+
         case NuTo::Constitutive::LINEAR_HEAT_FLUX:
-            ConstitutiveLawPtr = new NuTo::LinearHeatFlux();
+            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
+//            ConstitutiveLawPtr = new NuTo::LinearHeatFlux();
             break;
+
         case NuTo::Constitutive::GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS:
-            ConstitutiveLawPtr = new NuTo::GradientDamagePlasticityEngineeringStress();
+            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
+//            ConstitutiveLawPtr = new NuTo::GradientDamagePlasticityEngineeringStress();
             break;
+
         case NuTo::Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS:
             ConstitutiveLawPtr = new NuTo::GradientDamageEngineeringStress();
             break;
+
         case NuTo::Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE:
-            ConstitutiveLawPtr = new NuTo::GradientDamageEngineeringStressFatigue();
+            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
+//            ConstitutiveLawPtr = new NuTo::GradientDamageEngineeringStressFatigue();
             break;
+
         case NuTo::Constitutive::STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS:
-            ConstitutiveLawPtr = new NuTo::StrainGradientDamagePlasticityEngineeringStress();
+            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
+//            ConstitutiveLawPtr = new NuTo::StrainGradientDamagePlasticityEngineeringStress();
             break;
+
         case NuTo::Constitutive::DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS:
-            ConstitutiveLawPtr = new NuTo::DamageViscoPlasticityEngineeringStress();
+            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
+//            ConstitutiveLawPtr = new NuTo::DamageViscoPlasticityEngineeringStress();
             break;
+
         case NuTo::Constitutive::DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS:
-            ConstitutiveLawPtr = new NuTo::DamageViscoPlasticityHardeningEngineeringStress();
+            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
+//            ConstitutiveLawPtr = new NuTo::DamageViscoPlasticityHardeningEngineeringStress();
             break;
+
         case NuTo::Constitutive::MOISTURE_TRANSPORT:
             ConstitutiveLawPtr = new NuTo::MoistureTransport();
             break;
+
         case NuTo::Constitutive::MULTI_PHYSICS:
-            ConstitutiveLawPtr = new NuTo::ConstitutiveMultiPhysics();
+            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
+//            ConstitutiveLawPtr = new NuTo::ConstitutiveMultiPhysics();
             break;
+
         case NuTo::Constitutive::FIBRE_MATRIX_BOND_STRESS_SLIP:
-            ConstitutiveLawPtr = new NuTo::FibreMatrixBondStressSlip();
+            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
+//            ConstitutiveLawPtr = new NuTo::FibreMatrixBondStressSlip();
             break;
+
         case NuTo::Constitutive::DRYING_SHRINKAGE:
-            ConstitutiveLawPtr = new NuTo::DryingShrinkage();
+            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
+//            ConstitutiveLawPtr = new NuTo::DryingShrinkage();
             break;
+
          default:
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] invalid type of constitutive law.");
         }
@@ -241,16 +215,7 @@ void NuTo::StructureBase::ConstitutiveLawInfo(int rIdent, unsigned short rVerbos
 //! @return ... value of the requested variable
 bool NuTo::StructureBase::ConstitutiveLawGetParameterBool(int rIdent, const std::string &rIdentifier) const
 {
-    std::string upperCaseIdentifier;
-    NuTo::Constitutive::eConstitutiveParameter IdentifierEnum;
-
-    // transform string to uppercase
-    std::transform(rIdentifier.begin(), rIdentifier.end(), std::back_inserter(upperCaseIdentifier), (int (*)(int)) toupper);
-
-    // Get enum
-IdentifierEnum    = Constitutive::GetConstitutiveVariableFromString(upperCaseIdentifier);
-
-    return ConstitutiveLawGetParameterBool(rIdent, IdentifierEnum);
+    return ConstitutiveLawGetParameterBool(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier));
 }
 
 //! @brief ... sets a variable of the constitutive law which is selected by a string
@@ -259,88 +224,43 @@ IdentifierEnum    = Constitutive::GetConstitutiveVariableFromString(upperCaseIde
 //! @param rValue ... new value for requested variable
 void NuTo::StructureBase::ConstitutiveLawSetParameterBool(int rIdent, const std::string &rIdentifier, bool rValue)
 {
-    std::string upperCaseIdentifier;
-    NuTo::Constitutive::eConstitutiveParameter IdentifierEnum;
-
-    // transform string to uppercase
-    std::transform(rIdentifier.begin(), rIdentifier.end(), std::back_inserter(upperCaseIdentifier), (int (*)(int)) toupper);
-
-    // Get enum
-IdentifierEnum    = Constitutive::GetConstitutiveVariableFromString(upperCaseIdentifier);
-
-    ConstitutiveLawSetParameterBool(rIdent, IdentifierEnum, rValue);
+   ConstitutiveLawSetParameterBool(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier), rValue);
 }
 
 //! @brief ... gets a variable of the constitutive law which is selected by a string
 //! @param rIdent ... constitutive law identifier
 //! @param rIdentifier ... String to identify the requested variable
 //! @return ... value of the requested variable
-double NuTo::StructureBase::ConstitutiveLawGetParameterDouble(int rIdent, const string &rIdentifier) const
+double NuTo::StructureBase::ConstitutiveLawGetParameterDouble(int rIdent, const std::string &rIdentifier) const
 {
-    std::string upperCaseIdentifier;
-    NuTo::Constitutive::eConstitutiveParameter IdentifierEnum;
-
-    // transform string to uppercase
-    std::transform(rIdentifier.begin(), rIdentifier.end(), std::back_inserter(upperCaseIdentifier), (int (*)(int)) toupper);
-
-    // Get enum
-IdentifierEnum    = Constitutive::GetConstitutiveVariableFromString(upperCaseIdentifier);
-
-    return ConstitutiveLawGetParameterDouble(rIdent, IdentifierEnum);
+    return ConstitutiveLawGetParameterDouble(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier));
 }
 
 //! @brief ... sets a variable of the constitutive law which is selected by a sting
 //! @param rIdent ... constitutive law identifier
 //! @param rIdentifier ... String to identify the requested variable
 //! @param rValue ... new value for requested variable
-void NuTo::StructureBase::ConstitutiveLawSetParameterDouble(int rIdent, const string &rIdentifier, double rValue)
+void NuTo::StructureBase::ConstitutiveLawSetParameterDouble(int rIdent, const std::string &rIdentifier, double rValue)
 {
-    std::string upperCaseIdentifier;
-    NuTo::Constitutive::eConstitutiveParameter IdentifierEnum;
-
-    // transform string to uppercase
-    std::transform(rIdentifier.begin(), rIdentifier.end(), std::back_inserter(upperCaseIdentifier), (int (*)(int)) toupper);
-
-    // Get enum
-IdentifierEnum    = Constitutive::GetConstitutiveVariableFromString(upperCaseIdentifier);
-
-    ConstitutiveLawSetParameterDouble(rIdent, IdentifierEnum, rValue);
+    ConstitutiveLawSetParameterDouble(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier), rValue);
 }
 
 //! @brief ... gets a variable of the constitutive law which is selected by a string
 //! @param rIdent ... constitutive law identifier
 //! @param rIdentifier ... String to identify the requested variable
 //! @return ... value of the requested variable
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGetParameterFullVectorDouble(int rIdent, const string &rIdentifier) const
+NuTo::FullVector<double, Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGetParameterFullVectorDouble(int rIdent, const std::string &rIdentifier) const
 {
-    std::string upperCaseIdentifier;
-    NuTo::Constitutive::eConstitutiveParameter IdentifierEnum;
-
-    // transform string to uppercase
-    std::transform(rIdentifier.begin(), rIdentifier.end(), std::back_inserter(upperCaseIdentifier), (int (*)(int)) toupper);
-
-    // Get enum
-IdentifierEnum    = Constitutive::GetConstitutiveVariableFromString(upperCaseIdentifier);
-
-    return ConstitutiveLawGetParameterFullVectorDouble(rIdent, IdentifierEnum);
+    return ConstitutiveLawGetParameterFullVectorDouble(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier));
 }
 
 //! @brief ... sets a variable of the constitutive law which is selected by a string
 //! @param rIdent ... constitutive law identifier
 //! @param rIdentifier ... String to identify the requested variable
 //! @param rValue ... new value for requested variable
-void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(int rIdent, const string &rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
+void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(int rIdent, const std::string &rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
 {
-    std::string upperCaseIdentifier;
-    NuTo::Constitutive::eConstitutiveParameter IdentifierEnum;
-
-    // transform string to uppercase
-    std::transform(rIdentifier.begin(), rIdentifier.end(), std::back_inserter(upperCaseIdentifier), (int (*)(int)) toupper);
-
-    // Get enum
-IdentifierEnum    = Constitutive::GetConstitutiveVariableFromString(upperCaseIdentifier);
-
-    ConstitutiveLawSetParameterFullVectorDouble(rIdent, IdentifierEnum, rValue);
+    ConstitutiveLawSetParameterFullVectorDouble(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier), rValue);
 }
 
 //! @brief ... gets a parameter of the constitutive law which is selected by an enum
@@ -517,45 +437,13 @@ void NuTo::StructureBase::ConstitutiveLawAddHardeningModulus(int rIdent, double 
     }
 }
 
-//! @brief ... get damage law
-//! @return ... damage law
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGetDamageLaw(int rIdent) const
-{
-    NuTo::FullVector<double, Eigen::Dynamic> damageLaw;
-    try
-    {
-        const ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        damageLaw = ConstitutiveLawPtr->GetParameterFullVectorDouble(Constitutive::eConstitutiveParameter::DAMAGE_LAW);
-    } catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawGetDamageLaw] error getting damage law.");
-        throw e;
-    }
-    return damageLaw;
-}
 
-//! @brief ... set damage law
-//! @param rDamageLaw ... damage law <BR>
-//! ============================================================================================<BR>
-//! rDamageLaw[0] = Constitutive::Constitutive::eDamageLawType::ISOTROPIC_NO_SOFTENING <BR>
-//! w(k) = 1 - e_0/k <BR>
-//! rDamageLaw[1] = e_0 // strain at elastic limit <BR>
-//! ============================================================================================<BR>
-//! rDamageLaw[0] = Constitutive::Constitutive::eDamageLawType::ISOTROPIC_LINEAR_SOFTENING <BR>
-//! w(k) = e_c/k * (k-e_0) / (e_c-e_0) <BR>
-//! rDamageLaw[1] = e_0 // strain at elastic limit <BR>
-//! rDamageLaw[2] = e_c // strain at full damage <BR>
-//! ============================================================================================<BR>
-//! rDamageLaw[0] = Constitutive::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING <BR>
-//! w(k) = 1 - e_0/k exp{ (e_0 - k) / e_f } <BR>
-//! rDamageLaw[1] = e_0 // strain at elastic limit <BR>
-//! rDamageLaw[2] = e_f // post-peak slope parameter <BR>
-void NuTo::StructureBase::ConstitutiveLawSetDamageLaw(int rIdent, const NuTo::FullVector<double, Eigen::Dynamic> rDamageLaw)
+void NuTo::StructureBase::ConstitutiveLawSetDamageLaw(int rIdent, Constitutive::eDamageLawType rDamageLaw)
 {
     try
     {
         ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        ConstitutiveLawPtr->SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter::DAMAGE_LAW, rDamageLaw);
+        ConstitutiveLawPtr->SetParameterDouble(Constitutive::eConstitutiveParameter::DAMAGE_LAW, rDamageLaw);
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetDamageLaw] error setting damage law.");
@@ -604,5 +492,3 @@ void NuTo::StructureBase::ConstitutiveLawMultiPhysicsAddConstitutiveLaw(int rIde
         throw e;
     }
 }
-
-

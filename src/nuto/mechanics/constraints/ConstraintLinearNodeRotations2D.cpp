@@ -41,7 +41,7 @@ void NuTo::ConstraintLinearNodeRotations2D::SetRHS(double rRHS)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
 void NuTo::ConstraintLinearNodeRotations2D::AddToConstraintMatrix(int& curConstraintEquation,
-        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const
+        NuTo::SparseMatrix<double>& rConstraintMatrix)const
 {
     if (mNode->GetNumRotations()!=1)
         throw MechanicsException("[NuTo::ConstraintLinearNodeRotations2D::AddToConstraintMatrix] Node does not have a rotation component.");

@@ -18,7 +18,7 @@
 namespace NuTo
 {
 class NodeBase;
-class Element3D;
+template<int TDim> class ContinuumElement;
 class StructureBase;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -60,14 +60,18 @@ public:
 
         std::vector<std::pair<std::uintptr_t, int> >  mVolumeElementsAddress;
         ar & boost::serialization::make_nvp("mVolumeElements", mVolumeElementsAddress);
-        for(std::vector<std::pair<std::uintptr_t, int> >::const_iterator it = mVolumeElementsAddress.begin(); it != mVolumeElementsAddress.end(); it++)
+        for(auto it : mVolumeElementsAddress)
         {
-            mVolumeElements.push_back(reinterpret_cast<std::pair<const Element3D*, int> >(*it));
+            mVolumeElements.push_back(reinterpret_cast<std::pair<const ContinuumElement<3>*, int> >(it));
         }
 
-        ar & BOOST_SERIALIZATION_NVP(mIntegrationType3NPtr)
-           & BOOST_SERIALIZATION_NVP(mIntegrationType4NPtr)
-           & BOOST_SERIALIZATION_NVP(mIntegrationType6NPtr);
+        ar & BOOST_SERIALIZATION_NVP(mIntegrationTypeTriangleGauss1)
+           & BOOST_SERIALIZATION_NVP(mIntegrationTypeTriangleGauss2)
+           & BOOST_SERIALIZATION_NVP(mIntegrationTypeQuadGauss1)
+           & BOOST_SERIALIZATION_NVP(mIntegrationTypeQuadGauss2)
+           & BOOST_SERIALIZATION_NVP(mIntegrationTypeQuadLobatto2)
+           & BOOST_SERIALIZATION_NVP(mIntegrationTypeQuadLobatto3)
+           & BOOST_SERIALIZATION_NVP(mIntegrationTypeQuadLobatto4);
 #ifdef DEBUG_SERIALIZATION
         std::cout << "finish load LoadSurface3D\n";
 #endif
@@ -85,15 +89,20 @@ public:
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadBase);
 
         std::vector<std::pair<std::uintptr_t, int> >  mVolumeElementsAddress;
-        for(std::vector<std::pair<const Element3D*, int> >::const_iterator it = mVolumeElements.begin(); it != mVolumeElements.end(); it++)
+        for(auto it : mVolumeElements)
         {
-            mVolumeElementsAddress.push_back(reinterpret_cast<std::pair<std::uintptr_t, int> >(*it));
+            mVolumeElementsAddress.push_back(reinterpret_cast<std::pair<std::uintptr_t, int> >(it));
         }
         ar & boost::serialization::make_nvp("mVolumeElements", mVolumeElementsAddress);
 
-        ar & BOOST_SERIALIZATION_NVP(mIntegrationType3NPtr)
-           & BOOST_SERIALIZATION_NVP(mIntegrationType4NPtr)
-           & BOOST_SERIALIZATION_NVP(mIntegrationType6NPtr);
+        ar & BOOST_SERIALIZATION_NVP(mIntegrationTypeTriangleGauss1)
+           & BOOST_SERIALIZATION_NVP(mIntegrationTypeTriangleGauss2)
+           & BOOST_SERIALIZATION_NVP(mIntegrationTypeQuadGauss1)
+           & BOOST_SERIALIZATION_NVP(mIntegrationTypeQuadGauss2)
+           & BOOST_SERIALIZATION_NVP(mIntegrationTypeQuadLobatto2)
+           & BOOST_SERIALIZATION_NVP(mIntegrationTypeQuadLobatto3)
+           & BOOST_SERIALIZATION_NVP(mIntegrationTypeQuadLobatto4);
+
 #ifdef DEBUG_SERIALIZATION
         std::cout << "finish save LoadSurface3D\n";
 #endif
@@ -101,10 +110,17 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
-    std::vector<std::pair<const Element3D*, int> > mVolumeElements;
-    IntegrationTypeBase* mIntegrationType3NPtr;
-    IntegrationTypeBase* mIntegrationType4NPtr;
-    IntegrationTypeBase* mIntegrationType6NPtr;
+    std::vector<std::pair<const ContinuumElement<3>*, int> > mVolumeElements;
+    IntegrationTypeBase* mIntegrationTypeTriangleGauss1;
+    IntegrationTypeBase* mIntegrationTypeTriangleGauss2;
+
+    IntegrationTypeBase* mIntegrationTypeQuadGauss1;
+    IntegrationTypeBase* mIntegrationTypeQuadGauss2;
+    IntegrationTypeBase* mIntegrationTypeQuadLobatto2;
+    IntegrationTypeBase* mIntegrationTypeQuadLobatto3;
+    IntegrationTypeBase* mIntegrationTypeQuadLobatto4;
+
+
 };
 }//namespace NuTo
 

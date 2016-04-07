@@ -13,14 +13,14 @@
 
 //! @brief constructor
 NuTo::ConstitutiveStaticDataMisesPlasticityWithEnergy3D::ConstitutiveStaticDataMisesPlasticityWithEnergy3D() :
-ConstitutiveStaticDataMisesPlasticity3D() ,ConstitutiveStaticDataPrevEngineeringStressStrain3D()
+ConstitutiveStaticDataMisesPlasticity() ,ConstitutiveStaticDataPrevEngineeringStressStrain3D()
 {
 }
 
 //! @brief assignment operator
 NuTo::ConstitutiveStaticDataMisesPlasticityWithEnergy3D& NuTo::ConstitutiveStaticDataMisesPlasticityWithEnergy3D::operator= (ConstitutiveStaticDataMisesPlasticityWithEnergy3D const& rOther)
 {
-    NuTo::ConstitutiveStaticDataMisesPlasticity3D::operator= (rOther);
+    NuTo::ConstitutiveStaticDataMisesPlasticity::operator= (rOther);
     NuTo::ConstitutiveStaticDataPrevEngineeringStressStrain3D::operator= (rOther);
     return (*this);
 }
@@ -56,7 +56,7 @@ void NuTo::ConstitutiveStaticDataMisesPlasticityWithEnergy3D::serialize(Archive 
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ConstitutiveStaticDataMisesPlasticityWithEnergy3D" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveStaticDataMisesPlasticity3D)
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveStaticDataMisesPlasticity)
        & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveStaticDataPrevEngineeringStressStrain3D);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ConstitutiveStaticDataMisesPlasticityWithEnergy3D" << std::endl;

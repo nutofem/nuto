@@ -197,16 +197,8 @@ NuTo::Error::eError NuTo::NystroemBase::Solve(double rTimeDelta)
                     //to be implemented for time dependent problems mStructure->SetCurrentTime(mTime);
 					//an update of the external load factor and the time dependent constraint is only
 					//necessary for a modified global time
-					if (mTimeDependentConstraint!=-1)
-    				{
-				        if (CmatT.GetNumEntries() > 0)
-				        {
-				            throw MechanicsException("[NuTo::NystroemBase::Solve] solution with constraints not yet implemented.");
-				        }
-    					double timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
-    					mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
-    					//mStructure->ConstraintGetRHSAfterGaussElimination(bRHS);
-    				}
+			        UpdateConstraints(curTime);
+
     				//calculate external force
     				this->CalculateExternalLoad(*mStructure, curTime, extForce_j, extForce_k);
 				}

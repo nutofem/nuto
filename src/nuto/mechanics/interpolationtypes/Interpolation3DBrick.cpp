@@ -7,7 +7,7 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation3DBrick.h"
 
-NuTo::Interpolation3DBrick::Interpolation3DBrick(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
+NuTo::Interpolation3DBrick::Interpolation3DBrick(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
         Interpolation3D::Interpolation3D(rDofType, rTypeOrder, rDimension)
 {
     Initialize();
@@ -28,11 +28,11 @@ NuTo::IntegrationType::eIntegrationType NuTo::Interpolation3DBrick::GetStandardI
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return NuTo::IntegrationType::IntegrationType3D8NLobatto5x5x5Ip;
     default:
-        throw MechanicsException("[NuTo::Interpolation3DBrick::GetStandardIntegrationType] Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
-const Eigen::VectorXd NuTo::Interpolation3DBrick::CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const
+Eigen::VectorXd NuTo::Interpolation3DBrick::CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const
 {
     switch (mTypeOrder)
     {
@@ -47,11 +47,11 @@ const Eigen::VectorXd NuTo::Interpolation3DBrick::CalculateShapeFunctions(const 
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return ShapeFunctions3D::ShapeFunctionsBrickSpectralOrder4(rCoordinates);
     default:
-        throw MechanicsException("[NuTo::Interpolation3DBrick::CalculateShapeFunctions] Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
-const Eigen::MatrixXd NuTo::Interpolation3DBrick::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
+Eigen::MatrixXd NuTo::Interpolation3DBrick::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
 {
     switch (mTypeOrder)
     {
@@ -66,11 +66,11 @@ const Eigen::MatrixXd NuTo::Interpolation3DBrick::CalculateDerivativeShapeFuncti
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return ShapeFunctions3D::DerivativeShapeFunctionsBrickSpectralOrder4(rCoordinates);
     default:
-        throw MechanicsException("[NuTo::Interpolation3DBrick::CalculateDerivativeShapeFunctionsNatural] Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
-const Eigen::VectorXd NuTo::Interpolation3DBrick::CalculateNaturalNodeCoordinates(int rNodeIndexDof) const
+Eigen::VectorXd NuTo::Interpolation3DBrick::CalculateNaturalNodeCoordinates(int rNodeIndexDof) const
 {
     switch (mTypeOrder)
     {
@@ -85,7 +85,7 @@ const Eigen::VectorXd NuTo::Interpolation3DBrick::CalculateNaturalNodeCoordinate
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return ShapeFunctions3D::NodeCoordinatesBrickSpectralOrder4(rNodeIndexDof);
     default:
-        throw MechanicsException("[NuTo::Interpolation3DBrick::CalculateNaturalNodeCoordinates] Node arrangement for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Node arrangement for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
@@ -104,11 +104,11 @@ int NuTo::Interpolation3DBrick::CalculateNumNodes() const
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return 125;
     default:
-        throw MechanicsException("[NuTo::Interpolation3DBrick::CalculateNumNodes] Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
-const Eigen::VectorXd NuTo::Interpolation3DBrick::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::VectorXd NuTo::Interpolation3DBrick::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
 {
     assert(rNaturalSurfaceCoordinates.rows() == 2);
     double alpha = rNaturalSurfaceCoordinates(0);
@@ -129,11 +129,11 @@ const Eigen::VectorXd NuTo::Interpolation3DBrick::CalculateNaturalSurfaceCoordin
     case 5:
         return Eigen::Vector3d(   1.,alpha, beta);
     default:
-        throw MechanicsException("[NuTo::Interpolation3DBrick::CalculateNaturalSurfaceCoordinates] BRICK3D has exactly six surfaces, 0 to 5. You tried to access " + std::to_string(rSurface) + ".");
+        throw MechanicsException(__PRETTY_FUNCTION__, "BRICK3D has exactly six surfaces, 0 to 5. You tried to access " + std::to_string(rSurface) + ".");
     }
 }
 
-const Eigen::MatrixXd NuTo::Interpolation3DBrick::CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::MatrixXd NuTo::Interpolation3DBrick::CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
 {
     assert(rNaturalSurfaceCoordinates.rows() == 2);
     Eigen::MatrixXd dXidAlpha = Eigen::Matrix<double, 3, 2>::Zero();
@@ -165,12 +165,12 @@ const Eigen::MatrixXd NuTo::Interpolation3DBrick::CalculateDerivativeNaturalSurf
         break;
 
     default:
-        throw MechanicsException("[NuTo::Interpolation3DBrick::CalculateDerivativeNaturalSurfaceCoordinates] BRICK3D has exactly six surfaces, 0 to 5. You tried to access " + std::to_string(rSurface) + ".");
+        throw MechanicsException(__PRETTY_FUNCTION__, "BRICK3D has exactly six surfaces, 0 to 5. You tried to access " + std::to_string(rSurface) + ".");
     }
     return dXidAlpha;
 }
 
-const std::vector<Eigen::VectorXd> NuTo::Interpolation3DBrick::GetSurfaceEdgesCoordinates(int rSurface) const
+std::vector<Eigen::VectorXd> NuTo::Interpolation3DBrick::GetSurfaceEdgesCoordinates(int rSurface) const
 {
     int numNodes = 4;
     // returns exactly three nodes, (-1,-1).T; (1,-1).T; (1,1).T and (-1,1).T

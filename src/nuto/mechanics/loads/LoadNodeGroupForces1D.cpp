@@ -11,11 +11,11 @@ NuTo::LoadNodeGroupForces1D::LoadNodeGroupForces1D(int rLoadCase, const Group<No
         LoadNodeGroup(rLoadCase,rGroup)
 {
     // set direction
-    if (fabs(rDirection) < 1e-14)
+    if (std::abs(rDirection) < 1e-14)
     {
         throw MechanicsException("[NuTo::LoadNodeGroupForces1D::LoadNodeGroupForces1D] direction vector has zero length.");
     }
-    this->mDirection = rDirection/fabs(rDirection);
+    this->mDirection = rDirection/std::abs(rDirection);
 
     // set value
     this->mValue = rValue;

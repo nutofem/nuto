@@ -288,7 +288,7 @@ public:
 		}
 
         // calculate time step during harmonic excitation, the number of increments should be divisible by 4
-        if (mHarmonicExcitation == true && fabs(timeStep - 1./(mHarmonicIncrementation*mHarmonicFactor(0,1))) > 0.001*timeStep) {
+        if (mHarmonicExcitation == true && std::abs(timeStep - 1./(mHarmonicIncrementation*mHarmonicFactor(0,1))) > 0.001*timeStep) {
         	curTime += 1./(mHarmonicIncrementation*mHarmonicFactor(0,1))-timeStep;
         	timeStep = 1./(mHarmonicIncrementation*mHarmonicFactor(0,1));
         	return;
@@ -372,8 +372,11 @@ public:
     virtual std::string GetTypeId()const;
 
 protected:
+#ifdef ENABLE_SERIALIZATION
     //empty private construct required for serialization
     JumpDirect(){};
+#endif // ENABLE_SERIALIZATION
+
 	double mMinLineSearchStep;
 	bool mHarmonicExcitation;
 	bool mHarmonicExtrapolation;

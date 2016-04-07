@@ -43,6 +43,7 @@ public:
     //! @param rCSRMatrix ... input matrix (full storage)
     SparseMatrixCSRVector2Symmetric(const SparseMatrixCSRSymmetric<T>& rCSRMatrix);
 
+
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
     //! @return    class name
@@ -78,16 +79,6 @@ public:
     //! @param rMatrix ... the full matrix
     void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const;
 
-    //! @brief ... adds \f$(\boldsymbol{A}^T\,\boldsymbol{B}\,\boldsymbol{A})\f$ to the matrix
-    //! @param rMatrixA ... matrix A (general sparse matrix in csr storage)
-    //! @param rMatrixB ... matrix B (symmetric sparse matrix in csr storage)
-    void Add_TransA_Mult_B_Mult_A(const NuTo::SparseMatrixCSRVector2General<T>& rMatrixA, const NuTo::SparseMatrixCSRVector2Symmetric<T>& rMatrixB);
-
-    //! @brief ... subtract t\f$(\boldsymbol{A}^T\boldsymbol{B}^T + \boldsymbol{B} \boldsymbol{A})\f$ from the matrix
-    //! @param rMatrixA ... matrix A (general sparse matrix in csr storage)
-    //! @param rMatrixB ... matrix B (general sparse matrix in csr storage)
-    void Sub_TransA_Mult_TransB_Plus_B_Mult_A(const NuTo::SparseMatrixCSRVector2General<T>& rMatrixA, const NuTo::SparseMatrixCSRVector2General<T>& rMatrixB);
-
 #ifdef ENABLE_SERIALIZATION
     //! @brief ... save the object to a file
     //! @param filename ... filename
@@ -100,16 +91,19 @@ public:
     void Restore ( const std::string &filename,  std::string rType);
 #endif // ENABLE_SERIALIZATION
 
+#ifndef SWIG
+    friend SparseMatrixCSRVector2Symmetric<T> operator+ (SparseMatrixCSRVector2Symmetric<T> rLhs, const SparseMatrixCSRVector2Symmetric<T> &rRhs )
+    {
+        rLhs += rRhs;
+        return rLhs;
+    }
 
-    //! @brief ... add two matrices
-    //! @param rOther ... Symmetric sparse matrix stored in the CSRVector2 format
-    //! @return Symmetric sparse matrix stored in the CSR format
-    SparseMatrixCSRVector2Symmetric<T> operator+ ( const SparseMatrixCSRVector2Symmetric<T> &rOther );
+    friend SparseMatrixCSRVector2Symmetric<T> operator- (SparseMatrixCSRVector2Symmetric<T> rLhs, const SparseMatrixCSRVector2Symmetric<T> &rRhs )
+    {
+        rLhs -= rRhs;
+        return rLhs;
+    }
 
-    //! @brief ... subtract two matrices
-    //! @param rOther ... Symmetric sparse matrix stored in the CSRVector2 format
-    //! @return Symmetric sparse matrix stored in the CSR format
-    SparseMatrixCSRVector2Symmetric<T> operator- ( const SparseMatrixCSRVector2Symmetric<T> &rOther );
 
     //! @brief ... subtract two matrices
     //! @param rOther ... Symmetric sparse matrix stored in the CSRVector2 format
@@ -129,7 +123,13 @@ public:
     //! @brief ... multiplies the matrix with an scalar value
     //! @param rOther ... scalar value
     //! @return ... the multiplied matrix (sparse csr storage)
-    SparseMatrixCSRVector2Symmetric<T> operator* ( const T &rOther ) const;
+    friend SparseMatrixCSRVector2Symmetric<T> operator* (SparseMatrixCSRVector2Symmetric<T> rLhs,  const T &rRhs )
+    {
+        rLhs *= rRhs;
+        return rLhs;
+    }
+
+#endif // SWIG
 
     //! @brief ... multiply sparse matrix with a full matrix
     //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
@@ -142,12 +142,36 @@ public:
     //! @return ... transpose of this matrix (sparse csr storage)
     SparseMatrixCSRVector2Symmetric<T> Transpose() const;
 
-    //! @brief ... perform Gauss algorithm (matrix and right hand side are reordered and modified)
-    //! @param rRhs ... right-hand side vector (input and output object)
-    //! @param rMappingNewToInitialOrdering ... mapping from new ordering to initial ordering (output object)
-    //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to new ordering (output object)
-    //! @param rRelativeTolerance ... relative tolerance for zero matrix entries
-    void Gauss(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance = 1e-14);
+    //! @brief ... calculates the sum of all entries
+    T Sum() const override;
+
+
+    //! @brief ... add the scaled other matrix
+    //! @param rOther ... other matrix
+    //! @param rFactor ... scalar factor
+    void AddScal(const SparseMatrixCSRVector2<T> &rOther, T rFactor) override;
+
+
+    //! @brief ... add the scaled other matrix
+    //! @param rOther ... other matrix
+    //! @param rFactor ... scalar factor
+    void AddScal(const SparseMatrixCSRSymmetric<T> &rOther, T rFactor);
+
+    //! @brief ... adds \f$\boldsymbol{A}^T\,\boldsymbol{B}\,\boldsymbol{C} \, c\f$ to the matrix
+    //! @remark part of \f$\boldsymbol{C}_{mat}^T\,\boldsymbol{M}_{KK}\,\boldsymbol{C}_{mat} \, c\f$
+    void Add_TransA_B_C_Scal(
+            const NuTo::SparseMatrixCSRVector2<T>& rA,
+            const NuTo::SparseMatrixCSRVector2<T>& rB,
+            const NuTo::SparseMatrixCSRVector2<T>& rC, T rScalar) override;
+
+    //! @brief ... subtract t\f$(\left(\boldsymbol{A}^T\boldsymbol{B} + \boldsymbol{C} \boldsymbol{D}\right)\,c)\f$ from the matrix  with \f$ \boldsymbol{B} = \boldsymbol{C}^T\f$ and \f$ \boldsymbol{D} = \boldsymbol{A}\f$
+    //! @remark part of \f$(\boldsymbol{C}_{mat}^T\,\boldsymbol{M}_{KJ} + boldsymbol{M}_{JK}\,\boldsymbol{D}_{mat})\,c\f$
+    void Sub_TransA_B_Plus_C_D_Scal(
+            const SparseMatrixCSRVector2<T>& rA,
+            const SparseMatrixCSRVector2<T>& rB,
+            const SparseMatrixCSRVector2<T>& rC,
+            const SparseMatrixCSRVector2<T>& rD, T rScalar) override;
+
 
     //! @brief ... reorder columns of the matrix
     //! @param rMappingInitialToNewOrdering ... mapping fron initial to new ordering
@@ -156,19 +180,25 @@ public:
     //! @brief ... print info about the object
     void Info() const;
 
-#ifndef SWIG
+    //! @brief ... returns a random matrix
+    //! @param rDimension ... number of rows, number of columns
+    //! @param rDensity ... approximate density = numValues / (rNumRows*rNumColumns)
+    //! @param rSeed ... random seed
+    //! @return random Matrix
+    static SparseMatrixCSRVector2Symmetric<T> Random(int rDimension, double rDensity, int rSeed = 0);
+
+
     NuTo::SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric()override;
-#else
-    NuTo::SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric();
+#ifndef SWIG
+    const NuTo::SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric()const override;
 #endif
 
-#ifndef SWIG
-   const NuTo::SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric()const override;
-#else
-   const NuTo::SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric()const;
-#endif
+
 
 protected:
 };
 }
+
+
+
 #endif // SPARSE_MATRIX_CSR_VECTOR2_SYMMETRIC_DEF_H

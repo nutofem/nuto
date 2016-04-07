@@ -7,7 +7,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/loads/LoadSurfaceBase3D.h"
-#include "nuto/mechanics/elements/Element3D.h"
+#include "nuto/mechanics/elements/ContinuumElement.h"
 
 //! @brief constructor
 NuTo::LoadSurfaceBase3D::LoadSurfaceBase3D(int rLoadCase, StructureBase* rStructure, int rElementGroupId, int rNodeGroupId) :
@@ -29,13 +29,13 @@ NuTo::LoadSurfaceBase3D::LoadSurfaceBase3D(int rLoadCase, StructureBase* rStruct
     //loop over all elements
     Eigen::VectorXi surfaceNodeIndices;
     std::vector<const NodeBase*> surfaceNodes;
-    for (Group<ElementBase>::const_iterator itElement = elementGroup->begin(); itElement != elementGroup->end(); itElement++)
+    for (auto itElement : *elementGroup)
     {
         try
         {
             //check if solid element
-            Element3D* elementPtr = itElement->second->AsElement3D();
-            const InterpolationType* InterpolationType = elementPtr->GetInterpolationType();
+            ContinuumElement<3>& elementPtr = itElement.second->AsContinuumElement3D();
+            const InterpolationType* InterpolationType = elementPtr.GetInterpolationType();
 
             //loop over all surfaces
             for (int iSurface = 0; iSurface < InterpolationType->GetNumSurfaces(); iSurface++)
@@ -48,7 +48,7 @@ NuTo::LoadSurfaceBase3D::LoadSurfaceBase3D(int rLoadCase, StructureBase* rStruct
 
                 for (int iSurfaceNode = 0; iSurfaceNode < numSurfaceNodes; ++iSurfaceNode)
                 {
-                    surfaceNodes[iSurfaceNode] = elementPtr->GetNode(surfaceNodeIndices.at(iSurfaceNode, 0));
+                    surfaceNodes[iSurfaceNode] = elementPtr.GetNode(surfaceNodeIndices.at(iSurfaceNode, 0));
 
                 }
 
@@ -72,30 +72,37 @@ NuTo::LoadSurfaceBase3D::LoadSurfaceBase3D(int rLoadCase, StructureBase* rStruct
                 if (addSurface)
                 {
 //                    std::cout << "Surface added!" << std::endl;
-                    mVolumeElements.push_back(std::pair<const Element3D*, int>(elementPtr, iSurface));
+                    mVolumeElements.push_back(std::make_pair(&elementPtr, iSurface));
                 }
             }
         } catch (NuTo::MechanicsException &e)
         {
             std::stringstream ss;
-            assert(rStructure->ElementGetId(itElement->second) == itElement->first);
-            ss << itElement->first;
+            assert(rStructure->ElementGetId(itElement.second) == itElement.first);
+            ss << itElement.first;
             e.AddMessage("[NuTo::LoadSurfaceBase3D::LoadSurfaceBase3D] Error calculating surfaces for surface loads in element " + ss.str() + "(Maybe not a solid element?).");
             throw e;
         } catch (...)
         {
             std::stringstream ss;
-            assert(rStructure->ElementGetId(itElement->second) == itElement->first);
-            ss << itElement->first;
+            assert(rStructure->ElementGetId(itElement.second) == itElement.first);
+            ss << itElement.first;
             throw NuTo::MechanicsException("[NuTo::LoadSurfaceBase3D::LoadSurfaceBase3D] Error calculating surfaces for surface loads in element " + ss.str() + "(Maybe not a solid element?).");
         }
 
     }
 
     //set standard integration types for triangles and quads, this can be modified according to the needs
-    mIntegrationType3NPtr = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType2D3NGauss1Ip);
-    mIntegrationType4NPtr = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType2D4NGauss4Ip);
-    mIntegrationType6NPtr = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType2D3NGauss3Ip);
+    mIntegrationTypeTriangleGauss1 = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType2D3NGauss1Ip);
+    mIntegrationTypeTriangleGauss2 = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType2D3NGauss3Ip);
+
+
+    mIntegrationTypeQuadGauss1 = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType2D4NGauss4Ip);
+    mIntegrationTypeQuadGauss2 = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType2D4NGauss4Ip);
+    mIntegrationTypeQuadLobatto2 = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType2D4NLobatto9Ip);
+    mIntegrationTypeQuadLobatto3 = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType2D4NLobatto16Ip);
+    mIntegrationTypeQuadLobatto4 = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType2D4NLobatto25Ip);
+
 }
 
 //! @brief adds the load to global sub-vectors
@@ -105,11 +112,11 @@ void NuTo::LoadSurfaceBase3D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
 {
     if (rLoadCase != mLoadCase)
         return;
-    for (unsigned int countVolumeElement = 0; countVolumeElement < mVolumeElements.size(); countVolumeElement++)
+    for (auto it : mVolumeElements)
     {
 
-        const Element3D* elementPtr = mVolumeElements[countVolumeElement].first;
-        int surface = mVolumeElements[countVolumeElement].second;
+        const auto* elementPtr = it.first;
+        int surface = it.second;
 
 //        std::cout << "Surface: " << surface << std::endl;
 
@@ -124,10 +131,10 @@ void NuTo::LoadSurfaceBase3D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             switch (interpolationTypeDisps.GetTypeOrder())
             {
             case Interpolation::EQUIDISTANT1:
-                integrationType = mIntegrationType3NPtr;
+                integrationType = mIntegrationTypeTriangleGauss1;
                 break;
             case Interpolation::EQUIDISTANT2:
-                integrationType = mIntegrationType6NPtr;
+                integrationType = mIntegrationTypeTriangleGauss2;
                 break;
             default:
                 break;
@@ -139,8 +146,25 @@ void NuTo::LoadSurfaceBase3D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             switch (interpolationTypeDisps.GetTypeOrder())
             {
             case Interpolation::EQUIDISTANT1:
-                integrationType = mIntegrationType4NPtr;
+                integrationType = mIntegrationTypeQuadGauss1;
                 break;
+
+            case Interpolation::EQUIDISTANT2:
+                integrationType = mIntegrationTypeQuadGauss2;
+                break;
+
+            case Interpolation::LOBATTO2:
+                integrationType = mIntegrationTypeQuadLobatto2;
+                break;
+
+            case Interpolation::LOBATTO3:
+                integrationType = mIntegrationTypeQuadLobatto3;
+                break;
+
+            case Interpolation::LOBATTO4:
+                integrationType = mIntegrationTypeQuadLobatto4;
+                break;
+
             default:
                 break;
             }
@@ -175,7 +199,7 @@ void NuTo::LoadSurfaceBase3D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             ipCoordsSurface(0) = tmp[0];
             ipCoordsSurface(1) = tmp[1];
             ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface);
-            ipCoordsGlobal = nodeCoordinates * interpolationTypeCoords.CalculateShapeFunctions(ipCoordsNatural);
+            ipCoordsGlobal = interpolationTypeCoords.CalculateMatrixN(ipCoordsNatural) * nodeCoordinates;
 
             // #######################################
             // ##  Calculate the surface jacobian
@@ -183,7 +207,7 @@ void NuTo::LoadSurfaceBase3D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             // ## = [dX / dAlpha] x [dX / dBeta]
             // #######################################
             derivativeShapeFunctionsNatural = interpolationTypeCoords.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural);
-            const Eigen::Matrix3d jacobian = nodeCoordinates * derivativeShapeFunctionsNatural;                     // = [dX / dXi]
+            const Eigen::Matrix3d jacobian = elementPtr->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates);                     // = [dX / dXi]
 
             derivativeNaturalSurfaceCoordinates = interpolationTypeCoords.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, surface); // = [dXi / dAlpha]
             dXdAlpha = jacobian * derivativeNaturalSurfaceCoordinates.col(0);

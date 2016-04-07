@@ -67,7 +67,7 @@ public:
     //! @brief ... return number of intermediate stages
     int GetNumStages()const
     {
-    	return 4;
+    	return 3;
     }
 
     //! @brief ... return delta time factor of intermediate stages (c in Butcher tableau)
@@ -84,7 +84,10 @@ public:
 
 protected:
     //empty private construct required for serialization
+#ifdef ENABLE_SERIALIZATION
     RungeKutta3(){};
+#endif  // ENABLE_SERIALIZATION
+
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

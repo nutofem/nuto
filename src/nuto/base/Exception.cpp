@@ -2,26 +2,31 @@
 
 #include "nuto/base/Exception.h"
 
-namespace NuTo
-{
 //! @brief ... return error message of the exception
 //! @return ... error message
-std::string Exception::ErrorMessage() const throw()
+std::string NuTo::Exception::ErrorMessage() const throw()
 {
-    return message;
+    return mMessage;
 }
 
 //! @brief ... add a message to the exception (to be able to rethrow the exception afterwards)
 //! @param message_ ... message to add
-void Exception::AddMessage(const std::string &message_)
+void NuTo::Exception::AddMessage(const std::string &rMessage)
 {
-    message = message_ + "\n" + message;
+    mMessage += "\n" + rMessage;
+}
+
+//! @brief ...constructor
+//! @param rCaller ... name of the method that throws
+//! @param rMessage ...error message
+void NuTo::Exception::AddMessage(const std::string& rCaller, const std::string& rMessage)
+{
+    mMessage += std::string("\n[") + rCaller + "]\n" + rMessage;
 }
 
 //! @brief ... is the exception fatal (inconsistency of the software?)
 //! @return ... true or false
-bool Exception::IsFatal()const
+bool NuTo::Exception::IsFatal()const
 {
-    return FatalFlag;
+    return mFatalFlag;
 }
-}//NuTo

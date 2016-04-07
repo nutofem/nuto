@@ -1345,7 +1345,7 @@ void NuTo::MultipleLinearRegression::TestRegressionCoefficientsSignificanceTrans
 		rTestResult.resize(this->mCoefficients.GetNumRows());
 		for(int coefficient = 0; coefficient < this->mCoefficients.GetNumRows(); coefficient++)
 		{
-			double abs_t0 = fabs(this->mCoefficients(coefficient,0)/sqrt(covarianceMatrix(coefficient,coefficient)));
+			double abs_t0 = std::abs(this->mCoefficients(coefficient,0)/sqrt(covarianceMatrix(coefficient,coefficient)));
 			if(abs_t0 > t)
 			{
 				rTestResult[coefficient] = true;

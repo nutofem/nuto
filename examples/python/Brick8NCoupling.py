@@ -4,9 +4,9 @@ import nuto
 myStructure = nuto.Structure(3)
 
 # create material law
-Material1 = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
-myStructure.ConstitutiveLawSetParameterDouble(Material1,"YoungsModulus", 20000.)
-myStructure.ConstitutiveLawSetParameterDouble(Material1,"PoissonsRatio", 0.2)
+Material1 = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress")
+myStructure.ConstitutiveLawSetParameterDouble(Material1,"Youngs_Modulus", 20000.)
+myStructure.ConstitutiveLawSetParameterDouble(Material1,"Poissons_Ratio", 0.2)
 
 # create section
 Section1 = myStructure.SectionCreate("Volume")
@@ -164,40 +164,11 @@ myStructure.NodeBuildGlobalDofs()
 
 #Calculate maximum independent sets for parallelization (openmp)
 myStructure.CalculateMaximumIndependentSets();
-
-# build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-print "build stiffness matrix"
-stiffnessMatrix = nuto.DoubleSparseMatrixCSRVector2General()
-dispForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
-stiffnessMatrix.RemoveZeroEntries(0,1e-14)
-
-# build global external load vector
-print "build external force vector"
-extForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalExternalLoadVector(0,extForceVector)
-
-# calculate right hand side
-print "build right-hand-side vector"
-rhsVector = dispForceVector + extForceVector
-
-# solve
-print "solve"
-mySolver = nuto.SparseDirectSolverMUMPS()
-displacementVector = nuto.DoubleFullVector()
-stiffnessMatrixCSR = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrix)
-stiffnessMatrixCSR.SetOneBasedIndexing()
-mySolver.Solve(stiffnessMatrixCSR, rhsVector, displacementVector)
-
-# write displacements to node
-print "merge displacements"
-myStructure.NodeMergeActiveDofValues(displacementVector)
+myStructure.SolveGlobalSystemStaticElastic()
 
 # calculate residual
 print "calculate residual"
-intForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector)
-residualVector = extForceVector - intForceVector
+residualVector = myStructure.BuildGlobalExternalLoadVector(0).J.Get("Displacements") - myStructure.BuildGlobalInternalGradient().J.Get("Displacements")
 print "residual: " + str(residualVector.Norm())
 
 # visualize results

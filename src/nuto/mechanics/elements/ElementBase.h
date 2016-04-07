@@ -14,6 +14,8 @@
 
 #include <map>
 
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h" // for the Input/Output list typedefs
+
 #include "nuto/base/ErrorEnum.h"
 #include "nuto/math/FullMatrix_Def.h"
 #include "nuto/math/FullVector_Def.h"
@@ -39,13 +41,10 @@ class ElementDataBase;
 class IntegrationTypeBase;
 class InterpolationType;
 class NodeBase;
-class Plane;
-class Plane2D;
 class Lattice2D;
 class SectionBase;
 template<class T>
 class SparseMatrix;
-class Solid;
 class Structure;
 class StructureBase;
 class Truss;
@@ -53,13 +52,10 @@ class VisualizeComponentBase;
 class VisualizeComponent;
 class IpDataBase;
 class ElementOutputBase;
-class Element1D;
-class Element1DIn2D;
-class Element2D;
-class Element3D;
-class BoundaryElement1D;
-class BoundaryElement2D;
-class BoundaryElement3D;
+class IpDataStaticDataBase;
+template <int TDim> class ContinuumElement;
+template <int TDim> class ContinuumBoundaryElement;
+
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -143,19 +139,19 @@ public:
     //! @brief returns the number of nodes in this element of a specific dof
     //! @brief rDofType dof type
     //! @return number of nodes
-    virtual int GetNumNodes(Node::eAttributes rDofType) const;
+    virtual int GetNumNodes(Node::eDof rDofType) const;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @brief rDofType dof type
     //! @return pointer to the node
-    virtual NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType)=0;
+    virtual NodeBase* GetNode(int rLocalNodeNumber, Node::eDof rDofType)=0;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @brief rDofType dof type
     //! @return pointer to the node
-    virtual const NodeBase* GetNode(int rLocalNodeNumber, Node::eAttributes rDofType) const=0;
+    virtual const NodeBase* GetNode(int rLocalNodeNumber, Node::eDof rDofType) const=0;
 
     //! @brief sets the rLocalNodeNumber-th node of the element
     //! @param local node number
@@ -239,15 +235,14 @@ public:
     //! @return weight
     double GetIntegrationPointWeight(int rIpNum) const;
 
-    //! @brief calculate the length of an edge (belonging to an integration point for lattice elements)
-    //! @param rIp integration point
-    //! @return edge length
-    virtual double GetIpEdgeLength(int rIp) const;
-
     //! @brief calculates output data for the element
-    //! @param eOutput ... coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
-    //!                    @param updateStaticData (with DummyOutput), IPData, globalrow/column dofs etc.
-    virtual Error::eError Evaluate(boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase>& rConstitutiveOutput)=0;
+    //! @param rInput ... constitutive input map for the constitutive law
+    //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
+    virtual Error::eError Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)=0;
+
+    //! @brief calculates output data for the element with a standard input (EULER_BACKWARD static data)
+    //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
+    Error::eError Evaluate(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput);
 
     //! @brief integrates the stress over the element
     //! @param rStress integrated stress
@@ -271,6 +266,10 @@ public:
     //! @return static data
     const ConstitutiveStaticDataBase* GetStaticData(int rIp) const;
 
+    IpDataStaticDataBase& GetStaticDataBase(int rIp);
+
+    const IpDataStaticDataBase& GetStaticDataBase(int rIp) const;
+
     //! @brief sets the static data for an integration point of an element
     //! @param rIp integration point
     //! @param rStaticData static data
@@ -279,22 +278,25 @@ public:
     //! @brief Update the static data of an element
     //virtual Error::eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)=0;
 
-    const Eigen::MatrixXd ExtractNodeValues(Node::eAttributes rDofType) const;
+    Eigen::VectorXd ExtractNodeValues(Node::eDof rDofType) const
+    {
+        return this->ExtractNodeValues(0, rDofType);
+    }
 
-    virtual const Eigen::MatrixXd ExtractNodeValues(int rTimeDerivative, Node::eAttributes rDofType) const;
+    virtual Eigen::VectorXd ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const;
 
-    virtual const Eigen::VectorXd InterpolateDofGlobal(const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const;
+    virtual Eigen::VectorXd InterpolateDofGlobal(const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const;
 
-    virtual const Eigen::VectorXd InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const;
+    virtual Eigen::VectorXd InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const;
 
-    const Eigen::Vector3d InterpolateDof3D(const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const;
+    Eigen::Vector3d InterpolateDof3D(const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const;
 
     //! @brief interpolates a vector dof to 3D, mainly for visualization
     //! @remark is overridden by the boundary element
     //! @param rTimeDerivative ... time derivative (0..2)
     //! @param rNaturalCoordinates ... coordinates of the point in natural element coordinates
     //! @param rDofType ... dof type
-    const Eigen::Vector3d InterpolateDof3D(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const;
+    Eigen::Vector3d InterpolateDof3D(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const;
 
     //! @brief adds the nonlocal weight to an integration point
     //! @param rLocalIpNumber local Ip
@@ -341,25 +343,26 @@ public:
     //! @return True if coordinates are within the element, False otherwise
     virtual bool GetLocalPointCoordinates(const double* rGlobCoords, double* rLocCoords) const;
 
-    //! @brief Gets the additional node of an boundary element, if it has one
-    //! @return Additional boundary node
-    virtual NodeBase* GetAdditionalBoundaryNode() const;
+    //! @brief Gets the control node of an boundary element, if it has one
+    //! @return boundary control node
+    virtual NodeBase* GetBoundaryControlNode() const;
 
-    //! @brief sets the water volume fraction at the boundary surface
-    //! @return water volume fraction at the boundary surface
-    virtual double GetBoundaryWaterVolumeFraction() const;
+    //VHIRTHAMTODO remove???
+//    //! @brief sets the water volume fraction at the boundary surface
+//    //! @return water volume fraction at the boundary surface
+//    virtual double GetBoundaryWaterVolumeFraction() const;
 
-    //! @brief sets the water volume fraction at the boundary surface
-    //! @param water volume fraction at the boundary surface
-    virtual void SetBoundaryWaterVolumeFraction(double rBoundaryWaterVolumeFraction);
+//    //! @brief sets the water volume fraction at the boundary surface
+//    //! @param water volume fraction at the boundary surface
+//    virtual void SetBoundaryWaterVolumeFraction(double rBoundaryWaterVolumeFraction);
 
-    //! @brief sets the relative humidity at the boundary surface
-    //! @param relative humidity at the boundary surface
-    virtual double GetBoundaryRelativeHumidity() const;
+//    //! @brief sets the relative humidity at the boundary surface
+//    //! @param relative humidity at the boundary surface
+//    virtual double GetBoundaryRelativeHumidity() const;
 
-    //! @brief sets the relative humidity at the boundary surface
-    //! @param relative humidity at the boundary surface
-    virtual void SetBoundaryRelativeHumidity(double rBoundaryRelativeHumidity);
+//    //! @brief sets the relative humidity at the boundary surface
+//    //! @param relative humidity at the boundary surface
+//    virtual void SetBoundaryRelativeHumidity(double rBoundaryRelativeHumidity);
 
     //! @brief checks if a node is inside of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
@@ -379,66 +382,45 @@ public:
     //! @return bool cracked or not
     const bool IsCracked() const;
 
-    //! @brief cast the base pointer to an Element1D, otherwise throws an exception
-    virtual const Element1D* AsElement1D() const;
+    void Info() const;
 
-    //! @brief cast the base pointer to an Element1D, otherwise throws an exception
-    virtual Element1D* AsElement1D();
+    virtual const ContinuumElement<1>& AsContinuumElement1D() const
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<1>.");}
 
-    //! @brief cast the base pointer to an Element2D, otherwise throws an exception
-    virtual const Element2D* AsElement2D() const;
+    virtual const ContinuumElement<2>& AsContinuumElement2D() const
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<2>.");}
 
-    //! @brief cast the base pointer to an Element2D, otherwise throws an exception
-    virtual Element2D* AsElement2D();
+    virtual const ContinuumElement<3>& AsContinuumElement3D() const
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<3>.");}
 
-    //! @brief cast the base pointer to an Element3D, otherwise throws an exception
-    virtual const Element3D* AsElement3D() const;
+    virtual ContinuumElement<1>& AsContinuumElement1D()
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<1>.");}
 
-    //! @brief cast the base pointer to an Element3D, otherwise throws an exception
-    virtual Element3D* AsElement3D();
+    virtual ContinuumElement<2>& AsContinuumElement2D()
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<2>.");}
 
-    //! @brief cast the base pointer to an BoundaryElement1D, otherwise throws an exception
-    virtual const BoundaryElement1D* AsBoundaryElement1D() const;
-
-    //! @brief cast the base pointer to an BoundaryElement1D, otherwise throws an exception
-    virtual BoundaryElement1D* AsBoundaryElement1D();
-
-    //! @brief cast the base pointer to an BoundaryElement2D, otherwise throws an exception
-    virtual const BoundaryElement2D* AsBoundaryElement2D() const;
-
-    //! @brief cast the base pointer to an BoundaryElement2D, otherwise throws an exception
-    virtual BoundaryElement2D* AsBoundaryElement2D();
-
-    //! @brief cast the base pointer to an BoundaryElement3D, otherwise throws an exception
-    virtual const BoundaryElement3D* AsBoundaryElement3D()const;
-
-    //! @brief cast the base pointer to an BoundaryElement2D, otherwise throws an exception
-    virtual BoundaryElement3D* AsBoundaryElement3D();
+    virtual ContinuumElement<3>& AsContinuumElement3D()
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<3>.");}
 
 
-    //! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
-    virtual const Plane* AsPlane() const;
+    virtual const ContinuumBoundaryElement<1>& AsContinuumBoundaryElement1D() const
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<1>.");}
 
-    //! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
-    virtual Plane* AsPlane();
+    virtual const ContinuumBoundaryElement<2>& AsContinuumBoundaryElement2D() const
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<2>.");}
 
-    //! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
-    virtual const Plane2D* AsPlane2D() const;
+    virtual const ContinuumBoundaryElement<3>& AsContinuumBoundaryElement3D() const
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<3>.");}
 
-    //! @brief cast the base pointer to an ElementPlane, otherwise throws an exception
-    virtual Plane2D* AsPlane2D();
+    virtual ContinuumBoundaryElement<1>& AsContinuumBoundaryElement1D()
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<1>.");}
 
-    //! @brief cast the base pointer to an ElementSolid, otherwise throws an exception
-    virtual const Solid* AsSolid() const;
+    virtual ContinuumBoundaryElement<2>& AsContinuumBoundaryElement2D()
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<2>.");}
 
-    //! @brief cast the base pointer to an ElementSolid, otherwise throws an exception
-    virtual Solid* AsSolid();
+    virtual ContinuumBoundaryElement<3>& AsContinuumBoundaryElement3D()
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<3>.");}
 
-    //! @brief cast the base pointer to an ElementTruss, otherwise throws an exception
-    virtual const Truss* AsTruss() const;
-
-    //! @brief cast the base pointer to an ElementTruss, otherwise throws an exception
-    virtual Truss* AsTruss();
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

@@ -46,11 +46,11 @@ void NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D::SetRHS(double rRHS)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
 void NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D::AddToConstraintMatrix(int& curConstraintEquation,
-        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const
+        NuTo::SparseMatrix<double>& rConstraintMatrix)const
 {
 	switch (mParentElement->GetEnumType())
 	{
-	case Element::ELEMENT1D:
+	case Element::CONTINUUMELEMENT:
 	{
         Eigen::VectorXd localIpCoordinate(1);
         localIpCoordinate(0) = mLocalIpCoordinate;

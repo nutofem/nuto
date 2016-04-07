@@ -40,6 +40,11 @@ public:
     	mToleranceForce = rToleranceForce;
     }
 
+    //! @brief Sets the residual tolerance for a specific DOF
+    //! param rDof: degree of freedom
+    //! param rTolerance: tolerance
+    void SetToleranceResidual(Node::eDof rDof, double rTolerance);
+
     double GetToleranceForce()const
     {
     	return mToleranceForce;
@@ -85,6 +90,13 @@ public:
     	mUseLumpedMass = rUseLumpedMass;
     }
 
+    //! @brief merges the dof values depending on the numTimeDerivatives and rMergeAll
+    //! @param rDof_dt0 ... 0th time derivative
+    //! @param rDof_dt1 ... 1st time derivative
+    //! @param rDof_dt2 ... 2nd time derivative
+    //! @param rMergeAll ... false: merges dof_dt1 only when mMuMassDamping = 0, ignores dof_dt2
+    void MergeDofValues(const StructureOutputBlockVector& rDof_dt0, const StructureOutputBlockVector& rDof_dt1, const StructureOutputBlockVector& rDof_dt2, bool rMergeAll);
+
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
@@ -101,8 +113,12 @@ public:
 
 
 protected:
-    //empty private construct required for serialization
+
+#ifdef ENABLE_SERIALIZATION
     NewmarkBase(){};
+#endif  // ENABLE_SERIALIZATION
+
+
     //damping coefficient for the mass (F^d = -mMuDampingMass*M*v)
 	double mMuDampingMass;
     //NewtonRaphson parameters

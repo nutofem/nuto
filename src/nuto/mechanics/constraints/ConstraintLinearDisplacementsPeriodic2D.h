@@ -5,8 +5,8 @@
 
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/constraints/ConstraintLinear.h"
-#include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 
 namespace NuTo
 {
@@ -31,7 +31,7 @@ public:
     //! @brief constructor
     //! @param rDirection ... direction of the applied constraint
     //! @param rValue ... direction of the applied constraint
-    ConstraintLinearDisplacementsPeriodic2D(const StructureBase* rStructure, double rAngle, const EngineeringStrain2D& rStrain,
+    ConstraintLinearDisplacementsPeriodic2D(const StructureBase* rStructure, double rAngle, const EngineeringStrain<2>& rStrain,
             NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> crackOpening, double rRadiusToCrackWithoutConstraints,
             const Group<NodeBase>* rGroupTop,const Group<NodeBase>* rGroupBottom,
             const Group<NodeBase>* rGroupLeft, const Group<NodeBase>* rGroupRight);
@@ -46,7 +46,7 @@ public:
 
     //!@brief sets/modifies the average strain applied to the boundary
     //!@param rAngle angle in deg
-    void SetStrain(const EngineeringStrain2D& rStrain);
+    void SetStrain(const EngineeringStrain<2>& rStrain);
 
     //!@brief sets/modifies the average strain applied to the boundary
     //!@param rAngle angle in deg
@@ -62,7 +62,7 @@ public:
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
     void AddToConstraintMatrix(int& curConstraintEquation,
-                               NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const;
+                               NuTo::SparseMatrix<double>& rConstraintMatrix)const;
 
     //!@brief writes for the current constraint equation(s) the rhs into the vector
     // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
@@ -75,6 +75,13 @@ public:
     void Info(unsigned short rVerboseLevel) const
     {
         throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::Info] to be implemented.");
+    }
+
+    //! @brief determines the dof type affected by the constraint
+    //! @return dof type
+    Node::eDof GetDofType() const override
+    {
+        return Node::eDof::DISPLACEMENTS;
     }
 
 #ifdef ENABLE_SERIALIZATION
@@ -114,7 +121,7 @@ protected:
     double mAngle;
 
     //! @brief average strain applied to the boundaries (epsilon_xx, epsilon_yy, gamma_xy)
-    EngineeringStrain2D mStrain;
+    EngineeringStrain<2> mStrain;
 
     //! @brief crack opening in x and y-direction
     double mCrackOpening[2];

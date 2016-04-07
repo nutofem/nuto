@@ -43,6 +43,8 @@ public:
     //! @param  rOther ... copied element
     FullVector<T,rows> ( const FullVector<T,rows>& rOther );
 
+    using FullMatrix<T,rows,1>::Resize;
+
     //! @brief ... resize matrix (everything is deleted)
     //! @param rows ... number of rows
     void Resize ( int rRows);

@@ -1,6 +1,8 @@
 // $Id$
 %module NuToMath
 %feature("autodoc","1");
+//remove the warning for not exposing the base class features of eigen to python via swig
+#pragma SWIG nowarn=401
 %{
 //Put headers and other declarations here to be added in the wrapper files
 #include "nuto/math/NuToMath.h"

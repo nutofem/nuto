@@ -493,7 +493,7 @@ private:
     	NuTo::FullVector<double,Eigen::Dynamic> xh=rUnknown;
     	for (int j=0;j<n;j++) {
     		double temp=xh[j];
-    		double h=EPS*fabs(temp);
+    		double h=EPS*std::abs(temp);
     	   	if (h == 0.0) h=EPS;
     	   		xh[j]=temp+h;
     	   		h=xh[j]-temp;
@@ -543,7 +543,7 @@ private:
     	test=0.0;
     //                 								// OPTIMIZED
     //	for (i=0;i<n;i++) {
-    //		temp=fabs(p[i])/max(fabs(xold[i]),1.0); // OPTIMIZED
+    //		temp=std::abs(p[i])/max(std::abs(xold[i]),1.0); // OPTIMIZED
     //		if (temp > test) test=temp;             // OPTIMIZED
     //	}    										// OPTIMIZED
     	test = ( p.array().abs() / xold.array().abs().max(1.0) ).maxCoeff();  // OPTIMIZED
@@ -612,7 +612,7 @@ private:
     //												// OPTIMIZED
     //	test=0.0;
     //	for (i=0;i<n;i++)							// OPTIMIZED
-    //		if (fabs(fvec[i]) > test) test=fabs(fvec[i]);   // OPTIMIZED
+    //		if (std::abs(fvec[i]) > test) test=std::abs(fvec[i]);   // OPTIMIZED
     	test = fvec.array().abs().maxCoeff();		// OPTIMIZED
     	if (test < 0.01*TOLF) {
     		check=false;
@@ -665,7 +665,7 @@ private:
     //												// OPTIMIZED
     //		test=0.0;								// OPTIMIZED
     //		for (i=0;i<n;i++)						// OPTIMIZED
-    //			if (fabs(fvec[i]) > test) test=fabs(fvec[i]);   // OPTIMIZED
+    //			if (std::abs(fvec[i]) > test) test=std::abs(fvec[i]);   // OPTIMIZED
     		test = fvec.array().abs().maxCoeff();	// OPTIMIZED
 
     		if (test < TOLF) {
@@ -679,7 +679,7 @@ private:
     //												// OPTIMIZED
     //			test=0.0;							// OPTIMIZED
     //			for (i=0;i<n;i++) {					// OPTIMIZED
-    //				temp=fabs(g[i])*max(fabs(x[i]),1.0)/den;   // OPTIMIZED
+    //				temp=std::abs(g[i])*max(std::abs(x[i]),1.0)/den;   // OPTIMIZED
     //				if (temp > test) test=temp;		// OPTIMIZED
     //			}									// OPTIMIZED
     			test = ( g.array().abs() * x.array().abs().max(1.0) ).maxCoeff() / den;   // OPTIMIZED
@@ -689,7 +689,7 @@ private:
     //												// OPTIMIZED
     //		test=0.0;								// OPTIMIZED
     //		for (i=0;i<n;i++) {						// OPTIMIZED
-    //			temp=(fabs(x[i]-xold[i]))/max(fabs(x[i]),1.0);   // OPTIMIZED
+    //			temp=(std::abs(x[i]-xold[i]))/max(std::abs(x[i]),1.0);   // OPTIMIZED
     //			if (temp > test) test=temp;			// OPTIMIZED
     //		}										// OPTIMIZED
     		test = ( (x.array()-xold.array()).abs() / x.array().abs().max(1.0) ).maxCoeff();   // OPTIMIZED

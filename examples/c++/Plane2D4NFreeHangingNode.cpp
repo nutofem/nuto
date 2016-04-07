@@ -16,8 +16,8 @@ int main()
         // create structure
         NuTo::Structure myStructure(2);
         int myInterpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
-        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eAttributes::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eAttributes::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
         myStructure.Info();
 
         // create nodes
@@ -110,15 +110,11 @@ int main()
         myStructure.ElementTotalSetSection(mySection1);
 
         // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-        NuTo::FullVector<int, Eigen::Dynamic> rows;
-        NuTo::FullVector<int, Eigen::Dynamic> coluums;
-        NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> stiffnessMatrix;
-        myStructure.ElementStiffness(0, stiffnessMatrix, rows, coluums);
-//		if(mVerboseLevel>3)
-        stiffnessMatrix.WriteToFile("stiffness", "   ");
-        myStructure.ElementStiffness(4, stiffnessMatrix, rows, coluums);
-//		if(mVerboseLevel>3)
-        stiffnessMatrix.WriteToFile("stiffnessCoarse", "   ");
+        auto hessianElement0 = myStructure.ElementBuildHessian0(0);
+        auto hessianElement4 = myStructure.ElementBuildHessian0(4);
+
+        hessianElement0.Export().WriteToFile("stiffness", "   ");
+        hessianElement4.Export().WriteToFile("stiffnessCoarse", "   ");
 
         // boundary conditions
         NuTo::FullVector<double, Eigen::Dynamic> direction(2);
@@ -148,47 +144,11 @@ int main()
         myStructure.ConstraintLinearSetDisplacementNode(10, direction, BoundaryDisplacement);
 
         // start analysis
-        // build global dof numbering
-        myStructure.NodeBuildGlobalDofs();
+        myStructure.SolveGlobalSystemStaticElastic(1);
+        auto residual = myStructure.BuildGlobalInternalGradient() - myStructure.BuildGlobalExternalLoadVector(1);
 
-        // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-        NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixVector2;
-        NuTo::FullVector<double, Eigen::Dynamic> dispForceVector;
-        myStructure.CalculateMaximumIndependentSets();
-        myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixVector2, dispForceVector);
-        stiffnessMatrixVector2.RemoveZeroEntries(0, 1e-14);
-        //NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> A(stiffnessMatrix);
-        //A.WriteToFile("stiffnessMatrix.txt"," ");
-        //stiffnessMatrix.Info();
-        //dispForceVector.Info();
+        std::cout << "residual: " << residual.J.CalculateNormL2() << std::endl;
 
-        // build global external load vector
-        NuTo::FullVector<double, Eigen::Dynamic> extForceVector;
-        myStructure.BuildGlobalExternalLoadVector(0, extForceVector);
-        //extForceVector.Info();
-
-        // calculate right hand side
-        NuTo::FullVector<double, Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;
-        rhsVector.WriteToFile("rhsVector.txt", " ");
-
-        // solve
-        NuTo::SparseDirectSolverMUMPS mySolver;
-        NuTo::FullVector<double, Eigen::Dynamic> displacementVector;
-        NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrixGlob(stiffnessMatrixVector2);
-        stiffnessMatrixGlob.SetOneBasedIndexing();
-        mySolver.Solve(stiffnessMatrixGlob, rhsVector, displacementVector);
-        displacementVector.WriteToFile("displacementVector.txt", " ");
-
-        // write displacements to node
-        myStructure.NodeMergeActiveDofValues(displacementVector);
-
-        // calculate residual
-        NuTo::FullVector<double, Eigen::Dynamic> intForceVector;
-        myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector);
-        NuTo::FullVector<double, Eigen::Dynamic> residualVector = extForceVector - intForceVector;
-        std::cout << "residual: " << residualVector.Norm() << std::endl;
-
-#ifdef ENABLE_VISUALIZE
         // visualize element
         int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
         myStructure.GroupAddElementsTotal(visualizationGroup);
@@ -197,7 +157,6 @@ int main()
         myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
         myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
         myStructure.ExportVtkDataFileElements("Plane2D4N.vtk");
-#endif
     } catch (NuTo::MathException& e)
     {
         std::cout << e.ErrorMessage() << std::endl;

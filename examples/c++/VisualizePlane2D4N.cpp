@@ -80,7 +80,7 @@ int main()
         myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
 
         // create constitutive law
-        int myMatLin = myStructure.ConstitutiveLawCreate("LINEARELASTICENGINEERINGSTRESS");
+        int myMatLin = myStructure.ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
         myStructure.ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 10);
         myStructure.ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.1);
 
@@ -92,7 +92,6 @@ int main()
         myStructure.ElementTotalSetConstitutiveLaw(myMatLin);
         myStructure.ElementTotalSetSection(mySection1);
 
-#ifdef ENABLE_VISUALIZE
         // visualize element
         int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
         myStructure.GroupAddElementsTotal(visualizationGroup);
@@ -101,7 +100,6 @@ int main()
         myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
         myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
         myStructure.ExportVtkDataFileElements("Plane2D4N.vtk");
-#endif
     } catch (NuTo::MathException& e)
     {
         std::cout << e.ErrorMessage() << std::endl;

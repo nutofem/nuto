@@ -9,6 +9,7 @@
 #define ELEMENTUNIAXIALTEST_H_
 
 #include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
 #include "nuto/math/SparseDirectSolverMUMPS.h"
 #include <boost/filesystem.hpp>
 
@@ -34,12 +35,18 @@ public:
     //! of a uniaxial test, starting from (0,0,0) to (lx, ly, lz)
     void Run(NuTo::Structure& rStructure)
     {
+        rStructure.SetVerboseLevel(10);
         if (DEBUG_PRINT)
             rStructure.NodeInfo(10);
 
 
         SetConstitutiveLaw(rStructure);
         SetBoundaryConditions(rStructure);
+
+        rStructure.NodeBuildGlobalDofs();
+        rStructure.CalculateMaximumIndependentSets();
+
+        CheckStiffness(rStructure);
         Solve(rStructure);
         CheckSolution(rStructure);
         CheckMass(rStructure);
@@ -107,31 +114,23 @@ private:
         }
 
     }
+    void CheckStiffness(NuTo::Structure& rStructure)
+    {
+        if (rStructure.GetNumTotalDofs() > 50)
+            return;
+        rStructure.ElementCheckHessian0(1.e-8, 1.e-6, true);
+        rStructure.CheckHessian0(1.e-8, 1.e-6, true);
+    }
 
     void Solve(NuTo::Structure& rStructure)
     {
-        rStructure.NodeBuildGlobalDofs();
-        rStructure.CalculateMaximumIndependentSets();
+        rStructure.SolveGlobalSystemStaticElastic();
 
-        // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-        NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixCSRVector2;
-        NuTo::FullVector<double,Eigen::Dynamic> dispForceVector, displacementVector, residualVector;
+        auto internalGradient = rStructure.BuildGlobalInternalGradient();
 
-        rStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector);
-        NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix (stiffnessMatrixCSRVector2);
-
-        // solve
-        NuTo::SparseDirectSolverMUMPS mySolver;
-        stiffnessMatrix.SetOneBasedIndexing();
-        mySolver.Solve(stiffnessMatrix, dispForceVector, displacementVector);
-
-        // write displacements to node
-        rStructure.NodeMergeActiveDofValues(displacementVector);
-
-        // calculate residual
-        rStructure.BuildGlobalGradientInternalPotentialVector(residualVector);
-        if (residualVector.Abs().Max() > 1e-8)
+        if (internalGradient.J.CalculateNormL2()[NuTo::Node::DISPLACEMENTS] > 1e-8)
         {
+            internalGradient.J[NuTo::Node::DISPLACEMENTS].Info();
             throw NuTo::MechanicsException("[NuToTest::ElementUniaxialTest::Solve] residual force vector is not zero.");
         }
     }
@@ -148,6 +147,8 @@ private:
             std::cout << "force_x : " << analyticForce << std::endl;
         }
 
+        std::cout << rStructure.ElementGetEngineeringStrain(0) << std::endl;
+
         // get element stresses
         int allElements = rStructure.GroupCreate("Elements");
         int allNodes    = rStructure.GroupCreate("Nodes");
@@ -157,8 +158,7 @@ private:
         for (int iElement = 0; iElement < elementIds.GetNumRows(); ++iElement)
         {
             int elementId = elementIds(iElement);
-            NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> stress;
-            rStructure.ElementGetEngineeringStress(elementId, stress);
+            auto stress = rStructure.ElementGetEngineeringStress(elementId);
             for (int iIP = 0; iIP < stress.GetNumColumns(); ++iIP)
             {
                 double numericStress = stress(0,iIP);
@@ -200,33 +200,41 @@ private:
     {
         double analyticMass = lX*lY*lZ*rho;
 
-        int numActDofs = rStructure.GetNumActiveDofs();
-        int numDepDofs = rStructure.GetNumDofs() - numActDofs;
-
-        NuTo::SparseMatrixCSRVector2General<double> jj(numActDofs,numActDofs);
-        NuTo::SparseMatrixCSRVector2General<double> jk(numActDofs,numDepDofs);
-        NuTo::SparseMatrixCSRVector2General<double> kj(numDepDofs,numActDofs);
-        NuTo::SparseMatrixCSRVector2General<double> kk(numDepDofs,numDepDofs);
-        NuTo::FullVector<double,Eigen::Dynamic> dummy;
-
-        rStructure.BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::MASS, jj, jk, kj, kk);
-
-        NuTo::FullMatrix<double> jjFull(jj), jkFull(jk), kjFull(kj), kkFull(kk);
+        auto hessian2 = rStructure.BuildGlobalHessian2();
 
         double numericMass = 0;
-        numericMass += jjFull.Sum();
-        numericMass += jkFull.Sum();
-        numericMass += kjFull.Sum();
-        numericMass += kkFull.Sum();
+        numericMass += hessian2.JJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
+        numericMass += hessian2.JK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
+        numericMass += hessian2.KJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
+        numericMass += hessian2.KK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
 
         numericMass /= rStructure.GetDimension(); // since the mass is added to nodes in every direction
 
         if(std::abs(numericMass - analyticMass)/numericMass > 1.e-6 )
         {
-            std::cout << "mass analytical : " << analyticMass << std::endl;
-            std::cout << "mass numerical  : " << numericMass << std::endl;
+            std::cout << "mass analytical : " << std::setprecision(10) << analyticMass << std::endl;
+            std::cout << "mass numerical  : " << std::setprecision(10) << numericMass << std::endl;
             throw NuTo::MechanicsException("[NuToTest::ElementUniaxialTest::CheckMass] wrong mass calculation.");
         }
+
+
+        hessian2 = rStructure.BuildGlobalHessian2Lumped();
+
+        numericMass = 0;
+        numericMass += hessian2.JJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
+        numericMass += hessian2.JK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
+        numericMass += hessian2.KJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
+        numericMass += hessian2.KK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
+
+        numericMass /= rStructure.GetDimension(); // since the mass is added to nodes in every direction
+
+        if(std::abs(numericMass - analyticMass)/numericMass > 1.e-6 )
+        {
+            std::cout << "mass analytical : " << std::setprecision(10) << analyticMass << std::endl;
+            std::cout << "mass numerical  : " << std::setprecision(10) << numericMass << std::endl;
+            throw NuTo::MechanicsException("[NuToTest::ElementUniaxialTest::CheckMass] wrong lumped mass calculation.");
+        }
+
     }
 
     void Visualize(NuTo::Structure& rStructure)

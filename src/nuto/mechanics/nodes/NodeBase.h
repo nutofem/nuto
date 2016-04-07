@@ -60,6 +60,10 @@ public:
     //! @param rDOF current maximum DOF, this variable is increased within the routine
     virtual void SetGlobalDofs(int& rDOF);
 
+    //! @brief sets the global dofs numbers for each dof type
+    //! @param rDofNumbers ... map containing the dof type and the current number
+    virtual void SetGlobalDofsNumbers(std::map<Node::eDof, int>& rDofNumbers);
+
     //! @brief write dof values to the node (based on global dof number)
     //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
     //! @param rActiveDofValues ... active dof values
@@ -72,12 +76,33 @@ public:
     //! @param rDependentDofValues ... dependent dof values
     virtual void GetGlobalDofValues(int rTimeDerivative, FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const;
 
+
+    //! @brief write dof values to the node (based on global dof number) for a specific dof type
+    //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
+    //! @param rDofType ... specific dof type
+    //! @param rActiveDofValues ... active dof values
+    //! @param rDependentDofValues ... dependent dof values
+    virtual void SetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues);
+
+    //! @brief extract dof values from the node (based on global dof number) for a specific dof type
+    //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
+    //! @param rDofType ... specific dof type
+    //! @param rActiveDofValues ... active dof values
+    //! @param rDependentDofValues ... dependent dof values
+    virtual void GetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const;
+
+
     //! @brief extract all dof numbers from the node (based on global dof number)
     //virtual int* GetGlobalDofs();
 
     //! @brief renumber the global dofs according to predefined ordering
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
     virtual void RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering);
+
+    //! @brief renumber the global dofs according to predefined ordering
+    //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
+    virtual void RenumberGlobalDofs(Node::eDof rDof, std::vector<int>& rMappingInitialToNewOrdering);
+
 
     //! @brief returns the number of time derivatives stored at the node
     //! @return number of derivatives

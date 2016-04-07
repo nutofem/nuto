@@ -516,7 +516,7 @@ NuTo::Error::eError NuTo::StrainGradientDamagePlasticityEngineeringStress::Evalu
                 //it is scaled related to the length (based on the direction of the first principal plastic strain)
                 double dOmegadKappa;
                 double oneMinusOmega = 1.-CalculateDerivativeDamage(kappa, kappaD, dOmegadKappa);
-                assert(fabs(oneMinusOmega+omega-1.)<1e-10);
+                assert(std::abs(oneMinusOmega+omega-1.)<1e-10);
                 //rLogger << "omega " << 1.-oneMinusOmega << "\n";
                 if (unloading)
                 {
@@ -1454,14 +1454,14 @@ NuTo::Error::eError NuTo::StrainGradientDamagePlasticityEngineeringStress::Retur
 #ifdef ENABLE_DEBUG
 						rLogger << iteration <<" hessian" << "\n" << hessian << "\n" << "\n";
 
-						if (fabs(hessian.determinant())<toleranceDeterminant)
+						if (std::abs(hessian.determinant())<toleranceDeterminant)
 						{
 							rLogger << "hessian"<< "\n" << hessian << "\n";
 							rLogger << "trialStress"<< "\n" << trialStress << "\n";
 							rLogger << "rYieldConditionFlag " <<  "\n" << rYieldConditionFlag.transpose() << "\n" << "\n";
 						}
 #endif
-						assert(fabs(hessian.determinant())>toleranceDeterminant);
+						assert(std::abs(hessian.determinant())>toleranceDeterminant);
 
 						hessian = hessian.inverse().eval();
 #ifdef ENABLE_DEBUG
@@ -1478,7 +1478,7 @@ NuTo::Error::eError NuTo::StrainGradientDamagePlasticityEngineeringStress::Retur
 							{
 								if (rYieldConditionFlag(count) == INACTIVE)
 									continue;
-								if (fabs(yieldCondition(count)) > toleranceYieldSurface*f_ct)
+								if (std::abs(yieldCondition(count)) > toleranceYieldSurface*f_ct)
 								{
 									convergenceFlagYieldCondition = false;
 									break;
@@ -1558,7 +1558,7 @@ NuTo::Error::eError NuTo::StrainGradientDamagePlasticityEngineeringStress::Retur
 									}
 
 									// solve linearized system of equations for G_inv
-									assert(fabs(matG.determinant())>toleranceDeterminant);
+									assert(std::abs(matG.determinant())>toleranceDeterminant);
 									matGInv = matG.inverse().eval();
 
 #ifdef ENABLE_DEBUG
@@ -1749,7 +1749,7 @@ NuTo::Error::eError NuTo::StrainGradientDamagePlasticityEngineeringStress::Retur
 								assert(curYieldFunction==numActiveYieldFunctions);
 
 								// solve linearized system of equations for G_inv
-								assert(fabs(matG.determinant())>toleranceDeterminant);
+								assert(std::abs(matG.determinant())>toleranceDeterminant);
 #ifdef ENABLE_DEBUG
 								rLogger << "G and determinant" << matG.determinant() << "\n";
 								rLogger << matG << "\n";
@@ -2369,14 +2369,14 @@ NuTo::Error::eError NuTo::StrainGradientDamagePlasticityEngineeringStress::Retur
 #ifdef ENABLE_DEBUG
                     rLogger << iteration <<" hessian" << "\n" << hessian << "\n" << "\n";
 
-                    if (fabs(hessian.determinant())<toleranceDeterminant)
+                    if (std::abs(hessian.determinant())<toleranceDeterminant)
                     {
                         rLogger << "hessian"<< "\n" << hessian << "\n";
                         rLogger << "trialStress"<< "\n" << trialStress << "\n";
                         rLogger << "yieldConditionFlag " <<  "\n" << yieldConditionFlag.transpose() << "\n" << "\n";
                     }
 #endif
-                    assert(fabs(hessian.determinant())>toleranceDeterminant);
+                    assert(std::abs(hessian.determinant())>toleranceDeterminant);
 
                     hessian = hessian.inverse().eval();
 #ifdef ENABLE_DEBUG
@@ -2393,7 +2393,7 @@ NuTo::Error::eError NuTo::StrainGradientDamagePlasticityEngineeringStress::Retur
                         {
                             if (yieldConditionFlag(count) == INACTIVE)
                                 continue;
-                            if (fabs(yieldCondition(count)) > toleranceYieldSurface*f_ct)
+                            if (std::abs(yieldCondition(count)) > toleranceYieldSurface*f_ct)
                             {
                                 convergenceFlagYieldCondition = false;
                                 break;
@@ -2470,7 +2470,7 @@ NuTo::Error::eError NuTo::StrainGradientDamagePlasticityEngineeringStress::Retur
                             }
 
                             // solve linearized system of equations for G_inv
-                            assert(fabs(matG.determinant())>toleranceDeterminant);
+                            assert(std::abs(matG.determinant())>toleranceDeterminant);
                             matGInv = matG.inverse();
 
 #ifdef ENABLE_DEBUG
@@ -2550,7 +2550,7 @@ NuTo::Error::eError NuTo::StrainGradientDamagePlasticityEngineeringStress::Retur
                             assert(curYieldFunction==numActiveYieldFunctions);
 
                             // solve linearized system of equations for G_inv
-                            assert(fabs(matG.determinant())>toleranceDeterminant);
+                            assert(std::abs(matG.determinant())>toleranceDeterminant);
 #ifdef ENABLE_DEBUG
                             rLogger << "G and determinant" << matG.determinant() << "\n";
                             rLogger << matG << "\n";
@@ -3171,8 +3171,8 @@ NuTo::Error::eError NuTo::StrainGradientDamagePlasticityEngineeringStress::Retur
 									//throw MechanicsException("[NuTo::Mechanics::StrainGradientDamagePlasticityEngineeringStress] Error calculating first derivative of yield function.");
 								}
 
-								// fabs is checked, since of the type of the yield surface changes, the second derivatives are likely to change as well
-								//if (fabs(principal[0])>delta && fabs(principal[1])>delta && fabs(principal[2])>delta)
+								// std::abs is checked, since of the type of the yield surface changes, the second derivatives are likely to change as well
+								//if (std::abs(principal[0])>delta && std::abs(principal[1])>delta && std::abs(principal[2])>delta)
 								{
 									if ((d2F_d2SigmaCDF-(d2F_d2SigmaExact)).array().abs().maxCoeff()>1e-1)
 									{
@@ -3236,14 +3236,14 @@ NuTo::Error::eError NuTo::StrainGradientDamagePlasticityEngineeringStress::Retur
 #ifdef ENABLE_DEBUG
                     rLogger << iteration <<" hessian" << "\n" << hessian << "\n" << "\n";
 
-                    if (fabs(hessian.determinant())<toleranceDeterminant)
+                    if (std::abs(hessian.determinant())<toleranceDeterminant)
                     {
                         rLogger << "hessian"<< "\n" << hessian << "\n";
                         rLogger << "trialStress"<< "\n" << trialStress << "\n";
                         rLogger << "yieldConditionFlag " <<  "\n" << yieldConditionFlag.transpose() << "\n" << "\n";
                     }
 #endif
-                    assert(fabs(hessian.determinant())>toleranceDeterminant);
+                    assert(std::abs(hessian.determinant())>toleranceDeterminant);
 
                     hessian = hessian.inverse().eval();
 #ifdef ENABLE_DEBUG
@@ -3260,7 +3260,7 @@ NuTo::Error::eError NuTo::StrainGradientDamagePlasticityEngineeringStress::Retur
                         {
                             if (yieldConditionFlag(count) == INACTIVE)
                                 continue;
-                            if (fabs(yieldCondition(count)) > toleranceYieldSurface*f_ct)
+                            if (std::abs(yieldCondition(count)) > toleranceYieldSurface*f_ct)
                             {
                                 convergenceFlagYieldCondition = false;
                                 break;
@@ -3337,7 +3337,7 @@ NuTo::Error::eError NuTo::StrainGradientDamagePlasticityEngineeringStress::Retur
                             }
 
                             // solve linearized system of equations for G_inv
-                            assert(fabs(matG.determinant())>toleranceDeterminant);
+                            assert(std::abs(matG.determinant())>toleranceDeterminant);
                             matGInv = matG.inverse();
 
 #ifdef ENABLE_DEBUG
@@ -3427,7 +3427,7 @@ NuTo::Error::eError NuTo::StrainGradientDamagePlasticityEngineeringStress::Retur
                             assert(curYieldFunction==numActiveYieldFunctions);
 
                             // solve linearized system of equations for G_inv
-                            assert(fabs(matG.determinant())>toleranceDeterminant);
+                            assert(std::abs(matG.determinant())>toleranceDeterminant);
 #ifdef ENABLE_DEBUG
                             rLogger << "G and determinant" << matG.determinant() << "\n";
                             rLogger << matG << "\n";
@@ -4102,10 +4102,10 @@ void NuTo::StrainGradientDamagePlasticityEngineeringStress::YieldSurfaceRankine2
             throw MechanicsException("[NuTo::Mechanics::StrainGradientDamagePlasticityEngineeringStress] Error calculating first derivative of yield function.");
         }
 
-        // fabs is checked, since of the type of the yield surface changes, the second derivatives are likely to change as well
-        if (fabs(sigma_1)>delta && fabs(sigma_2)>delta && fabs(rStress(3))>delta)
+        // std::abs is checked, since of the type of the yield surface changes, the second derivatives are likely to change as well
+        if (std::abs(sigma_1)>delta && std::abs(sigma_2)>delta && std::abs(rStress(3))>delta)
         {
-            if ((rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).array().abs().maxCoeff()>1e-1 && fabs(sigma_1)>delta && fabs(sigma_2)>delta && fabs(rStress(3))>delta)
+            if ((rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).array().abs().maxCoeff()>1e-1 && std::abs(sigma_1)>delta && std::abs(sigma_2)>delta && std::abs(rStress(3))>delta)
             {
                 std::cout << "sigmas principal" << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << "\n";
                 std::cout << "sigmas " << rStress(0) << " " << rStress(1) <<  " " << rStress(2) <<  " " <<rStress(3) << "\n";
@@ -4174,7 +4174,7 @@ bool NuTo::StrainGradientDamagePlasticityEngineeringStress::YieldSurfaceDruckerP
                             (rStress(0)-rStress(3))*(rStress(0)-rStress(3)))/6.+
                              rStress(2)*rStress(2);
 
-    if (fabs(invariante_2)<1e-12)
+    if (std::abs(invariante_2)<1e-12)
         return false;
     double factor = 1./(sqrt(invariante_2)*6.);
 
@@ -4313,7 +4313,7 @@ double NuTo::StrainGradientDamagePlasticityEngineeringStress::YieldSurfaceRounde
 #endif
     assert(D<tolerance_D);
 
-    if (fabs(q)<tolerance_q && D>-tolerance_D)
+    if (std::abs(q)<tolerance_q && D>-tolerance_D)
     {
         //three identical eigenvalues
     	assert(D>-tolerance_D);
@@ -4477,9 +4477,9 @@ double NuTo::StrainGradientDamagePlasticityEngineeringStress::YieldSurfaceRounde
                     }
                 }
             }
-            if (fabs(q)>=tolerance_q)
+            if (std::abs(q)>=tolerance_q)
             {
-                assert(fabs(p)>tolerance_D);
+                assert(std::abs(p)>tolerance_D);
                 // P
                 factor1 = q<0 ? 1./(2.*sqrt_minus_p) : -1./(2.*sqrt_minus_p);
                 dP_ds[0] = factor1*dp_ds[0];

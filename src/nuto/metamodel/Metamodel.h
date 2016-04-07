@@ -8,15 +8,12 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include <string>
-#include <time.h>
+#include <random>
 
 #include "nuto/metamodel/MetamodelException.h"
 #include "nuto/base/NuToObject.h"
 #include "nuto/metamodel/SupportPoints.h"
 
-extern "C" { 
-#include <dSFMT.h>
-}
 
 namespace NuTo
 {
@@ -136,7 +133,7 @@ public:
 protected:
 
     NuTo::SupportPoints mSupportPoints;
-    dsfmt_t mRandomNumberGenerator;
+    std::mt19937_64 mRandomNumberGenerator;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

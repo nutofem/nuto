@@ -131,7 +131,12 @@ FullMatrix<T,rows,cols>::FullMatrix ( const FullMatrix<T,rows,cols>& rOther ): E
 template<class T, int rows, int cols>
 FullMatrix<T,rows,cols>::FullMatrix ( const SparseMatrix<T>& rOther )
 {
-	rOther.WriteEntriesToMatrix(*this);
+    size_t expectedSize =  sizeof(T) * rOther.GetNumColumns() * rOther.GetNumRows();
+    size_t GB = 1e+9; // byte
+
+    if (expectedSize > 5 * GB)
+        throw MathException(__PRETTY_FUNCTION__, "Sparse matrix is too large for FullMatrix conversion. Approx. size of the FullMatrix would be " + std::to_string(expectedSize/GB) + "GB.");
+    rOther.WriteEntriesToMatrix(*this);
 }
 
 //! @brief ... assignment constructor
@@ -1457,6 +1462,17 @@ template<class T, int rows, int cols>
 T FullMatrix<T,rows,cols>::Sum() const
 {
 	return this->sum();
+}
+
+//! @brief ... sets small matrix entries to zero - e.g. for output formating
+//! @param rTolerance ... cut-off tolerance
+template<class T, int rows, int cols>
+void FullMatrix<T,rows,cols>::SetSmallEntriesZero(double rTolerance)
+{
+    for (int j = 0; j < this->cols(); ++j)
+        for (int i = 0; i < this->rows(); ++i)
+            if (std::abs((*this)(i, j)) < rTolerance)
+                (*this)(i, j) = 0;
 }
 
 //! @brief ... calculates the sum of the entries for each column

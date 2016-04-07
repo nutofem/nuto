@@ -115,14 +115,14 @@ double NuTo::ConstraintBase::GetRHS()const
 
 //!@brief set the strain of the periodic boundary conditions
 //!@param rStrain strain (e_xx,e_yy,gamma_xy)
-void NuTo::ConstraintBase::SetStrain(const NuTo::EngineeringStrain2D& rStrain)
+void NuTo::ConstraintBase::SetStrain(const NuTo::EngineeringStrain<2>& rStrain)
 {
     throw MechanicsException("[NuTo::ConstraintBase] Set strain for this type of constraints not implemented.");
 }
 
 //!@brief get the strain of the strain for a constrain equation
 //!@return rStrain strain (e_xx,e_yy,gamma_xy)
-const NuTo::EngineeringStrain2D& NuTo::ConstraintBase::GetStrain()const
+const NuTo::EngineeringStrain<2>& NuTo::ConstraintBase::GetStrain()const
 {
     throw MechanicsException("[NuTo::ConstraintBase] Get strain for this type of constraints not implemented.");
 }

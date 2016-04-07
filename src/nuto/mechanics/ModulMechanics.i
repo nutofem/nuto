@@ -20,8 +20,25 @@
 %include "nuto/base/ModulNuToBase.i"
 
 
-
 %include "nuto/mechanics/structures/StructureBase.h"
 %include "nuto/mechanics/structures/unstructured/Structure.h"
 %include "nuto/mechanics/elements/ElementEnum.h"
+
+%include "nuto/mechanics/dofSubMatrixStorage/BlockStorageBase.h"
+%include "nuto/mechanics/dofSubMatrixStorage/DofStatus.h"
+%include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
+%include "nuto/mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
+%include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
+%include "nuto/mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
+
+%include "nuto/mechanics/structures/StructureOutputBase.h"
+%include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
+%include "nuto/mechanics/structures/StructureOutputBlockVector.h"
+
+%template(DoubleBlockFullMatrix) NuTo::BlockFullMatrix<double>;
+%template(DoubleBlockFullVector) NuTo::BlockFullVector<double>;
+%template(IntBlockFullVector) NuTo::BlockFullVector<int>;
+
+
+
 

@@ -7,13 +7,13 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation1D.h"
 
-NuTo::Interpolation1D::Interpolation1D(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
+NuTo::Interpolation1D::Interpolation1D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
         InterpolationBase::InterpolationBase(rDofType, rTypeOrder, rDimension)
 {
 
 }
 
-const std::vector<Eigen::VectorXd> NuTo::Interpolation1D::GetSurfaceEdgesCoordinates(int rSurface) const
+std::vector<Eigen::VectorXd> NuTo::Interpolation1D::GetSurfaceEdgesCoordinates(int rSurface) const
 {
     Eigen::VectorXd dummy; // has no influence in 1D
     return std::vector<Eigen::VectorXd>(1, this->CalculateNaturalSurfaceCoordinates(dummy, rSurface));
@@ -38,9 +38,10 @@ int NuTo::Interpolation1D::GetNumDofsPerNode() const
     case NuTo::Node::WATERVOLUMEFRACTION:
         return 1;
     default:
-        throw NuTo::MechanicsException("[NuTo::Interpolation1D::GetNumDofsPerNode] dof type not found.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "dof type not found.");
     }
 }
+
 
 #ifdef ENABLE_SERIALIZATION
 template void NuTo::Interpolation1D::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);

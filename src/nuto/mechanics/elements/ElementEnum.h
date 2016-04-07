@@ -2,44 +2,66 @@
 #ifndef ELEMENTENUM_H_
 #define ELEMENTENUM_H_
 
+#include <map>
+#include <algorithm>
+#include "nuto/mechanics/MechanicsException.h"
+
 namespace NuTo
 {
 namespace Element
 {
 enum eElementType
 {
-    BOUNDARYGRADIENTDAMAGE1D=0,     //!< boundary element for gradient models
-    BOUNDARYMOISTURETRANSPORT1D,    //!< boundary element for moisture transport
-    BRICK8N,                        //!< three-dimensional brick element with 8 nodes
-    BRICK20N,                       //!< three-dimensional brick element with 20 nodes - serendipitiy
-    PLANE2D10N,                     //!< two-dimensional plane element with 10 nodes
-    PLANE2D15N,                     //!< two-dimensional plane element with 10 nodes
-    PLANE2D3N,                      //!< two-dimensional plane element with 3 nodes
-    PLANE2D4N,                      //!< two-dimensional plane element with 4 nodes
-    PLANE2D4NSPECTRALORDER2,        //!< two-dimensional plane element with 2x2 nodes for geometry interpolation and 3x3 for field interpolation
-    PLANE2D4NSPECTRALORDER3,        //!< two-dimensional plane element with 2x2 nodes for geometry interpolation and 4x4 for field interpolation
-    PLANE2D4NSPECTRALORDER4,        //!< two-dimensional plane element with 2x2 nodes for geometry interpolation and 5x5 for field interpolation
-    PLANE2D6N,                      //!< two-dimensional plane element with 6 nodes
-    TETRAHEDRON4N,                  //!< three-dimensional tetrahedron element with 4 nodes
-    TETRAHEDRON10N,                 //!< three-dimensional tetrahedron element with 10 nodes
-    TRUSS1D2N,                      //!< one-dimensional truss element with two nodes
-    TRUSS1D3N,                      //!< one-dimensional truss element with three nodes
-    TRUSS1D4NDISP3NX,               //!< one-dimensional truss element with four nodes for displacements, three for another dof
-    TRUSS1D2NSPECTRALORDER2,        //!< one-dimensional truss element with two nodes for geometry and 3 for field interpolation
-    TRUSS1D2NSPECTRALORDER3,        //!< one-dimensional truss element with two nodes for geometry and 4 for field interpolation
-    TRUSS1D2NSPECTRALORDER4,        //!< one-dimensional truss element with two nodes for geometry and 5 for field interpolation
-    ELEMENT1D,                      //!< one dimensional element
-    ELEMENT1DINXD,                  //!< one dimensional element in 2D or 3D
-    ELEMENT1DSPRING,                //!< one dimensional spring element
-    ELEMENT2D,                      //!< two dimensional element
-    ELEMENT2DINTERFACE,             //!< two dimensional element
-    ELEMENT3D,                      //!< three dimensional element
-    BOUNDARYELEMENT1D,              //!< boundary of 1D element --> 0D surface
-    BOUNDARYELEMENT2D,              //!< boundary of 2D element --> 1D surface
-    BOUNDARYELEMENT3D,              //!< boundary of 3D element --> 2D surface
-    BOUNDARYELEMENT2DADDITIONALNODE, //!< boundary of 2D element --> 1D surface with additional node as dependency
-    BOUNDARYELEMENT3DADDITIONALNODE //!< boundary of 3D element --> 2D surface with additional node as dependency
+
+    BOUNDARYGRADIENTDAMAGE1D=0,                     //!< boundary element for gradient models
+    BOUNDARYMOISTURETRANSPORT1D,                    //!< boundary element for moisture transport
+    CONTINUUMBOUNDARYELEMENT,                       //!< boundary of continuum element
+    CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE, //!< boundary of 2D element --> 1D surface with additional node as dependency
+    CONTINUUMELEMENT,                               //!< continuum element, dimension should not matter
+    ELEMENT1DINXD,                                  //!< one dimensional element in 2D or 3D
+    ELEMENT1DSPRING,                                //!< one dimensional spring element
+    ELEMENT2D,                                      //!< two dimensional element
+    ELEMENT2DINTERFACE,                             //!< two dimensional element
+    ELEMENT3D,                                      //!< three dimensional element
+    PLANE2D4N,
+    PLANE2D3N,
+
 };
+
+
+static inline std::map<eElementType, std::string> GetElementTypeMap()
+{
+    std::map<eElementType, std::string> map;
+    map[CONTINUUMELEMENT]                                = "CONTINUUMELEMENT";
+    map[CONTINUUMBOUNDARYELEMENT]                        = "CONTINUUMBOUNDARYELEMENT";
+    map[CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE]  = "CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE";
+    map[ELEMENT1DINXD]                                   = "ELEMENT1DINXD";
+    return map;
+}
+
+
+static inline std::string ElementTypeToString(eElementType rType)
+{
+    try
+    {
+        return GetElementTypeMap().find(rType)->second;
+    }
+    catch (const std::out_of_range& e)
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "Enum undefined or not implemented.");
+    }
+}
+
+static inline eElementType ElementTypeToEnum(std::string rType)
+{
+    std::transform(rType.begin(), rType.end(),rType.begin(), ::toupper);
+
+    for(auto entry : GetElementTypeMap())
+        if (entry.second == rType)
+            return entry.first;
+
+    throw MechanicsException(__PRETTY_FUNCTION__, "ElementType " + rType + " has no enum equivalent or is not implemented.");
+}
 
 enum eUpdateType
 {
@@ -63,16 +85,7 @@ enum eOutput
 	UPDATE_TMP_STATIC_DATA,
 	IP_DATA,                         //!< this is primarily for plotting, give the 3D state  so for plane stress there is a z-component in the strain
 	GLOBAL_ROW_DOF,                  //!< calculates the row dofs of the local element matrices
-	GLOBAL_COLUMN_DOF,               //!< calculates the column dofs of the local element matrices
-	FATIGUE_SAVE_STATIC_DATA,		 //!< for fatigue applications: saving static data in case if the cycle jump should be repeated
-	FATIGUE_RESTORE_STATIC_DATA,     //!< cycle jump should be repeated, getting the previous state
-        FATIGUE_EXTRAPOLATE_STATIC_DATA, //!< extrapolate static data to make a jump
-        RESIDUAL_NORM_FACTOR             //!< factor to scale the residual
-};
-
-enum eInput
-{
-    SOME_LOAD                        //! < some dummy for calculating the external load vector
+	GLOBAL_COLUMN_DOF                //!< calculates the column dofs of the local element matrices
 };
 
 }

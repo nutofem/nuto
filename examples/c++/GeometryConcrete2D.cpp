@@ -121,16 +121,16 @@ int main(int argc, char* argv[])
     //**********************************************
     //          Visualisation
     //**********************************************
-    int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
-    myStructure.GroupAddElementsTotal(visualizationGroup);
+    myStructure.AddVisualizationComponent(gAggreg, NuTo::VisualizeBase::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(gAggreg, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+    myStructure.AddVisualizationComponent(gAggreg, NuTo::VisualizeBase::ENGINEERING_STRESS);
+    myStructure.AddVisualizationComponent(gAggreg, NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS);
 
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
-
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::SECTION);
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN);
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS);
+    myStructure.AddVisualizationComponent(gMatrix, NuTo::VisualizeBase::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(gMatrix, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+    myStructure.AddVisualizationComponent(gMatrix, NuTo::VisualizeBase::ENGINEERING_STRESS);
+    myStructure.AddVisualizationComponent(gMatrix, NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS);
+    myStructure.AddVisualizationComponent(gMatrix, NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN);
 
     //**********************************************
     //          Solver
@@ -146,7 +146,7 @@ int main(int argc, char* argv[])
     NuTo::FullMatrix<double, 2, 2> dispRHS;
     dispRHS << 0, 0, simulationTime, deltaD;
 
-    myIntegrationScheme.SetTimeDependentConstraint(bc, dispRHS);
+    myIntegrationScheme.AddTimeDependentConstraint(bc, dispRHS);
     myIntegrationScheme.SetTimeStep(.1*simulationTime);
     myIntegrationScheme.SetToleranceForce(1e-6);
     myIntegrationScheme.SetAutomaticTimeStepping(true);

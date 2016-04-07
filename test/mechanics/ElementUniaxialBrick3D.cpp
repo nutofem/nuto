@@ -21,7 +21,7 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
     NuTo::Structure myStructure(3);
     myStructure.SetShowTime(false);
 
-    int numElementsX = 2;
+    int numElementsX = 1;
     int numElementsY = 1;
     int numElementsZ = 1;
 
@@ -102,9 +102,9 @@ int main(int argc, char* argv[])
     {
         std::cout << "## Test failed ##" << std::endl;
         std::cout << e.ErrorMessage();
-        return -1;
+        return EXIT_FAILURE;
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 

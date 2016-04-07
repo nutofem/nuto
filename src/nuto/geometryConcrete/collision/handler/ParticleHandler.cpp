@@ -392,7 +392,7 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleHandler::
             countSphere++)
     {
         double delta = spheres(countSphere, 2) - rZCoord;
-        if (fabs(delta) < spheres(countSphere, 3))
+        if (std::abs(delta) < spheres(countSphere, 3))
         {
             double radius = sqrt(static_cast<double>(spheres(countSphere, 3) * spheres(countSphere, 3) - delta * delta));
             if (radius > rMinRadius)

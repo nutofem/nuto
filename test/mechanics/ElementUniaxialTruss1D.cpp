@@ -54,7 +54,7 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
     int mySection = myStructure.SectionCreate("Truss");
     myStructure.SectionSetArea(mySection, test.lZ*test.lY);
     myStructure.ElementTotalSetSection(mySection);
-
+    myStructure.SetNumProcessors(2);
 
     test.Run(myStructure);
 }
@@ -68,12 +68,12 @@ int main(int argc, char* argv[])
     try
     {
         Run(NuTo::Interpolation::EQUIDISTANT1);
-        Run(NuTo::Interpolation::EQUIDISTANT2);
-        Run(NuTo::Interpolation::EQUIDISTANT3);
-        Run(NuTo::Interpolation::EQUIDISTANT4);
-        Run(NuTo::Interpolation::LOBATTO2);
-        Run(NuTo::Interpolation::LOBATTO3);
-        Run(NuTo::Interpolation::LOBATTO4);
+//        Run(NuTo::Interpolation::EQUIDISTANT2);
+//        Run(NuTo::Interpolation::EQUIDISTANT3);
+//        Run(NuTo::Interpolation::EQUIDISTANT4);
+//        Run(NuTo::Interpolation::LOBATTO2);
+//        Run(NuTo::Interpolation::LOBATTO3);
+//        Run(NuTo::Interpolation::LOBATTO4);
     }
     catch (NuTo::Exception& e)
     {

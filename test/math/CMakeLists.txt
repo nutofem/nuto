@@ -32,4 +32,13 @@ IF(ENABLE_ARPACK)
  ADD_TEST(c::math::Arpack ${CMAKE_CURRENT_BUILD_DIR}/Arpack)
 ENDIF(ENABLE_ARPACK) 
 
+
+ADD_EXECUTABLE(SparseMatrixTests SparseMatrixTests.cpp)
+TARGET_LINK_LIBRARIES(SparseMatrixTests NuToMath NuToBase ${Boost_LIBRARIES})
+IF(MINGW)
+  SET_TARGET_PROPERTIES(SparseMatrixTests PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)#
+ADD_TEST(c::math::SparseMatrixTests ${CMAKE_CURRENT_BUILD_DIR}/SparseMatrixTests)
+
+
 ENDIF(ENABLE_C++_TESTS)

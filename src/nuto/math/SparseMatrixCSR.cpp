@@ -35,9 +35,9 @@ int SparseMatrixCSR<int>::RemoveZeroEntries(double rAbsoluteTolerance, double rR
 	        double maxValue = 0;
 	        for (unsigned int entryCount = 0; entryCount < this->mValues.size(); entryCount++)
 	        {
-	            if (fabs(this->mValues[entryCount]) > maxValue)
+	            if (std::abs(this->mValues[entryCount]) > maxValue)
 	            {
-	                maxValue = fabs(this->mValues[entryCount]);
+	                maxValue = std::abs(this->mValues[entryCount]);
 	            }
 	        }
 	        tolerance += rRelativeTolerance * maxValue;
@@ -52,7 +52,7 @@ int SparseMatrixCSR<int>::RemoveZeroEntries(double rAbsoluteTolerance, double rR
 	        {
 	            for (int pos = start; pos < this->mRowIndex[row + 1] -1 ; pos++)
 	            {
-	                if (fabs(this->mValues[pos]) > tolerance)
+	                if (std::abs(this->mValues[pos]) > tolerance)
 	                {
 	                    this->mValues[newPos] = this->mValues[pos];
 	                    this->mColumns[newPos] = this->mColumns[pos];
@@ -72,7 +72,7 @@ int SparseMatrixCSR<int>::RemoveZeroEntries(double rAbsoluteTolerance, double rR
 	        {
 	            for (int pos = start; pos < this->mRowIndex[row + 1]; pos++)
 	            {
-	                if (fabs(this->mValues[pos]) > tolerance)
+	                if (std::abs(this->mValues[pos]) > tolerance)
 	                {
 	                    this->mValues[newPos] = this->mValues[pos];
 	                    this->mColumns[newPos] = this->mColumns[pos];
@@ -99,9 +99,9 @@ int SparseMatrixCSR<double>::RemoveZeroEntries(double rAbsoluteTolerance, double
         double maxValue = 0;
         for (unsigned int entryCount = 0; entryCount < this->mValues.size(); entryCount++)
         {
-            if (fabs(this->mValues[entryCount]) > maxValue)
+            if (std::abs(this->mValues[entryCount]) > maxValue)
             {
-                maxValue = fabs(this->mValues[entryCount]);
+                maxValue = std::abs(this->mValues[entryCount]);
             }
         }
         tolerance += rRelativeTolerance * maxValue;
@@ -116,7 +116,7 @@ int SparseMatrixCSR<double>::RemoveZeroEntries(double rAbsoluteTolerance, double
         {
             for (int pos = start; pos < this->mRowIndex[row + 1] -1 ; pos++)
             {
-                if (fabs(this->mValues[pos]) > tolerance)
+                if (std::abs(this->mValues[pos]) > tolerance)
                 {
                     this->mValues[newPos] = this->mValues[pos];
                     this->mColumns[newPos] = this->mColumns[pos];
@@ -136,7 +136,7 @@ int SparseMatrixCSR<double>::RemoveZeroEntries(double rAbsoluteTolerance, double
         {
             for (int pos = start; pos < this->mRowIndex[row + 1]; pos++)
             {
-                if (fabs(this->mValues[pos]) > tolerance)
+                if (std::abs(this->mValues[pos]) > tolerance)
                 {
                     this->mValues[newPos] = this->mValues[pos];
                     this->mColumns[newPos] = this->mColumns[pos];

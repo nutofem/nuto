@@ -27,6 +27,7 @@ class ConstitutiveBase;
 class ConstitutiveStaticDataBase;
 class ElementBase;
 class VisualizeComponentBase;
+class IpDataStaticDataBase;
 //! @author Joerg F. Unger
 //! @date Apr 28, 2010
 //! @brief ...
@@ -57,11 +58,17 @@ public :
 	//! @return nonlocal weights
 	virtual const std::vector<double>& GetNonlocalWeights(int rNonlocalElement)const;
 
-	virtual ConstitutiveStaticDataBase* GetStaticData();
+	virtual ConstitutiveStaticDataBase* GetStaticData(int rTimeStep = 0);
 
-    virtual const ConstitutiveStaticDataBase* GetStaticData()const;
+    virtual const ConstitutiveStaticDataBase* GetStaticData(int rTimeStep = 0)const;
 
     virtual void SetStaticData(ConstitutiveStaticDataBase* rStaticData);
+
+    virtual IpDataStaticDataBase& GetStaticDataBase();
+
+    virtual const IpDataStaticDataBase& GetStaticDataBase() const;
+
+    virtual void AllocateAdditionalStaticData(int rNumAdditionalStaticData);
 
     virtual void GetLocalIntegrationPointCoordinates2D(boost::array<double,2 >& rLocalCoordinatesFacet)const;
 
@@ -74,6 +81,7 @@ public :
 	virtual double GetIntegrationPointWeight()const;
 
 	virtual void SetIntegrationPointWeight(double);
+
 
     //! @brief returns the enum of IP data type
     //! @return enum of IPDataType

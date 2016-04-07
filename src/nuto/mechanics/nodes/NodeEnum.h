@@ -17,7 +17,7 @@ enum eNodeType
     NodeCoordinatesDofNonlocalData,
 };
 
-enum eAttributes
+enum eDof : unsigned char
 {
     COORDINATES,
     ROTATIONS,
@@ -32,45 +32,52 @@ enum eAttributes
     RELATIVEHUMIDITY
 };
 
-static inline std::map<eAttributes, std::string> GetAttributeMap()
+constexpr size_t maxDoFEnumValue = std::numeric_limits<unsigned char>::max();
+
+constexpr unsigned short CombineDofs(eDof rDof1, eDof rDof2)
 {
-    std::map<eAttributes, std::string> attributeMap;
-    attributeMap[eAttributes::COORDINATES]             = "COORDINATES";
-    attributeMap[eAttributes::ROTATIONS]               = "ROTATIONS";
-    attributeMap[eAttributes::TEMPERATURES]            = "TEMPERATURES";
-    attributeMap[eAttributes::DISPLACEMENTS]           = "DISPLACEMENTS";
-    attributeMap[eAttributes::FINESCALEDISPLACEMENTS]  = "FINESCALEDISPLACEMENTS";
-    attributeMap[eAttributes::NONLOCALDATA]            = "NONLOCALDATA";
-    attributeMap[eAttributes::NONLOCALEQPLASTICSTRAIN] = "NONLOCALEQPLASTICSTRAIN";
-    attributeMap[eAttributes::NONLOCALTOTALSTRAIN]     = "NONLOCALTOTALSTRAIN";
-    attributeMap[eAttributes::NONLOCALEQSTRAIN]        = "NONLOCALEQSTRAIN";
-    attributeMap[eAttributes::WATERVOLUMEFRACTION]     = "WATERVOLUMEFRACTION";
-    attributeMap[eAttributes::RELATIVEHUMIDITY]        = "RELATIVEHUMIDITY";
+    return rDof1 * maxDoFEnumValue + rDof2;
+}
+
+static inline std::map<eDof, std::string> GetDofMap()
+{
+    std::map<eDof, std::string> attributeMap;
+    attributeMap[eDof::COORDINATES]             = "COORDINATES";
+    attributeMap[eDof::ROTATIONS]               = "ROTATIONS";
+    attributeMap[eDof::TEMPERATURES]            = "TEMPERATURES";
+    attributeMap[eDof::DISPLACEMENTS]           = "DISPLACEMENTS";
+    attributeMap[eDof::FINESCALEDISPLACEMENTS]  = "FINESCALEDISPLACEMENTS";
+    attributeMap[eDof::NONLOCALDATA]            = "NONLOCALDATA";
+    attributeMap[eDof::NONLOCALEQPLASTICSTRAIN] = "NONLOCALEQPLASTICSTRAIN";
+    attributeMap[eDof::NONLOCALTOTALSTRAIN]     = "NONLOCALTOTALSTRAIN";
+    attributeMap[eDof::NONLOCALEQSTRAIN]        = "NONLOCALEQSTRAIN";
+    attributeMap[eDof::WATERVOLUMEFRACTION]     = "WATERVOLUMEFRACTION";
+    attributeMap[eDof::RELATIVEHUMIDITY]        = "RELATIVEHUMIDITY";
     return attributeMap;
 }
 
 
-static inline std::string AttributeToString(const eAttributes& rAttribute)
+static inline std::string DofToString(eDof rDof)
 {
     try
     {
-        return GetAttributeMap().find(rAttribute)->second;
+        return GetDofMap().find(rDof)->second;
     }
     catch (const std::out_of_range& e)
     {
-        throw NuTo::MechanicsException("[NuTo::Node::AttributeToString] Enum undefined or not implemented.");
+        throw NuTo::MechanicsException("[NuTo::Node::DofToString] Enum undefined or not implemented.");
     }
 }
 
-static inline eAttributes AttributeToEnum(const std::string& rAttribute)
+static inline eDof DofToEnum(std::string rDof)
 {
-    std::string uppercase = boost::to_upper_copy(rAttribute);
+    std::string uppercase = boost::to_upper_copy(rDof);
 
-    for(auto entry : GetAttributeMap())
+    for(auto entry : GetDofMap())
         if (entry.second == uppercase)
             return entry.first;
 
-    throw NuTo::MechanicsException("[NuTo::Node::AttributeToEnum] DofType " + rAttribute + " has no enum equivalent or is not implemented.");
+    throw NuTo::MechanicsException("[NuTo::Node::DofToEnum] DofType " + rDof + " has no enum equivalent or is not implemented.");
 }
 
 

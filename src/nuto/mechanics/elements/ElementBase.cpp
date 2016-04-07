@@ -12,8 +12,10 @@
 #include <boost/assign/ptr_map_inserter.hpp>
 
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
-#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataBase.h"
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIp.h"
@@ -25,6 +27,8 @@
 #include "nuto/mechanics/loads/LoadBase.h"
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/structures/StructureBase.h"
+
+
 
 #include <eigen3/Eigen/QR>
 #include <eigen3/Eigen/LU>
@@ -135,6 +139,18 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ElementBase)
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ElementBase)
 #endif // ENABLE_SERIALIZATION
 
+
+//! @brief calculates output data for the element with a standard input (EULER_BACKWARD static data)
+//! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
+NuTo::Error::eError NuTo::ElementBase::Evaluate(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)
+{
+    ConstitutiveInputMap input;
+    ConstitutiveCalculateStaticData calculateImplicitly(CalculateStaticData::EULER_BACKWARD);
+    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateImplicitly;
+
+    return this->Evaluate(input, rOutput);
+}
+
 //! @brief returns the id number of the element
 //! @return id
 int NuTo::ElementBase::ElementGetId() const
@@ -206,53 +222,49 @@ int NuTo::ElementBase::GetNumNodes() const
     return mInterpolationType->GetNumNodes();
 }
 
-int NuTo::ElementBase::GetNumNodes(Node::eAttributes rDofType) const
+int NuTo::ElementBase::GetNumNodes(Node::eDof rDofType) const
 {
     return mInterpolationType->Get(rDofType).GetNumNodes();
 }
 
-const Eigen::MatrixXd NuTo::ElementBase::ExtractNodeValues(Node::eAttributes rDofType) const
-{
-    return this->ExtractNodeValues(0, rDofType);
-}
 
-const Eigen::MatrixXd NuTo::ElementBase::ExtractNodeValues(int rTimeDerivative, Node::eAttributes rDofType) const
+Eigen::VectorXd NuTo::ElementBase::ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const
 {
     throw NuTo::MechanicsException("[NuTo::ElementBase::ExtractNodeValues] not implemented.");
 }
 
 
-const Eigen::VectorXd NuTo::ElementBase::InterpolateDofGlobal(const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const
+Eigen::VectorXd NuTo::ElementBase::InterpolateDofGlobal(const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const
 {
     //assert(GetLocalDimension() == GetStructure()->GetDimension() && "Global and local dimensions do not agree.");
 
     return InterpolateDofGlobal(0, rNaturalCoordinates, rDofType);
 }
 
-const Eigen::VectorXd NuTo::ElementBase::InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const
+Eigen::VectorXd NuTo::ElementBase::InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const
 {
 
     const InterpolationBase& interpolationType = mInterpolationType->Get(rDofType);
-    const Eigen::MatrixXd nodalValues = ExtractNodeValues(rTimeDerivative, rDofType);
-    const Eigen::VectorXd shapeFunctions = interpolationType.CalculateShapeFunctions(rNaturalCoordinates);
+    Eigen::MatrixXd nodalValues = ExtractNodeValues(rTimeDerivative, rDofType);
+    Eigen::MatrixXd matrixN = interpolationType.CalculateMatrixN(rNaturalCoordinates);
 
+//    std::cout << matrixN * nodalValues << std::endl;
 
-    return nodalValues * shapeFunctions;
+    return matrixN * nodalValues;
 }
 
-const Eigen::Vector3d NuTo::ElementBase::InterpolateDof3D(const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const
+Eigen::Vector3d NuTo::ElementBase::InterpolateDof3D(const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const
 {
     return InterpolateDof3D(0, rNaturalCoordinates, rDofType);
 }
 
-const Eigen::Vector3d NuTo::ElementBase::InterpolateDof3D(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eAttributes rDofType) const
+Eigen::Vector3d NuTo::ElementBase::InterpolateDof3D(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const
 {
 
     Eigen::VectorXd interpolatedDofs = InterpolateDofGlobal(rTimeDerivative, rNaturalCoordinates, rDofType);
     Eigen::Vector3d interpolation3D = Eigen::Vector3d::Zero();
 
-    for (int iRow = 0; iRow < interpolatedDofs.rows(); ++iRow)
-        interpolation3D[iRow] = interpolatedDofs[iRow];
+    interpolation3D.block(0,0, interpolatedDofs.rows(), 1) = interpolatedDofs;
 
     return interpolation3D;
 }
@@ -336,14 +348,6 @@ double NuTo::ElementBase::GetIntegrationPointWeight(int rIpNum) const
     return this->mElementData->GetIntegrationPointWeight(rIpNum);
 }
 
-//! @brief calculate the length of an edge (belonging to an integration point for lattice elements)
-//! @param rIp integration point
-//! @return edge length
-double NuTo::ElementBase::GetIpEdgeLength(int rIp) const
-{
-    throw MechanicsException("[NuTo::ElementBase::GetIpEdgeLength] not implement for this type of element. (implemented for lattice elements).");
-}
-
 //! @brief returns the static data of an integration point
 //! @param rIp integration point
 //! @return static data pointer
@@ -360,6 +364,16 @@ NuTo::ConstitutiveStaticDataBase* NuTo::ElementBase::GetStaticData(int rIp)
     return this->mElementData->GetStaticData(rIp);
 }
 
+NuTo::IpDataStaticDataBase& NuTo::ElementBase::GetStaticDataBase(int rIp)
+{
+    return mElementData->GetStaticDataBase(rIp);
+}
+
+const NuTo::IpDataStaticDataBase& NuTo::ElementBase::GetStaticDataBase(int rIp) const
+{
+    return mElementData->GetStaticDataBase(rIp);
+}
+
 //! @brief sets the static data for an integration point of an element
 //! @param rIp integration point
 //! @param rStaticData static data
@@ -373,13 +387,12 @@ void NuTo::ElementBase::SetStaticData(int rIp, ConstitutiveStaticDataBase* rStat
 
 const Eigen::Vector3d NuTo::ElementBase::GetGlobalIntegrationPointCoordinates(int rIpNum) const
 {
-    Eigen::VectorXd shapeFunctions = mInterpolationType->Get(Node::COORDINATES).GetShapeFunctions(rIpNum);
-    Eigen::MatrixXd nodeCoordinates = ExtractNodeValues(0, Node::COORDINATES);
-    assert(shapeFunctions.rows() == nodeCoordinates.cols());
+    const Eigen::MatrixXd& matrixN = mInterpolationType->Get(Node::COORDINATES).GetMatrixN(rIpNum);
+    Eigen::VectorXd nodeCoordinates = ExtractNodeValues(0, Node::COORDINATES);
 
     Eigen::Vector3d globalIntegrationPointCoordinates = Eigen::Vector3d::Zero();
-    for (int iRow = 0; iRow < nodeCoordinates.rows(); iRow++)
-        globalIntegrationPointCoordinates[iRow] = nodeCoordinates.row(iRow) * shapeFunctions;
+
+    globalIntegrationPointCoordinates.segment(0, GetLocalDimension()) = matrixN * nodeCoordinates;
 
     return globalIntegrationPointCoordinates;
 }
@@ -394,40 +407,41 @@ bool NuTo::ElementBase::GetLocalPointCoordinates(const double* rGlobCoords, doub
     throw NuTo::MechanicsException("[NuTo::ElementBase::GetLocalPointCoordinates] not implemented for this element type.");
 }
 
-//! @brief Gets the additional node of an boundary element, if it has one
-//! @return Additional boundary node
-NuTo::NodeBase *NuTo::ElementBase::GetAdditionalBoundaryNode() const
+//! @brief Gets the control node of an boundary element, if it has one
+//! @return boundary control node
+NuTo::NodeBase *NuTo::ElementBase::GetBoundaryControlNode() const
 {
-    throw NuTo::MechanicsException("[NuTo::ElementBase::GetAdditionalBoundaryNode] not implemented for this element type.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Not implemented for this element type.");
 }
 
-//! @brief sets the water volume fraction at the boundary surface
-//! @return water volume fraction at the boundary surface
-double NuTo::ElementBase::GetBoundaryWaterVolumeFraction() const
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::GetBoundaryWaterVolumeFraction] not implemented for this element type.");
-}
+//VHIRTHAMTODO Remove???
+////! @brief sets the water volume fraction at the boundary surface
+////! @return water volume fraction at the boundary surface
+//double NuTo::ElementBase::GetBoundaryWaterVolumeFraction() const
+//{
+//    throw NuTo::MechanicsException("[NuTo::ElementBase::GetBoundaryWaterVolumeFraction] not implemented for this element type.");
+//}
 
-//! @brief sets the water volume fraction at the boundary surface
-//! @param water volume fraction at the boundary surface
-void NuTo::ElementBase::SetBoundaryWaterVolumeFraction(double rBoundaryWaterVolumeFraction)
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::SetBoundaryWaterVolumeFraction] not implemented for this element type.");
-}
+////! @brief sets the water volume fraction at the boundary surface
+////! @param water volume fraction at the boundary surface
+//void NuTo::ElementBase::SetBoundaryWaterVolumeFraction(double rBoundaryWaterVolumeFraction)
+//{
+//    throw NuTo::MechanicsException("[NuTo::ElementBase::SetBoundaryWaterVolumeFraction] not implemented for this element type.");
+//}
 
-//! @brief sets the relative humidity at the boundary surface
-//! @param relative humidity at the boundary surface
-double NuTo::ElementBase::GetBoundaryRelativeHumidity() const
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::GetBoundaryRelativeHumidity] not implemented for this element type.");
-}
+////! @brief sets the relative humidity at the boundary surface
+////! @param relative humidity at the boundary surface
+//double NuTo::ElementBase::GetBoundaryRelativeHumidity() const
+//{
+//    throw NuTo::MechanicsException("[NuTo::ElementBase::GetBoundaryRelativeHumidity] not implemented for this element type.");
+//}
 
-//! @brief sets the relative humidity at the boundary surface
-//! @param relative humidity at the boundary surface
-void NuTo::ElementBase::SetBoundaryRelativeHumidity(double rBoundaryRelativeHumidity)
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::SetBoundaryRelativeHumidity] not implemented for this element type.");
-}
+////! @brief sets the relative humidity at the boundary surface
+////! @param relative humidity at the boundary surface
+//void NuTo::ElementBase::SetBoundaryRelativeHumidity(double rBoundaryRelativeHumidity)
+//{
+//    throw NuTo::MechanicsException("[NuTo::ElementBase::SetBoundaryRelativeHumidity] not implemented for this element type.");
+//}
 
 //! @brief checks if a node is inside of an element
 //! implemented with an exception for all elements, reimplementation required for those elements
@@ -477,7 +491,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
             throw NuTo::MechanicsException("[NuTo::ElementBase::Visualize] invalid dimension of local coordinates");
 
         const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
-        Eigen::Matrix<double, 3, 1> GlobalPointCoor = this->InterpolateDof3D(coords, Node::eAttributes::COORDINATES);
+        Eigen::Matrix<double, 3, 1> GlobalPointCoor = this->InterpolateDof3D(coords, Node::eDof::COORDINATES);
         unsigned int PointId = rVisualize.AddPoint(GlobalPointCoor.data());
         PointIdVec.push_back(PointId);
     }
@@ -560,7 +574,11 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
     }
 
     //determine the ipdata and determine the map
-    boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+    std::map<NuTo::Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
+    elementOutput[Element::IP_DATA] = std::make_shared<ElementOutputIpData>();
+
+    auto& elementIpDataMap = elementOutput.at(Element::IP_DATA)->GetIpData().GetIpDataMap();
+
     bool evaluateStress(false);
 
 
@@ -569,54 +587,54 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
         switch (it.get()->GetComponentEnum())
         {
         case NuTo::VisualizeBase::BOND_STRESS:
-            boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::BOND_STRESS);
-        break;
-		case NuTo::VisualizeBase::DAMAGE:
-			boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::DAMAGE);
-		break;
-		case NuTo::VisualizeBase::ENGINEERING_STRAIN:
-			boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::ENGINEERING_STRAIN);
-		break;
+            elementIpDataMap[IpData::BOND_STRESS];
+            break;
+        case NuTo::VisualizeBase::DAMAGE:
+            elementIpDataMap[IpData::DAMAGE];
+            break;
+        case NuTo::VisualizeBase::ENGINEERING_STRAIN:
+            elementIpDataMap[IpData::ENGINEERING_STRAIN];
+            break;
         case NuTo::VisualizeBase::LOCAL_EQ_STRAIN:
-            boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::LOCAL_EQ_STRAIN);
-        break;
-		case NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN:
-			boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::ENGINEERING_PLASTIC_STRAIN);
-		break;
+            elementIpDataMap[IpData::LOCAL_EQ_STRAIN];
+            break;
+        case NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN:
+            elementIpDataMap[IpData::ENGINEERING_PLASTIC_STRAIN];
+            break;
         case NuTo::VisualizeBase::TOTAL_INELASTIC_EQ_STRAIN:
-            boost::assign::ptr_map_insert<ElementOutputIpData>(elementOutput)(Element::IP_DATA, IpData::TOTAL_INELASTIC_EQ_STRAIN);
-        break;
-		case NuTo::VisualizeBase::ENGINEERING_STRESS:
-			if (evaluateStress==false)
-			{
-				boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::ENGINEERING_STRESS);
-				evaluateStress=true;
-			}
-		break;
-		case NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS:
-			if (evaluateStress==false)
-			{
-				boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::ENGINEERING_STRESS);
-				evaluateStress=true;
-			}
-		break;
-		case NuTo::VisualizeBase::HEAT_FLUX:
-			boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::HEAT_FLUX);
-		break;
-		case NuTo::VisualizeBase::DISPLACEMENTS:
-		case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
-		case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
-		case NuTo::VisualizeBase::CONSTITUTIVE:
-		case NuTo::VisualizeBase::SECTION:
-		case NuTo::VisualizeBase::ELEMENT:
-		case NuTo::VisualizeBase::CRACK:
-		case NuTo::VisualizeBase::TEMPERATURE:
-		case NuTo::VisualizeBase::ROTATION:
-		case NuTo::VisualizeBase::VELOCITY:
-		case NuTo::VisualizeBase::ACCELERATION:
-		case NuTo::VisualizeBase::ANGULAR_VELOCITY:
-		case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
-		case NuTo::VisualizeBase::PARTICLE_RADIUS:
+            elementIpDataMap[IpData::TOTAL_INELASTIC_EQ_STRAIN];
+            break;
+        case NuTo::VisualizeBase::ENGINEERING_STRESS:
+            if (evaluateStress == false)
+            {
+                elementIpDataMap[IpData::ENGINEERING_STRESS];
+                evaluateStress = true;
+            }
+            break;
+        case NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS:
+            if (evaluateStress == false)
+            {
+                elementIpDataMap[IpData::ENGINEERING_STRESS];
+                evaluateStress = true;
+            }
+            break;
+        case NuTo::VisualizeBase::HEAT_FLUX:
+            elementIpDataMap[IpData::HEAT_FLUX];
+            break;
+        case NuTo::VisualizeBase::DISPLACEMENTS:
+        case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
+        case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
+        case NuTo::VisualizeBase::CONSTITUTIVE:
+        case NuTo::VisualizeBase::SECTION:
+        case NuTo::VisualizeBase::ELEMENT:
+        case NuTo::VisualizeBase::CRACK:
+        case NuTo::VisualizeBase::TEMPERATURE:
+        case NuTo::VisualizeBase::ROTATION:
+        case NuTo::VisualizeBase::VELOCITY:
+        case NuTo::VisualizeBase::ACCELERATION:
+        case NuTo::VisualizeBase::ANGULAR_VELOCITY:
+        case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
+        case NuTo::VisualizeBase::PARTICLE_RADIUS:
         case NuTo::VisualizeBase::RELATIVE_HUMIDITY:
         case NuTo::VisualizeBase::WATER_VOLUME_FRACTION:
         default:
@@ -627,50 +645,13 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
     }
 
     //calculate the element solution
+//    ConstitutiveInputMap input;
+//    ConstitutiveCalculateStaticData calc(CalculateStaticData::USE_PREVIOUS);
+//    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calc;
+//    Evaluate(input, elementOutput);
     Evaluate(elementOutput);
 
     //assign the outputs
-
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* bondStress(nullptr);
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* damage(nullptr);
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* localEqStrain(nullptr);
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringStrain(nullptr);
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringPlasticStrain(nullptr);
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringStress(nullptr);
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* heatFlux(nullptr);
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* totalInelasticEqStrain(nullptr);
-    for (auto itElementOutput=elementOutput.begin(); itElementOutput!=elementOutput.end(); itElementOutput++)
-    {
-        switch (itElementOutput->second->GetIpDataType())
-        {
-        case NuTo::IpData::BOND_STRESS:
-            bondStress = &(itElementOutput->second->GetFullMatrixDouble());
-        break;
-		case NuTo::IpData::DAMAGE:
-			damage = &(itElementOutput->second->GetFullMatrixDouble());
-		break;
-        case NuTo::IpData::LOCAL_EQ_STRAIN:
-            localEqStrain = &(itElementOutput->second->GetFullMatrixDouble());
-        break;
-		case NuTo::IpData::ENGINEERING_STRAIN:
-			engineeringStrain = &(itElementOutput->second->GetFullMatrixDouble());
-		break;
-		case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
-			engineeringPlasticStrain = &(itElementOutput->second->GetFullMatrixDouble());
-		break;
-        case NuTo::IpData::TOTAL_INELASTIC_EQ_STRAIN:
-            totalInelasticEqStrain = &(itElementOutput->second->GetFullMatrixDouble());
-        break;
-		case NuTo::IpData::ENGINEERING_STRESS:
-			engineeringStress = &(itElementOutput->second->GetFullMatrixDouble());
-		break;
-		case NuTo::IpData::HEAT_FLUX:
-			heatFlux = &(itElementOutput->second->GetFullMatrixDouble());
-		break;
-		default:
-			throw MechanicsException("[NuTo::ElementBase::Visualize] other ipdatatypes not supported.");
-        }
-    }
 
     // store data
     for (auto const &it : rVisualizationList)
@@ -679,23 +660,25 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
         {
         case NuTo::VisualizeBase::DAMAGE:
         {
-            assert(damage != 0);
+            const auto& damage = elementIpDataMap.at(IpData::DAMAGE);
+            assert(damage.size() != 0);
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
                 unsigned int CellId = CellIdVec[CellCount];
-                rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), damage->data()[theIp]);
+                rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), damage.data()[theIp]);
             }
         }
         break;
         case NuTo::VisualizeBase::LOCAL_EQ_STRAIN:
         {
-            assert(localEqStrain!=0);
+            const auto& localEqStrain = elementIpDataMap.at(IpData::LOCAL_EQ_STRAIN);
+            assert(localEqStrain.size() != 0);
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
                 unsigned int CellId = CellIdVec[CellCount];
-                rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), localEqStrain->data()[theIp]);
+                rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), localEqStrain.data()[theIp]);
             }
         }
         break;
@@ -703,7 +686,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
                 const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
-                Eigen::Vector3d GlobalDisplacements = this->InterpolateDof3D(coords, Node::eAttributes::DISPLACEMENTS);
+                Eigen::Vector3d GlobalDisplacements = this->InterpolateDof3D(coords, Node::eDof::DISPLACEMENTS);
                 unsigned int PointId = PointIdVec[PointCount];
                 rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GlobalDisplacements.data());
             }
@@ -712,7 +695,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
                 const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
-                Eigen::Vector3d GlobalVelocity = this->InterpolateDof3D(1, coords, Node::eAttributes::DISPLACEMENTS);
+                Eigen::Vector3d GlobalVelocity = this->InterpolateDof3D(1, coords, Node::eDof::DISPLACEMENTS);
                 unsigned int PointId = PointIdVec[PointCount];
                 rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GlobalVelocity.data());
             }
@@ -721,28 +704,28 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
                 const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
-                Eigen::Vector3d GlobalAcceleration = this->InterpolateDof3D(2, coords, Node::eAttributes::DISPLACEMENTS);
+                Eigen::Vector3d GlobalAcceleration = this->InterpolateDof3D(2, coords, Node::eDof::DISPLACEMENTS);
                 unsigned int PointId = PointIdVec[PointCount];
                 rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GlobalAcceleration.data());
             }
             break;
         case NuTo::VisualizeBase::ENGINEERING_STRAIN:
         {
-            assert(engineeringStrain != 0);
+            const auto& engineeringStrain = elementIpDataMap.at(IpData::ENGINEERING_STRAIN);
+            assert(engineeringStrain.size() != 0);
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
-                const double* EngineeringStrainVector = &(engineeringStrain->data()[theIp * 6]);
-                double EngineeringStrainTensor[9];
-                EngineeringStrainTensor[0] = EngineeringStrainVector[0];
-                EngineeringStrainTensor[1] = 0.5 * EngineeringStrainVector[3];
-                EngineeringStrainTensor[2] = 0.5 * EngineeringStrainVector[5];
-                EngineeringStrainTensor[3] = 0.5 * EngineeringStrainVector[3];
-                EngineeringStrainTensor[4] = EngineeringStrainVector[1];
-                EngineeringStrainTensor[5] = 0.5 * EngineeringStrainVector[4];
-                EngineeringStrainTensor[6] = 0.5 * EngineeringStrainVector[5];
-                EngineeringStrainTensor[7] = 0.5 * EngineeringStrainVector[4];
-                EngineeringStrainTensor[8] = EngineeringStrainVector[2];
+                 double EngineeringStrainTensor[9];
+                EngineeringStrainTensor[0] =       engineeringStrain(0, theIp);
+                EngineeringStrainTensor[1] = 0.5 * engineeringStrain(3, theIp);
+                EngineeringStrainTensor[2] = 0.5 * engineeringStrain(5, theIp);
+                EngineeringStrainTensor[3] = 0.5 * engineeringStrain(3, theIp);
+                EngineeringStrainTensor[4] =       engineeringStrain(1, theIp);
+                EngineeringStrainTensor[5] = 0.5 * engineeringStrain(4, theIp);
+                EngineeringStrainTensor[6] = 0.5 * engineeringStrain(5, theIp);
+                EngineeringStrainTensor[7] = 0.5 * engineeringStrain(4, theIp);
+                EngineeringStrainTensor[8] =       engineeringStrain(2, theIp);
 
                 unsigned int CellId = CellIdVec[CellCount];
                 rVisualize.SetCellDataTensor(CellId, it.get()->GetComponentName(), EngineeringStrainTensor);
@@ -751,21 +734,21 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
             break;
         case NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN:
         {
-            assert(engineeringPlasticStrain != 0);
+            const auto& engineeringPlasticStrain = elementIpDataMap.at(IpData::ENGINEERING_PLASTIC_STRAIN);
+            assert(engineeringPlasticStrain.size() != 0);
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
-                const double* EngineeringStrainVector = &(engineeringPlasticStrain->data()[theIp * 6]);
                 double EngineeringStrainTensor[9];
-                EngineeringStrainTensor[0] = EngineeringStrainVector[0];
-                EngineeringStrainTensor[1] = 0.5 * EngineeringStrainVector[3];
-                EngineeringStrainTensor[2] = 0.5 * EngineeringStrainVector[5];
-                EngineeringStrainTensor[3] = 0.5 * EngineeringStrainVector[3];
-                EngineeringStrainTensor[4] = EngineeringStrainVector[1];
-                EngineeringStrainTensor[5] = 0.5 * EngineeringStrainVector[4];
-                EngineeringStrainTensor[6] = 0.5 * EngineeringStrainVector[5];
-                EngineeringStrainTensor[7] = 0.5 * EngineeringStrainVector[4];
-                EngineeringStrainTensor[8] = EngineeringStrainVector[2];
+                EngineeringStrainTensor[0] =       engineeringPlasticStrain(0, theIp);
+                EngineeringStrainTensor[1] = 0.5 * engineeringPlasticStrain(3, theIp);
+                EngineeringStrainTensor[2] = 0.5 * engineeringPlasticStrain(5, theIp);
+                EngineeringStrainTensor[3] = 0.5 * engineeringPlasticStrain(3, theIp);
+                EngineeringStrainTensor[4] =       engineeringPlasticStrain(1, theIp);
+                EngineeringStrainTensor[5] = 0.5 * engineeringPlasticStrain(4, theIp);
+                EngineeringStrainTensor[6] = 0.5 * engineeringPlasticStrain(5, theIp);
+                EngineeringStrainTensor[7] = 0.5 * engineeringPlasticStrain(4, theIp);
+                EngineeringStrainTensor[8] =       engineeringPlasticStrain(2, theIp);
 
                 unsigned int CellId = CellIdVec[CellCount];
                 rVisualize.SetCellDataTensor(CellId, it.get()->GetComponentName(), EngineeringStrainTensor);
@@ -774,32 +757,33 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
             break;
         case NuTo::VisualizeBase::TOTAL_INELASTIC_EQ_STRAIN:
         {
-            assert(totalInelasticEqStrain != 0);
+            const auto& totalInelasticEqStrain = elementIpDataMap.at(IpData::TOTAL_INELASTIC_EQ_STRAIN);
+            assert(totalInelasticEqStrain.size() != 0);
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
                 unsigned int CellId = CellIdVec[CellCount];
-                rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), totalInelasticEqStrain->data()[theIp]);
+                rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), totalInelasticEqStrain.data()[theIp]);
             }
         }
             break;
         case NuTo::VisualizeBase::ENGINEERING_STRESS:
         {
-            assert(engineeringStress != 0);
+            const auto& engineeringStress = elementIpDataMap.at(IpData::ENGINEERING_STRESS);
+            assert(engineeringStress.size() != 0);
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
-                const double* EngineeringStressVector = &(engineeringStress->data()[theIp * 6]);
                 double EngineeringStressTensor[9];
-                EngineeringStressTensor[0] = EngineeringStressVector[0];
-                EngineeringStressTensor[1] = EngineeringStressVector[3];
-                EngineeringStressTensor[2] = EngineeringStressVector[5];
-                EngineeringStressTensor[3] = EngineeringStressVector[3];
-                EngineeringStressTensor[4] = EngineeringStressVector[1];
-                EngineeringStressTensor[5] = EngineeringStressVector[4];
-                EngineeringStressTensor[6] = EngineeringStressVector[5];
-                EngineeringStressTensor[7] = EngineeringStressVector[4];
-                EngineeringStressTensor[8] = EngineeringStressVector[2];
+                EngineeringStressTensor[0] = engineeringStress(0, theIp);
+                EngineeringStressTensor[1] = engineeringStress(3, theIp);
+                EngineeringStressTensor[2] = engineeringStress(5, theIp);
+                EngineeringStressTensor[3] = engineeringStress(3, theIp);
+                EngineeringStressTensor[4] = engineeringStress(1, theIp);
+                EngineeringStressTensor[5] = engineeringStress(4, theIp);
+                EngineeringStressTensor[6] = engineeringStress(5, theIp);
+                EngineeringStressTensor[7] = engineeringStress(4, theIp);
+                EngineeringStressTensor[8] = engineeringStress(2, theIp);
 
                 //std::cout<<"[NuTo::ElementBase::VisualizeEngineeringStressTensor]" << EngineeringStressTensor[0] << EngineeringStressTensor[1] << std::endl;
                 unsigned int CellId = CellIdVec[CellCount];
@@ -809,14 +793,14 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
             break;
         case NuTo::VisualizeBase::BOND_STRESS:
         {
-            assert(bondStress != nullptr);
+            const auto& bondStress = elementIpDataMap.at(IpData::BOND_STRESS);
+            assert(bondStress.size() != 0);
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
-                const double* bondStressVector = &(bondStress->data()[theIp * 2]);
                 double bondStressTensor[9];
-                bondStressTensor[0] = bondStressVector[0];
-                bondStressTensor[1] = bondStressVector[1];
+                bondStressTensor[0] = bondStress(0, theIp);
+                bondStressTensor[1] = bondStress(1, theIp);
                 bondStressTensor[2] = 0.0;
                 bondStressTensor[3] = 0.0;
                 bondStressTensor[4] = 0.0;
@@ -832,22 +816,22 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
             break;
         case NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS:
         {
-            assert(engineeringStress != 0);
+            const auto& engineeringStress = elementIpDataMap.at(IpData::ENGINEERING_STRESS);
+            assert(engineeringStress.size() != 0);
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
-                const double* EngineeringStressVector = &(engineeringStress->data()[theIp * 6]);
                 Eigen::Matrix<double, 3, 3> EngineeringStressTensor;
 
-                EngineeringStressTensor(0, 0) = EngineeringStressVector[0];
-                EngineeringStressTensor(1, 0) = EngineeringStressVector[3];
-                EngineeringStressTensor(2, 0) = EngineeringStressVector[5];
-                EngineeringStressTensor(0, 1) = EngineeringStressVector[3];
-                EngineeringStressTensor(1, 1) = EngineeringStressVector[1];
-                EngineeringStressTensor(2, 1) = EngineeringStressVector[4];
-                EngineeringStressTensor(0, 2) = EngineeringStressVector[5];
-                EngineeringStressTensor(1, 2) = EngineeringStressVector[4];
-                EngineeringStressTensor(2, 2) = EngineeringStressVector[2];
+                EngineeringStressTensor(0, 0) = engineeringStress(0, theIp);
+                EngineeringStressTensor(1, 0) = engineeringStress(3, theIp);
+                EngineeringStressTensor(2, 0) = engineeringStress(5, theIp);
+                EngineeringStressTensor(0, 1) = engineeringStress(3, theIp);
+                EngineeringStressTensor(1, 1) = engineeringStress(1, theIp);
+                EngineeringStressTensor(2, 1) = engineeringStress(4, theIp);
+                EngineeringStressTensor(0, 2) = engineeringStress(5, theIp);
+                EngineeringStressTensor(1, 2) = engineeringStress(4, theIp);
+                EngineeringStressTensor(2, 2) = engineeringStress(2, theIp);
 
                 //std::cout<<"[NuTo::ElementBase::VisualizeEngineeringStressTensor]" << EngineeringStressTensor[0] << EngineeringStressTensor[1] << std::endl;
                 unsigned int CellId = CellIdVec[CellCount];
@@ -915,16 +899,16 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
         case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
-                Eigen::Matrix<double, Eigen::Dynamic, 1> nonlocalEqStrain(1);
+                Eigen::VectorXd nonlocalEqStrain(1);
                 if (mInterpolationType->IsDof(Node::NONLOCALEQSTRAIN))
                 {
                     // calculate only if element has nonlocal eq strain dofs
                     const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
-                    nonlocalEqStrain = InterpolateDofGlobal(coords, Node::eAttributes::NONLOCALEQSTRAIN);
+                    nonlocalEqStrain = InterpolateDofGlobal(coords, Node::eDof::NONLOCALEQSTRAIN);
                     assert(nonlocalEqStrain.rows() == 1);
                 }
                 unsigned int PointId = PointIdVec[PointCount];
-                rVisualize.SetPointDataScalar(PointId, it.get()->GetComponentName(), nonlocalEqStrain.at(0, 0));
+                rVisualize.SetPointDataScalar(PointId, it.get()->GetComponentName(), nonlocalEqStrain[0]);
             }
             break;
         case NuTo::VisualizeBase::CONSTITUTIVE:
@@ -984,12 +968,18 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
             break;
         case NuTo::VisualizeBase::HEAT_FLUX:
         {
-            assert(heatFlux != 0);
+            const auto& heatFlux = elementIpDataMap.at(IpData::HEAT_FLUX);
+            assert(heatFlux.size() != 0);
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
                 unsigned int CellId = CellIdVec[CellCount];
-                rVisualize.SetCellDataVector(CellId, it.get()->GetComponentName(), &(heatFlux->data()[theIp * 3]));
+                double heatFlux_VISUALIZE_I_HATE_YOU_SO_MUCH_OMG[3];
+                heatFlux_VISUALIZE_I_HATE_YOU_SO_MUCH_OMG[0] = heatFlux(0, theIp);
+                heatFlux_VISUALIZE_I_HATE_YOU_SO_MUCH_OMG[1] = heatFlux(1, theIp);
+                heatFlux_VISUALIZE_I_HATE_YOU_SO_MUCH_OMG[2] = heatFlux(2, theIp);
+
+                rVisualize.SetCellDataVector(CellId, it.get()->GetComponentName(),heatFlux_VISUALIZE_I_HATE_YOU_SO_MUCH_OMG);
             }
         }
             break;
@@ -997,9 +987,9 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
                 const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
-                Eigen::VectorXd temperature = InterpolateDofGlobal(coords, Node::eAttributes::TEMPERATURES);
+                Eigen::VectorXd temperature = InterpolateDofGlobal(coords, Node::eDof::TEMPERATURES);
                 unsigned int PointId = PointIdVec[PointCount];
-                rVisualize.SetPointDataScalar(PointId, it.get()->GetComponentName(), temperature.at(0, 0));
+                rVisualize.SetPointDataScalar(PointId, it.get()->GetComponentName(), temperature[0]);
             }
             break;
 
@@ -1011,11 +1001,11 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
                 {
                     // calculate only if element has nonlocal eq strain dofs
                     const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
-                    relativeHumidity = InterpolateDofGlobal(coords, Node::eAttributes::RELATIVEHUMIDITY);
+                    relativeHumidity = InterpolateDofGlobal(coords, Node::eDof::RELATIVEHUMIDITY);
                     assert(relativeHumidity.rows() == 1);
                 }
                 unsigned int PointId = PointIdVec[PointCount];
-                rVisualize.SetPointDataScalar(PointId, it.get()->GetComponentName(), relativeHumidity.at(0, 0));
+                rVisualize.SetPointDataScalar(PointId, it.get()->GetComponentName(), relativeHumidity[0]);
             }
             break;
         case NuTo::VisualizeBase::WATER_VOLUME_FRACTION:
@@ -1026,11 +1016,11 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
                 {
                     // calculate only if element has nonlocal eq strain dofs
                     const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
-                    waterVolumeFraction = InterpolateDofGlobal(coords, Node::eAttributes::WATERVOLUMEFRACTION);
+                    waterVolumeFraction = InterpolateDofGlobal(coords, Node::eDof::WATERVOLUMEFRACTION);
                     assert(waterVolumeFraction.rows() == 1);
                 }
                 unsigned int PointId = PointIdVec[PointCount];
-                rVisualize.SetPointDataScalar(PointId, it.get()->GetComponentName(), waterVolumeFraction     .at(0,0));
+                rVisualize.SetPointDataScalar(PointId, it.get()->GetComponentName(), waterVolumeFraction[0]);
             }
             break;
         default:
@@ -1082,7 +1072,7 @@ void NuTo::ElementBase::VisualizeExtrapolateToNodes(VisualizeUnstructuredGrid& r
     {
 
         const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
-        Eigen::Matrix<double, 3, 1> GlobalPointCoor = this->InterpolateDof3D(coords, Node::eAttributes::COORDINATES);
+        Eigen::Matrix<double, 3, 1> GlobalPointCoor = this->InterpolateDof3D(coords, Node::eDof::COORDINATES);
         unsigned int PointId = rVisualize.AddPoint(GlobalPointCoor.data());
         PointIdVec.push_back(PointId);
     }
@@ -1174,7 +1164,7 @@ void NuTo::ElementBase::VisualizeExtrapolateToNodes(VisualizeUnstructuredGrid& r
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
                 const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
-                Eigen::Vector3d GlobalDisplacements = this->InterpolateDof3D(coords, Node::eAttributes::DISPLACEMENTS);
+                Eigen::Vector3d GlobalDisplacements = this->InterpolateDof3D(coords, Node::eDof::DISPLACEMENTS);
                 unsigned int PointId = PointIdVec[PointCount];
                 rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GlobalDisplacements.data());
             }
@@ -1271,7 +1261,7 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(VisualizeUnstructuredGrid&
         {
 
             const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
-            Eigen::Matrix<double, 3, 1> GlobalPointCoor = this->InterpolateDof3D(coords, Node::eAttributes::COORDINATES);
+            Eigen::Matrix<double, 3, 1> GlobalPointCoor = this->InterpolateDof3D(coords, Node::eDof::COORDINATES);
             unsigned int PointId = rVisualize.AddPoint(GlobalPointCoor.data());
             PointIdVec.push_back(PointId);
         }
@@ -1304,14 +1294,16 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(VisualizeUnstructuredGrid&
         }
 
         //determine the ipdata and determine the map
-        boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+        std::map<NuTo::Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
+        elementOutput[Element::IP_DATA] = std::make_shared<ElementOutputIpData>();
+        auto& elementIpDataMap = elementOutput[Element::IP_DATA]->GetIpData().GetIpDataMap();
 
         for (auto const &it : rVisualizationList)
         {
             switch (it.get()->GetComponentEnum())
             {
             case NuTo::VisualizeBase::ENGINEERING_STRAIN:
-                boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA ,IpData::ENGINEERING_STRAIN);
+                elementIpDataMap[IpData::ENGINEERING_STRAIN];
             break;
             default:
                 throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Visualization component " + it.get()->GetComponentName() + " is not implemented or not known at the integration points.");
@@ -1322,21 +1314,6 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(VisualizeUnstructuredGrid&
         //calculate the element solution
         Evaluate(elementOutput);
 
-        //assign the outputs
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringStrain(nullptr);
-
-        for (auto itElementOutput=elementOutput.begin(); itElementOutput!=elementOutput.end(); itElementOutput++)
-        {
-            switch (itElementOutput->second->GetIpDataType())
-            {
-            case NuTo::IpData::ENGINEERING_STRAIN:
-                engineeringStrain = &(itElementOutput->second->GetFullMatrixDouble());
-            break;
-            default:
-                throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Visualization component is not implemented or not known at the integration points.");
-            }
-        }
-
         // store data
         for (auto const &it : rVisualizationList)
         {
@@ -1344,21 +1321,21 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(VisualizeUnstructuredGrid&
             {
             case NuTo::VisualizeBase::ENGINEERING_STRAIN:
             {
-                assert(engineeringStrain != 0);
+                const auto& engineeringStrain = elementIpDataMap.at(IpData::ENGINEERING_STRAIN);
+                assert(engineeringStrain.size() != 0);
                 for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
                 {
                     unsigned int theIp = VisualizationCellsIP[CellCount];
-                    const double* EngineeringStrainVector = &(engineeringStrain->data()[theIp * 6]);
                     double EngineeringStrainTensor[9];
-                    EngineeringStrainTensor[0] = EngineeringStrainVector[0];
-                    EngineeringStrainTensor[1] = 0.5 * EngineeringStrainVector[3];
-                    EngineeringStrainTensor[2] = 0.5 * EngineeringStrainVector[5];
-                    EngineeringStrainTensor[3] = 0.5 * EngineeringStrainVector[3];
-                    EngineeringStrainTensor[4] = EngineeringStrainVector[1];
-                    EngineeringStrainTensor[5] = 0.5 * EngineeringStrainVector[4];
-                    EngineeringStrainTensor[6] = 0.5 * EngineeringStrainVector[5];
-                    EngineeringStrainTensor[7] = 0.5 * EngineeringStrainVector[4];
-                    EngineeringStrainTensor[8] = EngineeringStrainVector[2];
+                    EngineeringStrainTensor[0] =       engineeringStrain(0, theIp);
+                    EngineeringStrainTensor[1] = 0.5 * engineeringStrain(3, theIp);
+                    EngineeringStrainTensor[2] = 0.5 * engineeringStrain(5, theIp);
+                    EngineeringStrainTensor[3] = 0.5 * engineeringStrain(3, theIp);
+                    EngineeringStrainTensor[4] =       engineeringStrain(1, theIp);
+                    EngineeringStrainTensor[5] = 0.5 * engineeringStrain(4, theIp);
+                    EngineeringStrainTensor[6] = 0.5 * engineeringStrain(5, theIp);
+                    EngineeringStrainTensor[7] = 0.5 * engineeringStrain(4, theIp);
+                    EngineeringStrainTensor[8] =       engineeringStrain(2, theIp);
 
                     unsigned int CellId = CellIdVec[CellCount];
                     rVisualize.SetCellDataTensor(CellId, it.get()->GetComponentName(), EngineeringStrainTensor);
@@ -1418,24 +1395,13 @@ int NuTo::ElementBase::GetNumNonlocalElements() const
 //! @param rStress integrated stress
 void NuTo::ElementBase::GetIntegratedStress(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rStress)
 {
-    // define local variables storing the element contribution would be wrong, since at the moment you pass it to the ptr_map, you will run into problems.
-    // My theory (TT): In this case, the d'tor of the ElementOutputIpData would be called twice, trying to delete the same underlying data array twice.
-    // --> use the ptr_maps as intended with pointers, or better the insert operators
-
-    NuTo::Element::eOutput keyIP_DATA = Element::IP_DATA;
-    boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
-
-    // first brackets: the ptr_map
-    // second brackets: (KEY, arguments for c'tor of ElementOutputIpData)
-    boost::assign::ptr_map_insert<ElementOutputIpData>(elementOutput)(keyIP_DATA, IpData::ENGINEERING_STRESS);
+    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
+    elementOutput[Element::IP_DATA] = std::make_shared<ElementOutputIpData>(IpData::ENGINEERING_STRESS);
 
     this->Evaluate(elementOutput);
 
-    // optional: extract the data from the ptr_map
-    ElementOutputBase& elementOutputIpData = elementOutput.at(keyIP_DATA);
-
-    const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& ipStress = elementOutputIpData.GetFullMatrixDouble();
-    const Eigen::VectorXd ipVolume = this->GetIntegrationPointVolume();
+    const auto& ipStress = elementOutput.at(Element::IP_DATA)->GetIpData().GetIpDataMap()[IpData::ENGINEERING_STRESS];
+    Eigen::VectorXd ipVolume = this->GetIntegrationPointVolume();
 
     rStress.Resize(ipStress.GetNumRows(), 1);
     for (int countIP = 0; countIP < ipStress.GetNumColumns(); countIP++)
@@ -1448,22 +1414,18 @@ void NuTo::ElementBase::GetIntegratedStress(FullMatrix<double, Eigen::Dynamic, E
 //! @param rStrain integrated strain
 void NuTo::ElementBase::GetIntegratedStrain(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rStrain)
 {
-    // see [NuTo::ElementBase::GetIntegratedStress]
-    NuTo::Element::eOutput keyIP_DATA(Element::IP_DATA);
-
-    boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
-    boost::assign::ptr_map_insert<ElementOutputIpData>(elementOutput)(keyIP_DATA, IpData::ENGINEERING_STRAIN);
+    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
+    elementOutput[Element::IP_DATA] = std::make_shared<ElementOutputIpData>(IpData::ENGINEERING_STRAIN);
 
     this->Evaluate(elementOutput);
-    ElementOutputBase& elementOutputIpData = elementOutput.at(keyIP_DATA);
 
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rIpStrain(elementOutputIpData.GetFullMatrixDouble());
+    const auto& ipStress = elementOutput.at(Element::IP_DATA)->GetIpData().GetIpDataMap()[IpData::ENGINEERING_STRAIN];
     Eigen::VectorXd ipVolume = this->GetIntegrationPointVolume();
 
-    rStrain.Resize(rIpStrain.GetNumRows(), 1);
-    for (int countIP = 0; countIP < rIpStrain.GetNumColumns(); countIP++)
+    rStrain.Resize(ipStress.GetNumRows(), 1);
+    for (int countIP = 0; countIP < ipStress.GetNumColumns(); countIP++)
     {
-        rStrain += rIpStrain.col(countIP) * (ipVolume[countIP]);
+        rStrain += (ipStress.col(countIP) * (ipVolume[countIP]));
     }
 }
 
@@ -1488,124 +1450,20 @@ const bool NuTo::ElementBase::IsCracked() const
     return this->mElementData->IsCracked();
 }
 
-//! @brief cast the base pointer to an Element1D, otherwise throws an exception
-const NuTo::Element1D* NuTo::ElementBase::AsElement1D() const
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElement1D] Element is not of type Element1D.");
-}
 
-//! @brief cast the base pointer to an Element1D, otherwise throws an exception
-NuTo::Element1D* NuTo::ElementBase::AsElement1D()
+void NuTo::ElementBase::Info() const
 {
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElement1D] Element is not of type Element1D.");
-}
+    mStructure->GetLogger() << "[" << __PRETTY_FUNCTION__ << "] \n";
+    mStructure->GetLogger() << "InterpolationTypeInfo:\n" << GetInterpolationType()->Info() << "\n";
 
-//! @brief cast the base pointer to an Element2D, otherwise throws an exception
-const NuTo::Element2D* NuTo::ElementBase::AsElement2D() const
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElement2D] Element is not of type Element2D.");
-}
+    for (int iNode = 0; iNode < GetNumNodes(); ++iNode)
+    {
+        const NodeBase* node = GetNode(iNode);
+        mStructure->GetLogger() << "NodeInfo of local node " << iNode << ": \n";
+        mStructure->GetLogger() << node->GetNodeTypeStr() << "\n";
+    }
+//    mStructure->GetLogger() << "InterpolationTypeInfo: \n " << GetInterpolationType()->Info();
 
-//! @brief cast the base pointer to an Element2D, otherwise throws an exception
-NuTo::Element2D* NuTo::ElementBase::AsElement2D()
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElement2D] Element is not of type Element2D.");
-}
-
-//! @brief cast the base pointer to an Element3D, otherwise throws an exception
-const NuTo::Element3D* NuTo::ElementBase::AsElement3D() const
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElement3D] Element is not of type Element3D.");
-}
-
-//! @brief cast the base pointer to an Element3D, otherwise throws an exception
-NuTo::Element3D* NuTo::ElementBase::AsElement3D()
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElement3D] Element is not of type Element3D.");
-}
-
-//! @brief cast the base pointer to an BoundaryElement1D, otherwise throws an exception
-const NuTo::BoundaryElement1D* NuTo::ElementBase::AsBoundaryElement1D() const
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryElement1D] BoundaryElement is not of type BoundaryElement1D.");
-}
-
-//! @brief cast the base pointer to an BoundaryElement1D, otherwise throws an exception
-NuTo::BoundaryElement1D* NuTo::ElementBase::AsBoundaryElement1D()
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryElement1D] BoundaryElement is not of type BoundaryElement1D.");
-}
-
-//! @brief cast the base pointer to an BoundaryElement2D, otherwise throws an exception
-const NuTo::BoundaryElement2D* NuTo::ElementBase::AsBoundaryElement2D() const
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryElement2D] BoundaryElement is not of type BoundaryElement2D.");
-}
-
-//! @brief cast the base pointer to an BoundaryElement2D, otherwise throws an exception
-NuTo::BoundaryElement2D* NuTo::ElementBase::AsBoundaryElement2D()
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryElement2D] BoundaryElement is not of type BoundaryElement2D.");
-}
-
-//! @brief cast the base pointer to an BoundaryElement3D, otherwise throws an exception
-const NuTo::BoundaryElement3D* NuTo::ElementBase::AsBoundaryElement3D()const
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryElement3D] BoundaryElement is not of type BoundaryElement3D.");
-}
-
-//! @brief cast the base pointer to an BoundaryElement3D, otherwise throws an exception
-NuTo::BoundaryElement3D* NuTo::ElementBase::AsBoundaryElement3D()
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsBoundaryElement3D] BoundaryElement is not of type BoundaryElement3D.");
-}
-
-//! @brief cast the base pointer to a Plane, otherwise throws an exception
-const NuTo::Plane* NuTo::ElementBase::AsPlane() const
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementPlane] Element is not of type Plane.");
-}
-
-//! @brief cast the base pointer to a Plane, otherwise throws an exception
-NuTo::Plane* NuTo::ElementBase::AsPlane()
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementPlane] Element is not of type Plane.");
-}
-
-//! @brief cast the base pointer to a Plane, otherwise throws an exception
-const NuTo::Plane2D* NuTo::ElementBase::AsPlane2D() const
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsPlane2D] Element is not of type Plane2D.");
-}
-
-//! @brief cast the base pointer to a Plane, otherwise throws an exception
-NuTo::Plane2D* NuTo::ElementBase::AsPlane2D()
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsPlane2D] Element is not of type Plane2D.");
-}
-
-//! @brief cast the base pointer to a Solid, otherwise throws an exception
-const NuTo::Solid* NuTo::ElementBase::AsSolid() const
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementSolid] Element is not of type ElementSolid.");
-}
-
-//! @brief cast the base pointer to a Solid, otherwise throws an exception
-NuTo::Solid* NuTo::ElementBase::AsSolid()
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementSolid] Element is not of type ElementSolid.");
-}
-
-//! @brief cast the base pointer to a Truss, otherwise throws an exception
-const NuTo::Truss* NuTo::ElementBase::AsTruss() const
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementTruss] Element is not of type ElementTruss.");
-}
-
-//! @brief cast the base pointer to a Truss, otherwise throws an exception
-NuTo::Truss* NuTo::ElementBase::AsTruss()
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::AsElementTruss] Element is not of type ElementTruss.");
 }
 
 //! @brief returns the Element Data Vector

@@ -21,10 +21,12 @@ Force = 1.
 # create one-dimensional structure
 myStructure = nuto.Structure(3)
 
+myStructure.SetShowTime(False)
+
 # create material law
-Material1 = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
-myStructure.ConstitutiveLawSetParameterDouble(Material1,"YoungsModulus", YoungsModulus)
-myStructure.ConstitutiveLawSetParameterDouble(Material1,"PoissonsRatio", PoissonsRatio)
+Material1 = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress")
+myStructure.ConstitutiveLawSetParameterDouble(Material1,"Youngs_Modulus", YoungsModulus)
+myStructure.ConstitutiveLawSetParameterDouble(Material1,"Poissons_Ratio", PoissonsRatio)
 
 Section1 = myStructure.SectionCreate("Volume")
 
@@ -132,50 +134,14 @@ oldTime = curTime
 curTime = time()
 print "time required for calculating maximum independent sets: " + str(curTime - oldTime) + " s"
 
-# build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-stiffnessMatrix = nuto.DoubleSparseMatrixCSRVector2General()
-dispForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrix, dispForceVector)
-oldTime = curTime
-curTime = time()
-print "time required for assembling: " + str(curTime - oldTime) + " s"
-
-# build global external load vector
-extForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalExternalLoadVector(0,extForceVector)
-oldTime = curTime
-curTime = time()
-print "time required for building external load vector: " + str(curTime - oldTime) + " s"
-
-# calculate right hand side
-rhsVector = dispForceVector + extForceVector
-oldTime = curTime
-curTime = time()
-print "time required for calculating right-hand-side vector: " + str(curTime - oldTime) + " s"
-
-# solve
-mySolver = nuto.SparseDirectSolverMUMPS()
-displacementVector = nuto.DoubleFullVector()
-stiffnessMatrixCSR = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrix)
-stiffnessMatrixCSR.SetOneBasedIndexing()
-mySolver.Solve(stiffnessMatrixCSR, rhsVector, displacementVector)
-oldTime = curTime
-curTime = time()
-print "time required for solving: " + str(curTime - oldTime) + " s"
-
-# write displacements to node
-myStructure.NodeMergeActiveDofValues(displacementVector)
-oldTime = curTime
-curTime = time()
-print "time required for merging dof values: " + str(curTime - oldTime) + " s"
+myStructure.SolveGlobalSystemStaticElastic()
 
 # calculate residual
-intForceVector = nuto.DoubleFullVector()
-myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector)
+intForceVector = myStructure.BuildGlobalInternalGradient()
 oldTime = curTime
 curTime = time()
 print "time required for building internal forces: " + str(curTime - oldTime) + " s"
-residualVector = extForceVector - intForceVector
+residualVector = myStructure.BuildGlobalExternalLoadVector(0).J.Get("Displacements") - intForceVector.J.Get("Displacements")
 print "residual: " + str(residualVector.Norm())
 
 # visualize results

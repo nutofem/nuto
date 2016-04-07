@@ -48,6 +48,8 @@ public:
         this->mPositiveDefinite=rOther.mPositiveDefinite;
     }
 
+    virtual ~SparseMatrix() = default;
+
     //! @brief ... get number of non-zero entries
     //! @return number of non-zero matrix entries
     virtual int GetNumEntries() const = 0;
@@ -154,9 +156,36 @@ public:
     	throw MathException("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRVector2Symmetric<T> rMatrix)] not implemented for this matrix type.");
 	}
 
+    virtual NuTo::FullMatrix<T,Eigen::Dynamic,Eigen::Dynamic> ConvertToFullMatrixDouble()
+    {
+        return NuTo::FullMatrix<T,Eigen::Dynamic,Eigen::Dynamic>(*this);
+    }
+
     virtual SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()
     {
     	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRGeneral.");
+    }
+
+    virtual SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric()
+    {
+        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRSymmetric.");
+    }
+
+    virtual SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General()
+    {
+        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRVector2General.");
+    }
+
+    virtual SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric()
+    {
+        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRVector2Symmetric.");
+    }
+
+#ifndef SWIG
+
+    virtual NuTo::FullMatrix<T,Eigen::Dynamic,Eigen::Dynamic> ConvertToFullMatrixDouble() const
+    {
+        return NuTo::FullMatrix<T,Eigen::Dynamic,Eigen::Dynamic>(*this);
     }
 
     virtual const SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()const
@@ -164,35 +193,25 @@ public:
     	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRGeneral.");
     }
 
-    virtual SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric()
-    {
-    	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRSymmetric.");
-    }
-
     virtual const SparseMatrixCSRSymmetric<T>& AsSparseMatrixCSRSymmetric()const
     {
-    	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRSymmetric.");
-    }
-
-    virtual SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General()
-    {
-    	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRVector2General.");
+        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRSymmetric.");
     }
 
     virtual const SparseMatrixCSRVector2General<T>& AsSparseMatrixCSRVector2General()const
     {
-    	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRVector2General.");
-    }
-
-    virtual SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric()
-    {
-    	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRVector2Symmetric.");
+        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRVector2General.");
     }
 
     virtual const SparseMatrixCSRVector2Symmetric<T>& AsSparseMatrixCSRVector2Symmetric()const
     {
-    	throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRVector2Symmetric.");
+        throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] matrix is not of type SparseMatrixCSRVector2Symmetric.");
     }
+#endif // SWIG
+
+
+
+
 
 
 #ifdef ENABLE_SERIALIZATION
@@ -223,16 +242,63 @@ public:
     //! @return    class name
     virtual std::string GetTypeId() const;
 
-    virtual T Max()=0;
-#ifndef SWIG
-    virtual void Max(T& result_output)=0;
-#endif
-    virtual void Max(int& row_output, int& column_output, T& result_output)=0;
-    virtual T Min()=0;
-#ifndef SWIG
-    virtual void Min(T& result_output)=0;
-#endif
-    virtual void Min(int& row_output, int& column_output, T& result_output)=0;
+    //! @brief Calculate the largest matrix entry
+    //! @param rResultOutput ... largest matrix entry
+    T Max() const
+    {
+        T max;
+        int row, col;
+        MaxEntry(row, col, max);
+        return max;
+    }
+
+    //! @brief Calculate the smallest matrix entry
+    //! @param rResultOutput ... smallest matrix entry
+    T Min() const
+    {
+        T min;
+        int row, col;
+        MinEntry(row, col, min);
+        return min;
+    }
+
+    virtual void MaxEntry(int& row_output, int& column_output, T& result_output) const = 0;
+
+    virtual void MinEntry(int& row_output, int& column_output, T& result_output) const = 0;
+
+    //! @brief calculates the largest absolute matrix entry with the corresponding position
+    //! @param rRow ... row
+    //! @param rCol ... column
+    //! @return ... largest absolute matrix entry
+    T AbsMax(int& rRow, int& rCol) const
+    {
+        T max, min;
+        int row, col;
+
+        MaxEntry(rRow, rCol, max);
+        MinEntry( row,  col, min);
+
+        if (std::abs(max) > std::abs(min))
+        {
+            // (max, rRow, rCol) is abs maximum
+            return max;
+        }
+        else
+        {
+            // (min, row, col) is abs maximum
+            rRow = row;
+            rCol = col;
+            return min;
+        }
+    }
+
+    //! @brief calculates the largest absolute matrix entry
+    //! @return ... largest absolute matrix entry
+    T AbsMax() const
+    {
+        int row, col;
+        return AbsMax(row, col);
+    }
 
 protected:
     //! @brief ... internal indexing of the matrix (true if one based indexing / false if zero based indexing)
@@ -240,5 +306,7 @@ protected:
     //! @brief ... definiteness of the matrix (true if positive definite / false if indefinite)
     bool mPositiveDefinite;
 };
+
+
 }
 #endif // SPARSE_MATRIX_H

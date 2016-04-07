@@ -105,7 +105,7 @@ public:
     //! @brief ... resize matrix (everything is deleted)
     //! @param rows ... number of rows
     //! @param cols ... number of columns
-    void Resize ( int rRows, int rCols );
+    void Resize ( int rRows, int rCols ) override;
 
 #ifndef SWIG
     //! @brief ... resize matrix (nothing is deleted)
@@ -405,6 +405,10 @@ public:
     //! @brief ... computes the sum of all coefficients
     //! @return sum of the entries for each column
     T Sum() const;
+
+    //! @brief ... sets small matrix entries to zero - e.g. for output formating
+    //! @param rTolerance ... cut-off tolerance
+    void SetSmallEntriesZero(double rTolerance);
 
     //! @brief ... calculates the sum of the entries for each column
     //! @return sum of the entries for each column

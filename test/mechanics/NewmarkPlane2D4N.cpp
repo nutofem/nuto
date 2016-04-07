@@ -101,7 +101,7 @@ try
     myStructure.ElementTotalSetSection(mySection);
 
 	//constitutive
-    int myMatLattice = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
+    int myMatLattice = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
     myStructure.ConstitutiveLawSetParameterDouble(myMatLattice,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,30000);
     myStructure.ConstitutiveLawSetParameterDouble(myMatLattice,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,0.0);
     myStructure.ConstitutiveLawSetParameterDouble(myMatLattice,NuTo::Constitutive::eConstitutiveParameter::DENSITY,density);
@@ -255,7 +255,7 @@ try
 
     myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_Left,DirectionX,0);
     int constraintRightDisp = myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_Right,DirectionX,0);
-    myIntegrationScheme.SetTimeDependentConstraint(constraintRightDisp, dispRHS);
+    myIntegrationScheme.AddTimeDependentConstraint(constraintRightDisp, dispRHS);
 
     //5 timesteps to capture the quarter wave (5/quarter wave)
     //myIntegrationScheme.SetMaxTimeStep(period/20.);
@@ -265,7 +265,7 @@ try
 
     //set output during the simulation to false
     myStructure.SetShowTime(false);
-    myStructure.SetNumProcessors(8);
+    myStructure.SetNumProcessors(1);
 
 	myIntegrationScheme.AddResultTime("Time");
 	myIntegrationScheme.AddResultGroupNodeForce("Forces_GroupNodes_Left",grpNodes_Left);
@@ -274,7 +274,7 @@ try
     //set result directory
     bool deleteResultDirectoryFirst(true);
     myIntegrationScheme.SetResultDirectory(resultDir,deleteResultDirectoryFirst);
-
+    myIntegrationScheme.SetToleranceForce(1.e-10);
     //solve (perform Newton raphson iteration
     myIntegrationScheme.Solve(simulationTime);
 
@@ -295,12 +295,12 @@ try
     {
     	std::cout << "difference " << (result_leftRef-result_left).cwiseAbs().maxCoeff() << "\n";
         std::cout<< "real result" << std::endl;
-        result_left.Info();
+        result_left.Info(10,3);
         std::cout<< "ref result" << std::endl;
-        result_leftRef.Info();
+        result_leftRef.Info(10,3);
     	std::cout << "difference " << (result_leftRef-result_leftRef) << "\n";
         std::cout << "[NewmarkPlane2D4N] result for left displacements is not correct." << std::endl;
-        return -1;
+        return EXIT_FAILURE;
     }
 
     //read in the result file right
@@ -319,12 +319,12 @@ try
     {
     	std::cout << "difference " << (result_rightRef-result_right).cwiseAbs().maxCoeff() << "\n";
         std::cout<< "real result" << std::endl;
-        result_right.Info();
+        result_right.Info(15,12);
         std::cout<< "ref result" << std::endl;
-        result_rightRef.Info();
+        result_rightRef.Info(15,12);
     	std::cout << "difference " << (result_rightRef-result_rightRef) << "\n";
         std::cout << "[NewmarkPlane2D4N] result for right displacements is not correct." << std::endl;
-        return -1;
+        return EXIT_FAILURE;
     }
 
     //read in the result file time
@@ -348,21 +348,23 @@ try
         result_timeRef.Info();
     	std::cout << "difference " << (result_timeRef-result_timeRef) << "\n";
         std::cout << "[NewmarkPlane2D4N] result for time is not correct." << std::endl;
-        return -1;
+        return EXIT_FAILURE;
     }
 }
 catch (NuTo::MechanicsException& e)
 {
     std::cout << "Error executing NewmarkPlane2D4N "<< std::endl;
     std::cout << e.ErrorMessage() << std::endl;
-    exit(1);
+    return EXIT_FAILURE;
 }
 catch (NuTo::Exception& e)
 {
     std::cout << "Error executing NewmarkPlane2D4N "<< std::endl;
     std::cout << e.ErrorMessage() << std::endl;
-    exit(1);
+    return EXIT_FAILURE;
 }
+
+return EXIT_SUCCESS;
 }
 
 

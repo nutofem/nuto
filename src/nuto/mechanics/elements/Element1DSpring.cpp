@@ -19,7 +19,7 @@ NuTo::Element::eElementType NuTo::Element1DSpring::GetEnumType() const
     return NuTo::Element::ELEMENT1DSPRING;
 }
 
-const Eigen::MatrixXd NuTo::Element1DSpring::ExtractNodeValues(int rTimeDerivative, Node::eAttributes rDofType) const
+const Eigen::MatrixXd NuTo::Element1DSpring::ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const
 {
     const InterpolationBase& interpolationTypeDof = GetInterpolationType()->Get(rDofType);
     int numNodes = interpolationTypeDof.GetNumNodes();
@@ -53,7 +53,7 @@ const Eigen::MatrixXd NuTo::Element1DSpring::ExtractNodeValues(int rTimeDerivati
             globalNodeValues.block(0, iNode, numDofsPerNode, 1) = node->GetDisplacements(rTimeDerivative);
             break;
         default:
-            throw MechanicsException("[NuTo::Element1DSpring::ExtractNodeValues] Not implemented for " + Node::AttributeToString(rDofType) + ".");
+            throw MechanicsException("[NuTo::Element1DSpring::ExtractNodeValues] Not implemented for " + Node::DofToString(rDofType) + ".");
         }
     }
 
@@ -74,11 +74,11 @@ NuTo::Error::eError NuTo::Element1DSpring::Evaluate(boost::ptr_multimap<NuTo::El
         if (section == nullptr)
             throw MechanicsException("[NuTo::Element1DSpring::Evaluate] no section allocated for element.");
 
-        const std::set<Node::eAttributes>& dofs = mInterpolationType->GetDofs();
-        const std::set<Node::eAttributes>& activeDofs = mInterpolationType->GetActiveDofs();
+        const std::set<Node::eDof>& dofs = mInterpolationType->GetDofs();
+        const std::set<Node::eDof>& activeDofs = mInterpolationType->GetActiveDofs();
         unsigned int numActiveDofs = mInterpolationType->GetNumActiveDofs();
         // extract all node values and store them
-        std::map<Node::eAttributes, Eigen::MatrixXd> nodalValues;
+        std::map<Node::eDof, Eigen::MatrixXd> nodalValues;
         for (auto dof : dofs)
         {
             nodalValues[dof] = ExtractNodeValues(0, dof);
@@ -125,7 +125,7 @@ NuTo::Error::eError NuTo::Element1DSpring::Evaluate(boost::ptr_multimap<NuTo::El
                         break;
 
                     default:
-                        throw MechanicsException("[NuTo::Element1DSpring::Evaluate] Element output HESSIAN_0_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
+                        throw MechanicsException("[NuTo::Element1DSpring::Evaluate] Element output HESSIAN_0_TIME_DERIVATIVE for " + Node::DofToString(dof) + " not implemented.");
 
                     }
                 }
@@ -276,7 +276,7 @@ const Eigen::VectorXi NuTo::Element1DSpring::CalculateGlobalRowDofs() const
             }
                 break;
             default:
-                throw MechanicsException("[NuTo::Element1DInXD::CalculateGlobalRowDofs] Not implemented for " + Node::AttributeToString(dof) + ".");
+                throw MechanicsException("[NuTo::Element1DInXD::CalculateGlobalRowDofs] Not implemented for " + Node::DofToString(dof) + ".");
 
             }
         }

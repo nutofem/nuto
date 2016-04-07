@@ -21,6 +21,7 @@
 #include "nuto/mechanics/timeIntegration/RungeKuttaBase.h"
 #include "nuto/mechanics/timeIntegration/TimeIntegrationEnum.h"
 #include "nuto/math/FullMatrix.h"
+#include "nuto/base/Timer.h"
 
 //! @brief constructor
 //! @param mDimension number of nodes
@@ -65,15 +66,15 @@ void NuTo::RungeKuttaBase::serialize(Archive & ar, const unsigned int version)
 //! @param rTimeDelta ... length of the simulation
 NuTo::Error::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-#ifdef _OPENMP
-    double wstart = omp_get_wtime ( );
-#endif
-    start=clock();
-#endif
+    NuTo::Timer timer(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
+
     try
     {
+        mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+
+        if (mStructure->GetDofStatus().HasInteractingConstraints())
+            throw MechanicsException(__PRETTY_FUNCTION__, "not implemented for constrained systems including multiple dofs.");
+
         if (mTimeStep==0.)
         {
         	if (this->HasCriticalTimeStep())
@@ -92,66 +93,43 @@ NuTo::Error::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         std::cout << "time step " << mTimeStep << std::endl;
         std::cout << "number of time steps " << rTimeDelta/mTimeStep << std::endl;
 
-        //renumber dofs and build constraint matrix
-        mStructure->NodeBuildGlobalDofs();
 
-        //calculate constraint matrix
-        /*
-        // ConstraintGetConstraintMatrixAfterGaussElimination(const NuTo::SparseMatrixCSRGeneral<double>& ... ) replaced by
-        // const NuTo::SparseMatrixCSRGeneral<double> ConstraintGetConstraintMatrixAfterGaussElimination() const;
-        // ---> No need for CmatTmp anymore! --- vhirtham
 
-        NuTo::SparseMatrixCSRGeneral<double> CmatTmp;
-        mStructure->ConstraintGetConstraintMatrixAfterGaussElimination(CmatTmp);
-        */
-        NuTo::SparseMatrixCSRVector2General<double> Cmat(mStructure->ConstraintGetConstraintMatrixAfterGaussElimination());
-        SparseMatrixCSRVector2General<double> CmatT (Cmat.Transpose());
-        FullVector<double,Eigen::Dynamic> bRHS, bRHSdot, bRHSddot;
-        if (CmatT.GetNumEntries() > 0)
-        {
-            throw MechanicsException("[NuTo::RungeKuttaBase::Solve] not implemented for constrained systems including multiple dofs.");
-        }
+        StructureOutputBlockVector outOfBalance(mStructure->GetDofStatus(), true);
 
-        //calculate individual inverse mass matrix, use only lumped mass matrices - stored as fullvectors and then use asDiagonal()
-        NuTo::FullVector<double,Eigen::Dynamic> invMassMatrix_j(mStructure->GetNumActiveDofs());
-        NuTo::FullVector<double,Eigen::Dynamic> massMatrix_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-
-        //extract displacements, velocities and accelerations
-        NuTo::FullVector<double,Eigen::Dynamic> disp_j, vel_j, tmp_k,
-                                                disp_j_tmp, vel_j_tmp,     //intermediate values of the displacements and velocities
-                                                disp_j_new, vel_j_new;     //new d and v at end of time step
-        std::vector<NuTo::FullVector<double,Eigen::Dynamic> > d_disp_j_tmp, d_vel_j_tmp; //intermediate values of the time derivatives of d and v
-
-        NuTo::FullVector<double,Eigen::Dynamic> extForce_j, extForce_k;
-        NuTo::FullVector<double,Eigen::Dynamic> outOfBalance_j(mStructure->GetNumActiveDofs()), outOfBalance_k;
-        NuTo::FullVector<double,Eigen::Dynamic> intForce_j(mStructure->GetNumActiveDofs()),
-        		                                intForce_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
+        CalculateStaticAndTimeDependentExternalLoad();
 
         //store last converged displacements, velocities and accelerations
-        mStructure->NodeExtractDofValues(0,disp_j,tmp_k);
-        mStructure->NodeExtractDofValues(1,vel_j,tmp_k);
+        auto dof_dt0 = mStructure->NodeExtractDofValues(0);
+        auto dof_dt1 = mStructure->NodeExtractDofValues(1);
 
-        //calculate lumped mass matrix
-        //intForce_j is just used as a tmp variable
-        mStructure->BuildGlobalLumpedHession2(intForce_j,massMatrix_k);
+        StructureOutputBlockMatrix hessian2 = mStructure->BuildGlobalHessian2Lumped();
+        double numericMass = 0;
+        numericMass += hessian2.JJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
+        numericMass += hessian2.JK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
+        numericMass += hessian2.KJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
+        numericMass += hessian2.KK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
 
-        //check the sum of all entries
-        std::cout << "the total mass is " << intForce_j.sum()/((double)mStructure->GetDimension()) +  tmp_k.sum()/((double)mStructure->GetDimension()) << std::endl;
+        numericMass /= mStructure->GetDimension(); // since the mass is added to nodes in every direction
+        std::cout << "the total mass is " << numericMass << std::endl;
 
         //invert the mass matrix
-        invMassMatrix_j = intForce_j.cwiseInverse();
+        hessian2.CwiseInvert();
 
         double curTime  = 0;
-		CalculateExternalLoad(*mStructure, curTime, extForce_j, extForce_k);
-		d_disp_j_tmp.resize(this->GetNumStages());
-		d_vel_j_tmp.resize(this->GetNumStages());
+        auto extLoad = CalculateCurrentExternalLoad(curTime);
+        auto intForce = mStructure->BuildGlobalInternalGradient();
+
+        std::vector<StructureOutputBlockVector> d_dof_dt0_tmp(this->GetNumStages(), mStructure->GetDofStatus());
+        std::vector<StructureOutputBlockVector> d_dof_dt1_tmp(this->GetNumStages(), mStructure->GetDofStatus());
+
 		std::vector<double> stageDerivativeFactor(this->GetNumStages()-1);
         while (curTime < rTimeDelta)
         {
          	//calculate for delta_t = 0
-            std::cout << "curTime " << curTime <<   " (" << curTime/rTimeDelta << ") max Disp = "  <<  disp_j.maxCoeff() << std::endl;
-        	disp_j_new = disp_j;
-        	vel_j_new = vel_j;
+            std::cout << "curTime " << curTime <<   " (" << curTime/rTimeDelta << ") max Disp = "  <<  dof_dt0.J[Node::DISPLACEMENTS].maxCoeff() << std::endl;
+            auto dof_dt0_new = dof_dt0;
+            auto dof_dt1_new = dof_dt1;
 
 			double prevTime(mTime);
 			double prevCurTime(curTime);
@@ -160,14 +138,14 @@ NuTo::Error::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         		//std::cout << "\n stage weight " << GetStageWeights(countStage) << std::endl;
         		double deltaTimeStage = this->GetStageTimeFactor(countStage)*mTimeStep;
 				this->GetStageDerivativeFactor(stageDerivativeFactor, countStage);
-				disp_j_tmp = disp_j;
-				vel_j_tmp = vel_j;
+				auto dof_dt0_tmp = dof_dt0;
+				auto dof_dt1_tmp = dof_dt1;
 				for (int countStage2=0; countStage2<countStage; countStage2++)
 				{
 					if (stageDerivativeFactor[countStage2]!=0.)
 					{
-						disp_j_tmp+=d_disp_j_tmp[countStage2]*(stageDerivativeFactor[countStage2]);
-	    				vel_j_tmp +=d_vel_j_tmp [countStage2]*(stageDerivativeFactor[countStage2]);
+					    dof_dt0_tmp += d_dof_dt0_tmp[countStage2]*(stageDerivativeFactor[countStage2]);
+					    dof_dt1_tmp += d_dof_dt1_tmp[countStage2]*(stageDerivativeFactor[countStage2]);
 					}
 				}
 
@@ -187,27 +165,26 @@ NuTo::Error::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
     					//mStructure->ConstraintGetRHSAfterGaussElimination(bRHS);
     				}
     				//calculate external force
-    				this->CalculateExternalLoad(*mStructure, curTime, extForce_j, extForce_k);
-				}
+					extLoad = CalculateCurrentExternalLoad(curTime);
 
-				mStructure->NodeMergeActiveDofValues(0,disp_j_tmp);
+				}
+				dof_dt0_tmp.K = mStructure->NodeCalculateDependentDofValues(dof_dt0_tmp.J);
+				mStructure->NodeMergeDofValues(0,dof_dt0_tmp);
 				mStructure->ElementTotalUpdateTmpStaticData();
 
 				//calculate internal force (with update of history variables = true)
-				mStructure->BuildGlobalGradientInternalPotentialSubVectors(intForce_j,intForce_k,false);
-
-				//std::cout << "norm of deltaForce " << (intForce_j-extForce_j).norm() << std::endl;
+				intForce = mStructure->BuildGlobalInternalGradient();
 
 				//update derivatives (ydot or k1,k2,k3,k4) for Runge Kutta
-				d_disp_j_tmp[countStage] = vel_j_tmp*mTimeStep;
+				d_dof_dt0_tmp[countStage] = dof_dt1_tmp*mTimeStep;
 				//std::cout << "d_disp_j_tmp " << d_disp_j_tmp[countStage](0) << std::endl;
-                d_vel_j_tmp[countStage]  = (invMassMatrix_j.asDiagonal()*(extForce_j-intForce_j))*mTimeStep;
+				d_dof_dt1_tmp[countStage]  = hessian2*(extLoad-intForce)*mTimeStep;
 				//std::cout << "d_vel_j_tmp " << d_vel_j_tmp[countStage](0) << std::endl;
 				//std::cout << "norm of acc " << (d_vel_j_tmp).norm() << std::endl;
 
-				disp_j_new += d_disp_j_tmp[countStage]*(GetStageWeights(countStage));
+				dof_dt0_new += d_dof_dt0_tmp[countStage]*(GetStageWeights(countStage));
 				//std::cout << "disp_j_new " << disp_j_new(0) << std::endl;
-				vel_j_new  += d_vel_j_tmp[countStage]*(GetStageWeights(countStage));
+				dof_dt1_new  += d_dof_dt1_tmp[countStage]*(GetStageWeights(countStage));
 				//std::cout << "vel_j_new " << vel_j_new(0) << std::endl;
             }
 
@@ -215,38 +192,32 @@ NuTo::Error::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         	curTime = prevCurTime + mTimeStep;
 
 			//std::cout << "final disp_j_new " << disp_j_new(0) << std::endl;
-			mStructure->NodeMergeActiveDofValues(0,disp_j_new);
+        	dof_dt0_new.K = mStructure->NodeCalculateDependentDofValues(dof_dt0_new.J);
+			mStructure->NodeMergeDofValues(0,dof_dt0_new);
 			mStructure->ElementTotalUpdateTmpStaticData();
 			mStructure->ElementTotalUpdateStaticData();
 			//std::cout << "delta disp between time steps" <<  (disp_j-disp_j_new).norm() << std::endl;
-            disp_j = disp_j_new;
-            vel_j  = vel_j_new;
+            dof_dt0 = dof_dt0_new;
+            dof_dt1 = dof_dt1_new;
 
 			//**********************************************
 			//PostProcessing
 			//**********************************************
-        	if (CmatT.GetNumEntries() > 0)
-	        {
-	            throw MechanicsException("[NuTo::RungeKuttaBase::Solve] not implemented for constrained systems including multiple dofs.");
-	        }
-	        else
-	        {
-	        	// outOfBalance_j is automatically zero
-			    //outOfBalance_j.Resize(intForce_j.GetNumRows());
-	        	//the acceleration of the dofs k is given by the acceleration of the rhs of the constraint equation
-	        	//this is calculated using finite differencs
-	        	//make sure to recalculate the internal force and external force (if time factor is not 1)
-				if (mTimeDependentConstraint!=-1)
-				{
-					throw MechanicsException("[NuTo::RungeKuttaBase::Solve] solution with constraints not yet implemented.");
-				}
+            // outOfBalance_j is automatically zero
+            //outOfBalance_j.Resize(intForce_j.GetNumRows());
+            //the acceleration of the dofs k is given by the acceleration of the rhs of the constraint equation
+            //this is calculated using finite differencs
+            //make sure to recalculate the internal force and external force (if time factor is not 1)
+            if (mTimeDependentConstraint!=-1)
+            {
+                throw MechanicsException("[NuTo::RungeKuttaBase::Solve] solution with constraints not yet implemented.");
+            }
 
-				//acc_k = (bRHSprev-bRHShalf*2+bRHSend)*(4./(timeStep*timeStep))
-	        	//outOfBalance_k = intForce_k - extForce_k + massMatrix_k.asDiagonal()*acc_k;
-	        }
+            //acc_k = (bRHSprev-bRHShalf*2+bRHSend)*(4./(timeStep*timeStep))
+            //outOfBalance_k = intForce_k - extForce_k + massMatrix_k.asDiagonal()*acc_k;
 
 			// postprocess data for plotting
-            this->PostProcess(outOfBalance_j, outOfBalance_k);
+            this->PostProcess(extLoad-intForce);
         }
     }
     catch (MechanicsException& e)
@@ -254,17 +225,7 @@ NuTo::Error::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         e.AddMessage("[NuTo::RungeKuttaBase::Solve] performing Newton-Raphson iteration.");
         throw e;
     }
-#ifdef SHOW_TIME
-    end=clock();
-#ifdef _OPENMP
-    double wend = omp_get_wtime ( );
-    if (mShowTime)
-        mStructure->GetLogger()<<"[NuTo::RungeKuttaBase::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec(" << wend-wstart <<")\n";
-#else
-    if (mShowTime)
-        mStructure->GetLogger()<< "[NuTo::RungeKuttaBase::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
-#endif
-#endif
+
     return NuTo::Error::SUCCESSFUL;
 
 }

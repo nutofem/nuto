@@ -17,6 +17,7 @@
 
 #include <nuto/metamodel/PolynomialLeastSquaresFitting.h>
 #include "nuto/mechanics/timeIntegration/CrankNicolsonEvaluate.h"
+#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 
 
 class MeshGenerator
@@ -280,9 +281,9 @@ int main()
         \*------------------------------------*/
 
 
-        NuTo::FullVector<int,3>     NumElements = {{    2,
-                                                        2,
-                                                        6}};
+        NuTo::FullVector<int,3>     NumElements = {{    10,
+                                                        10,
+                                                        30}};
 
 
         NuTo::FullVector<double,3>  Length      = {{    0.1,
@@ -292,20 +293,20 @@ int main()
         bool            EnableSorptionHysteresis            = false;
         bool            EnableModiefiedTangentialStiffness  = false;
 
-        double          delta_t                         = 1.0/1.0 *     1.0 * 24.0 * 60.0 * 60.0;
-        double          t_final                         = 1.0/1.0 *     3.0 * 24.0 * 60.0 * 60.0;
+        double          delta_t                         = 1.0/10.0 *     1.0 * 24.0 * 60.0 * 60.0;
+        double          t_final                         = 1.0/1.0 *     1.0 * 24.0 * 60.0 * 60.0;
         double          BC_TransitionTime               =                     24.0 * 60.0 * 60.0;
 
 
         // initial node values
-        double          InitialRelativeHumidity         =    0.95;
+        double          InitialRelativeHumidity         =    1.00;
         double          InitialWaterVolumeFraction      =    0.03;
 
 
         // constitutive law values
         double          MassExchangeRate                =    3.42e-7    ;
         double          Porosity                        =    0.25      ;
-        double          VaporPhaseDiffusionCoefficient  =    3.9e-10     ;
+        double          VaporPhaseDiffusionCoefficient  =    3.9e-12     ;
         double          VaporPhaseDiffusionExponent     =    1.0        ;
         double          VaporPhaseSaturationDensity     =    0.0173     ;
         double          WaterPhaseDensity               =  999.97       ;
@@ -325,7 +326,7 @@ int main()
         NuTo::PolynomialLeastSquaresFitting DesorptionFit;
 
 
-        double          MaxResidual                     =    1.0e-18;
+        double          MaxResidual                     =    1.0e-8;
 
 
 
@@ -631,11 +632,10 @@ int main()
 
 
         myTimeIntegrationScheme.SetPerformLineSearch(false);
-        myTimeIntegrationScheme.SetCheckEquilibriumOnStart(false);
         myTimeIntegrationScheme.SetToleranceForce(MaxResidual);
-        myTimeIntegrationScheme.SetMaxNumIterations(40);
+        myTimeIntegrationScheme.SetMaxNumIterations(100);
 
-        myTimeIntegrationScheme.AddTimeDependentConstraint(BoundaryConstraint,  RelativeHumidityFunc);
+        myTimeIntegrationScheme.AddTimeDependentConstraintFunction(BoundaryConstraint,  RelativeHumidityFunc);
 
 
         //set result directory

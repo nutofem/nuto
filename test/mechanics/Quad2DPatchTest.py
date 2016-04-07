@@ -29,9 +29,9 @@ def RunPatchTest(StressState):
 	myStructure.SetShowTime(False)
 
 	# create material law
-	myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
-        myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"YoungsModulus", E)
-        myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"PoissonsRatio", v)
+	myMatLin = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress")
+        myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"Youngs_Modulus", E)
+        myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"Poissons_Ratio", v)
 
 	#create section
 	mySection = myStructure.SectionCreate("Plane_Stress")
@@ -106,55 +106,34 @@ def RunPatchTest(StressState):
 	# build global dof numbering
 	myStructure.NodeBuildGlobalDofs()
 	myStructure.CalculateMaximumIndependentSets()
-
-	# build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-	stiffnessMatrixCSRVector2 = nuto.DoubleSparseMatrixCSRVector2General(0,0)
-	dispForceVector = nuto.DoubleFullVector()
-	myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixCSRVector2, dispForceVector)
-	stiffnessMatrix = nuto.DoubleSparseMatrixCSRGeneral(stiffnessMatrixCSRVector2)
-
-	# calculate right hand side
-	rhsVector = dispForceVector
-
-	# solve
-	mySolver = nuto.SparseDirectSolverMUMPS()
-	displacementVector = nuto.DoubleFullVector()
-	stiffnessMatrix.SetOneBasedIndexing()
-	mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector)
-
-	# write displacements to node
-	myStructure.NodeMergeActiveDofValues(displacementVector)
+	
+	myStructure.SolveGlobalSystemStaticElastic()
 
 	# calculate residual
-	intForceVector = nuto.DoubleFullVector()
-	myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector)
+	internalGradient = myStructure.BuildGlobalInternalGradient()
 	if (printResult):
-		residualVector = intForceVector*(-1.)
+		residualVector = internalGradient.J.Export()*(-1.)
 		print "residual: " + str(residualVector.Norm())
 		
-	if ((intForceVector).Norm()>1e-8):
+	if ((internalGradient.J.Export()).Norm()>1e-8):
 			print 'Internal and external forces differs.'
 			error = True;
 
 
 
 	#calculate internal force vector
-	Fi = nuto.DoubleFullVector()
-	rowIndex = nuto.IntFullVector()
-	myStructure.ElementGradientInternalPotential(2,Fi,rowIndex)
+	Fi = myStructure.ElementBuildInternalGradient(2)
 	if (printResult):
 		print "Internal Force"
 		Fi.Info()
 
 	#calculate engineering strain of 2 at all integration points
 	#the size the matrix is not important and reallocated within the procedure
-	EngineeringStrain = nuto.DoubleFullMatrix(0,0)
-	myStructure.ElementGetEngineeringStrain(2, EngineeringStrain)
+	EngineeringStrain = myStructure.ElementGetEngineeringStrain(2)
 
 
 	#calculate engineering strain of 2 at all integration points
-	EngineeringStress = nuto.DoubleFullMatrix(0,0)
-	myStructure.ElementGetEngineeringStress(2, EngineeringStress)
+	EngineeringStress = myStructure.ElementGetEngineeringStress(2)
 	#correct stress
 	EngineeringStressCorrect = nuto.DoubleFullMatrix(6,4)
 	for i in range(0,4):
@@ -166,7 +145,7 @@ def RunPatchTest(StressState):
 			EngineeringStressCorrect.SetValue(1,i, sigma)
 		elif StressState == "XY":
 			sigma = E*BoundaryDisplacement / 10. / (2+2*v)
-			EngineeringStressCorrect.SetValue(3,i, sigma)
+			EngineeringStressCorrect.SetValue(5,i, sigma)
 
 
 

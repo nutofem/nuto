@@ -53,12 +53,6 @@ public:
     //! @param rSchurComplement ... Schur complement
     void SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, NuTo::FullVector<int, Eigen::Dynamic> rSchurIndices, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement);
 
-protected:
-
-#ifdef HAVE_MUMPS
-
-    DMUMPS_STRUC_C mSolver;
-
     //! @brief ... prepare the solver, and perform all the steps up to the factorization of the matrix
     //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)
     void Factorization(const NuTo::SparseMatrixCSR<double>& rMatrix);
@@ -69,16 +63,21 @@ protected:
     //! @param rSolution ... matrix storing the corresponding solution vectors (output)
     void Solution(const NuTo::FullVector<double,Eigen::Dynamic>& rRhs, NuTo::FullVector<double,Eigen::Dynamic>& rSolution);
 
-    //! @brief ... use the factorized matrix for the final solution phase
-    //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)
-    //! @param rRhs ... matrix storing the right-hand-side vectors (input)
-    //! @param rSolution ... matrix storing the corresponding solution vectors (output)
+    //! @brief ... Termination and release of memory
     void CleanUp();
+
+protected:
+
+#ifdef HAVE_MUMPS
+
+    DMUMPS_STRUC_C mSolver;
+
 
     //! @brief ... generate an error message from the error code
     //! @param error ... error code
     //! @return error message as std::string
     std::string GetErrorString(int error) const;
+
 #endif // HAVE_MUMPS
 
 };

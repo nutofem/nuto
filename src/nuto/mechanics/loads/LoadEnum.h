@@ -6,7 +6,7 @@ namespace NuTo
 {
 namespace Load
 {
-enum eAttributes
+enum eDof
 {
     FORCES=0,
     MOMENTS

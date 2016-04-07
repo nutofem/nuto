@@ -112,7 +112,7 @@ void Mises2D(const std::string& rDir)
     dispRHS << 0, 0, simulationTime, deltaD;
 
 
-    myIntegrationScheme.SetTimeDependentConstraint(bc, dispRHS);
+    myIntegrationScheme.AddTimeDependentConstraint(bc, dispRHS);
     myIntegrationScheme.SetTimeStep(0.02);
 
     myIntegrationScheme.SetToleranceForce(1e-6);
@@ -152,6 +152,7 @@ void Mises3D(const std::string& rDir)
 
     NuTo::FullVector<int, Eigen::Dynamic> nodeIds(8);
 
+
     nodeIds[0] = myStructure.NodeCreate(NuTo::FullVector<double, 3>({1,1,1}));
     nodeIds[1] = myStructure.NodeCreate(NuTo::FullVector<double, 3>({0,1,1}));
     nodeIds[2] = myStructure.NodeCreate(NuTo::FullVector<double, 3>({0,0,1}));
@@ -161,12 +162,38 @@ void Mises3D(const std::string& rDir)
     nodeIds[6] = myStructure.NodeCreate(NuTo::FullVector<double, 3>({0,0,0}));
     nodeIds[7] = myStructure.NodeCreate(NuTo::FullVector<double, 3>({1,0,0}));
 
-    int interpol = myStructure.InterpolationTypeCreate(NuTo::Interpolation::BRICK3D);
+
+    NuTo::FullVector<int,Eigen::Dynamic> nodesTet0(4);
+    NuTo::FullVector<int,Eigen::Dynamic> nodesTet1(4);
+    NuTo::FullVector<int,Eigen::Dynamic> nodesTet2(4);
+    NuTo::FullVector<int,Eigen::Dynamic> nodesTet3(4);
+    NuTo::FullVector<int,Eigen::Dynamic> nodesTet4(4);
+    NuTo::FullVector<int,Eigen::Dynamic> nodesTet5(4);
+
+    nodesTet0 << nodeIds(0), nodeIds(1), nodeIds(3), nodeIds(7);
+    nodesTet1 << nodeIds(0), nodeIds(1), nodeIds(7), nodeIds(4);
+    nodesTet2 << nodeIds(5), nodeIds(4), nodeIds(7), nodeIds(1);
+    nodesTet3 << nodeIds(6), nodeIds(5), nodeIds(7), nodeIds(1);
+    nodesTet4 << nodeIds(2), nodeIds(7), nodeIds(1), nodeIds(6);
+    nodesTet5 << nodeIds(2), nodeIds(3), nodeIds(1), nodeIds(7);
+
+
+
+
+    int interpol = myStructure.InterpolationTypeCreate(NuTo::Interpolation::TETRAHEDRON3D);
     myStructure.InterpolationTypeAdd(interpol, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(interpol, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT2);
 
 
-    myStructure.ElementCreate(interpol, nodeIds, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA);
+    myStructure.ElementCreate(interpol, nodesTet0, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA);
+    myStructure.ElementCreate(interpol, nodesTet1, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA);
+    myStructure.ElementCreate(interpol, nodesTet2, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA);
+    myStructure.ElementCreate(interpol, nodesTet3, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA);
+    myStructure.ElementCreate(interpol, nodesTet4, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA);
+    myStructure.ElementCreate(interpol, nodesTet5, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA);
+
+
+
     myStructure.ElementTotalConvertToInterpolationType();
 
     SetConstitutiveLaw(myStructure);
@@ -208,7 +235,7 @@ void Mises3D(const std::string& rDir)
     dispRHS << 0, 0, simulationTime, deltaD;
 
 
-    myIntegrationScheme.SetTimeDependentConstraint(bc, dispRHS);
+    myIntegrationScheme.AddTimeDependentConstraint(bc, dispRHS);
     myIntegrationScheme.SetTimeStep(0.02);
 
     myIntegrationScheme.SetToleranceForce(1e-6);
@@ -233,8 +260,8 @@ int main(int argc, char* argv[])
     std::string resultDir = std::string(argv[0]) + "Out/";
     boost::filesystem::create_directory(resultDir);
 
-
     Mises2D(resultDir);
+    Mises3D(resultDir);
 
 
     std::cout << std::endl;

@@ -16,13 +16,13 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation2D.h"
 
-NuTo::Interpolation2D::Interpolation2D(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
+NuTo::Interpolation2D::Interpolation2D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
         InterpolationBase::InterpolationBase(rDofType, rTypeOrder, rDimension)
 {
 
 }
 
-const std::vector<Eigen::VectorXd> NuTo::Interpolation2D::GetSurfaceEdgesCoordinates(int rSurface) const
+std::vector<Eigen::VectorXd> NuTo::Interpolation2D::GetSurfaceEdgesCoordinates(int rSurface) const
 {
     int numNodes = 2;
     // returns exactly two nodes, one at alpha = -1 and one at alpha = 1 of the required surface
@@ -55,7 +55,7 @@ int NuTo::Interpolation2D::GetNumDofsPerNode() const
     case NuTo::Node::WATERVOLUMEFRACTION:
         return 1;
     default:
-        throw NuTo::MechanicsException("[NuTo::Interpolation2D::GetNumDofsPerNode] dof type not found.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "dof type not found.");
     }
 }
 

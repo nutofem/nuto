@@ -32,6 +32,7 @@ class InterpolationType;
 class ElementBase;
 class IpDataBase;
 class VisualizeComponentBase;
+class IpDataStaticDataBase;
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -83,6 +84,17 @@ public:
     //! @param rIp integration point
     //! @return static data
     virtual const ConstitutiveStaticDataBase* GetStaticData(int rIp)const;
+
+    //! @brief returns the static data of an integration point
+    //! @param rIp integration point
+    //! @return static data
+    virtual IpDataStaticDataBase& GetStaticDataBase(int rIp);
+
+    //! @brief returns the static data of an integration point
+    //! @param rIp integration point
+    //! @return static data
+    virtual const IpDataStaticDataBase& GetStaticDataBase(int rIp)const;
+
 
     //! @brief sets the static data for an integration point of an element
     //! @param rIp integration point

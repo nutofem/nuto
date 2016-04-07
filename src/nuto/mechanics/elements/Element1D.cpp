@@ -55,13 +55,13 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
         if (section == 0)
             throw MechanicsException("[NuTo::Element1D::Evaluate] no section allocated for element.");
 
-        const std::set<Node::eAttributes>& dofs = mInterpolationType->GetDofs();
-        const std::set<Node::eAttributes>& activeDofs = mInterpolationType->GetActiveDofs();
+        const std::set<Node::eDof>& dofs = mInterpolationType->GetDofs();
+        const std::set<Node::eDof>& activeDofs = mInterpolationType->GetActiveDofs();
 
         int numActiveDofs = mInterpolationType->GetNumActiveDofs();
 
         // extract all node values and store them
-        std::map<Node::eAttributes, Eigen::MatrixXd> nodalValues;
+        std::map<Node::eDof, Eigen::MatrixXd> nodalValues;
         for (auto dof : dofs)
         {
             nodalValues[dof] = ExtractNodeValues(0, dof);
@@ -180,7 +180,7 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
             }
                 break;
             default:
-                throw MechanicsException("[NuTo::Element1D::Evaluate] Constitutive input for " + Node::AttributeToString(dof) + " not implemented.");
+                throw MechanicsException("[NuTo::Element1D::Evaluate] Constitutive input for " + Node::DofToString(dof) + " not implemented.");
             }
         }
 
@@ -233,7 +233,7 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         }
                             break;
                         default:
-                            throw MechanicsException("[NuTo::Element1D::Evaluate] Constitutive output INTERNAL_GRADIENT for " + Node::AttributeToString(dof) + " not implemented.");
+                            throw MechanicsException("[NuTo::Element1D::Evaluate] Constitutive output INTERNAL_GRADIENT for " + Node::DofToString(dof) + " not implemented.");
 
                         }
                     }
@@ -287,7 +287,7 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     }
                         break;
                     default:
-                        throw MechanicsException("[NuTo::Element1D::Evaluate] Constitutive output HESSIAN_0_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
+                        throw MechanicsException("[NuTo::Element1D::Evaluate] Constitutive output HESSIAN_0_TIME_DERIVATIVE for " + Node::DofToString(dof) + " not implemented.");
                     }
                 }
             }
@@ -318,7 +318,7 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
                     }
                         break;
                     default:
-                        throw MechanicsException("[NuTo::Element1D::Evaluate] Constitutive output HESSIAN_1_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
+                        throw MechanicsException("[NuTo::Element1D::Evaluate] Constitutive output HESSIAN_1_TIME_DERIVATIVE for " + Node::DofToString(dof) + " not implemented.");
                     }
                 }
                 break;
@@ -393,8 +393,8 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
          *     CALCULATE CONSTITUTIVE INPUTS     *
          \*****************************************/
 
-        std::map<Node::eAttributes, Eigen::VectorXd> shapeFunctions;
-        std::map<Node::eAttributes, Eigen::MatrixXd> derivativeShapeFunctions;
+        std::map<Node::eDof, Eigen::VectorXd> shapeFunctions;
+        std::map<Node::eDof, Eigen::MatrixXd> derivativeShapeFunctions;
 
         // loop over the integration points
         for (int theIP = 0; theIP < GetNumIntegrationPoints(); theIP++)
@@ -452,7 +452,7 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
                 }
                     break;
                 default:
-                    throw MechanicsException("[NuTo::Element1D::Evaluate] Constitutive input for " + Node::AttributeToString(dof) + " not implemented.");
+                    throw MechanicsException("[NuTo::Element1D::Evaluate] Constitutive input for " + Node::DofToString(dof) + " not implemented.");
                 }
             }
 
@@ -530,7 +530,7 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
                             }
                                 break;
                             default:
-                                throw MechanicsException("[NuTo::Element1D::Evaluate] Element output INTERNAL_GRADIENT for " + Node::AttributeToString(dof) + " not implemented.");
+                                throw MechanicsException("[NuTo::Element1D::Evaluate] Element output INTERNAL_GRADIENT for " + Node::DofToString(dof) + " not implemented.");
 
                             }
                         }
@@ -648,7 +648,7 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         }
                             break;
                         default:
-                            throw MechanicsException("[NuTo::Element1D::Evaluate] Element output HESSIAN_0_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
+                            throw MechanicsException("[NuTo::Element1D::Evaluate] Element output HESSIAN_0_TIME_DERIVATIVE for " + Node::DofToString(dof) + " not implemented.");
 
                         }
                     }
@@ -719,7 +719,7 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         }
                             break;
                         default:
-                            throw MechanicsException("[NuTo::Element1D::Evaluate] Element output HESSIAN_0_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
+                            throw MechanicsException("[NuTo::Element1D::Evaluate] Element output HESSIAN_0_TIME_DERIVATIVE for " + Node::DofToString(dof) + " not implemented.");
 
                         }
                     }
@@ -751,7 +751,7 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         case Node::TEMPERATURES:
                             break;
                         default:
-                            throw MechanicsException("[NuTo::Element1D::Evaluate] Element output HESSIAN_2_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
+                            throw MechanicsException("[NuTo::Element1D::Evaluate] Element output HESSIAN_2_TIME_DERIVATIVE for " + Node::DofToString(dof) + " not implemented.");
 
                         }
                     }
@@ -799,7 +799,7 @@ NuTo::Error::eError NuTo::Element1D::Evaluate(boost::ptr_multimap<NuTo::Element:
                         }
                             break;
                         default:
-                            throw MechanicsException("[NuTo::Element1D::Evaluate] Element output LUMPED_HESSIAN_2_TIME_DERIVATIVE for " + Node::AttributeToString(dof) + " not implemented.");
+                            throw MechanicsException("[NuTo::Element1D::Evaluate] Element output LUMPED_HESSIAN_2_TIME_DERIVATIVE for " + Node::DofToString(dof) + " not implemented.");
                         }
                     }
 
@@ -879,7 +879,7 @@ const NuTo::NodeBase* NuTo::Element1D::GetNode(int rLocalNodeNumber) const
     return mNodes[rLocalNodeNumber];
 }
 
-NuTo::NodeBase* NuTo::Element1D::GetNode(int rLocalNodeNumber, Node::eAttributes rDofType)
+NuTo::NodeBase* NuTo::Element1D::GetNode(int rLocalNodeNumber, Node::eDof rDofType)
 {
     assert(rLocalNodeNumber >= 0);
     assert(rLocalNodeNumber < (int )mNodes.size());
@@ -889,7 +889,7 @@ NuTo::NodeBase* NuTo::Element1D::GetNode(int rLocalNodeNumber, Node::eAttributes
     return mNodes[nodeIndex];
 }
 
-const NuTo::NodeBase* NuTo::Element1D::GetNode(int rLocalNodeNumber, Node::eAttributes rDofType) const
+const NuTo::NodeBase* NuTo::Element1D::GetNode(int rLocalNodeNumber, Node::eDof rDofType) const
 {
     assert(rLocalNodeNumber >= 0);
     assert(rLocalNodeNumber < (int )mNodes.size());
@@ -971,7 +971,7 @@ const Eigen::VectorXd NuTo::Element1D::GetIntegrationPointVolume() const
     return volume;
 }
 
-const Eigen::MatrixXd NuTo::Element1D::ExtractNodeValues(int rTimeDerivative, Node::eAttributes rDofType) const
+const Eigen::MatrixXd NuTo::Element1D::ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const
 {
     const InterpolationBase& interpolationTypeDof = GetInterpolationType()->Get(rDofType);
 
@@ -1013,7 +1013,7 @@ const Eigen::MatrixXd NuTo::Element1D::ExtractNodeValues(int rTimeDerivative, No
             break;
 
         default:
-            throw MechanicsException("[NuTo::Element1D::ExtractNodeValues] Not implemented for " + Node::AttributeToString(rDofType) + ".");
+            throw MechanicsException("[NuTo::Element1D::ExtractNodeValues] Not implemented for " + Node::DofToString(rDofType) + ".");
         }
     }
     return nodalValues;
@@ -1060,7 +1060,7 @@ const Eigen::VectorXi NuTo::Element1D::CalculateGlobalRowDofs() const
             }
                 break;
             default:
-                throw MechanicsException("[NuTo::Element1D::CalculateGlobalRowDofs] Not implemented for " + Node::AttributeToString(dof) + ".");
+                throw MechanicsException("[NuTo::Element1D::CalculateGlobalRowDofs] Not implemented for " + Node::DofToString(dof) + ".");
 
             }
         }

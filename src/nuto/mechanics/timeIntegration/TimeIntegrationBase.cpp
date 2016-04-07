@@ -15,47 +15,49 @@
 #include "boost/filesystem.hpp"
 #include <iostream>
 #include <fstream>
-#ifdef SHOW_TIME
-#include <ctime>
-#endif
-
-# ifdef _OPENMP
-#include <omp.h>
-# endif
 
 
+#include "nuto/base/Timer.h"
 #include "nuto/mechanics/timeIntegration/TimeIntegrationBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/structures/StructureBase.h"
-#include <nuto/mechanics/timeIntegration/ResultElementIpData.h>
+#include "nuto/mechanics/timeIntegration/ResultElementIpData.h"
 #include "nuto/mechanics/timeIntegration/ResultGroupNodeForce.h"
 #include "nuto/mechanics/timeIntegration/ResultNodeDisp.h"
 #include "nuto/mechanics/timeIntegration/ResultNodeAcceleration.h"
 #include "nuto/mechanics/timeIntegration/ResultTime.h"
 #include "nuto/mechanics/timeIntegration/TimeDependencyFunction.h"
 #include "nuto/mechanics/timeIntegration/TimeDependencyMatrix.h"
+#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
+#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
 
 
-NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) : NuTo::NuToObject::NuToObject(), mStructure(rStructure)
+
+NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) :
+    NuTo::NuToObject::NuToObject(),
+    mStructure(rStructure),
+    mLoadVectorStatic(rStructure->GetDofStatus()),
+    mLoadVectorTimeDependent(rStructure->GetDofStatus())
 {
-	mTime = 0.;
-	mLoadStep = 1;
-	mTimeStep = 0;
-	mMaxTimeStep = 1;
-	mMinTimeStep = 0;
+    mTime = 0.;
+    mLoadStep = 1;
+    mTimeStep = 0;
+    mMaxTimeStep = 1;
+    mMinTimeStep = 0;
     mLoadStep = 0;
     mMinTimeStepPlot = 0;
     mTimeStepResult = 0;
     mTimeStepVTK = 0;
     mLastTimePlot = -1e99;
     mAutomaticTimeStepping = false;
- 	mTimeDependentConstraint = -1;
- 	mTimeDependentLoadCase = -1;
- 	mMergeActiveDofValuesOrder1 = true;
- 	mMergeActiveDofValuesOrder2 = false;
- 	mCheckCoefficientMatrix = false;
- 	mVisualizeResidual = false;
- 	ResetForNextLoad();
+    mTimeDependentConstraint = -1;
+    mTimeDependentLoadCase = -1;
+    mMergeActiveDofValuesOrder1 = true;
+    mMergeActiveDofValuesOrder2 = false;
+    mCheckCoefficientMatrix = false;
+    mCallback = nullptr;
+    ResetForNextLoad();
 }
 
 //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
@@ -93,11 +95,19 @@ void NuTo::TimeIntegrationBase::AddTimeDependentConstraint(int rTimeDependentCon
 //! @brief Adds the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
 //! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
 //! @param rTimeDependentConstraintFunction ... function that calculates the time dependent constraint factor for the current time step
-void NuTo::TimeIntegrationBase::AddTimeDependentConstraint(int rTimeDependentConstraint, const std::function<double (double rTime)>& rTimeDependentConstraintFunction)
+void NuTo::TimeIntegrationBase::AddTimeDependentConstraintFunction(int rTimeDependentConstraint, const std::function<double (double rTime)>& rTimeDependentConstraintFunction)
 {
     mMapTimeDependentConstraint.insert(std::pair<int,std::shared_ptr<TimeDependencyBase>> (rTimeDependentConstraint, std::make_shared<TimeDependencyFunction>(rTimeDependentConstraintFunction)));
 }
 
+//! @brief Updates the Rhs for all constraints
+//! @param rCurrentTime ... current time
+//! @remark remove the second argument rDof
+void NuTo::TimeIntegrationBase::UpdateConstraints(double rCurrentTime)
+{
+    for(auto itTDC : mMapTimeDependentConstraint)
+        mStructure->ConstraintSetRHS(itTDC.first, itTDC.second->GetTimeDependentFactor(rCurrentTime));
+}
 
 //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
 //! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
@@ -167,72 +177,86 @@ double NuTo::TimeIntegrationBase::CalculateTimeDependentConstraintFactor(double 
 	return 0;
 }
 
-//! @brief calculate the external force as a function of time delta
-//! @param curTime ... current time (within the loadstep)
-//! @param rLoad_j ... external load vector for the independent dofs
-//! @param rLoad_k ... external load vector for the dependent dofs
-void NuTo::TimeIntegrationBase::CalculateExternalLoad(StructureBase& rStructure, double curTime, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_j, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_k)
+
+
+//! @brief calculate the external force vector (mStatic and m) as a function of time delta
+void NuTo::TimeIntegrationBase::CalculateStaticAndTimeDependentExternalLoad()
 {
-	if (mLoadVectorStatic_j.GetNumRows()==0 && mLoadVectorStatic_k.GetNumRows()==0 &&
-		mLoadVectorTimeDependent_j.GetNumRows()==0 && mLoadVectorTimeDependent_k.GetNumRows()==0)
-	{
-		//build static and dynamic load vector
-		NuTo::FullVector<double,Eigen::Dynamic> tmp_j,tmp_k;
+//    mLoadVectorStatic.J.AllocateSubvectors();
+//    mLoadVectorStatic.K.AllocateSubvectors();
+//
+//    mLoadVectorTimeDependent.J.AllocateSubvectors();
+//    mLoadVectorTimeDependent.K.AllocateSubvectors();
 
-		mLoadVectorStatic_j.Resize(rStructure.GetNumActiveDofs());
-		mLoadVectorStatic_k.Resize(rStructure.GetNumDofs()-rStructure.GetNumActiveDofs());
+    mLoadVectorStatic        = StructureOutputBlockVector(mStructure->GetDofStatus(), true);
+    mLoadVectorTimeDependent = StructureOutputBlockVector(mStructure->GetDofStatus(), true);
 
-		mLoadVectorTimeDependent_j.Resize(rStructure.GetNumActiveDofs());
-		mLoadVectorTimeDependent_k.Resize(rStructure.GetNumDofs()-rStructure.GetNumActiveDofs());
+    for (int iLoadCase = 0; iLoadCase< mStructure->GetNumLoadCases(); ++iLoadCase)
+    {
+        auto tmp = mStructure->BuildGlobalExternalLoadVector(iLoadCase);
+        mStructure->GetLogger()<<"TIB_CEL1, mTimeDeoendentLoadCase = " << mTimeDependentLoadCase << "\n";
+        if (iLoadCase == mTimeDependentLoadCase)
+        {
+            mStructure->GetLogger() << "TIB TimeDependent \n";
+            mLoadVectorTimeDependent += tmp;
+        }
+        else
+        {
+            mStructure->GetLogger() << "TIB Static \n";
+            mLoadVectorStatic += tmp;
+        }
+        mStructure->GetLogger() << "sum of loads for loadcase " << iLoadCase << " is " << tmp.J.Export().ColumnwiseSum() + tmp.K.Export().ColumnwiseSum() << "\n";
+    }
+}
 
-		for (int count=0; count<rStructure.GetNumLoadCases(); count++)
-		{
-			rStructure.BuildGlobalExternalLoadVector(count,tmp_j,tmp_k);
-			mStructure->GetLogger()<<"TIB_CEL1, mTimeDependentLoadCase = " << mTimeDependentLoadCase << "\n";
-			if (count==mTimeDependentLoadCase)
-			{
-			    mStructure->GetLogger() << "TIB TimeDependent \n";
-				mLoadVectorTimeDependent_j=tmp_j;
-				mLoadVectorTimeDependent_k=tmp_k;
-			}
-			else
-			{
-			    mStructure->GetLogger() << "TIB Static \n";
-				mLoadVectorStatic_j+=tmp_j;
-				mLoadVectorStatic_k+=tmp_k;
-			}
-			mStructure->GetLogger() << "sum of loads for loadcase " << count << " is " << tmp_j.ColumnwiseSum() + tmp_k.ColumnwiseSum() << "\n";
-		}
-	}
-
-	if (mTimeDependentLoadCase!=-1)
-	{
-		if (mTimeDependentLoadFactor.GetNumRows()==0)
-		{
-			throw MechanicsException("[NuTo::TimeIntegrationBase::CalculateExternalLoad] TimeDependentLoadFactor not set.");
-		}
+//! @brief calculate the current external force as a function of time delta
+//! @param curTime ... current time in the load step
+//! @return ... external load vector
+NuTo::StructureOutputBlockVector NuTo::TimeIntegrationBase::CalculateCurrentExternalLoad(double curTime)
+{
+    if (mTimeDependentLoadCase!=-1)
+    {
+        if (mTimeDependentLoadFactor.GetNumRows()==0)
+        {
+            throw MechanicsException("[NuTo::TimeIntegrationBase::CalculateExternalLoad] TimeDependentLoadFactor not set.");
+        }
         int curStep(0);
         while (mTimeDependentLoadFactor(curStep,0)<curTime && curStep<mTimeDependentLoadFactor.GetNumRows()-1)
-        	curStep++;
-		if (curStep==0)
-			curStep++;
+            curStep++;
+        if (curStep==0)
+            curStep++;
 
-		//extract the two data points
-		double s1 = mTimeDependentLoadFactor(curStep-1,1);
-		double s2 = mTimeDependentLoadFactor(curStep,1);
-		double t1 = mTimeDependentLoadFactor(curStep-1,0);
-		double t2 = mTimeDependentLoadFactor(curStep,0);
+        //extract the two data points
+        double s1 = mTimeDependentLoadFactor(curStep-1,1);
+        double s2 = mTimeDependentLoadFactor(curStep,1);
+        double t1 = mTimeDependentLoadFactor(curStep-1,0);
+        double t2 = mTimeDependentLoadFactor(curStep,0);
 
-		double s = 	s1 + (s2-s1)/(t2-t1) * (curTime-t1);
+        double s =  s1 + (s2-s1)/(t2-t1) * (curTime-t1);
 
-		rLoad_j=mLoadVectorStatic_j+mLoadVectorTimeDependent_j*s;
-		rLoad_k=mLoadVectorStatic_k+mLoadVectorTimeDependent_k*s;
-	}
-	else
-	{
-		rLoad_j=mLoadVectorStatic_j;
-		rLoad_k=mLoadVectorStatic_k;
-	}
+        return mLoadVectorStatic + mLoadVectorTimeDependent * s;
+    }
+    else
+    {
+        return mLoadVectorStatic;
+    }
+}
+
+const NuTo::BlockFullVector<double>& NuTo::TimeIntegrationBase::UpdateAndGetConstraintRHS(double rCurrentTime)
+{
+    UpdateConstraints(rCurrentTime);
+    return mStructure->ConstraintGetRHSAfterGaussElimination();
+}
+
+const NuTo::BlockFullVector<double>& NuTo::TimeIntegrationBase::UpdateAndGetAndMergeConstraintRHS(double rCurrentTime, StructureOutputBlockVector& rDof_dt0)
+{
+    UpdateConstraints(rCurrentTime);
+
+    rDof_dt0.K = mStructure->NodeCalculateDependentDofValues(rDof_dt0.J);
+    mStructure->NodeMergeDofValues(0, rDof_dt0);
+
+    mStructure->ElementTotalUpdateTmpStaticData();
+    return mStructure->ConstraintGetRHSAfterGaussElimination();
 }
 
 //! @brief monitor the displacements of a node
@@ -332,14 +356,39 @@ int NuTo::TimeIntegrationBase::AddResultGroupNodeForce(const std::string& rResul
 	return resultNumber;
 }
 
+//! @brief extracts all dof values
+//! @param rDof_dt0 ... 0th time derivative
+//! @param rDof_dt1 ... 1st time derivative
+//! @param rDof_dt2 ... 2nd time derivative
+void NuTo::TimeIntegrationBase::ExtractDofValues(StructureOutputBlockVector& rDof_dt0, StructureOutputBlockVector& rDof_dt1, StructureOutputBlockVector& rDof_dt2) const
+{
+    rDof_dt0 = mStructure->NodeExtractDofValues(0);
 
+    if (mStructure->GetNumTimeDerivatives() >= 1)
+        rDof_dt1 = mStructure->NodeExtractDofValues(1);
+
+    if (mStructure->GetNumTimeDerivatives() >= 2)
+        rDof_dt2 = mStructure->NodeExtractDofValues(2);
+
+}
+
+//! @brief calculates the norm of the residual, can include weighting
+//! @param rResidual ... residual
+double NuTo::TimeIntegrationBase::CalculateNorm(const BlockFullVector<double>& rResidual) const
+{
+    double norm = 0;
+    for (auto rDofType : rResidual.GetDofStatus().GetActiveDofTypes())
+        norm += rResidual[rDofType].Norm();
+
+    return norm;
+}
 
 //! @brief postprocess (nodal dofs etc. and visualize a vtk file)
-//! @param rOutOfBalance_j ... out of balance values of the independent dofs (for disp dofs, this is the out of balance force)
-//! @param rOutOfBalance_k ... out of balance values of the dependent dofs
-void NuTo::TimeIntegrationBase::PostProcess(const FullVector<double, Eigen::Dynamic>& rOutOfBalance_j,
-		                                    const FullVector<double, Eigen::Dynamic>& rOutOfBalance_k)
+//! @param rOutOfBalance ... out of balance values of the independent dofs (for disp dofs, this is the out of balance force)
+void NuTo::TimeIntegrationBase::PostProcess(const StructureOutputBlockVector& rOutOfBalance)
 {
+    Timer timer(__FUNCTION__, GetShowTime(), mStructure->GetLogger());
+
 	if (mResultDir.length()==0)
 	{
 		throw MechanicsException("[NuTo::TimeIntegrationBase::PostProcess] Set the result directory first.");
@@ -373,7 +422,7 @@ void NuTo::TimeIntegrationBase::PostProcess(const FullVector<double, Eigen::Dyna
 			{
 				ResultGroupNodeDof* resultPtr(
 						itResult->second->AsResultGroupNodeDof());
-				resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult, rOutOfBalance_j,rOutOfBalance_k);
+                resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult, rOutOfBalance.J[Node::DISPLACEMENTS],rOutOfBalance.K[Node::DISPLACEMENTS]);
 				break;
 
 			}
@@ -411,36 +460,6 @@ void NuTo::TimeIntegrationBase::PostProcess(const FullVector<double, Eigen::Dyna
     }
 }
 
-//! @brief visualizes the residual by merging it to the nodes, exporting the vtu file and restoring the inital state
-//! @param rResidual_j ... residual vector
-//! @param rActiveDofValues ... vector of active dof values
-//! @param rTimeStep ... time step number for file names
-void NuTo::TimeIntegrationBase::VisualizeResidual(
-        const FullVector<double,Eigen::Dynamic>& rResidual_j,
-        const FullVector<double, Eigen::Dynamic>& rActiveDofValues,
-        int rTimeStep)
-{
-    std::string resultDir = mResultDir + "Residual";
-
-    if (rTimeStep == 0)
-    {
-        // create and clear residual result directory
-        std::string resultDirOrig = mResultDir;
-        SetResultDirectory(resultDir, true);
-        mResultDir = resultDirOrig;
-    }
-
-    // apply residual to nodes, export the vtu files
-    mStructure->NodeMergeActiveDofValues(rResidual_j);
-
-    double timeMod = mTime+rTimeStep*mMinTimeStep*1.e-1;
-    ExportVisualizationFiles(resultDir, timeMod, rTimeStep);
-
-    // resore dof values
-    mStructure->NodeMergeActiveDofValues(rActiveDofValues);
-
-}
-
 #ifdef ENABLE_SERIALIZATION
 template void NuTo::TimeIntegrationBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
 template void NuTo::TimeIntegrationBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
@@ -454,15 +473,15 @@ void NuTo::TimeIntegrationBase::serialize(Archive & ar, const unsigned int versi
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialization of TimeIntegrationBase" << "\n";
 #endif
+
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuToObject)
        & BOOST_SERIALIZATION_NVP(mTimeDependentConstraint)
-       & BOOST_SERIALIZATION_NVP(mTimeDependentLoadFactor)
+       & BOOST_SERIALIZATION_NVP(mTimeDependentConstraintFactor)
+//       & BOOST_SERIALIZATION_NVP(mMapTimeDependentConstraint)
        & BOOST_SERIALIZATION_NVP(mTimeDependentLoadCase)
        & BOOST_SERIALIZATION_NVP(mTimeDependentLoadFactor)
-       & BOOST_SERIALIZATION_NVP(mLoadVectorStatic_j)
-       & BOOST_SERIALIZATION_NVP(mLoadVectorStatic_k)
-       & BOOST_SERIALIZATION_NVP(mLoadVectorTimeDependent_j)
-       & BOOST_SERIALIZATION_NVP(mLoadVectorTimeDependent_k)
+//       & BOOST_SERIALIZATION_NVP(mLoadVectorStatic)
+//       & BOOST_SERIALIZATION_NVP(mLoadVectorTimeDependent)
        & BOOST_SERIALIZATION_NVP(mTime)
        & BOOST_SERIALIZATION_NVP(mTimeStepResult)
        & BOOST_SERIALIZATION_NVP(mTimeStepVTK)
@@ -549,8 +568,6 @@ void NuTo::TimeIntegrationBase::ExportVisualizationFiles(const std::string& rRes
         resultFile = rResultDir;
         resultFile /= std::string("Group") + std::to_string(iVisualizePair.first) + std::string("_Elements") + ssTimeStepVTK.str() + std::string(".vtu");
         mStructure->ElementGroupExportVtkDataFile(iVisualizePair.first, resultFile.string(), true);
-
-        std::cout << "Export group " << iVisualizePair.first << " with " << mStructure->GroupGetNumMembers(iVisualizePair.first) << " members" << std::endl;
 
         //write an additional pvd file
         resultFile = rResultDir;

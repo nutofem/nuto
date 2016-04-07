@@ -21,8 +21,8 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/FullVector.h"
 
-#include "nuto/mechanics/constitutive/mechanics/GradientDamageEngineeringStressFatigue.h"
-#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataGradientDamage1DFatigue.h"
+//#include "nuto/mechanics/constitutive/mechanics/GradientDamageEngineeringStressFatigue.h"
+//#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataGradientDamage1DFatigue.h"
 
 
 

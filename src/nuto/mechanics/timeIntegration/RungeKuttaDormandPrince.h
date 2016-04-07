@@ -84,7 +84,10 @@ public:
 
 protected:
     //empty private construct required for serialization
+#ifdef ENABLE_SERIALIZATION
     RungeKuttaDormandPrince(){};
+#endif  // ENABLE_SERIALIZATION
+
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

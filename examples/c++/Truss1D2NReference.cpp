@@ -30,8 +30,8 @@ int main()
 	myStructure.SectionSetArea(Section1, Area);
 
 	// create material law
-	int Material1 = myStructure.ConstitutiveLawCreate("LINEARELASTICENGINEERINGSTRESS");
-	int Material2 = myStructure.ConstitutiveLawCreate("LINEARELASTICENGINEERINGSTRESS");
+	int Material1 = myStructure.ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
+	int Material2 = myStructure.ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
     myStructure.ConstitutiveLawSetParameterDouble(Material1,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
     myStructure.ConstitutiveLawSetParameterDouble(Material2,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus+YoungsModulusDiff);
 //    myStructure.ConstitutiveLawSetPoissonsRatio(Material1,0.2);
@@ -139,32 +139,10 @@ int main()
 		myStructure.LoadCreateNodeForce(1,NumElements, direction, Force);
 	}
 	// start analysis
-	// build global dof numbering
-	myStructure.NodeBuildGlobalDofs();
-
-	// build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-	NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixVec;
-	NuTo::FullVector<double,Eigen::Dynamic> dispForceVector;
 	myStructure.CalculateMaximumIndependentSets();
-	myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixVec, dispForceVector);
-	NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix(stiffnessMatrixVec);
+    myStructure.SolveGlobalSystemStaticElastic(1);
 
-	// build global external load vector
-	NuTo::FullVector<double,Eigen::Dynamic> extForceVector;
-	myStructure.BuildGlobalExternalLoadVector(1,extForceVector);
-
-	// calculate right hand side
-	NuTo::FullVector<double,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;
-
-	// solve
-	NuTo::SparseDirectSolverMUMPS mySolver;
-	NuTo::FullVector<double,Eigen::Dynamic> displacementVector;
-	stiffnessMatrix.SetOneBasedIndexing();
-#ifdef HAVE_MUMPS
-	mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector);
-
-	// write displacements to node
-	myStructure.NodeMergeActiveDofValues(displacementVector);
+    auto displacementVector = myStructure.NodeExtractDofValues(0);
 
 	NuTo::FullVector<double,Eigen::Dynamic> rDisplacements;
 	filename="Truss1D2NReference-disp";
@@ -189,36 +167,21 @@ int main()
 
 
 	// calculate residual
-	NuTo::FullVector<double,Eigen::Dynamic> intForceVector;
-	myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector);
-	NuTo::FullVector<double,Eigen::Dynamic> residualVector = extForceVector - intForceVector;
-	std::cout << "residual: " << residualVector.Norm() << std::endl;
+    auto residual = myStructure.BuildGlobalInternalGradient() - myStructure.BuildGlobalExternalLoadVector(1);
 
-	// calculate Stress and strain per element
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rEngineeringStress0;
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rEngineeringStrain0;
+    std::cout << "residual: " << residual.J.CalculateNormL2() << std::endl;
 
+	std::cout << "element 0: strain\n" << myStructure.ElementGetEngineeringStrain(0) << std::endl;
+    std::cout << "           stress\n" << myStructure.ElementGetEngineeringStress(0) << std::endl;
 
-	myStructure.ElementGetEngineeringStrain(0,rEngineeringStrain0);
-	myStructure.ElementGetEngineeringStress(0,rEngineeringStress0);
-	std::cout << "element 0: strain\n" << rEngineeringStrain0 << std::endl;
-	std::cout << "           stress\n" << rEngineeringStress0 << std::endl;
+    std::cout << "element 0: strain\n" << myStructure.ElementGetEngineeringStrain(1) << std::endl;
+    std::cout << "           stress\n" << myStructure.ElementGetEngineeringStress(1) << std::endl;
 
-	myStructure.ElementGetEngineeringStrain(1,rEngineeringStrain0);
-	myStructure.ElementGetEngineeringStress(1,rEngineeringStress0);
-	std::cout << "element 1: strain\n" << rEngineeringStrain0 << std::endl;
-	std::cout << "           stress\n" << rEngineeringStress0 << std::endl;
+    std::cout << "element 0: strain\n" << myStructure.ElementGetEngineeringStrain(2) << std::endl;
+    std::cout << "           stress\n" << myStructure.ElementGetEngineeringStress(2) << std::endl;
 
-	myStructure.ElementGetEngineeringStrain(2,rEngineeringStrain0);
-	myStructure.ElementGetEngineeringStress(2,rEngineeringStress0);
-	std::cout << "element 2: strain\n" << rEngineeringStrain0 << std::endl;
-	std::cout << "           stress\n" << rEngineeringStress0 << std::endl;
-
-	myStructure.ElementGetEngineeringStrain(3,rEngineeringStrain0);
-	myStructure.ElementGetEngineeringStress(3,rEngineeringStress0);
-	std::cout << "element 3: strain\n" << rEngineeringStrain0 << std::endl;
-	std::cout << "           stress\n" << rEngineeringStress0 << std::endl;
-
+    std::cout << "element 0: strain\n" << myStructure.ElementGetEngineeringStrain(3) << std::endl;
+    std::cout << "           stress\n" << myStructure.ElementGetEngineeringStress(3) << std::endl;
 
 	filename="Truss1D2NReference-strain00";
 	output.open(filename.c_str());
@@ -228,8 +191,7 @@ int main()
 		output<<"strain00\n";
 		for(int element = 0; element < NumElements; element++)
 		{
-			myStructure.ElementGetEngineeringStrain(element,rEngineeringStrain0);
-			output<<rEngineeringStrain0.GetRow(0)<<"\n";
+			output<<myStructure.ElementGetEngineeringStrain(element).GetRow(0)<<"\n";
 		}
 		output.close();
 	}
@@ -245,16 +207,13 @@ int main()
 		output<<"stress00\n";
 		for(int element = 0; element < NumElements; element++)
 		{
-			myStructure.ElementGetEngineeringStress(element,rEngineeringStress0);
-			output<<rEngineeringStress0.GetRow(0)<<"\n";
-
+            output<<myStructure.ElementGetEngineeringStress(element).GetRow(0)<<"\n";
 		}
 		output.close();
 	}
 	else
 		std::cout<<__LINE__<<" Truss1D2NReference] error output file.\n";
 
-#ifdef ENABLE_VISUALIZE
 	// visualize results
     int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
     myStructure.GroupAddElementsTotal(visualizationGroup);
@@ -266,10 +225,6 @@ int main()
     myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::CONSTITUTIVE);
 
 	myStructure.ExportVtkDataFileElements("Truss1D2NReference.vtk");
-#endif
 
-#else
-    std::cout << "MUMPS not available - can't solve system of equations " << std::endl;
-#endif // HAVE_MUMPS
 	return 0;
 }

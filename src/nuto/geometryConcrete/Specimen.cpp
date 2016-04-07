@@ -42,7 +42,7 @@ const double NuTo::Specimen::GetVolume() const
 		{
 		Vspecimen = mLength[0] * mLength[1] * mLength[2];
 		double D = mLength[0];
-		if (fabs(
+		if (std::abs(
 				static_cast<double>(mLength[1] - 1.5 * D)) > 1e-10)
 			throw Exception("[NuTo::ParticleCreator::GetSpecimenVolume] "
 					+ std::string("for the dog bone specimen, the y dimension should be 1.5 times the x dimension."));
@@ -54,7 +54,7 @@ const double NuTo::Specimen::GetVolume() const
 		break;
 	case 2:
 		{
-		if (fabs(static_cast<double>(mLength[0] - mLength[1]) > 1e-10))
+		if (std::abs(static_cast<double>(mLength[0] - mLength[1])) > 1e-10)
 			throw Exception("[NuTo::ParticleCreator::GetSpecimenVolume] "
 					+ std::string("for the cylindern, the x and y dimension should be identical (Diameter)."));
 		double D = mLength[0];

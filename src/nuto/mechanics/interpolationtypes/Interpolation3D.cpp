@@ -7,7 +7,7 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation3D.h"
 
-NuTo::Interpolation3D::Interpolation3D(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
+NuTo::Interpolation3D::Interpolation3D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
         InterpolationBase::InterpolationBase(rDofType, rTypeOrder, rDimension)
 {
 
@@ -30,7 +30,7 @@ int NuTo::Interpolation3D::GetNumDofsPerNode() const
     case NuTo::Node::WATERVOLUMEFRACTION:
         return 1;
     default:
-        throw NuTo::MechanicsException("[NuTo::Interpolation3D::GetNumDofsPerNode] dof type not found.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "dof type not found.");
     }
 }
 

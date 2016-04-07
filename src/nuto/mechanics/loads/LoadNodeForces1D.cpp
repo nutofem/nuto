@@ -11,11 +11,11 @@ NuTo::LoadNodeForces1D::LoadNodeForces1D(int rLoadCase, const NodeBase* rNode, d
         LoadNode(rLoadCase,rNode)
 {
     // set direction
-    if (fabs(rDirection) < 1e-14)
+    if (std::abs(rDirection) < 1e-14)
     {
         throw MechanicsException("[NuTo::LoadNodeForces1D::LoadNodeForces1D] direction vector has zero length.");
     }
-    this->mDirection = rDirection/fabs(rDirection);
+    this->mDirection = rDirection/std::abs(rDirection);
 
     // set value
     this->mValue = rValue;

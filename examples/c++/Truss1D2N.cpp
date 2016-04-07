@@ -26,7 +26,7 @@ int main()
 	myStructure.SectionSetArea(Section1, Area);
 
 	// create material law
-    int Material1 = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
+    int Material1 = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
     myStructure.ConstitutiveLawSetParameterDouble(Material1,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
 
 	// create nodes
@@ -73,40 +73,11 @@ int main()
 	}
 
 	// start analysis
-	// build global dof numbering
-	myStructure.NodeBuildGlobalDofs();
+    myStructure.SolveGlobalSystemStaticElastic(1);
+    auto residual = myStructure.BuildGlobalInternalGradient() - myStructure.BuildGlobalExternalLoadVector(1);
 
-	// build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
-	NuTo::SparseMatrixCSRVector2General<double> stiffnessMatrixVec;
-	NuTo::FullVector<double,Eigen::Dynamic> dispForceVector;
-	myStructure.CalculateMaximumIndependentSets();
-	myStructure.BuildGlobalCoefficientMatrix0(stiffnessMatrixVec, dispForceVector);
-	NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrix(stiffnessMatrixVec);
+    std::cout << "residual: " << residual.J.CalculateNormL2() << std::endl;
 
-	// build global external load vector
-	NuTo::FullVector<double,Eigen::Dynamic> extForceVector;
-	myStructure.BuildGlobalExternalLoadVector(0,extForceVector);
-
-	// calculate right hand side
-	NuTo::FullVector<double,Eigen::Dynamic> rhsVector = dispForceVector + extForceVector;
-
-	// solve
-	NuTo::SparseDirectSolverMUMPS mySolver;
-	NuTo::FullVector<double,Eigen::Dynamic> displacementVector;
-	stiffnessMatrix.SetOneBasedIndexing();
-#ifdef HAVE_MUMPS
-	mySolver.Solve(stiffnessMatrix, rhsVector, displacementVector);
-
-	// write displacements to node
-	myStructure.NodeMergeActiveDofValues(displacementVector);
-
-	// calculate residual
-	NuTo::FullVector<double,Eigen::Dynamic> intForceVector;
-	myStructure.BuildGlobalGradientInternalPotentialVector(intForceVector);
-	NuTo::FullVector<double,Eigen::Dynamic> residualVector = extForceVector - intForceVector;
-	std::cout << "residual: " << residualVector.Norm() << std::endl;
-
-#ifdef ENABLE_VISUALIZE
 	// visualize results
 	int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
     myStructure.GroupAddElementsTotal(visualizationGroup);
@@ -115,10 +86,6 @@ int main()
     myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
     myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
     myStructure.ExportVtkDataFileElements("Truss1D2N.vtk");
-#endif
 
-#else
-    std::cout << "MUMPS not available - can't solve system of equations " << std::endl;
-#endif // HAVE_MUMPS
 	return 0;
 }

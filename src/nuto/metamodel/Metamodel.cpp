@@ -10,16 +10,14 @@
 #include <boost/serialization/vector.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include <time.h>
 #include "nuto/metamodel/MinMaxTransformation.h"
 #include "nuto/metamodel/ZeroMeanUnitVarianceTransformation.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/metamodel/Metamodel.h"
-
 // constructor
-NuTo::Metamodel::Metamodel() : NuTo::NuToObject()
+NuTo::Metamodel::Metamodel() : NuTo::NuToObject(), mRandomNumberGenerator(time (NULL)) // init random number generator with current time
 {
-	// init random number generator with milliseconds from ..
-	dsfmt_init_gen_rand(&mRandomNumberGenerator, time (NULL));
 }
 
 void NuTo::Metamodel::AppendMinMaxTransformationInput(int rCoordinate, double rMin, double rMax)
@@ -140,12 +138,15 @@ void NuTo::Metamodel::BuildTransformation()
 
 void NuTo::Metamodel::InitRandomNumberGenerator(int rSeed)
 {
-    dsfmt_init_gen_rand(&mRandomNumberGenerator, rSeed);  
+    mRandomNumberGenerator.seed(rSeed);
 }
 
 double NuTo::Metamodel::RandomDouble()
 {
-    return dsfmt_genrand_close_open(&mRandomNumberGenerator);
+    return std::uniform_real_distribution<double>(0.0, 1.0)(mRandomNumberGenerator); // interval [0, 1)  ( equals dSFMT close_open)
+//    or
+//    std::uniform_real_distribution<double> distr(0.0, 1.0); // interval [0, 1)  ( equals dSFMT close_open)
+//    return distr(mRandomNumberGenerator);
 }
 
 void NuTo::Metamodel::Solve(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputCoordinates, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinates)const

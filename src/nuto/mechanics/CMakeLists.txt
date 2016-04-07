@@ -1,93 +1,60 @@
 # $Id$
 SET(NuToMechanicsConstitutive_SOURCES
 constitutive/ConstitutiveBase.cpp
-constitutive/ConstitutiveInputBase.cpp
-constitutive/ConstitutiveOutputBase.cpp
-constitutive/ConstitutiveStaticDataBase.cpp
-constitutive/ConstitutiveTangentBase.cpp
-constitutive/ConstitutiveTangentLocal.cpp
-constitutive/thermal/HeatFlux1D.cpp
-constitutive/thermal/HeatFlux2D.cpp
-constitutive/thermal/HeatFlux3D.cpp
-constitutive/thermal/LinearHeatFlux.cpp
-constitutive/thermal/Temperature.cpp
-constitutive/thermal/TemperatureGradient1D.cpp
-constitutive/thermal/TemperatureGradient2D.cpp
-constitutive/thermal/TemperatureGradient3D.cpp
-constitutive/mechanics/ConstitutiveStaticDataBondStressSlip.cpp
-constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3D.cpp
-constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3DFatigue.cpp
-constitutive/mechanics/ConstitutiveStaticDataGradientDamage1D.cpp
-constitutive/mechanics/ConstitutiveStaticDataGradientDamage1DFatigue.cpp
-constitutive/mechanics/ConstitutiveStaticDataGradientDamage2DFatigue.cpp
-constitutive/mechanics/ConstitutiveStaticDataGradientDamagePlasticity1D.cpp
-constitutive/mechanics/ConstitutiveStaticDataMisesPlasticity3D.cpp
-constitutive/mechanics/ConstitutiveStaticDataMisesPlasticityWithEnergy3D
-constitutive/mechanics/ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain.cpp
-constitutive/mechanics/ConstitutiveStaticDataNonlocalDamagePlasticity3D.cpp
-constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain1D.cpp
-constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain.cpp
-constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain3D.cpp
-constitutive/mechanics/ConstitutiveStaticDataStrainGradientDamagePlasticity1D.cpp
-constitutive/mechanics/EngineeringStress1D.cpp
-constitutive/mechanics/EngineeringStress2D.cpp
-constitutive/mechanics/EngineeringStress3D.cpp
-constitutive/mechanics/DeformationGradient1D.cpp
-constitutive/mechanics/Damage.cpp
-constitutive/mechanics/DamageViscoPlasticityEngineeringStress.cpp
-constitutive/mechanics/DamageViscoPlasticityHardeningEngineeringStress.cpp
-constitutive/mechanics/DeformationGradient2D.cpp
-constitutive/mechanics/DeformationGradient3D.cpp
-constitutive/mechanics/Displacements1D.cpp
-constitutive/mechanics/EngineeringStrain1D.cpp
-constitutive/mechanics/EngineeringStrain2D.cpp
-constitutive/mechanics/EngineeringStrain3D.cpp
-constitutive/mechanics/GradientDamageEngineeringStress.cpp
-constitutive/mechanics/GradientDamagePlasticityEngineeringStress.cpp
-constitutive/mechanics/GradientDamageEngineeringStressFatigue.cpp
-constitutive/mechanics/GreenLagrangeStrain1D.cpp
-constitutive/mechanics/GreenLagrangeStrain2D.cpp
-constitutive/mechanics/GreenLagrangeStrain3D.cpp
-constitutive/mechanics/InterfaceSlip.cpp
-constitutive/mechanics/InterfaceTractions1D.cpp
-constitutive/mechanics/InterfaceTractions2D.cpp
-constitutive/mechanics/InterfaceTractions3D.cpp
-constitutive/mechanics/FibreMatrixBondStressSlip.cpp
-constitutive/mechanics/LinearElasticEngineeringStress.cpp
-constitutive/mechanics/LinearSpring.cpp
-constitutive/mechanics/LocalEqPlasticStrain.cpp
-constitutive/mechanics/LocalEqStrain.cpp
-constitutive/mechanics/LocalEqTotalInelasticStrain.cpp
-constitutive/mechanics/MisesPlasticityEngineeringStress.cpp
-constitutive/mechanics/NonlocalEqPlasticStrain.cpp
-constitutive/mechanics/NonlocalEqStrain.cpp
-constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.cpp
-constitutive/mechanics/RelativeInterfaceDisplacements1D.cpp
-constitutive/mechanics/RelativeInterfaceDisplacements2D.cpp
-constitutive/mechanics/RelativeInterfaceDisplacements3D.cpp
-constitutive/mechanics/SecondPiolaKirchhoffStress1D.cpp
-constitutive/mechanics/SecondPiolaKirchhoffStress2D.cpp
-constitutive/mechanics/SecondPiolaKirchhoffStress3D.cpp
-constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.cpp
-constitutive/moistureTransport/MoistureTransport.cpp
-constitutive/moistureTransport/WaterVolumeFraction.cpp
-constitutive/moistureTransport/WaterVolumeFractionGradient2D.cpp
-constitutive/moistureTransport/WaterVolumeFractionGradient3D.cpp
-constitutive/moistureTransport/RelativeHumidity.cpp
-constitutive/moistureTransport/RelativeHumidityGradient2D.cpp
-constitutive/moistureTransport/RelativeHumidityGradient3D.cpp
-constitutive/moistureTransport/ConstitutiveStaticDataMoistureTransport.cpp
-constitutive/multiPhysics/ConstitutiveMultiPhysics.cpp
-constitutive/multiPhysics/ConstitutiveStaticDataMultiPhysics.cpp
-constitutive/shrinkage/DryingShrinkage.cpp
+#constitutive/mechanics/ConstitutiveStaticDataBondStressSlip.cpp
+#constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3D.cpp
+#constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3DFatigue.cpp
+#constitutive/mechanics/ConstitutiveStaticDataGradientDamage1D.cpp
+#constitutive/mechanics/ConstitutiveStaticDataGradientDamage1DFatigue.cpp
+#constitutive/mechanics/ConstitutiveStaticDataGradientDamage2DFatigue.cpp
+#constitutive/mechanics/ConstitutiveStaticDataGradientDamagePlasticity1D.cpp
+#constitutive/mechanics/ConstitutiveStaticDataMisesPlasticity3D.cpp
+#constitutive/mechanics/ConstitutiveStaticDataMisesPlasticityWithEnergy3D
+#constitutive/mechanics/ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain.cpp
+#constitutive/mechanics/ConstitutiveStaticDataNonlocalDamagePlasticity3D.cpp
+#constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain1D.cpp
+#constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain2DPlaneStrain.cpp
+#constitutive/mechanics/ConstitutiveStaticDataPrevEngineeringStressStrain3D.cpp
+#constitutive/mechanics/ConstitutiveStaticDataStrainGradientDamagePlasticity1D.cpp
+#constitutive/mechanics/DamageViscoPlasticityEngineeringStress.cpp
+#constitutive/mechanics/DamageViscoPlasticityHardeningEngineeringStress.cpp
+#constitutive/mechanics/GradientDamagePlasticityEngineeringStress.cpp
+#constitutive/mechanics/GradientDamageEngineeringStressFatigue.cpp
+#constitutive/mechanics/InterfaceSlip.cpp
+#constitutive/mechanics/InterfaceTractions1D.cpp
+#constitutive/mechanics/InterfaceTractions2D.cpp
+#constitutive/mechanics/InterfaceTractions3D.cpp
+#constitutive/mechanics/FibreMatrixBondStressSlip.cpp
+#constitutive/mechanics/LinearSpring.cpp
+#constitutive/mechanics/LocalEqTotalInelasticStrain.cpp
+#constitutive/mechanics/NonlocalEqPlasticStrain.cpp
+#constitutive/mechanics/NonlocalEqStrain.cpp
+#constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.cpp
+#constitutive/mechanics/RelativeInterfaceDisplacements1D.cpp
+#constitutive/mechanics/RelativeInterfaceDisplacements2D.cpp
+#constitutive/mechanics/RelativeInterfaceDisplacements3D.cpp
+#constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.cpp
+#constitutive/multiPhysics/ConstitutiveMultiPhysics.cpp
+#constitutive/multiPhysics/ConstitutiveStaticDataMultiPhysics.cpp
+#constitutive/shrinkage/DryingShrinkage.cpp
+constitutive/inputoutput/ConstitutiveIOBase.cpp
+constitutive/inputoutput/EngineeringStrain.cpp
+constitutive/inputoutput/EngineeringStress.cpp
+constitutive/inputoutput/EquivalentStrain.cpp
+constitutive/laws/EngineeringStressHelper.cpp
+constitutive/laws/LinearElasticEngineeringStress.cpp
+constitutive/laws/MisesPlasticityEngineeringStress.cpp
+constitutive/laws/MoistureTransport.cpp
+constitutive/laws/GradientDamageEngineeringStress.cpp
+constitutive/staticData/ConstitutiveStaticDataBase.cpp
+constitutive/staticData/ConstitutiveStaticDataMoistureTransport.cpp
+constitutive/staticData/ConstitutiveStaticDataGradientDamage.cpp
+constitutive/staticData/ConstitutiveStaticDataMisesPlasticity.cpp
 )
 
 SET(NuToMechanicsConstraint_SOURCES
 constraints/ConstraintBase.cpp
 constraints/ConstraintEquationTerm.cpp
-constraints/ConstraintLagrange.cpp
-constraints/ConstraintLagrangeNodeGroupDisplacements1D.cpp
-constraints/ConstraintLagrangeNodeGroupDisplacements2D.cpp
 constraints/ConstraintLinear.cpp
 constraints/ConstraintLinearDerivativeNonlocalTotalStrain1D.cpp
 constraints/ConstraintLinearDisplacementsPeriodic2D.cpp
@@ -108,6 +75,15 @@ constraints/ConstraintNodeGroup.cpp
 constraints/ConstraintNonlinear.cpp
 )
 
+SET(NuToMechanicsDofSubMatrixStorage_SOURCES
+dofSubMatrixStorage/DofStatus.cpp
+dofSubMatrixStorage/BlockStorageBase.cpp
+dofSubMatrixStorage/BlockSparseMatrix.cpp
+dofSubMatrixStorage/BlockScalar.cpp
+dofSubMatrixStorage/BlockFullVector.cpp
+dofSubMatrixStorage/BlockFullMatrix.cpp
+)
+
 SET(NuToMechanicsCrack_SOURCES
 cracks/CrackBase.cpp
 cracks/CrackExplicit2D.cpp
@@ -117,12 +93,9 @@ structures/unstructured/StructureCrack.cpp
 )
 
 SET(NuToMechanicsElements_SOURCES
-elements/BoundaryElementBase.cpp
-elements/BoundaryElement1D.cpp
-elements/BoundaryElement2D.cpp
-elements/BoundaryElement2DAdditionalNode.cpp
-elements/BoundaryElement3D.cpp
-elements/BoundaryElement3DAdditionalNode.cpp
+elements/ContinuumElement.cpp	
+elements/ContinuumBoundaryElement.cpp
+elements/ContinuumBoundaryElementConstrainedControlNode.cpp
 elements/ElementBase.cpp
 elements/ElementDataBase.cpp
 elements/ElementDataConstitutiveBase.cpp
@@ -133,21 +106,12 @@ elements/ElementDataNonlocalBase.cpp
 elements/ElementDataVariableConstitutiveBase.cpp
 elements/ElementDataVariableConstitutiveIp.cpp
 elements/ElementOutputBase.cpp
-elements/ElementInputBase.cpp
 elements/ElementShapeFunctions.cpp
-elements/Element1D.cpp
-elements/Element1DSpring.cpp
-elements/Element1DInXD.cpp
-elements/Element2D.cpp
-elements/Element2DInterface.cpp
-elements/Element3D.cpp
 elements/IpDataBase.cpp
 elements/IpDataEmpty.cpp
-elements/IpDataCoordinates2DBase.cpp
 elements/IpDataNonlocalBase.cpp
 elements/IpDataStaticData.cpp
 elements/IpDataStaticDataBase.cpp
-elements/IpDataStaticDataWeightCoordinates2D.cpp
 elements/IpDataStaticDataNonlocal.cpp
 elements/IpDataWeightBase.cpp
 )
@@ -255,6 +219,8 @@ structures/StructureBaseLogger.cpp
 structures/StructureBaseNode.cpp
 structures/StructureBaseSection.cpp
 structures/StructureOutputBase.cpp
+structures/StructureOutputBlockMatrix.cpp
+structures/StructureOutputBlockVector.cpp
 structures/unstructured/Structure.cpp
 structures/unstructured/StructureElement.cpp
 structures/unstructured/StructureGroup.cpp
@@ -264,13 +230,11 @@ structures/unstructured/StructureNode.cpp
 )
 
 SET(NuToMechanicsTimeIntegration_SOURCES
-timeIntegration/CrankNicolson.cpp
-timeIntegration/CrankNicolsonEvaluate.cpp
 timeIntegration/NewmarkBase.cpp
 timeIntegration/NewmarkDirect.cpp
-timeIntegration/JumpDirect.cpp
-timeIntegration/NystroemBase.cpp
-timeIntegration/NystroemQinZhu.cpp
+#timeIntegration/JumpDirect.cpp
+#timeIntegration/NystroemBase.cpp
+#timeIntegration/NystroemQinZhu.cpp
 timeIntegration/ResultBase.cpp
 timeIntegration/ResultElementIpData.cpp
 timeIntegration/ResultGroupNodeForce.cpp
@@ -288,17 +252,30 @@ timeIntegration/RungeKuttaDormandPrince.cpp
 timeIntegration/RungeKuttaBase.cpp
 timeIntegration/TimeDependencyBase.cpp
 timeIntegration/TimeIntegrationBase.cpp
-timeIntegration/VelocityVerlet.cpp
+timeIntegration/ImplicitExplicitBase.cpp
+timeIntegration/ImplEx.cpp
+#timeIntegration/VelocityVerlet.cpp
 )
 
-
+SET(NuToMechanicsTools_SOURCES
+tools/MeshGenerator.cpp
+)
 
 SET(NuToMechanics_SOURCES
-MechanicsException.cpp ${NuToMechanicsConstitutive_SOURCES} ${NuToMechanicsConstraint_SOURCES}
-${NuToMechanicsCrack_SOURCES} ${NuToMechanicsElements_SOURCES} ${NuToMechanicsGroups_SOURCES}
-${NuToMechanicsIntegrationtypes_SOURCES} ${NuToMechanicsInterpolationtypes_SOURCE} ${NuToMechanicsLoads_SOURCES}
-${NuToMechanicsNodes_SOURCES} ${NuToMechanicsSection_SOURCES} ${NuToMechanicsStructures_SOURCES}
+${NuToMechanicsConstitutive_SOURCES} 
+${NuToMechanicsConstraint_SOURCES}
+${NuToMechanicsCrack_SOURCES} 
+${NuToMechanicsDofSubMatrixStorage_SOURCES}
+${NuToMechanicsElements_SOURCES} 
+${NuToMechanicsGroups_SOURCES}
+${NuToMechanicsIntegrationtypes_SOURCES} 
+${NuToMechanicsInterpolationtypes_SOURCE} 
+${NuToMechanicsLoads_SOURCES}
+${NuToMechanicsNodes_SOURCES} 
+${NuToMechanicsSection_SOURCES} 
+${NuToMechanicsStructures_SOURCES}
 ${NuToMechanicsTimeIntegration_SOURCES}
+${NuToMechanicsTools_SOURCES}
 )
 
 SET(NuToMechanics_SWIG_MODULES
@@ -309,6 +286,17 @@ SET(SWIG_MODULE_ModulMechanics_EXTRA_DEPS
   structures/StructureBase.h
   structures/unstructured/Structure.h
   elements/ElementEnum.h
+  dofSubMatrixStorage/BlockStorageBase.h
+
+  dofSubMatrixStorage/DofStatus.h
+  dofSubMatrixStorage/BlockScalar.h
+  dofSubMatrixStorage/BlockFullMatrix.h
+  dofSubMatrixStorage/BlockFullVector.h
+  dofSubMatrixStorage/BlockSparseMatrix.h
+  
+  structures/StructureOutputBase.h
+  structures/StructureOutputBlockMatrix.h
+  structures/StructureOutputBlockVector.h
 )
 
 # build static library

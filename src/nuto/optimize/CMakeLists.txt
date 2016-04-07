@@ -5,7 +5,6 @@ SET(NuToOptimize_SOURCES
   CallbackHandlerPython.cpp
   CallbackHandlerGrid.cpp
   Jacobi.cpp
-  OptimizeException.cpp
   MisesWielandt.cpp
   NonlinearSolverBase.cpp
   NewtonRaphson.cpp

@@ -14,7 +14,7 @@ NuTo::ConstraintLinearNodeWaterVolumeFraction::ConstraintLinearNodeWaterVolumeFr
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
 void NuTo::ConstraintLinearNodeWaterVolumeFraction::AddToConstraintMatrix(int& curConstraintEquation,
-                                   NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix) const
+                                   NuTo::SparseMatrix<double>& rConstraintMatrix) const
 {
     // add constraint to constrain matrix
     if (mNode->GetNumWaterVolumeFraction()!=1)

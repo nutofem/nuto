@@ -29,7 +29,7 @@ public:
     //! @param rDofType ... which type of dof (e.g. displacement, rotation, temperature) is constrained
     //! @param rDofComponent ... which dof is constrained (e.g. 0 - dispalacement in x-direction)
     //! @param rCoefficient ... weighting of this term in the constraint equation
-    ConstraintEquationTerm(const NodeBase* rNode, Node::eAttributes rDofType, int rDofComponent, double rCoefficient);
+    ConstraintEquationTerm(const NodeBase* rNode, Node::eDof rDofType, int rDofComponent, double rCoefficient);
 
     //! @brief returns the dof that is related to that linear term
     //! @return dof
@@ -42,10 +42,15 @@ public:
     	return mCoefficient;
     }
 
+    Node::eDof GetDofType() const
+    {
+        return mDofType;
+    }
+
     //! @brief adds the constraint equation term to the matrix
     //! @param rRow ... row in constraint matrix
     //! @param rConstraintMatrix ... constraint matrix
-    void AddToConstraintMatrix(int rRow, NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix) const;
+    void AddToConstraintMatrix(int rRow, NuTo::SparseMatrix<double>& rConstraintMatrix) const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -56,7 +61,7 @@ public:
 #endif // ENABLE_SERIALIZATION
 protected:
     const NodeBase* mNode;           //!< node pointer
-    Node::eAttributes mDofType;  //!< which type of dof (e.g. displacement, rotation, temperature) is constrained
+    Node::eDof mDofType;             //!< which type of dof (e.g. displacement, rotation, temperature) is constrained
     int mDofComponent;               //!< which dof is constrained (e.g. 0 - dispalacement in x-direction)
     double mCoefficient;             //!< weighting of this term in the constraint equation
 

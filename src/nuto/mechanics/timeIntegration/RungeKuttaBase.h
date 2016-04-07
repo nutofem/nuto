@@ -59,7 +59,9 @@ public:
 
 protected:
     //empty private construct required for serialization
+#ifdef ENABLE_SERIALIZATION
     RungeKuttaBase(){};
+#endif  // ENABLE_SERIALIZATION
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

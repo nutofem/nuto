@@ -1268,7 +1268,7 @@ void NuTo::JumpDirect::CalculateFourierCoefficients(NuTo::FullVector<double,Eige
 void NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs(NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_k,
 		NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_k)
 {
-	std::map<NuTo::Node::eAttributes, bool> updatedDofs;
+	std::map<NuTo::Node::eDof, bool> updatedDofs;
 	bool updateCoupledDofs(false);
 
 	// creating the map of those Dofs, which can be updated by this routine
@@ -1280,7 +1280,7 @@ void NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs(NuTo::FullVector<
 		if(mStructure->InterpolationTypeIsConstitutiveInput(it->first)){
 			it->second = true;
 			updateCoupledDofs = true;
-			std::cout<< "[NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs] the following Dof will be updated: " << NuTo::Node::AttributeToString(it->first) <<std::endl;
+			std::cout<< "[NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs] the following Dof will be updated: " << NuTo::Node::DofToString(it->first) <<std::endl;
 		}
 	}
 

@@ -36,6 +36,14 @@ void NuTo::NodeBase::SetGlobalDofs(int& rDOF)
 	throw MechanicsException("[NuTo::NodeBase::SetGlobalDofs] Node of type " + GetNodeTypeStr() + " dofs.");
 }
 
+//! @brief sets the global dofs numbers for each dof type
+//! @param rDofNumbers ... map containing the dof type and the current number
+void NuTo::NodeBase::SetGlobalDofsNumbers(std::map<Node::eDof, int>& rDofNumbers)
+{
+    throw MechanicsException("[NuTo::NodeBase::SetGlobalDofsNumbers] Node of type " + GetNodeTypeStr() + " dofs.");
+}
+
+
 //! @brief write dof values to the node (based on global dof number)
 //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
 //! @param rActiveDofValues ... active dof values
@@ -54,6 +62,26 @@ void NuTo::NodeBase::GetGlobalDofValues(int rTimeDerivative, FullVector<double,E
 	throw MechanicsException("[NuTo::NodeBase::GetGlobalDofValues] Node of type " + GetNodeTypeStr() + " dofs.");
 }
 
+//! @brief write dof values to the node (based on global dof number)
+//! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
+//! @param rDofType ... specific dof type
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeBase::SetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues)
+{
+    throw MechanicsException("[NuTo::NodeBase::GetGlobalDofValues] Node of type " + GetNodeTypeStr() + " dofs.");
+}
+
+//! @brief extract dof values from the node (based on global dof number)
+//! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
+//! @param rDofType ... specific dof type
+//! @param rActiveDofValues ... active dof values
+//! @param rDependentDofValues ... dependent dof values
+void NuTo::NodeBase::GetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const
+{
+    throw MechanicsException("[NuTo::NodeBase::GetGlobalDofValues] Node of type " + GetNodeTypeStr() + " dofs.");
+}
+
 //! @brief extract all dof numbers from the node (based on global dof number)
 //int* NuTo::NodeBase::GetGlobalDofs()
 //{
@@ -67,6 +95,13 @@ void NuTo::NodeBase::RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOr
 	throw MechanicsException("[NuTo::NodeBase::RenumberGlobalDofs] Node of type " + GetNodeTypeStr() + " dofs.");
 }
 
+//! @brief renumber the global dofs according to predefined ordering
+//! @param rDofType ... specific dof type
+//! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
+void NuTo::NodeBase::RenumberGlobalDofs(Node::eDof rDofType, std::vector<int>& rMappingInitialToNewOrdering)
+{
+    throw MechanicsException("[NuTo::NodeBase::RenumberGlobalDofs] Node of type " + GetNodeTypeStr() + " dofs.");
+}
 
 //! @brief returns the number of time derivatives stored at the node
 //! @return number of derivatives

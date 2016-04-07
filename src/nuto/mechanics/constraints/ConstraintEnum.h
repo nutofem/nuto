@@ -6,7 +6,7 @@ namespace NuTo
 {
 namespace Constraint
 {
-enum eAttributes
+enum eDof
 {
     COORDINATES=0,
     DISPLACEMENTS,

@@ -12,28 +12,13 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/elements/IpDataStaticData.h"
-#include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
 
 NuTo::IpDataStaticData::IpDataStaticData() : IpDataBase()
 {
-	mStaticData = 0;
 }
 
 NuTo::IpDataStaticData::~IpDataStaticData()
 {
-}
-
-void NuTo::IpDataStaticData::Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive)
-{
-	if (mStaticData!=0)
-	{
-		delete mStaticData;
-	}
-	if (rConstitutive!=0)
-	    mStaticData = rElement->AllocateStaticData(rConstitutive);
-	else
-		mStaticData = 0;
 }
 
 //! @brief returns the enum of IP data type

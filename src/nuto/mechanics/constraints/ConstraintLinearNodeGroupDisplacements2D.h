@@ -41,7 +41,7 @@ public:
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
     void AddToConstraintMatrix(int& curConstraintEquation,
-                               NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const;
+                               NuTo::SparseMatrix<double>& rConstraintMatrix)const;
 
     //!@brief writes for the current constraint equation(s) the rhs into the vector
     // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
@@ -54,6 +54,13 @@ public:
     void Info(unsigned short rVerboseLevel) const
     {
         throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements2D::Info] to be implemented.");
+    }
+
+    //! @brief determines the dof type affected by the constraint
+    //! @return dof type
+    Node::eDof GetDofType() const override
+    {
+        return Node::eDof::DISPLACEMENTS;
     }
 
 #ifdef ENABLE_SERIALIZATION

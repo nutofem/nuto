@@ -26,7 +26,12 @@ NuTo::ElementOutputBase::~ElementOutputBase()
 
 NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& NuTo::ElementOutputBase::GetFullMatrixDouble()
 {
-	throw MechanicsException("[ElementOutputBase::GetFullMatrixDouble] element output matrix is not of type FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>");
+    throw MechanicsException("[ElementOutputBase::GetFullMatrixDouble] element output matrix is not of type FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>");
+}
+
+NuTo::BlockFullMatrix<double> &NuTo::ElementOutputBase::GetBlockFullMatrixDouble()
+{
+    throw MechanicsException(std::string("[")+ __PRETTY_FUNCTION__ +std::string("] element output matrix is not of type BlockFullMatrix<double>"));
 }
 
 NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& NuTo::ElementOutputBase::GetFullMatrixInt()
@@ -36,7 +41,17 @@ NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& NuTo::ElementOutputBase::Ge
 
 NuTo::FullVector<double,Eigen::Dynamic>& NuTo::ElementOutputBase::GetFullVectorDouble()
 {
-	throw MechanicsException("[ElementOutputBase::GetFullVectorDouble] element output matrix is not of type FullVector<double,Eigen::Dynamic>");
+    throw MechanicsException("[ElementOutputBase::GetFullVectorDouble] element output matrix is not of type FullVector<double,Eigen::Dynamic>");
+}
+
+NuTo::BlockFullVector<double> &NuTo::ElementOutputBase::GetBlockFullVectorDouble()
+{
+    throw MechanicsException(std::string("[")+ __PRETTY_FUNCTION__ +std::string("] element output vector is not of type BlockFullVector<double>"));
+}
+
+NuTo::BlockFullVector<int>& NuTo::ElementOutputBase::GetBlockFullVectorInt()
+{
+    throw MechanicsException(std::string("[")+ __PRETTY_FUNCTION__ +std::string("] element output vector is not of type BlockFullVector<int>"));
 }
 
 NuTo::FullVector<int,Eigen::Dynamic>& NuTo::ElementOutputBase::GetFullVectorInt()
@@ -49,9 +64,9 @@ std::vector<int>& NuTo::ElementOutputBase::GetVectorInt()
     throw MechanicsException("[ElementOutputBase::GetVectorInt] element output matrix is not of type std::vector<int>");
 }
 
-NuTo::IpData::eIpStaticDataType NuTo::ElementOutputBase::GetIpDataType()
+NuTo::ElementOutputIpData& NuTo::ElementOutputBase::GetIpData()
 {
-	throw MechanicsException("[ElementOutputBase::GetIpDataType] ipdata is not stored.");
+	throw MechanicsException("[ElementOutputBase::GetIpData] ipdata is not stored.");
 }
 
 void NuTo::ElementOutputBase::SetSymmetry(bool rSymmetric)

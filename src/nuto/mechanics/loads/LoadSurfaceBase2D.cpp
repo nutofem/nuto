@@ -6,7 +6,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/loads/LoadSurfaceBase2D.h"
-#include "nuto/mechanics/elements/Element2D.h"
+#include "nuto/mechanics/elements/ContinuumElement.h"
 
 //! @brief constructor
 NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStructure, int rElementGroupId, int rNodeGroupId) :
@@ -30,13 +30,13 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
 //loop over all elements
     Eigen::VectorXi surfaceNodeIndices;
     std::vector<const NodeBase*> surfaceNodes;
-    for (Group<ElementBase>::const_iterator itElement = elementGroup->begin(); itElement != elementGroup->end(); itElement++)
+    for (auto itElement : *elementGroup)
     {
         try
         {
             //check if plane element
-            Element2D* elementPtr = itElement->second->AsElement2D();
-            const InterpolationType* InterpolationType = elementPtr->GetInterpolationType();
+            ContinuumElement<2>& elementPtr = itElement.second->AsContinuumElement2D();
+            const InterpolationType* InterpolationType = elementPtr.GetInterpolationType();
 
             //loop over all surfaces
             for (int iSurface = 0; iSurface < InterpolationType->GetNumSurfaces(); iSurface++)
@@ -48,7 +48,7 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
 
                 for (int iSurfaceNode = 0; iSurfaceNode < numSurfaceNodes; ++iSurfaceNode)
                 {
-                    surfaceNodes[iSurfaceNode] = elementPtr->GetNode(surfaceNodeIndices.at(iSurfaceNode, 0));
+                    surfaceNodes[iSurfaceNode] = elementPtr.GetNode(surfaceNodeIndices.at(iSurfaceNode, 0));
                 }
 
                 //check, if all surface nodes are in the node group
@@ -63,7 +63,7 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
 
                 if (addSurface)
                 {
-                    mElements2D.push_back(std::make_pair(elementPtr, iSurface));
+                    mElements2D.push_back(std::make_pair(&elementPtr, iSurface));
 //            		double nodeCoordinates[2];
 //            		surfaceNodes[0]->GetCoordinates2D(nodeCoordinates);
 //            		surfaceNodes[1]->GetCoordinates2D(nodeCoordinates);
@@ -72,15 +72,15 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
         } catch (NuTo::MechanicsException &e)
         {
             std::stringstream ss;
-            assert(rStructure->ElementGetId(itElement->second) == itElement->first);
-            ss << itElement->first;
+            assert(rStructure->ElementGetId(itElement.second) == itElement.first);
+            ss << itElement.first;
             e.AddMessage("[NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D] Error calculating surfaces for surface loads in element " + ss.str() + "(Maybe not a solid element?).");
             throw e;
         } catch (...)
         {
             std::stringstream ss;
-            assert(rStructure->ElementGetId(itElement->second) == itElement->first);
-            ss << itElement->first;
+            assert(rStructure->ElementGetId(itElement.second) == itElement.first);
+            ss << itElement.first;
             throw NuTo::MechanicsException("[NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D] Error calculating surfaces for surface loads in element " + ss.str() + "(Maybe not a solid element?).");
         }
     }
@@ -104,10 +104,10 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
 {
     if (rLoadCase != mLoadCase)
         return;
-    for (unsigned int countPlaneElement = 0; countPlaneElement < mElements2D.size(); countPlaneElement++)
+    for (auto it : mElements2D)
     {
-        const Element2D* elementPtr = mElements2D[countPlaneElement].first;
-        int surface = mElements2D[countPlaneElement].second;
+        const auto* elementPtr = it.first;
+        int surface = it.second;
 
         const InterpolationBase& interpolationTypeDisps = elementPtr->GetInterpolationType()->Get(Node::DISPLACEMENTS);
         const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType()->Get(Node::COORDINATES);
@@ -140,7 +140,7 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             throw MechanicsException("[NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D] integration types only for 2, 3, 4 and 5 nodes (on the surface) implemented.");
         }
 
-        Eigen::MatrixXd nodeCoordinates = elementPtr->ExtractNodeValues(0, Node::COORDINATES);
+        Eigen::VectorXd nodeCoordinates = elementPtr->ExtractNodeValues(0, Node::COORDINATES);
 
         Eigen::Matrix<double, 1, 1> ipCoordsSurface;
         Eigen::Matrix<double, 2, 1> ipCoordsNatural;
@@ -160,15 +160,17 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             double tmp;
             integrationType->GetLocalIntegrationPointCoordinates1D(theIp, tmp);
             ipCoordsSurface(0) = tmp;
+
             ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface);
-            ipCoordsGlobal = nodeCoordinates * interpolationTypeCoords.CalculateShapeFunctions(ipCoordsNatural);
+            ipCoordsGlobal = interpolationTypeCoords.CalculateMatrixN(ipCoordsNatural) * nodeCoordinates;
 
             // #######################################
             // ##  Calculate the surface jacobian
             // ## = || [dX / dXi] * [dXi / dAlpha] ||
             // #######################################
             derivativeShapeFunctionsNatural = interpolationTypeCoords.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural);
-            const Eigen::Matrix2d jacobian = nodeCoordinates * derivativeShapeFunctionsNatural;                     // = [dX / dXi]
+
+            const Eigen::Matrix2d jacobian = elementPtr->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates);// = [dX / dXi]
 
             derivativeNaturalSurfaceCoordinates = interpolationTypeCoords.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, surface); // = [dXi / dAlpha]
             double detJacobian = (jacobian * derivativeNaturalSurfaceCoordinates).norm();                           // = || [dX / dXi] * [dXi / dAlpha] ||
@@ -177,8 +179,8 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             // ##  Calculate surface normal vector
             // ## = ( dY / dAlpha     -dX/dAlpha).T
             // #######################################
-            // dXdAlpha :  [2 x NumNodes] * [NumNodes x 2] * [2 x 1] = [2 x 1]
-            Eigen::Vector2d surfaceTangentVector = nodeCoordinates * derivativeShapeFunctionsNatural * derivativeNaturalSurfaceCoordinates;
+            // dXdAlpha :  [2 x NumNodes*2] * [NumNodes*2 x 1] * [2 x 1] = [2 x 1]
+            Eigen::Vector2d surfaceTangentVector = jacobian * derivativeNaturalSurfaceCoordinates;
             surfaceTangentVector.normalize();
             NuTo::FullVector<double, 2> surfaceNormalVector;
             surfaceNormalVector(0) = surfaceTangentVector.at(1, 0);

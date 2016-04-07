@@ -6,35 +6,35 @@
 
 namespace NuTo
 {
+
+class StructureOutputBlockMatrix;
+class StructureOutputBlockVector;
+
+
 //! @author Volker Hirthammer
 //! @date June 25, 2015
 //! @brief ...
 class StructureOutputBase
 {
 public:
+
     StructureOutputBase();
+
+#ifndef SWIG
 
     virtual ~StructureOutputBase();
 
-    virtual SparseMatrix<double>& GetSparseMatrixDouble();
+    virtual StructureOutputBlockMatrix& AsStructureOutputBlockMatrix();
 
-    virtual SparseMatrix<double>& GetSparseMatrixDouble(StructureEnum::eSubMatrix rSubmatrixEnum);
-
-    virtual FullVector<double,Eigen::Dynamic>& GetFullVectorDouble();
-
-    virtual FullVector<double,Eigen::Dynamic>& GetFullVectorDouble(StructureEnum::eSubVector rSubvectorEnum);
-
-    virtual int GetNumSubmatrices() const;
-
-    virtual int GetNumSubvectors() const;
+    virtual StructureOutputBlockVector& AsStructureOutputBlockVector();
 
     virtual void SetSymmetry(bool rSymmetric);
 
-    virtual bool GetSymmetry()const;
+    virtual bool IsSymmetric()const;
 
-    virtual void SetConstant(bool rConstant);
+    virtual void SetZero();
 
-    virtual bool GetConstant()const;
+#endif
 };
 
 } // namespace NuTo

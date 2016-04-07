@@ -7,7 +7,7 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation2DQuad.h"
 
-NuTo::Interpolation2DQuad::Interpolation2DQuad(NuTo::Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
+NuTo::Interpolation2DQuad::Interpolation2DQuad(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
         Interpolation2D::Interpolation2D(rDofType, rTypeOrder, rDimension)
 {
     Initialize();
@@ -29,11 +29,11 @@ NuTo::IntegrationType::eIntegrationType NuTo::Interpolation2DQuad::GetStandardIn
         return NuTo::IntegrationType::IntegrationType2D4NLobatto25Ip;
 
     default:
-        throw MechanicsException("[NuTo::Interpolation2DQuad::GetStandardIntegrationType] Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
-const Eigen::VectorXd NuTo::Interpolation2DQuad::CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const
+Eigen::VectorXd NuTo::Interpolation2DQuad::CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const
 {
     switch (mTypeOrder)
     {
@@ -48,11 +48,11 @@ const Eigen::VectorXd NuTo::Interpolation2DQuad::CalculateShapeFunctions(const E
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
         return ShapeFunctions2D::ShapeFunctionsQuadSpectralOrder4(rCoordinates);
     default:
-        throw MechanicsException("[NuTo::Interpolation2DQuad::CalculateShapeFunctions] Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
-const Eigen::MatrixXd NuTo::Interpolation2DQuad::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
+Eigen::MatrixXd NuTo::Interpolation2DQuad::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const
 {
     switch (mTypeOrder)
     {
@@ -68,11 +68,11 @@ const Eigen::MatrixXd NuTo::Interpolation2DQuad::CalculateDerivativeShapeFunctio
         return ShapeFunctions2D::DerivativeShapeFunctionsQuadSpectralOrder4(rCoordinates);
 
     default:
-        throw MechanicsException("[NuTo::Interpolation2DQuad::CalculateDerivativeShapeFunctionsNatural] Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation order for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
-const Eigen::VectorXd NuTo::Interpolation2DQuad::CalculateNaturalNodeCoordinates(int rNodeIndexDof) const
+Eigen::VectorXd NuTo::Interpolation2DQuad::CalculateNaturalNodeCoordinates(int rNodeIndexDof) const
 {
     switch (mTypeOrder)
     {
@@ -88,11 +88,11 @@ const Eigen::VectorXd NuTo::Interpolation2DQuad::CalculateNaturalNodeCoordinates
         return ShapeFunctions2D::NodeCoordinatesQuadSpectralOrder4(rNodeIndexDof);
 
     default:
-        throw MechanicsException("[NuTo::Interpolation2DQuad::CalculateNaturalNodeCoordinates] Node arrangement for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Node arrangement for " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 
-const Eigen::VectorXd NuTo::Interpolation2DQuad::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::VectorXd NuTo::Interpolation2DQuad::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
 {
     assert(rNaturalSurfaceCoordinates.rows() == 1);
     switch (rSurface)
@@ -106,11 +106,11 @@ const Eigen::VectorXd NuTo::Interpolation2DQuad::CalculateNaturalSurfaceCoordina
     case 3:
         return Eigen::Vector2d(-1., -rNaturalSurfaceCoordinates(0));
     default:
-        throw MechanicsException("[NuTo::Interpolation2DQuad::CalculateNaturalSurfaceCoordinates] QUAD2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
+        throw MechanicsException(__PRETTY_FUNCTION__, "QUAD2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
     }
 }
 
-const Eigen::MatrixXd NuTo::Interpolation2DQuad::CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
+Eigen::MatrixXd NuTo::Interpolation2DQuad::CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
 {
     assert(rNaturalSurfaceCoordinates.rows() == 1);
     switch (rSurface)
@@ -124,7 +124,7 @@ const Eigen::MatrixXd NuTo::Interpolation2DQuad::CalculateDerivativeNaturalSurfa
     case 3:
         return Eigen::Vector2d(0, -1);
     default:
-        throw MechanicsException("[NuTo::Interpolation2DQuad::CalculateDerivativeNaturalSurfaceCoordinates] QUAD2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
+        throw MechanicsException(__PRETTY_FUNCTION__, "QUAD2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
     }
 }
 
@@ -144,7 +144,7 @@ int NuTo::Interpolation2DQuad::CalculateNumNodes() const
         return 25;
 
     default:
-        throw MechanicsException("[NuTo::Interpolation2DQuad::CalculateNumNodes] Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }
 }
 

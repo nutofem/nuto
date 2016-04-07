@@ -34,7 +34,7 @@ void CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder rType
     myStructure.CalculateMaximumIndependentSets();
 
     //create constitutive law
-    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
+    int myMatLin = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
     myStructure.ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 10);
     myStructure.ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.2);
 
@@ -51,23 +51,26 @@ void CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder rType
     direction(0) = 1;
     direction(1) = 0;
     myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
-    myStructure.NodeBuildGlobalDofs();
+    myStructure.CalculateMaximumIndependentSets();
 
-    bool isCorrectStiffnessStructure = myStructure.CheckCoefficientMatrix_0         (1.e-6, true);
-    bool isCorrectStiffnessElements  = myStructure.ElementCheckCoefficientMatrix_0  (1.e-6);
+    bool isCorrectStiffnessStructure = myStructure.CheckHessian0(1.e-6, 1.e-4);
+    bool isCorrectStiffnessElements  = myStructure.ElementCheckHessian0(1.e-6, 1.e-4);
+
 
     if (!isCorrectStiffnessStructure)
         throw NuTo::MechanicsException("Global stiffness matrix is incorrect.");
 
     if (!isCorrectStiffnessElements)
         throw NuTo::MechanicsException("Element stiffness matrices are incorrect.");
+
 }
 
 int main()
 {
     try
     {
-        CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::EQUIDISTANT3);
+        std::string s = "Stuff";
+        CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::EQUIDISTANT1);
     }
     catch (NuTo::Exception& e)
     {

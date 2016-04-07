@@ -20,8 +20,6 @@ public:
 
 	virtual ~IpDataStaticDataNonlocal();
 
-	virtual void Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive);
-
     //! @brief returns the enum of IP data type
     //! @return enum of IPDataType
     NuTo::IpData::eIpDataType GetIpDataType()const;

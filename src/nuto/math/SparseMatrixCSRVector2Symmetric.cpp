@@ -25,36 +25,6 @@ std::string SparseMatrixCSRVector2Symmetric<int>::GetTypeId()const
     return std::string("SparseMatrixCSRVector2SymmetricInt");
 }
 
-// adds the product of trans(A) * B * A to the matrix (A is a general matrix, and B is a symmetric matrix)
-template<>
-void SparseMatrixCSRVector2Symmetric<int>::Add_TransA_Mult_B_Mult_A(const NuTo::SparseMatrixCSRVector2General<int>& rMatrixA, const NuTo::SparseMatrixCSRVector2Symmetric<int>& rMatrixB)
-{
-    throw MathException("[SparseMatrixCSRVector2Symmetric::Add_TransA_Mult_B_Mult_A] not implemented for this data-type.");
-}
-
-// adds the product of trans(A) * B * A to the matrix (A is a general matrix, and B is a symmetric matrix)
-template<>
-void SparseMatrixCSRVector2Symmetric<double>::Add_TransA_Mult_B_Mult_A(const NuTo::SparseMatrixCSRVector2General<double>& rMatrixA, const NuTo::SparseMatrixCSRVector2Symmetric<double>& rMatrixB)
-{
-    throw MathException("[SparseMatrixCSRVector2Symmetric::Add_TransA_Mult_B_Mult_A] not implemented for this data-type.");
-}
-
-// subtract (trans(A) * B + trans(B) * A) from the matrix (A and B are general matrices)
-template<>
-void SparseMatrixCSRVector2Symmetric<int>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(const NuTo::SparseMatrixCSRVector2General<int>& rMatrixA, const NuTo::SparseMatrixCSRVector2General<int>& rMatrixB)
-{
-    throw MathException("[SparseMatrixCSRVector2Symmetric::Sub_TransA_Mult_B_Plus_TransB_Mult_A] not implemented for this data-type.");
-}
-
-// subtract (trans(A) * trans(B) + B * A) from the matrix (A and B are general matrices)
-template<>
-void SparseMatrixCSRVector2Symmetric<double>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(const NuTo::SparseMatrixCSRVector2General<double>& rMatrixA, const NuTo::SparseMatrixCSRVector2General<double>& rMatrixB)
-{
-    throw MathException("[SparseMatrixCSRVector2Symmetric::Sub_TransA_Mult_TransB_Plus_B_Mult_A] not implemented for this data-type.");
-}
-
-
-
 #ifdef ENABLE_SERIALIZATION
 template<class T>
 void SparseMatrixCSRVector2Symmetric<T>::Save ( const std::string &filename, std::string rType)const

@@ -14,7 +14,7 @@
 namespace NuTo
 {
 class ConstraintLagrange;
-template<class T> class SparseMatrixCSRGeneral;
+template<class T> class SparseMatrix;
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -54,6 +54,8 @@ public:
     //! @return number of constraints
     virtual int GetNumLinearConstraints()const=0;
 
+    using ConstraintBase::GetRHS;
+
     //!@brief writes for the current constraint equation(s) the rhs into the vector
     // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
     //! @param curConstraintEquation (is incremented during the function call)
@@ -64,7 +66,7 @@ public:
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
     virtual void AddToConstraintMatrix(int& curConstraintEquation,
-                                       NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const=0;
+                                       NuTo::SparseMatrix<double>& rConstraintMatrix)const=0;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

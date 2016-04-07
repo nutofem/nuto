@@ -59,6 +59,15 @@ import_array();
 
 %extend NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> 
 {
+  FullVector<double,Eigen::Dynamic> operator*(NuTo::FullVector<double,Eigen::Dynamic> rOther)
+  {
+      return NuTo::FullVector<double,Eigen::Dynamic>($self->operator*(rOther));
+  }
+}
+
+
+%extend NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> 
+{
   FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> operator+(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rOther)
   {
       return NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>($self->operator+(rOther));

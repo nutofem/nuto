@@ -1,6 +1,5 @@
 SET(NuToMetamodel_SOURCES
   Metamodel.cpp
-  MetamodelException.cpp
   MultipleLinearRegression.cpp
   NeuralNetwork.cpp
   TransferFunction.cpp

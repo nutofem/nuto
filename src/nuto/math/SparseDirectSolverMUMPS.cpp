@@ -1,12 +1,6 @@
 // $Id$
-#ifdef SHOW_TIME
-    #include <ctime>
-#endif
 
-# ifdef _OPENMP
-#include <omp.h>
-# endif
-
+#include "nuto/base/Timer.h"
 #include "nuto/math/MathException.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/FullVector.h"
@@ -20,69 +14,36 @@ NuTo::SparseDirectSolverMUMPS::SparseDirectSolverMUMPS() : SparseDirectSolver()
     // set default solver parameters
     // this->orderingType = 2;          // set ordering to METIS
 #else // HAVE_MUMPS
-    throw NuTo::MathException("[SparseDirectSolverMUMPS::SparseDirectSolverMUMPS] MUMPS-solver was not found on your system (check cmake)");
+    throw NuTo::MathException(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
 #endif // HAVE_MUMPS
 }
 
 #ifdef HAVE_MUMPS
 void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double,Eigen::Dynamic>& rRhs, NuTo::FullVector<double,Eigen::Dynamic>& rSolution)
 {
-#ifdef HAVE_MUMPS
-
-#ifdef SHOW_TIME
-#ifdef _OPENMP
-    double startWtimeGlobal = omp_get_wtime();
-#else
-    std::clock_t start,end;
-    start=clock();
-#endif
-#endif
+    Timer timer(std::string("MUMPS ") + __FUNCTION__, GetShowTime());
 
     Factorization(rMatrix);
     Solution(rRhs, rSolution);
     CleanUp();
-
-#else // HAVE_MUMPS
-    throw NuTo::MathException("[SparseDirectSolverMUMPS::SparseDirectSolverMUMPS] MUMPS-solver was not found on your system (check cmake)");
-#endif // HAVE_MUMPS
-
-#ifdef SHOW_TIME
-#ifdef _OPENMP
-    double endWtimeGlobal = omp_get_wtime();
-    if (mShowTime)
-        std::cout << "[NuTo::SparseDirectSolverMUMPS::solve] Overall time: "<<endWtimeGlobal-startWtimeGlobal<<"sec"<<std::endl;
-#else
-    end = clock();
-    if (mShowTime)
-        std::cout<< "[NuTo::SparseDirectSolverMUMPS::solve] Overall time: "<< difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-#endif
-#endif
 }
 
 
-
-#ifdef HAVE_MUMPS
 //! @brief ... prepare the solver, and perform all the steps up to the factorization of the matrix
 //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)
 void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<double>& rMatrix)
 {
-#ifdef SHOW_TIME
-#ifdef _OPENMP
-    double startWtime = omp_get_wtime();
-#else
-    std::clock_t start,end;
-    start=clock();
-#endif
-#endif
+    Timer timer(std::string("MUMPS ") + __FUNCTION__ + " reordering and symbolic factorization", GetShowTime());
+
 	// check rMatrix
 	if (rMatrix.HasZeroBasedIndexing())
 	{
-		throw NuTo::MathException("[SparseDirectSolverMUMPS::Factorization] one based indexing of sparse matrix is required for this solver.");
+		throw NuTo::MathException(__PRETTY_FUNCTION__, "one based indexing of sparse matrix is required for this solver.");
 	}
 	int matrixDimension = rMatrix.GetNumRows();
 	if (matrixDimension != rMatrix.GetNumColumns())
 	{
-		throw NuTo::MathException("[SparseDirectSolverMUMPS::Factorization] matrix is not square.");
+		throw NuTo::MathException(__PRETTY_FUNCTION__, "matrix is not square.");
 	}
 	const std::vector<int>& matrixRowIndex = rMatrix.GetRowIndex();
 	// extract rows from rowIndex
@@ -154,22 +115,10 @@ void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<do
 	dmumps_c(&mSolver);
 	if (mSolver.info[0] < 0)
 	{
-		throw NuTo::MathException("[SparseDirectSolverMUMPS::solve] Analysis and reordering phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+		throw NuTo::MathException(__PRETTY_FUNCTION__, "Analysis and reordering phase: " + this->GetErrorString(mSolver.info[0]) + ".");
 	}
 
-#ifdef SHOW_TIME
-#ifdef _OPENMP
-    double endWtime = omp_get_wtime();
-    if (mShowTime)
-        std::cout<<"[NuTo::SparseDirectSolverMUMPS::Solve] reordering and symbolic factorization "<<endWtime - startWtime<<"sec"<<std::endl;
-    startWtime = omp_get_wtime();
-#else
-    end = clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::SparseDirectSolverMUMPS::Solve] reordering and symbolic factorization "<< difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-    start = end;
-#endif
-#endif
+	timer.Reset(std::string("MUMPS ") + __FUNCTION__ + " numerical factorization");
 
 	// Numerical factorization.
 	mSolver.job = 2;
@@ -184,22 +133,9 @@ void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<do
 		default:
 			break;
 		}
-		throw NuTo::MathException("[SparseDirectSolverMUMPS::solve] Numerical factorization phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+		throw NuTo::MathException(__PRETTY_FUNCTION__, "Numerical factorization phase: " + this->GetErrorString(mSolver.info[0]) + ".");
 	}
 
-#ifdef SHOW_TIME
-#ifdef _OPENMP
-    endWtime = omp_get_wtime();
-	if (mShowTime)
-        std::cout<<"[NuTo::SparseDirectSolverMUMPS::Solve] numerical factorization " <<endWtime - startWtime<< "sec" << std::endl;
-    startWtime = omp_get_wtime();
-#else
-    end = clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::SparseDirectSolverMUMPS::Solve] numerical factorization " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-    start = end;
-#endif
-#endif
 }
 
 //! @brief ... use the factorized matrix for the final solution phase
@@ -208,19 +144,13 @@ void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<do
 //! @param rSolution ... matrix storing the corresponding solution vectors (output)
 void NuTo::SparseDirectSolverMUMPS::Solution(const NuTo::FullVector<double,Eigen::Dynamic>& rRhs, NuTo::FullVector<double,Eigen::Dynamic>& rSolution)
 {
-#ifdef SHOW_TIME
-#ifdef _OPENMP
-    double startWtime = omp_get_wtime();
-#else
-    std::clock_t start,end;
-    start=clock();
-#endif
-#endif
+    Timer timer(std::string("MUMPS ") + __FUNCTION__, GetShowTime());
+
 	// check right hand side
 	if (mSolver.n != rRhs.GetNumRows())
 	{
 		std::cout << "n " << mSolver.n <<  "dim rhs " << rRhs.GetNumRows() << std::endl;
-		throw NuTo::MathException("[SparseDirectSolverMUMPS::Factorization] invalid dimension of right hand side vector.");
+		throw NuTo::MathException(__PRETTY_FUNCTION__, "invalid dimension of right hand side vector.");
 	}
 	int rhsNumColumns = rRhs.GetNumColumns();
 
@@ -236,59 +166,38 @@ void NuTo::SparseDirectSolverMUMPS::Solution(const NuTo::FullVector<double,Eigen
 		dmumps_c(&mSolver);
 		if (mSolver.info[0] < 0)
 		{
-			throw NuTo::MathException("[SparseDirectSolverMUMPS::solve] Solution phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+			throw NuTo::MathException(__PRETTY_FUNCTION__, "Solution phase: " + this->GetErrorString(mSolver.info[0]) + ".");
 		}
 	}
-#ifdef SHOW_TIME
-#ifdef _OPENMP
-    double endWtime = omp_get_wtime();
-    if (mShowTime)
-        std::cout<<"[NuTo::SparseDirectSolverMUMPS::Solve] Solution " << endWtime - startWtime<< "sec" << std::endl;
-#else
-    end = clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::SparseDirectSolverMUMPS::Solve] Solution " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-#endif
-#endif
 }
 
 
-//! @brief ... use the factorized matrix for the final solution phase
-//! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)
-//! @param rRhs ... matrix storing the right-hand-side vectors (input)
-//! @param rSolution ... matrix storing the corresponding solution vectors (output)
+//! @brief ... Termination and release of memory
 void NuTo::SparseDirectSolverMUMPS::CleanUp()
 {
+    Timer timer(std::string("MUMPS ") + __FUNCTION__, GetShowTime());
     // Termination and release of memory
     mSolver.job = -2;
     dmumps_c(&mSolver);
     if (mSolver.info[0] < 0)
     {
-        throw NuTo::MathException("[SparseDirectSolverMUMPS::CleanUp] Termination phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+        throw NuTo::MathException(__PRETTY_FUNCTION__, "Termination phase: " + this->GetErrorString(mSolver.info[0]) + ".");
     }
 }
 
-#endif //HAVE_MUMPS
-
 void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, NuTo::FullVector<int, Eigen::Dynamic> rSchurIndices, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement)
 {
-#ifdef SHOW_TIME
-#ifdef _OPENMP
-    double startWtime = omp_get_wtime();
-#else
-    std::clock_t start,end;
-    start=clock();
-#endif
-#endif
+    Timer timer(std::string("MUMPS ") + __FUNCTION__ + " reordering and symbolic factorization", GetShowTime());
+
     // check rMatrix
     if (rMatrix.HasZeroBasedIndexing())
     {
-        throw NuTo::MathException("[SparseDirectSolverMUMPS::SchurComplement] one based indexing of sparse matrix is required for this solver.");
+        throw NuTo::MathException(__PRETTY_FUNCTION__, "one based indexing of sparse matrix is required for this solver.");
     }
     int matrixDimension = rMatrix.GetNumRows();
     if (matrixDimension != rMatrix.GetNumColumns())
     {
-        throw NuTo::MathException("[SparseDirectSolverMUMPS::SchurComplement] matrix is not square.");
+        throw NuTo::MathException(__PRETTY_FUNCTION__, "matrix is not square.");
     }
     const std::vector<int>& matrixRowIndex = rMatrix.GetRowIndex();
     // extract rows from rowIndex
@@ -309,7 +218,7 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     // check Schur Indices
     if (matrixDimension < rSchurIndices.GetNumRows() || rSchurIndices.GetNumColumns()!=1)
     {
-        throw NuTo::MathException("[SparseDirectSolverMUMPS::SchurComplement] invalid dimension of schur indices vector.");
+        throw NuTo::MathException(__PRETTY_FUNCTION__, "invalid dimension of schur indices vector.");
     }
 
     // add indices by one, since the external interface always counts from zero and mumps requires one based indexing
@@ -370,60 +279,27 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     dmumps_c(&mSolver);
     if (mSolver.info[0] < 0)
     {
-        throw NuTo::MathException("[SparseDirectSolverMUMPS::SchurComplement] Analysis and reordering phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+        throw NuTo::MathException(__PRETTY_FUNCTION__, "Analysis and reordering phase: " + this->GetErrorString(mSolver.info[0]) + ".");
     }
 
-#ifdef SHOW_TIME
-#ifdef _OPENMP
-    double endWtime = omp_get_wtime();
-    if (mShowTime)
-        std::cout<<"[NuTo::SparseDirectSolverMUMPS::SchurComplement] reordering and symbolic factorization " << endWtime - startWtime << "sec" << std::endl;
-    startWtime = omp_get_wtime();
-#else
-    end = clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::SparseDirectSolverMUMPS::SchurComplement] reordering and symbolic factorization " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-    start = end;
-#endif
-#endif
+    timer.Reset(std::string("MUMPS ") + __FUNCTION__ + " numerical factorization");
+
     // Numerical factorization.
     mSolver.job = 2;
     dmumps_c(&mSolver);
     if (mSolver.info[0] < 0)
     {
         std::cout << "mSolver info " << mSolver.info[0] << "\n";
-    	throw NuTo::MathException("[SparseDirectSolverMUMPS::SchurComplement] Numerical factorization phase: " + this->GetErrorString(mSolver.info[0]) + ".");
+    	throw NuTo::MathException(__PRETTY_FUNCTION__, "Numerical factorization phase: " + this->GetErrorString(mSolver.info[0]) + ".");
     }
 
-#ifdef SHOW_TIME
-#ifdef _OPENMP
-    endWtime = omp_get_wtime();
-    if (mShowTime)
-        std::cout<<"[NuTo::SparseDirectSolverMUMPS::SchurComplement] numerical factorization " <<endWtime-startWtime<< "sec" << std::endl;
-    startWtime = omp_get_wtime();
-#else
-    end = clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::SparseDirectSolverMUMPS::SchurComplement] numerical factorization " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-    start = end;
-#endif
-#endif
 
     CleanUp();
 
+    timer.Reset(std::string("MUMPS ") + __FUNCTION__ + " solution");
+
     rSchurComplement = rSchurComplementTranspose.transpose();
 
-#ifdef SHOW_TIME
-#ifdef _OPENMP
-    endWtime = omp_get_wtime();
-    if (mShowTime)
-        std::cout<<"[NuTo::SparseDirectSolverMUMPS::SchurComplement] Solution " << endWtime - startWtime << "sec" << std::endl;
-#else
-    end = clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::SparseDirectSolverMUMPS::SchurComplement] Solution " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-#endif
-#endif
 }
 
 
@@ -446,11 +322,11 @@ std::string NuTo::SparseDirectSolverMUMPS::GetErrorString(int error) const
 #else // HAVE_MUMPS
 void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double, Eigen::Dynamic>& rRhs, NuTo::FullVector<double, Eigen::Dynamic>& rSolution)
 {
-	throw NuTo::MathException("[SparseDirectSolverMUMPS::Solve] MUMPS-solver was not found on your system (check cmake)");
+	throw NuTo::MathException(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
 }
 
 void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<int, Eigen::Dynamic> rSchurIndices, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement)
 {
-    throw NuTo::MathException("[SparseDirectSolverMUMPS::SchurComplement] MUMPS-solver was not found on your system (check cmake)");
+    throw NuTo::MathException(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
 }
 #endif // HAVE_MUMPS

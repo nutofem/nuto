@@ -22,48 +22,6 @@ NuTo::ConstitutiveBase::ConstitutiveBase()
     this->mParametersValid = false;
 }
 
-//! @brief ... evaluate the constitutive relation in 1D
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-//! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate1D(ElementBase* rElement, int rIp,
-		const std::map<NuTo::Constitutive::Input::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
-		std::map<NuTo::Constitutive::Output::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput)
-{
-	std::cout << "[ConstitutiveBase::Evaluate1D] make this function pure virtual." << std::endl;
-	throw std::string("[ConstitutiveBase::Evaluate] make this function pure virtual.");
-	return Error::SUCCESSFUL;
-}
-
-//! @brief ... evaluate the constitutive relation in 2D
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-//! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate2D(ElementBase* rElement, int rIp,
-		const std::map<NuTo::Constitutive::Input::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
-		std::map<NuTo::Constitutive::Output::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput)
-{
-	std::cout << "[ConstitutiveBase::Evaluate1D] make this function pure virtual." << std::endl;
-	throw std::string("[ConstitutiveBase::Evaluate] make this function pure virtual.");
-	return Error::SUCCESSFUL;
-}
-
-//! @brief ... evaluate the constitutive relation in 3D
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-//! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-NuTo::Error::eError NuTo::ConstitutiveBase::Evaluate3D(ElementBase* rElement, int rIp,
-		const std::map<NuTo::Constitutive::Input::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
-		std::map<NuTo::Constitutive::Output::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput)
-{
-	std::cout << "[ConstitutiveBase::Evaluate3D] make this function pure virtual." << std::endl;
-	throw std::string("[ConstitutiveBase::Evaluate] make this function pure virtual.");
-    return Error::SUCCESSFUL;
-}
-
 //! @brief ... checks if the constitutive law has a specific parameter
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... true/false
@@ -120,22 +78,38 @@ void NuTo::ConstitutiveBase::SetParameterFullVectorDouble(NuTo::Constitutive::eC
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetParameterFullVectorDouble] This constitutive law has no variables of type NuTo::FullVector<double, Eigen::Dynamic>.");
 }
 
-
-//! @brief ... get factor to modify Young's modulus (using random fields)
-//! @param rElement ...  element
-//! @param rIp ...  integration point
-double NuTo::ConstitutiveBase::GetRanfieldFactorYoungsModulus(const ElementBase* rElement,int rIp) const
+//! @brief checks parameters, throws if the check failed
+void NuTo::ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
-    return 1;
-}
+    switch (rIdentifier)
+    {
+    case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS:
+    case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER:
+    case Constitutive::eConstitutiveParameter::TENSILE_STRENGTH:
+    case Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH:
+    case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
+    case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
+    case Constitutive::eConstitutiveParameter::DENSITY:
+    {
+        if (rValue < 0.)
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, Constitutive::ConstitutiveParameterToString(rIdentifier) + " must be > 0. (value: " + std::to_string(rValue) + ").");
+    }
+    break;
+    case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
+    {
+        if (rValue <= -1.0)
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Poisson's ratio must be greater or equal to -1.0 (value: " + std::to_string(rValue) + ").");
+        if (rValue >= 0.5)
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Poisson's ratio must be smaller or equal to 0.5 (value: " + std::to_string(rValue) + ").");
+    }
+    break;
 
+    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
+    break;
 
-//! @brief ... get factor to modify Poisson's ratio (using random fields)
-//! @param rElement ...  element
-//! @param rIp ...  integration point
-double NuTo::ConstitutiveBase::GetRanfieldFactorPoissonsRatio(const ElementBase* rElement,int rIp) const
-{
-    return 1;
+    default:
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "material parameter check not implemented.");
+    }
 }
 
 //! @brief ... get yield strength for multilinear response
@@ -154,15 +128,6 @@ void NuTo::ConstitutiveBase::AddYieldStrength(double rEpsilon, double rSigma)
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AddYieldStrength] The constitutive relationship does not have a parameter yield strength.");
 }
 
-//! @brief ... get factor to modify yield strength (using random fields)
-//! @param rElement ...  element
-//! @param rIp ...  integration point
-double NuTo::ConstitutiveBase::GetRanfieldFactorYieldStrength(const ElementBase* rElement,int rIp) const
-{
-    return 1;
-}
-
-
 //! @brief ... get hardening modulus for multilinear response
 //! @return ... first column: equivalent plastic strain
 //! @return ... second column: corresponding hardening modulus
@@ -178,15 +143,6 @@ void NuTo::ConstitutiveBase::AddHardeningModulus(double rEpsilon, double rH)
 {
 	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AddYieldStrength] The constitutive relationship does not have a parameter yield strength.");
 }
-
-//! @brief ... get factor to modify hardening modulus (using random fields)
-//! @param rElement ...  element
-//! @param rIp ...  integration point
-double NuTo::ConstitutiveBase::GetRanfieldFactorHardeningModulus(const ElementBase* rElement,int rIp) const
-{
-    return 1;
-}
-
 
 
 //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
@@ -223,7 +179,7 @@ void NuTo::ConstitutiveBase::SetParametersValid()
     {
         this->CheckParameters();
     }
-    catch (NuTo::MechanicsException)
+    catch (NuTo::MechanicsException& e)
     {
         this->mParametersValid = false;
         return;
@@ -244,23 +200,23 @@ void NuTo::ConstitutiveBase::Info(unsigned short rVerboseLevel, Logger& rLogger)
 
 //! @brief ... allocate the correct static data
 //! @return ... see brief explanation
-NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveBase::AllocateStaticDataEngineeringStress_EngineeringStrain1D(const ElementBase* rElement)const
+NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveBase::AllocateStaticData1D(const ElementBase* rElement)const
 {
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AllocateStaticDataEngineeringStress_EngineeringStrain1D] Allocate routine for 1D EngineeringStressStrain not implemented.");
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AllocateStaticData1D] Allocate routine for 1D EngineeringStressStrain not implemented.");
 }
 
 //! @brief ... allocate the correct static data
 //! @return ... see brief explanation
-NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveBase::AllocateStaticDataEngineeringStress_EngineeringStrain2D(const ElementBase* rElement)const
+NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveBase::AllocateStaticData2D(const ElementBase* rElement)const
 {
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AllocateStaticDataEngineeringStress_EngineeringStrain2D] Allocate routine for 2D EngineeringStressStrain not implemented.");
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AllocateStaticData2D] Allocate routine for 2D EngineeringStressStrain not implemented.");
 }
 
 //! @brief ... allocate the correct static data
 //! @return ... see brief explanation
-NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveBase::AllocateStaticDataEngineeringStress_EngineeringStrain3D(const ElementBase* rElement)const
+NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveBase::AllocateStaticData3D(const ElementBase* rElement)const
 {
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AllocateStaticDataEngineeringStress_EngineeringStrain3D] Allocate routine for 3D EngineeringStressStrain not implemented.");
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AllocateStaticData3D] Allocate routine for 3D EngineeringStressStrain not implemented.");
 }
 
 

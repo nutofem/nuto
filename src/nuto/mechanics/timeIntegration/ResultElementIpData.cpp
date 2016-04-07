@@ -28,42 +28,22 @@ void NuTo::ResultElementIpData::CalculateAndAddValues(const StructureBase& rStru
 
 void NuTo::ResultElementIpData::CalculateValues(const StructureBase& rStructure, NuTo::FullMatrix<double, 1, Eigen::Dynamic>& rValues)const
 {
-	const ElementBase*  element(rStructure.ElementGetElementPtr(mElementId));
+    const ElementBase* element(rStructure.ElementGetElementPtr(mElementId));
 
-    //determine the ipdata and determine the map
-	boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
-	boost::assign::ptr_map_insert<ElementOutputIpData>( elementOutput )( Element::IP_DATA , mIpDataType);
+    std::map<NuTo::Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
+    elementOutput[Element::IP_DATA] = std::make_shared<ElementOutputIpData>(mIpDataType);
 
-    //calculate the element solution (this can't be const, since update is also a possible step in evaluate which is not constant)
-	const_cast<ElementBase*>(element)->Evaluate(elementOutput);
+    const_cast<ElementBase*>(element)->Evaluate(elementOutput);
 
-    //assign the outputs
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* ipData(nullptr);
-    for (auto itElementOutput=elementOutput.begin(); itElementOutput!=elementOutput.end(); itElementOutput++)
+    const auto& ipDataResult = elementOutput.at(Element::IP_DATA)->GetIpData().GetIpDataMap()[mIpDataType];
+
+    // iterate over all ips
+    assert(ipDataResult.GetNumColumns() == element->GetNumIntegrationPoints());
+    unsigned int numComponents = ipDataResult.GetNumRows();
+    for (int iCol = 0; iCol < ipDataResult.GetNumColumns(); ++iCol)
     {
-        switch (itElementOutput->second->GetIpDataType())
-        {
-		case NuTo::IpData::ENGINEERING_STRESS:
-        case NuTo::IpData::ENGINEERING_STRAIN:
-        case NuTo::IpData::DAMAGE:
-        case NuTo::IpData::BOND_STRESS:
-        case NuTo::IpData::SLIP:
-            ipData = &(itElementOutput->second->GetFullMatrixDouble());
-            break;
-        default:
-			throw MechanicsException(std::string(__PRETTY_FUNCTION__) +"\t: Ip data type not supported yet.");
-        }// switch
+        rValues.SetBlock(0, iCol * numComponents, ipDataResult.GetColumn(iCol).Trans());
     }
-
-
-    //iterate over all ips
-    assert(ipData->GetNumColumns()==element->GetNumIntegrationPoints());
-    const unsigned int numComponents = ipData->GetNumRows();
-    for (int count=0; count<ipData->GetNumColumns(); count++)
-    {
-    	rValues.SetBlock(0,count*numComponents,ipData->GetColumn(count).Trans());
-    }
-    return;
 }
 
 int NuTo::ResultElementIpData::GetNumData(const StructureBase& rStructure) const

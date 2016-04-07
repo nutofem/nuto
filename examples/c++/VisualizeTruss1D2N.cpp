@@ -46,7 +46,7 @@ int main()
     myStructure.NodeSetDisplacements(2, Displacements);
 
     // create constitutive law
-    int myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
+    int myMatLin = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
     myStructure.ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,10);
     myStructure.ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,0.1);
 

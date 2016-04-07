@@ -54,13 +54,17 @@ public:
         this->mValues.reserve(rNumReserveEntries_);
         this->mColumns.reserve(rNumReserveEntries_);
     }
+    virtual ~SparseMatrixCSR() = default;
 
-    SparseMatrixCSR(const SparseMatrixCSR<T>& rOther) : SparseMatrix<T>(rOther)
-    {
-        this->mRowIndex = rOther.mRowIndex;
-        this->mValues = rOther.mValues;
-        this->mColumns = rOther.mColumns;
-    }
+    SparseMatrixCSR(const SparseMatrixCSR<T>&  rOther) = default;
+
+#ifndef SWIG
+    SparseMatrixCSR(      SparseMatrixCSR<T>&& rOther) = default;
+
+    SparseMatrixCSR<T>& operator =(const SparseMatrixCSR<T>&   rOther) = default;
+    SparseMatrixCSR<T>& operator =(      SparseMatrixCSR<T>&&  rOther) = default;
+
+#endif // SWIG
 
     //! @brief ... resize matrix
     //! @param rNumRows_ ... number of rows
@@ -267,67 +271,11 @@ public:
         return *this;
     }
 
-    //! @brief Calculate the largest matrix entry
-    //! @param rResultOutput ... largest matrix entry
-    virtual T Max()
-    {
-        T max;
-        Max(max);
-        return max;
-    }
-
-#ifndef SWIG
-    //! @brief Determine the largest matrix entry
-    //! @param rResultOutput ... largest matrix entry
-    void Max(T& rResultOutput)
-    {
-        if (mValues.size()==0)
-            throw MathException("[NuTo::SparseMatrixCSR::Max] Maximum for matrix with zero entries cannot be calculated.");
-
-        rResultOutput = mValues[0];
-        for (unsigned int count=1; count<mValues.size(); count++)
-        {
-            if (mValues[count]>rResultOutput)
-            {
-                rResultOutput = mValues[count];
-            }
-        }
-    }
-#endif
-
-    //! @brief Calculate the smallest matrix entry
-    //! @param rResultOutput ... smallest matrix entry
-    virtual T Min()
-    {
-        T min;
-        Min(min);
-        return min;
-    }
-
-#ifndef SWIG
-    //! @brief Calculate the smallest matrix entry
-    //! @param rResultOutput ... smallest matrix entry
-    virtual void Min(T& rResultOutput)
-    {
-        if (mValues.size()==0)
-            throw MathException("[NuTo::SparseMatrixCSR::Min] Minimum for matrix with zero entries cannot be calculated.");
-
-        rResultOutput = mValues[0];
-        for (unsigned int count=1; count<mValues.size(); count++)
-        {
-            if (mValues[count]<rResultOutput)
-            {
-                rResultOutput = mValues[count];
-            }
-        }
-    }
-#endif
-
     //! @brief Calculate the maximum matrix entry
     //! @param rRowOutput ... row index of the maximum matrix entry
     //! @param rColumnOutput ... column index of the maximum matrix entry
     //! @param rResultOutput ... maximum matrix entry
-    virtual void Max(int& rRowOutput, int& rColumnOutput, T& rResultOutput)
+    virtual void MaxEntry(int& rRowOutput, int& rColumnOutput, T& rResultOutput) const override
     {
         if (mValues.size()==0)
             throw MathException("[NuTo::SparseMatrixCSR::Max] Maximum for matrix with zero entries cannot be calculated.");
@@ -354,7 +302,7 @@ public:
     //! @param rRowOutput ... row index of the minimum matrix entry
     //! @param rColumnOutput ... column index of the minimum matrix entry
     //! @param rResultOutput ... minimum matrix entry
-    virtual void Min(int& rRowOutput, int& rColumnOutput, T& rResultOutput)
+    virtual void MinEntry(int& rRowOutput, int& rColumnOutput, T& rResultOutput) const override
     {
         if (mValues.size()==0)
             throw MathException("[NuTo::SparseMatrixCSR::Min] Minimum for matrix with zero entries cannot be calculated.");

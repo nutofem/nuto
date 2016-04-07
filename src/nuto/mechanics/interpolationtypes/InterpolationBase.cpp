@@ -19,7 +19,7 @@
 #include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 
-NuTo::InterpolationBase::InterpolationBase(Node::eAttributes rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
+NuTo::InterpolationBase::InterpolationBase(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
     mTypeOrder(rTypeOrder),
     mDofType(rDofType),
     mIsConstitutiveInput(true),
@@ -32,15 +32,7 @@ NuTo::InterpolationBase::InterpolationBase(Node::eAttributes rDofType, NuTo::Int
 {
 }
 
-
-NuTo::InterpolationBase::InterpolationBase():
-    mTypeOrder(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1),
-    mDofType(NuTo::Node::eAttributes::COORDINATES),
-    mDimension(0)
-{
-}
-
-const NuTo::Interpolation::eTypeOrder NuTo::InterpolationBase::GetTypeOrder() const
+NuTo::Interpolation::eTypeOrder NuTo::InterpolationBase::GetTypeOrder() const
 {
     return mTypeOrder;
 }
@@ -52,10 +44,12 @@ void NuTo::InterpolationBase::UpdateIntegrationType(const IntegrationTypeBase& r
     int numIPs = rIntegrationType.GetNumIntegrationPoints();
 
     mShapeFunctions.clear();
+    mMatrixN.clear();
     mDerivativeShapeFunctionsNatural.clear();
 
-    mShapeFunctions = std::vector<Eigen::VectorXd>(numIPs);
-    mDerivativeShapeFunctionsNatural = std::vector<Eigen::MatrixXd>(numIPs);
+    mShapeFunctions.resize(numIPs);
+    mMatrixN.resize(numIPs);
+    mDerivativeShapeFunctionsNatural.resize(numIPs);
 
     int dim = rIntegrationType.GetCoordinateDimension();
     for (int iIP = 0; iIP < numIPs; ++iIP)
@@ -86,12 +80,34 @@ void NuTo::InterpolationBase::UpdateIntegrationType(const IntegrationTypeBase& r
         }
             break;
         default:
-            throw MechanicsException("[NuTo::InterpolationBase::UpdateIntegrationType] only implemented for dimension 1,2 and 3");
+            throw MechanicsException(__PRETTY_FUNCTION__, "only implemented for dimension 1,2 and 3");
         }
         mShapeFunctions[iIP] = CalculateShapeFunctions(IPcoordinates);
+        mMatrixN[iIP] = CalculateMatrixN(IPcoordinates);
         mDerivativeShapeFunctionsNatural[iIP] = CalculateDerivativeShapeFunctionsNatural(IPcoordinates);
+
     }
     mUpdateRequired = false;
+}
+
+Eigen::MatrixXd NuTo::InterpolationBase::CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const
+{
+    int dimBlock = GetNumDofsPerNode();
+    auto shapeFunctions = CalculateShapeFunctions(rCoordinates);
+    if (dimBlock == 1) return shapeFunctions.transpose();
+
+    int numNodes = GetNumNodes();
+
+
+    assert (shapeFunctions.rows() == numNodes);
+
+    Eigen::MatrixXd matrixN(dimBlock, numNodes * dimBlock);
+    for (int iNode = 0, iBlock = 0; iNode < numNodes; ++iNode, iBlock += dimBlock)
+    {
+        matrixN.block(0, iBlock, dimBlock, dimBlock) = Eigen::MatrixXd::Identity(dimBlock, dimBlock) * shapeFunctions(iNode);
+    }
+
+    return matrixN;
 }
 
 bool NuTo::InterpolationBase::IsActive() const
@@ -159,6 +175,13 @@ const Eigen::VectorXd& NuTo::InterpolationBase::GetShapeFunctions(int rIP) const
     return mShapeFunctions.at(rIP);
 }
 
+const Eigen::MatrixXd& NuTo::InterpolationBase::GetMatrixN(int rIP) const
+{
+    assert(rIP < (int )mMatrixN.size());
+    assert(not mUpdateRequired);
+    return mMatrixN.at(rIP);
+}
+
 const Eigen::MatrixXd& NuTo::InterpolationBase::GetDerivativeShapeFunctionsNatural(int rIP) const
 {
     assert(rIP < (int )mDerivativeShapeFunctionsNatural.size());
@@ -224,6 +247,13 @@ void NuTo::InterpolationBase::Initialize()
 }
 
 #ifdef ENABLE_SERIALIZATION
+NuTo::InterpolationBase::InterpolationBase():
+    mTypeOrder(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1),
+    mDofType(NuTo::Node::COORDINATES),
+    mDimension(0)
+{
+}
+
 template void NuTo::InterpolationBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
 template void NuTo::InterpolationBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
 template void NuTo::InterpolationBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
@@ -237,7 +267,7 @@ void NuTo::InterpolationBase::serialize(Archive & ar, const unsigned int version
     std::cout << "start serialize InterpolationBase" << std::endl;
 #endif
     ar & boost::serialization::make_nvp("mTypeOrder", const_cast<NuTo::Interpolation::eTypeOrder&>(mTypeOrder));
-    ar & boost::serialization::make_nvp("mDofType", const_cast<NuTo::Node::eAttributes&>(mDofType));
+    ar & boost::serialization::make_nvp("mDofType", const_cast<NuTo::Node::eDof&>(mDofType));
     ar & BOOST_SERIALIZATION_NVP(mIsConstitutiveInput);
     ar & BOOST_SERIALIZATION_NVP(mIsActive);
     ar & BOOST_SERIALIZATION_NVP(mNumDofs);

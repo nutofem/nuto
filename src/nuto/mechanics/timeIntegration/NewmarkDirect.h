@@ -8,6 +8,10 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/timeIntegration/NewmarkBase.h"
+#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
+#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
+
 
 namespace NuTo
 {
@@ -44,6 +48,21 @@ public:
     {
         return mPerformLineSearch;
     }
+
+    int GetVerboseLevel() const
+    {
+        return mVerboseLevel;
+    }
+
+    void SetVerboseLevel(int rVerboseLevel)
+    {
+        mVerboseLevel = rVerboseLevel;
+    }
+
+    //! @brief Sets the residual tolerance for a specific DOF
+    //! param rDof: degree of freedom
+    //! param rTolerance: tolerance
+    void SetToleranceResidual(Node::eDof rDof, double rTolerance);
 
     //! @brief returns true, if the method is only conditionally stable (for unconditional stable, this is false)
     bool HasCriticalTimeStep()const
@@ -105,7 +124,6 @@ public:
 				return;
 			}
 		}
-
     }
 
 
@@ -142,14 +160,97 @@ public:
     //! @return    class name
     virtual std::string GetTypeId()const;
 
+
+    //! @brief ... Adds a calculation step to each timestep
+    //! param rActiveDofs ... active Dofs of the calculation step
+    void AddCalculationStep(const std::set<Node::eDof> &rActiveDofs);
+
+    //! @brief ... Sets the number of calculation steps per timestep
+    //! param rNumSteps ... number of calculation steps per timestep
+    void SetNumCalculationSteps(int rNumSteps);
+
+    //! @brief ... Sets the active Dofs of a calculation step
+    //! param rStepNum ... step number
+    //! param rActiveDofs ... active Dofs of the calculation step
+    void SetActiveDofsCalculationStep(int rStepNum, const std::set<Node::eDof> &rActiveDofs);
+
+private:
+    StructureOutputBlockVector CalculateDof1(
+            const StructureOutputBlockVector& rDeltaDof_dt0,
+            const StructureOutputBlockVector& rDof_dt1,
+            const StructureOutputBlockVector& rDof_dt2, double rTimeStep) const;
+
+    StructureOutputBlockVector CalculateDof2(
+            const StructureOutputBlockVector& rDeltaDof_dt0,
+            const StructureOutputBlockVector& rDof_dt1,
+            const StructureOutputBlockVector& rDof_dt2, double rTimeStep) const;
+
+    //! @brief ... builds the modified hessian matrix (including cmat) and solves the system
+    //! @param rHessian_dt0 ... hessian_dt0 matrix
+    //! @param rHessian_dt1 ... hessian_dt1 matrix
+    //! @param rHessian_dt2 ... hessian_dt2 matrix
+    //! @param rResidualMod ... modified residual (including the cmatrix)
+    //! @param rTimeStep ... current time step
+    //! @return ... deltaDof_dt0.J
+    //! @remark ... If hessian_dt0 is constant, its values are preserved (hessianMod = temporary matrix). Otherwise, hessian0 will be used (hessianMod = hessian0)
+    BlockFullVector<double> BuildHessianModAndSolveSystem(
+                  StructureOutputBlockMatrix& rHessian_dt0,
+            const StructureOutputBlockMatrix& rHessian_dt1,
+            const StructureOutputBlockMatrix& rHessian_dt2,
+            const BlockFullVector<double>& rResidualMod, double rTimeStep) const;
+
+    StructureOutputBlockVector CalculateResidual(
+            const StructureOutputBlockVector& rIntForce,
+            const StructureOutputBlockVector& rExtForce,
+            const StructureOutputBlockMatrix& rHessian2,
+            const StructureOutputBlockVector& rDof_dt1,
+            const StructureOutputBlockVector& rDof_dt2) const;
+
+    //! @brief Calculates (if needed) the residual.K part for the post-processing. Since it is not needed for the actual time integration
+    //! its calculation is skipped if Cmat has only zero entries.
+    void CalculateResidualKForPostprocessing(
+            StructureOutputBlockVector& rResidual,
+            const StructureOutputBlockMatrix& rHessian_dt2,
+            const StructureOutputBlockVector& rDof_dt1,
+            const StructureOutputBlockVector& rDof_dt2) const;
+
+    void CalculateMuDampingMatrix(StructureOutputBlockMatrix& rHessian_dt1, const StructureOutputBlockMatrix& rHessian_dt2) const;
+
+    void CalculateResidualTrial(
+            StructureOutputBlockVector& rResidual,
+            const BlockFullVector<double>& rDeltaBRHS,
+            const StructureOutputBlockMatrix& rHessian_dt0,
+            const StructureOutputBlockMatrix& rHessian_dt1,
+            const StructureOutputBlockMatrix& rHessian_dt2,
+            const StructureOutputBlockVector& rDof_dt1,
+            const StructureOutputBlockVector& rDof_dt2,
+            double rTimeStep) const;
+
+
+    //! @brief Prints Info about the current calculation stage
+    void PrintInfoStagger() const;
+
+    //! @brief Prints Info about the current iteration
+    void PrintInfoIteration(const BlockScalar &rNormResidual, int rIteration) const;
+
 protected:
+#ifdef ENABLE_SERIALIZATION
     //empty private construct required for serialization
-    NewmarkDirect(){};
-	double mMinLineSearchStep;
+    NewmarkDirect() : mToleranceResidual(DofStatus()) {};
+#endif // ENABLE_SERIALIZATION
+    double mMinLineSearchStep;
 
-	bool mPerformLineSearch;
+    bool mPerformLineSearch;
 
-	int mVisualizeResidualTimeStep;
+    int mVisualizeResidualTimeStep;
+
+    //! @brief Controls the output verbosity (0 = silent)
+    int mVerboseLevel = 1;
+
+    BlockScalar mToleranceResidual;
+
+    //! @brief Stores wich Dofs are active in which calculation step
+    std::vector<std::set<Node::eDof>> mStepActiveDofs;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

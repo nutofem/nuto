@@ -368,8 +368,8 @@ int main()
         myTimeIntegrationScheme.SetMinTimeStep(0.001*myTimeIntegrationScheme.GetMaxTimeStep());
 
 
-        myTimeIntegrationScheme.AddTimeDependentConstraint(ConstraintRightDisp,  DispFunctionRHS);
-        myTimeIntegrationScheme.AddTimeDependentConstraint(ConstraintCenterDisp, DispFunctionCenter);
+        myTimeIntegrationScheme.AddTimeDependentConstraintFunction(ConstraintRightDisp,  DispFunctionRHS);
+        myTimeIntegrationScheme.AddTimeDependentConstraintFunction(ConstraintCenterDisp, DispFunctionCenter);
         //myTimeIntegrationScheme.AddTimeDependentConstraint(ConstraintRightDisp, DispRHS);
         //myTimeIntegrationScheme.SetTimeDependentConstraint(ConstraintRightDisp, DispRHS);
 

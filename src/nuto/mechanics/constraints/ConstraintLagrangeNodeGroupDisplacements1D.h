@@ -89,6 +89,13 @@ public:
         throw MechanicsException("[NuTo::ConstraintLagrangeNodeGroupDisplacements1D::Info] to be implemented.");
     }
 
+    //! @brief determines the dof type affected by the constraint
+    //! @return dof type
+    Node::eDof GetDofType() const override
+    {
+        return Node::eDof::DISPLACEMENTS;
+    }
+
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

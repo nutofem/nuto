@@ -221,7 +221,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate2D(
                 //it is scaled related to the length (based on the direction of the first principal plastic strain)
                 double dOmegadKappa;
                 double oneMinusOmega = 1.-CalculateDerivativeDamage(kappa, kappaD, dOmegadKappa);
-                assert(fabs(oneMinusOmega+omega-1.)<1e-10);
+                assert(std::abs(oneMinusOmega+omega-1.)<1e-10);
                 //rLogger << "omega " << 1.-oneMinusOmega << "\n";
                 if (unloading)
                 {
@@ -483,720 +483,6 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::Evaluate3D(
 }
 
 
-/*
-//  Engineering strain /////////////////////////////////////
-//! @brief ... calculate engineering plastic strain from deformation gradient in 1D
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rEngineeringStrain ... engineering strain
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
-                                  const DeformationGradient1D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain] Material model not implemented for 1D.");
-}
-
-//  Engineering strain /////////////////////////////////////
-//! @brief ... calculate engineering plastic strain from deformation gradient in 3D
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rEngineeringStrain ... engineering strain
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
-                                  const DeformationGradient2D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
-{
-    const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
-    // update the temporary parts of the static data
-    rEngineeringPlasticStrain[0] = oldStaticData->mTmpEpsilonP[0];
-    rEngineeringPlasticStrain[1] = oldStaticData->mTmpEpsilonP[1];
-    rEngineeringPlasticStrain[2] = oldStaticData->mTmpEpsilonP[3];
-    rEngineeringPlasticStrain[3] = oldStaticData->mTmpEpsilonP[2];
-    rEngineeringPlasticStrain[4] = 0.;
-    rEngineeringPlasticStrain[5] = 0.;
-
-    return Error::SUCCESSFUL;
-}
-
-//  Engineering strain /////////////////////////////////////
-//! @brief ... calculate engineering plastic strain from deformation gradient in 3D
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rEngineeringStrain ... engineering strain
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringPlasticStrain(const ElementBase* rElement, int rIp,
-                                  const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rEngineeringPlasticStrain) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain] Material model not implemented for 3D.");
-}
-
-// Engineering stress - Engineering strain /////////////////////////////////////
-//! @brief ... calculate engineering stress from engineering strain (which is calculated from the deformation gradient)
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rCauchyStress ... Cauchy stress
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
-              const DeformationGradient1D& rDeformationGradient, EngineeringStress1D& rEngineeringStress) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain] Material model not implemented for 1D.");
-}
-
-// Engineering stress - Engineering strain /////////////////////////////////////
-//! @brief ... calculate engineering stress from engineering strain (which is calculated from the deformation gradient)
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rEngineeringStress ... engineering stress
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
-          const DeformationGradient1D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain] Material model not implemented for 1D.");
-}
-
-// Engineering stress - Engineering strain /////////////////////////////////////
-//! @brief ... calculate engineering stress from engineering strain (which is calculated from the deformation gradient)
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rCauchyStress ... Cauchy stress
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
-              const DeformationGradient2D& rDeformationGradient, EngineeringStress2D& rEngineeringStress) const
-{
-    // check if parameters are valid
-    if (this->mParametersValid == false)
-    {
-           //throw an exception giving information related to the wrong parameter
-        CheckParameters();
-        //if there is no exception thrown there is a problem with the source code
-        //since every time a material parameter is changed, the parameters should be checked
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain] Check the material parameters.");
-    }
-
-    const SectionBase* theSection(rElement->GetSection());
-    if (theSection==0)
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain] No section defined for element.");
-    if (theSection->GetType()==Section::PLANE_STRAIN)
-    {
-        // calculate coefficients of the material matrix
-        double C11, C12, C33;
-        this->CalculateCoefficients3D(C11, C12, C33);
-
-        //a recalculation of the plastic strain is not necessary, since this has been performed at the previous iteration with the update of the nonlocaltmpstatic data
-        //Get previous ip_data
-        const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
-
-        // calculate engineering strain
-        EngineeringStrain2D engineeringStrain;
-        rDeformationGradient.GetEngineeringStrain(engineeringStrain);
-
-        // subtract local plastic strain that has been calculated within the updatetmpstaticdata routine
-        double elastStrain[4];
-        elastStrain[0] = engineeringStrain[0] - oldStaticData->mTmpEpsilonP[0];
-        elastStrain[1] = engineeringStrain[1] - oldStaticData->mTmpEpsilonP[1];
-        elastStrain[2] = engineeringStrain[2] - oldStaticData->mTmpEpsilonP[2];
-        elastStrain[3] =  - oldStaticData->mTmpEpsilonP[3];
-
-        if (mDamage)
-        {
-            //calculate scaled equivalent plastic strain (scaled by the element length)
-            bool unloading(true);
-            double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp, unloading);
-
-            //determine kappaUnscaled, which is a scaling factor related to the fracture energy
-            double kappaD = CalculateKappaD();
-
-            //calculate damage parameter from the equivalente plastic strain
-            //it is scaled related to the length (based on the direction of the first principal plastic strain)
-            double oneMinusOmega = 1.-CalculateDamage(kappa, kappaD);
-            //rLogger << "stress calculation unloading=" << unloading << " omega " << 1.-oneMinusOmega << "\n";
-
-            //calculate the stress
-            rEngineeringStress[0] = oneMinusOmega*(C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
-            rEngineeringStress[1] = oneMinusOmega*(C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
-            rEngineeringStress[2] = oneMinusOmega*(C33*elastStrain[2]);
-        }
-        else
-        {
-            //calculate the stress
-            rEngineeringStress[0] = (C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
-            rEngineeringStress[1] = (C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
-            rEngineeringStress[2] = (C33*elastStrain[2]);
-         }
-    }
-    else
-    {
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain] Plane stress is to be implemented.");
-    }
-
-    return Error::SUCCESSFUL;
-}
-
-// Engineering stress - Engineering strain /////////////////////////////////////
-//! @brief ... calculate engineering stress from engineering strain (which is calculated from the deformation gradient)
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rCauchyStress ... Cauchy stress
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
-              const DeformationGradient2D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const
-{
-    // check if parameters are valid
-    if (this->mParametersValid == false)
-    {
-           //throw an exception giving information related to the wrong parameter
-        CheckParameters();
-        //if there is no exception thrown there is a problem with the source code
-        //since every time a material parameter is changed, the parameters should be checked
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain] Check the material parameters.");
-    }
-
-    const SectionBase* theSection(rElement->GetSection());
-    if (theSection==0)
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain] No section defined for element.");
-    if (theSection->GetType()==Section::PLANE_STRAIN)
-    {
-        // calculate coefficients of the material matrix
-        double C11, C12, C44;
-        this->CalculateCoefficients3D(C11, C12, C44);
-
-        //a recalculation of the plastic strain is not necessary, since this has been performed at the previous iteration with the update of the nonlocaltmpstatic data
-        //Get previous ip_data
-        const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
-
-        // calculate engineering strain
-        EngineeringStrain2D engineeringStrain;
-        rDeformationGradient.GetEngineeringStrain(engineeringStrain);
-
-        // subtract local plastic strain that has been calculated within the updatetmpstaticdata routine
-        double elastStrain[4];
-        elastStrain[0] = engineeringStrain[0] - oldStaticData->mTmpEpsilonP[0];
-        elastStrain[1] = engineeringStrain[1] - oldStaticData->mTmpEpsilonP[1];
-        elastStrain[2] = engineeringStrain[2] - oldStaticData->mTmpEpsilonP[2];
-        elastStrain[3] =  - oldStaticData->mTmpEpsilonP[3];
-
-        if (mDamage)
-        {
-            //calculate scaled equivalent plastic strain (scaled by the element length)
-            bool unloading(true);
-            double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp,unloading);
-
-            //determine kappaUnscaled, which is a scaling factor related to the fracture energy
-            double kappaD = CalculateKappaD();
-
-            //calculate damage parameter from the equivalente plastic strain
-            //it is scaled related to the length (based on the direction of the first principal plastic strain)
-            double oneMinusOmega = 1.-CalculateDamage(kappa, kappaD);
-
-            //calculate the stress
-            rEngineeringStress[0] = oneMinusOmega*(C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]));
-            rEngineeringStress[1] = oneMinusOmega*(C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]));
-            rEngineeringStress[2] = oneMinusOmega*(C11 * elastStrain[3] + C12*(elastStrain[0]+elastStrain[1]));
-            rEngineeringStress[3] = oneMinusOmega*(C44*elastStrain[2]);
-            rEngineeringStress[4] = 0.;
-            rEngineeringStress[5] = 0.;
-        }
-        else
-        {
-            //calculate the stress
-            rEngineeringStress[0] = C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]);
-            rEngineeringStress[1] = C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]);
-            rEngineeringStress[2] = C11 * elastStrain[3] + C12*(elastStrain[0]+elastStrain[1]);
-            rEngineeringStress[3] = C44*elastStrain[2];
-            rEngineeringStress[4] = 0.;
-            rEngineeringStress[5] = 0.;
-        }
-    }
-    else
-    {
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain] Plane stress is to be implemented.");
-    }
-
-    return Error::SUCCESSFUL;
-}
-
-// Engineering stress - Engineering strain /////////////////////////////////////
-//! @brief ... calculate engineering stress from engineering strain (which is calculated from the deformation gradient)
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rCauchyStress ... Cauchy stress
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain(const ElementBase* rElement, int rIp,
-              const DeformationGradient3D& rDeformationGradient, EngineeringStress3D& rEngineeringStress) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain] Not implemented for 3D.");
-}
-
-//  Damage /////////////////////////////////////
- //! @brief ... calculate isotropic damage from deformation gradient in 1D
- //! @param rElement ... element
- //! @param rIp ... integration point
- //! @param rDeformationGradient ... deformation gradient
- //! @param rDamage ... damage variable
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetDamage(const ElementBase* rElement, int rIp,
-                                   const DeformationGradient1D& rDeformationGradient, double& rDamage) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetDamage] Not implemented for 1D.");
-}
-
- //  Damage /////////////////////////////////////
- //! @brief ... calculate isotropic damage from deformation gradient in 2D
- //! @param rElement ... element
- //! @param rIp ... integration point
- //! @param rDeformationGradient ... deformation gradient
- //! @param rDamage ... damage variable
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetDamage(const ElementBase* rElement, int rIp,
-                                   const DeformationGradient2D& rDeformationGradient, double& rDamage) const
-{
-    if (mDamage)
-    {
-        //calculate scaled equivalent plastic strain (scaled by the element length)
-        bool unloading(true);
-        double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp, unloading);
-
-        //determine kappaUnscaled, which is a scaling factor related to the fracture energy
-        double kappaD = CalculateKappaD();
-
-        //calculate damage parameter from the equivalente plastic strain
-        //it is scaled related to the length (based on the direction of the first principal plastic strain)
-        rDamage = CalculateDamage(kappa, kappaD);
-    }
-    else
-        rDamage = 0.;
-
-    return Error::SUCCESSFUL;
-}
-
- //  Damage /////////////////////////////////////
- //! @brief ... calculate isotropic damage from deformation gradient in 3D
- //! @param rElement ... element
- //! @param rIp ... integration point
- //! @param rDeformationGradient ... deformation gradient
- //! @param rDamage ... damage variable
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetDamage(const ElementBase* rElement, int rIp,
-                                   const DeformationGradient3D& rDeformationGradient, double& rDamage) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetDamage] Not implemented for 3D.");
-}
-
-
-
-//! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rTangent ... tangent
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient1D& rDeformationGradient,
-        ConstitutiveTangentBase* rTangent) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetNonlocalTangent_EngineeringStress_EngineeringStrain] Local stiffness routine not implemented for NonlocalDamagePlasticityEngineeringStress.");
-}
-
-
-//! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rTangent ... tangent
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient2D& rDeformationGradient,
-        ConstitutiveTangentBase* rTangent) const
-{
-    ConstitutiveTangentNonlocal3x3 *tangent(rTangent->AsConstitutiveTangentNonlocal3x3());
-
-    // check if parameters are valid
-    if (this->mParametersValid == false)
-    {
-           //throw an exception giving information related to the wrong parameter
-        CheckParameters();
-        //if there is no exception thrown there is a problem with the source code
-        //since every time a material parameter is changed, the parameters should be checked
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetTangent_EngineeringStress_EngineeringStrain] Check the material parameters.");
-    }
-
-    const SectionBase* theSection(rElement->GetSection());
-    if (theSection==0)
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetTangent_EngineeringStress_EngineeringStrain] No section defined for element.");
-    if (theSection->GetType()==Section::PLANE_STRAIN)
-    {
-        // calculate coefficients of the material matrix
-        double C11, C12, C33;
-        this->CalculateCoefficients3D(C11, C12, C33);
-
-        Eigen::Matrix<double,4,4> ElasticStiffness;
-        ElasticStiffness << C11, C12, 0.,  C12,
-                            C12, C11, 0.,  C12,
-                             0.,  0., C33, 0.,
-                            C12, C12, 0.,  C11;
-
-        Eigen::Matrix<double,3,1> unity3;
-        unity3.setOnes(3);
-
-        //a recalculation of the plastic strain is not necessary, since this has been performed at the previous iteration with the update of the nonlocaltmpstatic data
-        //Get previous ip_data
-        const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
-
-        if (mDamage)
-        {
-            // calculate engineering strain
-            EngineeringStrain2D engineeringStrain;
-            rDeformationGradient.GetEngineeringStrain(engineeringStrain);
-
-            // subtract local plastic strain that has been calculated within the updatetmpstaticdata routine
-            double elastStrain[4];
-            elastStrain[0] = engineeringStrain[0] - oldStaticData->mTmpEpsilonP[0];
-            elastStrain[1] = engineeringStrain[1] - oldStaticData->mTmpEpsilonP[1];
-            elastStrain[2] = engineeringStrain[2] - oldStaticData->mTmpEpsilonP[2];
-            elastStrain[3] =  - oldStaticData->mTmpEpsilonP[3];
-
-            // calculate Engineering stress
-            Eigen::Matrix<double,3,1> sigmaElast;
-            sigmaElast(0) = C11 * elastStrain[0] + C12*(elastStrain[1]+elastStrain[3]);
-            sigmaElast(1) = C11 * elastStrain[1] + C12*(elastStrain[0]+elastStrain[3]);
-            sigmaElast(2) = C33 * elastStrain[2] ;
-
-            const std::vector<const NuTo::ElementBase*>& nonlocalElements(rElement->GetNonlocalElements());
-
-            //calculate scaled equivalent plastic strain (scaled by the element length)
-            bool unloading(true);
-            double kappa = CalculateNonlocalEquivalentPlasticStrain(rElement, rIp, unloading);
-
-            //determine kappaUnscaled, which is a scaling factor related to the fracture energy
-            double kappaD = CalculateKappaD();
-
-            //calculate damage parameter from the equivalente plastic strain
-            //it is scaled related to the length (based on the direction of the first principal plastic strain)
-            double dOmegadKappa;
-            double oneMinusOmega = 1.-CalculateDerivativeDamage(kappa, kappaD, dOmegadKappa);
-            //rLogger << "omega " << 1.-oneMinusOmega << "\n";
-            if (unloading)
-            {
-                //rLogger << "unloading local stiffness " << C11 << " "<< C12 << " " << C33 << " omega " << 1.-oneMinusOmega << "\n";
-                tangent->mIsLocal=true;
-                tangent->SetSymmetry(true);
-                double *localStiffData(tangent->mNonlocalMatrices[0].mTangent);
-                localStiffData[0] = oneMinusOmega * C11;
-                localStiffData[1] = oneMinusOmega * C12;
-                localStiffData[2] = 0.;
-
-                localStiffData[3] = localStiffData[1];
-                localStiffData[4] = localStiffData[0];
-                localStiffData[5] = 0.;
-
-                localStiffData[6] = 0.;
-                localStiffData[7] = 0.;
-                localStiffData[8] = oneMinusOmega * C33;
-            }
-            else
-            {
-                //rLogger << "nonlocal stiffness, omega " << 1.-oneMinusOmega << "\n";
-                tangent->mIsLocal=false;
-                //calculate nonlocal plastic strain for the direction of the equivalent length
-                double nonlocalPlasticStrain[4];
-                CalculateNonlocalPlasticStrain(rElement, rIp, nonlocalPlasticStrain);
-
-                Eigen::Matrix<double,4,1> dKappadEpsilonP;
-                //calculate derivative of damage parameter with respect to local strains of all nonlocal integration points
-                int totalNonlocalIp(0);
-                for (int countNonlocalElement=0; countNonlocalElement<(int)nonlocalElements.size(); countNonlocalElement++)
-                {
-                    const std::vector<double>& weights(rElement->GetNonlocalWeights(rIp,countNonlocalElement));
-
-                    //rLogger << weights.size() << " "<< nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints() << "\n";
-                    assert((int)weights.size()==nonlocalElements[countNonlocalElement]->GetNumIntegrationPoints());
-
-                    //Go through all the integration points
-                    for (int theNonlocalIP=0; theNonlocalIP<(int)weights.size(); theNonlocalIP++, totalNonlocalIp++)
-                    {
-                        if (weights[theNonlocalIP]==0.)
-                            continue;
-                        assert(totalNonlocalIp<tangent->GetNumSubMatrices());
-                        double *localStiffData = tangent->mNonlocalMatrices[totalNonlocalIp].mTangent;
-
-                        //here the nonlocal delta is relevant
-                        const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *NonlocalOldStaticData = (nonlocalElements[countNonlocalElement]->GetStaticData(theNonlocalIP))->AsNonlocalDamagePlasticity2DPlaneStrain();
-
-                        double deltaEpsilonPxx = NonlocalOldStaticData->mTmpEpsilonP[0] - NonlocalOldStaticData->mEpsilonP[0];
-                        double deltaEpsilonPyy = NonlocalOldStaticData->mTmpEpsilonP[1] - NonlocalOldStaticData->mEpsilonP[1];
-                        double deltaEpsilonPxy = NonlocalOldStaticData->mTmpEpsilonP[2] - NonlocalOldStaticData->mEpsilonP[2];
-                        double deltaEpsilonPzz = NonlocalOldStaticData->mTmpEpsilonP[3] - NonlocalOldStaticData->mEpsilonP[3];
-
-                        double deltaEpsilonPEq = sqrt(deltaEpsilonPxx*deltaEpsilonPxx+deltaEpsilonPyy*deltaEpsilonPyy+
-                                                        0.5*deltaEpsilonPxy*deltaEpsilonPxy+deltaEpsilonPzz*deltaEpsilonPzz);
-                        if (deltaEpsilonPEq>0)
-                        {
-                            double factor(NonlocalOldStaticData->mTmpLeq/deltaEpsilonPEq);
-                            dKappadEpsilonP(0) = factor*deltaEpsilonPxx;
-                            dKappadEpsilonP(1) = factor*deltaEpsilonPyy;
-                            dKappadEpsilonP(2) = factor*0.5*deltaEpsilonPxy;
-                            dKappadEpsilonP(3) = factor*deltaEpsilonPzz;
-                        }
-                        else
-                        {
-                            double factor(NonlocalOldStaticData->mTmpLeq);
-                            dKappadEpsilonP(0) = factor;
-                            dKappadEpsilonP(1) = factor;
-                            dKappadEpsilonP(2) = factor*0.5;
-                            dKappadEpsilonP(3) = factor;
-                        }
-
-                        //calculate dOmegadepsilon, instead of using transpose, just declare a RowMajor storage
-                        Eigen::Matrix<double,3,1> minusdOmegadEpsilon (Eigen::Matrix<double,4,4,Eigen::RowMajor>::Map(NonlocalOldStaticData->mTmpdEpsilonPdEpsilon,4,4).topLeftCorner<3,4>() * dKappadEpsilonP);
-
-                        //the second part includes the dependence of leq as a function of the local stress at the nonlocal integration point
-                        minusdOmegadEpsilon += Eigen::Matrix<double,3,1>::Map(NonlocalOldStaticData->mTmpdLeqdEpsilon,3)*deltaEpsilonPEq;
-
-                        minusdOmegadEpsilon *= -dOmegadKappa * weights[theNonlocalIP];
-                        //rLogger<< "dOmegadepsilon/weight analytic" << "\n" << -minusdOmegadEpsilon/weights[theNonlocalIP] << "\n";
-                        //rLogger << "weight " << weights[theNonlocalIP] << "\n";
-
-                        Eigen::Matrix<double,3,Eigen::Dynamic>::Map(localStiffData,3, 3) = sigmaElast * minusdOmegadEpsilon.transpose() ;
-
-                        if (nonlocalElements[countNonlocalElement]==rElement && rIp == theNonlocalIP)
-                        {
-
-                            const double *tmpdEP(oldStaticData->mTmpdEpsilonPdEpsilon);
-                            localStiffData[0] += oneMinusOmega*(C11*(1.-tmpdEP[0]) - C12*(tmpdEP[1] + tmpdEP[3]));
-                            localStiffData[1] += oneMinusOmega*(C12*(1.-tmpdEP[0] - tmpdEP[3]) - C11*tmpdEP[1]);
-                            localStiffData[2] += oneMinusOmega*(-C33*tmpdEP[2]);
-                            localStiffData[3] += oneMinusOmega*(-C11*tmpdEP[4] + C12*(1.-tmpdEP[5]- tmpdEP[7]));
-                            localStiffData[4] += oneMinusOmega*(-C12*(tmpdEP[4] + tmpdEP[7]) + C11*(1.-tmpdEP[5]));
-                            localStiffData[5] += oneMinusOmega*(-C33*tmpdEP[6]);
-                            localStiffData[6] += oneMinusOmega*(-C11*tmpdEP[8] - C12*(tmpdEP[9]+tmpdEP[11]));
-                            localStiffData[7] += oneMinusOmega*(-C12*(tmpdEP[8]+ tmpdEP[11]) - C11*tmpdEP[9]);
-                            localStiffData[8] += oneMinusOmega*(C33*(1.-tmpdEP[10]));
-                        }
-                    }
-                }
-            }
-        }
-        else
-        {
-            tangent->mIsLocal=true;
-
-            double *localStiffData(tangent->mNonlocalMatrices[0].mTangent);
-            const double *tmpdEP(oldStaticData->mTmpdEpsilonPdEpsilon);
-            localStiffData[0] = C11*(1.-tmpdEP[0]) - C12*(tmpdEP[1] + tmpdEP[3]);
-            localStiffData[1] = C12*(1.-tmpdEP[0] - tmpdEP[3]) - C11*tmpdEP[1];
-            localStiffData[2] = -C33*tmpdEP[2];
-            localStiffData[3] = -C11*tmpdEP[4] + C12*(1.-tmpdEP[5]- tmpdEP[7]);
-            localStiffData[4] = -C12*(tmpdEP[4] + tmpdEP[7]) + C11*(1.-tmpdEP[5]);
-            localStiffData[5] = -C33*tmpdEP[6];
-            localStiffData[6] = -C11*tmpdEP[8] - C12*(tmpdEP[9]+tmpdEP[11]);
-            localStiffData[7] = -C12*(tmpdEP[8]+ tmpdEP[11]) - C11*tmpdEP[9];
-            localStiffData[8] = C33*(1.-tmpdEP[10]);
-        }
-    }
-    else
-    {
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain] Plane stress is to be implemented.");
-    }
-
-    return Error::SUCCESSFUL;
-}
-
-
-//! @brief ... calculate the tangent (derivative of the Engineering stresses with respect to the engineering strains) of the constitutive relationship
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rTangent ... tangent
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetTangent_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient3D& rDeformationGradient,
-        ConstitutiveTangentBase* rTangent) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetNonlocalTangent_EngineeringStress_EngineeringStrain] Local stiffness routine not implemented for NonlocalDamagePlasticityEngineeringStress.");
-}
-
-//! @brief ... update static data (history variables) of the constitutive relationship
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-        const DeformationGradient1D& rDeformationGradient) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::UpdateStaticData_EngineeringStress_EngineeringStrain] Not implemented for 1D.");
-}
-
-
-//! @brief ... update static data (history variables) of the constitutive relationship
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-        const DeformationGradient2D& rDeformationGradient) const
-{
-    // check if parameters are valid
-    if (this->mParametersValid == false)
-    {
-           //throw an exception giving information related to the wrong parameter
-        CheckParameters();
-        //if there is no exception thrown there is a problem with the source code
-        //since every time a material parameter is changed, the parametes should be checked
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::UpdateTmpStaticData_EngineeringStress_EngineeringStrain] Check the material parameters.");
-    }
-    // calculate engineering strain
-    EngineeringStrain2D engineeringStrain;
-    rDeformationGradient.GetEngineeringStrain(engineeringStrain);
-
-    assert(rElement->GetSection()!=0);
-    if (rElement->GetSection()->GetType()==Section::PLANE_STRAIN)
-    {
-        ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
-
-        //Update Stress (it has to be recalculated)
-        EngineeringStress2D stress;
-        GetEngineeringStressFromEngineeringStrain(rElement, rIp,rDeformationGradient, stress);
-
-        double energy = oldStaticData->GetPrevTotalEnergy();
-        //calculate delta total energy (sigma1+sigma2)/2*delta_strain
-        const EngineeringStress2D& prevStress(oldStaticData->GetPrevStress());
-        const EngineeringStrain2D prevStrain(oldStaticData->GetPrevStrain());
-        energy+=0.5*(
-            (stress[0]+prevStress[0])*(engineeringStrain[0]-prevStrain[0])+
-            (stress[1]+prevStress[1])*(engineeringStrain[1]-prevStrain[1])+
-            (stress[2]+prevStress[2])*(engineeringStrain[2]-prevStrain[2])
-            );
-        oldStaticData->mPrevStrain = engineeringStrain;
-        oldStaticData->mPrevSigma = stress;
-        oldStaticData->SetPrevTotalEnergy(energy);
-
-        // update the parts of the static data that are not related to the temporary updates (from the nonlocal calculation)
-        oldStaticData->mKappa = oldStaticData->mTmpKappa;
-
-        Eigen::Matrix<double,4,1>::Map(oldStaticData->mEpsilonP,4,1) = Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpEpsilonP,4,1);;
-    }
-    else
-    {
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain] Only plane strain is implemented.");
-    }
-
-    return Error::SUCCESSFUL;
-}
-
-
-//! @brief ... update static data (history variables) of the constitutive relationship
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::UpdateStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-        const DeformationGradient3D& rDeformationGradient) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::UpdateStaticData_EngineeringStress_EngineeringStrain] 1D is not implemented.");
-}
-
-//! @brief ... update tmp static data (history variables) of the constitutive relationship
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-        const DeformationGradient1D& rDeformationGradient) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::UpdateTmpStaticData_EngineeringStress_EngineeringStrain] 1D is not implemented.");
-}
-
-//! @brief ... update tmp static data (history variables) of the constitutive relationship
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-        const DeformationGradient2D& rDeformationGradient) const
-{
-    // check if parameters are valid
-    if (this->mParametersValid == false)
-    {
-           //throw an exception giving information related to the wrong parameter
-        CheckParameters();
-        //if there is no exception thrown there is a problem with the source code
-        //since every time a material parameter is changed, the parametes should be checked
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::UpdateTmpStaticData_EngineeringStress_EngineeringStrain] Check the material parameters.");
-    }
-    // calculate engineering strain
-    EngineeringStrain2D engineeringStrain;
-    rDeformationGradient.GetEngineeringStrain(engineeringStrain);
-
-    assert(rElement->GetSection()!=0);
-    if (rElement->GetSection()->GetType()==Section::PLANE_STRAIN)
-    {
-        ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *oldStaticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
-        double rDeltaEqPlasticStrain;
-        Eigen::Matrix<double,4,4> rdEpsilonPdEpsilon;
-        Eigen::Matrix<double,4,1> rNewEpsilonP;
-        Eigen::Matrix<double,4,1> rNewStress;
-
-        // perform return mapping for the plasticity model
-        NuTo::Error::eError error = this->ReturnMapping2D(
-                engineeringStrain,
-                oldStaticData->mEpsilonP,
-                oldStaticData->mPrevStrain,
-                rNewStress,
-                rNewEpsilonP,
-                rDeltaEqPlasticStrain,
-                rdEpsilonPdEpsilon,
-                rElement->GetStructure()->GetLogger());
-
-        if (error!=Error::SUCCESSFUL)
-            return error;
-
-        // update the temporary parts of the static data
-        Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpEpsilonP,4) = rNewEpsilonP;
-
-        //determine equivalente length in zz and plane direction
-        //using the local elastic stress
-        Eigen::Matrix<double,4,1> dLdSigma;
-        oldStaticData->mTmpLeq = CalculateDerivativeEquivalentLength2D(rElement,rNewStress,dLdSigma);
-
-        oldStaticData->mTmpKappa = oldStaticData->mKappa + rDeltaEqPlasticStrain*oldStaticData->mTmpLeq;
-
-        //rLogger << "tmpKappa " << oldStaticData->mTmpKappa << "\n";
-        Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4) = rdEpsilonPdEpsilon;
-
-        // calculate coefficients of the linear elastic material matrix
-        double C11, C12, C33;
-        this->CalculateCoefficients3D(C11, C12, C33);
-
-        Eigen::Matrix<double,4,4> ElasticStiffness;
-        ElasticStiffness << C11, C12, 0.,  C12,
-                            C12, C11, 0.,  C12,
-                             0.,  0., C33, 0.,
-                            C12, C12, 0.,  C11;
-
-        // calculate derivative of eq length with respect to local strain
-        Eigen::Matrix<double,4,1>::Map(oldStaticData->mTmpdLeqdEpsilon,4) = dLdSigma.transpose() * ElasticStiffness * (Eigen::Matrix<double,4,4>::Identity() - Eigen::Matrix<double,4,4>::Map(oldStaticData->mTmpdEpsilonPdEpsilon,4,4));
-    }
-    else
-    {
-        throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetEngineeringStressFromEngineeringStrain] Only plane strain is implemented.");
-    }
-    return Error::SUCCESSFUL;
-}
-
-//! @brief ... update tmp static data (history variables) of the constitutive relationship
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::UpdateTmpStaticData_EngineeringStress_EngineeringStrain(ElementBase* rElement, int rIp,
-        const DeformationGradient3D& rDeformationGradient) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::UpdateTmpStaticData_EngineeringStress_EngineeringStrain] 3D is not implemented.");
-}
-
-*/
-
 //! @brief ... create new static data object for an integration point
 //! @return ... pointer to static data object
 NuTo::ConstitutiveStaticDataBase* NuTo::NonlocalDamagePlasticityEngineeringStress::AllocateStaticDataEngineeringStress_EngineeringStrain1D(
@@ -1229,130 +515,6 @@ NuTo::ConstitutiveStaticDataBase* NuTo::NonlocalDamagePlasticityEngineeringStres
 }
 
 
-//! @brief ... calculate the total energy density
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-/*NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetInternalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient1D& rDeformationGradient, double& rEnergy) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetInternalEnergy_EngineeringStress_EngineeringStrain] not implemented for 1D.");
-}
-
-
-//! @brief ... calculate the total energy density
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetInternalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient2D& rDeformationGradient, double& rEnergy) const
-{
-    EngineeringStress2D engineeringStress;
-    GetEngineeringStressFromEngineeringStrain(rElement, rIp, rDeformationGradient, engineeringStress);
-    const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *staticData = (rElement->GetStaticData(rIp))->AsNonlocalDamagePlasticity2DPlaneStrain();
-    rEnergy = staticData->GetPrevTotalEnergy();
-    const EngineeringStress2D& prevStress(staticData->GetPrevStress());
-    EngineeringStrain2D engineeringStrain;
-    rDeformationGradient.GetEngineeringStrain(engineeringStrain);
-    EngineeringStrain2D prevStrain(staticData->GetPrevStrain());
-    rEnergy+=0.5*(
-            (engineeringStress[0]+prevStress[0])*(engineeringStrain[0]-prevStrain[0])+
-            (engineeringStress[1]+prevStress[1])*(engineeringStrain[1]-prevStrain[1])+
-            (engineeringStress[2]+prevStress[2])*(engineeringStrain[2]-prevStrain[2])
-            );
-    return Error::SUCCESSFUL;
-}
-
-
-//! @brief ... calculate the total energy density
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetInternalEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient3D& rDeformationGradient, double& rEnergy) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetInternalEnergy_EngineeringStress_EngineeringStrain] not implemented for 3D.");
-}
-
-
-//! @brief ... calculate the elastic energy density
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient1D& rDeformationGradient, double& rEnergy) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetElasticEnergy_EngineeringStress_EngineeringStrain] not implemented.");
-}
-
-
-//! @brief ... calculate the elastic energy density
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient2D& rDeformationGradient, double& rEnergy) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetElasticEnergy_EngineeringStress_EngineeringStrain] not implemented.");
-}
-
-
-//! @brief ... calculate the elastic energy density
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::GetElasticEnergy_EngineeringStress_EngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient3D& rDeformationGradient, double& rEnergy) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetElasticEnergy_EngineeringStress_EngineeringStrain] not implemented.");
-}
-
-
-//! @brief ... calculates the difference of the elastic strain between the current state and the previous update
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rDeltaElasticEngineeringStrain ... delta elastic engineering strain (return value)
-void NuTo::NonlocalDamagePlasticityEngineeringStress::GetDeltaElasticEngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient1D& rDeformationGradient, EngineeringStrain1D& rDeltaElasticEngineeringStrain) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetDeltaElasticEngineeringStrain] this method is only required for \
-NuTo::ConstitutiveEngineeringStressStrain::GetTotalEnergy_EngineeringStress_EngineeringStrain, which is reimplemented for Linear elastic -- consequently, this metods is not required.");
-}
-
-//! @brief ... calculates the difference of the elastic strain between the current state and the previous update
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rDeltaElasticEngineeringStrain ... delta elastic engineering strain (return value)
-void NuTo::NonlocalDamagePlasticityEngineeringStress::GetDeltaElasticEngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient2D& rDeformationGradient, EngineeringStrain2D& rDeltaElasticEngineeringStrain) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetDeltaElasticEngineeringStrain] this method is only required for \
-NuTo::ConstitutiveEngineeringStressStrain::GetTotalEnergy_EngineeringStress_EngineeringStrain, which is reimplemented for Linear elastic -- consequently, this metods is not required.");
-}
-
-//! @brief ... calculates the difference of the elastic strain between the current state and the previous update
-//! @param rStructure ... structure
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rDeformationGradient ... deformation gradient
-//! @param rDeltaElasticEngineeringStrain ... delta elastic engineering strain (return value)
-void NuTo::NonlocalDamagePlasticityEngineeringStress::GetDeltaElasticEngineeringStrain(const ElementBase* rElement, int rIp,
-        const DeformationGradient3D& rDeformationGradient, EngineeringStrain3D& rDeltaElasticEngineeringStrain) const
-{
-    throw MechanicsException("[NuTo::NonlocalDamagePlasticityEngineeringStress::GetDeltaElasticEngineeringStrain] this method is only required for \
-NuTo::ConstitutiveEngineeringStressStrain::GetTotalEnergy_EngineeringStress_EngineeringStrain, which is reimplemented for Linear elastic -- consequently, this metods is not required.");
-}
-*/
 // calculate coefficients of the material matrix
 void NuTo::NonlocalDamagePlasticityEngineeringStress::CalculateCoefficients3D(double& C11, double& C12, double& C44) const
 {
@@ -1637,7 +799,7 @@ double NuTo::NonlocalDamagePlasticityEngineeringStress::CalculateEquivalentLengt
 
     if (stressPlane >=rStress[3])
     {
-        if (fabs(rStress[3])>1e-10)
+        if (std::abs(rStress[3])>1e-10)
         {
             //plane and zz-direction in tension
             double tan_beta = rStress[3]/stressPlane;
@@ -1653,7 +815,7 @@ double NuTo::NonlocalDamagePlasticityEngineeringStress::CalculateEquivalentLengt
     }
     else
     {
-        if (fabs(stressPlane)>1e-10)
+        if (std::abs(stressPlane)>1e-10)
         {
             //plane and zz-direction in tension
             double tan_beta = rStress[3]/stressPlane;
@@ -1711,7 +873,7 @@ double NuTo::NonlocalDamagePlasticityEngineeringStress::CalculateDerivativeEquiv
 
     if (StressPlane >=rStress[3])
     {
-        if (fabs(rStress[3])>1e-10)
+        if (std::abs(rStress[3])>1e-10)
         {
             //plane and zz-direction in tension
             double tan_beta = rStress[3]/StressPlane;
@@ -1750,7 +912,7 @@ double NuTo::NonlocalDamagePlasticityEngineeringStress::CalculateDerivativeEquiv
     }
     else
     {
-        if (fabs(StressPlane)>1e-10)
+        if (std::abs(StressPlane)>1e-10)
         {
             //plane and zz-direction in tension
             double tan_beta = rStress[3]/StressPlane;
@@ -2180,14 +1342,14 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::ReturnMappi
 #ifdef ENABLE_DEBUG
                     rLogger << iteration <<" hessian" << "\n" << hessian << "\n" << "\n";
 
-                    if (fabs(hessian.determinant())<toleranceDeterminant)
+                    if (std::abs(hessian.determinant())<toleranceDeterminant)
                     {
                         rLogger << "hessian"<< "\n" << hessian << "\n";
                         rLogger << "trialStress"<< "\n" << trialStress << "\n";
                         rLogger << "yieldConditionFlag " <<  "\n" << yieldConditionFlag.transpose() << "\n" << "\n";
                     }
 #endif
-                    assert(fabs(hessian.determinant())>toleranceDeterminant);
+                    assert(std::abs(hessian.determinant())>toleranceDeterminant);
 
                     hessian = hessian.inverse().eval();
 #ifdef ENABLE_DEBUG
@@ -2204,7 +1366,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::ReturnMappi
                         {
                             if (yieldConditionFlag(count) == INACTIVE)
                                 continue;
-                            if (fabs(yieldCondition(count)) > toleranceYieldSurface*f_ct)
+                            if (std::abs(yieldCondition(count)) > toleranceYieldSurface*f_ct)
                             {
                                 convergenceFlagYieldCondition = false;
                                 break;
@@ -2281,7 +1443,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::ReturnMappi
                             }
 
                             // solve linearized system of equations for G_inv
-                            assert(fabs(matG.determinant())>toleranceDeterminant);
+                            assert(std::abs(matG.determinant())>toleranceDeterminant);
                             matGInv = matG.inverse();
 
 #ifdef ENABLE_DEBUG
@@ -2361,7 +1523,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::ReturnMappi
                             assert(curYieldFunction==numActiveYieldFunctions);
 
                             // solve linearized system of equations for G_inv
-                            assert(fabs(matG.determinant())>toleranceDeterminant);
+                            assert(std::abs(matG.determinant())>toleranceDeterminant);
 #ifdef ENABLE_DEBUG
                             rLogger << "G and determinant" << matG.determinant() << "\n";
                             rLogger << matG << "\n";
@@ -2977,10 +2139,10 @@ void NuTo::NonlocalDamagePlasticityEngineeringStress::YieldSurfaceRankine2DRound
             throw MechanicsException("[NuTo::Mechanics::NonlocalDamagePlasticityEngineeringStress] Error calculating first derivative of yield function.");
         }
 
-        // fabs is checked, since of the type of the yield surface changes, the second derivatives are likely to change as well
-        if (fabs(sigma_1)>delta && fabs(sigma_2)>delta && fabs(rStress(3))>delta)
+        // std::abs is checked, since of the type of the yield surface changes, the second derivatives are likely to change as well
+        if (std::abs(sigma_1)>delta && std::abs(sigma_2)>delta && std::abs(rStress(3))>delta)
         {
-            if ((rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).array().abs().maxCoeff()>1e-1 && fabs(sigma_1)>delta && fabs(sigma_2)>delta && fabs(rStress(3))>delta)
+            if ((rd2F_d2SigmaCDF-(*rd2F_d2Sigma)).array().abs().maxCoeff()>1e-1 && std::abs(sigma_1)>delta && std::abs(sigma_2)>delta && std::abs(rStress(3))>delta)
             {
                 std::cout << "sigmas principal" << sigma_1<< " " << sigma_2 <<  " " << rStress(3) << "\n";
                 std::cout << "sigmas " << rStress(0) << " " << rStress(1) <<  " " << rStress(2) <<  " " <<rStress(3) << "\n";
@@ -3049,7 +2211,7 @@ bool NuTo::NonlocalDamagePlasticityEngineeringStress::YieldSurfaceDruckerPrager2
                             (rStress(0)-rStress(3))*(rStress(0)-rStress(3)))/6.+
                              rStress(2)*rStress(2);
 
-    if (fabs(invariante_2)<1e-12)
+    if (std::abs(invariante_2)<1e-12)
         return false;
     double factor = 1./(sqrt(invariante_2)*6.);
 
@@ -3137,10 +2299,10 @@ double NuTo::NonlocalDamagePlasticityEngineeringStress::CalculateNonlocalEquival
         {
             const ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain *staticData(nonlocalElements[countNonlocalElement]->GetStaticData(theIP)->AsNonlocalDamagePlasticity2DPlaneStrain());
             nonlocalKappa+=weights[theIP] * staticData->mTmpKappa;
-            if (fabs(staticData->mTmpdEpsilonPdEpsilon[0])>1e-10 ||
-                fabs(staticData->mTmpdEpsilonPdEpsilon[5])>1e-10 ||
-                fabs(staticData->mTmpdEpsilonPdEpsilon[10])>1e-10 ||
-                fabs(staticData->mTmpdEpsilonPdEpsilon[15])>1e-10)
+            if (std::abs(staticData->mTmpdEpsilonPdEpsilon[0])>1e-10 ||
+                std::abs(staticData->mTmpdEpsilonPdEpsilon[5])>1e-10 ||
+                std::abs(staticData->mTmpdEpsilonPdEpsilon[10])>1e-10 ||
+                std::abs(staticData->mTmpdEpsilonPdEpsilon[15])>1e-10)
                 rUnloading = false;
         }
     }

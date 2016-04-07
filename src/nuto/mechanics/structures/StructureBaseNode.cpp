@@ -4,6 +4,8 @@
 
 #include "nuto/mechanics/elements/ElementOutputFullMatrixDouble.h"
 #include "nuto/mechanics/elements/ElementOutputFullVectorDouble.h"
+#include "nuto/mechanics/elements/ElementOutputBlockVectorDouble.h"
+#include "nuto/mechanics/elements/ElementOutputBlockVectorInt.h"
 #include "nuto/mechanics/elements/ElementOutputVectorInt.h"
 
 #include "nuto/mechanics/structures/StructureBase.h"
@@ -682,57 +684,48 @@ void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, NuTo::FullVect
 //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
 void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullVector<double,Eigen::Dynamic>& rNodeForce)
 {
-	try
-	{
-		boost::ptr_multimap<NuTo::Element::eOutput, NuTo::ElementOutputBase> elementOutput;
+    try
+    {
+        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
+        elementOutputMap[Element::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(mDofStatus);
+        elementOutputMap[Element::GLOBAL_ROW_DOF] = std::make_shared<ElementOutputBlockVectorInt>(mDofStatus);
 
-		boost::assign::ptr_map_insert<ElementOutputFullVectorDouble>( elementOutput )( Element::INTERNAL_GRADIENT );
-		boost::assign::ptr_map_insert<ElementOutputVectorInt>( elementOutput )( Element::GLOBAL_ROW_DOF );
+        std::vector<ElementBase*> elements;
+        this->NodeGetElements(rNodePtr, elements);
 
-		rNodeForce.Resize(rNodePtr->GetNumDisplacements());
+        rNodeForce.Resize(rNodePtr->GetNumDisplacements());
+        rNodeForce.setZero();
 
-		//go through all elements and check, if the node belongs to the element
-		std::vector<ElementBase*> elements;
-		GetElementsTotal(elements);
-		for (unsigned int countElement=0; countElement<elements.size(); countElement++)
-		{
-			ElementBase* elementPtr=elements[countElement];
-			for (int countNode=0; countNode<elementPtr->GetNumNodes(); countNode++)
-			{
-				if (elementPtr->GetNode(countNode)==rNodePtr)
-				{
-					elementPtr->Evaluate(elementOutput);
+        for (auto element : elements)
+        {
+            element->Evaluate(elementOutputMap);
+            const auto& internalGradient = elementOutputMap.at(Element::INTERNAL_GRADIENT)->GetBlockFullVectorDouble()[Node::DISPLACEMENTS];
+            const auto& globalRowDof = elementOutputMap.at(Element::GLOBAL_ROW_DOF)->GetBlockFullVectorInt()[Node::DISPLACEMENTS];
+            assert(internalGradient.GetNumRows() == globalRowDof.GetNumRows());
 
-					NuTo::FullVector<double,Eigen::Dynamic>&  elementVector(elementOutput.find(Element::INTERNAL_GRADIENT)->second->GetFullVectorDouble());
-	    			std::vector<int>& elementVectorGlobalDofs(elementOutput.find(Element::GLOBAL_ROW_DOF)->second->GetVectorInt());
+            for (int countDof=0; countDof< rNodePtr->GetNumDisplacements(); countDof++)
+            {
+                int theDof = rNodePtr->GetDofDisplacement(countDof);
+                for (int iDof=0; iDof < globalRowDof.GetNumRows(); iDof++)
+                {
+                    if (globalRowDof[iDof] == theDof)
+                    {
+                        rNodeForce(countDof)+=internalGradient(iDof);
+                    }
+                }
+            }
+        }
 
-	    			assert(static_cast<unsigned int>(elementVector.GetNumRows()) == elementVectorGlobalDofs.size());
 
-					for (int countDof=0; countDof< rNodePtr->GetNumDisplacements(); countDof++)
-					{
-                        int theDof = rNodePtr->GetDofDisplacement(countDof);
-                        for (unsigned int countGlobalDofs=0; countGlobalDofs<elementVectorGlobalDofs.size(); countGlobalDofs++)
-                        {
-                        	if (elementVectorGlobalDofs[countGlobalDofs] == theDof)
-                        	{
-                        		rNodeForce(countDof)+=elementVector(countGlobalDofs);
-                        	}
-                        }
-					}
-				}
-			}
-		}
-	}
-    catch(NuTo::MechanicsException & b)
-	{
-        b.AddMessage("[NuTo::StructureBase::NodeInternalForce] Error getting gradient of internal potential.");
-    	throw b;
-	}
+    }    catch(NuTo::MechanicsException & b)
+    {
+        b.AddMessage(std::string("[") + __PRETTY_FUNCTION__ + "] Error getting gradient of internal potential.");
+        throw b;
+    }
     catch(...)
-	{
-	    throw MechanicsException("[NuTo::StructureBase::NodeInternalForce] Error getting gradient of internal potential (unspecified exception).");
-	}
-
+    {
+        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Error getting gradient of internal potential (unspecified exception).");
+    }
 }
 
 //! @brief ... store all element ids connected to this node in a vector

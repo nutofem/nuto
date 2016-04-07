@@ -17,8 +17,6 @@
 #include "nuto/math/FullMatrix_Def.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/constitutive/ConstitutiveInputBase.h"
-#include "nuto/mechanics/constitutive/ConstitutiveOutputBase.h"
 
 namespace NuTo
 {
@@ -42,6 +40,8 @@ class SecondPiolaKirchhoffStress1D;
 class SecondPiolaKirchhoffStress2D;
 class SecondPiolaKirchhoffStress3D;
 class StructureBase;
+class ConstitutiveIOBase;
+class InterpolationType;
 
 //! @brief ... base class for the constitutive relationship, e.g. material laws
 //! @author Stefan Eckardt, ISM
@@ -58,30 +58,65 @@ public:
     //! @brief ... constructor
     virtual ~ConstitutiveBase()
     {}
+    //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
+    //! @param rConstitutiveOutput ... desired constitutive outputs
+    //! @param rInterpolationType ... interpolation type to determine additional inputs
+    //! @return constitutive inputs needed for the evaluation
+    virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType& rInterpolationType) const = 0;
 
     //! @brief ... evaluate the constitutive relation in 1D
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError Evaluate1D(ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::Input::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
-    		std::map<NuTo::Constitutive::Output::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput);
+    template <int TDim>
+    NuTo::Error::eError Evaluate(
+            ElementBase* rElement, int rIp,
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput)
+    {
+        static_assert (TDim == 1 || TDim == 2 || TDim == 3 , "Dimensions 1D, 2D & 3D supported.");
+
+        if (this->mParametersValid == false) CheckParameters();
+
+        if (TDim == 1) return Evaluate1D(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
+        if (TDim == 2) return Evaluate2D(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
+        if (TDim == 3) return Evaluate3D(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
+    }
+
+
+    //! @brief ... evaluate the constitutive relation in 1D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    virtual NuTo::Error::eError Evaluate1D(
+            ElementBase* rElement, int rIp,
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
 
     //! @brief ... evaluate the constitutive relation in 2D
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError Evaluate2D(ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::Input::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
-    		std::map<NuTo::Constitutive::Output::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput);
+    virtual NuTo::Error::eError Evaluate2D(
+            ElementBase* rElement, int rIp,
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
 
     //! @brief ... evaluate the constitutive relation in 3D
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError Evaluate3D(ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::Input::eInput, const NuTo::ConstitutiveInputBase*>& rConstitutiveInput,
-    		std::map<NuTo::Constitutive::Output::eOutput, NuTo::ConstitutiveOutputBase*>& rConstitutiveOutput);
+    virtual NuTo::Error::eError Evaluate3D(
+            ElementBase* rElement, int rIp,
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
+
+
+
 
     // parameters /////////////////////////////////////////////////////////////
 
@@ -120,31 +155,11 @@ public:
     //! @param rValue ... new value for requested variable
     virtual void SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double,Eigen::Dynamic> rValue);
 
-    /*
 
-    //! @brief ... get density
-    //! @return ... density
-    virtual double GetDensity() const;
+    //! @brief checks parameters, throws if the check failed
+    static void CheckParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue);
 
-    //! @brief ... set density
-    //! @param rRho ... density
-    virtual void SetDensity(double rRho);
-
-    */
-
-
-    //! @brief ... get factor to modify Youngs modulus (using random fields)
-    //! @param rElement ...  element
-    //! @param rIp ...  integration point
-    double GetRanfieldFactorYoungsModulus(const ElementBase* rElement,int rIp) const;
-
-    //! @brief ... get factor to modify Poisson's ratio (using random fields)
-    //! @param rElement ...  element
-    //! @param rIp ...  integration point
-    double GetRanfieldFactorPoissonsRatio(const ElementBase* rElement,int rIp) const;
-
-
-    //! @brief ... get yield strength for multilinear response
+     //! @brief ... get yield strength for multilinear response
     //! @return ... first column: equivalent plastic strain
     //! @return ... second column: corresponding yield strength
     virtual NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetYieldStrength() const;
@@ -153,11 +168,6 @@ public:
     //! @param rEpsilon ...  equivalent plastic strain
     //! @param rSigma ...  yield strength
     virtual void AddYieldStrength(double rEpsilon, double rSigma);
-
-    //! @brief ... get factor to modify yield strength (using random fields)
-    //! @param rElement ...  element
-    //! @param rIp ...  integration point
-    double GetRanfieldFactorYieldStrength(const ElementBase* rElement,int rIp) const;
 
     //! @brief ... get hardening modulus for multilinear response
     //! @return ... first column: equivalent plastic strain
@@ -168,12 +178,6 @@ public:
     //! @param rEpsilon ...  equivalent plastic strain
     //! @param rSigma ...  hardening modulus
     virtual void AddHardeningModulus(double rEpsilon, double rH);
-
-    //! @brief ... get factor to modify hardening modulus (using random fields)
-    //! @param rElement ...  element
-    //! @param rIp ...  integration point
-    double GetRanfieldFactorHardeningModulus(const ElementBase* rElement,int rIp) const;
-
 
     //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
     //! @param rRelativeHumidity ... relative humidity
@@ -221,15 +225,15 @@ public:
 
     //! @brief ... allocate the correct static data
     //! @return ... see brief explanation
-    virtual ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain1D(const ElementBase* rElement)const;
+    virtual ConstitutiveStaticDataBase* AllocateStaticData1D(const ElementBase* rElement)const;
 
     //! @brief ... allocate the correct static data
     //! @return ... see brief explanation
-    virtual ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain2D(const ElementBase* rElement)const;
+    virtual ConstitutiveStaticDataBase* AllocateStaticData2D(const ElementBase* rElement)const;
 
     //! @brief ... allocate the correct static data
     //! @return ... see brief explanation
-    virtual ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain3D(const ElementBase* rElement)const;
+    virtual ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement)const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

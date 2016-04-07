@@ -96,14 +96,13 @@ bool NuTo::IntegrationType0DBoundary::CheckElementCompatibility(
 {
     switch (rElementType)
     {
-        case Element::BOUNDARYELEMENT1D:
-        {
-            return true;
-        }
-            break;
-        default:
-            return false;
-            break;
+    case Element::CONTINUUMBOUNDARYELEMENT:
+    case Element::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
+        return true;
+
+    default:
+        return false;
+
     }
 }
 

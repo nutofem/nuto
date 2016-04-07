@@ -12,12 +12,12 @@ NuTo::ConstraintLinearNodeDisplacements1D::ConstraintLinearNodeDisplacements1D(c
         ConstraintNode(rNode), ConstraintLinear()
 {
     // set direction
-    if (fabs(rDirection) < 1e-14)
+    if (std::abs(rDirection) < 1e-14)
     {
         throw MechanicsException("[NuTo::ConstraintLinearNodeDisplacements1D::ConstraintLinearNodeDisplacements1D] Length of the direction vector is zero");
     }
     // set normalized direction
-    this->mDirection = rDirection / fabs(rDirection);
+    this->mDirection = rDirection / std::abs(rDirection);
 
     // set value
     mRHS = rValue;
@@ -41,7 +41,7 @@ void NuTo::ConstraintLinearNodeDisplacements1D::SetRHS(double rRHS)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
 void NuTo::ConstraintLinearNodeDisplacements1D::AddToConstraintMatrix(int& curConstraintEquation,
-        NuTo::SparseMatrixCSRGeneral<double>& rConstraintMatrix)const
+        NuTo::SparseMatrix<double>& rConstraintMatrix)const
 {
     // add constraint to constrain matrix
     if (mNode->GetNumDisplacements()!=1)
