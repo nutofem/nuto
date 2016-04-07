@@ -41,7 +41,7 @@ public:
     template <typename T>
     static T EulerForward(const T& rXn, const T& rXn_m1, const ConstitutiveIOBase& rTimeStep)
     {
-        rTimeStep.AssertIsVector<2>(Constitutive::Output::UPDATE_STATIC_DATA, __PRETTY_FUNCTION__); // enum is just a dummy... I'm sorry.
+        assert (rTimeStep.GetNumRows() >= 2 && "At least two time steps required. Current and previous one.");
 
         // this is a bit wierd since this method should be used for ConstiutiveScalar/Vector/Matrix,
         // all inheriting from Eigen::Matrix<double>

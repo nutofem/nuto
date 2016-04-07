@@ -237,6 +237,19 @@ public:
         mCallback = rCallback;
     }
 
+    //! @brief ... Adds a calculation step to each timestep
+    //! param rActiveDofs ... active Dofs of the calculation step
+    void AddCalculationStep(const std::set<Node::eDof> &rActiveDofs);
+
+    //! @brief ... Sets the number of calculation steps per timestep
+    //! param rNumSteps ... number of calculation steps per timestep
+    void SetNumCalculationSteps(int rNumSteps);
+
+    //! @brief ... Sets the active Dofs of a calculation step
+    //! param rStepNum ... step number
+    //! param rActiveDofs ... active Dofs of the calculation step
+    void SetActiveDofsCalculationStep(int rStepNum, const std::set<Node::eDof> &rActiveDofs);
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -336,6 +349,8 @@ protected:
 
     CallbackInterface* mCallback;
 
+    //! @brief Stores wich Dofs are active in which calculation step
+    std::vector<std::set<Node::eDof>> mStepActiveDofs;
 
 };
 } //namespace NuTo

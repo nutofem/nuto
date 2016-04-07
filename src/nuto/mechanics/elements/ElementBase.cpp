@@ -645,11 +645,11 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
     }
 
     //calculate the element solution
-//    ConstitutiveInputMap input;
-//    ConstitutiveCalculateStaticData calc(CalculateStaticData::USE_PREVIOUS);
-//    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calc;
-//    Evaluate(input, elementOutput);
-    Evaluate(elementOutput);
+    ConstitutiveInputMap input;
+    ConstitutiveCalculateStaticData calc(CalculateStaticData::USE_PREVIOUS);
+    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calc;
+    Evaluate(input, elementOutput);
+//    Evaluate(elementOutput);
 
     //assign the outputs
 

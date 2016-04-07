@@ -126,7 +126,7 @@ void SaveRestoreStaticData()
 
 void Extrapolate()
 {
-    NuTo::ConstitutiveTimeStep<2> deltaT;
+    NuTo::ConstitutiveTimeStep deltaT(2);
     deltaT[0] = 1.5; // current time step
     deltaT[1] = 2.5; // previous time step
 
@@ -165,7 +165,7 @@ void Extrapolate()
 
 
 
-    NuTo::ConstitutiveTimeStep<4> t;
+    NuTo::ConstitutiveTimeStep t(4);
     t[0] = 42;
     t.SetCurrentTimeStep(1337); // t should be [1337, 42, 0 0]
     if (not (t[0] == 1337 and t[1] == 42 and t[2] == 0 and t[3] == 0))
@@ -176,7 +176,6 @@ void Extrapolate()
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "SetCurrentTimeStep incorrect");
 
 }
-
 
 
 void ImplEx()
@@ -274,17 +273,18 @@ void ImplEx()
     myIntegrationScheme.AddCalculationStep({NuTo::Node::DISPLACEMENTS});
     myIntegrationScheme.AddCalculationStep({NuTo::Node::NONLOCALEQSTRAIN});
 
-    myIntegrationScheme.AddDofWithConstantHessian(NuTo::Node::NONLOCALEQSTRAIN);
+    myIntegrationScheme.AddDofWithConstantHessian0(NuTo::Node::NONLOCALEQSTRAIN);
 
     myIntegrationScheme.AddResultGroupNodeForce("Force", gNodeBC);
     myIntegrationScheme.AddResultNodeDisplacements("Displ", iNodeBC);
 
+    myIntegrationScheme.SetExtrapolationErrorThreshold(kappa_i * 0.02);
 
     std::string resultDir = "./ResultsImplex";
     boost::filesystem::create_directory(resultDir);
     myIntegrationScheme.SetResultDirectory(resultDir, true);
 
-    myIntegrationScheme.Solve(simulationTime);
+    myIntegrationScheme.Solve(simulationTime / 5.);
 
 }
 

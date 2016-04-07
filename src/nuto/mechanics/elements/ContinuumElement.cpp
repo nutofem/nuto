@@ -458,6 +458,10 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveO
             it.second.Resize(1, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::Output::DAMAGE] = &(rData.mDamage);
             break;
+        case NuTo::IpData::EXTRAPOLATION_ERROR:
+            it.second.Resize(1, GetNumIntegrationPoints());
+            rConstitutiveOutput[NuTo::Constitutive::Output::EXTRAPOLATION_ERROR] = &(rData.mExtrapolationError);
+            break;
         case NuTo::IpData::LOCAL_EQ_STRAIN:
             it.second.Resize(1, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN] = &(rData.mLocalEqStrain);
@@ -931,6 +935,9 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputIpData(ElementOutputIpD
             break;
         case NuTo::IpData::DAMAGE:
             it.second.col(rTheIP) = std::move(rData.mDamage);
+            break;
+        case NuTo::IpData::EXTRAPOLATION_ERROR:
+            it.second.col(rTheIP) = std::move(rData.mExtrapolationError);
             break;
         case NuTo::IpData::LOCAL_EQ_STRAIN:
             it.second.col(rTheIP) = std::move(rData.mLocalEqStrain);

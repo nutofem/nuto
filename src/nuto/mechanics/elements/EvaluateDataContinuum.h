@@ -37,6 +37,7 @@ public:
     ConstitutiveScalar mNonlocalParameterXi;
     ConstitutiveVector<VoigtDim> mTangentStressNonlocalEqStrain;
     ConstitutiveVector<VoigtDim> mTangentLocalEqStrainStrain;
+    ConstitutiveScalar mExtrapolationError;
 
 
     // Moisture Transport

@@ -41,6 +41,33 @@ public:
     {
         return "ImplEx";
     }
+
+    double GetExtrapolationErrorThreshold() const
+    {
+        return mExtrapolationErrorThreshold;
+    }
+
+    void SetExtrapolationErrorThreshold(double rExtrapolationErrorThreshold)
+    {
+        mExtrapolationErrorThreshold = rExtrapolationErrorThreshold;
+    }
+
+protected:
+
+    //! @brief ... assess the solution and return the new time step
+    //! @return ... bool : true - accept solution, false - reject solution
+    bool CheckExtrapolationAndAdjustTimeStep() override;
+
+    //! @brief ... extrapolates the static data
+    //! @param rTimeStep ... time step object
+    void ExtrapolateStaticData(const ConstitutiveTimeStep& rTimeStep) override;
+
+private:
+
+    double mExtrapolationErrorThreshold;
+
+    bool mForceAcceptOfNextSolution = true;
+
 };
 
 } /* namespace NuTo */

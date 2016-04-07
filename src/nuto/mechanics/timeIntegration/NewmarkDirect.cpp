@@ -48,29 +48,6 @@ void NuTo::NewmarkDirect::Info()const
     NewmarkBase::Info();
 }
 
-#ifdef ENABLE_SERIALIZATION
-// serializes the class
-template void NuTo::NewmarkDirect::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::NewmarkDirect::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::NewmarkDirect::serialize(Archive & ar, const unsigned int version)
-{
-    #ifdef DEBUG_SERIALIZATION
-        std::cout << "start serialization of NewmarkDirect" << "\n";
-    #endif
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NewmarkBase)
-           & BOOST_SERIALIZATION_NVP(mMinLineSearchStep);
-    #ifdef DEBUG_SERIALIZATION
-        std::cout << "finish serialization of NewmarkDirect" << "\n";
-    #endif
-}
-
-#endif // ENABLE_SERIALIZATION
-
 NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 {
     NuTo::Timer timerFull(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
@@ -440,31 +417,6 @@ std::string NuTo::NewmarkDirect::GetTypeId()const
 }
 
 
-//! @brief ... Adds a calculation step to each timestep
-//! param rActiveDofs ... active Dofs of the calculation step
-void NuTo::NewmarkDirect::AddCalculationStep(const std::set<NuTo::Node::eDof>& rActiveDofs)
-{
-    mStepActiveDofs.push_back(rActiveDofs);
-}
-
-
-//! @brief ... Sets the number of calculation steps per timestep
-//! param rNumSteps ... number of calculation steps per timestep
-void NuTo::NewmarkDirect::SetNumCalculationSteps(int rNumSteps)
-{
-    mStepActiveDofs.resize(rNumSteps);
-}
-
-
-//! @brief ... Sets the active Dofs of a calculation step
-//! param rStepNum ... step number
-//! param rActiveDofs ... active Dofs of a calculation step
-void NuTo::NewmarkDirect::SetActiveDofsCalculationStep(int rStepNum,
-                                                       const std::set<NuTo::Node::eDof>& rActiveDofs)
-{
-    mStepActiveDofs[rStepNum] = rActiveDofs;
-}
-
 void NuTo::NewmarkDirect::CalculateMuDampingMatrix(StructureOutputBlockMatrix& rHessian_dt1, const StructureOutputBlockMatrix& rHessian_dt2) const
 {
     if (mMuDampingMass != 0)
@@ -673,117 +625,26 @@ NuTo::BlockFullVector<double> NuTo::NewmarkDirect::BuildHessianModAndSolveSystem
 
 
 #ifdef ENABLE_SERIALIZATION
-//! @brief ... restore the object from a file
-//! @param filename ... filename
-//! @param aType ... type of file, either BINARY, XML or TEXT
-//! @brief ... save the object to a file
-void NuTo::NewmarkDirect::Restore (const std::string &filename, std::string rType )
-{
-    try
-    {
-        //transform to uppercase
-        std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
-        std::ifstream ifs ( filename.c_str(), std::ios_base::binary );
-        std::string tmpString;
-        if (rType=="BINARY")
-        {
-            boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
-            oba & boost::serialization::make_nvp ( "Object_type", tmpString );
-            if ( tmpString!=GetTypeId() )
-                throw MechanicsException ( "[NewmarkDirect::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-            oba & boost::serialization::make_nvp(tmpString.c_str(), *this);
-        }
-        else if (rType=="XML")
-        {
-            boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
-            oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
-            if ( tmpString!=GetTypeId() )
-                throw MechanicsException ( "[NewmarkDirect::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-            oxa & boost::serialization::make_nvp(tmpString.c_str(), *this);
-        }
-        else if (rType=="TEXT")
-        {
-            boost::archive::text_iarchive ota ( ifs, std::ios::binary );
-            ota & boost::serialization::make_nvp ( "Object_type", tmpString );
-            if ( tmpString!=GetTypeId() )
-                throw MechanicsException ( "[NewmarkDirect::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
-            ota & boost::serialization::make_nvp(tmpString.c_str(), *this);
-        }
-        else
-        {
-            throw MathException ( "[Matrix::Restore]File type not implemented" );
-        }
-    }
-    catch ( MechanicsException &e )
-    {
-        throw e;
-    }
-    catch ( std::exception &e )
-    {
-        throw MechanicsException ( e.what() );
-    }
-    catch ( ... )
-    {
-        throw MechanicsException ( "[NewmarkDirect::Restore]Unhandled exception." );
-    }
-}
-
-//  @brief this routine has to be implemented in the final derived classes, which are no longer abstract
-//! @param filename ... filename
-//! @param aType ... type of file, either BINARY, XML or TEXT
-void NuTo::NewmarkDirect::Save (const std::string &filename, std::string rType )const
-{
-    try
-    {
-        //transform to uppercase
-        std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
-        std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
-        std::string tmpStr ( GetTypeId() );
-        std::string baseClassStr = tmpStr.substr ( 4,100 );
-        if (rType=="BINARY")
-        {
-            boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
-            oba & boost::serialization::make_nvp ( "Object_type", tmpStr );
-            oba & boost::serialization::make_nvp(tmpStr.c_str(), *this);
-        }
-        else if (rType=="XML")
-        {
-            boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
-            oxa & boost::serialization::make_nvp ( "Object_type", tmpStr );
-            oxa & boost::serialization::make_nvp(tmpStr.c_str(), *this);
-        }
-        else if (rType=="TEXT")
-        {
-            boost::archive::text_oarchive ota ( ofs, std::ios::binary );
-            ota & boost::serialization::make_nvp ( "Object_type", tmpStr );
-            ota & boost::serialization::make_nvp(tmpStr.c_str(), *this);
-        }
-        else
-        {
-            throw MechanicsException ( "[NewmarkDirect::Save]File type not implemented." );
-        }
-    }
-    catch ( boost::archive::archive_exception e )
-    {
-        std::string s ( std::string ( "[NewmarkDirect::Save]File save exception in boost - " ) +std::string ( e.what() ) );
-        std::cout << s << "\n";
-        throw MathException ( s );
-    }
-    catch ( MechanicsException &e )
-    {
-        throw e;
-    }
-    catch ( std::exception &e )
-    {
-        throw MechanicsException ( e.what() );
-    }
-    catch ( ... )
-    {
-        throw MechanicsException ( "[NewmarkDirect::Save]Unhandled exception." );
-    }
-}
-
 #ifndef SWIG
+// serializes the class
+template void NuTo::NewmarkDirect::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::NewmarkDirect::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::NewmarkDirect::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::NewmarkDirect::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::NewmarkDirect::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::NewmarkDirect::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::NewmarkDirect::serialize(Archive & ar, const unsigned int version)
+{
+    #ifdef DEBUG_SERIALIZATION
+        std::cout << "start serialization of NewmarkDirect" << "\n";
+    #endif
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NewmarkBase)
+           & BOOST_SERIALIZATION_NVP(mMinLineSearchStep);
+    #ifdef DEBUG_SERIALIZATION
+        std::cout << "finish serialization of NewmarkDirect" << "\n";
+    #endif
+}
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NewmarkDirect)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION

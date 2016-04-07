@@ -460,6 +460,22 @@ void NuTo::TimeIntegrationBase::PostProcess(const StructureOutputBlockVector& rO
     }
 }
 
+void NuTo::TimeIntegrationBase::AddCalculationStep(const std::set<NuTo::Node::eDof>& rActiveDofs)
+{
+    mStepActiveDofs.push_back(rActiveDofs);
+}
+
+
+void NuTo::TimeIntegrationBase::SetNumCalculationSteps(int rNumSteps)
+{
+    mStepActiveDofs.resize(rNumSteps);
+}
+
+void NuTo::TimeIntegrationBase::SetActiveDofsCalculationStep(int rStepNum, const std::set<NuTo::Node::eDof>& rActiveDofs)
+{
+    mStepActiveDofs[rStepNum] = rActiveDofs;
+}
+
 #ifdef ENABLE_SERIALIZATION
 template void NuTo::TimeIntegrationBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
 template void NuTo::TimeIntegrationBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);

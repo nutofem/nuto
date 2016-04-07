@@ -68,6 +68,13 @@ public:
     //! @return ... current static data
     NuTo::ConstitutiveStaticDataGradientDamage GetCurrentStaticData(ElementBase& rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput) const;
 
+    //! @brief calculates the error of the extrapolation
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+    //! @return ... error of the extrapolation
+    double CalculateStaticDataExtrapolationError(ElementBase& rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput) const;
+
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object

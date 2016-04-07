@@ -39,6 +39,8 @@ public:
 
     int GetNumRows() const override
     {
+        if (TRows == Eigen::Dynamic)
+            return this->rows();
         return TRows;
     }
 

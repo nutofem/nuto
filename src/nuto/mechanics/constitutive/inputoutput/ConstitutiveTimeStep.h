@@ -17,12 +17,12 @@ namespace NuTo
 //! dT[1] = previous time step
 //! dT[2] = pre-previous time step
 //! ...
-template <int TNum>
-class ConstitutiveTimeStep: public ConstitutiveVector<TNum>
+class ConstitutiveTimeStep: public ConstitutiveVector<Eigen::Dynamic>
 {
 public:
-    ConstitutiveTimeStep()
+    ConstitutiveTimeStep(int rNumTimeSteps)
     {
+        this->resize(rNumTimeSteps);
         this->SetZero();
     }
 
@@ -31,9 +31,14 @@ public:
     //! @param rCurrentTimeStep ... new current time step
     void SetCurrentTimeStep(double rCurrentTimeStep)
     {
-        for (int i = TNum-1; i > 0; --i)
+        for (int i = this->rows()-1; i > 0; --i)
             (*this)[i] = (*this)[i-1];
         (*this)[0] = rCurrentTimeStep;
+    }
+
+    int GetNumTimeSteps() const
+    {
+        return this->rows();
     }
 
 };

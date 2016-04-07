@@ -360,6 +360,7 @@ enum eOutput
     HEAT_FLUX,
     D_HEAT_FLUX_D_TEMPERATURE_GRADIENT,
 	DAMAGE,
+	EXTRAPOLATION_ERROR,
 	UPDATE_STATIC_DATA,
 	UPDATE_TMP_STATIC_DATA,
     LOCAL_EQ_PLASTIC_STRAIN,
@@ -432,6 +433,7 @@ static inline std::string OutputToString( const Output::eOutput& e )
                               (Output::HEAT_FLUX,"HEAT_FLUX")
                               (Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT,"D_HEAT_FLUX_D_TEMPERATURE_GRADIENT")
                               (Output::DAMAGE,"DAMAGE")
+                              (Output::EXTRAPOLATION_ERROR,"EXTRAPOLATION_ERROR")
                               (Output::UPDATE_STATIC_DATA,"UPDATE_STATIC_DATA")
                               (Output::UPDATE_TMP_STATIC_DATA,"UPDATE_TMP_STATIC_DATA")
                               (Output::LOCAL_EQ_PLASTIC_STRAIN,"LOCAL_EQ_PLASTIC_STRAIN")

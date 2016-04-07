@@ -680,6 +680,9 @@ public:
     //! @return max damage value
     double ElementTotalGetMaxDamage();
 
+    //! @brief calculates some error in the static data, e.g. for IMPL-EX
+    double ElementTotalGetStaticDataExtrapolationError();
+
     //! @brief allocates additional static data for an element group
     //! @param rElementGroupId ... element group id
     //! @param rNumAdditionalStaticData ... number of addidional static data objects
@@ -1684,6 +1687,9 @@ public:
 
     //! @brief Sets all dofs inactive
     void DofTypeDeactivateAll();
+
+    //! @brief Sets all dofs active
+    void DofTypeActivateAll();
 
     //! @brief forwards the property to all interpolation types. Inactive dofs are not solved for
     //! @param rDofType ... dof type
