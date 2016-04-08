@@ -168,7 +168,8 @@ myStructure.SolveGlobalSystemStaticElastic()
 
 # calculate residual
 print "calculate residual"
-residualVector = myStructure.BuildGlobalExternalLoadVector(0).J.Get("Displacements") - myStructure.BuildGlobalInternalGradient().J.Get("Displacements")
+extLoadVector = myStructure.BuildGlobalExternalLoadVector(0)
+residualVector = extLoadVector.J.Get("Displacements") - myStructure.BuildGlobalInternalGradient().J.Get("Displacements")
 print "residual: " + str(residualVector.Norm())
 
 # visualize results
