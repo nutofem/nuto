@@ -78,7 +78,7 @@ void BlockFullVectorTest()
      * Addition
      */
     timer.Reset("BVT:Addition");
-    if (v1 + v2 != v2 + v1)                 throw NuTo::MechanicsException("[BVT:Addition] v1 + v2 != v2 + v2");
+    if (v1 + v2 != v2 + v1)                 throw NuTo::MechanicsException("[BVT:Addition] v1 + v2 != v2 + v1");
     if ((v1 + v2).Export() != ev1 + ev2)    throw NuTo::MechanicsException("[BVT:Addition] e(v1 + v2) != ev1 + ev2");
 
     /*
@@ -467,7 +467,7 @@ void SimpleTestResult(bool rResult, std::string rTestName)
 //! @brief Test the block scalar class
 void BlockScalarTest()
 {
-    NuTo::Timer timer("BlockScalarTest::Init");
+    NuTo::Timer timer("BlockScalarTest");
     NuTo::DofStatus s;
     s.SetDofTypes       ({NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE, NuTo::Node::WATERVOLUMEFRACTION});
     s.SetActiveDofTypes ({NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE});
@@ -498,6 +498,229 @@ void BlockScalarTest()
     SimpleTestResult(!(B.CheckDofWiseLessActivDofs(D)) ,std::string("[BlockScalarTest] B.CheckDofWiseLessActivDofs(D) modified"));
 }
 
+
+#ifdef ENABLE_SERIALIZATION
+
+//! @brief ... save the object to a file
+//! @param filename ... filename
+//! @param aType ... type of file, either BINARY, XML or TEXT
+template <typename T>
+void Save (const T& rObject, const std::string &filename, std::string rType )
+{
+    try
+    {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << std::endl << "Save object of type: " << rObject.GetTypeId() << std::endl << "--->" << std::endl;
+#endif
+        //transform to uppercase
+        std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
+        std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
+        std::string tmpStr ( rObject.GetTypeId() );
+        std::string baseClassStr = tmpStr.substr ( 4,100 );
+        if (rType=="BINARY")
+        {
+            boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
+            oba & boost::serialization::make_nvp ( "Object_type", tmpStr );
+            oba & boost::serialization::make_nvp(tmpStr.c_str(), rObject);
+        }
+//        else if (rType=="XML")
+//        {
+//            boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
+//            oxa & boost::serialization::make_nvp ( "Object_type", tmpStr );
+//            oxa & boost::serialization::make_nvp(tmpStr.c_str(), *this);
+//        }
+//        else if (rType=="TEXT")
+//        {
+//            boost::archive::text_oarchive ota ( ofs, std::ios::binary );
+//            ota & boost::serialization::make_nvp ( "Object_type", tmpStr );
+//            ota & boost::serialization::make_nvp(tmpStr.c_str(), *this);
+//        }
+        else
+        {
+            throw NuTo::Exception (__PRETTY_FUNCTION__, "File type not implemented." );
+        }
+    }
+    catch ( boost::archive::archive_exception e )
+    {
+        std::string s ( std::string ( "File save exception in boost - " ) +std::string ( e.what() ) );
+        std::cout << s << "\n";
+        throw NuTo::Exception (__PRETTY_FUNCTION__, s );
+    }
+    catch ( NuTo::Exception &e )
+    {
+        throw e;
+    }
+    catch ( std::exception &e )
+    {
+        throw NuTo::Exception ( __PRETTY_FUNCTION__, e.what() );
+    }
+    catch ( ... )
+    {
+        throw NuTo::Exception ( __PRETTY_FUNCTION__, "Unhandled exception." );
+    }
+}
+
+//! @brief ... restore the object from a file
+//! @param filename ... filename
+//! @param aType ... type of file, either BINARY, XML or TEXT
+template<typename T>
+void Restore (T& rObject,const std::string &filename, std::string rType )
+{
+    try
+    {
+#ifdef DEBUG_SERIALIZATION
+    std::cout << std::endl << "Restore object of type :" << rObject.GetTypeId() << std::endl << "--->" << std::endl;
+#endif
+        //transform to uppercase
+        std::transform(rType.begin(), rType.end(), rType.begin(), toupper);
+        std::ifstream ifs ( filename.c_str(), std::ios_base::binary );
+        std::string tmpString;
+        if (rType=="BINARY")
+        {
+            boost::archive::binary_iarchive oba ( ifs, std::ios::binary );
+            oba & boost::serialization::make_nvp ( "Object_type", tmpString );
+            if ( tmpString!=rObject.GetTypeId() )
+                throw NuTo::Exception ( __PRETTY_FUNCTION__, "Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+rObject.GetTypeId() +")." );
+            oba & boost::serialization::make_nvp(tmpString.c_str(), rObject);
+        }
+//        else if (rType=="XML")
+//        {
+//            boost::archive::xml_iarchive oxa ( ifs, std::ios::binary );
+//            oxa & boost::serialization::make_nvp ( "Object_type", tmpString );
+//            if ( tmpString!=GetTypeId() )
+//                throw Exception ( "[NewmarkDirect::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+//            oxa & boost::serialization::make_nvp(tmpString.c_str(), *this);
+//        }
+//        else if (rType=="TEXT")
+//        {
+//            boost::archive::text_iarchive ota ( ifs, std::ios::binary );
+//            ota & boost::serialization::make_nvp ( "Object_type", tmpString );
+//            if ( tmpString!=GetTypeId() )
+//                throw Exception ( "[NewmarkDirect::Restore]Data type of object in file ("+tmpString+") is not identical to data type of object to read ("+GetTypeId() +")." );
+//            ota & boost::serialization::make_nvp(tmpString.c_str(), *this);
+//        }
+        else
+        {
+            throw NuTo::Exception( __PRETTY_FUNCTION__, "File type not implemented" );
+        }
+    }
+    catch ( NuTo::Exception &e )
+    {
+        throw e;
+    }
+    catch ( std::exception &e )
+    {
+        throw NuTo::Exception ( e.what() );
+    }
+    catch ( ... )
+    {
+        throw NuTo::Exception ( __PRETTY_FUNCTION__, "Unhandled exception." );
+    }
+}
+
+
+
+void SerializationTest_CompareDofTypes(const std::set<NuTo::Node::eDof>& rDofTypes_1, const std::set<NuTo::Node::eDof>& rDofTypes_2)
+{
+    if(rDofTypes_1.size()!=rDofTypes_2.size())
+        throw NuTo::Exception(__PRETTY_FUNCTION__,"Number of dof types not equal");
+    for(auto dofType : rDofTypes_1)
+        if (rDofTypes_2.find(dofType) == rDofTypes_2.end())
+            throw NuTo::Exception(__PRETTY_FUNCTION__,"Dof types aren't equal");
+}
+
+#endif //ENABLE_SERIALIZATION
+
+//!@brief test the serialization of each block structure
+void SerializationTest(std::string rFileType)
+{
+    NuTo::Timer timer("SerializationTest");
+#ifdef ENABLE_SERIALIZATION
+    const std::set<NuTo::Node::eDof>& dofTypes          = {NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE};
+    const std::set<NuTo::Node::eDof>& activeDofTypes    = {NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE};
+
+    {
+        NuTo::DofStatus s;
+        s.SetDofTypes       (dofTypes);
+        s.SetActiveDofTypes (activeDofTypes);
+        NuTo::BlockFullMatrix<double> BM_A(s);
+        NuTo::BlockFullMatrix<double> BM_B(s);
+        BM_A(NuTo::Node::DISPLACEMENTS,NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(4, 4, 1.0,1);
+        BM_A(NuTo::Node::DISPLACEMENTS,NuTo::Node::TEMPERATURE )  = NuTo::SparseMatrixCSRVector2General<double>::Random(4, 2, 1.0,2);
+        BM_A(NuTo::Node::TEMPERATURE  ,NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(2, 4, 1.0,3);
+        BM_A(NuTo::Node::TEMPERATURE  ,NuTo::Node::TEMPERATURE )  = NuTo::SparseMatrixCSRVector2General<double>::Random(2, 2, 1.0,4);
+
+        BM_B(NuTo::Node::DISPLACEMENTS,NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(4, 4, 1.0,5);
+        BM_B(NuTo::Node::DISPLACEMENTS,NuTo::Node::TEMPERATURE  ) = NuTo::SparseMatrixCSRVector2General<double>::Random(4, 2, 1.0,6);
+        BM_B(NuTo::Node::TEMPERATURE  ,NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(2, 4, 1.0,7);
+        BM_B(NuTo::Node::TEMPERATURE  ,NuTo::Node::TEMPERATURE  ) = NuTo::SparseMatrixCSRVector2General<double>::Random(2, 2, 1.0,8);
+
+        BM_A.CheckDimensions();
+        Save(BM_A,"Tmp",rFileType);
+        s.SetDofTypes({NuTo::Node::DISPLACEMENTS});
+        s.SetActiveDofTypes ({NuTo::Node::TEMPERATURE });
+        Restore(BM_B,"Tmp",rFileType);
+
+        if(BM_A.GetNumActiveColumns()   != BM_B.GetNumActiveColumns()   ||
+           BM_A.GetNumActiveRows()      != BM_B.GetNumActiveRows()      ||
+           BM_A.GetNumColumns()         != BM_B.GetNumColumns()         ||
+           BM_A.GetNumRows()            != BM_B.GetNumRows()            )
+            throw NuTo::Exception(__PRETTY_FUNCTION__,"BlockMatrix dimensions not equal!");
+
+        for(auto dofRow : activeDofTypes)
+            for(auto dofCol : activeDofTypes)
+            {
+                const NuTo::FullMatrix<double,Eigen::Dynamic, Eigen::Dynamic>& Mat_A = BM_A(dofRow,dofCol);
+                const NuTo::FullMatrix<double,Eigen::Dynamic, Eigen::Dynamic>& Mat_B = BM_B(dofRow,dofCol);
+                if(Mat_A.GetNumColumns()!= Mat_B.GetNumColumns() || Mat_A.GetNumRows()!= Mat_B.GetNumRows())
+                    throw NuTo::Exception(__PRETTY_FUNCTION__,"Dimensions of initial and restored submatrices not equal!");
+                for(unsigned int row=0; row<Mat_A.GetNumRows(); ++row)
+                    for(unsigned int col=0; col<Mat_A.GetNumColumns(); ++col)
+                        if(Mat_A(row,col)!=Mat_B(row,col))
+                            throw NuTo::Exception(__PRETTY_FUNCTION__,"initial and restored submatrix values not equal!");
+            }
+
+
+
+        // Test if initial DofStatus is restored correct
+        SerializationTest_CompareDofTypes(BM_A.GetDofStatus().GetDofTypes(),dofTypes);
+        SerializationTest_CompareDofTypes(BM_A.GetDofStatus().GetActiveDofTypes(),activeDofTypes);
+        SerializationTest_CompareDofTypes(BM_B.GetDofStatus().GetDofTypes(),dofTypes);
+        SerializationTest_CompareDofTypes(BM_B.GetDofStatus().GetActiveDofTypes(),activeDofTypes);
+    }
+    {
+        // Test if new DofStatus is restored correct
+        NuTo::DofStatus s;
+        NuTo::BlockFullMatrix<double> BM_B(s);
+        Restore(BM_B,"Tmp",rFileType);
+        SerializationTest_CompareDofTypes(BM_B.GetDofStatus().GetDofTypes(),dofTypes);
+        SerializationTest_CompareDofTypes(BM_B.GetDofStatus().GetActiveDofTypes(),activeDofTypes);
+    }
+//    for(auto dofTypes : DS_A.GetActiveDofTypes())
+
+
+//    if(!(BM_A==BM_B))
+//        throw NuTo::Exception(__PRETTY_FUNCTION__,std::string("Restored values of ")+BM_A.GetTypeId()+" do not match original values!");
+//    template<typename T>
+//    bool NuTo::BlockFullMatrix<T>::operator==(const NuTo::BlockFullMatrix<T> &rOther)
+//    {
+//        for (auto dofRow : mDofStatus.GetActiveDofTypes())
+//            for (auto dofCol : mDofStatus.GetActiveDofTypes())
+//            {
+//                auto a = rOther(dofRow, dofCol);
+//                auto b = (*this)(dofRow, dofRow);
+//                auto test = (a == b);
+//                if(!((*this)(dofRow, dofCol) == rOther(dofRow, dofCol)))
+//                    return false;
+//            }
+//        return true;
+//    }
+#else //ENABLE_SERIALIZATION
+    return;
+#endif //ENABLE_SERIALIZATION
+}
+
+
 int main()
 {
 
@@ -516,6 +739,7 @@ int main()
         StructureOutputBlockMatrixTestSymmetric(10, 0, 1);       // cmat == 0
         StructureOutputBlockMatrixTestSymmetric(10, 2, 1);
 
+        SerializationTest("binary");
 //        int dim = 1e5;
 //        StructureOutputBlockMatrixTestGeneral(2*dim, dim, 1000, 1000, 0.0001);
 //        StructureOutputBlockMatrixTestSymmetric(2*dim, 1000, 0.0001);
@@ -530,6 +754,12 @@ int main()
     catch (NuTo::MathException& e)
     {
         std::cout << "\n\n\n NuTo Math errors occurred: \n\n\n";
+        std::cout << e.what();
+        return EXIT_FAILURE;
+    }
+    catch (NuTo::Exception& e)
+    {
+        std::cout << "\n\n\n NuTo errors occurred: \n\n\n";
         std::cout << e.what();
         return EXIT_FAILURE;
     }

@@ -317,3 +317,5 @@ template void FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>::Restore (const s
 #endif // ENABLE_SERIALIZATION
 
 } //NAMESPACE NUTO
+
+

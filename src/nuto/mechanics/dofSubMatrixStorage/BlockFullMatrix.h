@@ -3,6 +3,8 @@
 #include "nuto/mechanics/dofSubMatrixStorage/BlockStorageBase.h"
 #include "nuto/math/FullMatrix_Def.h"
 
+#include "boost/serialization/map.hpp"  //VHIRTHAMTODO: Try move to cpp
+
 namespace NuTo
 {
 template <typename T> class BlockFullVector;
@@ -15,7 +17,7 @@ class BlockFullMatrix: public BlockStorageBase
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
     BlockFullMatrix() {}
-//    template<class Archive> void serialize(Archive & ar, const unsigned int version);
+    template<class Archive> void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
 public:
@@ -87,9 +89,19 @@ public:
         return (*this)(Node::DofToEnum(rDofRow), Node::DofToEnum(rDofCol));
     }
 
+#ifdef ENABLE_SERIALIZATION
+    //! @brief Returns the class name as a string
+    std::string GetTypeId()const;
+#endif
+
+
 private:
     std::map<std::pair<Node::eDof, Node::eDof>, NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>> mData;
 };
 
 
 } /* namespace NuTo */
+
+#ifdef ENABLE_SERIALIZATION
+    BOOST_CLASS_EXPORT_KEY(NuTo::BlockFullMatrix<double>)
+#endif

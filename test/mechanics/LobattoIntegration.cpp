@@ -348,15 +348,7 @@ int main()
         myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, 10, DisplacementCorrectSerialization1D);
 #ifdef ENABLE_SERIALIZATION
         std::cout << "\n************************** Saving a NuTo-Structure (StructureOut1D3NLobatto)**************************\n";
-
-        // open file
-        std::ofstream ofs ( "StructureOut1D3NLobatto", std::ios_base::binary );
-
-        boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
-        oba & boost::serialization::make_nvp("StructureOut1D3NLobatto", myStructure);
-
-        myStructure->saveImplement(oba);
-
+        myStructure->Save("StructureOut1D3NLobatto", "XML");
 #endif
         solve(myStructure, DisplacementCorrectSerialization1D);
 

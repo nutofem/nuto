@@ -30,11 +30,11 @@ void NuTo::HeatConduction::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize HeatConduction" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase)
-    & BOOST_SERIALIZATION_NVP(mE)
-    & BOOST_SERIALIZATION_NVP(mNu)
-    & BOOST_SERIALIZATION_NVP(mRho)
-    & BOOST_SERIALIZATION_NVP(mThermalExpansionCoefficient);
+//    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase)
+//    & BOOST_SERIALIZATION_NVP(mE)
+//    & BOOST_SERIALIZATION_NVP(mNu)
+//    & BOOST_SERIALIZATION_NVP(mRho)
+//    & BOOST_SERIALIZATION_NVP(mThermalExpansionCoefficient);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize HeatConduction" << std::endl;
 #endif

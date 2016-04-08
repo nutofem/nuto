@@ -33,7 +33,7 @@ void NuTo::BlockStorageBase::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize BlockStorageBase" << "\n";
 #endif
-
+    ar& boost::serialization::make_nvp("mDofStatus",const_cast<DofStatus&>(mDofStatus));
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize BlockStorageBase \n";
 #endif
