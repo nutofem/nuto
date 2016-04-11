@@ -12,6 +12,7 @@ IF(ENABLE_PYTHON_TESTS)
   ADD_TEST(p::mechanics::DeleteElemNode                    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/DeleteElemNode.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(p::mechanics::ElementUniaxialTest               ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/ElementUniaxialTest.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_BINARY_DIR})
   ADD_TEST(p::mechanics::Quad2DPatchTest                   ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Quad2DPatchTest.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_BINARY_DIR})
+  add_test(p::mechanics::HeatConduction ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/HeatConduction.py)
 
   # set PYTHONPATH environment for all examples
 
@@ -26,6 +27,7 @@ IF(ENABLE_PYTHON_TESTS)
   p::mechanics::DeleteElemNode
   p::mechanics::ElementUniaxialTest
   p::mechanics::Quad2DPatchTest
+  p::mechanics::HeatConduction
   )
   SET_PROPERTY(TEST ${MYTESTS}  PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
 ENDIF(ENABLE_PYTHON_TESTS)
@@ -387,6 +389,9 @@ IF(MINGW)
 ENDIF(MINGW)
     ADD_TEST(c::mechanics::ConstitutiveLawMoistureTransport ${CMAKE_CURRENT_BUILD_DIR}/ConstitutiveLawMoistureTransport)
 
+  add_executable(HeatConduction HeatConduction.cpp)
+  target_link_libraries(HeatConduction NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+  add_test(c::mechanics::HeatConduction ${CMAKE_CURRENT_BUILD_DIR}/HeatConduction)
 
 ENDIF(ENABLE_C++_TESTS)
 

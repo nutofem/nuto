@@ -30,11 +30,9 @@ void NuTo::HeatConduction::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize HeatConduction" << std::endl;
 #endif
-//    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase)
-//    & BOOST_SERIALIZATION_NVP(mE)
-//    & BOOST_SERIALIZATION_NVP(mNu)
-//    & BOOST_SERIALIZATION_NVP(mRho)
-//    & BOOST_SERIALIZATION_NVP(mThermalExpansionCoefficient);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase)
+    & BOOST_SERIALIZATION_NVP(mK)
+    & BOOST_SERIALIZATION_NVP(mCt);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize HeatConduction" << std::endl;
 #endif
@@ -64,41 +62,54 @@ NuTo::ConstitutiveInputMap NuTo::HeatConduction::GetConstitutiveInputs(
             break;
         }
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive law.");
+            throw MechanicsException(__PRETTY_FUNCTION__, Constitutive::OutputToString(itOutput.first)
+                    + " cannot be calculated by this constitutive law.");
         }
     }
 
     return constitutiveInputMap;
 }
 
-NuTo::Error::eError NuTo::HeatConduction::Evaluate1D(
-        ElementBase* rElement, int rIp,
+template<int TDim>
+NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
+        int rIp,
         const ConstitutiveInputMap& rConstitutiveInput,
         const ConstitutiveOutputMap& rConstitutiveOutput)
 {
+    auto eye = Eigen::MatrixXd::Identity(TDim, TDim);
+
+    InputData<TDim> inputData;
+    for (auto itInput : rConstitutiveInput)
+    {
+        switch(itInput.first)
+        {
+        case NuTo::Constitutive::Input::TEMPERATURE_GRADIENT:
+            inputData.mTemperatureGradient = (*static_cast<ConstitutiveVector<TDim>*>(itInput.second)).AsVector();
+            break;
+        case NuTo::Constitutive::Input::CALCULATE_STATIC_DATA:
+        case NuTo::Constitutive::Input::TIME_STEP:
+            break;
+        default:
+            throw MechanicsException(__PRETTY_FUNCTION__, "Input object "
+                + Constitutive::InputToString(itInput.first) + " is not needed by the heat conduction law.");
+        }
+    }
+
     for (auto itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
         case NuTo::Constitutive::Output::HEAT_FLUX:
         {
-            const auto& temperatureGradient = *rConstitutiveInput.at(Constitutive::Input::TEMPERATURE_GRADIENT);
-            ConstitutiveIOBase& heatFlux = *itOutput.second;
-            heatFlux[0] = mK * temperatureGradient[0];
+            Eigen::Matrix<double, TDim, 1>& heatFlux = (*static_cast<ConstitutiveVector<TDim>*>(itOutput.second));
+            heatFlux = mK * eye * inputData.mTemperatureGradient;
             break;
         }
         case NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT:
         {
-            ConstitutiveIOBase& tangent = *itOutput.second;
-            tangent.AssertIsMatrix<1,1>(itOutput.first, __PRETTY_FUNCTION__);
-
-            tangent(0,0) = mK;
-            break;
-        }
-        case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
-        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
-        {
-            //nothing to be done for update routine
+            Eigen::Matrix<double, TDim, TDim>& tangent =
+                (*static_cast<ConstitutiveMatrix<TDim, TDim>*>(itOutput.second));
+            tangent = mK * eye;
             break;
         }
         default:
@@ -107,22 +118,6 @@ NuTo::Error::eError NuTo::HeatConduction::Evaluate1D(
                     + " could not be calculated, check the allocated material law and the section behavior.");
         }
     }
-    return Error::SUCCESSFUL;
-}
-
-NuTo::Error::eError NuTo::HeatConduction::Evaluate2D(
-        ElementBase* rElement, int rIp,
-        const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput)
-{
-    return Error::SUCCESSFUL;
-}
-
-NuTo::Error::eError NuTo::HeatConduction::Evaluate3D(
-        ElementBase* rElement, int rIp,
-        const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput)
-{
     return Error::SUCCESSFUL;
 }
 
