@@ -230,6 +230,7 @@ protected:
     void FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullVector<double>& rInternalGradient, EvaluateDataContinuumBoundary<TDim>& rData) const;
     void FillConstitutiveOutputMapHessian0(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian0, EvaluateDataContinuumBoundary<TDim>& rData) const;
     void FillConstitutiveOutputMapHessian1(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian0, EvaluateDataContinuumBoundary<TDim>& rData) const;
+    void FillConstitutiveOutputMapIpData  (ConstitutiveOutputMap& rConstitutiveOutput, ElementOutputIpData& rIpData, EvaluateDataContinuumBoundary<TDim>& rData) const;
 
     ConstitutiveInputMap GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput, EvaluateDataContinuumBoundary<TDim>& rData) const;
 
@@ -241,6 +242,7 @@ protected:
 
     void CalculateElementOutputInternalGradient(    BlockFullVector<double>& rInternalGradient, EvaluateDataContinuumBoundary<TDim> &rData, int rTheIP) const;
     void CalculateElementOutputHessian0(            BlockFullMatrix<double>& rHessian0,         EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP) const;
+    void CalculateElementOutputIpData(              ElementOutputIpData&     rIpData,           EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP) const;
 
     void CalculateNMatrixBMatrixDetJacobian(EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP) const;
 
