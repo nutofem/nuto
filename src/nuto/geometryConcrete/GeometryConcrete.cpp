@@ -52,8 +52,15 @@ void NuTo::GeometryConcrete::MaximizeParticleDistance(double rParticleDistance)
         handler.Simulate(mNumEventsMax, timeEnd, mSecondsWallTimeMax, mSecondsPrint, mInitialTimeBarrier);
     } catch (NuTo::Exception& e)
     {
-        e.AddMessage("The simulation failed. \n");
-        throw e;
+        e.AddMessage("The simulation stopped with an exception. \n");
+        if (mContinueOnException)
+        {
+            std::cout << e.ErrorMessage() << "\n but I'll continue.";
+        }
+        else
+        {
+            throw e;
+        }
     }
 
     std::cout << "min Dist.= " << mParticleHandler->GetAbsoluteMininimalDistance(*mSpecimen)<< std::endl;
@@ -91,7 +98,14 @@ void NuTo::GeometryConcrete::MaximizeParticleVolumeFraction(double rShrinkage)
     } catch (NuTo::Exception& e)
     {
         e.AddMessage("The simulation failed. \n");
-        throw e;
+        if (mContinueOnException)
+        {
+            std::cout << e.ErrorMessage() << "\n but I'll continue.";
+        }
+        else
+        {
+            throw e;
+        }
     }
 
     std::cout << "min Dist.= " << mParticleHandler->GetAbsoluteMininimalDistance(*mSpecimen)<< std::endl;
@@ -102,7 +116,7 @@ void NuTo::GeometryConcrete::MaximizeParticleVolumeFraction(double rShrinkage)
 
 
 
-void NuTo::GeometryConcrete::ExportGmshGeo2D(std::string rGmshFile, double rMeshSize, double rZSlice)
+void NuTo::GeometryConcrete::ExportGmshGeo2D(std::string rGmshFile, double rMeshSize, double rZSlice, double rMinRadius)
 {
     if (mParticleHandler == nullptr)
         throw NuTo::Exception("[NuTo::GeometryConcrete::ExportGmsh2D] Run a simulation first!");
@@ -113,9 +127,7 @@ void NuTo::GeometryConcrete::ExportGmshGeo2D(std::string rGmshFile, double rMesh
     if (zS >= rZSlice || zE <= rZSlice)
         throw NuTo::Exception("[NuTo::GeometryConcrete::ExportGmsh2D] The rZSlice does not intersect the specimen!");
 
-
-    double minRadius = rMeshSize/4.;
-    mParticleHandler->ExportParticlesToGmsh2D(rGmshFile+".geo", *mSpecimen, rMeshSize, rZSlice, minRadius);
+    mParticleHandler->ExportParticlesToGmsh2D(rGmshFile+".geo", *mSpecimen, rMeshSize, rZSlice, rMinRadius);
 }
 
 //! @brief ... exports the geometry to a 3D mesh file
@@ -268,3 +280,12 @@ void NuTo::GeometryConcrete::SetSeed(double rSeed)
     mSeed = rSeed;
 }
 
+bool NuTo::GeometryConcrete::ContinueOnException() const
+{
+    return mContinueOnException;
+}
+
+void NuTo::GeometryConcrete::SetContinueOnException(bool rContinueOnException)
+{
+    mContinueOnException = rContinueOnException;
+}

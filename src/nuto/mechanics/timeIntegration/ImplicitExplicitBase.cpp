@@ -105,7 +105,7 @@ NuTo::Error::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 
         while (mTime < rTimeDelta)
         {
-            timerDebug.Reset("current time: " + std::to_string(mTime));
+            timerDebug.Reset("\033[1;31m Iteration " + std::to_string(numAcceptedIterations) + " at current time: " + std::to_string(mTime) + "\033[0m");
 
             mStructure->DofTypeActivateAll();
 
@@ -236,6 +236,11 @@ NuTo::Error::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 
         std::cout << "["<<__FUNCTION__<<"] Number of accepted iterations: " << numAcceptedIterations << std::endl;
         std::cout << "["<<__FUNCTION__<<"] Number of rejected iterations: " << numRejectedIterations << std::endl;
+
+        for (auto& itPair : preFactorizedHessians)
+        {
+            itPair.second.CleanUp();
+        }
 
     }
     catch (MechanicsException& e)

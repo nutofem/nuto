@@ -483,6 +483,7 @@ void NuTo::ContinuumElement<TDim>::CalculateGlobalRowDofs(BlockFullVector<int> &
 
         dofWiseGlobalRowDofs.Resize(interpolationType.GetNumDofs());
         dofWiseGlobalRowDofs.setZero();
+
         switch (dof)
         {
         case Node::DISPLACEMENTS:

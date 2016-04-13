@@ -55,7 +55,7 @@ bool NuTo::ImplEx::CheckExtrapolationAndAdjustTimeStep()
 
     bool extrapolationIsOK = extrapolationError < mExtrapolationErrorThreshold;
 
-    std::cout << "relative Extrapolation error: " << extrapolationError / mExtrapolationErrorThreshold << std::endl;
+    std::cout << "relative Extrapolation error (>1 is bad): " << extrapolationError / mExtrapolationErrorThreshold << std::endl;
 
     if (not extrapolationIsOK && not mForceAcceptOfNextSolution)
     {

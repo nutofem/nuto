@@ -538,6 +538,7 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh3D(std::string rOutputFile,
     auto spheres = GetParticles();
     int objectCounter = 1; // The first (index 0) object is the box.
 
+    mFile << "meshCircle = " << rMeshSize << "; \n";
     for (int i = 0; i < spheres.rows(); i++)
     {
         mFile << "t = " << objectCounter << ";\n";
@@ -545,7 +546,6 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh3D(std::string rOutputFile,
         mFile << "xC = " << spheres(i, 0) << "; yC = " << spheres(i, 1)
                 << "; zC = " << spheres(i, 2) << ";\n";
         mFile << "R = " << spheres(i, 3) << "; \n";
-        mFile << "meshCircle = " << rMeshSize << "; \n";
         mFile << "Call MySphere; \n";
         mFile << " \n";
         mFile << " \n";
@@ -641,13 +641,14 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh2D(std::string rOutputFile,
 
     int objectCounter = 0;
 
+    file << "meshCircle = " << rMeshSize << "; \n";
+
     for (int i = 0; i < circles.rows(); i++)
     {
         file << "t = " << objectCounter << ";\n";
         objectCounter++;
         file << "xC = " << circles(i, 0) << "; yC = " << circles(i, 1) << ";\n";
         file << "R = " << circles(i, 2) << "; \n";
-        file << "meshCircle = " << rMeshSize << "; \n";
         file << "Call MySphere; \n";
         file << " \n";
         file << " \n";
