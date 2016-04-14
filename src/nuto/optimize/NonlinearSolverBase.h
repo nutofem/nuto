@@ -17,7 +17,6 @@
 
 #include "nuto/base/NuToObject.h"
 #include "nuto/base/ErrorEnum.h"
-#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/FullVector.h"
 

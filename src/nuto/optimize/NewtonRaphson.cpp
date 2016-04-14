@@ -14,7 +14,7 @@
 # endif
 
 #include "nuto/optimize/NewtonRaphson.h"
-#include "nuto/mechanics/MechanicsException.h"
+#include "nuto/optimize/OptimizeException.h"
 
 //! @brief constructor
 NuTo::NewtonRaphson::NewtonRaphson() : NonlinearSolverBase()
@@ -53,7 +53,7 @@ NuTo::Error::eError NuTo::NewtonRaphson::Solve(NuTo::FullVector<double,Eigen::Dy
 	NuTo::Error::eError Error;
 
 	if (not mAssignResidual && mResidualFunction == 0) {
-		throw MechanicsException("[NuTo::NewtonRaphson::Solve] the pointer to the residual function is required.");
+		throw OptimizeException("[NuTo::NewtonRaphson::Solve] the pointer to the residual function is required.");
 	}
 
 	Error = this->NewtonRaphsonIterator(rUnknown,this->mCheckNewtonRaphson);
