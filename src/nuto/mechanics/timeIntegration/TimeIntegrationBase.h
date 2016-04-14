@@ -87,10 +87,6 @@ public:
     //! @return ... external load vector
     virtual StructureOutputBlockVector CalculateCurrentExternalLoad(double curTime);
 
-
-    //! @brief sets the nodes, for which displacements are to be monitored
-    void CalculateOutputDispNodesPtr(StructureBase& rStructure);
-
     //! @brief extracts all dof values
     //! @param rDof_dt0 ... 0th time derivative
     //! @param rDof_dt1 ... 1st time derivative

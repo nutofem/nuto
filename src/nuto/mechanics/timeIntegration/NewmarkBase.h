@@ -40,11 +40,6 @@ public:
     	mToleranceForce = rToleranceForce;
     }
 
-    //! @brief Sets the residual tolerance for a specific DOF
-    //! param rDof: degree of freedom
-    //! param rTolerance: tolerance
-    void SetToleranceResidual(Node::eDof rDof, double rTolerance);
-
     double GetToleranceForce()const
     {
     	return mToleranceForce;

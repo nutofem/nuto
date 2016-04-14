@@ -10,6 +10,10 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/base/Logger.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/base/CallbackInterface.h"
+#include "nuto/mechanics/timeIntegration/TimeIntegrationBase.h"
+#include "nuto/mechanics/timeIntegration/NewmarkBase.h"
+#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 %}
 
 // convert python string to std::string
@@ -18,7 +22,7 @@
 %include "std_vector.i"
 %ignore Exception;
 %include "nuto/base/ModulNuToBase.i"
-
+%include "nuto/base/CallbackInterface.h"
 
 %include "nuto/mechanics/structures/StructureBase.h"
 %include "nuto/mechanics/structures/unstructured/Structure.h"
@@ -31,14 +35,19 @@
 %include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
 %include "nuto/mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
 
+%include "nuto/mechanics/nodes/NodeEnum.h"
+
 %include "nuto/mechanics/structures/StructureOutputBase.h"
 %include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
 %include "nuto/mechanics/structures/StructureOutputBlockVector.h"
 
+%include "nuto/mechanics/timeIntegration/TimeIntegrationBase.h"
+%include "nuto/mechanics/timeIntegration/NewmarkBase.h"
+%include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+
 %template(DoubleBlockFullMatrix) NuTo::BlockFullMatrix<double>;
 %template(DoubleBlockFullVector) NuTo::BlockFullVector<double>;
 %template(IntBlockFullVector) NuTo::BlockFullVector<int>;
-
 
 
 

@@ -297,6 +297,10 @@ SET(SWIG_MODULE_ModulMechanics_EXTRA_DEPS
   dofSubMatrixStorage/BlockFullVector.h
   dofSubMatrixStorage/BlockSparseMatrix.h
   
+  timeIntegration/TimeIntegrationBase.h
+  timeIntegration/NewmarkBase.h
+  timeIntegration/NewmarkDirect.h
+
   structures/StructureOutputBase.h
   structures/StructureOutputBlockMatrix.h
   structures/StructureOutputBlockVector.h
