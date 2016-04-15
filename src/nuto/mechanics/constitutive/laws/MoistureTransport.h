@@ -8,7 +8,7 @@
 
 
 // VHIRTHAMTODO Check deactivated routines, if they are still needed
-
+// VHIRTHAMTODO Rebuild CheckXYZ routines ---> CheckParameterDouble of base class
 namespace NuTo
 {
 
@@ -331,6 +331,7 @@ public:
     virtual void                                    SetParameterFullVectorDouble                                (Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double,Eigen::Dynamic> rValue) override;
 
 
+    //VHIRTHAMTODO Check if static function better?
     //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
     //! @param rRelativeHumidity ... relative humidity
     //! @param rCoeffs ... polynomial coefficients of the sorption curve

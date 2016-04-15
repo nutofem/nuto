@@ -84,7 +84,9 @@ NuTo::ConstitutiveInputMap NuTo::LinearElasticEngineeringStress::GetConstitutive
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
             break;
         default:
-            throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] output object " + Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive law.");
+            continue;
+//            ProcessUnhandledOutput(__PRETTY_FUNCTION__,itOutput.first);
+//            throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] output object " + Constitutive::OutputToString(itOutput.first) + " cannot be calculated by this constitutive law.");
         }
     }
 
@@ -140,11 +142,12 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate1D(
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
         {
             //nothing to be done for update routine
-            break;
+            continue;
         }
         default:
-            throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] output object " + Constitutive::OutputToString(itOutput.first) + " could not be calculated, check the allocated material law and the section behavior.");
+            continue;
         }
+        itOutput.second->SetIsCalculated(true);
     }
     //update history variables but for linear elastic, there is nothing to do
     return Error::SUCCESSFUL;
@@ -256,11 +259,12 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
         {
             //nothing to be done for update routine
-            break;
+            continue;
         }
         default:
-            throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] output object " + Constitutive::OutputToString(itOutput.first) + " could not be calculated, check the allocated material law and the section behavior.");
+            continue;
         }
+        itOutput.second->SetIsCalculated(true);
     }
     //update history variables but for linear elastic, there is nothing to do
     return Error::SUCCESSFUL;
@@ -340,11 +344,12 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate3D(
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
         {
             //nothing to be done for update routine
-            break;
+            continue;
         }
         default:
-            throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] output object " + Constitutive::OutputToString(itOutput.first) + " could not be calculated, check the allocated material law and the section behavior.");
+            continue;
         }
+        itOutput.second->SetIsCalculated(true);
     }
 
     //update history variables but for linear elastic, there is nothing to do
@@ -455,6 +460,7 @@ bool NuTo::LinearElasticEngineeringStress::CheckElementCompatibility(NuTo::Eleme
     switch (rElementType)
     {
     case NuTo::Element::CONTINUUMELEMENT:
+    case NuTo::Element::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
         return true;
     default:
         return false;

@@ -156,11 +156,9 @@ double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double rRelativ
 }
 
 
-//! @brief ... adds a constitutive law to a multi physics model
-//! @param ... additional constitutive law
-void NuTo::ConstitutiveBase::MultiPhysicsAddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw)
+void NuTo::ConstitutiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw)
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::MultiPhysicsAddConstitutiveLaw] The constitutive relationship does not have this parameter.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"The constitutive relationship does not have this functionality.");
 }
 
 
@@ -220,6 +218,8 @@ NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveBase::AllocateStaticData3D(c
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AllocateStaticData3D] Allocate routine for 3D EngineeringStressStrain not implemented.");
 }
+
+
 
 
 #ifdef ENABLE_SERIALIZATION

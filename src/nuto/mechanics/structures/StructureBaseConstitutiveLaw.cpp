@@ -4,6 +4,7 @@
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 //#include "nuto/mechanics/constitutive/mechanics/LinearSpring.h"
+#include "nuto/mechanics/constitutive/laws/ConstitutiveLawsAdditiveOutput.h"
 #include "nuto/mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "nuto/mechanics/constitutive/laws/LinearElasticEngineeringStress.h"
 #include "nuto/mechanics/constitutive/laws/HeatConduction.h"
@@ -58,6 +59,10 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
         ConstitutiveBase* ConstitutiveLawPtr;
         switch (rType)
         {
+        case NuTo::Constitutive::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT:
+            ConstitutiveLawPtr = new NuTo::ConstitutiveLawsAdditiveOutput();
+            break;
+
         case NuTo::Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS:
             ConstitutiveLawPtr = new NuTo::LinearElasticEngineeringStress();
             break;
@@ -112,6 +117,7 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
         case NuTo::Constitutive::MOISTURE_TRANSPORT:
             ConstitutiveLawPtr = new NuTo::MoistureTransport();
             break;
+
 
         case NuTo::Constitutive::MULTI_PHYSICS:
             throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
@@ -473,22 +479,22 @@ double NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction(int
     return EquilibriumWaterVolumeFraction;
 }
 
+//VHIRTHAMTODO Delete???
+////! @brief ... adds a constitutive law to a multi physics model
+////! @param rIdentMultiPhysics ... multi physics constitutive law to which the constitutive law should be added
+////! @param rIdentConstitutiveLaw ... constitutive law which should be added to the multi physics model
+//void NuTo::StructureBase::ConstitutiveLawMultiPhysicsAddConstitutiveLaw(int rIdentMultiPhysics, int rIdentConstitutiveLaw)
+//{
+//    try
+//    {
+//        ConstitutiveBase* MultiPhysicsLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdentMultiPhysics);
+//        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdentConstitutiveLaw);
 
-//! @brief ... adds a constitutive law to a multi physics model
-//! @param rIdentMultiPhysics ... multi physics constitutive law to which the constitutive law should be added
-//! @param rIdentConstitutiveLaw ... constitutive law which should be added to the multi physics model
-void NuTo::StructureBase::ConstitutiveLawMultiPhysicsAddConstitutiveLaw(int rIdentMultiPhysics, int rIdentConstitutiveLaw)
-{
-    try
-    {
-        ConstitutiveBase* MultiPhysicsLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdentMultiPhysics);
-        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdentConstitutiveLaw);
-
-        MultiPhysicsLawPtr->MultiPhysicsAddConstitutiveLaw(ConstitutiveLawPtr);
-    }
-    catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawMultiPhysicsAddConstitutiveLaw] error adding constitutive law to multi physics model.");
-        throw e;
-    }
-}
+//        MultiPhysicsLawPtr->MultiPhysicsAddConstitutiveLaw(ConstitutiveLawPtr);
+//    }
+//    catch (NuTo::MechanicsException& e)
+//    {
+//        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawMultiPhysicsAddConstitutiveLaw] error adding constitutive law to multi physics model.");
+//        throw e;
+//    }
+//}

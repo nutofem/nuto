@@ -213,19 +213,22 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
         case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
         {
             throw MechanicsException(__PRETTY_FUNCTION__, "tmp_static_data has to be updated without any other outputs, call it separately.");
-            break;
+            continue;
         }
 
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
         {
             performUpdateAtEnd = true;
-            break;
+            continue;
         }
-
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "output object " + NuTo::Constitutive::OutputToString(itOutput.first)
-                            + " could not be calculated, check the allocated material law and the section behavior.");
+            continue;
         }
+        itOutput.second->SetIsCalculated(true);
+//        default:
+//            throw MechanicsException(__PRETTY_FUNCTION__, "output object " + NuTo::Constitutive::OutputToString(itOutput.first)
+//                            + " could not be calculated, check the allocated material law and the section behavior.");
+//        }
     }
 
     //update history variables
@@ -417,17 +420,21 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
         {
             throw MechanicsException(__PRETTY_FUNCTION__,"tmp_static_data has to be updated without any other outputs, call it separately.");
         }
-            break;
+            continue;
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
         {
             performUpdateAtEnd = true;
         }
-            break;
+            continue;
+//        default:
+//            throw MechanicsException(
+//                    std::string(__PRETTY_FUNCTION__,"output object ") + NuTo::Constitutive::OutputToString(itOutput.first)
+//                            + std::string(" could not be calculated, check the allocated material law and the section behavior."));
+//        }
         default:
-            throw MechanicsException(
-                    std::string(__PRETTY_FUNCTION__,"output object ") + NuTo::Constitutive::OutputToString(itOutput.first)
-                            + std::string(" could not be calculated, check the allocated material law and the section behavior."));
+            continue;
         }
+        itOutput.second->SetIsCalculated(true);
     }
 
     //update history variables
@@ -598,19 +605,22 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
         case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
         {
             throw MechanicsException(__PRETTY_FUNCTION__, "tmp_static_data has to be updated without any other outputs, call it separately.");
-            break;
+            continue;
         }
 
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
         {
             performUpdateAtEnd = true;
-            break;
+            continue;
         }
-
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "output object " + NuTo::Constitutive::OutputToString(itOutput.first)
-                            + " could not be calculated, check the allocated material law and the section behavior.");
+            continue;
         }
+        itOutput.second->SetIsCalculated(true);
+//        default:
+//            throw MechanicsException(__PRETTY_FUNCTION__, "output object " + NuTo::Constitutive::OutputToString(itOutput.first)
+//                            + " could not be calculated, check the allocated material law and the section behavior.");
+//        }
     }
 
     //update history variables

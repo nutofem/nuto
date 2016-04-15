@@ -193,6 +193,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
         if (mToleranceResidual < residual_mod.CalculateInfNorm())
         {
             mStructure->GetLogger() << residual_mod.CalculateInfNorm();
+            std::cout << residual << std::endl;
             throw MechanicsException(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
         }
 

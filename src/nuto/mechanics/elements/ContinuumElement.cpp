@@ -45,9 +45,15 @@ NuTo::Error::eError NuTo::ContinuumElement<TDim>::Evaluate(const ConstitutiveInp
         try
         {
             ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(theIP);
+            for(auto itOutput : constitutiveOutput)
+                if(itOutput.second!=nullptr) //check nullptr because of static data
+                    itOutput.second->SetIsCalculated(false);
             Error::eError error = constitutivePtr->Evaluate<TDim>(this, theIP, constitutiveInput, constitutiveOutput);
             if (error != Error::SUCCESSFUL)
                 return error;
+            for(auto itOutput : constitutiveOutput)
+                if(itOutput.second!=nullptr && !itOutput.second->GetIsCalculated()) //check nullptr because of static data
+                    throw MechanicsException(__PRETTY_FUNCTION__,std::string("Output ")+Constitutive::OutputToString(itOutput.first)+" not calculated by constitutive law");
         } catch (NuTo::MechanicsException& e)
         {
             e.AddMessage(__PRETTY_FUNCTION__, "error evaluating the constitutive model.");
@@ -224,11 +230,11 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumElement<TDim>::GetConstitutiveOutputM
         }
 
         case Element::UPDATE_STATIC_DATA:
-            constitutiveOutput[NuTo::Constitutive::Output::UPDATE_STATIC_DATA] = 0;
+            constitutiveOutput[NuTo::Constitutive::Output::UPDATE_STATIC_DATA] = nullptr;
             break;
 
         case Element::UPDATE_TMP_STATIC_DATA:
-            constitutiveOutput[NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA] = 0;
+            constitutiveOutput[NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA] = nullptr;
             break;
 
         case Element::IP_DATA:
@@ -314,16 +320,16 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian0(Constitutiv
                 rConstitutiveOutput[NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT] = &rData.mTangentHeatFluxTemperatureGradient;
                 break;
 
-//            case Node::CombineDofs(Node::DISPLACEMENTS, Node::RELATIVEHUMIDITY):
+            case Node::CombineDofs(Node::DISPLACEMENTS, Node::RELATIVEHUMIDITY):
 //            {
 //                rConstitutiveOutput[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY_2D] = &tangent_D_EngineeringStress_D_RH;
 //                break;
 //            }
 //
-//            case Node::CombineDofs(Node::DISPLACEMENTS, Node::WATERVOLUMEFRACTION):
+            case Node::CombineDofs(Node::DISPLACEMENTS, Node::WATERVOLUMEFRACTION):
 //            {
 //                rConstitutiveOutput[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION_2D] = &tangent_D_EngineeringStress_D_WV;
-//                break;
+                break;
 //            }
 
             case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::RELATIVEHUMIDITY):
@@ -391,7 +397,7 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian1(Constitutiv
 
             /*******************************************************\
             |         NECESSARY BUT UNUSED DOF COMBINATIONS         |
-             \*******************************************************/
+            \*******************************************************/
             case Node::CombineDofs(Node::DISPLACEMENTS, Node::DISPLACEMENTS):
             case Node::CombineDofs(Node::DISPLACEMENTS, Node::RELATIVEHUMIDITY):
             case Node::CombineDofs(Node::DISPLACEMENTS, Node::WATERVOLUMEFRACTION):
@@ -848,6 +854,14 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
                                                             rData.mN.at(dofRow)->transpose() * rData.mInternalGradientWV_dWV_NN_H0 * (*rData.mN.at(dofCol)));
                 break;
 
+            /*******************************************************\
+            |         NECESSARY BUT UNUSED DOF COMBINATIONS         |
+            \*******************************************************/
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::RELATIVEHUMIDITY):
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::WATERVOLUMEFRACTION):
+            case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::DISPLACEMENTS):
+            case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::DISPLACEMENTS):
+                break;
             default:
                 throw MechanicsException(__PRETTY_FUNCTION__, "Element output HESSIAN_0_TIME_DERIVATIVE for "
                         "(" + Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
@@ -884,6 +898,14 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatri
                 hessian1 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow)->transpose() * rData.mInternalGradientWV_dWV_NN_H1 * (*rData.mN.at(dofCol));
                 break;
 
+            /*******************************************************\
+            |         NECESSARY BUT UNUSED DOF COMBINATIONS         |
+            \*******************************************************/
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::RELATIVEHUMIDITY):
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::WATERVOLUMEFRACTION):
+            case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::DISPLACEMENTS):
+            case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::DISPLACEMENTS):
+                break;
             default:
                 throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Element output HESSIAN_1_TIME_DERIVATIVE for "
                         "(" + Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");

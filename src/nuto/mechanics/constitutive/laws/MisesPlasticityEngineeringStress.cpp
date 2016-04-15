@@ -146,15 +146,19 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate2D(ElementBa
         case NuTo::Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE:
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
             newStaticDataPtr = &newStaticData;
-            break;
+            continue;
 
         case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
-        break;
+            continue;
         default:
-            throw MechanicsException(std::string("[NuTo::MisesPlasticityEngineeringStress::Evaluate3D] output object)") +
-                    NuTo::Constitutive::OutputToString(itOutput.first) +
-                    std::string(" could not be calculated, check the allocated material law and the section behavior."));
+            continue;
         }
+        itOutput.second->SetIsCalculated(true);
+//        default:
+//            throw MechanicsException(std::string("[NuTo::MisesPlasticityEngineeringStress::Evaluate3D] output object)") +
+//                    NuTo::Constitutive::OutputToString(itOutput.first) +
+//                    std::string(" could not be calculated, check the allocated material law and the section behavior."));
+//        }
     }
 
 
@@ -216,15 +220,19 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate2D(ElementBa
             break;
         }
         case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
-            break;
+            continue;
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
         {
             *(rElement->GetStaticData(rIp)->AsConstitutiveStaticDataMisesPlasticity3D()) = newStaticData;
         }
-            break;
+            continue;
         default:
-            throw MechanicsException(std::string("[NuTo::MisesPlasticityEngineeringStress::Evaluate2D] output object)") + NuTo::Constitutive::OutputToString(itOutput.first) + std::string(" could not be calculated, check the allocated material law and the section behavior."));
+            continue;
         }
+        itOutput.second->SetIsCalculated(true);
+//        default:
+//            throw MechanicsException(std::string("[NuTo::MisesPlasticityEngineeringStress::Evaluate2D] output object)") + NuTo::Constitutive::OutputToString(itOutput.first) + std::string(" could not be calculated, check the allocated material law and the section behavior."));
+//        }
     }
 
     //update history variables but for linear elastic, there is nothing to do
@@ -283,14 +291,18 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate3D(ElementBa
         case NuTo::Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE:
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
             newStaticDataPtr = &newStaticData;
-            break;
+            continue;
         case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
-        break;
+            continue;
         default:
-            throw MechanicsException(std::string("[NuTo::MisesPlasticityEngineeringStress::Evaluate3D] output object)") +
-                    NuTo::Constitutive::OutputToString(itOutput.first) +
-                    std::string(" could not be calculated, check the allocated material law and the section behavior."));
+            continue;
         }
+        itOutput.second->SetIsCalculated(true);
+//        default:
+//            throw MechanicsException(std::string("[NuTo::MisesPlasticityEngineeringStress::Evaluate3D] output object)") +
+//                    NuTo::Constitutive::OutputToString(itOutput.first) +
+//                    std::string(" could not be calculated, check the allocated material law and the section behavior."));
+//        }
     }
 
 
@@ -339,15 +351,19 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate3D(ElementBa
             break;
         }
         case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
-            break;
+            continue;
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
         {
             *(rElement->GetStaticData(rIp)->AsConstitutiveStaticDataMisesPlasticity3D()) = newStaticData;
         }
-            break;
+            continue;
         default:
-            throw MechanicsException(std::string("[NuTo::MisesPlasticityEngineeringStress::Evaluate3D] output object)") + NuTo::Constitutive::OutputToString(itOutput.first) + std::string(" could not be calculated, check the allocated material law and the section behavior."));
+            continue;
         }
+        itOutput.second->SetIsCalculated(true);
+//        default:
+//            throw MechanicsException(std::string("[NuTo::MisesPlasticityEngineeringStress::Evaluate3D] output object)") + NuTo::Constitutive::OutputToString(itOutput.first) + std::string(" could not be calculated, check the allocated material law and the section behavior."));
+//        }
     }
 
     //update history variables but for linear elastic, there is nothing to do

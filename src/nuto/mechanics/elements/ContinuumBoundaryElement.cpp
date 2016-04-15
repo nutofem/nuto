@@ -42,10 +42,16 @@ NuTo::Error::eError NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const Constit
         try
         {
             ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(theIP);
+            for(auto itOutput : constitutiveOutput)
+                if(itOutput.second!=nullptr) //check nullptr because of static data
+                    itOutput.second->SetIsCalculated(false);
             Error::eError error = constitutivePtr->Evaluate<TDim>(this, theIP, constitutiveInput, constitutiveOutput);
             if (error != Error::SUCCESSFUL)
                 return error;            
             CalculateGradientDamageBoundaryConditionParameters(data, constitutivePtr);
+            for(auto itOutput : constitutiveOutput)
+                if(itOutput.second!=nullptr && !itOutput.second->GetIsCalculated()) //check nullptr because of static data
+                    throw MechanicsException(__PRETTY_FUNCTION__,std::string("Output ")+Constitutive::OutputToString(itOutput.first)+" not calculated by constitutive law");
 
         } catch (NuTo::MechanicsException& e)
         {
@@ -360,6 +366,14 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputHessian0(BlockF
             case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::RELATIVEHUMIDITY):
                 break;
             default:
+                /*******************************************************\
+                |         NECESSARY BUT UNUSED DOF COMBINATIONS         |
+                \*******************************************************/
+                 case Node::CombineDofs(Node::DISPLACEMENTS,         Node::RELATIVEHUMIDITY):
+                 case Node::CombineDofs(Node::DISPLACEMENTS,         Node::WATERVOLUMEFRACTION):
+                 case Node::CombineDofs(Node::RELATIVEHUMIDITY,      Node::DISPLACEMENTS):
+                 case Node::CombineDofs(Node::WATERVOLUMEFRACTION,   Node::DISPLACEMENTS):
+                     continue;
                 throw MechanicsException(__PRETTY_FUNCTION__, "Element output HESSIAN_0_TIME_DERIVATIVE for "
                         "(" + Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
             }
@@ -471,6 +485,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(Con
            /*******************************************************\
            |         NECESSARY BUT UNUSED DOF COMBINATIONS         |
            \*******************************************************/
+            case Node::CombineDofs(Node::DISPLACEMENTS, Node::RELATIVEHUMIDITY):
+            case Node::CombineDofs(Node::DISPLACEMENTS, Node::WATERVOLUMEFRACTION):
             case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::DISPLACEMENTS):
             case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::WATERVOLUMEFRACTION):
             case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::DISPLACEMENTS):
@@ -509,17 +525,18 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(Con
            /*******************************************************\
            |         NECESSARY BUT UNUSED DOF COMBINATIONS         |
            \*******************************************************/
-            case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::RELATIVEHUMIDITY):
-            case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::WATERVOLUMEFRACTION):
-            case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::DISPLACEMENTS):
-            case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::WATERVOLUMEFRACTION):
-            case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::DISPLACEMENTS):
-            case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::RELATIVEHUMIDITY):
-            {
+            case Node::CombineDofs(Node::DISPLACEMENTS,         Node::DISPLACEMENTS):
+            case Node::CombineDofs(Node::DISPLACEMENTS,         Node::RELATIVEHUMIDITY):
+            case Node::CombineDofs(Node::DISPLACEMENTS,         Node::WATERVOLUMEFRACTION):
+            case Node::CombineDofs(Node::RELATIVEHUMIDITY,      Node::RELATIVEHUMIDITY):
+            case Node::CombineDofs(Node::WATERVOLUMEFRACTION,   Node::WATERVOLUMEFRACTION):
+            case Node::CombineDofs(Node::RELATIVEHUMIDITY,      Node::DISPLACEMENTS):
+            case Node::CombineDofs(Node::RELATIVEHUMIDITY,      Node::WATERVOLUMEFRACTION):
+            case Node::CombineDofs(Node::WATERVOLUMEFRACTION,   Node::DISPLACEMENTS):
+            case Node::CombineDofs(Node::WATERVOLUMEFRACTION,   Node::RELATIVEHUMIDITY):
                 continue;
-            }
             default:
-                throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_0_TIME_DERIVATIVE for "
+                throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_1_TIME_DERIVATIVE for "
                         "(" + Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
             }
         }

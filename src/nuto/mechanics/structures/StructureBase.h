@@ -1289,11 +1289,11 @@ public:
     //! @return ... equilibrium water volume fraction
     double ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const;
 
-
-    //! @brief ... adds a constitutive law to a multi physics model
-    //! @param rIdentMultiPhysics ... multi physics constitutive law to which the constitutive law should be added
-    //! @param rIdentConstitutiveLaw ... constitutive law which should be added to the multi physics model
-    void ConstitutiveLawMultiPhysicsAddConstitutiveLaw(int rIdentMultiPhysics, int rIdentConstitutiveLaw);
+//    //VHIRTHAMTODO Delete???
+//    //! @brief ... adds a constitutive law to a multi physics model
+//    //! @param rIdentMultiPhysics ... multi physics constitutive law to which the constitutive law should be added
+//    //! @param rIdentConstitutiveLaw ... constitutive law which should be added to the multi physics model
+//    void ConstitutiveLawMultiPhysicsAddConstitutiveLaw(int rIdentMultiPhysics, int rIdentConstitutiveLaw);
 
 #ifndef SWIG
 

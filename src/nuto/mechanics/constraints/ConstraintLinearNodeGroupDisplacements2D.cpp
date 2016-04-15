@@ -66,7 +66,7 @@ void NuTo::ConstraintLinearNodeGroupDisplacements2D::AddToConstraintMatrix(int& 
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {
         if (itNode->second->GetNumDisplacements()==0)
-            throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements2D::AddToConstraintMatrix] Node does not have displacements or has more than two displacement components.");
+            throw MechanicsException(__PRETTY_FUNCTION__,"Node does not have displacements");
 
         if (std::abs(mDirection[0])>1e-18)
             rConstraintMatrix.AddValue(curConstraintEquation,itNode->second->GetDofDisplacement(0),mDirection[0]);

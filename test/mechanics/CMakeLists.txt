@@ -383,11 +383,18 @@ ENDIF(MINGW)
 
 ADD_EXECUTABLE(ConstitutiveLawMoistureTransport ConstitutiveLawMoistureTransport.cpp)
 TARGET_LINK_LIBRARIES(ConstitutiveLawMoistureTransport NuToMechanics NuToMath NuToBase)
-ADD_TEST(c::mechanics::ConstitutiveLawMoistureTransport ${CMAKE_CURRENT_BUILD_DIR}/ConstitutiveLawMoistureTransport)
 IF(MINGW)
     SET_TARGET_PROPERTIES(ConstitutiveLawMoistureTransport PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
-    ADD_TEST(c::mechanics::ConstitutiveLawMoistureTransport ${CMAKE_CURRENT_BUILD_DIR}/ConstitutiveLawMoistureTransport)
+ADD_TEST(c::mechanics::MoistureTransport ${CMAKE_CURRENT_BUILD_DIR}/ConstitutiveLawMoistureTransport)
+
+
+ADD_EXECUTABLE(MultipleConstitutiveLaws MultipleConstitutiveLaws.cpp)
+TARGET_LINK_LIBRARIES(MultipleConstitutiveLaws NuToMechanics NuToMath NuToBase)
+IF(MINGW)
+    SET_TARGET_PROPERTIES(MultipleConstitutiveLaws PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)
+ADD_TEST(c::mechanics::MultipleConstitutiveLaws ${CMAKE_CURRENT_BUILD_DIR}/MultipleConstitutiveLaws)
 
   add_executable(HeatConduction HeatConduction.cpp)
   target_link_libraries(HeatConduction NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})

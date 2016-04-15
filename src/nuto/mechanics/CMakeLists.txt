@@ -41,6 +41,7 @@ constitutive/inputoutput/ConstitutiveIOBase.cpp
 constitutive/inputoutput/EngineeringStrain.cpp
 constitutive/inputoutput/EngineeringStress.cpp
 constitutive/inputoutput/EquivalentStrain.cpp
+constitutive/laws/ConstitutiveLawsAdditiveOutput.cpp
 constitutive/laws/EngineeringStressHelper.cpp
 constitutive/laws/HeatConduction.cpp
 constitutive/laws/LinearElasticEngineeringStress.cpp
@@ -49,6 +50,7 @@ constitutive/laws/MoistureTransport.cpp
 constitutive/laws/GradientDamageEngineeringStress.cpp
 constitutive/staticData/ConstitutiveStaticDataBase.cpp
 constitutive/staticData/ConstitutiveStaticDataMoistureTransport.cpp
+constitutive/staticData/ConstitutiveStaticDataMultipleConstitutiveLaws.cpp
 constitutive/staticData/ConstitutiveStaticDataGradientDamage.cpp
 constitutive/staticData/ConstitutiveStaticDataMisesPlasticity.cpp
 )

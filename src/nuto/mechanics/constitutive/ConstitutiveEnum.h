@@ -1,6 +1,4 @@
-// $Id$
-#ifndef CONSTITUTIVEENUM_H_
-#define CONSTITUTIVEENUM_H_
+#pragma once
 
 #include <map>
 #include <set>
@@ -15,6 +13,7 @@ namespace Constitutive
 {
 enum eConstitutiveType
 {
+    CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT,             //!< container for multiple constitutive laws linked by addition of their outputs
     LINEAR_ELASTIC_ENGINEERING_STRESS,             //!< linear-elastic behavior
     MISES_PLASTICITY_ENGINEERING_STRESS,           //!< mises plasticity with isotropic and kinematic hardening
     NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< nonlocal damage model with plasticity in the effective stress space
@@ -37,6 +36,7 @@ enum eConstitutiveType
 static inline std::map<eConstitutiveType, std::string> GetConstitutiveTypeMap()
 {
     std::map<eConstitutiveType, std::string> map;
+    map[CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT]                     = "CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT";
     map[LINEAR_ELASTIC_ENGINEERING_STRESS]                     = "LINEAR_ELASTIC_ENGINEERING_STRESS";
     map[MISES_PLASTICITY_ENGINEERING_STRESS]                   = "MISES_PLASTICITY_ENGINEERING_STRESS";
     map[NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS]         = "NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
@@ -484,4 +484,3 @@ using ConstitutiveOutputMap = std::map<Constitutive::Output::eOutput, Constituti
 
 
 }//NuTo
-#endif /* CONSTITUTIVEENUM_H_ */
