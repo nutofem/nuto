@@ -112,11 +112,15 @@ NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
             tangent = mK * eye;
             break;
         }
+//        default:
+//            throw MechanicsException(__PRETTY_FUNCTION__, "Output object "
+//                    + Constitutive::OutputToString(itOutput.first)
+//                    + " could not be calculated, check the allocated material law and the section behavior.");
+//        }
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Output object "
-                    + Constitutive::OutputToString(itOutput.first)
-                    + " could not be calculated, check the allocated material law and the section behavior.");
+            continue;
         }
+        itOutput.second->SetIsCalculated(true);
     }
     return Error::SUCCESSFUL;
 }

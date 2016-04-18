@@ -44,6 +44,7 @@ NuTo::Error::eError NuTo::ContinuumElement<TDim>::Evaluate(const ConstitutiveInp
 
         try
         {
+            //VHIRTHAMTODO ---> separate routine in elementbase
             ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(theIP);
             for(auto itOutput : constitutiveOutput)
                 if(itOutput.second!=nullptr) //check nullptr because of static data
