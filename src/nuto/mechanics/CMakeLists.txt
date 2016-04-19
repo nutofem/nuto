@@ -310,13 +310,7 @@ SET(SWIG_MODULE_ModulMechanics_EXTRA_DEPS
 
 # build static library
 ADD_LIBRARY(NuToMechanics ${NuToMechanics_SOURCES})
-TARGET_LINK_LIBRARIES(NuToMechanics NuToBase NuToMath ${ANN_LIBRARIES} ${MERSENNE_LIBRARIES})
-IF (ENABLE_VISUALIZE)
-  TARGET_LINK_LIBRARIES(NuToMechanics NuToVisualize)
-ENDIF (ENABLE_VISUALIZE)
-IF (ENABLE_OPTIMIZE)
-  TARGET_LINK_LIBRARIES(NuToMechanics NuToOptimize)
-ENDIF (ENABLE_OPTIMIZE)
+target_link_libraries(NuToMechanics ${ANN_LIBRARIES})
 IF (ENABLE_SHOW_TIME)
 #add library for clock_gettime routines
   TARGET_LINK_LIBRARIES(NuToMechanics rt)
@@ -337,5 +331,5 @@ INSTALL(TARGETS NuToMechanics
 CONFIGURE_FILE(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
 NUTO_INSTALL_PYTHON_FILE(__init__.py ${NUTO_PYTHON_MODULES_INSTALL_PATH}/nuto/mechanics)
 FOREACH(NuToMechanics_SWIG_MODULE ${NuToMechanics_SWIG_MODULES})
-  NUTO_SWIG_MODULE(${NuToMechanics_SWIG_MODULE} ${NuToMechanics_SWIG_MODULE}.i nuto/mechanics NuToMechanics)
+    NUTO_SWIG_MODULE(${NuToMechanics_SWIG_MODULE} ${NuToMechanics_SWIG_MODULE}.i nuto/mechanics NuToMechanics NuToBase NuToMath)
 ENDFOREACH(NuToMechanics_SWIG_MODULE)
