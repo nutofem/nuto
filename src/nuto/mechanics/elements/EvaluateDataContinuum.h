@@ -72,6 +72,9 @@ public:
     // Heat conduction
     // ------------------------------------------------------------------------
     ConstitutiveMatrix<TDim, TDim> mTangentHeatFluxTemperatureGradient;
+    ConstitutiveScalar mTangentHeatTemperature;
+    ConstitutiveScalar mHeatChange;
+    ConstitutiveScalar mTemperatureChange;
     ConstitutiveVector<TDim> mHeatFlux;
     ConstitutiveVector<TDim> mTemperatureGradient;
 

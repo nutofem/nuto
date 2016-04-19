@@ -13,6 +13,7 @@
 
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 
 #include "nuto/mechanics/elements/ElementBase.h"
 
@@ -55,12 +56,21 @@ NuTo::ConstitutiveInputMap NuTo::HeatConduction::GetConstitutiveInputs(
             constitutiveInputMap[Constitutive::Input::TEMPERATURE_GRADIENT];
             break;
         }
+        case NuTo::Constitutive::Output::HEAT_CHANGE:
+        {
+            constitutiveInputMap[Constitutive::Input::TEMPERATURE_CHANGE];
+            break;
+        }
         case NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT:
+        case NuTo::Constitutive::Output::D_HEAT_D_TEMPERATURE:
         {
             // for nonlinear:
             //constitutiveInputMap[Constitutive::Input::TEMPERATURE];
             break;
         }
+        case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
+            break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, Constitutive::OutputToString(itOutput.first)
                     + " cannot be calculated by this constitutive law.");
@@ -86,6 +96,9 @@ NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
         case NuTo::Constitutive::Input::TEMPERATURE_GRADIENT:
             inputData.mTemperatureGradient = (*static_cast<ConstitutiveVector<TDim>*>(itInput.second)).AsVector();
             break;
+        case NuTo::Constitutive::Input::TEMPERATURE_CHANGE:
+            inputData.mTemperatureChange = (*itInput.second)[0];
+            break;
         case NuTo::Constitutive::Input::CALCULATE_STATIC_DATA:
         case NuTo::Constitutive::Input::TIME_STEP:
             break;
@@ -105,6 +118,12 @@ NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
             heatFlux = mK * eye * inputData.mTemperatureGradient;
             break;
         }
+        case NuTo::Constitutive::Output::HEAT_CHANGE:
+        {
+            Eigen::Matrix<double, 1, 1>& heatChange = (*static_cast<ConstitutiveScalar*>(itOutput.second));
+            heatChange(0, 0) = mCt * mRho * inputData.mTemperatureChange;
+            break;
+        }
         case NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT:
         {
             Eigen::Matrix<double, TDim, TDim>& tangent =
@@ -112,11 +131,18 @@ NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
             tangent = mK * eye;
             break;
         }
-//        default:
-//            throw MechanicsException(__PRETTY_FUNCTION__, "Output object "
-//                    + Constitutive::OutputToString(itOutput.first)
-//                    + " could not be calculated, check the allocated material law and the section behavior.");
-//        }
+        case NuTo::Constitutive::Output::D_HEAT_D_TEMPERATURE:
+        {
+            Eigen::Matrix<double, 1, 1>& tangent = (*static_cast<ConstitutiveScalar*>(itOutput.second));
+            tangent(0,0) = mCt;
+            break;
+        }
+        case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
+        {
+            //nothing to be done for update routine
+            break;
+        }
         default:
             continue;
         }
@@ -149,6 +175,8 @@ double NuTo::HeatConduction::GetParameterDouble(NuTo::Constitutive::eConstitutiv
         return this->mK;
     case Constitutive::eConstitutiveParameter::HEAT_CAPACITY:
         return this->mCt;
+    case Constitutive::eConstitutiveParameter::DENSITY:
+        return this->mRho;
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
     }
@@ -161,6 +189,9 @@ void NuTo::HeatConduction::SetParameterDouble(NuTo::Constitutive::eConstitutiveP
     {
     case Constitutive::eConstitutiveParameter::THERMAL_CONDUCTIVITY:
         this->mK = rValue;
+        break;
+    case Constitutive::eConstitutiveParameter::DENSITY:
+        this->mRho = rValue;
         break;
     case Constitutive::eConstitutiveParameter::HEAT_CAPACITY:
         this->mCt = rValue;

@@ -259,7 +259,6 @@ public:
     //! @return number of nodes
     virtual int GetNumNodes() const =0;
 
-#ifndef SWIG
     //! @brief a reference to a node
     //! @param identifier
     //! @return reference to a node
@@ -270,6 +269,7 @@ public:
     //! @return reference to a node
     virtual const NodeBase* NodeGetNodePtr(int rIdent)const=0;
 
+#ifndef SWIG
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNode (Input) 		... node pointer
     //! @param rElements (Output) 	... vector of element pointers

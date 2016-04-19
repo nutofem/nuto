@@ -138,10 +138,14 @@ protected:
     //! @brief Specific heat capacity \f$ c_T \f$
     double mCt;
 
+    //! @brief Density \f$ \rho \f$
+    double mRho;
+
     template <int TDim>
     struct InputData
     {
         Eigen::Matrix<double, TDim, 1> mTemperatureGradient;
+        double mTemperatureChange;
     };
 
 };

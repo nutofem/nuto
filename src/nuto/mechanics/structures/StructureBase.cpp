@@ -391,7 +391,7 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, const std
         AddVisualizationComponent(rElementGroup, VisualizeBase::ANGULAR_VELOCITY);
     else if (rVisualizeComponent == "BondStress")
         AddVisualizationComponent(rElementGroup, VisualizeBase::BOND_STRESS);
-    else if (rVisualizeComponent == "BondStress")
+    else if (rVisualizeComponent == "Constitutive")
         AddVisualizationComponent(rElementGroup, VisualizeBase::CONSTITUTIVE);
     else if (rVisualizeComponent == "Crack")
         AddVisualizationComponent(rElementGroup, VisualizeBase::CRACK);

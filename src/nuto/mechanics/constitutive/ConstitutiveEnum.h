@@ -189,7 +189,7 @@ enum class eConstitutiveParameter
     SPRING_DIRECTION,                           //!<
     TENSILE_STRENGTH,                           //!<
     THERMAL_EXPANSION_COEFFICIENT,              //!<
-    THERMAL_CONDUCTIVITY,                       //!< \f$k \text{ in } \mathbf{q} = - k \nabla \vartheta \f$
+    THERMAL_CONDUCTIVITY,                       //!< \f$k \text{ in } \mathbf{q} = - k \nabla T \f$
     VISCOPLASTIC_YIELD_SURFACE_OFFSET,          //!<
     VISCOSITY,                                  //!<
     VISCOSITY_EXPONENT,                         //!<
@@ -273,8 +273,9 @@ namespace Input
 enum eInput
 {
     ENGINEERING_STRAIN,                 //!<
-    TEMPERATURE,                        //!<
-    TEMPERATURE_GRADIENT,               //!<
+    TEMPERATURE,                        //!< Temperature \f$T\f$
+    TEMPERATURE_GRADIENT,               //!< Temperature gradient \f$\nabla T\f$
+    TEMPERATURE_CHANGE,                 //!< First time derivative \f$\frac{\partial T}{\partial t}\f$
     NONLOCAL_EQ_PLASTIC_STRAIN,         //!<
     NONLOCAL_EQ_STRAIN,                 //!<
     NONLOCAL_TOTAL_STRAIN_1D,           //!<
@@ -302,6 +303,7 @@ static inline std::string InputToString ( const Input::eInput& e )
     boost::assign::map_list_of(Input::ENGINEERING_STRAIN, "ENGINEERING_STRAIN")
                               (Input::TEMPERATURE,"TEMPERATURE")
                               (Input::TEMPERATURE_GRADIENT,"TEMPERATURE_GRADIENT")
+                              (Input::TEMPERATURE_CHANGE,"TEMPERATURE_CHANGE")
                               (Input::NONLOCAL_EQ_PLASTIC_STRAIN,"NONLOCAL_EQ_PLASTIC_STRAIN")
                               (Input::NONLOCAL_EQ_STRAIN,"NONLOCAL_EQ_STRAIN")
                               (Input::NONLOCAL_TOTAL_STRAIN_1D,"NONLOCAL_TOTAL_STRAIN_1D")
@@ -358,7 +360,10 @@ enum eOutput
     D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY_2D,
     D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION_2D,
     HEAT_FLUX,
-    D_HEAT_FLUX_D_TEMPERATURE_GRADIENT,
+    HEAT_CHANGE, //!< First time derivative of heat, i.e. 
+                 //!< \f$\frac{\partial Q}{\partial t} = \rho c_T \frac{\partial T}{\partial t}\f$
+    D_HEAT_FLUX_D_TEMPERATURE_GRADIENT, //!< conductivity matrix
+    D_HEAT_D_TEMPERATURE, //!< heat capacity
 	DAMAGE,
 	EXTRAPOLATION_ERROR,
 	UPDATE_STATIC_DATA,
@@ -431,7 +436,9 @@ static inline std::string OutputToString( const Output::eOutput& e )
                               (Output::D_ENGINEERING_STRESS_D_TEMPERATURE_2D,"D_ENGINEERING_STRESS_D_TEMPERATURE_2D")
                               (Output::D_ENGINEERING_STRESS_D_TEMPERATURE_3D,"D_ENGINEERING_STRESS_D_TEMPERATURE_3D")
                               (Output::HEAT_FLUX,"HEAT_FLUX")
+                              (Output::HEAT_CHANGE,"HEAT_CHANGE")
                               (Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT,"D_HEAT_FLUX_D_TEMPERATURE_GRADIENT")
+                              (Output::D_HEAT_D_TEMPERATURE,"D_HEAT_D_TEMPERATURE")
                               (Output::DAMAGE,"DAMAGE")
                               (Output::EXTRAPOLATION_ERROR,"EXTRAPOLATION_ERROR")
                               (Output::UPDATE_STATIC_DATA,"UPDATE_STATIC_DATA")

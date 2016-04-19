@@ -331,5 +331,5 @@ INSTALL(TARGETS NuToMechanics
 CONFIGURE_FILE(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
 NUTO_INSTALL_PYTHON_FILE(__init__.py ${NUTO_PYTHON_MODULES_INSTALL_PATH}/nuto/mechanics)
 FOREACH(NuToMechanics_SWIG_MODULE ${NuToMechanics_SWIG_MODULES})
-    NUTO_SWIG_MODULE(${NuToMechanics_SWIG_MODULE} ${NuToMechanics_SWIG_MODULE}.i nuto/mechanics NuToMechanics NuToBase NuToMath)
+    NUTO_SWIG_MODULE(${NuToMechanics_SWIG_MODULE} ${NuToMechanics_SWIG_MODULE}.i nuto/mechanics NuToMechanics NuToBase NuToMath NuToVisualize)
 ENDFOREACH(NuToMechanics_SWIG_MODULE)
