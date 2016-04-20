@@ -461,6 +461,7 @@ bool NuTo::LinearElasticEngineeringStress::CheckElementCompatibility(NuTo::Eleme
     {
     case NuTo::Element::CONTINUUMELEMENT:
     case NuTo::Element::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
+    case NuTo::Element::ELEMENT1DINXD:
         return true;
     default:
         return false;

@@ -1,4 +1,4 @@
-#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataBondStressSlip.h"
+#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataBondStressSlip.h"
 #include "nuto/mechanics/MechanicsException.h"
 
 NuTo::ConstitutiveStaticDataBondStressSlip::ConstitutiveStaticDataBondStressSlip() :

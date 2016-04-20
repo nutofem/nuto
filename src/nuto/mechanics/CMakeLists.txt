@@ -1,7 +1,6 @@
 # $Id$
 SET(NuToMechanicsConstitutive_SOURCES
 constitutive/ConstitutiveBase.cpp
-#constitutive/mechanics/ConstitutiveStaticDataBondStressSlip.cpp
 #constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3D.cpp
 #constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3DFatigue.cpp
 #constitutive/mechanics/ConstitutiveStaticDataGradientDamage1D.cpp
@@ -24,7 +23,6 @@ constitutive/ConstitutiveBase.cpp
 #constitutive/mechanics/InterfaceTractions1D.cpp
 #constitutive/mechanics/InterfaceTractions2D.cpp
 #constitutive/mechanics/InterfaceTractions3D.cpp
-#constitutive/mechanics/FibreMatrixBondStressSlip.cpp
 #constitutive/mechanics/LinearSpring.cpp
 #constitutive/mechanics/LocalEqTotalInelasticStrain.cpp
 #constitutive/mechanics/NonlocalEqPlasticStrain.cpp
@@ -48,7 +46,9 @@ constitutive/laws/LinearElasticEngineeringStress.cpp
 constitutive/laws/MisesPlasticityEngineeringStress.cpp
 constitutive/laws/MoistureTransport.cpp
 constitutive/laws/GradientDamageEngineeringStress.cpp
+constitutive/laws/FibreMatrixBondStressSlip.cpp
 constitutive/staticData/ConstitutiveStaticDataBase.cpp
+constitutive/staticData/ConstitutiveStaticDataBondStressSlip.cpp
 constitutive/staticData/ConstitutiveStaticDataMoistureTransport.cpp
 constitutive/staticData/ConstitutiveStaticDataMultipleConstitutiveLaws.cpp
 constitutive/staticData/ConstitutiveStaticDataGradientDamage.cpp
@@ -103,6 +103,8 @@ elements/ContinuumBoundaryElementConstrainedControlNode.cpp
 elements/ElementBase.cpp
 elements/ElementDataBase.cpp
 elements/ElementDataConstitutiveBase.cpp
+elements/Element1DInXD.cpp
+elements/Element2DInterface.cpp
 elements/ElementDataConstitutiveIp.cpp
 elements/ElementDataConstitutiveIpNonlocal.cpp
 elements/ElementDataIpBase.cpp

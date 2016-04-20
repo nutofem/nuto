@@ -20,7 +20,7 @@ template<int TDim>
 NuTo::ContinuumElement<TDim>::ContinuumElement(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType) :
         NuTo::ElementBase::ElementBase(rStructure, rElementDataType, rIpDataType, rInterpolationType),
         mNodes(rNodes),
-        mSection(0)
+        mSection(nullptr)
 {}
 
 template<int TDim>
@@ -157,6 +157,10 @@ NuTo::ConstitutiveInputMap NuTo::ContinuumElement<TDim>::GetConstitutiveInputMap
 
         case Constitutive::Input::NONLOCAL_EQ_STRAIN:
             itInput.second = &(rData.mNonlocalEqStrain);
+            break;
+
+        case Constitutive::Input::INTERFACE_SLIP:
+            itInput.second = &(rData.mSlip);
             break;
 
         case Constitutive::Input::RELATIVE_HUMIDITY:
@@ -491,6 +495,8 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveO
 template<int TDim>
 void NuTo::ContinuumElement<TDim>::CalculateGlobalRowDofs(BlockFullVector<int> &rGlobalRowDofs) const
 {
+    const unsigned globalDimension = GetStructure()->GetDimension();
+
     for (auto dof : mInterpolationType->GetActiveDofs())
     {
         const InterpolationBase& interpolationType = mInterpolationType->Get(dof);
@@ -507,8 +513,8 @@ void NuTo::ContinuumElement<TDim>::CalculateGlobalRowDofs(BlockFullVector<int> &
             for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
             {
                 const NodeBase* nodePtr = mNodes[interpolationType.GetNodeIndex(iNodeDof)];
-                for (int iDof = 0; iDof < TDim; ++iDof)
-                    dofWiseGlobalRowDofs[TDim * iNodeDof + iDof] = nodePtr->GetDofDisplacement(iDof);
+                for (int iDof = 0; iDof < globalDimension; ++iDof)
+                    dofWiseGlobalRowDofs[globalDimension * iNodeDof + iDof] = nodePtr->GetDofDisplacement(iDof);
             }
             break;
         }

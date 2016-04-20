@@ -92,12 +92,12 @@ void NuTo::InterpolationBase::UpdateIntegrationType(const IntegrationTypeBase& r
 
 Eigen::MatrixXd NuTo::InterpolationBase::CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const
 {
-    int dimBlock = GetNumDofsPerNode();
+
     auto shapeFunctions = CalculateShapeFunctions(rCoordinates);
-    if (dimBlock == 1) return shapeFunctions.transpose();
+    if (GetLocalDimension() == 1) return shapeFunctions.transpose();
 
     int numNodes = GetNumNodes();
-
+    int dimBlock = GetNumDofsPerNode();
 
     assert (shapeFunctions.rows() == numNodes);
 

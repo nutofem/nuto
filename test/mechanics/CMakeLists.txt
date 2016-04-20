@@ -310,7 +310,7 @@ ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoInte
 
 
     # structure evaluate
-  # CONFIGURE_FILE(InterfaceElements.msh ${CMAKE_CURRENT_BINARY_DIR})
+
   # ADD_EXECUTABLE(StructureEvaluate StructureEvaluate.cpp)
   #   TARGET_LINK_LIBRARIES(StructureEvaluate NuToMechanics NuToMath NuToBase)
   #   ADD_TEST(c::mechanics::StructureEvaluate ${CMAKE_CURRENT_BUILD_DIR}/StructureEvaluate)
@@ -318,29 +318,30 @@ ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoInte
   #   SET_TARGET_PROPERTIES(StructureEvaluate PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   # ENDIF(MINGW)
 
-  # # TrussIn2D
-  # ADD_EXECUTABLE(TrussIn2D TrussIn2D.cpp)
-  #   TARGET_LINK_LIBRARIES(TrussIn2D NuToMechanics NuToMath NuToBase)
-  #   ADD_TEST(c::mechanics::TrussIn2D ${CMAKE_CURRENT_BUILD_DIR}/TrussIn2D)
-  # IF(MINGW)
-  #   SET_TARGET_PROPERTIES(TrussIn2D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  # ENDIF(MINGW)
+   # TrussIn2D
+   ADD_EXECUTABLE(TrussIn2D TrussIn2D.cpp)
+     TARGET_LINK_LIBRARIES(TrussIn2D NuToMechanics NuToMath NuToBase)
+     ADD_TEST(c::mechanics::TrussIn2D ${CMAKE_CURRENT_BUILD_DIR}/TrussIn2D)
+   IF(MINGW)
+     SET_TARGET_PROPERTIES(TrussIn2D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+   ENDIF(MINGW)
 
-  # # TrussIn3D
-  # ADD_EXECUTABLE(TrussIn3D TrussIn3D.cpp)
-  #   TARGET_LINK_LIBRARIES(TrussIn3D NuToMechanics NuToMath NuToBase)
-  #   ADD_TEST(c::mechanics::TrussIn3D ${CMAKE_CURRENT_BUILD_DIR}/TrussIn3D)
-  # IF(MINGW)
-  #   SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  # ENDIF(MINGW)
+   # TrussIn3D
+   ADD_EXECUTABLE(TrussIn3D TrussIn3D.cpp)
+     TARGET_LINK_LIBRARIES(TrussIn3D NuToMechanics NuToMath NuToBase)
+     ADD_TEST(c::mechanics::TrussIn3D ${CMAKE_CURRENT_BUILD_DIR}/TrussIn3D)
+   IF(MINGW)
+     SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+   ENDIF(MINGW)
 
-  # # InterfaceElements
-  # ADD_EXECUTABLE(InterfaceElements InterfaceElements.cpp)
-  #   TARGET_LINK_LIBRARIES(InterfaceElements NuToMechanics NuToMath NuToBase)
-  #   ADD_TEST(c::mechanics::InterfaceElements ${CMAKE_CURRENT_BUILD_DIR}/InterfaceElements)
-  # IF(MINGW)
-  #   SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  # ENDIF(MINGW)
+   # InterfaceElements
+   CONFIGURE_FILE(InterfaceElements.msh ${CMAKE_CURRENT_BINARY_DIR})
+   ADD_EXECUTABLE(InterfaceElements InterfaceElements.cpp)
+   TARGET_LINK_LIBRARIES(InterfaceElements NuToMechanics NuToMath NuToBase)
+   ADD_TEST(c::mechanics::InterfaceElements ${CMAKE_CURRENT_BUILD_DIR}/InterfaceElements)
+   IF(MINGW)
+     SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+   ENDIF(MINGW)
 
   # BlockMatrices
   ADD_EXECUTABLE(BlockMatrices BlockMatrices.cpp)

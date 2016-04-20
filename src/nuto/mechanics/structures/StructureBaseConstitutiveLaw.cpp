@@ -3,24 +3,14 @@
 
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
-//#include "nuto/mechanics/constitutive/mechanics/LinearSpring.h"
+
 #include "nuto/mechanics/constitutive/laws/ConstitutiveLawsAdditiveOutput.h"
 #include "nuto/mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "nuto/mechanics/constitutive/laws/LinearElasticEngineeringStress.h"
 #include "nuto/mechanics/constitutive/laws/HeatConduction.h"
 #include "nuto/mechanics/constitutive/laws/MoistureTransport.h"
 #include "nuto/mechanics/constitutive/laws/MisesPlasticityEngineeringStress.h"
-//#include "nuto/mechanics/constitutive/mechanics/DamageViscoPlasticityEngineeringStress.h"
-//#include "nuto/mechanics/constitutive/mechanics/DamageViscoPlasticityHardeningEngineeringStress.h"
-
-//#include "nuto/mechanics/constitutive/mechanics/GradientDamagePlasticityEngineeringStress.h"
-//#include "nuto/mechanics/constitutive/mechanics/FibreMatrixBondStressSlip.h"
-//#include "nuto/mechanics/constitutive/mechanics/GradientDamageEngineeringStressFatigue.h"
-//#include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.h"
-//#include "nuto/mechanics/constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.h"
-//#include "nuto/mechanics/constitutive/multiPhysics/ConstitutiveMultiPhysics.h"
-//#include "nuto/mechanics/constitutive/shrinkage/DryingShrinkage.h"
-//#include "nuto/mechanics/constitutive/thermal/LinearHeatFlux.h"
+#include "nuto/mechanics/constitutive/laws/FibreMatrixBondStressSlip.h"
 
 // create a new constitutive law
 int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
@@ -125,8 +115,7 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             break;
 
         case NuTo::Constitutive::FIBRE_MATRIX_BOND_STRESS_SLIP:
-            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
-//            ConstitutiveLawPtr = new NuTo::FibreMatrixBondStressSlip();
+            ConstitutiveLawPtr = new NuTo::FibreMatrixBondStressSlip();
             break;
 
         case NuTo::Constitutive::DRYING_SHRINKAGE:

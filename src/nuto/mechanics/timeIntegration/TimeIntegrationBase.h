@@ -67,11 +67,6 @@ public:
     //! @remark remove the second argument rDof
     void UpdateConstraints(double rCurrentTime);
 
-    //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
-    //! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
-    //! @param mTimeDependentConstraintFactor ... first row time, rhs of the constraint (linear interpolation in between afterwards linear extrapolation)
-    void SetTimeDependentConstraint(int rTimeDependentConstraint, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& mTimeDependentConstraintFactor);
-
     //! @brief sets a scalar time dependent multiplication factor for the external loads
     //! @param rLoadRHSFactor ... first row time, second row scalar factor to calculate the external load (linear interpolation in between,  afterwards linear extrapolation)
     void SetTimeDependentLoadCase(int rLoadCase, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLoadRHSFactor);

@@ -10,17 +10,13 @@
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#endif // ENABLE_SERIALIZATION
-
 namespace NuTo
 {
+template <int TRows, int TCols> class ConstitutiveMatrix;
+template <int TRows> class ConstitutiveVector;
+class ConstitutiveScalar;
+class ConstitutiveStaticDataBase;
+class ConstitutiveStaticDataBondStressSlip;
 
 class FibreMatrixBondStressSlip: public ConstitutiveBase
 {
@@ -41,29 +37,46 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 
+    //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
+    //! @param rConstitutiveOutput ... desired constitutive outputs
+    //! @param rInterpolationType ... interpolation type to determine additional inputs
+    //! @return constitutive inputs needed for the evaluation
+    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType& rInterpolationType) const override;
+
     //! @brief ... evaluate the constitutive relation in 1D
     //! @param rElement ... element
     //! @param rIp ... integration point
-    //! @param rUpdateHistory ... update history variables after leaving the routine
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate1D(ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput, std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput) override;
+    NuTo::Error::eError Evaluate1D(ElementBase* rElement, int rIp,
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput) override;
 
     //! @brief ... evaluate the constitutive relation in 2D
     //! @param rElement ... element
     //! @param rIp ... integration point
-    //! @param rUpdateHistory ... update history variables after leaving the routine
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate2D(ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput, std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput) override;
+    NuTo::Error::eError Evaluate2D(ElementBase* rElement, int rIp,
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput) override;
 
     //! @brief ... evaluate the constitutive relation in 3D
     //! @param rElement ... element
     //! @param rIp ... integration point
-    //! @param rUpdateHistory ... update history variables after leaving the routine
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate3D(ElementBase* rElement, int rIp, const std::map<NuTo::Constitutive::Input::eInput, const ConstitutiveInputBase*>& rConstitutiveInput, std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput) override;
+    NuTo::Error::eError Evaluate3D(ElementBase* rElement, int rIp,
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput) override;
+
+
+    //! @brief calculates the current static data based on the given CALCULATE_STATIC_DATA input
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+    //! @return ... current static data
+    NuTo::ConstitutiveStaticDataBondStressSlip GetCurrentStaticData(ElementBase& rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput) const;
 
     //! @brief ... gets a variable of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested variable
@@ -81,7 +94,7 @@ public:
     Constitutive::eConstitutiveType GetType() const override;
 
     //! @brief ... check parameters of the constitutive relationship
-    void CheckParameters() const;
+    void CheckParameters() const override;
 
     //! @brief ... check compatibility between element type and type of constitutive relationship
     //! @param rElementType ... element type
@@ -90,7 +103,15 @@ public:
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticDataEngineeringStress_EngineeringStrain2D(const ElementBase* rElement) const override;
+    ConstitutiveStaticDataBase* AllocateStaticData1D(const ElementBase* rElement) const override;
+
+    //! @brief ... create new static data object for an integration point
+    //! @return ... pointer to static data object
+    ConstitutiveStaticDataBase* AllocateStaticData2D(const ElementBase* rElement) const override;
+
+    //! @brief ... create new static data object for an integration point
+    //! @return ... pointer to static data object
+    ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const override;
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information

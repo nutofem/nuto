@@ -99,7 +99,7 @@ public:
     //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
     void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr) override;
 
-    Eigen::VectorXd ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const override;
+    virtual Eigen::VectorXd ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const override;
 
     //! @brief sets the section of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
@@ -170,23 +170,23 @@ protected:
 
     ConstitutiveOutputMap GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput, EvaluateDataContinuum<TDim>& rData) const;
 
-    void FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<TDim>& rData) const;
-    void FillConstitutiveOutputMapHessian0(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian0, EvaluateDataContinuum<TDim>& rData) const;
-    void FillConstitutiveOutputMapHessian1(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian1, EvaluateDataContinuum<TDim>& rData) const;
-    void FillConstitutiveOutputMapHessian2(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian2, EvaluateDataContinuum<TDim>& rData) const;
-    void FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput, ElementOutputIpData& rIpData, EvaluateDataContinuum<TDim>& rData) const;
+    virtual void FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<TDim>& rData) const;
+    virtual void FillConstitutiveOutputMapHessian0(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian0, EvaluateDataContinuum<TDim>& rData) const;
+    virtual void FillConstitutiveOutputMapHessian1(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian1, EvaluateDataContinuum<TDim>& rData) const;
+    virtual void FillConstitutiveOutputMapHessian2(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian2, EvaluateDataContinuum<TDim>& rData) const;
+    virtual void FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput, ElementOutputIpData& rIpData, EvaluateDataContinuum<TDim>& rData) const;
 
     ConstitutiveInputMap GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput, EvaluateDataContinuum<TDim>& rData) const;
 
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
-    void CalculateGlobalRowDofs(BlockFullVector<int>& rGlobalRowDofs) const;
+    virtual void CalculateGlobalRowDofs(BlockFullVector<int>& rGlobalRowDofs) const;
 
     //! @brief ... extract global dofs from nodes (mapping of local column ordering of the element matrices to the global dof ordering)
     void CalculateGlobalColumnDofs(BlockFullVector<int>& rGlobalDofMapping) const;
 
 
 
-    void CalculateNMatrixBMatrixDetJacobian(EvaluateDataContinuum<TDim>& data, int rTheIP) const;
+    virtual void CalculateNMatrixBMatrixDetJacobian(EvaluateDataContinuum<TDim>& data, int rTheIP) const;
 
 
     //! @brief Turns rDerivativeShapeFunctions into the B-Matrix for the displacements
@@ -199,13 +199,13 @@ protected:
             std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
             EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
 
-    void CalculateElementOutputInternalGradient(    BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
-    void CalculateElementOutputHessian0(            BlockFullMatrix<double>& rHessian0,         EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
-    void CalculateElementOutputHessian1(            BlockFullMatrix<double>& rHessian1,         EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
-    void CalculateElementOutputHessian2(            BlockFullMatrix<double>& rHessian2,         EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
-    void CalculateElementOutputIpData(              ElementOutputIpData&     rIpData,           EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
+    virtual void CalculateElementOutputInternalGradient(    BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
+    virtual void CalculateElementOutputHessian0(            BlockFullMatrix<double>& rHessian0,         EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
+    virtual void CalculateElementOutputHessian1(            BlockFullMatrix<double>& rHessian1,         EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
+    virtual void CalculateElementOutputHessian2(            BlockFullMatrix<double>& rHessian2,         EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
+    virtual void CalculateElementOutputIpData(              ElementOutputIpData&     rIpData,           EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
 
-    double CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const;
+    virtual double CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const;
 
 
 #ifdef ENABLE_SERIALIZATION
