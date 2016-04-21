@@ -15,7 +15,7 @@ void TestTangentMatrix(double conductivity)
             = &tangent;
 
     // evaluate tangent
-    NuTo::ElementBase* some_element;
+    NuTo::ElementBase* some_element = nullptr;
     heat_conduction.Evaluate<3>(some_element, 0, input_map, output_map);
 
     // compare to expected output

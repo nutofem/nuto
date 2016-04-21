@@ -21,6 +21,7 @@ NuTo::HeatConduction::HeatConduction() : ConstitutiveBase()
 {
     mK = 0.0;
     mCt = 0.0;
+    mRho = 0.0;
     SetParametersValid();
 }
 
@@ -33,7 +34,8 @@ void NuTo::HeatConduction::serialize(Archive & ar, const unsigned int version)
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ConstitutiveBase)
     & BOOST_SERIALIZATION_NVP(mK)
-    & BOOST_SERIALIZATION_NVP(mCt);
+    & BOOST_SERIALIZATION_NVP(mCt)
+    & BOOST_SERIALIZATION_NVP(mRho);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize HeatConduction" << std::endl;
 #endif
@@ -141,7 +143,7 @@ NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
         {
             //nothing to be done for update routine
-            break;
+            continue;
         }
         default:
             continue;
@@ -237,10 +239,12 @@ void NuTo::HeatConduction::Info(unsigned short rVerboseLevel, Logger& rLogger) c
     this->ConstitutiveBase::Info(rVerboseLevel, rLogger);
     rLogger << "    Thermal conductivity          : " << this->mK << "\n";
     rLogger << "    Heat capacity                 : " << this->mCt << "\n";
+    rLogger << "    Density                       : " << this->mRho << "\n";
 }
 
 void NuTo::HeatConduction::CheckParameters() const
 {
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::THERMAL_CONDUCTIVITY, mK);
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::HEAT_CAPACITY, mCt);
+    ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::HEAT_CAPACITY, mRho);
 }

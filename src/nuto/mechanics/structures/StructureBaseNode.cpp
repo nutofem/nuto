@@ -229,6 +229,23 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, int rTimeDe
 #endif
 }
 
+void NuTo::StructureBase::NodeSetTemperature(int rNode, const double rTemperature)
+{
+	NodeBase* nodePtr = NodeGetNodePtr(rNode);
+	this->mUpdateTmpStaticDataRequired = true;
+    nodePtr->SetTemperature(rTemperature);
+}
+
+void NuTo::StructureBase::NodeSetTemperature(int rNode, int rTimeDerivative, const double rTemperature)
+{
+	NodeBase* nodePtr = NodeGetNodePtr(rNode);
+	this->mUpdateTmpStaticDataRequired = true;
+	if (nodePtr->GetNumTimeDerivatives()<rTimeDerivative)
+	    throw MechanicsException(__PRETTY_FUNCTION__,
+                "Number of time derivatives stored at node is less than the required value.");
+    nodePtr->SetTemperature(rTimeDerivative, rTemperature);
+}
+
 void NuTo::StructureBase::NodeGroupGetMembers(int rGroupId, NuTo::FullVector<int,Eigen::Dynamic>& rMembers)
 {
 #ifdef SHOW_TIME
@@ -439,6 +456,19 @@ void NuTo::StructureBase::NodeGroupGetDisplacements(int rGroupIdent, FullMatrix<
     if (mShowTime)
         std::cout<<"[NuTo::StructureBase::NodeGroupGetDisplacements] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
 #endif
+}
+
+double NuTo::StructureBase::NodeGetTemperature(int rNode) const
+{
+    return this->NodeGetTemperature(rNode, 0);
+}
+
+double NuTo::StructureBase::NodeGetTemperature(int rNode, int rTimeDerivative) const
+{
+    const NodeBase* nodePtr = NodeGetNodePtr(rNode);
+    if (nodePtr->GetNumTemperature() == 0)
+        throw MechanicsException(__PRETTY_FUNCTION__, "Node doesn't have a temperature.");
+    return nodePtr->GetTemperature(rTimeDerivative);
 }
 
 //! @brief gets the coordinates of a node

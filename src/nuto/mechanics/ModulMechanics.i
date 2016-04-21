@@ -36,7 +36,6 @@
 %include "nuto/mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
 
 %include "nuto/mechanics/nodes/NodeEnum.h"
-%include "nuto/mechanics/nodes/NodeBase.h"
 
 %include "nuto/mechanics/structures/StructureOutputBase.h"
 %include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"

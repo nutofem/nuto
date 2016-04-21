@@ -388,7 +388,6 @@ ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoInte
       SET_TARGET_PROPERTIES(IntegrationPointVoronoiCells PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
     ENDIF(MINGW)
   ENDIF (ENABLE_VISUALIZE)
-    ADD_TEST(c::mechanics::IntegrationPointVoronoiCells ${CMAKE_CURRENT_BUILD_DIR}/IntegrationPointVoronoiCells)
 
 #MisesPlasticity
 ADD_EXECUTABLE(MisesPlasticity MisesPlasticity.cpp)
