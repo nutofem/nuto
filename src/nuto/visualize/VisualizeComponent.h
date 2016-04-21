@@ -19,7 +19,7 @@ class VisualizeComponent
 public:
     VisualizeComponent(NuTo::VisualizeBase::eVisualizeWhat rVisualizeComponent);
 
-    virtual ~VisualizeComponent(){};
+    virtual ~VisualizeComponent()= default;
 
     virtual NuTo::VisualizeBase::eVisualizeWhat GetComponentEnum()const;
 
@@ -41,7 +41,7 @@ public:
 
 protected:
     //! @brief just for serialization
-    VisualizeComponent(){};
+    VisualizeComponent() = default;
 
 private:
     VisualizeBase::eVisualizeWhat mVisualizeComponent;

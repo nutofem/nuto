@@ -159,10 +159,6 @@ NuTo::ConstitutiveInputMap NuTo::ContinuumElement<TDim>::GetConstitutiveInputMap
             itInput.second = &(rData.mNonlocalEqStrain);
             break;
 
-        case Constitutive::Input::INTERFACE_SLIP:
-            itInput.second = &(rData.mSlip);
-            break;
-
         case Constitutive::Input::RELATIVE_HUMIDITY:
             itInput.second = &(rData.mRelativeHumidity);
             break;
@@ -513,7 +509,7 @@ void NuTo::ContinuumElement<TDim>::CalculateGlobalRowDofs(BlockFullVector<int> &
             for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
             {
                 const NodeBase* nodePtr = mNodes[interpolationType.GetNodeIndex(iNodeDof)];
-                for (int iDof = 0; iDof < globalDimension; ++iDof)
+                for (unsigned iDof = 0; iDof < globalDimension; ++iDof)
                     dofWiseGlobalRowDofs[globalDimension * iNodeDof + iDof] = nodePtr->GetDofDisplacement(iDof);
             }
             break;
