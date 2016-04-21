@@ -20,19 +20,24 @@ ENDIF(ENABLE_NUMPY)
 
 ENDIF(ENABLE_PYTHON_TESTS)
 
+
+####################
+######## C++ #######
+####################
 IF(ENABLE_C++_TESTS)
+
+##### ARPACK #####
 IF(ENABLE_ARPACK)
  ADD_EXECUTABLE(Arpack Arpack.cpp)
  TARGET_LINK_LIBRARIES(Arpack NuToMath NuToBase ${Boost_LIBRARIES} ${OpenBLAS_LIBRARIES} )
-  TARGET_LINK_LIBRARIES(Arpack ${ARPACK_LIBRARIES})
-
+ TARGET_LINK_LIBRARIES(Arpack ${ARPACK_LIBRARIES})
  IF(MINGW)
-  SET_TARGET_PROPERTIES(Arpack PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+   SET_TARGET_PROPERTIES(Arpack PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
  ENDIF(MINGW)#
  ADD_TEST(c::math::Arpack ${CMAKE_CURRENT_BUILD_DIR}/Arpack)
 ENDIF(ENABLE_ARPACK) 
 
-
+##### SparseMatrixTests #####
 ADD_EXECUTABLE(SparseMatrixTests SparseMatrixTests.cpp)
 TARGET_LINK_LIBRARIES(SparseMatrixTests NuToMath NuToBase ${Boost_LIBRARIES})
 IF(MINGW)
@@ -40,5 +45,12 @@ IF(MINGW)
 ENDIF(MINGW)#
 ADD_TEST(c::math::SparseMatrixTests ${CMAKE_CURRENT_BUILD_DIR}/SparseMatrixTests)
 
+##### CurvesAndSurfaces #####
+ADD_EXECUTABLE(CurvesAndSurfaces CurvesAndSurfaces.cpp)
+TARGET_LINK_LIBRARIES(CurvesAndSurfaces NuToMath NuToBase ${Boost_LIBRARIES} ${OpenBLAS_LIBRARIES})
+IF(MINGW)
+  SET_TARGET_PROPERTIES(CurvesAndSurfaces PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)#
+ADD_TEST(c::math::CurvesAndSurfaces ${CMAKE_CURRENT_BUILD_DIR}/CurvesAndSurfaces)
 
 ENDIF(ENABLE_C++_TESTS)

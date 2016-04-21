@@ -7,8 +7,13 @@ NuTo::BSplineCurve::BSplineCurve(int rDegree,
 {
     int numKnots = rKnots.GetNumRows();
     int numControlPoints = rControlPoints.GetNumColumns();
+
     if (numControlPoints != numKnots - rDegree - 1)
             throw MathException("[BSplineCurve] incorrect number of control points or number of knots or degree.");
+
+    for (int i = 1; i < numKnots; i++)
+        if(rKnots[i-1] > rKnots[i])
+            throw MathException("[BSplineCurve] knot vector mus contain ascending values.");
 
     mDegree = rDegree;
     mControlPoints = rControlPoints;
@@ -16,9 +21,11 @@ NuTo::BSplineCurve::BSplineCurve(int rDegree,
 }
 
 NuTo::BSplineCurve::BSplineCurve(int rDegree,
-                                 const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rPoints)
+                                 const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rPoints,
+                                 FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& AInv)
 {
     assert(rDegree > 0);
+    mDegree = rDegree;
     int numPoints = rPoints.GetNumRows();
     assert(numPoints);
 
@@ -32,19 +39,18 @@ NuTo::BSplineCurve::BSplineCurve(int rDegree,
     // the coefficient matrix
     FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> A(numPoints, numPoints);
 
-    FullVector<double, Eigen::Dynamic> basisFunctions(mDegree + 1);
     for (int i = 0; i < numPoints; i++)
     {
         int spanIdx = FindSpan(rParameters[i]);
-        BasisFuns(rParameters[i], spanIdx, basisFunctions);
-        A.SetBlock(i, spanIdx-mDegree, basisFunctions);
+        FullVector<double, Eigen::Dynamic> basisFunctions = BasisFuns(rParameters[i], spanIdx);
+        A.SetBlock(i, spanIdx-mDegree, basisFunctions.Trans());
     }
 
-    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> AInv (A.Inverse());
+    std::cout << A << std::endl << std::endl;
+    AInv = A.Inverse();
+    std::cout << AInv << std::endl;
 
     mControlPoints = AInv*rPoints;
-
-
 }
 
 int NuTo::BSplineCurve::FindSpan(double rParameter)
@@ -66,9 +72,10 @@ int NuTo::BSplineCurve::FindSpan(double rParameter)
     return mid;
 }
 
-void NuTo::BSplineCurve::BasisFuns(double rParameter, int rSpan, NuTo::FullVector<double, Eigen::Dynamic>& rBasisFunctions)
+NuTo::FullVector<double, Eigen::Dynamic> NuTo::BSplineCurve::BasisFuns(double rParameter, int rSpan)
 {
-    assert(rBasisFunctions.GetNumRows() == (mDegree + 1));
+
+    FullVector<double, Eigen::Dynamic> rBasisFunctions(mDegree + 1);
 
     rBasisFunctions[0] = 1.;
 
@@ -88,6 +95,8 @@ void NuTo::BSplineCurve::BasisFuns(double rParameter, int rSpan, NuTo::FullVecto
         }
         rBasisFunctions[j] = saved;
     }
+
+    return rBasisFunctions;
 }
 
 void NuTo::BSplineCurve::ParametrizationChordLengthMethod(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rPoints,
@@ -101,35 +110,59 @@ void NuTo::BSplineCurve::ParametrizationChordLengthMethod(const FullMatrix<doubl
     rParameters[numPoints - 1] = 1.;
 
     double totalLengthPolygon = 0.;
-    for (int i = 1; i <= numPoints - 1; i++)
+    for (int i = 1; i <= (numPoints-1); i++)
     {
-        NuTo::FullMatrix<double, 1, Eigen::Dynamic> diff(rPoints.GetRow(i) - rPoints.GetRow(i+1));
+        NuTo::FullMatrix<double, 1, Eigen::Dynamic> diff(rPoints.GetRow(i) - rPoints.GetRow(i-1));
         totalLengthPolygon += diff.Norm();
     }
 
-    for (int i = 1; i <= numPoints - 1; i++ )
+    for (int i = 1; i < (numPoints-1); i++ )
     {
-        NuTo::FullMatrix<double, 1, Eigen::Dynamic> diff(rPoints.GetRow(i) - rPoints.GetRow(i+1));
+        NuTo::FullMatrix<double, 1, Eigen::Dynamic> diff(rPoints.GetRow(i) - rPoints.GetRow(i-1));
         rParameters[i] = rParameters[i-1] + diff.Norm()/totalLengthPolygon;
     }
 
-    int numKnots = numPoints + mDegree;
+    int numKnots = numPoints + mDegree + 1;
     mKnots.resize(numKnots);
 
     for (int i = 0; i <= mDegree; i++) mKnots[i] = 0.;
     for (int i = numKnots - 1 - mDegree; i < numKnots; i++) mKnots[i] = 1.;
 
     double scale = 1./mDegree;
-    for (int j = 1; j < (numKnots - 1 - mDegree); j++)
+    for (int j = 1; j <= (numPoints - 1 - mDegree); j++)
     {
         mKnots[j + mDegree] = 0.;
         for (int i = j; i <= (j + mDegree - 1); i++) mKnots[j + mDegree] += rParameters[i];
-        mKnots[j + mDegree]/=scale;
+        mKnots[j + mDegree]*=scale;
     }
 }
 
 
 void NuTo::BSplineCurve::ParametrizationCentripetalMethod(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rPoints)
 {
+// TODO
+}
 
+NuTo::FullVector<double, Eigen::Dynamic> NuTo::BSplineCurve::CurvePoint(double rParameter)
+{
+    int spanIdx = FindSpan(rParameter);
+    FullVector<double, Eigen::Dynamic> basisFunctions = BasisFuns(rParameter, spanIdx);
+
+    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinates(1, GetDimension());
+    for(int i = 0; i <= mDegree; i++) coordinates += basisFunctions[i]*(mControlPoints.GetRow(spanIdx-mDegree+i));
+
+    return coordinates.Trans();
+}
+
+
+NuTo::FullMatrix<double, Eigen::Dynamic> NuTo::BSplineCurve::CurvePoints(FullVector<double, Eigen::Dynamic> rParameter)
+{
+    int numParameters = rParameter.GetNumRows();
+    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> result(numParameters, GetDimension());
+    for(int i = 0; i < numParameters; i++)
+    {
+        std::cout << CurvePoint(rParameter[i]).Trans() << std::endl;
+        result.SetBlock(i,0,CurvePoint(rParameter[i]).Trans());
+    }
+    return result;
 }
