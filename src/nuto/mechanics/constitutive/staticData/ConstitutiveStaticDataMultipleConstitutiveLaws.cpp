@@ -54,10 +54,10 @@ NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::~ConstitutiveStaticDataMul
 
 
 
-
 void NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::AllocateStaticData1D(const std::vector<NuTo::ConstitutiveBase *> &rConstitutiveLaws,
                                                                                 const NuTo::ElementBase *rElement)
 {
+//VHIRTHAMTODO check for nullptr instead
     for(unsigned int i=0; i<rConstitutiveLaws.size(); ++i)
     {
         switch(rConstitutiveLaws[i]->GetType())
@@ -68,6 +68,7 @@ void NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::AllocateStaticData1D(
 
         // Do nothing
         case Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS:
+        case Constitutive::SHRINKAGE_CAPILLARY_STRESS_BASED:
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__,std::string("Behaviour for constitutive law ")+
@@ -89,6 +90,7 @@ void NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::AllocateStaticData2D(
 
         // Do nothing
         case Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS:
+        case Constitutive::SHRINKAGE_CAPILLARY_STRESS_BASED:
             break;
 
         default:
@@ -110,6 +112,7 @@ void NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::AllocateStaticData3D(
             break;
         // Do nothing
         case Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS:
+        case Constitutive::SHRINKAGE_CAPILLARY_STRESS_BASED:
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__,std::string("Behaviour for constitutive law ")+

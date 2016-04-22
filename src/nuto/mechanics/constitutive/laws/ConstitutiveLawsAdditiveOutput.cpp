@@ -9,6 +9,13 @@
 
 
 
+//VHIRTHAMTODO --- maybe store possible dof combinations one time in a set when constitutive law is added instead of looping over each law every time
+bool NuTo::ConstitutiveLawsAdditiveOutput::CheckDofCombinationComputeable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
+{
+    if(mComputableDofCombinations[rTimeDerivative].find(std::pair<Node::eDof,Node::eDof>(rDofRow,rDofCol)) != mComputableDofCombinations[rTimeDerivative].end())
+        return true;
+    return false;
+}
 
 NuTo::Error::eError NuTo::ConstitutiveLawsAdditiveOutput::Evaluate1D(NuTo::ElementBase *rElement,
                                                                    int rIp,
@@ -132,4 +139,17 @@ NuTo::ConstitutiveInputMap NuTo::ConstitutiveLawsAdditiveOutput::GetConstitutive
     }
 
     return constitutiveInputMap;
+}
+
+void NuTo::ConstitutiveLawsAdditiveOutput::AddCalculableDofCombinations(NuTo::ConstitutiveBase *rConstitutiveLaw)
+{
+    std::set<Node::eDof> allDofs = Node::GetDofSet();
+    for (unsigned int i=0; i<mComputableDofCombinations.size(); ++i)
+    for (auto itRow : allDofs)
+        for (auto itCol : allDofs)
+        {
+            if (rConstitutiveLaw->CheckDofCombinationComputeable(itRow,itCol,i))
+                    mComputableDofCombinations[i].emplace(itRow,itCol);
+        }
+
 }

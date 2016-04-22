@@ -729,6 +729,30 @@ NuTo::ConstitutiveStaticDataBase* NuTo::GradientDamageEngineeringStress::Allocat
     return new ConstitutiveStaticDataGradientDamage;
 }
 
+
+//! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
+//! @param rDofRow ... row dof
+//! @param rDofCol ... column dof
+//! @param rTimeDerivative ... time derivative
+bool NuTo::GradientDamageEngineeringStress::CheckDofCombinationComputeable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
+{
+    assert(rTimeDerivative>-1);
+    if (rTimeDerivative<1)
+    {
+        switch (Node::CombineDofs(rDofRow, rDofCol))
+        {
+        case Node::CombineDofs(Node::DISPLACEMENTS,      Node::DISPLACEMENTS):
+        case Node::CombineDofs(Node::DISPLACEMENTS,      Node::NONLOCALEQSTRAIN):
+        case Node::CombineDofs(Node::NONLOCALEQSTRAIN,   Node::DISPLACEMENTS):
+        case Node::CombineDofs(Node::NONLOCALEQSTRAIN,   Node::NONLOCALEQSTRAIN):
+            return true;
+        default:
+            return false;
+        }
+    }
+    return false;
+}
+
 // parameters /////////////////////////////////////////////////////////////
 
 double NuTo::GradientDamageEngineeringStress::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const

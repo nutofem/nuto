@@ -397,6 +397,20 @@ NuTo::ConstitutiveStaticDataBase* NuTo::MisesPlasticityEngineeringStress::Alloca
     return new NuTo::ConstitutiveStaticDataMisesPlasticity<3>();
 }
 
+bool NuTo::MisesPlasticityEngineeringStress::CheckDofCombinationComputeable(Node::eDof rDofRow,
+                                                                            Node::eDof rDofCol,
+                                                                            int rTimeDerivative) const
+{
+    assert(rTimeDerivative>-1);
+    if(rTimeDerivative<1 &&
+            rDofRow == Node::DISPLACEMENTS &&
+            rDofCol == Node::DISPLACEMENTS)
+    {
+        return true;
+    }
+    return false;
+}
+
 
 NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping2D(const ElementBase* rElement,int rIp,
         const EngineeringStrain<2>& rEngineeringStrain,

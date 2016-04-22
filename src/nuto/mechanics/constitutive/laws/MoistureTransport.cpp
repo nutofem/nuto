@@ -730,6 +730,38 @@ void                                        NuTo::MoistureTransport::CalculateSo
     }
 }
 
+
+
+
+bool NuTo::MoistureTransport::CheckDofCombinationComputeable(NuTo::Node::eDof rDofRow,
+                                                            NuTo::Node::eDof rDofCol,
+                                                            int rTimeDerivative) const
+{
+    assert(rTimeDerivative>-1);
+
+    switch (Node::CombineDofs(rDofRow, rDofCol))
+    {
+    case Node::CombineDofs(Node::WATERVOLUMEFRACTION,   Node::RELATIVEHUMIDITY):
+        if (rTimeDerivative<1)
+            return true;
+        else
+            return false;
+    case Node::CombineDofs(Node::RELATIVEHUMIDITY,      Node::RELATIVEHUMIDITY):
+    case Node::CombineDofs(Node::RELATIVEHUMIDITY,      Node::WATERVOLUMEFRACTION):
+    case Node::CombineDofs(Node::WATERVOLUMEFRACTION,   Node::WATERVOLUMEFRACTION):
+        if (rTimeDerivative<2)
+            return true;
+        else
+            return false;
+    default:
+        return false;
+    }
+
+
+}
+
+
+
 ////! @brief ... check compatibility between element type and type of constitutive relationship
 ////! @param rElementType ... element type
 ////! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.

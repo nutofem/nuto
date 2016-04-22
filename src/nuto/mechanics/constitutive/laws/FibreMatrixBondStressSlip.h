@@ -113,6 +113,14 @@ public:
     //! @return ... pointer to static data object
     ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const override;
 
+    //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
+    //! @param rDofRow ... row dof
+    //! @param rDofCol ... column dof
+    //! @param rTimeDerivative ... time derivative
+    virtual bool CheckDofCombinationComputeable(Node::eDof rDofRow,
+                                                Node::eDof rDofCol,
+                                                int rTimeDerivative) const override;
+
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
     //! @param rLogger stream for the output

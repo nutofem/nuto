@@ -16,6 +16,7 @@
 
 #include "nuto/base/ErrorEnum.h"
 #include "nuto/math/FullMatrix_Def.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
@@ -66,6 +67,14 @@ public:
     //! @return constitutive inputs needed for the evaluation
     virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
                                                        const InterpolationType& rInterpolationType) const = 0;
+
+    //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
+    //! @param rDofRow ... row dof
+    //! @param rDofCol ... column dof
+    //! @param rTimeDerivative ... time derivative
+    virtual bool CheckDofCombinationComputeable(Node::eDof rDofRow,
+                                               Node::eDof rDofCol,
+                                               int rTimeDerivative) const = 0;
 
     //! @brief ... evaluate the constitutive relation in 1D
     //! @param rElement ... element

@@ -32,9 +32,6 @@ constitutive/ConstitutiveBase.cpp
 #constitutive/mechanics/RelativeInterfaceDisplacements2D.cpp
 #constitutive/mechanics/RelativeInterfaceDisplacements3D.cpp
 #constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.cpp
-#constitutive/multiPhysics/ConstitutiveMultiPhysics.cpp
-#constitutive/multiPhysics/ConstitutiveStaticDataMultiPhysics.cpp
-#constitutive/shrinkage/DryingShrinkage.cpp
 constitutive/inputoutput/ConstitutiveIOBase.cpp
 constitutive/inputoutput/EngineeringStrain.cpp
 constitutive/inputoutput/EngineeringStress.cpp
@@ -45,6 +42,7 @@ constitutive/laws/HeatConduction.cpp
 constitutive/laws/LinearElasticEngineeringStress.cpp
 constitutive/laws/MisesPlasticityEngineeringStress.cpp
 constitutive/laws/MoistureTransport.cpp
+constitutive/laws/ShrinkageCapillaryStressBased.cpp
 constitutive/laws/GradientDamageEngineeringStress.cpp
 constitutive/laws/FibreMatrixBondStressSlip.cpp
 constitutive/staticData/ConstitutiveStaticDataBase.cpp

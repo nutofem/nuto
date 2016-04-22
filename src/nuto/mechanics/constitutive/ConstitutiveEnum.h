@@ -13,47 +13,45 @@ namespace Constitutive
 {
 enum eConstitutiveType
 {
-    CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT,             //!< container for multiple constitutive laws linked by addition of their outputs
-    LINEAR_ELASTIC_ENGINEERING_STRESS,             //!< linear-elastic behavior
-    MISES_PLASTICITY_ENGINEERING_STRESS,           //!< mises plasticity with isotropic and kinematic hardening
-    NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< nonlocal damage model with plasticity in the effective stress space
-    MULTISCALE,                                    //!< multiscale model, where the average stress is calculated from a full fine scale model
-    LATTICE_CONCRETE,                              //!< material law for lattice model
-    HEAT_CONDUCTION,                               //!< Heat conduction
-    GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< gradient damage plasticity model
-    GRADIENT_DAMAGE_ENGINEERING_STRESS,            //!< gradient damage model
-    GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE,    //!< gradient damage model for fatigued
-    STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS, //!< strain gradient damage plasticity model (damage and plasticity are function of nonlocal total strain)
-    DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS,    //!< viscoplastic damage model
-    DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS, //!< viscoplastic damage model with hardening
-    MOISTURE_TRANSPORT,                             //!< moisture transport model
-    LINEAR_SPRING,                                   //!< linear spring model
-    MULTI_PHYSICS,                                   //!< multi physics
-    FIBRE_MATRIX_BOND_STRESS_SLIP,                   //!< material model for the matrix-fibre interface
-    DRYING_SHRINKAGE                                //!< drying shrinkage
+    CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT,                      //!< container for multiple constitutive laws linked by addition of their outputs
+    DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS,             //!< viscoplastic damage model
+    DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS,   //!< viscoplastic damage model with hardening
+    FIBRE_MATRIX_BOND_STRESS_SLIP,                          //!< material model for the matrix-fibre interface
+    GRADIENT_DAMAGE_ENGINEERING_STRESS,                     //!< gradient damage model
+    GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE,             //!< gradient damage model for fatigued
+    GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS,          //!< gradient damage plasticity model
+    HEAT_CONDUCTION,                                        //!< Heat conduction
+    LATTICE_CONCRETE,                                       //!< material law for lattice model
+    LINEAR_ELASTIC_ENGINEERING_STRESS,                      //!< linear-elastic behavior
+    LINEAR_SPRING,                                          //!< linear spring model
+    MISES_PLASTICITY_ENGINEERING_STRESS,                    //!< mises plasticity with isotropic and kinematic hardening
+    MOISTURE_TRANSPORT,                                     //!< moisture transport model
+    MULTISCALE,                                             //!< multiscale model, where the average stress is calculated from a full fine scale model
+    NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS,          //!< nonlocal damage model with plasticity in the effective stress space
+    SHRINKAGE_CAPILLARY_STRESS_BASED,                       //!< stress based drying shrinkage - capillary term
+    STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS    //!< strain gradient damage plasticity model (damage and plasticity are function of nonlocal total strain)
 };
 
 static inline std::map<eConstitutiveType, std::string> GetConstitutiveTypeMap()
 {
     std::map<eConstitutiveType, std::string> map;
-    map[CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT]                     = "CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT";
-    map[LINEAR_ELASTIC_ENGINEERING_STRESS]                     = "LINEAR_ELASTIC_ENGINEERING_STRESS";
-    map[MISES_PLASTICITY_ENGINEERING_STRESS]                   = "MISES_PLASTICITY_ENGINEERING_STRESS";
-    map[NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS]         = "NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
-    map[MULTISCALE]                                            = "MULTISCALE";
-    map[LATTICE_CONCRETE]                                      = "LATTICE_CONCRETE";
-    map[HEAT_CONDUCTION]                                       = "HEAT_CONDUCTION";
-    map[GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS]         = "GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
-    map[GRADIENT_DAMAGE_ENGINEERING_STRESS]                    = "GRADIENT_DAMAGE_ENGINEERING_STRESS";
-    map[GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE]            = "GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE";
-    map[STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS]  = "STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
-    map[DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS]            = "DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS";
-    map[DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS]  = "DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS";
-    map[MOISTURE_TRANSPORT]                                    = "MOISTURE_TRANSPORT";
-    map[LINEAR_SPRING]                                         = "LINEAR_SPRING";
-    map[MULTI_PHYSICS]                                         = "MULTI_PHYSICS";
-    map[FIBRE_MATRIX_BOND_STRESS_SLIP]                         = "FIBRE_MATRIX_BOND_STRESS_SLIP";
-    map[DRYING_SHRINKAGE]                                      = "DRYING_SHRINKAGE";
+    map[CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT]                      = "CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT";
+    map[DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS]             = "DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS";
+    map[DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS]   = "DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS";
+    map[FIBRE_MATRIX_BOND_STRESS_SLIP]                          = "FIBRE_MATRIX_BOND_STRESS_SLIP";
+    map[GRADIENT_DAMAGE_ENGINEERING_STRESS]                     = "GRADIENT_DAMAGE_ENGINEERING_STRESS";
+    map[GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE]             = "GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE";
+    map[GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS]          = "GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
+    map[HEAT_CONDUCTION]                                        = "HEAT_CONDUCTION";
+    map[LATTICE_CONCRETE]                                       = "LATTICE_CONCRETE";
+    map[LINEAR_ELASTIC_ENGINEERING_STRESS]                      = "LINEAR_ELASTIC_ENGINEERING_STRESS";
+    map[LINEAR_SPRING]                                          = "LINEAR_SPRING";
+    map[MISES_PLASTICITY_ENGINEERING_STRESS]                    = "MISES_PLASTICITY_ENGINEERING_STRESS";
+    map[MOISTURE_TRANSPORT]                                     = "MOISTURE_TRANSPORT";
+    map[MULTISCALE]                                             = "MULTISCALE";
+    map[NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS]          = "NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
+    map[SHRINKAGE_CAPILLARY_STRESS_BASED]                       = "SHRINKAGE_CAPILLARY_STRESS_BASED";
+    map[STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS]   = "STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
     return map;
 }
 
@@ -337,6 +335,8 @@ enum eOutput
     ENGINEERING_STRAIN,
     ENGINEERING_STRAIN_VISUALIZE,
     D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,
+    D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY,
+    D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION,
     ENGINEERING_PLASTIC_STRAIN_VISUALIZE,
 
     D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN,
@@ -344,8 +344,7 @@ enum eOutput
     D_LOCAL_EQ_STRAIN_XI_D_STRAIN,
 
 	ENGINEERING_VISCOPLASTIC_STRAIN_3D,  	//!<
-	ENGINEERING_TOTAL_INELASTIC_STRAIN_3D,  //!<
-    ENGINEERING_STRESS_2D_PORE_PRESSURE, //!<
+        ENGINEERING_TOTAL_INELASTIC_STRAIN_3D,  //!<
 	ENGINEERING_STRESS_ELASTIC_1D,	 //!<
 	ENGINEERING_STRESS_ELASTIC_2D,	 //!<
 	ENGINEERING_STRESS_ELASTIC_3D,	 //!<
@@ -356,9 +355,7 @@ enum eOutput
     D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_1D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_2D,
-	D_ENGINEERING_STRESS_D_TEMPERATURE_3D,
-    D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY_2D,
-    D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION_2D,
+        D_ENGINEERING_STRESS_D_TEMPERATURE_3D,
     HEAT_FLUX,
     HEAT_CHANGE, //!< First time derivative of heat, i.e. 
                  //!< \f$\frac{\partial Q}{\partial t} = \rho c_T \frac{\partial T}{\partial t}\f$
@@ -378,10 +375,6 @@ enum eOutput
 	D_ENGINEERING_STRESS_REAL_D_NONLOCAL_TOTAL_STRAIN_REAL_1D,
 	D_ENGINEERING_STRAIN_VIRT_D_STRESS_REAL_1D,
     D_ENGINEERING_STRAIN_VIRT_D_NONLOCAL_TOTAL_STRAIN_VIRT_1D,
-//    BOUNDARY_SURFACE_RELATIVE_HUMIDIY_TRANSPORT_COEFFICIENT,
-//    BOUNDARY_SURFACE_WATER_VOLUME_FRACTION_TRANSPORT_COEFFICIENT,
-//    BOUNDARY_SURFACE_VAPOR_PHASE_RESIDUAL,
-//    BOUNDARY_SURFACE_WATER_PHASE_RESIDUAL,
     D_INTERNAL_GRADIENT_RH_D_RH_BB_H0,
     D_INTERNAL_GRADIENT_RH_D_RH_NN_H0,
     D_INTERNAL_GRADIENT_RH_D_WV_BN_H0,
@@ -415,7 +408,7 @@ static inline std::string OutputToString( const Output::eOutput& e )
 {
 	const std::map< Output::eOutput, std::string > lut =
     boost::assign::map_list_of(Output::ENGINEERING_STRAIN, "ENGINEERING_STRAIN" )
-	                          (Output::ENGINEERING_STRAIN_VISUALIZE, "ENGINEERING_STRAIN_VISUALIZE" )
+                              (Output::ENGINEERING_STRAIN_VISUALIZE, "ENGINEERING_STRAIN_VISUALIZE" )
                               (Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE, "ENGINEERING_PLASTIC_STRAIN_VISUALIZE" )
                               (Output::ENGINEERING_VISCOPLASTIC_STRAIN_3D, "ENGINEERING_VISCOPLASTIC_STRAIN_3D" )
                               (Output::ENGINEERING_TOTAL_INELASTIC_STRAIN_3D, "ENGINEERING_TOTAL_INELASTIC_STRAIN_3D" )
@@ -424,8 +417,9 @@ static inline std::string OutputToString( const Output::eOutput& e )
                               (Output::ENGINEERING_STRESS_ELASTIC_1D,"ENGINEERING_STRESS_ELASTIC_1D")
                               (Output::ENGINEERING_STRESS_ELASTIC_2D,"ENGINEERING_STRESS_ELASTIC_2D")
                               (Output::ENGINEERING_STRESS_ELASTIC_3D,"ENGINEERING_STRESS_ELASTIC_3D")
-                              (Output::ENGINEERING_STRESS_2D_PORE_PRESSURE,"ENGINEERING_STRESS_2D_PORE_PRESSURE")
                               (Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN")
+                              (Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY,"D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY")
+                              (Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION,"D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION")
                               (Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_1D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_1D")
                               (Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_2D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_2D")
                               (Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_3D,"D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_3D")
