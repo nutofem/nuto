@@ -23,8 +23,10 @@ class ContinuumElement: public ElementBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
-    ContinuumElement() {}
+protected:
+    ContinuumElement()=default;
 #endif // ENABLE_SERIALIZATION
+
     friend class ContinuumBoundaryElement<TDim>;
 
 public:

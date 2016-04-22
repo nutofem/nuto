@@ -376,7 +376,7 @@ ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoInte
   if(ENABLE_VISUALIZE)
       target_link_libraries(ConstraintsNodeToElement NuToVisualize)
   endif()
-  #  ADD_TEST(c::mechanics::ConstraintsNodeToElement ${CMAKE_CURRENT_BUILD_DIR}/ConstraintsNodeToElement)
+  ADD_TEST(c::mechanics::ConstraintsNodeToElement ${CMAKE_CURRENT_BUILD_DIR}/ConstraintsNodeToElement)
 
 
   # IntegrationPointVoronoiCells

@@ -778,16 +778,21 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
         case 2:
         for (int iElement = 0; iElement < GroupGetNumMembers(nearestElements); ++iElement)
         {
-            int iElementId = elementGroupIds(iElement, 0);
-            Eigen::MatrixXd elementNodeCoords = ElementGetElementPtr(iElementId)->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
-            int numNodes = elementNodeCoords.cols();
+            const int iElementId              = elementGroupIds(iElement, 0);
+            Eigen::VectorXd elementNodeCoords = ElementGetElementPtr(iElementId)->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
+            const int numNodes                = ElementGetElementPtr(iElementId)->GetNumNodes(Node::eDof::COORDINATES);
 
             bool pointInsideElement = false;
             for (int i = 0, j = numNodes - 1; i < numNodes; j = i++)
             {
-                if (((elementNodeCoords(1, i) > queryNodeCoords(1, 0)) != (elementNodeCoords(1, j) > queryNodeCoords(1, 0)))
-                        && (queryNodeCoords(0, 0) < (elementNodeCoords(0, j) - elementNodeCoords(0, i)) * (queryNodeCoords(1, 0) - elementNodeCoords(1, i)) / (elementNodeCoords(1, j) - elementNodeCoords(1, i)) + elementNodeCoords(0, i)))
-                    pointInsideElement = !pointInsideElement;
+                // This check whether queryNode is inside the polygon
+                if (((elementNodeCoords(1 + 2*i) > queryNodeCoords(1, 0)) != (elementNodeCoords(1 + 2*j) > queryNodeCoords(1, 0)))
+                        && (queryNodeCoords(0, 0) < (elementNodeCoords(0 + 2*j) - elementNodeCoords(0 + 2*i)) * (queryNodeCoords(1, 0) - elementNodeCoords(1 + 2*i)) / (elementNodeCoords(1 + 2*j) - elementNodeCoords(1 + 2*i)) + elementNodeCoords(0 + 2*i)))
+                                    pointInsideElement = !pointInsideElement;
+
+//                if (((elementNodeCoords(1, i) > queryNodeCoords(1, 0)) != (elementNodeCoords(1, j) > queryNodeCoords(1, 0)))
+//                        && (queryNodeCoords(0, 0) < (elementNodeCoords(0, j) - elementNodeCoords(0, i)) * (queryNodeCoords(1, 0) - elementNodeCoords(1, i)) / (elementNodeCoords(1, j) - elementNodeCoords(1, i)) + elementNodeCoords(0, i)))
+//                    pointInsideElement = !pointInsideElement;
             }
 
 
@@ -804,14 +809,19 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
         {
         for (int iElement = 0; iElement < GroupGetNumMembers(nearestElements); ++iElement)
         {
+
             int iElementId = elementGroupIds(iElement, 0);
-            Eigen::MatrixXd elementNodeCoords = ElementGetElementPtr(iElementId)->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
-            int numNodes = elementNodeCoords.cols();
+            Eigen::VectorXd elementNodeCoords = ElementGetElementPtr(iElementId)->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
+            int numNodes = elementNodeCoords.rows()/mDimension;
 
             Eigen::Matrix4d matrices;
+            matrices.Zero();
 
             matrices.col(3) = Eigen::Vector4d::Ones();
-            matrices.block<4, 3>(0, 0) = elementNodeCoords.transpose();
+            for (int iNode = 0; iNode < numNodes; ++iNode)
+            {
+                matrices.block<1,3>(iNode,0) = elementNodeCoords.segment(iNode*mDimension,mDimension);
+            }
             const double det = matrices.determinant();
 
             bool pointInsideElement = true;
@@ -856,7 +866,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = elementPtr->GetInterpolationType()->Get(Node::COORDINATES).GetDerivativeShapeFunctionsNatural(0);
 
     // real coordinates of every node in rElement
-    auto elementNodeCoords = elementPtr->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
+    Eigen::VectorXd elementNodeCoords = elementPtr->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
     Eigen::MatrixXd elementNaturalNodeCoords;
     switch (mDimension)
     {
@@ -864,14 +874,14 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     {
         Eigen::Matrix2d invJacobian = elementPtr->AsContinuumElement2D().CalculateJacobian(derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
 
-        elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.col(0));
+        elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(2));
     }
         break;
     case 3:
     {
         Eigen::Matrix3d invJacobian = elementPtr->AsContinuumElement3D().CalculateJacobian(derivativeShapeFunctionsGeometryNatural, elementNodeCoords).inverse();
 
-        elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.col(0));
+        elementNaturalNodeCoords = invJacobian * (queryNodeCoords - elementNodeCoords.head(3));
     }
         break;
 

@@ -246,7 +246,7 @@ Eigen::VectorXd NuTo::Element1DInXD::InterpolateDofGlobal(int rTimeDerivative, c
     const Eigen::VectorXd nodalValues = ExtractGlobalNodeValues(rTimeDerivative, rDofType);
     const Eigen::MatrixXd matrixNLocal = interpolationType.CalculateMatrixN(rNaturalCoordinates);
 
-    int numNodes = GetNumNodes();
+    int numNodes = GetNumNodes(rDofType);
     int dimBlock = GetNumDofsPerNode(rDofType);
 
 
@@ -272,7 +272,6 @@ void NuTo::Element1DInXD::CheckElement()
 
     Eigen::MatrixXd nodeCoordinates = ExtractNodeValues(0, Node::COORDINATES);
 
-    std::cout << "mRotationMatrix"<< mRotationMatrix << std::endl;
     double length = 0;
     for (unsigned int iIP = 0; iIP < numIntegrationPoints; ++iIP)
     {
@@ -332,7 +331,8 @@ void NuTo::Element1DInXD::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize Element1DInXD" << std::endl;
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Element1D);
+    typedef ContinuumElement<1> ContinuumElement1D;
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ContinuumElement1D);
     ar & BOOST_SERIALIZATION_NVP(mRotationMatrix);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize Element1DInXD" << std::endl;
