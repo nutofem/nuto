@@ -73,7 +73,7 @@ public:
     //! @brief ... find span of a parameter (rParameter) in the knot vector
     //! @param rParameter ... parameter to find the span of
     //! @return ... the span index
-    NuTo::FullVector<double, Eigen::Dynamic> BasisFuns(double rParameter, int rSpan);
+    NuTo::FullMatrix<double, 1, Eigen::Dynamic> BasisFuns(double rParameter, int rSpan);
 
     //! @brief ... find span of a parameter (rParameter) in the knot vector
     //! @param rParameter ... parameter to find the span of
@@ -84,12 +84,17 @@ public:
 
     //! @brief ... parametrization for given points to interpolate (chord length method)
     //! @param rPoints ... points to interpolate
-    void ParametrizationChordLengthMethod(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rPoints,
-                                          FullVector<double, Eigen::Dynamic>& rParameters);
+    //! @return rParameters ... parameters to the given points
+    FullVector<double, Eigen::Dynamic> ParametrizationChordLengthMethod(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rPoints);
 
     //! @brief ... parametrization for given points to interpolate (centripetal method)
     //! @param rPoints ... points to interpolate
-    void ParametrizationCentripetalMethod(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rPoints);
+    //! @return rParameters ... parameters to the given points
+    FullVector<double, Eigen::Dynamic> ParametrizationCentripetalMethod(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rPoints);
+
+    //! @brief ... set the knot vector due to the parameters given (e.g. computed by the chord length or centripetal methods ...)
+    //! @param rPoints ... points to interpolate
+    const FullVector<double, Eigen::Dynamic>& ParametrizationKnotVector(const FullVector<double, Eigen::Dynamic> &rParameters);
 
     /** Evaluation **/
 
