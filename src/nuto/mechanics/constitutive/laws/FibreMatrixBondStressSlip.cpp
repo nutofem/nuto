@@ -472,7 +472,7 @@ BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::FibreMatrixBondStressSlip)
 #endif // ENABLE_SERIALIZATION
 
 
-bool NuTo::FibreMatrixBondStressSlip::CheckDofCombinationComputeable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
+bool NuTo::FibreMatrixBondStressSlip::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
 {
     assert(rTimeDerivative>-1);
     if(rTimeDerivative<1 &&

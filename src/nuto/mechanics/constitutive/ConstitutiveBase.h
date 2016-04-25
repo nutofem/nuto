@@ -72,7 +72,7 @@ public:
     //! @param rDofRow ... row dof
     //! @param rDofCol ... column dof
     //! @param rTimeDerivative ... time derivative
-    virtual bool CheckDofCombinationComputeable(Node::eDof rDofRow,
+    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow,
                                                Node::eDof rDofCol,
                                                int rTimeDerivative) const = 0;
 

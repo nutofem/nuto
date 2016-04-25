@@ -192,6 +192,10 @@ bool NuTo::StructureBase::ElementCheckHessian0(ElementBase* rElement, double rDe
     {
         for (auto dofCol : GetDofStatus().GetActiveDofTypes())
         {
+            // TODO: Do not loop over all possible combinations of DOFs but over a list of combinations created by the constitutive law of the corresponding element. What if an element has multiple constitutive laws assigned?
+            if(not rElement->GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow,dofCol,0))
+                continue;
+
             double scaling = hessianRef(dofRow, dofCol).cwiseAbs().maxCoeff();
             FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>  differenceRelative = differenceAbsolute(dofRow, dofCol) / scaling;
             int row = 0, col = 0;

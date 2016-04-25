@@ -87,7 +87,7 @@ NuTo::ConstitutiveInputMap NuTo::HeatConduction::GetConstitutiveInputs(
 //! @param rDofRow ... row dof
 //! @param rDofCol ... column dof
 //! @param rTimeDerivative ... time derivative
-bool NuTo::HeatConduction::CheckDofCombinationComputeable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
+bool NuTo::HeatConduction::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
 {
     assert(rTimeDerivative>-1);
     if (rTimeDerivative<1 &&

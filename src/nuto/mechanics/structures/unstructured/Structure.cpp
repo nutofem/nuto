@@ -628,6 +628,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
                                  {
                                      const auto& elementMatrix = elementOutputMap.at(Element::HESSIAN_0_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
                                      structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(
+                                             elementPtr,
                                              elementMatrix,
                                              elementVectorGlobalDofsRow,
                                              elementVectorGlobalDofsColumn,
@@ -639,6 +640,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
                                  {
                                      const auto& elementMatrix = elementOutputMap.at(Element::HESSIAN_1_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
                                      structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(
+                                             elementPtr,
                                              elementMatrix,
                                              elementVectorGlobalDofsRow,
                                              elementVectorGlobalDofsColumn,
@@ -651,6 +653,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
                                  {
                                      const auto& elementMatrix = elementOutputMap.at(Element::HESSIAN_2_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
                                      structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(
+                                             elementPtr,
                                              elementMatrix,
                                              elementVectorGlobalDofsRow,
                                              elementVectorGlobalDofsColumn,

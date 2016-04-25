@@ -10,7 +10,7 @@
 
 
 
-bool NuTo::ShrinkageCapillaryStressBased::CheckDofCombinationComputeable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
+bool NuTo::ShrinkageCapillaryStressBased::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
 {
     if(rTimeDerivative == 0 &&
        rDofRow == Node::DISPLACEMENTS &&

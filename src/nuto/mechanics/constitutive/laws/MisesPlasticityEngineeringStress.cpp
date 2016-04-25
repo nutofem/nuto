@@ -397,7 +397,7 @@ NuTo::ConstitutiveStaticDataBase* NuTo::MisesPlasticityEngineeringStress::Alloca
     return new NuTo::ConstitutiveStaticDataMisesPlasticity<3>();
 }
 
-bool NuTo::MisesPlasticityEngineeringStress::CheckDofCombinationComputeable(Node::eDof rDofRow,
+bool NuTo::MisesPlasticityEngineeringStress::CheckDofCombinationComputable(Node::eDof rDofRow,
                                                                             Node::eDof rDofCol,
                                                                             int rTimeDerivative) const
 {

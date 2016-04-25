@@ -442,7 +442,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(Con
             NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian0(dofRow, dofCol);
             dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
             dofSubMatrix.setZero();
-            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputeable(dofRow,dofCol,0))
+            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow,dofCol,0))
                 continue;
 
             switch (Node::CombineDofs(dofRow, dofCol))
@@ -501,7 +501,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(Con
             NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian0(dofRow, dofCol);
             dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
             dofSubMatrix.setZero();
-            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputeable(dofRow,dofCol,1))
+            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow,dofCol,1))
                 continue;
 
             switch (Node::CombineDofs(dofRow, dofCol))
@@ -541,7 +541,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(Con
 //            NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian2(dofRow, dofCol);
 //            dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
 //            dofSubMatrix.setZero();
-//            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputeable(dofRow,dofCol,2))
+//            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow,dofCol,2))
 //                continue;
 //            switch (Node::CombineDofs(dofRow, dofCol))
 //            {

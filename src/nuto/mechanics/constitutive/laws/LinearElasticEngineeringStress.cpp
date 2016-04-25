@@ -360,7 +360,7 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate3D(
 
 
 
-bool NuTo::LinearElasticEngineeringStress::CheckDofCombinationComputeable(NuTo::Node::eDof rDofRow,
+bool NuTo::LinearElasticEngineeringStress::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow,
                                                                           NuTo::Node::eDof rDofCol,
                                                                           int rTimeDerivative) const
 {

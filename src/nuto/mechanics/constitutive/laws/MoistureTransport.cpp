@@ -733,7 +733,7 @@ void                                        NuTo::MoistureTransport::CalculateSo
 
 
 
-bool NuTo::MoistureTransport::CheckDofCombinationComputeable(NuTo::Node::eDof rDofRow,
+bool NuTo::MoistureTransport::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow,
                                                             NuTo::Node::eDof rDofCol,
                                                             int rTimeDerivative) const
 {
