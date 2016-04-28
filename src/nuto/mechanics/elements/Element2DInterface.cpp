@@ -33,7 +33,7 @@ NuTo::Element2DInterface::Element2DInterface(const NuTo::StructureBase* rStructu
 NuTo::ConstitutiveOutputMap NuTo::Element2DInterface::GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase> >& rElementOutput, EvaluateData& rData)
 {
 
-    const unsigned globalDimension = GetStructure()->GetDimension();
+//    const unsigned globalDimension = GetStructure()->GetDimension(); // --- unused so far
     ConstitutiveOutputMap constitutiveOutput;
 
     for (auto it : rElementOutput)
@@ -106,7 +106,7 @@ NuTo::Error::eError NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMa
     const unsigned globalDimension = GetStructure()->GetDimension();
     const std::set<Node::eDof>& dofs = mInterpolationType->GetDofs();
     const std::set<Node::eDof>& activeDofs = mInterpolationType->GetActiveDofs();
-    unsigned numActiveDofs = mInterpolationType->GetNumActiveDofs();
+//    unsigned numActiveDofs = mInterpolationType->GetNumActiveDofs(); // --- unused so far
 
     // extract all node values and store them
     EvaluateData data;
@@ -271,7 +271,7 @@ void NuTo::Element2DInterface::CalculateGlobalRowDofs(BlockFullVector<int>& rGlo
              for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
              {
                  const NodeBase* nodePtr = mNodes[interpolationType.GetNodeIndex(iNodeDof)];
-                 for (int iDof = 0; iDof < globalDimension; ++iDof)
+                 for (unsigned int iDof = 0; iDof < globalDimension; ++iDof)
                      dofWiseGlobalRowDofs[globalDimension * iNodeDof + iDof] = nodePtr->GetDofDisplacement(iDof);
              }
 
@@ -448,7 +448,7 @@ Eigen::VectorXd NuTo::Element2DInterface::ExtractNodeValues(int rTimeDerivative,
     const unsigned globalDimension = GetStructure()->GetDimension();
     int numNodes = interpolationTypeDof.GetNumNodes();
     int numDofs = interpolationTypeDof.GetNumDofs();
-    int numDofsPerNode = numDofs / numNodes;
+//    int numDofsPerNode = numDofs / numNodes; // --- unused so far
 
     Eigen::VectorXd nodeValues = Eigen::VectorXd::Constant(numDofs, -1337.0);
 

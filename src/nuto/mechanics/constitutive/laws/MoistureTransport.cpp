@@ -1006,18 +1006,15 @@ bool NuTo::MoistureTransport::GetParameterBool(NuTo::Constitutive::eConstitutive
 {
     switch(rIdentifier)
     {
-        case Constitutive::eConstitutiveParameter::ENABLE_MODIFIED_TANGENTIAL_STIFFNESS:
-        {
-            return mEnableModifiedTangentialStiffness;
-        }
-        case Constitutive::eConstitutiveParameter::ENABLE_SORPTION_HYSTERESIS:
-        {
-            return mEnableSorptionHysteresis;
-        }
-        default:
-        {
-            throw MechanicsException("[NuTo::MoistureTransport::GetParameterBool] Constitutive law does not have the requested variable");
-        }
+    case Constitutive::eConstitutiveParameter::ENABLE_MODIFIED_TANGENTIAL_STIFFNESS:
+        return mEnableModifiedTangentialStiffness;
+
+    case Constitutive::eConstitutiveParameter::ENABLE_SORPTION_HYSTERESIS:
+        return mEnableSorptionHysteresis;
+
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__,std::string("Constitutive law does not have the parameter ")+Constitutive::ConstitutiveParameterToString(rIdentifier));
+
     }
 }
 
@@ -1029,20 +1026,17 @@ void NuTo::MoistureTransport::SetParameterBool(NuTo::Constitutive::eConstitutive
 {
     switch(rIdentifier)
     {
-        case Constitutive::eConstitutiveParameter::ENABLE_MODIFIED_TANGENTIAL_STIFFNESS:
-        {
-            mEnableModifiedTangentialStiffness = rValue;
-            return;
-        }
-        case Constitutive::eConstitutiveParameter::ENABLE_SORPTION_HYSTERESIS:
-        {
-            mEnableSorptionHysteresis = rValue;
-            return;
-        }
-        default:
-        {
-            throw MechanicsException("[NuTo::MoistureTransport::SetParameterBool] Constitutive law does not have the requested variable");
-        }
+    case Constitutive::eConstitutiveParameter::ENABLE_MODIFIED_TANGENTIAL_STIFFNESS:
+        mEnableModifiedTangentialStiffness = rValue;
+        return;
+
+    case Constitutive::eConstitutiveParameter::ENABLE_SORPTION_HYSTERESIS:
+        mEnableSorptionHysteresis = rValue;
+        return;
+
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__,std::string("Constitutive law does not have the parameter ")+Constitutive::ConstitutiveParameterToString(rIdentifier));
+
     }
 }
 
@@ -1053,58 +1047,44 @@ double NuTo::MoistureTransport::GetParameterDouble(NuTo::Constitutive::eConstitu
 {
     switch(rIdentifier)
     {
-        case Constitutive::eConstitutiveParameter::BOUNDARY_DIFFUSION_COEFFICIENT_RH:
-        {
-            return mBoundaryDiffusionCoefficientRH;
-        }
-        case Constitutive::eConstitutiveParameter::BOUNDARY_DIFFUSION_COEFFICIENT_WV:
-        {
-            return mBoundaryDiffusionCoefficientWV;
-        }
-        case Constitutive::eConstitutiveParameter::DENSITY_WATER:
-        {
-            return mDensityWater;
-        }
-        case Constitutive::eConstitutiveParameter::DIFFUSION_COEFFICIENT_RH:
-        {
-            return mDiffusionCoefficientRH;
-        }
-        case Constitutive::eConstitutiveParameter::DIFFUSION_COEFFICIENT_WV:
-        {
-            return mDiffusionCoefficientWV;
-        }
-        case Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_RH:
-        {
-            return mDiffusionExponentRH;
-        }
-        case Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_WV:
-        {
-            return mDiffusionExponentWV;
-        }
-        case Constitutive::eConstitutiveParameter::GRADIENT_CORRECTION_ADSORPTION_DESORPTION:
-        {
-            return mGradientCorrAdsorptionDesorption;
-        }
-        case Constitutive::eConstitutiveParameter::GRADIENT_CORRECTION_DESORPTION_ADSORPTION:
-        {
-            return mGradientCorrDesorptionAdsorption;
-        }
-        case Constitutive::eConstitutiveParameter::MASS_EXCHANGE_RATE:
-        {
-            return mMassExchangeRate;
-        }
-        case Constitutive::eConstitutiveParameter::PORE_VOLUME_FRACTION:
-        {
-            return mPoreVolumeFraction;
-        }
-        case Constitutive::eConstitutiveParameter::DENSITY_SATURATED_WATER_VAPOR:
-        {
-            return mDensitySaturatedWaterVapor;
-        }
-        default:
-        {
-            throw MechanicsException("[NuTo::MoistureTransport::GetParameterDouble] Constitutive law does not have the requested variable");
-        }
+    case Constitutive::eConstitutiveParameter::BOUNDARY_DIFFUSION_COEFFICIENT_RH:
+        return mBoundaryDiffusionCoefficientRH;
+
+    case Constitutive::eConstitutiveParameter::BOUNDARY_DIFFUSION_COEFFICIENT_WV:
+        return mBoundaryDiffusionCoefficientWV;
+
+    case Constitutive::eConstitutiveParameter::DENSITY_WATER:
+        return mDensityWater;
+
+    case Constitutive::eConstitutiveParameter::DIFFUSION_COEFFICIENT_RH:
+        return mDiffusionCoefficientRH;
+
+    case Constitutive::eConstitutiveParameter::DIFFUSION_COEFFICIENT_WV:
+        return mDiffusionCoefficientWV;
+
+    case Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_RH:
+        return mDiffusionExponentRH;
+
+    case Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_WV:
+        return mDiffusionExponentWV;
+
+    case Constitutive::eConstitutiveParameter::GRADIENT_CORRECTION_ADSORPTION_DESORPTION:
+        return mGradientCorrAdsorptionDesorption;
+
+    case Constitutive::eConstitutiveParameter::GRADIENT_CORRECTION_DESORPTION_ADSORPTION:
+        return mGradientCorrDesorptionAdsorption;
+
+    case Constitutive::eConstitutiveParameter::MASS_EXCHANGE_RATE:
+        return mMassExchangeRate;
+
+    case Constitutive::eConstitutiveParameter::PORE_VOLUME_FRACTION:
+        return mPoreVolumeFraction;
+
+    case Constitutive::eConstitutiveParameter::DENSITY_SATURATED_WATER_VAPOR:
+        return mDensitySaturatedWaterVapor;
+
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__,std::string("Constitutive law does not have the parameter ")+Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
 }
 
@@ -1115,82 +1095,68 @@ void NuTo::MoistureTransport::SetParameterDouble(NuTo::Constitutive::eConstituti
 {
     switch(rIdentifier)
     {
-        case Constitutive::eConstitutiveParameter::BOUNDARY_DIFFUSION_COEFFICIENT_RH:
-        {
-            CheckBoundaryDiffusionCoefficientRH(rValue);
-            mBoundaryDiffusionCoefficientRH = rValue;
-            return;
-        }
-        case Constitutive::eConstitutiveParameter::BOUNDARY_DIFFUSION_COEFFICIENT_WV:
-        {
-            CheckBoundaryDiffusionCoefficientWV(rValue);
-            mBoundaryDiffusionCoefficientWV = rValue;
-            return;
-        }
-        case Constitutive::eConstitutiveParameter::DENSITY_WATER:
-        {
-            CheckDensityWater(rValue);
-            mDensityWater = rValue;
-            return;
-        }
-        case Constitutive::eConstitutiveParameter::DIFFUSION_COEFFICIENT_RH:
-        {
-            CheckDiffusionCoefficientRH(rValue);
-            mDiffusionCoefficientRH=rValue;
-            return;
-        }
-        case Constitutive::eConstitutiveParameter::DIFFUSION_COEFFICIENT_WV:
-        {
-            CheckDiffusionCoefficientWV(rValue);
-            mDiffusionCoefficientWV=rValue;
-            return;
-        }
-        case Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_RH:
-        {
-            CheckDiffusionExponentRH(rValue);
-            mDiffusionExponentRH=rValue;
-            return;
-        }
-        case Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_WV:
-        {
-            CheckDiffusionExponentWV(rValue);
-            mDiffusionExponentWV=rValue;
-            return;
-        }
-        case Constitutive::eConstitutiveParameter::GRADIENT_CORRECTION_ADSORPTION_DESORPTION:
-        {
-            CheckGradientCorrAdsorptionDesorption(rValue);
-            mGradientCorrAdsorptionDesorption = rValue;
-            return;
-        }
-        case Constitutive::eConstitutiveParameter::GRADIENT_CORRECTION_DESORPTION_ADSORPTION:
-        {
-            CheckGradientCorrDesorptionAdsorption(rValue);
-            mGradientCorrDesorptionAdsorption = rValue;
-            return;
-        }
-        case Constitutive::eConstitutiveParameter::MASS_EXCHANGE_RATE:
-        {
-            CheckMassExchangeRate(rValue);
-            mMassExchangeRate= rValue;
-            return;
-        }
-        case Constitutive::eConstitutiveParameter::PORE_VOLUME_FRACTION:
-        {
-            CheckPoreVolumeFraction(rValue);
-            mPoreVolumeFraction=rValue;
-            return;
-        }
-        case Constitutive::eConstitutiveParameter::DENSITY_SATURATED_WATER_VAPOR:
-        {
-            CheckDensitySaturatedWaterVapor(rValue);
-            mDensitySaturatedWaterVapor=rValue;
-            return;
-        }
-        default:
-        {
-            throw MechanicsException("[NuTo::MoistureTransport::SetParameterDouble] Constitutive law does not have the requested variable");
-        }
+    case Constitutive::eConstitutiveParameter::BOUNDARY_DIFFUSION_COEFFICIENT_RH:
+        CheckBoundaryDiffusionCoefficientRH(rValue);
+        mBoundaryDiffusionCoefficientRH = rValue;
+        return;
+
+    case Constitutive::eConstitutiveParameter::BOUNDARY_DIFFUSION_COEFFICIENT_WV:
+        CheckBoundaryDiffusionCoefficientWV(rValue);
+        mBoundaryDiffusionCoefficientWV = rValue;
+        return;
+
+    case Constitutive::eConstitutiveParameter::DENSITY_WATER:
+        CheckDensityWater(rValue);
+        mDensityWater = rValue;
+        return;
+
+    case Constitutive::eConstitutiveParameter::DIFFUSION_COEFFICIENT_RH:
+        CheckDiffusionCoefficientRH(rValue);
+        mDiffusionCoefficientRH=rValue;
+        return;
+
+    case Constitutive::eConstitutiveParameter::DIFFUSION_COEFFICIENT_WV:
+        CheckDiffusionCoefficientWV(rValue);
+        mDiffusionCoefficientWV=rValue;
+        return;
+
+    case Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_RH:
+        CheckDiffusionExponentRH(rValue);
+        mDiffusionExponentRH=rValue;
+        return;
+
+    case Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_WV:
+        CheckDiffusionExponentWV(rValue);
+        mDiffusionExponentWV=rValue;
+        return;
+
+    case Constitutive::eConstitutiveParameter::GRADIENT_CORRECTION_ADSORPTION_DESORPTION:
+        CheckGradientCorrAdsorptionDesorption(rValue);
+        mGradientCorrAdsorptionDesorption = rValue;
+        return;
+
+    case Constitutive::eConstitutiveParameter::GRADIENT_CORRECTION_DESORPTION_ADSORPTION:
+        CheckGradientCorrDesorptionAdsorption(rValue);
+        mGradientCorrDesorptionAdsorption = rValue;
+        return;
+
+    case Constitutive::eConstitutiveParameter::MASS_EXCHANGE_RATE:
+        CheckMassExchangeRate(rValue);
+        mMassExchangeRate= rValue;
+        return;
+
+    case Constitutive::eConstitutiveParameter::PORE_VOLUME_FRACTION:
+        CheckPoreVolumeFraction(rValue);
+        mPoreVolumeFraction=rValue;
+        return;
+
+    case Constitutive::eConstitutiveParameter::DENSITY_SATURATED_WATER_VAPOR:
+        CheckDensitySaturatedWaterVapor(rValue);
+        mDensitySaturatedWaterVapor=rValue;
+        return;
+
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__,std::string("Constitutive law does not have the parameter ")+Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
 }
 
@@ -1201,18 +1167,14 @@ NuTo::FullVector<double, Eigen::Dynamic> NuTo::MoistureTransport::GetParameterFu
 {
     switch(rIdentifier)
     {
-        case Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_ADSORPTION:
-        {
-            return mAdsorptionCoeff;
-        }
-        case Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION:
-        {
-            return mDesorptionCoeff;
-        }
-        default:
-        {
-            throw MechanicsException("[NuTo::MoistureTransport::GetParameterFullVectorDouble] Constitutive law does not have the requested variable");
-        }
+    case Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_ADSORPTION:
+        return mAdsorptionCoeff;
+
+    case Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION:
+        return mDesorptionCoeff;
+
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__,std::string("Constitutive law does not have the parameter ")+Constitutive::ConstitutiveParameterToString(rIdentifier));
     }
 }
 
@@ -1243,10 +1205,8 @@ void NuTo::MoistureTransport::SetParameterFullVectorDouble(NuTo::Constitutive::e
                     break;
                 }
                 default:
-                {
-                    throw NuTo::MechanicsException("[NuTo::MoistureTransport::SetParameterFullVectorDouble] The vector for the adsorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
-                    break;
-                }
+                    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"The vector for the adsorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
+
             }
             return;
         }
@@ -1271,7 +1231,7 @@ void NuTo::MoistureTransport::SetParameterFullVectorDouble(NuTo::Constitutive::e
                 }
                 default:
                 {
-                    throw NuTo::MechanicsException("[NuTo::MoistureTransport::SetParameterFullVectorDouble] The vector for the desorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
+                    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"The vector for the desorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
                     break;
                 }
             }
@@ -1279,7 +1239,7 @@ void NuTo::MoistureTransport::SetParameterFullVectorDouble(NuTo::Constitutive::e
         }
         default:
         {
-            throw MechanicsException("[NuTo::MoistureTransport::SetParameterFullVectorDouble] Constitutive law does not have the requested variable");
+            throw MechanicsException(__PRETTY_FUNCTION__,"Constitutive law does not have the requested variable");
         }
     }
 }
@@ -1296,7 +1256,7 @@ double                                      NuTo::MoistureTransport::GetEquilibr
 
     if (rCoeffs.GetNumRows() < 3 || rCoeffs.GetNumRows() > 4)
     {
-        throw NuTo::MechanicsException("[NuTo::MoistureTransport::GetEquilibriumWaterVolumeFraction] The vector for the sorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"The vector for the sorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
     }
     if (rCoeffs.GetNumRows() == 3)
     {
@@ -1309,7 +1269,7 @@ double                                      NuTo::MoistureTransport::GetEquilibr
     {
         if (rCoeffs(0)!=0.0)
         {
-            throw NuTo::MechanicsException("[NuTo::MoistureTransport::CheckDesorptionCoefficients] The first desorption coefficients (constant term) has to be zero");
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"The first desorption coefficients (constant term) has to be zero");
         }
         return rCoeffs(1) * rRelativeHumidity +
                rCoeffs(2) * rRelativeHumidity * rRelativeHumidity +

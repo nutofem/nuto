@@ -321,6 +321,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputHessian0(BlockF
     {
         for (auto dofCol : mInterpolationType->GetActiveDofs())
         {
+            if(!GetConstitutiveLaw(rTheIP)->CheckDofCombinationComputable(dofRow,dofCol,0))
+                continue;
             auto& hessian0 = rHessian0(dofRow, dofCol);            
             switch (Node::CombineDofs(dofRow, dofCol))
             {

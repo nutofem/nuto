@@ -186,6 +186,7 @@ enum class eConstitutiveParameter
     SPRING_STIFFNESS,                           //!<
     SPRING_DIRECTION,                           //!<
     TENSILE_STRENGTH,                           //!<
+    TEMPERATURE,                                //!<
     THERMAL_EXPANSION_COEFFICIENT,              //!<
     THERMAL_CONDUCTIVITY,                       //!< \f$k \text{ in } \mathbf{q} = - k \nabla T \f$
     VISCOPLASTIC_YIELD_SURFACE_OFFSET,          //!<
@@ -231,6 +232,7 @@ static inline std::map<eConstitutiveParameter, std::string> GetConstitutiveParam
     map[eConstitutiveParameter::PORE_VOLUME_FRACTION]                       = "PORE_VOLUME_FRACTION";
     map[eConstitutiveParameter::DENSITY_SATURATED_WATER_VAPOR]              = "DENSITY_SATURATED_WATER_VAPOR";
     map[eConstitutiveParameter::SPRING_STIFFNESS]                           = "SPRING_STIFFNESS";
+    map[eConstitutiveParameter::TEMPERATURE]                                = "TEMPERATURE";
     map[eConstitutiveParameter::TENSILE_STRENGTH]                           = "TENSILE_STRENGTH";
     map[eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT]              = "THERMAL_EXPANSION_COEFFICIENT";
     map[eConstitutiveParameter::THERMAL_CONDUCTIVITY]                       = "THERMAL_CONDUCTIVITY";

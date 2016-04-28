@@ -2,6 +2,8 @@
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 
+
+//VHIRTHAMTODO Implement missing check routines --- at the moment only temperature
 namespace NuTo
 {
 
@@ -13,6 +15,18 @@ public:
     ShrinkageCapillaryStressBased()
         : ConstitutiveBase()
     {}
+
+    //! @brief ... create new static data object for an integration point
+    //! @return ... pointer to static data object
+    ConstitutiveStaticDataBase* AllocateStaticData1D(const ElementBase* rElement) const override {return nullptr;}
+
+    //! @brief ... create new static data object for an integration point
+    //! @return ... pointer to static data object
+    ConstitutiveStaticDataBase* AllocateStaticData2D(const ElementBase* rElement) const override  {return nullptr;}
+
+    //! @brief ... create new static data object for an integration point
+    //! @return ... pointer to static data object
+    ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const override  {return nullptr;}
 
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow ... row dof
@@ -119,6 +133,16 @@ public:
         return NuTo::Constitutive::SHRINKAGE_CAPILLARY_STRESS_BASED;
     }
 
+    //! @brief ... gets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
+    //! @return ... value of the requested variable
+    virtual double GetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier) const override;
+
+    //! @brief ... sets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
+    //! @param rValue ... new value for requested variable
+    virtual void SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue) override;
+
     //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
     //! @return ... see brief explanation
     virtual bool HaveTmpStaticData() const override
@@ -127,21 +151,6 @@ public:
     }
 
 private:
-
-    //! @brief Atmospheric pressure
-    double                      mAtmosphericPressure    = 100000.0;
-
-    //! @brief Density of water
-    double                      mDensityWater           = 999.97;
-
-    //! @brief Ideal gas constant
-    static constexpr const double      mIdealGasConstant       = 8.314459848;
-
-    //! @brief Molar mass of water
-    static constexpr const double      mMolarMassWater         = 18.01528 / 1000.0;
-
-    //! @brief Porosity
-    double                      mPorosity               = 1.00;
 
     //! @brief Temperature in K
     double                      mTemperature            = 293.15;
