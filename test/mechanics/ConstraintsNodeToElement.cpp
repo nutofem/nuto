@@ -38,7 +38,7 @@ public:
 
     static constexpr double mTimeStep = 1.0e-1;
     static constexpr double mMinTimeStep = 1.0e-5;
-    static constexpr double mMaxTimeStep = 1.0e-1;
+    static constexpr double mMaxTimeStep = 1.0e-0;
     static constexpr double mToleranceForce = 1e-6;
     static constexpr double mSimulationTime = 1.0;
     static constexpr double mLoad = 0.01;
@@ -229,7 +229,6 @@ void run2d()
         myStructure.CalculateMaximumIndependentSets();
 
 
-        myStructure.ElementCheckHessian0(1.e-6,1.e-6,true);
         NuTo::FullMatrix<double, 2, 2> timeDependentLoad;
         timeDependentLoad(0, 0) = 0;
         timeDependentLoad(1, 0) = Parameters::mSimulationTime;
@@ -274,7 +273,6 @@ void run2d()
 
         if ( (dispInMatrix - dispInFiber).norm() > 1e-6 or (coordsInMatrix - coordsInFiber).norm() > 1e-6)
             throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Displacements and/or coordinates of fiber and matrix do not match!");
-
 
 
         std::cout << "Results written to " + resultDir.string() << std::endl;
