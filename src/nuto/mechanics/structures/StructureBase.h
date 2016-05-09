@@ -259,6 +259,7 @@ public:
     //! @return number of nodes
     virtual int GetNumNodes() const =0;
 
+#ifndef SWIG
     //! @brief a reference to a node
     //! @param identifier
     //! @return reference to a node
@@ -269,7 +270,6 @@ public:
     //! @return reference to a node
     virtual const NodeBase* NodeGetNodePtr(int rIdent)const=0;
 
-#ifndef SWIG
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNode (Input) 		... node pointer
     //! @param rElements (Output) 	... vector of element pointers
@@ -329,6 +329,17 @@ public:
     //! @param rDisplacements matrix (one column) with the displacements
     void NodeGroupSetDisplacements(int rIdent, const NuTo::FullVector<double,Eigen::Dynamic>& rDisplacements);
 
+    //! @brief Sets the temperature of a node
+    //! @param rIdent Node identifier
+    //! @param rTemperature Temperature to assign to node
+    void NodeSetTemperature(int rId, const double rTemperature);
+
+    //! @brief Sets the temperature of a node
+    //! @param rIdent Node identifier
+    //! @param rTimeDerivative Time derivative (0 temperature, 1 temperature change)
+    //! @param rTemperature Temperature (change) to assign to node
+    void NodeSetTemperature(int rId, int rTimeDerivative, const double rTemperature);
+
     //! @brief returns the node ids of an node group
     //! @param rGroupId  group number
     //! @param rMembers  return vector with node ids
@@ -379,6 +390,17 @@ public:
     //! @param rNodeGroup node group identifier
     //! @param rDisplacements matrix (rows/nodes columns/rDisplacements)
     void NodeGroupGetDisplacements(int rNodeGroup, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements);
+
+    //! @brief Get the temperature at a node
+    //! @param rNode Node identifier
+    //! @return Temperature at the node
+    double NodeGetTemperature(int rNode) const;
+
+    //! @brief Get the temperature (change) of a node
+    //! @param rIdent Node identifier
+    //! @param rTimeDerivative Time derivative (0 temperature, 1 temperature change)
+    //! @return Temperature (change) at the node
+    double NodeGetTemperature(int rNode, int rTimeDerivative) const;
 
     //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)

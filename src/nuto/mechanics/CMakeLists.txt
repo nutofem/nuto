@@ -1,7 +1,6 @@
 # $Id$
 SET(NuToMechanicsConstitutive_SOURCES
 constitutive/ConstitutiveBase.cpp
-#constitutive/mechanics/ConstitutiveStaticDataBondStressSlip.cpp
 #constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3D.cpp
 #constitutive/mechanics/ConstitutiveStaticDataDamageViscoPlasticity3DFatigue.cpp
 #constitutive/mechanics/ConstitutiveStaticDataGradientDamage1D.cpp
@@ -24,7 +23,6 @@ constitutive/ConstitutiveBase.cpp
 #constitutive/mechanics/InterfaceTractions1D.cpp
 #constitutive/mechanics/InterfaceTractions2D.cpp
 #constitutive/mechanics/InterfaceTractions3D.cpp
-#constitutive/mechanics/FibreMatrixBondStressSlip.cpp
 #constitutive/mechanics/LinearSpring.cpp
 #constitutive/mechanics/LocalEqTotalInelasticStrain.cpp
 #constitutive/mechanics/NonlocalEqPlasticStrain.cpp
@@ -34,9 +32,6 @@ constitutive/ConstitutiveBase.cpp
 #constitutive/mechanics/RelativeInterfaceDisplacements2D.cpp
 #constitutive/mechanics/RelativeInterfaceDisplacements3D.cpp
 #constitutive/mechanics/StrainGradientDamagePlasticityEngineeringStress.cpp
-#constitutive/multiPhysics/ConstitutiveMultiPhysics.cpp
-#constitutive/multiPhysics/ConstitutiveStaticDataMultiPhysics.cpp
-#constitutive/shrinkage/DryingShrinkage.cpp
 constitutive/inputoutput/ConstitutiveIOBase.cpp
 constitutive/inputoutput/EngineeringStrain.cpp
 constitutive/inputoutput/EngineeringStress.cpp
@@ -47,8 +42,11 @@ constitutive/laws/HeatConduction.cpp
 constitutive/laws/LinearElasticEngineeringStress.cpp
 constitutive/laws/MisesPlasticityEngineeringStress.cpp
 constitutive/laws/MoistureTransport.cpp
+constitutive/laws/ShrinkageCapillaryStressBased.cpp
 constitutive/laws/GradientDamageEngineeringStress.cpp
+constitutive/laws/FibreMatrixBondStressSlip.cpp
 constitutive/staticData/ConstitutiveStaticDataBase.cpp
+constitutive/staticData/ConstitutiveStaticDataBondStressSlip.cpp
 constitutive/staticData/ConstitutiveStaticDataMoistureTransport.cpp
 constitutive/staticData/ConstitutiveStaticDataMultipleConstitutiveLaws.cpp
 constitutive/staticData/ConstitutiveStaticDataGradientDamage.cpp
@@ -103,6 +101,8 @@ elements/ContinuumBoundaryElementConstrainedControlNode.cpp
 elements/ElementBase.cpp
 elements/ElementDataBase.cpp
 elements/ElementDataConstitutiveBase.cpp
+elements/Element1DInXD.cpp
+elements/Element2DInterface.cpp
 elements/ElementDataConstitutiveIp.cpp
 elements/ElementDataConstitutiveIpNonlocal.cpp
 elements/ElementDataIpBase.cpp
@@ -331,5 +331,9 @@ INSTALL(TARGETS NuToMechanics
 CONFIGURE_FILE(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
 NUTO_INSTALL_PYTHON_FILE(__init__.py ${NUTO_PYTHON_MODULES_INSTALL_PATH}/nuto/mechanics)
 FOREACH(NuToMechanics_SWIG_MODULE ${NuToMechanics_SWIG_MODULES})
-    NUTO_SWIG_MODULE(${NuToMechanics_SWIG_MODULE} ${NuToMechanics_SWIG_MODULE}.i nuto/mechanics NuToMechanics NuToBase NuToMath NuToVisualize)
+    if(ENABLE_VISUALIZE)
+        NUTO_SWIG_MODULE(${NuToMechanics_SWIG_MODULE} ${NuToMechanics_SWIG_MODULE}.i nuto/mechanics NuToMechanics NuToBase NuToMath NuToVisualize)
+    else()
+        NUTO_SWIG_MODULE(${NuToMechanics_SWIG_MODULE} ${NuToMechanics_SWIG_MODULE}.i nuto/mechanics NuToMechanics NuToBase NuToMath)
+    endif()
 ENDFOREACH(NuToMechanics_SWIG_MODULE)

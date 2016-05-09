@@ -119,7 +119,7 @@ public:
     //! @return ... shape functions for the specific dof type
     virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const = 0;
 
-    //! @brief calculates the N-Matrix, blows up the shape functions to the correct format (e.g. 3D: N & 0 & 0 \\ 0 & N & \\ 0 & 0 & N ...)
+    //! @brief calculates the N-Matrix, blows up the shape functions to the correct format (e.g. 3D: N & 0 & 0 \\ 0 & N & 0 \\ 0 & 0 & N ...)
     Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const;
 
     //********************************************
@@ -157,6 +157,10 @@ public:
 
     //! @brief return the number of dofs per node depending on dimension
     virtual int GetNumDofsPerNode() const = 0;
+
+    //! @brief return the local dimension of the interpolation
+    virtual int GetLocalDimension() const = 0;
+
 
 #ifdef ENABLE_SERIALIZATION
 //    //! @brief serializes the class, this is the load routine

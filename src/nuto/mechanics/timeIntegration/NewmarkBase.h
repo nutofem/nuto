@@ -25,6 +25,8 @@ public:
     //! @brief constructor
     NewmarkBase(StructureBase* rStructure);
 
+    virtual NuTo::Error::eError Solve(double rTimeDelta)=0;
+
     void SetDampingCoefficientMass(double rMuDampingMass)
     {
     	mMuDampingMass = rMuDampingMass;

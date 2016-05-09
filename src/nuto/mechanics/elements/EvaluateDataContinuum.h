@@ -39,6 +39,11 @@ public:
     ConstitutiveVector<VoigtDim> mTangentLocalEqStrainStrain;
     ConstitutiveScalar mExtrapolationError;
 
+    // Shrinkage (stress based)
+    // --------------------------------------------------------------------------------------------
+
+    ConstitutiveVector<VoigtDim> mEngineeringStress_dRH;
+    ConstitutiveVector<VoigtDim> mEngineeringStress_dWV;
 
     // Moisture Transport
     // --------------------------------------------------------------------------------------------

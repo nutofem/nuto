@@ -53,7 +53,7 @@ void NuTo::StructureOutputBlockVector::ApplyCMatrix(BlockFullVector<double>& rRe
         return;
 
     for (auto dof : J.GetDofStatus().GetActiveDofTypes())
-        rResidual[dof] += rCmat(dof,dof).TransMult(K[dof]);
+        rResidual[dof] -= rCmat(dof,dof).TransMult(K[dof]);
 }
 
 void NuTo::StructureOutputBlockVector::ApplyCMatrix(const BlockSparseMatrix& rCmat)

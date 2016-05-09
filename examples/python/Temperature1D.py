@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import nuto
 
 # Geometry
@@ -8,28 +8,26 @@ conductivity = 1.0
 capacity = 1.0
 density = 1.0
 
-def initial_temperature(x):
-    lhs = 1.0 + x**2
-    return lhs
+def analytic_solution(x, t=0.0):
+    return 1.0 + x**2 + 2.0*t
 
 def interpolate(structure, function):
     num_nodes = structure.GetNumNodes()
 
     coordinates = nuto.DoubleFullVector(1)
-    x = numpy.empty((1, 1))
+    x = np.empty((1, 1))
     for i in range(num_nodes):
         structure.NodeGetCoordinates(i, coordinates)
         coordinates.convrtMatrixToNumpy(x)
         value = function(x[0][0])
-        node = structure.NodeGetNodePtr(i)
-        node.SetTemperature(value)
-        node.SetTemperature(1, 2.0)
+        structure.NodeSetTemperature(i, value)
+        structure.NodeSetTemperature(i, 1, 2.0)
     return structure
 
 def create_structure(number_of_time_derivatives=0):
     # Geometry/Mesh
     area = 1.0
-    num_elements = 20
+    number_of_elements = 20
 
     # create one-dimensional structure
     structure = nuto.Structure(1)
@@ -47,8 +45,8 @@ def create_structure(number_of_time_derivatives=0):
 
     # create nodes
     node_coordinates = nuto.DoubleFullVector(1)
-    for node in range(0, num_elements + 1):
-        node_coordinates.SetValue(0, 0, node * length/num_elements)
+    for node in range(0, number_of_elements + 1):
+        node_coordinates.SetValue(0, 0, node * length/number_of_elements)
         structure.NodeCreate(node, node_coordinates)
 
     # create interpolation type
@@ -59,7 +57,7 @@ def create_structure(number_of_time_derivatives=0):
 
     # create elements
     element_incidence = nuto.IntFullVector(2)
-    for element in range(0, num_elements):
+    for element in range(0, number_of_elements):
         element_incidence.SetValue(0, 0, element)
         element_incidence.SetValue(1, 0, element + 1)
         structure.ElementCreate(truss_interpolation, element_incidence)
@@ -113,8 +111,8 @@ def transient_solve(structure):
 
     beta = 2*conductivity/(density*capacity)
     # set dirichlet bc
-    boundary_temperature_east = initial_temperature(0.0)
-    boundary_temperature_west = initial_temperature(length)
+    boundary_temperature_east = analytic_solution(0.0)
+    boundary_temperature_west = analytic_solution(length)
     last_node_id = structure.GetNumNodes() - 1
     bc_west = structure.ConstraintLinearSetTemperatureNode(last_node_id, boundary_temperature_west)
     bc_east = structure.ConstraintLinearSetTemperatureNode(0, boundary_temperature_east)
@@ -140,10 +138,27 @@ def transient_solve(structure):
     newmark.Solve(simulation_time)
 
 
+def compare_to_analytic(structure):
+    num_nodes = structure.GetNumNodes()
+    coordinates = nuto.DoubleFullVector(1)
+    x = np.empty((1, 1))
+    exact_values = np.empty(num_nodes)
+    fem_values = np.empty(num_nodes)
+    for i in range(num_nodes):
+        transient_structure.NodeGetCoordinates(i, coordinates)
+        coordinates.convrtMatrixToNumpy(x)
+        exact_values[i] = analytic_solution(x[0][0], 1.8)
+        fem_values[i] = structure.NodeGetTemperature(i)
+
+    errornorm = np.linalg.norm(exact_values - fem_values, 1) / np.linalg.norm(exact_values, 1)
+    print(errornorm)
+
 if __name__ == "__main__":
     static_structure = create_structure()
     static_solve(static_structure)
 
     transient_structure = create_structure(number_of_time_derivatives=1)
-    transient_structure = interpolate(transient_structure, initial_temperature)
+    transient_structure = interpolate(transient_structure, analytic_solution)
     transient_solve(transient_structure)
+
+    compare_to_analytic(transient_structure)

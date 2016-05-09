@@ -1,93 +1,71 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataMultipleConstitutiveLaws.h"
 
-#include <set>
-#include <vector>
 
+//VHIRTHAMTODO Implement missing check routines --- at the moment only temperature
 namespace NuTo
 {
 
-class ConstitutiveLawsAdditiveOutput : public ConstitutiveBase
+class ShrinkageCapillaryStressBased : public ConstitutiveBase
 {
 public:
 
     //! @brief constructor
-    ConstitutiveLawsAdditiveOutput()
+    ShrinkageCapillaryStressBased()
         : ConstitutiveBase()
-    {
-        mComputableDofCombinations.resize(2); //VHIRTHAMTODO ---> Get number time derivatives during construction (as parameter)
-    }
-
-
-
-    //! @brief ... adds a constitutive law to a model that combines multiple constitutive laws (additive, parallel)
-    //! @param ... additional constitutive law
-    virtual void  AddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw) override
-    {
-        if(mStaticDataAllocated)
-            throw MechanicsException(__PRETTY_FUNCTION__,"All constitutive laws have to be attached before static data is allocated!");
-        mConstitutiveLaws.push_back(rConstitutiveLaw);
-        AddCalculableDofCombinations(rConstitutiveLaw);
-    }
-
-
+    {}
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData1D(const ElementBase* rElement) const override
-    {
-        mStaticDataAllocated = true;
-        return new ConstitutiveStaticDataMultipleConstitutiveLaws(mConstitutiveLaws,rElement,1);
-    }
+    ConstitutiveStaticDataBase* AllocateStaticData1D(const ElementBase* rElement) const override {return nullptr;}
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData2D(const ElementBase* rElement) const override
-    {
-        mStaticDataAllocated = true;
-        return new ConstitutiveStaticDataMultipleConstitutiveLaws(mConstitutiveLaws,rElement,2);
-    }
+    ConstitutiveStaticDataBase* AllocateStaticData2D(const ElementBase* rElement) const override  {return nullptr;}
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const override
-    {
-        mStaticDataAllocated = true;
-        return new ConstitutiveStaticDataMultipleConstitutiveLaws(mConstitutiveLaws,rElement,3);
-    }
+    ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const override  {return nullptr;}
 
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow ... row dof
     //! @param rDofCol ... column dof
     //! @param rTimeDerivative ... time derivative
     virtual bool CheckDofCombinationComputable(Node::eDof rDofRow,
-                                               Node::eDof rDofCol,
-                                               int rTimeDerivative) const override;
+                                                Node::eDof rDofCol,
+                                                int rTimeDerivative) const override;
 
     //! @brief ... check compatibility between element type and type of constitutive relationship
     //! @param rElementType ... element type
     //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
     virtual bool CheckElementCompatibility( Element::eElementType rElementType) const override
     {
-        for(unsigned int i=0; i<mConstitutiveLaws.size(); ++i)
+        switch (rElementType)
         {
-            if(!mConstitutiveLaws[i]->CheckElementCompatibility(rElementType))
-                return false;
+        case NuTo::Element::CONTINUUMELEMENT:
+        case NuTo::Element::CONTINUUMBOUNDARYELEMENT:
+        case NuTo::Element::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
+            return true;
+        default:
+            return false;
         }
-        return true;
     }
 
     //! @brief ... check parameters of the constitutive relationship
     //! if one check fails, an exception is thrwon
-    virtual void CheckParameters() const override
-    {
-        for(unsigned int i=0; i<mConstitutiveLaws.size(); ++i)
-        {
-            mConstitutiveLaws[i]->CheckParameters();
-        }
-    }
+    virtual void CheckParameters() const override;
+
+    //! @brief ... evaluate the constitutive relation
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    template <int TDim>
+    NuTo::Error::eError EvaluateShrinkageCapillary( ElementBase* rElement,
+                                                    int rIp,
+                                                    const ConstitutiveInputMap& rConstitutiveInput,
+                                                    const ConstitutiveOutputMap& rConstitutiveOutput);
 
 
     //! @brief ... evaluate the constitutive relation of every attached constitutive law in 1D
@@ -98,7 +76,13 @@ public:
     virtual NuTo::Error::eError Evaluate1D(ElementBase* rElement,
                                            int rIp,
                                            const ConstitutiveInputMap& rConstitutiveInput,
-                                           const ConstitutiveOutputMap& rConstitutiveOutput) override;
+                                           const ConstitutiveOutputMap& rConstitutiveOutput) override
+    {
+        return EvaluateShrinkageCapillary<1>(rElement,
+                                             rIp,
+                                             rConstitutiveInput,
+                                             rConstitutiveOutput);
+    }
 
     //! @brief ... evaluate the constitutive relation of every attached constitutive law in 2D
     //! @param rElement ... element
@@ -108,7 +92,13 @@ public:
     virtual NuTo::Error::eError Evaluate2D(ElementBase* rElement,
                                            int rIp,
                                            const ConstitutiveInputMap& rConstitutiveInput,
-                                           const ConstitutiveOutputMap& rConstitutiveOutput) override;
+                                           const ConstitutiveOutputMap& rConstitutiveOutput) override
+    {
+        return EvaluateShrinkageCapillary<2>(rElement,
+                                             rIp,
+                                             rConstitutiveInput,
+                                             rConstitutiveOutput);
+    }
 
     //! @brief ... evaluate the constitutive relation of every attached constitutive law relation in 3D
     //! @param rElement ... element
@@ -118,7 +108,13 @@ public:
     virtual NuTo::Error::eError Evaluate3D(ElementBase* rElement,
                                            int rIp,
                                            const ConstitutiveInputMap& rConstitutiveInput,
-                                           const ConstitutiveOutputMap& rConstitutiveOutput) override;
+                                           const ConstitutiveOutputMap& rConstitutiveOutput) override
+    {
+        return EvaluateShrinkageCapillary<3>(rElement,
+                                             rIp,
+                                             rConstitutiveInput,
+                                             rConstitutiveOutput);
+    }
 
 
 
@@ -134,35 +130,30 @@ public:
     //! @sa eConstitutiveType
     virtual Constitutive::eConstitutiveType GetType() const override
     {
-        return NuTo::Constitutive::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT;
+        return NuTo::Constitutive::SHRINKAGE_CAPILLARY_STRESS_BASED;
     }
+
+    //! @brief ... gets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
+    //! @return ... value of the requested variable
+    virtual double GetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier) const override;
+
+    //! @brief ... sets a parameter of the constitutive law which is selected by an enum
+    //! @param rIdentifier ... Enum to identify the requested parameter
+    //! @param rValue ... new value for requested variable
+    virtual void SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue) override;
 
     //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
     //! @return ... see brief explanation
     virtual bool HaveTmpStaticData() const override
     {
-        for(unsigned int i=0; i<mConstitutiveLaws.size(); ++i)
-        {
-            if(mConstitutiveLaws[i]->HaveTmpStaticData())
-                return true;
-        }
         return false;
     }
 
 private:
 
-    //! @brief Adds all calculable dof combinations of an attached constitutive law to an internal storage
-    //! @param rConstitutiveLaw ... constitutive law
-    void AddCalculableDofCombinations(NuTo::ConstitutiveBase* rConstitutiveLaw);
-
-
-    //! @brief ... list of pointers to every included constitutive law
-    std::vector<NuTo::ConstitutiveBase*> mConstitutiveLaws;
-
-    std::vector<std::set<std::pair<Node::eDof,Node::eDof>>> mComputableDofCombinations;
-
-    //! @brief debug variable to avoid that a constitutive law can be attached after allocation of static data.
-    mutable bool mStaticDataAllocated = false;
+    //! @brief Temperature in K
+    double                      mTemperature            = 293.15;
 };
 
 }

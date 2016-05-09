@@ -36,6 +36,7 @@ static inline std::map<eElementType, std::string> GetElementTypeMap()
     map[CONTINUUMBOUNDARYELEMENT]                        = "CONTINUUMBOUNDARYELEMENT";
     map[CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE]  = "CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE";
     map[ELEMENT1DINXD]                                   = "ELEMENT1DINXD";
+    map[ELEMENT2DINTERFACE]                              = "ELEMENTINTERFACE";
     return map;
 }
 

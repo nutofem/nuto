@@ -38,7 +38,7 @@ public:
 
     static constexpr double mTimeStep = 1.0e-1;
     static constexpr double mMinTimeStep = 1.0e-5;
-    static constexpr double mMaxTimeStep = 1.0e-1;
+    static constexpr double mMaxTimeStep = 1.0e-0;
     static constexpr double mToleranceForce = 1e-6;
     static constexpr double mSimulationTime = 1.0;
     static constexpr double mLoad = 0.01;
@@ -98,7 +98,7 @@ void run2d()
 //        int matrixMaterial = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
 //        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, Parameters::mMatrixYoungsModulus);
 //        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, Parameters::mMatrixPoissonsRatio);
-//
+
         int matrixMaterial = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS);
         myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, Parameters::mMatrixYoungsModulus);
         myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, Parameters::mMatrixPoissonsRatio);
@@ -117,13 +117,13 @@ void run2d()
 
         int matrixInterpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRIANGLE2D);
         myStructure.InterpolationTypeAdd(matrixInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
-        myStructure.InterpolationTypeAdd(matrixInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT2);
+        myStructure.InterpolationTypeAdd(matrixInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT1);
         myStructure.InterpolationTypeAdd(matrixInterpolationType, NuTo::Node::NONLOCALEQSTRAIN, NuTo::Interpolation::EQUIDISTANT1);
 
 
         int fibreInterpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRUSSXD);
         myStructure.InterpolationTypeAdd(fibreInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
-        myStructure.InterpolationTypeAdd(fibreInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT2);
+        myStructure.InterpolationTypeAdd(fibreInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT1);
 
         std::cout << "***********************************" << std::endl;
         std::cout << "**      Import Matrix Mesh       **" << std::endl;
@@ -228,6 +228,7 @@ void run2d()
         myStructure.NodeBuildGlobalDofs();
         myStructure.CalculateMaximumIndependentSets();
 
+
         NuTo::FullMatrix<double, 2, 2> timeDependentLoad;
         timeDependentLoad(0, 0) = 0;
         timeDependentLoad(1, 0) = Parameters::mSimulationTime;
@@ -245,7 +246,7 @@ void run2d()
         std::cout << "**      Postprocessing           **" << std::endl;
         std::cout << "***********************************" << std::endl;
 
-        myStructure.Info();
+
 
         // Calculate the displacements at one of the constrained points in the matrix and the fiber and check if they match
         auto elementPtrMatrix = myStructure.ElementGetElementPtr(0);
@@ -272,7 +273,6 @@ void run2d()
 
         if ( (dispInMatrix - dispInFiber).norm() > 1e-6 or (coordsInMatrix - coordsInFiber).norm() > 1e-6)
             throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Displacements and/or coordinates of fiber and matrix do not match!");
-
 
 
         std::cout << "Results written to " + resultDir.string() << std::endl;
@@ -333,7 +333,7 @@ void run3d()
 //    int matrixMaterial = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
 //    myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, Parameters::mMatrixYoungsModulus);
 //    myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, Parameters::mMatrixPoissonsRatio);
-//
+
     int matrixMaterial = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS);
     myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, Parameters::mMatrixYoungsModulus);
     myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, Parameters::mMatrixPoissonsRatio);
@@ -371,8 +371,6 @@ void run3d()
     myStructure.ElementConvertToInterpolationType(groupIdMatrix);
     myStructure.ElementGroupSetSection(groupIdMatrix, matrixSection);
     myStructure.ElementGroupSetConstitutiveLaw(groupIdMatrix, matrixMaterial);
-
-    myStructure.Info();
 
     std::cout << "***********************************" << std::endl;
     std::cout << "**      Import Fiber Mesh        **" << std::endl;
@@ -461,7 +459,6 @@ void run3d()
     std::cout << "**      Solver                   **" << std::endl;
     std::cout << "***********************************" << std::endl;
 
-    myStructure.Info();
     myStructure.NodeBuildGlobalDofs();
     myStructure.CalculateMaximumIndependentSets();
 
@@ -529,12 +526,17 @@ int main()
 
     } catch (NuTo::MechanicsException& e)
     {
-        std::cout << e.ErrorMessage();
+        std::cout << e.ErrorMessage() << std::endl;
         return EXIT_FAILURE;
 
     } catch (NuTo::MathException& e)
     {
-        std::cout << e.ErrorMessage();
+        std::cout << e.ErrorMessage() << std::endl;
+        return EXIT_FAILURE;
+
+    } catch (...)
+    {
+        std::cout << "Something else went wrong :-(" << std::endl;
         return EXIT_FAILURE;
     }
 

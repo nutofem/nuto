@@ -39,25 +39,10 @@ NuTo::Error::eError NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const Constit
         CalculateNMatrixBMatrixDetJacobian(data, theIP);
         CalculateConstitutiveInputs(constitutiveInput, data);
 
-        try
-        {
-            ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(theIP);
-            for(auto itOutput : constitutiveOutput)
-                if(itOutput.second!=nullptr) //check nullptr because of static data
-                    itOutput.second->SetIsCalculated(false);
-            Error::eError error = constitutivePtr->Evaluate<TDim>(this, theIP, constitutiveInput, constitutiveOutput);
-            if (error != Error::SUCCESSFUL)
-                return error;            
-            CalculateGradientDamageBoundaryConditionParameters(data, constitutivePtr);
-            for(auto itOutput : constitutiveOutput)
-                if(itOutput.second!=nullptr && !itOutput.second->GetIsCalculated()) //check nullptr because of static data
-                    throw MechanicsException(__PRETTY_FUNCTION__,std::string("Output ")+Constitutive::OutputToString(itOutput.first)+" not calculated by constitutive law");
 
-        } catch (NuTo::MechanicsException& e)
-        {
-            e.AddMessage(__PRETTY_FUNCTION__, "error evaluating the constitutive model.");
-            throw e;
-        }
+        Error::eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput,constitutiveOutput,theIP);
+        if (error != Error::SUCCESSFUL)
+            return error;
         CalculateElementOutputs(rElementOutput, data, theIP);
     }
     return Error::SUCCESSFUL;
@@ -336,7 +321,9 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputHessian0(BlockF
     {
         for (auto dofCol : mInterpolationType->GetActiveDofs())
         {
-            auto& hessian0 = rHessian0(dofRow, dofCol);
+            if(!GetConstitutiveLaw(rTheIP)->CheckDofCombinationComputable(dofRow,dofCol,0))
+                continue;
+            auto& hessian0 = rHessian0(dofRow, dofCol);            
             switch (Node::CombineDofs(dofRow, dofCol))
             {
 
@@ -457,6 +444,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(Con
             NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian0(dofRow, dofCol);
             dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
             dofSubMatrix.setZero();
+            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow,dofCol,0))
+                continue;
 
             switch (Node::CombineDofs(dofRow, dofCol))
             {
@@ -487,13 +476,11 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(Con
            \*******************************************************/
             case Node::CombineDofs(Node::DISPLACEMENTS, Node::RELATIVEHUMIDITY):
             case Node::CombineDofs(Node::DISPLACEMENTS, Node::WATERVOLUMEFRACTION):
-            case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::DISPLACEMENTS):
+//            case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::DISPLACEMENTS):
             case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::WATERVOLUMEFRACTION):
-            case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::DISPLACEMENTS):
+//            case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::DISPLACEMENTS):
             case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::RELATIVEHUMIDITY):
-            {
                 continue;
-            }
             default:
                 throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_0_TIME_DERIVATIVE for "
                         "(" + Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
@@ -516,6 +503,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(Con
             NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian0(dofRow, dofCol);
             dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
             dofSubMatrix.setZero();
+            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow,dofCol,1))
+                continue;
 
             switch (Node::CombineDofs(dofRow, dofCol))
             {
@@ -525,15 +514,15 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(Con
            /*******************************************************\
            |         NECESSARY BUT UNUSED DOF COMBINATIONS         |
            \*******************************************************/
-            case Node::CombineDofs(Node::DISPLACEMENTS,         Node::DISPLACEMENTS):
-            case Node::CombineDofs(Node::DISPLACEMENTS,         Node::RELATIVEHUMIDITY):
-            case Node::CombineDofs(Node::DISPLACEMENTS,         Node::WATERVOLUMEFRACTION):
+//            case Node::CombineDofs(Node::DISPLACEMENTS,         Node::DISPLACEMENTS):
+//            case Node::CombineDofs(Node::DISPLACEMENTS,         Node::RELATIVEHUMIDITY):
+//            case Node::CombineDofs(Node::DISPLACEMENTS,         Node::WATERVOLUMEFRACTION):
             case Node::CombineDofs(Node::RELATIVEHUMIDITY,      Node::RELATIVEHUMIDITY):
             case Node::CombineDofs(Node::WATERVOLUMEFRACTION,   Node::WATERVOLUMEFRACTION):
-            case Node::CombineDofs(Node::RELATIVEHUMIDITY,      Node::DISPLACEMENTS):
+//            case Node::CombineDofs(Node::RELATIVEHUMIDITY,      Node::DISPLACEMENTS):
             case Node::CombineDofs(Node::RELATIVEHUMIDITY,      Node::WATERVOLUMEFRACTION):
-            case Node::CombineDofs(Node::WATERVOLUMEFRACTION,   Node::DISPLACEMENTS):
-            case Node::CombineDofs(Node::WATERVOLUMEFRACTION,   Node::RELATIVEHUMIDITY):
+//            case Node::CombineDofs(Node::WATERVOLUMEFRACTION,   Node::DISPLACEMENTS):
+//            case Node::CombineDofs(Node::WATERVOLUMEFRACTION,   Node::RELATIVEHUMIDITY):
                 continue;
             default:
                 throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_1_TIME_DERIVATIVE for "
@@ -554,7 +543,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(Con
 //            NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian2(dofRow, dofCol);
 //            dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
 //            dofSubMatrix.setZero();
-
+//            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow,dofCol,2))
+//                continue;
 //            switch (Node::CombineDofs(dofRow, dofCol))
 //            {
 //            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):

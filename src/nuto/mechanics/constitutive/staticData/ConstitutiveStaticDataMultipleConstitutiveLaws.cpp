@@ -36,7 +36,7 @@ NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::ConstitutiveStaticDataMult
     for (auto itStaticData : rOther.mStaticData)
     {
         ConstitutiveStaticDataBase* constStaticData = itStaticData.second->Clone();
-        mStaticData.insert(std::pair<Constitutive::eConstitutiveStaticDataType,ConstitutiveStaticDataBase*>(itStaticData.first,constStaticData));
+        mStaticData.insert(std::pair<Constitutive::eConstitutiveType,ConstitutiveStaticDataBase*>(itStaticData.first,constStaticData));
     }
 }
 
@@ -54,24 +54,15 @@ NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::~ConstitutiveStaticDataMul
 
 
 
-
 void NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::AllocateStaticData1D(const std::vector<NuTo::ConstitutiveBase *> &rConstitutiveLaws,
                                                                                 const NuTo::ElementBase *rElement)
 {
     for(unsigned int i=0; i<rConstitutiveLaws.size(); ++i)
     {
-        switch(rConstitutiveLaws[i]->GetType())
+        ConstitutiveStaticDataBase* staticData = rConstitutiveLaws[i]->AllocateStaticData1D(rElement);
+        if(staticData != nullptr)
         {
-        case Constitutive::MOISTURE_TRANSPORT:
-            mStaticData.emplace(Constitutive::eConstitutiveStaticDataType::MOISTURE_TRANSPORT,rConstitutiveLaws[i]->AllocateStaticData1D(rElement));
-            break;
-
-        // Do nothing
-        case Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS:
-            break;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__,std::string("Behaviour for constitutive law ")+
-                                     Constitutive::ConstitutiveTypeToString(rConstitutiveLaws[i]->GetType())+" not specified");
+            mStaticData.emplace(rConstitutiveLaws[i]->GetType(), staticData);
         }
     }
 }
@@ -81,19 +72,10 @@ void NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::AllocateStaticData2D(
 {
     for(unsigned int i=0; i<rConstitutiveLaws.size(); ++i)
     {
-        switch(rConstitutiveLaws[i]->GetType())
+        ConstitutiveStaticDataBase* staticData = rConstitutiveLaws[i]->AllocateStaticData2D(rElement);
+        if(staticData != nullptr)
         {
-        case Constitutive::MOISTURE_TRANSPORT:
-            mStaticData.emplace(Constitutive::eConstitutiveStaticDataType::MOISTURE_TRANSPORT,rConstitutiveLaws[i]->AllocateStaticData2D(rElement));
-            break;
-
-        // Do nothing
-        case Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS:
-            break;
-
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__,std::string("Behaviour for constitutive law ")+
-                                     Constitutive::ConstitutiveTypeToString(rConstitutiveLaws[i]->GetType())+" not specified");
+            mStaticData.emplace(rConstitutiveLaws[i]->GetType(), staticData);
         }
     }
 }
@@ -103,17 +85,10 @@ void NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::AllocateStaticData3D(
 {
     for(unsigned int i=0; i<rConstitutiveLaws.size(); ++i)
     {
-        switch(rConstitutiveLaws[i]->GetType())
+        ConstitutiveStaticDataBase* staticData = rConstitutiveLaws[i]->AllocateStaticData3D(rElement);
+        if(staticData != nullptr)
         {
-        case Constitutive::MOISTURE_TRANSPORT:
-            mStaticData.emplace(Constitutive::eConstitutiveStaticDataType::MOISTURE_TRANSPORT,rConstitutiveLaws[i]->AllocateStaticData3D(rElement));
-            break;
-        // Do nothing
-        case Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS:
-            break;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__,std::string("Behaviour for constitutive law ")+
-                                     Constitutive::ConstitutiveTypeToString(rConstitutiveLaws[i]->GetType())+" not specified");
+            mStaticData.emplace(rConstitutiveLaws[i]->GetType(), staticData);
         }
     }
 }
@@ -121,7 +96,7 @@ void NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::AllocateStaticData3D(
 
 NuTo::ConstitutiveStaticDataMoistureTransport *NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::AsMoistureTransport()
 {
-    auto itConstLawStaticData = mStaticData.find(Constitutive::eConstitutiveStaticDataType::MOISTURE_TRANSPORT);
+    auto itConstLawStaticData = mStaticData.find(Constitutive::MOISTURE_TRANSPORT);
     if (itConstLawStaticData == mStaticData.end())
     {
         throw MechanicsException(__PRETTY_FUNCTION__,"No constitutive static data for moisture transport found!");
@@ -132,7 +107,7 @@ NuTo::ConstitutiveStaticDataMoistureTransport *NuTo::ConstitutiveStaticDataMulti
 
 const NuTo::ConstitutiveStaticDataMoistureTransport *NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::AsMoistureTransport() const
 {
-    auto itConstLawStaticData = mStaticData.find(Constitutive::eConstitutiveStaticDataType::MOISTURE_TRANSPORT);
+    auto itConstLawStaticData = mStaticData.find(Constitutive::MOISTURE_TRANSPORT);
     if (itConstLawStaticData == mStaticData.end())
     {
         throw MechanicsException(__PRETTY_FUNCTION__,"No constitutive static data for moisture transport found!");

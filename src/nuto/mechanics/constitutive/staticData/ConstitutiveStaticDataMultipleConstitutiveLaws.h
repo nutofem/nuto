@@ -90,7 +90,7 @@ public:
 
 
 private:
-    std::map<Constitutive::eConstitutiveStaticDataType,ConstitutiveStaticDataBase*>mStaticData;
+    std::map<Constitutive::eConstitutiveType,ConstitutiveStaticDataBase*>mStaticData;
 };
 
 }

@@ -204,7 +204,7 @@ int main(int argc, char* argv[])
         std::cout << "**      Loads                    **" << std::endl;
         std::cout << "***********************************" << std::endl;
 
-        int timeDependentConstraint = myStructure.ConstraintLinearSetDisplacementNode(205, Parameters::mDirectionX, 1);
+        int timeDependentConstraint = myStructure.ConstraintLinearSetDisplacementNode(205, Parameters::mDirectionX, 0);
 
         std::cout << "***********************************" << std::endl;
         std::cout << "**      Visualization            **" << std::endl;
@@ -237,7 +237,8 @@ int main(int argc, char* argv[])
         timeDependentLoad(3, 1) = 0.25*Parameters::mLoad;
         timeDependentLoad(4, 1) = 0.00*Parameters::mLoad;
 
-        myIntegrationScheme.SetTimeDependentConstraint(timeDependentConstraint, timeDependentLoad);
+        myIntegrationScheme.AddTimeDependentConstraint(timeDependentConstraint, timeDependentLoad);
+
 
         myIntegrationScheme.Solve(Parameters::mSimulationTime);
 
@@ -246,10 +247,12 @@ int main(int argc, char* argv[])
     } catch (NuTo::MechanicsException& e)
     {
         std::cout << e.ErrorMessage();
+        return EXIT_FAILURE;
 
     } catch (NuTo::MathException& e)
     {
         std::cout << e.ErrorMessage();
+        return EXIT_FAILURE;
     }
 
     std::cout << "***********************************" << std::endl;

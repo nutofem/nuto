@@ -360,6 +360,23 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate3D(
 
 
 
+bool NuTo::LinearElasticEngineeringStress::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow,
+                                                                          NuTo::Node::eDof rDofCol,
+                                                                          int rTimeDerivative) const
+{
+    assert(rTimeDerivative>-1);
+    if(rTimeDerivative<1 &&
+       rDofRow == Node::DISPLACEMENTS &&
+       rDofCol ==Node::DISPLACEMENTS)
+    {
+        return true;
+    }
+    return false;
+}
+
+
+
+
 
 bool NuTo::LinearElasticEngineeringStress::CheckHaveParameter(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
@@ -461,6 +478,7 @@ bool NuTo::LinearElasticEngineeringStress::CheckElementCompatibility(NuTo::Eleme
     {
     case NuTo::Element::CONTINUUMELEMENT:
     case NuTo::Element::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
+    case NuTo::Element::ELEMENT1DINXD:
         return true;
     default:
         return false;

@@ -127,6 +127,8 @@ NuTo::BlockFullMatrix<double> NuTo::StructureBase::ElementBuildHessian0_CDF(Elem
     auto globalColumnDofs  = ElementBuildGlobalDofsColumn(rElement);
     auto dofs = rElement->GetInterpolationType()->GetActiveDofs();
 
+
+
     NuTo::BlockFullMatrix<double> hessian0_CDF(GetDofStatus());
 
     auto dofValues = this->NodeExtractDofValues(0);
@@ -145,7 +147,7 @@ NuTo::BlockFullMatrix<double> NuTo::StructureBase::ElementBuildHessian0_CDF(Elem
             int numRows = internalGradient0[dofRow].GetNumRows();
 
             hessian0_CDF_dof.resize(numRows,numCols);
-
+            hessian0_CDF_dof.setZero();
             for (int iCol = 0; iCol < numCols; ++iCol)
             {
                 // Apply rDelta to the corresponding Dof
@@ -190,6 +192,10 @@ bool NuTo::StructureBase::ElementCheckHessian0(ElementBase* rElement, double rDe
     {
         for (auto dofCol : GetDofStatus().GetActiveDofTypes())
         {
+            // TODO: Do not loop over all possible combinations of DOFs but over a list of combinations created by the constitutive law of the corresponding element. What if an element has multiple constitutive laws assigned?
+            if(not rElement->GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow,dofCol,0))
+                continue;
+
             double scaling = hessianRef(dofRow, dofCol).cwiseAbs().maxCoeff();
             FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>  differenceRelative = differenceAbsolute(dofRow, dofCol) / scaling;
             int row = 0, col = 0;
@@ -231,7 +237,7 @@ bool NuTo::StructureBase::ElementCheckHessian0(double rDelta, double rRelativeTo
 
         if (not isElementCorrect)
         {
-            GetLogger() << "[" << __FUNCTION__ << "] wrong hessian0 in " << Element::ElementTypeToString(elementIdPair.second->GetEnumType()) << " " << elementIdPair.first << ".\n";
+            GetLogger() << "[" << __FUNCTION__ << "] wrong hessian0 in " << Element::ElementTypeToString(elementIdPair.second->GetEnumType()) << " " << elementIdPair.first << "\n";
             GetLogger() << "################################################################################################\n";
         }
 

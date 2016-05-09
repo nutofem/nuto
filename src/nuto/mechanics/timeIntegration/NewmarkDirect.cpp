@@ -248,7 +248,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                 CalculateResidualTrial(residual, deltaBRHS, hessian0, hessian1, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2, timeStep);
                 residual.ApplyCMatrix(residual_mod, cmat);
 
-                mStructure->GetLogger() << "Initial trial residual:               " << residual_mod.CalculateInfNorm() << "\n";
+                mStructure->GetLogger() << "\n"<< "Initial trial residual:               " << residual_mod.CalculateInfNorm() << "\n";
 
                 // ******************************************************
                 delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessian0, hessian1, hessian2, residual_mod, timeStep);
@@ -359,8 +359,8 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
                     mTime+=timeStep;
 
-                    mStructure->GetLogger() << "Convergence after " << iteration << " iterations at time " << mTime << "(timestep " << timeStep << ").\n";
-
+                    mStructure->GetLogger() << "Convergence after " << iteration << " iterations at time " << mTime << " (timestep " << timeStep << ").\n";
+                    mStructure->GetLogger() << "Residual: \t" << normResidual << "\n";
                     //perform Postprocessing
                     CalculateResidualKForPostprocessing(prevResidual, hessian2, dof_dt1, dof_dt2);
                     PostProcess(prevResidual);

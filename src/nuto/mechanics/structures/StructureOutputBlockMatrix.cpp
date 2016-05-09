@@ -5,6 +5,7 @@
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "nuto/mechanics/structures/StructureOutputBlockVector.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 
 
 NuTo::StructureOutputBlockMatrix::StructureOutputBlockMatrix(const DofStatus &rDofStatus, bool rAutomaticResize)
@@ -19,6 +20,7 @@ NuTo::StructureOutputBlockMatrix::StructureOutputBlockMatrix(const DofStatus &rD
 }
 
 void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
+        const ElementBase* rElementPtr,
         const NuTo::BlockFullMatrix<double>& rElementMatrix,
         const NuTo::BlockFullVector<int>& rGlobalRowDofNumbers,
         const NuTo::BlockFullVector<int>& rGlobalColumnDofNumbers,
@@ -30,6 +32,10 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
     for (auto dofRow : activeDofTypes)
         for (auto dofCol : activeDofTypes)
         {
+            // TODO: Do not loop over all possible combinations of DOFs but over a list of combinations created by the constitutive law of the corresponding element. What if an element has multiple constitutive laws assigned?
+            if (not rElementPtr->GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow, dofCol, 0))
+                continue;
+
             const auto& elementMatrix = rElementMatrix(dofRow, dofCol);
             const auto& globalRowDofs = rGlobalRowDofNumbers[dofRow];
             const auto& globalColDofs = rGlobalColumnDofNumbers[dofCol];

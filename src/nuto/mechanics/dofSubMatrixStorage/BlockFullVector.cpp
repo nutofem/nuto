@@ -187,7 +187,6 @@ NuTo::BlockScalar NuTo::BlockFullVector<T>::CalculateNormL2()
 template<typename T>
 NuTo::BlockScalar NuTo::BlockFullVector<T>::CalculateInfNorm()
 {
-    Eigen::MatrixXd d;
     BlockScalar dofWiseNorm(mDofStatus);
     for (auto dof : mDofStatus.GetActiveDofTypes())
     {

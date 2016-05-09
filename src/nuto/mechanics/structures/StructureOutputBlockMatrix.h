@@ -9,7 +9,7 @@ namespace NuTo
     // Foward declarations
 template <typename T> class BlockFullVector;
 template <typename T> class BlockFullMatrix;
-
+class ElementBase;
 
 //! @author Volker Hirthammer
 //! @date January 08, 2015
@@ -72,6 +72,7 @@ public:
 
 
     void AddElementMatrix(
+            const ElementBase* rElementPtr,
             const NuTo::BlockFullMatrix<double>& rElementMatrix,
             const NuTo::BlockFullVector<int>& rGlobalRowDofNumbers,
             const NuTo::BlockFullVector<int>& rGlobalColumnDofNumbers,

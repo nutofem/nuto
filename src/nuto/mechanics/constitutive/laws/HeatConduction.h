@@ -80,6 +80,14 @@ public:
     //! @return Pointer to static data object
     ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const override  {return nullptr;}
 
+    //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
+    //! @param rDofRow ... row dof
+    //! @param rDofCol ... column dof
+    //! @param rTimeDerivative ... time derivative
+    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow,
+                                                Node::eDof rDofCol,
+                                                int rTimeDerivative) const override;
+
     //! @brief Checks if the constitutive law has a specific parameter.
     //! @param rIdentifier Enum to identify the requested parameter
     virtual bool CheckHaveParameter(Constitutive::eConstitutiveParameter rIdentifier) const override;
