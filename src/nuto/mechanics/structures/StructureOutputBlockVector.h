@@ -55,11 +55,27 @@ public:
     StructureOutputBlockVector& operator+= (const StructureOutputBlockVector&  rRhs);
     StructureOutputBlockVector& operator-= (const StructureOutputBlockVector&  rRhs);
     StructureOutputBlockVector& operator*= (double rRhs);
+    StructureOutputBlockVector& operator/= (double rRhs);
 
 
     friend StructureOutputBlockVector operator+ (StructureOutputBlockVector rLhs, const StructureOutputBlockVector& rRhs)  { return std::move(rLhs += rRhs); }
     friend StructureOutputBlockVector operator- (StructureOutputBlockVector rLhs, const StructureOutputBlockVector& rRhs)  { return std::move(rLhs -= rRhs); }
-    friend StructureOutputBlockVector operator* (StructureOutputBlockVector rLhs, double rRhs)  { return std::move(rLhs *= rRhs); }
+    friend StructureOutputBlockVector operator* (StructureOutputBlockVector rLhs, double rRhs)
+    {
+        return std::move(rLhs *= rRhs);
+    }
+    friend StructureOutputBlockVector operator* (double rLhs, StructureOutputBlockVector rRhs)
+    {
+        return std::move(rRhs *= rLhs);
+    }
+    friend StructureOutputBlockVector operator/ (StructureOutputBlockVector rLhs, double rRhs)
+    {
+        return std::move(rLhs /= rRhs);
+    }
+    friend StructureOutputBlockVector operator/ (double rLhs, StructureOutputBlockVector rRhs)
+    {
+        return std::move(rRhs /= rLhs);
+    }
 
     friend std::ostream& operator<< (std::ostream &rOut, const StructureOutputBlockVector& rStructureOutputBlockVector);
 

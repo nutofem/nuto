@@ -93,6 +93,13 @@ NuTo::StructureOutputBlockVector& NuTo::StructureOutputBlockVector::operator *=(
     return *this;
 }
 
+NuTo::StructureOutputBlockVector& NuTo::StructureOutputBlockVector::operator /=(double rRhs)
+{
+    J /= rRhs;
+    K /= rRhs;
+    return *this;
+}
+
 
 //! @brief stream operator for outputs with cout or files
 std::ostream& NuTo::operator<<(std::ostream &rOut, const NuTo::StructureOutputBlockVector& rStructureOutputBlockVector)

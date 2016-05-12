@@ -1,5 +1,3 @@
-// $Id: NewmarkDirect.cpp 575 2011-09-20 18:05:35Z unger3 $
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -178,22 +176,29 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
         inputMap[Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateImplicitly;
 
         ExtractDofValues(lastConverged_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2);
+
         UpdateAndGetAndMergeConstraintRHS(curTime, lastConverged_dof_dt0);
 
         // ******************************************************
-        mStructure->Evaluate(inputMap, evaluate_InternalGradient);
+        mStructure->Evaluate(inputMap, evaluate_InternalGradient_Hessian0Hessian1);
         // ******************************************************
 
         StructureOutputBlockVector initialExtForce = CalculateCurrentExternalLoad(curTime);  // put this in element evaluate soon!
 
+        // set first time derivative automatically
+        if (mStructure->GetNumTimeDerivatives() == 1)
+        {
+            auto rhs = hessian0*lastConverged_dof_dt0 - initialExtForce;
+            lastConverged_dof_dt1.J = mStructure->SolveBlockSystem(hessian1.JJ, rhs.J);
+            mStructure->NodeMergeDofValues(1, lastConverged_dof_dt1);
+            mStructure->Evaluate(inputMap, evaluate_InternalGradient_Hessian0Hessian1);
+        }
+
         residual = CalculateResidual(intForce, initialExtForce, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2);
         residual.ApplyCMatrix(residual_mod, cmat);
-
-
         if (mToleranceResidual < residual_mod.CalculateInfNorm())
         {
             mStructure->GetLogger() << residual_mod.CalculateInfNorm();
-            std::cout << residual << std::endl;
             throw MechanicsException(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
         }
 

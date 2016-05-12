@@ -90,7 +90,7 @@ NuTo::ConstitutiveInputMap NuTo::HeatConduction::GetConstitutiveInputs(
 bool NuTo::HeatConduction::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
 {
     assert(rTimeDerivative>-1);
-    if (rTimeDerivative<1 &&
+    if (rTimeDerivative<=1 &&
         rDofRow == Node::TEMPERATURE &&
         rDofCol == Node::TEMPERATURE)
     {
@@ -145,15 +145,15 @@ NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
         }
         case NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT:
         {
-            Eigen::Matrix<double, TDim, TDim>& tangent =
+            Eigen::Matrix<double, TDim, TDim>& conductivity =
                 (*static_cast<ConstitutiveMatrix<TDim, TDim>*>(itOutput.second));
-            tangent = mK * eye;
+            conductivity = mK * eye;
             break;
         }
         case NuTo::Constitutive::Output::D_HEAT_D_TEMPERATURE:
         {
             Eigen::Matrix<double, 1, 1>& tangent = (*static_cast<ConstitutiveScalar*>(itOutput.second));
-            tangent(0,0) = mCt;
+            tangent(0,0) = mCt * mRho;
             break;
         }
         case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:

@@ -151,7 +151,10 @@ ENDIF(ENABLE_OPENMP)
 
 # use newer c++ standard, enable additional warnings, support for sse4
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall -msse4")
-
+# prevent warnings from boost and eigen
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --system-header-prefix=boost/ --system-header-prefix=eigen3/")
+endif()
 # there is an error in the numpy headers, which produces a warning that is
 # fatal when using pedantic-errors
 if(ENABLE_NUMPY)
