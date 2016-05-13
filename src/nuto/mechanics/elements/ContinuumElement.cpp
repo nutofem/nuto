@@ -450,6 +450,14 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveO
     {                                       // FullMatrix VALUE and you want to access this value by reference. Without the &, a tmp copy would be made.
         switch (it.first)
         {
+        case NuTo::IpData::DAMAGE:
+            it.second.Resize(1, GetNumIntegrationPoints());
+            rConstitutiveOutput[NuTo::Constitutive::Output::DAMAGE] = &(rData.mDamage);
+            break;
+        case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
+            it.second.Resize(6, GetNumIntegrationPoints());
+            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE] = &(rData.mEngineeringPlasticStrainVisualize);
+            break;
         case NuTo::IpData::ENGINEERING_STRAIN:
             it.second.Resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_STRAIN_VISUALIZE] = &(rData.mEngineeringStrainVisualize);
@@ -458,14 +466,6 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveO
             it.second.Resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_STRESS_VISUALIZE] = &(rData.mEngineeringStressVisualize);
             break;
-        case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
-            it.second.Resize(6, GetNumIntegrationPoints());
-            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE] = &(rData.mEngineeringPlasticStrainVisualize);
-            break;
-        case NuTo::IpData::DAMAGE:
-            it.second.Resize(1, GetNumIntegrationPoints());
-            rConstitutiveOutput[NuTo::Constitutive::Output::DAMAGE] = &(rData.mDamage);
-            break;
         case NuTo::IpData::EXTRAPOLATION_ERROR:
             it.second.Resize(1, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::Output::EXTRAPOLATION_ERROR] = &(rData.mExtrapolationError);
@@ -473,6 +473,10 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveO
         case NuTo::IpData::LOCAL_EQ_STRAIN:
             it.second.Resize(1, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN] = &(rData.mLocalEqStrain);
+            break;
+        case NuTo::IpData::SHRINKAGE_STRAIN:
+            it.second.Resize(6, GetNumIntegrationPoints());
+            rConstitutiveOutput[NuTo::Constitutive::Output::SHRINKAGE_STRAIN_VISUALIZE] = &(rData.mShrinkageStrainVisualize);
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "this ip data type is not implemented.");
@@ -980,23 +984,26 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputIpData(ElementOutputIpD
     {                                       // FullMatrix VALUE and you want to access this value by reference. Without the &, a tmp copy would be made.
         switch (it.first)
         {
+        case NuTo::IpData::DAMAGE:
+            it.second.col(rTheIP) = std::move(rData.mDamage);
+            break;
+        case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
+            it.second.col(rTheIP) = std::move(rData.mEngineeringPlasticStrainVisualize);
+            break;
         case NuTo::IpData::ENGINEERING_STRAIN:
             it.second.col(rTheIP) = std::move(rData.mEngineeringStrainVisualize);
             break;
         case NuTo::IpData::ENGINEERING_STRESS:
             it.second.col(rTheIP) = std::move(rData.mEngineeringStressVisualize);
             break;
-        case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
-            it.second.col(rTheIP) = std::move(rData.mEngineeringPlasticStrainVisualize);
-            break;
-        case NuTo::IpData::DAMAGE:
-            it.second.col(rTheIP) = std::move(rData.mDamage);
-            break;
         case NuTo::IpData::EXTRAPOLATION_ERROR:
             it.second.col(rTheIP) = std::move(rData.mExtrapolationError);
             break;
         case NuTo::IpData::LOCAL_EQ_STRAIN:
             it.second.col(rTheIP) = std::move(rData.mLocalEqStrain);
+            break;
+        case NuTo::IpData::SHRINKAGE_STRAIN:
+            it.second.col(rTheIP) = std::move(rData.mShrinkageStrainVisualize);
             break;
         default:
             throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Ip data not implemented.");

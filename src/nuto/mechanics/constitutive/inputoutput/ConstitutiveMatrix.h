@@ -49,6 +49,10 @@ public:
         return TCols;
     }
 
+    virtual Eigen::Matrix<double, TRows, TCols>& AsMatrix()
+    {
+        return *this;
+    }
 };
 
 } /* namespace NuTo */

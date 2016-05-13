@@ -54,6 +54,7 @@ int NuTo::ResultElementIpData::GetNumData(const StructureBase& rStructure) const
     {
     case NuTo::IpData::ENGINEERING_STRESS:
     case NuTo::IpData::ENGINEERING_STRAIN:
+    case NuTo::IpData::SHRINKAGE_STRAIN:
         numComponents = 6;
         break;
     case NuTo::IpData::DAMAGE:

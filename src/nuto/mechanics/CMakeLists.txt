@@ -36,12 +36,14 @@ constitutive/inputoutput/ConstitutiveIOBase.cpp
 constitutive/inputoutput/EngineeringStrain.cpp
 constitutive/inputoutput/EngineeringStress.cpp
 constitutive/inputoutput/EquivalentStrain.cpp
+constitutive/laws/AdditiveInputExplicit.cpp
 constitutive/laws/ConstitutiveLawsAdditiveOutput.cpp
 constitutive/laws/EngineeringStressHelper.cpp
 constitutive/laws/HeatConduction.cpp
 constitutive/laws/LinearElasticEngineeringStress.cpp
 constitutive/laws/MisesPlasticityEngineeringStress.cpp
 constitutive/laws/MoistureTransport.cpp
+constitutive/laws/ShrinkageCapillaryStrainBased.cpp
 constitutive/laws/ShrinkageCapillaryStressBased.cpp
 constitutive/laws/GradientDamageEngineeringStress.cpp
 constitutive/laws/FibreMatrixBondStressSlip.cpp

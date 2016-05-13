@@ -427,6 +427,8 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, const std
         AddVisualizationComponent(rElementGroup, VisualizeBase::ROTATION);
     else if (rVisualizeComponent == "Section")
         AddVisualizationComponent(rElementGroup, VisualizeBase::SECTION);
+    else if (rVisualizeComponent == "ShrinkageStrain")
+        AddVisualizationComponent(rElementGroup, VisualizeBase::SHRINKAGE_STRAIN);
     else if (rVisualizeComponent == "Slip")
         AddVisualizationComponent(rElementGroup, VisualizeBase::SLIP);
     else if (rVisualizeComponent == "Temperature")
@@ -610,10 +612,11 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
             rVisualize.DefineCellDataVector(it.get()->GetComponentName());
             break;
 
-        case NuTo::VisualizeBase::ENGINEERING_STRESS:
-        case NuTo::VisualizeBase::ENGINEERING_STRAIN:
-        case NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN:
         case NuTo::VisualizeBase::BOND_STRESS:
+        case NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN:
+        case NuTo::VisualizeBase::ENGINEERING_STRAIN:
+        case NuTo::VisualizeBase::ENGINEERING_STRESS:
+        case NuTo::VisualizeBase::SHRINKAGE_STRAIN:
             rVisualize.DefineCellDataTensor(it.get()->GetComponentName());
             break;
 

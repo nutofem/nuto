@@ -22,7 +22,7 @@
 
 // --- Time integration scheme
 // ---------------------------
-#define RES_TOLERANCE_MECHANICS 1e-4
+#define RES_TOLERANCE_MECHANICS 1e-8
 #define RES_TOLERANCE_MOISTURE_TRANSPORT 1e-17
 #define MAX_ITERATION 40
 
@@ -43,6 +43,8 @@
 
 #define TEST_TEMPERATURE 293.15
 #define TEST_YOUNGSMODULUS 30.e9
+#define TEST_MACROSCOPICBULKMODULUS 30.e9
+#define TEST_SOLIDPHASEBULKMODULUS 7.5e9
 
 /*---------------------------------------------*\
 |*                  TYPEDEFS                   *|
@@ -558,7 +560,7 @@ inline void SetupTimeIntegration(NuTo::NewmarkDirect& rTI,
 |*                 visualize                   *|
 \*---------------------------------------------*/
 
-inline void SetupVisualize(NuTo::Structure& rS)
+inline void SetupVisualize(NuTo::Structure& rS, bool rVisualizeShrinkageStrains = false)
 {
 #ifdef ENABLE_VISUALIZE
         int visGrp = rS.GroupCreate(NuTo::Groups::eGroupId::Elements);
@@ -567,7 +569,10 @@ inline void SetupVisualize(NuTo::Structure& rS)
         rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::RELATIVE_HUMIDITY);
         rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::WATER_VOLUME_FRACTION);
         rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+        rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::ENGINEERING_STRESS);
         rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS);
+        if(rVisualizeShrinkageStrains)
+            rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::SHRINKAGE_STRAIN);
 #endif // ENABLE_VISUALIZE
 }
 
@@ -583,7 +588,7 @@ inline void SetupVisualize(NuTo::Structure& rS)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 template<int TDim>
-void CheckMechanicsResults(NuTo::Structure& rS)
+void CheckMechanicsResultsStressBased(NuTo::Structure& rS)
 {
     constexpr const double temperature     =   TEST_TEMPERATURE;
     constexpr const double capStressFactor =   NuTo::SI::DensityLiquidWater(temperature) * NuTo::SI::IdealGasConstant
@@ -672,19 +677,16 @@ void CheckMoistureTransportResults(NuTo::Structure& rS,
 //! @param rN: array with number of elements in each direction
 //! @param rL: array with length of elements in each direction
 template<int TDim>
-void ShrinkageTest(std::array<int,TDim> rN,
-                        std::array<double,TDim> rL,
-                        std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> rDofIPTMap,
-                        bool rStaggered = false)
+void ShrinkageTestStressBased(  std::array<int,TDim> rN,
+                                std::array<double,TDim> rL,
+                                std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> rDofIPTMap,
+                                bool rStaggered = false)
 {
-//    assert((rN[0] == 16)   && "Only 16 elements in x-direction allowed for this test --- needed for direct comparison to values given in Johannesson 2010");
-//    assert((rL[0] == 0.16) && "The length in flow direction (x) must be 0.16m for direct comparison with paper values");
 
-
-    std::string testName = std::string("ShrinkageTest") + std::to_string(TDim) +"D";
+    std::string testName = std::string("StressBased") + std::to_string(TDim) +"D";
     if(rStaggered)
         testName += "_staggered";
-    std::string resultDir = std::string("./MultipleConstitutiveLaws_") + testName;
+    std::string resultDir = std::string("./Shrinkage_") + testName;
 
     std::cout << std::endl << "--------------------------------------------------------------------------"
               << std::endl << "Start test: "<< testName
@@ -696,14 +698,14 @@ void ShrinkageTest(std::array<int,TDim> rN,
     int CL_LE_ID   = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
     int CL_SCSB_ID = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::SHRINKAGE_CAPILLARY_STRESS_BASED);
     int CL_MT_ID   = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::MOISTURE_TRANSPORT);
-    int CL_CLAL_ID = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT);
+    int CL_AL_ID   = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT);
 
 
 
     NuTo::ConstitutiveBase* CL_LE_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LE_ID);
     NuTo::ConstitutiveBase* CL_SCSB_Ptr = S.ConstitutiveLawGetConstitutiveLawPtr(CL_SCSB_ID);
     NuTo::ConstitutiveBase* CL_MT_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_MT_ID);
-    NuTo::ConstitutiveBase* CL_CLAL_Ptr = S.ConstitutiveLawGetConstitutiveLawPtr(CL_CLAL_ID);
+    NuTo::ConstitutiveBase* CL_AL_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_AL_ID);
 
     TimeControl tCtrl;
     tCtrl.t_final = 365.0 * 24.0 * 60.0 * 60.0;
@@ -727,9 +729,9 @@ void ShrinkageTest(std::array<int,TDim> rN,
     CL_SCSB_Ptr->SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::TEMPERATURE, TEST_TEMPERATURE);
 
 
-    CL_CLAL_Ptr->AddConstitutiveLaw(CL_LE_Ptr);
-    CL_CLAL_Ptr->AddConstitutiveLaw(CL_SCSB_Ptr);
-    CL_CLAL_Ptr->AddConstitutiveLaw(CL_MT_Ptr);
+    CL_AL_Ptr->AddConstitutiveLaw(CL_LE_Ptr);
+    CL_AL_Ptr->AddConstitutiveLaw(CL_SCSB_Ptr);
+    CL_AL_Ptr->AddConstitutiveLaw(CL_MT_Ptr);
 
 
 
@@ -739,7 +741,7 @@ void ShrinkageTest(std::array<int,TDim> rN,
 
     SetupMesh<TDim>(S,
                     SEC,
-                    CL_CLAL_ID,
+                    CL_AL_ID,
                     IPT,
                     rN,
                     rL);
@@ -946,11 +948,294 @@ void ShrinkageTest(std::array<int,TDim> rN,
     CheckMoistureTransportResults<TDim>(S,
                                         rN,
                                         rL);
-    CheckMechanicsResults<TDim>(S);
+    CheckMechanicsResultsStressBased<TDim>(S);
 
 }
 
 
+
+
+
+//! @brief performs a simulation in the desired dimension
+//! @param rN: array with number of elements in each direction
+//! @param rL: array with length of elements in each direction
+template<int TDim>
+void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
+                                std::array<double,TDim> rL,
+                                std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> rDofIPTMap,
+                                bool rStaggered = false)
+{
+    std::string testName = std::string("StrainBased") + std::to_string(TDim) +"D";
+    if(rStaggered)
+        testName += "_staggered";
+    std::string resultDir = std::string("./Shrinkage_") + testName;
+
+    std::cout << std::endl << "--------------------------------------------------------------------------"
+              << std::endl << "Start test: "<< testName
+              << std::endl << "--------------------------------------------------------------------------" << std::endl;
+
+    // Allocate neccessary stuff
+    NuTo::Structure S(TDim);
+    NuTo::NewmarkDirect TI(&S);
+    int CL_LE_ID        = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
+    int CL_SCSB_ID      = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::SHRINKAGE_CAPILLARY_STRAIN_BASED);
+    int CL_AIE_ID       = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::ADDITIVE_INPUT_EXPLICIT);
+    int CL_MT_ID        = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::MOISTURE_TRANSPORT);
+    int CL_AO_ID        = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT);
+
+
+    NuTo::ConstitutiveBase* CL_LE_Ptr       = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LE_ID);
+    NuTo::ConstitutiveBase* CL_SCSB_Ptr     = S.ConstitutiveLawGetConstitutiveLawPtr(CL_SCSB_ID);
+    NuTo::ConstitutiveBase* CL_AIE_Ptr      = S.ConstitutiveLawGetConstitutiveLawPtr(CL_AIE_ID);
+    NuTo::ConstitutiveBase* CL_MT_Ptr       = S.ConstitutiveLawGetConstitutiveLawPtr(CL_MT_ID);
+    NuTo::ConstitutiveBase* CL_AO_Ptr       = S.ConstitutiveLawGetConstitutiveLawPtr(CL_AO_ID);
+
+    TimeControl tCtrl;
+    tCtrl.t_final = 365.0 * 24.0 * 60.0 * 60.0;
+    tCtrl.delta_t = tCtrl.t_final;
+    tCtrl.t_write = tCtrl.t_final;
+
+
+    MoistureTransportControl MTCtrl(S,*CL_MT_Ptr);
+    MTCtrl.InitialRelativeHumidity = 1.0;
+    MTCtrl.BoundaryEnvironmentalRH = 0.40;
+    MTCtrl.MassExchangeRate = 1.;
+    MTCtrl.DiffusionCoefficientRH = 1.e-5;
+    MTCtrl.DiffusionCoefficientWV = 1.e-1;
+    MTCtrl.BoundaryDiffusionCoefficientRH          =   1.0e-5;
+    MTCtrl.BoundaryDiffusionCoefficientWV          =   1.0e-1;
+    MTCtrl.SetParametersConstitutiveLaw();
+
+    MechanicsControl MeCtrl(S,*CL_LE_Ptr);
+    MeCtrl.SetParametersConstitutiveLaw();
+
+    CL_SCSB_Ptr->SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::MACROSCOPIC_BULK_MODULUS, TEST_MACROSCOPICBULKMODULUS);
+    CL_SCSB_Ptr->SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::SOLID_PHASE_BULK_MODULUS, TEST_SOLIDPHASEBULKMODULUS);
+    CL_SCSB_Ptr->SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::TEMPERATURE, TEST_TEMPERATURE);
+
+
+
+    CL_AIE_Ptr->AddConstitutiveLaw(CL_LE_Ptr);
+    CL_AIE_Ptr->AddConstitutiveLaw(CL_SCSB_Ptr, NuTo::Constitutive::Input::ENGINEERING_STRAIN);
+
+    CL_AO_Ptr->AddConstitutiveLaw(CL_AIE_Ptr);
+    CL_AO_Ptr->AddConstitutiveLaw(CL_MT_Ptr);
+
+    SetupStructure(S,testName);
+    int SEC = SetupSection<TDim>(S);
+    int IPT = SetupInterpolationType<TDim>(S,rDofIPTMap);
+
+    SetupMesh<TDim>(S,
+                    SEC,
+                    CL_AO_ID,
+                    IPT,
+                    rN,
+                    rL);
+
+    SetupIntegrationType<TDim>(S,IPT);
+
+    S.ElementTotalConvertToInterpolationType(); //old used values 1.0e-12,0.001
+    MTCtrl.ApplyInitialNodalValues();
+
+
+    auto LambdaGetBoundaryNodes = [rL](NuTo::NodeBase* rNodePtr) -> bool
+                                {
+                                    double Tol = 1.e-6;
+                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    {
+                                        double x = rNodePtr->GetCoordinate(0);
+                                        if ((x >= 0.0   - Tol   && x <= 0.0   + Tol) ||
+                                            (x >= rL[0] - Tol   && x <= rL[0] + Tol))
+                                        {
+                                            return true;
+                                        }
+
+                                        if(TDim>1)
+                                        {
+                                            double y = rNodePtr->GetCoordinate(1);
+                                            if ((y >= 0.0   - Tol   && y <= 0.0   + Tol) ||
+                                                (y >= rL[1] - Tol   && y <= rL[1] + Tol))
+                                            {
+                                                return true;
+                                            }
+                                        }
+                                        if(TDim>2)
+                                        {
+                                            double z = rNodePtr->GetCoordinate(2);
+                                            if ((z >=  0.0   - Tol   && z <= 0.0   + Tol) ||
+                                                (z >=  rL[2] - Tol   && z <= rL[2] + Tol))
+                                            {
+                                                return true;
+                                            }
+                                        }
+                                    }
+                                    return false;
+                                };  // GetBoundaryNodesLambda
+
+
+
+
+    auto LambdaTimeDepBoundaryRH= [&MTCtrl,&tCtrl]
+                                  (double rTime)->double
+                                {
+                                    if(rTime == 0.0)
+                                    {
+                                        return MTCtrl.InitialRelativeHumidity;
+                                    }
+                                    else
+                                    {
+                                        if(rTime< tCtrl.BC_TransitionTime)
+                                        {
+                                            return MTCtrl.InitialRelativeHumidity -
+                                                   sin(rTime / tCtrl.BC_TransitionTime * 3.14 /2.0) *
+                                                   (MTCtrl.InitialRelativeHumidity-MTCtrl.BoundaryEnvironmentalRH);
+                                        }
+                                        {
+                                            return MTCtrl.BoundaryEnvironmentalRH;
+                                        }
+                                    }
+                                };  //TimeDepBoundaryRHLambda
+
+
+    SetupConstrainedNodeBoundaryElements<TDim>(S,
+                                               LambdaGetBoundaryNodes,
+                                               TI,
+                                               LambdaTimeDepBoundaryRH);
+
+
+
+    auto lambdaGetNodeLeftBottomFront = [rL](NuTo::NodeBase* rNodePtr) -> bool
+                                {
+                                    if(rNodePtr->GetNumDisplacements()==0)
+                                        return false;
+                                    double Tol = 1.e-6;
+                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    {
+                                        double x=0.0,
+                                               y=0.0,
+                                               z=0.0;
+                                        x = rNodePtr->GetCoordinate(0);
+                                        if(TDim>1)
+                                            y = rNodePtr->GetCoordinate(1);
+                                        if(TDim>2)
+                                            z = rNodePtr->GetCoordinate(2);
+
+                                        if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
+                                            y >= 0.0   - Tol   && y <= 0.0   + Tol &&
+                                            z >= 0.0   - Tol   && z <= 0.0   + Tol )
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                };  // lambdaGetNodeLeftBottom
+
+    auto lambdaGetNodeLeftTopFront = [rL](NuTo::NodeBase* rNodePtr) -> bool
+                                {
+                                    if(rNodePtr->GetNumDisplacements()==0)
+                                        return false;
+                                    double Tol = 1.e-6;
+                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    {
+                                        double x=0.0,
+                                               y=0.0,
+                                               z=0.0;
+                                        x = rNodePtr->GetCoordinate(0);
+                                        if(TDim>1)
+                                            y = rNodePtr->GetCoordinate(1);
+                                        if(TDim>2)
+                                            z = rNodePtr->GetCoordinate(2);
+
+                                        if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
+                                            y >= 0.0   - Tol   && y <= 0.0   + Tol &&
+                                            z >= rL[2] - Tol   && z <= rL[2] + Tol )
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                };  // lambdaGetNodeLeftBottom
+
+    auto lambdaGetNodeLeftBottomBack = [rL](NuTo::NodeBase* rNodePtr) -> bool
+                                {
+                                    if(rNodePtr->GetNumDisplacements()==0)
+                                        return false;
+                                    double Tol = 1.e-6;
+                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    {
+                                        double x=0.0,
+                                               y=0.0,
+                                               z=0.0;
+                                        x = rNodePtr->GetCoordinate(0);
+                                        if(TDim>1)
+                                            y = rNodePtr->GetCoordinate(1);
+                                        if(TDim>2)
+                                            z = rNodePtr->GetCoordinate(2);
+
+                                        if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
+                                            y >= rL[1] - Tol   && y <= rL[1] + Tol &&
+                                            z >= 0.0   - Tol   && z <= 0.0   + Tol )
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                };  // lambdaGetNodeLeftBottom
+
+
+
+
+    MeCtrl.AddConstraint<TDim>(TI,
+                               lambdaGetNodeLeftBottomFront,
+                               0);
+    if(TDim>1)
+    {
+        MeCtrl.AddConstraint<TDim>(TI,
+                                   lambdaGetNodeLeftBottomFront,
+                                   1);
+
+        MeCtrl.AddConstraint<TDim>(TI,
+                                   lambdaGetNodeLeftBottomBack,
+                                   0);
+    }
+    if(TDim>2)
+    {
+        MeCtrl.AddConstraint<TDim>(TI,
+                                   lambdaGetNodeLeftBottomFront,
+                                   2);
+
+        MeCtrl.AddConstraint<TDim>(TI,
+                                   lambdaGetNodeLeftBottomBack,
+                                   2);
+
+        MeCtrl.AddConstraint<TDim>(TI,
+                                   lambdaGetNodeLeftTopFront,
+                                   0);
+
+        MeCtrl.AddConstraint<TDim>(TI,
+                                   lambdaGetNodeLeftTopFront,
+                                   1);
+    }
+
+    MTCtrl.SetupStaticData();
+    S.NodeBuildGlobalDofs();
+
+    SetupMultiProcessor(S);
+
+    SetupVisualize(S,true);
+
+    SetupTimeIntegration(TI,
+                         tCtrl,
+                         resultDir,
+                         rStaggered);
+    NuTo::Timer timer("shrinkagetest");
+    TI.Solve(tCtrl.t_final);
+
+    CheckMoistureTransportResults<TDim>(S,
+                                        rN,
+                                        rL);
+//    CheckMechanicsResults<TDim>(S);
+}
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //  Main
@@ -965,31 +1250,65 @@ int main()
     dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::EQUIDISTANT1;
 
 
-    ShrinkageTest<1>({3},
-                     {0.08},
-                     dofIPTMap);
+    // STRESS based
 
-    ShrinkageTest<2>({3,3},
-                     {0.08,0.08},
-                     dofIPTMap);
+    ShrinkageTestStressBased<1>({3},
+                                {0.01},
+                                dofIPTMap);
 
-    ShrinkageTest<3>({3,3,3},
-                     {0.08,0.08,0.08},
-                     dofIPTMap);
+    ShrinkageTestStressBased<2>({3,3},
+                                {0.01,0.01},
+                                dofIPTMap);
+
+    ShrinkageTestStressBased<3>({3,3,3},
+                                {0.01,0.01,0.01},
+                                dofIPTMap);
 
 
-    ShrinkageTest<1>({3},
-                     {0.08},
-                     dofIPTMap,
-                     true);
+    ShrinkageTestStressBased<1>({3},
+                                {0.01},
+                                dofIPTMap,
+                                true);
 
-    ShrinkageTest<2>({3,3},
-                     {0.08,0.08},
-                     dofIPTMap,
-                     true);
+    ShrinkageTestStressBased<2>({3,3},
+                                {0.01,0.01},
+                                dofIPTMap,
+                                true);
 
-    ShrinkageTest<3>({3,3,3},
-                     {0.08,0.08,0.08},
-                     dofIPTMap,
-                     true);
+    ShrinkageTestStressBased<3>({3,3,3},
+                                {0.01,0.01,0.01},
+                                dofIPTMap,
+                                true);
+
+    // STRAIN based
+
+    ShrinkageTestStrainBased<1>({3},
+                                {0.01},
+                                dofIPTMap);
+
+    ShrinkageTestStrainBased<2>({3,3},
+                                {0.01,0.01},
+                                dofIPTMap);
+
+    ShrinkageTestStrainBased<3>({3,3,3},
+                                {0.01,0.01,0.01},
+                                dofIPTMap);
+
+
+    ShrinkageTestStrainBased<1>({3},
+                                {0.01},
+                                dofIPTMap,
+                                true);
+
+    ShrinkageTestStrainBased<2>({3,3},
+                                {0.01,0.01},
+                                dofIPTMap,
+                                true);
+
+    ShrinkageTestStrainBased<3>({3,3,3},
+                                {0.01,0.01,0.01},
+                                dofIPTMap,
+                                true);
+
+
 }
