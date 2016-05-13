@@ -13,8 +13,6 @@ void  NuTo::ConstraintLinearNodeTemperature::AddToConstraintMatrix(
         int& curConstraintEquation, NuTo::SparseMatrix<double>& rConstraintMatrix) const
 {
     // add constraint to constrain matrix
-    std::cout << mNode;
-    std::flush(std::cout);
     if (mNode->GetNumTemperature()!=1)
     {
         throw MechanicsException(__PRETTY_FUNCTION__,

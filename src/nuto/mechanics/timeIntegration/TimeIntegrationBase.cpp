@@ -109,28 +109,6 @@ void NuTo::TimeIntegrationBase::UpdateConstraints(double rCurrentTime)
         mStructure->ConstraintSetRHS(itTDC.first, itTDC.second->GetTimeDependentFactor(rCurrentTime));
 }
 
-//! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
-//! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
-//! @param rTimeDependentConstraintFactor ... first row time, rhs of the constraint (linear interpolation in between afterwards, constant)
-void NuTo::TimeIntegrationBase::SetTimeDependentConstraint(int rTimeDependentConstraint, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rTimeDependentConstraintFactor)
-{
-	if (rTimeDependentConstraintFactor.GetNumColumns()!=2)
-		throw MechanicsException("[NuTo::TimeIntegrationBase::SetDisplacements] number of columns must be 2, first column contains the time, second column contains the corresponding rhs.");
-	if (rTimeDependentConstraintFactor.GetNumRows()<2)
-		throw MechanicsException("[NuTo::TimeIntegrationBase::SetDisplacements] number of rows must be at least 2.");
-	if (rTimeDependentConstraintFactor(0,0)!=0)
-		throw MechanicsException("[NuTo::TimeIntegrationBase::SetDisplacements] the first time should always be zero.");
-
-	//check, if the time is monotonically increasing
-	for (int count=0; count<rTimeDependentConstraintFactor.GetNumRows()-1; count++)
-	{
-		if (rTimeDependentConstraintFactor(count,0)>=rTimeDependentConstraintFactor(count+1,0))
-			throw MechanicsException("[NuTo::TimeIntegrationBase::SetDisplacements] time has to increase monotonically.");
-	}
-
-	mTimeDependentConstraint = rTimeDependentConstraint;
-	mTimeDependentConstraintFactor = rTimeDependentConstraintFactor;
-}
 
 //! @brief sets a scalar time dependent multiplication factor for the external loads
 //! @param rTimeDependentLoadFactor ... first row time, second row scalar factor to calculate the external load (linear interpolation in between, afterwards constant)
@@ -252,10 +230,14 @@ const NuTo::BlockFullVector<double>& NuTo::TimeIntegrationBase::UpdateAndGetAndM
 {
     UpdateConstraints(rCurrentTime);
 
+
     rDof_dt0.K = mStructure->NodeCalculateDependentDofValues(rDof_dt0.J);
     mStructure->NodeMergeDofValues(0, rDof_dt0);
 
+
+
     mStructure->ElementTotalUpdateTmpStaticData();
+
     return mStructure->ConstraintGetRHSAfterGaussElimination();
 }
 
@@ -458,6 +440,22 @@ void NuTo::TimeIntegrationBase::PostProcess(const StructureOutputBlockVector& rO
 		}
         mTimeStepResult++;
     }
+}
+
+void NuTo::TimeIntegrationBase::AddCalculationStep(const std::set<NuTo::Node::eDof>& rActiveDofs)
+{
+    mStepActiveDofs.push_back(rActiveDofs);
+}
+
+
+void NuTo::TimeIntegrationBase::SetNumCalculationSteps(int rNumSteps)
+{
+    mStepActiveDofs.resize(rNumSteps);
+}
+
+void NuTo::TimeIntegrationBase::SetActiveDofsCalculationStep(int rStepNum, const std::set<NuTo::Node::eDof>& rActiveDofs)
+{
+    mStepActiveDofs[rStepNum] = rActiveDofs;
 }
 
 #ifdef ENABLE_SERIALIZATION

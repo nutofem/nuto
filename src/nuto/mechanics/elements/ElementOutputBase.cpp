@@ -95,8 +95,3 @@ NuTo::ElementOutputBase* NuTo::ElementOutputBase::Clone() const
 }
 
 
-NuTo::ElementOutputBase* NuTo::new_clone( const NuTo::ElementOutputBase& o)
-{
-	return o.Clone();
-}
-

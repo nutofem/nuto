@@ -54,6 +54,7 @@ void Run2d(NuTo::FullVector<double, -1> rNodeCoords0, NuTo::FullVector<double, -
     //**********************************************
 
     NuTo::Structure myStructure(ParametersGeometry2D::mDimension);
+    myStructure.SetVerboseLevel(10);
 
     //**********************************************
     //         Integration Scheme
@@ -165,9 +166,10 @@ int main(int argc, char* argv[])
 
     try
     {
-        //
-        //  example 1: quadratic truss element, 0° inclined
-        //
+        std::cout << "////////////////////////////////////////////////" << std::endl;
+        std::cout << "example 1: quadratic truss element, 0° inclined" << std::endl;
+        std::cout << "////////////////////////////////////////////////" << std::endl;
+
 
         nodeCoords0[0] = 1.0;
         nodeCoords0[1] = 2.0;
@@ -186,9 +188,10 @@ int main(int argc, char* argv[])
 
         Run2d(nodeCoords0, nodeCoords1, nodeCoords2, directionAligned, directionOrthogonal);
 
-        //
-        //  example 2: quadratic truss element, 45° inclined
-        //
+
+        std::cout << "////////////////////////////////////////////////" << std::endl;
+        std::cout << "example 2: quadratic truss element, 45° inclined" << std::endl;
+        std::cout << "////////////////////////////////////////////////" << std::endl;
 
         nodeCoords0[0] = 1.0;
         nodeCoords0[1] = 2.0;
@@ -207,9 +210,11 @@ int main(int argc, char* argv[])
 
         Run2d(nodeCoords0, nodeCoords1, nodeCoords2, directionAligned, directionOrthogonal);
 
-        //
-        //  example 3: quadratic truss element, 90° inclined
-        //
+
+        std::cout << "////////////////////////////////////////////////" << std::endl;
+        std::cout << "example 3: quadratic truss element, 90° inclined" << std::endl;
+        std::cout << "////////////////////////////////////////////////" << std::endl;
+
 
         nodeCoords0[0] = 1.0;
         nodeCoords0[1] = 2.0;

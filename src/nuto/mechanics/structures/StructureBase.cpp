@@ -391,7 +391,7 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, const std
         AddVisualizationComponent(rElementGroup, VisualizeBase::ANGULAR_VELOCITY);
     else if (rVisualizeComponent == "BondStress")
         AddVisualizationComponent(rElementGroup, VisualizeBase::BOND_STRESS);
-    else if (rVisualizeComponent == "BondStress")
+    else if (rVisualizeComponent == "Constitutive")
         AddVisualizationComponent(rElementGroup, VisualizeBase::CONSTITUTIVE);
     else if (rVisualizeComponent == "Crack")
         AddVisualizationComponent(rElementGroup, VisualizeBase::CRACK);
@@ -987,14 +987,11 @@ double NuTo::StructureBase::GetToleranceStiffnessEntries()const
     return mToleranceStiffnessEntries;
 }
 
-//! @brief returns all dof types of the structure
-//! @return ... set of active dof types
 std::set<NuTo::Node::eDof> NuTo::StructureBase::DofTypesGet() const
 {
     return GetDofStatus().GetDofTypes();
 }
 
-//! @brief Sets all dofs inactive
 void NuTo::StructureBase::DofTypeDeactivateAll()
 {
     std::set<NuTo::Node::eDof> activeDofs = DofTypesGetActive();
@@ -1004,9 +1001,11 @@ void NuTo::StructureBase::DofTypeDeactivateAll()
     assert(DofTypesGetActive().empty());
 }
 
-//! @brief forwards the property to all interpolation types. Inactive dofs are not solved for
-//! @param rDofType ... dof type
-//! @param rIsActive ... active/inactive
+void NuTo::StructureBase::DofTypeActivateAll()
+{
+    DofTypeSetIsActive(DofTypesGet());
+}
+
 void NuTo::StructureBase::DofTypeSetIsActive(Node::eDof rDofType, bool rIsActive)
 {
     BOOST_FOREACH(auto interpolationTypePair, mInterpolationTypeMap)
@@ -1018,8 +1017,6 @@ void NuTo::StructureBase::DofTypeSetIsActive(Node::eDof rDofType, bool rIsActive
     UpdateDofStatus();
 }
 
-//! @brief Sets a set of active dofs, deactivates others
-//! @param rActiveDofTypes ... dof type
 void NuTo::StructureBase::DofTypeSetIsActive(const std::set<Node::eDof>& rActiveDofTypes)
 {
     DofTypeDeactivateAll();
@@ -1027,17 +1024,12 @@ void NuTo::StructureBase::DofTypeSetIsActive(const std::set<Node::eDof>& rActive
         DofTypeSetIsActive(activeDofType, true);
 }
 
-//! @brief returns true if rDofType is an active dof type
-//! @param rDofType ... dof type
 bool NuTo::StructureBase::DofTypeIsActive(Node::eDof rDofType) const
 {
 	const auto& activeDofTypes = DofTypesGetActive();
 	return activeDofTypes.find(rDofType) != activeDofTypes.end();
 }
 
-//! @brief forwards the property to all interpolation types
-//! @param rDofType ... dof type
-//! @param rIsConstitutiveInput ... is/is not constitutive input
 void NuTo::StructureBase::DofTypeSetIsConstitutiveInput(Node::eDof rDofType, bool rIsConstitutiveInput)
 {
     BOOST_FOREACH(auto interpolationTypePair, mInterpolationTypeMap)
@@ -1048,30 +1040,21 @@ void NuTo::StructureBase::DofTypeSetIsConstitutiveInput(Node::eDof rDofType, boo
     }
 }
 
-//! @brief adds/removes the dof type from the mDofTypesSymmetric-set
-//! @param rDofType ... dof type
-//! @param rIsSymmetric ... is/is not symmetric input
-//! TODO: move to constitutive law somehow
 void NuTo::StructureBase::DofTypeSetIsSymmetric(Node::eDof rDofType, bool rIsSymmetric)
 {
     mDofStatus.SetIsSymmetric(rDofType, rIsSymmetric);
 }
 
-//! @brief returns if rDof is symmetric
 bool NuTo::StructureBase::DofTypeIsSymmetric(Node::eDof rDofType) const
 {
     return mDofStatus.IsSymmetric(rDofType);
 }
 
-/// !!!!!! IMPORTANT ------------------------------------------
-/// DofStatus-Geter should never get a non-const version
-/// Use Structure to change dofStatus
 const NuTo::DofStatus& NuTo::StructureBase::GetDofStatus() const
 {
     return mDofStatus;
 }
 
-//! @brief updates the mDofStatus with current information from the interpolation types
 void NuTo::StructureBase::UpdateDofStatus()
 {
     std::set<Node::eDof> dofTypes;
@@ -1097,15 +1080,11 @@ void NuTo::StructureBase::UpdateDofStatus()
 //    mDofStatus.SetHasInteractingConstraints(true);
 }
 
-//! @brief returns the number of degrees of freedom
-//! @return ... number of degrees of freedom
 int NuTo::StructureBase::GetNumTotalDofs() const
 {
     return GetNumTotalActiveDofs() + GetNumTotalDependentDofs();
 }
 
-//! @brief returns the number of active degrees of freedom
-//! @return ... number of active degrees of freedom
 int NuTo::StructureBase::GetNumTotalActiveDofs() const
 {
     int numTotalActiveDofs = 0;
@@ -1114,8 +1093,6 @@ int NuTo::StructureBase::GetNumTotalActiveDofs() const
     return numTotalActiveDofs;
 }
 
-//! @brief returns the number of dependent degrees of freedom
-//! @return ... number of dependent degrees of freedom
 int NuTo::StructureBase::GetNumTotalDependentDofs() const
 {
     int numTotalActiveDofs = 0;
@@ -1124,25 +1101,17 @@ int NuTo::StructureBase::GetNumTotalDependentDofs() const
     return numTotalActiveDofs;
 }
 
-//! @brief returns all active dof types
-//! @return ... set of active dof types
 std::set<NuTo::Node::eDof> NuTo::StructureBase::DofTypesGetActive() const
 {
     return GetDofStatus().GetActiveDofTypes();
 }
 
 
-//! @brief returns the number of degrees of freedom for dof type rDof
-//! @param rDofType ... dof type
-//! @return ... number of degrees of freedom
 int NuTo::StructureBase::GetNumDofs(Node::eDof rDofType) const
 {
     return GetNumActiveDofs(rDofType) + GetNumDependentDofs(rDofType);
 }
 
-//! @brief returns the number of active degrees of freedom for dof type rDof
-//! @param rDofType ... dof type
-//! @return ... number of active degrees of freedom
 int NuTo::StructureBase::GetNumActiveDofs(Node::eDof rDofType) const
 {
     auto it = mDofStatus.GetNumActiveDofsMap().find(rDofType);
@@ -1152,9 +1121,6 @@ int NuTo::StructureBase::GetNumActiveDofs(Node::eDof rDofType) const
     return it->second;
 }
 
-//! @brief returns the number of dependent degrees of freedom for dof type rDof
-//! @param rDofType ... dof type
-//! @return ... number of dependent degrees of freedom
 int NuTo::StructureBase::GetNumDependentDofs(Node::eDof rDofType) const
 {
     auto it = mDofStatus.GetNumDependentDofsMap().find(rDofType);
@@ -1164,47 +1130,32 @@ int NuTo::StructureBase::GetNumDependentDofs(Node::eDof rDofType) const
     return it->second;
 }
 
-//! @brief returns the number of degrees of freedom for dof type rDof
-//! @param rDofType ... dof type
-//! @return ... number of degrees of freedom
 int NuTo::StructureBase::GetNumDofs(std::string rDofType) const
 {
     return GetNumDofs(Node::DofToEnum(rDofType));
 }
 
-//! @brief returns the number of active degrees of freedom for dof type rDof
-//! @param rDofType ... dof type
-//! @return ... number of active degrees of freedom
 int NuTo::StructureBase::GetNumActiveDofs(std::string rDofType) const
 {
     return GetNumActiveDofs(Node::DofToEnum(rDofType));
 }
 
-//! @brief returns the number of dependent degrees of freedom for dof type rDof
-//! @param rDofType ... dof type
-//! @return ... number of dependent degrees of freedom
 int NuTo::StructureBase::GetNumDependentDofs(std::string rDofType) const
 {
     return GetNumDependentDofs(Node::DofToEnum(rDofType));
 }
 
-//! @brief returns the a reference to the constraint matrix
+
 const NuTo::BlockSparseMatrix& NuTo::StructureBase::GetConstraintMatrix() const
 {
     return mConstraintMatrix;
 }
 
-//! @brief adds/removes the dof type from the mDofTypesActive-set. Inactive dofs are not solved for
-//! @param rDofType ... dof type
-//! @param rIsActive ... active/inactive
 void NuTo::StructureBase::DofTypeSetIsActive(std::string rDofType, bool rIsActive)
 {
     DofTypeSetIsActive(Node::DofToEnum(rDofType), rIsActive);
 }
 
-//! @brief adds/removes the dof type from the mDofTypesConstitutiveInput-set
-//! @param rDofType ... dof type
-//! @param rIsConstitutiveInput ... is/is not constitutive input
 void NuTo::StructureBase::DofTypeSetIsConstitutiveInput(std::string rDofType, bool rIsConstitutiveInput)
 {
     DofTypeSetIsConstitutiveInput(Node::DofToEnum(rDofType), rIsConstitutiveInput);

@@ -81,7 +81,7 @@ std::string NuTo::VisualizeComponent::GetComponentName() const
     case VisualizeBase::LOCAL_EQ_STRAIN:
         return "LocalEqStrain";
     case VisualizeBase::NONLOCAL_EQ_STRAIN:
-        return "NONLOCAL_EQ_STRAIN";
+        return "NonlocalEqStrain";
     case VisualizeBase::PARTICLE_RADIUS:
         return "ParticleRadius";
     case VisualizeBase::PRINCIPAL_ENGINEERING_STRESS:

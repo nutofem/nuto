@@ -68,6 +68,13 @@ public:
     //! @return ... current static data
     NuTo::ConstitutiveStaticDataGradientDamage GetCurrentStaticData(ElementBase& rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput) const;
 
+    //! @brief calculates the error of the extrapolation
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+    //! @return ... error of the extrapolation
+    double CalculateStaticDataExtrapolationError(ElementBase& rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput) const;
+
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
@@ -80,6 +87,14 @@ public:
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
     ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const override;
+
+    //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
+    //! @param rDofRow ... row dof
+    //! @param rDofCol ... column dof
+    //! @param rTimeDerivative ... time derivative
+    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow,
+                                                Node::eDof rDofCol,
+                                                int rTimeDerivative) const override;
 
     // parameters /////////////////////////////////////////////////////////////
 

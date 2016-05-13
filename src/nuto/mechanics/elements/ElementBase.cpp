@@ -348,6 +348,33 @@ double NuTo::ElementBase::GetIntegrationPointWeight(int rIpNum) const
     return this->mElementData->GetIntegrationPointWeight(rIpNum);
 }
 
+template<int TDim>
+NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+                                                               NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
+                                                               int rIP)
+{
+    try
+    {
+        ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(rIP);
+        for(auto itOutput : rConstitutiveOutput)
+            if(itOutput.second!=nullptr) //check nullptr because of static data
+                itOutput.second->SetIsCalculated(false);
+        Error::eError error = constitutivePtr->Evaluate<TDim>(this, rIP, rConstitutiveInput, rConstitutiveOutput);
+        for(auto itOutput : rConstitutiveOutput)
+            if(itOutput.second!=nullptr && !itOutput.second->GetIsCalculated()) //check nullptr because of static data
+                throw MechanicsException(__PRETTY_FUNCTION__,std::string("Output ")+Constitutive::OutputToString(itOutput.first)+" not calculated by constitutive law");
+            return error;
+    } catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage(__PRETTY_FUNCTION__, "error evaluating the constitutive model.");
+        throw e;
+    }
+}
+
+template NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw<1>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,NuTo::ConstitutiveOutputMap& rConstitutiveOutput, int rIP);
+template NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw<2>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,NuTo::ConstitutiveOutputMap& rConstitutiveOutput, int rIP);
+template NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw<3>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,NuTo::ConstitutiveOutputMap& rConstitutiveOutput, int rIP);
+
 //! @brief returns the static data of an integration point
 //! @param rIp integration point
 //! @return static data pointer
@@ -645,11 +672,11 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
     }
 
     //calculate the element solution
-//    ConstitutiveInputMap input;
-//    ConstitutiveCalculateStaticData calc(CalculateStaticData::USE_PREVIOUS);
-//    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calc;
-//    Evaluate(input, elementOutput);
-    Evaluate(elementOutput);
+    ConstitutiveInputMap input;
+    ConstitutiveCalculateStaticData calc(CalculateStaticData::USE_PREVIOUS);
+    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calc;
+    Evaluate(input, elementOutput);
+//    Evaluate(elementOutput);
 
     //assign the outputs
 

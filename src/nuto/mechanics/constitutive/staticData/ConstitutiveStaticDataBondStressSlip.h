@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nuto/mechanics/constitutive/ConstitutiveStaticDataBase.h"
+#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataBase.h"
 
 //! @brief Class stores the maximum slip in the loading history of the element
 //! @author Philip Huschke, BAM

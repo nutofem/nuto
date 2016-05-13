@@ -27,7 +27,7 @@ void CreateMesoscaleGeometryMesh(std::string rGmshFile, double rLX, double rLY)
 
     geometry.MaximizeParticleDistance(0.75);
 
-    geometry.ExportGmshGeo2D(rGmshFile, 0.75, rLY/2.);
+    geometry.ExportGmshGeo2D(rGmshFile, 0.75, rLY/2., 0.75);
 
     std::cout << "Meshing..." << std::endl;
     system(("gmsh -2 -order 2 " + rGmshFile + ".geo -o " + rGmshFile + ".msh -v 2").c_str());

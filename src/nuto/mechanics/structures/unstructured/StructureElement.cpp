@@ -9,6 +9,8 @@
 #include "nuto/mechanics/elements/ContinuumElement.h"
 #include "nuto/mechanics/elements/ContinuumBoundaryElement.h"
 #include "nuto/mechanics/elements/ContinuumBoundaryElementConstrainedControlNode.h"
+#include "nuto/mechanics/elements/Element1DInXD.h"
+#include "nuto/mechanics/elements/Element2DInterface.h"
 
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/nodes/NodeDof.h"
@@ -681,9 +683,8 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
             ptrElement->CheckElement();
             break;
         case NuTo::Interpolation::eShapeType::TRUSSXD:
-            throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] Element1DInXD currently not implemented.");
-//            ptrElement = new Element1DInXD(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
-//            ptrElement->CheckElement();
+            ptrElement = new Element1DInXD(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
+            ptrElement->CheckElement();
             break;
         case NuTo::Interpolation::eShapeType::TRIANGLE2D:
         case NuTo::Interpolation::eShapeType::QUAD2D:
@@ -696,9 +697,8 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
             ptrElement->CheckElement();
             break;
         case NuTo::Interpolation::eShapeType::INTERFACE:
-            throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] Element2DInterface currently not implemented.");
-//            ptrElement = new Element2DInterface(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
-//            ptrElement->CheckElement();
+            ptrElement = new Element2DInterface(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
+            ptrElement->CheckElement();
             break;
         default:
             throw MechanicsException("[NuTo::Structure::ElementCreate] invalid dimension.");

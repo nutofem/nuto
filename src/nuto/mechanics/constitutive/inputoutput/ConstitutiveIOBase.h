@@ -96,6 +96,16 @@ public:
     virtual EngineeringStrain<2>& AsEngineeringStrain2D() {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "input/output is not engineering strain.");}
     virtual EngineeringStrain<3>& AsEngineeringStrain3D() {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "input/output is not engineering strain.");}
 
+    void SetIsCalculated(bool rIsCalculated)
+    {
+        mIsCalculated = rIsCalculated;
+    }
+
+    bool GetIsCalculated() const
+    {
+        return mIsCalculated;
+    }
+
 private:
 
     #ifdef DEBUG
@@ -113,6 +123,9 @@ private:
         }
     }
     #endif
+
+    //!@brief Is supposed to be set to <B>TRUE<B> by the constitutive law after calculation. Elements should check every output object before using its value
+    bool mIsCalculated = false;
 
 };
 

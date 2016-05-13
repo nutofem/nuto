@@ -43,6 +43,7 @@ int main()
         NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(InterpolationType, NuTo::Node::TEMPERATURE,
         NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeSetIntegrationType(InterpolationType, "1D2NGauss2Ip", "noipdata");
 
 	// create elements
 	NuTo::FullVector<int,Eigen::Dynamic> elementIncidence(2);

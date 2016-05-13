@@ -9,6 +9,7 @@
 #include "nuto/mechanics/elements/ContinuumElement.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/ElementOutputBase.h"
+#include "nuto/mechanics/elements/ElementOutputIpData.h"
 #include "nuto/mechanics/elements/EvaluateDataContinuumBoundary.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/sections/SectionTruss.h"
@@ -38,19 +39,10 @@ NuTo::Error::eError NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const Constit
         CalculateNMatrixBMatrixDetJacobian(data, theIP);
         CalculateConstitutiveInputs(constitutiveInput, data);
 
-        try
-        {
-            ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(theIP);
-            Error::eError error = constitutivePtr->Evaluate<TDim>(this, theIP, constitutiveInput, constitutiveOutput);
-            if (error != Error::SUCCESSFUL)
-                return error;            
-            CalculateGradientDamageBoundaryConditionParameters(data, constitutivePtr);
 
-        } catch (NuTo::MechanicsException& e)
-        {
-            e.AddMessage(__PRETTY_FUNCTION__, "error evaluating the constitutive model.");
-            throw e;
-        }
+        Error::eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput,constitutiveOutput,theIP);
+        if (error != Error::SUCCESSFUL)
+            return error;
         CalculateElementOutputs(rElementOutput, data, theIP);
     }
     return Error::SUCCESSFUL;
@@ -104,6 +96,14 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiv
 
         case Element::UPDATE_STATIC_DATA:
             constitutiveOutput[NuTo::Constitutive::Output::UPDATE_STATIC_DATA] = 0;
+            break;
+
+        case Element::UPDATE_TMP_STATIC_DATA:
+            constitutiveOutput[NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA] = 0;
+            break;
+
+        case Element::IP_DATA:
+            FillConstitutiveOutputMapIpData(constitutiveOutput, it.second->GetIpData(), rData);
             break;
 
         case Element::GLOBAL_ROW_DOF:
@@ -263,15 +263,9 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputs(std::map<Elem
         case Element::UPDATE_STATIC_DATA:
         case Element::UPDATE_TMP_STATIC_DATA:
             break;
-//        case Element::FATIGUE_SAVE_STATIC_DATA:
-//            break;
-//        case Element::FATIGUE_RESTORE_STATIC_DATA:
-//            break;
-//        case Element::FATIGUE_EXTRAPOLATE_STATIC_DATA:
-//            break;
-//        case Element::IP_DATA:
-//            CalculateElementOutputIpData(it.second->GetIpData(), rData, rTheIP);
-//            break;
+        case Element::IP_DATA:
+            CalculateElementOutputIpData(it.second->GetIpData(), rData, rTheIP);
+            break;
         case Element::GLOBAL_ROW_DOF:
         case Element::GLOBAL_COLUMN_DOF:
             break;
@@ -327,7 +321,9 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputHessian0(BlockF
     {
         for (auto dofCol : mInterpolationType->GetActiveDofs())
         {
-            auto& hessian0 = rHessian0(dofRow, dofCol);
+            if(!GetConstitutiveLaw(rTheIP)->CheckDofCombinationComputable(dofRow,dofCol,0))
+                continue;
+            auto& hessian0 = rHessian0(dofRow, dofCol);            
             switch (Node::CombineDofs(dofRow, dofCol))
             {
 
@@ -357,6 +353,14 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputHessian0(BlockF
             case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::RELATIVEHUMIDITY):
                 break;
             default:
+                /*******************************************************\
+                |         NECESSARY BUT UNUSED DOF COMBINATIONS         |
+                \*******************************************************/
+                 case Node::CombineDofs(Node::DISPLACEMENTS,         Node::RELATIVEHUMIDITY):
+                 case Node::CombineDofs(Node::DISPLACEMENTS,         Node::WATERVOLUMEFRACTION):
+                 case Node::CombineDofs(Node::RELATIVEHUMIDITY,      Node::DISPLACEMENTS):
+                 case Node::CombineDofs(Node::WATERVOLUMEFRACTION,   Node::DISPLACEMENTS):
+                     continue;
                 throw MechanicsException(__PRETTY_FUNCTION__, "Element output HESSIAN_0_TIME_DERIVATIVE for "
                         "(" + Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
             }
@@ -364,7 +368,36 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputHessian0(BlockF
     }
 }
 
-
+template<int TDim>
+void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputIpData(ElementOutputIpData& rIpData, EvaluateDataContinuumBoundary<TDim> &rData, int rTheIP) const
+{
+    for (auto& it : rIpData.GetIpDataMap()) // this reference here is _EXTREMLY_ important, since the GetIpDataMap() contains a
+    {                                       // FullMatrix VALUE and you want to access this value by reference. Without the &, a tmp copy would be made.
+        switch (it.first)
+        {
+        case NuTo::IpData::ENGINEERING_STRAIN:
+            it.second.col(rTheIP) = std::move(rData.mEngineeringStrainVisualize);
+            break;
+        case NuTo::IpData::ENGINEERING_STRESS:
+            it.second.col(rTheIP) = std::move(rData.mEngineeringStressVisualize);
+            break;
+        case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
+            it.second.col(rTheIP) = std::move(rData.mEngineeringPlasticStrainVisualize);
+            break;
+        case NuTo::IpData::DAMAGE:
+            it.second.col(rTheIP) = std::move(rData.mDamage);
+            break;
+        case NuTo::IpData::EXTRAPOLATION_ERROR:
+            it.second.col(rTheIP) = std::move(rData.mExtrapolationError);
+            break;
+        case NuTo::IpData::LOCAL_EQ_STRAIN:
+            it.second.col(rTheIP) = std::move(rData.mLocalEqStrain);
+            break;
+        default:
+            throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Ip data not implemented.");
+        }
+    }
+}
 
 template<int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput,
@@ -411,6 +444,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(Con
             NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian0(dofRow, dofCol);
             dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
             dofSubMatrix.setZero();
+            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow,dofCol,0))
+                continue;
 
             switch (Node::CombineDofs(dofRow, dofCol))
             {
@@ -439,13 +474,13 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(Con
            /*******************************************************\
            |         NECESSARY BUT UNUSED DOF COMBINATIONS         |
            \*******************************************************/
-            case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::DISPLACEMENTS):
+            case Node::CombineDofs(Node::DISPLACEMENTS, Node::RELATIVEHUMIDITY):
+            case Node::CombineDofs(Node::DISPLACEMENTS, Node::WATERVOLUMEFRACTION):
+//            case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::DISPLACEMENTS):
             case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::WATERVOLUMEFRACTION):
-            case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::DISPLACEMENTS):
+//            case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::DISPLACEMENTS):
             case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::RELATIVEHUMIDITY):
-            {
                 continue;
-            }
             default:
                 throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_0_TIME_DERIVATIVE for "
                         "(" + Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
@@ -468,6 +503,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(Con
             NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian0(dofRow, dofCol);
             dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
             dofSubMatrix.setZero();
+            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow,dofCol,1))
+                continue;
 
             switch (Node::CombineDofs(dofRow, dofCol))
             {
@@ -477,17 +514,18 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(Con
            /*******************************************************\
            |         NECESSARY BUT UNUSED DOF COMBINATIONS         |
            \*******************************************************/
-            case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::RELATIVEHUMIDITY):
-            case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::WATERVOLUMEFRACTION):
-            case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::DISPLACEMENTS):
-            case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::WATERVOLUMEFRACTION):
-            case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::DISPLACEMENTS):
-            case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::RELATIVEHUMIDITY):
-            {
+//            case Node::CombineDofs(Node::DISPLACEMENTS,         Node::DISPLACEMENTS):
+//            case Node::CombineDofs(Node::DISPLACEMENTS,         Node::RELATIVEHUMIDITY):
+//            case Node::CombineDofs(Node::DISPLACEMENTS,         Node::WATERVOLUMEFRACTION):
+            case Node::CombineDofs(Node::RELATIVEHUMIDITY,      Node::RELATIVEHUMIDITY):
+            case Node::CombineDofs(Node::WATERVOLUMEFRACTION,   Node::WATERVOLUMEFRACTION):
+//            case Node::CombineDofs(Node::RELATIVEHUMIDITY,      Node::DISPLACEMENTS):
+            case Node::CombineDofs(Node::RELATIVEHUMIDITY,      Node::WATERVOLUMEFRACTION):
+//            case Node::CombineDofs(Node::WATERVOLUMEFRACTION,   Node::DISPLACEMENTS):
+//            case Node::CombineDofs(Node::WATERVOLUMEFRACTION,   Node::RELATIVEHUMIDITY):
                 continue;
-            }
             default:
-                throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_0_TIME_DERIVATIVE for "
+                throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_1_TIME_DERIVATIVE for "
                         "(" + Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
             }
         }
@@ -505,7 +543,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(Con
 //            NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian2(dofRow, dofCol);
 //            dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
 //            dofSubMatrix.setZero();
-
+//            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow,dofCol,2))
+//                continue;
 //            switch (Node::CombineDofs(dofRow, dofCol))
 //            {
 //            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
@@ -517,56 +556,40 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(Con
 //        }
 //    }
 //}
+//
+template<int TDim>
+void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput, ElementOutputIpData& rIpData, EvaluateDataContinuumBoundary<TDim> &rData) const
+{
 
-//template<int TDim>
-//void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput, ElementOutputIpData& rIpData, EvaluateDataContinuum<TDim> &rData) const
-//{
-
-//    for (auto& it : rIpData.GetIpDataMap()) // this reference here is _EXTREMLY_ important, since the GetIpDataMap() contains a
-//    {                                       // FullMatrix VALUE and you want to access this value by reference. Without the &, a tmp copy would be made.
-//        switch (it.first)
-//        {
-//        case NuTo::IpData::ENGINEERING_STRAIN:
-//            it.second.Resize(6, GetNumIntegrationPoints());
-//            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_STRAIN_VISUALIZE] = &(rData.mEngineeringStrainVisualize);
-//            break;
-//        case NuTo::IpData::ENGINEERING_STRESS:
-//            it.second.Resize(6, GetNumIntegrationPoints());
-//            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_STRESS_VISUALIZE] = &(rData.mEngineeringStressVisualize);
-//            break;
-//        case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
-//            it.second.Resize(6, GetNumIntegrationPoints());
-//            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE] = &(rData.mEngineeringPlasticStrainVisualize);
-//            break;
-//        case NuTo::IpData::DAMAGE:
-//            it.second.Resize(1, GetNumIntegrationPoints());
-//            rConstitutiveOutput[NuTo::Constitutive::Output::DAMAGE] = &(rData.mDamage);
-//            break;
-//        case NuTo::IpData::LOCAL_EQ_STRAIN:
-//            it.second.Resize(1, GetNumIntegrationPoints());
-//            rConstitutiveOutput[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN] = &(rData.mLocalEqStrain);
-//            break;
-//        default:
-//            throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] this ip data type is not implemented.");
-//        }
-//    }
-//}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    for (auto& it : rIpData.GetIpDataMap()) // this reference here is _EXTREMLY_ important, since the GetIpDataMap() contains a
+    {                                       // FullMatrix VALUE and you want to access this value by reference. Without the &, a tmp copy would be made.
+        switch (it.first)
+        {
+        case NuTo::IpData::ENGINEERING_STRAIN:
+            it.second.Resize(6, GetNumIntegrationPoints());
+            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_STRAIN_VISUALIZE] = &(rData.mEngineeringStrainVisualize);
+            break;
+        case NuTo::IpData::ENGINEERING_STRESS:
+            it.second.Resize(6, GetNumIntegrationPoints());
+            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_STRESS_VISUALIZE] = &(rData.mEngineeringStressVisualize);
+            break;
+        case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
+            it.second.Resize(6, GetNumIntegrationPoints());
+            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE] = &(rData.mEngineeringPlasticStrainVisualize);
+            break;
+        case NuTo::IpData::DAMAGE:
+            it.second.Resize(1, GetNumIntegrationPoints());
+            rConstitutiveOutput[NuTo::Constitutive::Output::DAMAGE] = &(rData.mDamage);
+            break;
+        case NuTo::IpData::LOCAL_EQ_STRAIN:
+            it.second.Resize(1, GetNumIntegrationPoints());
+            rConstitutiveOutput[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN] = &(rData.mLocalEqStrain);
+            break;
+        default:
+            throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] this ip data type is not implemented.");
+        }
+    }
+}
 
 
 
@@ -655,7 +678,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateGradientDamageBoundaryCondit
         if (switchToNeumann)
         {
             rData.mBCType = BoundaryType::NEUMANN_HOMOGENEOUS;
-            std::cout << "Macaulay Culcin helps out in element " << GetStructure()->ElementGetId(this) << std::endl;
+//            std::cout << "Macaulay Culcin helps out in element " << GetStructure()->ElementGetId(this) << std::endl;
 
         }
         else

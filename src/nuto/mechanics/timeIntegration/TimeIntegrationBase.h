@@ -67,11 +67,6 @@ public:
     //! @remark remove the second argument rDof
     void UpdateConstraints(double rCurrentTime);
 
-    //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
-    //! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
-    //! @param mTimeDependentConstraintFactor ... first row time, rhs of the constraint (linear interpolation in between afterwards linear extrapolation)
-    void SetTimeDependentConstraint(int rTimeDependentConstraint, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& mTimeDependentConstraintFactor);
-
     //! @brief sets a scalar time dependent multiplication factor for the external loads
     //! @param rLoadRHSFactor ... first row time, second row scalar factor to calculate the external load (linear interpolation in between,  afterwards linear extrapolation)
     void SetTimeDependentLoadCase(int rLoadCase, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLoadRHSFactor);
@@ -86,10 +81,6 @@ public:
     //! @param curTime ... current time in the load step
     //! @return ... external load vector
     virtual StructureOutputBlockVector CalculateCurrentExternalLoad(double curTime);
-
-
-    //! @brief sets the nodes, for which displacements are to be monitored
-    void CalculateOutputDispNodesPtr(StructureBase& rStructure);
 
     //! @brief extracts all dof values
     //! @param rDof_dt0 ... 0th time derivative
@@ -237,6 +228,19 @@ public:
         mCallback = rCallback;
     }
 
+    //! @brief ... Adds a calculation step to each timestep
+    //! param rActiveDofs ... active Dofs of the calculation step
+    void AddCalculationStep(const std::set<Node::eDof> &rActiveDofs);
+
+    //! @brief ... Sets the number of calculation steps per timestep
+    //! param rNumSteps ... number of calculation steps per timestep
+    void SetNumCalculationSteps(int rNumSteps);
+
+    //! @brief ... Sets the active Dofs of a calculation step
+    //! param rStepNum ... step number
+    //! param rActiveDofs ... active Dofs of the calculation step
+    void SetActiveDofsCalculationStep(int rStepNum, const std::set<Node::eDof> &rActiveDofs);
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
@@ -336,6 +340,8 @@ protected:
 
     CallbackInterface* mCallback;
 
+    //! @brief Stores wich Dofs are active in which calculation step
+    std::vector<std::set<Node::eDof>> mStepActiveDofs;
 
 };
 } //namespace NuTo

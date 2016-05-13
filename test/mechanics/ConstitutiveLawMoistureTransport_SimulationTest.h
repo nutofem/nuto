@@ -72,6 +72,8 @@ void CompareResultsToPaper(NuTo::Structure& rS,
 
     typedef boost::ptr_map<int, NuTo::NodeBase> NodeMap;
 
+    assert(rL[relevantDirection] == 0.16 && "The length in flow direction must be 0.16m for direct comparison with paper values");
+
     double tolerance = 0.005; // Tolerance because not all necessary value (sorption curve) are given in the paper and must be approximated
     double deltaL = rL[relevantDirection]/rN[relevantDirection];
     unsigned int numMismatchingValues = 0;

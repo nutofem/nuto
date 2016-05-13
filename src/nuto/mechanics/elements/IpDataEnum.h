@@ -44,7 +44,8 @@ enum eIpStaticDataType
 	TOTAL_INELASTIC_EQ_STRAIN, //!> total inelastic equivalent strain
     ELASTIC_ENERGY,            //!> elastic energy
     INTERNAL_ENERGY,           //!> internal (elastic + inelastic) energy
-    HEAT_FLUX                  //!> heat flux
+    HEAT_FLUX,                 //!> heat flux
+    EXTRAPOLATION_ERROR          //!> for implicit / explicit time integration schemes
 };
 static inline std::map<eIpStaticDataType, std::string> GetIpStaticDataTypeMap()
 {
@@ -60,6 +61,7 @@ static inline std::map<eIpStaticDataType, std::string> GetIpStaticDataTypeMap()
     shapeTypeMap[eIpStaticDataType::ELASTIC_ENERGY]             = "ELASTIC_ENERGY";
     shapeTypeMap[eIpStaticDataType::INTERNAL_ENERGY]            = "INTERNAL_ENERGY";
     shapeTypeMap[eIpStaticDataType::HEAT_FLUX]                  = "HEAT_FLUX";
+    shapeTypeMap[eIpStaticDataType::EXTRAPOLATION_ERROR]        = "EXTRAPOLATION_ERROR";
     return shapeTypeMap;
 }
 

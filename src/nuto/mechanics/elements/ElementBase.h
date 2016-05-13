@@ -240,6 +240,9 @@ public:
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
     virtual Error::eError Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)=0;
 
+    template<int TDim>
+    Error::eError EvaluateConstitutiveLaw(const ConstitutiveInputMap &rConstitutiveInput, ConstitutiveOutputMap &rConstitutiveOutput, int rIP);
+
     //! @brief calculates output data for the element with a standard input (EULER_BACKWARD static data)
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
     Error::eError Evaluate(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput);

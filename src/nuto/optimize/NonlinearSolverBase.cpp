@@ -25,7 +25,7 @@
 
 
 #include "nuto/optimize/NonlinearSolverBase.h"
-#include "nuto/mechanics/MechanicsException.h"
+#include "nuto/optimize/OptimizeException.h"
 
 using namespace std;
 
@@ -51,7 +51,7 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::NonlinearSolverBase
 	NuTo::FullVector<double,Eigen::Dynamic> xh=rUnknown;
 
 	if (mResidualFunction==0 && mAssignResidual==false) {
-		throw MechanicsException("[NuTo::NonLinearSolverBase::DResidualNum] the pointer to the residual function is required.");
+		throw OptimizeException("[NuTo::NonLinearSolverBase::DResidualNum] the pointer to the residual function is required.");
 	}
 
 	for (int j=0;j<n;j++) {
@@ -73,7 +73,7 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::NonlinearSolverBase
 double NuTo::NonlinearSolverBase::Fmin(NuTo::FullVector<double,Eigen::Dynamic> rUnknown, NuTo::FullVector<double,Eigen::Dynamic> &rFvec) const
 {
 	if (mResidualFunction==0 && mAssignResidual==false) {
-		throw MechanicsException("[NuTo::NonLinearSolverBase::DResidualNum] the pointer to the residual function is required.");
+		throw OptimizeException("[NuTo::NonLinearSolverBase::DResidualNum] the pointer to the residual function is required.");
 	}
 
 //	rFvec = (*mResidualFunction)(this->mParameter,rUnknown);

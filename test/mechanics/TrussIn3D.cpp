@@ -281,6 +281,12 @@ int main(int argc, char* argv[])
         std::cout << e.ErrorMessage();
         return EXIT_FAILURE;
     }
+    catch (...)
+    {
+        std::cout << "## Test failed ##" << std::endl;
+        std::cout << "Something else went wrong :-(" << std::endl;
+        return EXIT_FAILURE;
+    }
 
     std::cout << "## Test successful ##" << std::endl;
 

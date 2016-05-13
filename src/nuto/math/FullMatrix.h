@@ -259,6 +259,7 @@ FullMatrix<T,rows,cols>& FullMatrix<T,rows,cols>::operator+= ( const T &other)
 	return *this;
 }
 
+
 //! @brief ... calculates the scalar product
 //! @param other ... other matrix
 //! @return reference to this matrix

@@ -55,6 +55,8 @@ void NuTo::ConstitutiveIOBase::AssertIsScalar(Constitutive::Output::eOutput rOut
 }
 
 
+
+
 #ifdef ENABLE_SERIALIZATION
 //! @brief serializes the class
 //! @param ar         archive

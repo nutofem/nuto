@@ -40,7 +40,8 @@ public:
     void serialize(Archive & ar, const unsigned int version)
     {
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(LoadNode)
-        & BOOST_SERIALIZATION_NVP(mValue);
+        & BOOST_SERIALIZATION_NVP(mValue)
+        & BOOST_SERIALIZATION_NVP(mDirection);
     }
 #endif // ENABLE_SERIALIZATION
 

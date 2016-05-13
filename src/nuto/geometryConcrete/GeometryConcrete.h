@@ -48,7 +48,8 @@ public:
     //! @param rGmshFile ... path (without .geo) for the gmsh file
     //! @param rMeshSize ... mesh size parameter
     //! @param rZSlice ... 3D --> 2D at z=rZSlice
-    void ExportGmshGeo2D(std::string rGmshFile, double rMeshSize, double rZSlice);
+    //! @param rMinRadius ... sliced radiuses smaller than rMinRadius are not exported
+    void ExportGmshGeo2D(std::string rGmshFile, double rMeshSize, double rZSlice, double rMinRadius);
 
 
     //! @brief ... exports the geometry to a 3D mesh file
@@ -96,6 +97,10 @@ public:
 
     void SetSeed(double rSeed);
 
+    bool ContinueOnException() const;
+
+    void SetContinueOnException(bool rContinueOnException);
+
 private:
 
     void CheckParameters();
@@ -115,6 +120,8 @@ private:
     double mRandomVelocityRange = 1.;
     double mRelativeGrowthRate = 0.0;
     double mAbsoluteGrowthRate = 0.0;
+
+    bool mContinueOnException = false;
 
 };
 

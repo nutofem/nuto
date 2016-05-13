@@ -8,13 +8,15 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include <set>
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 
 #include "nuto/base/ErrorEnum.h"
 #include "nuto/math/FullMatrix_Def.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
@@ -48,6 +50,7 @@ class InterpolationType;
 //! @date November 2009
 class ConstitutiveBase
 {
+    friend class ConstitutiveLawsAdditiveOutput;  //Needed for CheckParameters-function of ConstitutiveLawsAdditiveOutput
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
@@ -62,7 +65,16 @@ public:
     //! @param rConstitutiveOutput ... desired constitutive outputs
     //! @param rInterpolationType ... interpolation type to determine additional inputs
     //! @return constitutive inputs needed for the evaluation
-    virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType& rInterpolationType) const = 0;
+    virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
+                                                       const InterpolationType& rInterpolationType) const = 0;
+
+    //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
+    //! @param rDofRow ... row dof
+    //! @param rDofCol ... column dof
+    //! @param rTimeDerivative ... time derivative
+    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow,
+                                               Node::eDof rDofCol,
+                                               int rTimeDerivative) const = 0;
 
     //! @brief ... evaluate the constitutive relation in 1D
     //! @param rElement ... element
@@ -184,9 +196,9 @@ public:
     //! @return ... equilibrium water volume fraction
     virtual double GetEquilibriumWaterVolumeFraction(double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const;
 
-    //! @brief ... adds a constitutive law to a multi physics model
+    //! @brief ... adds a constitutive law to a model that combines multiple constitutive laws (additive, parallel)
     //! @param ... additional constitutive law
-    virtual void  MultiPhysicsAddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw);
+    virtual void  AddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw);
 
     //! @brief ... checks if a constitutive law has an specific output
     //! @return ... true/false
@@ -244,12 +256,11 @@ public:
 #endif // ENABLE_SERIALIZATION
 protected:
     //! @brief ... check parameters of the constitutive relationship
-    //! if one check fails, an exception is thrwon
+    //! if one check fails, an exception is thrown
     virtual void CheckParameters() const = 0;
 
     //! @brief ... flag which is <B>true</B> if all parameters of the constitutive relationship are valid and <B>false</B> otherwise
     bool mParametersValid;
-
 
 };
 

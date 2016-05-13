@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef CONSTITUTIVESTATICDATABASE_H_
-#define CONSTITUTIVESTATICDATABASE_H_
+#pragma once
 
 #include <string>
 #include "nuto/math/FullMatrix_Def.h"
@@ -34,7 +33,7 @@ class ConstitutiveStaticDataStrainGradientDamagePlasticity1D;
 class ConstitutiveStaticDataDamageViscoPlasticity3D;
 class ConstitutiveStaticDataDamageViscoPlasticity3DFatigue;
 class ConstitutiveStaticDataMoistureTransport;
-class ConstitutiveStaticDataMultiPhysics;
+class ConstitutiveStaticDataMultipleConstitutiveLaws;
 class ConstitutiveStaticDataBondStressSlip;
 class ElementBase;
 class VisualizeUnstructuredGrid;
@@ -164,10 +163,10 @@ public:
     virtual const ConstitutiveStaticDataMoistureTransport* AsMoistureTransport()const;
 
     //!@ brief reinterpret as multi physics
-    virtual ConstitutiveStaticDataMultiPhysics* AsMultiPhysics();
+    virtual ConstitutiveStaticDataMultipleConstitutiveLaws* AsMultipleConstitutiveLaws();
 
     //!@ brief reinterpret as multi physics
-    virtual const ConstitutiveStaticDataMultiPhysics* AsMultiPhysics()const;
+    virtual const ConstitutiveStaticDataMultipleConstitutiveLaws* AsMultipleConstitutiveLaws()const;
 
 #ifdef ENABLE_VISUALIZE
     //Visualize for all integration points the fine scale structure
@@ -180,4 +179,3 @@ public:
 
 }
 
-#endif // CONSTITUTIVESTATICDATABASE_H_ 

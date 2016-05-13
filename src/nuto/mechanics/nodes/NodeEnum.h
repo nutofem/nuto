@@ -2,6 +2,7 @@
 #ifndef NODEENUM_H_
 #define NODEENUM_H_
 
+#include <set>
 #include <map>
 #include <boost/algorithm/string.hpp>
 #include "nuto/mechanics/MechanicsException.h"
@@ -17,20 +18,30 @@ enum eNodeType
     NodeCoordinatesDofNonlocalData,
 };
 
-enum eDof : unsigned char
+
+#define DEGREES_OF_FREEDOM \
+{ \
+    COORDINATES, \
+    ROTATIONS, \
+    TEMPERATURE, \
+    DISPLACEMENTS, \
+    FINESCALEDISPLACEMENTS, \
+    NONLOCALDATA, \
+    NONLOCALEQPLASTICSTRAIN, \
+    NONLOCALTOTALSTRAIN, \
+    NONLOCALEQSTRAIN, \
+    WATERVOLUMEFRACTION, \
+    RELATIVEHUMIDITY \
+}
+
+enum eDof : unsigned char DEGREES_OF_FREEDOM;
+
+//! @brief Gets a set of all Dofs
+static inline std::set<eDof> GetDofSet()
 {
-    COORDINATES,
-    ROTATIONS,
-    TEMPERATURE,
-    DISPLACEMENTS,
-    FINESCALEDISPLACEMENTS,
-    NONLOCALDATA,
-    NONLOCALEQPLASTICSTRAIN,
-    NONLOCALTOTALSTRAIN,
-    NONLOCALEQSTRAIN,
-    WATERVOLUMEFRACTION,
-    RELATIVEHUMIDITY
-};
+    return DEGREES_OF_FREEDOM;
+}
+#undef DEGREES_OF_FREEDOM
 
 constexpr size_t maxDoFEnumValue = std::numeric_limits<unsigned char>::max();
 

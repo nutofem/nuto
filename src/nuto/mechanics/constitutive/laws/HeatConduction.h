@@ -29,27 +29,44 @@ public:
     //! @param rIp Integration point
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output to the constitutive law
-    NuTo::Error::eError Evaluate1D(ElementBase* rElement, int rIp,
+    template<int TDim>
+    NuTo::Error::eError Evaluate(ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput) override;
+            const ConstitutiveOutputMap& rConstitutiveOutput);
 
-    //! @brief Evaluate the constitutive relation in 2D.
-    //! @param rElement Element
-    //! @param rIp Integration point
-    //! @param rConstitutiveInput Input to the constitutive law
-    //! @param rConstitutiveOutput Output to the constitutive law
-    NuTo::Error::eError Evaluate2D(ElementBase* rElement, int rIp,
+    virtual NuTo::Error::eError Evaluate1D(ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput) override;
+            const ConstitutiveOutputMap& rConstitutiveOutput) override
+    {
+        return Evaluate<1>(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
 
-    //! @brief Evaluate the constitutive relation in 3D.
-    //! @param rElement Element
-    //! @param rIp Integration point
-    //! @param rConstitutiveInput Input to the constitutive law
-    //! @param rConstitutiveOutput Output to the constitutive law
-    NuTo::Error::eError Evaluate3D(ElementBase* rElement, int rIp,
+    }
+
+    //! @brief ... evaluate the constitutive relation in 2D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    virtual NuTo::Error::eError Evaluate2D(ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput) override;
+            const ConstitutiveOutputMap& rConstitutiveOutput) override
+    {
+        return Evaluate<2>(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
+
+    }
+
+    //! @brief ... evaluate the constitutive relation in 3D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    virtual NuTo::Error::eError Evaluate3D(ElementBase* rElement, int rIp,
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput) override
+    {
+        return Evaluate<3>(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
+
+    }
 
     //! @brief Create new static data object for an integration point.
     //! @return Pointer to static data object
@@ -62,6 +79,14 @@ public:
     //! @brief Create new static data object for an integration point.
     //! @return Pointer to static data object
     ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const override  {return nullptr;}
+
+    //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
+    //! @param rDofRow ... row dof
+    //! @param rDofCol ... column dof
+    //! @param rTimeDerivative ... time derivative
+    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow,
+                                                Node::eDof rDofCol,
+                                                int rTimeDerivative) const override;
 
     //! @brief Checks if the constitutive law has a specific parameter.
     //! @param rIdentifier Enum to identify the requested parameter
@@ -120,6 +145,16 @@ protected:
 
     //! @brief Specific heat capacity \f$ c_T \f$
     double mCt;
+
+    //! @brief Density \f$ \rho \f$
+    double mRho;
+
+    template <int TDim>
+    struct InputData
+    {
+        Eigen::Matrix<double, TDim, 1> mTemperatureGradient;
+        double mTemperatureChange;
+    };
 
 };
 

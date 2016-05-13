@@ -58,7 +58,7 @@ NuTo::Error::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
         StructureOutputBlockVector  intForce(dofStatus, true);
         StructureOutputBlockVector  residual(dofStatus, true);
 
-        ConstitutiveTimeStep<2> timeStep;
+        ConstitutiveTimeStep timeStep(2);
         ConstitutiveCalculateStaticData calculateStaticData(CalculateStaticData::USE_PREVIOUS ,1);
 
         // for constraints
@@ -98,69 +98,67 @@ NuTo::Error::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
         timeStep.SetCurrentTimeStep(mTimeStep);
         timeStep.SetCurrentTimeStep(mTimeStep);
 
-        int gElementsTotal = dynamic_cast<Structure*>(mStructure)->GroupGetElementsTotal();
-        auto allElementIds = mStructure->GroupGetMemberIds(gElementsTotal);
+        PostProcess(residual);
+
+        int numAcceptedIterations = 0;
+        int numRejectedIterations = 0;
 
         while (mTime < rTimeDelta)
         {
-            timerDebug.Reset("current time: " + std::to_string(mTime));
+            timerDebug.Reset("\033[1;31m Iteration " + std::to_string(numAcceptedIterations) + " at current time: " + std::to_string(mTime) + "\033[0m");
 
-            mStructure->DofTypeSetIsActive(dofStatus.GetDofTypes()); // activate all
+            mStructure->DofTypeActivateAll();
 
 
             // calculate Delta_BRhs and Delta_ExtForce
             auto bRHS = UpdateAndGetConstraintRHS(mTime);
             auto prevExtForce = CalculateCurrentExternalLoad(mTime);
 
-            mTime += timeStep[0];
+
+            mTime += mTimeStep;
 
 
             auto deltaBRHS = UpdateAndGetConstraintRHS(mTime) - bRHS;
             auto extForce = CalculateCurrentExternalLoad(mTime);
 
-            timeStep.SetCurrentTimeStep(mTimeStep);
-
             std::cout << "TimeStep: " << mTimeStep << std::endl;
 
+
+
             // extrapolate the history variables
-            calculateStaticData.SetCalculateStaticData(CalculateStaticData::EULER_FORWARD);
-            mStructure->Evaluate(input, evalUpdateStaticData);
+            ExtrapolateStaticData(timeStep);
+
 
             for (const auto& activeDofSet : mStepActiveDofs)
             {
                 mStructure->DofTypeSetIsActive(activeDofSet);
 
-                // hardcode version for gradient damage model:
-                if (activeDofSet.find(Node::NONLOCALEQSTRAIN) != activeDofSet.end())
-                {
-                    // nonlocal part, use precomputed factorization
-                    calculateStaticData.SetCalculateStaticData(CalculateStaticData::USE_PREVIOUS);
-                    mStructure->Evaluate(input, evalInternalGradient);
 
-//                    mStructure->GetLogger() << "Initial trial residual:               " << intForce.J.CalculateInfNorm() << "\n";
+                // if a single active dof is in mDofsWithConstantHessian
+                bool usePreFactorizedHessian = activeDofSet.size() == 1 && mDofsWithConstantHessian.find(*activeDofSet.begin()) != mDofsWithConstantHessian.end();
+
+                calculateStaticData.SetCalculateStaticData(CalculateStaticData::USE_PREVIOUS);
+                calculateStaticData.SetIndexOfPreviousStaticData(0);
+
+                if (usePreFactorizedHessian)
+                {
+                    auto activeDof = *activeDofSet.begin();
+
+                    mStructure->Evaluate(input, evalInternalGradient);  // internal gradient only
 
                     NuTo::FullVector<double,Eigen::Dynamic> solution;
-                    preFactorizedHessians[Node::NONLOCALEQSTRAIN].Solution(intForce.J[Node::NONLOCALEQSTRAIN], solution);
-                    delta_dof_dt0.SetZero();
-                    delta_dof_dt0.J.Import(-solution);
+                    preFactorizedHessians[activeDof].Solution(intForce.J[activeDof], solution);
 
-
-                    dof_dt0 += delta_dof_dt0;
-
-                    mStructure->NodeMergeDofValues(dof_dt0);
+                    dof_dt0.J[activeDof] -= solution;
                 }
                 else
                 {
-                    // displacement part, calculate everything with old data
-                    assert(activeDofSet.find(Node::DISPLACEMENTS) != activeDofSet.end());
-
-                    calculateStaticData.SetCalculateStaticData(CalculateStaticData::USE_PREVIOUS);
                     mStructure->Evaluate(input, evalInternalGradientAndHessian0);
 
                     delta_dof_dt0.J.SetZero();
                     delta_dof_dt0.K = deltaBRHS;
 
-                    residual = intForce;// - prevExtForce - extForce;
+                    residual = (intForce - extForce) - prevExtForce - extForce;
                     residual += hessian0 * delta_dof_dt0;
                     residual.ApplyCMatrix(mStructure->GetConstraintMatrix());
 
@@ -170,44 +168,79 @@ NuTo::Error::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 
 
                     delta_dof_dt0.J =  mStructure->SolveBlockSystem(hessian0.JJ, residual.J);
-                    delta_dof_dt0.K = deltaBRHS;// - mStructure->GetConstraintMatrix()*delta_dof_dt0.J;
-
-
+                    delta_dof_dt0.K = deltaBRHS - mStructure->GetConstraintMatrix()*delta_dof_dt0.J;
 
                     dof_dt0 += delta_dof_dt0;
-
-                    mStructure->NodeMergeDofValues(dof_dt0);
-//
-//                    calculateStaticData.SetCalculateStaticData(CalculateStaticData::EULER_FORWARD);
-//                    mStructure->Evaluate(input, evalInternalGradient);
-//
-//                    std::cout << intForce.J.CalculateInfNorm() << std::endl;
-//                    if (intForce.J.CalculateInfNorm()[Node::DISPLACEMENTS] > 1.e-8)
-//                    {
-//                        std::cout << intForce.J.CalculateInfNorm() << std::endl;
-//                        throw MechanicsException("FIX THE SOLVE, YOU IDIOT. I MEAN ITS A LINEAR SYSTEM. HOW HARD CAN IT BE TO SOLVE THAT SHIT PROPERLY.");
-//                    }
                 }
+                mStructure->NodeMergeDofValues(dof_dt0);
+
             } // end for mStepActiveDofs
 
-
-            // save the new implicit history variables
-            calculateStaticData.SetCalculateStaticData(CalculateStaticData::EULER_BACKWARD);
-            calculateStaticData.SetIndexOfPreviousStaticData(1);
-            mStructure->Evaluate(input, evalUpdateStaticData);
-
-
-            mStructure->ElementTotalUpdateStaticData();
-            mStructure->ElementTotalSaveStaticData();
-            PostProcess(residual);
 
             if (mCallback && mCallback->Exit(*mStructure))
                 return Error::SUCCESSFUL;
 
+            bool acceptSolution = true;
+
+            if (mAutomaticTimeStepping)
+                acceptSolution = CheckExtrapolationAndAdjustTimeStep();
+
+            if (acceptSolution)
+            {
+                // save the new implicit history variables
+                calculateStaticData.SetCalculateStaticData(CalculateStaticData::EULER_BACKWARD);
+                calculateStaticData.SetIndexOfPreviousStaticData(1);
+                mStructure->Evaluate(input, evalUpdateStaticData);
+
+                if (mTime + mTimeStep > rTimeDelta)
+                    mTimeStep = rTimeDelta - mTime;
+
+//                std::cout << "Bfore SaveStaticData" << std::endl;
+//                mCallback->Exit(*mStructure);
+                mStructure->ElementTotalSaveStaticData();   // shift static data by one to the past
+                timeStep.SetCurrentTimeStep(mTimeStep);     // shift time steps by one to the past
+
+//                std::cout << "after SaveStaticData" << std::endl;
+//                mCallback->Exit(*mStructure);
+
+                mStructure->DofTypeActivateAll();
+                lastConverged_dof_dt0 = dof_dt0;
+
+
+
+                calculateStaticData.SetCalculateStaticData(CalculateStaticData::USE_PREVIOUS);
+                mStructure->Evaluate(input, evalInternalGradient);
+                residual = intForce - extForce;
+                PostProcess(residual);
+
+                numAcceptedIterations++;
+            }
+            else
+            {
+                // do not save static data
+                // do not shift the time but set the new time step
+                timeStep[0] = mTimeStep;
+
+
+                // restore the old solution
+                mStructure->DofTypeActivateAll();
+                dof_dt0 = lastConverged_dof_dt0;
+                mStructure->NodeMergeDofValues(dof_dt0);
+                mTime -= mTimeStep;
+
+                numRejectedIterations++;
+            }
+
         } // end while
 
 
+        std::cout << "["<<__FUNCTION__<<"] Number of accepted iterations: " << numAcceptedIterations << std::endl;
+        std::cout << "["<<__FUNCTION__<<"] Number of rejected iterations: " << numRejectedIterations << std::endl;
 
+        for (auto& itPair : preFactorizedHessians)
+        {
+            itPair.second.CleanUp();
+        }
 
     }
     catch (MechanicsException& e)
@@ -215,6 +248,8 @@ NuTo::Error::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
         e.AddMessage(__PRETTY_FUNCTION__, " ERROR performing IMPL-EX.");
         throw e;
     }
+
+
     return NuTo::Error::SUCCESSFUL;
 
 }
@@ -224,13 +259,7 @@ double NuTo::ImplicitExplicitBase::CalculateCriticalTimeStep() const
     return M_PI;
 }
 
-
-void NuTo::ImplicitExplicitBase::AddCalculationStep(const std::set<NuTo::Node::eDof>& rActiveDofs)
-{
-    mStepActiveDofs.push_back(rActiveDofs);
-}
-
-void NuTo::ImplicitExplicitBase::AddDofWithConstantHessian(Node::eDof rDofWithConstantHessian)
+void NuTo::ImplicitExplicitBase::AddDofWithConstantHessian0(Node::eDof rDofWithConstantHessian)
 {
     mDofsWithConstantHessian.insert(rDofWithConstantHessian);
 }

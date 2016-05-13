@@ -42,176 +42,176 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstitutiveStaticDataBase)
 //!@ brief reinterpret as nonlocal damage2d static data
 NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* NuTo::ConstitutiveStaticDataBase::AsNonlocalDamagePlasticity2DPlaneStrain()
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::AsNonlocalDamagePlasticity2DPlaneStrain] Static data is not of type NonlocalDamagePlasticity2DPlaneStrain.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type NonlocalDamagePlasticity2DPlaneStrain.");
 }
 
 //!@ brief reinterpret as nonlocal damage2d static data
 const NuTo::ConstitutiveStaticDataNonlocalDamagePlasticity2DPlaneStrain* NuTo::ConstitutiveStaticDataBase::AsNonlocalDamagePlasticity2DPlaneStrain()const
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::AsNonlocalDamagePlasticity2DPlaneStrain] Static data is not of type NonlocalDamagePlasticity2DPlaneStrain.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type NonlocalDamagePlasticity2DPlaneStrain.");
 }
 
 //!@ brief reinterpret as gradient damage 1d static data
 NuTo::ConstitutiveStaticDataGradientDamagePlasticity1D* NuTo::ConstitutiveStaticDataBase::AsGradientDamagePlasticity1D()
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamagePlasticity1D] Static data is not of type GradientDamagePlasticity1D.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type GradientDamagePlasticity1D.");
 }
 
 //!@ brief reinterpret as nonlocal damage 1d static data
 const NuTo::ConstitutiveStaticDataGradientDamagePlasticity1D* NuTo::ConstitutiveStaticDataBase::AsGradientDamagePlasticity1D()const
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamagePlasticity1D] Static data is not of type GradientDamagePlasticity1D.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type GradientDamagePlasticity1D.");
 }
 
 //!@ brief reinterpret as gradient damage 1d static data
 NuTo::ConstitutiveStaticDataGradientDamage* NuTo::ConstitutiveStaticDataBase::AsGradientDamage()
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamage1D] Static data is not of type GradientDamage1D.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type GradientDamage1D.");
 }
 
 //!@ brief reinterpret as nonlocal damage 1d static data
 const NuTo::ConstitutiveStaticDataGradientDamage* NuTo::ConstitutiveStaticDataBase::AsGradientDamage()const
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamage1D] Static data is not of type GradientDamage1D.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type GradientDamage1D.");
 }
 
 //!@ brief reinterpret as gradient damage 1d static data
 NuTo::ConstitutiveStaticDataGradientDamage1DFatigue* NuTo::ConstitutiveStaticDataBase::AsGradientDamage1DFatigue()
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamage1DFatigue] Static data is not of type GradientDamage1DFatigue.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type GradientDamage1DFatigue.");
 }
 
 //!@ brief reinterpret as nonlocal damage 1d static data
 const NuTo::ConstitutiveStaticDataGradientDamage1DFatigue* NuTo::ConstitutiveStaticDataBase::AsGradientDamage1DFatigue()const
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamage1D] Static data is not of type GradientDamage1D.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type GradientDamage1D.");
 }
 
 //!@ brief reinterpret as gradient damage 2d static data
 NuTo::ConstitutiveStaticDataGradientDamage2DFatigue* NuTo::ConstitutiveStaticDataBase::AsGradientDamage2DFatigue()
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamage2DFatigue] Static data is not of type GradientDamage2DFatigue.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type GradientDamage2DFatigue.");
 }
 
 //!@ brief reinterpret as nonlocal damage 2d static data
 const NuTo::ConstitutiveStaticDataGradientDamage2DFatigue* NuTo::ConstitutiveStaticDataBase::AsGradientDamage2DFatigue()const
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamage2DFatigue] Static data is not of type GradientDamage2DFatigue.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type GradientDamage2DFatigue.");
 }
 
 //!@ brief reinterpret as bond stress slip static data
 NuTo::ConstitutiveStaticDataBondStressSlip* NuTo::ConstitutiveStaticDataBase::AsBondStressSlip()
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::AsBondStressSlip] Static data is not of type BondStressSlip.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type BondStressSlip.");
 }
 
 //!@ brief reinterpret as bond stress slip static data
 const NuTo::ConstitutiveStaticDataBondStressSlip* NuTo::ConstitutiveStaticDataBase::AsBondStressSlip()const
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::AsBondStressSlip] Static data is not of type BondStressSlip.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type BondStressSlip.");
 }
 
 //!@ brief reinterpret as multiscale2d static data
 NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain* NuTo::ConstitutiveStaticDataBase::AsMultiscale2DPlaneStrain()
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataMultiscale2DPlaneStrain] Static data is not of type NonlocalDamagePlasticity2DPlaneStrain.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type NonlocalDamagePlasticity2DPlaneStrain.");
 }
 
 //!@ brief reinterpret as multiscale2d static data
 const NuTo::ConstitutiveStaticDataMultiscale2DPlaneStrain* NuTo::ConstitutiveStaticDataBase::AsMultiscale2DPlaneStrain()const
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataMultiscale2DPlaneStrain] Static data is not of type NonlocalDamagePlasticity2DPlaneStrain.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type NonlocalDamagePlasticity2DPlaneStrain.");
 }
 
 //!@ brief reinterpret as lattice concrete 2D static data
 NuTo::ConstitutiveStaticDataLatticeConcrete2D* NuTo::ConstitutiveStaticDataBase::AsConstitutiveStaticDataLatticeConcrete2D()
 {
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataLatticeConcrete2D] Static data is not of type ConstitutiveStaticDataLatticeConcrete2D.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type ConstitutiveStaticDataLatticeConcrete2D.");
 }
 
 //!@ brief reinterpret as lattice concrete 2D static data
 const NuTo::ConstitutiveStaticDataLatticeConcrete2D* NuTo::ConstitutiveStaticDataBase::AsConstitutiveStaticDataLatticeConcrete2D()const
 {
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataLatticeConcrete2D] Static data is not of type ConstitutiveStaticDataLatticeConcrete2D.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type ConstitutiveStaticDataLatticeConcrete2D.");
 }
 
 //!@ brief reinterpret as strain gradient damage1d static data
 NuTo::ConstitutiveStaticDataStrainGradientDamagePlasticity1D* NuTo::ConstitutiveStaticDataBase::AsStrainGradientDamagePlasticity1D()
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataStrainGradientDamagePlasticity1D] Static data is not of type StrainGradientDamagePlasticity1D.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type StrainGradientDamagePlasticity1D.");
 }
 
 //!@ brief reinterpret as strain gradient damage plasticity static data
 const NuTo::ConstitutiveStaticDataStrainGradientDamagePlasticity1D* NuTo::ConstitutiveStaticDataBase::AsStrainGradientDamagePlasticity1D()const
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataGradientDamagePlasticity1D] Static data is not of type GradientDamagePlasticity1D.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type GradientDamagePlasticity1D.");
 }
 
 //!@ brief reinterpret as damage viscoplasticity static data
 NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D* NuTo::ConstitutiveStaticDataBase::AsDamageViscoPlasticity3D()
 {
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataDamageViscoPlasticity3D] Static data is not of type ConstitutiveStaticDataDamageViscoPlasticity3D.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type ConstitutiveStaticDataDamageViscoPlasticity3D.");
 }
 
 //!@ brief reinterpret as damage viscoplasticity static data
 const NuTo::ConstitutiveStaticDataDamageViscoPlasticity3D* NuTo::ConstitutiveStaticDataBase::AsDamageViscoPlasticity3D()const
 {
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataDamageViscoPlasticity3D] Static data is not of type ConstitutiveStaticDataDamageViscoPlasticity3D.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type ConstitutiveStaticDataDamageViscoPlasticity3D.");
 }
 
 //!@ brief reinterpret as damage viscoplasticity static data with damage
 NuTo::ConstitutiveStaticDataDamageViscoPlasticity3DFatigue* NuTo::ConstitutiveStaticDataBase::AsDamageViscoPlasticity3DFatigue()
 {
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataDamageViscoPlasticity3DFatigue] Static data is not of type ConstitutiveStaticDataDamageViscoPlasticity3DFatigue.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type ConstitutiveStaticDataDamageViscoPlasticity3DFatigue.");
 }
 
 //!@ brief reinterpret as damage viscoplasticity static data with damage
 const NuTo::ConstitutiveStaticDataDamageViscoPlasticity3DFatigue* NuTo::ConstitutiveStaticDataBase::AsDamageViscoPlasticity3DFatigue()const
 {
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::ConstitutiveStaticDataDamageViscoPlasticity3DFatigue] Static data is not of type ConstitutiveStaticDataDamageViscoPlasticity3DFatigue.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type ConstitutiveStaticDataDamageViscoPlasticity3DFatigue.");
 }
 
 //!@ brief reinterpret as moisture transport
 NuTo::ConstitutiveStaticDataMoistureTransport* NuTo::ConstitutiveStaticDataBase::AsMoistureTransport()
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::AsMoistureTransport] Static data is not of type ConstitutiveStaticDataMoistureTransport.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type ConstitutiveStaticDataMoistureTransport.");
 }
 
 //!@ brief reinterpret as moisture transport
 const NuTo::ConstitutiveStaticDataMoistureTransport* NuTo::ConstitutiveStaticDataBase::AsMoistureTransport()const
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::AsMoistureTransport] Static data is not of type ConstitutiveStaticDataMoistureTransport.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type ConstitutiveStaticDataMoistureTransport.");
 }
 
 //!@ brief reinterpret as multi physics
-NuTo::ConstitutiveStaticDataMultiPhysics *NuTo::ConstitutiveStaticDataBase::AsMultiPhysics()
+NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws *NuTo::ConstitutiveStaticDataBase::AsMultipleConstitutiveLaws()
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::AsMultiPhysics] Static data is not of type ConstitutiveStaticDataMultiPhysics.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type ConstitutiveStaticDataMultipleConstitutiveLaws.");
 }
 
 //!@ brief reinterpret as multi physics
-const NuTo::ConstitutiveStaticDataMultiPhysics *NuTo::ConstitutiveStaticDataBase::AsMultiPhysics() const
+const NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws *NuTo::ConstitutiveStaticDataBase::AsMultipleConstitutiveLaws() const
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::AsMultiPhysics] Static data is not of type ConstitutiveStaticDataMultiPhysics.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type ConstitutiveStaticDataMultipleConstitutiveLaws.");
 }
 
 
 void NuTo::ConstitutiveStaticDataBase::SetFineScaleModel(std::string rFileName, double rMacroLength, double rCenter[2], std::string rIPName)
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::SetFineScaleModel] Static data has no fine scale model");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data has no fine scale model");
 }
 
 
 //! @brief sets the fine scale model parameters
 void NuTo::ConstitutiveStaticDataBase::SetFineScaleParameter(const std::string& rName, double rParameter)
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::SetFineScaleParameter] Static data has no fine scale model");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data has no fine scale model");
 }
 
 //! @brief sets the fine scale model parameters
 void NuTo::ConstitutiveStaticDataBase::SetFineScaleParameter(const std::string& rName, std::string rParameter)
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveStaticDataBase::SetFineScaleParameter] Static data has no fine scale model");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data has no fine scale model");
 }
 
 #ifdef ENABLE_VISUALIZE

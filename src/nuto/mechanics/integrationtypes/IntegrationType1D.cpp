@@ -14,6 +14,7 @@ bool NuTo::IntegrationType1D::CheckElementCompatibility(NuTo::Element::eElementT
     case NuTo::Element::CONTINUUMELEMENT:
     case NuTo::Element::CONTINUUMBOUNDARYELEMENT:
     case NuTo::Element::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
+    case NuTo::Element::ELEMENT1DINXD:
         return true;
     default:
         return false;

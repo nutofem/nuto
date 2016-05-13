@@ -25,6 +25,8 @@ public:
     //! @brief constructor
     NewmarkBase(StructureBase* rStructure);
 
+    virtual NuTo::Error::eError Solve(double rTimeDelta)=0;
+
     void SetDampingCoefficientMass(double rMuDampingMass)
     {
     	mMuDampingMass = rMuDampingMass;
@@ -39,11 +41,6 @@ public:
     {
     	mToleranceForce = rToleranceForce;
     }
-
-    //! @brief Sets the residual tolerance for a specific DOF
-    //! param rDof: degree of freedom
-    //! param rTolerance: tolerance
-    void SetToleranceResidual(Node::eDof rDof, double rTolerance);
 
     double GetToleranceForce()const
     {

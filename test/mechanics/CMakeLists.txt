@@ -12,6 +12,7 @@ IF(ENABLE_PYTHON_TESTS)
   ADD_TEST(p::mechanics::DeleteElemNode                    ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/DeleteElemNode.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
   ADD_TEST(p::mechanics::ElementUniaxialTest               ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/ElementUniaxialTest.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_BINARY_DIR})
   ADD_TEST(p::mechanics::Quad2DPatchTest                   ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Quad2DPatchTest.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_BINARY_DIR})
+  add_test(p::mechanics::HeatConduction ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/HeatConduction.py)
 
   # set PYTHONPATH environment for all examples
 
@@ -26,6 +27,7 @@ IF(ENABLE_PYTHON_TESTS)
   p::mechanics::DeleteElemNode
   p::mechanics::ElementUniaxialTest
   p::mechanics::Quad2DPatchTest
+  p::mechanics::HeatConduction
   )
   SET_PROPERTY(TEST ${MYTESTS}  PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
 ENDIF(ENABLE_PYTHON_TESTS)
@@ -34,6 +36,12 @@ ENDIF(ENABLE_PYTHON_TESTS)
 IF (ENABLE_OPENMP AND OPENMP_FOUND AND NOT ENABLE_DEBUG)
   ADD_EXECUTABLE(ParallelAssembly ParallelAssembly.cpp)
   TARGET_LINK_LIBRARIES(ParallelAssembly NuToMath NuToMechanics NuToBase)
+  IF (ENABLE_VISUALIZE)
+    TARGET_LINK_LIBRARIES(ParallelAssembly NuToVisualize)
+  ENDIF (ENABLE_VISUALIZE)  
+  IF (ENABLE_OPTIMIZE)
+    TARGET_LINK_LIBRARIES(ParallelAssembly NuToOptimize)
+  ENDIF (ENABLE_OPTIMIZE)
   IF(MINGW)
     SET_TARGET_PROPERTIES(OpenMP PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
@@ -126,6 +134,9 @@ ADD_EXECUTABLE(RungeKutta RungeKutta.cpp)
 
   ADD_EXECUTABLE(EngineeringInvariants EngineeringInvariants.cpp)
   TARGET_LINK_LIBRARIES(EngineeringInvariants NuToMechanics NuToMath NuToBase)
+  if(ENABLE_VISUALIZE)
+      target_link_libraries(EngineeringInvariants NuToVisualize)
+  endif()
   IF(MINGW)
     SET_TARGET_PROPERTIES(EngineeringInvariants PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
@@ -164,6 +175,9 @@ ADD_EXECUTABLE(RungeKutta RungeKutta.cpp)
   # test the CheckStiffness method globally and locally
   ADD_EXECUTABLE(CoefficientChecks CoefficientChecks.cpp)
   TARGET_LINK_LIBRARIES(CoefficientChecks NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )
+  if(ENABLE_VISUALIZE)
+      target_link_libraries(CoefficientChecks NuToVisualize)
+  endif()
   ADD_TEST(c::mechanics::CoefficientChecks ${CMAKE_CURRENT_BUILD_DIR}/CoefficientChecks)
 
   ADD_EXECUTABLE(ElementUniaxialTruss1D ElementUniaxialTruss1D.cpp)
@@ -302,7 +316,7 @@ ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoInte
 
 
     # structure evaluate
-  # CONFIGURE_FILE(InterfaceElements.msh ${CMAKE_CURRENT_BINARY_DIR})
+
   # ADD_EXECUTABLE(StructureEvaluate StructureEvaluate.cpp)
   #   TARGET_LINK_LIBRARIES(StructureEvaluate NuToMechanics NuToMath NuToBase)
   #   ADD_TEST(c::mechanics::StructureEvaluate ${CMAKE_CURRENT_BUILD_DIR}/StructureEvaluate)
@@ -310,34 +324,43 @@ ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoInte
   #   SET_TARGET_PROPERTIES(StructureEvaluate PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   # ENDIF(MINGW)
 
-  # # TrussIn2D
-  # ADD_EXECUTABLE(TrussIn2D TrussIn2D.cpp)
-  #   TARGET_LINK_LIBRARIES(TrussIn2D NuToMechanics NuToMath NuToBase)
-  #   ADD_TEST(c::mechanics::TrussIn2D ${CMAKE_CURRENT_BUILD_DIR}/TrussIn2D)
-  # IF(MINGW)
-  #   SET_TARGET_PROPERTIES(TrussIn2D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  # ENDIF(MINGW)
+   # TrussIn2D
+   ADD_EXECUTABLE(TrussIn2D TrussIn2D.cpp)
+     TARGET_LINK_LIBRARIES(TrussIn2D NuToMechanics NuToMath NuToBase)
+   IF (ENABLE_VISUALIZE)
+    TARGET_LINK_LIBRARIES(TrussIn2D NuToVisualize)
+   ENDIF (ENABLE_VISUALIZE)
+     ADD_TEST(c::mechanics::TrussIn2D ${CMAKE_CURRENT_BUILD_DIR}/TrussIn2D)
+   IF(MINGW)
+     SET_TARGET_PROPERTIES(TrussIn2D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+   ENDIF(MINGW)
 
-  # # TrussIn3D
-  # ADD_EXECUTABLE(TrussIn3D TrussIn3D.cpp)
-  #   TARGET_LINK_LIBRARIES(TrussIn3D NuToMechanics NuToMath NuToBase)
-  #   ADD_TEST(c::mechanics::TrussIn3D ${CMAKE_CURRENT_BUILD_DIR}/TrussIn3D)
-  # IF(MINGW)
-  #   SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  # ENDIF(MINGW)
+   # TrussIn3D
+   ADD_EXECUTABLE(TrussIn3D TrussIn3D.cpp)
+     TARGET_LINK_LIBRARIES(TrussIn3D NuToMechanics NuToMath NuToBase)
+   IF (ENABLE_VISUALIZE)
+    TARGET_LINK_LIBRARIES(TrussIn3D NuToVisualize)
+   ENDIF (ENABLE_VISUALIZE)    
+     ADD_TEST(c::mechanics::TrussIn3D ${CMAKE_CURRENT_BUILD_DIR}/TrussIn3D)
+   IF(MINGW)
+     SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+   ENDIF(MINGW)
 
-  # # InterfaceElements
-  # ADD_EXECUTABLE(InterfaceElements InterfaceElements.cpp)
-  #   TARGET_LINK_LIBRARIES(InterfaceElements NuToMechanics NuToMath NuToBase)
-  #   ADD_TEST(c::mechanics::InterfaceElements ${CMAKE_CURRENT_BUILD_DIR}/InterfaceElements)
-  # IF(MINGW)
-  #   SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  # ENDIF(MINGW)
+   # InterfaceElements
+   CONFIGURE_FILE(InterfaceElements.msh ${CMAKE_CURRENT_BINARY_DIR})
+   ADD_EXECUTABLE(InterfaceElements InterfaceElements.cpp)
+   TARGET_LINK_LIBRARIES(InterfaceElements NuToMechanics NuToMath NuToBase)
+   IF (ENABLE_VISUALIZE)
+    TARGET_LINK_LIBRARIES(InterfaceElements NuToVisualize)
+   ENDIF (ENABLE_VISUALIZE)   
+   ADD_TEST(c::mechanics::InterfaceElements ${CMAKE_CURRENT_BUILD_DIR}/InterfaceElements)
 
   # BlockMatrices
   ADD_EXECUTABLE(BlockMatrices BlockMatrices.cpp)
   TARGET_LINK_LIBRARIES(BlockMatrices NuToMechanics NuToMath NuToBase)
-     ADD_TEST(c::mechanics::BlockMatrices ${CMAKE_CURRENT_BUILD_DIR}/BlockMatrices)
+  if(ENABLE_VISUALIZE)
+      target_link_libraries(BlockMatrices NuToVisualize)
+  endif()
   IF(MINGW)
     SET_TARGET_PROPERTIES(BlockMatrices PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
@@ -349,8 +372,11 @@ ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoInte
   CONFIGURE_FILE(ConstraintsNodeToElementMatrixMesh3d.msh ${CMAKE_CURRENT_BINARY_DIR})
   CONFIGURE_FILE(ConstraintsNodeToElementFiberMesh3d.msh ${CMAKE_CURRENT_BINARY_DIR})
   ADD_EXECUTABLE(ConstraintsNodeToElement ConstraintsNodeToElement.cpp)
-    TARGET_LINK_LIBRARIES(ConstraintsNodeToElement NuToMechanics NuToMath NuToBase)
-  #  ADD_TEST(c::mechanics::ConstraintsNodeToElement ${CMAKE_CURRENT_BUILD_DIR}/ConstraintsNodeToElement)
+  TARGET_LINK_LIBRARIES(ConstraintsNodeToElement NuToMechanics NuToMath NuToBase)
+  if(ENABLE_VISUALIZE)
+      target_link_libraries(ConstraintsNodeToElement NuToVisualize)
+  endif()
+  ADD_TEST(c::mechanics::ConstraintsNodeToElement ${CMAKE_CURRENT_BUILD_DIR}/ConstraintsNodeToElement)
 
 
   # IntegrationPointVoronoiCells
@@ -362,7 +388,6 @@ ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoInte
       SET_TARGET_PROPERTIES(IntegrationPointVoronoiCells PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
     ENDIF(MINGW)
   ENDIF (ENABLE_VISUALIZE)
-    ADD_TEST(c::mechanics::IntegrationPointVoronoiCells ${CMAKE_CURRENT_BUILD_DIR}/IntegrationPointVoronoiCells)
 
 #MisesPlasticity
 ADD_EXECUTABLE(MisesPlasticity MisesPlasticity.cpp)
@@ -381,11 +406,45 @@ ENDIF(MINGW)
 
 ADD_EXECUTABLE(ConstitutiveLawMoistureTransport ConstitutiveLawMoistureTransport.cpp)
 TARGET_LINK_LIBRARIES(ConstitutiveLawMoistureTransport NuToMechanics NuToMath NuToBase)
-ADD_TEST(c::mechanics::ConstitutiveLawMoistureTransport ${CMAKE_CURRENT_BUILD_DIR}/ConstitutiveLawMoistureTransport)
+if(ENABLE_VISUALIZE)
+    target_link_libraries(ConstitutiveLawMoistureTransport NuToVisualize)
+endif()
 IF(MINGW)
     SET_TARGET_PROPERTIES(ConstitutiveLawMoistureTransport PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
-    ADD_TEST(c::mechanics::ConstitutiveLawMoistureTransport ${CMAKE_CURRENT_BUILD_DIR}/ConstitutiveLawMoistureTransport)
+ADD_TEST(c::mechanics::MoistureTransport ${CMAKE_CURRENT_BUILD_DIR}/ConstitutiveLawMoistureTransport)
+
+
+ADD_EXECUTABLE(MultipleConstitutiveLaws MultipleConstitutiveLaws.cpp)
+TARGET_LINK_LIBRARIES(MultipleConstitutiveLaws NuToMechanics NuToMath NuToBase)
+if(ENABLE_VISUALIZE)
+    target_link_libraries(MultipleConstitutiveLaws NuToVisualize)
+endif()
+IF(MINGW)
+    SET_TARGET_PROPERTIES(MultipleConstitutiveLaws PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)
+ADD_TEST(c::mechanics::MultipleConstitutiveLaws ${CMAKE_CURRENT_BUILD_DIR}/MultipleConstitutiveLaws)
+
+
+
+
+
+ADD_EXECUTABLE(Shrinkage Shrinkage.cpp)
+TARGET_LINK_LIBRARIES(Shrinkage NuToMechanics NuToMath NuToBase)
+IF(ENABLE_VISUALIZE)
+    TARGET_LINK_LIBRARIES(Shrinkage NuToVisualize)
+ENDIF(ENABLE_VISUALIZE)
+IF(MINGW)
+    SET_TARGET_PROPERTIES(Shrinkage PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)
+ADD_TEST(c::mechanics::Shrinkage ${CMAKE_CURRENT_BUILD_DIR}/Shrinkage)
+
+ADD_EXECUTABLE(HeatConduction HeatConduction.cpp)
+TARGET_LINK_LIBRARIES(HeatConduction NuToMechanics NuToMath NuToBase)
+IF(ENABLE_VISUALIZE)
+    TARGET_LINK_LIBRARIES(HeatConduction NuToVisualize)
+ENDIF(ENABLE_VISUALIZE)
+ADD_TEST(c::mechanics::HeatConduction ${CMAKE_CURRENT_BUILD_DIR}/HeatConduction)
 
 
 ENDIF(ENABLE_C++_TESTS)

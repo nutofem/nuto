@@ -23,7 +23,7 @@ void MaxDistanceMesh2D(std::string rGmshFile, double rLX, double rLY)
 
     geometry.MaximizeParticleDistance(0.75);
 
-    geometry.ExportGmshGeo2D(rGmshFile, 0.75, rLY/2.);
+    geometry.ExportGmshGeo2D(rGmshFile, 0.75, rLY/2., 0.75);
 }
 
 void MaxVolumeFraction3D(std::string rGmshFile, double rLX, double rLY, double rLZ)

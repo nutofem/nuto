@@ -24,16 +24,17 @@ public:
 //    EngineeringStress<TDim> mEngineeringStress;
 //    ConstitutiveMatrix<VoigtDim, VoigtDim> mTangentStressStrain;
 
-//    EngineeringStrain<3> mEngineeringStrainVisualize;
-//    EngineeringStrain<3> mEngineeringPlasticStrainVisualize;
-//    EngineeringStress<3> mEngineeringStressVisualize;
+    EngineeringStrain<3> mEngineeringStrainVisualize;
+    EngineeringStrain<3> mEngineeringPlasticStrainVisualize;
+    EngineeringStress<3> mEngineeringStressVisualize;
 
-//    ConstitutiveScalar mDamage;
+    ConstitutiveScalar mDamage;
 
     ConstitutiveScalar mLocalEqStrain;
     ConstitutiveScalar mNonlocalEqStrain;
     ConstitutiveScalar mNonlocalParameterXi;
     ConstitutiveVector<VoigtDim> mTangentLocalEqStrainStrain;
+    ConstitutiveScalar mExtrapolationError;
 
     BoundaryType::eType mBCType;
 

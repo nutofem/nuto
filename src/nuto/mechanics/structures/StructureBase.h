@@ -329,6 +329,17 @@ public:
     //! @param rDisplacements matrix (one column) with the displacements
     void NodeGroupSetDisplacements(int rIdent, const NuTo::FullVector<double,Eigen::Dynamic>& rDisplacements);
 
+    //! @brief Sets the temperature of a node
+    //! @param rIdent Node identifier
+    //! @param rTemperature Temperature to assign to node
+    void NodeSetTemperature(int rId, const double rTemperature);
+
+    //! @brief Sets the temperature of a node
+    //! @param rIdent Node identifier
+    //! @param rTimeDerivative Time derivative (0 temperature, 1 temperature change)
+    //! @param rTemperature Temperature (change) to assign to node
+    void NodeSetTemperature(int rId, int rTimeDerivative, const double rTemperature);
+
     //! @brief returns the node ids of an node group
     //! @param rGroupId  group number
     //! @param rMembers  return vector with node ids
@@ -379,6 +390,17 @@ public:
     //! @param rNodeGroup node group identifier
     //! @param rDisplacements matrix (rows/nodes columns/rDisplacements)
     void NodeGroupGetDisplacements(int rNodeGroup, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements);
+
+    //! @brief Get the temperature at a node
+    //! @param rNode Node identifier
+    //! @return Temperature at the node
+    double NodeGetTemperature(int rNode) const;
+
+    //! @brief Get the temperature (change) of a node
+    //! @param rIdent Node identifier
+    //! @param rTimeDerivative Time derivative (0 temperature, 1 temperature change)
+    //! @return Temperature (change) at the node
+    double NodeGetTemperature(int rNode, int rTimeDerivative) const;
 
     //! @brief extract dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
@@ -679,6 +701,9 @@ public:
     //! @param rElemIdent  identifier for the element
     //! @return max damage value
     double ElementTotalGetMaxDamage();
+
+    //! @brief calculates some error in the static data, e.g. for IMPL-EX
+    double ElementTotalGetStaticDataExtrapolationError();
 
     //! @brief allocates additional static data for an element group
     //! @param rElementGroupId ... element group id
@@ -1286,11 +1311,11 @@ public:
     //! @return ... equilibrium water volume fraction
     double ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const;
 
-
-    //! @brief ... adds a constitutive law to a multi physics model
-    //! @param rIdentMultiPhysics ... multi physics constitutive law to which the constitutive law should be added
-    //! @param rIdentConstitutiveLaw ... constitutive law which should be added to the multi physics model
-    void ConstitutiveLawMultiPhysicsAddConstitutiveLaw(int rIdentMultiPhysics, int rIdentConstitutiveLaw);
+//    //VHIRTHAMTODO Delete???
+//    //! @brief ... adds a constitutive law to a multi physics model
+//    //! @param rIdentMultiPhysics ... multi physics constitutive law to which the constitutive law should be added
+//    //! @param rIdentConstitutiveLaw ... constitutive law which should be added to the multi physics model
+//    void ConstitutiveLawMultiPhysicsAddConstitutiveLaw(int rIdentMultiPhysics, int rIdentConstitutiveLaw);
 
 #ifndef SWIG
 
@@ -1684,6 +1709,9 @@ public:
 
     //! @brief Sets all dofs inactive
     void DofTypeDeactivateAll();
+
+    //! @brief Sets all dofs active
+    void DofTypeActivateAll();
 
     //! @brief forwards the property to all interpolation types. Inactive dofs are not solved for
     //! @param rDofType ... dof type

@@ -135,17 +135,6 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
 #endif// SWIG
-
-    //! @brief ... restore the object from a file
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-    //! @brief ... save the object to a file
-    void Restore (const std::string &filename, std::string rType );
-
-	//  @brief this routine has to be implemented in the final derived classes, which are no longer abstract
-    //! @param filename ... filename
-    //! @param aType ... type of file, either BINARY, XML or TEXT
-	void Save (const std::string &filename, std::string rType )const;
 #endif // ENABLE_SERIALIZATION
 
     //! @brief perform the time integration
@@ -159,20 +148,6 @@ public:
     //!            in case of restoring from a file with the wrong object type, the file id is printed
     //! @return    class name
     virtual std::string GetTypeId()const;
-
-
-    //! @brief ... Adds a calculation step to each timestep
-    //! param rActiveDofs ... active Dofs of the calculation step
-    void AddCalculationStep(const std::set<Node::eDof> &rActiveDofs);
-
-    //! @brief ... Sets the number of calculation steps per timestep
-    //! param rNumSteps ... number of calculation steps per timestep
-    void SetNumCalculationSteps(int rNumSteps);
-
-    //! @brief ... Sets the active Dofs of a calculation step
-    //! param rStepNum ... step number
-    //! param rActiveDofs ... active Dofs of the calculation step
-    void SetActiveDofsCalculationStep(int rStepNum, const std::set<Node::eDof> &rActiveDofs);
 
 private:
     StructureOutputBlockVector CalculateDof1(
@@ -248,9 +223,6 @@ protected:
     int mVerboseLevel = 1;
 
     BlockScalar mToleranceResidual;
-
-    //! @brief Stores wich Dofs are active in which calculation step
-    std::vector<std::set<Node::eDof>> mStepActiveDofs;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

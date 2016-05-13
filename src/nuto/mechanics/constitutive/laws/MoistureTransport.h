@@ -8,7 +8,7 @@
 
 
 // VHIRTHAMTODO Check deactivated routines, if they are still needed
-
+// VHIRTHAMTODO Rebuild CheckXYZ routines ---> CheckParameterDouble of base class
 namespace NuTo
 {
 
@@ -122,7 +122,7 @@ private:
                 throw NuTo::MechanicsException(rCallingFunction,"The vector for the desorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
             if (rSorptionCoefficients.GetNumRows() == 4 && rSorptionCoefficients(0)!=0.0)
                 throw NuTo::MechanicsException(rCallingFunction,"The first desorption coefficients (constant term) has to be zero");
-            for(int i =rSorptionCoefficients.GetNumRows()-3; i<rSorptionCoefficients.GetNumRows(); ++i)
+            for(int i =0; i<rSorptionCoefficients.GetNumRows(); ++i)
             {
                if(rSorptionCoefficients(i)!=0)
                    return;
@@ -131,6 +131,14 @@ private:
     }
 
 public:
+
+    //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
+    //! @param rDofRow ... row dof
+    //! @param rDofCol ... column dof
+    //! @param rTimeDerivative ... time derivative
+    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow,
+                                                Node::eDof rDofCol,
+                                                int rTimeDerivative) const override;
 
     //! @brief ... Checks the adsorption coefficients
     //! @param rAdsorptionCoefficients ... Adsorption coefficients
@@ -331,6 +339,7 @@ public:
     virtual void                                    SetParameterFullVectorDouble                                (Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double,Eigen::Dynamic> rValue) override;
 
 
+    //VHIRTHAMTODO Check if static function better?
     //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
     //! @param rRelativeHumidity ... relative humidity
     //! @param rCoeffs ... polynomial coefficients of the sorption curve

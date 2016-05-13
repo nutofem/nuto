@@ -201,22 +201,34 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
             break;
         }
 
+        case NuTo::Constitutive::Output::EXTRAPOLATION_ERROR:
+        {
+            ConstitutiveIOBase& error = *itOutput.second;
+            error.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
+
+            error[0] = CalculateStaticDataExtrapolationError(*rElement, rIp, rConstitutiveInput);
+            break;
+        }
+
         case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
         {
             throw MechanicsException(__PRETTY_FUNCTION__, "tmp_static_data has to be updated without any other outputs, call it separately.");
-            break;
+            continue;
         }
 
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
         {
             performUpdateAtEnd = true;
-            break;
+            continue;
         }
-
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "output object " + NuTo::Constitutive::OutputToString(itOutput.first)
-                            + " could not be calculated, check the allocated material law and the section behavior.");
+            continue;
         }
+        itOutput.second->SetIsCalculated(true);
+//        default:
+//            throw MechanicsException(__PRETTY_FUNCTION__, "output object " + NuTo::Constitutive::OutputToString(itOutput.first)
+//                            + " could not be calculated, check the allocated material law and the section behavior.");
+//        }
     }
 
     //update history variables
@@ -394,21 +406,35 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
             damage[0] = omega;
             break;
         }
+
+        case NuTo::Constitutive::Output::EXTRAPOLATION_ERROR:
+        {
+            ConstitutiveIOBase& error = *itOutput.second;
+            error.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
+
+            error[0] = CalculateStaticDataExtrapolationError(*rElement, rIp, rConstitutiveInput);
+            break;
+        }
+
         case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
         {
             throw MechanicsException(__PRETTY_FUNCTION__,"tmp_static_data has to be updated without any other outputs, call it separately.");
         }
-            break;
+            continue;
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
         {
             performUpdateAtEnd = true;
         }
-            break;
+            continue;
+//        default:
+//            throw MechanicsException(
+//                    std::string(__PRETTY_FUNCTION__,"output object ") + NuTo::Constitutive::OutputToString(itOutput.first)
+//                            + std::string(" could not be calculated, check the allocated material law and the section behavior."));
+//        }
         default:
-            throw MechanicsException(
-                    std::string(__PRETTY_FUNCTION__,"output object ") + NuTo::Constitutive::OutputToString(itOutput.first)
-                            + std::string(" could not be calculated, check the allocated material law and the section behavior."));
+            continue;
         }
+        itOutput.second->SetIsCalculated(true);
     }
 
     //update history variables
@@ -566,22 +592,35 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
             damage[0] = omega;
             break;
         }
+
+        case NuTo::Constitutive::Output::EXTRAPOLATION_ERROR:
+        {
+            ConstitutiveIOBase& error = *itOutput.second;
+            error.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
+
+            error[0] = CalculateStaticDataExtrapolationError(*rElement, rIp, rConstitutiveInput);
+            break;
+        }
+
         case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
         {
             throw MechanicsException(__PRETTY_FUNCTION__, "tmp_static_data has to be updated without any other outputs, call it separately.");
-            break;
+            continue;
         }
 
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
         {
             performUpdateAtEnd = true;
-            break;
+            continue;
         }
-
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "output object " + NuTo::Constitutive::OutputToString(itOutput.first)
-                            + " could not be calculated, check the allocated material law and the section behavior.");
+            continue;
         }
+        itOutput.second->SetIsCalculated(true);
+//        default:
+//            throw MechanicsException(__PRETTY_FUNCTION__, "output object " + NuTo::Constitutive::OutputToString(itOutput.first)
+//                            + " could not be calculated, check the allocated material law and the section behavior.");
+//        }
     }
 
     //update history variables
@@ -603,7 +642,8 @@ NuTo::ConstitutiveStaticDataGradientDamage NuTo::GradientDamageEngineeringStress
     {
         case CalculateStaticData::USE_PREVIOUS:
         {
-            return *(rElement.GetStaticData(rIp)->AsGradientDamage());
+            int index = calculateStaticData.GetIndexOfPreviousStaticData();
+            return *(rElement.GetStaticDataBase(rIp).GetStaticData(index)->AsGradientDamage());
         }
 
         case CalculateStaticData::EULER_BACKWARD:
@@ -647,6 +687,26 @@ NuTo::ConstitutiveStaticDataGradientDamage NuTo::GradientDamageEngineeringStress
 
 }
 
+double NuTo::GradientDamageEngineeringStress::CalculateStaticDataExtrapolationError(ElementBase& rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput) const
+{
+    // static data 0 contains the extrapolated values \tilde \kappa_n
+    // static data 1 contains the implicit data \kappa_n-1
+    // static data 2 contains the implicit data \kappa_n-2
+
+    auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::Input::CALCULATE_STATIC_DATA);
+    if (itCalculateStaticData == rConstitutiveInput.end())
+        throw MechanicsException(__PRETTY_FUNCTION__, "You need to specify the way the static data should be calculated (input list).");
+
+    const auto& ipData = rElement.GetStaticDataBase(rIp);
+
+    double eeq = (*rConstitutiveInput.at(Constitutive::Input::NONLOCAL_EQ_STRAIN))[0];
+    double k_n_t = ipData.GetStaticData(0)->AsGradientDamage()->GetKappa();
+    double k_n_1 = ipData.GetStaticData(1)->AsGradientDamage()->GetKappa();
+
+    double k_n = std::max(eeq, k_n_1); // calculate kappa implicitly
+    return std::abs(k_n - k_n_t);
+}
+
 
 //! @brief ... create new static data object for an integration point
 //! @return ... pointer to static data object
@@ -667,6 +727,30 @@ NuTo::ConstitutiveStaticDataBase* NuTo::GradientDamageEngineeringStress::Allocat
 NuTo::ConstitutiveStaticDataBase* NuTo::GradientDamageEngineeringStress::AllocateStaticData3D(const ElementBase* rElement) const
 {
     return new ConstitutiveStaticDataGradientDamage;
+}
+
+
+//! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
+//! @param rDofRow ... row dof
+//! @param rDofCol ... column dof
+//! @param rTimeDerivative ... time derivative
+bool NuTo::GradientDamageEngineeringStress::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
+{
+    assert(rTimeDerivative>-1);
+    if (rTimeDerivative<1)
+    {
+        switch (Node::CombineDofs(rDofRow, rDofCol))
+        {
+        case Node::CombineDofs(Node::DISPLACEMENTS,      Node::DISPLACEMENTS):
+        case Node::CombineDofs(Node::DISPLACEMENTS,      Node::NONLOCALEQSTRAIN):
+        case Node::CombineDofs(Node::NONLOCALEQSTRAIN,   Node::DISPLACEMENTS):
+        case Node::CombineDofs(Node::NONLOCALEQSTRAIN,   Node::NONLOCALEQSTRAIN):
+            return true;
+        default:
+            return false;
+        }
+    }
+    return false;
 }
 
 // parameters /////////////////////////////////////////////////////////////

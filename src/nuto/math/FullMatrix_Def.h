@@ -100,6 +100,7 @@ public:
     //! @param  rOther ... copied element
     template<typename OtherDerived>
     FullMatrix<T,rows,cols>& operator+=( const Eigen::DiagonalBase< OtherDerived > &other);
+
 #endif
 
     //! @brief ... resize matrix (everything is deleted)
