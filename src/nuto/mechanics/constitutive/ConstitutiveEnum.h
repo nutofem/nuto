@@ -13,6 +13,7 @@ namespace Constitutive
 {
 enum eConstitutiveType
 {
+    ADDITIVE_INPUT_EXPLICIT,                                //!< container for multiple constitutive laws linked by a shared input
     CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT,                      //!< container for multiple constitutive laws linked by addition of their outputs
     DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS,             //!< viscoplastic damage model
     DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS,   //!< viscoplastic damage model with hardening
@@ -28,6 +29,7 @@ enum eConstitutiveType
     MOISTURE_TRANSPORT,                                     //!< moisture transport model
     MULTISCALE,                                             //!< multiscale model, where the average stress is calculated from a full fine scale model
     NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS,          //!< nonlocal damage model with plasticity in the effective stress space
+    SHRINKAGE_CAPILLARY_STRAIN_BASED,                       //!< strain based drying shrinkage - capillary term
     SHRINKAGE_CAPILLARY_STRESS_BASED,                       //!< stress based drying shrinkage - capillary term
     STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS    //!< strain gradient damage plasticity model (damage and plasticity are function of nonlocal total strain)
 };
@@ -35,6 +37,7 @@ enum eConstitutiveType
 static inline std::map<eConstitutiveType, std::string> GetConstitutiveTypeMap()
 {
     std::map<eConstitutiveType, std::string> map;
+    map[ADDITIVE_INPUT_EXPLICIT]                                = "ADDITIVE_INPUT_EXPLICIT";
     map[CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT]                      = "CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT";
     map[DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS]             = "DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS";
     map[DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS]   = "DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS";
@@ -170,6 +173,7 @@ enum class eConstitutiveParameter
     HEAT_CAPACITY,                              //!< specific heat capacity \f$c_T\f$
     INITIAL_HARDENING_MODULUS,                  //!<
     INITIAL_YIELD_STRENGTH,                     //!<
+    MACROSCOPIC_BULK_MODULUS,                   //!<
     MASS_EXCHANGE_RATE,                         //!<
     MAX_BOND_STRESS,                            //!<
     NONLOCAL_RADIUS,                            //!<
@@ -183,6 +187,7 @@ enum class eConstitutiveParameter
     DENSITY_SATURATED_WATER_VAPOR,              //!<
     SLIP_AT_MAX_BOND_STRESS,                    //!<
     SLIP_AT_RESIDUAL_BOND_STRESS,               //!<
+    SOLID_PHASE_BULK_MODULUS,                   //!<
     SPRING_STIFFNESS,                           //!<
     SPRING_DIRECTION,                           //!<
     TENSILE_STRENGTH,                           //!<
@@ -223,6 +228,7 @@ static inline std::map<eConstitutiveParameter, std::string> GetConstitutiveParam
     map[eConstitutiveParameter::HEAT_CAPACITY]                              = "HEAT_CAPACITY";
     map[eConstitutiveParameter::INITIAL_HARDENING_MODULUS]                  = "INITIAL_HARDENING_MODULUS";
     map[eConstitutiveParameter::INITIAL_YIELD_STRENGTH]                     = "INITIAL_YIELD_STRENGTH";
+    map[eConstitutiveParameter::MACROSCOPIC_BULK_MODULUS]                   = "MACROSCOPIC_BULK_MODULUS";
     map[eConstitutiveParameter::MASS_EXCHANGE_RATE]                         = "MASS_EXCHANGE_RATE";
     map[eConstitutiveParameter::NONLOCAL_RADIUS]                            = "NONLOCAL_RADIUS";
     map[eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER]                  = "NONLOCAL_RADIUS_PARAMETER";
@@ -231,6 +237,7 @@ static inline std::map<eConstitutiveParameter, std::string> GetConstitutiveParam
     map[eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION]         = "POLYNOMIAL_COEFFICIENTS_DESORPTION";
     map[eConstitutiveParameter::PORE_VOLUME_FRACTION]                       = "PORE_VOLUME_FRACTION";
     map[eConstitutiveParameter::DENSITY_SATURATED_WATER_VAPOR]              = "DENSITY_SATURATED_WATER_VAPOR";
+    map[eConstitutiveParameter::SOLID_PHASE_BULK_MODULUS]                   = "SOLID_PHASE_BULK_MODULUS";
     map[eConstitutiveParameter::SPRING_STIFFNESS]                           = "SPRING_STIFFNESS";
     map[eConstitutiveParameter::TEMPERATURE]                                = "TEMPERATURE";
     map[eConstitutiveParameter::TENSILE_STRENGTH]                           = "TENSILE_STRENGTH";
@@ -272,6 +279,7 @@ namespace Input
 {
 enum eInput
 {
+    NONE,                               //!< for constitutive law additive input explicit (AddConstitutiveLaw-function)
     ENGINEERING_STRAIN,                 //!<
     TEMPERATURE,                        //!< Temperature \f$T\f$
     TEMPERATURE_GRADIENT,               //!< Temperature gradient \f$\nabla T\f$
@@ -335,7 +343,10 @@ enum eOutput
     ENGINEERING_STRESS,
     ENGINEERING_STRESS_VISUALIZE,
     ENGINEERING_STRAIN,
+    D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY,
+    D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION,
     ENGINEERING_STRAIN_VISUALIZE,
+    SHRINKAGE_STRAIN_VISUALIZE,
     D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,
     D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY,
     D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION,
@@ -410,7 +421,10 @@ static inline std::string OutputToString( const Output::eOutput& e )
 {
 	const std::map< Output::eOutput, std::string > lut =
     boost::assign::map_list_of(Output::ENGINEERING_STRAIN, "ENGINEERING_STRAIN" )
+                              (Output::D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY,"D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY")
+                              (Output::D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION,"D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION")
                               (Output::ENGINEERING_STRAIN_VISUALIZE, "ENGINEERING_STRAIN_VISUALIZE" )
+                              (Output::SHRINKAGE_STRAIN_VISUALIZE, "SHRINKAGE_STRAIN_VISUALIZE" )
                               (Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE, "ENGINEERING_PLASTIC_STRAIN_VISUALIZE" )
                               (Output::ENGINEERING_VISCOPLASTIC_STRAIN_3D, "ENGINEERING_VISCOPLASTIC_STRAIN_3D" )
                               (Output::ENGINEERING_TOTAL_INELASTIC_STRAIN_3D, "ENGINEERING_TOTAL_INELASTIC_STRAIN_3D" )

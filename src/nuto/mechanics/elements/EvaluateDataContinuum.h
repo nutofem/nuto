@@ -45,6 +45,7 @@ public:
     ConstitutiveVector<VoigtDim> mEngineeringStress_dRH;
     ConstitutiveVector<VoigtDim> mEngineeringStress_dWV;
 
+    EngineeringStrain<3> mShrinkageStrainVisualize;
     // Moisture Transport
     // --------------------------------------------------------------------------------------------
 

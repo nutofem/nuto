@@ -4,6 +4,7 @@
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 
+#include "nuto/mechanics/constitutive/laws/AdditiveInputExplicit.h"
 #include "nuto/mechanics/constitutive/laws/ConstitutiveLawsAdditiveOutput.h"
 #include "nuto/mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "nuto/mechanics/constitutive/laws/HeatConduction.h"
@@ -11,6 +12,7 @@
 #include "nuto/mechanics/constitutive/laws/LinearElasticEngineeringStress.h"
 #include "nuto/mechanics/constitutive/laws/MoistureTransport.h"
 #include "nuto/mechanics/constitutive/laws/MisesPlasticityEngineeringStress.h"
+#include "nuto/mechanics/constitutive/laws/ShrinkageCapillaryStrainBased.h"
 #include "nuto/mechanics/constitutive/laws/ShrinkageCapillaryStressBased.h"
 
 //#include "nuto/mechanics/constitutive/mechanics/DamageViscoPlasticityHardeningEngineeringStress.h"
@@ -60,6 +62,10 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
         ConstitutiveBase* ConstitutiveLawPtr;
         switch (rType)
         {
+        case NuTo::Constitutive::ADDITIVE_INPUT_EXPLICIT:
+            ConstitutiveLawPtr = new NuTo::AdditiveInputExplicit();
+            break;
+
         case NuTo::Constitutive::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT:
             ConstitutiveLawPtr = new NuTo::ConstitutiveLawsAdditiveOutput();
             break;
@@ -116,6 +122,10 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
 
         case NuTo::Constitutive::FIBRE_MATRIX_BOND_STRESS_SLIP:
             ConstitutiveLawPtr = new NuTo::FibreMatrixBondStressSlip();
+            break;
+
+        case NuTo::Constitutive::SHRINKAGE_CAPILLARY_STRAIN_BASED:
+            ConstitutiveLawPtr = new NuTo::ShrinkageCapillaryStrainBased();
             break;
 
         case NuTo::Constitutive::SHRINKAGE_CAPILLARY_STRESS_BASED:

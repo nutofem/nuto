@@ -31,37 +31,39 @@ static inline std::map<eIpDataType, std::string> GetIpDataTypeMap()
 //! @brief this is mainly used in Get routines for visualization purposes
 enum eIpStaticDataType
 {
-    BOND_STRESS,               //!< bond stress
-    SLIP,                      //!< slip, i.e. relative displacement
-    LATTICE_STRAIN,            //!< lattice strain
-    LATTICE_STRESS,            //!< lattice stress
-    LATTICE_PLASTIC_STRAIN,    //!< lattice plastic strain
-    ENGINEERING_STRAIN,        //!< engineering strain
-    ENGINEERING_STRESS,        //!< engineering stress
-    LOCAL_EQ_STRAIN,           //!< local equivalent strain
-    DAMAGE,                    //!< isotropic damage variable
-    ENGINEERING_PLASTIC_STRAIN,//!> plastic strain
-	TOTAL_INELASTIC_EQ_STRAIN, //!> total inelastic equivalent strain
-    ELASTIC_ENERGY,            //!> elastic energy
-    INTERNAL_ENERGY,           //!> internal (elastic + inelastic) energy
-    HEAT_FLUX,                 //!> heat flux
-    EXTRAPOLATION_ERROR          //!> for implicit / explicit time integration schemes
+    BOND_STRESS,                    //!< bond stress
+    DAMAGE,                         //!< isotropic damage variable
+    ELASTIC_ENERGY,                 //!> elastic energy
+    ENGINEERING_PLASTIC_STRAIN,     //!> plastic strain
+    ENGINEERING_STRAIN,             //!< engineering strain
+    ENGINEERING_STRESS,             //!< engineering stress
+    EXTRAPOLATION_ERROR,            //!> for implicit / explicit time integration schemes
+    HEAT_FLUX,                      //!> heat flux
+    INTERNAL_ENERGY,                //!> internal (elastic + inelastic) energy
+    LATTICE_STRAIN,                 //!< lattice strain
+    LATTICE_STRESS,                 //!< lattice stress
+    LATTICE_PLASTIC_STRAIN,         //!< lattice plastic strain
+    LOCAL_EQ_STRAIN,                //!< local equivalent strain
+    SHRINKAGE_STRAIN,               //!> shrinkage strains
+    SLIP,                           //!< slip, i.e. relative displacement
+    TOTAL_INELASTIC_EQ_STRAIN       //!> total inelastic equivalent strain
 };
 static inline std::map<eIpStaticDataType, std::string> GetIpStaticDataTypeMap()
 {
     std::map<eIpStaticDataType, std::string> shapeTypeMap;
-    shapeTypeMap[eIpStaticDataType::LATTICE_STRAIN]             = "LATTICE_STRAIN";
-    shapeTypeMap[eIpStaticDataType::LATTICE_STRESS]             = "LATTICE_STRESS";
-    shapeTypeMap[eIpStaticDataType::LATTICE_PLASTIC_STRAIN]     = "LATTICE_PLASTIC_STRAIN";
+    shapeTypeMap[eIpStaticDataType::DAMAGE]                     = "DAMAGE";
+    shapeTypeMap[eIpStaticDataType::ELASTIC_ENERGY]             = "ELASTIC_ENERGY";
+    shapeTypeMap[eIpStaticDataType::ENGINEERING_PLASTIC_STRAIN] = "ENGINEERING_PLASTIC_STRAIN";
     shapeTypeMap[eIpStaticDataType::ENGINEERING_STRAIN]         = "ENGINEERING_STRAIN";
     shapeTypeMap[eIpStaticDataType::ENGINEERING_STRESS]         = "ENGINEERING_STRESS";
-    shapeTypeMap[eIpStaticDataType::DAMAGE]                     = "DAMAGE";
-    shapeTypeMap[eIpStaticDataType::ENGINEERING_PLASTIC_STRAIN] = "ENGINEERING_PLASTIC_STRAIN";
-    shapeTypeMap[eIpStaticDataType::TOTAL_INELASTIC_EQ_STRAIN]	= "TOTAL_INELASTIC_EQUIVALENT_STRAIN";
-    shapeTypeMap[eIpStaticDataType::ELASTIC_ENERGY]             = "ELASTIC_ENERGY";
-    shapeTypeMap[eIpStaticDataType::INTERNAL_ENERGY]            = "INTERNAL_ENERGY";
-    shapeTypeMap[eIpStaticDataType::HEAT_FLUX]                  = "HEAT_FLUX";
     shapeTypeMap[eIpStaticDataType::EXTRAPOLATION_ERROR]        = "EXTRAPOLATION_ERROR";
+    shapeTypeMap[eIpStaticDataType::HEAT_FLUX]                  = "HEAT_FLUX";
+    shapeTypeMap[eIpStaticDataType::INTERNAL_ENERGY]            = "INTERNAL_ENERGY";
+    shapeTypeMap[eIpStaticDataType::LATTICE_PLASTIC_STRAIN]     = "LATTICE_PLASTIC_STRAIN";
+    shapeTypeMap[eIpStaticDataType::LATTICE_STRAIN]             = "LATTICE_STRAIN";
+    shapeTypeMap[eIpStaticDataType::LATTICE_STRESS]             = "LATTICE_STRESS";
+    shapeTypeMap[eIpStaticDataType::SHRINKAGE_STRAIN]           = "SHRINKAGE_STRAIN";
+    shapeTypeMap[eIpStaticDataType::TOTAL_INELASTIC_EQ_STRAIN]	= "TOTAL_INELASTIC_EQUIVALENT_STRAIN";
     return shapeTypeMap;
 }
 

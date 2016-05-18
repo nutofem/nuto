@@ -619,26 +619,16 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
         case NuTo::VisualizeBase::DAMAGE:
             elementIpDataMap[IpData::DAMAGE];
             break;
-        case NuTo::VisualizeBase::ENGINEERING_STRAIN:
-            elementIpDataMap[IpData::ENGINEERING_STRAIN];
-            break;
-        case NuTo::VisualizeBase::LOCAL_EQ_STRAIN:
-            elementIpDataMap[IpData::LOCAL_EQ_STRAIN];
-            break;
         case NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN:
             elementIpDataMap[IpData::ENGINEERING_PLASTIC_STRAIN];
             break;
-        case NuTo::VisualizeBase::TOTAL_INELASTIC_EQ_STRAIN:
-            elementIpDataMap[IpData::TOTAL_INELASTIC_EQ_STRAIN];
+        case NuTo::VisualizeBase::ENGINEERING_STRAIN:
+            elementIpDataMap[IpData::ENGINEERING_STRAIN];
+            break;
+        case NuTo::VisualizeBase::SHRINKAGE_STRAIN:
+            elementIpDataMap[IpData::SHRINKAGE_STRAIN];
             break;
         case NuTo::VisualizeBase::ENGINEERING_STRESS:
-            if (evaluateStress == false)
-            {
-                elementIpDataMap[IpData::ENGINEERING_STRESS];
-                evaluateStress = true;
-            }
-            break;
-        case NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS:
             if (evaluateStress == false)
             {
                 elementIpDataMap[IpData::ENGINEERING_STRESS];
@@ -648,21 +638,35 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
         case NuTo::VisualizeBase::HEAT_FLUX:
             elementIpDataMap[IpData::HEAT_FLUX];
             break;
-        case NuTo::VisualizeBase::DISPLACEMENTS:
-        case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
-        case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
-        case NuTo::VisualizeBase::CONSTITUTIVE:
-        case NuTo::VisualizeBase::SECTION:
-        case NuTo::VisualizeBase::ELEMENT:
-        case NuTo::VisualizeBase::CRACK:
-        case NuTo::VisualizeBase::TEMPERATURE:
-        case NuTo::VisualizeBase::ROTATION:
-        case NuTo::VisualizeBase::VELOCITY:
+        case NuTo::VisualizeBase::LOCAL_EQ_STRAIN:
+            elementIpDataMap[IpData::LOCAL_EQ_STRAIN];
+            break;
+        case NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS:
+            if (evaluateStress == false)
+            {
+                elementIpDataMap[IpData::ENGINEERING_STRESS];
+                evaluateStress = true;
+            }
+            break;
+        case NuTo::VisualizeBase::TOTAL_INELASTIC_EQ_STRAIN:
+            elementIpDataMap[IpData::TOTAL_INELASTIC_EQ_STRAIN];
+            break;
+
         case NuTo::VisualizeBase::ACCELERATION:
         case NuTo::VisualizeBase::ANGULAR_VELOCITY:
         case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
+        case NuTo::VisualizeBase::CONSTITUTIVE:
+        case NuTo::VisualizeBase::CRACK:
+        case NuTo::VisualizeBase::DISPLACEMENTS:
+        case NuTo::VisualizeBase::ELEMENT:
+        case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
+        case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
         case NuTo::VisualizeBase::PARTICLE_RADIUS:
         case NuTo::VisualizeBase::RELATIVE_HUMIDITY:
+        case NuTo::VisualizeBase::ROTATION:
+        case NuTo::VisualizeBase::SECTION:
+        case NuTo::VisualizeBase::TEMPERATURE:
+        case NuTo::VisualizeBase::VELOCITY:
         case NuTo::VisualizeBase::WATER_VOLUME_FRACTION:
         default:
             //do nothing
@@ -756,6 +760,29 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
 
                 unsigned int CellId = CellIdVec[CellCount];
                 rVisualize.SetCellDataTensor(CellId, it.get()->GetComponentName(), EngineeringStrainTensor);
+            }
+        }
+            break;
+        case NuTo::VisualizeBase::SHRINKAGE_STRAIN:
+        {
+            const auto& shrinkageStrain = elementIpDataMap.at(IpData::SHRINKAGE_STRAIN);
+            assert(shrinkageStrain.size() != 0);
+            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+            {
+                unsigned int theIp = VisualizationCellsIP[CellCount];
+                 double shrinkageStrainTensor[9];
+                shrinkageStrainTensor[0] =       shrinkageStrain(0, theIp);
+                shrinkageStrainTensor[1] = 0.5 * shrinkageStrain(3, theIp);
+                shrinkageStrainTensor[2] = 0.5 * shrinkageStrain(5, theIp);
+                shrinkageStrainTensor[3] = 0.5 * shrinkageStrain(3, theIp);
+                shrinkageStrainTensor[4] =       shrinkageStrain(1, theIp);
+                shrinkageStrainTensor[5] = 0.5 * shrinkageStrain(4, theIp);
+                shrinkageStrainTensor[6] = 0.5 * shrinkageStrain(5, theIp);
+                shrinkageStrainTensor[7] = 0.5 * shrinkageStrain(4, theIp);
+                shrinkageStrainTensor[8] =       shrinkageStrain(2, theIp);
+
+                unsigned int CellId = CellIdVec[CellCount];
+                rVisualize.SetCellDataTensor(CellId, it.get()->GetComponentName(), shrinkageStrainTensor);
             }
         }
             break;
@@ -1332,6 +1359,9 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(VisualizeUnstructuredGrid&
             case NuTo::VisualizeBase::ENGINEERING_STRAIN:
                 elementIpDataMap[IpData::ENGINEERING_STRAIN];
             break;
+            case NuTo::VisualizeBase::SHRINKAGE_STRAIN:
+                elementIpDataMap[IpData::SHRINKAGE_STRAIN];
+            break;
             default:
                 throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ": \t Visualization component " + it.get()->GetComponentName() + " is not implemented or not known at the integration points.");
                 break;
@@ -1366,6 +1396,29 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(VisualizeUnstructuredGrid&
 
                     unsigned int CellId = CellIdVec[CellCount];
                     rVisualize.SetCellDataTensor(CellId, it.get()->GetComponentName(), EngineeringStrainTensor);
+                }
+            }
+                break;
+            case NuTo::VisualizeBase::SHRINKAGE_STRAIN:
+            {
+                const auto& shrinkageStrain = elementIpDataMap.at(IpData::SHRINKAGE_STRAIN);
+                assert(shrinkageStrain.size() != 0);
+                for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+                {
+                    unsigned int theIp = VisualizationCellsIP[CellCount];
+                    double shrinkageStrainTensor[9];
+                    shrinkageStrainTensor[0] =       shrinkageStrain(0, theIp);
+                    shrinkageStrainTensor[1] = 0.5 * shrinkageStrain(3, theIp);
+                    shrinkageStrainTensor[2] = 0.5 * shrinkageStrain(5, theIp);
+                    shrinkageStrainTensor[3] = 0.5 * shrinkageStrain(3, theIp);
+                    shrinkageStrainTensor[4] =       shrinkageStrain(1, theIp);
+                    shrinkageStrainTensor[5] = 0.5 * shrinkageStrain(4, theIp);
+                    shrinkageStrainTensor[6] = 0.5 * shrinkageStrain(5, theIp);
+                    shrinkageStrainTensor[7] = 0.5 * shrinkageStrain(4, theIp);
+                    shrinkageStrainTensor[8] =       shrinkageStrain(2, theIp);
+
+                    unsigned int CellId = CellIdVec[CellCount];
+                    rVisualize.SetCellDataTensor(CellId, it.get()->GetComponentName(), shrinkageStrainTensor);
                 }
             }
                 break;

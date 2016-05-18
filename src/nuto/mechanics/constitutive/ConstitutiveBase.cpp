@@ -156,7 +156,7 @@ double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double rRelativ
 }
 
 
-void NuTo::ConstitutiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw)
+void NuTo::ConstitutiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw, Constitutive::Input::eInput rModiesInput)
 {
     throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"The constitutive relationship does not have this functionality.");
 }

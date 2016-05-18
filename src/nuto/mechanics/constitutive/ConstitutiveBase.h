@@ -50,7 +50,10 @@ class InterpolationType;
 //! @date November 2009
 class ConstitutiveBase
 {
-    friend class ConstitutiveLawsAdditiveOutput;  //Needed for CheckParameters-function of ConstitutiveLawsAdditiveOutput
+    // Friend declarations needed for CheckParameters-function of ConstitutiveLawsAdditiveOutput
+    friend class AdditiveInputExplicit;
+    friend class ConstitutiveLawsAdditiveOutput;
+
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
@@ -197,8 +200,9 @@ public:
     virtual double GetEquilibriumWaterVolumeFraction(double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const;
 
     //! @brief ... adds a constitutive law to a model that combines multiple constitutive laws (additive, parallel)
-    //! @param ... additional constitutive law
-    virtual void  AddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw);
+    //! @param rConstitutiveLaw ... additional constitutive law
+    //! @param rModiesInput ... enum which defines wich input is modified by a constitutive law.
+    virtual void  AddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw, Constitutive::Input::eInput rModiesInput = Constitutive::Input::NONE);
 
     //! @brief ... checks if a constitutive law has an specific output
     //! @return ... true/false
