@@ -7,7 +7,7 @@ find_package(Doxygen)
 if(DOXYGEN_FOUND)
     # configure Doxyfile
     set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/nuto)
-    set(DOXYGEN_INPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/src/nuto)
+    set(DOXYGEN_INPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/src/nuto ${CMAKE_SOURCE_DIR}/examples")
     set(DOXYGEN_IMAGE_DIRECTORY ${CMAKE_SOURCE_DIR}/doc/images)
     set(DOXYGEN_HAVE_DOT NO)
     if(DOXYGEN_DOT_FOUND)

@@ -1,3 +1,18 @@
+/*! @file Temperature1D.cpp
+ * Heat Conduction in 1D, with one Dirichlet and one Neumann boundary condition.
+ *
+ * Solve the heat equation in 1D, \f$ ρ c_T \dot{u} - k u,_{xx} = 0 \f$, under
+ * the boundary conditions \f$u|_{x = 0} = 20\f$ and \f$q|_{x=l} = 10 \f$.
+ * \f[ \fbox{ \begin{tikzpicture}
+ *      \draw[thick] (0, 0) -- ++(5, 0);
+ *      \node[left] at (0,0) {$T_0 = 20$};
+ *      \draw[<-] (5.1, 0) -- ++(0.5, 0);
+ *      \node[below right] at (5,0) {$q = 10$};
+ *      \draw[|<->|] (0, -0.2) -- ++(5, 0);
+ *      \node[below] at (2.5, -0.2) {$l$};
+ *  \end{tikzpicture} } \f]
+ */
+
 #include <iostream>
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"

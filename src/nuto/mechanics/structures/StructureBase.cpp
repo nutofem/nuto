@@ -601,6 +601,7 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
             rVisualize.DefineCellDataScalar(it.get()->GetComponentName());
             break;
 
+        case NuTo::VisualizeBase::HEAT_FLUX:
         case NuTo::VisualizeBase::SLIP:
         case NuTo::VisualizeBase::CRACK:
         case NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS:
