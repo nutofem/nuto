@@ -86,14 +86,102 @@ NuTo::FullMatrix<double, 1, Eigen::Dynamic> NuTo::BSplineCurve::BasisFuns(double
         double saved = 0.;
         for(int r = 0; r < j; r++)
         {
-            double temp = rBasisFunctions.GetValue(0,r)/(right[r+1] + left[j-r]);
-            rBasisFunctions.SetValue(0,r, saved + right[r+1]*temp);
+            double temp = rBasisFunctions(0,r)/(right[r+1] + left[j-r]);
+            rBasisFunctions(0,r) = saved + right[r+1]*temp;
             saved = left[j-r]*temp;
         }
-        rBasisFunctions.SetValue(0,j, saved);
+        rBasisFunctions(0,j) = saved;
     }
 
     return rBasisFunctions;
+}
+
+NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::BSplineCurve::BasisFunsAndDerivatives(double rParameter, int rSpan, int maxDer)
+{
+    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ndu(mDegree, mDegree);
+
+    ndu(0,0) = 1.0;
+
+    FullVector<double, Eigen::Dynamic> left(mDegree + 1);
+    FullVector<double, Eigen::Dynamic> right(mDegree + 1);
+
+    for (int j = 1; j <= mDegree; j++)
+    {
+        left[j]  = rParameter - mKnots[rSpan + 1 - j];
+        right[j] = mKnots[rSpan + j] - rParameter;
+        double saved = 0.;
+        for(int r = 0; r < j; r++)
+        {
+            ndu(j,r) = right[r+1] + left[j-r]; // lower triange (knot differences)
+            double temp = ndu(r, j-1)/ndu(j,r);
+            ndu(r,j) = saved + right[r+1]*temp; // upper triangle
+            saved = left[j-r]*temp;
+        }
+        ndu(j,j) = saved;
+    }
+
+    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ders(mDegree, mDegree);
+
+    for(int j = 0; j <= mDegree; j++)
+    {
+        ders(0,j) = ndu(j,mDegree);
+
+        FullMatrix<double, 2, 2> a(2, mDegree+1);
+        int r = 0;
+        for(; r<=mDegree; r++)
+        {
+            int s1 = 0;
+            int s2 = 1;
+
+            a(0,0) = 1.0;
+
+            for(int k = 1; k<=maxDer; k++)
+            {
+                double d = 0.0;
+                int rk = r-k;
+                int pk = mDegree-k;
+                if(r >= k)
+                {
+                    a(s2,0) = a(s1,0)/ndu(pk+1, rk);
+                    double d = a(s2,0)*ndu(rk,pk);
+                }
+                int j1 = 0;
+                if(rk >= -1) j1 = 1;
+                else         j1 = -rk;
+
+                int j2 = 0;
+                if(r-1 <= pk) j2 = k-1;
+                else          j2 = mDegree-r;
+
+                for(j = j1; j <= j2; j++)
+                {
+                    a(s2, j) = (a(s1,j) - a(s1, j-1))/ndu(pk+1, rk+j);
+                    d += a(s2,j)*ndu(rk+j, pk);
+                }
+
+                if(r <= pk)
+                {
+                    a(s2,k) = -a(s1,k-1)/ndu(pk+1,r);
+                    d += a(s2,k)*ndu(r,pk);
+                }
+
+                ders(k,r) = d;
+                j = s1;
+                s1 = s2;
+                s2 = j;
+            }
+        }
+
+        r = mDegree;
+        for(int k = 1; k <= maxDer; k++)
+        {
+            for (int j = 0; j <= mDegree; j++) ders(k,j) *=r;
+            r*= (mDegree-k);
+        }
+    }
+
+    return ders.Trans();
+
 }
 
 

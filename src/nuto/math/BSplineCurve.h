@@ -78,7 +78,7 @@ public:
     //! @brief ... find span of a parameter (rParameter) in the knot vector
     //! @param rParameter ... parameter to find the span of
     //! @return ... the span index
-    void DerivativeBasisFuns(double rParameter, int rSpan, NuTo::FullVector<double, Eigen::Dynamic>& rDersBasisFunctions);
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> BasisFunsAndDerivatives(double rParameter, int rSpan, int maxDer);
 
     /** Parametrization **/
 

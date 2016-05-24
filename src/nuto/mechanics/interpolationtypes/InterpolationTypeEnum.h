@@ -27,7 +27,8 @@ enum eShapeType
     QUAD2D,
     TETRAHEDRON3D,
     BRICK3D,
-    INTERFACE
+    INTERFACE,
+    INTERFACEIGA,
 };
 static inline std::map<eShapeType, std::string> GetShapeTypeMap()
 {
@@ -39,7 +40,8 @@ static inline std::map<eShapeType, std::string> GetShapeTypeMap()
     shapeTypeMap[eShapeType::QUAD2D]        = "QUAD2D";
     shapeTypeMap[eShapeType::TETRAHEDRON3D] = "TETRAHEDRON3D";
     shapeTypeMap[eShapeType::BRICK3D]       = "BRICK3D";
-    shapeTypeMap[eShapeType::INTERFACE]       = "INTERFACE";
+    shapeTypeMap[eShapeType::INTERFACE]     = "INTERFACE";
+    shapeTypeMap[eShapeType::INTERFACEIGA]  = "INTERFACEIGA";
     return shapeTypeMap;
 }
 
@@ -51,7 +53,10 @@ enum eTypeOrder
     EQUIDISTANT4,
     LOBATTO2,
     LOBATTO3,
-    LOBATTO4
+    LOBATTO4,
+    SPLINE2,
+    SPLINE3,
+    SPLINE4
 };
 static inline std::map<eTypeOrder, std::string> GetTypeOrderMap()
 {
@@ -63,6 +68,9 @@ static inline std::map<eTypeOrder, std::string> GetTypeOrderMap()
     typeOrderMap[eTypeOrder::LOBATTO2]      = "LOBATTO2";
     typeOrderMap[eTypeOrder::LOBATTO3]      = "LOBATTO3";
     typeOrderMap[eTypeOrder::LOBATTO4]      = "LOBATTO4";
+    typeOrderMap[eTypeOrder::SPLINE2]       = "SPLINE2";
+    typeOrderMap[eTypeOrder::SPLINE3]       = "SPLINE3";
+    typeOrderMap[eTypeOrder::SPLINE4]       = "SPLINE4";
     return typeOrderMap;
 }
 

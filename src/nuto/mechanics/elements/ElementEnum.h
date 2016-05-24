@@ -22,6 +22,7 @@ enum eElementType
     ELEMENT1DSPRING,                                //!< one dimensional spring element
     ELEMENT2D,                                      //!< two dimensional element
     ELEMENT2DINTERFACE,                             //!< two dimensional element
+    INTERFACEIGA,                                   //!< interface element isogeometric analysis (e.g. contact)
     ELEMENT3D,                                      //!< three dimensional element
     PLANE2D4N,
     PLANE2D3N,
@@ -37,6 +38,7 @@ static inline std::map<eElementType, std::string> GetElementTypeMap()
     map[CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE]  = "CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE";
     map[ELEMENT1DINXD]                                   = "ELEMENT1DINXD";
     map[ELEMENT2DINTERFACE]                              = "ELEMENTINTERFACE";
+    map[INTERFACEIGA]                                    = "INTERFACEIGA";
     return map;
 }
 
@@ -74,6 +76,7 @@ enum eUpdateType
 
 enum eOutput
 {
+        CONTACT_FORCE,                   //!< contact force after mortar discretization
 	INTERNAL_GRADIENT,               //!<
 	INTERNAL_GRADIENT_ELASTIC,       //!< calculates internal gradient for the case that the state variables remain unchanged
 	EXTERNAL_GRADIENT,               //!< TODO: calculate external forces in element

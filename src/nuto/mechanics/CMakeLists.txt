@@ -103,6 +103,9 @@ elements/ElementDataBase.cpp
 elements/ElementDataConstitutiveBase.cpp
 elements/Element1DInXD.cpp
 elements/Element2DInterface.cpp
+#elements/InterfaceElementBase.cpp #
+elements/Element1DInterfaceIGA.cpp
+#elements/InterfaceElementFEM.cpp #
 elements/ElementDataConstitutiveIp.cpp
 elements/ElementDataConstitutiveIpNonlocal.cpp
 elements/ElementDataIpBase.cpp
@@ -139,6 +142,7 @@ integrationtypes/IntegrationType1D2NGauss5Ip.cpp
 integrationtypes/IntegrationType1D2NLobatto3Ip.cpp
 integrationtypes/IntegrationType1D2NLobatto4Ip.cpp
 integrationtypes/IntegrationType1D2NLobatto5Ip.cpp
+integrationtypes/IntegrationType1D2NLobatto6Ip.cpp
 integrationtypes/IntegrationType2D.cpp
 integrationtypes/IntegrationType2D3NGauss13Ip.cpp
 integrationtypes/IntegrationType2D3NGauss16Ip.cpp
@@ -172,6 +176,7 @@ interpolationtypes/InterpolationBase.cpp
 interpolationtypes/Interpolation1D.cpp
 interpolationtypes/Interpolation1DTruss.cpp
 interpolationtypes/Interpolation1DInterface.cpp
+#interpolationtypes/Interpolation1DIGAInterface.cpp
 interpolationtypes/Interpolation2D.cpp
 interpolationtypes/Interpolation2DTriangle.cpp
 interpolationtypes/Interpolation2DQuad.cpp

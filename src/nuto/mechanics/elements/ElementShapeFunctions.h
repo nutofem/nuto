@@ -220,6 +220,17 @@ Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder2(const Eigen::VectorXd&
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
+namespace ShapeFunctionsInterfaceIGA1D // interval depends on the knot vector
+{
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Eigen::VectorXd ShapeFunctionsIGAInterface1D(double rParameter, const Eigen::VectorXd& mKnots, int rDegree);
+
+Eigen::MatrixXd DerivativeShapeFunctionsIGAInterface1D(const Eigen::VectorXd& rParameter, const Eigen::VectorXd& mKnots);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+}// namespace ShapeFunctionsInterfaceIGA1D
+
 
 } /* namespace NuTo */
 

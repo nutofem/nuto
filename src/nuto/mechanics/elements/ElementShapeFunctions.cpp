@@ -1869,5 +1869,49 @@ Eigen::MatrixXd DerivativeShapeFunctionsInterface3dOrder1(const Eigen::VectorXd&
 }// namespace ShapeFunctionsInterface3D
 
 
+namespace ShapeFunctionsInterfaceIGA1D // interval depends on the knot vector
+{
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Eigen::VectorXd ShapeFunctionsIGAInterface1D(double rParameter, const Eigen::VectorXd& mKnots, int rDegree)
+{
+    assert(mKnots.rows() == 2*rDegree+2);
+    Eigen::VectorXd rBasisFunctions(rDegree + 1);
+
+    rBasisFunctions(0,0) = 1.;
+
+    Eigen::VectorXd left(rDegree + 1);
+    Eigen::VectorXd right(rDegree + 1);
+
+    for (int j = 1; j <= rDegree; j++)
+    {
+        left[j]  = rParameter - mKnots[rDegree + 1 - j];
+        right[j] = mKnots[rDegree + j] - rParameter;
+        double saved = 0.;
+        for(int r = 0; r < j; r++)
+        {
+            double temp = rBasisFunctions(0,r)/(right[r+1] + left[j-r]);
+            rBasisFunctions(0,r) = saved + right[r+1]*temp;
+            saved = left[j-r]*temp;
+        }
+        rBasisFunctions(0,j) = saved;
+    }
+    return rBasisFunctions;
+}
+
+Eigen::MatrixXd DerivativeShapeFunctionsIGAInterface(const Eigen::VectorXd& rParameter, const Eigen::VectorXd& mKnots, int rDegree)
+{
+    Eigen::MatrixXd rDerivativeBasisFunctions(rDegree+1, 1);
+
+
+
+    return rDerivativeBasisFunctions;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+}// namespace ShapeFunctionsInterfaceIGA1D
+
+
+
 }
 

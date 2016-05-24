@@ -70,6 +70,7 @@ Eigen::VectorXd NuTo::Interpolation1DInterface::CalculateNaturalSurfaceCoordinat
     throw("[NuTo::Interpolation1DInterface::CalculateNaturalSurfaceCoordinates] not implemented");
 }
 
+
 Eigen::MatrixXd NuTo::Interpolation1DInterface::CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const
 {
     throw("[NuTo::Interpolation1DInterface::CalculateDerivativeNaturalSurfaceCoordinates] not implemented");

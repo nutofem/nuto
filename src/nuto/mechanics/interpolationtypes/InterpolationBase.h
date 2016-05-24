@@ -106,21 +106,26 @@ public:
     //! @brief returns specific shape functions via the IP index
     //! @param rIP ... integration point index
     //! @return ... specific shape functions
-    const Eigen::VectorXd& GetShapeFunctions(int rIP) const;
+    virtual const Eigen::VectorXd& GetShapeFunctions(int rIP) const;
 
     //! @brief returns specific N-matrix via the IP index
     //! @param rIP ... integration point index
     //! @return ... specific N-matrix
-    const Eigen::MatrixXd& GetMatrixN(int rIP) const;
+    virtual const Eigen::MatrixXd& GetMatrixN(int rIP) const;
 
     //! @brief calculates the shape functions for a specific dof
     //! @param rCoordinates ... integration point coordinates
-    //! @param rDofType ... dof type
     //! @return ... shape functions for the specific dof type
     virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const = 0;
 
+    //! @brief calculates the bspline shape (basis) function
+    //! @param rParameter ... integration point coordinates
+    //! @param mKnots ... the knots (e.g. \f$u_{i-2}, ..., u_{i+3}\f$ for degree=2, where rParameter \f$\in [u_{i},u_{i+1})\f$ )
+    //! @return ... shape functions for the specific dof type
+    virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rParameter, const FullVector<double, Eigen::Dynamic>& mKnots) const = 0;
+
     //! @brief calculates the N-Matrix, blows up the shape functions to the correct format (e.g. 3D: N & 0 & 0 \\ 0 & N & 0 \\ 0 & 0 & N ...)
-    Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const;
+    virtual Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const;
 
     //********************************************
     //       DERIVATIVE SHAPE FUNCTIONS NATURAL
@@ -129,12 +134,18 @@ public:
     //! @brief returns specific derivative shape functions natural via the IP index
     //! @param rIP ... integration point index
     //! @return ... specific derivative shape functions natural
-    const Eigen::MatrixXd & GetDerivativeShapeFunctionsNatural(int rIP) const;
+    virtual const Eigen::MatrixXd & GetDerivativeShapeFunctionsNatural(int rIP) const;
 
     //! @brief returns specific derivative shape functions natural via coordinates
     //! @param rCoordinates ... integration point coordinates
     //! @return ... specific derivative shape functions natural
     virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const = 0;
+
+    //! @brief calculates the derivatives of bspline shape (basis) function
+    //! @param rParameter ... integration point coordinates
+    //! @param mKnots ... the knots (e.g. \f$u_{i-2}, ..., u_{i+3}\f$ for degree=2, where rParameter \f$\in [u_{i},u_{i+1})\f$)
+    //! @return ... shape functions for the specific dof type
+    virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rParameter, const FullVector<double, Eigen::Dynamic>& mKnots) const = 0;
 
     //********************************************
     //       SURFACE PARAMETRIZATION
@@ -196,7 +207,7 @@ protected:
 
     //! @brief calculate and store the shape functions and their derivatives
     //! @param rIntegrationType ... integration type
-    void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType);
+    virtual void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType);
 
     //! @brief return the number node depending the shape and the order
     virtual int CalculateNumNodes() const = 0;
