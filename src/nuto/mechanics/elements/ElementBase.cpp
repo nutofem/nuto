@@ -628,6 +628,9 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
         case NuTo::VisualizeBase::SHRINKAGE_STRAIN:
             elementIpDataMap[IpData::SHRINKAGE_STRAIN];
             break;
+        case NuTo::VisualizeBase::THERMAL_STRAIN:
+            elementIpDataMap[IpData::THERMAL_STRAIN];
+            break;
         case NuTo::VisualizeBase::ENGINEERING_STRESS:
             if (evaluateStress == false)
             {
@@ -783,6 +786,29 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
 
                 unsigned int CellId = CellIdVec[CellCount];
                 rVisualize.SetCellDataTensor(CellId, it.get()->GetComponentName(), shrinkageStrainTensor);
+            }
+        }
+            break;
+        case NuTo::VisualizeBase::THERMAL_STRAIN:
+        {
+            const auto& thermalStrain = elementIpDataMap.at(IpData::THERMAL_STRAIN);
+            assert(thermalStrain.size() != 0);
+            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
+            {
+                unsigned int theIp = VisualizationCellsIP[CellCount];
+                double thermalStrainTensor[9];
+                thermalStrainTensor[0] =       thermalStrain(0, theIp);
+                thermalStrainTensor[1] = 0.5 * thermalStrain(3, theIp);
+                thermalStrainTensor[2] = 0.5 * thermalStrain(5, theIp);
+                thermalStrainTensor[3] = 0.5 * thermalStrain(3, theIp);
+                thermalStrainTensor[4] =       thermalStrain(1, theIp);
+                thermalStrainTensor[5] = 0.5 * thermalStrain(4, theIp);
+                thermalStrainTensor[6] = 0.5 * thermalStrain(5, theIp);
+                thermalStrainTensor[7] = 0.5 * thermalStrain(4, theIp);
+                thermalStrainTensor[8] =       thermalStrain(2, theIp);
+
+                unsigned int CellId = CellIdVec[CellCount];
+                rVisualize.SetCellDataTensor(CellId, it.get()->GetComponentName(), thermalStrainTensor);
             }
         }
             break;

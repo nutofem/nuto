@@ -45,6 +45,7 @@ enum eIpStaticDataType
     LATTICE_PLASTIC_STRAIN,         //!< lattice plastic strain
     LOCAL_EQ_STRAIN,                //!< local equivalent strain
     SHRINKAGE_STRAIN,               //!> shrinkage strains
+    THERMAL_STRAIN,                 //!> thermal strains
     SLIP,                           //!< slip, i.e. relative displacement
     TOTAL_INELASTIC_EQ_STRAIN       //!> total inelastic equivalent strain
 };
@@ -63,6 +64,7 @@ static inline std::map<eIpStaticDataType, std::string> GetIpStaticDataTypeMap()
     shapeTypeMap[eIpStaticDataType::LATTICE_STRAIN]             = "LATTICE_STRAIN";
     shapeTypeMap[eIpStaticDataType::LATTICE_STRESS]             = "LATTICE_STRESS";
     shapeTypeMap[eIpStaticDataType::SHRINKAGE_STRAIN]           = "SHRINKAGE_STRAIN";
+    shapeTypeMap[eIpStaticDataType::THERMAL_STRAIN]             = "THERMAL_STRAIN";
     shapeTypeMap[eIpStaticDataType::TOTAL_INELASTIC_EQ_STRAIN]	= "TOTAL_INELASTIC_EQUIVALENT_STRAIN";
     return shapeTypeMap;
 }

@@ -157,6 +157,10 @@ NuTo::ConstitutiveInputMap NuTo::ContinuumElement<TDim>::GetConstitutiveInputMap
             itInput.second = &(rData.mRelativeHumidity_Gradient);
             break;
 
+        case Constitutive::Input::TEMPERATURE:
+            itInput.second = &(rData.mTemperature);
+            break;
+
         case Constitutive::Input::TEMPERATURE_GRADIENT:
             itInput.second = &(rData.mTemperatureGradient);
             break;
@@ -336,6 +340,10 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian0(Constitutiv
                 rConstitutiveOutput[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY] = &rData.mEngineeringStress_dRH;
                 break;
 
+            case Node::CombineDofs(Node::DISPLACEMENTS, Node::TEMPERATURE):
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_TEMPERATURE] = &rData.mDStressDTemperature;
+                break;
+
             case Node::CombineDofs(Node::DISPLACEMENTS, Node::WATERVOLUMEFRACTION):
                 rConstitutiveOutput[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION] = &rData.mEngineeringStress_dWV;
                 break;
@@ -478,6 +486,10 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveO
             it.second.Resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::Output::SHRINKAGE_STRAIN_VISUALIZE] = &(rData.mShrinkageStrainVisualize);
             break;
+        case NuTo::IpData::THERMAL_STRAIN:
+            it.second.Resize(6, GetNumIntegrationPoints());
+            rConstitutiveOutput[NuTo::Constitutive::Output::THERMAL_STRAIN_VISUALIZE] = &(rData.mThermalStrainVisualize);
+            break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "this ip data type is not implemented.");
         }
@@ -588,6 +600,10 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(const Constitutiv
 
         case Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT:
             rData.mRelativeHumidity_Gradient.AsVector() = rData.mB.at(Node::RELATIVEHUMIDITY) * rData.mNodalValues.at(Node::RELATIVEHUMIDITY);
+            break;
+
+        case Constitutive::Input::TEMPERATURE:
+            rData.mTemperature.AsScalar() = (*rData.mN.at(Node::TEMPERATURE)) * rData.mNodalValues.at(Node::TEMPERATURE);
             break;
 
         case Constitutive::Input::TEMPERATURE_GRADIENT:
@@ -881,6 +897,10 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
                 hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose()  * rData.mEngineeringStress_dRH * (*rData.mN.at(dofCol));
                 break;
 
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::TEMPERATURE):
+                hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose()  * rData.mDStressDTemperature * (*rData.mN.at(dofCol));
+                break;
+
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::WATERVOLUMEFRACTION):
                 hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose()  * rData.mEngineeringStress_dWV * (*rData.mN.at(dofCol));
                 break;
@@ -889,6 +909,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
             |         NECESSARY BUT UNUSED DOF COMBINATIONS         |
             \*******************************************************/
             case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::DISPLACEMENTS):
+            case Node::CombineDofs(Node::eDof::TEMPERATURE, Node::eDof::DISPLACEMENTS):
             case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::DISPLACEMENTS):
                 break;
             default:
@@ -1004,6 +1025,9 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputIpData(ElementOutputIpD
             break;
         case NuTo::IpData::SHRINKAGE_STRAIN:
             it.second.col(rTheIP) = std::move(rData.mShrinkageStrainVisualize);
+            break;
+        case NuTo::IpData::THERMAL_STRAIN:
+            it.second.col(rTheIP) = std::move(rData.mThermalStrainVisualize);
             break;
         default:
             throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Ip data not implemented.");

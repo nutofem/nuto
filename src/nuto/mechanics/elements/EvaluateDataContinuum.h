@@ -79,10 +79,15 @@ public:
     // ------------------------------------------------------------------------
     ConstitutiveMatrix<TDim, TDim> mTangentHeatFluxTemperatureGradient;
     ConstitutiveScalar mTangentHeatTemperature;
+    ConstitutiveScalar mTemperature;
     ConstitutiveScalar mHeatChange;
     ConstitutiveScalar mTemperatureChange;
     ConstitutiveVector<TDim> mHeatFlux;
     ConstitutiveVector<TDim> mTemperatureGradient;
+
+    // Thermal strains
+    ConstitutiveVector<VoigtDim> mDStressDTemperature;
+    EngineeringStrain<3> mThermalStrainVisualize;
 
     // Nodal Values
     // --------------------------------------------------------------------------------------------

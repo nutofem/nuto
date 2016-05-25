@@ -74,8 +74,7 @@ NuTo::ConstitutiveInputMap NuTo::HeatConduction::GetConstitutiveInputs(
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
             break;
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, Constitutive::OutputToString(itOutput.first)
-                    + " cannot be calculated by this constitutive law.");
+            continue;
         }
     }
 
@@ -122,8 +121,7 @@ NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
         case NuTo::Constitutive::Input::TIME_STEP:
             break;
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Input object "
-                + Constitutive::InputToString(itInput.first) + " is not needed by the heat conduction law.");
+            continue;
         }
     }
 

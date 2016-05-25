@@ -98,6 +98,8 @@ std::string NuTo::VisualizeComponent::GetComponentName() const
         return "Slip";
     case VisualizeBase::TEMPERATURE:
         return "Temperature";
+    case VisualizeBase::THERMAL_STRAIN:
+        return "ThermalStrain";
     case VisualizeBase::TOTAL_INELASTIC_EQ_STRAIN:
         return "TotalInelasticEqStrain";
     case VisualizeBase::VELOCITY:

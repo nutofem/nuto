@@ -618,6 +618,7 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
         case NuTo::VisualizeBase::ENGINEERING_STRAIN:
         case NuTo::VisualizeBase::ENGINEERING_STRESS:
         case NuTo::VisualizeBase::SHRINKAGE_STRAIN:
+        case NuTo::VisualizeBase::THERMAL_STRAIN:
             rVisualize.DefineCellDataTensor(it.get()->GetComponentName());
             break;
 

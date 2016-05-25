@@ -31,7 +31,8 @@ enum eConstitutiveType
     NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS,          //!< nonlocal damage model with plasticity in the effective stress space
     SHRINKAGE_CAPILLARY_STRAIN_BASED,                       //!< strain based drying shrinkage - capillary term
     SHRINKAGE_CAPILLARY_STRESS_BASED,                       //!< stress based drying shrinkage - capillary term
-    STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS    //!< strain gradient damage plasticity model (damage and plasticity are function of nonlocal total strain)
+    STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS,   //!< strain gradient damage plasticity model (damage and plasticity are function of nonlocal total strain)
+    THERMAL_STRAINS                                         //!< strain induced by temperature change
 };
 
 static inline std::map<eConstitutiveType, std::string> GetConstitutiveTypeMap()
@@ -55,6 +56,7 @@ static inline std::map<eConstitutiveType, std::string> GetConstitutiveTypeMap()
     map[NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS]          = "NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
     map[SHRINKAGE_CAPILLARY_STRESS_BASED]                       = "SHRINKAGE_CAPILLARY_STRESS_BASED";
     map[STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS]   = "STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
+    map[THERMAL_STRAINS]                                        = "THERMAL_STRAINS";
     return map;
 }
 
@@ -347,6 +349,7 @@ enum eOutput
     D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION,
     ENGINEERING_STRAIN_VISUALIZE,
     SHRINKAGE_STRAIN_VISUALIZE,
+    THERMAL_STRAIN_VISUALIZE,
     D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,
     D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY,
     D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION,
@@ -364,11 +367,14 @@ enum eOutput
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_1D,
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_2D,
 	D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_ELASTIC_3D,
+	D_ENGINEERING_STRESS_D_THERMAL_STRAIN,
     D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D,
     D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D,
+	D_ENGINEERING_STRESS_D_TEMPERATURE,
+    D_STRAIN_D_TEMPERATURE,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_1D,
 	D_ENGINEERING_STRESS_D_TEMPERATURE_2D,
-        D_ENGINEERING_STRESS_D_TEMPERATURE_3D,
+	D_ENGINEERING_STRESS_D_TEMPERATURE_3D,
     HEAT_FLUX,
     HEAT_CHANGE, //!< First time derivative of heat, i.e. 
                  //!< \f$\frac{\partial Q}{\partial t} = \rho c_T \frac{\partial T}{\partial t}\f$
@@ -425,6 +431,7 @@ static inline std::string OutputToString( const Output::eOutput& e )
                               (Output::D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION,"D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION")
                               (Output::ENGINEERING_STRAIN_VISUALIZE, "ENGINEERING_STRAIN_VISUALIZE" )
                               (Output::SHRINKAGE_STRAIN_VISUALIZE, "SHRINKAGE_STRAIN_VISUALIZE" )
+                              (Output::THERMAL_STRAIN_VISUALIZE, "THERMAL_STRAIN_VISUALIZE" )
                               (Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE, "ENGINEERING_PLASTIC_STRAIN_VISUALIZE" )
                               (Output::ENGINEERING_VISCOPLASTIC_STRAIN_3D, "ENGINEERING_VISCOPLASTIC_STRAIN_3D" )
                               (Output::ENGINEERING_TOTAL_INELASTIC_STRAIN_3D, "ENGINEERING_TOTAL_INELASTIC_STRAIN_3D" )
@@ -442,9 +449,12 @@ static inline std::string OutputToString( const Output::eOutput& e )
                               (Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D,"D_ENGINEERING_STRESS_D_NONLOCAL_EQ_PLASTIC_STRAIN_1D")
                               (Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN,"D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN")
                               (Output::D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D,"D_ENGINEERING_STRESS_D_NONLOCAL_TOTAL_STRAIN_1D")
+                              (Output::D_ENGINEERING_STRESS_D_THERMAL_STRAIN,"D_ENGINEERING_STRESS_D_THERMAL_STRAIN")
+                              (Output::D_ENGINEERING_STRESS_D_TEMPERATURE,"D_ENGINEERING_STRESS_D_TEMPERATURE")
                               (Output::D_ENGINEERING_STRESS_D_TEMPERATURE_1D,"D_ENGINEERING_STRESS_D_TEMPERATURE_1D")
                               (Output::D_ENGINEERING_STRESS_D_TEMPERATURE_2D,"D_ENGINEERING_STRESS_D_TEMPERATURE_2D")
                               (Output::D_ENGINEERING_STRESS_D_TEMPERATURE_3D,"D_ENGINEERING_STRESS_D_TEMPERATURE_3D")
+                              (Output::D_STRAIN_D_TEMPERATURE, "D_STRAIN_D_TEMPERATURE")
                               (Output::HEAT_FLUX,"HEAT_FLUX")
                               (Output::HEAT_CHANGE,"HEAT_CHANGE")
                               (Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT,"D_HEAT_FLUX_D_TEMPERATURE_GRADIENT")
