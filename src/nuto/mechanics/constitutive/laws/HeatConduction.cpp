@@ -98,6 +98,18 @@ bool NuTo::HeatConduction::CheckDofCombinationComputable(NuTo::Node::eDof rDofRo
     return false;
 }
 
+bool NuTo::HeatConduction::CheckDofCombinationComputable2(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative)
+{
+    assert(rTimeDerivative>-1);
+    if (rTimeDerivative<=1 &&
+        rDofRow == Node::TEMPERATURE &&
+        rDofCol == Node::TEMPERATURE)
+    {
+        return true;
+    }
+    return false;
+}
+
 template<int TDim>
 NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
         int rIp,
