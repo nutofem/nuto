@@ -1,3 +1,4 @@
+#include "nuto/mechanics/constitutive/laws/ThermalStrains.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
