@@ -246,6 +246,16 @@ void NuTo::InterpolationBase::Initialize()
 
 }
 
+void NuTo::InterpolationBase::AddIGAPatchCurve(const BSplineCurve& rCurve)
+{
+    throw("[NuTo::IntegrationTypeBase::AddIGAPatchCurve] not implemented - only for IGA interpolation ('Interpolation1DIGA' and 'Interpolation2DIGA')");
+}
+
+void NuTo::InterpolationBase::AddIGAPatchSurface(const BSplineSurface& rSurface)
+{
+    throw("[NuTo::IntegrationTypeBase::AddIGAPatchCurve] not implemented - only for IGA interpolation ('Interpolation1DIGA' and 'Interpolation2DIGA')");
+}
+
 #ifdef ENABLE_SERIALIZATION
 NuTo::InterpolationBase::InterpolationBase():
     mTypeOrder(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1),

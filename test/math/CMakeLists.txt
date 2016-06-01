@@ -45,12 +45,4 @@ IF(MINGW)
 ENDIF(MINGW)#
 ADD_TEST(c::math::SparseMatrixTests ${CMAKE_CURRENT_BUILD_DIR}/SparseMatrixTests)
 
-##### CurvesAndSurfaces #####
-ADD_EXECUTABLE(CurvesAndSurfaces CurvesAndSurfaces.cpp)
-TARGET_LINK_LIBRARIES(CurvesAndSurfaces NuToMath NuToBase ${Boost_LIBRARIES} ${OpenBLAS_LIBRARIES})
-IF(MINGW)
-  SET_TARGET_PROPERTIES(CurvesAndSurfaces PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-ENDIF(MINGW)#
-ADD_TEST(c::math::CurvesAndSurfaces ${CMAKE_CURRENT_BUILD_DIR}/CurvesAndSurfaces)
-
 ENDIF(ENABLE_C++_TESTS)

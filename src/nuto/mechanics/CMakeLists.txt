@@ -103,9 +103,8 @@ elements/ElementDataBase.cpp
 elements/ElementDataConstitutiveBase.cpp
 elements/Element1DInXD.cpp
 elements/Element2DInterface.cpp
-#elements/InterfaceElementBase.cpp #
-elements/Element1DInterfaceIGA.cpp
-#elements/InterfaceElementFEM.cpp #
+#elements/Element1DInterfaceIGA.cpp #
+#elements/ContinuumElementIGA.cpp #
 elements/ElementDataConstitutiveIp.cpp
 elements/ElementDataConstitutiveIpNonlocal.cpp
 elements/ElementDataIpBase.cpp
@@ -176,13 +175,18 @@ interpolationtypes/InterpolationBase.cpp
 interpolationtypes/Interpolation1D.cpp
 interpolationtypes/Interpolation1DTruss.cpp
 interpolationtypes/Interpolation1DInterface.cpp
-#interpolationtypes/Interpolation1DIGAInterface.cpp
+interpolationtypes/Interpolation1DIGA.cpp
 interpolationtypes/Interpolation2D.cpp
 interpolationtypes/Interpolation2DTriangle.cpp
 interpolationtypes/Interpolation2DQuad.cpp
 interpolationtypes/Interpolation3D.cpp
 interpolationtypes/Interpolation3DTetrahedron.cpp
 interpolationtypes/Interpolation3DBrick.cpp
+)
+
+SET(NuToMechanicsIGA_SOURCE
+IGA/BSplineCurve.cpp
+IGA/BSplineSurface.cpp
 )
 
 SET(NuToMechanicsLoads_SOURCES
@@ -280,6 +284,7 @@ ${NuToMechanicsElements_SOURCES}
 ${NuToMechanicsGroups_SOURCES}
 ${NuToMechanicsIntegrationtypes_SOURCES} 
 ${NuToMechanicsInterpolationtypes_SOURCE} 
+${NuToMechanicsIGA_SOURCE}
 ${NuToMechanicsLoads_SOURCES}
 ${NuToMechanicsNodes_SOURCES} 
 ${NuToMechanicsSection_SOURCES} 

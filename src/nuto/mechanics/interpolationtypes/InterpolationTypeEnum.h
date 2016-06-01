@@ -28,7 +28,8 @@ enum eShapeType
     TETRAHEDRON3D,
     BRICK3D,
     INTERFACE,
-    INTERFACEIGA,
+    IGA1D,
+    IGA2D
 };
 static inline std::map<eShapeType, std::string> GetShapeTypeMap()
 {
@@ -41,7 +42,8 @@ static inline std::map<eShapeType, std::string> GetShapeTypeMap()
     shapeTypeMap[eShapeType::TETRAHEDRON3D] = "TETRAHEDRON3D";
     shapeTypeMap[eShapeType::BRICK3D]       = "BRICK3D";
     shapeTypeMap[eShapeType::INTERFACE]     = "INTERFACE";
-    shapeTypeMap[eShapeType::INTERFACEIGA]  = "INTERFACEIGA";
+    shapeTypeMap[eShapeType::IGA1D]         = "IGA1D";
+    shapeTypeMap[eShapeType::IGA2D]         = "IGA2D";
     return shapeTypeMap;
 }
 
@@ -54,9 +56,7 @@ enum eTypeOrder
     LOBATTO2,
     LOBATTO3,
     LOBATTO4,
-    SPLINE2,
-    SPLINE3,
-    SPLINE4
+    SPLINE          //!< whatever the bspline curve (mCurve) is providing in the IGA interpolation
 };
 static inline std::map<eTypeOrder, std::string> GetTypeOrderMap()
 {
@@ -68,9 +68,7 @@ static inline std::map<eTypeOrder, std::string> GetTypeOrderMap()
     typeOrderMap[eTypeOrder::LOBATTO2]      = "LOBATTO2";
     typeOrderMap[eTypeOrder::LOBATTO3]      = "LOBATTO3";
     typeOrderMap[eTypeOrder::LOBATTO4]      = "LOBATTO4";
-    typeOrderMap[eTypeOrder::SPLINE2]       = "SPLINE2";
-    typeOrderMap[eTypeOrder::SPLINE3]       = "SPLINE3";
-    typeOrderMap[eTypeOrder::SPLINE4]       = "SPLINE4";
+    typeOrderMap[eTypeOrder::SPLINE]        = "SPLINE";
     return typeOrderMap;
 }
 

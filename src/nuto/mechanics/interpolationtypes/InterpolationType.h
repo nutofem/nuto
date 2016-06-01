@@ -25,6 +25,10 @@ namespace NuTo
 class StructureBase;
 class InterpolationBase;
 
+// IGA interpolation patches
+class BSplineCurve;
+class BSplineSurface;
+
 class InterpolationType
 {
 #ifdef ENABLE_SERIALIZATION
@@ -121,6 +125,14 @@ public:
 
     //! @brief returns the number of surfaces
     int GetNumSurfaces() const;
+
+    //********************************************
+    //               IGA related
+    //********************************************
+
+    void AddIGAPatch1D(NuTo::Node::eDof rDofType, const BSplineCurve& rCurve);
+
+    void AddIGAPatch2D(NuTo::Node::eDof rDofType, const BSplineSurface& rSurface);
 
     //********************************************
     //               DEBUGGING

@@ -24,6 +24,10 @@ namespace NuTo
 {
 class IntegrationTypeBase;
 
+// IGA stuff
+class BSplineCurve;
+class BSplineSurface;
+
 //! @brief this class stores the information of the interpolation of a single dof type
 //! @remark the API only allows const access to this class via the InterpolationType.Get(dofType)
 //! method. Its data members are set via the friend class property.
@@ -118,12 +122,6 @@ public:
     //! @return ... shape functions for the specific dof type
     virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const = 0;
 
-    //! @brief calculates the bspline shape (basis) function
-    //! @param rParameter ... integration point coordinates
-    //! @param mKnots ... the knots (e.g. \f$u_{i-2}, ..., u_{i+3}\f$ for degree=2, where rParameter \f$\in [u_{i},u_{i+1})\f$ )
-    //! @return ... shape functions for the specific dof type
-    virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rParameter, const FullVector<double, Eigen::Dynamic>& mKnots) const = 0;
-
     //! @brief calculates the N-Matrix, blows up the shape functions to the correct format (e.g. 3D: N & 0 & 0 \\ 0 & N & 0 \\ 0 & 0 & N ...)
     virtual Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const;
 
@@ -140,12 +138,6 @@ public:
     //! @param rCoordinates ... integration point coordinates
     //! @return ... specific derivative shape functions natural
     virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const = 0;
-
-    //! @brief calculates the derivatives of bspline shape (basis) function
-    //! @param rParameter ... integration point coordinates
-    //! @param mKnots ... the knots (e.g. \f$u_{i-2}, ..., u_{i+3}\f$ for degree=2, where rParameter \f$\in [u_{i},u_{i+1})\f$)
-    //! @return ... shape functions for the specific dof type
-    virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rParameter, const FullVector<double, Eigen::Dynamic>& mKnots) const = 0;
 
     //********************************************
     //       SURFACE PARAMETRIZATION
@@ -172,6 +164,13 @@ public:
     //! @brief return the local dimension of the interpolation
     virtual int GetLocalDimension() const = 0;
 
+    //********************************************
+    //       IGA
+    //********************************************
+
+    virtual void AddIGAPatchCurve(const BSplineCurve& rCurve);
+
+    virtual void AddIGAPatchSurface(const BSplineSurface& rSurface);
 
 #ifdef ENABLE_SERIALIZATION
 //    //! @brief serializes the class, this is the load routine

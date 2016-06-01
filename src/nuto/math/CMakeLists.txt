@@ -15,8 +15,8 @@ SET(NuToMath_SOURCES
   SparseDirectSolverMKLPardiso.cpp
   SparseDirectSolverPardiso.cpp
   SparseDirectSolverMUMPS.cpp
-  BSplineCurve.cpp
-  BSplineSurface.cpp
+#  BSplineCurve.cpp
+#  BSplineSurface.cpp
 )
 
 SET(NuToMath_SWIG_MODULES

@@ -62,26 +62,6 @@ public:
     //! @return ... map of derivative shape functions in the natural coordinate system for all dofs
     Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rCoordinates) const override;
 
-
-    //! @brief calculates the bspline shape function
-    //! @param rParameter ... integration point coordinates
-    //! @param mKnots ... the knots (e.g. \f$u_{i-2}, ..., u_{i+3}\f$ for degree=2, where rParameter \f$\in [u_{i},u_{i+1})\f$ )
-    //! @return ... shape functions for the specific dof type
-    virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rParameter, const FullVector<double, Eigen::Dynamic>& mKnots) const override
-    {
-        throw("[NuTo::Interpolation1DInterface::CalculateShapeFunctions] not implemented");
-    }
-
-
-    //! @brief calculates the derivatives of bspline shape (basis) function
-    //! @param rParameter ... integration point coordinates
-    //! @param mKnots ... the knots (e.g. \f$u_{i-2}, ..., u_{i+3}\f$ for degree=2, where rParameter \f$\in [u_{i},u_{i+1})\f$)
-    //! @return ... shape functions for the specific dof type
-    virtual Eigen::MatrixXd CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd& rParameter, const FullVector<double, Eigen::Dynamic>& mKnots) const override
-    {
-        throw("[NuTo::Interpolation1DInterface::CalculateDerivativeShapeFunctionsNatural] not implemented");
-    }
-
     //! @brief returns the natural coordinates of the elements surface
     //! @param rNaturalSurfaceCoordinates ... natural surface coordinates
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType

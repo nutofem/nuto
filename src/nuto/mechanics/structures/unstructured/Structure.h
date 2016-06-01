@@ -24,6 +24,10 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for irregular (unstructured) structures
+
+class BSplineCurve;
+class BSplineSurface;
+
 class Structure: public StructureBase
 {
 #ifdef ENABLE_SERIALIZATION
@@ -479,6 +483,8 @@ public:
     //! @param rTypeOrder ... type and order of interpolation
     void InterpolationTypeAdd(int rInterpolationTypeId, const std::string& rDofType, const std::string& rTypeOrder);
 
+    void InterpolationTypeAddIGAPatch1D(int rInterpolationTypeId, Node::eDof rDofType, const BSplineCurve& rCurve);
+    void InterpolationTypeAddIGAPatch2D(int rInterpolationTypeId, Node::eDof rDofType, const BSplineSurface& rSurface);
 
 #ifndef SWIG
 

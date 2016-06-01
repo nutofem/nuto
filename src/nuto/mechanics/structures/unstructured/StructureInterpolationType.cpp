@@ -176,5 +176,26 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node:
     GroupDelete(elementGroupId);
     UpdateDofStatus();
     SetShowTime(showTime);
+}
 
+void NuTo::Structure::InterpolationTypeAddIGAPatch1D(int rInterpolationTypeId, NuTo::Node::eDof rDofType, const BSplineCurve& rCurve)
+{
+    boost::ptr_map<int,InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
+    // check if identifier exists
+    if (itIterator == mInterpolationTypeMap.end())
+        throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeAddIGAPatch1D] Interpolation type does not exist.");
+
+    InterpolationType* interpolationType = itIterator->second;
+    interpolationType->AddIGAPatch1D(rDofType, rCurve);
+}
+
+void NuTo::Structure::InterpolationTypeAddIGAPatch2D(int rInterpolationTypeId, NuTo::Node::eDof rDofType, const BSplineSurface& rSurface)
+{
+    boost::ptr_map<int,InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
+    // check if identifier exists
+    if (itIterator == mInterpolationTypeMap.end())
+        throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeAddIGAPatch1D] Interpolation type does not exist.");
+
+    InterpolationType* interpolationType = itIterator->second;
+    interpolationType->AddIGAPatch2D(rDofType, rSurface);
 }
