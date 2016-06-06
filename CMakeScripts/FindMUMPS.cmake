@@ -39,15 +39,18 @@ ENDIF(MUMPS_ROOT)
 # search for header dmumps_c.h
 FIND_PATH(MUMPS_INCLUDE_DIR NAMES dmumps_c.h HINTS ${_mumps_INCLUDE_SEARCH_DIRS})
 
-# search for mumps libraries
-IF(UNIX AND MUMPS_FIND_STATIC_LIBRARY)
-  SET(MUMPS_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
-  SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-ENDIF(UNIX AND MUMPS_FIND_STATIC_LIBRARY)
-# check for mumps libraries
-FIND_LIBRARY(_mumps_LIB_DMUMPS NAMES dmumps HINTS ${_mumps_LIBRARIES_SEARCH_DIRS})
-FIND_LIBRARY(_mumps_LIB_MUMPS_COMMON NAMES mumps_common HINTS ${_mumps_LIBRARIES_SEARCH_DIRS})
-FIND_LIBRARY(_mumps_LIB_MPISEQ NAMES mpiseq HINTS ${_mumps_LIBRARIES_SEARCH_DIRS})
+if(UNIX AND MUMPS_FIND_STATIC_LIBRARY)
+  set(MUMPS_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+  find_library(_mumps_LIB_DMUMPS NAMES dmumps HINTS ${_mumps_LIBRARIES_SEARCH_DIRS})
+  find_library(_mumps_LIB_MUMPS_COMMON NAMES mumps_common HINTS ${_mumps_LIBRARIES_SEARCH_DIRS})
+  find_library(_mumps_LIB_MPISEQ NAMES mpiseq mpiseq_seq-4.10.0 HINTS ${_mumps_LIBRARIES_SEARCH_DIRS})
+else()
+  find_library(_mumps_LIB_DMUMPS NAMES dmumps_seq-4.10.0)
+  find_library(_mumps_LIB_MUMPS_COMMON NAMES mumps_common_seq-4.10.0)
+  find_library(_mumps_LIB_MPISEQ NAMES mpiseq mpiseq_seq-4.10.0)
+endif()
+
 IF(_mumps_LIB_DMUMPS AND _mumps_LIB_MUMPS_COMMON AND NOT _mumps_LIB_MPISEQ)
   MESSAGE(WARNING "Only sequential version of MUMPS package is supported")
 ENDIF(_mumps_LIB_DMUMPS AND _mumps_LIB_MUMPS_COMMON AND NOT _mumps_LIB_MPISEQ)
