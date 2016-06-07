@@ -85,10 +85,6 @@ public:
                                                 Node::eDof rDofCol,
                                                 int rTimeDerivative) const override;
 
-    static bool CheckDofCombinationComputable2(Node::eDof rDofRow,
-                                                Node::eDof rDofCol,
-                                                int rTimeDerivative);
-
     //! @brief Checks if the constitutive law has a specific parameter.
     //! @param rIdentifier Enum to identify the requested parameter
     virtual bool CheckHaveParameter(Constitutive::eConstitutiveParameter rIdentifier) const override;

@@ -223,7 +223,6 @@ void SparseMatrixCSRSymmetric<double>::Add_TransA_Mult_B_Mult_A(const NuTo::Spar
                 }
                 if ((BPos < rMatrixB.mRowIndex[BColumn + 1]) && (rMatrixB.mColumns[BPos] == transAColumn))
                 {
-                    BRow = rMatrixB.mColumns[BPos];
                     double BValue = rMatrixB.mValues[BPos];
 
                     double transAValue_Mult_BValue = transAValue * BValue;

@@ -105,8 +105,6 @@ NuTo::Error::eError NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMa
 
     const unsigned globalDimension = GetStructure()->GetDimension();
     const std::set<Node::eDof>& dofs = mInterpolationType->GetDofs();
-    const std::set<Node::eDof>& activeDofs = mInterpolationType->GetActiveDofs();
-//    unsigned numActiveDofs = mInterpolationType->GetNumActiveDofs(); // --- unused so far
 
     // extract all node values and store them
     EvaluateData data;

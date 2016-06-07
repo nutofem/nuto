@@ -1,5 +1,3 @@
-// $Id: ConstraintNodeGroupDisplacements2D.cpp 265 2010-06-08 08:47:00Z arnold2 $
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -11,7 +9,6 @@
 
 #include <math.h>
 #include <iostream>
-
 
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
@@ -723,7 +720,6 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
 
             while (coordinatesNextMaster[1]<coordinatesSlaveonMasterSideY && nextMasterNodecount+1<mMasterNodesLeftBoundary.size())
             {
-                 curMasterNodePtr = nextMasterNodePtr;
                  coordinatesCurMaster = coordinatesNextMaster;
                  nextMasterNodecount++;
 
@@ -733,34 +729,14 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
             }
             //slave is between two master nodes
 
-            //calculate weighting function for each master node
-            //double w = this->CalculateWeightFunction(coordinatesCurMaster[1],coordinatesNextMaster[1],coordinatesSlaveonMasterSideY);
-
             deltaDisp[0] = length*mStrain[0] + mCrackOpening[0];
             deltaDisp[1] = length*0.5*mStrain[2] + mCrackOpening[1];
 
-/*            std::cout << "constraint equation " << curConstraintEquation
-                    << ": node " << mStructure->NodeGetId(curSlaveNodePtr) << " + "
-                    << w << " node " << mStructure->NodeGetId(curMasterNodePtr) << " + "
-                    << 1-w << " node " << mStructure->NodeGetId(nextMasterNodePtr)
-                    << " = (" << deltaDisp[0] << ", " << deltaDisp[1] << ")"
-                    << std::endl;
-*/
             //constrain x direction
-            //rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
-            //if (std::abs(w)>MIN_CONSTRAINT)
-            //    rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
-            //if (std::abs(w-1.)>MIN_CONSTRAINT)
-            //    rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
             rRHS(curConstraintEquation) = deltaDisp[0];
             curConstraintEquation++;
 
             //constrain y direction
-            //rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
-            //if (std::abs(w)>MIN_CONSTRAINT)
-            //    rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
-            //if (std::abs(w-1.)>MIN_CONSTRAINT)
-            //    rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
             rRHS(curConstraintEquation) = deltaDisp[1];
             curConstraintEquation++;
         }
@@ -817,13 +793,11 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
                     curMasterNodePtr = mMasterNodesBottomBoundary[0];
                     coordinatesCurMaster = curMasterNodePtr->GetCoordinates2D();
 
-                    nextMasterNodecount=1;
+                    nextMasterNodecount = 1;
                 }
                 else
                 {
-                    curMasterNodePtr = nextMasterNodePtr;
                     coordinatesCurMaster = coordinatesNextMaster;
-
                     nextMasterNodecount++;
                 }
                 nextMasterNodePtr = mMasterNodesBottomBoundary[nextMasterNodecount];
@@ -854,28 +828,11 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
             deltaDisp[0] = crackShift*mStrain[0] + length *0.5* mStrain[2] - deltaRHS[0];
             deltaDisp[1] = crackShift*0.5*mStrain[2] + length*mStrain[1] - deltaRHS[1];
 
-/*            std::cout << "constraint equation " << curConstraintEquation
-                    << ": node " << mStructure->NodeGetId(curSlaveNodePtr) << " + "
-                    << -w << " node " << mStructure->NodeGetId(curMasterNodePtr) << " + "
-                    << w-1 << " node " << mStructure->NodeGetId(nextMasterNodePtr)
-                    << " = (" << deltaDisp[0] << ", " << deltaDisp[1] << ")"
-                    << std::endl;
-*/
             //constrain x direction
-            //rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
-            //if (std::abs(w)>MIN_CONSTRAINT)
-            //    rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
-            //if (std::abs(w-1.)>MIN_CONSTRAINT)
-            //    rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
             rRHS(curConstraintEquation) = deltaDisp[0];
             curConstraintEquation++;
 
             //constrain y direction
-            //rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
-            //if (std::abs(w)>MIN_CONSTRAINT)
-            //    rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
-            //if (std::abs(w-1.)>MIN_CONSTRAINT)
-            //    rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
             rRHS(curConstraintEquation) = deltaDisp[1];
             curConstraintEquation++;
         }
@@ -919,34 +876,14 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
             }
             //slave is between two master nodes
 
-            //calculate weighting function for each master node
-            //double w = this->CalculateWeightFunction(coordinatesCurMaster[0],coordinatesNextMaster[0],coordinatesSlaveonMasterSideX);
-
             deltaDisp[0] = length*0.5*mStrain[2] + mCrackOpening[0];;
             deltaDisp[1] = length*mStrain[1] + mCrackOpening[1];;
 
-/*            std::cout << "constraint equation " << curConstraintEquation
-                    << ": node " << mStructure->NodeGetId(curSlaveNodePtr) << " + "
-                    << -w << " node " << mStructure->NodeGetId(curMasterNodePtr) << " + "
-                    << w-1 << " node " << mStructure->NodeGetId(nextMasterNodePtr)
-                    << " = (" << deltaDisp[0] << ", " << deltaDisp[1] << ")"
-                    << std::endl;
-*/
             //constrain x direction
-            //rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
-            //if (std::abs(w)>MIN_CONSTRAINT)
-            //    rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
-            //if (std::abs(w-1.)>MIN_CONSTRAINT)
-            //    rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
             rRHS(curConstraintEquation) = deltaDisp[0];
             curConstraintEquation++;
 
             //constrain y direction
-            //rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
-            //if (std::abs(w)>MIN_CONSTRAINT)
-            //    rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
-            //if (std::abs(w-1.)>MIN_CONSTRAINT)
-            //    rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
             rRHS(curConstraintEquation) = deltaDisp[1];
             curConstraintEquation++;
         }
@@ -1003,11 +940,10 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
                     curMasterNodePtr = mMasterNodesLeftBoundary[0];
                     coordinatesCurMaster = curMasterNodePtr->GetCoordinates2D();
 
-                    nextMasterNodecount=1;
+                    nextMasterNodecount = 1;
                 }
                 else
                 {
-                    curMasterNodePtr = nextMasterNodePtr;
                     coordinatesCurMaster = coordinatesNextMaster;
 
                     nextMasterNodecount++;
@@ -1040,28 +976,11 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
             deltaDisp[0] = crackShift*0.5*mStrain[2] + length*mStrain[0] - deltaRHS[0];
             deltaDisp[1] = crackShift*mStrain[1] + length *0.5* mStrain[2] - deltaRHS[1];
 
-/*            std::cout << "constraint equation " << curConstraintEquation
-                    << ": node " << mStructure->NodeGetId(curSlaveNodePtr) << " + "
-                    << -w << " node " << mStructure->NodeGetId(curMasterNodePtr) << " + "
-                    << w-1 << " node " << mStructure->NodeGetId(nextMasterNodePtr)
-                    << " = (" << deltaDisp[0] << ", " << deltaDisp[1] << ")"
-                    << std::endl;
-*/
             //constrain x direction
-            //rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(0),1);
-            //if (std::abs(w)>MIN_CONSTRAINT)
-            //    rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(0),-w);
-            //if (std::abs(w-1.)>MIN_CONSTRAINT)
-            //    rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(0),w-1.);
             rRHS(curConstraintEquation) = deltaDisp[0];
             curConstraintEquation++;
 
             //constrain y direction
-            //rConstraintMatrix.AddValue(curConstraintEquation,curSlaveNodePtr->GetDofDisplacement(1),1);
-            //if (std::abs(w)>MIN_CONSTRAINT)
-            //    rConstraintMatrix.AddValue(curConstraintEquation,curMasterNodePtr->GetDofDisplacement(1),-w);
-            //if (std::abs(w-1.)>MIN_CONSTRAINT)
-            //    rConstraintMatrix.AddValue(curConstraintEquation,nextMasterNodePtr->GetDofDisplacement(1),w-1.);
             rRHS(curConstraintEquation) = deltaDisp[1];
             curConstraintEquation++;
         }

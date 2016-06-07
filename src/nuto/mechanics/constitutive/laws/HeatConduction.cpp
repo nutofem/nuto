@@ -81,27 +81,10 @@ NuTo::ConstitutiveInputMap NuTo::HeatConduction::GetConstitutiveInputs(
     return constitutiveInputMap;
 }
 
-
-//! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
-//! @param rDofRow ... row dof
-//! @param rDofCol ... column dof
-//! @param rTimeDerivative ... time derivative
 bool NuTo::HeatConduction::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
 {
     assert(rTimeDerivative>-1);
     if (rTimeDerivative<=2 &&
-        rDofRow == Node::TEMPERATURE &&
-        rDofCol == Node::TEMPERATURE)
-    {
-        return true;
-    }
-    return false;
-}
-
-bool NuTo::HeatConduction::CheckDofCombinationComputable2(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative)
-{
-    assert(rTimeDerivative>-1);
-    if (rTimeDerivative<=1 &&
         rDofRow == Node::TEMPERATURE &&
         rDofCol == Node::TEMPERATURE)
     {

@@ -41,7 +41,6 @@ NuTo::Error::eError NuTo::ThermalStrains::Evaluate(NuTo::ElementBase *rElement,
 
         case NuTo::Constitutive::Output::THERMAL_STRAIN:
         {
-            double temperature = (*rConstitutiveInput.at(Constitutive::Input::TEMPERATURE))[0];
             Eigen::Matrix<double, TDim, TDim>& engineeringStrain =
                 (*static_cast<ConstitutiveMatrix<TDim, TDim>*>(itOutput.second));
             engineeringStrain = strain[0] * eye;

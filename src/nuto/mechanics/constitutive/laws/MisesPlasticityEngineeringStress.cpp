@@ -610,7 +610,6 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(cons
 
     //plastic loading
     H  = GetHardeningModulus(rOldStaticData.mEpsilonPEq,d_H);
-    epsilon_p_eq2 = rOldStaticData.mEpsilonPEq;
     H2 = H;
 
     int i=0;
