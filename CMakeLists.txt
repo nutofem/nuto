@@ -3,7 +3,7 @@ PROJECT(NuTo CXX C Fortran)
 # Minimum version for cmake 2.8
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 # Get information during make
-SET(CMAKE_VERBOSE_MAKEFILE ON)
+SET(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # Check for Mingw64
 if(MINGW AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
@@ -32,6 +32,7 @@ OPTION(ENABLE_EXAMPLES "enables examples" FALSE)
 OPTION(ENABLE_SHOW_TIME "shows for each python command the execution time" TRUE)
 OPTION(ENABLE_PYTHON_TESTS "create makefiles for python tests" TRUE)
 OPTION(ENABLE_C++_TESTS "create makefiles for c++ tests" TRUE)
+OPTION(ENABLE_UNIT_TESTS "use Boost Test library for unit tests" FALSE)
 OPTION(ENABLE_C++_TESTS_WIP "provides an additional flag to avoid compiling all tests" FALSE)
 OPTION(ENABLE_GUI "enable building the GUI application" FALSE)
 OPTION(ENABLE_MY_EXAMPLES "enable building private examples in a separate directory (nuto/myNutoExamples)" FALSE)
@@ -151,7 +152,7 @@ ENDIF(ENABLE_OPENMP)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall -msse4")
 # prevent warnings from boost and eigen
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --system-header-prefix=boost/ --system-header-prefix=eigen3/")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --system-header-prefix=boost/ --system-header-prefix=eigen3/ -Wno-inconsistent-missing-override")
 endif()
 # there is an error in the numpy headers, which produces a warning that is
 # fatal when using pedantic-errors
@@ -256,6 +257,10 @@ IF(ENABLE_SERIALIZATION)
 ELSE(ENABLE_SERIALIZATION)
   FIND_PACKAGE(Boost 1.44.0 COMPONENTS system filesystem  REQUIRED)
 ENDIF(ENABLE_SERIALIZATION)
+
+if(ENABLE_UNIT_TESTS)
+  find_package(Boost 1.44.0 COMPONENTS system filesystem unit_test_framework REQUIRED)
+endif()
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 message(STATUS "...Boost_VERSION = ${Boost_VERSION}")
 message(STATUS "...Boost version = ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")

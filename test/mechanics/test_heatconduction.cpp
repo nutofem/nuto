@@ -45,13 +45,12 @@ BOOST_AUTO_TEST_CASE(dofCombinations)
     auto rowDof = NuTo::Node::TEMPERATURE;
     auto colDof = NuTo::Node::TEMPERATURE;
     int timeDerivative = 0;
-    BOOST_CHECK(NuTo::HeatConduction::CheckDofCombinationComputable2(rowDof, colDof, timeDerivative));
+    NuTo::HeatConduction heatConduction;
+    BOOST_CHECK(heatConduction.CheckDofCombinationComputable(rowDof, colDof, timeDerivative));
     timeDerivative = 1;
-    BOOST_CHECK(NuTo::HeatConduction::CheckDofCombinationComputable2(rowDof, colDof, timeDerivative));
+    BOOST_CHECK(heatConduction.CheckDofCombinationComputable(rowDof, colDof, timeDerivative));
 
     // combinations it can't
-    timeDerivative = 2;
-    BOOST_CHECK(!NuTo::HeatConduction::CheckDofCombinationComputable2(rowDof, colDof, timeDerivative));
     colDof = NuTo::Node::DISPLACEMENTS;
-    BOOST_CHECK(!NuTo::HeatConduction::CheckDofCombinationComputable2(rowDof, colDof, timeDerivative));
+    BOOST_CHECK(!heatConduction.CheckDofCombinationComputable(rowDof, colDof, timeDerivative));
 }
