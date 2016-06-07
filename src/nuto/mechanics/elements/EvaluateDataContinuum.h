@@ -87,7 +87,7 @@ public:
 
     // Thermal strains
     ConstitutiveVector<VoigtDim> mDStressDTemperature;
-    EngineeringStrain<3> mThermalStrainVisualize;
+    EngineeringStrain<3> mThermalStrain;
 
     // Nodal Values
     // --------------------------------------------------------------------------------------------

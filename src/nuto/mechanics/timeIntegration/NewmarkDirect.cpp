@@ -186,18 +186,18 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
         StructureOutputBlockVector initialExtForce = CalculateCurrentExternalLoad(curTime);  // put this in element evaluate soon!
 
         // set first time derivative for temperature problem automatically
-        for (const auto& activeDofs : mStepActiveDofs)
-        {
-            auto temp_iterator = activeDofs.find(NuTo::Node::eDof::TEMPERATURE);
-            bool is_temperature = temp_iterator != activeDofs.end();
-            if (mStructure->GetNumTimeDerivatives() == 1 && is_temperature)
-            {
-                auto rhs = hessian0*lastConverged_dof_dt0 - initialExtForce;
-                lastConverged_dof_dt1.J = mStructure->SolveBlockSystem(hessian1.JJ, rhs.J);
-                mStructure->NodeMergeDofValues(1, lastConverged_dof_dt1);
-                mStructure->Evaluate(inputMap, evaluate_InternalGradient_Hessian0Hessian1);
-            }
-        }
+        //for (const auto& activeDofs : mStepActiveDofs)
+        //{
+        //    auto temp_iterator = activeDofs.find(NuTo::Node::eDof::TEMPERATURE);
+        //    bool is_temperature = temp_iterator != activeDofs.end();
+        //    if (mStructure->GetNumTimeDerivatives() == 1 && is_temperature)
+        //    {
+        //        auto rhs = hessian0*lastConverged_dof_dt0 - initialExtForce;
+        //        lastConverged_dof_dt1.J = mStructure->SolveBlockSystem(hessian1.JJ, rhs.J);
+        //        mStructure->NodeMergeDofValues(1, lastConverged_dof_dt1);
+        //        mStructure->Evaluate(inputMap, evaluate_InternalGradient_Hessian0Hessian1);
+        //    }
+        //}
 
         residual = CalculateResidual(intForce, initialExtForce, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2);
         residual.ApplyCMatrix(residual_mod, cmat);

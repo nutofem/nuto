@@ -1,7 +1,4 @@
-// $Id$
-
-#ifndef CONSTITUTIVEBASE_H_
-#define CONSTITUTIVEBASE_H_
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -13,7 +10,6 @@
 #include <string>
 #include <vector>
 
-
 #include "nuto/base/ErrorEnum.h"
 #include "nuto/math/FullMatrix_Def.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
@@ -22,32 +18,10 @@
 
 namespace NuTo
 {
-// forward declarations
-class ConstitutiveLatticeStressStrain;
 class ConstitutiveStaticDataBase;
-class ConstitutiveTangentLocal1x1;
-class ConstitutiveTangentLocal2x2;
-class ConstitutiveTangentLocal3x3;
-class ConstitutiveTangentLocal6x6;
-class DeformationGradient1D;
-class DeformationGradient2D;
-class DeformationGradient3D;
-class ElementBase;
-class EngineeringStrain3D;
-class EngineeringStress1D;
-class EngineeringStress2D;
-class EngineeringStress3D;
-class Logger;
-class SecondPiolaKirchhoffStress1D;
-class SecondPiolaKirchhoffStress2D;
-class SecondPiolaKirchhoffStress3D;
-class StructureBase;
-class ConstitutiveIOBase;
 class InterpolationType;
-
-//! @brief ... base class for the constitutive relationship, e.g. material laws
-//! @author Stefan Eckardt, ISM
-//! @date November 2009
+class ElementBase;
+//! @brief Base class for the constitutive relationship, e.g. material laws.
 class ConstitutiveBase
 {
     // Friend declarations needed for CheckParameters-function of ConstitutiveLawsAdditiveOutput
@@ -160,6 +134,8 @@ public:
     //! @param rValue ... new value for requested variable
     virtual void SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue);
 
+    virtual void SetParameterFunction(std::function<std::array<double, 2>(double)>);
+
     //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
@@ -269,5 +245,3 @@ protected:
 };
 
 }
-
-#endif // CONSTITUTIVEBASE_H_ 

@@ -94,10 +94,13 @@ public:
     //! @return Pointer to static data object
     ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const override {return nullptr;}
 
+    void SetParameterFunction(std::function<std::array<double, 2>(double)> ExpansionFunction) override;
 private:
 
     //! Thermal expansion coefficient \f$ \alpha \f$.
     double mExpansionCoefficient = 0.0;
+
+    std::function<std::array<double, 2>(double)> NonlinearExpansionCoeff;
 
     template <int TDim>
     NuTo::Error::eError Evaluate(ElementBase* rElement, int rIntegrationPoint,

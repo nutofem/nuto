@@ -590,11 +590,11 @@ inline void SetupVisualize(NuTo::Structure& rS, bool rVisualizeShrinkageStrains 
 template<int TDim>
 void CheckMechanicsResultsStressBased(NuTo::Structure& rS)
 {
-    constexpr const double temperature     =   TEST_TEMPERATURE;
-    constexpr const double capStressFactor =   NuTo::SI::DensityLiquidWater(temperature) * NuTo::SI::IdealGasConstant
-                                             * temperature / NuTo::SI::MolarMassWater;
+    const double temperature     =   TEST_TEMPERATURE;
+    const double capStressFactor =   NuTo::SI::DensityLiquidWater(temperature) * NuTo::SI::IdealGasConstant
+                                         * temperature / NuTo::SI::MolarMassWater;
 
-    constexpr const double capStress       = 0.062035 * log(0.4) * capStressFactor;
+    const double capStress       = 0.062035 * std::log(0.4) * capStressFactor;
 
     const NodeMap& nodePtrMap = rS.NodeGetNodeMap();
     BOOST_FOREACH(NodeMap::const_iterator::value_type it, nodePtrMap)
@@ -610,7 +610,7 @@ void CheckMechanicsResultsStressBased(NuTo::Structure& rS)
             double refDisp = capStress / TEST_YOUNGSMODULUS * coord;
             double disp  = nodePtr->GetDisplacement(i);
             double diff   = std::abs(refDisp) - std::abs(disp);
-            constexpr const double tolerance = 1e-10;
+            const double tolerance = 1e-10;
             if((diff >tolerance || diff < -tolerance))// && coordX > 0)
             {
                 throw NuTo::Exception(__PRETTY_FUNCTION__,"One ore more calculated Displacements are not correct");
@@ -627,7 +627,7 @@ void CheckMoistureTransportResults(NuTo::Structure& rS,
 {
 
 
-    constexpr const double tolerance = 0.00001; // Tolerance because not all necessary value (sorption curve) are given in the paper and must be approximated
+    constexpr double tolerance = 0.00001; // Tolerance because not all necessary value (sorption curve) are given in the paper and must be approximated
     unsigned int numMismatchingValues = 0;
 
 

@@ -12,27 +12,39 @@ NuTo::Error::eError NuTo::ThermalStrains::Evaluate(NuTo::ElementBase *rElement,
     auto eye = Eigen::MatrixXd::Identity(TDim, TDim);
     const int voigtDim = NuTo::ConstitutiveIOBase::GetVoigtDim(TDim);
 
+    double temperature;
+    std::array<double, 2> strain;
+    try
+    {
+        temperature = (*rConstitutiveInput.at(Constitutive::Input::TEMPERATURE))[0];
+        strain = NonlinearExpansionCoeff(temperature);
+    }
+    catch(const std::bad_function_call& e)
+    {
+        strain[0] = mExpansionCoefficient * temperature;
+    }
+    catch(const std::out_of_range& e) {}
+
     for (auto itOutput : rConstitutiveOutput)
     {
         switch(itOutput.first)
         {
         case NuTo::Constitutive::Output::ENGINEERING_STRAIN:
         {
-            double temperature = (*rConstitutiveInput.at(Constitutive::Input::TEMPERATURE))[0];
             Eigen::Matrix<double, voigtDim, 1>& engineeringStrain =
                 (*static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second)).AsVector();
             for(unsigned int i = 0; i < TDim; ++i)
-                engineeringStrain[i] += mExpansionCoefficient * temperature;
+                engineeringStrain[i] += strain[0];
             itOutput.second->SetIsCalculated(true);
             break;
         }
 
-        case NuTo::Constitutive::Output::THERMAL_STRAIN_VISUALIZE:
+        case NuTo::Constitutive::Output::THERMAL_STRAIN:
         {
             double temperature = (*rConstitutiveInput.at(Constitutive::Input::TEMPERATURE))[0];
             Eigen::Matrix<double, TDim, TDim>& engineeringStrain =
                 (*static_cast<ConstitutiveMatrix<TDim, TDim>*>(itOutput.second));
-            engineeringStrain = mExpansionCoefficient * eye * temperature;
+            engineeringStrain = strain[0] * eye;
             itOutput.second->SetIsCalculated(true);
             break;
         }
@@ -43,9 +55,9 @@ NuTo::Error::eError NuTo::ThermalStrains::Evaluate(NuTo::ElementBase *rElement,
                 (*static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second)).AsVector();
             for(unsigned int i=0; i<TDim; ++i)
             {
-                //TODO: This can't be right; need to investigate
-                //dStrainDTemperature[i]+= mExpansionCoefficient;
-                dStrainDTemperature[i] = 0.0;
+                //! \todo derivative is really positive, yet the strain itself
+                //! needs to be negative in the corresponding hessian
+                dStrainDTemperature[i] = -strain[1];
             }
             itOutput.second->SetIsCalculated(true);
         }
@@ -82,6 +94,8 @@ NuTo::ConstitutiveInputMap NuTo::ThermalStrains::GetConstitutiveInputs(
         {
 
         case NuTo::Constitutive::Output::ENGINEERING_STRAIN:
+        case NuTo::Constitutive::Output::THERMAL_STRAIN:
+        case NuTo::Constitutive::Output::D_STRAIN_D_TEMPERATURE:
             constitutiveInputMap[Constitutive::Input::TEMPERATURE];
             break;
 
@@ -122,3 +136,7 @@ void NuTo::ThermalStrains::SetParameterDouble(NuTo::Constitutive::eConstitutiveP
     }
 }
 
+void NuTo::ThermalStrains::SetParameterFunction(std::function<std::array<double, 2>(double)> ExpansionFunction)
+{
+    NonlinearExpansionCoeff = ExpansionFunction;
+}

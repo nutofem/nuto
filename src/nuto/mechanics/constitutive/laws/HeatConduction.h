@@ -39,7 +39,6 @@ public:
             const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
         return Evaluate<1>(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
-
     }
 
     //! @brief ... evaluate the constitutive relation in 2D
@@ -52,7 +51,6 @@ public:
             const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
         return Evaluate<2>(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
-
     }
 
     //! @brief ... evaluate the constitutive relation in 3D
@@ -65,7 +63,6 @@ public:
             const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
         return Evaluate<3>(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
-
     }
 
     //! @brief Create new static data object for an integration point.
