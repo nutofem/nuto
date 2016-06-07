@@ -31,12 +31,12 @@ myElement1 = myStructure.ElementCreate(myInterpolationType,nuto.IntFullVector((m
 mySection = myStructure.SectionCreate("Volume")
 
 #create constitutive law
-myMat = myStructure.ConstitutiveLawCreate("MisesPlasticityEngineeringStress")
+myMat = myStructure.ConstitutiveLawCreate("Mises_Plasticity_Engineering_Stress")
 #myStructure.ConstitutiveLawCreate("myMat","LinearElastic")
 
-myStructure.ConstitutiveLawSetParameterDouble(myMat,"YoungsModulus",100)
-myStructure.ConstitutiveLawSetParameterDouble(myMat,"PoissonsRatio",0.0)
-myStructure.ConstitutiveLawSetParameterDouble(myMat,"InitialYieldStrength",100)
+myStructure.ConstitutiveLawSetParameterDouble(myMat,"Youngs_Modulus",100)
+myStructure.ConstitutiveLawSetParameterDouble(myMat,"Poissons_Ratio",0.0)
+myStructure.ConstitutiveLawSetParameterDouble(myMat,"Initial_Yield_Strength",100)
 myStructure.ConstitutiveLawAddYieldStrength(myMat,0.25,150)
 myStructure.ConstitutiveLawAddYieldStrength(myMat,0.3,150)
 #myStructure.ConstitutiveLawSetInitialHardeningModulus(myMat,0)
@@ -115,7 +115,7 @@ for i in range(0, num_steps):
     myStructure.ConstraintSetRHS(constraint_right_side,boundaryDisplacement)
     
     if (numActiveDofs==0):
-        numActiveDofs = myStructure.GetNumActiveDofs()
+        numActiveDofs = myStructure.GetNumActiveDofs("Displacements")
         intForceVector.Resize(numActiveDofs)
         displacementVector.Resize(numActiveDofs)
 
