@@ -866,7 +866,6 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEqu
 
             while (coordinatesNextMaster[0]<coordinatesSlaveonMasterSideX && nextMasterNodecount+1<mMasterNodesBottomBoundary.size())
             {
-                 curMasterNodePtr = nextMasterNodePtr;
                  coordinatesCurMaster = coordinatesNextMaster;
                  nextMasterNodecount++;
 
