@@ -4,6 +4,11 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 
+std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string name)
+{
+    return (name[0] == '&' ? std::string(name.begin()+1, name.size()-1) : std::string(name.begin(), name.size() ));
+}
+
 BOOST_AUTO_TEST_CASE(tangent_matrix)
 {
     // set up constitutive law

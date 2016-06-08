@@ -454,7 +454,7 @@ ENDIF(ENABLE_C++_TESTS_WIP)
 
 if(ENABLE_UNIT_TESTS)
     add_executable(test_heatconduction test_heatconduction.cpp)
-    target_link_libraries(test_heatconduction NuToMechanics NuToMath NuToBase boost_unit_test_framework)
+    target_link_libraries(test_heatconduction NuToMechanics NuToMath NuToBase)
     if(ENABLE_VISUALIZE)
         target_link_libraries(test_heatconduction NuToVisualize)
     endif()
