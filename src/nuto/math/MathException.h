@@ -54,5 +54,18 @@ public:
     }
 
 };
+
+class out_of_range : public std::out_of_range
+{
+public:
+    out_of_range(std::string what) : std::out_of_range(what) {}
+};
+
+class invalid_argument : public std::invalid_argument
+{
+public:
+    invalid_argument(std::string what) : std::invalid_argument(what) {}
+};
+
 } //namespace NuTo
 #endif //NUTO_MATH_EXCEPTION_H

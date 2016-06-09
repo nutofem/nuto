@@ -2,6 +2,8 @@
 SET(NuToMath_SOURCES
   EigenSolverArpack.cpp
   FullMatrix.cpp
+  Interpolation.cpp
+  LinearInterpolation.cpp
   Matrix.cpp
   NuToMath.cpp
   SparseMatrix.cpp
