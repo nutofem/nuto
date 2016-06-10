@@ -12,7 +12,7 @@ class LinearInterpolation : public Interpolation
 public:
 
     //! create interpolation object; call with data array
-    LinearInterpolation(std::vector<std::array<double, 2>> data) : Interpolation{data} {};
+    LinearInterpolation(std::vector<std::array<double, 2>> data) : Interpolation{data, 1} {};
 
     //! return interpolated value at x
     double operator()(double x) override;

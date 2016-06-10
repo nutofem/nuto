@@ -7,20 +7,21 @@ bool CompareDataPairs(const std::array<double, 2>& x1, const std::array<double, 
     return x1[0] < x2[0] ? true : false;
 }
 
-NuTo::Math::Interpolation::Interpolation(std::vector<std::array<double, 2>> data) : mData{data}
+NuTo::Math::Interpolation::Interpolation(std::vector<std::array<double, 2>> data,
+        unsigned interpolationOrder) : mData{data}, mInterpolationOrder{interpolationOrder}
 {
-    if (mData.size() < 2)
+    if (mData.size() < interpolationOrder+1)
     {
         throw NuTo::invalid_argument("Input array does not have enough entries to interpolate.");
     }
     std::sort(mData.begin(), mData.end(), CompareDataPairs);
 }
 
-int NuTo::Math::Interpolation::bisection(double x)
+unsigned NuTo::Math::Interpolation::bisection(double x)
 {
-    int lower = 0;
-    int upper = mData.size() - 1;
-    int pivot;
+    unsigned lower = 0;
+    unsigned upper = mData.size() - 1;
+    unsigned pivot;
     while (upper - lower > 1)
     {
         pivot = (upper + lower) / 2; 
@@ -32,7 +33,6 @@ int NuTo::Math::Interpolation::bisection(double x)
         {
             upper = pivot;
         }
-
     }
-    return lower;
+    return lower - (mInterpolationOrder - 1)/2;
 }

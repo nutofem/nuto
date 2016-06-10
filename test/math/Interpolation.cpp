@@ -37,4 +37,13 @@ BOOST_AUTO_TEST_CASE(linear_interpolation)
     BOOST_CHECK_CLOSE(interpolation(50.0), 0.5, 1e-10);
     BOOST_CHECK_CLOSE(interpolation(0.0), 0.0, 1e-10);
     BOOST_CHECK_CLOSE(interpolation(100.0), 1.0, 1e-10);
+
+    // function object
+    std::function<double(double)> f = interpolation.f;
+    BOOST_CHECK_CLOSE(f(50.0), 0.5, 1e-10);
+    BOOST_CHECK_CLOSE(f(0.0), 0.0, 1e-10);
+    BOOST_CHECK_CLOSE(f(100.0), 1.0, 1e-10);
+
+    std::function<double(double)> f_prime = interpolation.df;
+    BOOST_CHECK_CLOSE(f_prime(50.0), 1e-2, 1e-10);
 }
