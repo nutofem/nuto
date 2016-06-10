@@ -12,7 +12,7 @@ class Interpolation
 public:
 
     //! create interpolation object; call with data array
-    Interpolation(std::vector<std::array<double, 2>> data, unsigned interpolationOrder);
+    Interpolation(std::vector<std::array<double, 2>> data, unsigned numNeighborPoints);
 
     //! return interpolated value at x; order is the order of the derivative
     virtual double operator()(double x) = 0;
@@ -30,7 +30,7 @@ protected:
 
     std::vector<std::array<double, 2>> mData;
 
-    unsigned mInterpolationOrder;
+    unsigned mNumNeighborPoints;
 
     unsigned bisection(double x);
 };

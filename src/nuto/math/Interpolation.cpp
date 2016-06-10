@@ -8,9 +8,9 @@ bool CompareDataPairs(const std::array<double, 2>& x1, const std::array<double, 
 }
 
 NuTo::Math::Interpolation::Interpolation(std::vector<std::array<double, 2>> data,
-        unsigned interpolationOrder) : mData{data}, mInterpolationOrder{interpolationOrder}
+        unsigned numNeighborPoints) : mData{data}, mNumNeighborPoints{numNeighborPoints}
 {
-    if (mData.size() < interpolationOrder+1)
+    if (mData.size() < mNumNeighborPoints)
     {
         throw NuTo::invalid_argument("Input array does not have enough entries to interpolate.");
     }
@@ -34,5 +34,5 @@ unsigned NuTo::Math::Interpolation::bisection(double x)
             upper = pivot;
         }
     }
-    return lower - (mInterpolationOrder - 1)/2;
+    return lower + (mNumNeighborPoints - 2)/2;
 }

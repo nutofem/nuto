@@ -1,5 +1,6 @@
 # $Id$
 SET(NuToMath_SOURCES
+  CubicSplineInterpolation.cpp
   EigenSolverArpack.cpp
   FullMatrix.cpp
   Interpolation.cpp
