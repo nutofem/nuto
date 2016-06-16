@@ -66,13 +66,13 @@ const NuTo::ConstitutiveStaticDataGradientDamagePlasticity1D* NuTo::Constitutive
 //!@ brief reinterpret as gradient damage 1d static data
 NuTo::ConstitutiveStaticDataGradientDamage* NuTo::ConstitutiveStaticDataBase::AsGradientDamage()
 {
-    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type GradientDamage1D.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type GradientDamage.");
 }
 
 //!@ brief reinterpret as nonlocal damage 1d static data
 const NuTo::ConstitutiveStaticDataGradientDamage* NuTo::ConstitutiveStaticDataBase::AsGradientDamage()const
 {
-    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type GradientDamage1D.");
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type GradientDamage.");
 }
 
 //!@ brief reinterpret as gradient damage 1d static data

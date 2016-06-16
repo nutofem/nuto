@@ -33,21 +33,21 @@ enum eIpStaticDataType
 {
     BOND_STRESS,                    //!< bond stress
     DAMAGE,                         //!< isotropic damage variable
-    ELASTIC_ENERGY,                 //!> elastic energy
-    ENGINEERING_PLASTIC_STRAIN,     //!> plastic strain
+    ELASTIC_ENERGY,                 //!< elastic energy
+    ENGINEERING_PLASTIC_STRAIN,     //!< plastic strain
     ENGINEERING_STRAIN,             //!< engineering strain
     ENGINEERING_STRESS,             //!< engineering stress
-    EXTRAPOLATION_ERROR,            //!> for implicit / explicit time integration schemes
-    HEAT_FLUX,                      //!> heat flux
-    INTERNAL_ENERGY,                //!> internal (elastic + inelastic) energy
+    EXTRAPOLATION_ERROR,            //!< for implicit / explicit time integration schemes
+    HEAT_FLUX,                      //!< heat flux
+    INTERNAL_ENERGY,                //!< internal (elastic + inelastic) energy
     LATTICE_STRAIN,                 //!< lattice strain
     LATTICE_STRESS,                 //!< lattice stress
     LATTICE_PLASTIC_STRAIN,         //!< lattice plastic strain
     LOCAL_EQ_STRAIN,                //!< local equivalent strain
-    SHRINKAGE_STRAIN,               //!> shrinkage strains
-    THERMAL_STRAIN,                 //!> thermal strains
+    SHRINKAGE_STRAIN,               //!< shrinkage strains
+    THERMAL_STRAIN,                 //!< thermal strains
     SLIP,                           //!< slip, i.e. relative displacement
-    TOTAL_INELASTIC_EQ_STRAIN       //!> total inelastic equivalent strain
+    TOTAL_INELASTIC_EQ_STRAIN       //!< total inelastic equivalent strain
 };
 static inline std::map<eIpStaticDataType, std::string> GetIpStaticDataTypeMap()
 {
