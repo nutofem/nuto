@@ -205,7 +205,7 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, int rTimeDe
 		try
 		{
 			if (itNode->second->GetNumTimeDerivatives()<rTimeDerivative)
-                throw MechanicsException("[NuTo::StructureBase::NodeGroupSetDisplacements] not does not have a sufficient number of time derivatives.");
+                throw MechanicsException("[NuTo::StructureBase::NodeGroupSetDisplacements] does not have a sufficient number of time derivatives.");
 
             if (rDisplacements.GetNumRows() <= 0 or rDisplacements.GetNumRows() > 3)
                 throw MechanicsException("[NuTo::StructureBase::NodeGroupSetDisplacements] The number of displacement components is either 1, 2 or 3.");

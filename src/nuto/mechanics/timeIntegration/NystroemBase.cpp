@@ -23,6 +23,7 @@
 #include "nuto/mechanics/timeIntegration/NystroemBase.h"
 #include "nuto/mechanics/timeIntegration/TimeIntegrationEnum.h"
 #include "nuto/math/FullMatrix.h"
+#include "nuto/base/Timer.h"
 
 //! @brief constructor
 //! @param mDimension number of nodes
@@ -69,6 +70,7 @@ void NuTo::NystroemBase::serialize(Archive & ar, const unsigned int version)
 //! @param rTimeDelta ... length of the simulation
 NuTo::Error::eError NuTo::NystroemBase::Solve(double rTimeDelta)
 {
+	NuTo::Timer timer(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 #ifdef SHOW_TIME
     std::clock_t start,end;
 #ifdef _OPENMP
@@ -78,6 +80,11 @@ NuTo::Error::eError NuTo::NystroemBase::Solve(double rTimeDelta)
 #endif
     try
     {
+    	mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+
+    	if (mStructure->GetDofStatus().HasInteractingConstraints())
+    		throw MechanicsException(__PRETTY_FUNCTION__, "not implemented for constrained systems including multiple dofs.");
+
         if (mTimeStep==0.)
         {
         	if (this->HasCriticalTimeStep())
@@ -98,96 +105,71 @@ NuTo::Error::eError NuTo::NystroemBase::Solve(double rTimeDelta)
         std::cout << "time step " << mTimeStep << std::endl;
         std::cout << "number of time steps " << rTimeDelta/mTimeStep << std::endl;
 
-        //renumber dofs and build constraint matrix
-        mStructure->NodeBuildGlobalDofs();
 
-        //calculate constraint matrix
-        /*
-        // ConstraintGetConstraintMatrixAfterGaussElimination(const NuTo::SparseMatrixCSRGeneral<double>& ... ) replaced by
-        // const NuTo::SparseMatrixCSRGeneral<double> ConstraintGetConstraintMatrixAfterGaussElimination() const;
-        // ---> No need for CmatTmp anymore! --- vhirtham
+        StructureOutputBlockVector outOfBalance(mStructure->GetDofStatus(), true);
 
-        NuTo::SparseMatrixCSRGeneral<double> CmatTmp;
-        mStructure->ConstraintGetConstraintMatrixAfterGaussElimination(CmatTmp);
-        */
-        NuTo::SparseMatrixCSRVector2General<double> Cmat(mStructure->ConstraintGetConstraintMatrixAfterGaussElimination());
-        SparseMatrixCSRVector2General<double> CmatT (Cmat.Transpose());
-        //FullVector<double,Eigen::Dynamic> bRHS;
-        if (CmatT.GetNumEntries() > 0)
-        {
-            throw MechanicsException("[NuTo::NystroemBase::Solve] not implemented for constrained systems including multiple dofs.");
-        }
-
-        //calculate individual inverse mass matrix, use only lumped mass matrices - stored as fullvectors and then use asDiagonal()
-        NuTo::FullVector<double,Eigen::Dynamic> invMassMatrix_j;
-        NuTo::SparseMatrixCSRGeneral<double> fullMassMatrix_jj;
-
-        //extract displacements, velocities and accelerations
-        NuTo::FullVector<double,Eigen::Dynamic> disp_j, vel_j, tmp_k,
-                                                disp_j_tmp,              //temporary argument for the evalution of f(y)
-                                                disp_j_new, vel_j_new;   //new d and v at end of time step
-        std::vector<NuTo::FullVector<double,Eigen::Dynamic> > acc_j_tmp; //intermediate values of the time derivatives (Z or l)
-
-        NuTo::FullVector<double,Eigen::Dynamic> extForce_j, extForce_k;
-        NuTo::FullVector<double,Eigen::Dynamic> outOfBalance_j(mStructure->GetNumActiveDofs()), outOfBalance_k;
-        NuTo::FullVector<double,Eigen::Dynamic> intForce_j(mStructure->GetNumActiveDofs()),
-        		                                intForce_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
+        CalculateStaticAndTimeDependentExternalLoad();
 
         //store last converged displacements, velocities and accelerations
-        mStructure->NodeExtractDofValues(0,disp_j,tmp_k);
-        mStructure->NodeExtractDofValues(1,vel_j,tmp_k);
+        auto dof_dt0 = mStructure->NodeExtractDofValues(0);
+        auto dof_dt1 = mStructure->NodeExtractDofValues(1);
 
-        if (mUseDiagonalMassMatrix)
+        StructureOutputBlockMatrix hessian2(mStructure->GetDofStatus(),true);
+
+		if (mUseDiagonalMassMatrix)
         {
-            //calculate lumped mass matrix
-        	invMassMatrix_j.resize(mStructure->GetNumActiveDofs());
-            //intForce_j is just used as a tmp variable
-			mStructure->BuildGlobalLumpedHession2(intForce_j,tmp_k);
+        	hessian2 = mStructure->BuildGlobalHessian2Lumped();
+        	double numericMass = 0;
+        	numericMass += hessian2.JJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
+        	numericMass += hessian2.JK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
+        	numericMass += hessian2.KJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
+        	numericMass += hessian2.KK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
 
-			//check the sum of all entries
-			std::cout << "the total mass is " << intForce_j.sum()/3. +  tmp_k.sum()/3. << std::endl;
+        	numericMass /= mStructure->GetDimension(); // since the mass is added to nodes in every direction
+        	std::cout << "the total mass is " << numericMass << std::endl;
 
-			//invert the mass matrix
-			invMassMatrix_j = intForce_j.cwiseInverse();
+        	//invert the mass matrix
+        	hessian2.CwiseInvert();
         }
         else
         {
-        	NuTo::SparseMatrixCSRVector2General<double> full2MassMatrix_jj,full2MassMatrix_jk,full2MassMatrix_kj,full2MassMatrix_kk;
-        	full2MassMatrix_jj.Resize(mStructure->GetNumActiveDofs(),mStructure->GetNumActiveDofs());
-        	full2MassMatrix_jk.Resize(mStructure->GetNumActiveDofs(),mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-        	full2MassMatrix_kj.Resize(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(),mStructure->GetNumActiveDofs());
-        	full2MassMatrix_kk.Resize(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(),mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-            mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::MASS,full2MassMatrix_jj,full2MassMatrix_jk,full2MassMatrix_kj,full2MassMatrix_kk);
-			fullMassMatrix_jj=full2MassMatrix_jj;
-			fullMassMatrix_jj.SetOneBasedIndexing();
+        	//get full mass matrix
+//        	StructureOutputBlockMatrix hessian2 = mStructure->BuildGlobalHessian2();
+        	std::cout << "ONLY LUMPED MASS MATRIX implemented"<<std::endl;
 	    }
 
-        double curTime  = 0;
-		CalculateExternalLoad(*mStructure, curTime, extForce_j, extForce_k);
-		acc_j_tmp.resize(this->GetNumStages());
+        double curTime  = 0.;
+        auto extLoad = CalculateCurrentExternalLoad(curTime);
+        auto intForce = mStructure->BuildGlobalInternalGradient();
+
+        std::vector<StructureOutputBlockVector> dof_dt2_tmp(this->GetNumStages(), mStructure->GetDofStatus());
 		std::vector<double> stageDerivativeFactor(this->GetNumStages()-1);
+
         while (curTime < rTimeDelta)
         {
          	//calculate for delta_t = 0
-            std::cout << "curTime " << curTime <<   " (" << curTime/rTimeDelta << ") max Disp = "  <<  disp_j.maxCoeff() << std::endl;
-        	disp_j_new = disp_j + vel_j*mTimeStep;
-        	vel_j_new = vel_j;
+            std::cout << "curTime " << curTime <<   " (" << curTime/rTimeDelta << ") max Disp = "  <<  dof_dt0.J[Node::DISPLACEMENTS].maxCoeff() << std::endl;
+        	auto dof_dt0_new = dof_dt0 + dof_dt1*mTimeStep;
+        	auto dof_dt1_new = dof_dt1;
+//        	std::cout << "dof_dt0_new "<< dof_dt0_new << std::endl;
+//        	std::cout << "dof_dt1_new "<< dof_dt1_new << std::endl;
 
 			double prevTime(mTime);
 			double prevCurTime(curTime);
         	for (int countStage=0; countStage<this->GetNumStages(); countStage++)
             {
-        		//std::cout << "\n stage weight " << GetStageWeights(countStage) << std::endl;
         		double deltaTimeStage = this->GetStageTimeFactor(countStage)*mTimeStep;
 				this->GetStageDerivativeFactor(stageDerivativeFactor, countStage);
-				disp_j_tmp = disp_j+vel_j*deltaTimeStage;
+//				std::cout << "countStage "<< countStage << std::endl;
+				auto dof_dt0_tmp = dof_dt0 + dof_dt1 * deltaTimeStage;
 				for (int countStage2=0; countStage2<countStage; countStage2++)
 				{
 					if (stageDerivativeFactor[countStage2]!=0.)
 					{
-						disp_j_tmp +=acc_j_tmp[countStage2]*(stageDerivativeFactor[countStage2]*mTimeStep*mTimeStep);
+						dof_dt0_tmp += dof_dt2_tmp[countStage2]*(stageDerivativeFactor[countStage2]*mTimeStep*mTimeStep);
 					}
 				}
+//				std::cout << "dof_dt0_tmp "<< dof_dt0_tmp << std::endl;
 
 				if (this->HasTimeChanged(countStage)==true)
 				{
@@ -197,63 +179,70 @@ NuTo::Error::eError NuTo::NystroemBase::Solve(double rTimeDelta)
                     //to be implemented for time dependent problems mStructure->SetCurrentTime(mTime);
 					//an update of the external load factor and the time dependent constraint is only
 					//necessary for a modified global time
-			        UpdateConstraints(curTime);
+//			        UpdateConstraints(curTime);??????????
+					if(mTimeDependentConstraint!=-1)
+					{
+						throw MechanicsException("[NuTo::NystroemBase::Solve] solution with constraints not yet implemented.");
+					}
 
     				//calculate external force
-    				this->CalculateExternalLoad(*mStructure, curTime, extForce_j, extForce_k);
+			        extLoad = CalculateCurrentExternalLoad(curTime);
 				}
 
-				mStructure->NodeMergeActiveDofValues(0,disp_j_tmp);
+				dof_dt0_tmp.K = mStructure->NodeCalculateDependentDofValues(dof_dt0_tmp.J);
+				mStructure->NodeMergeDofValues(0,dof_dt0_tmp);
 				mStructure->ElementTotalUpdateTmpStaticData();
 
 				//calculate internal force (with update of history variables = true)
-				mStructure->BuildGlobalGradientInternalPotentialSubVectors(intForce_j,intForce_k,false);
+				intForce = mStructure->BuildGlobalInternalGradient();
+//				std::cout << "F-R " << (extLoad-intForce) << std::endl;
 
-				//std::cout << "norm of deltaForce " << (intForce_j-extForce_j).norm() << std::endl;
-
-				//std::cout << "d_disp_j_tmp " << d_disp_j_tmp[countStage](0) << std::endl;
 				if (mUseDiagonalMassMatrix)
 				{
 					//no system has to be solved
-					acc_j_tmp[countStage]  = (invMassMatrix_j.asDiagonal()*(extForce_j-intForce_j));
+					dof_dt2_tmp[countStage]  = hessian2 * (extLoad-intForce);
+//					std::cout << "dof_dt2_tmp "<< dof_dt2_tmp[countStage] << std::endl;
 				}
 				else
 				{
 					//system of equations has to be solved
-					mySolver.Solve(fullMassMatrix_jj, extForce_j-intForce_j, acc_j_tmp[countStage]);
+//					mySolver.Solve(fullMassMatrix, extLoad-intForce, dof_dt2_tmp[countStage]);
+					std::cout << "ONLY LUMPED MASS MATRIX implemented"<<std::endl;
 				}
-				//std::cout << "d_vel_j_tmp " << d_vel_j_tmp[countStage](0) << std::endl;
-				//std::cout << "norm of acc " << (d_vel_j_tmp).norm() << std::endl;
 
-				disp_j_new += acc_j_tmp[countStage]*(GetStageWeights1(countStage)*mTimeStep*mTimeStep);
-				//std::cout << "disp_j_new " << disp_j_new(0) << std::endl;
-				vel_j_new  += acc_j_tmp[countStage]*(GetStageWeights2(countStage)*mTimeStep);
-				//std::cout << "vel_j_new " << vel_j_new(0) << std::endl;
+				dof_dt0_new += dof_dt2_tmp[countStage]*(GetStageWeights1(countStage)*mTimeStep*mTimeStep);
+				dof_dt1_new += dof_dt2_tmp[countStage]*(GetStageWeights2(countStage)*mTimeStep);
+//				std::cout << "dof_dt0_new "<< dof_dt0_new << std::endl;
+//				std::cout << "dof_dt1_new "<< dof_dt1_new << std::endl;
             }
 
         	mTime = prevTime + mTimeStep;
         	curTime = prevCurTime + mTimeStep;
 
-			//std::cout << "final disp_j_new " << disp_j_new(0) << std::endl;
-			mStructure->NodeMergeActiveDofValues(0,disp_j_new);
+        	dof_dt0_new.K = mStructure->NodeCalculateDependentDofValues(dof_dt0_new.J);
+			mStructure->NodeMergeDofValues(0,dof_dt0_new);
             if (mMergeActiveDofValuesOrder1)
-                mStructure->NodeMergeActiveDofValues(1,vel_j_new);
+            {
+            	dof_dt1_new.K = mStructure->NodeCalculateDependentDofValues(dof_dt1_new.J);
+                mStructure->NodeMergeDofValues(1,dof_dt1_new);
+            }
             if (mMergeActiveDofValuesOrder2)
             {
-            	mStructure->NodeMergeActiveDofValues(2,(vel_j_new-vel_j)*(1./mTimeStep));
+            	auto dof_dt2_new = (dof_dt1_new-dof_dt1) * (1./mTimeStep);
+            	dof_dt2_new.K = mStructure->NodeCalculateDependentDofValues(dof_dt2_new.J);
+            	mStructure->NodeMergeDofValues(2,dof_dt2_new);
             }
 
-			mStructure->ElementTotalUpdateTmpStaticData();
+//			mStructure->ElementTotalUpdateTmpStaticData();
 			mStructure->ElementTotalUpdateStaticData();
-			//std::cout << "delta disp between time steps" <<  (disp_j-disp_j_new).norm() << std::endl;
 
-            disp_j = disp_j_new;
-            vel_j  = vel_j_new;
+            dof_dt0 = dof_dt0_new;
+            dof_dt1 = dof_dt1_new;
 
             //**********************************************
 			//PostProcessing
 			//**********************************************
-            if (CmatT.GetNumEntries() > 0)
+            if (mTimeDependentConstraint!=-1)
 	        {
 	            throw MechanicsException("[NuTo::NystroemBase::Solve] not implemented for constrained systems including multiple dofs.");
 	        }
@@ -274,8 +263,7 @@ NuTo::Error::eError NuTo::NystroemBase::Solve(double rTimeDelta)
 	        }
 
 			//postprocess data for plotting
-			//, NuTo::FullVector<double,Eigen::Dynamic>(intForce_k-extForce_k)
-            this->PostProcess(outOfBalance_j, outOfBalance_k);
+            this->PostProcess(extLoad-intForce);
         }
     }
     catch (MechanicsException& e)

@@ -209,8 +209,8 @@ SET(NuToMechanicsTimeIntegration_SOURCES
 timeIntegration/NewmarkBase.cpp
 timeIntegration/NewmarkDirect.cpp
 #timeIntegration/JumpDirect.cpp
-#timeIntegration/NystroemBase.cpp
-#timeIntegration/NystroemQinZhu.cpp
+timeIntegration/NystroemBase.cpp
+timeIntegration/NystroemQinZhu.cpp
 timeIntegration/ResultBase.cpp
 timeIntegration/ResultElementIpData.cpp
 timeIntegration/ResultGroupNodeForce.cpp
@@ -230,7 +230,7 @@ timeIntegration/TimeDependencyBase.cpp
 timeIntegration/TimeIntegrationBase.cpp
 timeIntegration/ImplicitExplicitBase.cpp
 timeIntegration/ImplEx.cpp
-#timeIntegration/VelocityVerlet.cpp
+timeIntegration/VelocityVerlet.cpp
 )
 
 SET(NuToMechanicsTools_SOURCES

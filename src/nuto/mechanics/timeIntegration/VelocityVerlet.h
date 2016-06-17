@@ -70,8 +70,10 @@ public:
     std::string GetTypeId()const;
 
 protected:
+#ifdef ENABLE_SERIALIZATION
     //empty private construct required for serialization
     VelocityVerlet(){};
+#endif // ENABLE_SERIALIZATION
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

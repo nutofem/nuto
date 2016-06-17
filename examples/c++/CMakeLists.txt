@@ -286,3 +286,12 @@ ENDIF (ENABLE_GEOMETRYCONCRETE AND ENABLE_MECHANICS)
 #Grid3D
 ADD_EXECUTABLE(MortonOrder MortonOrder.cpp)
 TARGET_LINK_LIBRARIES(MortonOrder NuToMath NuToBase)
+
+
+
+ADD_EXECUTABLE(ExplicitTimeIntegration ExplicitTimeIntegration.cpp)
+TARGET_LINK_LIBRARIES(ExplicitTimeIntegration NuToMechanics NuToMath NuToBase)
+IF (ENABLE_VISUALIZE)
+  TARGET_LINK_LIBRARIES(ExplicitTimeIntegration NuToVisualize)
+ENDIF (ENABLE_VISUALIZE)
+ADD_TEST(EXAMPLES::Cpp::ExplicitTimeIntegration ${CMAKE_CURRENT_BUILD_DIR}/ExplicitTimeIntegration)

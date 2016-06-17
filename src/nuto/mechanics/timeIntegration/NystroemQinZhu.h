@@ -89,7 +89,9 @@ public:
 
 protected:
     //empty private construct required for serialization
+#ifdef ENABLE_SERIALIZATION
     NystroemQinZhu(){};
+#endif
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION
