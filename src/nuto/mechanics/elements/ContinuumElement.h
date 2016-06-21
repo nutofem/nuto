@@ -161,6 +161,7 @@ public:
 
 protected:
 
+    //! @todo boost ptr container?
     std::vector<NodeBase*> mNodes;
     const SectionBase *mSection;
 

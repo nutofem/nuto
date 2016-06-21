@@ -204,7 +204,7 @@ NuTo::IntegrationType::eIntegrationType NuTo::InterpolationType::GetStandardInte
 NuTo::Node::eDof NuTo::InterpolationType::GetDofWithHighestStandardIntegrationOrder() const
 {
     int maxOrder = 0;
-    Node::eDof maxDof = Node::eDof::DISPLACEMENTS; // RAII ---> Resource Acquisition Is Initialization --- otherwise compiler annoys me with a warnig: 'maxDof may be used but uninitialized'
+    Node::eDof maxDof = *GetDofs().begin();
     for (Node::eDof dof : GetDofs())
     {
         Interpolation::eTypeOrder order = Get(dof).GetTypeOrder();
