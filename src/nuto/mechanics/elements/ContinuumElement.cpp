@@ -929,7 +929,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatri
     {
         for (auto dofCol : mInterpolationType->GetActiveDofs())
         {
-            if(!GetConstitutiveLaw(rTheIP)->CheckDofCombinationComputable(dofRow,dofCol,0))
+            if(!GetConstitutiveLaw(rTheIP)->CheckDofCombinationComputable(dofRow,dofCol,1))
                 continue;
             auto& hessian1 = rHessian1(dofRow, dofCol);
             switch (Node::CombineDofs(dofRow, dofCol))
@@ -942,6 +942,8 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatri
                           * rData.mN.at(dofRow)->transpose()
                           * rData.mTangentHeatTemperature
                           * (*rData.mN.at(dofCol));
+                break;
+
             case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::RELATIVEHUMIDITY):
                 hessian1 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow)->transpose() * rData.mInternalGradientRH_dRH_NN_H1 * (*rData.mN.at(dofCol));
                 break;
@@ -966,7 +968,6 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatri
             case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::DISPLACEMENTS):
             case Node::CombineDofs(Node::eDof::TEMPERATURE, Node::eDof::DISPLACEMENTS):
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::TEMPERATURE):
-                break;
                 break;
             default:
                 throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Element output HESSIAN_1_TIME_DERIVATIVE for "
