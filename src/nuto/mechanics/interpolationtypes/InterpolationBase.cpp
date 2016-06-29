@@ -90,6 +90,26 @@ void NuTo::InterpolationBase::UpdateIntegrationType(const IntegrationTypeBase& r
     mUpdateRequired = false;
 }
 
+Eigen::MatrixXd NuTo::InterpolationBase::CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const
+{
+
+    auto shapeFunctions = CalculateShapeFunctions(rCoordinates);
+    if (GetLocalDimension() == 1) return shapeFunctions.transpose();
+
+    int numNodes = GetNumNodes();
+    int dimBlock = GetNumDofsPerNode();
+
+    assert (shapeFunctions.rows() == numNodes);
+
+    Eigen::MatrixXd matrixN(dimBlock, numNodes * dimBlock);
+    for (int iNode = 0, iBlock = 0; iNode < numNodes; ++iNode, iBlock += dimBlock)
+    {
+        matrixN.block(0, iBlock, dimBlock, dimBlock) = Eigen::MatrixXd::Identity(dimBlock, dimBlock) * shapeFunctions(iNode);
+    }
+
+    return matrixN;
+}
+
 bool NuTo::InterpolationBase::IsActive() const
 {
     return mIsActive;
@@ -139,6 +159,34 @@ int NuTo::InterpolationBase::GetSurfaceNodeIndex(int rSurface, int rNodeDofIndex
     assert(not mUpdateRequired);
 
     return mSurfaceNodeIndices[rSurface][rNodeDofIndex];
+}
+
+const Eigen::VectorXd& NuTo::InterpolationBase::GetNaturalNodeCoordinates(int rNodeIndex) const
+{
+    assert(rNodeIndex < mNumNodes);
+    assert((unsigned int) rNodeIndex < mNodeCoordinates.size());
+    return mNodeCoordinates[rNodeIndex];
+}
+
+const Eigen::VectorXd& NuTo::InterpolationBase::GetShapeFunctions(int rIP) const
+{
+    assert(rIP < (int )mShapeFunctions.size());
+    assert(not mUpdateRequired);
+    return mShapeFunctions.at(rIP);
+}
+
+const Eigen::MatrixXd& NuTo::InterpolationBase::GetMatrixN(int rIP) const
+{
+    assert(rIP < (int )mMatrixN.size());
+    assert(not mUpdateRequired);
+    return mMatrixN.at(rIP);
+}
+
+const Eigen::MatrixXd& NuTo::InterpolationBase::GetDerivativeShapeFunctionsNatural(int rIP) const
+{
+    assert(rIP < (int )mDerivativeShapeFunctionsNatural.size());
+    assert(not mUpdateRequired);
+    return mDerivativeShapeFunctionsNatural.at(rIP);
 }
 
 void NuTo::InterpolationBase::CalculateSurfaceNodeIds()
@@ -196,16 +244,6 @@ void NuTo::InterpolationBase::Initialize()
     for (int i = 0; i < mNumNodes; ++i)
         mNodeCoordinates[i] = CalculateNaturalNodeCoordinates(i);
 
-}
-
-void NuTo::InterpolationBase::AddIGAPatchCurve(const BSplineCurve& rCurve)
-{
-    throw("[NuTo::IntegrationTypeBase::AddIGAPatchCurve] not implemented - only for IGA interpolation ('Interpolation1DIGA' and 'Interpolation2DIGA')");
-}
-
-void NuTo::InterpolationBase::AddIGAPatchSurface(const BSplineSurface& rSurface)
-{
-    throw("[NuTo::IntegrationTypeBase::AddIGAPatchCurve] not implemented - only for IGA interpolation ('Interpolation1DIGA' and 'Interpolation2DIGA')");
 }
 
 #ifdef ENABLE_SERIALIZATION
