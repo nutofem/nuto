@@ -1869,47 +1869,94 @@ Eigen::MatrixXd DerivativeShapeFunctionsInterface3dOrder1(const Eigen::VectorXd&
 }// namespace ShapeFunctionsInterface3D
 
 
-namespace ShapeFunctionsInterfaceIGA1D // interval depends on the knot vector
+// In order to maintain equal shape functions on each element the Bézier extraction together with Bernstein polynomials is used (see. Borden et. al. 2011)
+namespace ShapeFunctionsIGA1D
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Eigen::VectorXd ShapeFunctionsIGAInterface1D(double rParameter, const Eigen::VectorXd& mKnots, int rDegree)
+Eigen::VectorXd Bernstein1DOrder1(double rParameter)
 {
-    assert(mKnots.rows() == 2*rDegree+2);
-    Eigen::VectorXd rBasisFunctions(rDegree + 1);
-
-    rBasisFunctions(0,0) = 1.;
-
-    Eigen::VectorXd left(rDegree + 1);
-    Eigen::VectorXd right(rDegree + 1);
-
-    for (int j = 1; j <= rDegree; j++)
-    {
-        left[j]  = rParameter - mKnots[rDegree + 1 - j];
-        right[j] = mKnots[rDegree + j] - rParameter;
-        double saved = 0.;
-        for(int r = 0; r < j; r++)
-        {
-            double temp = rBasisFunctions(0,r)/(right[r+1] + left[j-r]);
-            rBasisFunctions(0,r) = saved + right[r+1]*temp;
-            saved = left[j-r]*temp;
-        }
-        rBasisFunctions(0,j) = saved;
-    }
-    return rBasisFunctions;
+    return Bernstein1D(rParameter, 1);
 }
 
-Eigen::MatrixXd DerivativeShapeFunctionsIGAInterface(const Eigen::VectorXd& rParameter, const Eigen::VectorXd& mKnots, int rDegree)
+Eigen::VectorXd Bernstein1DOrder2(double rParameter)
 {
-    Eigen::MatrixXd rDerivativeBasisFunctions(rDegree+1, 1);
+    return Bernstein1D(rParameter, 2);
+}
+
+Eigen::VectorXd Bernstein1DOrder3(double rParameter)
+{
+    return Bernstein1D(rParameter, 3);
+}
+
+Eigen::VectorXd Bernstein1DOrder4(double rParameter)
+{
+    return Bernstein1D(rParameter, 4);
+}
+
+Eigen::VectorXd Bernstein1D(double rParameter, int rOrder)
+{
+    Eigen::VectorXd values(rOrder);
+
+    double paramUnivariate = (rParameter + 1.)/2;
+    double u1 = 1. - paramUnivariate;
+
+    for(int j = 1; j < rOrder; j++)
+    {
+        double saved = 0.;
+        for(int k = 0; k < j; k++)
+        {
+            double temp = values(k);
+            values(k) = saved + u1*temp;
+            saved = paramUnivariate*temp;
+        }
+        values(j) = saved;
+    }
+    return values;
+}
 
 
+Eigen::VectorXd DerivativeBernstein1DOrder1(double rParameter)
+{
+    return DerivativeBernstein1D(rParameter, 1);
+}
 
-    return rDerivativeBasisFunctions;
+Eigen::VectorXd DerivativeBernstein1DOrder2(double rParameter)
+{
+    return DerivativeBernstein1D(rParameter, 2);
+}
+
+Eigen::VectorXd DerivativeBernstein1DOrder3(double rParameter)
+{
+    return DerivativeBernstein1D(rParameter, 3);
+}
+
+Eigen::VectorXd DerivativeBernstein1DOrder4(double rParameter)
+{
+    return DerivativeBernstein1D(rParameter, 4);
+}
+
+Eigen::VectorXd DerivativeBernstein1D(double rParameter, int rOrder)
+{
+    Eigen::VectorXd values(rOrder);
+    double u1 = rOrder-1;
+
+    for(int j = 1; j < rOrder; j++)
+    {
+        double saved = 0.;
+        for(int k = 0; k < j; k++)
+        {
+            double temp = values(k);
+            values(k) = saved + u1*temp;
+            saved = u1*temp;
+        }
+        values(j) = saved;
+    }
+    return values;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-}// namespace ShapeFunctionsInterfaceIGA1D
+}// namespace ShapeFunctionsIGA1D
 
 
 

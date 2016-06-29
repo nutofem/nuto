@@ -220,16 +220,27 @@ Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder2(const Eigen::VectorXd&
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
-namespace ShapeFunctionsInterfaceIGA1D // interval depends on the knot vector
+// In order to maintain equal shape functions on each element the Bézier extraction together with Bernstein polynomials is used (see. Borden et. al. 2011)
+namespace ShapeFunctionsIGA1D
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Eigen::VectorXd ShapeFunctionsIGAInterface1D(double rParameter, const Eigen::VectorXd& mKnots, int rDegree);
+Eigen::VectorXd Bernstein1DOrder1(double rParameter);
+Eigen::VectorXd Bernstein1DOrder2(double rParameter);
+Eigen::VectorXd Bernstein1DOrder3(double rParameter);
+Eigen::VectorXd Bernstein1DOrder4(double rParameter);
+Eigen::VectorXd Bernstein1D(double rParameter, int rOrder);
 
-Eigen::MatrixXd DerivativeShapeFunctionsIGAInterface1D(const Eigen::VectorXd& rParameter, const Eigen::VectorXd& mKnots);
+
+Eigen::VectorXd DerivativeBernstein1DOrder1(double rParameter);
+Eigen::VectorXd DerivativeBernstein1DOrder2(double rParameter);
+Eigen::VectorXd DerivativeBernstein1DOrder3(double rParameter);
+Eigen::VectorXd DerivativeBernstein1DOrder4(double rParameter);
+Eigen::VectorXd DerivativeBernstein1D(double rParameter, int rOrder);
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-}// namespace ShapeFunctionsInterfaceIGA1D
+}// namespace ShapeFunctionsIGA1D
 
 
 } /* namespace NuTo */

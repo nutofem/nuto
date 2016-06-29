@@ -56,7 +56,7 @@ enum eTypeOrder
     LOBATTO2,
     LOBATTO3,
     LOBATTO4,
-    SPLINE          //!< whatever the bspline curve (mCurve) is providing in the IGA interpolation
+    SPLINE
 };
 static inline std::map<eTypeOrder, std::string> GetTypeOrderMap()
 {
@@ -68,7 +68,7 @@ static inline std::map<eTypeOrder, std::string> GetTypeOrderMap()
     typeOrderMap[eTypeOrder::LOBATTO2]      = "LOBATTO2";
     typeOrderMap[eTypeOrder::LOBATTO3]      = "LOBATTO3";
     typeOrderMap[eTypeOrder::LOBATTO4]      = "LOBATTO4";
-    typeOrderMap[eTypeOrder::SPLINE]        = "SPLINE";
+    typeOrderMap[eTypeOrder::SPLINE]      = "SPLINE";
     return typeOrderMap;
 }
 

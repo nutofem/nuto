@@ -24,10 +24,6 @@ namespace NuTo
 {
 class IntegrationTypeBase;
 
-// IGA stuff
-class BSplineCurve;
-class BSplineSurface;
-
 //! @brief this class stores the information of the interpolation of a single dof type
 //! @remark the API only allows const access to this class via the InterpolationType.Get(dofType)
 //! method. Its data members are set via the friend class property.
@@ -56,14 +52,11 @@ public:
     //             DOF METHODS
     //********************************************
 
-
     //! @brief returns whether or not the dof is active
     bool IsActive() const;
 
     //! @brief returns whether or not the dof is constitutive input
     bool IsConstitutiveInput() const;
-
-
 
     //! @brief returns the number of dofs
     int GetNumDofs() const;
@@ -94,12 +87,11 @@ public:
 
     //! @brief returns the natural coordinates of the dof node
     //! @param rNodeIndex ... node index
-    const Eigen::VectorXd& GetNaturalNodeCoordinates(int rNodeIndex) const;
+    virtual const Eigen::VectorXd& GetNaturalNodeCoordinates(int rNodeIndex) const = 0;
 
     //! @brief returns the natural coordinates of the dof node
     //! @param rNodeIndex ... node index
     virtual Eigen::VectorXd CalculateNaturalNodeCoordinates(int rNodeIndex) const = 0;
-
 
     void CalculateSurfaceNodeIds();
 
@@ -110,12 +102,12 @@ public:
     //! @brief returns specific shape functions via the IP index
     //! @param rIP ... integration point index
     //! @return ... specific shape functions
-    virtual const Eigen::VectorXd& GetShapeFunctions(int rIP) const;
+    virtual const Eigen::VectorXd& GetShapeFunctions(int rIP) const = 0;
 
     //! @brief returns specific N-matrix via the IP index
     //! @param rIP ... integration point index
     //! @return ... specific N-matrix
-    virtual const Eigen::MatrixXd& GetMatrixN(int rIP) const;
+    virtual const Eigen::MatrixXd& GetMatrixN(int rIP) const = 0;
 
     //! @brief calculates the shape functions for a specific dof
     //! @param rCoordinates ... integration point coordinates
@@ -123,7 +115,7 @@ public:
     virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const = 0;
 
     //! @brief calculates the N-Matrix, blows up the shape functions to the correct format (e.g. 3D: N & 0 & 0 \\ 0 & N & 0 \\ 0 & 0 & N ...)
-    virtual Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const;
+    virtual Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const = 0;
 
     //********************************************
     //       DERIVATIVE SHAPE FUNCTIONS NATURAL
@@ -132,7 +124,7 @@ public:
     //! @brief returns specific derivative shape functions natural via the IP index
     //! @param rIP ... integration point index
     //! @return ... specific derivative shape functions natural
-    virtual const Eigen::MatrixXd & GetDerivativeShapeFunctionsNatural(int rIP) const;
+    virtual const Eigen::MatrixXd & GetDerivativeShapeFunctionsNatural(int rIP) const = 0;
 
     //! @brief returns specific derivative shape functions natural via coordinates
     //! @param rCoordinates ... integration point coordinates
@@ -163,14 +155,6 @@ public:
 
     //! @brief return the local dimension of the interpolation
     virtual int GetLocalDimension() const = 0;
-
-    //********************************************
-    //       IGA
-    //********************************************
-
-    virtual void AddIGAPatchCurve(const BSplineCurve& rCurve);
-
-    virtual void AddIGAPatchSurface(const BSplineSurface& rSurface);
 
 #ifdef ENABLE_SERIALIZATION
 //    //! @brief serializes the class, this is the load routine
@@ -235,16 +219,8 @@ protected:
 
     int mLocalStartIndex;
 
-    // members for each integration point
-    std::vector<Eigen::VectorXd> mNodeCoordinates;
-    std::vector<Eigen::VectorXd> mShapeFunctions;
-    std::vector<Eigen::MatrixXd> mMatrixN;
-    std::vector<Eigen::MatrixXd> mDerivativeShapeFunctionsNatural;
-
     // members for each surface
     std::vector<std::vector<int>> mSurfaceNodeIndices;
-
-    bool mUpdateRequired;
 
     //! @brief dimension = Structure.GetDimension()
     const int mDimension;

@@ -391,6 +391,7 @@ const Eigen::VectorXd& NuTo::InterpolationType::GetNaturalNodeCoordinates(int rN
     assert((unsigned int )rNodeIndex < mNodeCoordinates.size());
     return mNodeCoordinates[rNodeIndex];
 }
+
 int NuTo::InterpolationType::GetNumNodes() const
 {
     return mNodeCoordinates.size();
