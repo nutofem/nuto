@@ -45,6 +45,7 @@ public:
     ConstitutiveVector<VoigtDim> mEngineeringStress_dRH;
     ConstitutiveVector<VoigtDim> mEngineeringStress_dWV;
 
+    EngineeringStrain<3> mShrinkageStrainVisualize;
     // Moisture Transport
     // --------------------------------------------------------------------------------------------
 
@@ -78,10 +79,15 @@ public:
     // ------------------------------------------------------------------------
     ConstitutiveMatrix<TDim, TDim> mTangentHeatFluxTemperatureGradient;
     ConstitutiveScalar mTangentHeatTemperature;
+    ConstitutiveScalar mTemperature;
     ConstitutiveScalar mHeatChange;
     ConstitutiveScalar mTemperatureChange;
     ConstitutiveVector<TDim> mHeatFlux;
     ConstitutiveVector<TDim> mTemperatureGradient;
+
+    // Thermal strains
+    ConstitutiveVector<VoigtDim> mDStressDTemperature;
+    EngineeringStrain<3> mThermalStrain;
 
     // Nodal Values
     // --------------------------------------------------------------------------------------------

@@ -74,23 +74,17 @@ NuTo::ConstitutiveInputMap NuTo::HeatConduction::GetConstitutiveInputs(
         case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
             break;
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, Constitutive::OutputToString(itOutput.first)
-                    + " cannot be calculated by this constitutive law.");
+            continue;
         }
     }
 
     return constitutiveInputMap;
 }
 
-
-//! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
-//! @param rDofRow ... row dof
-//! @param rDofCol ... column dof
-//! @param rTimeDerivative ... time derivative
 bool NuTo::HeatConduction::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
 {
     assert(rTimeDerivative>-1);
-    if (rTimeDerivative<1 &&
+    if (rTimeDerivative<=2 &&
         rDofRow == Node::TEMPERATURE &&
         rDofCol == Node::TEMPERATURE)
     {
@@ -122,8 +116,7 @@ NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
         case NuTo::Constitutive::Input::TIME_STEP:
             break;
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Input object "
-                + Constitutive::InputToString(itInput.first) + " is not needed by the heat conduction law.");
+            continue;
         }
     }
 
@@ -145,15 +138,15 @@ NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
         }
         case NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT:
         {
-            Eigen::Matrix<double, TDim, TDim>& tangent =
+            Eigen::Matrix<double, TDim, TDim>& conductivity =
                 (*static_cast<ConstitutiveMatrix<TDim, TDim>*>(itOutput.second));
-            tangent = mK * eye;
+            conductivity = mK * eye;
             break;
         }
         case NuTo::Constitutive::Output::D_HEAT_D_TEMPERATURE:
         {
             Eigen::Matrix<double, 1, 1>& tangent = (*static_cast<ConstitutiveScalar*>(itOutput.second));
-            tangent(0,0) = mCt;
+            tangent(0,0) = mCt * mRho;
             break;
         }
         case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:

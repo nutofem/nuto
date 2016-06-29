@@ -471,7 +471,8 @@ TARGET_LINK_LIBRARIES(HeatConduction NuToMechanics NuToMath NuToBase)
 IF(ENABLE_VISUALIZE)
     TARGET_LINK_LIBRARIES(HeatConduction NuToVisualize)
 ENDIF(ENABLE_VISUALIZE)
-ADD_TEST(c::mechanics::HeatConduction ${CMAKE_CURRENT_BUILD_DIR}/HeatConduction)
+
+
 
 
 ENDIF(ENABLE_C++_TESTS)
@@ -479,3 +480,12 @@ ENDIF(ENABLE_C++_TESTS)
 IF(ENABLE_C++_TESTS_WIP)
 
 ENDIF(ENABLE_C++_TESTS_WIP)
+
+if(ENABLE_UNIT_TESTS)
+    add_executable(test_heatconduction test_heatconduction.cpp)
+    target_link_libraries(test_heatconduction NuToMechanics NuToMath NuToBase)
+    if(ENABLE_VISUALIZE)
+        target_link_libraries(test_heatconduction NuToVisualize)
+    endif()
+    add_test(c::mechanics::test_heatconduction ${CMAKE_CURRENT_BUILD_DIR}/test_heatconduction)
+endif()

@@ -39,7 +39,7 @@ NuTo::Error::eError NuTo::ConstitutiveLawsAdditiveOutput::Evaluate1D(NuTo::Eleme
     }
     catch(Exception e)
     {
-        e.AddMessage(__PRETTY_FUNCTION__,"Exception while evaluating constitutive law attached to an additive link.");
+        e.AddMessage(__PRETTY_FUNCTION__,"Exception while evaluating constitutive law attached to an additive output.");
         throw e;
     }
     return error;
@@ -77,7 +77,7 @@ NuTo::Error::eError NuTo::ConstitutiveLawsAdditiveOutput::Evaluate2D(NuTo::Eleme
     }
     catch(Exception e)
     {
-        e.AddMessage(__PRETTY_FUNCTION__,"Exception while evaluating constitutive law attached to an additive link.");
+        e.AddMessage(__PRETTY_FUNCTION__,"Exception while evaluating constitutive law attached to an additive output.");
         throw e;
     }
     return error;
@@ -114,7 +114,7 @@ NuTo::Error::eError NuTo::ConstitutiveLawsAdditiveOutput::Evaluate3D(NuTo::Eleme
     }
     catch(Exception e)
     {
-        e.AddMessage(__PRETTY_FUNCTION__,"Exception while evaluating constitutive law attached to an additive link.");
+        e.AddMessage(__PRETTY_FUNCTION__,"Exception while evaluating constitutive law attached to an additive output.");
         throw e;
     }
     return error;
@@ -140,6 +140,8 @@ NuTo::ConstitutiveInputMap NuTo::ConstitutiveLawsAdditiveOutput::GetConstitutive
 
     return constitutiveInputMap;
 }
+
+
 
 void NuTo::ConstitutiveLawsAdditiveOutput::AddCalculableDofCombinations(NuTo::ConstitutiveBase *rConstitutiveLaw)
 {

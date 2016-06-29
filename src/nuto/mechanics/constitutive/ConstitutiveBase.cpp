@@ -62,6 +62,14 @@ void NuTo::ConstitutiveBase::SetParameterDouble(NuTo::Constitutive::eConstitutiv
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetParameterDouble] This constitutive law has no variables of type double.");
 }
 
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
+//! @param rValue ... new value for requested variable
+void NuTo::ConstitutiveBase::SetParameterFunction(std::function<std::array<double, 2>(double)>)
+{
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "This constitutive law has no variables of type double.");
+}
+
 //! @brief ... gets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
@@ -156,7 +164,7 @@ double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double rRelativ
 }
 
 
-void NuTo::ConstitutiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw)
+void NuTo::ConstitutiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw, Constitutive::Input::eInput rModiesInput)
 {
     throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"The constitutive relationship does not have this functionality.");
 }

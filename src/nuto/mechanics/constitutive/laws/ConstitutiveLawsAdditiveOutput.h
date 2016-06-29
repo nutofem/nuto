@@ -23,8 +23,9 @@ public:
 
 
     //! @brief ... adds a constitutive law to a model that combines multiple constitutive laws (additive, parallel)
-    //! @param ... additional constitutive law
-    virtual void  AddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw) override
+    //! @param rConstitutiveLaw ... additional constitutive law
+    //! @param rModiesInput ... enum which defines wich input is modified by a constitutive law.
+    virtual void  AddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw, Constitutive::Input::eInput rModiesInput = Constitutive::Input::NONE) override
     {
         if(mStaticDataAllocated)
             throw MechanicsException(__PRETTY_FUNCTION__,"All constitutive laws have to be attached before static data is allocated!");

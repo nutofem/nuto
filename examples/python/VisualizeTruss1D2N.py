@@ -24,9 +24,9 @@ try:
     myElement2 = myStructure.ElementCreate(myInterpolationType,nuto.IntFullVector((myNode2,myNode3)))
 
     #create constitutive law
-    myMatLin = myStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress")
-    myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"YoungsModulus",10)
-    myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"PoissonsRatio",0.1)
+    myMatLin = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress")
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"Youngs_Modulus",10)
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"Poissons_Ratio",0.1)
 
     #create section
     mySection1 = myStructure.SectionCreate ("TRUSS")

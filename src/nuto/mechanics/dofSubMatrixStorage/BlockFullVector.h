@@ -71,11 +71,30 @@ public:
     //! @brief operator *=
     //! @remark only modifies active dof types
     BlockFullVector& operator*=(double rScalar);
+ 
+    //! @brief operator *=
+    //! @remark only modifies active dof types
+    BlockFullVector& operator/=(double rScalar);
 
 
     friend NuTo::BlockFullVector<T> operator+(NuTo::BlockFullVector<T> rLhs, const NuTo::BlockFullVector<T>& rRhs) { return std::move(rLhs += rRhs); }
     friend NuTo::BlockFullVector<T> operator-(NuTo::BlockFullVector<T> rLhs, const NuTo::BlockFullVector<T>& rRhs) { return std::move(rLhs -= rRhs); }
-    friend NuTo::BlockFullVector<T> operator*(NuTo::BlockFullVector<T> rLhs, double rScalar)                       { return std::move(rLhs *= rScalar); }
+    friend NuTo::BlockFullVector<T> operator*(NuTo::BlockFullVector<T> rLhs, double rScalar)
+    {
+        return std::move(rLhs *= rScalar);
+    }
+    friend NuTo::BlockFullVector<T> operator*(double rScalar, NuTo::BlockFullVector<T> rRhs)
+    {
+        return std::move(rRhs *= rScalar);
+    }
+    friend NuTo::BlockFullVector<T> operator/(NuTo::BlockFullVector<T> rLhs, double rScalar)
+    {
+        return std::move(rLhs /= rScalar);
+    }
+    friend NuTo::BlockFullVector<T> operator/(double rScalar, NuTo::BlockFullVector<T> rRhs)
+    {
+        return std::move(rRhs /= rScalar);
+    }
 
     template <typename T2>
     friend std::ostream& operator<< (std::ostream &rOut, const NuTo::BlockFullVector<T2>& rBlockVector);

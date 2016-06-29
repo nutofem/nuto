@@ -54,9 +54,9 @@ myStructure.CalculateMaximumIndependentSets()
 
 # start analysis
 myStructure.SolveGlobalSystemStaticElastic(loadCase)
-intGradient = myStructure.BuildGlobalInternalGradient().J
-extGradient = myStructure.BuildGlobalExternalLoadVector(loadCase).J
-residual = intGradient.Get("Displacements") - extGradient.Get("Displacements")
+intGradient = myStructure.BuildGlobalInternalGradient()
+extGradient = myStructure.BuildGlobalExternalLoadVector(loadCase)
+residual = intGradient.J.Get("Displacements") - extGradient.J.Get("Displacements")
 
 
 print "residual: " + str(residual.Norm())

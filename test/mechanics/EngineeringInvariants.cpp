@@ -3,6 +3,7 @@
 #include "nuto/mechanics/constitutive/inputoutput/EquivalentStrain.h"
 #include "nuto/base/Timer.h"
 #include <eigen3/Eigen/Dense>
+#include <vector>
 
 constexpr int numRuns = 10;
 

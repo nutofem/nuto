@@ -92,10 +92,14 @@ std::string NuTo::VisualizeComponent::GetComponentName() const
         return "Rotations";
     case VisualizeBase::SECTION:
         return "Section";
+    case VisualizeBase::SHRINKAGE_STRAIN:
+        return "ShrinkageStrains";
     case VisualizeBase::SLIP:
         return "Slip";
     case VisualizeBase::TEMPERATURE:
         return "Temperature";
+    case VisualizeBase::THERMAL_STRAIN:
+        return "ThermalStrain";
     case VisualizeBase::TOTAL_INELASTIC_EQ_STRAIN:
         return "TotalInelasticEqStrain";
     case VisualizeBase::VELOCITY:

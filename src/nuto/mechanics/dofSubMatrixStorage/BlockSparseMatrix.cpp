@@ -113,7 +113,7 @@ NuTo::BlockFullVector<double> NuTo::BlockSparseMatrix::operator *(const BlockFul
         }
     }
 
-    return std::move(result);
+    return result;
 }
 
 void NuTo::BlockSparseMatrix::AddScal(const BlockSparseMatrix& rRhs, double rScalar)

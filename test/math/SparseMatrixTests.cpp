@@ -134,7 +134,6 @@ void SparseMatrixVector2Tests(int rNumActDofs, int rNumDepDofs, double rDensity,
         const NuTo::SparseMatrixCSRVector2<double>& bKK = KK;
         const NuTo::SparseMatrixCSRVector2<double>& bKJ = KJ;
         const NuTo::SparseMatrixCSRVector2<double>& bJK = JK;
-        const NuTo::SparseMatrixCSRVector2<double>& bJJ = JJ;
 
         const NuTo::SparseMatrixCSRVector2<double>& bCm = Cm;
 
@@ -211,7 +210,6 @@ void SparseMatrixVector2Tests(int rNumActDofs, int rNumDepDofs, double rDensity,
         const NuTo::SparseMatrixCSRVector2<double>& bKK = KK;
         const NuTo::SparseMatrixCSRVector2<double>& bKJ = KJ;
         const NuTo::SparseMatrixCSRVector2<double>& bJK = JK;
-        const NuTo::SparseMatrixCSRVector2<double>& bJJ = JJ;
 
         const NuTo::SparseMatrixCSRVector2<double>& bCm = Cm;
 

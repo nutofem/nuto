@@ -6,7 +6,7 @@
 #endif
 
 #include <string>
-#include <exception>
+#include <stdexcept>
 #include <iostream>
 
 namespace NuTo

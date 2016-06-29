@@ -72,7 +72,9 @@ public:
 
 protected:
     //empty private construct required for serialization
+#ifdef ENABLE_SERIALIZATION
     NystroemBase(){};
+#endif  // ENABLE_SERIALIZATION
 private:
     //use diagonal mass matrix (standard is true, only for test cases use false)
     bool mUseDiagonalMassMatrix;

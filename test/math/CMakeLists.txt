@@ -46,3 +46,9 @@ ENDIF(MINGW)#
 ADD_TEST(c::math::SparseMatrixTests ${CMAKE_CURRENT_BUILD_DIR}/SparseMatrixTests)
 
 ENDIF(ENABLE_C++_TESTS)
+
+if(ENABLE_UNIT_TESTS)
+    add_executable(Interpolation Interpolation.cpp)
+    target_link_libraries(Interpolation NuToMath)
+    add_test(c::math::Interpolation ${CMAKE_CURRENT_BUILD_DIR}/Interpolation)
+endif()

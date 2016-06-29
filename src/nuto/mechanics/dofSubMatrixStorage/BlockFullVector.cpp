@@ -86,6 +86,14 @@ NuTo::BlockFullVector<T>& NuTo::BlockFullVector<T>::operator *=(double rScalar)
 }
 
 template<typename T>
+NuTo::BlockFullVector<T>& NuTo::BlockFullVector<T>::operator /=(double rScalar)
+{
+    for (auto dof : mDofStatus.GetActiveDofTypes())
+        (*this)[dof] /= rScalar;
+    return *this;
+}
+
+template<typename T>
 NuTo::FullVector<T, Eigen::Dynamic> NuTo::BlockFullVector<T>::Export() const
 {
     FullVector<T, Eigen::Dynamic> result(GetNumActiveRows());

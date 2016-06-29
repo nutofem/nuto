@@ -51,7 +51,6 @@ void NuTo::CrackExplicit2D::Info(int rVerboseLevel)const
 void NuTo::CrackExplicit2D::Initiate(std::vector<NuTo::ElementBase*>& rElements, std::vector<NuTo::ElementBase*>& rCrackedElements)
 {
 	/// go through all given elements
-	typedef std::vector<NuTo::ElementBase*> elemVec_t;
 	BOOST_FOREACH(NuTo::ElementBase* thisElement,rElements)
 	{
 		bool isCracked=false;
