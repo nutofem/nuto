@@ -175,7 +175,6 @@ interpolationtypes/InterpolationBase.cpp
 interpolationtypes/Interpolation1D.cpp
 interpolationtypes/Interpolation1DTruss.cpp
 interpolationtypes/Interpolation1DInterface.cpp
-interpolationtypes/Interpolation1DIGA.cpp
 interpolationtypes/Interpolation2D.cpp
 interpolationtypes/Interpolation2DTriangle.cpp
 interpolationtypes/Interpolation2DQuad.cpp

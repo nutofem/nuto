@@ -25,7 +25,6 @@
 #include "nuto/mechanics/interpolationtypes/Interpolation3DBrick.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation1DTruss.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation1DInterface.h"
-#include "nuto/mechanics/interpolationtypes/Interpolation1DIGA.h"
 
 #include <boost/foreach.hpp>
 
@@ -90,9 +89,9 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
     case Interpolation::eShapeType::INTERFACE:
         newType = new Interpolation1DInterface(rDofType, rTypeOrder, mDimension);
         break;
-    case Interpolation::eShapeType::IGA1D:
-        newType = new Interpolation1DIGA(rDofType, rTypeOrder, mDimension);
-        break;
+//    case Interpolation::eShapeType::IGA1D:
+//        newType = new Interpolation1DIGA(rDofType, rTypeOrder, mDimension);
+//        break;
 //    case Interpolation::eShapeType::IGA2D:
 //        newType = new Interpolation2DIGA(rDofType, rTypeOrder, mDimension);
 //        break;
@@ -281,16 +280,16 @@ int NuTo::InterpolationType::GetNumSurfaces() const
     return mInterpolations.begin()->second->GetNumSurfaces();
 }
 
-void NuTo::InterpolationType::AddIGAPatch1D(NuTo::Node::eDof rDofType, const BSplineCurve& rCurve)
-{
-    auto interpolationTypeIterator = mInterpolations.find(rDofType);
+//void NuTo::InterpolationType::AddIGAPatch1D(NuTo::Node::eDof rDofType, const BSplineCurve& rCurve)
+//{
+//    auto interpolationTypeIterator = mInterpolations.find(rDofType);
 
-    InterpolationBase* interpolation = (interpolationTypeIterator->second);
-    interpolation->AddIGAPatchCurve(rCurve);
+//    InterpolationBase* interpolation = (interpolationTypeIterator->second);
+//    interpolation->AddIGAPatchCurve(rCurve);
 
-}
+//}
 
-void NuTo::InterpolationType::AddIGAPatch2D(NuTo::Node::eDof rDofType, const BSplineSurface& rSurface){}
+//void NuTo::InterpolationType::AddIGAPatch2D(NuTo::Node::eDof rDofType, const BSplineSurface& rSurface){}
 
 
 void NuTo::InterpolationType::UpdateLocalStartIndices()

@@ -483,8 +483,8 @@ public:
     //! @param rTypeOrder ... type and order of interpolation
     void InterpolationTypeAdd(int rInterpolationTypeId, const std::string& rDofType, const std::string& rTypeOrder);
 
-    void InterpolationTypeAddIGAPatch1D(int rInterpolationTypeId, Node::eDof rDofType, const BSplineCurve& rCurve);
-    void InterpolationTypeAddIGAPatch2D(int rInterpolationTypeId, Node::eDof rDofType, const BSplineSurface& rSurface);
+//    void InterpolationTypeAddIGAPatch1D(int rInterpolationTypeId, Node::eDof rDofType, const BSplineCurve& rCurve);
+//    void InterpolationTypeAddIGAPatch2D(int rInterpolationTypeId, Node::eDof rDofType, const BSplineSurface& rSurface);
 
 #ifndef SWIG
 
