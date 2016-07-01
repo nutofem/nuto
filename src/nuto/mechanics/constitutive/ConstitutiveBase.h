@@ -16,6 +16,8 @@
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+
 namespace NuTo
 {
 class ConstitutiveStaticDataBase;

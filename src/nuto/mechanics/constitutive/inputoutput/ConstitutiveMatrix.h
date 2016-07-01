@@ -17,6 +17,11 @@ public:
 
     virtual ~ConstitutiveMatrix()                               = default;
 
+    virtual std::unique_ptr<ConstitutiveIOBase> clone() override
+    {
+        return std::make_unique<ConstitutiveMatrix<TRows, TCols>>(*this);
+    }
+
     ConstitutiveMatrix& operator=(const ConstitutiveMatrix& )   = default;
     ConstitutiveMatrix& operator=(      ConstitutiveMatrix&&)   = default;
 

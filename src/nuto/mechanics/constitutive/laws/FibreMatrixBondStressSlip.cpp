@@ -392,7 +392,7 @@ NuTo::ConstitutiveStaticDataBondStressSlip NuTo::FibreMatrixBondStressSlip::GetC
     if (itCalculateStaticData == rConstitutiveInput.end())
         throw MechanicsException(__PRETTY_FUNCTION__, "You need to specify the way the static data should be calculated (input list).");
 
-    const auto& calculateStaticData = dynamic_cast<const ConstitutiveCalculateStaticData&>(*itCalculateStaticData->second);
+    const auto& calculateStaticData = *static_cast<const ConstitutiveCalculateStaticData*>(itCalculateStaticData->second.get());
 
     switch (calculateStaticData.GetCalculateStaticData())
     {

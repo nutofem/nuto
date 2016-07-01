@@ -85,14 +85,7 @@ NuTo::ConstitutiveInputMap NuTo::Element2DInterface::GetConstitutiveInputMap(con
     ConstitutiveInputMap constitutiveInputMap = GetConstitutiveLaw(0)->GetConstitutiveInputs(rConstitutiveOutput, *GetInterpolationType());
     for (auto& itInput : constitutiveInputMap)
     {
-        switch (itInput.first)
-        {
-        case Constitutive::Input::INTERFACE_SLIP:
-            itInput.second = &(rData.mSlip);
-            break;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive input " + Constitutive::InputToString(itInput.first) + " cannot be calculated by this element type.");
-        }
+        itInput.second = ConstitutiveIOBase::makeConstitutiveIO<2>(itInput.first);
     }
     return constitutiveInputMap;
 }
@@ -116,8 +109,7 @@ NuTo::Error::eError NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMa
 
     auto constitutiveOutput = GetConstitutiveOutputMap(rElementOutput, data);
     auto constitutiveInput = GetConstitutiveInputMap(constitutiveOutput, data);
-
-    constitutiveInput.insert(rInput.begin(), rInput.end());
+    constitutiveInput.Join(rInput);
 
     for (int theIP = 0; theIP < GetNumIntegrationPoints(); theIP++)
     {
@@ -283,15 +275,15 @@ void NuTo::Element2DInterface::CalculateGlobalRowDofs(BlockFullVector<int>& rGlo
 
 void NuTo::Element2DInterface::CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput, EvaluateData& rData)
 {
-    for (auto it : rConstitutiveInput)
+    for (auto& it : rConstitutiveInput)
      {
          switch (it.first)
         {
         case Constitutive::Input::INTERFACE_SLIP:
         {
             Eigen::MatrixXd rotationMatrix = CalculateRotationMatrix();
-            rData.mSlip.AsMatrix() = rotationMatrix * (rData.mMatrixB[Node::DISPLACEMENTS] * rData.mNodalValues[Node::DISPLACEMENTS]);
-
+            auto& slip = *static_cast<ConstitutiveMatrixXd*>(it.second.get());
+            slip.AsMatrix() = rotationMatrix * (rData.mMatrixB[Node::DISPLACEMENTS] * rData.mNodalValues[Node::DISPLACEMENTS]);
         }
             break;
         case Constitutive::Input::TIME_STEP:
@@ -768,8 +760,8 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
 
     //calculate the element solution
     ConstitutiveInputMap input;
-    ConstitutiveCalculateStaticData calculateImplicitly(CalculateStaticData::EULER_BACKWARD);
-    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateImplicitly;
+    input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(CalculateStaticData::EULER_BACKWARD);
+
 
     Evaluate(input, elementOutput);
 

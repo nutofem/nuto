@@ -30,7 +30,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
 
     // Copy input data to input struct
     InputData<TDim> inputData;
-    for (auto itInput : rConstitutiveInput)
+    for (auto& itInput : rConstitutiveInput)
     {
         switch(itInput.first)
         {
@@ -43,7 +43,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             break;
 
         case NuTo::Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT:
-            inputData.mRelativeHumidity_Gradient = (*static_cast<ConstitutiveVector<TDim>*>(itInput.second)).AsVector();
+            inputData.mRelativeHumidity_Gradient = static_cast<ConstitutiveVector<TDim>*>(itInput.second.get())->AsVector();
             break;
 
         case NuTo::Constitutive::Input::WATER_VOLUME_FRACTION:
@@ -55,7 +55,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             break;
 
         case NuTo::Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT:
-            inputData.mWaterVolumeFraction_Gradient = (*static_cast<ConstitutiveVector<TDim>*>(itInput.second)).AsVector();
+            inputData.mWaterVolumeFraction_Gradient = static_cast<ConstitutiveVector<TDim>*>(itInput.second.get())->AsVector();
             break;
 
         case NuTo::Constitutive::Input::CALCULATE_STATIC_DATA:

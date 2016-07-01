@@ -134,8 +134,7 @@ NuTo::ConstitutiveInputMap NuTo::ConstitutiveLawsAdditiveOutput::GetConstitutive
 
         ConstitutiveInputMap singleLawInputMap = mConstitutiveLaws[i]->GetConstitutiveInputs(rConstitutiveOutput,
                                                                                              rInterpolationType);
-
-        constitutiveInputMap.insert(singleLawInputMap.begin(),singleLawInputMap.end());
+        constitutiveInputMap.Join(singleLawInputMap);
     }
 
     return constitutiveInputMap;

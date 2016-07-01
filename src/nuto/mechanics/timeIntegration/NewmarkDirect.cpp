@@ -172,8 +172,8 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
         }
 
         ConstitutiveInputMap inputMap;
-        ConstitutiveCalculateStaticData calculateImplicitly(CalculateStaticData::EULER_BACKWARD);
-        inputMap[Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateImplicitly;
+        inputMap[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
+                CalculateStaticData::EULER_BACKWARD);
 
         ExtractDofValues(lastConverged_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2);
 
@@ -232,7 +232,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             prevExtForce = CalculateCurrentExternalLoad(curTime);
 
             curTime += timeStep;
-            this->SetTimeAndTimeStep(curTime, timeStep, rTimeDelta);     //check whether harmonic excitation, check whether curTime is too close to the time data
+            SetTimeAndTimeStep(curTime, timeStep, rTimeDelta);     //check whether harmonic excitation, check whether curTime is too close to the time data
             mStructure->SetTime(curTime);
 
             deltaBRHS = UpdateAndGetConstraintRHS(curTime) - bRHS;

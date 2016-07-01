@@ -145,8 +145,7 @@ BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ElementBase)
 NuTo::Error::eError NuTo::ElementBase::Evaluate(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)
 {
     ConstitutiveInputMap input;
-    ConstitutiveCalculateStaticData calculateImplicitly(CalculateStaticData::EULER_BACKWARD);
-    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateImplicitly;
+    input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(CalculateStaticData::EULER_BACKWARD);
 
     return this->Evaluate(input, rOutput);
 }
@@ -680,8 +679,8 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
 
     //calculate the element solution
     ConstitutiveInputMap input;
-    ConstitutiveCalculateStaticData calc(CalculateStaticData::USE_PREVIOUS);
-    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calc;
+    input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
+            CalculateStaticData::USE_PREVIOUS);
     Evaluate(input, elementOutput);
 //    Evaluate(elementOutput);
 

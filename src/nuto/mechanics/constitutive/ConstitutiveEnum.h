@@ -1,7 +1,6 @@
 #pragma once
 
 #include <map>
-#include <set>
 #include <algorithm>
 #include <boost/assign/list_of.hpp>
 #include "nuto/mechanics/MechanicsException.h"
@@ -518,11 +517,6 @@ static inline std::string OutputToString( const Output::eOutput& e )
   return std::string("undefined");
 }
 }//Constitutive
-
-class ConstitutiveIOBase;
-using ConstitutiveInputMap = std::map<Constitutive::Input::eInput, ConstitutiveIOBase*>;
-using ConstitutiveOutputMap = std::map<Constitutive::Output::eOutput, ConstitutiveIOBase*>;
-
 
 
 }//NuTo

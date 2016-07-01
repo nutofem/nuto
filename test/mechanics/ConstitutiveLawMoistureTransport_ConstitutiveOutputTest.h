@@ -3,6 +3,7 @@
 
 #include "nuto/base/Timer.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
 #include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataMoistureTransport.h"
@@ -114,15 +115,32 @@ void ConstitutiveOutputTest_SetNodalValues(NuTo::Structure& rS, const MoistureTr
 }
 
 template<int TDim>
-NuTo::ConstitutiveInputMap ConstitutiveOutputTest_CreateConstitutiveInputMap(ConstitutiveOutputTest_EvaluateData<TDim>& evaluateData)
+NuTo::ConstitutiveInputMap ConstitutiveOutputTest_CreateConstitutiveInputMap()
 {
+    using namespace NuTo::Constitutive::Input;
     NuTo::ConstitutiveInputMap constitutiveInputMap;
-    constitutiveInputMap[NuTo::Constitutive::Input::RELATIVE_HUMIDITY]              = &(evaluateData.mRelativeHumidity);
-    constitutiveInputMap[NuTo::Constitutive::Input::RELATIVE_HUMIDITY_DT1]          = &(evaluateData.mRelativeHumidity_dt1);
-    constitutiveInputMap[NuTo::Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT]     = &(evaluateData.mRelativeHumidity_Gradient);
-    constitutiveInputMap[NuTo::Constitutive::Input::WATER_VOLUME_FRACTION]          = &(evaluateData.mWaterVolumeFraction);
-    constitutiveInputMap[NuTo::Constitutive::Input::WATER_VOLUME_FRACTION_DT1]      = &(evaluateData.mWaterVolumeFraction_dt1);
-    constitutiveInputMap[NuTo::Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT] = &(evaluateData.mWaterVolumeFraction_Gradient);
+    std::vector<NuTo::Constitutive::Input::eInput> inputs {RELATIVE_HUMIDITY,
+            RELATIVE_HUMIDITY_DT1, RELATIVE_HUMIDITY_GRADIENT,
+            WATER_VOLUME_FRACTION, WATER_VOLUME_FRACTION_DT1,
+            WATER_VOLUME_FRACTION_GRADIENT};
+
+    for(auto input : inputs)
+    {
+        constitutiveInputMap[input] = NuTo::ConstitutiveIOBase::makeConstitutiveIO<TDim>(input);
+    }
+
+    (*constitutiveInputMap.at(RELATIVE_HUMIDITY))[0] = 1.0;
+    (*constitutiveInputMap.at(RELATIVE_HUMIDITY_DT1))[0] = 0.1;
+    for(unsigned int i=0; i<TDim; ++i)
+    {
+        (*constitutiveInputMap.at(RELATIVE_HUMIDITY_GRADIENT))[i] = 0.2;
+    }
+    (*constitutiveInputMap.at(WATER_VOLUME_FRACTION))[0] = 1.0;
+    (*constitutiveInputMap.at(WATER_VOLUME_FRACTION_DT1))[0] = 0.1;
+    for(unsigned int i=0; i<TDim; ++i)
+    {
+        (*constitutiveInputMap.at(WATER_VOLUME_FRACTION_GRADIENT))[i] = 0.2;
+    }
     return constitutiveInputMap;
 }
 
@@ -215,11 +233,16 @@ void ConstitutiveOutputTest_CheckAndPrintResults(const ConstitutiveOutputTest_Ev
 }
 
 template<int TDim>
-NuTo::ConstitutiveInputMap ConstitutiveOutputTest_CreateConstitutiveInputMapBoundary(ConstitutiveOutputTest_EvaluateData<TDim>& evaluateData)
+NuTo::ConstitutiveInputMap ConstitutiveOutputTest_CreateConstitutiveInputMapBoundary()
 {
+    using namespace NuTo::Constitutive::Input;
     NuTo::ConstitutiveInputMap constitutiveInputMap;
-    constitutiveInputMap[NuTo::Constitutive::Input::RELATIVE_HUMIDITY]              = &(evaluateData.mRelativeHumidity);
-    constitutiveInputMap[NuTo::Constitutive::Input::WATER_VOLUME_FRACTION]          = &(evaluateData.mWaterVolumeFraction);
+    constitutiveInputMap[RELATIVE_HUMIDITY] = NuTo::ConstitutiveIOBase::makeConstitutiveIO<TDim>(RELATIVE_HUMIDITY);
+    constitutiveInputMap[WATER_VOLUME_FRACTION] = NuTo::ConstitutiveIOBase::makeConstitutiveIO<TDim>(WATER_VOLUME_FRACTION);
+
+    (*constitutiveInputMap.at(RELATIVE_HUMIDITY))[0] = 1.0;
+    (*constitutiveInputMap.at(WATER_VOLUME_FRACTION))[0] = 1.0;
+
     return constitutiveInputMap;
 }
 
@@ -323,21 +346,9 @@ void ConstitutiveOutputTests(std::map<NuTo::Node::eDof,NuTo::Interpolation::eTyp
 
 
     ConstitutiveOutputTest_EvaluateData<TDim> evaluateData;
-    NuTo::ConstitutiveInputMap  constitutiveInputMap   = ConstitutiveOutputTest_CreateConstitutiveInputMap<TDim>(evaluateData);
+    NuTo::ConstitutiveInputMap  constitutiveInputMap   = ConstitutiveOutputTest_CreateConstitutiveInputMap<TDim>();
     NuTo::ConstitutiveOutputMap  constitutiveOutputMap  = ConstitutiveOutputTest_CreateConstitutiveOutputMap<TDim>(evaluateData);
 
-    evaluateData.mRelativeHumidity[0]               = 1.0;
-    evaluateData.mRelativeHumidity_dt1[0]           = 0.1;
-    for(unsigned int i=0; i<TDim; ++i)
-    {
-        evaluateData.mRelativeHumidity_Gradient[i]      = 0.2;
-    }
-    evaluateData.mWaterVolumeFraction[0]            = 1.0;
-    evaluateData.mWaterVolumeFraction_dt1[0]        = 0.1;
-    for(unsigned int i=0; i<TDim; ++i)
-    {
-        evaluateData.mWaterVolumeFraction_Gradient[i]   = 0.2;
-    }
 
     constLaw.Evaluate<TDim>(&element,0,constitutiveInputMap,constitutiveOutputMap);
 
@@ -399,19 +410,19 @@ void ConstitutiveOutputTests(std::map<NuTo::Node::eDof,NuTo::Interpolation::eTyp
 //    rS.BoundaryElementsCreate(eGrpBE,nGrpBE,rS.NodeGetNodePtr(boundaryNodeID));
     S.BoundaryElementsCreate(eGrpBE,nGrpBE,BEPtr);
 
-      NuTo::ElementBase& boundaryElement = *S.ElementGetElementPtr(1);
-      NuTo::ConstitutiveBase& boundaryConstLaw = *element.GetConstitutiveLaw(0);
+    NuTo::ElementBase& boundaryElement = *S.ElementGetElementPtr(1);
+    NuTo::ConstitutiveBase& boundaryConstLaw = *element.GetConstitutiveLaw(0);
 
 
-      NuTo::ConstitutiveInputMap  constitutiveInputMapBoundary   = ConstitutiveOutputTest_CreateConstitutiveInputMapBoundary<TDim>(evaluateData);
-      NuTo::ConstitutiveOutputMap  constitutiveOutputMapBoundary = ConstitutiveOutputTest_CreateConstitutiveOutputMapBoundary<TDim>(evaluateData);
+    NuTo::ConstitutiveInputMap constitutiveInputMapBoundary   = ConstitutiveOutputTest_CreateConstitutiveInputMapBoundary<TDim>();
+    NuTo::ConstitutiveOutputMap constitutiveOutputMapBoundary = ConstitutiveOutputTest_CreateConstitutiveOutputMapBoundary<TDim>(evaluateData);
 
-      MT.SetupStaticData(); //VHIRTHAMTODO Check static data Coeffs in contitutive law or somewhere else --- maybe assert!!!
+    MT.SetupStaticData(); //VHIRTHAMTODO Check static data Coeffs in contitutive law or somewhere else --- maybe assert!!!
 
-      boundaryConstLaw.Evaluate<TDim>(&boundaryElement,0,constitutiveInputMapBoundary,constitutiveOutputMapBoundary);
+    boundaryConstLaw.Evaluate<TDim>(&boundaryElement,0,constitutiveInputMapBoundary,constitutiveOutputMapBoundary);
 
 
-      ConstitutiveOutputTest_CheckAndPrintResultsBoundary(evaluateData);
+    ConstitutiveOutputTest_CheckAndPrintResultsBoundary(evaluateData);
 
 //      boundaryElement.Evaluate(NuTo::ConstitutiveInputMap(), elementOutputMap);
 

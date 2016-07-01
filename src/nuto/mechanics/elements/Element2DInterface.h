@@ -31,8 +31,6 @@ struct EvaluateData
 };
 
 
-class ConstitutiveIOBase;
-
 class Element2DInterface: public ElementBase
 {
 

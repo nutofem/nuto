@@ -102,12 +102,12 @@ NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
     auto eye = Eigen::MatrixXd::Identity(TDim, TDim);
 
     InputData<TDim> inputData;
-    for (auto itInput : rConstitutiveInput)
+    for (auto& itInput : rConstitutiveInput)
     {
         switch(itInput.first)
         {
         case NuTo::Constitutive::Input::TEMPERATURE_GRADIENT:
-            inputData.mTemperatureGradient = (*static_cast<ConstitutiveVector<TDim>*>(itInput.second)).AsVector();
+            inputData.mTemperatureGradient = static_cast<ConstitutiveVector<TDim>*>(itInput.second.get())->AsVector();
             break;
         case NuTo::Constitutive::Input::TEMPERATURE_CHANGE:
             inputData.mTemperatureChange = (*itInput.second)[0];

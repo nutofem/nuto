@@ -32,7 +32,7 @@ NuTo::Error::eError NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const Constit
 
     auto constitutiveOutput = GetConstitutiveOutputMap(rElementOutput, data);
     auto constitutiveInput  = GetConstitutiveInputMap(constitutiveOutput, data);
-    constitutiveInput.insert(rInput.begin(), rInput.end());
+    constitutiveInput.Join(rInput);
 
     for (int theIP = 0; theIP < GetNumIntegrationPoints(); theIP++)
     {
@@ -43,7 +43,7 @@ NuTo::Error::eError NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const Constit
         Error::eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput,constitutiveOutput,theIP);
         if (error != Error::SUCCESSFUL)
             return error;
-        CalculateElementOutputs(rElementOutput, data, theIP);
+        CalculateElementOutputs(rElementOutput, data, constitutiveInput, theIP);
     }
     return Error::SUCCESSFUL;
 }
@@ -130,27 +130,7 @@ NuTo::ConstitutiveInputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutive
 
     for (auto& itInput : constitutiveInputMap)
     {
-        switch (itInput.first)
-        {
-        case Constitutive::Input::ENGINEERING_STRAIN:
-            itInput.second = &(rData.mEngineeringStrain);
-            break;
-
-        case Constitutive::Input::NONLOCAL_EQ_STRAIN:
-            itInput.second = &(rData.mNonlocalEqStrain);
-            break;
-
-        case Constitutive::Input::RELATIVE_HUMIDITY:
-            itInput.second = &(rData.mRelativeHumidity);
-            break;
-
-        case Constitutive::Input::WATER_VOLUME_FRACTION:
-            itInput.second = &(rData.mWaterVolumeFraction);
-            break;
-
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive input " + Constitutive::InputToString(itInput.first) + " cannot be calculated by this element type.");
-        }
+        itInput.second = ConstitutiveIOBase::makeConstitutiveIO<TDim>(itInput.first);
     }
     return constitutiveInputMap;
 }
@@ -202,26 +182,35 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateNMatrixBMatrixDetJacobian(Ev
 template<int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput, EvaluateDataContinuumBoundary<TDim> &rData)
 {
-    for (auto it : rConstitutiveInput)
+    constexpr int voigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
+    for (auto& it : rConstitutiveInput)
     {
         switch (it.first)
         {
         case Constitutive::Input::ENGINEERING_STRAIN:
-            rData.mEngineeringStrain.AsVector() = rData.mB.at(Node::DISPLACEMENTS) * rData.mNodalValues.at(Node::DISPLACEMENTS);
+        {
+            auto& strain = *static_cast<ConstitutiveVector<voigtDim>*>(it.second.get());
+            strain.AsVector() = rData.mB.at(Node::DISPLACEMENTS) * rData.mNodalValues.at(Node::DISPLACEMENTS);
             break;
-
+        }
         case Constitutive::Input::NONLOCAL_EQ_STRAIN:
-            rData.mNonlocalEqStrain.AsScalar() = rData.mN.at(Node::NONLOCALEQSTRAIN) * rData.mNodalValues.at(Node::NONLOCALEQSTRAIN);
+        {
+            auto& nonLocalEqStrain = *static_cast<ConstitutiveScalar*>(it.second.get());
+            nonLocalEqStrain.AsScalar() = rData.mN.at(Node::NONLOCALEQSTRAIN) * rData.mNodalValues.at(Node::NONLOCALEQSTRAIN);
             break;
-
+        }
         case Constitutive::Input::RELATIVE_HUMIDITY:
-            rData.mRelativeHumidity.AsScalar() = rData.mN.at(Node::RELATIVEHUMIDITY) * rData.mNodalValues.at(Node::RELATIVEHUMIDITY);
+        {
+            auto& relativeHumidity = *static_cast<ConstitutiveScalar*>(it.second.get());
+            relativeHumidity.AsScalar() = rData.mN.at(Node::RELATIVEHUMIDITY) * rData.mNodalValues.at(Node::RELATIVEHUMIDITY);
             break;
-
+        }
         case Constitutive::Input::WATER_VOLUME_FRACTION:
-            rData.mWaterVolumeFraction.AsScalar() = rData.mN.at(Node::WATERVOLUMEFRACTION) * rData.mNodalValues.at(Node::WATERVOLUMEFRACTION);
+        {
+            auto& waterVolumeFraction = *static_cast<ConstitutiveScalar*>(it.second.get());
+            waterVolumeFraction.AsScalar() = rData.mN.at(Node::WATERVOLUMEFRACTION) * rData.mNodalValues.at(Node::WATERVOLUMEFRACTION);
             break;
-
+        }
         case Constitutive::Input::TIME_STEP:
         case Constitutive::Input::CALCULATE_STATIC_DATA:
             break;
@@ -233,9 +222,11 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateConstitutiveInputs(const Con
 }
 
 template<int TDim>
-void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
-                                                          EvaluateDataContinuumBoundary<TDim> &rData,
-                                                          int rTheIP) const
+void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputs(
+        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
+        EvaluateDataContinuumBoundary<TDim> &rData,
+        const ConstitutiveInputMap& constitutiveInputMap,
+        int rTheIP) const
 {
     rData.mDetJxWeightIPxSection = CalculateDetJxWeightIPxSection(rData.mDetJacobian, rTheIP); // formerly known as "factor"
 
@@ -244,7 +235,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputs(std::map<Elem
         switch (it.first)
         {
         case Element::INTERNAL_GRADIENT:
-            CalculateElementOutputInternalGradient(it.second->GetBlockFullVectorDouble(), rData, rTheIP);
+            CalculateElementOutputInternalGradient(it.second->GetBlockFullVectorDouble(), rData, constitutiveInputMap, rTheIP);
             break;
 
         case Element::HESSIAN_0_TIME_DERIVATIVE:
@@ -277,9 +268,11 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputs(std::map<Elem
 
 
 template<int TDim>
-void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient,
-                                                                         EvaluateDataContinuumBoundary<TDim> &rData,
-                                                                         int rTheIP) const
+void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputInternalGradient(
+        BlockFullVector<double>& rInternalGradient,
+        EvaluateDataContinuumBoundary<TDim> &rData,
+        const ConstitutiveInputMap& constitutiveInputMap,
+        int rTheIP) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
@@ -291,8 +284,10 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputInternalGradien
         case Node::NONLOCALEQSTRAIN:
         {
             if (rData.mBCType == BoundaryType::ROBIN_INHOMOGENEOUS)
-                rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection / rData.mAlpha * rData.mN.at(Node::NONLOCALEQSTRAIN).transpose() * (rData.mNonlocalEqStrain[0] - rData.mLocalEqStrain[0]);
-
+            {
+                const auto& nonlocalEqStrain = *static_cast<ConstitutiveScalar*>(constitutiveInputMap.at(Constitutive::Input::NONLOCAL_EQ_STRAIN).get());
+                rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection / rData.mAlpha * rData.mN.at(Node::NONLOCALEQSTRAIN).transpose() * (nonlocalEqStrain[0] - rData.mLocalEqStrain[0]);
+            }
             break;
         }
 
@@ -654,41 +649,41 @@ void NuTo::ContinuumBoundaryElement<TDim>::Visualize(VisualizeUnstructuredGrid& 
 #endif
 
 
-template<int TDim>
-void NuTo::ContinuumBoundaryElement<TDim>::CalculateGradientDamageBoundaryConditionParameters(EvaluateDataContinuumBoundary<TDim>& rData, const ConstitutiveBase* rConstitutiveLaw) const
-{
-    //VHIRTHAMTODO Temporary solution --- find better one ---> Problem: If dof NONLOCALEQSTRAIN does not exists, we will get an exception.
-    const std::set<Node::eDof>& DofTypes = mStructure->GetDofStatus().GetDofTypes();
-    if(DofTypes.find(Node::NONLOCALEQSTRAIN)==DofTypes.end())
-        return;
-
-    if (not mInterpolationType->IsActive(Node::NONLOCALEQSTRAIN))
-        return;
-
-    rData.mAlpha = std::sqrt(rData.mNonlocalParameterXi[0]);
-
-    double e0 = rConstitutiveLaw->GetParameterDouble(Constitutive::eConstitutiveParameter::TENSILE_STRENGTH) /
-                rConstitutiveLaw->GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS);
-    if (mBoundaryConditionType == BoundaryType::MACAULAY)
-    {
-        // determine state ...
-        bool switchToNeumann = (rData.mLocalEqStrain[0] > rData.mNonlocalEqStrain[0]) and (rData.mLocalEqStrain[0] > e0);
-
-        // ... and use existing implementations
-        if (switchToNeumann)
-        {
-            rData.mBCType = BoundaryType::NEUMANN_HOMOGENEOUS;
-//            std::cout << "Macaulay Culcin helps out in element " << GetStructure()->ElementGetId(this) << std::endl;
-
-        }
-        else
-            rData.mBCType = BoundaryType::ROBIN_INHOMOGENEOUS;
-    }
-    else
-    {
-        rData.mBCType = mBoundaryConditionType;
-    }
-}
+//template<int TDim>
+//void NuTo::ContinuumBoundaryElement<TDim>::CalculateGradientDamageBoundaryConditionParameters(EvaluateDataContinuumBoundary<TDim>& rData, const ConstitutiveBase* rConstitutiveLaw) const
+//{
+//    //VHIRTHAMTODO Temporary solution --- find better one ---> Problem: If dof NONLOCALEQSTRAIN does not exists, we will get an exception.
+//    const std::set<Node::eDof>& DofTypes = mStructure->GetDofStatus().GetDofTypes();
+//    if(DofTypes.find(Node::NONLOCALEQSTRAIN)==DofTypes.end())
+//        return;
+//
+//    if (not mInterpolationType->IsActive(Node::NONLOCALEQSTRAIN))
+//        return;
+//
+//    rData.mAlpha = std::sqrt(rData.mNonlocalParameterXi[0]);
+//
+//    double e0 = rConstitutiveLaw->GetParameterDouble(Constitutive::eConstitutiveParameter::TENSILE_STRENGTH) /
+//                rConstitutiveLaw->GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS);
+//    if (mBoundaryConditionType == BoundaryType::MACAULAY)
+//    {
+//        // determine state ...
+//        bool switchToNeumann = (rData.mLocalEqStrain[0] > rData.mNonlocalEqStrain[0]) and (rData.mLocalEqStrain[0] > e0);
+//
+//        // ... and use existing implementations
+//        if (switchToNeumann)
+//        {
+//            rData.mBCType = BoundaryType::NEUMANN_HOMOGENEOUS;
+////            std::cout << "Macaulay Culcin helps out in element " << GetStructure()->ElementGetId(this) << std::endl;
+//
+//        }
+//        else
+//            rData.mBCType = BoundaryType::ROBIN_INHOMOGENEOUS;
+//    }
+//    else
+//    {
+//        rData.mBCType = mBoundaryConditionType;
+//    }
+//}
 
 
 namespace NuTo

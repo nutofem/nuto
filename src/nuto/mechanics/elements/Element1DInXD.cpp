@@ -185,11 +185,8 @@ void NuTo::Element1DInXD::CalculateElementOutputHessian0(BlockFullMatrix<double>
 
 }
 
-void NuTo::Element1DInXD::CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<1>& rData, int rTheIP) const
+void NuTo::Element1DInXD::CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<1>& rData, int rTheIP, const ConstitutiveInputMap& constitutiveInputMap) const
 {
-
-
-
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
         switch (dofRow)

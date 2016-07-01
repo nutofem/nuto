@@ -4,7 +4,6 @@
 
 namespace NuTo
 {
-class ConstitutiveIOBase;
 class InterpolationType;
 
 class HeatConduction: public ConstitutiveBase
@@ -109,7 +108,7 @@ public:
     Constitutive::eConstitutiveType GetType() const override;
 
     //! @brief Check parameters of the constitutive relationship.
-    void CheckParameters()const;
+    void CheckParameters() const override;
 
     //! @brief Check compatibility between element type and type of constitutive relationship.
     //! @param rElementType Element type

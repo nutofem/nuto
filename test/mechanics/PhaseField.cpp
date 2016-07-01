@@ -6,6 +6,7 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataHistoryVariableScalar.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include <boost/filesystem.hpp>
 #include <iostream>
 #include <fstream>
@@ -22,20 +23,20 @@ void EvaluatePhaseFieldModel(const Eigen::Vector3d& rStrain, const double rCrack
 
 
     NuTo::EvaluateDataContinuum<2> data;
-    data.mEngineeringStrain.AsVector() = rStrain;
-    data.mDamage[0] = rCrackPhaseField;
     data.mEngineeringStress.AsVector().setZero();
 
-    NuTo::ConstitutiveCalculateStaticData calculateStaticData(NuTo::CalculateStaticData::EULER_BACKWARD);
-
     NuTo::ConstitutiveInputMap myConstitutiveInputMap;
-    myConstitutiveInputMap[NuTo::Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateStaticData;
-    myConstitutiveInputMap[NuTo::Constitutive::Input::ENGINEERING_STRAIN]    = &data.mEngineeringStrain;
-    myConstitutiveInputMap[NuTo::Constitutive::Input::CRACK_PHASE_FIELD]     = &data.mDamage;
+    myConstitutiveInputMap[NuTo::Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<NuTo::ConstitutiveCalculateStaticData>(NuTo::CalculateStaticData::EULER_BACKWARD);
+    myConstitutiveInputMap[NuTo::Constitutive::Input::ENGINEERING_STRAIN]    = NuTo::ConstitutiveIOBase::makeConstitutiveIO<2>(NuTo::Constitutive::Input::ENGINEERING_STRAIN);
+    auto& engineeringStrain= *static_cast<NuTo::EngineeringStrain<2>*>(myConstitutiveInputMap.at(NuTo::Constitutive::Input::ENGINEERING_STRAIN).get());
+    engineeringStrain.AsVector() = rStrain;
+    myConstitutiveInputMap[NuTo::Constitutive::Input::CRACK_PHASE_FIELD]     = NuTo::ConstitutiveIOBase::makeConstitutiveIO<2>(NuTo::Constitutive::Input::CRACK_PHASE_FIELD);
+    auto& damage = *static_cast<NuTo::ConstitutiveScalar*>(myConstitutiveInputMap.at(NuTo::Constitutive::Input::CRACK_PHASE_FIELD).get());
+    damage[0] = rCrackPhaseField;
 
     cout << "Inputs:" << endl;
-    cout << "data.mEngineeringStrain.AsVector()"    << endl << data.mEngineeringStrain.AsVector()   << endl;
-    cout << "data.mDamage.AsScalar()"               << endl << data.mDamage.AsScalar()              << endl;
+    cout << "engineeringStrain.AsVector()"    << endl << engineeringStrain.AsVector()   << endl;
+    cout << "damage.AsScalar()"               << endl << damage.AsScalar()              << endl;
 
 
     NuTo::ConstitutiveStaticDataHistoryVariableScalar staticData;
@@ -51,7 +52,7 @@ void EvaluatePhaseFieldModel(const Eigen::Vector3d& rStrain, const double rCrack
     cout << "data.mEngineeringStress.AsVector()"    << endl << data.mEngineeringStress.AsVector()   << endl;
     cout << "data.mTangentStressStrain.AsMatrix()"    << endl << data.mTangentStressStrain.AsMatrix()   << endl;
 
-    Eigen::Vector3d residual = data.mTangentStressStrain.AsMatrix() * data.mEngineeringStrain - data.mEngineeringStress;
+    Eigen::Vector3d residual = data.mTangentStressStrain.AsMatrix() * engineeringStrain - data.mEngineeringStress;
     cout << "Residual"    << endl << residual   << endl;
 
     assert(residual.norm() < 1e-8);

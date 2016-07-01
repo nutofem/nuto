@@ -642,7 +642,7 @@ NuTo::ConstitutiveStaticDataGradientDamage NuTo::GradientDamageEngineeringStress
     if (itCalculateStaticData == rConstitutiveInput.end())
         throw MechanicsException(__PRETTY_FUNCTION__, "You need to specify the way the static data should be calculated (input list).");
 
-    const auto& calculateStaticData = dynamic_cast<const ConstitutiveCalculateStaticData&>(*itCalculateStaticData->second);
+    const auto& calculateStaticData = *static_cast<const ConstitutiveCalculateStaticData*>(itCalculateStaticData->second.get());
 
     switch (calculateStaticData.GetCalculateStaticData())
     {
@@ -673,15 +673,13 @@ NuTo::ConstitutiveStaticDataGradientDamage NuTo::GradientDamageEngineeringStress
             auto itTimeStep = rConstitutiveInput.find(Constitutive::Input::TIME_STEP);
             if (itTimeStep == rConstitutiveInput.end())
                 throw MechanicsException(__PRETTY_FUNCTION__, "TimeStep input needed for EULER_FORWARD.");
-            const auto& timeStep = *itTimeStep->second;
+            const auto& timeStep = *(itTimeStep->second);
 
             ConstitutiveStaticDataGradientDamage newStaticData;
             double newKappa = ConstitutiveCalculateStaticData::EulerForward(
                     staticData.GetStaticData(1)->AsGradientDamage()->GetKappa(),
                     staticData.GetStaticData(2)->AsGradientDamage()->GetKappa(),
                     timeStep);
-
-//            std::cout << newKappa << std::endl;
 
             newStaticData.SetKappa(newKappa);
             return newStaticData;

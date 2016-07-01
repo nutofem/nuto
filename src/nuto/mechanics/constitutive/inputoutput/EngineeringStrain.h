@@ -40,7 +40,7 @@ public:
     EngineeringStrain& operator=(const EngineeringStrain& )   = default;
     EngineeringStrain& operator=(      EngineeringStrain&&)   = default;
 
-
+    virtual std::unique_ptr<ConstitutiveIOBase> clone() override;
     //! @brief returns I1 - the first strain invariant of the characteristic equation
     //! \f[ \lambda^3 - I_1 \lambda^2 + I_2 \lambda - I_3  \f]
     //! @remark only implemented for TDim = 3

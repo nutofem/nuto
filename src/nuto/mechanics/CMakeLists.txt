@@ -1,6 +1,7 @@
 SET(NuToMechanicsConstitutive_SOURCES
 constitutive/ConstitutiveBase.cpp
 constitutive/inputoutput/ConstitutiveIOBase.cpp
+constitutive/inputoutput/ConstitutiveIOMap.cpp
 constitutive/inputoutput/EngineeringStrain.cpp
 constitutive/inputoutput/EngineeringStress.cpp
 constitutive/inputoutput/EquivalentStrain.cpp

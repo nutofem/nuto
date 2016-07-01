@@ -17,7 +17,7 @@ namespace BoundaryType
 {
 enum eType
 {
-    NOT_SET, NEUMANN_HOMOGENEOUS,            // grad nonlocal eq strain * n = 0
+    NOT_SET, NEUMANN_HOMOGENEOUS,   // grad nonlocal eq strain * n = 0
     ROBIN_INHOMOGENEOUS,            // l * grad nonlocal eq strain * n + nonlocal eq strain = local eq strain
     MACAULAY                        // l * grad nonlocal eq strain * n + (nonlocal eq strain - local eq strain)_- = 0
 
@@ -38,8 +38,10 @@ public:
 
     //! @brief calculates output data for the element
     //! @param rInput ... constitutive input map for the constitutive law
-    //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
-    Error::eError Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
+    //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness)
+    //! and internal force (which includes inertia terms)
+    Error::eError Evaluate(const ConstitutiveInputMap& rInput,
+            std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
 
     //! @brief returns the enum (type of the element)
     //! @return enum
@@ -47,7 +49,6 @@ public:
     {
         return Element::eElementType::CONTINUUMBOUNDARYELEMENT;
     }
-
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
@@ -147,7 +148,8 @@ public:
     }
 
     //! brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
-    //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
+    //! this routine is used, if e.g. the data type of a node has changed,
+    //! but the restraints, elements etc. are still identical
     void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr) override
     {
         throw MechanicsException(__PRETTY_FUNCTION__,"Probably not needed.");
@@ -213,36 +215,48 @@ public:
 
 
 #ifdef ENABLE_VISUALIZE
-    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) override;
+    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize,
+            const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) override;
 #endif // ENABLE_VISUALIZE
 
 protected:
 
-//! @brief ... just for serialization
+    //! @brief ... just for serialization
     ContinuumBoundaryElement()
     {}
 
 
     void ExtractAllNecessaryDofValues(EvaluateDataContinuumBoundary<TDim> &rData);
 
-    ConstitutiveOutputMap GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput, EvaluateDataContinuumBoundary<TDim>& rData) const;
+    ConstitutiveOutputMap GetConstitutiveOutputMap(std::map<Element::eOutput,
+            std::shared_ptr<ElementOutputBase>>& rElementOutput, EvaluateDataContinuumBoundary<TDim>& rData) const;
 
-    void FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullVector<double>& rInternalGradient, EvaluateDataContinuumBoundary<TDim>& rData) const;
-    void FillConstitutiveOutputMapHessian0(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian0, EvaluateDataContinuumBoundary<TDim>& rData) const;
-    void FillConstitutiveOutputMapHessian1(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian0, EvaluateDataContinuumBoundary<TDim>& rData) const;
-    void FillConstitutiveOutputMapIpData  (ConstitutiveOutputMap& rConstitutiveOutput, ElementOutputIpData& rIpData, EvaluateDataContinuumBoundary<TDim>& rData) const;
+    void FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput, 
+            BlockFullVector<double>& rInternalGradient, EvaluateDataContinuumBoundary<TDim>& rData) const;
+    void FillConstitutiveOutputMapHessian0(ConstitutiveOutputMap& rConstitutiveOutput,
+            BlockFullMatrix<double>& rHessian0, EvaluateDataContinuumBoundary<TDim>& rData) const;
+    void FillConstitutiveOutputMapHessian1(ConstitutiveOutputMap& rConstitutiveOutput,
+            BlockFullMatrix<double>& rHessian0, EvaluateDataContinuumBoundary<TDim>& rData) const;
+    void FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput,
+            ElementOutputIpData& rIpData, EvaluateDataContinuumBoundary<TDim>& rData) const;
 
-    ConstitutiveInputMap GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput, EvaluateDataContinuumBoundary<TDim>& rData) const;
+    ConstitutiveInputMap GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput,
+            EvaluateDataContinuumBoundary<TDim>& rData) const;
 
-    void CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput, EvaluateDataContinuumBoundary<TDim> &rData);
+    void CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput,
+            EvaluateDataContinuumBoundary<TDim> &rData);
 
-    void CalculateElementOutputs(   std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
-                                    EvaluateDataContinuumBoundary<TDim> &rData,
-                                    int rTheIP) const;
+    void CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
+                                 EvaluateDataContinuumBoundary<TDim> &rData, 
+                                 const ConstitutiveInputMap& constitutiveInputMap, int rTheIP) const;
 
-    void CalculateElementOutputInternalGradient(    BlockFullVector<double>& rInternalGradient, EvaluateDataContinuumBoundary<TDim> &rData, int rTheIP) const;
-    void CalculateElementOutputHessian0(            BlockFullMatrix<double>& rHessian0,         EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP) const;
-    void CalculateElementOutputIpData(              ElementOutputIpData&     rIpData,           EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP) const;
+    void CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient,
+            EvaluateDataContinuumBoundary<TDim> &rData,
+            const ConstitutiveInputMap& constitutiveInputMap, int rTheIP) const;
+    void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0,
+            EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP) const;
+    void CalculateElementOutputIpData(ElementOutputIpData& rIpData,
+            EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP) const;
 
     void CalculateNMatrixBMatrixDetJacobian(EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP) const;
 
@@ -250,24 +264,23 @@ protected:
 
     double CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const;
 
-    void CalculateGradientDamageBoundaryConditionParameters(EvaluateDataContinuumBoundary<TDim>& rData, const ConstitutiveBase* rConstitutiveLaw) const;
-
-//! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
+    //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
     void ReorderNodes() override
     {
         throw MechanicsException(__PRETTY_FUNCTION__,"Probably not needed.");
     }
 
-//! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
+    //! @brief ... check if the element is properly defined
+    //! (check node dofs, nodes are reordered if the element length/area/volum is negative)
     void CheckElement() override
     {
         throw MechanicsException(__PRETTY_FUNCTION__,"Probably not needed.");
     }
 
-//The real boundary element that is attached to the virtual boundary element
+    //The real boundary element that is attached to the virtual boundary element
     const ContinuumElement<TDim>* mBaseElement;
 
-// surface id
+    // surface id
     int mSurfaceId;
 
     BoundaryType::eType mBoundaryConditionType;

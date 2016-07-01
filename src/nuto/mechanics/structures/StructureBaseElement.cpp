@@ -1067,9 +1067,8 @@ void NuTo::StructureBase::ElementTotalExtrapolateStaticData()
     std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
     elementOutput[Element::UPDATE_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
 
-    ConstitutiveCalculateStaticData calculateStaticData(CalculateStaticData::EULER_FORWARD);
     ConstitutiveInputMap input;
-    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateStaticData;
+    input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(CalculateStaticData::EULER_BACKWARD);
 
 #ifdef _OPENMP
     if (mNumProcessors!=0)

@@ -8,7 +8,6 @@ namespace NuTo
 
 class NodeBase;
 class SectionBase;
-class ConstitutiveIOBase;
 class ElementOutputBase;
 class ElementOutputIpData;
 
@@ -196,13 +195,14 @@ protected:
     //! @remark: (N0,x & N0,y \\ ...)   --> (N0,x & 0 \\ 0 & N0,y \\ N0,y & N0,x)
     void BlowToBMatrixEngineeringStrain(Eigen::MatrixXd& rDerivativeShapeFunctions) const;
 
-    void CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput, EvaluateDataContinuum<TDim>& rData);
+    void CalculateConstitutiveInputs(ConstitutiveInputMap& rConstitutiveInput, EvaluateDataContinuum<TDim>& rData);
 
     void CalculateElementOutputs(
             std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
-            EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
+            EvaluateDataContinuum<TDim>& rData, int rTheIP, const ConstitutiveInputMap& constitutiveInputMap) const;
 
-    virtual void CalculateElementOutputInternalGradient(    BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
+    virtual void CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient,
+            EvaluateDataContinuum<TDim>& rData, int rTheIP, const ConstitutiveInputMap& constitutiveInputMap) const;
     virtual void CalculateElementOutputHessian0(            BlockFullMatrix<double>& rHessian0,         EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
     virtual void CalculateElementOutputHessian1(            BlockFullMatrix<double>& rHessian1,         EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
     virtual void CalculateElementOutputHessian2(            BlockFullMatrix<double>& rHessian2,         EvaluateDataContinuum<TDim>& rData, int rTheIP) const;

@@ -21,7 +21,7 @@ def interpolate(structure, function):
         coordinates.convrtMatrixToNumpy(x)
         value = function(x[0][0])
         structure.NodeSetTemperature(i, value)
-        #structure.NodeSetTemperature(i, 1, 2.0)
+        structure.NodeSetTemperature(i, 1, 2.0)
     return structure
 
 def create_structure(number_of_time_derivatives=0):

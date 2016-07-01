@@ -9,7 +9,6 @@
 
 namespace NuTo
 {
-class ConstitutiveIOBase;
 class InterpolationType;
 
 //! @brief ... linear elastic material model
@@ -164,7 +163,7 @@ public:
     Constitutive::eConstitutiveType GetType() const override;
 
     //! @brief ... check parameters of the constitutive relationship
-    void CheckParameters()const;
+    void CheckParameters() const override;
 
     //! @brief ... check compatibility between element type and type of constitutive relationship
     //! @param rElementType ... element type

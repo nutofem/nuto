@@ -709,8 +709,8 @@ NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian(Structu
     evaluateMap[rOutput] = &hessian;
 
     ConstitutiveInputMap input;
-    ConstitutiveCalculateStaticData calculateImplicitly(CalculateStaticData::EULER_BACKWARD);
-    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateImplicitly;
+    input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
+            CalculateStaticData::EULER_BACKWARD);
 
     Evaluate(input, evaluateMap);
 
@@ -729,8 +729,8 @@ NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalInternalGradien
     evaluateMap[StructureEnum::INTERNAL_GRADIENT] = &internalGradient;
 
     ConstitutiveInputMap input;
-    ConstitutiveCalculateStaticData calculateImplicitly(CalculateStaticData::EULER_BACKWARD);
-    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateImplicitly;
+    input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
+            CalculateStaticData::EULER_BACKWARD);
 
     Evaluate(input, evaluateMap);
 

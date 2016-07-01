@@ -6,14 +6,11 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/vector.hpp>
-#include <boost/ptr_container/serialize_ptr_map.hpp>
 #else
-#include <boost/ptr_container/ptr_map.hpp>
 #include <vector>
 #endif //ENABLE_SERIALIZATION
 
 #include <map>
-#include <memory>
 
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h" // for the Input/Output list typedefs
 
@@ -27,7 +24,8 @@
 #include "nuto/mechanics/interpolationtypes/InterpolationType.h"
 
 #ifdef ENABLE_VISUALIZE
-#include <list>
+#include "nuto/visualize/VisualizeBase.h"
+#include "nuto/visualize/VisualizeUnstructuredGrid.h"
 #endif // ENABLE_VISUALIZE
 
 namespace NuTo

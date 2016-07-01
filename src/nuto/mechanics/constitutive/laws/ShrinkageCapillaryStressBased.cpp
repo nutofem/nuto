@@ -84,7 +84,7 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStressBased::EvaluateShrinkageCapill
 {
     double relativeHumidity     = std::numeric_limits<double>::min();
     double waterVolumeFraction  = std::numeric_limits<double>::min();
-    for (auto itInput : rConstitutiveInput)
+    for (auto& itInput : rConstitutiveInput)
     {
         switch(itInput.first)
         {

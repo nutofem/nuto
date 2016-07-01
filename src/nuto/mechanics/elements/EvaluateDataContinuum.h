@@ -20,7 +20,6 @@ public:
     // Mechanics
     // --------------------------------------------------------------------------------------------
 
-    EngineeringStrain<TDim> mEngineeringStrain;
     EngineeringStress<TDim> mEngineeringStress;
     ConstitutiveMatrix<VoigtDim, VoigtDim> mTangentStressStrain;
 
@@ -33,7 +32,6 @@ public:
 
     ConstitutiveScalar mDamage;
     ConstitutiveScalar mLocalEqStrain;
-    ConstitutiveScalar mNonlocalEqStrain;
     ConstitutiveScalar mNonlocalParameterXi;
     ConstitutiveVector<VoigtDim> mTangentStressNonlocalEqStrain;
     ConstitutiveVector<VoigtDim> mTangentLocalEqStrainStrain;
@@ -56,13 +54,6 @@ public:
     // Moisture Transport
     // --------------------------------------------------------------------------------------------
 
-    //input
-    ConstitutiveScalar          mRelativeHumidity;
-    ConstitutiveScalar          mRelativeHumidity_dt1;
-    ConstitutiveVector<TDim>    mRelativeHumidity_Gradient;
-    ConstitutiveScalar          mWaterVolumeFraction;
-    ConstitutiveScalar          mWaterVolumeFraction_dt1;
-    ConstitutiveVector<TDim>    mWaterVolumeFraction_Gradient;
     //output - internal gradient
     ConstitutiveVector<TDim>    mInternalGradientRH_B;
     ConstitutiveScalar          mInternalGradientRH_N;
@@ -86,11 +77,8 @@ public:
     // ------------------------------------------------------------------------
     ConstitutiveMatrix<TDim, TDim> mTangentHeatFluxTemperatureGradient;
     ConstitutiveScalar mTangentHeatTemperature;
-    ConstitutiveScalar mTemperature;
     ConstitutiveScalar mHeatChange;
-    ConstitutiveScalar mTemperatureChange;
     ConstitutiveVector<TDim> mHeatFlux;
-    ConstitutiveVector<TDim> mTemperatureGradient;
 
     // Thermal strains
     ConstitutiveVector<VoigtDim> mDStressDTemperature;
@@ -112,8 +100,6 @@ public:
     //! However, it is harder to put them into one container. Maybe shared_ptr<Eigen::MatrixBase>?
     std::map<Node::eDof, Eigen::MatrixXd> mB;
     std::map<Node::eDof, const Eigen::MatrixXd*> mN;
-
-
 
     // Misc
     // --------------------------------------------------------------------------------------------

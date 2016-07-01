@@ -1,5 +1,11 @@
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 
+template<int TDim>
+std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::EngineeringStrain<TDim>::clone()
+{
+    return std::make_unique<EngineeringStrain<TDim>>(*this);
+}
+
 template<>
 template<int U, typename std::enable_if<U == 3, int>::type>
 double NuTo::EngineeringStrain<3>::InvariantI1() const

@@ -42,66 +42,44 @@ NuTo::Error::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit(N
 
     // Need deep copy of all modified inputs, otherwise the modifications will possibly effect other constitutive laws that are coupled in a additive input or output law
     // So far only the engineering strain input is modified. If there are more modified Inputs in the future, a more general allocation method should be chosen
-    EngineeringStrain<TDim> engineeringStrain;
+    EngineeringStrain<TDim>* engineeringStrain = nullptr;
     ConstitutiveVector<VoigtDim> d_EngineeringStrain_D_RH;
     ConstitutiveVector<VoigtDim> d_EngineeringStrain_D_WV;
     ConstitutiveVector<VoigtDim> d_EngineeringStrain_D_Temperature;
 
-    engineeringStrain.setZero();
     d_EngineeringStrain_D_RH.setZero();
     d_EngineeringStrain_D_WV.setZero();
     d_EngineeringStrain_D_Temperature.setZero();
 
-    for (auto itInput : rConstitutiveInput)
+    copiedInputMap.Join(rConstitutiveInput);
+
+    if (copiedInputMap.find(Constitutive::Input::ENGINEERING_STRAIN) != copiedInputMap.end())
     {
-        if(mModifiedInputs.find(itInput.first) != mModifiedInputs.end())
+        switch(TDim)
         {
-            //deep copy
-            switch(itInput.first)
-            {
-            case Constitutive::Input::ENGINEERING_STRAIN:
-                switch(TDim)
-                {
-                case 1:
-                    engineeringStrain.AsEngineeringStrain1D() -= itInput.second->AsEngineeringStrain1D();
-                    break;
-                case 2:
-                    engineeringStrain.AsEngineeringStrain2D() -= itInput.second->AsEngineeringStrain2D();
-                    break;
-                case 3:
-                    engineeringStrain.AsEngineeringStrain3D() -= itInput.second->AsEngineeringStrain3D();
-                    break;
-
-                default:
-                    throw MechanicsException(__PRETTY_FUNCTION__,"invalid dimension");
-                }
-                copiedInputMap[Constitutive::Input::ENGINEERING_STRAIN] = &engineeringStrain;
-                break;
-
-            default:
-                throw MechanicsException(__PRETTY_FUNCTION__,std::string("No method provided to create a deep copy of input with enum: ")+Constitutive::InputToString(itInput.first));
-            }
+        case 1:
+            copiedInputMap.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain1D() *=-1.0;
+            break;
+        case 2:
+            copiedInputMap.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain2D() *=-1.0;
+            break;
+        case 3:
+            copiedInputMap.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain3D() *=-1.0;
+            break;
+        default:
+            throw MechanicsException(__PRETTY_FUNCTION__,"invalid dimension");
         }
-        else
-        {
-            //shallow copy
-            copiedInputMap[itInput.first] = itInput.second;
-        }
+        engineeringStrain = static_cast<EngineeringStrain<TDim>*>(copiedInputMap.at(Constitutive::Input::ENGINEERING_STRAIN).get()); 
     }
-
-
-
-
 
     for(unsigned int i=0; i<mConstitutiveLawsModInput.size(); ++i)
     {
-
         // Generate modified output map for constitutive law
         NuTo::ConstitutiveOutputMap modifiedOutputMap = rConstitutiveOutput;
 
         if(copiedInputMap.find(Constitutive::Input::ENGINEERING_STRAIN) != copiedInputMap.end())
         {
-                modifiedOutputMap[Constitutive::Output::ENGINEERING_STRAIN] = &engineeringStrain;
+            modifiedOutputMap[Constitutive::Output::ENGINEERING_STRAIN] = copiedInputMap.at(Constitutive::Input::ENGINEERING_STRAIN).get();
         }
         if(modifiedOutputMap.find(Constitutive::Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY) != modifiedOutputMap.end() &&
                                   mConstitutiveLawsModInput[i].second == Constitutive::Input::ENGINEERING_STRAIN)
@@ -124,26 +102,14 @@ NuTo::Error::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit(N
         switch(TDim)
         {
         case 1:
-            error = mConstitutiveLawsModInput[i].first->Evaluate1D(rElement,
-                                                                   rIp,
-                                                                   rConstitutiveInput,
-                                                                   modifiedOutputMap);
+            error = mConstitutiveLawsModInput[i].first->Evaluate1D(rElement, rIp, rConstitutiveInput, modifiedOutputMap);
             break;
-
         case 2:
-            error = mConstitutiveLawsModInput[i].first->Evaluate2D(rElement,
-                                                                   rIp,
-                                                                   rConstitutiveInput,
-                                                                   modifiedOutputMap);
+            error = mConstitutiveLawsModInput[i].first->Evaluate2D(rElement, rIp, rConstitutiveInput, modifiedOutputMap);
             break;
-
         case 3:
-            error = mConstitutiveLawsModInput[i].first->Evaluate3D(rElement,
-                                                                   rIp,
-                                                                   rConstitutiveInput,
-                                                                   modifiedOutputMap);
+            error = mConstitutiveLawsModInput[i].first->Evaluate3D(rElement, rIp, rConstitutiveInput, modifiedOutputMap);
             break;
-
         default:
             throw MechanicsException(__PRETTY_FUNCTION__,"invalid dimension");
         }
@@ -152,33 +118,23 @@ NuTo::Error::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit(N
             throw MechanicsException(__PRETTY_FUNCTION__,"Attached constitutive law returned an error code. Can't handle this");
         }
     }
-    engineeringStrain.AsVector() = engineeringStrain.AsVector() * -1;
+
+    if (engineeringStrain != nullptr)
+    {
+        engineeringStrain->AsVector() = engineeringStrain->AsVector() * -1;
+    }
 
     switch(TDim)
     {
     case 1:
-        error = mConstitutiveLawOutput->Evaluate1D(rElement,
-                                                   rIp,
-                                                   copiedInputMap,
-                                                   rConstitutiveOutput);
+        error = mConstitutiveLawOutput->Evaluate1D(rElement, rIp, copiedInputMap, rConstitutiveOutput);
         break;
-
     case 2:
-        error = mConstitutiveLawOutput->Evaluate2D(rElement,
-                                                   rIp,
-                                                   copiedInputMap,
-                                                   rConstitutiveOutput);
+        error = mConstitutiveLawOutput->Evaluate2D(rElement, rIp, copiedInputMap, rConstitutiveOutput);
         break;
-
     case 3:
-        error = mConstitutiveLawOutput->Evaluate3D(rElement,
-                                                   rIp,
-                                                   copiedInputMap,
-                                                   rConstitutiveOutput);
+        error = mConstitutiveLawOutput->Evaluate3D(rElement, rIp, copiedInputMap, rConstitutiveOutput);
         break;
-
-
-
     default:
         throw MechanicsException(__PRETTY_FUNCTION__,"invalid dimension");
     }
@@ -189,7 +145,7 @@ NuTo::Error::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit(N
         {
         case Constitutive::Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
         {
-            assert(rConstitutiveOutput.find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)!=rConstitutiveOutput.end());
+            assert(rConstitutiveOutput.find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN) != rConstitutiveOutput.end());
             ConstitutiveMatrix<VoigtDim, VoigtDim>& tangentStressStrain = *(static_cast<ConstitutiveMatrix<VoigtDim, VoigtDim>*>(rConstitutiveOutput.find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)->second));
             if(d_EngineeringStrain_D_RH.GetIsCalculated() == false)
                 throw MechanicsException(__PRETTY_FUNCTION__,std::string("Necessary value to determine ")+Constitutive::OutputToString(itOutput.first)+" was not calculated!");
@@ -224,9 +180,9 @@ NuTo::Error::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit(N
 
 
 
-
-NuTo::ConstitutiveInputMap NuTo::AdditiveInputExplicit::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
-                                                                                     const NuTo::InterpolationType &rInterpolationType) const
+NuTo::ConstitutiveInputMap NuTo::AdditiveInputExplicit::GetConstitutiveInputs(
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
+        const NuTo::InterpolationType &rInterpolationType) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
@@ -236,13 +192,12 @@ NuTo::ConstitutiveInputMap NuTo::AdditiveInputExplicit::GetConstitutiveInputs(co
         ConstitutiveInputMap singleLawInputMap = mConstitutiveLawsModInput[i].first->GetConstitutiveInputs(rConstitutiveOutput,
                                                                                                            rInterpolationType);
 
-        constitutiveInputMap.insert(singleLawInputMap.begin(),singleLawInputMap.end());
+        constitutiveInputMap.Join(singleLawInputMap);
     }
 
-    ConstitutiveInputMap singleLawInputMap = mConstitutiveLawOutput->GetConstitutiveInputs(rConstitutiveOutput,
+    ConstitutiveInputMap outputLawInputMap = mConstitutiveLawOutput->GetConstitutiveInputs(rConstitutiveOutput,
                                                                                            rInterpolationType);
-
-    constitutiveInputMap.insert(singleLawInputMap.begin(),singleLawInputMap.end());
+    constitutiveInputMap.Join(outputLawInputMap);
 
     return constitutiveInputMap;
 }

@@ -17,12 +17,8 @@ struct EvaluateDataContinuumBoundary
 public:
     static constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
 
-//    // Mechanics
-//    // --------------------------------------------------------------------------------------------
-
-    EngineeringStrain<TDim> mEngineeringStrain;
-//    EngineeringStress<TDim> mEngineeringStress;
-//    ConstitutiveMatrix<VoigtDim, VoigtDim> mTangentStressStrain;
+    // Mechanics
+    // --------------------------------------------------------------------------------------------
 
     EngineeringStrain<3> mEngineeringStrainVisualize;
     EngineeringStrain<3> mEngineeringPlasticStrainVisualize;
@@ -31,19 +27,14 @@ public:
     ConstitutiveScalar mDamage;
 
     ConstitutiveScalar mLocalEqStrain;
-    ConstitutiveScalar mNonlocalEqStrain;
     ConstitutiveScalar mNonlocalParameterXi;
     ConstitutiveVector<VoigtDim> mTangentLocalEqStrainStrain;
     ConstitutiveScalar mExtrapolationError;
 
     BoundaryType::eType mBCType;
 
-//    // Moisture Transport
-//    // --------------------------------------------------------------------------------------------
-
-//    //input
-    ConstitutiveScalar          mRelativeHumidity;
-    ConstitutiveScalar          mWaterVolumeFraction;
+    // Moisture Transport
+    // --------------------------------------------------------------------------------------------
     //output - internal gradient
     ConstitutiveScalar          mInternalGradientRH_Boundary_N;
     ConstitutiveScalar          mInternalGradientWV_Boundary_N;
@@ -52,12 +43,11 @@ public:
     ConstitutiveScalar          mInternalGradientWV_dWV_Boundary_NN_H0;
 
 
-//    // Nodal Values
-//    // --------------------------------------------------------------------------------------------
+    // Nodal Values
+    // --------------------------------------------------------------------------------------------
 
     std::map<Node::eDof, Eigen::VectorXd> mNodalValues;
     std::map<Node::eDof, Eigen::VectorXd> mNodalValues_dt1;
-
 
     // Shape Functions
     // --------------------------------------------------------------------------------------------
@@ -69,14 +59,11 @@ public:
     std::map<Node::eDof, Eigen::MatrixXd> mB;
     std::map<Node::eDof, Eigen::MatrixXd> mN;
 
-
-
-//    // Misc
-//    // --------------------------------------------------------------------------------------------
+    // Misc
+    // --------------------------------------------------------------------------------------------
     double mAlpha;                  // parameter for robin boundary condition
     double mDetJxWeightIPxSection;
     double mDetJacobian = 0;
 
 };
-
 } /* namespace NuTo */
