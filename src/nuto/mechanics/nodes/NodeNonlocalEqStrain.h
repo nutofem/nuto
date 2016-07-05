@@ -1,12 +1,6 @@
-/*
- * NodeNonlocalEqStrain.h
- *
- *  Created on: 25 May 2015
- *      Author: phuschke
- */
 
-#ifndef NODENONLOCALEQSTRAIN_H_
-#define NODENONLOCALEQSTRAIN_H_
+
+#pragma once
 
 #include "nuto/mechanics/nodes/NodeBase.h"
 
@@ -87,5 +81,3 @@ private:
 } /* namespace NuTo */
 
 
-
-#endif /* NODENONLOCALEQSTRAIN_H_ */

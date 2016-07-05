@@ -27,6 +27,7 @@ public:
         LOCAL_EQ_STRAIN,                //!< visualize local equivalent strains
 		TOTAL_INELASTIC_EQ_STRAIN,		//!< visualize inelastic equivalent strain
         DAMAGE,                         //!< visualize damage
+        DAMAGE_PHASE_FIELD,             //!< visualize damage
         ENGINEERING_PLASTIC_STRAIN,     //!< visualize engineering plastic strain
         CONSTITUTIVE,                   //!< visualize constitutive id
         SECTION,                        //!< visualize section id

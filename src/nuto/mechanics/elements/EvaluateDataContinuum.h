@@ -39,6 +39,13 @@ public:
     ConstitutiveVector<VoigtDim> mTangentLocalEqStrainStrain;
     ConstitutiveScalar mExtrapolationError;
 
+    // Phase field models
+    // --------------------------------------------------------------------------------------------
+
+    ConstitutiveScalar mElasticEnergyDensity;
+    ConstitutiveVector<VoigtDim> mTangentElasticEnergyStrain;
+    ConstitutiveVector<VoigtDim> mEngineeringStressDamagedPart;
+
     // Shrinkage (stress based)
     // --------------------------------------------------------------------------------------------
 

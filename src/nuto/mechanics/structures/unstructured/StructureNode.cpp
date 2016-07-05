@@ -191,6 +191,12 @@ void NuTo::Structure::NodeInfo(int rVerboseLevel)const
                     mLogger << "\t" << it->second->GetRelativeHumidity() ;
                     mLogger << "("<< it->second->GetDofRelativeHumidity()<< ")" ;
                 }
+                if (it->second->GetNumDamage()>0 )
+                {
+                    mLogger << "\t damage:";
+                    mLogger << "\t" << it->second->GetDamage() ;
+                    mLogger << "("<< it->second->GetDofDamage()<< ")" ;
+                }
 			}
 			mLogger << "\n";
     	}
@@ -276,13 +282,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
         switch (mDimension)
         {
         case 1:
-            nodePtr = new NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 0, 0>();
+            nodePtr = new NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0>();
             break;
         case 2:
-            nodePtr = new NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 0, 0, 0>();
+            nodePtr = new NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0>();
             break;
         case 3:
-            nodePtr = new NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 0, 0, 0>();
+            nodePtr = new NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0>();
             break;
         default:
             throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -296,13 +302,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 0, 1, 0, 0, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 0, 2, 0, 0, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 0, 3, 0, 0, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -312,13 +318,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 1, 1, 0, 0, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 1, 2, 0, 0, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 1, 2, 0, 0, 0, 0, 0, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 1, 3, 0, 0, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -328,13 +334,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 2, 1, 0, 0, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 2, 2, 0, 0, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 2, 3, 0, 0, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -352,13 +358,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 0, 1, 0, 0, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 0, 2, 1, 0, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 0, 3, 3, 0, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 0, 3, 3, 0, 0, 0, 0, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -368,13 +374,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 2, 1, 0, 0, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 2, 2, 1, 0, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 2, 3, 3, 0, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 2, 3, 3, 0, 0, 0, 0, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -392,13 +398,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 0, 0, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 0, 0, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 0, 0, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -408,13 +414,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 1, 0, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 1, 0, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 1, 0, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -424,13 +430,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 2, 0, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 2, 0, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 2, 0, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 2, 0, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 2, 0, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 2, 0, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -448,13 +454,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 0, 1, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 0, 2, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 0, 2, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 0, 3, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 0, 3, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -464,13 +470,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 1, 1, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 1, 2, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 1, 2, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 1, 3, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 1, 3, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -480,13 +486,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 2, 1, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 2, 1, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 2, 2, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 2, 2, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 2, 3, 0, 1, 0, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 2, 3, 0, 1, 0, 0, 0, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -522,13 +528,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 0, 1, 0, 0, 2, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 0, 2, 0, 0, 2, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 0, 2, 0, 0, 2, 0, 0, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 0, 3, 0, 0, 2, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 0, 3, 0, 0, 2, 0, 0, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -538,13 +544,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 2, 1, 0, 0, 2, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 2, 1, 0, 0, 2, 0, 0, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 2, 2, 0, 0, 2, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 2, 2, 0, 0, 2, 0, 0, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 2, 3, 0, 0, 2, 0, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 2, 3, 0, 0, 2, 0, 0, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -562,13 +568,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 0, 1, 0, 0, 0, 1, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 0, 2, 0, 0, 0, 3, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 0, 2, 0, 0, 0, 3, 0, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 0, 3, 0, 0, 0, 6, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 0, 3, 0, 0, 0, 6, 0, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -578,13 +584,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 2, 1, 0, 0, 0, 1, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 2, 1, 0, 0, 0, 1, 0, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 2, 2, 0, 0, 0, 3, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 2, 2, 0, 0, 0, 3, 0, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 2, 3, 0, 0, 0, 6, 0, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 2, 3, 0, 0, 0, 6, 0, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -602,13 +608,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 0, 1, 0, 0, 0, 0, 1, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 0, 2, 0, 0, 0, 0, 1, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 0, 2, 0, 0, 0, 0, 1, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 0, 3, 0, 0, 0, 0, 1, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 0, 3, 0, 0, 0, 0, 1, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -619,13 +625,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 2, 1, 0, 0, 0, 0, 1, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 2, 1, 0, 0, 0, 0, 1, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 2, 2, 0, 0, 0, 0, 1, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 2, 2, 0, 0, 0, 0, 1, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 2, 3, 0, 0, 0, 0, 1, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 2, 3, 0, 0, 0, 0, 1, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -643,13 +649,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 1, 0, 0>();
+                nodePtr = new NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 1, 0, 0>();
+                nodePtr = new NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 1, 0, 0>();
+                nodePtr = new NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -660,13 +666,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             //              switch (mDimension)
             //              {
             //              case 1:
-            //                  nodePtr = new NuTo::NodeDof<1,2,0,0,0,0,0,1,0,0>();
+            //                  nodePtr = new NuTo::NodeDof<1,2,0,0,0,0,0,1,0,0, 0>();
             //                  break;
             //              case 2:
-            //                  nodePtr = new NuTo::NodeDof<2,2,0,0,0,0,0,1,0,0>();
+            //                  nodePtr = new NuTo::NodeDof<2,2,0,0,0,0,0,1,0,0, 0>();
             //                  break;
             //              case 3:
-            //                  nodePtr = new NuTo::NodeDof<3,2,0,0,0,0,0,1,0,0>();
+            //                  nodePtr = new NuTo::NodeDof<3,2,0,0,0,0,0,1,0,0, 0>();
             //                  break;
             //              default:
             //                  throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -685,13 +691,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 0, 1, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 0, 2, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<2, 0, 2, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 0, 3, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<3, 0, 3, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -701,13 +707,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 1, 1, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 1, 2, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<2, 1, 2, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 1, 3, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<3, 1, 3, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -717,13 +723,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 2, 1, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<1, 2, 1, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 2, 2, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<2, 2, 2, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 2, 3, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<3, 2, 3, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -741,13 +747,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -757,13 +763,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 1, 0, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 1, 0, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<2, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 1, 0, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<3, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -773,13 +779,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 2, 0, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<1, 2, 0, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 2, 0, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<2, 2, 0, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 2, 0, 0, 0, 0, 0, 0, 1, 1>();
+                nodePtr = new NuTo::NodeDof<3, 2, 0, 0, 0, 0, 0, 0, 1, 1, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -797,13 +803,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 0, 1>();
+                nodePtr = new NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 0, 0, 1>();
+                nodePtr = new NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 0, 0, 1>();
+                nodePtr = new NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -813,13 +819,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 1, 0, 0, 0, 0, 0, 0, 0, 1>();
+                nodePtr = new NuTo::NodeDof<1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 1, 0, 0, 0, 0, 0, 0, 0, 1>();
+                nodePtr = new NuTo::NodeDof<2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 1, 0, 0, 0, 0, 0, 0, 0, 1>();
+                nodePtr = new NuTo::NodeDof<3, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -829,13 +835,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 2, 0, 0, 0, 0, 0, 0, 0, 1>();
+                nodePtr = new NuTo::NodeDof<1, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 2, 0, 0, 0, 0, 0, 0, 0, 1>();
+                nodePtr = new NuTo::NodeDof<2, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 2, 0, 0, 0, 0, 0, 0, 0, 1>();
+                nodePtr = new NuTo::NodeDof<3, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -853,13 +859,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 1, 0>();
+                nodePtr = new NuTo::NodeDof<1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 0, 1, 0>();
+                nodePtr = new NuTo::NodeDof<2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 0, 1, 0>();
+                nodePtr = new NuTo::NodeDof<3, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -869,13 +875,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 1, 0, 0, 0, 0, 0, 0, 1, 0>();
+                nodePtr = new NuTo::NodeDof<1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 1, 0, 0, 0, 0, 0, 0, 1, 0>();
+                nodePtr = new NuTo::NodeDof<2, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 1, 0, 0, 0, 0, 0, 0, 1, 0>();
+                nodePtr = new NuTo::NodeDof<3, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -885,13 +891,13 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             switch (mDimension)
             {
             case 1:
-                nodePtr = new NuTo::NodeDof<1, 2, 0, 0, 0, 0, 0, 0, 1, 0>();
+                nodePtr = new NuTo::NodeDof<1, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0>();
                 break;
             case 2:
-                nodePtr = new NuTo::NodeDof<2, 2, 0, 0, 0, 0, 0, 0, 1, 0>();
+                nodePtr = new NuTo::NodeDof<2, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0>();
                 break;
             case 3:
-                nodePtr = new NuTo::NodeDof<3, 2, 0, 0, 0, 0, 0, 0, 1, 0>();
+                nodePtr = new NuTo::NodeDof<3, 2, 0, 0, 0, 0, 0, 0, 1, 0, 0>();
                 break;
             default:
                 throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
@@ -902,6 +908,47 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
         }
         break;
         // Moisture Transport --- Ende
+    case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::DAMAGE):
+        // coordinates and displacements and damage
+        switch (mNumTimeDerivatives)
+        {
+        case 0:
+            switch (mDimension)
+            {
+            case 1:
+                nodePtr = new NuTo::NodeDof<1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1>();
+                break;
+            case 2:
+                nodePtr = new NuTo::NodeDof<2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1>();
+                break;
+            case 3:
+                nodePtr = new NuTo::NodeDof<3, 0, 3, 0, 0, 0, 0, 0, 0, 0, 1>();
+                break;
+            default:
+                throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+            }
+            break;
+        case 1:
+
+            switch (mDimension)
+            {
+            case 1:
+                nodePtr = new NuTo::NodeDof<1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1>();
+                break;
+            case 2:
+                nodePtr = new NuTo::NodeDof<2, 1, 2, 0, 0, 0, 0, 0, 0, 0, 1>();
+                break;
+            case 3:
+                nodePtr = new NuTo::NodeDof<3, 1, 3, 0, 0, 0, 0, 0, 0, 0, 1>();
+                break;
+            default:
+                throw MechanicsException("[NuTo::Structure::NodeCreate] Dimension of the structure is not valid.");
+            }
+            break;
+        default:
+            throw MechanicsException("[NuTo::Structure::NodeCreate] Coordinates, Displacements and damage only implemented for 0,1 time derivatives.");
+        }
+        break;
     default:
         throw MechanicsException("[NuTo::Structure::NodeCreate] This combination of attributes is not implemented (just add in the source file the relevant combination).");
     }
@@ -1194,9 +1241,11 @@ void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
         BOOST_FOREACH(auto it, mNodeMap)
             it.second->SetGlobalDofsNumbers(numDofsMap);
 
+
         mConstraintMatrix.AllocateSubmatrices();
         mConstraintMappingRHS.AllocateSubmatrices();
         mConstraintRHS.AllocateSubvectors();
+
 
         for (auto dof : DofTypesGet())
         {
@@ -1291,7 +1340,6 @@ void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
         this->ConstraintUpdateRHSAfterGaussElimination();
 
         mNodeNumberingRequired = false;
-
         UpdateDofStatus(); // again
 
     }

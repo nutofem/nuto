@@ -5,8 +5,7 @@
  *      Author: ttitsche
  */
 
-#ifndef NODEDISPLACEMENTS_H_
-#define NODEDISPLACEMENTS_H_
+#pragma once
 
 #include "nuto/mechanics/nodes/NodeBase.h"
 
@@ -243,4 +242,4 @@ inline void NodeDisplacements<3,2>::SetDisplacements3D(int rTimeDerivative, cons
 } /* namespace NuTo */
 
 
-#endif /* NODEDISPLACEMENTS_H_ */
+

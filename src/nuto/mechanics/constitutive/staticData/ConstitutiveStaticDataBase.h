@@ -35,6 +35,7 @@ class ConstitutiveStaticDataDamageViscoPlasticity3DFatigue;
 class ConstitutiveStaticDataMoistureTransport;
 class ConstitutiveStaticDataMultipleConstitutiveLaws;
 class ConstitutiveStaticDataBondStressSlip;
+class ConstitutiveStaticDataElasticEnergyDensity;
 class ElementBase;
 class VisualizeUnstructuredGrid;
 class VisualizeComponentBase;
@@ -88,6 +89,12 @@ public:
 
     //!@ brief reinterpret as gradient damage 1d static data
     virtual const ConstitutiveStaticDataGradientDamage* AsGradientDamage() const;
+
+    //!@ brief reinterpret as elastic energy density static data
+    virtual ConstitutiveStaticDataElasticEnergyDensity* AsElasticEnergyDensity();
+
+    //!@ brief reinterpret as elastic energy density static data
+    virtual const ConstitutiveStaticDataElasticEnergyDensity* AsElasticEnergyDensity() const;
 
     //!@ brief reinterpret as gradient damage 1d static data with fatigue
     virtual ConstitutiveStaticDataGradientDamage1DFatigue* AsGradientDamage1DFatigue();
@@ -178,4 +185,3 @@ public:
 };
 
 }
-

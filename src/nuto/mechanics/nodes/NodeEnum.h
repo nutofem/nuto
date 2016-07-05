@@ -1,6 +1,5 @@
-// $Id$ 
-#ifndef NODEENUM_H_
-#define NODEENUM_H_
+// $Id$
+#pragma once
 
 #include <set>
 #include <map>
@@ -31,7 +30,8 @@ enum eNodeType
     NONLOCALTOTALSTRAIN, \
     NONLOCALEQSTRAIN, \
     WATERVOLUMEFRACTION, \
-    RELATIVEHUMIDITY \
+    RELATIVEHUMIDITY, \
+    DAMAGE \
 }
 
 enum eDof : unsigned char DEGREES_OF_FREEDOM;
@@ -64,6 +64,7 @@ static inline std::map<eDof, std::string> GetDofMap()
     attributeMap[eDof::NONLOCALEQSTRAIN]        = "NONLOCALEQSTRAIN";
     attributeMap[eDof::WATERVOLUMEFRACTION]     = "WATERVOLUMEFRACTION";
     attributeMap[eDof::RELATIVEHUMIDITY]        = "RELATIVEHUMIDITY";
+    attributeMap[eDof::DAMAGE]                  = "DAMAGE";
     return attributeMap;
 }
 
@@ -94,4 +95,3 @@ static inline eDof DofToEnum(std::string rDof)
 
 }
 }
-#endif /* NODEENUM_H_ */

@@ -364,14 +364,25 @@ bool NuTo::LinearElasticEngineeringStress::CheckDofCombinationComputable(NuTo::N
                                                                           NuTo::Node::eDof rDofCol,
                                                                           int rTimeDerivative) const
 {
-    assert(rTimeDerivative>-1);
-    if(rTimeDerivative<1 &&
-       rDofRow == Node::DISPLACEMENTS &&
-       rDofCol ==Node::DISPLACEMENTS)
+    assert(rTimeDerivative == 0 or rTimeDerivative == 1 or rTimeDerivative == 2);
+    switch (rTimeDerivative)
     {
-        return true;
+    case 0:
+    case 2:
+    {
+        switch (Node::CombineDofs(rDofRow, rDofCol))
+        {
+        case Node::CombineDofs(Node::DISPLACEMENTS, Node::DISPLACEMENTS):
+            return true;
+        default:
+            return false;
+        }
+
     }
-    return false;
+        break;
+    default:
+        return false;
+    }
 }
 
 

@@ -85,6 +85,9 @@ SetGlobalDofsNumbers(std::map<Node::eDof, int>& rDofNumbers)
     for (int i = 0; i < TNumRelativeHumidity; ++i)
         this->mDofRelativeHumidity[i] = rDofNumbers[Node::RELATIVEHUMIDITY]++;
 
+    for (int i = 0; i < TNumDamage; ++i)
+        this->mDofDamage[i] = rDofNumbers[Node::DAMAGE]++;
+
 }
 
 //! @brief write dof values to the node (based on global dof number)
@@ -223,6 +226,11 @@ SetGlobalDofValues(
     case Node::RELATIVEHUMIDITY:
         for (int i = 0; i < TNumRelativeHumidity; ++i)
             this->mRelativeHumidity[rTimeDerivative][i] = GetDofValueFromVector(this->mDofRelativeHumidity[i], rActiveDofValues, rDependentDofValues);
+        break;
+
+    case Node::DAMAGE:
+        for (int i = 0; i < TNumDamage; ++i)
+            this->mDamage[rTimeDerivative][i] = GetDofValueFromVector(this->mDofDamage[i], rActiveDofValues, rDependentDofValues);
         break;
 
     default:

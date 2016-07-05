@@ -9,6 +9,7 @@ constitutive/laws/ConstitutiveLawsAdditiveOutput.cpp
 constitutive/laws/EngineeringStressHelper.cpp
 constitutive/laws/FibreMatrixBondStressSlip.cpp
 constitutive/laws/GradientDamageEngineeringStress.cpp
+constitutive/laws/PhaseField.cpp
 constitutive/laws/HeatConduction.cpp
 constitutive/laws/LinearElasticEngineeringStress.cpp
 constitutive/laws/MisesPlasticityEngineeringStress.cpp
@@ -21,6 +22,7 @@ constitutive/staticData/ConstitutiveStaticDataBondStressSlip.cpp
 constitutive/staticData/ConstitutiveStaticDataMoistureTransport.cpp
 constitutive/staticData/ConstitutiveStaticDataMultipleConstitutiveLaws.cpp
 constitutive/staticData/ConstitutiveStaticDataGradientDamage.cpp
+constitutive/staticData/ConstitutiveStaticDataElasticEnergyDensity.cpp
 constitutive/staticData/ConstitutiveStaticDataMisesPlasticity.cpp
 )
 

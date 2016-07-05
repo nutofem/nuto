@@ -75,6 +75,16 @@ const NuTo::ConstitutiveStaticDataGradientDamage* NuTo::ConstitutiveStaticDataBa
     throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type GradientDamage.");
 }
 
+NuTo::ConstitutiveStaticDataElasticEnergyDensity* NuTo::ConstitutiveStaticDataBase::AsElasticEnergyDensity()
+{
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type ElasticEnergyDensity.");
+}
+
+const NuTo::ConstitutiveStaticDataElasticEnergyDensity* NuTo::ConstitutiveStaticDataBase::AsElasticEnergyDensity()const
+{
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type ElasticEnergyDensity.");
+}
+
 //!@ brief reinterpret as gradient damage 1d static data
 NuTo::ConstitutiveStaticDataGradientDamage1DFatigue* NuTo::ConstitutiveStaticDataBase::AsGradientDamage1DFatigue()
 {

@@ -1,6 +1,5 @@
 // $Id$
-#ifndef NODEBASE_H
-#define NODEBASE_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -193,6 +192,20 @@ public:
     virtual void SetTemperature(int rTimeDerivative, double rTemperature);
 
     //*************************************************
+    //************      DAMAGE          ***************
+    //*************************************************
+
+    virtual int GetNumDamage() const;
+    virtual int GetDofDamage() const;
+
+    double GetDamage() const;
+    virtual double GetDamage(int rTimeDerivative) const;
+
+    void SetDamage(double rDamage);
+    virtual void SetDamage(int rTimeDerivative, double rDamage);
+
+
+    //*************************************************
     //********  NONLOCAL EQ PLASTIC STRAIN  ***********
     //*************************************************
 
@@ -362,5 +375,5 @@ public:
 //}
 BOOST_CLASS_EXPORT_KEY(NuTo::NodeBase)
 #endif // ENABLE_SERIALIZATION
-#endif //NODEBASE_H
+
 

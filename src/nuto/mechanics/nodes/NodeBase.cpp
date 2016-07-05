@@ -23,6 +23,7 @@
 #include "nuto/mechanics/nodes/NodeNonlocalEqStrain.h"
 #include "nuto/mechanics/nodes/NodeRelativeHumidity.h"
 #include "nuto/mechanics/nodes/NodeRotations.h"
+#include "nuto/mechanics/nodes/NodeDamage.h"
 
 //! @brief constructor
 NuTo::NodeBase::NodeBase()
@@ -304,6 +305,31 @@ void NuTo::NodeBase::SetTemperature(double rTemperature)
 }
 void NuTo::NodeBase::SetTemperature(int rTimeDerivative, double rTemperature)
 {throw MechanicsException("[NuTo::NodeBase::SetTemperature] Node of type " + GetNodeTypeStr() + " has no temperature.");}
+
+//*************************************************
+//************      DAMAGE          ***************
+//*************************************************
+
+int NuTo::NodeBase::GetNumDamage() const
+{
+    return 0;
+}
+int NuTo::NodeBase::GetDofDamage() const
+{throw MechanicsException("[NuTo::NodeBase::GetDofDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");}
+
+double NuTo::NodeBase::GetDamage() const
+{
+    return GetDamage(0);
+}
+double NuTo::NodeBase::GetDamage(int rTimeDerivative) const
+{throw MechanicsException("[NuTo::NodeBase::GetDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");}
+
+void NuTo::NodeBase::SetDamage(double rDamage)
+{
+    SetDamage(0, rDamage);
+}
+void NuTo::NodeBase::SetDamage(int rTimeDerivative, double rDamage)
+{throw MechanicsException("[NuTo::NodeBase::SetDamage] Node of type " + GetNodeTypeStr() + " has no Damage.");}
 
 //*************************************************
 //********  NONLOCAL EQ PLASTIC STRAIN  ***********

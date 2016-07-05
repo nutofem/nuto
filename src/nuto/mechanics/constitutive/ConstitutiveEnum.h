@@ -29,6 +29,7 @@ enum eConstitutiveType
     MOISTURE_TRANSPORT,                                     //!< moisture transport model
     MULTISCALE,                                             //!< multiscale model, where the average stress is calculated from a full fine scale model
     NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS,          //!< nonlocal damage model with plasticity in the effective stress space
+    PHASE_FIELD,                                            //!< phase field model
     SHRINKAGE_CAPILLARY_STRAIN_BASED,                       //!< strain based drying shrinkage - capillary term
     SHRINKAGE_CAPILLARY_STRESS_BASED,                       //!< stress based drying shrinkage - capillary term
     STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS,   //!< strain gradient damage plasticity model (damage and plasticity are function of nonlocal total strain)
@@ -54,6 +55,7 @@ static inline std::map<eConstitutiveType, std::string> GetConstitutiveTypeMap()
     map[MOISTURE_TRANSPORT]                                     = "MOISTURE_TRANSPORT";
     map[MULTISCALE]                                             = "MULTISCALE";
     map[NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS]          = "NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
+    map[PHASE_FIELD]                                            = "PHASE_FIELD";
     map[SHRINKAGE_CAPILLARY_STRESS_BASED]                       = "SHRINKAGE_CAPILLARY_STRESS_BASED";
     map[STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS]   = "STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
     map[THERMAL_STRAINS]                                        = "THERMAL_STRAINS";
@@ -152,6 +154,7 @@ static inline eDamageLawType DamageLawToEnum(std::string rDamageLaw)
 enum class eConstitutiveParameter
 {
     ALPHA,                                      //!<
+    ARTIFICIAL_VISCOSITY,                       //!<
     BIAXIAL_COMPRESSIVE_STRENGTH,               //!<
     BOUNDARY_DIFFUSION_COEFFICIENT_RH,          //!<
     BOUNDARY_DIFFUSION_COEFFICIENT_WV,          //!<
@@ -175,6 +178,7 @@ enum class eConstitutiveParameter
     HEAT_CAPACITY,                              //!< specific heat capacity \f$c_T\f$
     INITIAL_HARDENING_MODULUS,                  //!<
     INITIAL_YIELD_STRENGTH,                     //!<
+    LENGTH_SCALE_PARAMETER,                     //!<
     MACROSCOPIC_BULK_MODULUS,                   //!<
     MASS_EXCHANGE_RATE,                         //!<
     MAX_BOND_STRESS,                            //!<
@@ -302,6 +306,8 @@ enum eInput
     WATER_VOLUME_FRACTION_DT1,          //!< first time derivative
     WATER_VOLUME_FRACTION_GRADIENT,     //!<
     INTERFACE_SLIP,                     //!<
+    DAMAGE,                             //!<
+    ELASTIC_ENERGY_DENSITY,             //!<
     CALCULATE_STATIC_DATA,
     TIME_STEP
 };
@@ -344,6 +350,7 @@ enum eOutput
 {
     ENGINEERING_STRESS,
     ENGINEERING_STRESS_VISUALIZE,
+    ENGINEERING_STRESS_DAMAGED_PART,
     ENGINEERING_STRAIN,
     D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY,
     D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION,
@@ -420,6 +427,8 @@ enum eOutput
     INTERFACE_CONSTITUTIVE_MATRIX,
     BOND_STRESS,
     SLIP,
+    ELASTIC_ENERGY_DAMAGED_PART,
+    D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN,
 };
 }
 

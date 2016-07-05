@@ -425,10 +425,6 @@ IF(MINGW)
 ENDIF(MINGW)
 ADD_TEST(c::mechanics::MultipleConstitutiveLaws ${CMAKE_CURRENT_BUILD_DIR}/MultipleConstitutiveLaws)
 
-
-
-
-
 ADD_EXECUTABLE(Shrinkage Shrinkage.cpp)
 TARGET_LINK_LIBRARIES(Shrinkage NuToMechanics NuToMath NuToBase)
 IF(ENABLE_VISUALIZE)
@@ -438,6 +434,19 @@ IF(MINGW)
     SET_TARGET_PROPERTIES(Shrinkage PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
 ADD_TEST(c::mechanics::Shrinkage ${CMAKE_CURRENT_BUILD_DIR}/Shrinkage)
+
+
+ADD_EXECUTABLE(PhaseField PhaseField.cpp)
+TARGET_LINK_LIBRARIES(PhaseField NuToMechanics NuToMath NuToBase)
+IF(ENABLE_VISUALIZE)
+    TARGET_LINK_LIBRARIES(PhaseField NuToVisualize)
+ENDIF(ENABLE_VISUALIZE)
+IF(MINGW)
+    SET_TARGET_PROPERTIES(PhaseField PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)
+ADD_TEST(c::mechanics::PhaseField ${CMAKE_CURRENT_BUILD_DIR}/PhaseField)
+
+
 
 ADD_EXECUTABLE(HeatConduction HeatConduction.cpp)
 TARGET_LINK_LIBRARIES(HeatConduction NuToMechanics NuToMath NuToBase)

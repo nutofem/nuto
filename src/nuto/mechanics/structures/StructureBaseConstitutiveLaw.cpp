@@ -9,6 +9,7 @@
 #include "nuto/mechanics/constitutive/laws/LinearElasticEngineeringStress.h"
 #include "nuto/mechanics/constitutive/laws/MoistureTransport.h"
 #include "nuto/mechanics/constitutive/laws/MisesPlasticityEngineeringStress.h"
+#include "nuto/mechanics/constitutive/laws/PhaseField.h"
 #include "nuto/mechanics/constitutive/laws/ShrinkageCapillaryStrainBased.h"
 #include "nuto/mechanics/constitutive/laws/ShrinkageCapillaryStressBased.h"
 #include "nuto/mechanics/constitutive/laws/ThermalStrains.h"
@@ -110,6 +111,10 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
 
         case NuTo::Constitutive::FIBRE_MATRIX_BOND_STRESS_SLIP:
             ConstitutiveLawPtr = new NuTo::FibreMatrixBondStressSlip();
+            break;
+
+        case NuTo::Constitutive::PHASE_FIELD:
+            ConstitutiveLawPtr = new NuTo::PhaseField();
             break;
 
         case NuTo::Constitutive::SHRINKAGE_CAPILLARY_STRAIN_BASED:

@@ -19,6 +19,7 @@
 #include "nuto/mechanics/nodes/NodeRelativeHumidity.h"
 #include "nuto/mechanics/nodes/NodeTemperature.h"
 #include "nuto/mechanics/nodes/NodeWaterVolumeFraction.h"
+#include "nuto/mechanics/nodes/NodeDamage.h"
 
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
@@ -30,15 +31,15 @@
 #include <boost/ptr_container/ptr_list.hpp>
 #endif // ENABLE_VISUALIZE
 
-#define NODE_DOF_TEMPLATE_PARAMETERS int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperature, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain, int TNumWaterVolumeFraction, int TNumRelativeHumidity
-#define NODE_DOF_TEMPLATE_INITIALIZATION TNumCoordinates, TNumTimeDerivatives, TNumDisplacements, TNumRotations, TNumTemperature, TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain, TNumNonlocalEqStrain, TNumWaterVolumeFraction, TNumRelativeHumidity
+#define NODE_DOF_TEMPLATE_PARAMETERS int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperature, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain, int TNumWaterVolumeFraction, int TNumRelativeHumidity, int TNumDamage
+#define NODE_DOF_TEMPLATE_INITIALIZATION TNumCoordinates, TNumTimeDerivatives, TNumDisplacements, TNumRotations, TNumTemperature, TNumNonlocalEqPlasticStrain, TNumNonlocalTotalStrain, TNumNonlocalEqStrain, TNumWaterVolumeFraction, TNumRelativeHumidity, TNumDamage
 
 namespace NuTo
 {
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for all nodes
-template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperature, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain, int TNumWaterVolumeFraction, int TNumRelativeHumidity>
+template <int TNumCoordinates, int TNumTimeDerivatives, int TNumDisplacements, int TNumRotations, int TNumTemperature, int TNumNonlocalEqPlasticStrain, int TNumNonlocalTotalStrain, int TNumNonlocalEqStrain, int TNumWaterVolumeFraction, int TNumRelativeHumidity, int TNumDamage>
 class NodeDof:
         public NodeCoordinates<TNumCoordinates>,
         public NodeDisplacements<TNumDisplacements, TNumTimeDerivatives>,
@@ -47,7 +48,8 @@ class NodeDof:
         public NodeNonlocalEqStrain<TNumNonlocalEqStrain, TNumTimeDerivatives>,
         public NodeRelativeHumidity<TNumRelativeHumidity,TNumTimeDerivatives>,
         public NodeTemperature<TNumTemperature, TNumTimeDerivatives>,
-        public NodeWaterVolumeFraction<TNumWaterVolumeFraction,TNumTimeDerivatives>
+        public NodeWaterVolumeFraction<TNumWaterVolumeFraction,TNumTimeDerivatives>,
+        public NodeDamage<TNumDamage,TNumTimeDerivatives>
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
