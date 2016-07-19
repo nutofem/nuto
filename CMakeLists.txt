@@ -12,7 +12,8 @@ endif()
 
 # options
 OPTION(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" FALSE)
-OPTION(ENABLE_ARPACK "enables ARPACK libraries (for the solution of eigenvalue problems)" OPTION(ENABLE_C++_TESTS "create makefiles for c++ tests" TRUE)
+OPTION(ENABLE_ARPACK "enables ARPACK libraries (for the solution of eigenvalue problems)" FALSE)
+OPTION(ENABLE_C++_TESTS "create makefiles for c++ tests" TRUE)
 OPTION(ENABLE_C++_TESTS_WIP "provides an additional flag to avoid compiling all tests" FALSE)
 OPTION(ENABLE_CGAL "enables CGAL libraries (for cracks only)" FALSE)
 OPTION(ENABLE_DEBUG "enables debug information" TRUE)
@@ -38,7 +39,6 @@ OPTION(ENABLE_SERIALIZATION "enables serialization" FALSE)
 OPTION(ENABLE_UNIT_TESTS "use Boost Test library for unit tests" FALSE)
 OPTION(ENABLE_VERBOSELEVEL "enables status messages during the execution by setting the verboselevel" FALSE)
 OPTION(ENABLE_VISUALIZE "enables the visualization package" FALSE)
-FALSE)
 
 if(ENABLE_MPI)
   find_package(MPI REQUIRED)
