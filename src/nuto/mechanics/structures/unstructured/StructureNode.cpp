@@ -908,7 +908,7 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
         }
         break;
         // Moisture Transport --- Ende
-    case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::DAMAGE):
+    case (1 << Node::COORDINATES) | (1 << Node::DISPLACEMENTS) | (1 << Node::CRACKPHASEFIELD):
         // coordinates and displacements and damage
         switch (mNumTimeDerivatives)
         {

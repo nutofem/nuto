@@ -25,7 +25,7 @@ static EngineeringStrain<TDim> CalculateElasticEngineeringStrain(
 //! @param rE ... Young's modulus
 //! @param rNu ... Poisson's ratio
 //! @return tuple <C11, C12, C33>
-static std::tuple<double, double, double> CalculateCoefficients2DPlainStress(double mE, double mNu);
+static std::tuple<double, double, double> CalculateCoefficients2DPlaneStress(double mE, double mNu);
 
 
 //! @brief calculate coefficients of the 3D material matrix

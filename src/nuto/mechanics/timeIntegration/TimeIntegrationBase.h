@@ -216,6 +216,18 @@ public:
         return mCheckCoefficientMatrix;
     }
 
+    //! @brief Sets the export data file nodes bool
+    void SetExportDataFileNodes(bool rExportDataFileNodes)
+    {
+        mExportDataFileNodes = rExportDataFileNodes;
+    }
+
+    //! @brief Gets the export data file nodes bool
+    bool GetExportDataFileNodes() const
+    {
+        return mExportDataFileNodes;
+    }
+
     //! @brief returns true, if the method is only conditionally stable (for unconditional stable, this is false)
     virtual bool HasCriticalTimeStep()const = 0;
 
@@ -308,6 +320,8 @@ protected:
 	bool mMergeActiveDofValuesOrder2;
 	//if set to true, checks the coefficient matrix in each sub step
 	bool mCheckCoefficientMatrix;
+    //! @brief If set to true, exports a data file for the nodes
+    bool mExportDataFileNodes = true;
 
 	//************************
 	//* PostProcessing Stuff *

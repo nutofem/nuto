@@ -1329,6 +1329,10 @@ public:
     //! @param rType ... constitutive law type
     void ConstitutiveLawCreate(int rIdent, Constitutive::eConstitutiveType rType);
 
+    //! @brief Adds a constitutive law
+    //! @param rConstitutiveLawPtr: Pointer to constitutive law
+    int AddConstitutiveLaw(ConstitutiveBase* rConstitutiveLawPtr);
+
     //! @brief ... get the pointer to a constitutive law from the constitutive law identifier
     //! @param rIdent ... constitutive law identifier
     //! @return ... pointer to the constitutive law

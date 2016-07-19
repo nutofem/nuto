@@ -86,7 +86,7 @@ SetGlobalDofsNumbers(std::map<Node::eDof, int>& rDofNumbers)
         this->mDofRelativeHumidity[i] = rDofNumbers[Node::RELATIVEHUMIDITY]++;
 
     for (int i = 0; i < TNumDamage; ++i)
-        this->mDofDamage[i] = rDofNumbers[Node::DAMAGE]++;
+        this->mDofDamage[i] = rDofNumbers[Node::CRACKPHASEFIELD]++;
 
 }
 
@@ -228,7 +228,7 @@ SetGlobalDofValues(
             this->mRelativeHumidity[rTimeDerivative][i] = GetDofValueFromVector(this->mDofRelativeHumidity[i], rActiveDofValues, rDependentDofValues);
         break;
 
-    case Node::DAMAGE:
+    case Node::CRACKPHASEFIELD:
         for (int i = 0; i < TNumDamage; ++i)
             this->mDamage[rTimeDerivative][i] = GetDofValueFromVector(this->mDofDamage[i], rActiveDofValues, rDependentDofValues);
         break;

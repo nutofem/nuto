@@ -33,7 +33,7 @@ class ConstitutiveBase
 #endif // ENABLE_SERIALIZATION
 public:
     //! @brief ... constructor
-    ConstitutiveBase();
+    ConstitutiveBase(): mParametersValid(false){};
 
     //! @brief ... constructor
     virtual ~ConstitutiveBase()

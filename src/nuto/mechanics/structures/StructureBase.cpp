@@ -626,7 +626,7 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
         case NuTo::VisualizeBase::RELATIVE_HUMIDITY:
         case NuTo::VisualizeBase::WATER_VOLUME_FRACTION:
         case NuTo::VisualizeBase::TEMPERATURE:
-        case NuTo::VisualizeBase::DAMAGE_PHASE_FIELD:
+        case NuTo::VisualizeBase::CRACK_PHASE_FIELD:
             rVisualize.DefinePointDataScalar(it.get()->GetComponentName());
             break;
 

@@ -1073,11 +1073,11 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
             }
             break;
 
-        case NuTo::VisualizeBase::DAMAGE_PHASE_FIELD:
+        case NuTo::VisualizeBase::CRACK_PHASE_FIELD:
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
                 const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
-                Eigen::VectorXd damage = InterpolateDofGlobal(coords, Node::eDof::DAMAGE);
+                Eigen::VectorXd damage = InterpolateDofGlobal(coords, Node::eDof::CRACKPHASEFIELD);
                 unsigned int PointId = PointIdVec[PointCount];
                 rVisualize.SetPointDataScalar(PointId, it.get()->GetComponentName(), damage[0]);
             }

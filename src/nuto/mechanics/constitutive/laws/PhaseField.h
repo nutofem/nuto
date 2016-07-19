@@ -16,6 +16,8 @@ class ConstitutiveScalar;
 class ConstitutiveStaticDataBase;
 class Logger;
 
+
+
 //! @author Philip Huschke
 //! @date June 14, 2016
 //! @brief ...
@@ -25,7 +27,12 @@ class PhaseField : public ConstitutiveBase
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-    PhaseField();
+    //! @brief Constructor
+    PhaseField(             const double rYoungsModulus,
+                            const double rPoissonsRatio,
+                            const double rLengthScaleParameter,
+                            const double rFractureEnergy,
+                            const double rArtificialViscosity);
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs
@@ -139,23 +146,30 @@ public:
     bool HaveTmpStaticData() const override {return false;}
 
 protected:
-    //! @brief ... Young's modulus \f$ E \f$
-    double mE;
+    //! @brief Young's modulus \f$ E \f$
+    const double mYoungsModulus;
 
-    //! @brief ... Poisson's ratio \f$ \nu \f$
-    double mNu;
+    //! @brief Poisson's ratio \f$ \nu \f$
+    const double mPoissonsRatio;
 
-    //! @brief ... length scale parameter \f$ l \f$
-    double mLengthScaleParameter;
+    //! @brief Length scale parameter \f$ l \f$
+    const double mLengthScaleParameter;
 
-    //! @brief ... fracture enerfy \f$ G_f \f$
-    double mFractureEnergy;
+    //! @brief Fracture energy \f$ G_f \f$
+    const double mFractureEnergy;
 
-    //! @brief ... thermal expansion coefficient \f$ \alpha \f$
-    double mThermalExpansionCoefficient;
+    //! @brief Artificial viscosity to improve numerical robustness \f$ \eta \f$
+    const double mArtificialViscosity;
 
-    //! @brief ... artificial viscosity to improve numerical robustness \f$ \eta \f$
-    double mArtificialViscosity;
+    //! @brief First Lame parameter \f$ \lambda \f$
+    const double mLameLambda;
+
+    //! @brief Second Lame parameter \f$ \mu \f$
+    const double mLameMu;
+
+    //! @brief Type of degradation function
+    Constitutive::ePhaseFieldDegradationFunctionType mPhaseFieldDegradationFunctionType = Constitutive::ePhaseFieldDegradationFunctionType::ISOTROPIC;
+
 private:
 
 };

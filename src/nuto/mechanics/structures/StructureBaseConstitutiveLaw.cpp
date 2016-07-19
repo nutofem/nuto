@@ -114,7 +114,8 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             break;
 
         case NuTo::Constitutive::PHASE_FIELD:
-            ConstitutiveLawPtr = new NuTo::PhaseField();
+            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
+            //ConstitutiveLawPtr = new NuTo::PhaseField();
             break;
 
         case NuTo::Constitutive::SHRINKAGE_CAPILLARY_STRAIN_BASED:
@@ -149,6 +150,26 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
         throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] Constitutive law already exists.");
     }
 }
+
+int NuTo::StructureBase::AddConstitutiveLaw(ConstitutiveBase* rConstitutiveLawPtr)
+{
+    //find unused integer id
+    int constitutiveID = mConstitutiveLawMap.size();
+    boost::ptr_map<int, ConstitutiveBase>::iterator it = mConstitutiveLawMap.find(constitutiveID);
+    while (it != mConstitutiveLawMap.end())
+    {
+        constitutiveID++;
+        it = mConstitutiveLawMap.find(constitutiveID);
+    }
+
+    // add constitutive law to map
+    this->mConstitutiveLawMap.insert(constitutiveID, rConstitutiveLawPtr);
+    if (rConstitutiveLawPtr->HaveTmpStaticData())
+        mHaveTmpStaticData = true;
+
+    return constitutiveID;
+}
+
 
 // delete an existing constitutive law
 void NuTo::StructureBase::ConstitutiveLawDelete(int rIdent)
