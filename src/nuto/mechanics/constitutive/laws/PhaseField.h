@@ -18,9 +18,20 @@ class Logger;
 
 
 
-//! @author Philip Huschke
-//! @date June 14, 2016
-//! @brief ...
+
+//! \class  PhaseField
+//! \author Philip Huschke
+//! \date   June 14, 2016
+//! \brief  A phase-field model for brittle fracture
+//!
+//!
+//! Recommended literature:
+//!
+//! Miehe et al.
+//! "Thermodynamically consistent phase-field models of fracture: Variational principles and multi-field FE implementations"
+//!
+//! Ambati et al.
+//! A review on phase-field models of brittle fracture and a new fast hybrid formulation
 class PhaseField : public ConstitutiveBase
 {
 #ifdef ENABLE_SERIALIZATION
