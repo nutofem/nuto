@@ -218,6 +218,7 @@ NuTo::Error::eError NuTo::PhaseField::Evaluate2D(ElementBase* rElement, int rIp,
             {
                 //todo: use static data (history variable) for loading/unloading
                 //elasticEnergyLoadTerm[0] = 0.5*mLameLambda*std::pow(std::max(traceStrain,0.0),2) + mNu*std::pow(traceStrainPositive,2);
+                throw MechanicsException(__PRETTY_FUNCTION__, "Degradation function type not implemented.");
                 break;
             }
             default:
@@ -233,7 +234,7 @@ NuTo::Error::eError NuTo::PhaseField::Evaluate2D(ElementBase* rElement, int rIp,
             dStressDPhaseField.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
 
 
-            const double degradationFactor = 2*(1-damage[0]);
+            const double degradationFactor = -2*(1-damage[0]);
 
             switch (mPhaseFieldDegradationFunctionType)
             {
