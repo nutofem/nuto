@@ -11,7 +11,7 @@ At your own peril.
 
 First, you need some external dependencies
 
-    sudo apt-get install git swig3.0 cmake doxygen python-dev python-numpy \
+    sudo apt-get install git swig3.0 cmake doxygen python-dev python-numpy python-instant\
     libboost-all-dev libeigen3-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev libomp-dev
 
 Then, you need to check out the source code
