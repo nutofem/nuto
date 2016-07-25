@@ -217,5 +217,5 @@ template void NuTo::BlockFullMatrix<double>::serialize(boost::archive::binary_ia
 template void NuTo::BlockFullMatrix<double>::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
 template void NuTo::BlockFullMatrix<double>::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::BlockFullMatrix<double>)
+BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::BlockFullMatrix<double>)), BOOST_PP_STRINGIZE(BOOST_IDENTITY_TYPE((NuTo::BlockFullMatrix<double>))))
 #endif //ENABLE_SERIALIZATION

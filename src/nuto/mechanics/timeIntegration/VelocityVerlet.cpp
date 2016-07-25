@@ -58,7 +58,7 @@ void NuTo::VelocityVerlet::serialize(Archive & ar, const unsigned int version)
     #ifdef DEBUG_SERIALIZATION
         std::cout << "start serialization of VelocityVerlet" << "\n";
     #endif
-        ar & BOOST_SERIALIZATION_BASE_O2.BJECT_NVP(TimeIntegrationBase);
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(TimeIntegrationBase);
     #ifdef DEBUG_SERIALIZATION
         std::cout << "finish serialization of VelocityVerlet" << "\n";
     #endif

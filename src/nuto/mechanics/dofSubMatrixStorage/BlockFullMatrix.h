@@ -102,6 +102,3 @@ private:
 
 } /* namespace NuTo */
 
-#ifdef ENABLE_SERIALIZATION
-    BOOST_CLASS_EXPORT_KEY(NuTo::BlockFullMatrix<double>)
-#endif
