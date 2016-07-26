@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationBaseFEM.h"
 
 namespace NuTo
 {
 
-class Interpolation1D: public InterpolationBase
+class Interpolation1D: public InterpolationBaseFEM
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -46,7 +46,6 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
-
 };
 
 } /* namespace NuTo */

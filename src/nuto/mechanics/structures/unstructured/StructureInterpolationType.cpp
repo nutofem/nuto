@@ -135,13 +135,54 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, const std::
     InterpolationTypeAdd(rInterpolationTypeId,Node::DofToEnum(rDofType), Interpolation::TypeOrderToEnum(rTypeOrder));
 }
 
+//! @brief adds a dof to IGA interpolation type
+//! @param rInterpolationTypeId ... interpolation type id
+//! @param rDofType ... dof type
+//! @param rTypeOrder ... type and order of interpolation
+void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDegree, const Eigen::VectorXd &rKnots)
+{
+    boost::ptr_map<int,InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
+    // check if identifier exists
+    if (itIterator == mInterpolationTypeMap.end())
+        throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeAdd] Interpolation type does not exist.");
+
+    InterpolationType* interpolationType = itIterator->second;
+    interpolationType->AddDofInterpolation(rDofType, rTypeOrder, rDegree, rKnots);
+
+    IntegrationType::eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
+    const IntegrationTypeBase* integrationType = this->GetPtrIntegrationType(integrationTypeEnum);
+
+    interpolationType->UpdateIntegrationType(*integrationType);
+    if (mVerboseLevel > 2)
+        mLogger << "[NuTo::Structure::InterpolationTypeAdd] Updated IntegrationType to " << integrationType->GetStrIdentifier() << ".\n";
+
+    // update all elements
+    // disable show time
+
+    bool showTime = GetShowTime();
+    SetShowTime(false);
+
+    int elementGroupId = GroupCreate("Elements");
+    GroupAddElementFromType(elementGroupId, rInterpolationTypeId);
+
+    NuTo::FullVector<int, Eigen::Dynamic> elementIds = GroupGetMemberIds(elementGroupId);
+    for (int iElement = 0; iElement < elementIds.GetNumRows(); ++iElement)
+    {
+        ElementBase* element = ElementGetElementPtr(elementIds.GetValue(iElement));
+        element->SetIntegrationType(integrationType, element->GetIpDataType(0));
+    }
+
+    GroupDelete(elementGroupId);
+    UpdateDofStatus();
+    SetShowTime(showTime);
+}
+
 //! @brief adds a dof to a interpolation type
 //! @param rInterpolationTypeId ... interpolation type id
 //! @param rDofType ... dof type
 //! @param rTypeOrder ... type and order of interpolation
 void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder)
 {
-
     boost::ptr_map<int,InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
     // check if identifier exists
     if (itIterator == mInterpolationTypeMap.end())
@@ -177,25 +218,3 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node:
     UpdateDofStatus();
     SetShowTime(showTime);
 }
-
-//void NuTo::Structure::InterpolationTypeAddIGAPatch1D(int rInterpolationTypeId, NuTo::Node::eDof rDofType, const BSplineCurve& rCurve)
-//{
-//    boost::ptr_map<int,InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
-//    // check if identifier exists
-//    if (itIterator == mInterpolationTypeMap.end())
-//        throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeAddIGAPatch1D] Interpolation type does not exist.");
-
-//    InterpolationType* interpolationType = itIterator->second;
-//    interpolationType->AddIGAPatch1D(rDofType, rCurve);
-//}
-
-//void NuTo::Structure::InterpolationTypeAddIGAPatch2D(int rInterpolationTypeId, NuTo::Node::eDof rDofType, const BSplineSurface& rSurface)
-//{
-//    boost::ptr_map<int,InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
-//    // check if identifier exists
-//    if (itIterator == mInterpolationTypeMap.end())
-//        throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeAddIGAPatch1D] Interpolation type does not exist.");
-
-//    InterpolationType* interpolationType = itIterator->second;
-//    interpolationType->AddIGAPatch2D(rDofType, rSurface);
-//}

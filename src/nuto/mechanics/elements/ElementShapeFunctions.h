@@ -223,7 +223,19 @@ Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder2(const Eigen::VectorXd&
 // In order to maintain equal shape functions on each element the Bézier extraction together with Bernstein polynomials is used (see. Borden et. al. 2011)
 namespace ShapeFunctionsIGA1D
 {
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// BSPLINE ////////////////////////////////////////////////////////////////////////
+//! @brief ... find span of a parameter (rParameter) in the knot vector
+//! @param rParameter ... parameter to find the span of
+//!
+//! @return ... the span index
+int FindSpan(double rParameter, int rDegree, const Eigen::VectorXd &rKnots);
+
+
+Eigen::VectorXd BasisFunctions(double rParameter, int spanIdx, int rDegree, const Eigen::VectorXd &rKnots);
+Eigen::MatrixXd BasisFunctionsAndDerivatives(double rParameter, int spanIdx, int maxDer, int rDegree, const Eigen::VectorXd &rKnots);
+
+
+/////////////////////////////// BERNSTEIN //////////////////////////////////////////////////////////////////////
 
 Eigen::VectorXd Bernstein1DOrder1(double rParameter);
 Eigen::VectorXd Bernstein1DOrder2(double rParameter);

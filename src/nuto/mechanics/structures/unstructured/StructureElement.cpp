@@ -7,6 +7,7 @@
 #include "nuto/mechanics/elements/IpDataEnum.h"
 
 #include "nuto/mechanics/elements/ContinuumElement.h"
+#include "nuto/mechanics/elements/ContinuumElementIGA.h"
 #include "nuto/mechanics/elements/ContinuumBoundaryElement.h"
 #include "nuto/mechanics/elements/ContinuumBoundaryElementConstrainedControlNode.h"
 #include "nuto/mechanics/elements/Element1DInXD.h"
@@ -698,6 +699,10 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
             break;
         case NuTo::Interpolation::eShapeType::INTERFACE:
             ptrElement = new Element2DInterface(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
+            ptrElement->CheckElement();
+            break;
+        case NuTo::Interpolation::eShapeType::IGA1D:
+            ptrElement = new ContinuumElementIGA<1>(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
             ptrElement->CheckElement();
             break;
         default:

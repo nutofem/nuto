@@ -25,7 +25,7 @@
 #include "nuto/mechanics/interpolationtypes/Interpolation3DBrick.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation1DTruss.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation1DInterface.h"
-
+#include "nuto/mechanics/interpolationtypes/Interpolation1DTrussIGA.h"
 #include <boost/foreach.hpp>
 
 #include <iomanip>
@@ -61,6 +61,57 @@ NuTo::InterpolationBase& NuTo::InterpolationType::GetNonConst(Node::eDof rDofTyp
     return *(interpolationTypeIterator->second);
 }
 
+void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDegree, const Eigen::VectorXd &rKnots)
+{
+    if (IsDof(rDofType))
+        throw NuTo::MechanicsException("[NuTo::InterpolationTypeBase::AddDofInterpolation] Dof " + NuTo::Node::DofToString(rDofType) + " exists.");
+
+    InterpolationBase* newType;
+    switch (mShapeType)
+    {
+    case Interpolation::eShapeType::SPRING:
+    case Interpolation::eShapeType::TRUSS1D:
+    case Interpolation::eShapeType::TRUSSXD:
+    case Interpolation::eShapeType::TRIANGLE2D:
+    case Interpolation::eShapeType::QUAD2D:
+    case Interpolation::eShapeType::TETRAHEDRON3D:
+    case Interpolation::eShapeType::BRICK3D:
+    case Interpolation::eShapeType::INTERFACE:
+        throw NuTo::MechanicsException("[NuTo::InterpolationTypeBase::AddDofInterpolation] This method is for IG interpolation, please use the 'AddDofInterpolation(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder)'.");
+        break;
+    case Interpolation::eShapeType::IGA1D:
+        newType = new Interpolation1DTrussIGA(rDofType, rTypeOrder, mDimension, rDegree, rKnots);
+        break;
+    default:
+        throw NuTo::MechanicsException("[NuTo::InterpolationType::AddDofInterpolation] ShapeType " + NuTo::Interpolation::ShapeTypeToString(mShapeType) + " not implemented.");
+    }
+
+    mInterpolations.insert(rDofType, newType);
+    mDofs.insert(rDofType);
+
+    mNumDofs += newType->GetNumDofs();
+
+    if (rDofType == Node::COORDINATES)
+    {
+        SetIsActive(false, rDofType);
+        SetIsConstitutiveInput(false, rDofType);
+    }
+    else
+    {
+        SetIsActive(true, rDofType);
+        SetIsConstitutiveInput(true, rDofType);
+    }
+
+    // calculate mNodeDofs, mNodeCoordinates and mNodeIndices
+    mNodeDofs.resize(mNodeDofs.size() + newType->GetNumNodes());
+
+    for(size_t i = mNodeDofs.size(); i < mNodeDofs.size() + newType->GetNumNodes(); i++)
+        mNodeDofs[i].insert(rDofType);
+
+    if (mIntegrationType != nullptr)
+        newType->UpdateIntegrationType(*mIntegrationType);
+}
+
 void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder)
 {
     if (IsDof(rDofType))
@@ -89,12 +140,6 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
     case Interpolation::eShapeType::INTERFACE:
         newType = new Interpolation1DInterface(rDofType, rTypeOrder, mDimension);
         break;
-//    case Interpolation::eShapeType::IGA1D:
-//        newType = new Interpolation1DIGA(rDofType, rTypeOrder, mDimension);
-//        break;
-//    case Interpolation::eShapeType::IGA2D:
-//        newType = new Interpolation2DIGA(rDofType, rTypeOrder, mDimension);
-//        break;
     default:
         throw NuTo::MechanicsException("[NuTo::InterpolationType::AddDofInterpolation] ShapeType " + NuTo::Interpolation::ShapeTypeToString(mShapeType) + " not implemented.");
     }
@@ -115,7 +160,7 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
         SetIsConstitutiveInput(true, rDofType);
     }
 
-// calculate mNodeDofs, mNodeCoordinates and mNodeIndices
+    // calculate mNodeDofs, mNodeCoordinates and mNodeIndices
     mNodeDofs.resize(mNodeDofs.size() + newType->GetNumNodes());
 
     newType->mNodeIndices.resize(newType->GetNumNodes());
@@ -230,6 +275,9 @@ NuTo::Node::eDof NuTo::InterpolationType::GetDofWithHighestStandardIntegrationOr
         case Interpolation::LOBATTO4:
         case Interpolation::EQUIDISTANT4:
             currentOrder = 4;
+            break;
+        case Interpolation::SPLINE:
+            currentOrder =  Get(dof).GetSplineDegree() + 1;
             break;
         default:
             throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Standard integration type for " + Interpolation::TypeOrderToString(order) + " is not implemented.");

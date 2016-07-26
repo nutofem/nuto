@@ -8,12 +8,12 @@
 #ifndef INTERPOLATION2D_H_
 #define INTERPOLATION2D_H_
 
-#include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationBaseFEM.h"
 
 namespace NuTo
 {
 
-class Interpolation2D: public InterpolationBase
+class Interpolation2D: public InterpolationBaseFEM
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;

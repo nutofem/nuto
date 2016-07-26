@@ -483,9 +483,6 @@ public:
     //! @param rTypeOrder ... type and order of interpolation
     void InterpolationTypeAdd(int rInterpolationTypeId, const std::string& rDofType, const std::string& rTypeOrder);
 
-//    void InterpolationTypeAddIGAPatch1D(int rInterpolationTypeId, Node::eDof rDofType, const BSplineCurve& rCurve);
-//    void InterpolationTypeAddIGAPatch2D(int rInterpolationTypeId, Node::eDof rDofType, const BSplineSurface& rSurface);
-
 #ifndef SWIG
 
     //! @brief creates a new interpolation type
@@ -505,6 +502,12 @@ public:
     //! @param rIpDataType ... ip data type enum
     void InterpolationTypeSetIntegrationType(int rInterpolationTypeId, IntegrationTypeBase* rIntegrationType, IpData::eIpDataType rIpDataType);
 
+    //! @brief adds a dof to a IGA interpolation type
+    //! @param rInterpolationTypeId ... interpolation type id
+    //! @param rDofType ... dof type
+    //! @param rTypeOrder ... type and order of interpolation
+    void InterpolationTypeAdd(int rInterpolationTypeId, int rDegree, const Eigen::VectorXd &rKnots);
+
     //! @brief adds a dof to a interpolation type
     //! @param rInterpolationTypeId ... interpolation type id
     //! @param rDofType ... dof type
@@ -512,8 +515,13 @@ public:
     void InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
 
 
-#endif //SWIG
+    //! @brief adds a dof to a interpolation type
+    //! @param rInterpolationTypeId ... interpolation type id
+    //! @param rDofType ... dof type
+    //! @param rTypeOrder ... type and order of interpolation
+    void InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType, Interpolation::eTypeOrder rTypeOrder, int rDegree, const Eigen::VectorXd &rKnots);
 
+#endif //SWIG
 
     //***********************************************************
     //************         Mesh routines        *****************

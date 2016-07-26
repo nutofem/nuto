@@ -1872,7 +1872,138 @@ Eigen::MatrixXd DerivativeShapeFunctionsInterface3dOrder1(const Eigen::VectorXd&
 // In order to maintain equal shape functions on each element the Bézier extraction together with Bernstein polynomials is used (see. Borden et. al. 2011)
 namespace ShapeFunctionsIGA1D
 {
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////// BSPLINE ////////////////////////////////////////////////////////////////////////
+
+int FindSpan(double rParameter, int rDegree, const Eigen::VectorXd &rKnots)
+{
+    int numBasisFuns = rKnots.rows() - rDegree - 1;
+    if(rParameter == rKnots[numBasisFuns]) return numBasisFuns-1;
+
+    int low  = rDegree;
+    int high = numBasisFuns;
+    int mid  = (low + high)/2;
+
+    while(rParameter < rKnots[mid] || rParameter >= rKnots[mid+1])
+    {
+        if(rParameter < rKnots[mid]) high = mid;
+        else                         low = mid;
+
+        mid = (low + high)/2;
+    }
+    return mid;
+}
+
+Eigen::VectorXd BasisFunctions(double rParameter, int spanIdx, int rDegree, const Eigen::VectorXd &rKnots)
+{
+    Eigen::VectorXd rBasisFunctions(rDegree+1);
+
+    rBasisFunctions[0] = 1.;
+
+    Eigen::VectorXd left(rDegree+1);
+    Eigen::VectorXd right(rDegree+1);
+
+    for (int j = 1; j <= rDegree; j++)
+    {
+        left[j]  = rParameter - rKnots[spanIdx + 1 - j];
+        right[j] = rKnots[spanIdx + j] - rParameter;
+        double saved = 0.;
+        for(int r = 0; r < j; r++)
+        {
+            double temp = rBasisFunctions[r]/(right[r+1] + left[j-r]);
+            rBasisFunctions[r] = saved + right[r+1]*temp;
+            saved = left[j-r]*temp;
+        }
+        rBasisFunctions[j] = saved;
+    }
+    return rBasisFunctions;
+}
+
+Eigen::MatrixXd BasisFunctionsAndDerivatives(double rParameter, int spanIdx, int maxDer, int rDegree, const Eigen::VectorXd &rKnots)
+{
+    Eigen::MatrixXd ndu(rDegree+1, rDegree+1);
+
+    ndu(0,0) = 1.0;
+
+    Eigen::VectorXd left(rDegree + 1);
+    Eigen::VectorXd right(rDegree + 1);
+
+    for (int j = 1; j <= rDegree; j++)
+    {
+        left[j]  = rParameter - rKnots[spanIdx + 1 - j];
+        right[j] = rKnots[spanIdx + j] - rParameter;
+        double saved = 0.;
+        for(int r = 0; r < j; r++)
+        {
+            ndu(j,r) = right[r+1] + left[j-r]; // lower triange (knot differences)
+            double temp = ndu(r, j-1)/ndu(j,r);
+            ndu(r,j) = saved + right[r+1]*temp; // upper triangle
+            saved = left[j-r]*temp;
+        }
+        ndu(j,j) = saved;
+    }
+
+    Eigen::MatrixXd ders(maxDer+1, rDegree+1);
+
+    for(int j = 0; j <= rDegree; j++) ders(0,j) = ndu(j,rDegree);
+
+    Eigen::MatrixXd a(2, rDegree+1);
+    for(int r = 0; r<=rDegree; r++)
+    {
+        int s1 = 0;
+        int s2 = 1;
+
+        a(0,0) = 1.0;
+
+        int j = 0;
+        for(int k = 1; k<=maxDer; k++)
+        {
+            double d = 0.;
+            int rk = r-k;
+            int pk = rDegree-k;
+            if(r >= k)
+            {
+                a(s2,0) = a(s1,0)/ndu(pk+1, rk);
+                d = a(s2,0)*ndu(rk,pk);
+            }
+            int j1 = 0;
+            if(rk >= -1) j1 = 1;
+            else         j1 = -rk;
+
+            int j2 = 0;
+            if(r-1 <= pk) j2 = k-1;
+            else          j2 = rDegree-r;
+
+            for(j = j1; j <= j2; j++)
+            {
+                a(s2, j) = (a(s1,j) - a(s1, j-1))/ndu(pk+1, rk+j);
+                d += a(s2,j)*ndu(rk+j, pk);
+            }
+
+            if(r <= pk)
+            {
+                a(s2,k) = -a(s1,k-1)/ndu(pk+1,r);
+                d += a(s2,k)*ndu(r,pk);
+            }
+
+            ders(k,r) = d;
+            j = s1;
+            s1 = s2;
+            s2 = j;
+        }
+    }
+
+    int r = rDegree;
+    for(int k = 1; k <= maxDer; k++)
+    {
+        for (int j = 0; j <= rDegree; j++) ders(k,j) *=r;
+        r*= (rDegree-k);
+    }
+
+    return ders;
+}
+
+///////////////////////////////////// BERNSTEIN ////////////////////////////////////////////////////////////////
 
 Eigen::VectorXd Bernstein1DOrder1(double rParameter)
 {

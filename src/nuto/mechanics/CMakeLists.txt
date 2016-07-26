@@ -74,8 +74,7 @@ elements/ElementDataBase.cpp
 elements/ElementDataConstitutiveBase.cpp
 elements/Element1DInXD.cpp
 elements/Element2DInterface.cpp
-#elements/Element1DInterfaceIGA.cpp #
-#elements/ContinuumElementIGA.cpp #
+elements/ContinuumElementIGA.cpp
 elements/ElementDataConstitutiveIp.cpp
 elements/ElementDataConstitutiveIpNonlocal.cpp
 elements/ElementDataIpBase.cpp
@@ -143,6 +142,8 @@ integrationtypes/IntegrationTypeBase.cpp
 SET(NuToMechanicsInterpolationtypes_SOURCE
 interpolationtypes/InterpolationType.cpp
 interpolationtypes/InterpolationBase.cpp
+interpolationtypes/InterpolationBaseFEM.cpp
+interpolationtypes/InterpolationBaseIGA.cpp
 interpolationtypes/Interpolation1D.cpp
 interpolationtypes/Interpolation1DTruss.cpp
 interpolationtypes/Interpolation1DInterface.cpp
@@ -152,6 +153,8 @@ interpolationtypes/Interpolation2DQuad.cpp
 interpolationtypes/Interpolation3D.cpp
 interpolationtypes/Interpolation3DTetrahedron.cpp
 interpolationtypes/Interpolation3DBrick.cpp
+interpolationtypes/Interpolation1DIGA.cpp
+interpolationtypes/Interpolation1DTrussIGA.cpp
 )
 
 SET(NuToMechanicsIGA_SOURCE

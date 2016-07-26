@@ -54,6 +54,7 @@ class IpDataBase;
 class ElementOutputBase;
 class IpDataStaticDataBase;
 template <int TDim> class ContinuumElement;
+template <int TDim> class ContinuumElementIGA;
 template <int TDim> class ContinuumBoundaryElement;
 
 
@@ -404,6 +405,24 @@ public:
 
     virtual ContinuumElement<3>& AsContinuumElement3D()
     {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<3>.");}
+
+    virtual const ContinuumElementIGA<1>& AsContinuumElementIGA1D() const
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__ , "Element is not of type ContinuumElementIGA<1>.");}
+
+    virtual const ContinuumElementIGA<2>& AsContinuumElementIGA2D() const
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElementIGA<2>.");}
+
+    virtual const ContinuumElementIGA<3>& AsContinuumElementIGA3D() const
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElementIGA<3>.");}
+
+    virtual ContinuumElementIGA<1>& AsContinuumElementIGA1D()
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElementIGA<1>.");}
+
+    virtual ContinuumElementIGA<2>& AsContinuumElementIGA2D()
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElementIGA<2>.");}
+
+    virtual ContinuumElementIGA<3>& AsContinuumElementIGA3D()
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElementIGA<3>.");}
 
 
     virtual const ContinuumBoundaryElement<1>& AsContinuumBoundaryElement1D() const

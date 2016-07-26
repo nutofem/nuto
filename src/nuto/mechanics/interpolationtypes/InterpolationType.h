@@ -25,10 +25,6 @@ namespace NuTo
 class StructureBase;
 class InterpolationBase;
 
-// IGA interpolation patches
-class BSplineCurve;
-class BSplineSurface;
-
 class InterpolationType
 {
 #ifdef ENABLE_SERIALIZATION
@@ -42,6 +38,10 @@ public:
     virtual ~InterpolationType();
 
     const InterpolationBase& Get(const Node::eDof& rDofType) const;
+
+    //! @brief adds a dof type and the corresponding interpolation of IGA type
+    //! @param rDofType ... dof type
+    void AddDofInterpolation(Node::eDof rDofType, Interpolation::eTypeOrder rTypeOrder, int rDegree, const Eigen::VectorXd &rKnots);
 
     //! @brief adds a dof type and the corresponding interpolation order, calculate and store
     //! @param rDofType ... dof type
@@ -125,18 +125,6 @@ public:
 
     //! @brief returns the number of surfaces
     int GetNumSurfaces() const;
-
-    //********************************************
-    //               IGA related
-    //********************************************
-
-    void AddIGAPatch1D(NuTo::Node::eDof rDofType, const BSplineCurve& rCurve);
-
-    void AddIGAPatch2D(NuTo::Node::eDof rDofType, const BSplineSurface& rSurface);
-
-    //********************************************
-    //               DEBUGGING
-    //********************************************
 
     //! @brief returns the dof interpolation information as a string
     std::string Info() const;

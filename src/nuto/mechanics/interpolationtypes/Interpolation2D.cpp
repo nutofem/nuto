@@ -17,7 +17,7 @@
 #include "nuto/mechanics/interpolationtypes/Interpolation2D.h"
 
 NuTo::Interpolation2D::Interpolation2D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
-        InterpolationBase::InterpolationBase(rDofType, rTypeOrder, rDimension)
+        InterpolationBaseFEM::InterpolationBaseFEM(rDofType, rTypeOrder, rDimension)
 {
 
 }
@@ -72,7 +72,7 @@ void NuTo::Interpolation2D::serialize(Archive & ar, const unsigned int version)
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize Interpolation2D\n";
 #endif
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(InterpolationBase);
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(InterpolationBaseFEM);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize Interpolation2D\n";
 #endif
