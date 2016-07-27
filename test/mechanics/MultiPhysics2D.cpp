@@ -285,15 +285,15 @@ int main()
         for (unsigned int i=0; i<NNodes; i++)
         {
             /*
-            double NodeX = myStructure.NodeGetNodePtr(i)->GetCoordinates()[0] / Length;
-            double NodeY = myStructure.NodeGetNodePtr(i)->GetCoordinates()[1] / Height;
+            double NodeX = myStructure.NodeGetNodePtr(i)->Get(Node::COORDINATES)[0] / Length;
+            double NodeY = myStructure.NodeGetNodePtr(i)->Get(Node::COORDINATES)[1] / Height;
             double XVal = 0.5 * sin(NodeX * 3.14) + 0.5 * NodeX * NodeX;
             double YVal = (cos((NodeY + 0.5)* 3.14) + 1.0) * (0.5 +0.5*NodeY);
             double NodeMultiplier = 0.25 +  XVal * 0.75 * YVal;
             */
 
             double NodeMultiplier = 1.0;
-            if(myStructure.NodeGetNodePtr(i)->GetNumRelativeHumidity() != 0)
+            if(myStructure.NodeGetNodePtr(i)->GetNum(Node::RELATIVEHUMIDITY) != 0)
             {
                 myStructure.NodeGetNodePtr(i)->SetRelativeHumidity(0,InitialRelativeHumidity*NodeMultiplier);
             }
@@ -327,7 +327,7 @@ int main()
 
         auto PickNodeFunction = [Length,Height](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(Node::COORDINATES)>0)
                                     {
                                         double x = rNodePtr->GetCoordinate(0);
                                         double y = rNodePtr->GetCoordinate(1);
@@ -348,7 +348,7 @@ int main()
 
         auto PickSingleNodeLeftFunction = [Length,Height](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(Node::COORDINATES)>0)
                                     {
                                         double x = rNodePtr->GetCoordinate(0);
                                         double y = rNodePtr->GetCoordinate(1);
@@ -367,7 +367,7 @@ int main()
 
         auto PickSingleNodeRightFunction = [Length,Height](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(Node::COORDINATES)>0)
                                     {
                                         double x = rNodePtr->GetCoordinate(0);
                                         double y = rNodePtr->GetCoordinate(1);
@@ -396,7 +396,7 @@ int main()
         auto GetBoundaryNodesLambda = [Length,Height](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(Node::COORDINATES)>0)
                                     {
                                         double x = rNodePtr->GetCoordinate(0);
                                         double y = rNodePtr->GetCoordinate(1);

@@ -13,12 +13,12 @@ void  NuTo::ConstraintLinearNodeTemperature::AddToConstraintMatrix(
         int& curConstraintEquation, NuTo::SparseMatrix<double>& rConstraintMatrix) const
 {
     // add constraint to constrain matrix
-    if (mNode->GetNumTemperature()!=1)
+    if (mNode->GetNum(Node::TEMPERATURE)!=1)
     {
         throw MechanicsException(__PRETTY_FUNCTION__,
                 "Node does not have a temperature component or has more than one temperature component.");
     }
-    rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDofTemperature(), 1);
+    rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDof(Node::TEMPERATURE), 1);
 
     // increase constraint equation number
     curConstraintEquation++;
@@ -43,7 +43,7 @@ void NuTo::ConstraintLinearNodeTemperature::GetRHS(int& rCurConstraintEquation,
         NuTo::FullVector<double,Eigen::Dynamic>& rRHS) const
 {
     // add constraint to constrain matrix
-    if (mNode->GetNumTemperature() != 1)
+    if (mNode->GetNum(Node::TEMPERATURE) != 1)
     {
         throw MechanicsException(__PRETTY_FUNCTION__,
             "Node does not have a temperature component or has more than one temperature component.");

@@ -193,7 +193,7 @@ int main()
 
         auto PickNodeFunction = [Length,Height](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(Node::COORDINATES)>0)
                                     {
                                         double x = rNodePtr->GetCoordinate(0);
                                         double y = rNodePtr->GetCoordinate(1);
@@ -215,7 +215,7 @@ int main()
 
         auto PickNodeFunction2 = [Length,Height](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(Node::COORDINATES)>0)
                                     {
                                         double x = rNodePtr->GetCoordinate(0);
                                         double y = rNodePtr->GetCoordinate(1);

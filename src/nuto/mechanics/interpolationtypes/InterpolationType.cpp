@@ -14,7 +14,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/ptr_container/serialize_ptr_map.hpp>
 #include <boost/serialization/set.hpp>
-#include "nuto/math/EigenBoostSerialization.h"
+#include "nuto/math/CustomBoostSerializationExtensions.h"
 #endif
 
 #include "nuto/mechanics/interpolationtypes/InterpolationType.h"
@@ -144,7 +144,9 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
         }
     }
 
-    UpdateLocalStartIndices();
+    mNumActiveDofs = 0;
+    for (auto dof : mActiveDofs)
+        mNumActiveDofs += Get(dof).GetNumDofs();
 
     if (rDofType == Node::COORDINATES)
         UpdateNodeRenumberingIndices();
@@ -273,33 +275,6 @@ int NuTo::InterpolationType::GetNumSurfaces() const
     return mInterpolations.begin()->second->GetNumSurfaces();
 }
 
-void NuTo::InterpolationType::UpdateLocalStartIndices()
-{
-    // calculate local start indices
-    // prescribe a specific order
-
-    std::vector<Node::eDof> orderedDofs(
-    { Node::COORDINATES, Node::DISPLACEMENTS, Node::TEMPERATURE, Node::NONLOCALEQPLASTICSTRAIN, Node::NONLOCALEQSTRAIN, Node::RELATIVEHUMIDITY, Node::WATERVOLUMEFRACTION });
-
-    int currentStartIndex = 0;
-    for (unsigned int i = 0; i < orderedDofs.size(); ++i)
-    {
-        auto dof = orderedDofs[i];
-        if (IsDof(dof))
-        {
-            GetNonConst(dof).mLocalStartIndex = currentStartIndex;
-            if (mActiveDofs.find(dof) != mActiveDofs.end())
-                currentStartIndex += GetNonConst(dof).GetNumDofs();
-        }
-    }
-
-    mNumActiveDofs = 0;
-    for (auto dof : mActiveDofs)
-    {
-        mNumActiveDofs += Get(dof).GetNumDofs();
-    }
-}
-
 void NuTo::InterpolationType::SetIsActive(bool rIsActiveDof, Node::eDof rDofType)
 {
     if (not IsDof(rDofType))
@@ -312,9 +287,9 @@ void NuTo::InterpolationType::SetIsActive(bool rIsActiveDof, Node::eDof rDofType
 
     GetNonConst(rDofType).mIsActive = rIsActiveDof;
 
-    UpdateLocalStartIndices();
-
-
+    mNumActiveDofs = 0;
+    for (auto dof : mActiveDofs)
+        mNumActiveDofs += Get(dof).GetNumDofs();
 }
 
 bool NuTo::InterpolationType::IsActive(const Node::eDof& rDofType) const

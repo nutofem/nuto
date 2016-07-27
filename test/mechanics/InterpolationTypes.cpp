@@ -177,23 +177,6 @@ void CheckTriangle()
     }
 
     CheckNodeIndexing(myIT);
-
-    // check previous dofs for that specific case
-
-    if (myIT.Get(NuTo::Node::COORDINATES).GetLocalStartIndex() != 0) // no coordinates
-        throw NuTo::MechanicsException("[CheckTriangle] Wrong GetNumPreviousActiveDofs for COORDINATES");
-
-    if (myIT.Get(NuTo::Node::DISPLACEMENTS).GetLocalStartIndex() != 0) // displacement is always first
-        throw NuTo::MechanicsException("[CheckTriangle] Wrong GetNumPreviousActiveDofs for DISPLACEMENTS");
-
-    if (myIT.Get(NuTo::Node::TEMPERATURE).GetLocalStartIndex() != 20) // 10x2 previous displacement dofs
-        throw NuTo::MechanicsException("[CheckTriangle] Wrong GetNumPreviousActiveDofs for TEMPERATURE");
-
-    if (myIT.Get(NuTo::Node::NONLOCALEQSTRAIN).GetLocalStartIndex() != 35) // + 15x1 previous temperature dofs
-        throw NuTo::MechanicsException("[CheckTriangle] Wrong GetNumPreviousActiveDofs for NONLOCALEQSTRAIN");
-
-    std::cout << "[CheckPreviousDofs] OK!" << std::endl;
-
 }
 
 void CheckQuad()

@@ -411,7 +411,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             //Calculation
             Eigen::Matrix<double, 1, 1>& internalGradientRH_Boundary_N = (*static_cast<ConstitutiveScalar*>(itOutput.second)).AsScalar();
 
-            double relativeHumidityBoundary = rElement->GetBoundaryControlNode()->GetRelativeHumidity();
+            double relativeHumidityBoundary = rElement->GetBoundaryControlNode()->Get(Node::RELATIVEHUMIDITY).at(0,0);
             internalGradientRH_Boundary_N(0,0) =    mBoundaryDiffusionCoefficientRH * (inputData.mRelativeHumidity - relativeHumidityBoundary);
         }
             break;
@@ -428,7 +428,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             //Calculation
             Eigen::Matrix<double, 1, 1>& internalGradientWV_Boundary_N = (*static_cast<ConstitutiveScalar*>(itOutput.second)).AsScalar();
 
-            double waterVolumeFractionBoundary = GetEquilibriumWaterVolumeFraction(rElement->GetBoundaryControlNode()->GetRelativeHumidity(),
+            double waterVolumeFractionBoundary = GetEquilibriumWaterVolumeFraction(rElement->GetBoundaryControlNode()->Get(Node::RELATIVEHUMIDITY).at(0,0),
                                                                                    StaticData->GetCurrentSorptionCoeff());
             internalGradientWV_Boundary_N(0,0) =    mBoundaryDiffusionCoefficientWV * (inputData.mWaterVolumeFraction - waterVolumeFractionBoundary);
         }

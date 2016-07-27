@@ -22,6 +22,9 @@ class ConstraintEquationTerm
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
+public:
+    //! @brief default constructor
+    ConstraintEquationTerm();
 #endif  // ENABLE_SERIALIZATION
 public:
     //! @brief constructor
@@ -59,15 +62,12 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
 
-    //! @brief default constructor
-    ConstraintEquationTerm();
 #endif // ENABLE_SERIALIZATION
 protected:
     const NodeBase* mNode;           //!< node pointer
     Node::eDof mDofType;             //!< which type of dof (e.g. displacement, rotation, temperature) is constrained
     int mDofComponent;               //!< which dof is constrained (e.g. 0 - dispalacement in x-direction)
     double mCoefficient;             //!< weighting of this term in the constraint equation
-
 
 };
 

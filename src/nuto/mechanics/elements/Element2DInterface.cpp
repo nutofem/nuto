@@ -270,7 +270,7 @@ void NuTo::Element2DInterface::CalculateGlobalRowDofs(BlockFullVector<int>& rGlo
              {
                  const NodeBase* nodePtr = mNodes[interpolationType.GetNodeIndex(iNodeDof)];
                  for (unsigned int iDof = 0; iDof < globalDimension; ++iDof)
-                     dofWiseGlobalRowDofs[globalDimension * iNodeDof + iDof] = nodePtr->GetDofDisplacement(iDof);
+                     dofWiseGlobalRowDofs[globalDimension * iNodeDof + iDof] = nodePtr->GetDof(Node::DISPLACEMENTS, iDof);
              }
 
          }
@@ -459,13 +459,13 @@ Eigen::VectorXd NuTo::Element2DInterface::ExtractNodeValues(int rTimeDerivative,
         {
         case Node::COORDINATES:
         {
-            Eigen::MatrixXd tmp(node->GetCoordinates());
+            Eigen::MatrixXd tmp(node->Get(Node::COORDINATES));
 
-            nodeValues.segment(iNode * globalDimension, globalDimension) = node->GetCoordinates();
+            nodeValues.segment(iNode * globalDimension, globalDimension) = node->Get(Node::COORDINATES);
         }
             break;
         case Node::DISPLACEMENTS:
-            nodeValues.segment(iNode * globalDimension, globalDimension) = node->GetDisplacements();
+            nodeValues.segment(iNode * globalDimension, globalDimension) = node->Get(Node::DISPLACEMENTS);
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for " + Node::DofToString(rDofType));

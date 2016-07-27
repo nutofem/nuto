@@ -21,6 +21,10 @@ class ConstraintLinearEquation :  public NuTo::ConstraintLinear
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
+
+public:
+    //! @brief ... just for serialize
+    ConstraintLinearEquation() {}
 #endif  // ENABLE_SERIALIZATION
     friend class NewmarkIndirect;
 public:
@@ -82,8 +86,7 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 protected:
-    //! @brief ... just for serialize
-    ConstraintLinearEquation(){};
+
 
     std::vector<ConstraintEquationTerm> mTerms;  //!< terms of the constraint equation
     double mRhsValue;       //!< right-hand-side value of the constraint equation

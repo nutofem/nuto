@@ -83,50 +83,9 @@ Eigen::VectorXd NuTo::ContinuumElement<TDim>::ExtractNodeValues(int rTimeDerivat
     for (int iNode = 0; iNode < numNodes; ++iNode)
     {
         const NodeBase& node = *GetNode(iNode, rDofType);
-
-        switch (rDofType)
-        {
-        case Node::COORDINATES:
-            if (TDim == 1)
-                nodalValues.segment<1>(iNode * 1) = node.GetCoordinates1D();
-            if (TDim == 2)
-                nodalValues.segment<2>(iNode * 2) = node.GetCoordinates2D();
-            if (TDim == 3)
-                nodalValues.segment<3>(iNode * 3) = node.GetCoordinates3D();
-            break;
-        case Node::DISPLACEMENTS:
-            if (TDim == 1)
-                nodalValues.segment<1>(iNode * 1) = node.GetDisplacements1D(rTimeDerivative);
-            if (TDim == 2)
-                nodalValues.segment<2>(iNode * 2) = node.GetDisplacements2D(rTimeDerivative);
-            if (TDim == 3)
-                nodalValues.segment<3>(iNode * 3) = node.GetDisplacements3D(rTimeDerivative);
-            break;
-
-        case Node::TEMPERATURE:
-            nodalValues[iNode] = node.GetTemperature(rTimeDerivative);
-            break;
-
-        case Node::NONLOCALEQSTRAIN:
-            nodalValues[iNode] = node.GetNonlocalEqStrain(rTimeDerivative);
-            break;
-
-        case Node::RELATIVEHUMIDITY:
-            nodalValues[iNode] = node.GetRelativeHumidity(rTimeDerivative);
-            break;
-
-        case Node::WATERVOLUMEFRACTION:
-            nodalValues[iNode] = node.GetWaterVolumeFraction(rTimeDerivative);
-            break;
-
-        case Node::DAMAGE:
-            nodalValues[iNode] = node.GetDamage(rTimeDerivative);
-            break;
-
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for " + Node::DofToString(rDofType));
-        }
+        nodalValues.block(iNode * numDofsPerNode, 0, numDofsPerNode, 1) = node.Get(rDofType, rTimeDerivative);
     }
+
     return nodalValues;
 }
 
@@ -526,8 +485,6 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveO
 template<int TDim>
 void NuTo::ContinuumElement<TDim>::CalculateGlobalRowDofs(BlockFullVector<int> &rGlobalRowDofs) const
 {
-    const unsigned globalDimension = GetStructure()->GetDimension();
-
     for (auto dof : mStructure->GetDofStatus().GetActiveDofTypes())
     {
 
@@ -543,60 +500,16 @@ void NuTo::ContinuumElement<TDim>::CalculateGlobalRowDofs(BlockFullVector<int> &
         FullVector<int, Eigen::Dynamic>& dofWiseGlobalRowDofs = rGlobalRowDofs[dof];
         dofWiseGlobalRowDofs.setZero(interpolationType.GetNumDofs());
 
-        switch (dof)
+        unsigned int numDofsPerType = mNodes[interpolationType.GetNodeIndex(0)]->GetNum(dof);
+
+        for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
         {
-        case Node::DISPLACEMENTS:
-        {
-            for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
+            const NodeBase* nodePtr = mNodes[interpolationType.GetNodeIndex(iNodeDof)];
+
+            for (unsigned iDof = 0; iDof < numDofsPerType; ++iDof)
             {
-                const NodeBase* nodePtr = mNodes[interpolationType.GetNodeIndex(iNodeDof)];
-                for (unsigned iDof = 0; iDof < globalDimension; ++iDof)
-                    dofWiseGlobalRowDofs[globalDimension * iNodeDof + iDof] = nodePtr->GetDofDisplacement(iDof);
+                dofWiseGlobalRowDofs[numDofsPerType * iNodeDof + iDof] = nodePtr->GetDof(dof, iDof);
             }
-            break;
-        }
-        case Node::TEMPERATURE:
-        {
-            for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
-            {
-                dofWiseGlobalRowDofs[iNodeDof] = mNodes[interpolationType.GetNodeIndex(iNodeDof)]->GetDofTemperature();
-            }
-            break;
-        }
-        case Node::NONLOCALEQSTRAIN:
-        {
-            for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
-            {
-                dofWiseGlobalRowDofs[iNodeDof] = mNodes[interpolationType.GetNodeIndex(iNodeDof)]->GetDofNonlocalEqStrain();
-            }
-            break;
-        }
-        case Node::RELATIVEHUMIDITY:
-        {
-            for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
-            {
-                dofWiseGlobalRowDofs[iNodeDof] = mNodes[interpolationType.GetNodeIndex(iNodeDof)]->GetDofRelativeHumidity();
-            }
-            break;
-        }
-        case Node::WATERVOLUMEFRACTION:
-        {
-            for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
-            {
-                dofWiseGlobalRowDofs[iNodeDof] = mNodes[interpolationType.GetNodeIndex(iNodeDof)]->GetDofWaterVolumeFraction();
-            }
-            break;
-        }
-        case Node::DAMAGE:
-        {
-            for (int iNodeDof = 0; iNodeDof < numNodes; ++iNodeDof)
-            {
-                dofWiseGlobalRowDofs[iNodeDof] = mNodes[interpolationType.GetNodeIndex(iNodeDof)]->GetDofDamage();
-            }
-            break;
-        }
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for " + Node::DofToString(dof) + ".");
         }
     }
 }
@@ -1289,7 +1202,16 @@ void NuTo::ContinuumElement<TDim>::CalculateNMatrixBMatrixDetJacobian(EvaluateDa
     Eigen::Matrix<double, TDim, TDim> jacobian = CalculateJacobian(derivativeShapeFunctionsGeometryNatural, rData.mNodalValues[Node::COORDINATES]);
     rData.mDetJacobian = jacobian.determinant();
     if (rData.mDetJacobian == 0)
+    {
+        for (auto* node : mNodes)
+        {
+            std::cout << "ElementID " << mStructure->ElementGetId(this) << std::endl;
+            std::cout << "NodeID: " << mStructure->NodeGetId(node) << std::endl;
+            std::cout << node->Get(Node::COORDINATES) << std::endl << std::endl;
+        }
+        std::cout << rData.mNodalValues[Node::COORDINATES] << std::endl;
         throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Determinant of the Jacobian is zero, no inversion possible.");
+    }
 
     Eigen::Matrix<double, TDim, TDim> invJacobian = jacobian.inverse();
 

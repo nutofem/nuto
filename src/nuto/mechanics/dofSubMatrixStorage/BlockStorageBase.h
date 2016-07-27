@@ -6,7 +6,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include <set>
-#include <map>      // needed in all base classes
+#include <unordered_map>      // needed in all base classes
 #include <ostream>  // needed in all base classes
 #include "nuto/mechanics/dofSubMatrixStorage/DofStatus.h"
 
@@ -94,3 +94,8 @@ protected:
 
 } /* namespace NuTo */
 
+#ifdef ENABLE_SERIALIZATION
+#ifndef SWIG
+BOOST_CLASS_EXPORT_KEY(NuTo::BlockStorageBase)
+#endif // SWIG
+#endif // ENABLE_SERIALIZATION

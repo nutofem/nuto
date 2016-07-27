@@ -84,12 +84,8 @@ if (numberGlobalDofs!=3):
 
 #build constraint matrix and rhs
 rhs = myStructure.ConstraintGetRHSBeforeGaussElimination().Export()
-constraintMatrix = myStructure.ConstraintGetConstraintMatrixBeforeGaussElimination()
-constraintMatrix.Info()
+constraintMatrixFull = myStructure.ConstraintGetConstraintMatrixBeforeGaussElimination().ExportToFullMatrix()
 
-constraintMatrixFull = constraintMatrix.ExportToFullMatrix()
-
-print "#############################'"
 
 #correct constraint matrix
 constraintMatrixFullCorrect = nuto.DoubleFullMatrix(3,3)

@@ -1582,24 +1582,8 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>&
         // add node to map
         this->mNodeMap.insert(id, newNode);
 
-        int numCoordinates = nodeVector[countNode]->GetNumCoordinates();
+        newNode->Set(Node::COORDINATES, nodeVector[countNode]->Get(Node::COORDINATES) + rOffset);
 
-        switch (numCoordinates)
-        {
-        case 0:
-            break;
-        case 1:
-            newNode->SetCoordinates1D(nodeVector[countNode]->GetCoordinates1D() + rOffset);
-            break;
-        case 2:
-            newNode->SetCoordinates2D(nodeVector[countNode]->GetCoordinates2D() + rOffset);
-            break;
-        case 3:
-            newNode->SetCoordinates3D(nodeVector[countNode]->GetCoordinates3D() + rOffset);
-            break;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "number of nodes not supported.");
-        }
     }
     //renumbering of dofs for global matrices required
     this->mNodeNumberingRequired = true;

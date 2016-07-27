@@ -51,18 +51,18 @@ void CheckTriangle(NuTo::IntegrationType::eIntegrationType rIntegrationType)
     for (int i = 0; i < element->GetNumNodes(NuTo::Node::DISPLACEMENTS); ++i)
     {
         NuTo::NodeBase* node = element->GetNode(i, NuTo::Node::DISPLACEMENTS);
-        Eigen::Vector2d coord = node->GetCoordinates2D();
+        Eigen::Vector2d coord = node->Get(NuTo::Node::COORDINATES);
         Eigen::Vector2d displ(coord.x()*coord.x(), 0);
-        node->SetDisplacements2D(displ);
+        node->Set(NuTo::Node::DISPLACEMENTS, displ);
     }
 
     element = myStructure.ElementGetElementPtr(1);
     for (int i = 0; i < element->GetNumNodes(NuTo::Node::DISPLACEMENTS); ++i)
     {
         NuTo::NodeBase* node = element->GetNode(i, NuTo::Node::DISPLACEMENTS);
-        Eigen::Vector2d coord = node->GetCoordinates2D();
+        Eigen::Vector2d coord = node->Get(NuTo::Node::COORDINATES);
         Eigen::Vector2d displ(coord.x()*coord.x(), 0);
-        node->SetDisplacements2D(displ);
+        node->Set(NuTo::Node::DISPLACEMENTS, displ);
 
     }
 

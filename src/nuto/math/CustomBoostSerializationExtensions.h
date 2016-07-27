@@ -1,5 +1,4 @@
-#ifndef EIGEN_BOOST_SERIALIZATION
-#define EIGEN_BOOST_SERIALIZATION
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -12,6 +11,13 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/split_free.hpp>
+
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/serialization/split_member.hpp>
+#include <boost/serialization/unique_ptr.hpp>
+#include <memory>
+#include <unordered_map>
 #endif  // ENABLE_SERIALIZATION
 
 #include <eigen3/Eigen/Dense>
@@ -60,12 +66,50 @@ void serialize(Archive & ar, Eigen::Matrix<_Scalar,_Rows,_Cols,_Options,_MaxRows
     boost::serialization::split_free(ar,m,version);
 }
 
-//template<class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-//inline void serialize(Archive & ar, Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> & m, const unsigned int file_version)
-//{
-//    ar & boost::serialization::make_array(m.data(), m.size());
-//}
 
+
+
+namespace serialization {
+
+template<class Archive, class TKey, class TUniquePtrClass, class THash>
+inline void save(Archive& rArchive, const std::unordered_map<TKey, std::unique_ptr<TUniquePtrClass>, THash>& rMap,
+        const unsigned int /* file_version */) {
+
+    int size = rMap.size();
+    rArchive << boost::serialization::make_nvp("size", size);
+
+    for(const auto& pair: rMap) {
+        rArchive << boost::serialization::make_nvp("key", pair.first);
+        rArchive << boost::serialization::make_nvp("value", pair.second);
+    }
 }
 
-#endif
+template<class Archive, class TKey, class TUniquePtrClass, class THash>
+inline void load(Archive& rArchive, std::unordered_map<TKey, std::unique_ptr<TUniquePtrClass>, THash>& rMap,
+        const unsigned int /* file_version */) {
+
+    int size = 0;
+    rArchive >> boost::serialization::make_nvp("size", size);
+
+    rMap.clear();
+    for (int i = 0; i < size; ++i)
+    {
+        TKey key;
+        std::unique_ptr<TUniquePtrClass> value;
+
+        rArchive >> boost::serialization::make_nvp("key", key);
+        rArchive >> boost::serialization::make_nvp("value", value);
+
+        rMap[key] = std::move(value);
+    }
+}
+
+template<class Archive, class TKey, class TUniquePtrClass, class THash>
+inline void serialize(Archive& rArchive, std::unordered_map<TKey, std::unique_ptr<TUniquePtrClass>, THash>& rMap,
+        const unsigned int rFileVersion) {
+    boost::serialization::split_free(rArchive, rMap, rFileVersion);
+}
+
+} // namespace serialization
+} // namespace boost
+

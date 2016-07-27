@@ -194,11 +194,37 @@ public:
 #endif
 
 
+#ifdef ENABLE_SERIALIZATION
+    //! @brief serializes the class
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "start serialization SparseMatrixCSRVector2Symmetric \n";
+#endif
+        ar & boost::serialization::make_nvp("SparseMatrixCSRVector2Symmetric",boost::serialization::base_object< SparseMatrixCSRVector2<T> >(*this));
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "finish serialization SparseMatrixCSRVector2Symmetric \n";
+#endif
+    }
+#endif // ENABLE_SERIALIZATION
+
 
 protected:
 };
 }
 
-
+#ifdef ENABLE_SERIALIZATION
+#ifndef SWIG
+namespace boost{
+template <class T>
+struct is_virtual_base_of <NuTo::SparseMatrixCSRVector2<T>, NuTo::SparseMatrixCSRVector2Symmetric<T>>: public mpl:: true_ {};
+}
+BOOST_CLASS_EXPORT_KEY(NuTo::SparseMatrixCSRVector2Symmetric<double>)
+BOOST_CLASS_EXPORT_KEY(NuTo::SparseMatrixCSRVector2Symmetric<int>)
+#endif // SWIG
+#endif  // ENABLE_SERIALIZATION
 
 #endif // SPARSE_MATRIX_CSR_VECTOR2_SYMMETRIC_DEF_H

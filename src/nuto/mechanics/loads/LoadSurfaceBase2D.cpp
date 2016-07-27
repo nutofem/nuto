@@ -209,10 +209,10 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             for (int iNode = 0; iNode < shapeFunctions.rows(); iNode++)
             {
                 const NodeBase* node = elementPtr->GetNode(interpolationTypeDisps.GetNodeIndex(iNode));
-                assert(node->GetNumDisplacements() == 2);
+                assert(node->GetNum(Node::DISPLACEMENTS) == 2);
                 for (int iDispDof = 0; iDispDof < 2; iDispDof++)
                 {
-                    int theDof = node->GetDofDisplacement(iDispDof);
+                    int theDof = node->GetDof(Node::DISPLACEMENTS, iDispDof);
                     double theLoad = shapeFunctions[iNode] * loadVector(iDispDof);
                     if (theDof < rActiceDofsLoadVector.GetNumRows())
                     {

@@ -85,15 +85,15 @@ void CompareResultsToPaper(NuTo::Structure& rS,
         const NuTo::NodeBase* nodePtr = it.second;
 
 
-        if(nodePtr->GetNumWaterVolumeFraction()<1)
+        if(nodePtr->GetNum(NuTo::Node::WATERVOLUMEFRACTION)<1)
         {
             continue;   // Nodes without WVF cant be checked --- for example boundary control node
         }
 
-        double relevantNodeCoord = nodePtr->GetCoordinates()[relevantDirection];
+        double relevantNodeCoord = nodePtr->Get(NuTo::Node::COORDINATES)[relevantDirection];
         int relevantIndex = static_cast<int>(std::round(relevantNodeCoord / deltaL));
 
-        double nodalWVF = nodePtr->GetWaterVolumeFraction();
+        double nodalWVF = nodePtr->Get(NuTo::Node::WATERVOLUMEFRACTION)[0];
         double paperWVF = PaperValues[relevantIndex];
         if(nodalWVF<paperWVF-tolerance || nodalWVF>paperWVF+tolerance)
         {
@@ -189,9 +189,9 @@ void SimulationTest(std::array<int,TDim> rN,
     auto LambdaGetBoundaryNodes = [rL,rBS](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->GetCoordinate(0);
+                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
                                         if (rBS[0] && ((x >= 0.0   - Tol   && x <= 0.0   + Tol) ||
                                                        (x >= rL[0] - Tol   && x <= rL[0] + Tol)))
                                         {
@@ -200,7 +200,7 @@ void SimulationTest(std::array<int,TDim> rN,
 
                                         if(TDim>1)
                                         {
-                                            double y = rNodePtr->GetCoordinate(1);
+                                            double y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
                                             if (rBS[1] && ((y >= 0.0   - Tol   && y <= 0.0   + Tol) ||
                                                            (y >= rL[1] - Tol   && y <= rL[1] + Tol)))
                                             {
@@ -209,7 +209,7 @@ void SimulationTest(std::array<int,TDim> rN,
                                         }
                                         if(TDim>2)
                                         {
-                                            double z = rNodePtr->GetCoordinate(2);
+                                            double z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
                                             if (rBS[2] && ((z >=  0.0   - Tol   && z <= 0.0   + Tol) ||
                                                            (z >=  rL[2] - Tol   && z <= rL[2] + Tol)))
                                             {

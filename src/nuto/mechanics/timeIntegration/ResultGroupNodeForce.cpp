@@ -23,7 +23,7 @@ int NuTo::ResultGroupNodeForce::GetNumData(const StructureBase& rStructure)const
     if(groupNode.GetNumMembers() < 1)
     	throw MechanicsException("[NuTo::ResultGroupNodeForce::GetNumData] Group has no members.");
 
-	return groupNode.begin()->second->GetNumDisplacements();
+	return groupNode.begin()->second->GetNum(Node::DISPLACEMENTS);
 }
 
 
@@ -35,11 +35,11 @@ void NuTo::ResultGroupNodeForce::CalculateValues(const StructureBase& rStructure
 
     for (auto& itNode : nodeGroup)
     {
-        assert(itNode.second->GetNumDisplacements() == rStructure.GetDimension());
+        assert(itNode.second->GetNum(Node::DISPLACEMENTS) == rStructure.GetDimension());
 
         for (int iDim = 0; iDim < rStructure.GetDimension(); iDim++)
         {
-            int theDof = itNode.second->GetDofDisplacement(iDim);
+            int theDof = itNode.second->GetDof(Node::DISPLACEMENTS, iDim);
 
             if (theDof < rStructure.GetNumActiveDofs(Node::DISPLACEMENTS))
             {

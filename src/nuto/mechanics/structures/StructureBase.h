@@ -332,13 +332,13 @@ public:
     //! @brief Sets the temperature of a node
     //! @param rIdent Node identifier
     //! @param rTemperature Temperature to assign to node
-    void NodeSetTemperature(int rId, const double rTemperature);
+    void NodeSetTemperature(int rId, double rTemperature);
 
     //! @brief Sets the temperature of a node
     //! @param rIdent Node identifier
     //! @param rTimeDerivative Time derivative (0 temperature, 1 temperature change)
     //! @param rTemperature Temperature (change) to assign to node
-    void NodeSetTemperature(int rId, int rTimeDerivative, const double rTemperature);
+    void NodeSetTemperature(int rId, int rTimeDerivative, double rTemperature);
 
     //! @brief returns the node ids of an node group
     //! @param rGroupId  group number

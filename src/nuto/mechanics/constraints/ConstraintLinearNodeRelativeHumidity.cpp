@@ -16,11 +16,11 @@ NuTo::ConstraintLinearNodeRelativeHumidity::ConstraintLinearNodeRelativeHumidity
 void  NuTo::ConstraintLinearNodeRelativeHumidity::AddToConstraintMatrix(int& curConstraintEquation, NuTo::SparseMatrix<double>& rConstraintMatrix) const
 {
     // add constraint to constrain matrix
-    if (mNode->GetNumRelativeHumidity()!=1)
+    if (mNode->GetNum(Node::RELATIVEHUMIDITY)!=1)
     {
         throw MechanicsException("[NuTo::ConstraintLinearNodeRelativeHumidity::AddToConstraintMatrix] Node does not have a relative humidity component or has more than one relative humidity component.");
     }
-    rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDofRelativeHumidity(), 1);
+    rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDof(Node::RELATIVEHUMIDITY), 1);
 
     // increase constraint equation number
     curConstraintEquation++;
@@ -54,7 +54,7 @@ void NuTo::ConstraintLinearNodeRelativeHumidity::SetRHS(double rRHS)
 void NuTo::ConstraintLinearNodeRelativeHumidity::GetRHS                                          (int& rCurConstraintEquation, NuTo::FullVector<double,Eigen::Dynamic>& rRHS) const
 {
     // add constraint to constrain matrix
-    if (mNode->GetNumRelativeHumidity()!=1)
+    if (mNode->GetNum(Node::RELATIVEHUMIDITY)!=1)
     {
         throw MechanicsException("[NuTo::ConstraintLinearNodeRelativeHumidity::GetRHS] Node does not have a relative humidity component or has more than one relative humidity component.");
     }

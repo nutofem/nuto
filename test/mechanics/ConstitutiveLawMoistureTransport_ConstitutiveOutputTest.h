@@ -98,17 +98,17 @@ void ConstitutiveOutputTest_SetNodalValues(NuTo::Structure& rS, const MoistureTr
 
         NuTo::NodeBase& node =  *rS.NodeGetNodePtr(i);
 
-        double factor = (node.GetCoordinate(0)<0)? 0.5 : 1.0;
+        double factor = (node.Get(NuTo::Node::COORDINATES)[0]<0)? 0.5 : 1.0;
 
-        if(node.GetNumRelativeHumidity() != 0)
+        if(node.GetNum(NuTo::Node::RELATIVEHUMIDITY) != 0)
         {
-            node.SetRelativeHumidity(0,rMT.InitialRelativeHumidity * factor) ;
-            node.SetRelativeHumidity(1,rMT.InitialRelativeHumidity * factor * 0.01) ;
+            node.Set(NuTo::Node::RELATIVEHUMIDITY, 0, rMT.InitialRelativeHumidity * factor) ;
+            node.Set(NuTo::Node::RELATIVEHUMIDITY, 1, rMT.InitialRelativeHumidity * factor * 0.01) ;
         }
-        if(node.GetNumWaterVolumeFraction() != 0)
+        if(node.GetNum(NuTo::Node::WATERVOLUMEFRACTION) != 0)
         {
-            node.SetWaterVolumeFraction(0,rMT.InitialWaterVolumeFraction * factor);
-            node.SetWaterVolumeFraction(1,rMT.InitialWaterVolumeFraction * factor * 0.01);
+            node.Set(NuTo::Node::WATERVOLUMEFRACTION, 0, rMT.InitialWaterVolumeFraction * factor);
+            node.Set(NuTo::Node::WATERVOLUMEFRACTION, 1, rMT.InitialWaterVolumeFraction * factor * 0.01);
         }
     }
 }
@@ -375,9 +375,9 @@ void ConstitutiveOutputTests(std::map<NuTo::Node::eDof,NuTo::Interpolation::eTyp
                                 {
                                     double Tol = 1.e-6;
 
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->GetCoordinate(0);
+                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
 
                                         if (x >= 0.0  -Tol   && x <= 0.0  + Tol)
                                         {
@@ -395,7 +395,7 @@ void ConstitutiveOutputTests(std::map<NuTo::Node::eDof,NuTo::Interpolation::eTyp
 
     int boundaryNodeID = S.NodeCreateDOFs("RELATIVEHUMIDITY");
     NuTo::NodeBase* BEPtr = S.NodeGetNodePtr(boundaryNodeID);
-    BEPtr->SetRelativeHumidity(MT.BoundaryEnvironmentalRH);
+    BEPtr->Set(NuTo::Node::RELATIVEHUMIDITY, MT.BoundaryEnvironmentalRH);
 //    rS.BoundaryElementsCreate(eGrpBE,nGrpBE,rS.NodeGetNodePtr(boundaryNodeID));
     S.BoundaryElementsCreate(eGrpBE,nGrpBE,BEPtr);
 

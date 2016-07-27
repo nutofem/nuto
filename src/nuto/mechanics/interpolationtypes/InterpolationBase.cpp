@@ -13,7 +13,7 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include "nuto/math/EigenBoostSerialization.h"
+#include "nuto/math/CustomBoostSerializationExtensions.h"
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
@@ -26,7 +26,6 @@ NuTo::InterpolationBase::InterpolationBase(Node::eDof rDofType, NuTo::Interpolat
     mIsActive(true),
     mNumDofs(-1),
     mNumNodes(-1),
-    mLocalStartIndex(0),
     mUpdateRequired(true),
     mDimension(rDimension)
 {
@@ -124,11 +123,6 @@ int NuTo::InterpolationBase::GetNumDofs() const
 {
     assert(mNumNodes != -1);
     return mNumDofs;
-}
-
-int NuTo::InterpolationBase::GetLocalStartIndex() const
-{
-    return mLocalStartIndex;
 }
 
 int NuTo::InterpolationBase::GetNumNodes() const
@@ -273,13 +267,16 @@ void NuTo::InterpolationBase::serialize(Archive & ar, const unsigned int version
     ar & BOOST_SERIALIZATION_NVP(mNumDofs);
     ar & BOOST_SERIALIZATION_NVP(mNumNodes);
 
-    ar & boost::serialization::make_nvp("mNodeIndices", mNodeIndices);
-    ar & BOOST_SERIALIZATION_NVP(mLocalStartIndex);
-    ar & boost::serialization::make_nvp("mNodeCoordinates", mNodeCoordinates);
-    ar & boost::serialization::make_nvp("mShapeFunctions", mShapeFunctions);
-    ar & boost::serialization::make_nvp("mNodeCoordinates", mDerivativeShapeFunctionsNatural);
+    ar & BOOST_SERIALIZATION_NVP(mNodeIndices);
+
+    ar & BOOST_SERIALIZATION_NVP(mNodeCoordinates);
+    ar & BOOST_SERIALIZATION_NVP(mShapeFunctions);
+    ar & BOOST_SERIALIZATION_NVP(mMatrixN);
+    ar & BOOST_SERIALIZATION_NVP(mDerivativeShapeFunctionsNatural);
+    ar & BOOST_SERIALIZATION_NVP(mSurfaceNodeIndices);
     ar & BOOST_SERIALIZATION_NVP(mUpdateRequired);
     ar & boost::serialization::make_nvp("mDimension", const_cast<int&>(mDimension));
+
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize InterpolationBase" << std::endl;
 #endif

@@ -314,7 +314,7 @@ void solve(NuTo::Structure *myStructure, double solution, double tol = 1.e-6)
 
 //    double DisplacementCorrect = (Force*Length)/(Area*YoungsModulus);
 
-    double nodeDisp = myStructure->NodeGetNodePtr(myStructure->GetNumNodes()-1)->GetDisplacement(0);
+    double nodeDisp = myStructure->NodeGetNodePtr(myStructure->GetNumNodes()-1)->Get(NuTo::Node::DISPLACEMENTS)[0];
 
     std::cout << "Displacement last node FEM:\n" << nodeDisp << std::endl;
     std::cout << "Displacement last node analytical:\n" << solution << std::endl;

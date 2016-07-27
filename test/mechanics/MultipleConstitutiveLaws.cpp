@@ -195,13 +195,13 @@ public:
         {
 
 
-            if(mS.NodeGetNodePtr(i)->GetNumRelativeHumidity() != 0)
+            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::RELATIVEHUMIDITY) != 0)
             {
-                mS.NodeGetNodePtr(i)->SetRelativeHumidity(0,InitialRelativeHumidity) ;
+                mS.NodeGetNodePtr(i)->Set(NuTo::Node::RELATIVEHUMIDITY, 0,InitialRelativeHumidity) ;
             }
-            if(mS.NodeGetNodePtr(i)->GetNumWaterVolumeFraction() != 0)
+            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::WATERVOLUMEFRACTION) != 0)
             {
-                mS.NodeGetNodePtr(i)->SetWaterVolumeFraction(0,InitialWaterVolumeFraction);
+                mS.NodeGetNodePtr(i)->Set(NuTo::Node::WATERVOLUMEFRACTION, 0, InitialWaterVolumeFraction);
             }
         }
     }
@@ -579,12 +579,12 @@ void CheckMechanicsResults(NuTo::Structure& rS)
     BOOST_FOREACH(NodeMap::const_iterator::value_type it, nodePtrMap)
     {
         const NuTo::NodeBase* nodePtr = it.second;
-        if(nodePtr->GetNumDisplacements()<1)
+        if(nodePtr->GetNum(NuTo::Node::DISPLACEMENTS)<1)
         {
             continue;   // Nodes without Displacements cant be checked
         }
-        double coordX = nodePtr->GetCoordinate(0);
-        double dispX  = nodePtr->GetDisplacement(0);
+        double coordX = nodePtr->Get(NuTo::Node::COORDINATES)[0];
+        double dispX  = nodePtr->Get(NuTo::Node::DISPLACEMENTS)[0];
         double diff   = std::abs(coordX * 0.1) - std::abs(dispX);
         constexpr const double tolerance = 1e-6;
         if((diff >tolerance || diff < -tolerance))// && coordX > 0)
@@ -636,24 +636,26 @@ void CheckMoistureTransportResults(NuTo::Structure& rS,
         const NuTo::NodeBase* nodePtr = it.second;
 
 
-        if(nodePtr->GetNumWaterVolumeFraction()<1)
+        if(nodePtr->GetNum(NuTo::Node::WATERVOLUMEFRACTION)<1)
         {
             continue;   // Nodes without WVF cant be checked --- for example boundary control node
         }
 
-        double relevantNodeCoord = nodePtr->GetCoordinates()[0];
+        double relevantNodeCoord = nodePtr->Get(NuTo::Node::COORDINATES)[0];
         int relevantIndex = static_cast<int>(std::round(relevantNodeCoord / deltaL));
 
-        double nodalWVF = nodePtr->GetWaterVolumeFraction();
+        double nodalWVF = nodePtr->Get(NuTo::Node::WATERVOLUMEFRACTION)[0];
         double paperWVF = PaperValues[relevantIndex];
-        if(nodalWVF<paperWVF-tolerance || nodalWVF>paperWVF+tolerance)
+        if(std::abs(nodalWVF-paperWVF) > tolerance)
         {
+            std::cout << "nodalWVF nuto:  " << nodalWVF << std::endl;
+            std::cout << "nodalWVF paper: " << paperWVF << std::endl;
             ++numMismatchingValues;
         }
     }
     if(numMismatchingValues>0)
     {
-        throw NuTo::Exception(__PRETTY_FUNCTION__,"One ore more calculated water volue fraction values exceeds the tolerance when compared to reference values");
+        throw NuTo::Exception(__PRETTY_FUNCTION__,"One or more calculated water volume fraction values exceed the tolerance when compared to reference values.");
     }
     std::cout << "Water volume fraction correct!" << std::endl;
 }
@@ -743,9 +745,9 @@ void AdditiveOutputTest(std::array<int,TDim> rN,
     auto LambdaGetBoundaryNodes = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->GetCoordinate(0);
+                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
                                         if ((x >= 0.0   - Tol   && x <= 0.0   + Tol) ||
                                             (x >= rL[0] - Tol   && x <= rL[0] + Tol))
                                         {
@@ -790,12 +792,12 @@ void AdditiveOutputTest(std::array<int,TDim> rN,
 
     auto lambdaGetNodesLeftSide = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNumDisplacements()==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->GetCoordinate(0);
+                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
                                         if (x >= 0.0   - Tol   && x <= 0.0   + Tol)
                                         {
                                             return true;
@@ -806,19 +808,19 @@ void AdditiveOutputTest(std::array<int,TDim> rN,
 
     auto lambdaGetNodeLeftBottom = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNumDisplacements()==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
                                     {
                                         double x=0.0,
                                                y=0.0,
                                                z=0.0;
-                                        x = rNodePtr->GetCoordinate(0);
+                                        x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
                                         if(TDim>1)
-                                            y = rNodePtr->GetCoordinate(1);
+                                            y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
                                         if(TDim>2)
-                                            z = rNodePtr->GetCoordinate(2);
+                                            z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
 
                                         if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
                                             y >= 0.0   - Tol   && y <= 0.0   + Tol &&
@@ -832,12 +834,12 @@ void AdditiveOutputTest(std::array<int,TDim> rN,
 
     auto lambdaGetNodesRightSide = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNumDisplacements()==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->GetCoordinate(0);
+                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
                                         if (x >= rL[0] - Tol   && x <= rL[0] + Tol)
                                         {
                                             return true;

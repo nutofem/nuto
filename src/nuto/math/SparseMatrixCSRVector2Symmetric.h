@@ -796,4 +796,5 @@ const NuTo::SparseMatrixCSRVector2Symmetric<T>& NuTo::SparseMatrixCSRVector2Symm
 {
 	return *this;
 }
+
 #endif // SPARSE_MATRIX_CSR_VECTOR2_SYMMETRIC_H

@@ -17,7 +17,7 @@ class BlockFullVector: public BlockStorageBase
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
     BlockFullVector() {}
-//    template<class Archive> void serialize(Archive & ar, const unsigned int version);
+    template<class Archive> void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
 public:
@@ -150,11 +150,16 @@ public:
 
 private:
 
-    std::map<Node::eDof, NuTo::FullVector<T, Eigen::Dynamic>> mData;
+    std::unordered_map<Node::eDof, NuTo::FullVector<T, Eigen::Dynamic>, Node::eDofHash> mData;
 
 };
 
 } /* namespace NuTo */
 
 
-
+#ifdef ENABLE_SERIALIZATION
+#ifndef SWIG
+BOOST_CLASS_EXPORT_KEY(NuTo::BlockFullVector<double>)
+BOOST_CLASS_EXPORT_KEY(NuTo::BlockFullVector<int>)
+#endif // SWIG
+#endif // ENABLE_SERIALIZATION

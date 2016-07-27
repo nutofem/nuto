@@ -158,6 +158,13 @@ template void SparseMatrixCSRVector2General<int>::Restore (const std::string&, s
 template void SparseMatrixCSRVector2General<double>::Save (const std::string&, std::string) const;
 template void SparseMatrixCSRVector2General<double>::Restore (const std::string&, std::string);
 
+
+
 #endif // ENABLE_SERIALIZATION
 
 }
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::SparseMatrixCSRVector2General<double>)
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::SparseMatrixCSRVector2General<int>)
+#endif  // ENABLE_SERIALIZATION

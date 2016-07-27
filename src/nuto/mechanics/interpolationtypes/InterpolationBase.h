@@ -64,10 +64,6 @@ public:
     //! @brief returns the number of dofs
     int GetNumDofs() const;
 
-    //! @brief returns the start index that describes where to place the element sub-vectors and sub-matrices of rDofType
-    //! in a multi-physics context in the element vectors and matrices
-    int GetLocalStartIndex() const;
-
     //********************************************
     //             NODE METHODS
     //********************************************
@@ -222,8 +218,6 @@ protected:
     int mNumNodes;
 
     std::vector<int> mNodeIndices;
-
-    int mLocalStartIndex;
 
     // members for each integration point
     std::vector<Eigen::VectorXd> mNodeCoordinates;

@@ -1036,7 +1036,7 @@ const Eigen::VectorXi NuTo::Element1D::CalculateGlobalRowDofs() const
             {
             case Node::DISPLACEMENTS:
             {
-                globalRowDofs[index++] = nodePtr->GetDofDisplacement(0);
+                globalRowDofs[index++] = nodePtr->GetDof(Node::DISPLACEMENTS, 0);
             }
                 break;
             case Node::TEMPERATURE:

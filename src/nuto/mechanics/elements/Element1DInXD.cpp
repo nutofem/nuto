@@ -14,7 +14,7 @@
 #include "nuto/math/FullMatrix.h"
 
 #ifdef ENABLE_SERIALIZATION
-#include "nuto/math/EigenBoostSerialization.h"
+#include "nuto/math/CustomBoostSerializationExtensions.h"
 #endif
 
 
@@ -125,10 +125,10 @@ const Eigen::VectorXd NuTo::Element1DInXD::ExtractGlobalNodeValues(int rTimeDeri
         switch (rDofType)
         {
         case Node::COORDINATES:
-            globalNodeValues.segment(iNode * numDofsPerNode, structureDim) = node.GetCoordinates();
+            globalNodeValues.segment(iNode * numDofsPerNode, structureDim) = node.Get(Node::COORDINATES);
             break;
         case Node::DISPLACEMENTS:
-            globalNodeValues.segment(iNode * numDofsPerNode, structureDim) = node.GetDisplacements(rTimeDerivative);
+            globalNodeValues.segment(iNode * numDofsPerNode, structureDim) = node.Get(Node::DISPLACEMENTS, rTimeDerivative);
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for " + Node::DofToString(rDofType));
@@ -306,7 +306,7 @@ void NuTo::Element1DInXD::CheckElement()
 //            {
 //                const NodeBase* nodePtr = mNodes[interpolationType.GetNodeIndex(iNodeDof)];
 //                for (unsigned iDof = 0; iDof < globalDimension; ++iDof)
-//                    dofWiseGlobalRowDofs[globalDimension * iNodeDof + iDof] = nodePtr->GetDofDisplacement(iDof);
+//                    dofWiseGlobalRowDofs[globalDimension * iNodeDof + iDof] = nodePtr->GetDof(Node::DISPLACEMENTS, iDof);
 //            }
 //            break;
 //        }

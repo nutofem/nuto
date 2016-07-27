@@ -239,9 +239,9 @@ void NuTo::StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, int rDire
     for (unsigned int countNode = 0; countNode < nodeVector.size(); countNode++)
     {
         NodeBase* nodePtr(nodeVector[countNode].second);
-        if (nodePtr->GetNumCoordinates() < 1)
+        if (nodePtr->GetNum(Node::COORDINATES) < 1)
             continue;
-        double coordinate = nodePtr->GetCoordinate(rDirection);
+        double coordinate = nodePtr->Get(Node::COORDINATES)[rDirection];
 
         if (coordinate >= rMin && coordinate <= rMax)
             itGroup->second->AddMember(nodeVector[countNode].first, nodePtr);
@@ -315,9 +315,9 @@ void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullVec
     for (unsigned int countNode = 0; countNode < nodeVector.size(); countNode++)
     {
         NodeBase* nodePtr(nodeVector[countNode].second);
-        if (nodePtr->GetNumCoordinates() < 1)
+        if (nodePtr->GetNum(Node::COORDINATES) < 1)
             continue;
-        Eigen::Matrix<double, Eigen::Dynamic, 1> dCoordinates = nodePtr->GetCoordinates() - rCenter;
+        Eigen::VectorXd dCoordinates = nodePtr->Get(Node::COORDINATES) - rCenter;
         double r2 = dCoordinates.dot(dCoordinates);
 
         if (r2 >= rMin2 && r2 <= rMax2)
@@ -371,10 +371,10 @@ void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, NuTo:
         for (unsigned int countNode = 0; countNode < nodeVector.size(); countNode++)
         {
             NodeBase* nodePtr(nodeVector[countNode].second);
-            if (nodePtr->GetNumCoordinates() != 2)
+            if (nodePtr->GetNum(Node::COORDINATES) != 2)
                 continue;
             double r2(0.);
-            coordinates = nodePtr->GetCoordinates2D();
+            coordinates = nodePtr->Get(Node::COORDINATES);
             vecDelta = coordinates - rCenter;
 
             r2 = (vecDelta(0) * vecDelta(0) + vecDelta(1) * vecDelta(1));
@@ -403,10 +403,10 @@ void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, NuTo:
         for (unsigned int countNode = 0; countNode < nodeVector.size(); countNode++)
         {
             NodeBase* nodePtr(nodeVector[countNode].second);
-            if (nodePtr->GetNumCoordinates() != 3)
+            if (nodePtr->GetNum(Node::COORDINATES) != 3)
                 continue;
             double r2(0.);
-            coordinates = nodePtr->GetCoordinates3D();
+            coordinates = nodePtr->Get(Node::COORDINATES);
             vecPtrCenter = coordinates - rCenter;
 
             //get projection onto axis

@@ -121,11 +121,11 @@ void CheckStiffnesses(NuTo::Structure& rStructure)
     for (int i = 0; i < nodeIds.GetNumRows(); ++i)
     {
         NuTo::NodeBase* node = rStructure.NodeGetNodePtr(nodeIds.GetValue(i));
-        Eigen::VectorXd disps = node->GetCoordinates() / 100. * boundaryDisplacement;
-        node->SetDisplacements(disps);
+        Eigen::VectorXd disps = node->Get(NuTo::Node::COORDINATES) / 100. * boundaryDisplacement;
+        node->Set(NuTo::Node::DISPLACEMENTS, disps);
 
-        if (node->GetNumNonlocalEqStrain() > 0)
-            node->SetNonlocalEqStrain(disps(0, 0) / 10);
+        if (node->GetNum(NuTo::Node::NONLOCALEQSTRAIN) > 0)
+            node->Set(NuTo::Node::NONLOCALEQSTRAIN, disps(0, 0) / 10);
     }
 
 //    rStructure.Info();
@@ -439,7 +439,7 @@ void GroupRemoveNodesWithoutDisplacements(NuTo::Structure& rStructure, int rGrou
     {
         int nodeId = ids.GetValue(i);
         NuTo::NodeBase* node = rStructure.NodeGetNodePtr(nodeId);
-        if (node->GetNumDisplacements() == 0)
+        if (node->GetNum(NuTo::Node::DISPLACEMENTS) == 0)
         {
             NuTo::GroupBase* group = rStructure.GroupGetGroupPtr(rGroupNodeId);
             group->RemoveMember(nodeId);

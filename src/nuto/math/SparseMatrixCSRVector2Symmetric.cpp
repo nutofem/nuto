@@ -161,3 +161,8 @@ template void SparseMatrixCSRVector2Symmetric<double>::Restore (const std::strin
 #endif // ENABLE_SERIALIZATION
   
 }
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::SparseMatrixCSRVector2Symmetric<double>)
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::SparseMatrixCSRVector2Symmetric<int>)
+#endif  // ENABLE_SERIALIZATION

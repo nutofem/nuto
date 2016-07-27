@@ -30,7 +30,7 @@ void NuTo::LoadNodeHeatFlux1D::AddLoadToGlobalSubVectors(int rLoadCase,
     assert(rDependentDofsLoadVector.GetNumColumns()==1);
     try
     {
-        int dof = mNode->GetDofTemperature();
+        int dof = mNode->GetDof(Node::TEMPERATURE);
         assert(dof >= 0);
         if (dof < rActiceDofsLoadVector.GetNumRows())
         {

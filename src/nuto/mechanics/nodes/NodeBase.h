@@ -4,17 +4,14 @@
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
-#include <boost/serialization/array.hpp>
-#include "nuto/math/EigenBoostSerialization.h"
 #else
 #include <boost/array.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include <array>
+#include <map>
 #include <assert.h>
+#include <nuto/math/FullVector_Def.h>
 
-#include "nuto/math/FullMatrix_Def.h"
-#include "nuto/math/FullVector_Def.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
@@ -27,279 +24,186 @@
 
 namespace NuTo
 {
-class NodeDisplacementsMultiscale2D;
-//! @author Jörg F. Unger, ISM
-//! @date October 2009
+//! @author Thomas Titscher, BAM
+//! @date July 2016
 //! @brief ... standard abstract class for all nodes
 class NodeBase
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
-#endif  // ENABLE_SERIALIZATION
-
-public:
-    //! @brief constructor
-    NodeBase();
-
-    //! @brief destructor
-    virtual ~NodeBase(){}
-
-    //! @brief assignment operator
-    NodeBase& operator=(NodeBase const& rOther) = default;
-
-#ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
-#endif // ENABLE_SERIALIZATION
+#endif  // ENABLE_SERIALIZATION
 
-    //! @brief sets the global dofs
-    //! @param rDOF current maximum DOF, this variable is increased within the routine
-    virtual void SetGlobalDofs(int& rDOF);
+public:
+    //! @brief constructor
+    NodeBase() {}
+
+    //! @brief destructor
+    virtual ~NodeBase() {}
+
+    //! @brief assignment operator
+    NodeBase& operator=(NodeBase const& rOther) = default;
 
     //! @brief sets the global dofs numbers for each dof type
     //! @param rDofNumbers ... map containing the dof type and the current number
-    virtual void SetGlobalDofsNumbers(std::map<Node::eDof, int>& rDofNumbers);
-
-    //! @brief write dof values to the node (based on global dof number)
-    //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    virtual void SetGlobalDofValues(int rTimeDerivative, const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues);
-
-    //! @brief extract dof values from the node (based on global dof number)
-    //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
-    //! @param rActiveDofValues ... active dof values
-    //! @param rDependentDofValues ... dependent dof values
-    virtual void GetGlobalDofValues(int rTimeDerivative, FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const;
-
+    virtual void SetGlobalDofsNumbers(std::map<Node::eDof, int>& rDofNumbers)
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
+    }
 
     //! @brief write dof values to the node (based on global dof number) for a specific dof type
     //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
     //! @param rDofType ... specific dof type
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void SetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues);
+    virtual void SetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues)
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
+    }
 
     //! @brief extract dof values from the node (based on global dof number) for a specific dof type
     //! @param rTimeDerivative ... time derivative (e.g. 0 disp, 1 vel, 2 acc)
     //! @param rDofType ... specific dof type
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void GetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const;
-
-
-    //! @brief extract all dof numbers from the node (based on global dof number)
-    //virtual int* GetGlobalDofs();
-
-    //! @brief renumber the global dofs according to predefined ordering
-    //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
-    virtual void RenumberGlobalDofs(std::vector<int>& rMappingInitialToNewOrdering);
+    virtual void GetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
+    }
 
     //! @brief renumber the global dofs according to predefined ordering
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
-    virtual void RenumberGlobalDofs(Node::eDof rDof, std::vector<int>& rMappingInitialToNewOrdering);
+    virtual void RenumberGlobalDofs(Node::eDof rDof, std::vector<int>& rMappingInitialToNewOrdering)
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
+    }
 
 
     //! @brief returns the number of time derivatives stored at the node
     //! @return number of derivatives
-    virtual int GetNumTimeDerivatives()const;
+    virtual int GetNumTimeDerivatives()const
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
+    }
 
     //*************************************************
-    //************     COORDINATES      ***************
-    //*************************************************
-    virtual int GetNumCoordinates() const;
-    virtual double GetCoordinate(short rComponent) const;
-
-    virtual const Eigen::Matrix<double, 1, 1>& GetCoordinates1D() const;
-    virtual const Eigen::Matrix<double, 2, 1>& GetCoordinates2D() const;
-    virtual const Eigen::Matrix<double, 3, 1>& GetCoordinates3D() const;
-    virtual const Eigen::Matrix<double, Eigen::Dynamic, 1> GetCoordinates() const;
-
-    virtual void SetCoordinates1D(const Eigen::Matrix<double, 1, 1>& rCoordinates);
-    virtual void SetCoordinates2D(const Eigen::Matrix<double, 2, 1>& rCoordinates);
-    virtual void SetCoordinates3D(const Eigen::Matrix<double, 3, 1>& rCoordinates);
-    virtual void SetCoordinates  (const Eigen::Matrix<double, Eigen::Dynamic, 1>& rCoordinates);
-
-
-
-    //*************************************************
-    //************    DISPLACEMENTS     ***************
-    //*************************************************
-    virtual int GetNumDisplacements() const;
-    virtual int GetDofDisplacement(int rComponent) const;
-    virtual double GetDisplacement(short rIndex) const;
-
-    const Eigen::Matrix<double, 1, 1>& GetDisplacements1D() const;
-    const Eigen::Matrix<double, 2, 1>& GetDisplacements2D() const;
-    const Eigen::Matrix<double, 3, 1>& GetDisplacements3D() const;
-    const Eigen::Matrix<double, Eigen::Dynamic, 1> GetDisplacements() const;
-
-    virtual const Eigen::Matrix<double, 1, 1>& GetDisplacements1D(int rTimeDerivative) const;
-    virtual const Eigen::Matrix<double, 2, 1>& GetDisplacements2D(int rTimeDerivative) const;
-    virtual const Eigen::Matrix<double, 3, 1>& GetDisplacements3D(int rTimeDerivative) const;
-    virtual const Eigen::Matrix<double, Eigen::Dynamic, 1> GetDisplacements(int rTimeDerivative) const;
-
-    void SetDisplacements1D(const Eigen::Matrix<double, 1, 1>& rDisplacements);
-    void SetDisplacements2D(const Eigen::Matrix<double, 2, 1>& rDisplacements);
-    void SetDisplacements3D(const Eigen::Matrix<double, 3, 1>& rDisplacements);
-    void SetDisplacements  (const Eigen::Matrix<double, Eigen::Dynamic, 1>& rDisplacements);
-
-    virtual void SetDisplacements1D(int rTimeDerivative, const Eigen::Matrix<double, 1, 1>& rDisplacements);
-    virtual void SetDisplacements2D(int rTimeDerivative, const Eigen::Matrix<double, 2, 1>& rDisplacements);
-    virtual void SetDisplacements3D(int rTimeDerivative, const Eigen::Matrix<double, 3, 1>& rDisplacements);
-    virtual void SetDisplacements  (int rTimeDerivative, const Eigen::Matrix<double, Eigen::Dynamic, 1>& rDisplacements);
-
-    //*************************************************
-    //************       ROTATIONS      ***************
+    //************       ACCESS         ***************
     //*************************************************
 
-    virtual int GetNumRotations()const;
-    virtual int GetDofRotation(int rComponent)const;
-    virtual double GetRotation(short rIndex)const;
+    //! @brief returns the total number of dofs
+    virtual int GetNumDofs() const
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
+    }
 
-    const Eigen::Matrix<double, 1, 1>& GetRotations2D() const;
-    const Eigen::Matrix<double, 3, 1>& GetRotations3D() const;
-    const Eigen::Matrix<double, Eigen::Dynamic, 1> GetRotations() const;
+    //! @brief returns the number of dofs for a specific dof type
+    //! @param rDof ... specific dof type
+    virtual int GetNum(Node::eDof rDof) const
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
+    }
 
-    virtual const Eigen::Matrix<double, 1, 1>& GetRotations2D(int rTimeDerivative) const;
-    virtual const Eigen::Matrix<double, 3, 1>& GetRotations3D(int rTimeDerivative) const;
-    virtual const Eigen::Matrix<double, Eigen::Dynamic, 1> GetRotations(int rTimeDerivative) const;
+    //! @brief returns the global dof number for a specific dof type
+    //! @param rDof ... specific dof type
+    //! @param rComponent ... component index of the dof type (e.g. 0,1,2 for coordinates in 3D)
+    virtual int GetDof(Node::eDof rDof, int rComponent) const
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
+    }
 
-    void SetRotations2D(const Eigen::Matrix<double, 1, 1>& rRotations);
-    void SetRotations3D(const Eigen::Matrix<double, 3, 1>& rRotations);
-    void SetRotations  (const Eigen::Matrix<double, Eigen::Dynamic, 1>& rRotations);
+    //! @brief returns the global dof number for a specific dof type with only one dof (scalar dof)
+    //! @param rDof ... specific dof type
+    int GetDof(Node::eDof rDof) const
+    {
+        assert(GetNum(rDof) == 1);
+        return GetDof(rDof, 0);
+    }
 
+    //! @brief returns the dof values for a specific dof
+    //! @param rDof ... specific dof type
+    //! @param rTimeDerivative ... time derivative
+    virtual const Eigen::VectorXd& Get(Node::eDof rDof, int rTimeDerivative) const
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
+    }
 
-    virtual void SetRotations2D(int rTimeDerivative, const Eigen::Matrix<double, 1, 1>& rRotations);
-    virtual void SetRotations3D(int rTimeDerivative, const Eigen::Matrix<double, 3, 1>& rRotations);
-    virtual void SetRotations  (int rTimeDerivative, const Eigen::Matrix<double, Eigen::Dynamic, 1>& rRotations);
+    //! @brief returns the dof values for a specific dof
+    //! @param rDof ... specific dof type
+    const Eigen::VectorXd& Get(Node::eDof rDof) const
+    {
+        return Get(rDof, 0);
+    }
 
+    //! @brief sets the dof values for a specific dof
+    //! @param rDof ... specific dof type
+    //! @param rTimeDerivative ... time derivative
+    //! @param rValue ... dof value
+    virtual void Set(Node::eDof rDof, int rTimeDerivative, const Eigen::VectorXd& rValue)
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
+    }
 
-    //*************************************************
-    //************      TEMPERATURE     ***************
-    //*************************************************
+    //! @brief sets the dof values for a specific dof
+    //! @param rDof ... specific dof type
+    //! @param rValue ... dof value
+    void Set(Node::eDof rDof, const Eigen::VectorXd& rValue)
+    {
+        Set(rDof, 0, rValue);
+    }
 
-    virtual int GetNumTemperature() const;
-    virtual int GetDofTemperature() const;
+    //! @brief sets the dof values for a specific scalar dof
+    //! @param rDof ... specific dof type
+    //! @param rTimeDerivative ... time derivative
+    //! @param rValue ... dof scalar value
+    void Set(Node::eDof rDof, int rTimeDerivative, double rValue)
+    {
+        Eigen::VectorXd value(1);
+        value[0] = rValue;
+        Set(rDof, 0, value);
+    }
 
-    double GetTemperature() const;
-    virtual double GetTemperature(int rTimeDerivative) const;
+    //! @brief sets the dof values for a specific scalar dof
+    //! @param rDof ... specific dof type
+    //! @param rValue ... dof scalar value
+    void Set(Node::eDof rDof, double rValue)
+    {
+        Set(rDof, 0, rValue);
+    }
 
-    void SetTemperature(double rTemperature);
-    virtual void SetTemperature(int rTimeDerivative, double rTemperature);
-
-    //*************************************************
-    //************      DAMAGE          ***************
-    //*************************************************
-
-    virtual int GetNumDamage() const;
-    virtual int GetDofDamage() const;
-
-    double GetDamage() const;
-    virtual double GetDamage(int rTimeDerivative) const;
-
-    void SetDamage(double rDamage);
-    virtual void SetDamage(int rTimeDerivative, double rDamage);
-
-
-    //*************************************************
-    //********  NONLOCAL EQ PLASTIC STRAIN  ***********
-    //*************************************************
-
-    virtual int GetNumNonlocalEqPlasticStrain() const;
-    virtual int GetDofNonlocalEqPlasticStrain(int rComponent) const;
-
-    const Eigen::Matrix<double, 2, 1>& GetNonlocalEqPlasticStrain() const;
-    virtual const Eigen::Matrix<double, 2, 1>& GetNonlocalEqPlasticStrain(int rTimeDerivative) const;
-
-    void SetNonlocalEqPlasticStrain(const Eigen::Matrix<double, 2, 1>& rNonlocalEqPlasticStrain);
-    virtual void SetNonlocalEqPlasticStrain(int rTimeDerivative, const Eigen::Matrix<double, 2, 1>& rNonlocalEqPlasticStrain);
-
-    //*************************************************
-    //********    NONLOCAL TOTAL STRAIN     ***********
-    //*************************************************
-
-    virtual int GetNumNonlocalTotalStrain()const;
-    virtual int GetDofNonlocalTotalStrain(int rComponent)const;
-    virtual double GetNonlocalTotalStrain(short rIndex)const;
-
-    const Eigen::Matrix<double, 1, 1>& GetNonlocalTotalStrain1D() const;
-    const Eigen::Matrix<double, 3, 1>& GetNonlocalTotalStrain2D() const;
-    const Eigen::Matrix<double, 6, 1>& GetNonlocalTotalStrain3D() const;
-    const Eigen::Matrix<double, Eigen::Dynamic, 1> GetNonlocalTotalStrains() const;
-
-    virtual const Eigen::Matrix<double, 1, 1>& GetNonlocalTotalStrain1D(int rTimeDerivative) const;
-    virtual const Eigen::Matrix<double, 3, 1>& GetNonlocalTotalStrain2D(int rTimeDerivative) const;
-    virtual const Eigen::Matrix<double, 6, 1>& GetNonlocalTotalStrain3D(int rTimeDerivative) const;
-    virtual const Eigen::Matrix<double, Eigen::Dynamic, 1> GetNonlocalTotalStrains(int rTimeDerivative) const;
-
-    void SetNonlocalTotalStrain1D(const Eigen::Matrix<double, 1, 1>& rNonlocalTotalStrain);
-    void SetNonlocalTotalStrain2D(const Eigen::Matrix<double, 3, 1>& rNonlocalTotalStrain);
-    void SetNonlocalTotalStrain3D(const Eigen::Matrix<double, 6, 1>& rNonlocalTotalStrain);
-    void SetNonlocalTotalStrain  (const Eigen::Matrix<double, Eigen::Dynamic, 1>& rNonlocalTotalStrain);
-
-    virtual void SetNonlocalTotalStrain1D(int rTimeDerivative, const Eigen::Matrix<double, 1, 1>& rNonlocalTotalStrain);
-    virtual void SetNonlocalTotalStrain2D(int rTimeDerivative, const Eigen::Matrix<double, 3, 1>& rNonlocalTotalStrain);
-    virtual void SetNonlocalTotalStrain3D(int rTimeDerivative, const Eigen::Matrix<double, 6, 1>& rNonlocalTotalStrain);
-    virtual void SetNonlocalTotalStrain  (int rTimeDerivative, const Eigen::Matrix<double, Eigen::Dynamic, 1>& rNonlocalTotalStrain);
-
-    //*************************************************
-    //*******   NONLOCAL EQUIVALENT STRAIN   **********
-    //*************************************************
-
-    virtual int GetNumNonlocalEqStrain() const;
-    virtual int GetDofNonlocalEqStrain() const;
-
-    double GetNonlocalEqStrain() const;
-    virtual double GetNonlocalEqStrain(int rTimeDerivative) const;
-
-    void SetNonlocalEqStrain(double rNonlocalEqStrain);
-    virtual void SetNonlocalEqStrain(int rTimeDerivative, double rNonlocalEqStrain);
-
-    //**************************************************
-    //*******      WATER VOLUME FRACTION      **********
-    //**************************************************
-
-    virtual int GetNumWaterVolumeFraction() const;
-    virtual int GetDofWaterVolumeFraction() const;
-
-    double GetWaterVolumeFraction() const;
-    virtual double GetWaterVolumeFraction(int rTimeDerivative) const;
-
-    void SetWaterVolumeFraction(double rWaterVolumeFraction);
-    virtual void SetWaterVolumeFraction(int rTimeDerivative, double rWaterVolumeFraction);
-
-    //*************************************************
-    //*******       RELATIVE HUMIDITY        **********
-    //*************************************************
-
-    virtual int GetNumRelativeHumidity() const;
-    virtual int GetDofRelativeHumidity() const;
-
-    double GetRelativeHumidity() const;
-    virtual double GetRelativeHumidity(int rTimeDerivative) const;
-
-    void SetRelativeHumidity(double rRelativeHumidity);
-    virtual void SetRelativeHumidity(int rTimeDerivative, double rRelativeHumidity);
+    //! @brief returns a set containing all dof types
+    virtual std::set<Node::eDof> GetDofTypes() const
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
+    }
 
 
     //! @brief returns the type of node as a string (all the data stored at the node)
     //! @return string
     virtual std::string GetNodeTypeStr()const=0;
 
-#ifdef ENABLE_VISUALIZE
-    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) const;
 
-#endif // ENABLE_VISUALIZE
 
     //! @brief clones (copies) the node with all its data, it's supposed to be a new node, so be careful with ptr
     virtual NodeBase* Clone()const=0;
 
+#ifdef ENABLE_VISUALIZE
+    virtual void Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) const;
+
+
+private:
+    //! @brief extracts the desired vector data to a 3d vector
+    Eigen::Vector3d GetPointVectorData(Node::eDof rDofType, int rTimeDerivative) const;
+#endif // ENABLE_VISUALIZE
+
+
 protected:
     //the base class of the nodes must not contain any data
+
+
 
 };
 
@@ -314,7 +218,7 @@ public:
 
     bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2)
     {
-        return nodePtr1->GetCoordinate(0) < nodePtr2->GetCoordinate(0);
+        return nodePtr1->Get(Node::COORDINATES)(0) < nodePtr2->Get(Node::COORDINATES)(0);
     }
 };
 
@@ -327,7 +231,7 @@ public:
 
     bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2)
     {
-        return nodePtr1->GetCoordinate(0) > nodePtr2->GetCoordinate(0);
+        return nodePtr1->Get(Node::COORDINATES)(0) > nodePtr2->Get(Node::COORDINATES)(0);
     }
 };
 
@@ -340,7 +244,7 @@ public:
 
     bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2)
     {
-        return nodePtr1->GetCoordinate(1) < nodePtr2->GetCoordinate(1);
+        return nodePtr1->Get(Node::COORDINATES)(1) < nodePtr2->Get(Node::COORDINATES)(1);
     }
 };
 
@@ -353,26 +257,13 @@ public:
 
     bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2)
     {
-        return nodePtr1->GetCoordinate(1) > nodePtr2->GetCoordinate(1);
+        return nodePtr1->Get(Node::COORDINATES)(1) > nodePtr2->Get(Node::COORDINATES)(1);
     }
 };
 
 }//namespace NuTo
 
 #ifdef ENABLE_SERIALIZATION
-//namespace boost
-//{
-//    //! @brief tell boost how to serialize an Eigen::Matrix
-//    template<class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-//    inline void serialize(
-//        Archive & ar,
-//        Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> & t,
-//        const unsigned int file_version
-//    )
-//    {
-//        ar & boost::serialization::make_array(t.data(), t.size());
-//    }
-//}
 BOOST_CLASS_EXPORT_KEY(NuTo::NodeBase)
 #endif // ENABLE_SERIALIZATION
 

@@ -174,6 +174,7 @@ loads/LoadSurfacePressure3D.cpp
 
 SET(NuToMechanicsNodes_SOURCES
 nodes/NodeBase.cpp
+nodes/NodeDof.cpp
 )
 
 SET(NuToMechanicsSection_SOURCES

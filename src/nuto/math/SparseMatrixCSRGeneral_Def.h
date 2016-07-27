@@ -193,4 +193,5 @@ protected:
     int mNumColumns;
 };
 }
+
 #endif // SPARSE_MATRIX_CSR_GENERAL_DEF_H

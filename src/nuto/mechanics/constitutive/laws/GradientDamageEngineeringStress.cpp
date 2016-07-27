@@ -46,6 +46,12 @@ NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress() :
 //! @brief serializes the class
 //! @param ar         archive
 //! @param version    version
+template void NuTo::GradientDamageEngineeringStress::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::GradientDamageEngineeringStress::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::GradientDamageEngineeringStress::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::GradientDamageEngineeringStress::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::GradientDamageEngineeringStress::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::GradientDamageEngineeringStress::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
 void NuTo::GradientDamageEngineeringStress::serialize(Archive & ar, const unsigned int version)
 {

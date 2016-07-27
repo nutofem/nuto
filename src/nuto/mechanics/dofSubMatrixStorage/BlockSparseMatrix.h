@@ -19,7 +19,7 @@ class BlockSparseMatrix: public BlockStorageBase
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
     BlockSparseMatrix() {}
-//    template<class Archive> void serialize(Archive & ar, const unsigned int version);
+    template<class Archive> void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 public:
     //! @brief ctor
@@ -135,11 +135,15 @@ private:
 
     //! @brief storage using a unique_ptr
     //! @todo use std::make_unique as soon as the compiler version allows it
-    std::map<std::pair<Node::eDof, Node::eDof>, std::unique_ptr<SparseMatrixCSRVector2<double>> > mData;
+    std::unordered_map<std::pair<Node::eDof, Node::eDof>, std::unique_ptr<SparseMatrixCSRVector2<double>>, Node::eDofPairHash> mData;
 
     bool mCanBeSymmetric;
 };
 
 } /* namespace NuTo */
 
-
+#ifdef ENABLE_SERIALIZATION
+#ifndef SWIG
+BOOST_CLASS_EXPORT_KEY(NuTo::BlockSparseMatrix)
+#endif // SWIG
+#endif // ENABLE_SERIALIZATION
