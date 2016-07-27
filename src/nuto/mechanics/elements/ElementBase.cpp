@@ -924,7 +924,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
         case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
         {
             // get constitutive model and nonlocal element
-            const ElementBase* visualizeElement(it.get()->GetElement());
+            const ElementBase* visualizeElement = mStructure->ElementGetElementPtr(it.get()->GetElementId());
 
             // get local number within nonlocal elements for current element
             try

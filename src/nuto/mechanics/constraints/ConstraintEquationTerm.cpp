@@ -70,15 +70,6 @@ NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node
     this->mCoefficient = rCoefficient;
 }
 
-// default constructor (should be private)
-NuTo::ConstraintEquationTerm::ConstraintEquationTerm()
-{
-    this->mNode = 0;
-    this->mDofType = Node::COORDINATES;
-    this->mDofComponent = 0;
-    this->mCoefficient = 0;
-}
-
 void NuTo::ConstraintEquationTerm::AddToConstraintMatrix(int rRow, NuTo::SparseMatrix<double>& rConstraintMatrix) const
 {
     assert(rRow >= 0);
@@ -138,4 +129,15 @@ template<class Archive> void NuTo::ConstraintEquationTerm::serialize(Archive & a
     std::cout << "finish serialize ConstraintEquationTerm" << std::endl;
 #endif
 }
+
+// default constructor (should be private)
+NuTo::ConstraintEquationTerm::ConstraintEquationTerm()
+{
+    this->mNode = 0;
+    this->mDofType = Node::COORDINATES;
+    this->mDofComponent = 0;
+    this->mCoefficient = 0;
+}
+
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintEquationTerm)
 #endif // ENABLE_SERIALIZATION

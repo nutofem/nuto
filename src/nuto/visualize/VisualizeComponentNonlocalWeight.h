@@ -21,13 +21,11 @@ class VisualizeComponentNonlocalWeight : public VisualizeComponent
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-	VisualizeComponentNonlocalWeight(const ElementBase* rElement, int rElementId, int rIp);
+    VisualizeComponentNonlocalWeight(int rElementId, int rIp);
 
     std::string GetComponentName(void) const override;
 
     int GetElementId(void) const override;
-
-    const NuTo::ElementBase* GetElement(void) const override;
 
     int GetIp(void) const override;
 
@@ -45,7 +43,6 @@ protected:
     //! @brief just for serialization
     VisualizeComponentNonlocalWeight(){};
     int mElementId;
-    const ElementBase* mElement;
     int	mIp;
 };
 }

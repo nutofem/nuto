@@ -674,8 +674,8 @@ void SerializationTest(std::string rFileType)
                 const NuTo::FullMatrix<double,Eigen::Dynamic, Eigen::Dynamic>& Mat_B = BM_B(dofRow,dofCol);
                 if(Mat_A.GetNumColumns()!= Mat_B.GetNumColumns() || Mat_A.GetNumRows()!= Mat_B.GetNumRows())
                     throw NuTo::Exception(__PRETTY_FUNCTION__,"Dimensions of initial and restored submatrices not equal!");
-                for(unsigned int row=0; row<Mat_A.GetNumRows(); ++row)
-                    for(unsigned int col=0; col<Mat_A.GetNumColumns(); ++col)
+                for(int row=0; row<Mat_A.GetNumRows(); ++row)
+                    for(int col=0; col<Mat_A.GetNumColumns(); ++col)
                         if(Mat_A(row,col)!=Mat_B(row,col))
                             throw NuTo::Exception(__PRETTY_FUNCTION__,"initial and restored submatrix values not equal!");
             }

@@ -10,7 +10,6 @@
 #include <boost/serialization/vector.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/visualize/VisualizeComponent.h"
 #include "nuto/visualize/VisualizeException.h"
 
@@ -18,24 +17,19 @@
 NuTo::VisualizeComponent::VisualizeComponent(NuTo::VisualizeBase::eVisualizeWhat rVisualizeComponent) :
         mVisualizeComponent(rVisualizeComponent)
 {
-
 }
 
 
 
 int NuTo::VisualizeComponent::GetElementId()const
 {
-	throw VisualizeException(std::string(__PRETTY_FUNCTION__) + ": \t Visualization component has no ElementId.");
+    throw VisualizeException(__PRETTY_FUNCTION__, "Visualization component has no ElementId.");
 }
 
-const NuTo::ElementBase* NuTo::VisualizeComponent::GetElement()const
-{
-	throw VisualizeException(std::string(__PRETTY_FUNCTION__) + ": \t Visualization component has no Element.");
-}
 
 int NuTo::VisualizeComponent::GetIp()const
 {
-    throw VisualizeException(std::string(__PRETTY_FUNCTION__) + ": \t Visualization component has no Integration point.");
+    throw VisualizeException(__PRETTY_FUNCTION__, "Visualization component has no Integration point.");
 }
 
 
@@ -109,7 +103,7 @@ std::string NuTo::VisualizeComponent::GetComponentName() const
     case VisualizeBase::WATER_VOLUME_FRACTION:
         return "WaterVolumeFraction";
     default:
-        throw VisualizeException(std::string(__PRETTY_FUNCTION__) + ": \t Visualization component not implemented.");
+        throw VisualizeException(__PRETTY_FUNCTION__, "Visualization component not implemented.");
     }
 }
 

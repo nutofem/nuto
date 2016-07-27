@@ -13,6 +13,7 @@
 #endif //ENABLE_SERIALIZATION
 
 #include <map>
+#include <memory>
 
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h" // for the Input/Output list typedefs
 
@@ -26,9 +27,7 @@
 #include "nuto/mechanics/interpolationtypes/InterpolationType.h"
 
 #ifdef ENABLE_VISUALIZE
-#include "nuto/visualize/VisualizeBase.h"
-#include "nuto/visualize/VisualizeUnstructuredGrid.h"
-#include <boost/ptr_container/ptr_list.hpp>
+#include <list>
 #endif // ENABLE_VISUALIZE
 
 namespace NuTo
