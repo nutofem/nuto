@@ -124,11 +124,11 @@ DBG_PRINT_VAL(crack5)
 	    myStructure.CrackInfo(5);
 	    for (int i=0; i < CrackNodes1.GetNumRows(); i++ )
 	    {
-			myStructure.CrackPushBack(crack1, myStructure.NodeGetNodePtr(CrackNodes1.at(i,0)));
+			myStructure.CrackPushBack(crack1, myStructure.NodeGetNodePtr(CrackNodes1(i,0)));
 		}
 	    for (int i=0; i < CrackNodes5.GetNumRows(); i++ )
 	    {
-			myStructure.CrackPushBack(crack5, myStructure.NodeGetNodePtr(CrackNodes5.at(i,0)));
+			myStructure.CrackPushBack(crack5, myStructure.NodeGetNodePtr(CrackNodes5(i,0)));
 		}
 		//myStructure.CrackPushFront(crack5, myStructure.NodeGetNodePtr(CrackNodes(InitCrackCoords.GetNumColumns()-1,0)));
 	    myStructure.CrackDelete(crack2);

@@ -68,7 +68,7 @@ myStructure.ElementCreate(interpolationType, nuto.IntFullVector((  3, 28, 29,  9
 
 myStructure.ElementTotalSetConstitutiveLaw(Material1)
 myStructure.ElementTotalSetSection(Section1)
-myStructure.ElementTotalConvertToInterpolationType(1.e-6, 5)
+myStructure.ElementTotalConvertToInterpolationType()
 
 #boundary conditions
 myStructure.ConstraintLinearEquationCreate( 1, "x_displacement", 1, 0)
@@ -164,13 +164,25 @@ myStructure.NodeBuildGlobalDofs()
 
 #Calculate maximum independent sets for parallelization (openmp)
 myStructure.CalculateMaximumIndependentSets();
-myStructure.SolveGlobalSystemStaticElastic()
+myStructure.SolveGlobalSystemStaticElastic(0)
 
 # calculate residual
 print "calculate residual"
-extLoadVector = myStructure.BuildGlobalExternalLoadVector(0)
-residualVector = extLoadVector.J.Get("Displacements") - myStructure.BuildGlobalInternalGradient().J.Get("Displacements")
-print "residual: " + str(residualVector.Norm())
+# start analysis
+intGradient = myStructure.BuildGlobalInternalGradient()
+extGradient = myStructure.BuildGlobalExternalLoadVector(0)
+extGradientJ = extGradient.J.Get("Displacements")
+intGradientJ = intGradient.J.Get("Displacements")
+intGradientK = intGradient.K.Get("Displacements")
+# cast FullVector to FullMatrix, python does not get it...
+numRows = intGradientK.GetNumRows()
+intGradientKcast = nuto.DoubleFullMatrix(numRows,1)
+for i in range(numRows):
+    intGradientKcast.SetValue(i,0, -intGradientK.GetValue(i))
+cmat = myStructure.GetConstraintMatrix()
+
+residual = nuto.DoubleFullVector(intGradientJ + cmat.Get("Displacements", "Displacements").TransMult(intGradientKcast) - extGradientJ)
+print "residual: " + str(residual.Norm())
 
 # visualize results
 visualizationGroup = myStructure.GroupCreate("Elements");

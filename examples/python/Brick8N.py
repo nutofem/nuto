@@ -137,12 +137,23 @@ print "time required for calculating maximum independent sets: " + str(curTime -
 myStructure.SolveGlobalSystemStaticElastic()
 
 # calculate residual
-intForceVector = myStructure.BuildGlobalInternalGradient()
+intGradient = myStructure.BuildGlobalInternalGradient()
 oldTime = curTime
 curTime = time()
 print "time required for building internal forces: " + str(curTime - oldTime) + " s"
-residualVector = myStructure.BuildGlobalExternalLoadVector(0).J.Get("Displacements") - intForceVector.J.Get("Displacements")
-print "residual: " + str(residualVector.Norm())
+extGradient = myStructure.BuildGlobalExternalLoadVector(0)
+extGradientJ = extGradient.J.Get("Displacements")
+intGradientJ = intGradient.J.Get("Displacements")
+intGradientK = intGradient.K.Get("Displacements")
+# cast FullVector to FullMatrix, python does not get it...
+numRows = intGradientK.GetNumRows()
+intGradientKcast = nuto.DoubleFullMatrix(numRows,1)
+for i in range(numRows):
+    intGradientKcast.SetValue(i,0, -intGradientK.GetValue(i))
+cmat = myStructure.GetConstraintMatrix()
+
+residual = nuto.DoubleFullVector(intGradientJ + cmat.Get("Displacements", "Displacements").TransMult(intGradientKcast) - extGradientJ)
+print "residual: " + str(residual.Norm())
 
 # visualize results
 visualizationGroup = myStructure.GroupCreate("Elements");
