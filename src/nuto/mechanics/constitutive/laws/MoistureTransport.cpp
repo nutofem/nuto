@@ -4,9 +4,9 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/math/Math.h"
 
 #include <limits>
-#include <Math.h>
 
 
 

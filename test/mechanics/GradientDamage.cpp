@@ -125,7 +125,7 @@ void CheckStiffnesses(NuTo::Structure& rStructure)
         node->SetDisplacements(disps);
 
         if (node->GetNumNonlocalEqStrain() > 0)
-            node->SetNonlocalEqStrain(disps.at(0, 0) / 10);
+            node->SetNonlocalEqStrain(disps(0, 0) / 10);
     }
 
 //    rStructure.Info();

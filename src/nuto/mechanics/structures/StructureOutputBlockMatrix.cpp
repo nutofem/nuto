@@ -62,7 +62,7 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
 
                     for (int iCol = 0; iCol < globalColDofs.GetNumRows(); ++iCol)
                     {
-                        double value = elementMatrix.at(iRow, iCol);
+                        double value = elementMatrix(iRow, iCol);
                         if (std::abs(value - rAddValueTolerance) > 0. )
                         {
                             int globalColDof = globalColDofs[iCol];
@@ -84,7 +84,7 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
 
                         for (int iCol = 0; iCol < globalColDofs.GetNumRows(); ++iCol)
                         {
-                            double value = elementMatrix.at(iRow, iCol);
+                            double value = elementMatrix(iRow, iCol);
                             if (std::abs(value - rAddValueTolerance) > 0. )
                             {
                                 int globalColDof = globalColDofs[iCol];
