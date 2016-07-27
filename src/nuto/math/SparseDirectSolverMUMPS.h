@@ -72,13 +72,13 @@ protected:
 
     DMUMPS_STRUC_C mSolver;
 
+#endif // HAVE_MUMPS
 
     //! @brief ... generate an error message from the error code
     //! @param error ... error code
     //! @return error message as std::string
     std::string GetErrorString(int error) const;
 
-#endif // HAVE_MUMPS
 
 };
 }

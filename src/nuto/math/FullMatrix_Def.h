@@ -4,7 +4,7 @@
 #define FULL_MATRIX_DEF_H
 
 //plugins for the eigen matrices
-#define EIGEN_MATRIXBASE_PLUGIN "MatrixBaseAddons.h"
+#define EIGEN_MATRIXBASE_PLUGIN "nuto/math/MatrixBaseAddons.h"
 
 #ifdef ENABLE_SERIALIZATION
 // serialize
