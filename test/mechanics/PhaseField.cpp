@@ -1,182 +1,207 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include "nuto/mechanics/constitutive/laws/PhaseField.h"
-
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/elements/EvaluateDataContinuum.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataHistoryVariableScalar.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include <boost/filesystem.hpp>
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <chrono>
+#include <exception>
+#include <cassert>
 
 using std::cout;
 using std::endl;
+using NuTo::Constitutive::ePhaseFieldEnergyDecomposition;
+void EvaluatePhaseFieldModel(const Eigen::Vector3d& rStrain, const double rCrackPhaseField, NuTo::PhaseField* rPhaseField)
+{
+
+
+    NuTo::EvaluateDataContinuum<2> data;
+    data.mEngineeringStrain.AsVector() = rStrain;
+    data.mDamage[0] = rCrackPhaseField;
+    data.mEngineeringStress.AsVector().setZero();
+
+    NuTo::ConstitutiveCalculateStaticData calculateStaticData(NuTo::CalculateStaticData::EULER_BACKWARD);
+
+    NuTo::ConstitutiveInputMap myConstitutiveInputMap;
+    myConstitutiveInputMap[NuTo::Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateStaticData;
+    myConstitutiveInputMap[NuTo::Constitutive::Input::ENGINEERING_STRAIN]    = &data.mEngineeringStrain;
+    myConstitutiveInputMap[NuTo::Constitutive::Input::CRACK_PHASE_FIELD]     = &data.mDamage;
+
+    cout << "Inputs:" << endl;
+    cout << "data.mEngineeringStrain.AsVector()"    << endl << data.mEngineeringStrain.AsVector()   << endl;
+    cout << "data.mDamage.AsScalar()"               << endl << data.mDamage.AsScalar()              << endl;
+
+
+    NuTo::ConstitutiveStaticDataHistoryVariableScalar staticData;
+    staticData.SetHistoryVariable(0.0);
+
+    NuTo::ConstitutiveOutputMap myConstitutiveOutputMap;
+    myConstitutiveOutputMap[NuTo::Constitutive::Output::ENGINEERING_STRESS]                            = &data.mEngineeringStress;
+    myConstitutiveOutputMap[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN]     = &data.mTangentStressStrain;
+
+    rPhaseField->Evaluate2DAnisotropicSpectralDecomposition(staticData, myConstitutiveInputMap, myConstitutiveOutputMap);
+
+    cout << "Outputs:" << endl;
+    cout << "data.mEngineeringStress.AsVector()"    << endl << data.mEngineeringStress.AsVector()   << endl;
+    cout << "data.mTangentStressStrain.AsMatrix()"    << endl << data.mTangentStressStrain.AsMatrix()   << endl;
+
+    Eigen::Vector3d residual = data.mTangentStressStrain.AsMatrix() * data.mEngineeringStrain - data.mEngineeringStress;
+    cout << "Residual"    << endl << residual   << endl;
+
+    assert(residual.norm() < 1e-8);
+}
+
 
 int main()
 {
     try
     {
 
-        constexpr unsigned int dimension = 2;
-
-        constexpr bool performLineSearch = true;
-        constexpr bool automaticTimeStepping = true;
-
-        constexpr double youngsModulus = 2.1e5;
+        constexpr double youngsModulus = 200;
         constexpr double poissonsRatio = 0.3;
-        constexpr double thickness = 1.0;
         constexpr double lengthScale = 1.0;
         constexpr double fractureEnergy = 2.7;
         constexpr double artificialViscosity = 0.1;
+        constexpr   ePhaseFieldEnergyDecomposition energyDecomposition = ePhaseFieldEnergyDecomposition::ANISOTROPIC_SPECTRAL_DECOMPOSITION;
 
-        constexpr double timeStep = 1e-2;
-        constexpr double minTimeStep = 1e-5;
-        constexpr double maxTimeStep = 1e-1;
-        constexpr double toleranceForce = 1e-6;
-        constexpr double simulationTime = 1.0;
-        constexpr double load = 0.01;
-
-        constexpr double tolerance = 1.0e-6;
-
-        boost::filesystem::path resultPath(boost::filesystem::initial_path().string() + "/resultPhaseField/");
-        boost::filesystem::remove_all(resultPath);
-        boost::filesystem::create_directory(resultPath);
-
-        const NuTo::FullVector<double, dimension> directionX = NuTo::FullVector<double, dimension>::UnitX();
-        const NuTo::FullVector<double, dimension> directionY = NuTo::FullVector<double, dimension>::UnitY();
-
-        cout << "**********************************************" << endl;
-        cout << "**  strucutre                               **" << endl;
-        cout << "**********************************************" << endl;
-
-        NuTo::Structure myStructure(dimension);
-        myStructure.SetShowTime(false);
-        myStructure.SetNumTimeDerivatives(1);
-
-        cout << "**********************************************" << endl;
-        cout << "**  integration sheme                       **" << endl;
-        cout << "**********************************************" << endl;
-
-        NuTo::NewmarkDirect myIntegrationScheme(&myStructure);
-        myIntegrationScheme.SetTimeStep(timeStep);
-        myIntegrationScheme.SetMinTimeStep(minTimeStep);
-        myIntegrationScheme.SetMaxTimeStep(maxTimeStep);
-        myIntegrationScheme.SetToleranceForce(toleranceForce);
-        myIntegrationScheme.SetAutomaticTimeStepping(automaticTimeStepping);
-        myIntegrationScheme.SetPerformLineSearch(performLineSearch);
-        myIntegrationScheme.SetResultDirectory(resultPath.string(), true);
-
-        cout << "**********************************************" << endl;
-        cout << "**  section                                 **" << endl;
-        cout << "**********************************************" << endl;
-
-        int mySection = myStructure.SectionCreate(NuTo::Section::PLANE_STRESS);
-        myStructure.SectionSetThickness(mySection, thickness);
 
         cout << "**********************************************" << endl;
         cout << "**  material                                **" << endl;
         cout << "**********************************************" << endl;
 
-        NuTo::ConstitutiveBase* phaseField = new NuTo::PhaseField(youngsModulus,
-                                                                  poissonsRatio,
-                                                                  lengthScale,
-                                                                  fractureEnergy,
-                                                                  artificialViscosity);
-
-
-        int matrixMaterial = myStructure.AddConstitutiveLaw(phaseField);
+        NuTo::PhaseField* phaseField = new NuTo::PhaseField(youngsModulus,
+                                                            poissonsRatio,
+                                                            lengthScale,
+                                                            fractureEnergy,
+                                                            artificialViscosity,
+                                                            energyDecomposition);
 
         cout << "**********************************************" << endl;
-        cout << "**  geometry                                **" << endl;
-        cout << "**********************************************" << endl;
+        Eigen::Vector3d strain;
+        strain[0] = 0.;
+        strain[1] = 0.;
+        strain[2] = 0.;
 
-        NuTo::FullVector<int, -1> nodeIds(3);
-        NuTo::FullVector<double, -1> nodeCoords(2);
+        double crackPhaseField = 0.;
 
-        nodeCoords[0] = 0.0;
-        nodeCoords[1] = 0.0;
-        nodeIds[0] = myStructure.NodeCreate(nodeCoords);
-
-        nodeCoords[0] = 2.0;
-        nodeCoords[1] = 0.0;
-        nodeIds[1] = myStructure.NodeCreate(nodeCoords);
-
-        nodeCoords[0] = 1.0;
-        nodeCoords[1] = 1.0;
-        nodeIds[2] = myStructure.NodeCreate(nodeCoords);
-
-        int myInterpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRIANGLE2D);
-        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
-
-        myStructure.ElementCreate(myInterpolationType, nodeIds);
-
-        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT2);
-        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::CRACKPHASEFIELD, NuTo::Interpolation::EQUIDISTANT1);
-
-        myStructure.InterpolationTypeSetIntegrationType(myInterpolationType, NuTo::IntegrationType::IntegrationType2D3NGauss3Ip, NuTo::IpData::STATICDATA);
-        myStructure.InterpolationTypeInfo(myInterpolationType);
-
-        myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
-
-        myStructure.ElementTotalSetSection(mySection);
-        myStructure.ElementTotalSetConstitutiveLaw(matrixMaterial);
+        EvaluatePhaseFieldModel(strain, crackPhaseField, phaseField);
 
         cout << "**********************************************" << endl;
-        cout << "**  bc                                      **" << endl;
-        cout << "**********************************************" << endl;
+        strain[0] = 0.;
+        strain[1] = 0.;
+        strain[2] = 0.;
 
-        NuTo::FullVector<double, 2> center;
+        crackPhaseField = 1.;
 
-        // bottom left boundary
-        center[0] = 0;
-        center[1] = 0;
-        int grpNodes_bottom_left = myStructure.GroupCreate(NuTo::Groups::Nodes);
-        myStructure.GroupAddNodeRadiusRange(grpNodes_bottom_left, center, 0, tolerance);
-        myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_bottom_left, directionX, 0);
+        EvaluatePhaseFieldModel(strain, crackPhaseField, phaseField);
 
-        // bottom right boundary
-        int grpNodes_bottom_right = myStructure.GroupCreate(NuTo::Groups::Nodes);
-        myStructure.GroupAddNodeCoordinateRange(grpNodes_bottom_right, 1, -tolerance, tolerance);
-        myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_bottom_right, directionY, 0);
 
         cout << "**********************************************" << endl;
-        cout << "**  load                                    **" << endl;
+        strain[0] = 1.;
+        strain[1] = 0.;
+        strain[2] = 0.;
+
+        crackPhaseField = 0.;
+
+        EvaluatePhaseFieldModel(strain, crackPhaseField, phaseField);
         cout << "**********************************************" << endl;
+        strain[0] = -1.;
+        strain[1] = 0.;
+        strain[2] = 0.;
 
-        // middle top load
-        center[0] = 1;
-        center[1] = 1;
-        int grpNodes_load = myStructure.GroupCreate(NuTo::Groups::Nodes);
+        crackPhaseField = 0.;
 
-        myStructure.GroupAddNodeRadiusRange(grpNodes_load, center, 0, tolerance);
-
-        int loadId = myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_load, directionY, 0);
-
-        cout << "**********************************************" << endl;
-        cout << "**  visualization                           **" << endl;
-        cout << "**********************************************" << endl;
-
-        int groupId = myStructure.GroupGetElementsTotal();
-        myStructure.AddVisualizationComponent(groupId, NuTo::VisualizeBase::DISPLACEMENTS);
-        myStructure.AddVisualizationComponent(groupId, NuTo::VisualizeBase::ENGINEERING_STRAIN);
-        myStructure.AddVisualizationComponent(groupId, NuTo::VisualizeBase::ENGINEERING_STRESS);
-        myStructure.AddVisualizationComponent(groupId, NuTo::VisualizeBase::CRACK_PHASE_FIELD);
+        EvaluatePhaseFieldModel(strain, crackPhaseField, phaseField);
 
         cout << "**********************************************" << endl;
-        cout << "**  solver                                  **" << endl;
+        strain[0] = -1.;
+        strain[1] = 0.;
+        strain[2] = 0.;
+
+        crackPhaseField = 1.;
+
+        EvaluatePhaseFieldModel(strain, crackPhaseField, phaseField);
+
         cout << "**********************************************" << endl;
+        strain[0] = 1.;
+        strain[1] = 0.;
+        strain[2] = 0.;
 
-        myStructure.NodeBuildGlobalDofs();
-        myStructure.CalculateMaximumIndependentSets();
+        crackPhaseField = 1.;
 
-        NuTo::FullMatrix<double, 2, 2> dispRHS;
-        dispRHS(0, 0) = 0;
-        dispRHS(1, 0) = simulationTime;
-        dispRHS(0, 1) = 0;
-        dispRHS(1, 1) = load;
+        EvaluatePhaseFieldModel(strain, crackPhaseField, phaseField);
 
-        myIntegrationScheme.AddTimeDependentConstraint(loadId, dispRHS);
+        cout << "**********************************************" << endl;
+        strain[0] = 1.;
+        strain[1] = 1.;
+        strain[2] = 0.;
 
-        myIntegrationScheme.Solve(simulationTime);
+        crackPhaseField = 0.;
+
+        EvaluatePhaseFieldModel(strain, crackPhaseField, phaseField);
+
+        cout << "**********************************************" << endl;
+        strain[0] = 1.;
+        strain[1] = 1.;
+        strain[2] = 0.;
+
+        crackPhaseField = 1.;
+
+        EvaluatePhaseFieldModel(strain, crackPhaseField, phaseField);
+
+
+        cout << "**********************************************" << endl;
+        strain[0] = 2.;
+        strain[1] = 1.;
+        strain[2] = 0.;
+
+        crackPhaseField = 1.;
+
+        EvaluatePhaseFieldModel(strain, crackPhaseField, phaseField);
+
+        cout << "**********************************************" << endl;
+        strain[0] = 2.;
+        strain[1] = -1.;
+        strain[2] = 0.;
+
+        crackPhaseField = 1.;
+
+        EvaluatePhaseFieldModel(strain, crackPhaseField, phaseField);
+
+
+        cout << "**********************************************" << endl;
+        strain[0] = 0.;
+        strain[1] = 0.;
+        strain[2] = 2.;
+
+        crackPhaseField = 1.0;
+
+        EvaluatePhaseFieldModel(strain, crackPhaseField, phaseField);
+
+
+        cout << "**********************************************" << endl;
+        strain[0] = 1.;
+        strain[1] = 1.;
+        strain[2] = 2.;
+
+        crackPhaseField = 1.0;
+
+        EvaluatePhaseFieldModel(strain, crackPhaseField, phaseField);
+
+        cout << "**********************************************" << endl;
+        strain[0] = 1.;
+        strain[1] = -3.;
+        strain[2] = 2.;
+
+        crackPhaseField = 1.0;
+
+        EvaluatePhaseFieldModel(strain, crackPhaseField, phaseField);
 
     } catch (...)
     {
@@ -188,4 +213,3 @@ int main()
     cout << "**  end                                     **" << endl;
     cout << "**********************************************" << endl;
 }
-

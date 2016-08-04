@@ -119,7 +119,7 @@ enum eDamageLawType
     ISOTROPIC_CUBIC_HERMITE                         //!< cubic hermite h00
 };
 
-enum ePhaseFieldDegradationFunctionType
+enum class ePhaseFieldEnergyDecomposition
 {
     ISOTROPIC,                                              //!< isotropic degradation
     ANISOTROPIC_SPECTRAL_DECOMPOSITION,                     //!< spectral decompostion of the elastic strain tensor proposed by Miehe et al.

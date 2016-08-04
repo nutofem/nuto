@@ -996,7 +996,6 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
 
                 const auto& kappa   = rData.mElasticEnergyDensity[0];
 
-                //TODO: replace sigma * eps with static data kappa
                 hessian0 += rData.mDetJxWeightIPxSection * ( (G/l + 2*kappa) * N.transpose() * N +  G*l*B.transpose() * B );
                 break;
             }

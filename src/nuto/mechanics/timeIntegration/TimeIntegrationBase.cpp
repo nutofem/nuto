@@ -423,7 +423,7 @@ void NuTo::TimeIntegrationBase::PostProcess(const StructureOutputBlockVector& rO
 			}
         }
 
-		if (mTime-mLastTimePlot>=mMinTimeStepPlot)
+        if ((mTime-mLastTimePlot)>=mMinTimeStepPlot)
 		{
 	        //write the results to files
 			for (auto itResult=mResultMap.begin(); itResult!=mResultMap.end(); itResult++)

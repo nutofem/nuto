@@ -85,6 +85,16 @@ const NuTo::ConstitutiveStaticDataElasticEnergyDensity* NuTo::ConstitutiveStatic
     throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type ElasticEnergyDensity.");
 }
 
+NuTo::ConstitutiveStaticDataHistoryVariableScalar* NuTo::ConstitutiveStaticDataBase::AsHistoryVariableScalar()
+{
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type HistoryVariableScalar.");
+}
+
+const NuTo::ConstitutiveStaticDataHistoryVariableScalar* NuTo::ConstitutiveStaticDataBase::AsHistoryVariableScalar()const
+{
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Static data is not of type HistoryVariableScalar.");
+}
+
 //!@ brief reinterpret as gradient damage 1d static data
 NuTo::ConstitutiveStaticDataGradientDamage1DFatigue* NuTo::ConstitutiveStaticDataBase::AsGradientDamage1DFatigue()
 {
