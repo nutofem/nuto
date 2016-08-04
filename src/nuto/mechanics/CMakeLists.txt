@@ -23,6 +23,7 @@ constitutive/staticData/ConstitutiveStaticDataMoistureTransport.cpp
 constitutive/staticData/ConstitutiveStaticDataMultipleConstitutiveLaws.cpp
 constitutive/staticData/ConstitutiveStaticDataGradientDamage.cpp
 constitutive/staticData/ConstitutiveStaticDataElasticEnergyDensity.cpp
+constitutive/staticData/ConstitutiveStaticDataHistoryVariableScalar.cpp
 constitutive/staticData/ConstitutiveStaticDataMisesPlasticity.cpp
 )
 

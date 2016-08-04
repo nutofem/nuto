@@ -36,6 +36,7 @@ class ConstitutiveStaticDataMoistureTransport;
 class ConstitutiveStaticDataMultipleConstitutiveLaws;
 class ConstitutiveStaticDataBondStressSlip;
 class ConstitutiveStaticDataElasticEnergyDensity;
+class ConstitutiveStaticDataHistoryVariableScalar;
 class ElementBase;
 class VisualizeUnstructuredGrid;
 class VisualizeComponentBase;
@@ -174,6 +175,12 @@ public:
 
     //!@ brief reinterpret as multi physics
     virtual const ConstitutiveStaticDataMultipleConstitutiveLaws* AsMultipleConstitutiveLaws()const;
+
+    //!@ brief reinterpret as history variable
+    virtual ConstitutiveStaticDataHistoryVariableScalar* AsHistoryVariableScalar();
+
+    //!@ brief reinterpret as history variable
+    virtual const ConstitutiveStaticDataHistoryVariableScalar* AsHistoryVariableScalar()const;
 
 #ifdef ENABLE_VISUALIZE
     //Visualize for all integration points the fine scale structure
