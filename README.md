@@ -39,6 +39,11 @@ In the end, run the test suite to see if all went well
 
     make test
 
+Examples
+====
+
+![alt text](https://github.com/nutofem/nuto/blob/master/doc/images/crack_phase_field.png "Crack phase-field for a single edge notched tension test")
+
 
 Can I see some code?
 ====================
