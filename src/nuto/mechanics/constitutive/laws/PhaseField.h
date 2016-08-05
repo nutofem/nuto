@@ -24,13 +24,13 @@ class Logger;
 //! \author Philip Huschke
 //! \date   June 14, 2016
 //! \brief  A phase-field model for brittle fracture
-//!
+
 //! Recommended literature:
 //!
-//! Miehe et al.
+//! Miehe et al. \n
 //! "Thermodynamically consistent phase-field models of fracture: Variational principles and multi-field FE implementations"
 //!
-//! Ambati et al.
+//! Ambati et al. \n
 //! "A review on phase-field models of brittle fracture and a new fast hybrid formulation"
 class PhaseField : public ConstitutiveBase
 {
@@ -44,7 +44,7 @@ public:
     //! \param[in]  rLengthScaleParameter Parameter that corresponds to the band-width of the diffusive crack
     //! \param[in]  rFractureEnergy Fracture energy/critical energy release rate
     //! \param[in]  rArtificialViscosity Parameter to improve robustness of the model (non-physical)
-    //! \param[in]  rEnergyDecomposition Decomposition of the elastic energy density $\psi_0 = psi_0^+ + \psi_0^-$
+    //! \param[in]  rEnergyDecomposition Decomposition of the elastic energy density \f$\psi_0 = \psi_0^+ + \psi_0^-\f$
     PhaseField(             const double rYoungsModulus,
                             const double rPoissonsRatio,
                             const double rLengthScaleParameter,
