@@ -1,3 +1,5 @@
+![alt text](https://github.com/nutofem/nuto/blob/master/doc/images/NuTo_logo.png "NuTo logo")
+
 NuTo
 ====
 
