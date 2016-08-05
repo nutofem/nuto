@@ -12,7 +12,7 @@ NuTo::Error::eError NuTo::ThermalStrains::Evaluate(NuTo::ElementBase *rElement,
     auto eye = Eigen::MatrixXd::Identity(TDim, TDim);
     const int voigtDim = NuTo::ConstitutiveIOBase::GetVoigtDim(TDim);
 
-    double temperature;
+    double temperature = 0.0;
     std::array<double, 2> strain;
     try
     {
