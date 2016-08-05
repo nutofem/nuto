@@ -41,6 +41,11 @@ In the end, run the test suite to see if all went well
 
     make test
 
+Requirements
+====
+
+![alt text](https://github.com/nutofem/nuto/blob/master/doc/images/library_requirements.png "library requirements")
+
 Examples
 ====
 
