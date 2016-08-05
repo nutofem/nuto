@@ -48,7 +48,7 @@ int NuTo::Interpolation2D::GetNumDofsPerNode() const
     case NuTo::Node::NONLOCALEQSTRAIN:
     case NuTo::Node::RELATIVEHUMIDITY:
     case NuTo::Node::WATERVOLUMEFRACTION:
-    case NuTo::Node::DAMAGE:
+    case NuTo::Node::CRACKPHASEFIELD:
         return 1;
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "dof type not found.");

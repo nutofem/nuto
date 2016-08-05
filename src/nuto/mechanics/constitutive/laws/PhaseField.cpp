@@ -22,23 +22,33 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "nuto/mechanics/elements/IpDataStaticDataBase.h"
 
-NuTo::PhaseField::PhaseField() :
-ConstitutiveBase(),
-mE(-1.),
-mNu(-1.),
-mLengthScaleParameter(-1.),
-mFractureEnergy(-1.),
-mThermalExpansionCoefficient(-1.),
-mArtificialViscosity(-1.)
-{
-}
+#include "eigen3/Eigen/Eigenvalues"
+#include "eigen3/Eigen/Dense"
+
+
+NuTo::PhaseField::PhaseField(   const double rYoungsModulus,
+                                const double rPoissonsRatio,
+                                const double rLengthScaleParameter,
+                                const double rFractureEnergy,
+                                const double rArtificialViscosity)
+                                :
+                                ConstitutiveBase(),
+                                mYoungsModulus                  (rYoungsModulus),
+                                mPoissonsRatio                  (rPoissonsRatio),
+                                mLengthScaleParameter           (rLengthScaleParameter),
+                                mFractureEnergy                 (rFractureEnergy),
+                                mArtificialViscosity            (rArtificialViscosity),
+                                mLameLambda                     ((rYoungsModulus*rPoissonsRatio) / ((1+rPoissonsRatio)*(1-2*rPoissonsRatio))),
+                                mLameMu                         (rYoungsModulus/(2*(1+rPoissonsRatio)))
+                                {}
+
 
 NuTo::ConstitutiveInputMap NuTo::PhaseField::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType& rInterpolationType) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
     constitutiveInputMap[Constitutive::Input::ENGINEERING_STRAIN];
-    constitutiveInputMap[Constitutive::Input::DAMAGE];
+    constitutiveInputMap[Constitutive::Input::CRACK_PHASE_FIELD];
 
     return constitutiveInputMap;
 }
@@ -50,20 +60,20 @@ NuTo::Error::eError NuTo::PhaseField::Evaluate1D(ElementBase* rElement, int rIp,
 
 NuTo::Error::eError NuTo::PhaseField::Evaluate2D(ElementBase* rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
 {
-    const auto& engineeringStrain   = rConstitutiveInput.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
-    const auto& damage              = *rConstitutiveInput.at(Constitutive::Input::DAMAGE);
 
-    auto elasticEngineeringStrain   = EngineeringStressHelper::CalculateElasticEngineeringStrain<2>(engineeringStrain, *rElement->GetInterpolationType(), rConstitutiveInput, mThermalExpansionCoefficient);
+
+    const auto& engineeringStrain   = rConstitutiveInput.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
+    const auto& damage              = *rConstitutiveInput.at(Constitutive::Input::CRACK_PHASE_FIELD);
 
     // calculate coefficients
     double C11, C12, C33;
     switch (rElement->GetSection()->GetType())
     {
     case Section::PLANE_STRAIN:
-        std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients3D(mE, mNu);
+        std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients3D(mYoungsModulus, mPoissonsRatio);
         break;
     case Section::PLANE_STRESS:
-        std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients2DPlainStress(mE, mNu);
+        std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients2DPlaneStress(mYoungsModulus, mPoissonsRatio);
         break;
     default:
         throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "[ Invalid type of 2D section behavior found!!!");
@@ -80,20 +90,42 @@ NuTo::Error::eError NuTo::PhaseField::Evaluate2D(ElementBase* rElement, int rIp,
 
     // calculate the effective stress
     Eigen::Vector3d effectiveStress;
-    effectiveStress[0] = (C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1]);
-    effectiveStress[1] = (C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0]);
-    effectiveStress[2] = C33 * elasticEngineeringStrain[2];
+    effectiveStress[0] = (C11 * engineeringStrain[0] + C12 * engineeringStrain[1]);
+    effectiveStress[1] = (C11 * engineeringStrain[1] + C12 * engineeringStrain[0]);
+    effectiveStress[2] = C33 * engineeringStrain[2];
 
     // calculate the elastic energy density
-    const double elasticEnergyDensity = 0.5*effectiveStress.dot(elasticEngineeringStrain);
+    const double elasticEnergyDensity = 0.5*effectiveStress.dot(engineeringStrain);
 
     ConstitutiveStaticDataElasticEnergyDensity currentStaticData;
     currentStaticData.SetMaxElasticEnergyDensity(std::max(elasticEnergyDensity, oldStaticData.GetMaxElasticEnergyDensity()));
 
+//    Eigen::Matrix2d strainMatrix(2,2);
+//    strainMatrix(0,0) = engineeringStrain[0];
+//    strainMatrix(0,1) = engineeringStrain[2];
 
-    constexpr double residualEnergyDensity = 1.e-8;
+//    strainMatrix(1,0) = engineeringStrain[2];
+//    strainMatrix(1,1) = engineeringStrain[1];
+
+
+//    const double traceStrain = strainMatrix.diagonal().sum();
+
+//    Eigen::Matrix2d strainMatrixPositive(2,2);
+//    strainMatrixPositive(0,0) = std::max(engineeringStrain[0],0.0);
+//    strainMatrixPositive(0,1) = std::max(engineeringStrain[2],0.0);;
+//    strainMatrixPositive(1,0) = std::max(engineeringStrain[2],0.0);;
+//    strainMatrixPositive(1,1) = std::max(engineeringStrain[1],0.0);;
+
+//    const double traceStrainPositive = strainMatrixPositive.diagonal().sum();
+
+//    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigenSolver(strainMatrix);
+
+//    //const auto& eigenValues     = eigenSolver.eigenvalues();
+//    const auto& eigenVectors    = eigenSolver.eigenvectors();
+
 
     bool performUpdateAtEnd = false;
+    constexpr double residualEnergyDensity = 1.e-8;
 
     for (auto itOutput : rConstitutiveOutput)
     {
@@ -103,28 +135,34 @@ NuTo::Error::eError NuTo::PhaseField::Evaluate2D(ElementBase* rElement, int rIp,
         {
             ConstitutiveIOBase& engineeringStress = *itOutput.second;
             engineeringStress.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
-            engineeringStress[0] = (std::pow(1. - damage[0],2) + residualEnergyDensity) * effectiveStress[0];
-            engineeringStress[1] = (std::pow(1. - damage[0],2) + residualEnergyDensity) * effectiveStress[1];
-            engineeringStress[2] = (std::pow(1. - damage[0],2) + residualEnergyDensity) * effectiveStress[2];
+
+            const double factor  = std::pow(1. - damage[0],2) + residualEnergyDensity;
+
+            engineeringStress[0] = factor * effectiveStress[0];
+            engineeringStress[1] = factor * effectiveStress[1];
+            engineeringStress[2] = factor * effectiveStress[2];
+
             break;
         }
-
         case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
         {
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsMatrix<3,3>(itOutput.first, __PRETTY_FUNCTION__);
+
             // right coefficients are calculated above
-            tangent(0, 0) = (std::pow(1. - damage[0],2) + residualEnergyDensity) * C11;
-            tangent(1, 0) = (std::pow(1. - damage[0],2) + residualEnergyDensity) * C12;
-            tangent(2, 0) = 0.;
+            const double factor  = std::pow(1. - damage[0],2) + residualEnergyDensity;
 
-            tangent(0, 1) = (std::pow(1. - damage[0],2) + residualEnergyDensity) * C12;
-            tangent(1, 1) = (std::pow(1. - damage[0],2) + residualEnergyDensity) * C11;
-            tangent(2, 1) = 0.;
+            tangent(0, 0)        = factor * C11;
+            tangent(1, 0)        = factor * C12;
+            tangent(2, 0)        = 0.;
 
-            tangent(0, 2) = 0.;
-            tangent(1, 2) = 0.;
-            tangent(2, 2) = (std::pow(1. - damage[0],2) + residualEnergyDensity) * C33;
+            tangent(0, 1)        = factor * C12;
+            tangent(1, 1)        = factor * C11;
+            tangent(2, 1)        = 0.;
+
+            tangent(0, 2)        = 0.;
+            tangent(1, 2)        = 0.;
+            tangent(2, 2)        = factor * C33;
             break;
         }
 
@@ -132,23 +170,25 @@ NuTo::Error::eError NuTo::PhaseField::Evaluate2D(ElementBase* rElement, int rIp,
         {
             ConstitutiveIOBase& engineeringStress3D = *itOutput.second;
             engineeringStress3D.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
+
+            const double factor  = std::pow(1. - damage[0],2) + residualEnergyDensity;
             switch (rElement->GetSection()->GetType())
             {
             case Section::PLANE_STRAIN:
-                engineeringStress3D[0] = (std::pow(1. - damage[0],2) + residualEnergyDensity) * (C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1]);
-                engineeringStress3D[1] = (std::pow(1. - damage[0],2) + residualEnergyDensity) * (C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0]);
-                engineeringStress3D[2] = (std::pow(1. - damage[0],2) + residualEnergyDensity) *  C12 *(elasticEngineeringStrain[0] + elasticEngineeringStrain[1]);
+                engineeringStress3D[0] = factor * (C11 * engineeringStrain[0] + C12 * engineeringStrain[1]);
+                engineeringStress3D[1] = factor * (C11 * engineeringStrain[1] + C12 * engineeringStrain[0]);
+                engineeringStress3D[2] = factor *  C12 *(engineeringStrain[0] + engineeringStrain[1]);
                 engineeringStress3D[3] = 0.;
                 engineeringStress3D[4] = 0.;
-                engineeringStress3D[5] = (std::pow(1. - damage[0],2) + residualEnergyDensity) *  C33 * elasticEngineeringStrain[2];
+                engineeringStress3D[5] = factor *  C33 * engineeringStrain[2];
                 break;
             case Section::PLANE_STRESS:
-                engineeringStress3D[0] = (std::pow(1. - damage[0],2) + residualEnergyDensity) * (C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1]);
-                engineeringStress3D[1] = (std::pow(1. - damage[0],2) + residualEnergyDensity) * (C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0]);
+                engineeringStress3D[0] = factor * (C11 * engineeringStrain[0] + C12 * engineeringStrain[1]);
+                engineeringStress3D[1] = factor * (C11 * engineeringStrain[1] + C12 * engineeringStrain[0]);
                 engineeringStress3D[2] = 0.;
                 engineeringStress3D[3] = 0.;
                 engineeringStress3D[4] = 0.;
-                engineeringStress3D[5] = (std::pow(1. - damage[0],2) + residualEnergyDensity) * C33 * elasticEngineeringStrain[2];
+                engineeringStress3D[5] = factor * C33 * engineeringStrain[2];
                 break;
 
             default:
@@ -159,25 +199,73 @@ NuTo::Error::eError NuTo::PhaseField::Evaluate2D(ElementBase* rElement, int rIp,
 
         case NuTo::Constitutive::Output::ENGINEERING_STRAIN_VISUALIZE:
         {
-            itOutput.second->AsEngineeringStrain3D() = engineeringStrain.As3D(mNu, rElement->GetSection()->GetType());
+            itOutput.second->AsEngineeringStrain3D() = engineeringStrain.As3D(mPoissonsRatio, rElement->GetSection()->GetType());
             break;
         }
 
         case NuTo::Constitutive::Output::ELASTIC_ENERGY_DAMAGED_PART:
         {
-            ConstitutiveIOBase& elasticEnergyDamagedPart = *itOutput.second;
-            elasticEnergyDamagedPart[0] = currentStaticData.GetMaxElasticEnergyDensity();
+            ConstitutiveIOBase& elasticEnergyLoadTerm = *itOutput.second;
+
+            switch (mPhaseFieldDegradationFunctionType)
+            {
+            case Constitutive::ePhaseFieldDegradationFunctionType::ISOTROPIC:
+            {
+                elasticEnergyLoadTerm[0] = currentStaticData.GetMaxElasticEnergyDensity();
+                break;
+            }
+            case Constitutive::ePhaseFieldDegradationFunctionType::ANISOTROPIC_SPECTRAL_DECOMPOSITION:
+            {
+                //todo: use static data (history variable) for loading/unloading
+                //elasticEnergyLoadTerm[0] = 0.5*mLameLambda*std::pow(std::max(traceStrain,0.0),2) + mNu*std::pow(traceStrainPositive,2);
+                break;
+            }
+            default:
+                 throw MechanicsException(__PRETTY_FUNCTION__, "Degradation function type not implemented.");
+            }
 
             break;
         }
 
-        case NuTo::Constitutive::Output::ENGINEERING_STRESS_DAMAGED_PART:
+        case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_PHASE_FIELD:
         {
-            ConstitutiveIOBase& engineeringStressDamagedPart = *itOutput.second;
-            engineeringStressDamagedPart.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
-            engineeringStressDamagedPart[0] = effectiveStress[0];
-            engineeringStressDamagedPart[1] = effectiveStress[1];
-            engineeringStressDamagedPart[2] = effectiveStress[2];
+            ConstitutiveIOBase& dStressDPhaseField = *itOutput.second;
+            dStressDPhaseField.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
+
+
+            const double degradationFactor = 2*(1-damage[0]);
+
+            switch (mPhaseFieldDegradationFunctionType)
+            {
+            case Constitutive::ePhaseFieldDegradationFunctionType::ISOTROPIC:
+            {
+                dStressDPhaseField[0] = degradationFactor*effectiveStress[0];
+                dStressDPhaseField[1] = degradationFactor*effectiveStress[1];
+                dStressDPhaseField[2] = degradationFactor*effectiveStress[2];
+
+                break;
+            }
+            case Constitutive::ePhaseFieldDegradationFunctionType::ANISOTROPIC_SPECTRAL_DECOMPOSITION:
+            {
+//                Eigen::Matrix<double,dimension,dimension> engineeringStressPositive;
+//                engineeringStressPositive.Zero();
+
+//                for (int i = 0; i < dimension; ++i)
+//                {
+//                    engineeringStressPositive += eigenVectors.col(i) * eigenVectors.col(i).transpose();
+//                }
+//                engineeringStressPositive *=mLameLambda*std::max(traceStrain,0.0) + 2*mLameMu*traceStrainPositive;
+
+//                dStressDPhaseField[0] = degradationFactor*engineeringStressPositive.at(0,0);
+//                dStressDPhaseField[1] = degradationFactor*engineeringStressPositive.at(1,1);
+//                dStressDPhaseField[2] = degradationFactor*engineeringStressPositive.at(1,0);
+
+                break;
+            }
+            default:
+                throw MechanicsException(__PRETTY_FUNCTION__, "Degradation function type not implemented.");
+            }
+
             break;
         }
 
@@ -187,12 +275,43 @@ NuTo::Error::eError NuTo::PhaseField::Evaluate2D(ElementBase* rElement, int rIp,
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
 
+
             if (elasticEnergyDensity == currentStaticData.GetMaxElasticEnergyDensity())
             {
                 // loading
-                tangent[0] = effectiveStress[0];
-                tangent[1] = effectiveStress[1];
-                tangent[2] = effectiveStress[2];
+                switch (mPhaseFieldDegradationFunctionType)
+                {
+                case Constitutive::ePhaseFieldDegradationFunctionType::ISOTROPIC:
+                {
+                    tangent[0] = effectiveStress[0];
+                    tangent[1] = effectiveStress[1];
+                    tangent[2] = effectiveStress[2];
+
+                    break;
+                }
+                case Constitutive::ePhaseFieldDegradationFunctionType::ANISOTROPIC_SPECTRAL_DECOMPOSITION:
+                {
+
+//                    Eigen::Matrix<double,dimension,dimension> engineeringStressPositive;
+//                    engineeringStressPositive.Zero();
+
+
+//                    for (int i = 0; i < dimension; ++i)
+//                    {
+//                        engineeringStressPositive += eigenVectors.col(i) * eigenVectors.col(i).transpose();
+//                    }
+
+//                    engineeringStressPositive *=mLameLambda*std::max(traceStrain,0.0) + 2*mLameMu*traceStrainPositive;
+
+//                    tangent[0] = engineeringStressPositive.at(0,0);
+//                    tangent[1] = engineeringStressPositive.at(1,1);
+//                    tangent[2] = engineeringStressPositive.at(1,0);
+                    break;
+                }
+                default:
+                    throw MechanicsException(__PRETTY_FUNCTION__, "Degradation function type not implemented.");
+                }
+
 
             } else
             {
@@ -265,9 +384,9 @@ bool NuTo::PhaseField::CheckDofCombinationComputable(Node::eDof rDofRow, Node::e
         switch (Node::CombineDofs(rDofRow, rDofCol))
         {
         case Node::CombineDofs(Node::DISPLACEMENTS, Node::DISPLACEMENTS):
-        case Node::CombineDofs(Node::DISPLACEMENTS, Node::DAMAGE):
-        case Node::CombineDofs(Node::DAMAGE, Node::DISPLACEMENTS):
-        case Node::CombineDofs(Node::DAMAGE, Node::DAMAGE):
+        case Node::CombineDofs(Node::DISPLACEMENTS, Node::CRACKPHASEFIELD):
+        case Node::CombineDofs(Node::CRACKPHASEFIELD, Node::DISPLACEMENTS):
+        case Node::CombineDofs(Node::CRACKPHASEFIELD, Node::CRACKPHASEFIELD):
             return true;
         default:
             return false;
@@ -276,7 +395,7 @@ bool NuTo::PhaseField::CheckDofCombinationComputable(Node::eDof rDofRow, Node::e
     case 1:
         switch (Node::CombineDofs(rDofRow, rDofCol))
         {
-        case Node::CombineDofs(Node::DAMAGE, Node::DAMAGE):
+        case Node::CombineDofs(Node::CRACKPHASEFIELD, Node::CRACKPHASEFIELD):
             return true;
         default:
             return false;
@@ -297,13 +416,11 @@ double NuTo::PhaseField::GetParameterDouble(Constitutive::eConstitutiveParameter
     case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
         return mFractureEnergy;
     case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
-        return mNu;
+        return mPoissonsRatio;
     case Constitutive::eConstitutiveParameter::LENGTH_SCALE_PARAMETER:
         return mLengthScaleParameter;
-    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
-        return mThermalExpansionCoefficient;
     case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
-        return mE;
+        return mYoungsModulus;
 
     default:
         throw MechanicsException(__PRETTY_FUNCTION__,"Constitutive law does not have the requested variable");
@@ -312,30 +429,27 @@ double NuTo::PhaseField::GetParameterDouble(Constitutive::eConstitutiveParameter
 
 void NuTo::PhaseField::SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
-    switch (rIdentifier)
-    {
-    case Constitutive::eConstitutiveParameter::ARTIFICIAL_VISCOSITY:
-        mArtificialViscosity = rValue;
-        break;
-    case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
-        mFractureEnergy = rValue;
-        break;
-    case Constitutive::eConstitutiveParameter::LENGTH_SCALE_PARAMETER:
-        mLengthScaleParameter = rValue;
-        break;
-    case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
-        mNu = rValue;
-        break;
-    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
-        mThermalExpansionCoefficient = rValue;
-        break;
-    case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
-        mE = rValue;
-        break;
-    default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
-    }
-    SetParametersValid();
+//    switch (rIdentifier)
+//    {
+//    case Constitutive::eConstitutiveParameter::ARTIFICIAL_VISCOSITY:
+//        mArtificialViscosity = rValue;
+//        break;
+//    case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
+//        mFractureEnergy = rValue;
+//        break;
+//    case Constitutive::eConstitutiveParameter::LENGTH_SCALE_PARAMETER:
+//        mLengthScaleParameter = rValue;
+//        break;
+//    case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
+//        mPoissonsRatio = rValue;
+//        break;
+//    case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
+//        mYoungsModulus = rValue;
+//        break;
+//    default:
+//        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law does not have the requested variable");
+//    }
+//    SetParametersValid();
 }
 
 NuTo::Constitutive::eConstitutiveType NuTo::PhaseField::GetType() const
@@ -361,9 +475,8 @@ bool NuTo::PhaseField::CheckElementCompatibility(Element::eElementType rElementT
 void NuTo::PhaseField::Info(unsigned short rVerboseLevel, Logger& rLogger) const
 {
   this->ConstitutiveBase::Info(rVerboseLevel, rLogger);
-  rLogger << "    Young's modulus         : " << mE << "\n";
-  rLogger << "    Poisson's ratio         : " << mNu << "\n";
-  rLogger << "    thermal expansion coeff : " << mThermalExpansionCoefficient << "\n";
+  rLogger << "    Young's modulus         : " << mYoungsModulus << "\n";
+  rLogger << "    Poisson's ratio         : " << mPoissonsRatio << "\n";
   rLogger << "    fracture energy         : " << mFractureEnergy << "\n";
   rLogger << "    artificial viscosity    : " << mArtificialViscosity << "\n";
   rLogger << "    length scale parameter  : " << mLengthScaleParameter << "\n";

@@ -93,6 +93,7 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
+
 private:
 
     //! @brief extracts the appropriate dof value from the active dof vector or the dependent dof vector

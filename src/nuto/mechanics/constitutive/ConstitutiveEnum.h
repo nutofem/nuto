@@ -119,6 +119,12 @@ enum eDamageLawType
     ISOTROPIC_CUBIC_HERMITE                         //!< cubic hermite h00
 };
 
+enum ePhaseFieldDegradationFunctionType
+{
+    ISOTROPIC,                                              //!< isotropic degradation
+    ANISOTROPIC_SPECTRAL_DECOMPOSITION,                     //!< spectral decompostion of the elastic strain tensor proposed by Miehe et al.
+};
+
 static inline std::map<eDamageLawType, std::string> GetDamageLawMap()
 {
     std::map<eDamageLawType, std::string> map;
@@ -306,7 +312,7 @@ enum eInput
     WATER_VOLUME_FRACTION_DT1,          //!< first time derivative
     WATER_VOLUME_FRACTION_GRADIENT,     //!<
     INTERFACE_SLIP,                     //!<
-    DAMAGE,                             //!<
+    CRACK_PHASE_FIELD,                  //!<
     ELASTIC_ENERGY_DENSITY,             //!<
     CALCULATE_STATIC_DATA,
     TIME_STEP
@@ -350,7 +356,7 @@ enum eOutput
 {
     ENGINEERING_STRESS,
     ENGINEERING_STRESS_VISUALIZE,
-    ENGINEERING_STRESS_DAMAGED_PART,
+    D_ENGINEERING_STRESS_D_PHASE_FIELD,
     ENGINEERING_STRAIN,
     D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY,
     D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION,

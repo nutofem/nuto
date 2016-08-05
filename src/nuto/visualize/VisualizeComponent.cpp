@@ -56,8 +56,8 @@ std::string NuTo::VisualizeComponent::GetComponentName() const
         return "Crack";
     case VisualizeBase::DAMAGE:
         return "Damage";
-    case VisualizeBase::DAMAGE_PHASE_FIELD:
-        return "Damage_Phase_Field";
+    case VisualizeBase::CRACK_PHASE_FIELD:
+        return "CrackPhaseField";
     case VisualizeBase::DISPLACEMENTS:
         return "Displacements";
     case VisualizeBase::ELEMENT:

@@ -31,7 +31,7 @@ enum eNodeType
     NONLOCALEQSTRAIN, \
     WATERVOLUMEFRACTION, \
     RELATIVEHUMIDITY, \
-    DAMAGE \
+    CRACKPHASEFIELD \
 }
 
 enum eDof : unsigned char DEGREES_OF_FREEDOM;
@@ -84,7 +84,7 @@ static inline std::map<eDof, std::string> GetDofMap()
     attributeMap[eDof::NONLOCALEQSTRAIN]        = "NONLOCALEQSTRAIN";
     attributeMap[eDof::WATERVOLUMEFRACTION]     = "WATERVOLUMEFRACTION";
     attributeMap[eDof::RELATIVEHUMIDITY]        = "RELATIVEHUMIDITY";
-    attributeMap[eDof::DAMAGE]                  = "DAMAGE";
+    attributeMap[eDof::CRACKPHASEFIELD]         = "CRACKPHASEFIELD";
     return attributeMap;
 }
 

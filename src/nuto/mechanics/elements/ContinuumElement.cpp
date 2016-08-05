@@ -144,7 +144,7 @@ NuTo::ConstitutiveInputMap NuTo::ContinuumElement<TDim>::GetConstitutiveInputMap
             itInput.second = &(rData.mWaterVolumeFraction_Gradient);
             break;
 
-        case Constitutive::Input::DAMAGE:
+        case Constitutive::Input::CRACK_PHASE_FIELD:
             itInput.second = &(rData.mDamage);
             break;
 
@@ -256,7 +256,7 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapInternalGradient(Con
             rConstitutiveOutput[NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_B] = &(rData.mInternalGradientWV_B);
             rConstitutiveOutput[NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_N] = &(rData.mInternalGradientWV_N);
             break;
-        case Node::DAMAGE:
+        case Node::CRACKPHASEFIELD:
             rConstitutiveOutput[NuTo::Constitutive::Output::ELASTIC_ENERGY_DAMAGED_PART] = &(rData.mElasticEnergyDensity);
             break;
         default:
@@ -338,15 +338,15 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian0(Constitutiv
                 rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_NN_H0] = &rData.mInternalGradientWV_dWV_NN_H0;
                 break;
 
-            case Node::CombineDofs(Node::DISPLACEMENTS, Node::DAMAGE):
-                rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_STRESS_DAMAGED_PART] = &rData.mEngineeringStressDamagedPart;
+            case Node::CombineDofs(Node::DISPLACEMENTS, Node::CRACKPHASEFIELD):
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_PHASE_FIELD] = &rData.mDStressDPhaseField;
                 break;
 
-            case Node::CombineDofs(Node::DAMAGE, Node::DAMAGE):
+            case Node::CombineDofs(Node::CRACKPHASEFIELD, Node::CRACKPHASEFIELD):
                 rConstitutiveOutput[NuTo::Constitutive::Output::ELASTIC_ENERGY_DAMAGED_PART] = &rData.mElasticEnergyDensity;
                 break;
 
-            case Node::CombineDofs(Node::DAMAGE, Node::DISPLACEMENTS):
+            case Node::CombineDofs(Node::CRACKPHASEFIELD, Node::DISPLACEMENTS):
                 rConstitutiveOutput[NuTo::Constitutive::Output::D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN] = &(rData.mTangentElasticEnergyStrain);
                 break;
 
@@ -396,7 +396,7 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian1(Constitutiv
                 break;
             case Node::CombineDofs(Node::eDof::TEMPERATURE, Node::eDof::DISPLACEMENTS):
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::TEMPERATURE):
-            case Node::CombineDofs(Node::eDof::DAMAGE, Node::eDof::DAMAGE):
+            case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::CRACKPHASEFIELD):
                 break;
             default:
                 throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_1_TIME_DERIVATIVE for (" + Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
@@ -538,8 +538,8 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(const Constitutiv
             rData.mNonlocalEqStrain.AsScalar() = (*rData.mN.at(Node::NONLOCALEQSTRAIN)) * rData.mNodalValues.at(Node::NONLOCALEQSTRAIN);
             break;
 
-        case Constitutive::Input::DAMAGE:
-            rData.mDamage.AsScalar() = (*rData.mN.at(Node::DAMAGE)) * rData.mNodalValues.at(Node::DAMAGE);
+        case Constitutive::Input::CRACK_PHASE_FIELD:
+            rData.mDamage.AsScalar() = (*rData.mN.at(Node::CRACKPHASEFIELD)) * rData.mNodalValues.at(Node::CRACKPHASEFIELD);
             break;
 
         case Constitutive::Input::RELATIVE_HUMIDITY:
@@ -781,14 +781,14 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(BlockF
                                                                          rData.mN.at(dofRow)->transpose() * rData.mInternalGradientWV_N);
             break;
 
-        case Node::DAMAGE:
+        case Node::CRACKPHASEFIELD:
         {
             const auto  G       = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::FRACTURE_ENERGY);
             const auto  l       = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::LENGTH_SCALE_PARAMETER);
-            const auto& N       = *(rData.mN.at(Node::DAMAGE));
-            const auto& B       = rData.mB.at(Node::DAMAGE);
-            const auto& d       = rData.mNodalValues.at(Node::DAMAGE);
-            const auto& d_dt    = rData.mNodalValues_dt1.at(Node::DAMAGE);
+            const auto& N       = *(rData.mN.at(Node::CRACKPHASEFIELD));
+            const auto& B       = rData.mB.at(Node::CRACKPHASEFIELD);
+            const auto& d       = rData.mNodalValues.at(Node::CRACKPHASEFIELD);
+            const auto& d_dt    = rData.mNodalValues_dt1.at(Node::CRACKPHASEFIELD);
 
             const auto& kappa   = rData.mElasticEnergyDensity[0];
             const auto  visco   = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::ARTIFICIAL_VISCOSITY);
@@ -880,38 +880,32 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
                 hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose()  * rData.mEngineeringStress_dWV * (*rData.mN.at(dofCol));
                 break;
 
-            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DAMAGE):
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::CRACKPHASEFIELD):
             {
-
                 const auto& Bu = rData.mB.at(Node::eDof::DISPLACEMENTS);
-
-                const auto& Nd = *(rData.mN.at(Node::eDof::DAMAGE));
-                const double d = (Nd * rData.mNodalValues.at(Node::eDof::DAMAGE)).at(0,0);
-
-                //TODO: substitute engineeringStress with tensile component
-                hessian0 += rData.mDetJxWeightIPxSection * 2 * (d -1.) * Bu.transpose() * rData.mEngineeringStressDamagedPart * Nd;
+                const auto& Nd = *(rData.mN.at(Node::eDof::CRACKPHASEFIELD));
+                hessian0 += rData.mDetJxWeightIPxSection * Bu.transpose() * rData.mDStressDPhaseField * Nd;
                 break;
             }
 
-            case Node::CombineDofs(Node::eDof::DAMAGE, Node::eDof::DISPLACEMENTS):
+            case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::DISPLACEMENTS):
             {
-                const auto& Nd = *(rData.mN.at(Node::eDof::DAMAGE));
-                const double d = (Nd * rData.mNodalValues.at(Node::eDof::DAMAGE)).at(0,0);
+                const auto& Nd = *(rData.mN.at(Node::eDof::CRACKPHASEFIELD));
+                const double d = (Nd * rData.mNodalValues.at(Node::eDof::CRACKPHASEFIELD)).at(0,0);
 
                 const auto& Bu = rData.mB.at(Node::eDof::DISPLACEMENTS);
 
-                //TODO: substitute engineeringStress with static data derivative d_kappa_d_strain
                 hessian0 += rData.mDetJxWeightIPxSection * 2 * (d -1.) * Nd.transpose() * rData.mTangentElasticEnergyStrain.transpose() * Bu;
                 break;
             }
 
-            case Node::CombineDofs(Node::eDof::DAMAGE, Node::eDof::DAMAGE):
+            case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::CRACKPHASEFIELD):
             {
                 const auto  G = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::FRACTURE_ENERGY);
                 const auto  l = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::LENGTH_SCALE_PARAMETER);
 
-                const auto& N = *(rData.mN.at(Node::eDof::DAMAGE));
-                const auto& B = rData.mB.at(Node::eDof::DAMAGE);
+                const auto& N = *(rData.mN.at(Node::eDof::CRACKPHASEFIELD));
+                const auto& B = rData.mB.at(Node::eDof::CRACKPHASEFIELD);
 
                 const auto& kappa   = rData.mElasticEnergyDensity[0];
 
@@ -970,9 +964,9 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatri
                 hessian1 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow)->transpose() * rData.mInternalGradientWV_dWV_NN_H1 * (*rData.mN.at(dofCol));
                 break;
 
-            case Node::CombineDofs(Node::eDof::DAMAGE, Node::eDof::DAMAGE):
+            case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::CRACKPHASEFIELD):
             {
-                const auto& N = *(rData.mN.at(Node::eDof::DAMAGE));
+                const auto& N = *(rData.mN.at(Node::eDof::CRACKPHASEFIELD));
                 const auto  visco   = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::ARTIFICIAL_VISCOSITY);
                 hessian1 += visco * rData.mDetJxWeightIPxSection * N.transpose() * N;
             }

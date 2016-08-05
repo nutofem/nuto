@@ -551,8 +551,12 @@ void NuTo::TimeIntegrationBase::ExportVisualizationFiles(const std::string& rRes
     std::stringstream ssTimeStepVTK;
     ssTimeStepVTK << rTimeStep;
     boost::filesystem::path resultFile(rResultDir);
-    resultFile /= std::string("Nodes") + ssTimeStepVTK.str() + std::string(".vtu");
-    mStructure->ExportVtkDataFileNodes(resultFile.string(), true);
+
+    if (mExportDataFileNodes==true)
+    {
+        resultFile /= std::string("Nodes") + ssTimeStepVTK.str() + std::string(".vtu");
+        mStructure->ExportVtkDataFileNodes(resultFile.string(), true);
+    }
 
     std::stringstream timeFormatted;
     timeFormatted.width(15);

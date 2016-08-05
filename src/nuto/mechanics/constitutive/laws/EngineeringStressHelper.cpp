@@ -23,7 +23,7 @@ NuTo::EngineeringStrain<TDim> NuTo::EngineeringStressHelper::CalculateElasticEng
 }
 
 
-std::tuple<double, double, double> NuTo::EngineeringStressHelper::CalculateCoefficients2DPlainStress(double mE, double mNu)
+std::tuple<double, double, double> NuTo::EngineeringStressHelper::CalculateCoefficients2DPlaneStress(double mE, double mNu)
 {
     double factor = mE / (1.0 - (mNu * mNu));
     return std::make_tuple(

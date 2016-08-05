@@ -242,7 +242,7 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             case Node::NONLOCALEQSTRAIN:
             case Node::WATERVOLUMEFRACTION:
             case Node::RELATIVEHUMIDITY:
-            case Node::DAMAGE:
+            case Node::CRACKPHASEFIELD:
             {
                 dimensionOfDof = 1;
                 break;
@@ -840,4 +840,3 @@ void NuTo::Structure::NodeExchangePtr(int rId, NuTo::NodeBase* rOldPtr, NuTo::No
 
 
 }
-

@@ -1,5 +1,6 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "nuto/mechanics/constitutive/laws/PhaseField.h"
 
 #include <boost/filesystem.hpp>
 #include <iostream>
@@ -75,12 +76,14 @@ int main()
         cout << "**  material                                **" << endl;
         cout << "**********************************************" << endl;
 
-        int matrixMaterial = myStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::PHASE_FIELD);
-        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, youngsModulus);
-        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, poissonsRatio);
-        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::LENGTH_SCALE_PARAMETER, lengthScale);
-        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY, fractureEnergy);
-        myStructure.ConstitutiveLawSetParameterDouble(matrixMaterial, NuTo::Constitutive::eConstitutiveParameter::ARTIFICIAL_VISCOSITY, artificialViscosity);
+        NuTo::ConstitutiveBase* phaseField = new NuTo::PhaseField(youngsModulus,
+                                                                  poissonsRatio,
+                                                                  lengthScale,
+                                                                  fractureEnergy,
+                                                                  artificialViscosity);
+
+
+        int matrixMaterial = myStructure.AddConstitutiveLaw(phaseField);
 
         cout << "**********************************************" << endl;
         cout << "**  geometry                                **" << endl;
@@ -107,7 +110,7 @@ int main()
         myStructure.ElementCreate(myInterpolationType, nodeIds);
 
         myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT2);
-        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::DAMAGE, NuTo::Interpolation::EQUIDISTANT1);
+        myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::CRACKPHASEFIELD, NuTo::Interpolation::EQUIDISTANT1);
 
         myStructure.InterpolationTypeSetIntegrationType(myInterpolationType, NuTo::IntegrationType::IntegrationType2D3NGauss3Ip, NuTo::IpData::STATICDATA);
         myStructure.InterpolationTypeInfo(myInterpolationType);
@@ -156,7 +159,7 @@ int main()
         myStructure.AddVisualizationComponent(groupId, NuTo::VisualizeBase::DISPLACEMENTS);
         myStructure.AddVisualizationComponent(groupId, NuTo::VisualizeBase::ENGINEERING_STRAIN);
         myStructure.AddVisualizationComponent(groupId, NuTo::VisualizeBase::ENGINEERING_STRESS);
-        myStructure.AddVisualizationComponent(groupId, NuTo::VisualizeBase::DAMAGE_PHASE_FIELD);
+        myStructure.AddVisualizationComponent(groupId, NuTo::VisualizeBase::CRACK_PHASE_FIELD);
 
         cout << "**********************************************" << endl;
         cout << "**  solver                                  **" << endl;

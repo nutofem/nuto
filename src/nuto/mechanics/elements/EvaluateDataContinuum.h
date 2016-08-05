@@ -44,7 +44,7 @@ public:
 
     ConstitutiveScalar mElasticEnergyDensity;
     ConstitutiveVector<VoigtDim> mTangentElasticEnergyStrain;
-    ConstitutiveVector<VoigtDim> mEngineeringStressDamagedPart;
+    ConstitutiveVector<VoigtDim> mDStressDPhaseField;
 
     // Shrinkage (stress based)
     // --------------------------------------------------------------------------------------------

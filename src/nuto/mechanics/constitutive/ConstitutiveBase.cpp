@@ -16,12 +16,6 @@
 #include "nuto/base/Logger.h"
 #include "nuto/mechanics/MechanicsException.h"
 
-// constructor
-NuTo::ConstitutiveBase::ConstitutiveBase()
-{
-    this->mParametersValid = false;
-}
-
 //! @brief ... checks if the constitutive law has a specific parameter
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... true/false
