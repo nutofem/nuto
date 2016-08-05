@@ -83,7 +83,9 @@ Eigen::VectorXd NuTo::ContinuumElement<TDim>::ExtractNodeValues(int rTimeDerivat
     for (int iNode = 0; iNode < numNodes; ++iNode)
     {
         const NodeBase& node = *GetNode(iNode, rDofType);
+
         nodalValues.block(iNode * numDofsPerNode, 0, numDofsPerNode, 1) = node.Get(rDofType, rTimeDerivative);
+
     }
 
     return nodalValues;
@@ -499,6 +501,7 @@ void NuTo::ContinuumElement<TDim>::CalculateGlobalRowDofs(BlockFullVector<int> &
 
         FullVector<int, Eigen::Dynamic>& dofWiseGlobalRowDofs = rGlobalRowDofs[dof];
         dofWiseGlobalRowDofs.setZero(interpolationType.GetNumDofs());
+
 
         unsigned int numDofsPerType = mNodes[interpolationType.GetNodeIndex(0)]->GetNum(dof);
 
