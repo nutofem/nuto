@@ -355,11 +355,11 @@ NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw(const NuTo::Const
     try
     {
         ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(rIP);
-        for(auto itOutput : rConstitutiveOutput)
+        for (auto& itOutput : rConstitutiveOutput)
             if(itOutput.second!=nullptr) //check nullptr because of static data
                 itOutput.second->SetIsCalculated(false);
         Error::eError error = constitutivePtr->Evaluate<TDim>(this, rIP, rConstitutiveInput, rConstitutiveOutput);
-        for(auto itOutput : rConstitutiveOutput)
+        for(auto& itOutput : rConstitutiveOutput)
             if(itOutput.second!=nullptr && !itOutput.second->GetIsCalculated()) //check nullptr because of static data
                 throw MechanicsException(__PRETTY_FUNCTION__,std::string("Output ")+Constitutive::OutputToString(itOutput.first)+" not calculated by constitutive law");
             return error;

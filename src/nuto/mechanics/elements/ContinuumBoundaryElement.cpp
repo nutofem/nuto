@@ -32,7 +32,7 @@ NuTo::Error::eError NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const Constit
 
     auto constitutiveOutput = GetConstitutiveOutputMap(rElementOutput, data);
     auto constitutiveInput  = GetConstitutiveInputMap(constitutiveOutput, data);
-    constitutiveInput.Join(rInput);
+    constitutiveInput.Merge(rInput);
 
     for (int theIP = 0; theIP < GetNumIntegrationPoints(); theIP++)
     {
@@ -399,6 +399,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapInternalGrad
                                                                             BlockFullVector<double>& rInternalGradient,
                                                                             EvaluateDataContinuumBoundary<TDim>& rData) const
 {
+    using namespace NuTo::Constitutive::Output;
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
         rInternalGradient[dofRow].Resize(mInterpolationType->Get(dofRow).GetNumDofs());
@@ -408,16 +409,16 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapInternalGrad
             break;
 
         case Node::NONLOCALEQSTRAIN:
-            rConstitutiveOutput[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN] = &(rData.mLocalEqStrain);
-            rConstitutiveOutput[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI] = &(rData.mNonlocalParameterXi);
+            rConstitutiveOutput[LOCAL_EQ_STRAIN] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(LOCAL_EQ_STRAIN);
+            rConstitutiveOutput[NONLOCAL_PARAMETER_XI] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(NONLOCAL_PARAMETER_XI);
             break;
 
         case Node::RELATIVEHUMIDITY:
-            rConstitutiveOutput[NuTo::Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N] = &(rData.mInternalGradientRH_Boundary_N);
+            rConstitutiveOutput[INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N);
             break;
 
         case Node::WATERVOLUMEFRACTION:
-            rConstitutiveOutput[NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N] = &(rData.mInternalGradientWV_Boundary_N);
+            rConstitutiveOutput[INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N);
             break;
 
         default:
@@ -432,6 +433,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(Con
                                                                     BlockFullMatrix<double>& rHessian0,
                                                                     EvaluateDataContinuumBoundary<TDim> &rData) const
 {
+    using namespace NuTo::Constitutive::Output;
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
         for (auto dofCol : mInterpolationType->GetActiveDofs())
@@ -450,19 +452,19 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(Con
                 break;
 
             case Node::CombineDofs(Node::NONLOCALEQSTRAIN, Node::DISPLACEMENTS):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_D_STRAIN] = &(rData.mTangentLocalEqStrainStrain);
+                rConstitutiveOutput[D_LOCAL_EQ_STRAIN_D_STRAIN] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(D_LOCAL_EQ_STRAIN_D_STRAIN);
                 break;
 
             case Node::CombineDofs(Node::NONLOCALEQSTRAIN, Node::NONLOCALEQSTRAIN):
-                rConstitutiveOutput[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI] = &(rData.mNonlocalParameterXi);
+                rConstitutiveOutput[NONLOCAL_PARAMETER_XI] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(NONLOCAL_PARAMETER_XI);
                 break;
 
             case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::RELATIVEHUMIDITY):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0] = &rData.mInternalGradientRH_dRH_Boundary_NN_H0;
+                rConstitutiveOutput[D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0);
                 break;
 
             case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::WATERVOLUMEFRACTION):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0] = &rData.mInternalGradientWV_dWV_Boundary_NN_H0;
+                rConstitutiveOutput[D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0);
                 break;
 
 
@@ -471,9 +473,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(Con
            \*******************************************************/
             case Node::CombineDofs(Node::DISPLACEMENTS, Node::RELATIVEHUMIDITY):
             case Node::CombineDofs(Node::DISPLACEMENTS, Node::WATERVOLUMEFRACTION):
-//            case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::DISPLACEMENTS):
             case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::WATERVOLUMEFRACTION):
-//            case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::DISPLACEMENTS):
             case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::RELATIVEHUMIDITY):
                 continue;
             default:
@@ -555,30 +555,30 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(Con
 template<int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput, ElementOutputIpData& rIpData, EvaluateDataContinuumBoundary<TDim> &rData) const
 {
-
+    using namespace NuTo::Constitutive::Output;
     for (auto& it : rIpData.GetIpDataMap()) // this reference here is _EXTREMLY_ important, since the GetIpDataMap() contains a
     {                                       // FullMatrix VALUE and you want to access this value by reference. Without the &, a tmp copy would be made.
         switch (it.first)
         {
         case NuTo::IpData::ENGINEERING_STRAIN:
             it.second.Resize(6, GetNumIntegrationPoints());
-            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_STRAIN_VISUALIZE] = &(rData.mEngineeringStrainVisualize);
+            rConstitutiveOutput[ENGINEERING_STRAIN_VISUALIZE] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(ENGINEERING_STRAIN_VISUALIZE);
             break;
         case NuTo::IpData::ENGINEERING_STRESS:
             it.second.Resize(6, GetNumIntegrationPoints());
-            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_STRESS_VISUALIZE] = &(rData.mEngineeringStressVisualize);
+            rConstitutiveOutput[ENGINEERING_STRESS_VISUALIZE] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(ENGINEERING_STRESS_VISUALIZE);
             break;
         case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
             it.second.Resize(6, GetNumIntegrationPoints());
-            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE] = &(rData.mEngineeringPlasticStrainVisualize);
+            rConstitutiveOutput[ENGINEERING_PLASTIC_STRAIN_VISUALIZE] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(ENGINEERING_PLASTIC_STRAIN_VISUALIZE);
             break;
         case NuTo::IpData::DAMAGE:
             it.second.Resize(1, GetNumIntegrationPoints());
-            rConstitutiveOutput[NuTo::Constitutive::Output::DAMAGE] = &(rData.mDamage);
+            rConstitutiveOutput[DAMAGE] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(DAMAGE);
             break;
         case NuTo::IpData::LOCAL_EQ_STRAIN:
             it.second.Resize(1, GetNumIntegrationPoints());
-            rConstitutiveOutput[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN] = &(rData.mLocalEqStrain);
+            rConstitutiveOutput[LOCAL_EQ_STRAIN] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(LOCAL_EQ_STRAIN);
             break;
         default:
             throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] this ip data type is not implemented.");

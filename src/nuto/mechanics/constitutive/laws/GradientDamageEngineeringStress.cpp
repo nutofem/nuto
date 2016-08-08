@@ -109,7 +109,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
 
     bool performUpdateAtEnd = false;
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (const auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
@@ -280,7 +280,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
 
 
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (const auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
@@ -478,7 +478,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
     double C11, C12, C44;
     std::tie(C11, C12, C44) = EngineeringStressHelper::CalculateCoefficients3D(mE, mNu);
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (const auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {

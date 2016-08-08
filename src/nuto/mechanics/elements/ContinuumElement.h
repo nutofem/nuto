@@ -199,14 +199,25 @@ protected:
 
     void CalculateElementOutputs(
             std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
-            EvaluateDataContinuum<TDim>& rData, int rTheIP, const ConstitutiveInputMap& constitutiveInputMap) const;
+            EvaluateDataContinuum<TDim>& rData, int rTheIP,
+            const ConstitutiveInputMap& constitutiveInputMap,
+            const ConstitutiveOutputMap& constitutiveOutputMap) const;
 
     virtual void CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient,
-            EvaluateDataContinuum<TDim>& rData, int rTheIP, const ConstitutiveInputMap& constitutiveInputMap) const;
-    virtual void CalculateElementOutputHessian0(            BlockFullMatrix<double>& rHessian0,         EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
-    virtual void CalculateElementOutputHessian1(            BlockFullMatrix<double>& rHessian1,         EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
-    virtual void CalculateElementOutputHessian2(            BlockFullMatrix<double>& rHessian2,         EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
-    virtual void CalculateElementOutputIpData(              ElementOutputIpData&     rIpData,           EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
+            EvaluateDataContinuum<TDim>& rData, int rTheIP,
+            const ConstitutiveInputMap& constitutiveInputMap,
+            const ConstitutiveOutputMap& constitutiveOutputMap) const;
+    virtual void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0,
+            EvaluateDataContinuum<TDim>& rData, int rTheIP,
+            const ConstitutiveOutputMap& constitutiveOutputMap) const;
+    virtual void CalculateElementOutputHessian1(BlockFullMatrix<double>& rHessian1,
+            EvaluateDataContinuum<TDim>& rData, int rTheIP,
+            const ConstitutiveOutputMap& constitutiveOutputMap) const;
+    virtual void CalculateElementOutputHessian2(BlockFullMatrix<double>& rHessian2,
+            EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
+    virtual void CalculateElementOutputIpData(ElementOutputIpData& rIpData,
+            EvaluateDataContinuum<TDim>& rData, int rTheIP,
+            const ConstitutiveOutputMap& constitutiveOutputMap) const;
 
     virtual double CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const;
 

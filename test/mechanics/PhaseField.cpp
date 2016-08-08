@@ -20,10 +20,7 @@ using std::endl;
 using NuTo::Constitutive::ePhaseFieldEnergyDecomposition;
 void EvaluatePhaseFieldModel(const Eigen::Vector3d& rStrain, const double rCrackPhaseField, NuTo::PhaseField* rPhaseField)
 {
-
-
-    NuTo::EvaluateDataContinuum<2> data;
-    data.mEngineeringStress.AsVector().setZero();
+    constexpr int VoigtDim = NuTo::ConstitutiveIOBase::GetVoigtDim(2);
 
     NuTo::ConstitutiveInputMap myConstitutiveInputMap;
     myConstitutiveInputMap[NuTo::Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<NuTo::ConstitutiveCalculateStaticData>(NuTo::CalculateStaticData::EULER_BACKWARD);
@@ -43,16 +40,19 @@ void EvaluatePhaseFieldModel(const Eigen::Vector3d& rStrain, const double rCrack
     staticData.SetHistoryVariable(0.0);
 
     NuTo::ConstitutiveOutputMap myConstitutiveOutputMap;
-    myConstitutiveOutputMap[NuTo::Constitutive::Output::ENGINEERING_STRESS]                            = &data.mEngineeringStress;
-    myConstitutiveOutputMap[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN]     = &data.mTangentStressStrain;
+    myConstitutiveOutputMap[NuTo::Constitutive::Output::ENGINEERING_STRESS] = NuTo::ConstitutiveIOBase::makeConstitutiveIO<2>(NuTo::Constitutive::Output::ENGINEERING_STRESS);
+    auto& engineeringStress = *static_cast<NuTo::EngineeringStress<2>*>(myConstitutiveOutputMap.at(NuTo::Constitutive::Output::ENGINEERING_STRESS).get());
+    engineeringStress.SetZero();
+    myConstitutiveOutputMap[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN] = NuTo::ConstitutiveIOBase::makeConstitutiveIO<2>(NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN);
+    auto& tangentStressStrain = *static_cast<NuTo::ConstitutiveMatrix<VoigtDim, VoigtDim>*>(myConstitutiveOutputMap.at(NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN).get());
 
     rPhaseField->Evaluate2DAnisotropicSpectralDecomposition(staticData, myConstitutiveInputMap, myConstitutiveOutputMap);
 
     cout << "Outputs:" << endl;
-    cout << "data.mEngineeringStress.AsVector()"    << endl << data.mEngineeringStress.AsVector()   << endl;
-    cout << "data.mTangentStressStrain.AsMatrix()"    << endl << data.mTangentStressStrain.AsMatrix()   << endl;
+    cout << "engineeringStress.AsVector()"   << endl << engineeringStress.AsVector()   << endl;
+    cout << "tangentStressStrain.AsMatrix()" << endl << tangentStressStrain.AsMatrix() << endl;
 
-    Eigen::Vector3d residual = data.mTangentStressStrain.AsMatrix() * engineeringStrain - data.mEngineeringStress;
+    Eigen::Vector3d residual = tangentStressStrain.AsMatrix() * engineeringStrain - engineeringStress;
     cout << "Residual"    << endl << residual   << endl;
 
     assert(residual.norm() < 1e-8);

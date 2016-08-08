@@ -31,11 +31,11 @@ void NuTo::ShrinkageCapillaryStrainBased::CheckParameters() const
 
 
 
-NuTo::ConstitutiveInputMap NuTo::ShrinkageCapillaryStrainBased::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
-                                                                                     const NuTo::InterpolationType &rInterpolationType) const
+NuTo::ConstitutiveInputMap NuTo::ShrinkageCapillaryStrainBased::GetConstitutiveInputs(
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, const NuTo::InterpolationType &rInterpolationType) const
 {
     ConstitutiveInputMap constitutiveInputMap;
-    for (auto itOutput : rConstitutiveOutput)
+    for (const auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
@@ -103,7 +103,7 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapill
 {
     double relativeHumidity     = std::numeric_limits<double>::min();
     double waterVolumeFraction  = std::numeric_limits<double>::min();
-    for (auto& itInput : rConstitutiveInput)
+    for (const auto& itInput : rConstitutiveInput)
     {
         switch(itInput.first)
         {
@@ -123,7 +123,7 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapill
 
     double bulkFactor = 1.0 / 3.0 * (1.0/mMacroscopicBulkModulus - 1.0/mSolidPhaseModulus);
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (const auto& itOutput : rConstitutiveOutput)
     {
 
         switch(itOutput.first)
@@ -135,7 +135,7 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapill
             assert(relativeHumidity    > std::numeric_limits<double>::min());
             assert(waterVolumeFraction > std::numeric_limits<double>::min());
 
-            Eigen::Matrix<double, ConstitutiveIOBase::GetVoigtDim(TDim), 1>&  engineeringStrain = (*static_cast<ConstitutiveVector<ConstitutiveIOBase::GetVoigtDim(TDim)>*>(itOutput.second)).AsVector();
+            Eigen::Matrix<double, ConstitutiveIOBase::GetVoigtDim(TDim), 1>&  engineeringStrain = static_cast<ConstitutiveVector<ConstitutiveIOBase::GetVoigtDim(TDim)>*>(itOutput.second.get())->AsVector();
             //VHIRTHAMTODO --- how to handle atmospheric pressure?
             double capillaryStrain    = (//mAtmosphericPressure
                                          - waterVolumeFraction
@@ -158,7 +158,7 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapill
             assert(relativeHumidity    > std::numeric_limits<double>::min());
             assert(waterVolumeFraction > std::numeric_limits<double>::min());
 
-            Eigen::Matrix<double, ConstitutiveIOBase::GetVoigtDim(3), 1>&  engineeringStrain = (*static_cast<ConstitutiveVector<ConstitutiveIOBase::GetVoigtDim(3)>*>(itOutput.second)).AsVector();
+            Eigen::Matrix<double, ConstitutiveIOBase::GetVoigtDim(3), 1>&  engineeringStrain = static_cast<ConstitutiveVector<ConstitutiveIOBase::GetVoigtDim(3)>*>(itOutput.second.get())->AsVector();
             //VHIRTHAMTODO --- how to handle atmospheric pressure?
             engineeringStrain.setZero();    //VHIRTHAMTODO Must be done on element level!
             double capillaryStrain    = (//mAtmosphericPressure
@@ -179,7 +179,7 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapill
             assert(relativeHumidity    > std::numeric_limits<double>::min());
             assert(waterVolumeFraction > std::numeric_limits<double>::min());
 
-            Eigen::Matrix<double, ConstitutiveIOBase::GetVoigtDim(TDim), 1>&  engineeringStrain_dRH = (*static_cast<ConstitutiveVector<ConstitutiveIOBase::GetVoigtDim(TDim)>*>(itOutput.second)).AsVector();
+            Eigen::Matrix<double, ConstitutiveIOBase::GetVoigtDim(TDim), 1>&  engineeringStrain_dRH = static_cast<ConstitutiveVector<ConstitutiveIOBase::GetVoigtDim(TDim)>*>(itOutput.second.get())->AsVector();
             double capillaryStrain_dRH = - waterVolumeFraction
                                          * NuTo::SI::DensityLiquidWater(mTemperature) * NuTo::SI::IdealGasConstant * mTemperature
                                          / (NuTo::SI::MolarMassWater * relativeHumidity) * bulkFactor;
@@ -195,7 +195,7 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapill
         {
             assert(relativeHumidity    > std::numeric_limits<double>::min());
 
-            Eigen::Matrix<double, ConstitutiveIOBase::GetVoigtDim(TDim), 1>&  engineeringStrain_dWV = (*static_cast<ConstitutiveVector<ConstitutiveIOBase::GetVoigtDim(TDim)>*>(itOutput.second)).AsVector();
+            Eigen::Matrix<double, ConstitutiveIOBase::GetVoigtDim(TDim), 1>&  engineeringStrain_dWV = static_cast<ConstitutiveVector<ConstitutiveIOBase::GetVoigtDim(TDim)>*>(itOutput.second.get())->AsVector();
             double capillaryStrain_dWV = - NuTo::SI::DensityLiquidWater(mTemperature) * NuTo::SI::IdealGasConstant * mTemperature
                                          / (NuTo::SI::MolarMassWater)
                                          * log(relativeHumidity) * bulkFactor;

@@ -57,3 +57,15 @@ BOOST_AUTO_TEST_CASE(create_input)
     BOOST_CHECK_EQUAL(second, 6.0);
     BOOST_CHECK_EQUAL(third, 3.0);
 }
+
+BOOST_AUTO_TEST_CASE(copy_construction)
+{
+    ConstitutiveInputMap inputMap;
+    auto inputType = NuTo::Constitutive::Input::eInput::TEMPERATURE;
+    inputMap[inputType] = ConstitutiveIOBase::makeConstitutiveIO<1>(inputType);
+    double& temp = (*inputMap.at(inputType))[0];
+    temp = 5.0;
+
+    ConstitutiveInputMap emptyMap = inputMap;
+    BOOST_CHECK_EQUAL((*inputMap.at(inputType))[0], (*emptyMap.at(inputType))[0]);
+}

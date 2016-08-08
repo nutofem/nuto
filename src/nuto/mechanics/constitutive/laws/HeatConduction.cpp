@@ -49,7 +49,7 @@ NuTo::ConstitutiveInputMap NuTo::HeatConduction::GetConstitutiveInputs(
 {
     ConstitutiveInputMap constitutiveInputMap;
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (const auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
@@ -120,32 +120,31 @@ NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
         }
     }
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (const auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
         case NuTo::Constitutive::Output::HEAT_FLUX:
         {
-            Eigen::Matrix<double, TDim, 1>& heatFlux = (*static_cast<ConstitutiveVector<TDim>*>(itOutput.second));
+            Eigen::Matrix<double, TDim, 1>& heatFlux = *static_cast<ConstitutiveVector<TDim>*>(itOutput.second.get());
             heatFlux = mK * eye * inputData.mTemperatureGradient;
             break;
         }
         case NuTo::Constitutive::Output::HEAT_CHANGE:
         {
-            Eigen::Matrix<double, 1, 1>& heatChange = (*static_cast<ConstitutiveScalar*>(itOutput.second));
+            Eigen::Matrix<double, 1, 1>& heatChange = *static_cast<ConstitutiveScalar*>(itOutput.second.get());
             heatChange(0, 0) = mCt * mRho * inputData.mTemperatureChange;
             break;
         }
         case NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT:
         {
-            Eigen::Matrix<double, TDim, TDim>& conductivity =
-                (*static_cast<ConstitutiveMatrix<TDim, TDim>*>(itOutput.second));
+            Eigen::Matrix<double, TDim, TDim>& conductivity = *static_cast<ConstitutiveMatrix<TDim, TDim>*>(itOutput.second.get());
             conductivity = mK * eye;
             break;
         }
         case NuTo::Constitutive::Output::D_HEAT_D_TEMPERATURE:
         {
-            Eigen::Matrix<double, 1, 1>& tangent = (*static_cast<ConstitutiveScalar*>(itOutput.second));
+            Eigen::Matrix<double, 1, 1>& tangent = *static_cast<ConstitutiveScalar*>(itOutput.second.get());
             tangent(0,0) = mCt * mRho;
             break;
         }

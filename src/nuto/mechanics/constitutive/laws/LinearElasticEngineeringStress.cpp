@@ -61,7 +61,7 @@ NuTo::ConstitutiveInputMap NuTo::LinearElasticEngineeringStress::GetConstitutive
 {
     ConstitutiveInputMap constitutiveInputMap;
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
@@ -98,7 +98,7 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate1D(
         const ConstitutiveInputMap& rConstitutiveInput,
         const ConstitutiveOutputMap& rConstitutiveOutput)
 {
-    for (auto itOutput : rConstitutiveOutput)
+    for (auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
@@ -179,7 +179,7 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(
     }
 
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
@@ -287,7 +287,7 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate3D(
         std::tie(C11, C12, C44) = EngineeringStressHelper::CalculateCoefficients3D(mE, mNu);
     }
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {

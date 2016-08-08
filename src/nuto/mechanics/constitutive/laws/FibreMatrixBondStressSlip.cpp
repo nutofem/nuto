@@ -166,7 +166,7 @@ NuTo::Error::eError NuTo::FibreMatrixBondStressSlip::Evaluate2D(ElementBase* rEl
     //         LOOP OVER OUTPUT REQUESTS           //
     /////////////////////////////////////////////////
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (const auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {

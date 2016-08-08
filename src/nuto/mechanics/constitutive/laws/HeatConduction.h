@@ -6,6 +6,13 @@ namespace NuTo
 {
 class InterpolationType;
 
+//! Evaluate heat conduction according to Fourier's law.
+
+//! Heat flux: \f$\mathbf{q} = - k \nabla T\f$
+//!
+//! Heat change: \f$\dot{Q} = ρ c_T \dot{T}\f$
+//!
+//! Conductivity matrix: \f$C_{ij} = \frac{\partial q_i}{\partial g_j} = - k \delta_{ij} \text{ where } g_i = \frac{\partial T}{\partial x_i}\f$
 class HeatConduction: public ConstitutiveBase
 {
 

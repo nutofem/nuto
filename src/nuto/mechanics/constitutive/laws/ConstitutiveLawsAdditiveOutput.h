@@ -90,6 +90,10 @@ public:
         }
     }
 
+    template <int TDim>
+    NuTo::Error::eError Evaluate(ElementBase* rElement, int rIp,
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput);
 
     //! @brief ... evaluate the constitutive relation of every attached constitutive law in 1D
     //! @param rElement ... element

@@ -227,7 +227,7 @@ double NuTo::PhaseField::Evaluate2DIsotropic(const ConstitutiveStaticDataHistory
     bool performUpdateAtEnd = false;
     constexpr double residualEnergyDensity = 1.e-8;
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
@@ -425,7 +425,7 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const Consti
     ConstitutiveStaticDataHistoryVariableScalar currentStaticData;
     currentStaticData.SetHistoryVariable(max(elasticEnergyPlus, rOldStaticData.GetHistoryVariable()));
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {

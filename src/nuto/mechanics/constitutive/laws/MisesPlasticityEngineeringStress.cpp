@@ -73,7 +73,7 @@ NuTo::ConstitutiveInputMap NuTo::MisesPlasticityEngineeringStress::GetConstituti
         constitutiveInputMap[Constitutive::Input::TEMPERATURE];
 
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
@@ -134,7 +134,7 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate2D(ElementBa
 
         case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
         {
-            tangent = itOutput.second;
+            tangent = itOutput.second.get();
             tangent->AssertIsMatrix<3,3>(NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN, __FUNCTION__);
             break;
         }
@@ -263,7 +263,7 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate3D(ElementBa
         {
         case Constitutive::Output::ENGINEERING_STRESS:
         {
-            engineeringStress = itOutput.second;
+            engineeringStress = itOutput.second.get();
             engineeringStress->AssertIsVector<6>(NuTo::Constitutive::Output::ENGINEERING_STRESS, __FUNCTION__);
             break;
         }
@@ -273,7 +273,7 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate3D(ElementBa
             // use the ENGINEERING_STRESS for visualization. if not, set the pointer
             if (rConstitutiveOutput.find(Constitutive::Output::ENGINEERING_STRESS) == rConstitutiveOutput.end())
             {
-                engineeringStress = itOutput.second;
+                engineeringStress = itOutput.second.get();
                 engineeringStress->AssertIsVector<6>(NuTo::Constitutive::Output::ENGINEERING_STRESS_VISUALIZE, __FUNCTION__);
             }
             break;
@@ -281,7 +281,7 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate3D(ElementBa
 
         case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
         {
-            tangent = itOutput.second;
+            tangent = itOutput.second.get();
             tangent->AssertIsMatrix<6,6>(NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN, __FUNCTION__);
             break;
         }

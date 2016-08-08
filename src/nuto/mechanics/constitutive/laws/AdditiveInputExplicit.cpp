@@ -30,73 +30,39 @@ bool NuTo::AdditiveInputExplicit::CheckDofCombinationComputable(NuTo::Node::eDof
 }
 
 template <int TDim>
-NuTo::Error::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit(NuTo::ElementBase *rElement,
-                                                                               int rIp,
-                                                                               const NuTo::ConstitutiveInputMap &rConstitutiveInput,
-                                                                               const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
+NuTo::Error::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit(
+        NuTo::ElementBase *rElement, int rIp,
+        const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
 {
+    using namespace Constitutive;
     static constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
     Error::eError error = Error::SUCCESSFUL;
 
-     NuTo::ConstitutiveInputMap copiedInputMap;
+    NuTo::ConstitutiveInputMap copiedInputMap = rConstitutiveInput;
+    NuTo::ConstitutiveOutputMap modifiedOutputMap = rConstitutiveOutput;
+    modifiedOutputMap[Output::ENGINEERING_STRAIN] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(Output::ENGINEERING_STRAIN);
 
-    // Need deep copy of all modified inputs, otherwise the modifications will possibly effect other constitutive laws that are coupled in a additive input or output law
-    // So far only the engineering strain input is modified. If there are more modified Inputs in the future, a more general allocation method should be chosen
-    EngineeringStrain<TDim>* engineeringStrain = nullptr;
-    ConstitutiveVector<VoigtDim> d_EngineeringStrain_D_RH;
-    ConstitutiveVector<VoigtDim> d_EngineeringStrain_D_WV;
-    ConstitutiveVector<VoigtDim> d_EngineeringStrain_D_Temperature;
+    auto& engineeringStrain = *static_cast<EngineeringStrain<TDim>*>(copiedInputMap.at(Input::ENGINEERING_STRAIN).get());
 
-    d_EngineeringStrain_D_RH.setZero();
-    d_EngineeringStrain_D_WV.setZero();
-    d_EngineeringStrain_D_Temperature.setZero();
-
-    copiedInputMap.Join(rConstitutiveInput);
-
-    if (copiedInputMap.find(Constitutive::Input::ENGINEERING_STRAIN) != copiedInputMap.end())
+    // evaluate sublaws
+    for (unsigned int i = 0; i < mConstitutiveLawsModInput.size(); ++i)
     {
-        switch(TDim)
+        if(modifiedOutputMap.find(Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY) != modifiedOutputMap.end() &&
+                                  mConstitutiveLawsModInput[i].second == Input::ENGINEERING_STRAIN)
         {
-        case 1:
-            copiedInputMap.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain1D() *=-1.0;
-            break;
-        case 2:
-            copiedInputMap.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain2D() *=-1.0;
-            break;
-        case 3:
-            copiedInputMap.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain3D() *=-1.0;
-            break;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__,"invalid dimension");
+            modifiedOutputMap[Output::D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(Output::D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY);
         }
-        engineeringStrain = static_cast<EngineeringStrain<TDim>*>(copiedInputMap.at(Constitutive::Input::ENGINEERING_STRAIN).get()); 
-    }
-
-    for(unsigned int i=0; i<mConstitutiveLawsModInput.size(); ++i)
-    {
-        // Generate modified output map for constitutive law
-        NuTo::ConstitutiveOutputMap modifiedOutputMap = rConstitutiveOutput;
-
-        if(copiedInputMap.find(Constitutive::Input::ENGINEERING_STRAIN) != copiedInputMap.end())
+        if(modifiedOutputMap.find(Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION) != modifiedOutputMap.end() &&
+                                  mConstitutiveLawsModInput[i].second == Input::ENGINEERING_STRAIN)
         {
-            modifiedOutputMap[Constitutive::Output::ENGINEERING_STRAIN] = copiedInputMap.at(Constitutive::Input::ENGINEERING_STRAIN).get();
+            modifiedOutputMap[Output::D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(Output::D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION);
         }
-        if(modifiedOutputMap.find(Constitutive::Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY) != modifiedOutputMap.end() &&
-                                  mConstitutiveLawsModInput[i].second == Constitutive::Input::ENGINEERING_STRAIN)
+        if(modifiedOutputMap.find(Output::D_ENGINEERING_STRESS_D_TEMPERATURE) != modifiedOutputMap.end() &&
+                                  mConstitutiveLawsModInput[i].second == Input::ENGINEERING_STRAIN)
         {
-            modifiedOutputMap[Constitutive::Output::D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY] = &d_EngineeringStrain_D_RH;
+            modifiedOutputMap[Output::D_STRAIN_D_TEMPERATURE] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(Output::D_STRAIN_D_TEMPERATURE);
         }
-        if(modifiedOutputMap.find(Constitutive::Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION) != modifiedOutputMap.end() &&
-                                  mConstitutiveLawsModInput[i].second == Constitutive::Input::ENGINEERING_STRAIN)
-        {
-            modifiedOutputMap[Constitutive::Output::D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION] = &d_EngineeringStrain_D_WV;
-        }
-        if(modifiedOutputMap.find(Constitutive::Output::D_ENGINEERING_STRESS_D_TEMPERATURE) != modifiedOutputMap.end() &&
-                                  mConstitutiveLawsModInput[i].second == Constitutive::Input::ENGINEERING_STRAIN)
-        {
-            modifiedOutputMap[Constitutive::Output::D_STRAIN_D_TEMPERATURE] = &d_EngineeringStrain_D_Temperature;
-        }
-
 
         // evaluate constitutive law
         switch(TDim)
@@ -117,13 +83,22 @@ NuTo::Error::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit(N
         {
             throw MechanicsException(__PRETTY_FUNCTION__,"Attached constitutive law returned an error code. Can't handle this");
         }
+        for (const auto& it : modifiedOutputMap)
+        {
+            if (it.first == Output::ENGINEERING_STRAIN)
+            {
+                const auto& additionalStrain = *static_cast<EngineeringStrain<TDim>*>(modifiedOutputMap.at(Output::ENGINEERING_STRAIN).get());
+                engineeringStrain -= additionalStrain;
+            }
+            else if (rConstitutiveOutput.count(it.first) and rConstitutiveOutput.at(it.first) != nullptr)
+            {
+                *(rConstitutiveOutput.at(it.first)) = *(it.second);
+            }
+        }
+
     }
 
-    if (engineeringStrain != nullptr)
-    {
-        engineeringStrain->AsVector() = engineeringStrain->AsVector() * -1;
-    }
-
+    // evaluate output law
     switch(TDim)
     {
     case 1:
@@ -139,35 +114,39 @@ NuTo::Error::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit(N
         throw MechanicsException(__PRETTY_FUNCTION__,"invalid dimension");
     }
 
-    for(auto itOutput : rConstitutiveOutput)
+    // evaluate derivatives of outputs depending on sublaws
+    for (auto& itOutput : rConstitutiveOutput)
     {
         switch(itOutput.first)
         {
-        case Constitutive::Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
+        case Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
         {
-            assert(rConstitutiveOutput.find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN) != rConstitutiveOutput.end());
-            ConstitutiveMatrix<VoigtDim, VoigtDim>& tangentStressStrain = *(static_cast<ConstitutiveMatrix<VoigtDim, VoigtDim>*>(rConstitutiveOutput.find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)->second));
+            assert(rConstitutiveOutput.count(Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN));
+            const auto& tangentStressStrain = *static_cast<ConstitutiveMatrix<VoigtDim, VoigtDim>*>(rConstitutiveOutput.at(Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN).get());
+            const auto& d_EngineeringStrain_D_RH = *static_cast<ConstitutiveVector<VoigtDim>*>(modifiedOutputMap.at(Output::D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY).get());
             if(d_EngineeringStrain_D_RH.GetIsCalculated() == false)
-                throw MechanicsException(__PRETTY_FUNCTION__,std::string("Necessary value to determine ")+Constitutive::OutputToString(itOutput.first)+" was not calculated!");
-            (static_cast<EngineeringStress<TDim>*>(itOutput.second))->AsVector() = tangentStressStrain.AsMatrix() * d_EngineeringStrain_D_RH.AsVector();
+                throw MechanicsException(__PRETTY_FUNCTION__,std::string("Necessary value to determine ")+OutputToString(itOutput.first)+" was not calculated!");
+            (static_cast<EngineeringStress<TDim>*>(itOutput.second.get()))->AsVector() = tangentStressStrain * d_EngineeringStrain_D_RH;
             break;
         }
-        case Constitutive::Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:
+        case Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:
         {
-            assert(rConstitutiveOutput.find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)!=rConstitutiveOutput.end());
-            ConstitutiveMatrix<VoigtDim, VoigtDim>& tangentStressStrain = *(static_cast<ConstitutiveMatrix<VoigtDim, VoigtDim>*>(rConstitutiveOutput.find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)->second));
+            assert(rConstitutiveOutput.count(Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN));
+            const auto& tangentStressStrain = *static_cast<ConstitutiveMatrix<VoigtDim, VoigtDim>*>(rConstitutiveOutput.at(Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN).get());
+            const auto& d_EngineeringStrain_D_WV = *static_cast<ConstitutiveVector<VoigtDim>*>(modifiedOutputMap.at(Output::D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION).get());
             if(d_EngineeringStrain_D_WV.GetIsCalculated() == false)
-                throw MechanicsException(__PRETTY_FUNCTION__,std::string("Necessary value to determine ")+Constitutive::OutputToString(itOutput.first)+" was not calculated!");
-            (static_cast<EngineeringStress<TDim>*>(itOutput.second))->AsVector() = tangentStressStrain.AsMatrix() * d_EngineeringStrain_D_WV.AsVector();
+                throw MechanicsException(__PRETTY_FUNCTION__,std::string("Necessary value to determine ")+OutputToString(itOutput.first)+" was not calculated!");
+            (static_cast<EngineeringStress<TDim>*>(itOutput.second.get()))->AsVector() = tangentStressStrain * d_EngineeringStrain_D_WV;
             break;
         }
-        case Constitutive::Output::D_ENGINEERING_STRESS_D_TEMPERATURE:
+        case Output::D_ENGINEERING_STRESS_D_TEMPERATURE:
         {
-            assert(rConstitutiveOutput.find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN) != rConstitutiveOutput.end());
-            ConstitutiveMatrix<VoigtDim, VoigtDim>& tangentStressStrain = *(static_cast<ConstitutiveMatrix<VoigtDim, VoigtDim>*>(rConstitutiveOutput.find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)->second));
-            if(d_EngineeringStrain_D_Temperature.GetIsCalculated() == false)
-                throw MechanicsException(__PRETTY_FUNCTION__, "Necessary value to determine " + Constitutive::OutputToString(itOutput.first) + " was not calculated!");
-            (static_cast<EngineeringStress<TDim>*>(itOutput.second))->AsVector() = tangentStressStrain.AsMatrix() * d_EngineeringStrain_D_Temperature.AsVector();
+            assert(rConstitutiveOutput.count(Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN));
+            const auto& tangentStressStrain = *static_cast<ConstitutiveMatrix<VoigtDim, VoigtDim>*>(rConstitutiveOutput.at(Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN).get());
+            const auto& d_Strain_D_Temperature = *static_cast<ConstitutiveVector<VoigtDim>*>(modifiedOutputMap.at(Output::D_STRAIN_D_TEMPERATURE).get());
+            if(d_Strain_D_Temperature.GetIsCalculated() == false)
+                throw MechanicsException(__PRETTY_FUNCTION__, "Necessary value to determine " + OutputToString(itOutput.first) + " was not calculated!");
+            (static_cast<EngineeringStress<TDim>*>(itOutput.second.get()))->AsVector() = tangentStressStrain * d_Strain_D_Temperature;
             break;
         }
         default:
@@ -186,18 +165,20 @@ NuTo::ConstitutiveInputMap NuTo::AdditiveInputExplicit::GetConstitutiveInputs(
 {
     ConstitutiveInputMap constitutiveInputMap;
 
-    for(unsigned int i=0; i<mConstitutiveLawsModInput.size(); ++i)
+    for (unsigned int i = 0; i < mConstitutiveLawsModInput.size(); ++i)
     {
 
         ConstitutiveInputMap singleLawInputMap = mConstitutiveLawsModInput[i].first->GetConstitutiveInputs(rConstitutiveOutput,
                                                                                                            rInterpolationType);
 
-        constitutiveInputMap.Join(singleLawInputMap);
+        constitutiveInputMap.Merge(singleLawInputMap);
     }
 
     ConstitutiveInputMap outputLawInputMap = mConstitutiveLawOutput->GetConstitutiveInputs(rConstitutiveOutput,
                                                                                            rInterpolationType);
-    constitutiveInputMap.Join(outputLawInputMap);
+    constitutiveInputMap.Merge(outputLawInputMap);
+
+    constitutiveInputMap[NuTo::Constitutive::Input::ENGINEERING_STRAIN];
 
     return constitutiveInputMap;
 }

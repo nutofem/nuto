@@ -35,18 +35,17 @@ NuTo::Error::eError NuTo::ContinuumElement<TDim>::Evaluate(const ConstitutiveInp
     auto constitutiveOutput = GetConstitutiveOutputMap(rElementOutput, data);
     auto constitutiveInput = GetConstitutiveInputMap(constitutiveOutput, data);
 
-    constitutiveInput.Join(rInput);
+    constitutiveInput.Merge(rInput);
 
     for (int theIP = 0; theIP < GetNumIntegrationPoints(); theIP++)
     {
         CalculateNMatrixBMatrixDetJacobian(data, theIP);
         CalculateConstitutiveInputs(constitutiveInput, data);
 
-
         Error::eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput,constitutiveOutput,theIP);
         if (error != Error::SUCCESSFUL)
             return error;
-        CalculateElementOutputs(rElementOutput, data, theIP, constitutiveInput);
+        CalculateElementOutputs(rElementOutput, data, theIP, constitutiveInput, constitutiveOutput);
     }
     return Error::SUCCESSFUL;
 }
@@ -96,8 +95,10 @@ NuTo::ConstitutiveInputMap NuTo::ContinuumElement<TDim>::GetConstitutiveInputMap
         const ConstitutiveOutputMap& rConstitutiveOutput,
         EvaluateDataContinuum<TDim>& rData) const
 {
+    // create maps with only the keys
     ConstitutiveInputMap constitutiveInputMap = GetConstitutiveLaw(0)->GetConstitutiveInputs(rConstitutiveOutput, *GetInterpolationType());
 
+    // attach corresponding scalar/vector/matrix object to each key
     for (auto& itInput : constitutiveInputMap)
     {
         itInput.second = ConstitutiveIOBase::makeConstitutiveIO<TDim>(itInput.first);
@@ -110,6 +111,7 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumElement<TDim>::GetConstitutiveOutputM
 {
     ConstitutiveOutputMap constitutiveOutput;
 
+    // find the outputs we need
     for (auto it : rElementOutput)
     {
         switch (it.first)
@@ -165,15 +167,20 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumElement<TDim>::GetConstitutiveOutputM
             throw MechanicsException(__PRETTY_FUNCTION__, "element output not implemented.");
         }
     }
+
+    // allocate the objects for the output data
+    for (auto& outputs : constitutiveOutput)
+    {
+        outputs.second = ConstitutiveIOBase::makeConstitutiveIO<TDim>(outputs.first);
+    }
     return constitutiveOutput;
 }
 
 template<int TDim>
-void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<TDim>& rData) const
+void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapInternalGradient(
+        ConstitutiveOutputMap& rConstitutiveOutput,
+        BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<TDim>& rData) const
 {
-
-
-
     for (auto dofRow : mStructure->GetDofStatus().GetActiveDofTypes())
     {
 
@@ -188,26 +195,26 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapInternalGradient(Con
         switch (dofRow)
         {
         case Node::DISPLACEMENTS:
-            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_STRESS] = &(rData.mEngineeringStress);
+            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_STRESS];
             break;
         case Node::NONLOCALEQSTRAIN:
-            rConstitutiveOutput[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN] = &(rData.mLocalEqStrain);
-            rConstitutiveOutput[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI] = &(rData.mNonlocalParameterXi);
+            rConstitutiveOutput[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN];
+            rConstitutiveOutput[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI];
             break;
         case Node::RELATIVEHUMIDITY:
-            rConstitutiveOutput[NuTo::Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_B] = &(rData.mInternalGradientRH_B);
-            rConstitutiveOutput[NuTo::Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_N] = &(rData.mInternalGradientRH_N);
+            rConstitutiveOutput[NuTo::Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_B];
+            rConstitutiveOutput[NuTo::Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_N];
             break;
         case Node::TEMPERATURE:
-            rConstitutiveOutput[NuTo::Constitutive::Output::HEAT_FLUX] = &(rData.mHeatFlux);
-            rConstitutiveOutput[NuTo::Constitutive::Output::HEAT_CHANGE] = &(rData.mHeatChange);
+            rConstitutiveOutput[NuTo::Constitutive::Output::HEAT_FLUX];
+            rConstitutiveOutput[NuTo::Constitutive::Output::HEAT_CHANGE];
             break;
         case Node::WATERVOLUMEFRACTION:
-            rConstitutiveOutput[NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_B] = &(rData.mInternalGradientWV_B);
-            rConstitutiveOutput[NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_N] = &(rData.mInternalGradientWV_N);
+            rConstitutiveOutput[NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_B];
+            rConstitutiveOutput[NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_N];
             break;
         case Node::CRACKPHASEFIELD:
-            rConstitutiveOutput[NuTo::Constitutive::Output::ELASTIC_ENERGY_DAMAGED_PART] = &(rData.mElasticEnergyDensity);
+            rConstitutiveOutput[NuTo::Constitutive::Output::ELASTIC_ENERGY_DAMAGED_PART];
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive output INTERNAL_GRADIENT for " + Node::DofToString(dofRow) + " not implemented.");
@@ -240,56 +247,58 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian0(Constitutiv
             switch (Node::CombineDofs(dofRow, dofCol))
             {
             case Node::CombineDofs(Node::DISPLACEMENTS, Node::DISPLACEMENTS):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN] = &rData.mTangentStressStrain;
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN];
                 break;
             case Node::CombineDofs(Node::DISPLACEMENTS, Node::NONLOCALEQSTRAIN):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN] = &rData.mTangentStressNonlocalEqStrain;
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN];
                 break;
             case Node::CombineDofs(Node::NONLOCALEQSTRAIN, Node::DISPLACEMENTS):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_XI_D_STRAIN] = &rData.mTangentLocalEqStrainStrain;
-                rConstitutiveOutput[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI] = &rData.mNonlocalParameterXi;
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_XI_D_STRAIN];
+                rConstitutiveOutput[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI];
                 break;
             case Node::CombineDofs(Node::NONLOCALEQSTRAIN, Node::NONLOCALEQSTRAIN):
-                rConstitutiveOutput[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI] = &rData.mNonlocalParameterXi;
+                rConstitutiveOutput[NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI];
                 break;
             case Node::CombineDofs(Node::TEMPERATURE, Node::TEMPERATURE):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT] = &rData.mTangentHeatFluxTemperatureGradient;
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT];
                 break;
 
             case Node::CombineDofs(Node::DISPLACEMENTS, Node::RELATIVEHUMIDITY):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY] = &rData.mEngineeringStress_dRH;
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY];
                 break;
 
             case Node::CombineDofs(Node::DISPLACEMENTS, Node::TEMPERATURE):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_TEMPERATURE] = &rData.mDStressDTemperature;
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_TEMPERATURE];
                 break;
 
             case Node::CombineDofs(Node::DISPLACEMENTS, Node::WATERVOLUMEFRACTION):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION] = &rData.mEngineeringStress_dWV;
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION];
                 break;
 
             case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::RELATIVEHUMIDITY):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_BB_H0] = &rData.mInternalGradientRH_dRH_BB_H0;
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_NN_H0] = &rData.mInternalGradientRH_dRH_NN_H0;
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_BB_H0];
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_NN_H0];
                 break;
 
             case Node::CombineDofs(Node::RELATIVEHUMIDITY, Node::WATERVOLUMEFRACTION):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_BN_H0] = &rData.mInternalGradientRH_dWV_BN_H0;
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_NN_H0] = &rData.mInternalGradientRH_dWV_NN_H0;
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_BN_H0];
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_NN_H0];
                 break;
 
             case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::RELATIVEHUMIDITY):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_RH_NN_H0] = &rData.mInternalGradientWV_dRH_NN_H0;
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_RH_NN_H0];
                 break;
 
             case Node::CombineDofs(Node::WATERVOLUMEFRACTION, Node::WATERVOLUMEFRACTION):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BB_H0] = &rData.mInternalGradientWV_dWV_BB_H0;
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BN_H0] = &rData.mInternalGradientWV_dWV_BN_H0;
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_NN_H0] = &rData.mInternalGradientWV_dWV_NN_H0;
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BB_H0];
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BN_H0];
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_NN_H0];
                 break;
 
             default:
-                throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_0_TIME_DERIVATIVE for (" + Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
+                throw MechanicsException(__PRETTY_FUNCTION__,
+                        "Constitutive output HESSIAN_0_TIME_DERIVATIVE for ("
+                        + Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
             }
         }
     }
@@ -318,19 +327,19 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian1(Constitutiv
             {
 
             case Node::CombineDofs(Node::RELATIVEHUMIDITY,Node::RELATIVEHUMIDITY):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_NN_H1] = &rData.mInternalGradientRH_dRH_NN_H1;
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_NN_H1];
                 break;
 
             case Node::CombineDofs(Node::RELATIVEHUMIDITY,Node::WATERVOLUMEFRACTION):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_NN_H1] = &rData.mInternalGradientRH_dWV_NN_H1;
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_NN_H1];
                 break;
 
             case Node::CombineDofs(Node::WATERVOLUMEFRACTION,Node::WATERVOLUMEFRACTION):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_NN_H1] = &rData.mInternalGradientWV_dWV_NN_H1;
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_NN_H1];
                 break;
 
             case Node::CombineDofs(Node::TEMPERATURE, Node::TEMPERATURE):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_HEAT_D_TEMPERATURE] = &rData.mTangentHeatTemperature;
+                rConstitutiveOutput[NuTo::Constitutive::Output::D_HEAT_D_TEMPERATURE];
                 break;
             case Node::CombineDofs(Node::eDof::TEMPERATURE, Node::eDof::DISPLACEMENTS):
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::TEMPERATURE):
@@ -384,35 +393,35 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveO
         {
         case NuTo::IpData::DAMAGE:
             it.second.Resize(1, GetNumIntegrationPoints());
-            rConstitutiveOutput[NuTo::Constitutive::Output::DAMAGE] = &(rData.mDamage);
+            rConstitutiveOutput[NuTo::Constitutive::Output::DAMAGE];
             break;
         case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
             it.second.Resize(6, GetNumIntegrationPoints());
-            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE] = &(rData.mEngineeringPlasticStrainVisualize);
+            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE];
             break;
         case NuTo::IpData::ENGINEERING_STRAIN:
             it.second.Resize(6, GetNumIntegrationPoints());
-            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_STRAIN_VISUALIZE] = &(rData.mEngineeringStrainVisualize);
+            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_STRAIN_VISUALIZE];
             break;
         case NuTo::IpData::ENGINEERING_STRESS:
             it.second.Resize(6, GetNumIntegrationPoints());
-            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_STRESS_VISUALIZE] = &(rData.mEngineeringStressVisualize);
+            rConstitutiveOutput[NuTo::Constitutive::Output::ENGINEERING_STRESS_VISUALIZE];
             break;
         case NuTo::IpData::EXTRAPOLATION_ERROR:
             it.second.Resize(1, GetNumIntegrationPoints());
-            rConstitutiveOutput[NuTo::Constitutive::Output::EXTRAPOLATION_ERROR] = &(rData.mExtrapolationError);
+            rConstitutiveOutput[NuTo::Constitutive::Output::EXTRAPOLATION_ERROR];
             break;
         case NuTo::IpData::LOCAL_EQ_STRAIN:
             it.second.Resize(1, GetNumIntegrationPoints());
-            rConstitutiveOutput[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN] = &(rData.mLocalEqStrain);
+            rConstitutiveOutput[NuTo::Constitutive::Output::LOCAL_EQ_STRAIN];
             break;
         case NuTo::IpData::SHRINKAGE_STRAIN:
             it.second.Resize(6, GetNumIntegrationPoints());
-            rConstitutiveOutput[NuTo::Constitutive::Output::SHRINKAGE_STRAIN_VISUALIZE] = &(rData.mShrinkageStrainVisualize);
+            rConstitutiveOutput[NuTo::Constitutive::Output::SHRINKAGE_STRAIN_VISUALIZE];
             break;
         case NuTo::IpData::THERMAL_STRAIN:
             it.second.Resize(6, GetNumIntegrationPoints());
-            rConstitutiveOutput[NuTo::Constitutive::Output::THERMAL_STRAIN] = &(rData.mThermalStrain);
+            rConstitutiveOutput[NuTo::Constitutive::Output::THERMAL_STRAIN];
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "this ip data type is not implemented.");
@@ -465,7 +474,7 @@ void NuTo::ContinuumElement<TDim>::CalculateGlobalColumnDofs(BlockFullVector<int
 template<int TDim>
 void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(ConstitutiveInputMap& rConstitutiveInput, EvaluateDataContinuum<TDim> &rData)
 {
-    constexpr int voigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
+    constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
 
     for (auto& it : rConstitutiveInput)
     {
@@ -473,7 +482,7 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(ConstitutiveInput
         {
         case Constitutive::Input::ENGINEERING_STRAIN:        
         {
-            auto& strain = *static_cast<ConstitutiveVector<voigtDim>*>(it.second.get());
+            auto& strain = *static_cast<ConstitutiveVector<VoigtDim>*>(it.second.get());
             strain.AsVector() = rData.mB.at(Node::DISPLACEMENTS) * rData.mNodalValues.at(Node::DISPLACEMENTS);
             break;
         }
@@ -482,13 +491,13 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(ConstitutiveInput
             auto& nonLocalEqStrain = *static_cast<ConstitutiveScalar*>(it.second.get());
             nonLocalEqStrain.AsScalar() = (*rData.mN.at(Node::NONLOCALEQSTRAIN)) * rData.mNodalValues.at(Node::NONLOCALEQSTRAIN);
             break;
-	}
+        }
         case Constitutive::Input::CRACK_PHASE_FIELD:
-	{
-	    auto& damage = *static_cast<ConstitutiveScalar*>(it.second.get());
+        {
+            auto& damage = *static_cast<ConstitutiveScalar*>(it.second.get());
             damage.AsScalar() = (*rData.mN.at(Node::CRACKPHASEFIELD)) * rData.mNodalValues.at(Node::CRACKPHASEFIELD);
             break;
-	}
+        }
         case Constitutive::Input::RELATIVE_HUMIDITY:
         {
             auto& relativeHumidity = *static_cast<ConstitutiveScalar*>(it.second.get());
@@ -630,7 +639,11 @@ Eigen::MatrixXd NuTo::ContinuumElement<TDim>::CalculateMatrixB(Node::eDof rDofTy
 }
 
 template<int TDim>
-void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput, EvaluateDataContinuum<TDim> &rData, int rTheIP, const ConstitutiveInputMap& constitutiveInputMap) const
+void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(
+        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
+        EvaluateDataContinuum<TDim> &rData, int rTheIP,
+        const ConstitutiveInputMap& constitutiveInputMap,
+        const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
     rData.mDetJxWeightIPxSection = CalculateDetJxWeightIPxSection(rData.mDetJacobian, rTheIP); // formerly known as "factor"
 
@@ -639,15 +652,15 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(std::map<Element::eOu
         switch (it.first)
         {
         case Element::INTERNAL_GRADIENT:
-            CalculateElementOutputInternalGradient(it.second->GetBlockFullVectorDouble(), rData, rTheIP, constitutiveInputMap);
+            CalculateElementOutputInternalGradient(it.second->GetBlockFullVectorDouble(), rData, rTheIP, constitutiveInputMap, constitutiveOutputMap);
             break;
 
         case Element::HESSIAN_0_TIME_DERIVATIVE:
-            CalculateElementOutputHessian0(it.second->GetBlockFullMatrixDouble(), rData, rTheIP);
+            CalculateElementOutputHessian0(it.second->GetBlockFullMatrixDouble(), rData, rTheIP, constitutiveOutputMap);
             break;
 
         case Element::HESSIAN_1_TIME_DERIVATIVE:
-            CalculateElementOutputHessian1(it.second->GetBlockFullMatrixDouble(), rData, rTheIP);
+            CalculateElementOutputHessian1(it.second->GetBlockFullMatrixDouble(), rData, rTheIP, constitutiveOutputMap);
             break;
 
         case Element::HESSIAN_2_TIME_DERIVATIVE:
@@ -699,7 +712,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(std::map<Element::eOu
         case Element::UPDATE_TMP_STATIC_DATA:
             break;
         case Element::IP_DATA:
-            CalculateElementOutputIpData(it.second->GetIpData(), rData, rTheIP);
+            CalculateElementOutputIpData(it.second->GetIpData(), rData, rTheIP, constitutiveOutputMap);
             break;
         case Element::GLOBAL_ROW_DOF:
         case Element::GLOBAL_COLUMN_DOF:
@@ -712,42 +725,58 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(std::map<Element::eOu
 }
 
 template<int TDim>
-void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient,
-        EvaluateDataContinuum<TDim> &rData, int rTheIP, const ConstitutiveInputMap& constitutiveInputMap) const
+void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(
+        BlockFullVector<double>& rInternalGradient,
+        EvaluateDataContinuum<TDim> &rData, int rTheIP,
+        const ConstitutiveInputMap& constitutiveInputMap,
+        const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
         switch (dofRow)
         {
         case Node::DISPLACEMENTS:
-            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * rData.mEngineeringStress;
+        {
+            const auto& engineeringStress= *static_cast<EngineeringStress<TDim>*>(constitutiveOutputMap.at(Constitutive::Output::ENGINEERING_STRESS).get());
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * engineeringStress;
             break;
-
+        }
         case Node::NONLOCALEQSTRAIN:
         {
             const auto& N = *(rData.mN.at(dofRow));
             const auto& B = rData.mB.at(dofRow);
             const auto& nonlocalEqStrain = *static_cast<ConstitutiveScalar*>(constitutiveInputMap.at(Constitutive::Input::NONLOCAL_EQ_STRAIN).get());
+            const auto& localEqStrain = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::LOCAL_EQ_STRAIN).get());
+            const auto& nonlocalXi = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::NONLOCAL_PARAMETER_XI).get());
             rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *
-                                      ( N.transpose() * (nonlocalEqStrain[0] - rData.mLocalEqStrain[0]) / rData.mNonlocalParameterXi[0] +
+                                      ( N.transpose() * (nonlocalEqStrain[0] - localEqStrain[0]) / nonlocalXi[0] +
                                         B.transpose() * (B * rData.mNodalValues.at(Node::NONLOCALEQSTRAIN)));
             break;
         }
         case Node::RELATIVEHUMIDITY:
-            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose()  * rData.mInternalGradientRH_B +
-                                                                         rData.mN.at(dofRow)->transpose() * rData.mInternalGradientRH_N);
+        {
+            const auto& internalGradientRH_B = *static_cast<ConstitutiveVector<TDim>*>(constitutiveOutputMap.at(Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_B).get());
+            const auto& internalGradientRH_N = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_N).get());
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose()  * internalGradientRH_B +
+                                                                         rData.mN.at(dofRow)->transpose() * internalGradientRH_N);
             break;
-
+        }
         case Node::TEMPERATURE:
-            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose() * rData.mHeatFlux +
-                                                                         rData.mN.at(dofRow)->transpose() * rData.mHeatChange);
+        {
+            const auto& heatFlux = *static_cast<ConstitutiveVector<TDim>*>(constitutiveOutputMap.at(Constitutive::Output::HEAT_FLUX).get());
+            const auto& heatChange = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::HEAT_CHANGE).get());
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose() * heatFlux +
+                                                                         rData.mN.at(dofRow)->transpose() * heatChange);
             break;
-
+        }
         case Node::WATERVOLUMEFRACTION:
-            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose()  * rData.mInternalGradientWV_B +
-                                                                         rData.mN.at(dofRow)->transpose() * rData.mInternalGradientWV_N);
+        {
+            const auto& internalGradientWV_B = *static_cast<ConstitutiveVector<TDim>*>(constitutiveOutputMap.at(Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_B).get());
+            const auto& internalGradientWV_N = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_N).get());
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose()  * internalGradientWV_B +
+                                                                         rData.mN.at(dofRow)->transpose() * internalGradientWV_N);
             break;
-
+        }
         case Node::CRACKPHASEFIELD:
         {
             const auto  G       = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::FRACTURE_ENERGY);
@@ -757,7 +786,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(BlockF
             const auto& d       = rData.mNodalValues.at(Node::CRACKPHASEFIELD);
             const auto& d_dt    = rData.mNodalValues_dt1.at(Node::CRACKPHASEFIELD);
 
-            const auto& kappa   = rData.mElasticEnergyDensity[0];
+            const auto& kappa   = (*static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::ELASTIC_ENERGY_DAMAGED_PART).get()))[0];
             const auto  visco   = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::ARTIFICIAL_VISCOSITY);
 
             //TODO: replace sigma * eps with static data kappa
@@ -769,8 +798,6 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(BlockF
                                                                          );
             break;
         }
-
-
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "Element output INTERNAL_GRADIENT for " + Node::DofToString(dofRow) + " not implemented.");
         }
@@ -779,8 +806,9 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(BlockF
 }
 
 template<int TDim>
-void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateDataContinuum<TDim> &rData, int rTheIP) const
+void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateDataContinuum<TDim> &rData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
+    constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
         for (auto dofCol : mInterpolationType->GetActiveDofs())
@@ -791,67 +819,95 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
             switch (Node::CombineDofs(dofRow, dofCol))
             {
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
-                hessian0 += rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * rData.mTangentStressStrain * rData.mB.at(dofRow);
+            {
+                const auto& tangentStressStrain = *static_cast<ConstitutiveMatrix<VoigtDim, VoigtDim>*>(constitutiveOutputMap.at(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN).get());
+                hessian0 += rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * tangentStressStrain * rData.mB.at(dofRow);
                 break;
-
+            }
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::NONLOCALEQSTRAIN):
-                hessian0 += rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * rData.mTangentStressNonlocalEqStrain * *(rData.mN.at(dofCol));
+            {
+                const auto& tangentStressNonlocalEqStrain = *static_cast<ConstitutiveVector<VoigtDim>*>(constitutiveOutputMap.at(Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN).get());
+                hessian0 += rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * tangentStressNonlocalEqStrain * *(rData.mN.at(dofCol));
                 break;
-
+            }
             case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::DISPLACEMENTS):
-                hessian0 -= rData.mDetJxWeightIPxSection *  rData.mN.at(dofRow)->transpose() * rData.mTangentLocalEqStrainStrain.transpose() * (rData.mB.at(dofCol));
+            {
+                const auto& tangentLocalEqStrainStrain = *static_cast<ConstitutiveVector<VoigtDim>*>(constitutiveOutputMap.at(Constitutive::Output::D_LOCAL_EQ_STRAIN_XI_D_STRAIN).get());
+                hessian0 -= rData.mDetJxWeightIPxSection *  rData.mN.at(dofRow)->transpose() * tangentLocalEqStrainStrain.transpose() * (rData.mB.at(dofCol));
                 break;
-
+            }
             case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::NONLOCALEQSTRAIN):
             {
                 const auto& N = *(rData.mN.at(dofRow));
                 const auto& B = rData.mB.at(dofRow);
-                hessian0 += rData.mDetJxWeightIPxSection * (N.transpose() * (1./rData.mNonlocalParameterXi[0]) * N + B.transpose() * B);
+                const auto& nonlocalXi = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::NONLOCAL_PARAMETER_XI).get());
+                hessian0 += rData.mDetJxWeightIPxSection * (N.transpose() * (1./nonlocalXi[0]) * N + B.transpose() * B);
                 break;
             }
 
             case Node::CombineDofs(Node::eDof::TEMPERATURE, Node::eDof::TEMPERATURE):
-                hessian0 += rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * rData.mTangentHeatFluxTemperatureGradient * rData.mB.at(dofRow);
+            {
+                const auto& tangentHeatFluxTemperatureGradient = *static_cast<ConstitutiveMatrix<TDim, TDim>*>(constitutiveOutputMap.at(Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT).get());
+                hessian0 += rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * tangentHeatFluxTemperatureGradient * rData.mB.at(dofRow);
                 break;
-
+            }
                 //VHIRTHAMTODO get references to shape functions ---> no double find for the same value
             case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::RELATIVEHUMIDITY):
-                hessian0 += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose()  * rData.mInternalGradientRH_dRH_BB_H0[0] * rData.mB.at(dofCol) +
-                                                            rData.mN.at(dofRow)->transpose() * rData.mInternalGradientRH_dRH_NN_H0 * (*rData.mN.at(dofCol)));
+            {
+                const auto& internalGradientRH_dRH_BB_H0 = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_BB_H0).get());
+                const auto& internalGradientRH_dRH_NN_H0 = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_NN_H0).get());
+                hessian0 += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose()  * internalGradientRH_dRH_BB_H0[0] * rData.mB.at(dofCol) +
+                                                            rData.mN.at(dofRow)->transpose() * internalGradientRH_dRH_NN_H0 * (*rData.mN.at(dofCol)));
                 break;
-
+            }
             case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::WATERVOLUMEFRACTION):
-                hessian0 += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose()  * rData.mInternalGradientRH_dWV_BN_H0 * (*rData.mN.at(dofCol)) +
-                                                            rData.mN.at(dofRow)->transpose() * rData.mInternalGradientRH_dWV_NN_H0 * (*rData.mN.at(dofCol)));
+            {
+                const auto& internalGradientRH_dWV_BN_H0 = *static_cast<ConstitutiveVector<TDim>*>(constitutiveOutputMap.at(Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_BN_H0).get());
+                const auto& internalGradientRH_dWV_NN_H0 = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_NN_H0).get());
+                hessian0 += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose()  * internalGradientRH_dWV_BN_H0 * (*rData.mN.at(dofCol)) +
+                                                            rData.mN.at(dofRow)->transpose() * internalGradientRH_dWV_NN_H0 * (*rData.mN.at(dofCol)));
                 break;
-
+            }
             case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::RELATIVEHUMIDITY):
-                hessian0 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow)->transpose()  * rData.mInternalGradientWV_dRH_NN_H0 * (*rData.mN.at(dofCol));
+            {
+                const auto& internalGradientWV_dRH_NN_H0 = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_RH_NN_H0).get());
+                hessian0 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow)->transpose()  * internalGradientWV_dRH_NN_H0 * (*rData.mN.at(dofCol));
                 break;
-
+            }
             case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::WATERVOLUMEFRACTION):
-                hessian0 += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose()  * rData.mInternalGradientWV_dWV_BB_H0[0] * rData.mB.at(dofCol) +
-                                                            rData.mB.at(dofRow).transpose()  * rData.mInternalGradientWV_dWV_BN_H0 * (*rData.mN.at(dofCol)) +
-                                                            rData.mN.at(dofRow)->transpose() * rData.mInternalGradientWV_dWV_NN_H0 * (*rData.mN.at(dofCol)));
+            {
+                const auto& internalGradientWV_dWV_BB_H0 = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BB_H0).get());
+                const auto& internalGradientWV_dWV_BN_H0 = *static_cast<ConstitutiveVector<TDim>*>(constitutiveOutputMap.at(Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BN_H0).get());
+                const auto& internalGradientWV_dWV_NN_H0 = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_NN_H0).get());
+                hessian0 += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose()  * internalGradientWV_dWV_BB_H0[0] * rData.mB.at(dofCol) +
+                                                            rData.mB.at(dofRow).transpose()  * internalGradientWV_dWV_BN_H0 * (*rData.mN.at(dofCol)) +
+                                                            rData.mN.at(dofRow)->transpose() * internalGradientWV_dWV_NN_H0 * (*rData.mN.at(dofCol)));
                 break;
-
+            }
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::RELATIVEHUMIDITY):
-                hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose()  * rData.mEngineeringStress_dRH * (*rData.mN.at(dofCol));
+            {
+                const auto& engineeringStress_dRH = *static_cast<ConstitutiveVector<VoigtDim>*>(constitutiveOutputMap.at(Constitutive::Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY).get());
+                hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose()  * engineeringStress_dRH * (*rData.mN.at(dofCol));
                 break;
-
+            }
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::TEMPERATURE):
-                hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose()  * rData.mDStressDTemperature * (*rData.mN.at(dofCol));
+            {
+                const auto& dStressDTemperature = *static_cast<ConstitutiveVector<VoigtDim>*>(constitutiveOutputMap.at(Constitutive::Output::D_ENGINEERING_STRESS_D_TEMPERATURE).get());
+                hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose()  * dStressDTemperature * (*rData.mN.at(dofCol));
                 break;
-
+            }
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::WATERVOLUMEFRACTION):
-                hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose()  * rData.mEngineeringStress_dWV * (*rData.mN.at(dofCol));
+            {
+                const auto& engineeringStress_dWV = *static_cast<ConstitutiveVector<VoigtDim>*>(constitutiveOutputMap.at(Constitutive::Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION).get());
+                hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose()  * engineeringStress_dWV * (*rData.mN.at(dofCol));
                 break;
-
+            }
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::CRACKPHASEFIELD):
             {
                 const auto& Bu = rData.mB.at(Node::eDof::DISPLACEMENTS);
                 const auto& Nd = *(rData.mN.at(Node::eDof::CRACKPHASEFIELD));
-                hessian0 += rData.mDetJxWeightIPxSection * Bu.transpose() * rData.mDStressDPhaseField * Nd;
+                const auto& dStressDPhaseField = *static_cast<ConstitutiveVector<VoigtDim>*>(constitutiveOutputMap.at(Constitutive::Output::D_ENGINEERING_STRESS_D_PHASE_FIELD).get());
+                hessian0 += rData.mDetJxWeightIPxSection * Bu.transpose() * dStressDPhaseField * Nd;
                 break;
             }
 
@@ -861,8 +917,9 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
                 const double d = (Nd * rData.mNodalValues.at(Node::eDof::CRACKPHASEFIELD)).at(0,0);
 
                 const auto& Bu = rData.mB.at(Node::eDof::DISPLACEMENTS);
+                const auto& tangentElasticEnergyStrain = *static_cast<ConstitutiveVector<VoigtDim>*>(constitutiveOutputMap.at(Constitutive::Output::D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN).get());
 
-                hessian0 += rData.mDetJxWeightIPxSection * 2 * (d -1.) * Nd.transpose() * rData.mTangentElasticEnergyStrain.transpose() * Bu;
+                hessian0 += rData.mDetJxWeightIPxSection * 2 * (d -1.) * Nd.transpose() * tangentElasticEnergyStrain.transpose() * Bu;
                 break;
             }
 
@@ -874,12 +931,11 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
                 const auto& N = *(rData.mN.at(Node::eDof::CRACKPHASEFIELD));
                 const auto& B = rData.mB.at(Node::eDof::CRACKPHASEFIELD);
 
-                const auto& kappa   = rData.mElasticEnergyDensity[0];
+                const auto& kappa   = (*static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::ELASTIC_ENERGY_DAMAGED_PART).get()))[0];
 
                 hessian0 += rData.mDetJxWeightIPxSection * ( (G/l + 2*kappa) * N.transpose() * N +  G*l*B.transpose() * B );
                 break;
             }
-
             /*******************************************************\
             |         NECESSARY BUT UNUSED DOF COMBINATIONS         |
             \*******************************************************/
@@ -895,7 +951,9 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
 }
 
 template<int TDim>
-void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatrix<double>& rHessian1, EvaluateDataContinuum<TDim> &rData, int rTheIP) const
+void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatrix<double>& rHessian1,
+        EvaluateDataContinuum<TDim> &rData, int rTheIP,
+        const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
@@ -910,27 +968,33 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatri
                 break;
 
             case Node::CombineDofs(Node::eDof::TEMPERATURE, Node::eDof::TEMPERATURE):
-                hessian1 += rData.mDetJxWeightIPxSection
-                          * rData.mN.at(dofRow)->transpose()
-                          * rData.mTangentHeatTemperature
-                          * (*rData.mN.at(dofCol));
+            {
+                const auto& tangentHeatTemperature = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::D_HEAT_D_TEMPERATURE).get());
+                hessian1 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow)->transpose()
+                          * tangentHeatTemperature * (*rData.mN.at(dofCol));
                 break;
-
+            }
             case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::RELATIVEHUMIDITY):
-                hessian1 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow)->transpose() * rData.mInternalGradientRH_dRH_NN_H1 * (*rData.mN.at(dofCol));
+            {
+                const auto& internalGradientRH_dRH_NN_H1 = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_NN_H1).get());
+                hessian1 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow)->transpose() * internalGradientRH_dRH_NN_H1 * (*rData.mN.at(dofCol));
                 break;
-
+            }
             case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::WATERVOLUMEFRACTION):
-                hessian1 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow)->transpose() * rData.mInternalGradientRH_dWV_NN_H1 * (*rData.mN.at(dofCol));
+            {
+                const auto& internalGradientRH_dWV_NN_H1 = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_NN_H1).get());
+                hessian1 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow)->transpose() * internalGradientRH_dWV_NN_H1 * (*rData.mN.at(dofCol));
                 break;
-
+            }
             case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::RELATIVEHUMIDITY):
                 break;
 
             case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::WATERVOLUMEFRACTION):
-                hessian1 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow)->transpose() * rData.mInternalGradientWV_dWV_NN_H1 * (*rData.mN.at(dofCol));
+            {
+                const auto& internalGradientWV_dWV_NN_H1 = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_NN_H1).get());
+                hessian1 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow)->transpose() * internalGradientWV_dWV_NN_H1 * (*rData.mN.at(dofCol));
                 break;
-
+            }
             case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::CRACKPHASEFIELD):
             {
                 const auto& N = *(rData.mN.at(Node::eDof::CRACKPHASEFIELD));
@@ -938,7 +1002,6 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatri
                 hessian1 += visco * rData.mDetJxWeightIPxSection * N.transpose() * N;
             }
                 break;
-
             /*******************************************************\
             |         NECESSARY BUT UNUSED DOF COMBINATIONS         |
             \*******************************************************/
@@ -986,35 +1049,36 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian2(BlockFullMatri
 }
 
 template<int TDim>
-void NuTo::ContinuumElement<TDim>::CalculateElementOutputIpData(ElementOutputIpData& rIpData, EvaluateDataContinuum<TDim> &rData, int rTheIP) const
+void NuTo::ContinuumElement<TDim>::CalculateElementOutputIpData(ElementOutputIpData& rIpData,
+        EvaluateDataContinuum<TDim> &rData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
     for (auto& it : rIpData.GetIpDataMap()) // this reference here is _EXTREMLY_ important, since the GetIpDataMap() contains a
     {                                       // FullMatrix VALUE and you want to access this value by reference. Without the &, a tmp copy would be made.
         switch (it.first)
         {
         case NuTo::IpData::DAMAGE:
-            it.second.col(rTheIP) = std::move(rData.mDamage);
+            it.second.col(rTheIP) = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::DAMAGE).get());
             break;
         case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
-            it.second.col(rTheIP) = std::move(rData.mEngineeringPlasticStrainVisualize);
+            it.second.col(rTheIP) = *static_cast<EngineeringStrain<3>*>(constitutiveOutputMap.at(Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE).get());
             break;
         case NuTo::IpData::ENGINEERING_STRAIN:
-            it.second.col(rTheIP) = std::move(rData.mEngineeringStrainVisualize);
+            it.second.col(rTheIP) = *static_cast<EngineeringStrain<3>*>(constitutiveOutputMap.at(Constitutive::Output::ENGINEERING_STRAIN_VISUALIZE).get());
             break;
         case NuTo::IpData::ENGINEERING_STRESS:
-            it.second.col(rTheIP) = std::move(rData.mEngineeringStressVisualize);
+            it.second.col(rTheIP) = *static_cast<EngineeringStress<3>*>(constitutiveOutputMap.at(Constitutive::Output::ENGINEERING_STRESS_VISUALIZE).get());
             break;
         case NuTo::IpData::EXTRAPOLATION_ERROR:
-            it.second.col(rTheIP) = std::move(rData.mExtrapolationError);
+            it.second.col(rTheIP) = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::EXTRAPOLATION_ERROR).get());
             break;
         case NuTo::IpData::LOCAL_EQ_STRAIN:
-            it.second.col(rTheIP) = std::move(rData.mLocalEqStrain);
+            it.second.col(rTheIP) = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::LOCAL_EQ_STRAIN).get());
             break;
         case NuTo::IpData::SHRINKAGE_STRAIN:
-            it.second.col(rTheIP) = std::move(rData.mShrinkageStrainVisualize);
+            it.second.col(rTheIP) = *static_cast<EngineeringStrain<3>*>(constitutiveOutputMap.at(Constitutive::Output::SHRINKAGE_STRAIN_VISUALIZE).get());
             break;
         case NuTo::IpData::THERMAL_STRAIN:
-            it.second.col(rTheIP) = std::move(rData.mThermalStrain);
+            it.second.col(rTheIP) = *static_cast<EngineeringStrain<3>*>(constitutiveOutputMap.at(Constitutive::Output::THERMAL_STRAIN).get());
             break;
         default:
             throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Ip data not implemented.");
