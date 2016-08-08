@@ -1,0 +1,20 @@
+$MeshFormat
+2.2 0 8
+$EndMeshFormat
+$Nodes
+9
+1 0 0 0
+2 100 0 0
+3 100 20 0
+4 0 20 0
+5 50 0 0
+6 100 10 0
+7 50 20 0
+8 0 10 0
+9 50 10 0
+$EndNodes
+$Elements
+2
+1 9 2 12 9 1 2 4 5 9 8
+2 9 2 11 10 2 3 4 6 7 9
+$EndElements
