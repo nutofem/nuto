@@ -38,7 +38,7 @@ IF (ENABLE_OPENMP AND OPENMP_FOUND AND NOT ENABLE_DEBUG)
   TARGET_LINK_LIBRARIES(ParallelAssembly NuToMath NuToMechanics NuToBase)
   IF (ENABLE_VISUALIZE)
     TARGET_LINK_LIBRARIES(ParallelAssembly NuToVisualize)
-  ENDIF (ENABLE_VISUALIZE)  
+  ENDIF (ENABLE_VISUALIZE)
   IF (ENABLE_OPTIMIZE)
     TARGET_LINK_LIBRARIES(ParallelAssembly NuToOptimize)
   ENDIF (ENABLE_OPTIMIZE)
@@ -77,7 +77,7 @@ IF(ENABLE_C++_TESTS)
     SET_TARGET_PROPERTIES(NewmarkPlane2D4N PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
   ADD_TEST(c::mechanics::NewmarkPlane2D4N ${CMAKE_CURRENT_BUILD_DIR}/NewmarkPlane2D4N)
-  
+
   # cycle jump local
   #  ADD_EXECUTABLE(Brick8NcycleJump Brick8NcycleJump.cpp)
   #TARGET_LINK_LIBRARIES(Brick8NcycleJump NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
@@ -91,8 +91,8 @@ IF(ENABLE_C++_TESTS)
   #  SET_TARGET_PROPERTIES(Brick8NcycleJump PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   #ENDIF(MINGW)
   #ADD_TEST(c::mechanics::Brick8NcycleJump ${CMAKE_CURRENT_BUILD_DIR}/Brick8NcycleJump)
-  
-  # cycle jump nonlocal 
+
+  # cycle jump nonlocal
   #ADD_EXECUTABLE(CycleJumpNonlocal CycleJumpNonlocal.cpp)
   #TARGET_LINK_LIBRARIES(CycleJumpNonlocal NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
   #IF (ENABLE_VISUALIZE)
@@ -118,7 +118,7 @@ ADD_EXECUTABLE(RungeKutta RungeKutta.cpp)
     SET_TARGET_PROPERTIES(RungeKutta PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
   ADD_TEST(c::mechanics::RungeKutta ${CMAKE_CURRENT_BUILD_DIR}/RungeKutta)
-  
+
   ADD_EXECUTABLE(ImplEx ImplEx.cpp)
   TARGET_LINK_LIBRARIES(ImplEx NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
   IF (ENABLE_VISUALIZE)
@@ -348,7 +348,7 @@ ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoInte
      TARGET_LINK_LIBRARIES(TrussIn3D NuToMechanics NuToMath NuToBase)
    IF (ENABLE_VISUALIZE)
     TARGET_LINK_LIBRARIES(TrussIn3D NuToVisualize)
-   ENDIF (ENABLE_VISUALIZE)    
+   ENDIF (ENABLE_VISUALIZE)
      ADD_TEST(c::mechanics::TrussIn3D ${CMAKE_CURRENT_BUILD_DIR}/TrussIn3D)
    IF(MINGW)
      SET_TARGET_PROPERTIES(TrussIn3D PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
@@ -360,7 +360,7 @@ ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoInte
    TARGET_LINK_LIBRARIES(InterfaceElements NuToMechanics NuToMath NuToBase)
    IF (ENABLE_VISUALIZE)
     TARGET_LINK_LIBRARIES(InterfaceElements NuToVisualize)
-   ENDIF (ENABLE_VISUALIZE)   
+   ENDIF (ENABLE_VISUALIZE)
    ADD_TEST(c::mechanics::InterfaceElements ${CMAKE_CURRENT_BUILD_DIR}/InterfaceElements)
 
   # BlockMatrices
@@ -444,16 +444,6 @@ ENDIF(MINGW)
 ADD_TEST(c::mechanics::Shrinkage ${CMAKE_CURRENT_BUILD_DIR}/Shrinkage)
 
 
-ADD_EXECUTABLE(PhaseField PhaseField.cpp)
-TARGET_LINK_LIBRARIES(PhaseField NuToMechanics NuToMath NuToBase)
-IF(ENABLE_VISUALIZE)
-    TARGET_LINK_LIBRARIES(PhaseField NuToVisualize)
-ENDIF(ENABLE_VISUALIZE)
-IF(MINGW)
-    SET_TARGET_PROPERTIES(PhaseField PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-ENDIF(MINGW)
-ADD_TEST(c::mechanics::PhaseField ${CMAKE_CURRENT_BUILD_DIR}/PhaseField)
-
 ENDIF(ENABLE_C++_TESTS)
 
 IF(ENABLE_C++_TESTS_WIP)
@@ -467,4 +457,11 @@ if(ENABLE_UNIT_TESTS)
         target_link_libraries(ContinuumElement NuToVisualize)
     endif()
     add_test(c::unit::ContinuumElement ${CMAKE_CURRENT_BUILD_DIR}/ContinuumElement)
+
+    add_executable(PhaseField PhaseField.cpp)
+    target_link_libraries(PhaseField NuToMechanics NuToMath NuToBase)
+    if(ENABLE_VISUALIZE)
+        target_link_libraries(PhaseField NuToVisualize)
+    endif()
+    add_test(c::unit::PhaseField ${CMAKE_CURRENT_BUILD_DIR}/ContinuumElement)
 endif()

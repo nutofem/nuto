@@ -1,13 +1,19 @@
-
 #include "nuto/mechanics/constitutive/laws/PhaseField.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataHistoryVariableScalar.h"
+#include "nuto/mechanics/elements/EvaluateDataContinuum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
-#include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
-#include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
+#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataHistoryVariableScalar.h"
 
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
+
+#include <boost/filesystem.hpp>
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <chrono>
+#include <exception>
+#include <cassert>
 
 #define BOOST_TEST_MODULE PhaseFieldTest
 #define BOOST_TEST_DYN_LINK

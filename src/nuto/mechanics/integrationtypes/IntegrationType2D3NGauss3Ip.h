@@ -35,7 +35,9 @@ public:
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
     //! @param rCoordinates (result)
-    void GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const;
+    void GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const override;
+
+    virtual Eigen::MatrixXd GetNaturalIntegrationPointCoordinates() const override;
 
 
     //! @brief returns the total number of integration points for this integration type
