@@ -17,9 +17,6 @@ template<int TRows, int TCols>
 class ConstitutiveMatrix;
 
 template <int TDim>
-struct EvaluateDataContinuum;
-
-template <int TDim>
 class EngineeringStress;
 
 
@@ -96,9 +93,9 @@ private:
 
 
     void CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient,
-            EvaluateDataContinuum<1>& rData, int rTheIP, const ConstitutiveInputMap& constitutiveInputMap,
+            int rTheIP, const ConstitutiveInputMap& constitutiveInputMap,
             const ConstitutiveOutputMap& constitutiveOutputMap) const override;
-    void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateDataContinuum<1>& rData,
+    void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0,
             int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const override;
 
     //! @brief Calculates the transformation matrix. The size of the matrix depends on the number of nodes and the global dimension of the element.

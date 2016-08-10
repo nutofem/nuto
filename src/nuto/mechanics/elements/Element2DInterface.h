@@ -14,17 +14,6 @@ namespace NuTo
 {
 class ElementOutputIpData;
 
-struct EvaluateData
-{
-    ConstitutiveMatrixXd mSlip;
-
-    std::map<Node::eDof, Eigen::VectorXd> mNodalValues;
-    std::map<Node::eDof, Eigen::MatrixXd> mMatrixB;
-    std::map<Node::eDof, const Eigen::MatrixXd*> mMatrixN;
-
-    double mDetJacobian = 0;
-    double mDetJxWeightIPxSection = 0;
-};
 
 
 class Element2DInterface: public ElementBase
@@ -134,36 +123,53 @@ public:
 
 
 protected:
-
     std::vector<NodeBase*> mNodes;
     const SectionBase *mSection;
     Eigen::MatrixXd mTransformationMatrix;
 
+    // Nodal Values
+    // --------------------------------------------------------------------------------------------
+    std::map<Node::eDof, Eigen::VectorXd> mNodalValues;
+    std::map<Node::eDof, Eigen::VectorXd> mNodalValues_dt1;
+
+    // Shape Functions
+    // --------------------------------------------------------------------------------------------
+    //! @todo TT: fixed size dimensions could be used here, e.g.
+    //! Eigen::Matrix<double, TDim,     Eigen::Dynamic> if B represents a normal gradient or
+    //! Eigen::Matrix<double, VoigtDim, Eigen::Dynamic> if B calculates the engineering strain.
+    //! However, it is harder to put them into one container. Maybe shared_ptr<Eigen::MatrixBase>?
+    std::map<Node::eDof, Eigen::MatrixXd> mMatrixB;
+    std::map<Node::eDof, const Eigen::MatrixXd*> mMatrixN;
+
+    // Misc
+    // --------------------------------------------------------------------------------------------
+    double mDetJxWeightIPxSection;
+    double mDetJacobian = 0;
 
     //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
     void CheckElement() override;
 
 private:
-    ConstitutiveOutputMap   GetConstitutiveOutputMap    (std::map<Element::eOutput, std::shared_ptr<ElementOutputBase> >& rElementOutput, EvaluateData& rData);
-    ConstitutiveInputMap    GetConstitutiveInputMap     (const ConstitutiveOutputMap& rConstitutiveOutput, EvaluateData& rData) const;
-    void CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput, EvaluateData& rData);
+    ConstitutiveOutputMap   GetConstitutiveOutputMap    (std::map<Element::eOutput, std::shared_ptr<ElementOutputBase> >& rElementOutput);
+    ConstitutiveInputMap    GetConstitutiveInputMap     (const ConstitutiveOutputMap& rConstitutiveOutput) const;
+    void CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput);
 
-    virtual void FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullVector<double>& rInternalGradient, EvaluateData& rData) const;
-    virtual void FillConstitutiveOutputMapHessian0(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian0, EvaluateData& rData) const;
-    virtual void FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput, ElementOutputIpData& rIpData, EvaluateData& rData) const;
+    virtual void FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullVector<double>& rInternalGradient) const;
+    virtual void FillConstitutiveOutputMapHessian0(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian0) const;
+    virtual void FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput, ElementOutputIpData& rIpData) const;
 
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
     void CalculateGlobalRowDofs(BlockFullVector<int>& rGlobalRowDofs) const;
 
     void CalculateElementOutputs(
             std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
-            EvaluateData& rData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const;
+            int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const;
 
     virtual void CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient,
-            EvaluateData& rData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const;
+            int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const;
     virtual void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0,
-            EvaluateData& rData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const;
-    virtual void CalculateElementOutputIpData(              ElementOutputIpData&     rIpData,           EvaluateData& rData, int rTheIP) const;
+            int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const;
+    virtual void CalculateElementOutputIpData(ElementOutputIpData& rIpData, int rTheIP) const;
 
     //! @brief calculates the rotation matirx based on the orientation of the element
     Eigen::MatrixXd CalculateRotationMatrix();

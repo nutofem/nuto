@@ -10,11 +10,14 @@
 #include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/ElementOutputBase.h"
 #include "nuto/mechanics/elements/ElementOutputIpData.h"
-#include "nuto/mechanics/elements/EvaluateDataContinuumBoundary.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/sections/SectionTruss.h"
 #include "nuto/mechanics/sections/SectionPlane.h"
 #include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
+#include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
+#include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 
 template <int TDim>
 NuTo::ContinuumBoundaryElement<TDim>::ContinuumBoundaryElement(const ContinuumElement<TDim> *rBaseElement, int rSurfaceId)
@@ -27,50 +30,49 @@ NuTo::ContinuumBoundaryElement<TDim>::ContinuumBoundaryElement(const ContinuumEl
 template <int TDim>
 NuTo::Error::eError NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
 {
-    EvaluateDataContinuumBoundary<TDim> data;
-    ExtractAllNecessaryDofValues(data);
+    ExtractAllNecessaryDofValues();
 
-    auto constitutiveOutput = GetConstitutiveOutputMap(rElementOutput, data);
-    auto constitutiveInput  = GetConstitutiveInputMap(constitutiveOutput, data);
+    auto constitutiveOutput = GetConstitutiveOutputMap(rElementOutput);
+    auto constitutiveInput  = GetConstitutiveInputMap(constitutiveOutput);
     constitutiveInput.Merge(rInput);
 
     for (int theIP = 0; theIP < GetNumIntegrationPoints(); theIP++)
     {
-        CalculateNMatrixBMatrixDetJacobian(data, theIP);
-        CalculateConstitutiveInputs(constitutiveInput, data);
+        CalculateNMatrixBMatrixDetJacobian(theIP);
+        mDetJxWeightIPxSection = CalculateDetJxWeightIPxSection(theIP); // formerly known as "factor"
+        CalculateConstitutiveInputs(constitutiveInput);
 
 
         Error::eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput,constitutiveOutput,theIP);
         if (error != Error::SUCCESSFUL)
             return error;
-        CalculateElementOutputs(rElementOutput, data, constitutiveInput, theIP);
+        CalculateElementOutputs(rElementOutput, constitutiveInput, constitutiveOutput, theIP);
     }
     return Error::SUCCESSFUL;
 }
 
 template <int TDim>
-void NuTo::ContinuumBoundaryElement<TDim>::ExtractAllNecessaryDofValues(EvaluateDataContinuumBoundary<TDim> &rData)
+void NuTo::ContinuumBoundaryElement<TDim>::ExtractAllNecessaryDofValues()
 {
-    // needs optimization,
-    // not all dofs might be needed...
+    //! @todo needs optimization, not all dofs might be needed...
 
     const std::set<Node::eDof>& dofs = mInterpolationType->GetDofs();
     for (auto dof : dofs)
         if (mInterpolationType->IsConstitutiveInput(dof))
-            rData.mNodalValues[dof] = mBaseElement->ExtractNodeValues(0, dof);
+            mNodalValues[dof] = mBaseElement->ExtractNodeValues(0, dof);
 
-    rData.mNodalValues[Node::COORDINATES] = mBaseElement->ExtractNodeValues(0, Node::COORDINATES);
+    mNodalValues[Node::COORDINATES] = mBaseElement->ExtractNodeValues(0, Node::COORDINATES);
 
     if (mStructure->GetNumTimeDerivatives() >= 1)
         for (auto dof : dofs)
             if (mInterpolationType->IsConstitutiveInput(dof))
-                rData.mNodalValues_dt1[dof] = mBaseElement->ExtractNodeValues(1, dof);
+                mNodalValues_dt1[dof] = mBaseElement->ExtractNodeValues(1, dof);
 }
 
 
 template<int TDim>
-NuTo::ConstitutiveOutputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
-                                                                                   EvaluateDataContinuumBoundary<TDim>& rData) const
+NuTo::ConstitutiveOutputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiveOutputMap(
+        std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const
 {
     ConstitutiveOutputMap constitutiveOutput;
 
@@ -79,15 +81,15 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiv
         switch (it.first)
         {
         case Element::INTERNAL_GRADIENT:
-            FillConstitutiveOutputMapInternalGradient(constitutiveOutput, it.second->GetBlockFullVectorDouble(), rData);
+            FillConstitutiveOutputMapInternalGradient(constitutiveOutput, it.second->GetBlockFullVectorDouble());
             break;
 
         case Element::HESSIAN_0_TIME_DERIVATIVE:
-            FillConstitutiveOutputMapHessian0(constitutiveOutput, it.second->GetBlockFullMatrixDouble(), rData);
+            FillConstitutiveOutputMapHessian0(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
             break;
 
         case Element::HESSIAN_1_TIME_DERIVATIVE:
-            FillConstitutiveOutputMapHessian1(constitutiveOutput, it.second->GetBlockFullMatrixDouble(), rData);
+            FillConstitutiveOutputMapHessian1(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
             break;
 
         case Element::HESSIAN_2_TIME_DERIVATIVE:
@@ -103,7 +105,7 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiv
             break;
 
         case Element::IP_DATA:
-            FillConstitutiveOutputMapIpData(constitutiveOutput, it.second->GetIpData(), rData);
+            FillConstitutiveOutputMapIpData(constitutiveOutput, it.second->GetIpData());
             break;
 
         case Element::GLOBAL_ROW_DOF:
@@ -123,8 +125,7 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiv
 
 
 template<int TDim>
-NuTo::ConstitutiveInputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                                                EvaluateDataContinuumBoundary<TDim>& rData) const
+NuTo::ConstitutiveInputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap =  GetConstitutiveLaw(0)->GetConstitutiveInputs(rConstitutiveOutput, *GetInterpolationType());
 
@@ -140,7 +141,7 @@ NuTo::ConstitutiveInputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutive
 
 
 template<int TDim>
-void NuTo::ContinuumBoundaryElement<TDim>::CalculateNMatrixBMatrixDetJacobian(EvaluateDataContinuumBoundary<TDim> &rData, int rTheIP) const
+void NuTo::ContinuumBoundaryElement<TDim>::CalculateNMatrixBMatrixDetJacobian(int rTheIP)
 {
 
     const InterpolationBase& interpolationTypeCoords = mInterpolationType->Get(Node::COORDINATES);
@@ -153,12 +154,12 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateNMatrixBMatrixDetJacobian(Ev
     // ## = || [dX / dXi] * [dXi / dAlpha] ||
     // #######################################
     Eigen::MatrixXd derivativeShapeFunctionsNatural     = interpolationTypeCoords.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural);
-    const Eigen::Matrix<double,TDim,TDim> jacobian      = mBaseElement->CalculateJacobian(derivativeShapeFunctionsNatural, rData.mNodalValues[Node::COORDINATES]);// = [dX / dXi]
+    const Eigen::Matrix<double,TDim,TDim> jacobian      = mBaseElement->CalculateJacobian(derivativeShapeFunctionsNatural, mNodalValues.at(Node::COORDINATES));// = [dX / dXi)
 
     const Eigen::MatrixXd derivativeNaturalSurfaceCoordinates   = interpolationTypeCoords.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, mSurfaceId); // = [dXi / dAlpha]
-    rData.mDetJacobian = (jacobian * derivativeNaturalSurfaceCoordinates).norm();
+    mDetJacobian = (jacobian * derivativeNaturalSurfaceCoordinates).norm();
 
-    if (rData.mDetJacobian == 0)
+    if (mDetJacobian == 0)
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "Determinant of the Jacobian is zero, no inversion possible.");
     }
@@ -171,16 +172,16 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateNMatrixBMatrixDetJacobian(Ev
         if (dof == Node::COORDINATES)
             continue;
         const InterpolationBase& interpolationType = mInterpolationType->Get(dof);
-        rData.mN[dof] = interpolationType.CalculateMatrixN(ipCoordsNatural);
+        mN[dof] = interpolationType.CalculateMatrixN(ipCoordsNatural);
 
-        rData.mB[dof] = mBaseElement->CalculateMatrixB(dof, interpolationType.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural), invJacobian);
+        mB[dof] = mBaseElement->CalculateMatrixB(dof, interpolationType.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural), invJacobian);
     }
 }
 
 
 
 template<int TDim>
-void NuTo::ContinuumBoundaryElement<TDim>::CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput, EvaluateDataContinuumBoundary<TDim> &rData)
+void NuTo::ContinuumBoundaryElement<TDim>::CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput)
 {
     constexpr int voigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
     for (auto& it : rConstitutiveInput)
@@ -190,25 +191,25 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateConstitutiveInputs(const Con
         case Constitutive::Input::ENGINEERING_STRAIN:
         {
             auto& strain = *static_cast<ConstitutiveVector<voigtDim>*>(it.second.get());
-            strain.AsVector() = rData.mB.at(Node::DISPLACEMENTS) * rData.mNodalValues.at(Node::DISPLACEMENTS);
+            strain.AsVector() = mB.at(Node::DISPLACEMENTS) * mNodalValues.at(Node::DISPLACEMENTS);
             break;
         }
         case Constitutive::Input::NONLOCAL_EQ_STRAIN:
         {
             auto& nonLocalEqStrain = *static_cast<ConstitutiveScalar*>(it.second.get());
-            nonLocalEqStrain.AsScalar() = rData.mN.at(Node::NONLOCALEQSTRAIN) * rData.mNodalValues.at(Node::NONLOCALEQSTRAIN);
+            nonLocalEqStrain.AsScalar() = mN.at(Node::NONLOCALEQSTRAIN) * mNodalValues.at(Node::NONLOCALEQSTRAIN);
             break;
         }
         case Constitutive::Input::RELATIVE_HUMIDITY:
         {
             auto& relativeHumidity = *static_cast<ConstitutiveScalar*>(it.second.get());
-            relativeHumidity.AsScalar() = rData.mN.at(Node::RELATIVEHUMIDITY) * rData.mNodalValues.at(Node::RELATIVEHUMIDITY);
+            relativeHumidity.AsScalar() = mN.at(Node::RELATIVEHUMIDITY) * mNodalValues.at(Node::RELATIVEHUMIDITY);
             break;
         }
         case Constitutive::Input::WATER_VOLUME_FRACTION:
         {
             auto& waterVolumeFraction = *static_cast<ConstitutiveScalar*>(it.second.get());
-            waterVolumeFraction.AsScalar() = rData.mN.at(Node::WATERVOLUMEFRACTION) * rData.mNodalValues.at(Node::WATERVOLUMEFRACTION);
+            waterVolumeFraction.AsScalar() = mN.at(Node::WATERVOLUMEFRACTION) * mNodalValues.at(Node::WATERVOLUMEFRACTION);
             break;
         }
         case Constitutive::Input::TIME_STEP:
@@ -224,22 +225,21 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateConstitutiveInputs(const Con
 template<int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputs(
         std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
-        EvaluateDataContinuumBoundary<TDim> &rData,
         const ConstitutiveInputMap& constitutiveInputMap,
+        const ConstitutiveOutputMap& constitutiveOutputMap,
         int rTheIP) const
 {
-    rData.mDetJxWeightIPxSection = CalculateDetJxWeightIPxSection(rData.mDetJacobian, rTheIP); // formerly known as "factor"
 
     for (auto it : rElementOutput)
     {
         switch (it.first)
         {
         case Element::INTERNAL_GRADIENT:
-            CalculateElementOutputInternalGradient(it.second->GetBlockFullVectorDouble(), rData, constitutiveInputMap, rTheIP);
+            CalculateElementOutputInternalGradient(it.second->GetBlockFullVectorDouble(), constitutiveInputMap, constitutiveOutputMap, rTheIP);
             break;
 
         case Element::HESSIAN_0_TIME_DERIVATIVE:
-            CalculateElementOutputHessian0(it.second->GetBlockFullMatrixDouble(), rData, rTheIP);
+            CalculateElementOutputHessian0(it.second->GetBlockFullMatrixDouble(), rTheIP, constitutiveOutputMap);
             break;
 
         case Element::HESSIAN_1_TIME_DERIVATIVE:
@@ -255,7 +255,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputs(
         case Element::UPDATE_TMP_STATIC_DATA:
             break;
         case Element::IP_DATA:
-            CalculateElementOutputIpData(it.second->GetIpData(), rData, rTheIP);
+            CalculateElementOutputIpData(it.second->GetIpData(), rTheIP, constitutiveOutputMap);
             break;
         case Element::GLOBAL_ROW_DOF:
         case Element::GLOBAL_COLUMN_DOF:
@@ -270,8 +270,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputs(
 template<int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputInternalGradient(
         BlockFullVector<double>& rInternalGradient,
-        EvaluateDataContinuumBoundary<TDim> &rData,
         const ConstitutiveInputMap& constitutiveInputMap,
+        const ConstitutiveOutputMap& constitutiveOutputMap,
         int rTheIP) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
@@ -283,22 +283,27 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputInternalGradien
 
         case Node::NONLOCALEQSTRAIN:
         {
-            if (rData.mBCType == BoundaryType::ROBIN_INHOMOGENEOUS)
+            if (mBCType == BoundaryType::ROBIN_INHOMOGENEOUS)
             {
+                const auto& localEqStrain = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::LOCAL_EQ_STRAIN).get());
                 const auto& nonlocalEqStrain = *static_cast<ConstitutiveScalar*>(constitutiveInputMap.at(Constitutive::Input::NONLOCAL_EQ_STRAIN).get());
-                rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection / rData.mAlpha * rData.mN.at(Node::NONLOCALEQSTRAIN).transpose() * (nonlocalEqStrain[0] - rData.mLocalEqStrain[0]);
+                rInternalGradient[dofRow] += mDetJxWeightIPxSection / mAlpha * mN.at(Node::NONLOCALEQSTRAIN).transpose() * (nonlocalEqStrain[0] - localEqStrain[0]);
             }
             break;
         }
 
         case Node::RELATIVEHUMIDITY:
-            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow).transpose() * rData.mInternalGradientRH_Boundary_N;
+        {
+            const auto& internalGradientRH_Boundary_N = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N).get());
+            rInternalGradient[dofRow] += mDetJxWeightIPxSection * mN.at(dofRow).transpose() * internalGradientRH_Boundary_N;
             break;
-
+        }
         case Node::WATERVOLUMEFRACTION:
-            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow).transpose() * rData.mInternalGradientWV_Boundary_N;
+        {
+            const auto& internalGradientWV_Boundary_N = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N).get());
+            rInternalGradient[dofRow] += mDetJxWeightIPxSection * mN.at(dofRow).transpose() * internalGradientWV_Boundary_N;
             break;
-
+        }
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "Element output INTERNAL_GRADIENT for " + Node::DofToString(dofRow) + " not implemented.");
         }
@@ -308,10 +313,9 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputInternalGradien
 
 
 template<int TDim>
-void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0,
-                                                                 EvaluateDataContinuumBoundary<TDim> &rData,
-                                                                 int rTheIP) const
+void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
+    constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
         for (auto dofCol : mInterpolationType->GetActiveDofs())
@@ -327,23 +331,30 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputHessian0(BlockF
                 break;
 
             case Node::CombineDofs(Node::NONLOCALEQSTRAIN, Node::DISPLACEMENTS):
-                if (rData.mBCType == BoundaryType::ROBIN_INHOMOGENEOUS)
-                    hessian0 -= rData.mDetJxWeightIPxSection / rData.mAlpha * rData.mN.at(dofRow).transpose() * rData.mTangentLocalEqStrainStrain.transpose() * rData.mB.at(dofCol);
+                if (mBCType == BoundaryType::ROBIN_INHOMOGENEOUS)
+                {
+                    const auto& tangentLocalEqStrainStrain = *static_cast<ConstitutiveVector<VoigtDim>*>(constitutiveOutputMap.at(Constitutive::Output::D_LOCAL_EQ_STRAIN_XI_D_STRAIN).get());
+                    hessian0 -= mDetJxWeightIPxSection / mAlpha * mN.at(dofRow).transpose() * tangentLocalEqStrainStrain.transpose() * mB.at(dofCol);
+                }
                 break;
 
             case Node::CombineDofs(Node::NONLOCALEQSTRAIN, Node::NONLOCALEQSTRAIN):
-                if (rData.mBCType == BoundaryType::ROBIN_INHOMOGENEOUS)
-                    hessian0 += rData.mN.at(dofRow).transpose() * rData.mN.at(dofRow) * rData.mDetJxWeightIPxSection / rData.mAlpha;
+                if (mBCType == BoundaryType::ROBIN_INHOMOGENEOUS)
+                    hessian0 += mN.at(dofRow).transpose() * mN.at(dofRow) * mDetJxWeightIPxSection / mAlpha;
                 break;
 
             case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::RELATIVEHUMIDITY):
-                hessian0 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow).transpose() * rData.mInternalGradientRH_dRH_Boundary_NN_H0 * rData.mN.at(dofCol);
+            {
+                const auto& internalGradientRH_dRH_Boundary_NN_H0 = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0).get());
+                hessian0 += mDetJxWeightIPxSection * mN.at(dofRow).transpose() * internalGradientRH_dRH_Boundary_NN_H0 * mN.at(dofCol);
                 break;
-
+            }
             case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::WATERVOLUMEFRACTION):
-                hessian0 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow).transpose() * rData.mInternalGradientWV_dWV_Boundary_NN_H0 * rData.mN.at(dofCol);
+            {
+                const auto& internalGradientWV_dWV_Boundary_NN_H0 = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0).get());
+                hessian0 += mDetJxWeightIPxSection * mN.at(dofRow).transpose() * internalGradientWV_dWV_Boundary_NN_H0 * mN.at(dofCol);
                 break;
-
+            }
             case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::WATERVOLUMEFRACTION):
             case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::RELATIVEHUMIDITY):
                 break;
@@ -364,29 +375,30 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputHessian0(BlockF
 }
 
 template<int TDim>
-void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputIpData(ElementOutputIpData& rIpData, EvaluateDataContinuumBoundary<TDim> &rData, int rTheIP) const
+void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputIpData(ElementOutputIpData& rIpData, int rTheIP,
+        const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
     for (auto& it : rIpData.GetIpDataMap()) // this reference here is _EXTREMLY_ important, since the GetIpDataMap() contains a
     {                                       // FullMatrix VALUE and you want to access this value by reference. Without the &, a tmp copy would be made.
         switch (it.first)
         {
         case NuTo::IpData::ENGINEERING_STRAIN:
-            it.second.col(rTheIP) = std::move(rData.mEngineeringStrainVisualize);
+            it.second.col(rTheIP) = *static_cast<EngineeringStrain<TDim>*>(constitutiveOutputMap.at(Constitutive::Output::ENGINEERING_STRAIN_VISUALIZE).get());
             break;
         case NuTo::IpData::ENGINEERING_STRESS:
-            it.second.col(rTheIP) = std::move(rData.mEngineeringStressVisualize);
+            it.second.col(rTheIP) = *static_cast<EngineeringStress<TDim>*>(constitutiveOutputMap.at(Constitutive::Output::ENGINEERING_STRESS_VISUALIZE).get());
             break;
         case NuTo::IpData::ENGINEERING_PLASTIC_STRAIN:
-            it.second.col(rTheIP) = std::move(rData.mEngineeringPlasticStrainVisualize);
+            it.second.col(rTheIP) = *static_cast<EngineeringStrain<TDim>*>(constitutiveOutputMap.at(Constitutive::Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE).get());
             break;
         case NuTo::IpData::DAMAGE:
-            it.second.col(rTheIP) = std::move(rData.mDamage);
+            it.second.col(rTheIP) = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::DAMAGE).get());
             break;
         case NuTo::IpData::EXTRAPOLATION_ERROR:
-            it.second.col(rTheIP) = std::move(rData.mExtrapolationError);
+            it.second.col(rTheIP) = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::EXTRAPOLATION_ERROR).get());
             break;
         case NuTo::IpData::LOCAL_EQ_STRAIN:
-            it.second.col(rTheIP) = std::move(rData.mLocalEqStrain);
+            it.second.col(rTheIP) = *static_cast<ConstitutiveScalar*>(constitutiveOutputMap.at(Constitutive::Output::LOCAL_EQ_STRAIN).get());
             break;
         default:
             throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Ip data not implemented.");
@@ -395,9 +407,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputIpData(ElementO
 }
 
 template<int TDim>
-void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput,
-                                                                            BlockFullVector<double>& rInternalGradient,
-                                                                            EvaluateDataContinuumBoundary<TDim>& rData) const
+void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapInternalGradient(
+        ConstitutiveOutputMap& rConstitutiveOutput, BlockFullVector<double>& rInternalGradient) const
 {
     using namespace NuTo::Constitutive::Output;
     for (auto dofRow : mInterpolationType->GetActiveDofs())
@@ -430,8 +441,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapInternalGrad
 
 template<int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(ConstitutiveOutputMap& rConstitutiveOutput,
-                                                                    BlockFullMatrix<double>& rHessian0,
-                                                                    EvaluateDataContinuumBoundary<TDim> &rData) const
+                                                                             BlockFullMatrix<double>& rHessian0) const
 {
     using namespace NuTo::Constitutive::Output;
     for (auto dofRow : mInterpolationType->GetActiveDofs())
@@ -488,8 +498,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(Con
 
 template<int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(ConstitutiveOutputMap& rConstitutiveOutput,
-                                                                    BlockFullMatrix<double>& rHessian0,
-                                                                    EvaluateDataContinuumBoundary<TDim> &rData) const
+                                                                             BlockFullMatrix<double>& rHessian0) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
@@ -553,7 +562,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(Con
 //}
 //
 template<int TDim>
-void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput, ElementOutputIpData& rIpData, EvaluateDataContinuumBoundary<TDim> &rData) const
+void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput, ElementOutputIpData& rIpData) const
 {
     using namespace NuTo::Constitutive::Output;
     for (auto& it : rIpData.GetIpDataMap()) // this reference here is _EXTREMLY_ important, since the GetIpDataMap() contains a
@@ -739,25 +748,25 @@ Eigen::Matrix<double,2,1>  ContinuumBoundaryElement<3>::CalculateIPCoordinatesSu
 
 
 template<>
-double NuTo::ContinuumBoundaryElement<1>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
+double NuTo::ContinuumBoundaryElement<1>::CalculateDetJxWeightIPxSection(int rTheIP) const
 {
 
     return  mBaseElement->mSection->GetArea();
 }
 
 template<>
-double NuTo::ContinuumBoundaryElement<2>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
+double NuTo::ContinuumBoundaryElement<2>::CalculateDetJxWeightIPxSection(int rTheIP) const
 {
-    return  rDetJacobian *
+    return  mDetJacobian *
             mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP) *
             mBaseElement->mSection->GetThickness();
 
 }
 
 template<>
-double NuTo::ContinuumBoundaryElement<3>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
+double NuTo::ContinuumBoundaryElement<3>::CalculateDetJxWeightIPxSection(int rTheIP) const
 {
-    return  rDetJacobian *
+    return  mDetJacobian *
             mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP);
 }
 
