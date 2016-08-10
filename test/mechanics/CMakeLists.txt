@@ -1,4 +1,4 @@
-# $Id$
+add_subdirectory(constitutive)
 
 #test files for mechanics module
 IF(ENABLE_PYTHON_TESTS)
@@ -459,3 +459,12 @@ ENDIF(ENABLE_C++_TESTS)
 IF(ENABLE_C++_TESTS_WIP)
 
 ENDIF(ENABLE_C++_TESTS_WIP)
+
+if(ENABLE_UNIT_TESTS)
+    add_executable(ContinuumElement ContinuumElement.cpp)
+    target_link_libraries(ContinuumElement NuToMechanics NuToMath NuToBase)
+    if(ENABLE_VISUALIZE)
+        target_link_libraries(ContinuumElement NuToVisualize)
+    endif()
+    add_test(c::unit::ContinuumElement ${CMAKE_CURRENT_BUILD_DIR}/ContinuumElement)
+endif()
