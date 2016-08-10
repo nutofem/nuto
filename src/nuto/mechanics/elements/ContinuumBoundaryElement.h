@@ -17,10 +17,9 @@ namespace BoundaryType
 {
 enum eType
 {
-    NOT_SET, NEUMANN_HOMOGENEOUS,   // grad nonlocal eq strain * n = 0
-    ROBIN_INHOMOGENEOUS,            // l * grad nonlocal eq strain * n + nonlocal eq strain = local eq strain
-    MACAULAY                        // l * grad nonlocal eq strain * n + (nonlocal eq strain - local eq strain)_- = 0
-
+    NOT_SET, NEUMANN_HOMOGENEOUS,   //!< grad nonlocal eq strain * n = 0
+    ROBIN_INHOMOGENEOUS,            //!< l * grad nonlocal eq strain * n + nonlocal eq strain = local eq strain
+    MACAULAY                        //!< l * grad nonlocal eq strain * n + (nonlocal eq strain - local eq strain)_- = 0
 };
 }
 
@@ -220,33 +219,13 @@ public:
 #endif // ENABLE_VISUALIZE
 
 protected:
-    // Nodal Values
-    // --------------------------------------------------------------------------------------------
-    std::map<Node::eDof, Eigen::VectorXd> mNodalValues;
-    std::map<Node::eDof, Eigen::VectorXd> mNodalValues_dt1;
-
-    // Shape Functions
-    // --------------------------------------------------------------------------------------------
-    //! @todo TT: fixed size dimensions could be used here, e.g.
-    //! Eigen::Matrix<double, TDim,     Eigen::Dynamic> if B represents a normal gradient or
-    //! Eigen::Matrix<double, VoigtDim, Eigen::Dynamic> if B calculates the engineering strain.
-    //! However, it is harder to put them into one container. Maybe shared_ptr<Eigen::MatrixBase>?
-    std::map<Node::eDof, Eigen::MatrixXd> mB;
-    std::map<Node::eDof, Eigen::MatrixXd> mN;
-
-    // Misc
-    // -------------------------------------------------------------------------------------------
-    double mDetJxWeightIPxSection;
-    double mDetJacobian = 0;
-    BoundaryType::eType mBCType;
-    double mAlpha; //!< parameter for robin boundary condition
 
     //! @brief ... just for serialization
     ContinuumBoundaryElement()
     {}
 
 
-    void ExtractAllNecessaryDofValues();
+    void ExtractAllNecessaryDofValues(EvaluateDataContinuumBoundary<TDim> &rData);
 
     ConstitutiveOutputMap GetConstitutiveOutputMap(std::map<Element::eOutput,
             std::shared_ptr<ElementOutputBase>>& rElementOutput) const;
@@ -262,24 +241,29 @@ protected:
 
     ConstitutiveInputMap GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const;
 
-    void CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput);
+    void CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput,
+            EvaluateDataContinuumBoundary<TDim> &rData);
 
     void CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
-                                 const ConstitutiveInputMap& constitutiveInputMap, 
-                                 const ConstitutiveOutputMap& constitutiveOutputMap, int rTheIP) const;
+            EvaluateDataContinuumBoundary<TDim> &rData, int rTheIP,
+            const ConstitutiveInputMap& constitutiveInput, 
+            const ConstitutiveOutputMap& constitutiveOutput) const;
 
     void CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient,
-            const ConstitutiveInputMap& constitutiveInputMap,
-            const ConstitutiveOutputMap& constitutiveOutputMap, 
-            int rTheIP) const;
-    void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const;
-    void CalculateElementOutputIpData(ElementOutputIpData& rIpData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const;
+            EvaluateDataContinuumBoundary<TDim> &rData,
+            const ConstitutiveInputMap& constitutiveInput,
+            const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
+    void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0,
+            EvaluateDataContinuumBoundary<TDim>& rData,
+            const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
+    void CalculateElementOutputIpData(ElementOutputIpData& rIpData,
+            const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
 
-    void CalculateNMatrixBMatrixDetJacobian(int rTheIP);
+    void CalculateNMatrixBMatrixDetJacobian(EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP) const;
 
-    Eigen::Matrix<double,TDim-1,1> CalculateIPCoordinatesSurface(int rTheIP) const;
+    Eigen::Matrix<double,TDim-1,1>  CalculateIPCoordinatesSurface(int rTheIP) const;
 
-    double CalculateDetJxWeightIPxSection(int rTheIP) const;
+    double CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const;
 
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
     void ReorderNodes() override

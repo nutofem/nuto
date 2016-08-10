@@ -9,6 +9,7 @@
 
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveMatrix.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
+#include "nuto/mechanics/elements/EvaluateDataContinuum.h"
 
 #include "nuto/math/FullMatrix.h"
 
@@ -138,7 +139,7 @@ const Eigen::VectorXd NuTo::Element1DInXD::ExtractGlobalNodeValues(int rTimeDeri
 
 }
 
-void NuTo::Element1DInXD::CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const
+void NuTo::Element1DInXD::CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateDataContinuum<1>& rData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
@@ -156,7 +157,7 @@ void NuTo::Element1DInXD::CalculateElementOutputHessian0(BlockFullMatrix<double>
                 Eigen::MatrixXd transformationMatrix = CalculateTransformationMatrix(globalDimension, numberOfNodes);
 
                 const auto& tangentStressStrain = *static_cast<ConstitutiveMatrix<1, 1>*>(constitutiveOutputMap.at(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN).get());
-                const Eigen::MatrixXd localHessian0 = mDetJxWeightIPxSection * mB.at(dofRow).transpose() * tangentStressStrain * mB.at(dofRow);
+                const Eigen::MatrixXd localHessian0 = rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose() * tangentStressStrain * rData.mB.at(dofRow);
                 Eigen::MatrixXd globalHessian0(numberOfDofs, numberOfDofs);
                 globalHessian0.setZero();
 
@@ -183,7 +184,7 @@ void NuTo::Element1DInXD::CalculateElementOutputHessian0(BlockFullMatrix<double>
 
 }
 
-void NuTo::Element1DInXD::CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient, int rTheIP, const ConstitutiveInputMap& constitutiveInputMap, const ConstitutiveOutputMap& constitutiveOutputMap) const
+void NuTo::Element1DInXD::CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<1>& rData, int rTheIP, const ConstitutiveInputMap& constitutiveInputMap, const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
@@ -197,7 +198,7 @@ void NuTo::Element1DInXD::CalculateElementOutputInternalGradient(BlockFullVector
             Eigen::MatrixXd transformationMatrix = CalculateTransformationMatrix(globalDimension, numberOfNodes);
 
             const auto& engineeringStress= *static_cast<EngineeringStress<1>*>(constitutiveOutputMap.at(Constitutive::Output::ENGINEERING_STRESS).get());
-            const Eigen::VectorXd localInternalGradient = mDetJxWeightIPxSection * mB.at(dofRow).transpose() * engineeringStress;
+            const Eigen::VectorXd localInternalGradient = rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose() * engineeringStress;
             Eigen::VectorXd globalInternalGradient(globalDimension * numberOfNodes);
             globalInternalGradient.setZero();
 

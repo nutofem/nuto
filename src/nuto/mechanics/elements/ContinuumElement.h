@@ -15,6 +15,8 @@ template <typename T> class BlockFullVector;
 template <typename T> class BlockFullMatrix;
 template <int TDim> class ContinuumBoundaryElement;
 
+template <int TDim> struct EvaluateDataContinuum;
+
 template <int TDim>
 class ContinuumElement: public ElementBase
 {
@@ -162,30 +164,11 @@ protected:
     std::vector<NodeBase*> mNodes;
     const SectionBase *mSection;
 
-    // Nodal Values
-    // --------------------------------------------------------------------------------------------
-    std::map<Node::eDof, Eigen::VectorXd> mNodalValues;
-    std::map<Node::eDof, Eigen::VectorXd> mNodalValues_dt1;
-
-    // Shape Functions
-    // --------------------------------------------------------------------------------------------
-    //! @todo TT: fixed size dimensions could be used here, e.g.
-    //! Eigen::Matrix<double, TDim,     Eigen::Dynamic> if B represents a normal gradient or
-    //! Eigen::Matrix<double, VoigtDim, Eigen::Dynamic> if B calculates the engineering strain.
-    //! However, it is harder to put them into one container. Maybe shared_ptr<Eigen::MatrixBase>?
-    std::map<Node::eDof, Eigen::MatrixXd> mB;
-    std::map<Node::eDof, const Eigen::MatrixXd*> mN;
-
-    // Misc
-    // --------------------------------------------------------------------------------------------
-    double mDetJxWeightIPxSection;
-    double mDetJacobian = 0;
-    mutable double mTotalMass = 0;
 
     //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
     void CheckElement() override;
 
-    void ExtractAllNecessaryDofValues();
+    void ExtractAllNecessaryDofValues(EvaluateDataContinuum<TDim> &data);
 
     ConstitutiveOutputMap GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const;
 
@@ -205,32 +188,38 @@ protected:
 
 
 
-    virtual void CalculateNMatrixBMatrixDetJacobian(int rTheIP);
+    virtual void CalculateNMatrixBMatrixDetJacobian(EvaluateDataContinuum<TDim>& data, int rTheIP) const;
 
 
     //! @brief Turns rDerivativeShapeFunctions into the B-Matrix for the displacements
     //! @remark: (N0,x & N0,y \\ ...)   --> (N0,x & 0 \\ 0 & N0,y \\ N0,y & N0,x)
     void BlowToBMatrixEngineeringStrain(Eigen::MatrixXd& rDerivativeShapeFunctions) const;
 
-    void CalculateConstitutiveInputs(ConstitutiveInputMap& rConstitutiveInput);
+    void CalculateConstitutiveInputs(ConstitutiveInputMap& rConstitutiveInput, EvaluateDataContinuum<TDim>& rData);
 
     void CalculateElementOutputs(
-            std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput, int rTheIP,
-            const ConstitutiveInputMap& constitutiveInputMap,
-            const ConstitutiveOutputMap& constitutiveOutputMap) const;
+            std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
+            EvaluateDataContinuum<TDim>& rData, int rTheIP,
+            const ConstitutiveInputMap& constitutiveInput,
+            const ConstitutiveOutputMap& constitutiveOutput) const;
 
-    virtual void CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient, int rTheIP,
-            const ConstitutiveInputMap& constitutiveInputMap,
-            const ConstitutiveOutputMap& constitutiveOutputMap) const;
-    virtual void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, int rTheIP,
-            const ConstitutiveOutputMap& constitutiveOutputMap) const;
-    virtual void CalculateElementOutputHessian1(BlockFullMatrix<double>& rHessian1, int rTheIP,
-            const ConstitutiveOutputMap& constitutiveOutputMap) const;
-    virtual void CalculateElementOutputHessian2(BlockFullMatrix<double>& rHessian2, int rTheIP) const;
-    virtual void CalculateElementOutputIpData(ElementOutputIpData& rIpData, int rTheIP,
-            const ConstitutiveOutputMap& constitutiveOutputMap) const;
+    virtual void CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient,
+            EvaluateDataContinuum<TDim>& rData, int rTheIP,
+            const ConstitutiveInputMap& constitutiveInput,
+            const ConstitutiveOutputMap& constitutiveOutput) const;
+    virtual void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0,
+            EvaluateDataContinuum<TDim>& rData, int rTheIP,
+            const ConstitutiveOutputMap& constitutiveOutput) const;
+    virtual void CalculateElementOutputHessian1(BlockFullMatrix<double>& rHessian1,
+            EvaluateDataContinuum<TDim>& rData, int rTheIP,
+            const ConstitutiveOutputMap& constitutiveOutput) const;
+    virtual void CalculateElementOutputHessian2(BlockFullMatrix<double>& rHessian2,
+            EvaluateDataContinuum<TDim>& rData, int rTheIP) const;
+    virtual void CalculateElementOutputIpData(ElementOutputIpData& rIpData,
+            EvaluateDataContinuum<TDim>& rData, int rTheIP,
+            const ConstitutiveOutputMap& constitutiveOutput) const;
 
-    virtual double CalculateDetJxWeightIPxSection(int rTheIP) const;
+    virtual double CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const;
 
 
 #ifdef ENABLE_SERIALIZATION
@@ -258,3 +247,4 @@ private:
 };
 
 } /* namespace NuTo */
+

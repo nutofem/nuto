@@ -2,6 +2,7 @@
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include "nuto/mechanics/constitutive/laws/PhaseField.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/elements/EvaluateDataContinuum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataHistoryVariableScalar.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
