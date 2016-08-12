@@ -2,6 +2,7 @@
 #include "nuto/mechanics/MechanicsException.h"
 
 #include "nuto/mechanics/constitutive/laws/AdditiveInputExplicit.h"
+#include "nuto/mechanics/constitutive/laws/AdditiveInputImplicit.h"
 #include "nuto/mechanics/constitutive/laws/ConstitutiveLawsAdditiveOutput.h"
 #include "nuto/mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "nuto/mechanics/constitutive/laws/HeatConduction.h"
@@ -55,6 +56,9 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             ConstitutiveLawPtr = new NuTo::AdditiveInputExplicit();
             break;
 
+        case NuTo::Constitutive::ADDITIVE_INPUT_IMPLICIT:
+            ConstitutiveLawPtr = new NuTo::AdditiveInputImplicit();
+            break;
         case NuTo::Constitutive::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT:
             ConstitutiveLawPtr = new NuTo::ConstitutiveLawsAdditiveOutput();
             break;

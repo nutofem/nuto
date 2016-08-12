@@ -28,6 +28,7 @@ class ConstitutiveBase
 {
     // Friend declarations needed for CheckParameters-function of ConstitutiveLawsAdditiveOutput
     friend class AdditiveInputExplicit;
+    friend class AdditiveInputImplicit;
     friend class ConstitutiveLawsAdditiveOutput;
 
 #ifdef ENABLE_SERIALIZATION

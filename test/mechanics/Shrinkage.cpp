@@ -1234,7 +1234,7 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
     CheckMoistureTransportResults<TDim>(S,
                                         rN,
                                         rL);
-//    CheckMechanicsResults<TDim>(S);
+    /*CheckMechanicsResults<TDim>(S)*/;
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

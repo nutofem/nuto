@@ -48,7 +48,7 @@ public:
 
     void SetDofTypes(const std::set<Node::eDof>& rDofTypes)
     {
-        mDofTypes = rDofTypes;
+            mDofTypes = rDofTypes;
     }
 
     bool HasInteractingConstraints() const

@@ -168,7 +168,8 @@ public:
                              int rInterpolationType,
                              std::array<int,3> rNumElements,
                              double rRadius,
-                             double rHeight);
+                             double rHeight,
+                             std::array<double,2> rDensitiyFactor = {1.0,1.0});
 
 };
 

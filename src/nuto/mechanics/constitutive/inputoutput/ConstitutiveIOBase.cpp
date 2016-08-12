@@ -56,6 +56,8 @@ std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitu
             return std::make_unique<ConstitutiveVector<TDim>>();
         // vectors voigtdim
         case D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN:
+        case D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY:
+        case D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION:
         case D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN:
         case D_ENGINEERING_STRESS_D_PHASE_FIELD:
         case D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
@@ -192,6 +194,57 @@ void NuTo::ConstitutiveIOBase::AssertIsScalar(Constitutive::Output::eOutput rOut
 }
 
 
+namespace NuTo
+{
+    template<int TDim>
+    EngineeringStrain<TDim>& ConstitutiveIOBase::AsEngineeringStrain()
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "invalid diemnsion");
+    }
+
+    template<>
+    EngineeringStrain<1>& ConstitutiveIOBase::AsEngineeringStrain<1>()
+    {
+        return AsEngineeringStrain1D();
+    }
+
+    template<>
+    EngineeringStrain<2>& ConstitutiveIOBase::AsEngineeringStrain<2>()
+    {
+        return AsEngineeringStrain2D();
+    }
+
+    template<>
+    EngineeringStrain<3>& ConstitutiveIOBase::AsEngineeringStrain<3>()
+    {
+        return AsEngineeringStrain3D();
+    }
+
+
+    template<int TDim>
+    const EngineeringStrain<TDim>& ConstitutiveIOBase::AsEngineeringStrain() const
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "invalid diemnsion");
+    }
+
+    template<>
+    const EngineeringStrain<1>& ConstitutiveIOBase::AsEngineeringStrain<1>() const
+    {
+        return AsEngineeringStrain1D();
+    }
+
+    template<>
+    const EngineeringStrain<2>& ConstitutiveIOBase::AsEngineeringStrain<2>() const
+    {
+        return AsEngineeringStrain2D();
+    }
+
+    template<>
+    const EngineeringStrain<3>& ConstitutiveIOBase::AsEngineeringStrain<3>() const
+    {
+        return AsEngineeringStrain3D();
+    }
+}
 
 
 #ifdef ENABLE_SERIALIZATION

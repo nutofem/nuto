@@ -13,6 +13,7 @@ namespace Constitutive
 enum eConstitutiveType
 {
     ADDITIVE_INPUT_EXPLICIT,                                //!< container for multiple constitutive laws linked by a shared input
+    ADDITIVE_INPUT_IMPLICIT,                                //!< container for multiple constitutive laws linked by a shared input
     CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT,                      //!< container for multiple constitutive laws linked by addition of their outputs
     DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS,             //!< viscoplastic damage model
     DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS,   //!< viscoplastic damage model with hardening

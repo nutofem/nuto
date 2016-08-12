@@ -893,6 +893,178 @@ void AdditiveOutputTest(std::array<int,TDim> rN,
 
 
 
+
+
+
+
+
+template<int TDim>
+void AdditiveInputImplicitTest(std::array<int,TDim> rN,
+                               std::array<double,TDim> rL,
+                               std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> rDofIPTMap,
+                               bool rStaggered = false)
+{
+
+
+    std::string testName = std::string("ConstitutiveLawsAdditiveInputImplicit") + std::to_string(TDim) +"D";
+    if(rStaggered)
+        testName += "_staggered";
+    std::string resultDir = std::string("./MultipleConstitutiveLaws_") + testName;
+
+    std::cout << std::endl << "--------------------------------------------------------------------------"
+              << std::endl << "Start test: "<< testName
+              << std::endl << "--------------------------------------------------------------------------" << std::endl;
+
+    // Allocate neccessary stuff
+    NuTo::Structure S(TDim);
+    NuTo::NewmarkDirect TI(&S);
+    int CL_LE1_ID   = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
+    int CL_LE2_ID   = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
+    int CL_AII_ID   = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::ADDITIVE_INPUT_IMPLICIT);
+
+
+    NuTo::ConstitutiveBase* CL_LE1_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LE1_ID);
+    NuTo::ConstitutiveBase* CL_LE2_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LE2_ID);
+    NuTo::ConstitutiveBase* CL_AII_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_AII_ID);
+
+    CL_AII_Ptr->AddConstitutiveLaw(CL_LE1_Ptr);
+    CL_AII_Ptr->AddConstitutiveLaw(CL_LE2_Ptr);
+
+    MechanicsControl MeCtrl1(S,*CL_LE1_Ptr);
+    MechanicsControl MeCtrl2(S,*CL_LE2_Ptr);
+    MeCtrl1.mYoungsModulus = 30e9;
+    MeCtrl2.mYoungsModulus = 30e9;
+    MeCtrl1.SetParametersConstitutiveLaw();
+    MeCtrl2.SetParametersConstitutiveLaw();
+
+    TimeControl tCtrl;
+    tCtrl.t_final = 293.0 * 24.0 * 60.0 * 60.0;
+    tCtrl.t_write = tCtrl.t_final;
+    tCtrl.delta_t = tCtrl.t_final / 5.0;
+
+    SetupStructure(S,testName);
+    int SEC = SetupSection<TDim>(S);
+    int IPT = SetupInterpolationType<TDim>(S,rDofIPTMap);
+
+    SetupMesh<TDim>(S,
+                    SEC,
+                    CL_AII_ID,
+                    IPT,
+                    rN,
+                    rL);
+
+
+    S.ElementTotalConvertToInterpolationType(); //old used values 1.0e-12,0.001
+
+
+    auto lambdaGetNodesLeftSide = [](NuTo::NodeBase* rNodePtr) -> bool
+                                {
+                                    if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)
+                                        return false;
+                                    double Tol = 1.e-6;
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
+                                    {
+                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+                                        if (x >= 0.0   - Tol   && x <= 0.0   + Tol)
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                };  // lambdaGetNodesLeftSide
+
+
+    auto lambdaGetNodesRightSide = [&rL](NuTo::NodeBase* rNodePtr) -> bool
+                                {
+                                    if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)
+                                        return false;
+                                    double Tol = 1.e-6;
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
+                                    {
+                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+                                        if (x >= rL[0]   - Tol   && x <= rL[0]   + Tol)
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                };  // lambdaGetNodesLeftSide
+
+
+    auto lambdaGetNodeLeftBottom = [](NuTo::NodeBase* rNodePtr) -> bool
+                                {
+                                    if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)
+                                        return false;
+                                    double Tol = 1.e-6;
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
+                                    {
+                                        double x=0.0,
+                                               y=0.0,
+                                               z=0.0;
+                                        x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+                                        if(TDim>1)
+                                            y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
+                                        if(TDim>2)
+                                            z = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[2];
+
+                                        if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
+                                            y >= 0.0   - Tol   && y <= 0.0   + Tol &&
+                                            z >= 0.0   - Tol   && z <= 0.0   + Tol )
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                };  // lambdaGetNodeLeftBottom
+
+
+
+
+    auto lambdaDisplacementRightSide = [tCtrl,rL](double rTime)->double
+                              {
+                                    return -0.1 * rL[0] * rTime / tCtrl.t_final;
+                              }; // lambdaDisplacementRightSide
+
+
+
+    MeCtrl1.AddConstraint<TDim>(TI,
+                               lambdaGetNodesLeftSide,
+                               0);
+    if(TDim>1)
+        MeCtrl1.AddConstraint<TDim>(TI,
+                                   lambdaGetNodeLeftBottom,
+                                   1);
+    if(TDim>2)
+        MeCtrl1.AddConstraint<TDim>(TI,
+                                   lambdaGetNodeLeftBottom,
+                                   2);
+
+    MeCtrl1.AddTimeDependentConstraint<TDim>(TI,
+                                            lambdaGetNodesRightSide,
+                                            lambdaDisplacementRightSide,
+                                            0);
+
+    S.NodeBuildGlobalDofs(); //<--- possible memory leak!!! (Valgrind!!!)
+
+    SetupMultiProcessor(S);
+
+#ifdef ENABLE_VISUALIZE
+        int visGrp = S.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        S.GroupAddElementsTotal(visGrp);
+        S.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::DISPLACEMENTS);
+        S.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS);
+#endif // ENABLE_VISUALIZE
+
+    SetupTimeIntegration(TI,
+                         tCtrl,
+                         resultDir,
+                         rStaggered);
+    TI.Solve(tCtrl.t_final);
+
+}
+
+
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //  Main
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -905,30 +1077,50 @@ int main()
     dofIPTMap[NuTo::Node::eDof::RELATIVEHUMIDITY]       = NuTo::Interpolation::EQUIDISTANT1;
     dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::EQUIDISTANT1;
 
-    AdditiveOutputTest<1>({16},
-                          {0.16},
-                          dofIPTMap);
+//    AdditiveOutputTest<1>({16},
+//                          {0.16},
+//                          dofIPTMap);
 
-    AdditiveOutputTest<2>({16,2},
-                          {0.16,0.02},
-                          dofIPTMap);
+//    AdditiveOutputTest<2>({16,2},
+//                          {0.16,0.02},
+//                          dofIPTMap);
 
-    AdditiveOutputTest<3>({16,2,2},
-                          {0.16,0.02,0.02},
-                          dofIPTMap);
+//    AdditiveOutputTest<3>({16,2,2},
+//                          {0.16,0.02,0.02},
+//                          dofIPTMap);
 
-    AdditiveOutputTest<1>({16},
-                          {0.16},
-                          dofIPTMap,
-                          true);
+//    AdditiveOutputTest<1>({16},
+//                          {0.16},
+//                          dofIPTMap,
+//                          true);
 
-    AdditiveOutputTest<2>({16,2},
-                          {0.16,0.02},
-                          dofIPTMap,
-                          true);
+//    AdditiveOutputTest<2>({16,2},
+//                          {0.16,0.02},
+//                          dofIPTMap,
+//                          true);
 
-    AdditiveOutputTest<3>({16,2,2},
-                          {0.16,0.02,0.02},
-                          dofIPTMap,
-                          true);
+//    AdditiveOutputTest<3>({16,2,2},
+//                          {0.16,0.02,0.02},
+//                          dofIPTMap,
+//                          true);
+
+
+// Solver (MUMPS / PARDISO aren't thread save! Find other solution in constitutive law to solve local system)
+#ifndef _OPENMP
+    dofIPTMap.clear();
+    dofIPTMap[NuTo::Node::eDof::COORDINATES]            = NuTo::Interpolation::EQUIDISTANT1;
+    dofIPTMap[NuTo::Node::eDof::DISPLACEMENTS]          = NuTo::Interpolation::EQUIDISTANT1;
+
+//    AdditiveInputImplicitTest<1>({16},
+//                                 {0.16},
+//                                 dofIPTMap);
+
+    AdditiveInputImplicitTest<2>({16,2},
+                                 {0.16,0.02},
+                                 dofIPTMap);
+
+//    AdditiveInputImplicitTest<3>({16,2,2},
+//                                 {0.16,0.02,0.02},
+//                                 dofIPTMap);
+#endif
 }

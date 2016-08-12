@@ -6,6 +6,7 @@ constitutive/inputoutput/EngineeringStrain.cpp
 constitutive/inputoutput/EngineeringStress.cpp
 constitutive/inputoutput/EquivalentStrain.cpp
 constitutive/laws/AdditiveInputExplicit.cpp
+constitutive/laws/AdditiveInputImplicit.cpp
 constitutive/laws/ConstitutiveLawsAdditiveOutput.cpp
 constitutive/laws/EngineeringStressHelper.cpp
 constitutive/laws/FibreMatrixBondStressSlip.cpp

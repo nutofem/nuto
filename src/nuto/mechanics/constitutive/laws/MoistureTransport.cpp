@@ -852,60 +852,60 @@ NuTo::ConstitutiveInputMap NuTo::MoistureTransport::GetConstitutiveInputs(  cons
         // Internal Gradient
         // ----------------------------------------------------------------------------------------
         case NuTo::Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_B:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT] = nullptr;
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_N:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY];
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_DT1];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_DT1];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_DT1] = nullptr;
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_DT1] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_B:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT];
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_N:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_DT1];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_DT1] = nullptr;
             break;
 
 
         // Hessian 0
         // ----------------------------------------------------------------------------------------
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_BB_H0:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_NN_H0:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY];
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_DT1];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_DT1] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_BN_H0:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT] = nullptr;
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_NN_H0:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_DT1];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_DT1] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_RH_NN_H0:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BB_H0:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BN_H0:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT];
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_NN_H0:
@@ -916,11 +916,11 @@ NuTo::ConstitutiveInputMap NuTo::MoistureTransport::GetConstitutiveInputs(  cons
         // ----------------------------------------------------------------------------------------
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_NN_H1:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_NN_H1:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_NN_H1:
@@ -930,11 +930,11 @@ NuTo::ConstitutiveInputMap NuTo::MoistureTransport::GetConstitutiveInputs(  cons
         // ----------------------------------------------------------------------------------------
 
         case NuTo::Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0:

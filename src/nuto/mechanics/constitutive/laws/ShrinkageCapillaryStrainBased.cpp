@@ -137,6 +137,7 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapill
 
             Eigen::Matrix<double, ConstitutiveIOBase::GetVoigtDim(TDim), 1>&  engineeringStrain = static_cast<ConstitutiveVector<ConstitutiveIOBase::GetVoigtDim(TDim)>*>(itOutput.second.get())->AsVector();
             //VHIRTHAMTODO --- how to handle atmospheric pressure?
+            //VHIRTHAMTODO --- IMPORTANT: Check if the equation needs to be devided through porosity, because in the equation S_w (pore water volume fraction) is used
             double capillaryStrain    = (//mAtmosphericPressure
                                          - waterVolumeFraction
                                          * NuTo::SI::DensityLiquidWater(mTemperature) * NuTo::SI::IdealGasConstant * mTemperature / NuTo::SI::MolarMassWater
@@ -176,6 +177,7 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapill
 
         case NuTo::Constitutive::Output::D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY:
         {
+            itOutput.second->AssertIsVector<ConstitutiveIOBase::GetVoigtDim(TDim)>(itOutput.first,__PRETTY_FUNCTION__);
             assert(relativeHumidity    > std::numeric_limits<double>::min());
             assert(waterVolumeFraction > std::numeric_limits<double>::min());
 
@@ -193,6 +195,7 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapill
 
         case NuTo::Constitutive::Output::D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION:
         {
+            itOutput.second->AssertIsVector<ConstitutiveIOBase::GetVoigtDim(TDim)>(itOutput.first,__PRETTY_FUNCTION__);
             assert(relativeHumidity    > std::numeric_limits<double>::min());
 
             Eigen::Matrix<double, ConstitutiveIOBase::GetVoigtDim(TDim), 1>&  engineeringStrain_dWV = static_cast<ConstitutiveVector<ConstitutiveIOBase::GetVoigtDim(TDim)>*>(itOutput.second.get())->AsVector();

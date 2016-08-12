@@ -35,18 +35,9 @@ NuTo::Error::eError NuTo::ConstitutiveLawsAdditiveOutput::Evaluate(NuTo::Element
             {
                 singleOutput[output.first] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(output.first);
             }
-            if (TDim == 1)
-            {
-                error = mConstitutiveLaws[i]->Evaluate1D(rElement, rIp, rConstitutiveInput, singleOutput);
-            }
-            if (TDim == 2)
-            {
-                error = mConstitutiveLaws[i]->Evaluate2D(rElement, rIp, rConstitutiveInput, singleOutput);
-            }
-            if (TDim == 3)
-            {
-                error = mConstitutiveLaws[i]->Evaluate3D(rElement, rIp, rConstitutiveInput, singleOutput);
-            }
+
+           error = mConstitutiveLaws[i]->Evaluate<TDim>(rElement, rIp, rConstitutiveInput, singleOutput);
+
             for (const auto& output : singleOutput)
             {
                 if (output.second != nullptr and output.second->GetIsCalculated())
@@ -121,6 +112,11 @@ NuTo::Error::eError NuTo::ConstitutiveLawsAdditiveOutput::Evaluate(NuTo::Element
                             *static_cast<ConstitutiveMatrix<TDim, TDim>*>(singleOutput.at(output.first).get());
                         rConstitutiveOutput.at(output.first)->SetIsCalculated(true);
                         break;
+
+                    default:
+                        throw Exception(__PRETTY_FUNCTION__,
+                                        "Output is not implemented or can't be handled.");
+
                     } // switch outputs
                 } // if not nullptr and IsCalculated
             } // for each output

@@ -26,7 +26,7 @@ void NuTo::MeshGenerator::GenerateMesh1D(NuTo::Structure &rStructure,
 
     std::cout << std::endl << "Creating Elements of Mesh" << std::endl << std::endl;
 
-    boost::progress_display show_progress( rNumElements[0] * rNumElements[1]);
+//    boost::progress_display show_progress( rNumElements[0] * rNumElements[1]);
 
 
 
@@ -41,7 +41,7 @@ void NuTo::MeshGenerator::GenerateMesh1D(NuTo::Structure &rStructure,
         rStructure.ElementSetSection(elementNumber,rSection);
 
         rStructure.ElementSetConstitutiveLaw(elementNumber,rConstitutiveLaw);
-        ++show_progress;
+//        ++show_progress;
     }
 
 }
@@ -68,7 +68,7 @@ std::vector<int> NuTo::MeshGenerator::GetNodeCoordinatesLineSegmentMapped(NuTo::
 
     std::cout << std::endl << "Creating Nodes of Mesh" << std::endl << std::endl;
 
-    boost::progress_display show_progress( NodeIDs.size() );
+//    boost::progress_display show_progress( NodeIDs.size() );
 
 
     int NodeNum = 0;
@@ -84,7 +84,7 @@ std::vector<int> NuTo::MeshGenerator::GetNodeCoordinatesLineSegmentMapped(NuTo::
 
             NodeIDs[NodeNum] = rStructure.NodeCreate(Coordinates);
 
-            ++show_progress;
+//            ++show_progress;
         }
 
         return NodeIDs;
@@ -155,7 +155,7 @@ void NuTo::MeshGenerator::GenerateMesh2D(NuTo::Structure &rStructure,
 
     std::cout << std::endl << "Creating Elements of Mesh" << std::endl << std::endl;
 
-    boost::progress_display show_progress( rNumElements[0] * rNumElements[1]);
+//    boost::progress_display show_progress( rNumElements[0] * rNumElements[1]);
 
 
     for(int y_count = 0; y_count < rNumElements[1]; y_count++)
@@ -173,7 +173,7 @@ void NuTo::MeshGenerator::GenerateMesh2D(NuTo::Structure &rStructure,
             rStructure.ElementSetSection(elementNumber,rSection);
 
             rStructure.ElementSetConstitutiveLaw(elementNumber,rConstitutiveLaw);
-            ++show_progress;
+//            ++show_progress;
         }
     }
 }
@@ -203,7 +203,7 @@ std::vector<int> NuTo::MeshGenerator::GetNodeCoordinatesSquarePlaneMapped(NuTo::
 
     std::cout << std::endl << "Creating Nodes of Mesh" << std::endl << std::endl;
 
-    boost::progress_display show_progress( NodeIDs.size() );
+//    boost::progress_display show_progress( NodeIDs.size() );
 
 
     int NodeNum = 0;
@@ -222,7 +222,7 @@ std::vector<int> NuTo::MeshGenerator::GetNodeCoordinatesSquarePlaneMapped(NuTo::
 
             NodeIDs[NodeNum] = rStructure.NodeCreate(Coordinates);
 
-            ++show_progress;
+//            ++show_progress;
         }
     }
 
@@ -292,7 +292,7 @@ void NuTo::MeshGenerator::GenerateMesh3D(NuTo::Structure &rStructure,
 
     std::cout << std::endl << "Creating Elements of Mesh" << std::endl << std::endl;
 
-    boost::progress_display show_progress( rNumElements[0] * rNumElements[1] * rNumElements[2] );
+//    boost::progress_display show_progress( rNumElements[0] * rNumElements[1] * rNumElements[2] );
 
 
     for(int z_count = 0; z_count < rNumElements[2]; z_count++)
@@ -316,7 +316,7 @@ void NuTo::MeshGenerator::GenerateMesh3D(NuTo::Structure &rStructure,
                 rStructure.ElementSetSection(elementNumber,rSection);
 
                 rStructure.ElementSetConstitutiveLaw(elementNumber,rConstitutiveLaw);
-                ++show_progress;
+//                ++show_progress;
             }
         }
     }
@@ -356,7 +356,7 @@ std::vector<int> NuTo::MeshGenerator::GetNodeCoordinatesCuboidMapped(NuTo::Struc
 
     std::cout << std::endl << "Creating Nodes of Mesh" << std::endl << std::endl;
 
-    boost::progress_display show_progress( NodeIDs.size() );
+//    boost::progress_display show_progress( NodeIDs.size() );
 
 
     int NodeNum = 0;
@@ -377,7 +377,7 @@ std::vector<int> NuTo::MeshGenerator::GetNodeCoordinatesCuboidMapped(NuTo::Struc
 
                 NodeIDs[NodeNum] = rStructure.NodeCreate(Coordinates);
 
-                ++show_progress;
+//                ++show_progress;
             }
         }
     }
@@ -434,7 +434,7 @@ void NuTo::MeshGenerator::MeshCylinder(NuTo::Structure &rStructure,
                                        int rInterpolationType,
                                        std::array<int, 3> rNumElements,
                                        double rRadius,
-                                       double rHeight)
+                                       double rHeight, std::array<double, 2> rDensitiyFactor)
 {
     assert(rRadius>0.0);
     assert(rHeight>0.0);
@@ -444,10 +444,17 @@ void NuTo::MeshGenerator::MeshCylinder(NuTo::Structure &rStructure,
                                 rX = rX *2 -1;
                                 rY = rY *2 -1;
                                 rZ = rZ *2 -1;
+                                rX *= 1.+ (1.-std::abs(rX))/2.;
+                                rY *= 1.+ (1.-std::abs(rY))/2.;
+                                rZ *= 1.+ (1.-std::abs(rZ))/2.;
                                 NuTo::FullVector<double,Eigen::Dynamic> CoordVec(3);
                                 CoordVec = {{rX * sqrt(1 - (rY * rY) / 2.0 ) * rRadius / 2.0,
                                              rY * sqrt(1 - (rX * rX) / 2.0 ) * rRadius / 2.0,
                                              rZ * rHeight / 2.0}};
+//                                double radius = sqrt(CoordVec[0]*CoordVec[0] + CoordVec[1]*CoordVec[1]);
+//                                double coordCorrectionRadius = 1.0 + (rRadius/2.0 - radius) / rRadius/2.0;
+//                                CoordVec[0]*=coordCorrectionRadius;
+//                                CoordVec[1]*=coordCorrectionRadius;
                                 return CoordVec;
                             };
 

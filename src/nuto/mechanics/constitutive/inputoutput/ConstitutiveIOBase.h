@@ -111,6 +111,12 @@ public:
     #endif
     }
 
+    template<int TDim>
+    EngineeringStrain<TDim>& AsEngineeringStrain();
+
+    template<int TDim>
+    const EngineeringStrain<TDim>& AsEngineeringStrain() const;
+
     virtual const EngineeringStrain<1>& AsEngineeringStrain1D() const 
     {
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "input/output is not engineering strain.");
@@ -172,4 +178,6 @@ private:
     bool mIsCalculated = false;
 
 };
+
 } /* namespace NuTo */
+

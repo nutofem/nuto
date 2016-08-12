@@ -219,10 +219,24 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
         while (curTime < rTimeDelta)
         {
-            for(auto dof : dofStatus.GetDofTypes())
+
+
+
+
+            //! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //! LEAVE IT OR FIX IT IF YOU CAN:
+            //! If you dont make a copy of the dof set with dofStatus.GetDofTypes() and use it directly in the for loop everything seems
+            //! to work fine, but valgrind tells you otherwise. Problem is, that the DofType is changed during the function call inside
+            //! the loop which leads to reads in already freed blocks of memory
+            //! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            std::set<Node::eDof> currentDofSet = dofStatus.GetDofTypes();
+            for(const auto& dof : currentDofSet)
             {
                 mStructure->DofTypeSetIsActive(dof,true);
             }
+
+
+
 
             if (timeStep<mMinTimeStep)
                 throw MechanicsException(__PRETTY_FUNCTION__, "time step is smaller than minimum - no convergence is obtained.");
@@ -237,9 +251,10 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 
             deltaBRHS = UpdateAndGetConstraintRHS(curTime) - bRHS;
 
-
+            unsigned int staggeredStepNumber = 0;    // at the moment needed to do the postprocessing after the last step and not after every step of a staggered solution.
             for (const auto& activeDofs : mStepActiveDofs)
             {
+                ++staggeredStepNumber;
                 mStructure->DofTypeSetIsActive(activeDofs);
 
 
@@ -372,8 +387,11 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                     mStructure->GetLogger() << "Convergence after " << iteration << " iterations at time " << mTime << " (timestep " << timeStep << ").\n";
                     mStructure->GetLogger() << "Residual: \t" << normResidual << "\n";
                     //perform Postprocessing
-                    CalculateResidualKForPostprocessing(prevResidual, hessian2, dof_dt1, dof_dt2);
-                    PostProcess(prevResidual);
+                    if(!(staggeredStepNumber<mStepActiveDofs.size()))
+                    {
+                        CalculateResidualKForPostprocessing(prevResidual, hessian2, dof_dt1, dof_dt2);
+                        PostProcess(prevResidual);
+                    }
 
 
                     //eventually increase next time step
