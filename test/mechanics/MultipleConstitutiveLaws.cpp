@@ -1077,32 +1077,32 @@ int main()
     dofIPTMap[NuTo::Node::eDof::RELATIVEHUMIDITY]       = NuTo::Interpolation::EQUIDISTANT1;
     dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::EQUIDISTANT1;
 
-//    AdditiveOutputTest<1>({16},
-//                          {0.16},
-//                          dofIPTMap);
+    AdditiveOutputTest<1>({16},
+                          {0.16},
+                          dofIPTMap);
 
-//    AdditiveOutputTest<2>({16,2},
-//                          {0.16,0.02},
-//                          dofIPTMap);
+    AdditiveOutputTest<2>({16,2},
+                          {0.16,0.02},
+                          dofIPTMap);
 
-//    AdditiveOutputTest<3>({16,2,2},
-//                          {0.16,0.02,0.02},
-//                          dofIPTMap);
+    AdditiveOutputTest<3>({16,2,2},
+                          {0.16,0.02,0.02},
+                          dofIPTMap);
 
-//    AdditiveOutputTest<1>({16},
-//                          {0.16},
-//                          dofIPTMap,
-//                          true);
+    AdditiveOutputTest<1>({16},
+                          {0.16},
+                          dofIPTMap,
+                          true);
 
-//    AdditiveOutputTest<2>({16,2},
-//                          {0.16,0.02},
-//                          dofIPTMap,
-//                          true);
+    AdditiveOutputTest<2>({16,2},
+                          {0.16,0.02},
+                          dofIPTMap,
+                          true);
 
-//    AdditiveOutputTest<3>({16,2,2},
-//                          {0.16,0.02,0.02},
-//                          dofIPTMap,
-//                          true);
+    AdditiveOutputTest<3>({16,2,2},
+                          {0.16,0.02,0.02},
+                          dofIPTMap,
+                          true);
 
 
 // Solver (MUMPS / PARDISO aren't thread save! Find other solution in constitutive law to solve local system)
@@ -1111,16 +1111,16 @@ int main()
     dofIPTMap[NuTo::Node::eDof::COORDINATES]            = NuTo::Interpolation::EQUIDISTANT1;
     dofIPTMap[NuTo::Node::eDof::DISPLACEMENTS]          = NuTo::Interpolation::EQUIDISTANT1;
 
-//    AdditiveInputImplicitTest<1>({16},
-//                                 {0.16},
-//                                 dofIPTMap);
+    AdditiveInputImplicitTest<1>({16},
+                                 {0.16},
+                                 dofIPTMap);
 
     AdditiveInputImplicitTest<2>({16,2},
                                  {0.16,0.02},
                                  dofIPTMap);
 
-//    AdditiveInputImplicitTest<3>({16,2,2},
-//                                 {0.16,0.02,0.02},
-//                                 dofIPTMap);
+    AdditiveInputImplicitTest<3>({16,2,2},
+                                 {0.16,0.02,0.02},
+                                 dofIPTMap);
 #endif
 }
