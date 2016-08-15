@@ -127,7 +127,7 @@ NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
         case NuTo::Constitutive::Output::HEAT_FLUX:
         {
             Eigen::Matrix<double, TDim, 1>& heatFlux = *static_cast<ConstitutiveVector<TDim>*>(itOutput.second.get());
-            heatFlux = mK * eye * inputData.mTemperatureGradient;
+            heatFlux = -mK * eye * inputData.mTemperatureGradient;
             break;
         }
         case NuTo::Constitutive::Output::HEAT_CHANGE:

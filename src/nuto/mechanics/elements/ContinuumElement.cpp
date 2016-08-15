@@ -766,8 +766,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(
         {
             const auto& heatFlux = *static_cast<ConstitutiveVector<TDim>*>(constitutiveOutput.at(Constitutive::Output::HEAT_FLUX).get());
             const auto& heatChange = *static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::Output::HEAT_CHANGE).get());
-            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose() * heatFlux +
-                                                                         rData.mN.at(dofRow)->transpose() * heatChange);
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection * (rData.mN.at(dofRow)->transpose() * heatChange - rData.mB.at(dofRow).transpose() * heatFlux);
             break;
         }
         case Node::WATERVOLUMEFRACTION:
