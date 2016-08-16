@@ -20,7 +20,7 @@ NuTo::ConstitutiveIOMap<IOEnum>::ConstitutiveIOMap(const ConstitutiveIOMap<IOEnu
 }
 
 template<typename IOEnum>
-void NuTo::ConstitutiveIOMap<IOEnum>::Merge(const ConstitutiveIOMap<IOEnum>& other)
+NuTo::ConstitutiveIOMap<IOEnum>& NuTo::ConstitutiveIOMap<IOEnum>::Merge(const ConstitutiveIOMap<IOEnum>& other)
 {
     for(auto& it : other)
     {
@@ -42,7 +42,7 @@ void NuTo::ConstitutiveIOMap<IOEnum>::Merge(const ConstitutiveIOMap<IOEnum>& oth
             this->insert(std::make_pair(it.first, it.second->clone()));
         }
     }
-
+    return *this;
 }
 
 template class NuTo::ConstitutiveIOMap<NuTo::Constitutive::Input::eInput>;

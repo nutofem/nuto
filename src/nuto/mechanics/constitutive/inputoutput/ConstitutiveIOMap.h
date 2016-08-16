@@ -12,7 +12,7 @@ class ConstitutiveIOMap : public std::map<IOEnum, std::unique_ptr<ConstitutiveIO
 public:
     ConstitutiveIOMap() = default;
     ConstitutiveIOMap(const ConstitutiveIOMap& other);
-    void Merge(const ConstitutiveIOMap& other);
+    NuTo::ConstitutiveIOMap<IOEnum>& Merge(const ConstitutiveIOMap& other);
 };
 
 using ConstitutiveInputMap = ConstitutiveIOMap<Constitutive::Input::eInput>;
