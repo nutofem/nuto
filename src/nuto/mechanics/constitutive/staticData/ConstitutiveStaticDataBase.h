@@ -35,6 +35,8 @@ class ConstitutiveStaticDataDamageViscoPlasticity3DFatigue;
 class ConstitutiveStaticDataMoistureTransport;
 class ConstitutiveStaticDataMultipleConstitutiveLaws;
 class ConstitutiveStaticDataBondStressSlip;
+class ConstitutiveStaticDataElasticEnergyDensity;
+class ConstitutiveStaticDataHistoryVariableScalar;
 class ElementBase;
 class VisualizeUnstructuredGrid;
 class VisualizeComponentBase;
@@ -88,6 +90,12 @@ public:
 
     //!@ brief reinterpret as gradient damage 1d static data
     virtual const ConstitutiveStaticDataGradientDamage* AsGradientDamage() const;
+
+    //!@ brief reinterpret as elastic energy density static data
+    virtual ConstitutiveStaticDataElasticEnergyDensity* AsElasticEnergyDensity();
+
+    //!@ brief reinterpret as elastic energy density static data
+    virtual const ConstitutiveStaticDataElasticEnergyDensity* AsElasticEnergyDensity() const;
 
     //!@ brief reinterpret as gradient damage 1d static data with fatigue
     virtual ConstitutiveStaticDataGradientDamage1DFatigue* AsGradientDamage1DFatigue();
@@ -168,6 +176,12 @@ public:
     //!@ brief reinterpret as multi physics
     virtual const ConstitutiveStaticDataMultipleConstitutiveLaws* AsMultipleConstitutiveLaws()const;
 
+    //!@ brief reinterpret as history variable
+    virtual ConstitutiveStaticDataHistoryVariableScalar* AsHistoryVariableScalar();
+
+    //!@ brief reinterpret as history variable
+    virtual const ConstitutiveStaticDataHistoryVariableScalar* AsHistoryVariableScalar()const;
+
 #ifdef ENABLE_VISUALIZE
     //Visualize for all integration points the fine scale structure
     virtual void VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
@@ -178,4 +192,3 @@ public:
 };
 
 }
-

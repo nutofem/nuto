@@ -17,11 +17,11 @@ void NuTo::ConstraintLinearNodeWaterVolumeFraction::AddToConstraintMatrix(int& c
                                    NuTo::SparseMatrix<double>& rConstraintMatrix) const
 {
     // add constraint to constrain matrix
-    if (mNode->GetNumWaterVolumeFraction()!=1)
+    if (mNode->GetNum(Node::WATERVOLUMEFRACTION)!=1)
     {
         throw MechanicsException("[NuTo::ConstraintLinearNodeWaterVolumeFraction::AddToConstraintMatrix] Node does not have a water volume fraction component or has more than one water volume fraction component.");
     }
-    rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDofWaterVolumeFraction(), 1);
+    rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDof(Node::WATERVOLUMEFRACTION), 1);
 
     // increase constraint equation number
     curConstraintEquation++;
@@ -49,7 +49,7 @@ double NuTo::ConstraintLinearNodeWaterVolumeFraction::GetRHS() const
 void NuTo::ConstraintLinearNodeWaterVolumeFraction::GetRHS(int& rCurConstraintEquation, NuTo::FullVector<double,Eigen::Dynamic>& rRHS) const
 {
     // add constraint to constrain matrix
-    if (mNode->GetNumWaterVolumeFraction()!=1)
+    if (mNode->GetNum(Node::WATERVOLUMEFRACTION)!=1)
     {
         throw MechanicsException("[NuTo::ConstraintLinearNodeWaterVolumeFraction::GetRHS] Node does not have water volume fraction or has more than one water volume fraction component.");
     }

@@ -46,7 +46,7 @@ const Eigen::MatrixXd NuTo::Element1DSpring::ExtractNodeValues(int rTimeDerivati
         switch (rDofType)
         {
         case Node::COORDINATES:
-            globalNodeValues.block(0, iNode, numDofsPerNode, 1) = node->GetCoordinates();
+            globalNodeValues.block(0, iNode, numDofsPerNode, 1) = node->Get(Node::COORDINATES);
             break;
 
         case Node::DISPLACEMENTS:
@@ -256,17 +256,17 @@ const Eigen::VectorXi NuTo::Element1DSpring::CalculateGlobalRowDofs() const
                 switch (GetStructure()->GetDimension())
                 {
                 case 1:
-                    globalRowDofs[index++] = nodePtr->GetDofDisplacement(0);
+                    globalRowDofs[index++] = nodePtr->GetDof(Node::DISPLACEMENTS, 0);
                     break;
                 case 2:
-                    globalRowDofs[index++] = nodePtr->GetDofDisplacement(0);
-                    globalRowDofs[index++] = nodePtr->GetDofDisplacement(1);
+                    globalRowDofs[index++] = nodePtr->GetDof(Node::DISPLACEMENTS, 0);
+                    globalRowDofs[index++] = nodePtr->GetDof(Node::DISPLACEMENTS, 1);
                     break;
 
                 case 3:
-                    globalRowDofs[index++] = nodePtr->GetDofDisplacement(0);
-                    globalRowDofs[index++] = nodePtr->GetDofDisplacement(1);
-                    globalRowDofs[index++] = nodePtr->GetDofDisplacement(2);
+                    globalRowDofs[index++] = nodePtr->GetDof(Node::DISPLACEMENTS, 0);
+                    globalRowDofs[index++] = nodePtr->GetDof(Node::DISPLACEMENTS, 1);
+                    globalRowDofs[index++] = nodePtr->GetDof(Node::DISPLACEMENTS, 2);
                     break;
                 default:
                     throw MechanicsException("[NuTo::Element1DSpring::CalculateGlobalRowDofs] Global dimension must be either 1, 2, or 3");

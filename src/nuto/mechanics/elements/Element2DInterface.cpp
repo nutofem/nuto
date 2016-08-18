@@ -30,7 +30,7 @@ NuTo::Element2DInterface::Element2DInterface(const NuTo::StructureBase* rStructu
     mTransformationMatrix = CalculateTransformationMatrix(GetStructure()->GetDimension(), mNodes.size());
 }
 
-NuTo::ConstitutiveOutputMap NuTo::Element2DInterface::GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase> >& rElementOutput, EvaluateData& rData)
+NuTo::ConstitutiveOutputMap NuTo::Element2DInterface::GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase> >& rElementOutput)
 {
 
 //    const unsigned globalDimension = GetStructure()->GetDimension(); // --- unused so far
@@ -42,12 +42,12 @@ NuTo::ConstitutiveOutputMap NuTo::Element2DInterface::GetConstitutiveOutputMap(s
         {
         case Element::INTERNAL_GRADIENT:
         {
-            FillConstitutiveOutputMapInternalGradient(constitutiveOutput, it.second->GetBlockFullVectorDouble(), rData);
+            FillConstitutiveOutputMapInternalGradient(constitutiveOutput, it.second->GetBlockFullVectorDouble());
         }
             break;
         case Element::HESSIAN_0_TIME_DERIVATIVE:
         {
-            FillConstitutiveOutputMapHessian0(constitutiveOutput, it.second->GetBlockFullMatrixDouble(), rData);
+            FillConstitutiveOutputMapHessian0(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
 
         }
             break;
@@ -63,7 +63,7 @@ NuTo::ConstitutiveOutputMap NuTo::Element2DInterface::GetConstitutiveOutputMap(s
             break;
         case Element::IP_DATA:
         {
-            FillConstitutiveOutputMapIpData(constitutiveOutput, it.second->GetIpData(), rData);
+            FillConstitutiveOutputMapIpData(constitutiveOutput, it.second->GetIpData());
         }
             break;
         case Element::GLOBAL_ROW_DOF:
@@ -80,19 +80,12 @@ NuTo::ConstitutiveOutputMap NuTo::Element2DInterface::GetConstitutiveOutputMap(s
     return constitutiveOutput;
 }
 
-NuTo::ConstitutiveInputMap NuTo::Element2DInterface::GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput, EvaluateData& rData) const
+NuTo::ConstitutiveInputMap NuTo::Element2DInterface::GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     ConstitutiveInputMap constitutiveInputMap = GetConstitutiveLaw(0)->GetConstitutiveInputs(rConstitutiveOutput, *GetInterpolationType());
     for (auto& itInput : constitutiveInputMap)
     {
-        switch (itInput.first)
-        {
-        case Constitutive::Input::INTERFACE_SLIP:
-            itInput.second = &(rData.mSlip);
-            break;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive input " + Constitutive::InputToString(itInput.first) + " cannot be calculated by this element type.");
-        }
+        itInput.second = ConstitutiveIOBase::makeConstitutiveIO<2>(itInput.first);
     }
     return constitutiveInputMap;
 }
@@ -114,10 +107,9 @@ NuTo::Error::eError NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMa
     }
 
 
-    auto constitutiveOutput = GetConstitutiveOutputMap(rElementOutput, data);
-    auto constitutiveInput = GetConstitutiveInputMap(constitutiveOutput, data);
-
-    constitutiveInput.insert(rInput.begin(), rInput.end());
+    auto constitutiveOutput = GetConstitutiveOutputMap(rElementOutput);
+    auto constitutiveInput = GetConstitutiveInputMap(constitutiveOutput);
+    constitutiveInput.Merge(rInput);
 
     for (int theIP = 0; theIP < GetNumIntegrationPoints(); theIP++)
     {
@@ -167,7 +159,7 @@ NuTo::Error::eError NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMa
             e.AddMessage(__PRETTY_FUNCTION__, "error evaluating the constitutive model.");
             throw e;
         }
-        CalculateElementOutputs(rElementOutput, data, theIP);
+        CalculateElementOutputs(rElementOutput, data, theIP, constitutiveOutput);
     }
     return Error::SUCCESSFUL;
 
@@ -270,7 +262,7 @@ void NuTo::Element2DInterface::CalculateGlobalRowDofs(BlockFullVector<int>& rGlo
              {
                  const NodeBase* nodePtr = mNodes[interpolationType.GetNodeIndex(iNodeDof)];
                  for (unsigned int iDof = 0; iDof < globalDimension; ++iDof)
-                     dofWiseGlobalRowDofs[globalDimension * iNodeDof + iDof] = nodePtr->GetDofDisplacement(iDof);
+                     dofWiseGlobalRowDofs[globalDimension * iNodeDof + iDof] = nodePtr->GetDof(Node::DISPLACEMENTS, iDof);
              }
 
          }
@@ -283,15 +275,15 @@ void NuTo::Element2DInterface::CalculateGlobalRowDofs(BlockFullVector<int>& rGlo
 
 void NuTo::Element2DInterface::CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput, EvaluateData& rData)
 {
-    for (auto it : rConstitutiveInput)
+    for (auto& it : rConstitutiveInput)
      {
          switch (it.first)
         {
         case Constitutive::Input::INTERFACE_SLIP:
         {
             Eigen::MatrixXd rotationMatrix = CalculateRotationMatrix();
-            rData.mSlip.AsMatrix() = rotationMatrix * (rData.mMatrixB[Node::DISPLACEMENTS] * rData.mNodalValues[Node::DISPLACEMENTS]);
-
+            auto& slip = *static_cast<ConstitutiveMatrixXd*>(it.second.get());
+            slip.AsMatrix() = rotationMatrix * (rData.mMatrixB[Node::DISPLACEMENTS] * rData.mNodalValues[Node::DISPLACEMENTS]);
         }
             break;
         case Constitutive::Input::TIME_STEP:
@@ -364,7 +356,7 @@ Eigen::MatrixXd NuTo::Element2DInterface::CalculateTransformationMatrix(unsigned
 
 }
 
-void NuTo::Element2DInterface::CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase> >& rElementOutput, EvaluateData& rData, int rTheIP) const
+void NuTo::Element2DInterface::CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase> >& rElementOutput, EvaluateData& rData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
     rData.mDetJxWeightIPxSection = rData.mDetJacobian * mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP) * mSection->GetCircumference();
 
@@ -373,11 +365,11 @@ void NuTo::Element2DInterface::CalculateElementOutputs(std::map<Element::eOutput
             switch (it.first)
             {
             case Element::INTERNAL_GRADIENT:
-                CalculateElementOutputInternalGradient(it.second->GetBlockFullVectorDouble(), rData, rTheIP);
+                CalculateElementOutputInternalGradient(it.second->GetBlockFullVectorDouble(), rData, rTheIP, constitutiveOutputMap);
                 break;
 
             case Element::HESSIAN_0_TIME_DERIVATIVE:
-                CalculateElementOutputHessian0(it.second->GetBlockFullMatrixDouble(), rData, rTheIP);
+                CalculateElementOutputHessian0(it.second->GetBlockFullMatrixDouble(), rData, rTheIP, constitutiveOutputMap);
                 break;
             case Element::IP_DATA:
                 //CalculateElementOutputIpData(it.second->GetIpData(), rData, rTheIP);
@@ -397,23 +389,25 @@ void NuTo::Element2DInterface::CalculateElementOutputs(std::map<Element::eOutput
 
 }
 
-void NuTo::Element2DInterface::CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient, EvaluateData& rData, int rTheIP) const
+void NuTo::Element2DInterface::CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient, EvaluateData& rData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
         switch (dofRow)
         {
         case Node::DISPLACEMENTS:
-            rInternalGradient[dofRow] += mTransformationMatrix * rData.mDetJxWeightIPxSection *  rData.mMatrixB.at(dofRow).transpose() * rData.mBondStress;
+        {
+            const auto& bondStress = *static_cast<ConstitutiveMatrixXd*>(constitutiveOutputMap.at(NuTo::Constitutive::Output::BOND_STRESS).get());
+            rInternalGradient[dofRow] += mTransformationMatrix * rData.mDetJxWeightIPxSection *  rData.mMatrixB.at(dofRow).transpose() * bondStress;
             break;
-
+        }
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "Element output INTERNAL_GRADIENT for " + Node::DofToString(dofRow) + " not implemented.");
         }
     }
 }
 
-void NuTo::Element2DInterface::CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateData& rData, int rTheIP) const
+void NuTo::Element2DInterface::CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateData& rData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
@@ -423,9 +417,11 @@ void NuTo::Element2DInterface::CalculateElementOutputHessian0(BlockFullMatrix<do
             switch (Node::CombineDofs(dofRow, dofCol))
             {
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
-                hessian0 += mTransformationMatrix * rData.mDetJxWeightIPxSection *  rData.mMatrixB.at(dofRow).transpose() * rData.mTangentBondStressSlip * rData.mMatrixB.at(dofRow) * mTransformationMatrix.transpose();
+            {
+                const auto& tangentBondStressSlip = *static_cast<ConstitutiveMatrixXd*>(constitutiveOutputMap.at(NuTo::Constitutive::Output::INTERFACE_CONSTITUTIVE_MATRIX).get());
+                hessian0 += mTransformationMatrix * rData.mDetJxWeightIPxSection *  rData.mMatrixB.at(dofRow).transpose() * tangentBondStressSlip * rData.mMatrixB.at(dofRow) * mTransformationMatrix.transpose();
                 break;
-
+            }
             default:
                 throw MechanicsException(__PRETTY_FUNCTION__, "Element output HESSIAN_0_TIME_DERIVATIVE for "
                         "(" + Node::DofToString(dofRow) + "," + Node::DofToString(dofCol) + ") not implemented.");
@@ -459,13 +455,13 @@ Eigen::VectorXd NuTo::Element2DInterface::ExtractNodeValues(int rTimeDerivative,
         {
         case Node::COORDINATES:
         {
-            Eigen::MatrixXd tmp(node->GetCoordinates());
+            Eigen::MatrixXd tmp(node->Get(Node::COORDINATES));
 
-            nodeValues.segment(iNode * globalDimension, globalDimension) = node->GetCoordinates();
+            nodeValues.segment(iNode * globalDimension, globalDimension) = node->Get(Node::COORDINATES);
         }
             break;
         case Node::DISPLACEMENTS:
-            nodeValues.segment(iNode * globalDimension, globalDimension) = node->GetDisplacements();
+            nodeValues.segment(iNode * globalDimension, globalDimension) = node->Get(Node::DISPLACEMENTS);
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for " + Node::DofToString(rDofType));
@@ -482,7 +478,7 @@ void NuTo::Element2DInterface::CheckElement()
 {
 }
 
-void NuTo::Element2DInterface::FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullVector<double>& rInternalGradient, EvaluateData& rData) const
+void NuTo::Element2DInterface::FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullVector<double>& rInternalGradient) const
 {
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
@@ -490,7 +486,7 @@ void NuTo::Element2DInterface::FillConstitutiveOutputMapInternalGradient(Constit
         switch (dofRow)
         {
         case Node::DISPLACEMENTS:
-            rConstitutiveOutput[NuTo::Constitutive::Output::BOND_STRESS] = &(rData.mBondStress);
+            rConstitutiveOutput[NuTo::Constitutive::Output::BOND_STRESS] = ConstitutiveIOBase::makeConstitutiveIO<2>(NuTo::Constitutive::Output::BOND_STRESS);
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive output INTERNAL_GRADIENT for " + Node::DofToString(dofRow) + " not implemented.");
@@ -499,7 +495,7 @@ void NuTo::Element2DInterface::FillConstitutiveOutputMapInternalGradient(Constit
     }
 }
 
-void NuTo::Element2DInterface::FillConstitutiveOutputMapHessian0(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian0, EvaluateData& rData) const
+void NuTo::Element2DInterface::FillConstitutiveOutputMapHessian0(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian0) const
 {
 
 
@@ -514,7 +510,7 @@ void NuTo::Element2DInterface::FillConstitutiveOutputMapHessian0(ConstitutiveOut
             switch (Node::CombineDofs(dofRow, dofCol))
             {
             case Node::CombineDofs(Node::DISPLACEMENTS, Node::DISPLACEMENTS):
-                rConstitutiveOutput[NuTo::Constitutive::Output::INTERFACE_CONSTITUTIVE_MATRIX] = &(rData.mTangentBondStressSlip);
+                rConstitutiveOutput[NuTo::Constitutive::Output::INTERFACE_CONSTITUTIVE_MATRIX] = ConstitutiveIOBase::makeConstitutiveIO<2>(NuTo::Constitutive::Output::INTERFACE_CONSTITUTIVE_MATRIX);
                 break;
             default:
                 throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive output HESSIAN_0_TIME_DERIVATIVE for "
@@ -768,8 +764,8 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
 
     //calculate the element solution
     ConstitutiveInputMap input;
-    ConstitutiveCalculateStaticData calculateImplicitly(CalculateStaticData::EULER_BACKWARD);
-    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateImplicitly;
+    input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(CalculateStaticData::EULER_BACKWARD);
+
 
     Evaluate(input, elementOutput);
 
@@ -853,7 +849,7 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
 
 }
 #endif // ENABLE_VISUALIZE
-void NuTo::Element2DInterface::FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput, ElementOutputIpData& rIpData, EvaluateData& rData) const
+void NuTo::Element2DInterface::FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput, ElementOutputIpData& rIpData) const
 {
 
     for (auto& it : rIpData.GetIpDataMap()) // this reference here is _EXTREMLY_ important, since the GetIpDataMap() contains a
@@ -862,7 +858,7 @@ void NuTo::Element2DInterface::FillConstitutiveOutputMapIpData(ConstitutiveOutpu
         {
         case NuTo::IpData::BOND_STRESS:
             it.second.Resize(6, GetNumIntegrationPoints());
-            rConstitutiveOutput[NuTo::Constitutive::Output::BOND_STRESS] = &(rData.mBondStressVisualize);
+            rConstitutiveOutput[NuTo::Constitutive::Output::BOND_STRESS] = ConstitutiveIOBase::makeConstitutiveIO<2>(NuTo::Constitutive::Output::BOND_STRESS);
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "this ip data type is not implemented.");

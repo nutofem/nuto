@@ -95,8 +95,11 @@ private:
     Eigen::MatrixXd CalculateRotationMatrix();
 
 
-    void CalculateElementOutputInternalGradient(    BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<1>& rData, int rTheIP) const override;
-    void CalculateElementOutputHessian0(            BlockFullMatrix<double>& rHessian0,         EvaluateDataContinuum<1>& rData, int rTheIP) const override;
+    void CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient,
+            EvaluateDataContinuum<1>& rData, int rTheIP, const ConstitutiveInputMap& constitutiveInputMap,
+            const ConstitutiveOutputMap& constitutiveOutputMap) const override;
+    void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateDataContinuum<1>& rData,
+            int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const override;
 
     //! @brief Calculates the transformation matrix. The size of the matrix depends on the number of nodes and the global dimension of the element.
     //! @param rGlobalDimension: global dimension of the element, i.e. 2 or 3

@@ -16,6 +16,11 @@ public:
 
     virtual ~ConstitutiveVector()                               = default;
 
+    virtual std::unique_ptr<ConstitutiveIOBase> clone() override
+    {
+        return std::make_unique<ConstitutiveVector<TRows>>(*this);
+    }
+
     ConstitutiveVector& operator=(const ConstitutiveVector& )   = default;
     ConstitutiveVector& operator=(      ConstitutiveVector&&)   = default;
 

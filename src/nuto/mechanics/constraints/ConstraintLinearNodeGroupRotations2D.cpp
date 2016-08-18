@@ -38,10 +38,10 @@ void NuTo::ConstraintLinearNodeGroupRotations2D::AddToConstraintMatrix(int& curC
 {
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {
-        if (itNode->second->GetNumRotations()!=1)
+        if (itNode->second->GetNum(Node::ROTATIONS)!=1)
             throw MechanicsException("[NuTo::ConstraintLinearNodeGroupRotations2D::AddToConstraintMatrix] Node should have exactly 1 rotational dof.");
 
-        rConstraintMatrix.AddValue(curConstraintEquation,itNode->second->GetDofRotation(0),1);
+        rConstraintMatrix.AddValue(curConstraintEquation,itNode->second->GetDof(Node::ROTATIONS, 0),1);
 
         curConstraintEquation++;
     }
@@ -56,7 +56,7 @@ void NuTo::ConstraintLinearNodeGroupRotations2D::GetRHS(int& curConstraintEquati
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {
         rRHS(curConstraintEquation,0) = mRHS;
-        if (itNode->second->GetNumRotations()!=1)
+        if (itNode->second->GetNum(Node::ROTATIONS)!=1)
             throw MechanicsException("[NuTo::ConstraintLinearNodeGroupRotations2D::GetRHS] Node should have exactly 1 rotational dof.");
 
         curConstraintEquation++;

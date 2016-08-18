@@ -4,9 +4,9 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/math/Math.h"
 
 #include <limits>
-#include <Math.h>
 
 
 
@@ -30,7 +30,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
 
     // Copy input data to input struct
     InputData<TDim> inputData;
-    for (auto itInput : rConstitutiveInput)
+    for (auto& itInput : rConstitutiveInput)
     {
         switch(itInput.first)
         {
@@ -43,7 +43,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             break;
 
         case NuTo::Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT:
-            inputData.mRelativeHumidity_Gradient = (*static_cast<ConstitutiveVector<TDim>*>(itInput.second)).AsVector();
+            inputData.mRelativeHumidity_Gradient = static_cast<ConstitutiveVector<TDim>*>(itInput.second.get())->AsVector();
             break;
 
         case NuTo::Constitutive::Input::WATER_VOLUME_FRACTION:
@@ -55,7 +55,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             break;
 
         case NuTo::Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT:
-            inputData.mWaterVolumeFraction_Gradient = (*static_cast<ConstitutiveVector<TDim>*>(itInput.second)).AsVector();
+            inputData.mWaterVolumeFraction_Gradient = static_cast<ConstitutiveVector<TDim>*>(itInput.second.get())->AsVector();
             break;
 
         case NuTo::Constitutive::Input::CALCULATE_STATIC_DATA:
@@ -69,7 +69,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
 
 
     // evaluate outputs
-    for (auto itOutput : rConstitutiveOutput)
+    for (const auto& itOutput : rConstitutiveOutput)
     {
 
         switch(itOutput.first)
@@ -89,7 +89,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             assert(inputData.mWaterVolumeFraction       !=  std::numeric_limits<double>::min());
 
             //Calculation
-            Eigen::Matrix<double, TDim, 1>&  internalGradientRH_B = (*static_cast<ConstitutiveVector<TDim>*>(itOutput.second)).AsVector();
+            Eigen::Matrix<double, TDim, 1>&  internalGradientRH_B = (*static_cast<ConstitutiveVector<TDim>*>(itOutput.second.get())).AsVector();
             internalGradientRH_B = mDiffusionCoefficientRH* pow(1 - (inputData.mWaterVolumeFraction / mPoreVolumeFraction), mDiffusionExponentRH) * inputData.mRelativeHumidity_Gradient;
         }
             break;
@@ -108,7 +108,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             assert(inputData.mWaterVolumeFraction_dt1   !=  std::numeric_limits<double>::min());
 
             //Calculation
-            Eigen::Matrix<double, 1, 1>& internalGradientRH_N = (*static_cast<ConstitutiveScalar*>(itOutput.second)).AsScalar();
+            Eigen::Matrix<double, 1, 1>& internalGradientRH_N = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
             internalGradientRH_N(0,0) =     mDensitySaturatedWaterVapor * (mPoreVolumeFraction - inputData.mWaterVolumeFraction)    * inputData.mRelativeHumidity_dt1
                                           - mDensitySaturatedWaterVapor *  inputData.mWaterVolumeFraction_dt1                       * inputData.mRelativeHumidity
                                           - mMassExchangeRate           *  inputData.mWaterVolumeFraction
@@ -130,7 +130,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             assert(inputData.mWaterVolumeFraction       !=  std::numeric_limits<double>::min());
 
             //Calculation
-            Eigen::Matrix<double, TDim, 1>&  internalGradientWV_B = (*static_cast<ConstitutiveVector<TDim>*>(itOutput.second)).AsVector();
+            Eigen::Matrix<double, TDim, 1>&  internalGradientWV_B = (*static_cast<ConstitutiveVector<TDim>*>(itOutput.second.get())).AsVector();
             internalGradientWV_B =          mDiffusionCoefficientWV * inputData.mWaterVolumeFraction_Gradient
                                           * pow(inputData.mWaterVolumeFraction / mPoreVolumeFraction, mDiffusionExponentWV);
         }
@@ -149,7 +149,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             assert(inputData.mWaterVolumeFraction_dt1   !=  std::numeric_limits<double>::min());
 
             //Calculation
-            Eigen::Matrix<double, 1, 1>& internalGradientWV_N = (*static_cast<ConstitutiveScalar*>(itOutput.second)).AsScalar();
+            Eigen::Matrix<double, 1, 1>& internalGradientWV_N = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
             internalGradientWV_N(0,0) =     mDensityWater       * inputData.mWaterVolumeFraction_dt1
                                           + mMassExchangeRate   * inputData.mWaterVolumeFraction
                                           - mMassExchangeRate   * inputData.mRelativeHumidity   * ( StaticData->mCurrentSorptionCoeff(0)
@@ -173,7 +173,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             assert(inputData.mWaterVolumeFraction       !=  std::numeric_limits<double>::min());
 
             //Calculation
-            Eigen::Matrix<double, 1, 1>& internalGradientRH_dRH_BB_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second)).AsScalar();
+            Eigen::Matrix<double, 1, 1>& internalGradientRH_dRH_BB_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
             internalGradientRH_dRH_BB_H0(0,0) =     mDiffusionCoefficientRH
                                                   * pow(1 - (inputData.mWaterVolumeFraction / mPoreVolumeFraction), mDiffusionExponentRH);
         }
@@ -192,7 +192,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
 
             //Calculation
             CalculateSorptionCurveCoefficients(StaticData, inputData.mRelativeHumidity);    //VHIRTHAMTODO ---> find better place to calculate, maybe in inputData
-            Eigen::Matrix<double, 1, 1>& internalGradientRH_dRH_NN_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second)).AsScalar();
+            Eigen::Matrix<double, 1, 1>& internalGradientRH_dRH_NN_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
             if(mEnableModifiedTangentialStiffness)
             {
                 internalGradientRH_dRH_NN_H0(0,0) =     mMassExchangeRate   * ( StaticData->mCurrentSorptionCoeff(0)
@@ -221,7 +221,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             assert(inputData.mWaterVolumeFraction       !=  std::numeric_limits<double>::min());
 
             //Calculation
-            Eigen::Matrix<double, TDim, 1>& internalGradientRH_dWV_BN_H0 = (*static_cast<ConstitutiveVector<TDim>*>(itOutput.second)).AsVector();
+            Eigen::Matrix<double, TDim, 1>& internalGradientRH_dWV_BN_H0 = (*static_cast<ConstitutiveVector<TDim>*>(itOutput.second.get())).AsVector();
             if(mEnableModifiedTangentialStiffness)
             {
                 internalGradientRH_dWV_BN_H0.col(0).setZero();
@@ -245,7 +245,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             assert(inputData.mRelativeHumidity_dt1      !=  std::numeric_limits<double>::min());
 
             //Calculation
-            Eigen::Matrix<double, 1, 1>& internalGradientRH_dWV_NN_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second)).AsScalar();
+            Eigen::Matrix<double, 1, 1>& internalGradientRH_dWV_NN_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
             if(mEnableModifiedTangentialStiffness)
             {
                 internalGradientRH_dWV_NN_H0(0,0) =   - mMassExchangeRate;
@@ -270,7 +270,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
 
             //Calculation
             CalculateSorptionCurveCoefficients(StaticData, inputData.mRelativeHumidity);    //VHIRTHAMTODO ---> find better place to calculate, maybe in inputData
-            Eigen::Matrix<double, 1, 1>& internalGradientWV_dRH_NN_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second)).AsScalar();
+            Eigen::Matrix<double, 1, 1>& internalGradientWV_dRH_NN_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
             if(mEnableModifiedTangentialStiffness)
             {
                 internalGradientWV_dRH_NN_H0(0,0) =   - mMassExchangeRate   * ( StaticData->mCurrentSorptionCoeff(0)
@@ -298,7 +298,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             assert(inputData.mWaterVolumeFraction       !=  std::numeric_limits<double>::min());
 
             //Calculation
-            Eigen::Matrix<double, 1, 1>& internalGradientWV_dWV_BB_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second)).AsScalar();
+            Eigen::Matrix<double, 1, 1>& internalGradientWV_dWV_BB_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
             internalGradientWV_dWV_BB_H0(0,0) =     mDiffusionCoefficientWV
                                                   * pow(inputData.mWaterVolumeFraction / mPoreVolumeFraction, mDiffusionExponentWV);
         }
@@ -316,7 +316,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             assert(inputData.mWaterVolumeFraction       !=  std::numeric_limits<double>::min());
 
             //Calculation
-            Eigen::Matrix<double, TDim, 1>& internalGradientWV_dWV_BN_H0 = (*static_cast<ConstitutiveVector<TDim>*>(itOutput.second)).AsVector();
+            Eigen::Matrix<double, TDim, 1>& internalGradientWV_dWV_BN_H0 = (*static_cast<ConstitutiveVector<TDim>*>(itOutput.second.get())).AsVector();
             if(mEnableModifiedTangentialStiffness)
             {
                 internalGradientWV_dWV_BN_H0.col(0).setZero();
@@ -339,7 +339,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
 
             //Calculation
-            Eigen::Matrix<double, 1, 1>& internalGradientWV_dWV_NN_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second)).AsScalar();
+            Eigen::Matrix<double, 1, 1>& internalGradientWV_dWV_NN_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
             internalGradientWV_dWV_NN_H0(0,0) =     mMassExchangeRate;
         }
             break;
@@ -360,7 +360,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             assert(inputData.mWaterVolumeFraction       !=  std::numeric_limits<double>::min());
 
             //Calculation
-            Eigen::Matrix<double, 1, 1>& internalGradientRH_dRH_NN_H1 = (*static_cast<ConstitutiveScalar*>(itOutput.second)).AsScalar();
+            Eigen::Matrix<double, 1, 1>& internalGradientRH_dRH_NN_H1 = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
             internalGradientRH_dRH_NN_H1(0,0) =     mDensitySaturatedWaterVapor     * (mPoreVolumeFraction  - inputData.mWaterVolumeFraction);
         }
             break;
@@ -376,7 +376,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             assert(inputData.mRelativeHumidity          !=  std::numeric_limits<double>::min());
 
             //Calculation
-            Eigen::Matrix<double, 1, 1>& internalGradientRH_dWV_NN_H1 = (*static_cast<ConstitutiveScalar*>(itOutput.second)).AsScalar();
+            Eigen::Matrix<double, 1, 1>& internalGradientRH_dWV_NN_H1 = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
             internalGradientRH_dWV_NN_H1(0,0) =   - mDensitySaturatedWaterVapor * inputData.mRelativeHumidity;
         }
             break;
@@ -391,7 +391,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
 
             //Calculation
-            Eigen::Matrix<double, 1, 1>& internalGradientWV_dWV_NN_H1 = (*static_cast<ConstitutiveScalar*>(itOutput.second)).AsScalar();
+            Eigen::Matrix<double, 1, 1>& internalGradientWV_dWV_NN_H1 = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
             internalGradientWV_dWV_NN_H1(0,0) =     mDensityWater;
         }
             break;
@@ -409,9 +409,9 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
 
             //Calculation
-            Eigen::Matrix<double, 1, 1>& internalGradientRH_Boundary_N = (*static_cast<ConstitutiveScalar*>(itOutput.second)).AsScalar();
+            Eigen::Matrix<double, 1, 1>& internalGradientRH_Boundary_N = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
 
-            double relativeHumidityBoundary = rElement->GetBoundaryControlNode()->GetRelativeHumidity();
+            double relativeHumidityBoundary = rElement->GetBoundaryControlNode()->Get(Node::RELATIVEHUMIDITY).at(0,0);
             internalGradientRH_Boundary_N(0,0) =    mBoundaryDiffusionCoefficientRH * (inputData.mRelativeHumidity - relativeHumidityBoundary);
         }
             break;
@@ -426,9 +426,9 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
 
             //Calculation
-            Eigen::Matrix<double, 1, 1>& internalGradientWV_Boundary_N = (*static_cast<ConstitutiveScalar*>(itOutput.second)).AsScalar();
+            Eigen::Matrix<double, 1, 1>& internalGradientWV_Boundary_N = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
 
-            double waterVolumeFractionBoundary = GetEquilibriumWaterVolumeFraction(rElement->GetBoundaryControlNode()->GetRelativeHumidity(),
+            double waterVolumeFractionBoundary = GetEquilibriumWaterVolumeFraction(rElement->GetBoundaryControlNode()->Get(Node::RELATIVEHUMIDITY).at(0,0),
                                                                                    StaticData->GetCurrentSorptionCoeff());
             internalGradientWV_Boundary_N(0,0) =    mBoundaryDiffusionCoefficientWV * (inputData.mWaterVolumeFraction - waterVolumeFractionBoundary);
         }
@@ -446,7 +446,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
 
             //Calculation
-            Eigen::Matrix<double, 1, 1>& internalGradientRH_dRH_Boundary_NN_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second)).AsScalar();
+            Eigen::Matrix<double, 1, 1>& internalGradientRH_dRH_Boundary_NN_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
 
             internalGradientRH_dRH_Boundary_NN_H0(0,0) =    mBoundaryDiffusionCoefficientRH;
         }
@@ -462,7 +462,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::El
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
 
             //Calculation
-            Eigen::Matrix<double, 1, 1>& internalGradientWV_dWV_Boundary_NN_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second)).AsScalar();
+            Eigen::Matrix<double, 1, 1>& internalGradientWV_dWV_Boundary_NN_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
 
             internalGradientWV_dWV_Boundary_NN_H0(0,0) =    mBoundaryDiffusionCoefficientWV;
         }
@@ -844,7 +844,7 @@ NuTo::ConstitutiveInputMap NuTo::MoistureTransport::GetConstitutiveInputs(  cons
 {
     ConstitutiveInputMap constitutiveInputMap;
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (const auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
@@ -852,60 +852,60 @@ NuTo::ConstitutiveInputMap NuTo::MoistureTransport::GetConstitutiveInputs(  cons
         // Internal Gradient
         // ----------------------------------------------------------------------------------------
         case NuTo::Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_B:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT] = nullptr;
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_N:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY];
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_DT1];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_DT1];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_DT1] = nullptr;
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_DT1] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_B:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT];
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_N:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_DT1];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_DT1] = nullptr;
             break;
 
 
         // Hessian 0
         // ----------------------------------------------------------------------------------------
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_BB_H0:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_NN_H0:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY];
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_DT1];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_DT1] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_BN_H0:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT] = nullptr;
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_NN_H0:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_DT1];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_DT1] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_RH_NN_H0:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BB_H0:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BN_H0:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT];
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_NN_H0:
@@ -916,11 +916,11 @@ NuTo::ConstitutiveInputMap NuTo::MoistureTransport::GetConstitutiveInputs(  cons
         // ----------------------------------------------------------------------------------------
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_NN_H1:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_NN_H1:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_NN_H1:
@@ -930,11 +930,11 @@ NuTo::ConstitutiveInputMap NuTo::MoistureTransport::GetConstitutiveInputs(  cons
         // ----------------------------------------------------------------------------------------
 
         case NuTo::Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY];
+            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
+            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
         case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0:

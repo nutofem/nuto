@@ -29,6 +29,8 @@ public:
 
     DofStatus();
 
+    friend std::ostream& operator<<(std::ostream& out, const DofStatus& dofStatus);
+
     const std::set<Node::eDof>& GetActiveDofTypes() const
     {
         return mActiveDofTypes;
@@ -46,7 +48,7 @@ public:
 
     void SetDofTypes(const std::set<Node::eDof>& rDofTypes)
     {
-        mDofTypes = rDofTypes;
+            mDofTypes = rDofTypes;
     }
 
     bool HasInteractingConstraints() const

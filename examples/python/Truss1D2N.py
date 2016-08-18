@@ -60,10 +60,11 @@ else:
 myStructure.CalculateMaximumIndependentSets()
 
 # start analysis
+# start analysis
 myStructure.SolveGlobalSystemStaticElastic(0)
-intGradient = myStructure.BuildGlobalInternalGradient().J.Get("Displacements")
-extGradient = myStructure.BuildGlobalExternalLoadVector(0).J.Get("Displacements")
-residual = nuto.DoubleFullVector(intGradient - extGradient)
+intGradient = myStructure.BuildGlobalInternalGradient()
+extGradient = myStructure.BuildGlobalExternalLoadVector(0)
+residual = intGradient.J.Get("Displacements") - extGradient.J.Get("Displacements")
 
 
 print "residual: " + str(residual.Norm())

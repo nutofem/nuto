@@ -10,6 +10,7 @@ ENDIF(MUMPS_FOUND)
 IF(MINGW)
   SET_TARGET_PROPERTIES(TestOperators PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
+ADD_TEST(EXAMPLES::Cpp::TestOperators ${CMAKE_CURRENT_BUILD_DIR}/TestOperators)
 
 IF (ENABLE_OPENMP AND OPENMP_FOUND AND NOT ENABLE_DEBUG)
   ADD_EXECUTABLE(OpenMP OpenMP.cpp)
@@ -19,7 +20,7 @@ IF (ENABLE_OPENMP AND OPENMP_FOUND AND NOT ENABLE_DEBUG)
     SET_TARGET_PROPERTIES(OpenMP PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
 ENDIF (ENABLE_OPENMP AND OPENMP_FOUND AND NOT ENABLE_DEBUG)
- 
+
 IF(ENABLE_MKL AND MKLSolver_FOUND)
   ADD_EXECUTABLE(SparseDirectSolverMKLPardiso SparseDirectSolverMKLPardiso.cpp)
   TARGET_LINK_LIBRARIES(SparseDirectSolverMKLPardiso NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${MKLSolver_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
@@ -28,7 +29,7 @@ IF(ENABLE_MKL AND MKLSolver_FOUND)
   ENDIF(MINGW)
   ADD_TEST(EXAMPLES::Cpp::SparseDirectSolverMKLPardiso ${CMAKE_CURRENT_BUILD_DIR}/SparseDirectSolverMKLPardiso)
 ENDIF(ENABLE_MKL AND MKLSolver_FOUND)
- 
+
 IF(ENABLE_MUMPS AND MUMPS_FOUND)
    ADD_EXECUTABLE(SparseDirectSolverMUMPS SparseDirectSolverMUMPS.cpp)
    TARGET_LINK_LIBRARIES(SparseDirectSolverMUMPS NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
@@ -159,6 +160,7 @@ IF(ENABLE_MECHANICS)
   IF(MINGW)
     SET_TARGET_PROPERTIES(VisualizePlane2D4N PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
+  ADD_TEST(EXAMPLES::Cpp::VisualizePlane2D4N ${CMAKE_CURRENT_BUILD_DIR}/VisualizePlane2D4N)
 ENDIF(ENABLE_MECHANICS)
 
  # Temperature1D
@@ -171,6 +173,7 @@ if(ENABLE_MECHANICS)
   if(MUMPS_FOUND)
     target_link_libraries(Temperature1D ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
   endif()
+  ADD_TEST(EXAMPLES::Cpp::Temperature1D ${CMAKE_CURRENT_BUILD_DIR}/Temperature1D)
 endif()
 
 # Tetrahedron 10N
@@ -185,7 +188,8 @@ IF(ENABLE_MECHANICS)
   ENDIF(MUMPS_FOUND)
   IF(MINGW)
     SET_TARGET_PROPERTIES(Tetrahedron10N PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-  ENDIF(MINGW)  
+  ENDIF(MINGW)
+  ADD_TEST(EXAMPLES::Cpp::Tetrahedron10N ${CMAKE_CURRENT_BUILD_DIR}/Tetrahedron10N)
 ENDIF(ENABLE_MECHANICS)
 
 
@@ -219,9 +223,10 @@ IF(ENABLE_MECHANICS)
   IF(MINGW)
     SET_TARGET_PROPERTIES(Truss1D2N PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
   ENDIF(MINGW)
+  ADD_TEST(EXAMPLES::Cpp::Truss1D2N ${CMAKE_CURRENT_BUILD_DIR}/Truss1D2N)
 ENDIF(ENABLE_MECHANICS)
 
-# 
+#
 # # Truss1DMultiphase
 # ADD_EXECUTABLE(Truss1DMultiphase Truss1DMultiphase.cpp)
 # TARGET_LINK_LIBRARIES(Truss1DMultiphase NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
@@ -235,11 +240,12 @@ ENDIF(ENABLE_MECHANICS)
 #   SET_TARGET_PROPERTIES(Truss1DMultiphase PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 # ENDIF(MINGW)
 
- 
+
 # VirtualFunctionsVsDynamicCast
 ADD_EXECUTABLE(VirtualFunctionsVsDynamicCast VirtualFunctionsVsDynamicCastClasses.cpp VirtualFunctionsVsDynamicCast.cpp)
 IF(MINGW)
   SET_TARGET_PROPERTIES(VirtualFunctionsVsDynamicCast PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+  ADD_TEST(EXAMPLES::Cpp::VirtualFunctionsVsDynamicCast ${CMAKE_CURRENT_BUILD_DIR}/VirtualFunctionsVsDynamicCast)
 ENDIF(MINGW)
 
 # # Crack
@@ -254,7 +260,7 @@ IF(ENABLE_MECHANICS)
   ENDIF(MINGW)
   ADD_TEST(EXAMPLES::Cpp::CrackPlane2D4N ${CMAKE_CURRENT_BUILD_DIR}/CrackPlane2D4N)
 ENDIF(ENABLE_MECHANICS)
- 
+
 IF (ENABLE_GEOMETRYCONCRETE AND ENABLE_MECHANICS)
 ADD_EXECUTABLE(GeometryConcrete2D GeometryConcrete2D.cpp)
 TARGET_LINK_LIBRARIES(GeometryConcrete2D NuToMechanics NuToMath NuToBase NuToGeometryConcrete ${Boost_LIBRARIES})
@@ -279,15 +285,12 @@ ENDIF (ENABLE_GEOMETRYCONCRETE AND ENABLE_MECHANICS)
 # IF(MINGW)
 #   SET_TARGET_PROPERTIES(PhantomNodeMethodPlane2D4N PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 # ENDIF(MINGW)
-# 
+#
 
 
 # MortonOrder
-#Grid3D
 ADD_EXECUTABLE(MortonOrder MortonOrder.cpp)
 TARGET_LINK_LIBRARIES(MortonOrder NuToMath NuToBase)
-
-
 
 ADD_EXECUTABLE(ExplicitTimeIntegration ExplicitTimeIntegration.cpp)
 TARGET_LINK_LIBRARIES(ExplicitTimeIntegration NuToMechanics NuToMath NuToBase)
@@ -295,3 +298,12 @@ IF (ENABLE_VISUALIZE)
   TARGET_LINK_LIBRARIES(ExplicitTimeIntegration NuToVisualize)
 ENDIF (ENABLE_VISUALIZE)
 ADD_TEST(EXAMPLES::Cpp::ExplicitTimeIntegration ${CMAKE_CURRENT_BUILD_DIR}/ExplicitTimeIntegration)
+
+if(ENABLE_MECHANICS)
+    add_executable(HeatedPlate HeatedPlate.cpp)
+    target_link_libraries(HeatedPlate NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/HeatedPlate.geo ${CMAKE_CURRENT_BINARY_DIR}/HeatedPlate.geo COPYONLY)
+    if(ENABLE_VISUALIZE)
+        target_link_libraries(HeatedPlate NuToVisualize)
+    endif(ENABLE_VISUALIZE)
+endif(ENABLE_MECHANICS)

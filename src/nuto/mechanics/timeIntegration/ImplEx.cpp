@@ -30,11 +30,9 @@ void NuTo::ImplEx::ExtrapolateStaticData(const ConstitutiveTimeStep& rTimeStep)
 {
     // Setup input list with the timeStep and the option to use EULER_FORWARD
     ConstitutiveInputMap input;
-    ConstitutiveCalculateStaticData calculateStaticDataEulerForward(CalculateStaticData::EULER_FORWARD);
-    ConstitutiveTimeStep nonconstTimeStepCopy(rTimeStep);
-
-    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateStaticDataEulerForward;
-    input[Constitutive::Input::TIME_STEP] = &nonconstTimeStepCopy;
+    input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
+            CalculateStaticData::EULER_FORWARD);
+    input[Constitutive::Input::TIME_STEP] = std::make_unique<ConstitutiveTimeStep>(rTimeStep);
 
 
     // Setup output map to store the static data

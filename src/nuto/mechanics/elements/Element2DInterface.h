@@ -16,22 +16,14 @@ class ElementOutputIpData;
 
 struct EvaluateData
 {
-    ConstitutiveMatrixXd mSlip;
-    ConstitutiveMatrixXd mBondStress;
-    ConstitutiveMatrixXd mTangentBondStressSlip;
-
     std::map<Node::eDof, Eigen::VectorXd> mNodalValues;
     std::map<Node::eDof, Eigen::MatrixXd> mMatrixB;
     std::map<Node::eDof, const Eigen::MatrixXd*> mMatrixN;
-
-    ConstitutiveMatrixXd mBondStressVisualize;
 
     double mDetJacobian = 0;
     double mDetJxWeightIPxSection = 0;
 };
 
-
-class ConstitutiveIOBase;
 
 class Element2DInterface: public ElementBase
 {
@@ -150,23 +142,25 @@ protected:
     void CheckElement() override;
 
 private:
-    ConstitutiveOutputMap   GetConstitutiveOutputMap    (std::map<Element::eOutput, std::shared_ptr<ElementOutputBase> >& rElementOutput, EvaluateData& rData);
-    ConstitutiveInputMap    GetConstitutiveInputMap     (const ConstitutiveOutputMap& rConstitutiveOutput, EvaluateData& rData) const;
+    ConstitutiveOutputMap GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase> >& rElementOutput);
+    ConstitutiveInputMap GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const;
     void CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput, EvaluateData& rData);
 
-    virtual void FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullVector<double>& rInternalGradient, EvaluateData& rData) const;
-    virtual void FillConstitutiveOutputMapHessian0(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian0, EvaluateData& rData) const;
-    virtual void FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput, ElementOutputIpData& rIpData, EvaluateData& rData) const;
+    virtual void FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullVector<double>& rInternalGradient) const;
+    virtual void FillConstitutiveOutputMapHessian0(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian0) const;
+    virtual void FillConstitutiveOutputMapIpData(ConstitutiveOutputMap& rConstitutiveOutput, ElementOutputIpData& rIpData) const;
 
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
     void CalculateGlobalRowDofs(BlockFullVector<int>& rGlobalRowDofs) const;
 
     void CalculateElementOutputs(
             std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
-            EvaluateData& rData, int rTheIP) const;
+            EvaluateData& rData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const;
 
-    virtual void CalculateElementOutputInternalGradient(    BlockFullVector<double>& rInternalGradient, EvaluateData& rData, int rTheIP) const;
-    virtual void CalculateElementOutputHessian0(            BlockFullMatrix<double>& rHessian0,         EvaluateData& rData, int rTheIP) const;
+    virtual void CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient,
+            EvaluateData& rData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const;
+    virtual void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0,
+            EvaluateData& rData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const;
     virtual void CalculateElementOutputIpData(              ElementOutputIpData&     rIpData,           EvaluateData& rData, int rTheIP) const;
 
     //! @brief calculates the rotation matirx based on the orientation of the element

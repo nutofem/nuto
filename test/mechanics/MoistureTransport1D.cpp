@@ -237,8 +237,8 @@ int main()
 
         for (unsigned int i=0; i<NNodes; i++)
         {
-            auto NodeMultiplier= 1.0;//MTStructure1D.NodeGetNodePtr(i)->GetCoordinates()[0]/L;
-            if(MTStructure1D.NodeGetNodePtr(i)->GetNumRelativeHumidity() != 0)
+            auto NodeMultiplier= 1.0;//MTStructure1D.NodeGetNodePtr(i)->Get(Node::COORDINATES)[0]/L;
+            if(MTStructure1D.NodeGetNodePtr(i)->GetNum(Node::RELATIVEHUMIDITY) != 0)
             {
                 MTStructure1D.NodeGetNodePtr(i)->SetRelativeHumidity(0,InitialRelativeHumidity*NodeMultiplier);
             }
@@ -378,7 +378,7 @@ int main()
         // Nodes
         for (unsigned int i=0; i<NNodes; i++)
         {
-            if (MTStructure1D.NodeGetNodePtr(i)->GetNumRelativeHumidity() != 0 && MTStructure1D.NodeGetNodePtr(i)->GetRelativeHumidity(0) != InitialRelativeHumidity)
+            if (MTStructure1D.NodeGetNodePtr(i)->GetNum(Node::RELATIVEHUMIDITY) != 0 && MTStructure1D.NodeGetNodePtr(i)->GetRelativeHumidity(0) != InitialRelativeHumidity)
                 throw NuTo::Exception(std::string("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.NodeGetNodePtr("+std::to_string(i)+")->GetRelativeHumidity(0) != InitialRelativeHumidity"));
             if (MTStructure1D.NodeGetNodePtr(i)->GetNumWaterVolumeFraction() != 0 && MTStructure1D.NodeGetNodePtr(i)->GetWaterVolumeFraction(0) != InitialWaterVolumeFraction)
                 throw NuTo::Exception(std::string("[Testfile: MoistureTransport1D.cpp] Getter/Setter error: MTStructure1D.NodeGetNodePtr("+std::to_string(i)+")->GetRelativeHumidity(0) != InitialRelativeHumidity"));

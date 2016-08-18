@@ -8,6 +8,7 @@
 
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include <eigen3/Eigen/Dense>
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/CellBase.h"
@@ -72,6 +73,11 @@ public:
     //! @param rIpNum integration point (counting from zero)
     //! @param rCoordinates (result)
     virtual void GetLocalIntegrationPointCoordinates3D(int rIpNum, double rCoordinates[3])const;
+
+    virtual Eigen::MatrixXd GetNaturalIntegrationPointCoordinates() const
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented in base class.");
+    }
 
     //! @brief returns the total number of integration points for this integration type
     //! @return number of integration points

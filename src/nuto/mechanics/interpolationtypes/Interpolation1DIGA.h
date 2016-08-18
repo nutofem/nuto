@@ -177,11 +177,6 @@ private:
 
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::Interpolation1DIGA)
-namespace boost
-{
-template<>
-struct is_virtual_base_of<NuTo::Interpolation1D, NuTo::Interpolation1DIGA>: public mpl::true_ {};
-}
 #endif
 
 

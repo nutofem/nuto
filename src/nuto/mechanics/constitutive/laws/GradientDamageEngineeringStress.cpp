@@ -46,6 +46,12 @@ NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress() :
 //! @brief serializes the class
 //! @param ar         archive
 //! @param version    version
+template void NuTo::GradientDamageEngineeringStress::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::GradientDamageEngineeringStress::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::GradientDamageEngineeringStress::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::GradientDamageEngineeringStress::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::GradientDamageEngineeringStress::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::GradientDamageEngineeringStress::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
 void NuTo::GradientDamageEngineeringStress::serialize(Archive & ar, const unsigned int version)
 {
@@ -103,7 +109,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
 
     bool performUpdateAtEnd = false;
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (const auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
@@ -266,7 +272,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
         std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients3D(mE, mNu);
         break;
     case Section::PLANE_STRESS:
-        std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients2DPlainStress(mE, mNu);
+        std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients2DPlaneStress(mE, mNu);
         break;
     default:
         throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "[ Invalid type of 2D section behavior found!!!");
@@ -274,7 +280,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
 
 
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (const auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
@@ -472,7 +478,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
     double C11, C12, C44;
     std::tie(C11, C12, C44) = EngineeringStressHelper::CalculateCoefficients3D(mE, mNu);
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (const auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
@@ -636,7 +642,7 @@ NuTo::ConstitutiveStaticDataGradientDamage NuTo::GradientDamageEngineeringStress
     if (itCalculateStaticData == rConstitutiveInput.end())
         throw MechanicsException(__PRETTY_FUNCTION__, "You need to specify the way the static data should be calculated (input list).");
 
-    const auto& calculateStaticData = dynamic_cast<const ConstitutiveCalculateStaticData&>(*itCalculateStaticData->second);
+    const auto& calculateStaticData = *static_cast<const ConstitutiveCalculateStaticData*>(itCalculateStaticData->second.get());
 
     switch (calculateStaticData.GetCalculateStaticData())
     {
@@ -667,15 +673,13 @@ NuTo::ConstitutiveStaticDataGradientDamage NuTo::GradientDamageEngineeringStress
             auto itTimeStep = rConstitutiveInput.find(Constitutive::Input::TIME_STEP);
             if (itTimeStep == rConstitutiveInput.end())
                 throw MechanicsException(__PRETTY_FUNCTION__, "TimeStep input needed for EULER_FORWARD.");
-            const auto& timeStep = *itTimeStep->second;
+            const auto& timeStep = *(itTimeStep->second);
 
             ConstitutiveStaticDataGradientDamage newStaticData;
             double newKappa = ConstitutiveCalculateStaticData::EulerForward(
                     staticData.GetStaticData(1)->AsGradientDamage()->GetKappa(),
                     staticData.GetStaticData(2)->AsGradientDamage()->GetKappa(),
                     timeStep);
-
-//            std::cout << newKappa << std::endl;
 
             newStaticData.SetKappa(newKappa);
             return newStaticData;

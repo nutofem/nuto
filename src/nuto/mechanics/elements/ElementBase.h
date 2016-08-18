@@ -6,9 +6,7 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/vector.hpp>
-#include <boost/ptr_container/serialize_ptr_map.hpp>
 #else
-#include <boost/ptr_container/ptr_map.hpp>
 #include <vector>
 #endif //ENABLE_SERIALIZATION
 
@@ -28,7 +26,6 @@
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeBase.h"
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
-#include <boost/ptr_container/ptr_list.hpp>
 #endif // ENABLE_VISUALIZE
 
 namespace NuTo

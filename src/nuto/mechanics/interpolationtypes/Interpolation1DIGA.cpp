@@ -174,10 +174,12 @@ void NuTo::Interpolation1DIGA::serialize(Archive & ar, const unsigned int versio
     std::cout << "start serialize Interpolation1DIGA" << std::endl;
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(InterpolationBaseIGA);
+    ar & boost::serialization::make_nvp("mKnots", mKnots);
+    ar & boost::serialization::make_nvp("mDegree", mDegree);
+    ar & boost::serialization::make_nvp("mIPCoordinates", mIPCoordinates);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize Interpolation1DIGA" << std::endl;
 #endif
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Interpolation1DIGA)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Interpolation1DIGA)
 #endif  // ENABLE_SERIALIZATION

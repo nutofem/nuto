@@ -14,7 +14,7 @@
 #include "nuto/math/FullMatrix.h"
 
 #ifdef ENABLE_SERIALIZATION
-#include "nuto/math/EigenBoostSerialization.h"
+#include "nuto/math/CustomBoostSerializationExtensions.h"
 #endif
 
 
@@ -125,10 +125,10 @@ const Eigen::VectorXd NuTo::Element1DInXD::ExtractGlobalNodeValues(int rTimeDeri
         switch (rDofType)
         {
         case Node::COORDINATES:
-            globalNodeValues.segment(iNode * numDofsPerNode, structureDim) = node.GetCoordinates();
+            globalNodeValues.segment(iNode * numDofsPerNode, structureDim) = node.Get(Node::COORDINATES);
             break;
         case Node::DISPLACEMENTS:
-            globalNodeValues.segment(iNode * numDofsPerNode, structureDim) = node.GetDisplacements(rTimeDerivative);
+            globalNodeValues.segment(iNode * numDofsPerNode, structureDim) = node.Get(Node::DISPLACEMENTS, rTimeDerivative);
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for " + Node::DofToString(rDofType));
@@ -139,10 +139,8 @@ const Eigen::VectorXd NuTo::Element1DInXD::ExtractGlobalNodeValues(int rTimeDeri
 
 }
 
-void NuTo::Element1DInXD::CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateDataContinuum<1>& rData, int rTheIP) const
+void NuTo::Element1DInXD::CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0, EvaluateDataContinuum<1>& rData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
-
-
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
         for (auto dofCol : mInterpolationType->GetActiveDofs())
@@ -158,7 +156,8 @@ void NuTo::Element1DInXD::CalculateElementOutputHessian0(BlockFullMatrix<double>
 
                 Eigen::MatrixXd transformationMatrix = CalculateTransformationMatrix(globalDimension, numberOfNodes);
 
-                const Eigen::MatrixXd localHessian0 = rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose() * rData.mTangentStressStrain * rData.mB.at(dofRow);
+                const auto& tangentStressStrain = *static_cast<ConstitutiveMatrix<1, 1>*>(constitutiveOutputMap.at(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN).get());
+                const Eigen::MatrixXd localHessian0 = rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose() * tangentStressStrain * rData.mB.at(dofRow);
                 Eigen::MatrixXd globalHessian0(numberOfDofs, numberOfDofs);
                 globalHessian0.setZero();
 
@@ -185,11 +184,8 @@ void NuTo::Element1DInXD::CalculateElementOutputHessian0(BlockFullMatrix<double>
 
 }
 
-void NuTo::Element1DInXD::CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<1>& rData, int rTheIP) const
+void NuTo::Element1DInXD::CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient, EvaluateDataContinuum<1>& rData, int rTheIP, const ConstitutiveInputMap& constitutiveInputMap, const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
-
-
-
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
         switch (dofRow)
@@ -201,7 +197,8 @@ void NuTo::Element1DInXD::CalculateElementOutputInternalGradient(BlockFullVector
 
             Eigen::MatrixXd transformationMatrix = CalculateTransformationMatrix(globalDimension, numberOfNodes);
 
-            const Eigen::VectorXd localInternalGradient = rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose() * rData.mEngineeringStress;
+            const auto& engineeringStress= *static_cast<EngineeringStress<1>*>(constitutiveOutputMap.at(Constitutive::Output::ENGINEERING_STRESS).get());
+            const Eigen::VectorXd localInternalGradient = rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose() * engineeringStress;
             Eigen::VectorXd globalInternalGradient(globalDimension * numberOfNodes);
             globalInternalGradient.setZero();
 
@@ -306,7 +303,7 @@ void NuTo::Element1DInXD::CheckElement()
 //            {
 //                const NodeBase* nodePtr = mNodes[interpolationType.GetNodeIndex(iNodeDof)];
 //                for (unsigned iDof = 0; iDof < globalDimension; ++iDof)
-//                    dofWiseGlobalRowDofs[globalDimension * iNodeDof + iDof] = nodePtr->GetDofDisplacement(iDof);
+//                    dofWiseGlobalRowDofs[globalDimension * iNodeDof + iDof] = nodePtr->GetDof(Node::DISPLACEMENTS, iDof);
 //            }
 //            break;
 //        }

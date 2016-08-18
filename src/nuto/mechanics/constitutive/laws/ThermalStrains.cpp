@@ -12,7 +12,7 @@ NuTo::Error::eError NuTo::ThermalStrains::Evaluate(NuTo::ElementBase *rElement,
     auto eye = Eigen::MatrixXd::Identity(TDim, TDim);
     const int voigtDim = NuTo::ConstitutiveIOBase::GetVoigtDim(TDim);
 
-    double temperature;
+    double temperature = 0.0;
     std::array<double, 2> strain;
     try
     {
@@ -25,24 +25,22 @@ NuTo::Error::eError NuTo::ThermalStrains::Evaluate(NuTo::ElementBase *rElement,
     }
     catch(const std::out_of_range& e) {}
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (auto& itOutput : rConstitutiveOutput)
     {
         switch(itOutput.first)
         {
         case NuTo::Constitutive::Output::ENGINEERING_STRAIN:
         {
-            Eigen::Matrix<double, voigtDim, 1>& engineeringStrain =
-                (*static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second)).AsVector();
+            Eigen::Matrix<double, voigtDim, 1>& engineeringStrain = static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second.get())->AsVector();
             for(unsigned int i = 0; i < TDim; ++i)
-                engineeringStrain[i] += strain[0];
+                engineeringStrain[i] = strain[0];
             itOutput.second->SetIsCalculated(true);
             break;
         }
 
         case NuTo::Constitutive::Output::THERMAL_STRAIN:
         {
-            Eigen::Matrix<double, TDim, TDim>& engineeringStrain =
-                (*static_cast<ConstitutiveMatrix<TDim, TDim>*>(itOutput.second));
+            Eigen::Matrix<double, TDim, TDim>& engineeringStrain = static_cast<ConstitutiveMatrix<TDim, TDim>*>(itOutput.second.get())->AsMatrix();
             engineeringStrain = strain[0] * eye;
             itOutput.second->SetIsCalculated(true);
             break;
@@ -50,8 +48,7 @@ NuTo::Error::eError NuTo::ThermalStrains::Evaluate(NuTo::ElementBase *rElement,
 
         case NuTo::Constitutive::Output::D_STRAIN_D_TEMPERATURE:
         {
-            Eigen::Matrix<double, voigtDim, 1>& dStrainDTemperature =
-                (*static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second)).AsVector();
+            Eigen::Matrix<double, voigtDim, 1>& dStrainDTemperature = static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second.get())->AsVector();
             for(unsigned int i=0; i<TDim; ++i)
             {
                 //! \todo derivative is really positive, yet the strain itself
@@ -82,12 +79,12 @@ bool NuTo::ThermalStrains::CheckDofCombinationComputable(Node::eDof rDofRow,
 }
 
 NuTo::ConstitutiveInputMap NuTo::ThermalStrains::GetConstitutiveInputs(
-        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
-        const NuTo::InterpolationType &rInterpolationType) const
+        const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
+        const NuTo::InterpolationType& rInterpolationType) const
 {
     ConstitutiveInputMap constitutiveInputMap;
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (const auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {

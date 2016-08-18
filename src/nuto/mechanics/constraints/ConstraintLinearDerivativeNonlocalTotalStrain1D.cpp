@@ -64,7 +64,7 @@ void NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D::AddToConstraintMatri
 		{
 		    const NodeBase* node = mParentElement->GetNode(count, Node::NONLOCALTOTALSTRAIN);
 			rConstraintMatrix.AddValue(curConstraintEquation,
-			        node->GetDofNonlocalTotalStrain(0),
+			        node->GetDof(Node::NONLOCALTOTALSTRAIN, 0),
 	        		derivativeShapeFunctionsNaturalNonlocalTotalStrain(count,0));
 		}
 	}

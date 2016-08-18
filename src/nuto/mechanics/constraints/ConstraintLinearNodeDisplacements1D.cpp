@@ -44,11 +44,11 @@ void NuTo::ConstraintLinearNodeDisplacements1D::AddToConstraintMatrix(int& curCo
         NuTo::SparseMatrix<double>& rConstraintMatrix)const
 {
     // add constraint to constrain matrix
-    if (mNode->GetNumDisplacements()!=1)
+    if (mNode->GetNum(Node::DISPLACEMENTS)!=1)
     {
         throw MechanicsException("[NuTo::ConstraintLinearNodeDisplacements1D::ConstraintBase] Node does not have displacements or has more than one displacement component.");
     }
-    rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDofDisplacement(0), this->mDirection);
+    rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDof(Node::DISPLACEMENTS, 0), this->mDirection);
 
     // increase constraint equation number
     curConstraintEquation++;
@@ -61,7 +61,7 @@ void NuTo::ConstraintLinearNodeDisplacements1D::AddToConstraintMatrix(int& curCo
 void NuTo::ConstraintLinearNodeDisplacements1D::GetRHS(int& curConstraintEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const
 {
     // add constraint to constrain matrix
-    if (mNode->GetNumDisplacements()!=1)
+    if (mNode->GetNum(Node::DISPLACEMENTS)!=1)
     {
         throw MechanicsException("[NuTo::ConstraintLinearNodeDisplacements1D::ConstraintBase] Node does not have displacements or has more than one displacement component.");
     }

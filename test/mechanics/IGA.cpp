@@ -498,13 +498,13 @@ void solve(NuTo::Structure *myStructure, double solution, double tol = 1.e-6)
 {
     myStructure->SolveGlobalSystemStaticElastic();
 
-    int numNodes = myStructure->GetNumNodes();
-    double nodeDisp = myStructure->NodeGetNodePtr(numNodes - 1)->GetDisplacement(0);
+    double nodeDisp = myStructure->NodeGetNodePtr(myStructure->GetNumNodes()-1)->Get(NuTo::Node::DISPLACEMENTS)[0];
 
     if (PRINTRESULT)
     {
         std::cout << "Displacement node numerical: \n";
-        for(int i = 0; i < numNodes; i++)  std::cout << i << ": " << myStructure->NodeGetNodePtr(i)->GetDisplacement(0) << std::endl;
+        for(int i = 0; i < myStructure->GetNumNodes(); i++)
+            std::cout << i << ": " << myStructure->NodeGetNodePtr(i)->Get(NuTo::Node::DISPLACEMENTS) << std::endl;
     }
 
     std::cout << "Dimension: " << myStructure->GetDimension() << std::endl;

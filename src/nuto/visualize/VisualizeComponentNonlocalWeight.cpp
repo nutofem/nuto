@@ -11,14 +11,12 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/visualize/VisualizeComponentNonlocalWeight.h"
 #include "nuto/visualize/VisualizeException.h"
 #include <sstream>
 
-NuTo::VisualizeComponentNonlocalWeight::VisualizeComponentNonlocalWeight(const ElementBase* rElement, int rElementId, int rIp) : VisualizeComponent::VisualizeComponent(NuTo::VisualizeBase::NONLOCAL_WEIGHT)
+NuTo::VisualizeComponentNonlocalWeight::VisualizeComponentNonlocalWeight(int rElementId, int rIp) : VisualizeComponent::VisualizeComponent(NuTo::VisualizeBase::NONLOCAL_WEIGHT)
 {
-    mElement = rElement;
     mElementId = rElementId;
     mIp = rIp;
 }
@@ -26,11 +24,6 @@ NuTo::VisualizeComponentNonlocalWeight::VisualizeComponentNonlocalWeight(const E
 int NuTo::VisualizeComponentNonlocalWeight::GetElementId()const
 {
 	return mElementId;
-}
-
-const NuTo::ElementBase* NuTo::VisualizeComponentNonlocalWeight::GetElement()const
-{
-	return mElement;
 }
 
 int NuTo::VisualizeComponentNonlocalWeight::GetIp()const
@@ -68,7 +61,6 @@ void NuTo::VisualizeComponentNonlocalWeight::serialize(Archive & ar, const unsig
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(VisualizeComponent)
        & BOOST_SERIALIZATION_NVP(mElementId)
-       & BOOST_SERIALIZATION_NVP(mElement)
        & BOOST_SERIALIZATION_NVP(mIp);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize VisualizeComponentNonlocalWeight" << std::endl;

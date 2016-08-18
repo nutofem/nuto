@@ -182,44 +182,32 @@ void NuTo::InterpolationBaseFEM::Initialize()
 
 }
 
-//#ifdef ENABLE_SERIALIZATION
-//NuTo::InterpolationBaseFEM::InterpolationBaseFEM():
-//    mTypeOrder(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1),
-//    mDofType(NuTo::Node::COORDINATES),
-//    mDimension(0)
-//{
-//}
+#ifdef ENABLE_SERIALIZATION
+NuTo::InterpolationBaseFEM::InterpolationBaseFEM()
+{
+}
 
-//template void NuTo::InterpolationBaseFEM::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-//template void NuTo::InterpolationBaseFEM::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-//template void NuTo::InterpolationBaseFEM::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-//template void NuTo::InterpolationBaseFEM::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-//template void NuTo::InterpolationBaseFEM::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-//template void NuTo::InterpolationBaseFEM::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-//template<class Archive>
-//void NuTo::InterpolationBaseFEM::serialize(Archive & ar, const unsigned int version)
-//{
-//#ifdef DEBUG_SERIALIZATION
-//    std::cout << "start serialize InterpolationBaseFEM" << std::endl;
-//#endif
-//    ar & boost::serialization::make_nvp("mTypeOrder", const_cast<NuTo::Interpolation::eTypeOrder&>(mTypeOrder));
-//    ar & boost::serialization::make_nvp("mDofType", const_cast<NuTo::Node::eDof&>(mDofType));
-//    ar & BOOST_SERIALIZATION_NVP(mIsConstitutiveInput);
-//    ar & BOOST_SERIALIZATION_NVP(mIsActive);
-//    ar & BOOST_SERIALIZATION_NVP(mNumDofs);
-//    ar & BOOST_SERIALIZATION_NVP(mNumNodes);
-
-//    ar & boost::serialization::make_nvp("mNodeIndices", mNodeIndices);
-//    ar & BOOST_SERIALIZATION_NVP(mLocalStartIndex);
-//    ar & boost::serialization::make_nvp("mNodeCoordinates", mNodeCoordinates);
-//    ar & boost::serialization::make_nvp("mShapeFunctions", mShapeFunctions);
-//    ar & boost::serialization::make_nvp("mDerivativeShapeFunctionsNatural", mDerivativeShapeFunctionsNatural);
-//    ar & BOOST_SERIALIZATION_NVP(mUpdateRequired);
-//    ar & boost::serialization::make_nvp("mDimension", const_cast<int&>(mDimension));
-//#ifdef DEBUG_SERIALIZATION
-//    std::cout << "finish serialize InterpolationBaseFEM" << std::endl;
-//#endif
-//}
-//BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::InterpolationBaseFEM)
-//BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::InterpolationBaseFEM)
-//#endif  // ENABLE_SERIALIZATION
+template void NuTo::InterpolationBaseFEM::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::InterpolationBaseFEM::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::InterpolationBaseFEM::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::InterpolationBaseFEM::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::InterpolationBaseFEM::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::InterpolationBaseFEM::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+template<class Archive>
+void NuTo::InterpolationBaseFEM::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "start serialize InterpolationBaseFEM" << std::endl;
+#endif
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(InterpolationBase);
+    ar & boost::serialization::make_nvp("mNodeCoordinates", mNodeCoordinates);
+    ar & boost::serialization::make_nvp("mShapeFunctions", mShapeFunctions);
+    ar & boost::serialization::make_nvp("mMatrixN", mMatrixN);
+    ar & boost::serialization::make_nvp("mDerivativeShapeFunctionsNatural", mDerivativeShapeFunctionsNatural);
+#ifdef DEBUG_SERIALIZATION
+    std::cout << "finish serialize InterpolationBaseFEM" << std::endl;
+#endif
+}
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::InterpolationBaseFEM)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::InterpolationBaseFEM)
+#endif  // ENABLE_SERIALIZATION

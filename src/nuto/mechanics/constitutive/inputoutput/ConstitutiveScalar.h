@@ -12,6 +12,11 @@ public:
     ConstitutiveScalar(const ConstitutiveScalar& )              = default;
     ConstitutiveScalar(      ConstitutiveScalar&&)              = default;
 
+    virtual std::unique_ptr<ConstitutiveIOBase> clone() override
+    {
+        return std::make_unique<ConstitutiveScalar>(*this);
+    }
+
     virtual ~ConstitutiveScalar()                               = default;
 
     ConstitutiveScalar& operator=(const ConstitutiveScalar& )   = default;

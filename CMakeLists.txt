@@ -12,33 +12,44 @@ endif()
 
 # options
 OPTION(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" FALSE)
-OPTION(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
-OPTION(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
-OPTION(ENABLE_PARDISO "enables support for PARDISO solver" FALSE)
+OPTION(ENABLE_ARPACK "enables ARPACK libraries (for the solution of eigenvalue problems)" FALSE)
+OPTION(ENABLE_C++_TESTS "create makefiles for c++ tests" TRUE)
+OPTION(ENABLE_CGAL "enables CGAL libraries (for cracks only)" FALSE)
 OPTION(ENABLE_DEBUG "enables debug information" TRUE)
 OPTION(ENABLE_DEBUG_SERIALIZATION "prints additional debug information during serialization" FALSE)
+#<<<<<<< HEAD
 OPTION(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" ON)
 OPTION(ENABLE_OPENACC "enables OpenACC" FALSE)
 OPTION(ENABLE_OPENMP "enables OpenMP" FALSE)
 OPTION(ENABLE_SERIALIZATION "enables serialization" FALSE)
 OPTION(ENABLE_NUMPY "enables numpy" TRUE)
+#=======
+OPTION(ENABLE_EXAMPLES "enables examples" FALSE)
+#>>>>>>> master
 OPTION(ENABLE_GEOMETRYCONCRETE "geometry for concrete mesoscale modeling" FALSE)
-OPTION(ENABLE_VERBOSELEVEL "enables status messages during the execution by setting the verboselevel" FALSE)
+OPTION(ENABLE_GUI "enable building the GUI application" FALSE)
 OPTION(ENABLE_MECHANICS "enables the mechanics package" TRUE)
 OPTION(ENABLE_METAMODEL "enables the metamodel package" FALSE)
-OPTION(ENABLE_OPTIMIZE "enables the optimize package" FALSE)
-OPTION(ENABLE_VISUALIZE "enables the visualization package" FALSE)
-OPTION(ENABLE_EXAMPLES "enables examples" FALSE)
-OPTION(ENABLE_SHOW_TIME "shows for each python command the execution time" TRUE)
-OPTION(ENABLE_PYTHON_TESTS "create makefiles for python tests" TRUE)
-OPTION(ENABLE_C++_TESTS "create makefiles for c++ tests" TRUE)
-OPTION(ENABLE_UNIT_TESTS "use Boost Test library for unit tests" FALSE)
-OPTION(ENABLE_C++_TESTS_WIP "provides an additional flag to avoid compiling all tests" FALSE)
-OPTION(ENABLE_GUI "enable building the GUI application" FALSE)
-OPTION(ENABLE_MY_EXAMPLES "enable building private examples in a separate directory (nuto/myNutoExamples)" FALSE)
-OPTION(ENABLE_CGAL "enables CGAL libraries (for cracks only)" FALSE)
-OPTION(ENABLE_ARPACK "enables ARPACK libraries (for the solution of eigenvalue problems)" FALSE)
+OPTION(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
 OPTION(ENABLE_MPI "enables the message passing interface MPI (for distributed memory systems)" FALSE)
+OPTION(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
+OPTION(ENABLE_MY_EXAMPLES "enable building private examples in a separate directory (nuto/myNutoExamples)" FALSE)
+OPTION(ENABLE_NUMPY "enables numpy" TRUE)
+OPTION(ENABLE_OPENACC "enables OpenACC" FALSE)
+OPTION(ENABLE_OPENMP "enables OpenMP" FALSE)
+OPTION(ENABLE_OPTIMIZE "enables the optimize package" FALSE)
+OPTION(ENABLE_PARDISO "enables support for PARDISO solver" FALSE)
+OPTION(ENABLE_PYTHON_TESTS "create makefiles for python tests" TRUE)
+OPTION(ENABLE_SHOW_TIME "shows for each python command the execution time" TRUE)
+OPTION(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" FALSE)
+OPTION(ENABLE_SERIALIZATION "enables serialization" FALSE)
+OPTION(ENABLE_UNIT_TESTS "use Boost Test library for unit tests" FALSE)
+OPTION(ENABLE_VERBOSELEVEL "enables status messages during the execution by setting the verboselevel" FALSE)
+OPTION(ENABLE_VISUALIZE "enables the visualization package" FALSE)
+
+# set module path for modified scripts
+SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts ${CMAKE_MODULE_PATH})
+INCLUDE(NuToMacros)
 
 if(ENABLE_MPI)
   find_package(MPI REQUIRED)
@@ -71,13 +82,6 @@ IF (ENABLE_SERIALIZATION)
     SET(NuTo_DOXYGEN_PREDEFINED "ENABLE_SERIALIZATION" ${NuTo_DOXYGEN_PREDEFINED})
     SET(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_SERIALIZATION")
 ENDIF(ENABLE_SERIALIZATION)
-
-IF (ENABLE_NUMPY)
-    ADD_DEFINITIONS("-DENABLE_NUMPY")
-
-    SET(NuTo_DOXYGEN_PREDEFINED "ENABLE_NUMPY" ${NuTo_DOXYGEN_PREDEFINED})
-    SET(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_NUMPY")
-ENDIF(ENABLE_NUMPY)
 
 IF (ENABLE_VERBOSELEVEL)
     ADD_DEFINITIONS("-DENABLE_VERBOSELEVEL")
@@ -115,10 +119,6 @@ IF(ENABLE_DEBUG_SERIALIZATION)
   ADD_DEFINITIONS("-DDEBUG_SERIALIZATION")
 ENDIF(ENABLE_DEBUG_SERIALIZATION)
 
-# set module path for modified scripts
-SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts ${CMAKE_MODULE_PATH})
-INCLUDE(NuToMacros)
-
 # find openacc
 IF(ENABLE_OPENACC)
   MESSAGE(STATUS "OpenACC support currently not implemented, wait for gcc 5.X")
@@ -149,10 +149,10 @@ ELSE(ENABLE_OPENMP)
 ENDIF(ENABLE_OPENMP)
 
 # use newer c++ standard, enable additional warnings, support for sse4
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall -msse4")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -msse4")
 # prevent warnings from boost and eigen
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --system-header-prefix=boost/ --system-header-prefix=eigen3/ -Wno-inconsistent-missing-override")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --system-header-prefix=boost/ --system-header-prefix=eigen3/ -Wno-inconsistent-missing-override -Wno-missing-braces")
 endif()
 # there is an error in the numpy headers, which produces a warning that is
 # fatal when using pedantic-errors
@@ -162,7 +162,7 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic-errors")
 endif()
 # gcc specific options
-if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU") 
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.7.0")
     message(FATAL_ERROR "Insufficient gcc version (at least 4.7.0)")
   endif()
@@ -170,10 +170,14 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-long-long -Wno-unused-local-typedefs -Wunknown-pragmas")
 endif()
 
+
 IF(ENABLE_NUMPY)
 FIND_PACKAGE(Numpy REQUIRED)
   if(NUMPY_FOUND)
+    ADD_DEFINITIONS("-DENABLE_NUMPY")
     INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_PATH})
+    SET(NuTo_DOXYGEN_PREDEFINED "ENABLE_NUMPY" ${NuTo_DOXYGEN_PREDEFINED})
+    SET(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_NUMPY")
     message (STATUS "Numpy found ")
   else(NUMPY_FOUND)
     message (STATUS "Numpy not found ")
@@ -252,15 +256,21 @@ IF(NUTO_EXTERNAL_LIBRARIES_ROOT)
 ENDIF(NUTO_EXTERNAL_LIBRARIES_ROOT)
 ENDIF(NOT BOOST_ROOT AND NOT DEFINED $ENV{BOOST_ROOT})
 
-IF(ENABLE_SERIALIZATION)
-  FIND_PACKAGE(Boost 1.44.0 COMPONENTS serialization system filesystem REQUIRED)
-ELSE(ENABLE_SERIALIZATION)
-  FIND_PACKAGE(Boost 1.44.0 COMPONENTS system filesystem  REQUIRED)
-ENDIF(ENABLE_SERIALIZATION)
+# collect the required boost components and versions
+set(NuToBoostComponents system filesystem)
+set(NuToBoostRequiredVersion 1.44.0)
+
+if(ENABLE_SERIALIZATION)
+  set(NuToBoostRequiredVersion 1.58.0)
+  set(NuToBoostComponents ${NuToBoostComponents} serialization)
+endif(ENABLE_SERIALIZATION)
 
 if(ENABLE_UNIT_TESTS)
-  find_package(Boost 1.44.0 COMPONENTS system filesystem unit_test_framework REQUIRED)
-endif()
+set(NuToBoostComponents ${NuToBoostComponents} unit_test_framework)
+endif(ENABLE_UNIT_TESTS)
+
+FIND_PACKAGE(Boost ${NuToBoostRequiredVersion} COMPONENTS ${NuToBoostComponents} REQUIRED)
+
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 message(STATUS "...Boost_VERSION = ${Boost_VERSION}")
 message(STATUS "...Boost version = ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
@@ -366,7 +376,7 @@ IF(EIGEN_FOUND)
     message(FATAL_ERROR "Insufficient eigen version (at least 3.2.0)")
   endif()
 
-  INCLUDE_DIRECTORIES(${EIGEN_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/src/nuto/math)
+  INCLUDE_DIRECTORIES(${EIGEN_INCLUDE_DIR})
 ELSE(EIGEN_FOUND)
   message(FATAL_ERROR "Fatal error: Eigen (version >= 3.0) required.\n")
 ENDIF(EIGEN_FOUND)
@@ -420,6 +430,8 @@ IF(ENABLE_MKL)
   FIND_PACKAGE(LAPACK REQUIRED)
 ENDIF(ENABLE_MKL)
 
+INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src)
+
 # build nuto
 ADD_SUBDIRECTORY(src)
 
@@ -428,11 +440,6 @@ ADD_SUBDIRECTORY(doc)
 
 #test Environment
 INCLUDE(CTest)
-
-IF(ENABLE_MECHANICS OR ENABLE_METAMODEL OR ENABLE_OPTIMIZE OR ENABLE_EXAMPLES OR ENABLE_GEOMETRYCONCRETE)
-  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src)
-ENDIF(ENABLE_MECHANICS OR ENABLE_METAMODEL OR ENABLE_OPTIMIZE OR ENABLE_EXAMPLES OR ENABLE_GEOMETRYCONCRETE)
-
 
 ADD_SUBDIRECTORY(test/math)
 IF(ENABLE_MECHANICS)

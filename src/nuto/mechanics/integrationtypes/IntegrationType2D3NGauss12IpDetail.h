@@ -4,7 +4,7 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/array.hpp>
-#include "nuto/math/EigenBoostSerialization.h"
+#include "nuto/math/CustomBoostSerializationExtensions.h"
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/integrationtypes/IntegrationType2D.h"

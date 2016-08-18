@@ -52,8 +52,8 @@ int GetNearestNode(double rTargetX, double rTargetY, NuTo::Structure& rStructure
 
     NuTo::NodeBase* TmpNode = rStructure.NodeGetNodePtr(rGroupIdsAll[0]);
     int NearestNodeID = rGroupIdsAll[0];
-    double TmpX = TmpNode->GetCoordinates()(0) - rTargetX;
-    double TmpY = TmpNode->GetCoordinates()(1) - rTargetY;
+    double TmpX = TmpNode->Get(Node::COORDINATES)(0) - rTargetX;
+    double TmpY = TmpNode->Get(Node::COORDINATES)(1) - rTargetY;
     double TmpNodeDistance = sqrt(TmpX * TmpX + TmpY * TmpY);
     double NodeDistance = TmpNodeDistance;
 
@@ -62,8 +62,8 @@ int GetNearestNode(double rTargetX, double rTargetY, NuTo::Structure& rStructure
     for (int i=1; i<rGroupIdsAll.GetNumRows(); i++)
     {
         TmpNode = rStructure.NodeGetNodePtr(rGroupIdsAll[i]);
-        TmpX = TmpNode->GetCoordinates()(0) - rTargetX;
-        TmpY = TmpNode->GetCoordinates()(1) - rTargetY;
+        TmpX = TmpNode->Get(Node::COORDINATES)(0) - rTargetX;
+        TmpY = TmpNode->Get(Node::COORDINATES)(1) - rTargetY;
         TmpNodeDistance = sqrt(TmpX * TmpX + TmpY * TmpY);
         if(TmpNodeDistance<NodeDistance)
         {
@@ -81,7 +81,7 @@ bool ElementIsAggregate(NuTo::FullVector<int,Eigen::Dynamic>& rNodes, NuTo::Stru
 {
 
     NuTo::NodeBase* tmpNode = rStructure.NodeGetNodePtr(rNodes[0]);
-    Eigen::Matrix<double, 2, 1> Coordinates = tmpNode->GetCoordinates2D();
+    Eigen::Matrix<double, 2, 1> Coordinates = tmpNode->Get(Node::COORDINATES);
 
     float maxX = Coordinates(0);
     float minX = Coordinates(0);
@@ -91,7 +91,7 @@ bool ElementIsAggregate(NuTo::FullVector<int,Eigen::Dynamic>& rNodes, NuTo::Stru
     for(unsigned int i=1; i<rNodes.GetNumRows(); ++i)
     {
         tmpNode = rStructure.NodeGetNodePtr(rNodes[i]);
-        Coordinates = tmpNode->GetCoordinates2D();
+        Coordinates = tmpNode->Get(Node::COORDINATES);
         if(Coordinates(0)<minX)
         {
             minX = Coordinates(0);
@@ -419,7 +419,7 @@ int main(int argc, char* argv[])
         auto GetBoundaryNodesLambda = [lX,lY](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(Node::COORDINATES)>0)
                                     {
                                         double x = rNodePtr->GetCoordinate(0);
                                         double y = rNodePtr->GetCoordinate(1);
@@ -482,7 +482,7 @@ int main(int argc, char* argv[])
             for(unsigned int j = 0; j<ElementPtr->GetNumNodes(); ++j)
             {
                 NuTo::NodeBase* NodePtr = ElementPtr->GetNode(j);
-                if(NodePtr->GetNumRelativeHumidity() != 0)
+                if(NodePtr->GetNum(Node::RELATIVEHUMIDITY) != 0)
                 {
                     NodePtr->SetRelativeHumidity(0,InitialRelativeHumidity);
                 }

@@ -145,8 +145,7 @@ BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ElementBase)
 NuTo::Error::eError NuTo::ElementBase::Evaluate(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)
 {
     ConstitutiveInputMap input;
-    ConstitutiveCalculateStaticData calculateImplicitly(CalculateStaticData::EULER_BACKWARD);
-    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateImplicitly;
+    input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(CalculateStaticData::EULER_BACKWARD);
 
     return this->Evaluate(input, rOutput);
 }
@@ -356,11 +355,11 @@ NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw(const NuTo::Const
     try
     {
         ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(rIP);
-        for(auto itOutput : rConstitutiveOutput)
+        for (auto& itOutput : rConstitutiveOutput)
             if(itOutput.second!=nullptr) //check nullptr because of static data
                 itOutput.second->SetIsCalculated(false);
         Error::eError error = constitutivePtr->Evaluate<TDim>(this, rIP, rConstitutiveInput, rConstitutiveOutput);
-        for(auto itOutput : rConstitutiveOutput)
+        for(auto& itOutput : rConstitutiveOutput)
             if(itOutput.second!=nullptr && !itOutput.second->GetIsCalculated()) //check nullptr because of static data
                 throw MechanicsException(__PRETTY_FUNCTION__,std::string("Output ")+Constitutive::OutputToString(itOutput.first)+" not calculated by constitutive law");
             return error;
@@ -680,8 +679,8 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
 
     //calculate the element solution
     ConstitutiveInputMap input;
-    ConstitutiveCalculateStaticData calc(CalculateStaticData::USE_PREVIOUS);
-    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calc;
+    input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
+            CalculateStaticData::USE_PREVIOUS);
     Evaluate(input, elementOutput);
 //    Evaluate(elementOutput);
 
@@ -924,7 +923,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
         case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
         {
             // get constitutive model and nonlocal element
-            const ElementBase* visualizeElement(it.get()->GetElement());
+            const ElementBase* visualizeElement = mStructure->ElementGetElementPtr(it.get()->GetElementId());
 
             // get local number within nonlocal elements for current element
             try
@@ -1070,6 +1069,16 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
                 Eigen::VectorXd temperature = InterpolateDofGlobal(coords, Node::eDof::TEMPERATURE);
                 unsigned int PointId = PointIdVec[PointCount];
                 rVisualize.SetPointDataScalar(PointId, it.get()->GetComponentName(), temperature[0]);
+            }
+            break;
+
+        case NuTo::VisualizeBase::CRACK_PHASE_FIELD:
+            for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
+            {
+                const Eigen::VectorXd& coords = visualizationPointNaturalCoordinates.col(PointCount);
+                Eigen::VectorXd damage = InterpolateDofGlobal(coords, Node::eDof::CRACKPHASEFIELD);
+                unsigned int PointId = PointIdVec[PointCount];
+                rVisualize.SetPointDataScalar(PointId, it.get()->GetComponentName(), damage[0]);
             }
             break;
 

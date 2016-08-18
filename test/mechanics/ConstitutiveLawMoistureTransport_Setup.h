@@ -146,13 +146,13 @@ public:
         {
 
 
-            if(mS.NodeGetNodePtr(i)->GetNumRelativeHumidity() != 0)
+            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::RELATIVEHUMIDITY) != 0)
             {
-                mS.NodeGetNodePtr(i)->SetRelativeHumidity(0,InitialRelativeHumidity) ;
+                mS.NodeGetNodePtr(i)->Set(NuTo::Node::RELATIVEHUMIDITY, 0, InitialRelativeHumidity) ;
             }
-            if(mS.NodeGetNodePtr(i)->GetNumWaterVolumeFraction() != 0)
+            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::WATERVOLUMEFRACTION) != 0)
             {
-                mS.NodeGetNodePtr(i)->SetWaterVolumeFraction(0,InitialWaterVolumeFraction);
+                mS.NodeGetNodePtr(i)->Set(NuTo::Node::WATERVOLUMEFRACTION, 0, InitialWaterVolumeFraction);
             }
         }
     }

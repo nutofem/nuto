@@ -129,7 +129,7 @@ void NuTo::Structure::GroupAddNodeFromElementGroupCoordinateRange(int rIdentNode
     for (auto const & iNodeId : nodesInGroup)
     {
         auto nodePtr = NodeGetNodePtr(iNodeId);
-        double coordinate = nodePtr->GetCoordinate(rDirection);
+        double coordinate = nodePtr->Get(Node::COORDINATES)[rDirection];
 
         if (coordinate >= rMin and coordinate <= rMax)
             itGroup->second->AddMember(iNodeId, nodePtr);

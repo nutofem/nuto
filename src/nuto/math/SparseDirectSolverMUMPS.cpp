@@ -18,14 +18,17 @@ NuTo::SparseDirectSolverMUMPS::SparseDirectSolverMUMPS() : SparseDirectSolver()
 #endif // HAVE_MUMPS
 }
 
-#ifdef HAVE_MUMPS
 void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double,Eigen::Dynamic>& rRhs, NuTo::FullVector<double,Eigen::Dynamic>& rSolution)
 {
+#ifdef HAVE_MUMPS
     Timer timer(std::string("MUMPS ") + __FUNCTION__, GetShowTime());
 
     Factorization(rMatrix);
     Solution(rRhs, rSolution);
     CleanUp();
+#else // HAVE_MUMPS
+    throw NuTo::MathException(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
+#endif // HAVE_MUMPS
 }
 
 
@@ -33,6 +36,7 @@ void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& r
 //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)
 void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<double>& rMatrix)
 {
+#ifdef HAVE_MUMPS
     Timer timer(std::string("MUMPS ") + __FUNCTION__ + " reordering and symbolic factorization", GetShowTime());
 
 	// check rMatrix
@@ -135,7 +139,9 @@ void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<do
 		}
 		throw NuTo::MathException(__PRETTY_FUNCTION__, "Numerical factorization phase: " + this->GetErrorString(mSolver.info[0]) + ".");
 	}
-
+#else // HAVE_MUMPS
+    throw NuTo::MathException(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
+#endif // HAVE_MUMPS
 }
 
 //! @brief ... use the factorized matrix for the final solution phase
@@ -144,6 +150,7 @@ void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<do
 //! @param rSolution ... matrix storing the corresponding solution vectors (output)
 void NuTo::SparseDirectSolverMUMPS::Solution(const NuTo::FullVector<double,Eigen::Dynamic>& rRhs, NuTo::FullVector<double,Eigen::Dynamic>& rSolution)
 {
+#ifdef HAVE_MUMPS
     Timer timer(std::string("MUMPS ") + __FUNCTION__, GetShowTime());
 
 	// check right hand side
@@ -169,12 +176,16 @@ void NuTo::SparseDirectSolverMUMPS::Solution(const NuTo::FullVector<double,Eigen
 			throw NuTo::MathException(__PRETTY_FUNCTION__, "Solution phase: " + this->GetErrorString(mSolver.info[0]) + ".");
 		}
 	}
+#else // HAVE_MUMPS
+    throw NuTo::MathException(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
+#endif // HAVE_MUMPS
 }
 
 
 //! @brief ... Termination and release of memory
 void NuTo::SparseDirectSolverMUMPS::CleanUp()
 {
+#ifdef HAVE_MUMPS
     Timer timer(std::string("MUMPS ") + __FUNCTION__, GetShowTime());
     // Termination and release of memory
     mSolver.job = -2;
@@ -183,10 +194,14 @@ void NuTo::SparseDirectSolverMUMPS::CleanUp()
     {
         throw NuTo::MathException(__PRETTY_FUNCTION__, "Termination phase: " + this->GetErrorString(mSolver.info[0]) + ".");
     }
+#else // HAVE_MUMPS
+    throw NuTo::MathException(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
+#endif // HAVE_MUMPS
 }
 
 void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, NuTo::FullVector<int, Eigen::Dynamic> rSchurIndices, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement)
 {
+#ifdef HAVE_MUMPS
     Timer timer(std::string("MUMPS ") + __FUNCTION__ + " reordering and symbolic factorization", GetShowTime());
 
     // check rMatrix
@@ -299,12 +314,15 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     timer.Reset(std::string("MUMPS ") + __FUNCTION__ + " solution");
 
     rSchurComplement = rSchurComplementTranspose.transpose();
-
+#else // HAVE_MUMPS
+    throw NuTo::MathException(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
+#endif // HAVE_MUMPS
 }
 
 
 std::string NuTo::SparseDirectSolverMUMPS::GetErrorString(int error) const
 {
+#ifdef HAVE_MUMPS
     assert(error < 0);
 
     switch (error)
@@ -318,15 +336,7 @@ std::string NuTo::SparseDirectSolverMUMPS::GetErrorString(int error) const
     default:
         return "unknown error code";
     }
-}
 #else // HAVE_MUMPS
-void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double, Eigen::Dynamic>& rRhs, NuTo::FullVector<double, Eigen::Dynamic>& rSolution)
-{
-	throw NuTo::MathException(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
-}
-
-void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<int, Eigen::Dynamic> rSchurIndices, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement)
-{
     throw NuTo::MathException(__PRETTY_FUNCTION__, "MUMPS-solver was not found on your system (check cmake)");
-}
 #endif // HAVE_MUMPS
+}

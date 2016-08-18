@@ -8,22 +8,13 @@ NuTo::EngineeringStrain<TDim> NuTo::EngineeringStressHelper::CalculateElasticEng
         const ConstitutiveInputMap& rConstitutiveInput,
         double rThermalExpansionCoefficient)
 {
+    //! @todo used to be for thermal strains -> remove
     NuTo::EngineeringStrain<TDim> elasticEngineeringStrain = rEngineeringStrain;
-
-    if (rInterpolationType.IsConstitutiveInput(Node::TEMPERATURE))
-    {
-        const ConstitutiveIOBase& temperature = *(rConstitutiveInput.at(Constitutive::Input::TEMPERATURE));
-        double temperatureStrain = rThermalExpansionCoefficient * temperature[0];
-        for (int iDim = 0; iDim < TDim; ++iDim)
-        {
-            elasticEngineeringStrain[iDim] -= temperatureStrain;
-        }
-    }
     return elasticEngineeringStrain;
 }
 
 
-std::tuple<double, double, double> NuTo::EngineeringStressHelper::CalculateCoefficients2DPlainStress(double mE, double mNu)
+std::tuple<double, double, double> NuTo::EngineeringStressHelper::CalculateCoefficients2DPlaneStress(double mE, double mNu)
 {
     double factor = mE / (1.0 - (mNu * mNu));
     return std::make_tuple(

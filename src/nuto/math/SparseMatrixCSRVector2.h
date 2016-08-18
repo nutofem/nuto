@@ -162,16 +162,24 @@ public:
     virtual std::string GetTypeId() const;
 
 #ifdef ENABLE_SERIALIZATION
+#ifndef SWIG
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        ar & boost::serialization::make_nvp("SparseMatrix",boost::serialization::base_object< SparseMatrix<T> >(*this));
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "start serialization of SparseMatrixCSRVector2" << std::endl;
+#endif
+        ar & boost::serialization::make_nvp("SparseMatrixCSRVector2",boost::serialization::base_object< SparseMatrix<T> >(*this));
         ar & BOOST_SERIALIZATION_NVP(mColumns)
            & BOOST_SERIALIZATION_NVP(mValues);
+#ifdef DEBUG_SERIALIZATION
+        std::cout << "finish serialization of SparseMatrixCSRVector2" << std::endl;
+#endif
    }
+#endif // SWIG
 #endif  // ENABLE_SERIALIZATION
 
     //! @brief performs a monadic operator on all matrix entries
@@ -463,4 +471,11 @@ private:
 
 };
 }
+#ifdef ENABLE_SERIALIZATION
+#ifndef SWIG
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::SparseMatrixCSRVector2<double>)
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::SparseMatrixCSRVector2<int>)
+#endif  // SWIG
+#endif  // ENABLE_SERIALIZATION
+
 #endif // SPARSE_MATRIX_CSR_VECTOR2_H

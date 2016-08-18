@@ -14,7 +14,6 @@
 #include "nuto/mechanics/elements/Element2DInterface.h"
 
 #include "nuto/mechanics/groups/Group.h"
-#include "nuto/mechanics/nodes/NodeDof.h"
 
 //! @brief returns the number of nodes
 //! @return number of nodes
@@ -318,8 +317,8 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
 
 
     // find the bounding box corners = max/min x,y,z coordinates, initialize with random node coordinates
-    Eigen::VectorXd boundingBoxMax = elements[0]->GetNode(0)->GetCoordinates();
-    Eigen::VectorXd boundingBoxMin = elements[0]->GetNode(0)->GetCoordinates();
+    Eigen::VectorXd boundingBoxMax = elements[0]->GetNode(0)->Get(Node::COORDINATES);
+    Eigen::VectorXd boundingBoxMin = elements[0]->GetNode(0)->Get(Node::COORDINATES);
 
     for (ElementBase* element : elements)
     {
@@ -327,7 +326,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
         for (int iNode = 0; iNode < element->GetNumNodes(Node::COORDINATES); ++iNode)
         {
             NodeBase* node = element->GetNode(iNode, Node::COORDINATES);
-            Eigen::VectorXd nodeCoordinates = node->GetCoordinates();
+            Eigen::VectorXd nodeCoordinates = node->Get(Node::COORDINATES);
             assert(nodeCoordinates.rows() == mDimension);
             boundingBoxMax = boundingBoxMax.cwiseMax(nodeCoordinates);
             boundingBoxMin = boundingBoxMin.cwiseMin(nodeCoordinates);

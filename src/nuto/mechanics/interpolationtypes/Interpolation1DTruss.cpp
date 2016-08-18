@@ -7,6 +7,15 @@
 
 #include "nuto/mechanics/interpolationtypes/Interpolation1DTruss.h"
 
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif  // ENABLE_SERIALIZATION
+
 NuTo::Interpolation1DTruss::Interpolation1DTruss(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
         NuTo::Interpolation1D::Interpolation1D(rDofType, rTypeOrder, rDimension)
 {
@@ -151,6 +160,12 @@ int NuTo::Interpolation1DTruss::CalculateNumNodes() const
 }
 
 #ifdef ENABLE_SERIALIZATION
+template void NuTo::Interpolation1DTruss::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::Interpolation1DTruss::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::Interpolation1DTruss::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::Interpolation1DTruss::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::Interpolation1DTruss::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::Interpolation1DTruss::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<class Archive>
 void NuTo::Interpolation1DTruss::serialize(Archive & ar, const unsigned int version)
 {

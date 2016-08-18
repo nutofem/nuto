@@ -58,8 +58,6 @@ NuTo::Error::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
         StructureOutputBlockVector  intForce(dofStatus, true);
         StructureOutputBlockVector  residual(dofStatus, true);
 
-        ConstitutiveTimeStep timeStep(2);
-        ConstitutiveCalculateStaticData calculateStaticData(CalculateStaticData::USE_PREVIOUS ,1);
 
         // for constraints
         // ---------------
@@ -89,8 +87,10 @@ NuTo::Error::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 
 
         ConstitutiveInputMap input;
-        input[Constitutive::Input::TIME_STEP] = &timeStep;
-        input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateStaticData;
+        input[Constitutive::Input::TIME_STEP] = std::make_unique<ConstitutiveTimeStep>(2);
+        auto& timeStep = *static_cast<ConstitutiveTimeStep*>(input[Constitutive::Input::TIME_STEP].get());
+        input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(CalculateStaticData::USE_PREVIOUS ,1);
+        auto& calculateStaticData = *static_cast<ConstitutiveCalculateStaticData*>(input[Constitutive::Input::CALCULATE_STATIC_DATA].get());
 
         timeStep.SetCurrentTimeStep(mTimeStep);
         timeStep.SetCurrentTimeStep(mTimeStep);

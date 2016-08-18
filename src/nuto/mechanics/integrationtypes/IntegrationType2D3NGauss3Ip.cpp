@@ -44,6 +44,21 @@ void NuTo::IntegrationType2D3NGauss3Ip::GetLocalIntegrationPointCoordinates2D(in
 }
 
 
+Eigen::MatrixXd NuTo::IntegrationType2D3NGauss3Ip::GetNaturalIntegrationPointCoordinates()const
+{
+    Eigen::MatrixXd naturalCoordinates(2,3);
+    naturalCoordinates(0,0) = 1./6.;
+    naturalCoordinates(1,0) = 1./6.;
+
+    naturalCoordinates(0,1) = 4./6.;
+    naturalCoordinates(1,1) = 1./6.;
+
+    naturalCoordinates(0,2) = 1./6.;
+    naturalCoordinates(1,2) = 4./6.;
+
+    return naturalCoordinates;
+}
+
 //! @brief returns the total number of integration points for this integration type
 //! @return number of integration points
 int NuTo::IntegrationType2D3NGauss3Ip::GetNumIntegrationPoints()const

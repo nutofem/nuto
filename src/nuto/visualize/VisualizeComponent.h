@@ -9,7 +9,6 @@
 
 namespace NuTo
 {
-class ElementBase;
 
 class VisualizeComponent
 {
@@ -26,8 +25,6 @@ public:
     virtual std::string GetComponentName()const;
 
     virtual int GetElementId()const;
-
-    virtual const NuTo::ElementBase* GetElement()const;
 
     virtual int GetIp()const;
 

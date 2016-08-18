@@ -989,4 +989,5 @@ const NuTo::SparseMatrixCSRVector2General<T>& NuTo::SparseMatrixCSRVector2Genera
 {
 	return *this;
 }
+
 #endif // SPARSE_MATRIX_CSR_VECTOR2_GENERAL_H

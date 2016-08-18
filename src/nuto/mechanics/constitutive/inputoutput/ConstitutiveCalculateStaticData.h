@@ -36,6 +36,10 @@ public:
         mIndexOfPreviousStaticData(rIndexOfPreviousStaticData)
     {}
 
+    virtual std::unique_ptr<ConstitutiveIOBase> clone() override
+    {
+        return std::make_unique<ConstitutiveCalculateStaticData>(*this);
+    }
 
     //! @brief returns (rXn + rTimeStep[0] / rTimeStep[1] * (rXn - rXn_m1)
     template <typename T>

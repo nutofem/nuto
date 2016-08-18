@@ -151,8 +151,6 @@ private:
     //! @param rC1,rC2 ... coordinate vectors
     bool CoordinatesAreEqual(const Eigen::VectorXd& rC1, const Eigen::VectorXd& rC2) const;
 
-    void UpdateLocalStartIndices();
-
     //! @brief Calculates index pairs that - if swapped - change the orientation of the element.
     //! It is implemented by reflecting each point at a plane at (0,0,0) with normal vector (1,-1,0) which is equal to swapping xi and eta coordinates
     //! @remark Different behavior for 1D: xi' = -xi. This could be done using polymorphism, but I think that bundling it here is sufficient.

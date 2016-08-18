@@ -3,6 +3,17 @@
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "nuto/math/FullMatrix.h"
 
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/utility.hpp>
+#endif // ENABLE_SERIALIZATION
+
 
 template<typename T>
 NuTo::BlockFullMatrix<T>::BlockFullMatrix(const DofStatus& rDofStatus) : BlockStorageBase(rDofStatus)
@@ -194,6 +205,12 @@ template<> std::string BlockFullMatrix<double>::GetTypeId() const
 }
 }
 
+template void NuTo::BlockFullMatrix<double>::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+template void NuTo::BlockFullMatrix<double>::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+template void NuTo::BlockFullMatrix<double>::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+template void NuTo::BlockFullMatrix<double>::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+template void NuTo::BlockFullMatrix<double>::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+template void NuTo::BlockFullMatrix<double>::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<typename T>
 template<class Archive>
 void NuTo::BlockFullMatrix<T>::serialize(Archive& ar, const unsigned int version)
@@ -201,21 +218,13 @@ void NuTo::BlockFullMatrix<T>::serialize(Archive& ar, const unsigned int version
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize BlockFullMarix" << "\n";
 #endif
-    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(NuTo::BlockStorageBase);
+    ar& BOOST_SERIALIZATION_BASE_OBJECT_NVP(BlockStorageBase);
     ar& BOOST_SERIALIZATION_NVP(mData);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize BlockFullMarix \n";
 #endif
 }
 
-
-
-template void NuTo::BlockFullMatrix<double>::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::BlockFullMatrix<double>::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::BlockFullMatrix<double>::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::BlockFullMatrix<double>::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::BlockFullMatrix<double>::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::BlockFullMatrix<double>::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::BlockFullMatrix<double>)
 #endif //ENABLE_SERIALIZATION

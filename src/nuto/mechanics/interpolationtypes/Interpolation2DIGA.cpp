@@ -291,8 +291,7 @@ int NuTo::Interpolation2DIGA::GetSurfaceDegree(int rSurface) const
 
 void NuTo::Interpolation2DIGA::UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType)
 {
-    int dim = rIntegrationType.GetCoordinateDimension();
-    assert(dim == 2);
+    assert(rIntegrationType.GetCoordinateDimension() == 2);
 
     int numIPs = rIntegrationType.GetNumIntegrationPoints();
 
@@ -328,10 +327,13 @@ void NuTo::Interpolation2DIGA::serialize(Archive & ar, const unsigned int versio
     std::cout << "start serialize Interpolation1DIGA" << std::endl;
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(InterpolationBaseIGA);
+    ar & BOOST_SERIALIZATION_NVP(mDegree);
+    ar & BOOST_SERIALIZATION_NVP(mKnotsX);
+    ar & BOOST_SERIALIZATION_NVP(mKnotsY);
+    ar & BOOST_SERIALIZATION_NVP(mIPCoordinates);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize Interpolation1DIGA" << std::endl;
 #endif
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::Interpolation2DIGA)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Interpolation2DIGA)
 #endif  // ENABLE_SERIALIZATION

@@ -86,6 +86,7 @@ if (numberGlobalDofs!=3):
 rhs = myStructure.ConstraintGetRHSBeforeGaussElimination().Export()
 constraintMatrixFull = myStructure.ConstraintGetConstraintMatrixBeforeGaussElimination().ExportToFullMatrix()
 
+
 #correct constraint matrix
 constraintMatrixFullCorrect = nuto.DoubleFullMatrix(3,3)
 constraintMatrixFullCorrect.SetValue(0,0,1)

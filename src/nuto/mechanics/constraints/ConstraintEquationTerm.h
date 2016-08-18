@@ -22,6 +22,9 @@ class ConstraintEquationTerm
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
+public:
+    //! @brief default constructor
+    ConstraintEquationTerm();
 #endif  // ENABLE_SERIALIZATION
 public:
     //! @brief constructor
@@ -58,6 +61,7 @@ public:
     //! @param version    version
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
+
 #endif // ENABLE_SERIALIZATION
 protected:
     const NodeBase* mNode;           //!< node pointer
@@ -65,10 +69,12 @@ protected:
     int mDofComponent;               //!< which dof is constrained (e.g. 0 - dispalacement in x-direction)
     double mCoefficient;             //!< weighting of this term in the constraint equation
 
-    //! @brief default constructor
-    ConstraintEquationTerm();
 };
 
 }
+
+#ifdef ENABLE_SERIALIZATION
+BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintEquationTerm)
+#endif // ENABLE_SERIALIZATION
 
 #endif // CONSTRAINTEQUATIONTERM_H_

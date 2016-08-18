@@ -20,52 +20,34 @@ public:
         mComputableDofCombinations.resize(2); //VHIRTHAMTODO ---> Get number time derivatives during construction (as parameter)
     }
 
+
+    //! @brief ... adds a constitutive law to a model that combines multiple constitutive laws (additive, parallel)
+    //! @param rConstitutiveLaw ... additional constitutive law
+    //! @param rModiesInput ... enum which defines wich input is modified by a constitutive law.
+    virtual void  AddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw, Constitutive::Input::eInput rModiesInput = Constitutive::Input::NONE) override;
+
+
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
     ConstitutiveStaticDataBase* AllocateStaticData1D(const ElementBase* rElement) const override
     {
-        mStaticDataAllocated = true;
-        std::vector<NuTo::ConstitutiveBase*> tempVec;
-        for(unsigned int i=0; i<mConstitutiveLawsModInput.size(); ++i)
-        {
-            tempVec.push_back(mConstitutiveLawsModInput[i].first);
-        }
-        tempVec.push_back(mConstitutiveLawOutput);
-        return new ConstitutiveStaticDataMultipleConstitutiveLaws(tempVec,rElement,1);
+        return AllocateStaticDataAdditiveInputExplicit<1>(rElement);
     }
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
     ConstitutiveStaticDataBase* AllocateStaticData2D(const ElementBase* rElement) const override
     {
-        mStaticDataAllocated = true;
-        std::vector<NuTo::ConstitutiveBase*> tempVec;
-        for(unsigned int i=0; i<mConstitutiveLawsModInput.size(); ++i)
-        {
-            tempVec.push_back(mConstitutiveLawsModInput[i].first);
-        }
-        tempVec.push_back(mConstitutiveLawOutput);
-        return new ConstitutiveStaticDataMultipleConstitutiveLaws(tempVec,rElement,2);
+        return AllocateStaticDataAdditiveInputExplicit<2>(rElement);
     }
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
     ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const override
     {
-        mStaticDataAllocated = true;
-        std::vector<NuTo::ConstitutiveBase*> tempVec;
-        for(unsigned int i=0; i<mConstitutiveLawsModInput.size(); ++i)
-        {
-            tempVec.push_back(mConstitutiveLawsModInput[i].first);
-        }
-        tempVec.push_back(mConstitutiveLawOutput);
-        return new ConstitutiveStaticDataMultipleConstitutiveLaws(tempVec,rElement,3);
+        return AllocateStaticDataAdditiveInputExplicit<3>(rElement);
     }
 
-    //! @brief ... adds a constitutive law to a model that combines multiple constitutive laws (additive, parallel)
-    //! @param rConstitutiveLaw ... additional constitutive law
-    //! @param rModiesInput ... enum which defines wich input is modified by a constitutive law.
-    virtual void  AddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw, Constitutive::Input::eInput rModiesInput = Constitutive::Input::NONE) override;
 
 
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
@@ -81,34 +63,28 @@ public:
     //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
     virtual bool CheckElementCompatibility( Element::eElementType rElementType) const override
     {
-        for(unsigned int i=0; i<mConstitutiveLawsModInput.size(); ++i)
+        for(unsigned int i=0; i<mSublaws.size(); ++i)
         {
-            if(!mConstitutiveLawsModInput[i].first->CheckElementCompatibility(rElementType))
+            if(!mSublaws[i].first->CheckElementCompatibility(rElementType))
                 return false;
         }
-        return true;
+        assert(mMainLaw!=nullptr);
+        return mMainLaw->CheckElementCompatibility(rElementType);
     }
 
     //! @brief ... check parameters of the constitutive relationship
     //! if one check fails, an exception is thrwon
     virtual void CheckParameters() const override
     {
-        for(unsigned int i=0; i<mConstitutiveLawsModInput.size(); ++i)
+        for(unsigned int i=0; i<mSublaws.size(); ++i)
         {
-            mConstitutiveLawsModInput[i].first->CheckParameters();
+            mSublaws[i].first->CheckParameters();
         }
+        assert(mMainLaw!=nullptr);
+        mMainLaw->CheckParameters();
     }
 
-    //! @brief ... evaluate the constitutive relation
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    template <int TDim>
-    NuTo::Error::eError EvaluateAdditiveInputExplicit(  ElementBase* rElement,
-                                                        int rIp,
-                                                        const ConstitutiveInputMap& rConstitutiveInput,
-                                                        const ConstitutiveOutputMap& rConstitutiveOutput);
+
 
 
     //! @brief ... evaluate the constitutive relation of every attached constitutive law in 1D
@@ -181,31 +157,82 @@ public:
     //! @return ... see brief explanation
     virtual bool HaveTmpStaticData() const override
     {
-        for(unsigned int i=0; i<mConstitutiveLawsModInput.size(); ++i)
+        for(unsigned int i=0; i<mSublaws.size(); ++i)
         {
-            if(mConstitutiveLawsModInput[i].first->HaveTmpStaticData())
+            if(mSublaws[i].first->HaveTmpStaticData())
                 return true;
+        }
+        if(mMainLaw!=nullptr)
+        {
+            return mMainLaw->HaveTmpStaticData();
         }
         return false;
     }
 
 private:
 
-    //! @brief Gets the output enum from an input enum
-    Constitutive::Output::eOutput GetOutputEnumFromInputEnum(Constitutive::Input::eInput rInputEnum);
-
     //! @brief Adds all calculable dof combinations of an attached constitutive law to an internal storage
     //! @param rConstitutiveLaw ... constitutive law
     void AddCalculableDofCombinations(NuTo::ConstitutiveBase* rConstitutiveLaw);
 
+    //! @brief ... create new static data object for an integration point
+    //! @return ... pointer to static data object
+    template <int TDim>
+    ConstitutiveStaticDataBase* AllocateStaticDataAdditiveInputExplicit(const ElementBase* rElement) const;
+
+    //! @brief Applies sublaw dependent modifications to the main laws inputs and the global outputs
+    //! @param rMainLawInput: Input map of the main law
+    //! @param rConstitutiveOutput: Global output map of this constitutive law
+    //! @param rSublawOutput: Output map of a sublaw
+    template <int TDim>
+    void ApplySublawOutputs(const ConstitutiveInputMap& rMainLawInput,
+                            const ConstitutiveOutputMap& rConstitutiveOutput,
+                            const ConstitutiveOutputMap& rSublawOutput);
+
+    //! @brief Calculates the derivatives that depend on main law and sublaw outputs
+    //! @param rConstitutiveOutput: Global output map of this constitutive law
+    //! @param rSublawOutputVec: Vector with all the sublaws output maps
+    template <int TDim>
+    void CalculateDerivatives(const ConstitutiveOutputMap &rConstitutiveOutput,
+                              std::vector<ConstitutiveOutputMap> &rSublawOutputVec);
+
+    //! @brief ... evaluate the constitutive relation
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    template <int TDim>
+    NuTo::Error::eError EvaluateAdditiveInputExplicit(  ElementBase* rElement,
+                                                        int rIp,
+                                                        const ConstitutiveInputMap& rConstitutiveInput,
+                                                        const ConstitutiveOutputMap& rConstitutiveOutput);
+
+
+    //! @brief Gets the enum of the sublaw output that is needed to calculate the specified derivative
+    //! @param rParameter: Enum of the parameter whose derivative is needed
+    //! @param rMainDerivative: The requested global derivative
+    //! @return Sublaw derivative enum
+    Constitutive::Output::eOutput GetDerivativeEnumSublaw(Constitutive::Output::eOutput rParameter,
+                                                          Constitutive::Output::eOutput rMainDerivative) const;
+
+
+    //! @brief Gets a modified output map for the sublaws depending on the main laws inputs and the specified modified Input (see Member: mModifiedInputs)
+    //! @return Modified output map
+    template <int TDim>
+    ConstitutiveOutputMap GetSublawOutputMap(const ConstitutiveInputMap& rMainLawInputMap,
+                                             const NuTo::ConstitutiveOutputMap& rMainLawOutputMap,
+                                             unsigned int rSublawIndex) const;
+
+
+
+
+
+
     //! @brief ... pointer to constitutive law that delivers the output
-    NuTo::ConstitutiveBase* mConstitutiveLawOutput = nullptr;
+    NuTo::ConstitutiveBase* mMainLaw = nullptr;
 
     //! @brief ... vector of pairs which store the pointers to input modifying constitutive laws together with the modified inputs enum.
-    std::vector<std::pair<NuTo::ConstitutiveBase*,Constitutive::Input::eInput>> mConstitutiveLawsModInput;
-
-    //! @brief ... set of all Inputs that should be modified
-    std::set<Constitutive::Input::eInput> mModifiedInputs;
+    std::vector<std::pair<NuTo::ConstitutiveBase*,Constitutive::Input::eInput>> mSublaws;
 
     std::vector<std::set<std::pair<Node::eDof,Node::eDof>>> mComputableDofCombinations;
 

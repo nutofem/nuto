@@ -36,15 +36,16 @@ public:
     void Run(NuTo::Structure& rStructure)
     {
         rStructure.SetVerboseLevel(10);
-        if (DEBUG_PRINT)
-            rStructure.NodeInfo(10);
-
 
         SetConstitutiveLaw(rStructure);
         SetBoundaryConditions(rStructure);
 
         rStructure.NodeBuildGlobalDofs();
         rStructure.CalculateMaximumIndependentSets();
+
+        if (DEBUG_PRINT)
+            rStructure.NodeInfo(10);
+
 
         CheckStiffness(rStructure);
         Solve(rStructure);

@@ -1,14 +1,17 @@
 SET(NuToMechanicsConstitutive_SOURCES
 constitutive/ConstitutiveBase.cpp
 constitutive/inputoutput/ConstitutiveIOBase.cpp
+constitutive/inputoutput/ConstitutiveIOMap.cpp
 constitutive/inputoutput/EngineeringStrain.cpp
 constitutive/inputoutput/EngineeringStress.cpp
 constitutive/inputoutput/EquivalentStrain.cpp
 constitutive/laws/AdditiveInputExplicit.cpp
+constitutive/laws/AdditiveInputImplicit.cpp
 constitutive/laws/ConstitutiveLawsAdditiveOutput.cpp
 constitutive/laws/EngineeringStressHelper.cpp
 constitutive/laws/FibreMatrixBondStressSlip.cpp
 constitutive/laws/GradientDamageEngineeringStress.cpp
+constitutive/laws/PhaseField.cpp
 constitutive/laws/HeatConduction.cpp
 constitutive/laws/LinearElasticEngineeringStress.cpp
 constitutive/laws/MisesPlasticityEngineeringStress.cpp
@@ -21,6 +24,8 @@ constitutive/staticData/ConstitutiveStaticDataBondStressSlip.cpp
 constitutive/staticData/ConstitutiveStaticDataMoistureTransport.cpp
 constitutive/staticData/ConstitutiveStaticDataMultipleConstitutiveLaws.cpp
 constitutive/staticData/ConstitutiveStaticDataGradientDamage.cpp
+constitutive/staticData/ConstitutiveStaticDataElasticEnergyDensity.cpp
+constitutive/staticData/ConstitutiveStaticDataHistoryVariableScalar.cpp
 constitutive/staticData/ConstitutiveStaticDataMisesPlasticity.cpp
 )
 
@@ -183,6 +188,7 @@ loads/LoadSurfacePressure3D.cpp
 
 SET(NuToMechanicsNodes_SOURCES
 nodes/NodeBase.cpp
+nodes/NodeDof.cpp
 )
 
 SET(NuToMechanicsSection_SOURCES

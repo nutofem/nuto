@@ -15,16 +15,16 @@ NuTo::ResultNodeAcceleration::ResultNodeAcceleration(const std::string& rIdent, 
 //! @brief calculate the relevant nodal dofs
 void NuTo::ResultNodeAcceleration::CalculateValues(const StructureBase& rStructure, NuTo::FullMatrix<double, 1, Eigen::Dynamic>& rValues)const
 {
-	const NodeBase* node(rStructure.NodeGetNodePtr(mNodeId));
+    const NodeBase* node(rStructure.NodeGetNodePtr(mNodeId));
 
-	rValues = node->GetDisplacements(2).transpose();
+    rValues = node->Get(Node::DISPLACEMENTS, 2).transpose();
 }
 
 //! @brief number of data points per time step (e.g. number of Accelerationlacement components of a node
 int NuTo::ResultNodeAcceleration::GetNumData(const StructureBase& rStructure)const
 {
-	const NodeBase* node(rStructure.NodeGetNodePtr(mNodeId));
-	return node->GetNumDisplacements();
+    const NodeBase* node(rStructure.NodeGetNodePtr(mNodeId));
+    return node->GetNum(Node::DISPLACEMENTS);
 }
 
 

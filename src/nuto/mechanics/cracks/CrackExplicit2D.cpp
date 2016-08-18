@@ -36,8 +36,8 @@ void NuTo::CrackExplicit2D::Info(int rVerboseLevel)const
 			if (rVerboseLevel>4)
 			{
 					std::cout << "\tcoordinates of node " << i << " :";
-					for(unsigned short iDof=0; iDof < (*it)->GetNumCoordinates(); ++iDof)
-							std::cout << "\t" << (*it)->GetCoordinate(iDof);
+					for(unsigned short iDof=0; iDof < (*it)->GetNum(Node::COORDINATES); ++iDof)
+							std::cout << "\t" << (*it)->Get(Node::COORDINATES, iDof);
 			}
 			std::cout << std::endl;
         }
@@ -75,7 +75,7 @@ void NuTo::CrackExplicit2D::Initiate(std::vector<NuTo::ElementBase*>& rElements,
 				/// check if at least 1 element edge is intersected by the crack
 				for(int j=0; j<numElemNodes; j++)
 				{
-					NuTo::NodeBase* nodeI=new NuTo::NodeDof<2,0,0,0,0,0,0,0,0,0>();
+					NuTo::NodeBase* nodeI=new NuTo::NodeDof(0, std::map<Node::eDof, int>({{Node::COORDINATES, 2}}));
 					double relCoor=0.0;
 					size_t seg;
 					isCracked=Intersect(thisElement->GetNode(j),thisElement->GetNode(((j+1)%numElemNodes)),nodeI, relCoor, seg);
@@ -122,7 +122,7 @@ void NuTo::CrackExplicit2D::Initiate(std::vector<NuTo::ElementBase*>& rElements,
 //! @todo  move this function to geometry class
 double NuTo::CrackExplicit2D::NodeDistance(const NuTo::NodeBase* rNode) const
 {
-	Eigen::Matrix<double, 2, 1> nodeCoor = rNode->GetCoordinates2D();
+	Eigen::Matrix<double, 2, 1> nodeCoor = rNode->Get(Node::COORDINATES);
 	double signedDist=HUGE_VAL;//LONG_MAX ;
 
 	/// go through all crack segments to check the minimal Distance of the node
@@ -133,10 +133,10 @@ double NuTo::CrackExplicit2D::NodeDistance(const NuTo::NodeBase* rNode) const
 	while (crackPtIt!= this->end())
     {
 		/// get coordinates as long as the second segment point is the end of the list
-	    xA = (*crackPtIt)->GetCoordinates2D();
+	    xA = (*crackPtIt)->Get(Node::COORDINATES);
 		if( ++crackPtIt == this->end()) 	break;
 
-		xB = (*crackPtIt)->GetCoordinates2D();
+		xB = (*crackPtIt)->Get(Node::COORDINATES);
 
 		/// calculate the normal to the cracksegment
  		/*!
@@ -176,7 +176,7 @@ double NuTo::CrackExplicit2D::NodeDistance(const NuTo::NodeBase* rNode) const
 bool NuTo::CrackExplicit2D::Intersect(const NuTo::NodeBase* rNodeA, const NuTo::NodeBase* rNodeB, NuTo::NodeBase* rNodeI, double &rDist, size_t& rSeg)
 {
 	//! check if input nodes are 2D-nodes
-	if(rNodeA->GetNumCoordinates()!=2 || rNodeB->GetNumCoordinates()!=2 )
+	if(rNodeA->GetNum(Node::COORDINATES)!=2 || rNodeB->GetNum(Node::COORDINATES)!=2 )
 		throw NuTo::MechanicsException("[NuTo::CrackExplicit2D::Intersect] don't got an 2D-Node!!!");
 
 	bool isCracked=false;
@@ -213,7 +213,7 @@ bool NuTo::CrackExplicit2D::Intersect(const NuTo::NodeBase* rNodeA, const NuTo::
 unsigned short NuTo::CrackExplicit2D::ExtendEnd(const NuTo::NodeBase* rNodeA, const NuTo::NodeBase* rNodeB, NuTo::NodeBase* rNodeI, double& rDist)
 {
 	//! check if input nodes are 2D-nodes
-	if(rNodeA->GetNumCoordinates()!=2 || rNodeB->GetNumCoordinates()!=2 )
+	if(rNodeA->GetNum(Node::COORDINATES)!=2 || rNodeB->GetNum(Node::COORDINATES)!=2 )
 		throw NuTo::MechanicsException("[NuTo::CrackExplicit2D::ExtendEnd] don't got an 2D-Node!!!");
 
 	unsigned short isCracked=0;
@@ -226,7 +226,7 @@ unsigned short NuTo::CrackExplicit2D::ExtendEnd(const NuTo::NodeBase* rNodeA, co
 	std::list<NuTo::NodeBase*>::const_reverse_iterator crackPtIt2 = this->rbegin();
 
 	//! compute the nomalized direction of the end-ray
-	Eigen::Matrix<double, 2, 1> dir = (*crackPtIt1)->GetCoordinates2D() - (*crackPtIt2)->GetCoordinates2D();
+	Eigen::Matrix<double, 2, 1> dir = (*crackPtIt1)->Get(Node::COORDINATES) - (*crackPtIt2)->Get(Node::COORDINATES);
 	dir.normalize();
 
 	//! check if there is an intersection with the end-ray of this crack
@@ -241,7 +241,7 @@ unsigned short NuTo::CrackExplicit2D::ExtendEnd(const NuTo::NodeBase* rNodeA, co
 		std::list<NuTo::NodeBase*>::const_iterator crackPtIt2 = this->begin();
 
 		//! compute the nomalized direction of the end-ray
-	    Eigen::Matrix<double, 2, 1> dir = (*crackPtIt1)->GetCoordinates2D() - (*crackPtIt2)->GetCoordinates2D();
+	    Eigen::Matrix<double, 2, 1> dir = (*crackPtIt1)->Get(Node::COORDINATES) - (*crackPtIt2)->Get(Node::COORDINATES);
 	    dir.normalize();
 
 		const NuTo::NodeBase* nodeC(*crackPtIt2);
@@ -270,13 +270,13 @@ bool NuTo::CrackExplicit2D::IntersectSegmentSegment(	const NuTo::NodeBase* rNode
 														NuTo::NodeBase* rNodeI, double & rDist1, double & rDist2)
 {
 	//! check if input nodes are 2D-nodes
-	if(rNodeA->GetNumCoordinates()!=2 || rNodeB->GetNumCoordinates()!=2 || rNodeC->GetNumCoordinates()!=2 || rNodeD->GetNumCoordinates()!=2 || rNodeI->GetNumCoordinates()!=2 )
+	if(rNodeA->GetNum(Node::COORDINATES)!=2 || rNodeB->GetNum(Node::COORDINATES)!=2 || rNodeC->GetNum(Node::COORDINATES)!=2 || rNodeD->GetNum(Node::COORDINATES)!=2 || rNodeI->GetNum(Node::COORDINATES)!=2 )
 		throw NuTo::MechanicsException("[NuTo::CrackExplicit2D::Intersect] don't got an 2D-Node!!!");
 
-	Eigen::Matrix<double, 2, 1> xA = rNodeA->GetCoordinates2D();
-	Eigen::Matrix<double, 2, 1> xB = rNodeB->GetCoordinates2D();
-	Eigen::Matrix<double, 2, 1> xC = rNodeC->GetCoordinates2D();
-	Eigen::Matrix<double, 2, 1> xD = rNodeD->GetCoordinates2D();
+	Eigen::Matrix<double, 2, 1> xA = rNodeA->Get(Node::COORDINATES);
+	Eigen::Matrix<double, 2, 1> xB = rNodeB->Get(Node::COORDINATES);
+	Eigen::Matrix<double, 2, 1> xC = rNodeC->Get(Node::COORDINATES);
+	Eigen::Matrix<double, 2, 1> xD = rNodeD->Get(Node::COORDINATES);
 
 
 	/*!
@@ -353,7 +353,7 @@ bool NuTo::CrackExplicit2D::IntersectSegmentSegment(	const NuTo::NodeBase* rNode
 	 * \f$
 	 */
 	Eigen::Matrix<double, 2, 1> xI = xA + rDist1 * dir1;
-	rNodeI->SetCoordinates2D(xI);
+	rNodeI->Set(Node::COORDINATES, xI);
 
 	if( rDist1<=1 && 0<=rDist1 && rDist2<=1 && 0<=rDist2 ){
 		return true;
@@ -379,12 +379,12 @@ bool NuTo::CrackExplicit2D::IntersectSegmentRay(	const NuTo::NodeBase* rNodeA, c
 														NuTo::NodeBase* rNodeI, double & rDist1, double & rDist2)
 {
 	//! check if input nodes are 2D-nodes
-	if(rNodeA->GetNumCoordinates()!=2 || rNodeB->GetNumCoordinates()!=2 || rNodeC->GetNumCoordinates()!=2 || rNodeI->GetNumCoordinates()!=2 )
+	if(rNodeA->GetNum(Node::COORDINATES)!=2 || rNodeB->GetNum(Node::COORDINATES)!=2 || rNodeC->GetNum(Node::COORDINATES)!=2 || rNodeI->GetNum(Node::COORDINATES)!=2 )
 		throw NuTo::MechanicsException("[NuTo::CrackExplicit2D::Intersect] don't got an 2D-Node!!!");
 
-    Eigen::Matrix<double, 2, 1> xA = rNodeA->GetCoordinates2D();
-    Eigen::Matrix<double, 2, 1> xB = rNodeB->GetCoordinates2D();
-    Eigen::Matrix<double, 2, 1> xC = rNodeC->GetCoordinates2D();
+    Eigen::Matrix<double, 2, 1> xA = rNodeA->Get(Node::COORDINATES);
+    Eigen::Matrix<double, 2, 1> xB = rNodeB->Get(Node::COORDINATES);
+    Eigen::Matrix<double, 2, 1> xC = rNodeC->Get(Node::COORDINATES);
 
 	/*!
 	 * Building up Vector 1
@@ -449,7 +449,7 @@ bool NuTo::CrackExplicit2D::IntersectSegmentRay(	const NuTo::NodeBase* rNodeA, c
 	 * \f$
 	 */
     Eigen::Matrix<double, 2, 1> xI = xA + rDist1 * dir1;
-    rNodeI->SetCoordinates2D(xI);
+    rNodeI->Set(Node::COORDINATES, xI);
 
 	//! return true if \f$ 0 \leq {r,s} \leq 1 \f$
 	//! return false otherwise
@@ -477,7 +477,7 @@ void NuTo::CrackExplicit2D::Visualize(VisualizeUnstructuredGrid& rVisualize) con
     std::vector<unsigned int> PointIdVec;
     for (std::list<NuTo::NodeBase*>::const_iterator it = this->begin(); it!= this->end(); it++)
     {
-        double GlobalPointCoor[3] = {(*it)->GetCoordinate(0) , (*it)->GetCoordinate(1), 0.0};
+        double GlobalPointCoor[3] = {(*it)->Get(Node::COORDINATES)[0] , (*it)->Get(Node::COORDINATES)[0], 0.0};
 
         unsigned int PointId = rVisualize.AddPoint(GlobalPointCoor);
         PointIdVec.push_back(PointId);

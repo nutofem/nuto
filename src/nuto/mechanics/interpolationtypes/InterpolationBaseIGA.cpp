@@ -24,9 +24,6 @@ void NuTo::InterpolationBaseIGA::Initialize()
 
 #ifdef ENABLE_SERIALIZATION
 NuTo::InterpolationBaseIGA::InterpolationBaseIGA():
-    mTypeOrder(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1),
-    mDofType(NuTo::Node::COORDINATES),
-    mDimension(0)
 {
 }
 
@@ -42,15 +39,7 @@ void NuTo::InterpolationBaseIGA::serialize(Archive & ar, const unsigned int vers
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize InterpolationBaseIGA" << std::endl;
 #endif
-    ar & boost::serialization::make_nvp("mTypeOrder", const_cast<NuTo::Interpolation::eTypeOrder&>(mTypeOrder));
-    ar & boost::serialization::make_nvp("mDofType", const_cast<NuTo::Node::eDof&>(mDofType));
-    ar & BOOST_SERIALIZATION_NVP(mIsConstitutiveInput);
-    ar & BOOST_SERIALIZATION_NVP(mIsActive);
-    ar & BOOST_SERIALIZATION_NVP(mNumDofs);
-    ar & BOOST_SERIALIZATION_NVP(mNumNodes);
-
-    ar & BOOST_SERIALIZATION_NVP(mLocalStartIndex);
-    ar & boost::serialization::make_nvp("mDimension", const_cast<int&>(mDimension));
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(InterpolationBase);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize InterpolationBaseIGA" << std::endl;
 #endif

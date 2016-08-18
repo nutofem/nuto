@@ -16,6 +16,8 @@
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+
 namespace NuTo
 {
 class ConstitutiveStaticDataBase;
@@ -26,6 +28,7 @@ class ConstitutiveBase
 {
     // Friend declarations needed for CheckParameters-function of ConstitutiveLawsAdditiveOutput
     friend class AdditiveInputExplicit;
+    friend class AdditiveInputImplicit;
     friend class ConstitutiveLawsAdditiveOutput;
 
 #ifdef ENABLE_SERIALIZATION
@@ -33,7 +36,7 @@ class ConstitutiveBase
 #endif // ENABLE_SERIALIZATION
 public:
     //! @brief ... constructor
-    ConstitutiveBase();
+    ConstitutiveBase(): mParametersValid(false){};
 
     //! @brief ... constructor
     virtual ~ConstitutiveBase()

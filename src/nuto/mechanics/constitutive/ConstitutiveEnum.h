@@ -1,7 +1,6 @@
 #pragma once
 
 #include <map>
-#include <set>
 #include <algorithm>
 #include <boost/assign/list_of.hpp>
 #include "nuto/mechanics/MechanicsException.h"
@@ -14,6 +13,7 @@ namespace Constitutive
 enum eConstitutiveType
 {
     ADDITIVE_INPUT_EXPLICIT,                                //!< container for multiple constitutive laws linked by a shared input
+    ADDITIVE_INPUT_IMPLICIT,                                //!< container for multiple constitutive laws linked by a shared input
     CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT,                      //!< container for multiple constitutive laws linked by addition of their outputs
     DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS,             //!< viscoplastic damage model
     DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS,   //!< viscoplastic damage model with hardening
@@ -29,6 +29,7 @@ enum eConstitutiveType
     MOISTURE_TRANSPORT,                                     //!< moisture transport model
     MULTISCALE,                                             //!< multiscale model, where the average stress is calculated from a full fine scale model
     NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS,          //!< nonlocal damage model with plasticity in the effective stress space
+    PHASE_FIELD,                                            //!< phase field model
     SHRINKAGE_CAPILLARY_STRAIN_BASED,                       //!< strain based drying shrinkage - capillary term
     SHRINKAGE_CAPILLARY_STRESS_BASED,                       //!< stress based drying shrinkage - capillary term
     STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS,   //!< strain gradient damage plasticity model (damage and plasticity are function of nonlocal total strain)
@@ -54,6 +55,7 @@ static inline std::map<eConstitutiveType, std::string> GetConstitutiveTypeMap()
     map[MOISTURE_TRANSPORT]                                     = "MOISTURE_TRANSPORT";
     map[MULTISCALE]                                             = "MULTISCALE";
     map[NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS]          = "NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
+    map[PHASE_FIELD]                                            = "PHASE_FIELD";
     map[SHRINKAGE_CAPILLARY_STRESS_BASED]                       = "SHRINKAGE_CAPILLARY_STRESS_BASED";
     map[STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS]   = "STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS";
     map[THERMAL_STRAINS]                                        = "THERMAL_STRAINS";
@@ -117,6 +119,12 @@ enum eDamageLawType
     ISOTROPIC_CUBIC_HERMITE                         //!< cubic hermite h00
 };
 
+enum class ePhaseFieldEnergyDecomposition
+{
+    ISOTROPIC,                                              //!< isotropic degradation
+    ANISOTROPIC_SPECTRAL_DECOMPOSITION,                     //!< spectral decompostion of the elastic strain tensor proposed by Miehe et al.
+};
+
 static inline std::map<eDamageLawType, std::string> GetDamageLawMap()
 {
     std::map<eDamageLawType, std::string> map;
@@ -152,6 +160,7 @@ static inline eDamageLawType DamageLawToEnum(std::string rDamageLaw)
 enum class eConstitutiveParameter
 {
     ALPHA,                                      //!<
+    ARTIFICIAL_VISCOSITY,                       //!<
     BIAXIAL_COMPRESSIVE_STRENGTH,               //!<
     BOUNDARY_DIFFUSION_COEFFICIENT_RH,          //!<
     BOUNDARY_DIFFUSION_COEFFICIENT_WV,          //!<
@@ -175,6 +184,7 @@ enum class eConstitutiveParameter
     HEAT_CAPACITY,                              //!< specific heat capacity \f$c_T\f$
     INITIAL_HARDENING_MODULUS,                  //!<
     INITIAL_YIELD_STRENGTH,                     //!<
+    LENGTH_SCALE_PARAMETER,                     //!<
     MACROSCOPIC_BULK_MODULUS,                   //!<
     MASS_EXCHANGE_RATE,                         //!<
     MAX_BOND_STRESS,                            //!<
@@ -302,6 +312,8 @@ enum eInput
     WATER_VOLUME_FRACTION_DT1,          //!< first time derivative
     WATER_VOLUME_FRACTION_GRADIENT,     //!<
     INTERFACE_SLIP,                     //!<
+    CRACK_PHASE_FIELD,                  //!<
+    ELASTIC_ENERGY_DENSITY,             //!<
     CALCULATE_STATIC_DATA,
     TIME_STEP
 };
@@ -344,12 +356,13 @@ enum eOutput
 {
     ENGINEERING_STRESS,
     ENGINEERING_STRESS_VISUALIZE,
+    D_ENGINEERING_STRESS_D_PHASE_FIELD,
     ENGINEERING_STRAIN,
     D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY,
     D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION,
     ENGINEERING_STRAIN_VISUALIZE,
     SHRINKAGE_STRAIN_VISUALIZE,
-    THERMAL_STRAIN, //!< \f$ε_{th} = α ΔT I\f$
+    THERMAL_STRAIN, //!< \f$\varepsilon_{th} = \alpha \Delta T I\f$
     D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,
     D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY,
     D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION,
@@ -420,6 +433,8 @@ enum eOutput
     INTERFACE_CONSTITUTIVE_MATRIX,
     BOND_STRESS,
     SLIP,
+    ELASTIC_ENERGY_DAMAGED_PART,
+    D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN,
 };
 }
 
@@ -503,11 +518,6 @@ static inline std::string OutputToString( const Output::eOutput& e )
   return std::string("undefined");
 }
 }//Constitutive
-
-class ConstitutiveIOBase;
-using ConstitutiveInputMap = std::map<Constitutive::Input::eInput, ConstitutiveIOBase*>;
-using ConstitutiveOutputMap = std::map<Constitutive::Output::eOutput, ConstitutiveIOBase*>;
-
 
 
 }//NuTo

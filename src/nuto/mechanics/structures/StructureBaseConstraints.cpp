@@ -719,7 +719,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
 
     for (int iNode = 0; iNode < GroupGetNumMembers(nodeGroup); ++iNode)
     {
-        Eigen::VectorXd tmpMatrix = NodeGetNodePtr(nodeGroupIds.at(iNode, 0))->GetCoordinates();
+        Eigen::VectorXd tmpMatrix = NodeGetNodePtr(nodeGroupIds.at(iNode, 0))->Get(Node::COORDINATES);
 
         for (int iDim = 0; iDim < dim; ++iDim)
             dataPoints[iNode][iDim] = tmpMatrix.at(iDim,0);
@@ -729,7 +729,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
 
 
 
-    Eigen::VectorXd queryNodeCoords = NodeGetNodePtr(rNode)->GetCoordinates();
+    Eigen::VectorXd queryNodeCoords = NodeGetNodePtr(rNode)->Get(Node::COORDINATES);
 
     for (int iDim = 0; iDim < dim; ++iDim)
         queryPoint[iDim] = queryNodeCoords.at(iDim,0);

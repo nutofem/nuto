@@ -332,13 +332,13 @@ public:
     //! @brief Sets the temperature of a node
     //! @param rIdent Node identifier
     //! @param rTemperature Temperature to assign to node
-    void NodeSetTemperature(int rId, const double rTemperature);
+    void NodeSetTemperature(int rId, double rTemperature);
 
     //! @brief Sets the temperature of a node
     //! @param rIdent Node identifier
     //! @param rTimeDerivative Time derivative (0 temperature, 1 temperature change)
     //! @param rTemperature Temperature (change) to assign to node
-    void NodeSetTemperature(int rId, int rTimeDerivative, const double rTemperature);
+    void NodeSetTemperature(int rId, int rTimeDerivative, double rTemperature);
 
     //! @brief returns the node ids of an node group
     //! @param rGroupId  group number
@@ -1328,6 +1328,10 @@ public:
     //! @param rIdent ... constitutive law identifier
     //! @param rType ... constitutive law type
     void ConstitutiveLawCreate(int rIdent, Constitutive::eConstitutiveType rType);
+
+    //! @brief Adds a constitutive law
+    //! @param rConstitutiveLawPtr: Pointer to constitutive law
+    int AddConstitutiveLaw(ConstitutiveBase* rConstitutiveLawPtr);
 
     //! @brief ... get the pointer to a constitutive law from the constitutive law identifier
     //! @param rIdent ... constitutive law identifier

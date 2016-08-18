@@ -206,13 +206,13 @@ public:
         {
 
 
-            if(mS.NodeGetNodePtr(i)->GetNumRelativeHumidity() != 0)
+            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::RELATIVEHUMIDITY) != 0)
             {
-                mS.NodeGetNodePtr(i)->SetRelativeHumidity(0,InitialRelativeHumidity) ;
+                mS.NodeGetNodePtr(i)->Set(NuTo::Node::RELATIVEHUMIDITY, 0,InitialRelativeHumidity) ;
             }
-            if(mS.NodeGetNodePtr(i)->GetNumWaterVolumeFraction() != 0)
+            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::WATERVOLUMEFRACTION) != 0)
             {
-                mS.NodeGetNodePtr(i)->SetWaterVolumeFraction(0,InitialWaterVolumeFraction);
+                mS.NodeGetNodePtr(i)->Set(NuTo::Node::WATERVOLUMEFRACTION, 0,InitialWaterVolumeFraction);
             }
         }
     }
@@ -600,15 +600,15 @@ void CheckMechanicsResultsStressBased(NuTo::Structure& rS)
     BOOST_FOREACH(NodeMap::const_iterator::value_type it, nodePtrMap)
     {
         const NuTo::NodeBase* nodePtr = it.second;
-        if(nodePtr->GetNumDisplacements()<1)
+        if(nodePtr->GetNum(NuTo::Node::DISPLACEMENTS)<1)
         {
             continue;   // Nodes without Displacements cant be checked
         }
         for(int i=0; i<TDim; ++i)
         {
-            double coord = nodePtr->GetCoordinate(i);
+            double coord = nodePtr->Get(NuTo::Node::COORDINATES)[i];
             double refDisp = capStress / TEST_YOUNGSMODULUS * coord;
-            double disp  = nodePtr->GetDisplacement(i);
+            double disp  = nodePtr->Get(NuTo::Node::DISPLACEMENTS)[i];
             double diff   = std::abs(refDisp) - std::abs(disp);
             const double tolerance = 1e-10;
             if((diff >tolerance || diff < -tolerance))// && coordX > 0)
@@ -637,18 +637,18 @@ void CheckMoistureTransportResults(NuTo::Structure& rS,
         const NuTo::NodeBase* nodePtr = it.second;
 
 
-        if(nodePtr->GetNumWaterVolumeFraction()>0)
+        if(nodePtr->GetNum(NuTo::Node::WATERVOLUMEFRACTION)>0)
         {
-            double nodalWVF = nodePtr->GetWaterVolumeFraction();
+            double nodalWVF = nodePtr->Get(NuTo::Node::WATERVOLUMEFRACTION)[0];
             double eqWVF = 0.062035;
             if(nodalWVF<eqWVF-tolerance || nodalWVF>eqWVF+tolerance)
             {
                 ++numMismatchingValues;
             }
         }
-        if(nodePtr->GetNumWaterVolumeFraction()>0)
+        if(nodePtr->GetNum(NuTo::Node::WATERVOLUMEFRACTION)>0)
         {
-            double nodalRH = nodePtr->GetRelativeHumidity();
+            double nodalRH = nodePtr->Get(NuTo::Node::RELATIVEHUMIDITY)[0];
             double eqRH = 0.4;
             if(nodalRH<eqRH-tolerance || nodalRH>eqRH+tolerance)
             {
@@ -755,9 +755,9 @@ void ShrinkageTestStressBased(  std::array<int,TDim> rN,
     auto LambdaGetBoundaryNodes = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->GetCoordinate(0);
+                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
                                         if ((x >= 0.0   - Tol   && x <= 0.0   + Tol) ||
                                             (x >= rL[0] - Tol   && x <= rL[0] + Tol))
                                         {
@@ -766,7 +766,7 @@ void ShrinkageTestStressBased(  std::array<int,TDim> rN,
 
                                         if(TDim>1)
                                         {
-                                            double y = rNodePtr->GetCoordinate(1);
+                                            double y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
                                             if ((y >= 0.0   - Tol   && y <= 0.0   + Tol) ||
                                                 (y >= rL[1] - Tol   && y <= rL[1] + Tol))
                                             {
@@ -775,7 +775,7 @@ void ShrinkageTestStressBased(  std::array<int,TDim> rN,
                                         }
                                         if(TDim>2)
                                         {
-                                            double z = rNodePtr->GetCoordinate(2);
+                                            double z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
                                             if ((z >=  0.0   - Tol   && z <= 0.0   + Tol) ||
                                                 (z >=  rL[2] - Tol   && z <= rL[2] + Tol))
                                             {
@@ -820,19 +820,19 @@ void ShrinkageTestStressBased(  std::array<int,TDim> rN,
 
     auto lambdaGetNodeLeftBottomFront = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNumDisplacements()==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
                                     {
                                         double x=0.0,
                                                y=0.0,
                                                z=0.0;
-                                        x = rNodePtr->GetCoordinate(0);
+                                        x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
                                         if(TDim>1)
-                                            y = rNodePtr->GetCoordinate(1);
+                                            y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
                                         if(TDim>2)
-                                            z = rNodePtr->GetCoordinate(2);
+                                            z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
 
                                         if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
                                             y >= 0.0   - Tol   && y <= 0.0   + Tol &&
@@ -846,19 +846,19 @@ void ShrinkageTestStressBased(  std::array<int,TDim> rN,
 
     auto lambdaGetNodeLeftTopFront = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNumDisplacements()==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
                                     {
                                         double x=0.0,
                                                y=0.0,
                                                z=0.0;
-                                        x = rNodePtr->GetCoordinate(0);
+                                        x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
                                         if(TDim>1)
-                                            y = rNodePtr->GetCoordinate(1);
+                                            y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
                                         if(TDim>2)
-                                            z = rNodePtr->GetCoordinate(2);
+                                            z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
 
                                         if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
                                             y >= 0.0   - Tol   && y <= 0.0   + Tol &&
@@ -872,19 +872,19 @@ void ShrinkageTestStressBased(  std::array<int,TDim> rN,
 
     auto lambdaGetNodeLeftBottomBack = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNumDisplacements()==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
                                     {
                                         double x=0.0,
                                                y=0.0,
                                                z=0.0;
-                                        x = rNodePtr->GetCoordinate(0);
+                                        x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
                                         if(TDim>1)
-                                            y = rNodePtr->GetCoordinate(1);
+                                            y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
                                         if(TDim>2)
-                                            z = rNodePtr->GetCoordinate(2);
+                                            z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
 
                                         if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
                                             y >= rL[1] - Tol   && y <= rL[1] + Tol &&
@@ -1041,9 +1041,9 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
     auto LambdaGetBoundaryNodes = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->GetCoordinate(0);
+                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
                                         if ((x >= 0.0   - Tol   && x <= 0.0   + Tol) ||
                                             (x >= rL[0] - Tol   && x <= rL[0] + Tol))
                                         {
@@ -1052,7 +1052,7 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
 
                                         if(TDim>1)
                                         {
-                                            double y = rNodePtr->GetCoordinate(1);
+                                            double y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
                                             if ((y >= 0.0   - Tol   && y <= 0.0   + Tol) ||
                                                 (y >= rL[1] - Tol   && y <= rL[1] + Tol))
                                             {
@@ -1061,7 +1061,7 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
                                         }
                                         if(TDim>2)
                                         {
-                                            double z = rNodePtr->GetCoordinate(2);
+                                            double z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
                                             if ((z >=  0.0   - Tol   && z <= 0.0   + Tol) ||
                                                 (z >=  rL[2] - Tol   && z <= rL[2] + Tol))
                                             {
@@ -1106,19 +1106,19 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
 
     auto lambdaGetNodeLeftBottomFront = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNumDisplacements()==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
                                     {
                                         double x=0.0,
                                                y=0.0,
                                                z=0.0;
-                                        x = rNodePtr->GetCoordinate(0);
+                                        x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
                                         if(TDim>1)
-                                            y = rNodePtr->GetCoordinate(1);
+                                            y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
                                         if(TDim>2)
-                                            z = rNodePtr->GetCoordinate(2);
+                                            z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
 
                                         if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
                                             y >= 0.0   - Tol   && y <= 0.0   + Tol &&
@@ -1132,19 +1132,19 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
 
     auto lambdaGetNodeLeftTopFront = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNumDisplacements()==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
                                     {
                                         double x=0.0,
                                                y=0.0,
                                                z=0.0;
-                                        x = rNodePtr->GetCoordinate(0);
+                                        x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
                                         if(TDim>1)
-                                            y = rNodePtr->GetCoordinate(1);
+                                            y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
                                         if(TDim>2)
-                                            z = rNodePtr->GetCoordinate(2);
+                                            z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
 
                                         if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
                                             y >= 0.0   - Tol   && y <= 0.0   + Tol &&
@@ -1158,19 +1158,19 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
 
     auto lambdaGetNodeLeftBottomBack = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNumDisplacements()==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNumCoordinates()>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
                                     {
                                         double x=0.0,
                                                y=0.0,
                                                z=0.0;
-                                        x = rNodePtr->GetCoordinate(0);
+                                        x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
                                         if(TDim>1)
-                                            y = rNodePtr->GetCoordinate(1);
+                                            y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
                                         if(TDim>2)
-                                            z = rNodePtr->GetCoordinate(2);
+                                            z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
 
                                         if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
                                             y >= rL[1] - Tol   && y <= rL[1] + Tol &&
@@ -1234,7 +1234,7 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
     CheckMoistureTransportResults<TDim>(S,
                                         rN,
                                         rL);
-//    CheckMechanicsResults<TDim>(S);
+    /*CheckMechanicsResults<TDim>(S)*/;
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

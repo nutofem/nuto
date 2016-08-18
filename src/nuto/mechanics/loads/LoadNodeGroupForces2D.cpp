@@ -40,7 +40,7 @@ void NuTo::LoadNodeGroupForces2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo:
         {
             for (int dofCount = 0; dofCount < 2; dofCount++)
             {
-                int dof = itNode->second->GetDofDisplacement(dofCount);
+                int dof = itNode->second->GetDof(Node::DISPLACEMENTS, dofCount);
                 assert(dof >= 0);
                 if (dof < rActiceDofsLoadVector.GetNumRows())
                 {

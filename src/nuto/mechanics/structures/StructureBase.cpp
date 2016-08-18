@@ -440,7 +440,7 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, const std
     else if (rVisualizeComponent == "WaterVolumeFraction")
         AddVisualizationComponent(rElementGroup, VisualizeBase::WATER_VOLUME_FRACTION);
     else
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Visualization component not implemented or misspelled.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Visualization component not implemented or misspelled.");
 
 
 
@@ -452,13 +452,13 @@ void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementG
 
     // check if the element group exists
     if (mGroupMap.find(rElementGroup) == mGroupMap.end())
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Element group does not exist.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Element group does not exist.");
 
     const ElementBase *elementBase = ElementGetElementPtr(rElementId);
     int numIp = elementBase->GetNumIntegrationPoints();
 
     if (rIp < 0 or rIp >= numIp)
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Integration point number is out of range.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Integration point number is out of range.");
 
     try
     {
@@ -466,7 +466,7 @@ void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementG
         if (mGroupVisualizeComponentsMap.find(rElementGroup) == mGroupVisualizeComponentsMap.end())
         {
             std::list<std::shared_ptr<VisualizeComponent>> visualizationPtrList;
-            visualizationPtrList.push_back(std::make_shared<VisualizeComponentNonlocalWeight>(VisualizeComponentNonlocalWeight(elementBase, rElementId, rIp)));
+            visualizationPtrList.push_back(std::make_shared<VisualizeComponentNonlocalWeight>(VisualizeComponentNonlocalWeight(rElementId, rIp)));
 
             mGroupVisualizeComponentsMap.insert(std::pair<int,std::list<std::shared_ptr<VisualizeComponent>>>(rElementGroup, visualizationPtrList));
             // mGroupVisualizeComponentsMap.emplace(rElementGroup, visualizationPtrList);       //<- use this for gcc version 4.9 or higher!
@@ -477,18 +477,18 @@ void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementG
 
         } else
         {
-            mGroupVisualizeComponentsMap.at(rElementGroup).push_back(std::make_shared<VisualizeComponentNonlocalWeight>(VisualizeComponentNonlocalWeight(elementBase, rElementId, rIp)));
+            mGroupVisualizeComponentsMap.at(rElementGroup).push_back(std::make_shared<VisualizeComponentNonlocalWeight>(VisualizeComponentNonlocalWeight(rElementId, rIp)));
         }
 
     }
     catch (NuTo::MechanicsException &e)
      {
-        e.AddMessage(std::string(__PRETTY_FUNCTION__) + "\t: error setting element and local ip number.");
+        e.AddMessage(__PRETTY_FUNCTION__, "error setting element and local ip number.");
         throw e;
      }
     catch(...)
      {
-        throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: error setting element and local ip number.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "error setting element and local ip number.");
      }
 #endif // ENABLE_VISUALIZE
 }
@@ -498,11 +498,11 @@ void NuTo::StructureBase::SetVisualizationType(const int rElementGroup, const Vi
 {
     // check if the element group exists
     if (mGroupMap.find(rElementGroup) == mGroupMap.end())
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Element group does not exist.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Element group does not exist.");
 
     // check if the element group exists
     if (mGroupVisualizationType.find(rElementGroup) == mGroupVisualizationType.end())
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Please add a visualization component first before setting the visualization type.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Please add a visualization component first before setting the visualization type.");
 
     mGroupVisualizationType.at(rElementGroup) = rVisualizationType;
 }
@@ -579,9 +579,7 @@ void NuTo::StructureBase::ElementGroupExportVtkDataFile(int rGroupIdent, const s
 
 std::map<int, std::list<std::shared_ptr<NuTo::VisualizeComponent>>>& NuTo::StructureBase::GetGroupVisualizeComponentsMap(void)
 {
-#ifdef ENABLE_VISUALIZE
     return mGroupVisualizeComponentsMap;
-#endif // ENABLE_VISUALIZE
 }
 
 void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)const
@@ -626,6 +624,7 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
         case NuTo::VisualizeBase::RELATIVE_HUMIDITY:
         case NuTo::VisualizeBase::WATER_VOLUME_FRACTION:
         case NuTo::VisualizeBase::TEMPERATURE:
+        case NuTo::VisualizeBase::CRACK_PHASE_FIELD:
             rVisualize.DefinePointDataScalar(it.get()->GetComponentName());
             break;
 
@@ -644,7 +643,7 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
             break;
 
         default:
-        	throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: undefined visualize components.");
+        	throw MechanicsException(__PRETTY_FUNCTION__, "undefined visualize components.");
         }
 
     }
@@ -708,8 +707,8 @@ NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian(Structu
     evaluateMap[rOutput] = &hessian;
 
     ConstitutiveInputMap input;
-    ConstitutiveCalculateStaticData calculateImplicitly(CalculateStaticData::EULER_BACKWARD);
-    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateImplicitly;
+    input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
+            CalculateStaticData::EULER_BACKWARD);
 
     Evaluate(input, evaluateMap);
 
@@ -728,8 +727,8 @@ NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalInternalGradien
     evaluateMap[StructureEnum::INTERNAL_GRADIENT] = &internalGradient;
 
     ConstitutiveInputMap input;
-    ConstitutiveCalculateStaticData calculateImplicitly(CalculateStaticData::EULER_BACKWARD);
-    input[Constitutive::Input::CALCULATE_STATIC_DATA] = &calculateImplicitly;
+    input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
+            CalculateStaticData::EULER_BACKWARD);
 
     Evaluate(input, evaluateMap);
 

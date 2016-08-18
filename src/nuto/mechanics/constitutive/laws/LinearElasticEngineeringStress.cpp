@@ -61,7 +61,7 @@ NuTo::ConstitutiveInputMap NuTo::LinearElasticEngineeringStress::GetConstitutive
 {
     ConstitutiveInputMap constitutiveInputMap;
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
@@ -98,7 +98,7 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate1D(
         const ConstitutiveInputMap& rConstitutiveInput,
         const ConstitutiveOutputMap& rConstitutiveOutput)
 {
-    for (auto itOutput : rConstitutiveOutput)
+    for (auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
@@ -172,14 +172,14 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(
         std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients3D(mE, mNu);
         break;
     case Section::PLANE_STRESS:
-        std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients2DPlainStress(mE, mNu);
+        std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients2DPlaneStress(mE, mNu);
         break;
     default:
         throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "[ Invalid type of 2D section behavior found!!!");
     }
 
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
@@ -287,7 +287,7 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate3D(
         std::tie(C11, C12, C44) = EngineeringStressHelper::CalculateCoefficients3D(mE, mNu);
     }
 
-    for (auto itOutput : rConstitutiveOutput)
+    for (auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
@@ -364,14 +364,25 @@ bool NuTo::LinearElasticEngineeringStress::CheckDofCombinationComputable(NuTo::N
                                                                           NuTo::Node::eDof rDofCol,
                                                                           int rTimeDerivative) const
 {
-    assert(rTimeDerivative>-1);
-    if(rTimeDerivative<1 &&
-       rDofRow == Node::DISPLACEMENTS &&
-       rDofCol ==Node::DISPLACEMENTS)
+    assert(rTimeDerivative == 0 or rTimeDerivative == 1 or rTimeDerivative == 2);
+    switch (rTimeDerivative)
     {
-        return true;
+    case 0:
+    case 2:
+    {
+        switch (Node::CombineDofs(rDofRow, rDofCol))
+        {
+        case Node::CombineDofs(Node::DISPLACEMENTS, Node::DISPLACEMENTS):
+            return true;
+        default:
+            return false;
+        }
+
     }
-    return false;
+        break;
+    default:
+        return false;
+    }
 }
 
 

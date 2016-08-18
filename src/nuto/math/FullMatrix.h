@@ -3,9 +3,6 @@
 #ifndef FULL_MATRIX_H
 #define FULL_MATRIX_H
 
-//plugins for the eigen matrices
-#define EIGEN_MATRIXBASE_PLUGIN "MatrixBaseAddons.h"
-
 #include <iomanip>  //for setw
 #include <fstream>  //for file acces
 #include <vector>

@@ -11,7 +11,6 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/nodes/NodeDof.h"
 #include "nuto/mechanics/constraints/ConstraintNode.h"
 
 

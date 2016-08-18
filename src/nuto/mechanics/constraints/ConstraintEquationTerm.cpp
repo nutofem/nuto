@@ -25,7 +25,7 @@ NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node
     {
     case Node::DISPLACEMENTS:
     {
-        int numDisplacements = rNode->GetNumDisplacements();
+        int numDisplacements = rNode->GetNum(Node::DISPLACEMENTS);
         if (rDofComponent < 0 || rDofComponent >= numDisplacements)
         {
             throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid displacement component.");
@@ -34,7 +34,7 @@ NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node
     break;
     case Node::ROTATIONS:
     {
-        int numRotations = rNode->GetNumRotations();
+        int numRotations = rNode->GetNum(Node::ROTATIONS);
         if (rDofComponent < 0 || rDofComponent >= numRotations)
         {
             throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid displacement component.");
@@ -43,7 +43,7 @@ NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node
     break;
     case Node::TEMPERATURE:
     {
-        int numTemperature = rNode->GetNumTemperature();
+        int numTemperature = rNode->GetNum(Node::TEMPERATURE);
         if (rDofComponent < 0 || rDofComponent >= numTemperature)
         {
             throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid temerature component.");
@@ -52,7 +52,7 @@ NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node
     break;
     case Node::NONLOCALEQSTRAIN:
     {
-        int numNonlocalEqStrain = rNode->GetNumNonlocalEqStrain();
+        int numNonlocalEqStrain = rNode->GetNum(Node::NONLOCALEQSTRAIN);
         if (rDofComponent < 0 || rDofComponent >= numNonlocalEqStrain)
         {
             throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid nonlocal eq strain component.");
@@ -68,15 +68,6 @@ NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node
     this->mDofType = rDofType;
     this->mDofComponent = rDofComponent;
     this->mCoefficient = rCoefficient;
-}
-
-// default constructor (should be private)
-NuTo::ConstraintEquationTerm::ConstraintEquationTerm()
-{
-    this->mNode = 0;
-    this->mDofType = Node::COORDINATES;
-    this->mDofComponent = 0;
-    this->mCoefficient = 0;
 }
 
 void NuTo::ConstraintEquationTerm::AddToConstraintMatrix(int rRow, NuTo::SparseMatrix<double>& rConstraintMatrix) const
@@ -95,22 +86,22 @@ int NuTo::ConstraintEquationTerm::GetDof() const
     {
     case Node::DISPLACEMENTS:
     {
-    	return mNode->GetDofDisplacement(this->mDofComponent);
+    	return mNode->GetDof(Node::DISPLACEMENTS, this->mDofComponent);
     }
     break;
     case Node::ROTATIONS:
     {
-    	return mNode->GetDofRotation(this->mDofComponent);
+    	return mNode->GetDof(Node::ROTATIONS, this->mDofComponent);
     }
     break;
     case Node::TEMPERATURE:
     {
-    	return mNode->GetDofTemperature();
+    	return mNode->GetDof(Node::TEMPERATURE, 0);
     }
     break;
     case Node::NONLOCALEQSTRAIN:
     {
-        return mNode->GetDofNonlocalEqStrain();
+        return mNode->GetDof(Node::NONLOCALEQSTRAIN, 0);
     }
     break;
     default:
@@ -119,6 +110,15 @@ int NuTo::ConstraintEquationTerm::GetDof() const
 }
 
 #ifdef ENABLE_SERIALIZATION
+
+NuTo::ConstraintEquationTerm::ConstraintEquationTerm()
+{
+    this->mNode = 0;
+    this->mDofType = Node::COORDINATES;
+    this->mDofComponent = 0;
+    this->mCoefficient = 0;
+}
+
 template void NuTo::ConstraintEquationTerm::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
 template void NuTo::ConstraintEquationTerm::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
 template void NuTo::ConstraintEquationTerm::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
@@ -138,4 +138,6 @@ template<class Archive> void NuTo::ConstraintEquationTerm::serialize(Archive & a
     std::cout << "finish serialize ConstraintEquationTerm" << std::endl;
 #endif
 }
+
+BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::ConstraintEquationTerm)
 #endif // ENABLE_SERIALIZATION
