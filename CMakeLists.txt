@@ -17,15 +17,7 @@ OPTION(ENABLE_C++_TESTS "create makefiles for c++ tests" TRUE)
 OPTION(ENABLE_CGAL "enables CGAL libraries (for cracks only)" FALSE)
 OPTION(ENABLE_DEBUG "enables debug information" TRUE)
 OPTION(ENABLE_DEBUG_SERIALIZATION "prints additional debug information during serialization" FALSE)
-#<<<<<<< HEAD
-OPTION(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" ON)
-OPTION(ENABLE_OPENACC "enables OpenACC" FALSE)
-OPTION(ENABLE_OPENMP "enables OpenMP" FALSE)
-OPTION(ENABLE_SERIALIZATION "enables serialization" FALSE)
-OPTION(ENABLE_NUMPY "enables numpy" TRUE)
-#=======
 OPTION(ENABLE_EXAMPLES "enables examples" FALSE)
-#>>>>>>> master
 OPTION(ENABLE_GEOMETRYCONCRETE "geometry for concrete mesoscale modeling" FALSE)
 OPTION(ENABLE_GUI "enable building the GUI application" FALSE)
 OPTION(ENABLE_MECHANICS "enables the mechanics package" TRUE)
