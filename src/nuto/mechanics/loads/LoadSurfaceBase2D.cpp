@@ -30,6 +30,7 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
 //loop over all elements
     Eigen::VectorXi surfaceNodeIndices;
     std::vector<const NodeBase*> surfaceNodes;
+
     for (auto itElement : *elementGroup)
     {
         try
@@ -136,6 +137,31 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
         case Interpolation::LOBATTO4:
             integrationType = mIntegrationType5NPtrLobatto;
             break;
+        case Interpolation::SPLINE:
+        {
+            int degree = interpolationTypeDisps.GetSurfaceDegree(surface);
+            switch (degree)
+            {
+            case 0: // (0+1)/2 = 0.5 ips
+                integrationType = mIntegrationType2NPtr;
+                break;
+            case 1: // 2/2 = 1 ips or (1+3)/2 = 2 ips lobatto
+                integrationType = mIntegrationType2NPtr;
+                break;
+            case 2: // (2+1)/2 = 1.5 ips or (2+3)/2 = 2.5 ips lobatto
+                integrationType = mIntegrationType3NPtr;
+                break;
+            case 3: // (3+1)/2 = 2 ips or (3+3)/2 = 3 ips lobatto
+                integrationType = mIntegrationType3NPtr;
+                break;
+            case 4: // (4+1)/2 = 2.5 ips or (4+3)/2 = 3.5 ips lobatto
+                integrationType = mIntegrationType4NPtr;
+                break;
+            default:
+                throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + std::to_string(degree) + " IGA not implemented");
+            }
+            break;
+        }
         default:
             throw MechanicsException("[NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D] integration types only for 2, 3, 4 and 5 nodes (on the surface) implemented.");
         }
@@ -161,16 +187,26 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             integrationType->GetLocalIntegrationPointCoordinates1D(theIp, tmp);
             ipCoordsSurface(0) = tmp;
 
-            ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface);
+            if (interpolationTypeDisps.GetTypeOrder() == Interpolation::SPLINE)
+                ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface, elementPtr->GetKnots());
+            else
+                ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface);
+
             ipCoordsGlobal = interpolationTypeCoords.CalculateMatrixN(ipCoordsNatural) * nodeCoordinates;
 
             // #######################################
             // ##  Calculate the surface jacobian
             // ## = || [dX / dXi] * [dXi / dAlpha] ||
             // #######################################
+
             derivativeShapeFunctionsNatural = interpolationTypeCoords.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural);
 
-            const Eigen::Matrix2d jacobian = elementPtr->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates);// = [dX / dXi]
+            const Eigen::Matrix2d jacobianStd = elementPtr->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates);// = [dX / dXi]
+
+            // in case of non IGA - just an identity matrix
+            const Eigen::Matrix2d jacobianIGA = elementPtr->CalculateJacobianParametricSpaceIGA();// = [dXi / d\tilde{Xi}]
+
+            const Eigen::Matrix2d jacobian = jacobianStd*jacobianIGA;
 
             derivativeNaturalSurfaceCoordinates = interpolationTypeCoords.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, surface); // = [dXi / dAlpha]
             double detJacobian = (jacobian * derivativeNaturalSurfaceCoordinates).norm();                           // = || [dX / dXi] * [dXi / dAlpha] ||

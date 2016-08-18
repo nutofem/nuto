@@ -135,6 +135,11 @@ public:
             const Eigen::MatrixXd& rDerivativeShapeFunctions,
             const Eigen::VectorXd& rNodeCoordinates)const;
 
+    //! @brief Calculates the the jacobian of the mapping between the refernce element and parametric space (knots)
+    //! @param rKnots ... knots of the element
+    //! @return the jacobian
+    virtual Eigen::Matrix<double, TDim, TDim> CalculateJacobianParametricSpaceIGA() const;
+
     Eigen::MatrixXd CalculateMatrixB(
             Node::eDof rDofType,
             const Eigen::MatrixXd& rDerivativeShapeFunctions,

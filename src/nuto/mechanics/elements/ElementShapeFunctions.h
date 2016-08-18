@@ -221,7 +221,7 @@ Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder2(const Eigen::VectorXd&
 }
 
 // In order to maintain equal shape functions on each element the Bézier extraction together with Bernstein polynomials is used (see. Borden et. al. 2011)
-namespace ShapeFunctionsIGA1D
+namespace ShapeFunctionsIGA
 {
 /////////////////////////////// BSPLINE ////////////////////////////////////////////////////////////////////////
 //! @brief ... find span of a parameter (rParameter) in the knot vector
@@ -230,9 +230,20 @@ namespace ShapeFunctionsIGA1D
 //! @return ... the span index
 int FindSpan(double rParameter, int rDegree, const Eigen::VectorXd &rKnots);
 
-
 Eigen::VectorXd BasisFunctions(double rParameter, int spanIdx, int rDegree, const Eigen::VectorXd &rKnots);
 Eigen::MatrixXd BasisFunctionsAndDerivatives(double rParameter, int spanIdx, int maxDer, int rDegree, const Eigen::VectorXd &rKnots);
+
+Eigen::VectorXd BasisFunctions2D(const Eigen::VectorXd& rCoordinates,
+                                 const Eigen::Vector2i& rSpanIdx,
+                                 const Eigen::Vector2i& rDegree,
+                                 const Eigen::VectorXd &rKnotsX,
+                                 const Eigen::VectorXd &rKnotsY);
+
+Eigen::Matrix<double, Eigen::Dynamic, 2> BasisFunctionsAndDerivatives2D(const Eigen::VectorXd& rCoordinates,
+                                                                        const Eigen::Vector2i &rSpanIdx,
+                                                                        const Eigen::Vector2i &rDegree,
+                                                                        const Eigen::VectorXd &rKnotsX,
+                                                                        const Eigen::VectorXd &rKnotsY);
 
 
 /////////////////////////////// BERNSTEIN //////////////////////////////////////////////////////////////////////
@@ -252,7 +263,7 @@ Eigen::VectorXd DerivativeBernstein1D(double rParameter, int rOrder);
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-}// namespace ShapeFunctionsIGA1D
+}// namespace ShapeFunctionsIGA
 
 
 } /* namespace NuTo */

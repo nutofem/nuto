@@ -1870,13 +1870,15 @@ Eigen::MatrixXd DerivativeShapeFunctionsInterface3dOrder1(const Eigen::VectorXd&
 
 
 // In order to maintain equal shape functions on each element the Bézier extraction together with Bernstein polynomials is used (see. Borden et. al. 2011)
-namespace ShapeFunctionsIGA1D
+namespace ShapeFunctionsIGA
 {
 
 /////////////////////////////// BSPLINE ////////////////////////////////////////////////////////////////////////
 
 int FindSpan(double rParameter, int rDegree, const Eigen::VectorXd &rKnots)
 {
+    int size = rKnots.rows();
+    assert(rParameter >= rKnots(0) && rParameter <= rKnots(size - 1));
     int numBasisFuns = rKnots.rows() - rDegree - 1;
     if(rParameter == rKnots[numBasisFuns]) return numBasisFuns-1;
 
@@ -1998,6 +2000,55 @@ Eigen::MatrixXd BasisFunctionsAndDerivatives(double rParameter, int spanIdx, int
     {
         for (int j = 0; j <= rDegree; j++) ders(k,j) *=r;
         r*= (rDegree-k);
+    }
+
+    return ders;
+}
+
+Eigen::VectorXd BasisFunctions2D(const Eigen::VectorXd &rCoordinates,
+                                 const Eigen::Vector2i &rSpanIdx,
+                                 const Eigen::Vector2i &rDegree,
+                                 const Eigen::VectorXd &rKnotsX,
+                                 const Eigen::VectorXd &rKnotsY)
+{
+    Eigen::VectorXd xBasis = BasisFunctions(rCoordinates(0), rSpanIdx(0), rDegree(0), rKnotsX);
+    Eigen::VectorXd yBasis = BasisFunctions(rCoordinates(1), rSpanIdx(1), rDegree(1), rKnotsY);
+
+    Eigen::VectorXd basis((rDegree(0)+1)*(rDegree(1)+1));
+
+    int count = 0;
+    for(int i = 0; i <= rDegree(1); i++)
+    {
+        for(int j = 0; j <= rDegree(0); j++)
+        {
+            basis(count) = xBasis(j)*yBasis(i);
+            count++;
+        }
+    }
+
+    return basis;
+}
+
+Eigen::Matrix<double, Eigen::Dynamic, 2> BasisFunctionsAndDerivatives2D(const Eigen::VectorXd &rCoordinates,
+                                                                        const Eigen::Vector2i &rSpanIdx,
+                                                                        const Eigen::Vector2i &rDegree,
+                                                                        const Eigen::VectorXd &rKnotsX,
+                                                                        const Eigen::VectorXd &rKnotsY)
+{
+    Eigen::MatrixXd xBasisDer = BasisFunctionsAndDerivatives(rCoordinates(0), rSpanIdx(0), 1, rDegree(0), rKnotsX);
+    Eigen::MatrixXd yBasisDer = BasisFunctionsAndDerivatives(rCoordinates(1), rSpanIdx(1), 1, rDegree(1), rKnotsY);
+
+    Eigen::MatrixXd ders((rDegree(0)+1)*(rDegree(1)+1), 2);
+
+    int count = 0;
+    for(int i = 0; i <= rDegree(1); i++)
+    {
+        for(int j = 0; j <= rDegree(0); j++)
+        {
+            ders(count,0) = xBasisDer(1,j)*yBasisDer(0,i);
+            ders(count,1) = xBasisDer(0,j)*yBasisDer(1,i);
+            count++;
+        }
     }
 
     return ders;

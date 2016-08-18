@@ -154,7 +154,7 @@ interpolationtypes/Interpolation3D.cpp
 interpolationtypes/Interpolation3DTetrahedron.cpp
 interpolationtypes/Interpolation3DBrick.cpp
 interpolationtypes/Interpolation1DIGA.cpp
-interpolationtypes/Interpolation1DTrussIGA.cpp
+interpolationtypes/Interpolation2DIGA.cpp
 )
 
 SET(NuToMechanicsIGA_SOURCE

@@ -388,6 +388,16 @@ public:
 
     void Info() const;
 
+    //! @brief returns the knots of the element
+    //! @return reference on the matrix containing the knots
+    virtual const Eigen::MatrixXd& GetKnots() const
+    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Only implemented in ContinuumElementIGA.");}
+
+    //! @brief returns the knotIDs of the element
+    //! @return reference on the vector containing the knotIDs
+    virtual const Eigen::VectorXi& GetKnotIDs() const
+    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Only implemented in ContinuumElementIGA.");}
+
     virtual const ContinuumElement<1>& AsContinuumElement1D() const
     {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<1>.");}
 

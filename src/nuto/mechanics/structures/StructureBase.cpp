@@ -905,6 +905,7 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int rLoadCase)
     deltaDof_dt0.K = ConstraintGetRHSAfterGaussElimination();
 
     auto hessian0 = BuildGlobalHessian0();
+
     auto residual = hessian0 * deltaDof_dt0 - BuildGlobalExternalLoadVector(rLoadCase) + BuildGlobalInternalGradient();
 
     hessian0.ApplyCMatrix(GetConstraintMatrix());

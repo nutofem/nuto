@@ -30,6 +30,11 @@ public:
     //! @return ... natural surface edge coordinates
     std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const override;
 
+    Eigen::VectorXi GetSurfaceNodeIndices(int rSurface) const override
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Implemented in NuTo::InterpolationType::GetSurfaceNodeIndices.");
+    }
+
     //! @brief return the number of dofs per node depending on dimension
     int GetNumDofsPerNode() const override;
 

@@ -66,6 +66,7 @@ public:
     //! @return ... derivative of the surface parametrization
     Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const override;
 
+
     //! @brief returns the number of surfaces
     inline int GetNumSurfaces() const override
     {

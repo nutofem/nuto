@@ -114,44 +114,44 @@ bool NuTo::InterpolationBase::NodeIsOnSurface(int rSurface, const Eigen::VectorX
     return std::abs(det) < 1.e-10;
 }
 
-#ifdef ENABLE_SERIALIZATION
-NuTo::InterpolationBase::InterpolationBase():
-    mTypeOrder(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1),
-    mDofType(NuTo::Node::COORDINATES),
-    mDimension(0)
-{
-}
+//#ifdef ENABLE_SERIALIZATION
+//NuTo::InterpolationBase::InterpolationBase():
+//    mTypeOrder(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1),
+//    mDofType(NuTo::Node::COORDINATES),
+//    mDimension(0)
+//{
+//}
 
-template void NuTo::InterpolationBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::InterpolationBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::InterpolationBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::InterpolationBase::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::InterpolationBase::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::InterpolationBase::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template<class Archive>
-void NuTo::InterpolationBase::serialize(Archive & ar, const unsigned int version)
-{
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "start serialize InterpolationBase" << std::endl;
-#endif
-    ar & boost::serialization::make_nvp("mTypeOrder", const_cast<NuTo::Interpolation::eTypeOrder&>(mTypeOrder));
-    ar & boost::serialization::make_nvp("mDofType", const_cast<NuTo::Node::eDof&>(mDofType));
-    ar & BOOST_SERIALIZATION_NVP(mIsConstitutiveInput);
-    ar & BOOST_SERIALIZATION_NVP(mIsActive);
-    ar & BOOST_SERIALIZATION_NVP(mNumDofs);
-    ar & BOOST_SERIALIZATION_NVP(mNumNodes);
+//template void NuTo::InterpolationBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
+//template void NuTo::InterpolationBase::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
+//template void NuTo::InterpolationBase::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
+//template void NuTo::InterpolationBase::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
+//template void NuTo::InterpolationBase::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
+//template void NuTo::InterpolationBase::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
+//template<class Archive>
+//void NuTo::InterpolationBase::serialize(Archive & ar, const unsigned int version)
+//{
+//#ifdef DEBUG_SERIALIZATION
+//    std::cout << "start serialize InterpolationBase" << std::endl;
+//#endif
+//    ar & boost::serialization::make_nvp("mTypeOrder", const_cast<NuTo::Interpolation::eTypeOrder&>(mTypeOrder));
+//    ar & boost::serialization::make_nvp("mDofType", const_cast<NuTo::Node::eDof&>(mDofType));
+//    ar & BOOST_SERIALIZATION_NVP(mIsConstitutiveInput);
+//    ar & BOOST_SERIALIZATION_NVP(mIsActive);
+//    ar & BOOST_SERIALIZATION_NVP(mNumDofs);
+//    ar & BOOST_SERIALIZATION_NVP(mNumNodes);
 
-    ar & boost::serialization::make_nvp("mNodeIndices", mNodeIndices);
-    ar & BOOST_SERIALIZATION_NVP(mLocalStartIndex);
-    ar & boost::serialization::make_nvp("mNodeCoordinates", mNodeCoordinates);
-    ar & boost::serialization::make_nvp("mShapeFunctions", mShapeFunctions);
-    ar & boost::serialization::make_nvp("mNodeCoordinates", mDerivativeShapeFunctionsNatural);
-    ar & BOOST_SERIALIZATION_NVP(mUpdateRequired);
-    ar & boost::serialization::make_nvp("mDimension", const_cast<int&>(mDimension));
-#ifdef DEBUG_SERIALIZATION
-    std::cout << "finish serialize InterpolationBase" << std::endl;
-#endif
-}
-BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::InterpolationBase)
-BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::InterpolationBase)
-#endif  // ENABLE_SERIALIZATION
+//    ar & boost::serialization::make_nvp("mNodeIndices", mNodeIndices);
+//    ar & BOOST_SERIALIZATION_NVP(mLocalStartIndex);
+//    ar & boost::serialization::make_nvp("mNodeCoordinates", mNodeCoordinates);
+//    ar & boost::serialization::make_nvp("mShapeFunctions", mShapeFunctions);
+//    ar & boost::serialization::make_nvp("mNodeCoordinates", mDerivativeShapeFunctionsNatural);
+//    ar & BOOST_SERIALIZATION_NVP(mUpdateRequired);
+//    ar & boost::serialization::make_nvp("mDimension", const_cast<int&>(mDimension));
+//#ifdef DEBUG_SERIALIZATION
+//    std::cout << "finish serialize InterpolationBase" << std::endl;
+//#endif
+//}
+//BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::InterpolationBase)
+//BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::InterpolationBase)
+//#endif  // ENABLE_SERIALIZATION

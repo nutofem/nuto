@@ -139,7 +139,11 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, const std::
 //! @param rInterpolationTypeId ... interpolation type id
 //! @param rDofType ... dof type
 //! @param rTypeOrder ... type and order of interpolation
-void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDegree, const Eigen::VectorXd &rKnots)
+void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId,
+                                           NuTo::Node::eDof rDofType,
+                                           NuTo::Interpolation::eTypeOrder rTypeOrder,
+                                           const Eigen::VectorXi &rDegree,
+                                           const std::vector<Eigen::VectorXd> &rKnots)
 {
     boost::ptr_map<int,InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
     // check if identifier exists

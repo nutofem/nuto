@@ -590,15 +590,15 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(const Constitutiv
             break;
 
         case Constitutive::Input::NONLOCAL_EQ_STRAIN:
-            rData.mNonlocalEqStrain.AsScalar() = (*rData.mN.at(Node::NONLOCALEQSTRAIN)) * rData.mNodalValues.at(Node::NONLOCALEQSTRAIN);
+            rData.mNonlocalEqStrain.AsScalar() = *(rData.GetNMatrix(Node::NONLOCALEQSTRAIN)) * rData.mNodalValues.at(Node::NONLOCALEQSTRAIN);
             break;
 
         case Constitutive::Input::RELATIVE_HUMIDITY:
-            rData.mRelativeHumidity.AsScalar() = (*rData.mN.at(Node::RELATIVEHUMIDITY)) * rData.mNodalValues.at(Node::RELATIVEHUMIDITY);
+            rData.mRelativeHumidity.AsScalar() = *(rData.GetNMatrix(Node::RELATIVEHUMIDITY)) * rData.mNodalValues.at(Node::RELATIVEHUMIDITY);
             break;
 
         case Constitutive::Input::RELATIVE_HUMIDITY_DT1:
-            rData.mRelativeHumidity_dt1.AsScalar() = (*rData.mN.at(Node::RELATIVEHUMIDITY)) * rData.mNodalValues_dt1.at(Node::RELATIVEHUMIDITY);
+            rData.mRelativeHumidity_dt1.AsScalar() = *(rData.GetNMatrix(Node::RELATIVEHUMIDITY)) * rData.mNodalValues_dt1.at(Node::RELATIVEHUMIDITY);
             break;
 
         case Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT:
@@ -606,7 +606,7 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(const Constitutiv
             break;
 
         case Constitutive::Input::TEMPERATURE:
-            rData.mTemperature.AsScalar() = (*rData.mN.at(Node::TEMPERATURE)) * rData.mNodalValues.at(Node::TEMPERATURE);
+            rData.mTemperature.AsScalar() = *(rData.GetNMatrix(Node::TEMPERATURE)) * rData.mNodalValues.at(Node::TEMPERATURE);
             break;
 
         case Constitutive::Input::TEMPERATURE_GRADIENT:
@@ -615,15 +615,15 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(const Constitutiv
 
         case Constitutive::Input::TEMPERATURE_CHANGE:
             if (mStructure->GetNumTimeDerivatives() >= 1)
-                rData.mTemperatureChange.AsScalar() = (*rData.mN.at(Node::TEMPERATURE)) * rData.mNodalValues_dt1.at(Node::TEMPERATURE);
+                rData.mTemperatureChange.AsScalar() = *(rData.GetNMatrix(Node::TEMPERATURE)) * rData.mNodalValues_dt1.at(Node::TEMPERATURE);
             break;
 
         case Constitutive::Input::WATER_VOLUME_FRACTION:
-            rData.mWaterVolumeFraction.AsScalar() = (*rData.mN.at(Node::WATERVOLUMEFRACTION)) * rData.mNodalValues.at(Node::WATERVOLUMEFRACTION);
+            rData.mWaterVolumeFraction.AsScalar() = *(rData.GetNMatrix(Node::WATERVOLUMEFRACTION)) * rData.mNodalValues.at(Node::WATERVOLUMEFRACTION);
             break;
 
         case Constitutive::Input::WATER_VOLUME_FRACTION_DT1:
-            rData.mWaterVolumeFraction_dt1.AsScalar() = (*rData.mN.at(Node::WATERVOLUMEFRACTION)) * rData.mNodalValues_dt1.at(Node::WATERVOLUMEFRACTION);
+            rData.mWaterVolumeFraction_dt1.AsScalar() = *(rData.GetNMatrix(Node::WATERVOLUMEFRACTION)) * rData.mNodalValues_dt1.at(Node::WATERVOLUMEFRACTION);
             break;
 
         case Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT:
@@ -660,6 +660,12 @@ Eigen::Matrix<double, TDim, TDim> NuTo::ContinuumElement<TDim>::CalculateJacobia
 
     return nodeBlockCoordinates.lazyProduct(rDerivativeShapeFunctions);
 
+}
+
+template<int TDim>
+Eigen::Matrix<double, TDim, TDim> NuTo::ContinuumElement<TDim>::CalculateJacobianParametricSpaceIGA() const
+{
+    return Eigen::Matrix<double, TDim, TDim>::Identity();
 }
 
 template<int TDim>
@@ -810,7 +816,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(BlockF
 
         case Node::NONLOCALEQSTRAIN:
         {
-            const auto& N = *(rData.mN.at(dofRow));
+            const auto& N = *(rData.GetNMatrix(dofRow));
             const auto& B = rData.mB.at(dofRow);
             rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *
                                       ( N.transpose() * (rData.mNonlocalEqStrain[0] - rData.mLocalEqStrain[0]) / rData.mNonlocalParameterXi[0] +
@@ -819,17 +825,17 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(BlockF
         }
         case Node::RELATIVEHUMIDITY:
             rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose()  * rData.mInternalGradientRH_B +
-                                                                         rData.mN.at(dofRow)->transpose() * rData.mInternalGradientRH_N);
+                                                                        (rData.GetNMatrix(dofRow))->transpose() * rData.mInternalGradientRH_N);
             break;
 
         case Node::TEMPERATURE:
             rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose() * rData.mHeatFlux +
-                                                                         rData.mN.at(dofRow)->transpose() * rData.mHeatChange);
+                                                                        (rData.GetNMatrix(dofRow))->transpose() * rData.mHeatChange);
             break;
 
         case Node::WATERVOLUMEFRACTION:
             rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose()  * rData.mInternalGradientWV_B +
-                                                                         rData.mN.at(dofRow)->transpose() * rData.mInternalGradientWV_N);
+                                                                        (rData.GetNMatrix(dofRow))->transpose() * rData.mInternalGradientWV_N);
             break;
 
         default:
@@ -856,16 +862,16 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
                 break;
 
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::NONLOCALEQSTRAIN):
-                hessian0 += rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * rData.mTangentStressNonlocalEqStrain * *(rData.mN.at(dofCol));
+                hessian0 += rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * rData.mTangentStressNonlocalEqStrain * (*(rData.GetNMatrix(dofCol)));
                 break;
 
             case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::DISPLACEMENTS):
-                hessian0 -= rData.mDetJxWeightIPxSection *  rData.mN.at(dofRow)->transpose() * rData.mTangentLocalEqStrainStrain.transpose() * (rData.mB.at(dofCol));
+                hessian0 -= rData.mDetJxWeightIPxSection *  ((rData.GetNMatrix(dofRow))->transpose()) * rData.mTangentLocalEqStrainStrain.transpose() * (rData.mB.at(dofCol));
                 break;
 
             case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::NONLOCALEQSTRAIN):
             {
-                const auto& N = *(rData.mN.at(dofRow));
+                const auto& N = *(rData.GetNMatrix(dofRow));
                 const auto& B = rData.mB.at(dofRow);
                 hessian0 += rData.mDetJxWeightIPxSection * (N.transpose() * (1./rData.mNonlocalParameterXi[0]) * N + B.transpose() * B);
                 break;
@@ -878,34 +884,34 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
                 //VHIRTHAMTODO get references to shape functions ---> no double find for the same value
             case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::RELATIVEHUMIDITY):
                 hessian0 += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose()  * rData.mInternalGradientRH_dRH_BB_H0[0] * rData.mB.at(dofCol) +
-                                                            rData.mN.at(dofRow)->transpose() * rData.mInternalGradientRH_dRH_NN_H0 * (*rData.mN.at(dofCol)));
+                                                           (rData.GetNMatrix(dofRow))->transpose() * rData.mInternalGradientRH_dRH_NN_H0 * (*rData.GetNMatrix(dofCol)));
                 break;
 
             case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::WATERVOLUMEFRACTION):
-                hessian0 += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose()  * rData.mInternalGradientRH_dWV_BN_H0 * (*rData.mN.at(dofCol)) +
-                                                            rData.mN.at(dofRow)->transpose() * rData.mInternalGradientRH_dWV_NN_H0 * (*rData.mN.at(dofCol)));
+                hessian0 += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose()  * rData.mInternalGradientRH_dWV_BN_H0 * (*rData.GetNMatrix(dofCol)) +
+                                                           (rData.GetNMatrix(dofRow))->transpose() * rData.mInternalGradientRH_dWV_NN_H0 * (*rData.GetNMatrix(dofCol)));
                 break;
 
             case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::RELATIVEHUMIDITY):
-                hessian0 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow)->transpose()  * rData.mInternalGradientWV_dRH_NN_H0 * (*rData.mN.at(dofCol));
+                hessian0 += rData.mDetJxWeightIPxSection * (rData.GetNMatrix(dofRow))->transpose()  * rData.mInternalGradientWV_dRH_NN_H0 * (*rData.GetNMatrix(dofCol));
                 break;
 
             case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::WATERVOLUMEFRACTION):
                 hessian0 += rData.mDetJxWeightIPxSection * (rData.mB.at(dofRow).transpose()  * rData.mInternalGradientWV_dWV_BB_H0[0] * rData.mB.at(dofCol) +
-                                                            rData.mB.at(dofRow).transpose()  * rData.mInternalGradientWV_dWV_BN_H0 * (*rData.mN.at(dofCol)) +
-                                                            rData.mN.at(dofRow)->transpose() * rData.mInternalGradientWV_dWV_NN_H0 * (*rData.mN.at(dofCol)));
+                                                            rData.mB.at(dofRow).transpose()  * rData.mInternalGradientWV_dWV_BN_H0 * (*rData.GetNMatrix(dofCol)) +
+                                                           (rData.GetNMatrix(dofRow))->transpose() * rData.mInternalGradientWV_dWV_NN_H0 * (*rData.GetNMatrix(dofCol)));
                 break;
 
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::RELATIVEHUMIDITY):
-                hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose()  * rData.mEngineeringStress_dRH * (*rData.mN.at(dofCol));
+                hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose()  * rData.mEngineeringStress_dRH * (*rData.GetNMatrix(dofCol));
                 break;
 
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::TEMPERATURE):
-                hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose()  * rData.mDStressDTemperature * (*rData.mN.at(dofCol));
+                hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose()  * rData.mDStressDTemperature * (*rData.GetNMatrix(dofCol));
                 break;
 
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::WATERVOLUMEFRACTION):
-                hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose()  * rData.mEngineeringStress_dWV * (*rData.mN.at(dofCol));
+                hessian0 += rData.mDetJxWeightIPxSection * rData.mB.at(dofRow).transpose()  * rData.mEngineeringStress_dWV * (*rData.GetNMatrix(dofCol));
                 break;
 
             /*******************************************************\
@@ -939,24 +945,24 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatri
 
             case Node::CombineDofs(Node::eDof::TEMPERATURE, Node::eDof::TEMPERATURE):
                 hessian1 += rData.mDetJxWeightIPxSection
-                          * rData.mN.at(dofRow)->transpose()
+                          * rData.GetNMatrix(dofRow)->transpose()
                           * rData.mTangentHeatTemperature
-                          * (*rData.mN.at(dofCol));
+                          * (*rData.GetNMatrix(dofCol));
                 break;
 
             case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::RELATIVEHUMIDITY):
-                hessian1 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow)->transpose() * rData.mInternalGradientRH_dRH_NN_H1 * (*rData.mN.at(dofCol));
+                hessian1 += rData.mDetJxWeightIPxSection * rData.GetNMatrix(dofRow)->transpose() * rData.mInternalGradientRH_dRH_NN_H1 * (*rData.GetNMatrix(dofCol));
                 break;
 
             case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::WATERVOLUMEFRACTION):
-                hessian1 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow)->transpose() * rData.mInternalGradientRH_dWV_NN_H1 * (*rData.mN.at(dofCol));
+                hessian1 += rData.mDetJxWeightIPxSection * rData.GetNMatrix(dofRow)->transpose() * rData.mInternalGradientRH_dWV_NN_H1 * (*rData.GetNMatrix(dofCol));
                 break;
 
             case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::RELATIVEHUMIDITY):
                 break;
 
             case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION, Node::eDof::WATERVOLUMEFRACTION):
-                hessian1 += rData.mDetJxWeightIPxSection * rData.mN.at(dofRow)->transpose() * rData.mInternalGradientWV_dWV_NN_H1 * (*rData.mN.at(dofCol));
+                hessian1 += rData.mDetJxWeightIPxSection * rData.GetNMatrix(dofRow)->transpose() * rData.mInternalGradientWV_dWV_NN_H1 * (*rData.GetNMatrix(dofCol));
                 break;
 
             /*******************************************************\
@@ -991,7 +997,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian2(BlockFullMatri
             {
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
             {
-                const auto& N = *(rData.mN.at(dofRow));
+                const auto& N = *(rData.GetNMatrix(dofRow));
                 double rho = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY);
                 hessian2 += rho * N.transpose() * N * rData.mDetJxWeightIPxSection;
 

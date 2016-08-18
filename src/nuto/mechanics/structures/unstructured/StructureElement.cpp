@@ -529,22 +529,44 @@ void NuTo::Structure::ElementDelete(int rElementNumber)
 #endif
 }
 
-//! @brief Creates an element
-//! @param rInterpolationTypeId interpolation type id
-//! @param rNodeNumbers node indices
-//! @return int rElementNumber
+int NuTo::Structure::ElementCreate(int rInterpolationTypeId,
+                                   const Eigen::VectorXi &rNodeNumbers,
+                                   const Eigen::MatrixXd &rKnots,
+                                   const Eigen::VectorXi &rKnotIDs)
+{
+    return ElementCreate(rInterpolationTypeId, rNodeNumbers, rKnots, rKnotIDs,  "CONSTITUTIVELAWIP", "NOIPDATA");
+}
+
+
 int NuTo::Structure::ElementCreate(int rInterpolationTypeId, const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers)
 {
     return ElementCreate(rInterpolationTypeId, rNodeNumbers, "CONSTITUTIVELAWIP", "NOIPDATA");
 }
 
-//! @brief Creates an element
-//! @param rInterpolationTypeId interpolation type id
-//! @param rNodeNumbers node indices
-//! @param rElementDataType Element data for the elements
-//! @param rIpDataType Integration point data for the elements
-//! @return int rElementNumber
-int NuTo::Structure::ElementCreate(int rInterpolationTypeId, const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType)
+int NuTo::Structure::ElementCreate(int   rInterpolationTypeId,
+                                   const Eigen::VectorXi &rNodeNumbers,
+                                   const Eigen::MatrixXd &rKnots,
+                                   const Eigen::VectorXi &rKnotIDs,
+                                   const std::string     &rElementDataType,
+                                   const std::string     &rIpDataType)
+{
+    //find unused integer id
+    int elementNumber(mElementMap.size());
+    boost::ptr_map<int, ElementBase>::iterator it = mElementMap.find(elementNumber);
+    while (it != mElementMap.end())
+    {
+        elementNumber++;
+        it = mElementMap.find(elementNumber);
+    }
+    // create element
+    this->ElementCreate(elementNumber, rInterpolationTypeId, rNodeNumbers, rKnots, rKnotIDs, rElementDataType, rIpDataType);
+    return elementNumber;
+}
+
+int NuTo::Structure::ElementCreate(int   rInterpolationTypeId,
+                                   const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers,
+                                   const std::string& rElementDataType,
+                                   const std::string& rIpDataType)
 {
 
     //find unused integer id
@@ -560,12 +582,34 @@ int NuTo::Structure::ElementCreate(int rInterpolationTypeId, const NuTo::FullVec
     return elementNumber;
 }
 
-//! @brief Creates an element
-//! @param rElementNumber element number
-//! @param rInterpolationTypeId interpolation type id
-//! @param rElementType element type
-//! @param rNodeIdents pointers to the corresponding nodes
-void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId, const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType)
+void NuTo::Structure::ElementCreate(int rElementNumber,
+                                    int rInterpolationTypeId,
+                                    const Eigen::VectorXi& rNodeNumbers,
+                                    const Eigen::MatrixXd &rKnots,
+                                    const Eigen::VectorXi &rKnotIDs,
+                                    const std::string& rElementDataType,
+                                    const std::string& rIpDataType)
+{
+    // convert node numbers to pointer
+    if (rNodeNumbers.cols() != 1)
+        throw MechanicsException("[NuTo::Structure::ElementCreate] Matrix with node numbers should have a single column.");
+    std::vector<NodeBase*> nodeVector;
+    for (int iNode = 0; iNode < rNodeNumbers.rows(); iNode++)
+    {
+        nodeVector.push_back(NodeGetNodePtr(rNodeNumbers(iNode)));
+    }
+
+    ElementData::eElementDataType elementDataType = ElementData::ElementDataTypeToEnum(rElementDataType);
+    IpData::eIpDataType ipDataType = NuTo::IpData::IpDataTypeToEnum(rIpDataType);
+
+    ElementCreate(rElementNumber, rInterpolationTypeId, nodeVector, rKnots, rKnotIDs, elementDataType, ipDataType);
+}
+
+void NuTo::Structure::ElementCreate(int rElementNumber,
+                                    int rInterpolationTypeId,
+                                    const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers,
+                                    const std::string& rElementDataType,
+                                    const std::string& rIpDataType)
 {
     // convert node numbers to pointer
     if (rNodeNumbers.GetNumColumns() != 1)
@@ -582,12 +626,29 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
     ElementCreate(rElementNumber, rInterpolationTypeId, nodeVector, elementDataType, ipDataType);
 }
 
-//! @brief Creates an element
-//! @param rInterpolationTypeId interpolation type id
-//! @param rNodeVector pointers to the corresponding nodes
-//! @param rElementDataType Element data for the elements
-//! @param rIpDataType Integration point data for the elements
-//! @return int rElementNumber
+int NuTo::Structure::ElementCreate(int rInterpolationTypeId,
+                                   const std::vector<NodeBase*>& rNodeNumbers,
+                                   const Eigen::MatrixXd &rKnots,
+                                   const Eigen::VectorXi &rKnotIDs,
+                                   ElementData::eElementDataType rElementDataType,
+                                   IpData::eIpDataType rIpDataType)
+{
+    //find unused integer id
+    int elementNumber(mElementMap.size());
+    boost::ptr_map<int, ElementBase>::iterator it = mElementMap.find(elementNumber);
+    while (it != mElementMap.end())
+    {
+        elementNumber++;
+        it = mElementMap.find(elementNumber);
+    }
+
+    // create element
+    this->ElementCreate(elementNumber, rInterpolationTypeId, rNodeNumbers, rKnots, rKnotIDs, rElementDataType, rIpDataType);
+
+    // return element number
+    return elementNumber;
+}
+
 int NuTo::Structure::ElementCreate(int rInterpolationTypeId, const std::vector<NodeBase*>& rNodeNumbers, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
 {
     //find unused integer id
@@ -606,13 +667,42 @@ int NuTo::Structure::ElementCreate(int rInterpolationTypeId, const std::vector<N
     return elementNumber;
 }
 
-//! @brief Creates an element
-//! @param rInterpolationTypeId interpolation type id
-//! @param rNodeNumbers node indices
-//! @param rElementDataType Element data for the elements
-//! @param rIpDataType Integration point data for the elements
-//! @return int rElementNumber
-int NuTo::Structure::ElementCreate(int rInterpolationTypeId, const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
+int NuTo::Structure::ElementCreate(int rInterpolationTypeId,
+                                   const Eigen::VectorXi& rNodeNumbers,
+                                   const Eigen::MatrixXd &rKnots,
+                                   const Eigen::VectorXi &rKnotIDs,
+                                   ElementData::eElementDataType rElementDataType,
+                                   IpData::eIpDataType rIpDataType)
+{
+    //find unused integer id
+    int elementNumber(mElementMap.size());
+    boost::ptr_map<int, ElementBase>::iterator it = mElementMap.find(elementNumber);
+    while (it != mElementMap.end())
+    {
+        elementNumber++;
+        it = mElementMap.find(elementNumber);
+    }
+
+    // convert node numbers to pointer
+    if (rNodeNumbers.cols() != 1)
+        throw MechanicsException("[NuTo::Structure::ElementCreate] Matrix with node numbers should have a single column.");
+    std::vector<NodeBase*> nodeVector;
+    for (int iNode = 0; iNode < rNodeNumbers.rows(); iNode++)
+    {
+        nodeVector.push_back(NodeGetNodePtr(rNodeNumbers(iNode)));
+    }
+
+    // create element
+    this->ElementCreate(elementNumber, rInterpolationTypeId, nodeVector, rKnots, rKnotIDs, rElementDataType, rIpDataType);
+
+    // return element number
+    return elementNumber;
+}
+
+int NuTo::Structure::ElementCreate(int rInterpolationTypeId,
+                                   const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers,
+                                   ElementData::eElementDataType rElementDataType,
+                                   IpData::eIpDataType rIpDataType)
 {
     //find unused integer id
     int elementNumber(mElementMap.size());
@@ -637,6 +727,84 @@ int NuTo::Structure::ElementCreate(int rInterpolationTypeId, const NuTo::FullVec
 
     // return element number
     return elementNumber;
+}
+
+
+void NuTo::Structure::ElementCreate(int rElementNumber,
+                                    int rInterpolationTypeId,
+                                    const std::vector<NodeBase*>& rNodeVector,
+                                    const Eigen::MatrixXd &rKnots,
+                                    const Eigen::VectorXi &rKnotIDs,
+                                    ElementData::eElementDataType rElementDataType,
+                                    IpData::eIpDataType rIpDataType)
+{
+    boost::ptr_map<int, InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
+
+    if (itIterator == mInterpolationTypeMap.end())
+        throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] Interpolation type does not exist.");
+
+    InterpolationType* interpolationType = itIterator->second;
+
+    if (interpolationType->IsDof(Node::COORDINATES) == false)
+        throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] COORDINATE interpolation required.");
+
+    unsigned int numNodesCoordinates = interpolationType->Get(Node::COORDINATES).GetNumNodes();
+    if (numNodesCoordinates != rNodeVector.size())
+        throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] COORDINATE interpolation requires " + std::to_string(numNodesCoordinates) + " nodes. " + std::to_string(rNodeVector.size()) + " are provided.");
+
+    ElementBase* ptrElement = 0;
+
+    if (interpolationType->GetCurrentIntegrationType() == nullptr)
+    {
+        IntegrationType::eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
+        IntegrationTypeBase* integrationType = GetPtrIntegrationType(integrationTypeEnum);
+        interpolationType->UpdateIntegrationType(*integrationType);
+    }
+
+    try
+    {
+        switch (interpolationType->GetShapeType())
+        {
+        case NuTo::Interpolation::eShapeType::SPRING:
+            throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] Element1DSpring currently not implemented.");
+//            ptrElement = new Element1DSpring(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
+//            ptrElement->CheckElement();
+            break;
+        case NuTo::Interpolation::eShapeType::TRUSS1D:
+        case NuTo::Interpolation::eShapeType::TRUSSXD:
+        case NuTo::Interpolation::eShapeType::TRIANGLE2D:
+        case NuTo::Interpolation::eShapeType::QUAD2D:
+        case NuTo::Interpolation::eShapeType::TETRAHEDRON3D:
+        case NuTo::Interpolation::eShapeType::BRICK3D:
+        case NuTo::Interpolation::eShapeType::INTERFACE:
+            throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] Please use approriate functions for element creation, this is IGA implementation.");
+            break;
+        case NuTo::Interpolation::eShapeType::IGA1D:
+            ptrElement = new ContinuumElementIGA<1>(this, rNodeVector, rKnots, rKnotIDs, rElementDataType, rIpDataType, interpolationType);
+            ptrElement->CheckElement();
+            break;
+        case NuTo::Interpolation::eShapeType::IGA2D:
+            ptrElement = new ContinuumElementIGA<2>(this, rNodeVector, rKnots, rKnotIDs, rElementDataType, rIpDataType, interpolationType);
+            ptrElement->CheckElement();
+            break;
+        default:
+            throw MechanicsException("[NuTo::Structure::ElementCreate] invalid dimension.");
+        }
+
+        mElementMap.insert(rElementNumber, ptrElement);
+
+    } catch (NuTo::MechanicsException &e)
+    {
+        std::stringstream ss;
+        ss << rElementNumber;
+        e.AddMessage("[NuTo::Structure::ElementCreate] Error creating element " + ss.str() + ".");
+        throw e;
+    } catch (...)
+    {
+        std::stringstream ss;
+        ss << rElementNumber;
+        throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] Error creating element " + ss.str() + ".");
+    }
 }
 
 //! @brief Creates an element
@@ -702,8 +870,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
             ptrElement->CheckElement();
             break;
         case NuTo::Interpolation::eShapeType::IGA1D:
-            ptrElement = new ContinuumElementIGA<1>(this, rNodeVector, rElementDataType, rIpDataType, interpolationType);
-            ptrElement->CheckElement();
+            throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] Please use the ElementCreate function for IGA elements, where the knot parameters are provided.");
             break;
         default:
             throw MechanicsException("[NuTo::Structure::ElementCreate] invalid dimension.");
