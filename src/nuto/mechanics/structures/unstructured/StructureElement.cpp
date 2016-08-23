@@ -580,6 +580,15 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
     ElementCreate(rElementNumber, rInterpolationTypeId, nodeVector, elementDataType, ipDataType);
 }
 
+void  NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId, const std::vector<int>& rNodeIds, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
+{
+    std::vector<NodeBase*> nodeVector;
+    for (const auto& nodeId : rNodeIds)
+        nodeVector.push_back(NodeGetNodePtr(nodeId));
+
+    ElementCreate(rElementNumber, rInterpolationTypeId, nodeVector, rElementDataType, rIpDataType);
+}
+
 //! @brief Creates an element
 //! @param rInterpolationTypeId interpolation type id
 //! @param rNodeVector pointers to the corresponding nodes

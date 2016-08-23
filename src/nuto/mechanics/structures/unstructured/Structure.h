@@ -398,7 +398,7 @@ public:
     //! @return int rElementNumber
     int ElementCreate(int rInterpolationTypeId, const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
 
-
+    void ElementCreate(int rElementNumber, int rInterpolationTypeId, const std::vector<int>& rNodeIds, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
 
     //! @brief Creates an element
     //! @param rElementNumber element number
