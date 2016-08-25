@@ -18,6 +18,7 @@
 #include <eigen3/Eigen/Core>
 #include <map>
 #include <set>
+#include <vector>
 
 
 namespace NuTo

@@ -15,6 +15,7 @@
 #include <eigen3/Eigen/Dense>
 #include <boost/ptr_container/ptr_map.hpp>
 #include <set>
+#include <vector>
 
 namespace NuTo
 {
