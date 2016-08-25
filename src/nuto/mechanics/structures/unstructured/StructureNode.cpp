@@ -146,7 +146,8 @@ void NuTo::Structure::NodeInfo(int rVerboseLevel)const
                     for (unsigned short iDof = 0; iDof < numDofs; ++iDof)
                     {
                         mLogger << "\t" << it->second->Get(dofType)[iDof];
-                        mLogger << "("<< it->second->GetDof(dofType, iDof)<< ")" ;
+                        if (it->second->IsDof(dofType))
+                            mLogger << "("<< it->second->GetDof(dofType, iDof)<< ")" ;
                     }
                 }
             }
@@ -209,8 +210,59 @@ int NuTo::Structure::NodeCreate(NuTo::FullVector<double,Eigen::Dynamic> rCoordin
     return id;
 }
 
+int NuTo::Structure::GetDofDimension(Node::eDof rDof)
+{
+    switch (rDof)
+    {
+    // **************************************
+    // dofs with dimension = global dimension
+    // **************************************
+    case Node::eDof::COORDINATES:
+    case Node::eDof::DISPLACEMENTS:
+        return GetDimension();
 
+    // **************************************
+    // scalars:
+    // **************************************
+    case Node::eDof::TEMPERATURE:
+    case Node::eDof::NONLOCALEQSTRAIN:
+    case Node::eDof::WATERVOLUMEFRACTION:
+    case Node::eDof::RELATIVEHUMIDITY:
+    case Node::eDof::CRACKPHASEFIELD:
+        return 1;
 
+    // **************************************
+    // others:
+    // **************************************
+    case Node::eDof::ROTATIONS:
+    {
+        if (GetDimension() == 2)
+            return 1;
+
+        if (GetDimension() == 3)
+            return 3;
+
+        throw MechanicsException(__PRETTY_FUNCTION__, "Rotations are only defined for structural dimension 2 and 3");
+    }
+    case Node::eDof::NONLOCALEQPLASTICSTRAIN:
+    case Node::eDof::NONLOCALTOTALSTRAIN:
+    {
+        if (GetDimension() == 1)
+            return 1;
+
+        if (GetDimension() == 2)
+            return 3;
+
+        if (GetDimension() == 3)
+            return 6;
+
+        break;
+    }
+    default:
+    break; // throw below gets called...
+    }
+    throw MechanicsException(__PRETTY_FUNCTION__, "Dimensions of the required DOF " + Node::DofToString(rDof) + " not defined.");
+}
 
 NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates)
 {
@@ -220,67 +272,27 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
 
     NodeBase* nodePtr = nullptr;
 
-    std::map<Node::eDof, int> dofDimensions;
+    std::map<Node::eDof, NodeDofInfo> dofInfos;
 
     // somehow always add coordinates
     rDOFs.insert(Node::eDof::COORDINATES);
 
     for (Node::eDof dof : rDOFs)
     {
-        int dimensionOfDof = 0;
-        switch (dof) {
+        NodeDofInfo& dofInfo = dofInfos[dof];
 
-            // **************************************
-            // dofs with dimension = global dimension
-            // **************************************
-            case Node::eDof::COORDINATES:
-            case Node::eDof::DISPLACEMENTS:
-            {
-                dimensionOfDof = GetDimension();
-                break;
-            }
+        dofInfo.mDimension = GetDofDimension(dof);
+        dofInfo.mNumTimeDerivatives = GetNumTimeDerivatives();
+        dofInfo.mIsDof = true;
 
-            // **************************************
-            // scalars:
-            // **************************************
-            case Node::eDof::TEMPERATURE:
-            case Node::eDof::NONLOCALEQSTRAIN:
-            case Node::eDof::WATERVOLUMEFRACTION:
-            case Node::eDof::RELATIVEHUMIDITY:
-            case Node::eDof::CRACKPHASEFIELD:
-            {
-                dimensionOfDof = 1;
-                break;
-            }
-
-            // **************************************
-            // others:
-            // **************************************
-            case Node::eDof::ROTATIONS:
-            {
-                if (GetDimension() == 2) dimensionOfDof = 1;
-                if (GetDimension() == 3) dimensionOfDof = 3;
-                break;
-            }
-            case Node::eDof::NONLOCALEQPLASTICSTRAIN:
-            {
-                dimensionOfDof = 2;
-                break;
-            }
-            case Node::eDof::NONLOCALTOTALSTRAIN:
-            {
-                if (GetDimension() == 1) dimensionOfDof = 1;
-                if (GetDimension() == 2) dimensionOfDof = 3;
-                if (GetDimension() == 3) dimensionOfDof = 6;
-                break;
-            }
-            default:
-                throw MechanicsException(__PRETTY_FUNCTION__, "Dimensions of the required DOF " + Node::DofToString(dof) + " not defined.");
+        if (dof == Node::eDof::COORDINATES)
+        {
+            dofInfo.mNumTimeDerivatives = 0;
+            dofInfo.mIsDof = false;
         }
-        dofDimensions[dof] = dimensionOfDof;
     }
 
-    nodePtr = new NodeDof(GetNumTimeDerivatives(), dofDimensions);
+    nodePtr = new NodeDof(dofInfos);
 
     nodePtr->Set(Node::eDof::COORDINATES, rCoordinates);
     return nodePtr;

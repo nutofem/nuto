@@ -451,10 +451,6 @@ ADD_TEST(c::mechanics::Shrinkage ${CMAKE_CURRENT_BUILD_DIR}/Shrinkage)
 
 ENDIF(ENABLE_C++_TESTS)
 
-IF(ENABLE_C++_TESTS_WIP)
-
-ENDIF(ENABLE_C++_TESTS_WIP)
-
 if(ENABLE_UNIT_TESTS)
     foreach(test ContinuumElement PhaseField)
         add_executable(${test} ${test}.cpp)

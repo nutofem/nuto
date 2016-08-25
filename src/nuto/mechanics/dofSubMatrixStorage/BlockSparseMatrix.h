@@ -2,7 +2,6 @@
 
 #include <memory>
 
-
 #include "nuto/mechanics/dofSubMatrixStorage/BlockStorageBase.h"
 #include "nuto/mechanics/nodes/DofHash.h"
 

@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -95,8 +94,15 @@ public:
 
 
     //! @brief returns the number of time derivatives stored at the node
+    //! @param rDof ... specific dof type
     //! @return number of derivatives
-    virtual int GetNumTimeDerivatives()const
+    virtual int GetNumTimeDerivatives(Node::eDof rDof)const
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
+    }
+
+    //! @brief returns if the dof type rDof is an actual degree of freedom (in contrast to COORDINATES)
+    virtual bool IsDof(Node::eDof rDof) const
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
     }
@@ -261,5 +267,3 @@ public:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::NodeBase)
 #endif // ENABLE_SERIALIZATION
-
-

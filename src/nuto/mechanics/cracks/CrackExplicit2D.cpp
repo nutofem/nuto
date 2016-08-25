@@ -82,7 +82,12 @@ void NuTo::CrackExplicit2D::Initiate(std::vector<NuTo::ElementBase*>& rElements,
 				/// check if at least 1 element edge is intersected by the crack
 				for(int j=0; j<numElemNodes; j++)
 				{
-                    NuTo::NodeBase* nodeI=new NuTo::NodeDof(0, std::map<Node::eDof, int>({{Node::eDof::COORDINATES, 2}}));
+				    NodeDofInfo info;
+				    info.mDimension = 2;
+				    info.mNumTimeDerivatives = 0;
+				    info.mIsDof = false;
+					NuTo::NodeBase* nodeI = new NuTo::NodeDof(std::map<Node::eDof, NodeDofInfo>({{Node::eDof::COORDINATES, info}}));
+
 					double relCoor=0.0;
 					size_t seg;
 					isCracked=Intersect(thisElement->GetNode(j),thisElement->GetNode(((j+1)%numElemNodes)),nodeI, relCoor, seg);

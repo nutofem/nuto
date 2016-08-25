@@ -261,6 +261,8 @@ if(ENABLE_UNIT_TESTS)
 set(NuToBoostComponents ${NuToBoostComponents} unit_test_framework)
 endif(ENABLE_UNIT_TESTS)
 
+message(STATUS "Requesting BOOST components ${NuToBoostComponents} - at least version ${NuToBoostRequiredVersion} required.")
+
 FIND_PACKAGE(Boost ${NuToBoostRequiredVersion} COMPONENTS ${NuToBoostComponents} REQUIRED)
 
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})

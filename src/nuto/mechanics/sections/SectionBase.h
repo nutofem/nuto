@@ -26,7 +26,7 @@ public:
     SectionBase();
 
     //! @brief ... destructor
-    virtual ~SectionBase(){};
+    virtual ~SectionBase(){}
 
     //! @brief ... get the section type
     //! @return ... section type

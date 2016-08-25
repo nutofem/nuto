@@ -41,14 +41,14 @@ void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const std:
         break;
         case NuTo::eVisualizeWhat::VELOCITY:
         {
-            if (GetNum(Node::eDof::DISPLACEMENTS) == 0 && GetNumTimeDerivatives() < 1)
+            if (GetNum(Node::eDof::DISPLACEMENTS) == 0 && GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < 1)
                 break;
             rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GetPointVectorData(Node::eDof::DISPLACEMENTS, 1).data());
         }
         break;
         case NuTo::eVisualizeWhat::ACCELERATION:
         {
-            if (GetNum(Node::eDof::DISPLACEMENTS) == 0 && GetNumTimeDerivatives() < 2)
+            if (GetNum(Node::eDof::DISPLACEMENTS) == 0 && GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < 2)
                 break;
             rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GetPointVectorData(Node::eDof::DISPLACEMENTS, 2).data());
         }
@@ -62,14 +62,14 @@ void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const std:
         break;
         case NuTo::eVisualizeWhat::ANGULAR_VELOCITY:
         {
-            if (GetNum(Node::eDof::ROTATIONS) == 0 && GetNumTimeDerivatives() < 1)
+            if (GetNum(Node::eDof::ROTATIONS) == 0 && GetNumTimeDerivatives(Node::eDof::ROTATIONS) < 1)
                 break;
             rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GetPointVectorData(Node::eDof::ROTATIONS, 1).data());
         }
         break;
         case NuTo::eVisualizeWhat::ANGULAR_ACCELERATION:
         {
-            if (GetNum(Node::eDof::ROTATIONS) == 0 && GetNumTimeDerivatives() < 2)
+            if (GetNum(Node::eDof::ROTATIONS) == 0 && GetNumTimeDerivatives(Node::eDof::ROTATIONS) < 2)
                  break;
              rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GetPointVectorData(Node::eDof::ROTATIONS, 2).data());
         }

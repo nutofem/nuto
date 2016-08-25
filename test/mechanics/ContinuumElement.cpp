@@ -34,11 +34,17 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     Structure structure(1);
     structure.SetNumTimeDerivatives(1);
     std::vector<NodeBase*> nodes;
-    std::map<Node::eDof, int> dofDimensions;
-    dofDimensions[Node::eDof::COORDINATES] = 1;
-    dofDimensions[Node::eDof::TEMPERATURE] = 1;
-    auto node1 = NodeDof(1, dofDimensions);
-    auto node2 = NodeDof(1, dofDimensions);
+    std::map<Node::eDof, NuTo::NodeDofInfo> dofInfos;
+    dofInfos[Node::eDof::COORDINATES].mDimension = 1;
+    dofInfos[Node::eDof::COORDINATES].mNumTimeDerivatives = 1;
+    dofInfos[Node::eDof::COORDINATES].mIsDof = false;
+
+    dofInfos[Node::eDof::TEMPERATURE].mDimension = 1;
+    dofInfos[Node::eDof::TEMPERATURE].mNumTimeDerivatives = 1;
+    dofInfos[Node::eDof::TEMPERATURE].mIsDof = true;
+
+    auto node1 = NodeDof(dofInfos);
+    auto node2 = NodeDof(dofInfos);
 
     Eigen::Matrix<double, 1, 1> coordinate;
     Eigen::Matrix<double, 1, 1> dTemperatureDTime;

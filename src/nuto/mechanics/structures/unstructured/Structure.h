@@ -745,6 +745,11 @@ private:
     //! @param rCoordinates coordinates of the node
     //! @return node pointer
     NodeBase* NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+
+    //! @brief determines the dimensionality of a dof type
+    //! @param rDof ... specific dof type
+    //! @return dimension
+    int GetDofDimension(Node::eDof rDof);
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

@@ -77,7 +77,7 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, int rTimeDerivative, c
 
     if (rDisplacements.GetNumColumns()!=1)
         throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] Displacement matrix has to have a single column.");
-    if (nodePtr->GetNumTimeDerivatives()<rTimeDerivative)
+    if (nodePtr->GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS)<rTimeDerivative)
         throw MechanicsException("[NuTo::StructureBase::NodeSetDisplacements] number of time derivatives stored at node is less than the required value.");
     try
     {
@@ -188,7 +188,7 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, int rTimeDe
     {
         try
         {
-            if (itNode->second->GetNumTimeDerivatives()<rTimeDerivative)
+            if (itNode->second->GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS)<rTimeDerivative)
                 throw MechanicsException("[NuTo::StructureBase::NodeGroupSetDisplacements] does not have a sufficient number of time derivatives.");
 
             if (rDisplacements.GetNumRows() <= 0 or rDisplacements.GetNumRows() > 3)
@@ -219,7 +219,7 @@ void NuTo::StructureBase::NodeSetTemperature(int rNode, int rTimeDerivative, dou
 {
     NodeBase* nodePtr = NodeGetNodePtr(rNode);
     this->mUpdateTmpStaticDataRequired = true;
-    if (nodePtr->GetNumTimeDerivatives()<rTimeDerivative)
+    if (nodePtr->GetNumTimeDerivatives(Node::eDof::TEMPERATURE)<rTimeDerivative)
         throw MechanicsException(__PRETTY_FUNCTION__,
                 "Number of time derivatives stored at node is less than the required value.");
     nodePtr->Set(Node::eDof::TEMPERATURE, rTimeDerivative, rTemperature);
@@ -718,5 +718,3 @@ void NuTo::StructureBase::NodeVectorAddToVisualize(VisualizeUnstructuredGrid& rV
     }
 }
 #endif //ENABLE_VISUALIZE
-
-
