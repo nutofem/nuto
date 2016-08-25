@@ -3,9 +3,8 @@
 #pragma once
 
 #include <string>
-#include "nuto/math/FullMatrix_Def.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/MechanicsException.h"
+
 
 #ifdef ENABLE_VISUALIZE
 #include <boost/ptr_container/ptr_list.hpp>
@@ -40,6 +39,16 @@ class ConstitutiveStaticDataHistoryVariableScalar;
 class ElementBase;
 class VisualizeUnstructuredGrid;
 class VisualizeComponentBase;
+
+namespace Constitutive
+{
+    enum class eConstitutiveType;
+}// namespace Constitutive
+
+namespace Element
+{
+    enum class eElementType;
+}// namespace Element
 
 class ConstitutiveStaticDataBase
 {

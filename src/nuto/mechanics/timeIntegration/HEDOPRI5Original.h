@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef HEDOPRI5ORIGINAL_H
-#define HEDOPRI5ORIGINAL_H
+
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -96,4 +95,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::HEDOPRI5Original)
 
 
 
-#endif // RungeKutta4_H

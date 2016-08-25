@@ -1,10 +1,10 @@
 // $Id$
 
-#ifndef SPARSE_MATRIX_CSR_GENERAL_H
-#define SPARSE_MATRIX_CSR_GENERAL_H
+#pragma once
 #include "nuto/math/SparseMatrixCSRGeneral_Def.h"
 
 #include "nuto/math/SparseMatrixCSRVector2General.h"
+#include "nuto/math/SparseMatrixEnum.h"
 #include "nuto/math/MathException.h"
 
 //! @brief ... constructor
@@ -159,9 +159,9 @@ void NuTo::SparseMatrixCSRGeneral<T>::AddValue(int rRow, int rColumn, const T& r
 
 //! @brief ... return the matrix type
 template<class T>
-NuTo::SparseMatrixEnum::eType NuTo::SparseMatrixCSRGeneral<T>::GetSparseMatrixType()const
+NuTo::eSparseMatrixType NuTo::SparseMatrixCSRGeneral<T>::GetSparseMatrixType()const
 {
-    return NuTo::SparseMatrixEnum::CSRGENERAL;
+    return NuTo::eSparseMatrixType::CSRGENERAL;
 }
 
 //! @brief ... print info about the object
@@ -781,4 +781,3 @@ const NuTo::SparseMatrixCSRGeneral<T>& NuTo::SparseMatrixCSRGeneral<T>::AsSparse
 	return *this;
 }
 
-#endif // SPARSE_MATRIX_CSR_GENERAL_H

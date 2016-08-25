@@ -1,10 +1,6 @@
 // $Id: $
 
-#ifndef ResultTime_H
-#define ResultTime_H
-
-#include <ctime>
-#include <array>
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -12,7 +8,6 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/timeIntegration/ResultBase.h"
-#include "nuto/math/FullVector.h"
 
 namespace NuTo
 {
@@ -36,10 +31,7 @@ public:
 
     void CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot, double rTime);
 
-    NuTo::TimeIntegration::eResultType GetResultType()const
-    {
-    	return NuTo::TimeIntegration::TIME;
-    }
+    NuTo::eTimeIntegrationResultType GetResultType()const;
 
     //! @brief number of data points per time step (e.g. number of displacement components of a node)
     int GetNumData(const StructureBase& rStructure)const
@@ -74,4 +66,3 @@ protected:
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ResultTime)
 #endif // SWIG
 #endif  // ENABLE_SERIALIZATION
-#endif // ResultTime_H

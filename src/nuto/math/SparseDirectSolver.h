@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef SPARSE_DIRECT_SOLVER_H
-#define SPARSE_DIRECT_SOLVER_H
+#pragma once
 
 #include "nuto/base/NuToObject.h"
 #include "nuto/math/MathException.h"
@@ -29,4 +28,3 @@ public:
 protected:
 };
 } // namespace NuTo
-#endif // SPARSE_DIRECT_SOLVER_H

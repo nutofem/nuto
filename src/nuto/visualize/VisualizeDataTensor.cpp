@@ -1,6 +1,7 @@
 // $Id$
 
 #include "nuto/visualize/VisualizeDataTensor.h"
+#include "nuto/visualize/VisualizeDataType.h"
 
 // constructor
 NuTo::VisualizeDataTensor::VisualizeDataTensor()
@@ -12,9 +13,9 @@ NuTo::VisualizeDataTensor::VisualizeDataTensor()
 }
 
 // get data type
-NuTo::VisualizeDataType::eDataType NuTo::VisualizeDataTensor::GetDataType() const
+NuTo::eVisualizeDataType NuTo::VisualizeDataTensor::GetDataType() const
 {
-    return NuTo::VisualizeDataType::TENSOR;
+    return NuTo::eVisualizeDataType::TENSOR;
 }
 
 // get number of data

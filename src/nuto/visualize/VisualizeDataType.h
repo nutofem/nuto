@@ -1,11 +1,17 @@
 // $Id$
 
-#ifndef VISUALIZEDATATYPE_H_
-#define VISUALIZEDATATYPE_H_
+#pragma once
 #include <string>
 
 namespace NuTo
 {
+enum class eVisualizeDataType
+{
+    SCALAR,      //!< scalar data
+    VECTOR,      //!< vector data (vector length 3)
+    TENSOR,      //!< tensor data (3x3 tensor)
+    FIELD        //!< field data (variable length)
+};
 
 //! @brief ... class describing the data type stored at the cells or the points
 //! @author Stefan Eckardt, ISM
@@ -13,16 +19,9 @@ namespace NuTo
 class VisualizeDataType
 {
 public:
-    enum eDataType
-    {
-        SCALAR,      //!< scalar data
-        VECTOR,      //!< vector data (vector length 3)
-        TENSOR,      //!< tensor data (3x3 tensor)
-        FIELD        //!< field data (variable length)
-    };
 
     // constructor
-    VisualizeDataType(const std::string& rIdent, eDataType rDataType);
+    VisualizeDataType(const std::string& rIdent, eVisualizeDataType rDataType);
 
     inline std::string GetIdent() const
     {
@@ -41,7 +40,7 @@ public:
         }
     }
 
-    inline eDataType GetDataType() const
+    inline eVisualizeDataType GetDataType() const
     {
         return this->mDataType;
     }
@@ -58,7 +57,7 @@ private:
     std::string mIdent;
 
     //! @brief ... type of data
-    eDataType mDataType;
+    eVisualizeDataType mDataType;
 
     //! @brief ... number of data
     unsigned int mNumData;
@@ -66,4 +65,3 @@ private:
 
 }
 
-#endif // VISUALIZEDATATYPE_H_

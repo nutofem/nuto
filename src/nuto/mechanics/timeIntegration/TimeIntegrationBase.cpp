@@ -18,6 +18,7 @@
 
 
 #include "nuto/base/Timer.h"
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/timeIntegration/TimeIntegrationBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/structures/StructureBase.h"
@@ -31,6 +32,8 @@
 #include "nuto/mechanics/structures/StructureOutputBlockVector.h"
 #include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 
 
@@ -59,6 +62,9 @@ NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) :
     mCallback = nullptr;
     ResetForNextLoad();
 }
+
+NuTo::TimeIntegrationBase::~TimeIntegrationBase()
+{}
 
 //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
 void NuTo::TimeIntegrationBase::ResetForNextLoad()
@@ -382,37 +388,37 @@ void NuTo::TimeIntegrationBase::PostProcess(const StructureOutputBlockVector& rO
         {
 			switch (itResult->second->GetResultType())
 			{
-			case TimeIntegration::TIME:
+            case eTimeIntegrationResultType::TIME:
 			{
 				ResultTime* resultPtr(itResult->second->AsResultTime());
 				resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult,mTime);
 				break;
 			}
-			case TimeIntegration::NODE_ACCELERATION:
+            case eTimeIntegrationResultType::NODE_ACCELERATION:
 			{
 				ResultNodeDof* resultPtr(itResult->second->AsResultNodeDof());
 				resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult);
 				break;
 			}
-			case TimeIntegration::NODE_DISPLACEMENT:
+            case eTimeIntegrationResultType::NODE_DISPLACEMENT:
 			{
 				ResultNodeDof* resultPtr(itResult->second->AsResultNodeDof());
 				resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult);
 				break;
 			}
-			case TimeIntegration::GROUP_NODE_FORCE:
+            case eTimeIntegrationResultType::GROUP_NODE_FORCE:
 			{
 				ResultGroupNodeDof* resultPtr(
 						itResult->second->AsResultGroupNodeDof());
-                resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult, rOutOfBalance.J[Node::DISPLACEMENTS],rOutOfBalance.K[Node::DISPLACEMENTS]);
+                resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult, rOutOfBalance.J[Node::eDof::DISPLACEMENTS],rOutOfBalance.K[Node::eDof::DISPLACEMENTS]);
 				break;
 
 			}
-			case TimeIntegration::ELEMENT_IP_STRESS:
-            case TimeIntegration::ELEMENT_IP_STRAIN:
-            case TimeIntegration::ELEMENT_IP_DAMAGE:
-            case TimeIntegration::ELEMENT_IP_BOND_STRESS:
-            case TimeIntegration::ELEMENT_IP_SLIP:
+            case eTimeIntegrationResultType::ELEMENT_IP_STRESS:
+            case eTimeIntegrationResultType::ELEMENT_IP_STRAIN:
+            case eTimeIntegrationResultType::ELEMENT_IP_DAMAGE:
+            case eTimeIntegrationResultType::ELEMENT_IP_BOND_STRESS:
+            case eTimeIntegrationResultType::ELEMENT_IP_SLIP:
             {
                 ResultElementIpData* resultPtr(itResult->second->AsResultElementIpData());
                 resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult);

@@ -1,6 +1,5 @@
 // $Id$
-#ifndef IntegrationType2D4NModTriangle_H
-#define IntegrationType2D4NModTriangle_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -10,9 +9,9 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #endif //ENABLE_SERIALIZATION
-#include <boost/ptr_container/ptr_map.hpp>
 
-#include "nuto/mechanics/integrationtypes/IntegrationPointBase.h"
+
+
 #include "nuto/mechanics/integrationtypes/IntegrationType2DMod.h"
 
 namespace NuTo
@@ -55,4 +54,3 @@ protected:
 };
 }
 
-#endif //IntegrationType2D4NModTriangle_H

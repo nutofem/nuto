@@ -13,6 +13,8 @@
 #include <omp.h>
 # endif
 
+#include "nuto/base/ErrorEnum.h"
+#include "nuto/math/FullMatrix.h"
 #include "nuto/optimize/NewtonRaphson.h"
 #include "nuto/optimize/OptimizeException.h"
 
@@ -48,9 +50,9 @@ NuTo::NewtonRaphson::NewtonRaphson() : NonlinearSolverBase()
 //#endif // ENABLE_SERIALIZATION
 
 
-NuTo::Error::eError NuTo::NewtonRaphson::Solve(NuTo::FullVector<double,Eigen::Dynamic> &rUnknown)
+NuTo::eError NuTo::NewtonRaphson::Solve(NuTo::FullVector<double,Eigen::Dynamic> &rUnknown)
 {
-	NuTo::Error::eError Error;
+    NuTo::eError Error;
 
 	if (not mAssignResidual && mResidualFunction == 0) {
 		throw OptimizeException("[NuTo::NewtonRaphson::Solve] the pointer to the residual function is required.");
@@ -62,7 +64,7 @@ NuTo::Error::eError NuTo::NewtonRaphson::Solve(NuTo::FullVector<double,Eigen::Dy
 }
 
 //! @brief ... the routine performs Newton-Raphson iterations
-NuTo::Error::eError NuTo::NewtonRaphson::NewtonRaphsonIterator(NuTo::FullVector<double,Eigen::Dynamic> &rX, bool &rCheck) const
+NuTo::eError NuTo::NewtonRaphson::NewtonRaphsonIterator(NuTo::FullVector<double,Eigen::Dynamic> &rX, bool &rCheck) const
 {
 	const int MAXITS(this->mMaxIterationsNumber);
 	const double TOLF = this->mTolResidual, TOLMIN=1.0e-12, STPMX=100.0;
@@ -81,7 +83,7 @@ NuTo::Error::eError NuTo::NewtonRaphson::NewtonRaphsonIterator(NuTo::FullVector<
 
 	if (test < 0.01*TOLF) {
 		rCheck=false;
-		return NuTo::Error::SUCCESSFUL;
+        return NuTo::eError::SUCCESSFUL;
 	}
 
 	stpmax=STPMX*std::max(rX.lpNorm<2>(),double(n));
@@ -123,7 +125,7 @@ NuTo::Error::eError NuTo::NewtonRaphson::NewtonRaphsonIterator(NuTo::FullVector<
 		if (test < 0.01*TOLF) {
 			// ordinary return
 			rCheck=false;
-			return NuTo::Error::SUCCESSFUL;
+            return NuTo::eError::SUCCESSFUL;
 		}
 
 		if (rCheck) {
@@ -131,17 +133,17 @@ NuTo::Error::eError NuTo::NewtonRaphson::NewtonRaphsonIterator(NuTo::FullVector<
 			den=std::max(f,0.5*n);
 			test = ( g.array().abs() * rX.array().abs().max(1.0) ).maxCoeff() / den;
 			rCheck=(test < TOLMIN);
-			return NuTo::Error::SUCCESSFUL;
+            return NuTo::eError::SUCCESSFUL;
 		}
 
 		test = ( (rX.array()-xold.array()).abs() / rX.array().abs().max(1.0) ).maxCoeff();   // OPTIMIZED
 
 		if (test < TOLX)
 			// too small change of the solution, spurious solution
-			return NuTo::Error::SUCCESSFUL;
+            return NuTo::eError::SUCCESSFUL;
 	}
 	std::cout << "[NuTo::NewmarkRaphson::NewmarkRaphsonIterator] the maximal number of iterations exceeded" << std::endl;
-	return NuTo::Error::NO_CONVERGENCE;
+    return NuTo::eError::NO_CONVERGENCE;
 }
 
 //! @brief ... the routine performs line search correction of the Newton step

@@ -1,5 +1,4 @@
-#ifndef MATRIX_OPERATIONS_H
-#define MATRIX_OPERATIONS_H
+#pragma once
 namespace NuTo
 {
 //! @author Joerg F. Unger, ISM
@@ -27,4 +26,3 @@ public:
     }
 };
 }
-#endif MATRIX_OPERATIONS_H

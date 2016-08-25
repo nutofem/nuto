@@ -5,15 +5,17 @@
  *      Author: ttitsche
  */
 
-#ifndef PARTICLECREATOR_H_
-#define PARTICLECREATOR_H_
+#pragma once
 
-#include "nuto/math/FullMatrix.h"
+
+//member
 #include "nuto/geometryConcrete/Specimen.h"
 
 namespace NuTo
 {
 class InputReader;
+template <class T, int rows, int cols> class FullMatrix;
+
 class ParticleCreator
 {
 public:
@@ -88,4 +90,3 @@ private:
 };
 
 } /* namespace NuTo */
-#endif /* PARTICLECREATOR_H_ */

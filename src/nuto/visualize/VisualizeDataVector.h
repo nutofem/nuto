@@ -1,7 +1,7 @@
 // $Id$
 
-#ifndef VISUALIZEDATAVECTOR_H_
-#define VISUALIZEDATAVECTOR_H_
+#pragma once
+
 #include <iostream>
 
 #include "nuto/visualize/VisualizeDataBase.h"
@@ -20,7 +20,7 @@ public:
 
     //! @brief ... get data type
     //! @return ... visualize data type
-    NuTo::VisualizeDataType::eDataType GetDataType() const;
+    NuTo::eVisualizeDataType GetDataType() const;
 
     //! @brief ... get number of data
     //! @return ... number of data
@@ -44,4 +44,3 @@ private:
 };
 }
 
-#endif // VISUALIZEDATAVECTOR_H_ 

@@ -1,10 +1,15 @@
 #pragma once
 
 #include "nuto/mechanics/dofSubMatrixStorage/BlockStorageBase.h"
-#include "nuto/math/FullMatrix_Def.h"
+#include "nuto/mechanics/nodes/DofHash.h"
+
+#include <ostream>
+#include <unordered_map>
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
+template <class T, int rows, int cols>class FullMatrix;
 template <typename T> class BlockFullVector;
 //! @author Thomas Titscher, BAM
 //! @date January 2016
@@ -25,11 +30,14 @@ public:
     BlockFullMatrix(const DofStatus& rDofStatus);
 
     //! @brief copy ctor
-    BlockFullMatrix(const BlockFullMatrix& rOther) = default;
+    BlockFullMatrix(const BlockFullMatrix& rOther);
+
+    //! @brief destructor
+    ~BlockFullMatrix();
 
 #ifndef SWIG
     //! @brief move ctor
-    BlockFullMatrix(BlockFullMatrix&& rOther) = default;
+    BlockFullMatrix(BlockFullMatrix&& rOther);
 
     //! @brief non-const access
           NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& operator()(Node::eDof rDofRow, Node::eDof rDofCol);
@@ -37,12 +45,13 @@ public:
     //! @brief const access
     const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& operator()(Node::eDof rDofRow, Node::eDof rDofCol) const;
 
+    //! @brief copy assignment
+    BlockFullMatrix& operator =(const BlockFullMatrix& rOther);
+
     //! @brief move assignment
-    BlockFullMatrix& operator =(BlockFullMatrix&& rOther) = default;
+    BlockFullMatrix& operator =(BlockFullMatrix&& rOther);
 
 
-    //! @brief move assignment
-    BlockFullMatrix& operator =(const BlockFullMatrix& rOther) = default;
 
     //! @brief operator +=
     //! @remark only modifies active dof types
@@ -82,10 +91,7 @@ public:
 
     NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> Export() const;
 
-    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> Get(std::string rDofRow, std::string rDofCol) const
-    {
-        return (*this)(Node::DofToEnum(rDofRow), Node::DofToEnum(rDofCol));
-    }
+    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> Get(std::string rDofRow, std::string rDofCol) const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief Returns the class name as a string

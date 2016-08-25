@@ -1,18 +1,22 @@
 // $Id$ 
-#ifndef ELEMENTDATAIPBASE_H_
-#define ELEMENTDATAIPBASE_H_
+#pragma once
+
+
+#ifdef ENABLE_VISUALIZE
+#include <boost/ptr_container/ptr_list.hpp>
+#endif // ENABLE_VISUALIZE
+
+
 
 #include <boost/ptr_container/ptr_vector.hpp>
-#include <vector>
-
-#include "nuto/mechanics/elements/IpDataBase.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
-
-#include "nuto/mechanics/MechanicsException.h"
 
 namespace NuTo
 {
+#ifdef ENABLE_VISUALIZE
+class VisualizeUnstructuredGrid;
+#endif // ENABLE_VISUALIZE
+
 class IntegrationTypeBase;
 class IpDataBase;
 //! @author Joerg F. Unger
@@ -167,4 +171,3 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataIpBase)
 #endif // ENABLE_SERIALIZATION
 
-#endif /* ELEMENTDATAIPBASE_H_ */

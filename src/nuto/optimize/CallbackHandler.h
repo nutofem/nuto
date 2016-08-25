@@ -1,19 +1,24 @@
 // $Id$
 
-#ifndef CALLBACKHANDLER_H
-#define CALLBACKHANDLER_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+
+//parent
 #include "nuto/base/NuToObject.h"
+
+
 #include "nuto/optimize/OptimizeException.h"
-#include "nuto/math/FullMatrix.h"
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
+
+template<class T, int rows, int cols> class FullMatrix;
 
 //! @author Joerg F. Unger, ISM
 //! @date September 2009
@@ -94,4 +99,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::CallbackHandler)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::CallbackHandler)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
-#endif // CALLBACKHANDLER_H

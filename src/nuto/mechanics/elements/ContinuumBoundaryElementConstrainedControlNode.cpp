@@ -1,6 +1,7 @@
 #include "ContinuumBoundaryElementConstrainedControlNode.h"
 
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
 
 
 
@@ -19,7 +20,7 @@ NuTo::ContinuumBoundaryElementConstrainedControlNode<TDim>::ContinuumBoundaryEle
 template <int TDim>
 NuTo::Element::eElementType NuTo::ContinuumBoundaryElementConstrainedControlNode<TDim>::GetEnumType() const
 {
-    return Element::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE;
+    return Element::eElementType::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE;
 }
 
 

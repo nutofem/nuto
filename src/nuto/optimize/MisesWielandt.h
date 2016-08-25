@@ -1,14 +1,11 @@
 // $Id $
-#ifndef MISES_WIELANDT_H
-#define MISES_WIELANDT_H
+#pragma once
 
-#include <vector>
-#include <boost/dynamic_bitset.hpp>
-#include <memory>
 
+// parent
 #include "nuto/optimize/Optimizer.h"
+
 #include "nuto/optimize/OptimizeException.h"
-#include "nuto/optimize/CallbackHandlerGrid.h"
 
 
 namespace NuTo
@@ -174,4 +171,3 @@ protected:
 
 };
 } // namespace NuTo
-#endif // MISES_WIELANDT_H

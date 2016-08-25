@@ -1,10 +1,10 @@
 // $Id: SparseMatrixCSRVector2Symmetric.h 235 2010-04-22 09:25:38Z arnold2 $
 
-#ifndef SPARSE_MATRIX_CSR_VECTOR2_SYMMETRIC_H
-#define SPARSE_MATRIX_CSR_VECTOR2_SYMMETRIC_H
+#pragma once
 
 #include <algorithm>
 
+#include "nuto/math/SparseMatrixEnum.h"
 #include "nuto/math/SparseMatrixCSRVector2Symmetric_Def.h"
 #include "nuto/math/SparseMatrixCSRVector2General.h"
 
@@ -154,9 +154,9 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::AddValue(int rRow, int rColumn, c
 
 //! @brief ... return the matrix type
 template<class T>
-NuTo::SparseMatrixEnum::eType NuTo::SparseMatrixCSRVector2Symmetric<T>::GetSparseMatrixType()const
+NuTo::eSparseMatrixType NuTo::SparseMatrixCSRVector2Symmetric<T>::GetSparseMatrixType()const
 {
-    return NuTo::SparseMatrixEnum::CSRVECTOR2SYMMETRIC;
+    return NuTo::eSparseMatrixType::CSRVECTOR2SYMMETRIC;
 }
 
 //! @brief ... import matrix from slang object stored in  a text file
@@ -797,4 +797,3 @@ const NuTo::SparseMatrixCSRVector2Symmetric<T>& NuTo::SparseMatrixCSRVector2Symm
 	return *this;
 }
 
-#endif // SPARSE_MATRIX_CSR_VECTOR2_SYMMETRIC_H

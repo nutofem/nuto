@@ -1,24 +1,31 @@
 // $Id$
+#pragma once
 
-#ifndef VISUALIZEUNSTRUCTUREDGRID_H_
-#define VISUALIZEUNSTRUCTUREDGRID_H_
 #include <boost/ptr_container/ptr_vector.hpp>
-#include <map>
 #include <string>
 
-#include "nuto/visualize/VisualizeDataType.h"
 #include "nuto/visualize/VisualizeBase.h"
-#include "nuto/visualize/Point.h"
-#include "nuto/visualize/CellBase.h"
 
 namespace NuTo
 {
+
+class CellBase;
+class Point;
+class VisualizeDataType;
+
 //! @brief ... visualization of unstructured grids
 //! @author Stefan Eckardt, ISM
 //! @date November 2009
 class VisualizeUnstructuredGrid: public NuTo::VisualizeBase
 {
 public:
+
+    //! @brief ...ctor
+    VisualizeUnstructuredGrid();
+
+    //! @brief ...destructor
+    ~VisualizeUnstructuredGrid();
+
     //! @brief ... export to Vtk datafile
     //! @param rFilename ... filename
     void ExportVtkDataFile(const std::string& rFilename) const;
@@ -171,4 +178,3 @@ private:
 
 }
 
-#endif // VISUALIZEUNSTRUCTUREDGRID_H_ 

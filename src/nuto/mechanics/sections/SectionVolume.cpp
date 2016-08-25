@@ -1,6 +1,7 @@
 // $Id$
 
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/mechanics/sections/SectionVolume.h"
 
 // constructor
@@ -9,9 +10,9 @@ NuTo::SectionVolume::SectionVolume()
 }
 
 // get section type
-NuTo::Section::eSectionType NuTo::SectionVolume::GetType() const
+NuTo::eSectionType NuTo::SectionVolume::GetType() const
 {
-    return Section::VOLUME;
+    return eSectionType::VOLUME;
 }
 
 // info routine

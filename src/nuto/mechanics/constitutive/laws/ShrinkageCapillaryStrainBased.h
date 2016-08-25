@@ -39,18 +39,7 @@ public:
     //! @brief ... check compatibility between element type and type of constitutive relationship
     //! @param rElementType ... element type
     //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-    virtual bool CheckElementCompatibility( Element::eElementType rElementType) const override
-    {
-        switch (rElementType)
-        {
-        case NuTo::Element::CONTINUUMELEMENT:
-        case NuTo::Element::CONTINUUMBOUNDARYELEMENT:
-        case NuTo::Element::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
-            return true;
-        default:
-            return false;
-        }
-    }
+    virtual bool CheckElementCompatibility( Element::eElementType rElementType) const override;
 
     //! @brief ... check parameters of the constitutive relationship
     //! if one check fails, an exception is thrwon
@@ -62,7 +51,7 @@ public:
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
     template <int TDim>
-    NuTo::Error::eError EvaluateShrinkageCapillary( ElementBase* rElement,
+    NuTo::eError EvaluateShrinkageCapillary( ElementBase* rElement,
                                                     int rIp,
                                                     const ConstitutiveInputMap& rConstitutiveInput,
                                                     const ConstitutiveOutputMap& rConstitutiveOutput);
@@ -73,7 +62,7 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError Evaluate1D(ElementBase* rElement,
+    virtual NuTo::eError Evaluate1D(ElementBase* rElement,
                                            int rIp,
                                            const ConstitutiveInputMap& rConstitutiveInput,
                                            const ConstitutiveOutputMap& rConstitutiveOutput) override
@@ -89,7 +78,7 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError Evaluate2D(ElementBase* rElement,
+    virtual NuTo::eError Evaluate2D(ElementBase* rElement,
                                            int rIp,
                                            const ConstitutiveInputMap& rConstitutiveInput,
                                            const ConstitutiveOutputMap& rConstitutiveOutput) override
@@ -105,7 +94,7 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError Evaluate3D(ElementBase* rElement,
+    virtual NuTo::eError Evaluate3D(ElementBase* rElement,
                                            int rIp,
                                            const ConstitutiveInputMap& rConstitutiveInput,
                                            const ConstitutiveOutputMap& rConstitutiveOutput) override
@@ -128,10 +117,7 @@ public:
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship
     //! @sa eConstitutiveType
-    virtual Constitutive::eConstitutiveType GetType() const override
-    {
-        return NuTo::Constitutive::SHRINKAGE_CAPILLARY_STRAIN_BASED;
-    }
+    virtual Constitutive::eConstitutiveType GetType() const override;
 
     //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter

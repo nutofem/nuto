@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef SPARSE_MATRIX_H
-#define SPARSE_MATRIX_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/export.hpp>
@@ -14,15 +13,17 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/math/Matrix.h"
-#include "nuto/math/FullMatrix_Def.h"
-#include "nuto/math/SparseMatrixEnum.h"
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
+template <class T, int rows, int cols> class FullMatrix;
 template<class T> class SparseMatrixCSRGeneral;
 template<class T> class SparseMatrixCSRSymmetric;
 template<class T> class SparseMatrixCSRVector2General;
 template<class T> class SparseMatrixCSRVector2Symmetric;
+
+enum class eSparseMatrixType;
 
 //! @author Stefan Eckardt, ISM
 //! @date July 2009
@@ -116,7 +117,7 @@ public:
     }
 
     //! @brief ... return the matrix type
-    virtual NuTo::SparseMatrixEnum::eType GetSparseMatrixType()const=0;
+    virtual NuTo::eSparseMatrixType GetSparseMatrixType()const=0;
 
     //! @brief ... symmetry of the matrix
     //! @return ... true if the matrix is symmetric, false otherwise
@@ -309,4 +310,3 @@ protected:
 
 
 }
-#endif // SPARSE_MATRIX_H

@@ -44,14 +44,11 @@ public:
     //! @brief calculates output data for the element
     //! @param rInput ... constitutive input map for the constitutive law
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
-    Error::eError Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
+    eError Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
 
     //! @brief returns the enum (type of the element)
     //! @return enum
-    NuTo::Element::eElementType GetEnumType() const override
-    {
-        return Element::eElementType::CONTINUUMELEMENT;
-    }
+    NuTo::Element::eElementType GetEnumType() const override;
 
     //! @brief returns the local dimension of the element
     //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure

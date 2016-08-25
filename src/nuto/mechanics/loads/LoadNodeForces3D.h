@@ -1,6 +1,5 @@
 // $Id$
-#ifndef LOADNODEFORCES3D_H
-#define LOADNODEFORCES3D_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -11,11 +10,12 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/loads/LoadNode.h"
 
 namespace NuTo
 {
+template <class T, int rows, int cols> class FullMatrix;
+
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... abstract class for all forces applied to a single node
@@ -54,5 +54,3 @@ protected:
     double mDirection[3]; //!< direction of the applied force (normalized)
 };
 }//namespace NuTo
-#endif //LOADNODEFORCES3D_H
-

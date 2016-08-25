@@ -9,6 +9,10 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif //ENABLE_SERIALIZATION
 
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
+#endif // ENABLE_VISUALIZE
+
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss16Ip.h"
 #include <assert.h>
 
@@ -183,7 +187,7 @@ void NuTo::IntegrationType2D3NGauss16Ip::GetVisualizationCells(
     unsigned int& NumVisualizationPoints,
     std::vector<double>& VisualizationPointLocalCoordinates,
     unsigned int& NumVisualizationCells,
-    std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+    std::vector<NuTo::eCellTypes>& VisualizationCellType,
     std::vector<unsigned int>& VisualizationCellsIncidence,
     std::vector<unsigned int>& VisualizationCellsIP) const
 {
@@ -220,7 +224,7 @@ void NuTo::IntegrationType2D3NGauss16Ip::GetVisualizationCells(
     NumVisualizationCells = 3;
 
     // cell 0
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(0);
     VisualizationCellsIncidence.push_back(1);
     VisualizationCellsIncidence.push_back(4);
@@ -228,7 +232,7 @@ void NuTo::IntegrationType2D3NGauss16Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(5);
 
     // cell 1
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(1);
     VisualizationCellsIncidence.push_back(2);
     VisualizationCellsIncidence.push_back(5);
@@ -236,7 +240,7 @@ void NuTo::IntegrationType2D3NGauss16Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(6);
 
     // cell 2
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(4);
     VisualizationCellsIncidence.push_back(5);
     VisualizationCellsIncidence.push_back(6);

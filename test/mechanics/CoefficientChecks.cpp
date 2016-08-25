@@ -1,4 +1,7 @@
 #include "nuto/math/FullMatrix.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/MechanicsException.h"
 
@@ -16,8 +19,8 @@ void CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder rType
     myStructure.NodesCreate(nodeCoordinates);
 
     int interpolationType = myStructure.InterpolationTypeCreate("Triangle2D");
-    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
-    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::DISPLACEMENTS, rTypeOrder);
+    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, rTypeOrder);
 
     //create element
     NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> nodeNumbers(3, 10);
@@ -70,7 +73,7 @@ int main()
     try
     {
         std::string s = "Stuff";
-        CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::EQUIDISTANT1);
+        CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     }
     catch (NuTo::Exception& e)
     {

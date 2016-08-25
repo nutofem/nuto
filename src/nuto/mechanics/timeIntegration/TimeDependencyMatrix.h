@@ -1,8 +1,7 @@
-#ifndef TIMEDEPENDENCYMATRIX
-#define TIMEDEPENDENCYMATRIX
+#pragma once
 
-
-#include <nuto/math/FullMatrix.h>
+#include "nuto/mechanics/timeIntegration/TimeDependencyBase.h"
+#include <nuto/math/FullMatrix_Def.h>
 
 namespace NuTo
 {
@@ -47,5 +46,4 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mTimeDependencyMatrix;
 };
 } // namespace NuTo
 
-#endif // TIMEDEPENDENCYMATRIX
 

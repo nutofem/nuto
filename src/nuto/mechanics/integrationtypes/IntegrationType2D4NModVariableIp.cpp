@@ -9,6 +9,8 @@
 #include <boost/foreach.hpp>
 
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NModVariableIp.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType2D4NConstVariableIp.h"
+#include "nuto/mechanics/integrationtypes/IntegrationPointBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 
 //! @brief constructor

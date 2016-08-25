@@ -2,6 +2,7 @@
 
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIpCrack.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/IpDataBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 
@@ -47,5 +48,5 @@ void NuTo::ElementDataConstitutiveIpCrack::InitializeUpdatedConstitutiveLaw(cons
 //! @return enum of ElementDataType
 const NuTo::ElementData::eElementDataType NuTo::ElementDataConstitutiveIpCrack::GetElementDataType()const
 {
-    return NuTo::ElementData::CONSTITUTIVELAWIPCRACK;
+    return NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIPCRACK;
 }

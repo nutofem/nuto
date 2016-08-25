@@ -1,20 +1,18 @@
 // $Id$
 
-#ifndef SECTIONBASE_H
-#define SECTIONBASE_H
-
-#include <iostream>
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/sections/SectionEnum.h"
 
 namespace NuTo
 {
 class SectionTruss;
+enum class eSectionType;
+
 //! @author Stefan Eckardt, ISM
 //! @date October 2009
 //! @brief ... standard abstract base class for sections
@@ -32,7 +30,7 @@ public:
 
     //! @brief ... get the section type
     //! @return ... section type
-    virtual Section::eSectionType GetType() const = 0;
+    virtual eSectionType GetType() const = 0;
 
     //! @brief ... get the cross-section area of the section
     //! @return ... section cross-section area
@@ -85,4 +83,3 @@ public:
 BOOST_CLASS_EXPORT_KEY(NuTo::SectionBase)
 #endif // ENABLE_SERIALIZATION
 
-#endif // SECTIONBASE_H

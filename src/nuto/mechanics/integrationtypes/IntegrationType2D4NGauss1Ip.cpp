@@ -8,6 +8,10 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif //ENABLE_SERIALIZATION
 
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
+#endif // ENABLE_VISUALIZE
+
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss1Ip.h"
 #include <assert.h>
 
@@ -62,7 +66,7 @@ void NuTo::IntegrationType2D4NGauss1Ip::GetVisualizationCells(
     unsigned int& NumVisualizationPoints,
     std::vector<double>& VisualizationPointLocalCoordinates,
     unsigned int& NumVisualizationCells,
-    std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+    std::vector<NuTo::eCellTypes>& VisualizationCellType,
     std::vector<unsigned int>& VisualizationCellsIncidence,
     std::vector<unsigned int>& VisualizationCellsIP) const
 {
@@ -87,7 +91,7 @@ void NuTo::IntegrationType2D4NGauss1Ip::GetVisualizationCells(
     NumVisualizationCells = 1;
 
     // cell 0
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(0);
     VisualizationCellsIncidence.push_back(1);
     VisualizationCellsIncidence.push_back(2);

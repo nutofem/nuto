@@ -1,10 +1,15 @@
+#include "nuto/base/ErrorEnum.h"
 #include "nuto/mechanics/constitutive/laws/ThermalStrains.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 template <int TDim>
-NuTo::Error::eError NuTo::ThermalStrains::Evaluate(NuTo::ElementBase *rElement,
+NuTo::eError NuTo::ThermalStrains::Evaluate(NuTo::ElementBase *rElement,
         int rIntegrationPoint, const NuTo::ConstitutiveInputMap &rConstitutiveInput,
         const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
 {
@@ -16,7 +21,7 @@ NuTo::Error::eError NuTo::ThermalStrains::Evaluate(NuTo::ElementBase *rElement,
     std::array<double, 2> strain;
     try
     {
-        temperature = (*rConstitutiveInput.at(Constitutive::Input::TEMPERATURE))[0];
+        temperature = (*rConstitutiveInput.at(Constitutive::eInput::TEMPERATURE))[0];
         strain = NonlinearExpansionCoeff(temperature);
     }
     catch(const std::bad_function_call& e)
@@ -29,7 +34,7 @@ NuTo::Error::eError NuTo::ThermalStrains::Evaluate(NuTo::ElementBase *rElement,
     {
         switch(itOutput.first)
         {
-        case NuTo::Constitutive::Output::ENGINEERING_STRAIN:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN:
         {
             Eigen::Matrix<double, voigtDim, 1>& engineeringStrain = static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second.get())->AsVector();
             for(unsigned int i = 0; i < TDim; ++i)
@@ -38,7 +43,7 @@ NuTo::Error::eError NuTo::ThermalStrains::Evaluate(NuTo::ElementBase *rElement,
             break;
         }
 
-        case NuTo::Constitutive::Output::THERMAL_STRAIN:
+        case NuTo::Constitutive::eOutput::THERMAL_STRAIN:
         {
             Eigen::Matrix<double, TDim, TDim>& engineeringStrain = static_cast<ConstitutiveMatrix<TDim, TDim>*>(itOutput.second.get())->AsMatrix();
             engineeringStrain = strain[0] * eye;
@@ -46,7 +51,7 @@ NuTo::Error::eError NuTo::ThermalStrains::Evaluate(NuTo::ElementBase *rElement,
             break;
         }
 
-        case NuTo::Constitutive::Output::D_STRAIN_D_TEMPERATURE:
+        case NuTo::Constitutive::eOutput::D_STRAIN_D_TEMPERATURE:
         {
             Eigen::Matrix<double, voigtDim, 1>& dStrainDTemperature = static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second.get())->AsVector();
             for(unsigned int i=0; i<TDim; ++i)
@@ -59,20 +64,20 @@ NuTo::Error::eError NuTo::ThermalStrains::Evaluate(NuTo::ElementBase *rElement,
         }
             break;
 
-        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
-        case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
             break;
         default:
             continue;
         }
     }
-    return NuTo::Error::SUCCESSFUL;
+    return NuTo::eError::SUCCESSFUL;
 }
 
 bool NuTo::ThermalStrains::CheckDofCombinationComputable(Node::eDof rDofRow,
             Node::eDof rDofCol, int rTimeDerivative) const
 {
-    if(Node::CombineDofs(rDofRow, rDofCol) == Node::CombineDofs(Node::DISPLACEMENTS, Node::TEMPERATURE))
+    if(Node::CombineDofs(rDofRow, rDofCol) == Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::TEMPERATURE))
         return true;
 
     return false;
@@ -89,14 +94,14 @@ NuTo::ConstitutiveInputMap NuTo::ThermalStrains::GetConstitutiveInputs(
         switch (itOutput.first)
         {
 
-        case NuTo::Constitutive::Output::ENGINEERING_STRAIN:
-        case NuTo::Constitutive::Output::THERMAL_STRAIN:
-        case NuTo::Constitutive::Output::D_STRAIN_D_TEMPERATURE:
-            constitutiveInputMap[Constitutive::Input::TEMPERATURE];
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN:
+        case NuTo::Constitutive::eOutput::THERMAL_STRAIN:
+        case NuTo::Constitutive::eOutput::D_STRAIN_D_TEMPERATURE:
+            constitutiveInputMap[Constitutive::eInput::TEMPERATURE];
             break;
 
-        case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
-        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
             break;
         default:
             break;
@@ -106,12 +111,17 @@ NuTo::ConstitutiveInputMap NuTo::ThermalStrains::GetConstitutiveInputs(
     return constitutiveInputMap;
 }
 
+NuTo::Constitutive::eConstitutiveType NuTo::ThermalStrains::GetType() const
+{
+    return NuTo::Constitutive::eConstitutiveType::THERMAL_STRAINS;
+}
+
 bool NuTo::ThermalStrains::CheckElementCompatibility(Element::eElementType rElementType) const
 {
     switch (rElementType)
     {
-    case NuTo::Element::CONTINUUMELEMENT:
-    case NuTo::Element::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
+    case NuTo::Element::eElementType::CONTINUUMELEMENT:
+    case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
         return true;
     default:
         return false;

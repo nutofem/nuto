@@ -5,6 +5,8 @@
  *      Author: ttitsche
  */
 
+#include "nuto/math/FullMatrix.h"
+#include "nuto/geometryConcrete/collision/Event.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableWallBase.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableParticleSphere.h"
 #include "nuto/geometryConcrete/collision/SubBox.h"

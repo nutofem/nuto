@@ -5,10 +5,9 @@
  *      Author: ttitsche
  */
 
-#ifndef PARTICLEHANDLER_H_
-#define PARTICLEHANDLER_H_
+#pragma once
 
-#include "nuto/geometryConcrete/collision/collidables/CollidableBase.h"
+#include "eigen3/Eigen/Core"
 
 namespace NuTo
 {
@@ -17,6 +16,9 @@ class CollidableParticleBase;
 class CollidableParticleSphere;
 class VisualizeUnstructuredGrid;
 class Specimen;
+template <class T, int rows, int cols> class FullMatrix;
+template <class T, int rows> class FullVector;
+typedef std::vector<CollidableParticleSphere*> ParticleContainer;
 
 //! @brief ... handles the particle list
 class ParticleHandler
@@ -121,7 +123,7 @@ public:
 
 private:
 
-	CollidableBase::ParticleContainer mParticles;
+    ParticleContainer mParticles;
 
 	//! @brief ... returns a random vector with each component in a certain range
 	//! @param rStart ... start of value range
@@ -141,4 +143,3 @@ private:
 
 
 } /* namespace NuTo */
-#endif /* PARTICLEHANDLER_H_ */

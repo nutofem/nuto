@@ -32,7 +32,7 @@ public:
     //! @param rIp Integration point
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate1D(ElementBase* rElement, int rIntegrationPoint,
+    NuTo::eError Evaluate1D(ElementBase* rElement, int rIntegrationPoint,
                                    const ConstitutiveInputMap& rConstitutiveInput,
                                    const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
@@ -44,7 +44,7 @@ public:
     //! @param rIp Integration point
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate2D(ElementBase* rElement, int rIntegrationPoint,
+    NuTo::eError Evaluate2D(ElementBase* rElement, int rIntegrationPoint,
                                    const ConstitutiveInputMap& rConstitutiveInput,
                                    const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
@@ -56,7 +56,7 @@ public:
     //! @param rIp Integration point
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate3D(ElementBase* rElement, int rIntegrationPoint,
+    NuTo::eError Evaluate3D(ElementBase* rElement, int rIntegrationPoint,
                                    const ConstitutiveInputMap& rConstitutiveInput,
                                    const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
@@ -64,10 +64,7 @@ public:
     }
 
     //! @brief Get type of constitutive relationship
-    Constitutive::eConstitutiveType GetType() const override
-    {
-        return NuTo::Constitutive::THERMAL_STRAINS;
-    }
+    Constitutive::eConstitutiveType GetType() const override;
 
     //! @brief True if material model has tmp static data, which has to be
     //! updated before stress or stiffness are calculated
@@ -103,7 +100,7 @@ private:
     std::function<std::array<double, 2>(double)> NonlinearExpansionCoeff;
 
     template <int TDim>
-    NuTo::Error::eError Evaluate(ElementBase* rElement, int rIntegrationPoint,
+    NuTo::eError Evaluate(ElementBase* rElement, int rIntegrationPoint,
                                  const ConstitutiveInputMap& rConstitutiveInput,
                                  const ConstitutiveOutputMap& rConstitutiveOutput);
 

@@ -1,8 +1,5 @@
-
 #pragma once
 
-#include <ctime>
-#include <array>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -10,14 +7,20 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/timeIntegration/ResultBase.h"
-#include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/base/ErrorEnum.h"
-#include "nuto/mechanics/MechanicsException.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
+
 
 namespace NuTo
 {
+
+class StructureBase;
+
+template <class T, int rows, int cols> class  FullMatrix;
+
+namespace IpData
+{
+    enum class eIpStaticDataType;
+}// namespace IpData
+
 //! @author Philip Huschke
 //! @date October 2015
 //! @brief Outputs integration point values
@@ -42,7 +45,7 @@ public:
     //! @brief number of data points per time step, e.g. number of stress components for an integration point
     int GetNumData(const StructureBase& rStructure) const;
 
-    NuTo::TimeIntegration::eResultType GetResultType() const;
+    NuTo::eTimeIntegrationResultType GetResultType() const;
 
     //! @brief returns the class name
     std::string GetTypeId() const
@@ -57,12 +60,7 @@ public:
     }
 
     //! @brief ... Info routine that prints general information about the object
-    void Info()const
-    {
-        std::cout << "ResultElementIpData Info:      " << std::endl;
-        std::cout << "Integration point data type:   " << mIpDataType << std::endl;
-        std::cout << "Element id:                    " << mIpDataType << std::endl;
-    }
+    void Info()const;
 
 private:
     int mElementId;

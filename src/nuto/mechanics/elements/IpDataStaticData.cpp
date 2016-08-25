@@ -11,6 +11,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/elements/IpDataStaticData.h"
 
 NuTo::IpDataStaticData::IpDataStaticData() : IpDataBase()
@@ -25,7 +26,7 @@ NuTo::IpDataStaticData::~IpDataStaticData()
 //! @return enum of IPDataType
 NuTo::IpData::eIpDataType NuTo::IpDataStaticData::GetIpDataType()const
 {
-    return NuTo::IpData::STATICDATA;
+    return NuTo::IpData::eIpDataType::STATICDATA;
 }
 
 #ifdef ENABLE_SERIALIZATION

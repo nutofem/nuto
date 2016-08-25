@@ -6,12 +6,17 @@
 #include <boost/tokenizer.hpp>
 #include <boost/assign/ptr_map_inserter.hpp>
 
+#include "nuto/base/ErrorEnum.h"
 #include "nuto/base/Timer.h"
 #include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
 #include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/groups/GroupEnum.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/math/SparseMatrixCSRVector2General.h"
 #include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/ElementOutputFullMatrixDouble.h"
 #include "nuto/mechanics/elements/ElementOutputFullVectorDouble.h"
 
@@ -23,15 +28,22 @@
 #include "nuto/mechanics/elements/ElementOutputIpData.h"
 #include "nuto/mechanics/elements/ElementOutputDummy.h"
 
+#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/elements/IpDataStaticDataBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
+
+#include "nuto/visualize/VisualizeEnum.h"
 
 
 
 NuTo::BlockFullVector<double> NuTo::StructureBase::ElementBuildInternalGradient(ElementBase* rElement)
 {
     std::map<Element::eOutput,std::shared_ptr<ElementOutputBase>> elementOutputMap;
-    elementOutputMap[Element::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
+    elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(GetDofStatus());
 
 
     try
@@ -47,12 +59,12 @@ NuTo::BlockFullVector<double> NuTo::StructureBase::ElementBuildInternalGradient(
         throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Non-mechanics error in element " + std::to_string(ElementGetId(rElement)));
     }
 
-    return elementOutputMap.at(Element::INTERNAL_GRADIENT)->GetBlockFullVectorDouble();
+    return elementOutputMap.at(Element::eOutput::INTERNAL_GRADIENT)->GetBlockFullVectorDouble();
 }
 
 NuTo::BlockFullMatrix<double> NuTo::StructureBase::ElementBuildHessian(Element::eOutput rHessianType, ElementBase* rElement)
 {
-    std::set<Element::eOutput> supportedTypes({Element::HESSIAN_0_TIME_DERIVATIVE, Element::HESSIAN_1_TIME_DERIVATIVE, Element::HESSIAN_2_TIME_DERIVATIVE});
+    std::set<Element::eOutput> supportedTypes({Element::eOutput::HESSIAN_0_TIME_DERIVATIVE, Element::eOutput::HESSIAN_1_TIME_DERIVATIVE, Element::eOutput::HESSIAN_2_TIME_DERIVATIVE});
     if (supportedTypes.find(rHessianType) == supportedTypes.end())
         throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] requested matrix type is not supported or not implemented yet.");
 
@@ -76,10 +88,40 @@ NuTo::BlockFullMatrix<double> NuTo::StructureBase::ElementBuildHessian(Element::
     return elementOutputMap.at(rHessianType)->GetBlockFullMatrixDouble();
 }
 
+
+NuTo::BlockFullMatrix<double> NuTo::StructureBase::ElementBuildHessian0(int rElementId)
+{
+    return ElementBuildHessian0 (ElementGetElementPtr(rElementId));
+}
+NuTo::BlockFullMatrix<double> NuTo::StructureBase::ElementBuildHessian1(int rElementId)
+{
+    return ElementBuildHessian1 (ElementGetElementPtr(rElementId));
+}
+NuTo::BlockFullMatrix<double> NuTo::StructureBase::ElementBuildHessian2(int rElementId)
+{
+    return ElementBuildHessian2 (ElementGetElementPtr(rElementId));
+}
+
+
+NuTo::BlockFullMatrix<double> NuTo::StructureBase::ElementBuildHessian0(ElementBase* rElement)
+{
+    return ElementBuildHessian(Element::eOutput::HESSIAN_0_TIME_DERIVATIVE, rElement);
+}
+
+NuTo::BlockFullMatrix<double> NuTo::StructureBase::ElementBuildHessian1(ElementBase* rElement)
+{
+    return ElementBuildHessian(Element::eOutput::HESSIAN_1_TIME_DERIVATIVE, rElement);
+}
+
+NuTo::BlockFullMatrix<double> NuTo::StructureBase::ElementBuildHessian2(ElementBase* rElement)
+{
+    return ElementBuildHessian(Element::eOutput::HESSIAN_2_TIME_DERIVATIVE, rElement);
+}
+
 NuTo::BlockFullVector<int> NuTo::StructureBase::ElementBuildGlobalDofsRow(ElementBase* rElement)
 {
     std::map<Element::eOutput,std::shared_ptr<ElementOutputBase>> elementOutputMap;
-    elementOutputMap[Element::GLOBAL_ROW_DOF] = std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
+    elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] = std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
 
     try
     {
@@ -94,13 +136,13 @@ NuTo::BlockFullVector<int> NuTo::StructureBase::ElementBuildGlobalDofsRow(Elemen
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Non-mechanics error in element " + std::to_string(ElementGetId(rElement)));
     }
 
-    return elementOutputMap.at(Element::GLOBAL_ROW_DOF)->GetBlockFullVectorInt();
+    return elementOutputMap.at(Element::eOutput::GLOBAL_ROW_DOF)->GetBlockFullVectorInt();
 }
 
 NuTo::BlockFullVector<int> NuTo::StructureBase::ElementBuildGlobalDofsColumn(ElementBase* rElement)
 {
     std::map<Element::eOutput,std::shared_ptr<ElementOutputBase>> elementOutputMap;
-    elementOutputMap[Element::GLOBAL_COLUMN_DOF] = std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
+    elementOutputMap[Element::eOutput::GLOBAL_COLUMN_DOF] = std::make_shared<ElementOutputBlockVectorInt>(GetDofStatus());
 
     try
     {
@@ -115,7 +157,7 @@ NuTo::BlockFullVector<int> NuTo::StructureBase::ElementBuildGlobalDofsColumn(Ele
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Non-mechanics error in element " + std::to_string(ElementGetId(rElement)));
     }
 
-    return elementOutputMap.at(Element::GLOBAL_COLUMN_DOF)->GetBlockFullVectorInt();
+    return elementOutputMap.at(Element::eOutput::GLOBAL_COLUMN_DOF)->GetBlockFullVectorInt();
 }
 
 
@@ -325,7 +367,7 @@ void NuTo::StructureBase::ElementGroupSetConstitutiveLaw(int rGroupIdent, int rC
 	boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+    if (itGroup->second->GetType()!=NuTo::eGroupId::Elements)
     	throw MechanicsException("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Group is not an element group.");
     Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
@@ -462,7 +504,7 @@ void NuTo::StructureBase::ElementGroupSetSection(int rGroupIdent, int rSectionId
 	boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+    if (itGroup->second->GetType()!=NuTo::eGroupId::Elements)
     	throw MechanicsException("[NuTo::StructureBase::ElementGroupSetConstitutiveLaw] Group is not an element group.");
     Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
@@ -586,7 +628,7 @@ void NuTo::StructureBase::ElementGroupSetInterpolationType(int rGroupId, int rIn
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupSetInterpolationType] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+    if (itGroup->second->GetType()!=NuTo::eGroupId::Elements)
         throw MechanicsException("[NuTo::StructureBase::ElementGroupSetInterpolationType] Group is not an element group.");
     Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
@@ -642,15 +684,15 @@ NuTo::IpData::eIpDataType NuTo::StructureBase::ElementGetEnumIntegrationType(con
     NuTo::IpData::eIpDataType ipDataType;
     if (upperCaseIpDataTypeStr=="NOIPDATA")
     {
-    	ipDataType = NuTo::IpData::NOIPDATA;
+        ipDataType = NuTo::IpData::eIpDataType::NOIPDATA;
     }
     else if (upperCaseIpDataTypeStr=="STATICDATA")
 	{
-    	ipDataType = NuTo::IpData::STATICDATA;
+        ipDataType = NuTo::IpData::eIpDataType::STATICDATA;
 	}
     else if (upperCaseIpDataTypeStr=="STATICDATANONLOCAL")
     {
-    	ipDataType = NuTo::IpData::STATICDATANONLOCAL;
+        ipDataType = NuTo::IpData::eIpDataType::STATICDATANONLOCAL;
     }
     else
     {
@@ -659,6 +701,31 @@ NuTo::IpData::eIpDataType NuTo::StructureBase::ElementGetEnumIntegrationType(con
     return ipDataType;
 }
 
+
+NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::ElementGetStaticIPData(int rElementId, std::string rType)
+{
+    return ElementGetStaticIPData(rElementId, IpData::IpStaticDataTypeToEnum(rType));
+}
+
+NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId)
+{
+    return ElementGetStaticIPData(rElementId, IpData::eIpStaticDataType::ENGINEERING_STRAIN);
+}
+
+NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId)
+{
+    return ElementGetStaticIPData(rElementId, IpData::eIpStaticDataType::ENGINEERING_PLASTIC_STRAIN);
+}
+
+NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::ElementGetEngineeringStress(int rElementId)
+{
+    return ElementGetStaticIPData(rElementId, IpData::eIpStaticDataType::ENGINEERING_STRESS);
+}
+
+NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::ElementGetDamage(int rElementId)
+{
+    return ElementGetStaticIPData(rElementId, IpData::eIpStaticDataType::DAMAGE);
+}
 
 //! @brief calculates static ip data
 //! @param rElemIdent  element number
@@ -675,11 +742,11 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::El
     try
     {
         std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
-        elementOutputMap[Element::IP_DATA] = std::make_shared<ElementOutputIpData>(rType);
+        elementOutputMap[Element::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>(rType);
 
         elementPtr->Evaluate(elementOutputMap);
 
-        return elementOutputMap.at(Element::IP_DATA)->GetIpData().GetIpDataMap().at(rType);
+        return elementOutputMap.at(Element::eOutput::IP_DATA)->GetIpData().GetIpDataMap().at(rType);
 
     } catch (NuTo::MechanicsException &e)
     {
@@ -744,7 +811,7 @@ double NuTo::StructureBase::ElementTotalGetMaxDamage()
         throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] First update of tmp static data required.");
 
     std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
-    elementOutputMap[Element::IP_DATA] = std::make_shared<ElementOutputIpData>(IpData::DAMAGE);
+    elementOutputMap[Element::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>(IpData::eIpStaticDataType::DAMAGE);
 
     std::vector<ElementBase*> elementVector;
     GetElementsTotal(elementVector);
@@ -758,7 +825,7 @@ double NuTo::StructureBase::ElementTotalGetMaxDamage()
         try
         {
             element->Evaluate(elementOutputMap);
-            rIPDamage = elementOutputMap.at(Element::IP_DATA)->GetIpData().GetIpDataMap()[IpData::DAMAGE];
+            rIPDamage = elementOutputMap.at(Element::eOutput::IP_DATA)->GetIpData().GetIpDataMap()[IpData::eIpStaticDataType::DAMAGE];
         } catch (NuTo::MechanicsException &e)
         {
             e.AddMessage(std::string("[") + __PRETTY_FUNCTION__ + "] Error getting damage for element " + std::to_string(ElementGetId(element)) + ".");
@@ -780,7 +847,7 @@ double NuTo::StructureBase::ElementTotalGetStaticDataExtrapolationError()
         throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] First update of tmp static data required.");
 
     std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutputMap;
-    elementOutputMap[Element::IP_DATA] = std::make_shared<ElementOutputIpData>(IpData::EXTRAPOLATION_ERROR);
+    elementOutputMap[Element::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>(IpData::eIpStaticDataType::EXTRAPOLATION_ERROR);
 
     std::vector<ElementBase*> elementVector;
     GetElementsTotal(elementVector);
@@ -794,7 +861,7 @@ double NuTo::StructureBase::ElementTotalGetStaticDataExtrapolationError()
         try
         {
             element->Evaluate(elementOutputMap);
-            ipValues = elementOutputMap.at(Element::IP_DATA)->GetIpData().GetIpDataMap()[IpData::EXTRAPOLATION_ERROR];
+            ipValues = elementOutputMap.at(Element::eOutput::IP_DATA)->GetIpData().GetIpDataMap()[IpData::eIpStaticDataType::EXTRAPOLATION_ERROR];
         } catch (NuTo::MechanicsException &e)
         {
             e.AddMessage(std::string("[") + __PRETTY_FUNCTION__ + "] Error getting EXTRAPOLATION_ERROR for element " + std::to_string(ElementGetId(element)) + ".");
@@ -820,7 +887,7 @@ double NuTo::StructureBase::ElementTotalGetStaticDataExtrapolationError()
 //! @param rNumAdditionalStaticData ... number of addidional static data objects
 void NuTo::StructureBase::ElementGroupAllocateAdditionalStaticData(int rElementGroupId, int rNumAdditionalStaticData)
 {
-    if (GroupGetGroupPtr(rElementGroupId)->GetType() != Groups::Elements)
+    if (GroupGetGroupPtr(rElementGroupId)->GetType() != eGroupId::Elements)
         throw MechanicsException(__PRETTY_FUNCTION__, "Element group required.");
 
     auto elementIds = GroupGetMemberIds(rElementGroupId);
@@ -836,7 +903,7 @@ void NuTo::StructureBase::ElementGroupAllocateAdditionalStaticData(int rElementG
 }
 
 //! @brief updates the history data of a all elements
-NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateStaticData()
+NuTo::eError NuTo::StructureBase::ElementTotalUpdateStaticData()
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
     // build global tmp static data
@@ -844,8 +911,8 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateStaticData()
     {
         try
         {
-            Error::eError error = this->ElementTotalUpdateTmpStaticData();
-            if (error!=Error::SUCCESSFUL)
+            eError error = this->ElementTotalUpdateTmpStaticData();
+            if (error!=eError::SUCCESSFUL)
             	return error;
         }
         catch (NuTo::Exception& e)
@@ -861,12 +928,12 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateStaticData()
 
 	std::vector<ElementBase*> elementVector;
 	GetElementsTotal(elementVector);
-	Error::eError errorGlobal (Error::SUCCESSFUL);
+    eError errorGlobal (eError::SUCCESSFUL);
     int exception(0);
     std::string exceptionStringTotal;
 
     std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
-    elementOutput[Element::UPDATE_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
+    elementOutput[Element::eOutput::UPDATE_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
 
 #ifdef _OPENMP
 	if (mNumProcessors!=0)
@@ -878,10 +945,10 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateStaticData()
 	{
 		try
 		{
-            Error::eError error = elementVector[countElement]->Evaluate(elementOutput);
-            if (error!=Error::SUCCESSFUL)
+            eError error = elementVector[countElement]->Evaluate(elementOutput);
+            if (error!=eError::SUCCESSFUL)
             {
-            	if (errorGlobal==Error::SUCCESSFUL)
+                if (errorGlobal==eError::SUCCESSFUL)
             		errorGlobal = error;
             	else if (errorGlobal!=error)
             		throw MechanicsException("[NuTo::StructureBase::ElementTotalUpdateStaticData] elements have returned multiple different error codes, can't handle that.");
@@ -913,9 +980,9 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateStaticData()
 }
 
 //! @brief updates the history data of a all elements
-NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
+NuTo::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 {
-    Error::eError errorGlobal (Error::SUCCESSFUL);
+    eError errorGlobal (eError::SUCCESSFUL);
 
     //std::cout << "do we really have tmp static data " << mHaveTmpStaticData << std::endl;
     if (mHaveTmpStaticData)
@@ -926,7 +993,7 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 	    std::string exceptionStringTotal;
 
 	    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
-	    elementOutput[Element::UPDATE_TMP_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
+        elementOutput[Element::eOutput::UPDATE_TMP_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
 
 
 #ifdef _OPENMP
@@ -939,10 +1006,10 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 		{
 			try
 			{
-				Error::eError error = elementVector[countElement]->Evaluate(elementOutput);
-				if (error!=Error::SUCCESSFUL)
+				eError error = elementVector[countElement]->Evaluate(elementOutput);
+                if (error!=eError::SUCCESSFUL)
 				{
-					if (errorGlobal==Error::SUCCESSFUL)
+                    if (errorGlobal==eError::SUCCESSFUL)
 						errorGlobal = error;
 					else if (errorGlobal!=error)
 						throw MechanicsException("[NuTo::StructureBase::ElementTotalUpdateTmpStaticData] elements have returned multiple different error codes, can't handle that.");
@@ -1065,10 +1132,10 @@ void NuTo::StructureBase::ElementTotalExtrapolateStaticData()
     Exception exception("");
 
     std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
-    elementOutput[Element::UPDATE_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
+    elementOutput[Element::eOutput::UPDATE_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
 
     ConstitutiveInputMap input;
-    input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(CalculateStaticData::EULER_BACKWARD);
+    input[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(eCalculateStaticData::EULER_BACKWARD);
 
 #ifdef _OPENMP
     if (mNumProcessors!=0)
@@ -1148,7 +1215,7 @@ void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVol
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupGetAverageStress] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+    if (itGroup->second->GetType()!=NuTo::eGroupId::Elements)
         throw MechanicsException("[NuTo::StructureBase::ElementGroupGetAverageStress] Group is not an element group.");
     Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
@@ -1235,7 +1302,7 @@ void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVol
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupGetAverageStrain] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+    if (itGroup->second->GetType()!=NuTo::eGroupId::Elements)
         throw MechanicsException("[NuTo::StructureBase::ElementGroupGetAverageStrain] Group is not an element group.");
     Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
@@ -1279,7 +1346,7 @@ void NuTo::StructureBase::ElementGroupGetMembers(int rGroupId, NuTo::FullVector<
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupId);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupGetMembers] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+    if (itGroup->second->GetType()!=NuTo::eGroupId::Elements)
         throw MechanicsException("[NuTo::StructureBase::ElementGroupGetMembers] Group is not an element group.");
     Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
     assert(elementGroup!=0);
@@ -1342,7 +1409,7 @@ double NuTo::StructureBase::ElementGroupGetTotalEnergy(int rGroupId)
     boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(rGroupId);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupGetTotalEnergy] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+    if (itGroup->second->GetType()!=NuTo::eGroupId::Elements)
         throw MechanicsException("[NuTo::StructureBase::ElementGroupGetTotalEnergy] Group is not an element group.");
     const Group<ElementBase> *elementGroup = dynamic_cast<const Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
@@ -1447,7 +1514,7 @@ double NuTo::StructureBase::ElementCalculateLargestElementEigenvalue(const std::
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    Error::eError errorGlobal (Error::SUCCESSFUL);
+    eError errorGlobal (eError::SUCCESSFUL);
 
     int exception(0);
     std::string exceptionStringTotal;
@@ -1463,8 +1530,8 @@ double NuTo::StructureBase::ElementCalculateLargestElementEigenvalue(const std::
 	{
 
 	    std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
-        elementOutput[Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockVectorDouble>(mDofStatus);
-        elementOutput[Element::HESSIAN_0_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(mDofStatus);
+        elementOutput[Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockVectorDouble>(mDofStatus);
+        elementOutput[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(mDofStatus);
 
 		Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> > eigenSolver;
 
@@ -1476,12 +1543,12 @@ double NuTo::StructureBase::ElementCalculateLargestElementEigenvalue(const std::
 		{
 			try
 			{
-				Error::eError error = rElementVector[countElement]->Evaluate(elementOutput);
-				if (error!=Error::SUCCESSFUL)
+				eError error = rElementVector[countElement]->Evaluate(elementOutput);
+                if (error!=eError::SUCCESSFUL)
 #ifdef _OPENMP
 #pragma omp critical
 				{
-					if (errorGlobal==Error::SUCCESSFUL)
+                    if (errorGlobal==eError::SUCCESSFUL)
 						errorGlobal = error;
 					else if (errorGlobal!=error)
 						throw MechanicsException("[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] multiple elements have returned different error codes, can't handle that.");
@@ -1490,8 +1557,8 @@ double NuTo::StructureBase::ElementCalculateLargestElementEigenvalue(const std::
 				errorGlobal = error;
 #endif //_OPENMP
 
-				auto lumpedMass = elementOutput.at(Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE)->GetBlockFullVectorDouble().Export();
-				auto stiffness = elementOutput.at(Element::HESSIAN_0_TIME_DERIVATIVE)->GetBlockFullMatrixDouble().Export();
+                auto lumpedMass = elementOutput.at(Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE)->GetBlockFullVectorDouble().Export();
+                auto stiffness = elementOutput.at(Element::eOutput::HESSIAN_0_TIME_DERIVATIVE)->GetBlockFullMatrixDouble().Export();
 
 				//assuming the stiffness matrix is symmetric
 				//std::cout << "lumped mass in element routine\n" <<  lumpedMass << std::endl;
@@ -1538,7 +1605,7 @@ double NuTo::StructureBase::ElementCalculateLargestElementEigenvalue(const std::
     {
 	    throw MechanicsException(exceptionStringTotal);
     }
-    if (errorGlobal!=Error::SUCCESSFUL)
+    if (errorGlobal!=eError::SUCCESSFUL)
     {
 	    throw MechanicsException("[NuTo::StructureBase::ElementTotalCalculateCriticalTimeStep] error calculating critical time step.");
     }
@@ -1557,7 +1624,7 @@ double NuTo::StructureBase::ElementGroupGetVolume(int rGroupId)
     boost::ptr_map<int,GroupBase>::const_iterator itGroup = mGroupMap.find(rGroupId);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupGetVolume] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Elements)
+    if (itGroup->second->GetType()!=NuTo::eGroupId::Elements)
         throw MechanicsException("[NuTo::StructureBase::ElementGroupGetVolume] Group is not an element group.");
     const Group<ElementBase> *elementGroup = dynamic_cast<const Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
@@ -1611,8 +1678,15 @@ void NuTo::StructureBase::ElementGroupAddToVisualize(int rGroupId, VisualizeUnst
 
 }
 
+
 //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-void NuTo::StructureBase::ElementVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList, const std::vector<ElementBase*>& rElements, const VisualizeBase::eVisualizationType rVisualizationType)
+void NuTo::StructureBase::ElementVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList, const std::vector<ElementBase*>& rElements)
+{
+    ElementVectorAddToVisualize(rVisualize,rVisualizationList,rElements,eVisualizationType::VORONOI_CELL);
+}
+
+//! @brief ... adds all the elements in the vector to the data structure that is finally visualized
+void NuTo::StructureBase::ElementVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList, const std::vector<ElementBase*>& rElements, const eVisualizationType rVisualizationType)
 {
     // build global tmp static data
     if (mHaveTmpStaticData and mUpdateTmpStaticDataRequired)
@@ -1620,15 +1694,15 @@ void NuTo::StructureBase::ElementVectorAddToVisualize(VisualizeUnstructuredGrid&
 
     switch (rVisualizationType)
     {
-        case VisualizeBase::VORONOI_CELL:
+        case eVisualizationType::VORONOI_CELL:
             for (auto const & iElePtr : rElements)
                 iElePtr->Visualize(rVisualize, rVisualizationList);
             break;
-        case VisualizeBase::EXTRAPOLATION_TO_NODES:
+        case eVisualizationType::EXTRAPOLATION_TO_NODES:
             for (auto const & iElePtr : rElements)
                 iElePtr->VisualizeExtrapolateToNodes(rVisualize, rVisualizationList);
             break;
-        case VisualizeBase::POINTS:
+        case eVisualizationType::POINTS:
             for (auto const & iElePtr : rElements)
                 iElePtr->VisualizeIntegrationPointData(rVisualize, rVisualizationList);
             break;

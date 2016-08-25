@@ -3,6 +3,9 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss2x2x2Ip.h"
 #include <assert.h>
 
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
+#endif // ENABLE_VISUALIZE
 
 //! @brief constructor
 NuTo::IntegrationType3D8NGauss2x2x2Ip::IntegrationType3D8NGauss2x2x2Ip()
@@ -97,7 +100,7 @@ void NuTo::IntegrationType3D8NGauss2x2x2Ip::GetVisualizationCells(
     unsigned int& NumVisualizationPoints,
     std::vector<double>& VisualizationPointLocalCoordinates,
     unsigned int& NumVisualizationCells,
-    std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+    std::vector<NuTo::eCellTypes>& VisualizationCellType,
     std::vector<unsigned int>& VisualizationCellsIncidence,
     std::vector<unsigned int>& VisualizationCellsIP) const
 {
@@ -242,7 +245,7 @@ void NuTo::IntegrationType3D8NGauss2x2x2Ip::GetVisualizationCells(
     NumVisualizationCells = 8;
 
     // cell 1
-    VisualizationCellType.push_back(NuTo::CellBase::HEXAHEDRON);
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
     VisualizationCellsIncidence.push_back(0);
     VisualizationCellsIncidence.push_back(1);
     VisualizationCellsIncidence.push_back(4);
@@ -255,7 +258,7 @@ void NuTo::IntegrationType3D8NGauss2x2x2Ip::GetVisualizationCells(
 
 
     // cell 2
-    VisualizationCellType.push_back(NuTo::CellBase::HEXAHEDRON);
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
     VisualizationCellsIncidence.push_back(1);
     VisualizationCellsIncidence.push_back(2);
     VisualizationCellsIncidence.push_back(5);
@@ -267,7 +270,7 @@ void NuTo::IntegrationType3D8NGauss2x2x2Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(1);
 
     // cell 3
-    VisualizationCellType.push_back(NuTo::CellBase::HEXAHEDRON);
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
     VisualizationCellsIncidence.push_back(3);
     VisualizationCellsIncidence.push_back(4);
     VisualizationCellsIncidence.push_back(7);
@@ -279,7 +282,7 @@ void NuTo::IntegrationType3D8NGauss2x2x2Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(2);
 
     // cell 4
-    VisualizationCellType.push_back(NuTo::CellBase::HEXAHEDRON);
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
     VisualizationCellsIncidence.push_back(4);
     VisualizationCellsIncidence.push_back(5);
     VisualizationCellsIncidence.push_back(8);
@@ -291,7 +294,7 @@ void NuTo::IntegrationType3D8NGauss2x2x2Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(3);
 
     // cell 5
-    VisualizationCellType.push_back(NuTo::CellBase::HEXAHEDRON);
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
     VisualizationCellsIncidence.push_back(9);
     VisualizationCellsIncidence.push_back(10);
     VisualizationCellsIncidence.push_back(13);
@@ -303,7 +306,7 @@ void NuTo::IntegrationType3D8NGauss2x2x2Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(4);
 
     // cell 6
-    VisualizationCellType.push_back(NuTo::CellBase::HEXAHEDRON);
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
     VisualizationCellsIncidence.push_back(10);
     VisualizationCellsIncidence.push_back(11);
     VisualizationCellsIncidence.push_back(14);
@@ -315,7 +318,7 @@ void NuTo::IntegrationType3D8NGauss2x2x2Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(5);
 
     // cell 7
-    VisualizationCellType.push_back(NuTo::CellBase::HEXAHEDRON);
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
     VisualizationCellsIncidence.push_back(12);
     VisualizationCellsIncidence.push_back(13);
     VisualizationCellsIncidence.push_back(16);
@@ -327,7 +330,7 @@ void NuTo::IntegrationType3D8NGauss2x2x2Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(6);
 
     // cell 8
-    VisualizationCellType.push_back(NuTo::CellBase::HEXAHEDRON);
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
     VisualizationCellsIncidence.push_back(13);
     VisualizationCellsIncidence.push_back(14);
     VisualizationCellsIncidence.push_back(17);

@@ -5,6 +5,7 @@
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveMatrixXd.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -17,78 +18,78 @@
 
 template<int TDim>
 std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitutiveIO(
-        NuTo::Constitutive::Output::eOutput outputType)
+        NuTo::Constitutive::eOutput outputType)
 {
-    using namespace Constitutive::Output;
+    using namespace Constitutive;
     constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
     switch (outputType)
     {
         // scalars
-        case DAMAGE:
-        case D_HEAT_D_TEMPERATURE:
-        case D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0:
-        case D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0:
-        case D_INTERNAL_GRADIENT_RH_D_RH_BB_H0:
-        case D_INTERNAL_GRADIENT_RH_D_RH_NN_H0:
-        case D_INTERNAL_GRADIENT_RH_D_WV_NN_H0:
-        case D_INTERNAL_GRADIENT_WV_D_WV_BB_H0:
-        case D_INTERNAL_GRADIENT_WV_D_WV_NN_H0:
-        case D_INTERNAL_GRADIENT_WV_D_RH_NN_H0:
-        case D_INTERNAL_GRADIENT_RH_D_RH_NN_H1:
-        case D_INTERNAL_GRADIENT_RH_D_WV_NN_H1:
-        case D_INTERNAL_GRADIENT_WV_D_WV_NN_H1:
-        case EXTRAPOLATION_ERROR:
-        case ELASTIC_ENERGY_DAMAGED_PART:
-        case HEAT_CHANGE:
-        case INTERNAL_GRADIENT_RELATIVE_HUMIDITY_N:
-        case INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N:
-        case INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_N:
-        case INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N:
-        case NONLOCAL_PARAMETER_XI:
-        case LOCAL_EQ_STRAIN:
+        case eOutput::DAMAGE:
+        case eOutput::D_HEAT_D_TEMPERATURE:
+        case eOutput::D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0:
+        case eOutput::D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0:
+        case eOutput::D_INTERNAL_GRADIENT_RH_D_RH_BB_H0:
+        case eOutput::D_INTERNAL_GRADIENT_RH_D_RH_NN_H0:
+        case eOutput::D_INTERNAL_GRADIENT_RH_D_WV_NN_H0:
+        case eOutput::D_INTERNAL_GRADIENT_WV_D_WV_BB_H0:
+        case eOutput::D_INTERNAL_GRADIENT_WV_D_WV_NN_H0:
+        case eOutput::D_INTERNAL_GRADIENT_WV_D_RH_NN_H0:
+        case eOutput::D_INTERNAL_GRADIENT_RH_D_RH_NN_H1:
+        case eOutput::D_INTERNAL_GRADIENT_RH_D_WV_NN_H1:
+        case eOutput::D_INTERNAL_GRADIENT_WV_D_WV_NN_H1:
+        case eOutput::EXTRAPOLATION_ERROR:
+        case eOutput::ELASTIC_ENERGY_DAMAGED_PART:
+        case eOutput::HEAT_CHANGE:
+        case eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_N:
+        case eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N:
+        case eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_N:
+        case eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N:
+        case eOutput::NONLOCAL_PARAMETER_XI:
+        case eOutput::LOCAL_EQ_STRAIN:
             return std::make_unique<ConstitutiveScalar>();
         // vectors dim
-        case INTERNAL_GRADIENT_RELATIVE_HUMIDITY_B:
-        case INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_B:
-        case D_INTERNAL_GRADIENT_RH_D_WV_BN_H0:
-        case D_INTERNAL_GRADIENT_WV_D_WV_BN_H0:
-        case HEAT_FLUX:
+        case eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_B:
+        case eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_B:
+        case eOutput::D_INTERNAL_GRADIENT_RH_D_WV_BN_H0:
+        case eOutput::D_INTERNAL_GRADIENT_WV_D_WV_BN_H0:
+        case eOutput::HEAT_FLUX:
             return std::make_unique<ConstitutiveVector<TDim>>();
         // vectors voigtdim
-        case D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN:
-        case D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY:
-        case D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION:
-        case D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN:
-        case D_ENGINEERING_STRESS_D_PHASE_FIELD:
-        case D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
-        case D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:
-        case D_LOCAL_EQ_STRAIN_XI_D_STRAIN:
-        case D_ENGINEERING_STRESS_D_TEMPERATURE:
-        case D_LOCAL_EQ_STRAIN_D_STRAIN:
-        case D_STRAIN_D_TEMPERATURE:
+        case eOutput::D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN:
+        case eOutput::D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY:
+        case eOutput::D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION:
+        case eOutput::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN:
+        case eOutput::D_ENGINEERING_STRESS_D_PHASE_FIELD:
+        case eOutput::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
+        case eOutput::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:
+        case eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN:
+        case eOutput::D_ENGINEERING_STRESS_D_TEMPERATURE:
+        case eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN:
+        case eOutput::D_STRAIN_D_TEMPERATURE:
             return std::make_unique<ConstitutiveVector<VoigtDim>>();
         // visualize
-        case ENGINEERING_PLASTIC_STRAIN_VISUALIZE:
-        case ENGINEERING_STRAIN_VISUALIZE:
-        case SHRINKAGE_STRAIN_VISUALIZE:
-        case THERMAL_STRAIN:
+        case eOutput::ENGINEERING_PLASTIC_STRAIN_VISUALIZE:
+        case eOutput::ENGINEERING_STRAIN_VISUALIZE:
+        case eOutput::SHRINKAGE_STRAIN_VISUALIZE:
+        case eOutput::THERMAL_STRAIN:
             return std::make_unique<EngineeringStrain<3>>();
-        case ENGINEERING_STRESS_VISUALIZE:
+        case eOutput::ENGINEERING_STRESS_VISUALIZE:
             return std::make_unique<EngineeringStress<3>>();
         // other
-        case ENGINEERING_STRESS:
+        case eOutput::ENGINEERING_STRESS:
             return std::make_unique<EngineeringStress<TDim>>();
-        case ENGINEERING_STRAIN:
+        case eOutput::ENGINEERING_STRAIN:
             return std::make_unique<EngineeringStrain<TDim>>();
-        case D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+        case eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
             return std::make_unique<ConstitutiveMatrix<VoigtDim, VoigtDim>>();
-        case D_HEAT_FLUX_D_TEMPERATURE_GRADIENT:
+        case eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT:
             return std::make_unique<ConstitutiveMatrix<TDim, TDim>>();
-        case BOND_STRESS:
+        case eOutput::BOND_STRESS:
             return std::make_unique<ConstitutiveMatrixXd>();
-        case INTERFACE_CONSTITUTIVE_MATRIX:
+        case eOutput::INTERFACE_CONSTITUTIVE_MATRIX:
             return std::make_unique<ConstitutiveMatrixXd>();
-        case UPDATE_STATIC_DATA:
+        case eOutput::UPDATE_STATIC_DATA:
             return 0;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__,
@@ -98,41 +99,41 @@ std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitu
 }
 
 template std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitutiveIO<1>(
-        NuTo::Constitutive::Output::eOutput outputType);
+        NuTo::Constitutive::eOutput outputType);
 template std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitutiveIO<2>(
-        NuTo::Constitutive::Output::eOutput outputType);
+        NuTo::Constitutive::eOutput outputType);
 template std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitutiveIO<3>(
-        NuTo::Constitutive::Output::eOutput outputType);
+        NuTo::Constitutive::eOutput outputType);
 
 template<int TDim>
 std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitutiveIO(
-        NuTo::Constitutive::Input::eInput inputType)
+        NuTo::Constitutive::eInput inputType)
 {
-    using namespace Constitutive::Input;
+    using namespace Constitutive;
     switch (inputType)
     {
         // scalars
-        case CRACK_PHASE_FIELD:
-        case NONLOCAL_EQ_STRAIN:
-        case RELATIVE_HUMIDITY:
-        case RELATIVE_HUMIDITY_DT1:
-        case WATER_VOLUME_FRACTION:
-        case WATER_VOLUME_FRACTION_DT1:
-        case TEMPERATURE:
-        case TEMPERATURE_CHANGE:
+        case eInput::CRACK_PHASE_FIELD:
+        case eInput::NONLOCAL_EQ_STRAIN:
+        case eInput::RELATIVE_HUMIDITY:
+        case eInput::RELATIVE_HUMIDITY_DT1:
+        case eInput::WATER_VOLUME_FRACTION:
+        case eInput::WATER_VOLUME_FRACTION_DT1:
+        case eInput::TEMPERATURE:
+        case eInput::TEMPERATURE_CHANGE:
             return std::make_unique<ConstitutiveScalar>();
         // vectors
-        case RELATIVE_HUMIDITY_GRADIENT:
-        case WATER_VOLUME_FRACTION_GRADIENT:
-        case TEMPERATURE_GRADIENT:
+        case eInput::RELATIVE_HUMIDITY_GRADIENT:
+        case eInput::WATER_VOLUME_FRACTION_GRADIENT:
+        case eInput::TEMPERATURE_GRADIENT:
             return std::make_unique<ConstitutiveVector<TDim>>();
         // other
-        case ENGINEERING_STRAIN:
+        case eInput::ENGINEERING_STRAIN:
             return std::make_unique<EngineeringStrain<TDim>>();
-        case INTERFACE_SLIP:
+        case eInput::INTERFACE_SLIP:
             return std::make_unique<ConstitutiveMatrixXd>();
-        case CALCULATE_STATIC_DATA:
-            return std::make_unique<ConstitutiveCalculateStaticData>(NuTo::CalculateStaticData::EULER_BACKWARD);
+        case eInput::CALCULATE_STATIC_DATA:
+            return std::make_unique<ConstitutiveCalculateStaticData>(NuTo::eCalculateStaticData::EULER_BACKWARD);
         default:
             throw MechanicsException(__PRETTY_FUNCTION__,
                     "Don't know how to create Constitutive input for this input type");
@@ -140,11 +141,11 @@ std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitu
 }
 
 template std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitutiveIO<1>(
-        NuTo::Constitutive::Input::eInput inputType);
+        NuTo::Constitutive::eInput inputType);
 template std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitutiveIO<2>(
-        NuTo::Constitutive::Input::eInput inputType);
+        NuTo::Constitutive::eInput inputType);
 template std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitutiveIO<3>(
-        NuTo::Constitutive::Input::eInput inputType);
+        NuTo::Constitutive::eInput inputType);
 
 
 NuTo::ConstitutiveIOBase& NuTo::ConstitutiveIOBase::operator=(const ConstitutiveIOBase& rOther)
@@ -183,7 +184,7 @@ double NuTo::ConstitutiveIOBase::operator [](int rRow) const
 }
 
 
-void NuTo::ConstitutiveIOBase::AssertIsScalar(Constitutive::Output::eOutput rOutputEnum, std::string rMethodName) const
+void NuTo::ConstitutiveIOBase::AssertIsScalar(Constitutive::eOutput rOutputEnum, std::string rMethodName) const
 {
 #ifdef DEBUG
     bool isNotScalar = dynamic_cast<const ConstitutiveScalar*>(this) == nullptr;

@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef SECTIONSPRING_H
-#define SECTIONSPRING_H
+#pragma once
 
 #include "nuto/mechanics/sections/SectionBase.h"
 
@@ -16,7 +15,7 @@ public:
 
     //! @brief ... get the section type
     //! @return ... section type
-    virtual Section::eSectionType GetType() const;
+    virtual eSectionType GetType() const;
 
     //! @brief ... print information about the section
     //! @param rVerboseLevel ... verbosity of the information
@@ -25,5 +24,3 @@ public:
 };
 
 }
-
-#endif // SECTIONSPRING_H

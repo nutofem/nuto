@@ -5,6 +5,8 @@
  *      Author: ttitsche
  */
 
+#include "nuto/geometryConcrete/collision/Event.h"
+#include "nuto/geometryConcrete/collision/SubBox.h"
 #include "nuto/geometryConcrete/collision/handler/EventListHandler.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableBase.h"
 #include "nuto/geometryConcrete/collision/handler/SubBoxHandler.h"

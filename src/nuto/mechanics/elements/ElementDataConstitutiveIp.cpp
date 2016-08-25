@@ -10,6 +10,7 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/elements/ElementDataConstitutiveIp.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/IpDataBase.h"
 #include <assert.h>
 #include "nuto/mechanics/MechanicsException.h"
@@ -49,7 +50,7 @@ void NuTo::ElementDataConstitutiveIp::InitializeUpdatedConstitutiveLaw(const Ele
 //! @return enum of ElementDataType
 const NuTo::ElementData::eElementDataType NuTo::ElementDataConstitutiveIp::GetElementDataType()const
 {
-    return NuTo::ElementData::CONSTITUTIVELAWIP;
+    return NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP;
 }
 
 #ifdef ENABLE_SERIALIZATION

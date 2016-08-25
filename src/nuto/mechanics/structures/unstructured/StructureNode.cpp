@@ -3,11 +3,16 @@
 
 #include "nuto/base/Timer.h"
 
-#include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/math/FullMatrix.h"
+#include "nuto/mechanics/constraints/ConstraintBase.h"
+#include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/groups/GroupEnum.h"
 #include "nuto/mechanics/nodes/NodeDof.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 //! @brief returns the number of nodes
 //! @return number of nodes
@@ -75,9 +80,9 @@ const boost::ptr_map<int, NuTo::NodeBase>& NuTo::Structure::NodeGetNodeMap() con
 int NuTo::Structure::NodeGetDofDisplacement(int rNodeId, int rDispDof)
 {
 	NodeBase* nodePtr = NodeGetNodePtr(rNodeId);
-	if (nodePtr->GetNum(Node::DISPLACEMENTS)>rDispDof)
+    if (nodePtr->GetNum(Node::eDof::DISPLACEMENTS)>rDispDof)
 	{
-		return nodePtr->GetDof(Node::DISPLACEMENTS, rDispDof);
+        return nodePtr->GetDof(Node::eDof::DISPLACEMENTS, rDispDof);
 	}
 	else
 	   throw MechanicsException("[NuTo::Structure::NodeGetDisplacementDofs] Node does have sufficient disp dofs.");
@@ -218,7 +223,7 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
     std::map<Node::eDof, int> dofDimensions;
 
     // somehow always add coordinates
-    rDOFs.insert(Node::COORDINATES);
+    rDOFs.insert(Node::eDof::COORDINATES);
 
     for (Node::eDof dof : rDOFs)
     {
@@ -228,8 +233,8 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             // **************************************
             // dofs with dimension = global dimension
             // **************************************
-            case Node::COORDINATES:
-            case Node::DISPLACEMENTS:
+            case Node::eDof::COORDINATES:
+            case Node::eDof::DISPLACEMENTS:
             {
                 dimensionOfDof = GetDimension();
                 break;
@@ -238,11 +243,11 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             // **************************************
             // scalars:
             // **************************************
-            case Node::TEMPERATURE:
-            case Node::NONLOCALEQSTRAIN:
-            case Node::WATERVOLUMEFRACTION:
-            case Node::RELATIVEHUMIDITY:
-            case Node::CRACKPHASEFIELD:
+            case Node::eDof::TEMPERATURE:
+            case Node::eDof::NONLOCALEQSTRAIN:
+            case Node::eDof::WATERVOLUMEFRACTION:
+            case Node::eDof::RELATIVEHUMIDITY:
+            case Node::eDof::CRACKPHASEFIELD:
             {
                 dimensionOfDof = 1;
                 break;
@@ -251,18 +256,18 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
             // **************************************
             // others:
             // **************************************
-            case Node::ROTATIONS:
+            case Node::eDof::ROTATIONS:
             {
                 if (GetDimension() == 2) dimensionOfDof = 1;
                 if (GetDimension() == 3) dimensionOfDof = 3;
                 break;
             }
-            case Node::NONLOCALEQPLASTICSTRAIN:
+            case Node::eDof::NONLOCALEQPLASTICSTRAIN:
             {
                 dimensionOfDof = 2;
                 break;
             }
-            case Node::NONLOCALTOTALSTRAIN:
+            case Node::eDof::NONLOCALTOTALSTRAIN:
             {
                 if (GetDimension() == 1) dimensionOfDof = 1;
                 if (GetDimension() == 2) dimensionOfDof = 3;
@@ -277,7 +282,7 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
 
     nodePtr = new NodeDof(GetNumTimeDerivatives(), dofDimensions);
 
-    nodePtr->Set(Node::COORDINATES, rCoordinates);
+    nodePtr->Set(Node::eDof::COORDINATES, rCoordinates);
     return nodePtr;
 }
 
@@ -291,7 +296,7 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, NuTo::FullVector<double,Eigen:
 	}
 
 	std::set<Node::eDof> dofs;
-	dofs.insert(Node::COORDINATES);
+    dofs.insert(Node::eDof::COORDINATES);
 
     NodeBase* nodePtr = NodePtrCreate(dofs, rCoordinates);
 
@@ -346,7 +351,7 @@ void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::string rDOFs, NuTo::F
     }
 
     std::set<Node::eDof> dofs;
-    dofs.insert(Node::COORDINATES);
+    dofs.insert(Node::eDof::COORDINATES);
 
     // transform string to uppercase
     std::transform(rDOFs.begin(), rDOFs.end(), rDOFs.begin(), toupper);
@@ -426,7 +431,7 @@ void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::set<NuTo::Node::eDof>
         throw MechanicsException("[NuTo::Structure::NodeCreateDOFs] Node already exists.");
     }
 
-    rDOFs.insert(Node::COORDINATES);
+    rDOFs.insert(Node::eDof::COORDINATES);
 
     NodeBase* nodePtr = NodePtrCreate(rDOFs, rCoordinates);
 
@@ -498,7 +503,7 @@ void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
         //! using a loop over all groups
         //! remove the entry from all groups
         for(boost::ptr_map<int,GroupBase>::iterator groupIt=mGroupMap.begin();groupIt!=mGroupMap.end(); ++groupIt){
-        	if(groupIt->second->GetType()==NuTo::Groups::Nodes){
+        	if(groupIt->second->GetType()==NuTo::eGroupId::Nodes){
         		if(groupIt->second->Contain(itNode->first))
         		{
         			groupIt->second->RemoveMember(itNode->first);
@@ -824,7 +829,7 @@ void NuTo::Structure::NodeExchangePtr(int rId, NuTo::NodeBase* rOldPtr, NuTo::No
     //in groups
     for(boost::ptr_map<int,GroupBase>::iterator groupIt=mGroupMap.begin();groupIt!=mGroupMap.end(); ++groupIt)
     {
-        if(groupIt->second->GetType()==NuTo::Groups::Nodes)
+        if(groupIt->second->GetType()==NuTo::eGroupId::Nodes)
         {
         	if (groupIt->second->Contain(rId))
                 groupIt->second->ExchangePtr(rId, rOldPtr, rNewPtr);

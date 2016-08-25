@@ -8,29 +8,25 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 
 
 namespace NuTo
 {
 
-namespace CalculateStaticData
+
+enum class eCalculateStaticData
 {
+    EULER_FORWARD,
+    EULER_BACKWARD,
+    USE_PREVIOUS
+};
 
-    enum eCalculateStaticData
-    {
-        EULER_FORWARD,
-        EULER_BACKWARD,
-        USE_PREVIOUS
-    };
-
-}  // namespace CalculateStaticData
 
 
 class ConstitutiveCalculateStaticData: public ConstitutiveIOBase
 {
 public:
-    ConstitutiveCalculateStaticData(CalculateStaticData::eCalculateStaticData rCalculateStaticData, int rIndexOfPreviousStaticData = 0) :
+    ConstitutiveCalculateStaticData(eCalculateStaticData rCalculateStaticData, int rIndexOfPreviousStaticData = 0) :
         ConstitutiveIOBase() ,
         mCalculateStaticData(rCalculateStaticData),
         mIndexOfPreviousStaticData(rIndexOfPreviousStaticData)
@@ -59,12 +55,12 @@ public:
         return result;
     }
 
-    CalculateStaticData::eCalculateStaticData GetCalculateStaticData() const
+    eCalculateStaticData GetCalculateStaticData() const
     {
         return mCalculateStaticData;
     }
 
-    void SetCalculateStaticData(const CalculateStaticData::eCalculateStaticData& rCalculateStaticData)
+    void SetCalculateStaticData(const eCalculateStaticData& rCalculateStaticData)
     {
         mCalculateStaticData = rCalculateStaticData;
     }
@@ -80,7 +76,7 @@ public:
     }
 
 private:
-    CalculateStaticData::eCalculateStaticData mCalculateStaticData;
+    eCalculateStaticData mCalculateStaticData;
     int mIndexOfPreviousStaticData;
 };
 

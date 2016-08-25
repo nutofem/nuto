@@ -8,13 +8,22 @@
 
 #include <boost/filesystem.hpp>
 #include <string>
+#include "nuto/math/FullMatrix.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/groups/GroupEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
 
 void SetConstitutiveLaw(NuTo::Structure& rStructure)
 {
-    int myMat = rStructure.ConstitutiveLawCreate(NuTo::Constitutive::MISES_PLASTICITY_ENGINEERING_STRESS);
+    int myMat = rStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::MISES_PLASTICITY_ENGINEERING_STRESS);
 
     rStructure.ConstitutiveLawSetParameterDouble(myMat,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,100);
     rStructure.ConstitutiveLawSetParameterDouble(myMat,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,0.0);
@@ -27,13 +36,13 @@ void SetConstitutiveLaw(NuTo::Structure& rStructure)
 
     rStructure.ElementTotalSetConstitutiveLaw(myMat);
 
-    int visualizationGroup = rStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    int visualizationGroup = rStructure.GroupCreate(NuTo::eGroupId::Elements);
     rStructure.GroupAddElementsTotal(visualizationGroup);
 
-    rStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
-    rStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
-    rStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
-    rStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN);
+    rStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    rStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+    rStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
+    rStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_PLASTIC_STRAIN);
 
 
 }
@@ -63,25 +72,25 @@ void Mises2D(const std::string& rDir)
     nodeIds[2] = myStructure.NodeCreate(NuTo::FullVector<double, 2>({0,0}));
     nodeIds[3] = myStructure.NodeCreate(NuTo::FullVector<double, 2>({1,0}));
 
-    int interpol = myStructure.InterpolationTypeCreate(NuTo::Interpolation::QUAD2D);
-    myStructure.InterpolationTypeAdd(interpol, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
-    myStructure.InterpolationTypeAdd(interpol, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT2);
+    int interpol = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
+    myStructure.InterpolationTypeAdd(interpol, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(interpol, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
 
-    myStructure.ElementCreate(interpol, nodeIds, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA);
+    myStructure.ElementCreate(interpol, nodeIds, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
     myStructure.ElementTotalConvertToInterpolationType();
 
     SetConstitutiveLaw(myStructure);
 
-    int section = myStructure.SectionCreate(NuTo::Section::PLANE_STRAIN);
+    int section = myStructure.SectionCreate(NuTo::eSectionType::PLANE_STRAIN);
     myStructure.SectionSetThickness(section, 3.1415);
     myStructure.ElementTotalSetSection(section);
 
     // boundary conditions
     int nOrigin = myStructure.NodeGetIdAtCoordinate(NuTo::FullVector<double, 2>({0,0}), 1.e-6);
 
-    int gNodesXminus = myStructure.GroupCreate(NuTo::Groups::Nodes);
-    int gNodesXplus  = myStructure.GroupCreate(NuTo::Groups::Nodes);
+    int gNodesXminus = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    int gNodesXplus  = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
 
     myStructure.GroupAddNodeCoordinateRange(gNodesXminus, 0, 0, 0);
     myStructure.GroupAddNodeCoordinateRange(gNodesXplus,  0, 1, 1);
@@ -180,17 +189,17 @@ void Mises3D(const std::string& rDir)
 
 
 
-    int interpol = myStructure.InterpolationTypeCreate(NuTo::Interpolation::TETRAHEDRON3D);
-    myStructure.InterpolationTypeAdd(interpol, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
-    myStructure.InterpolationTypeAdd(interpol, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT2);
+    int interpol = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TETRAHEDRON3D);
+    myStructure.InterpolationTypeAdd(interpol, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(interpol, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
 
-    myStructure.ElementCreate(interpol, nodesTet0, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA);
-    myStructure.ElementCreate(interpol, nodesTet1, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA);
-    myStructure.ElementCreate(interpol, nodesTet2, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA);
-    myStructure.ElementCreate(interpol, nodesTet3, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA);
-    myStructure.ElementCreate(interpol, nodesTet4, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA);
-    myStructure.ElementCreate(interpol, nodesTet5, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA);
+    myStructure.ElementCreate(interpol, nodesTet0, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+    myStructure.ElementCreate(interpol, nodesTet1, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+    myStructure.ElementCreate(interpol, nodesTet2, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+    myStructure.ElementCreate(interpol, nodesTet3, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+    myStructure.ElementCreate(interpol, nodesTet4, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+    myStructure.ElementCreate(interpol, nodesTet5, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
 
 
 
@@ -198,13 +207,13 @@ void Mises3D(const std::string& rDir)
 
     SetConstitutiveLaw(myStructure);
 
-    myStructure.ElementTotalSetSection(myStructure.SectionCreate(NuTo::Section::VOLUME));
+    myStructure.ElementTotalSetSection(myStructure.SectionCreate(NuTo::eSectionType::VOLUME));
 
     // boundary conditions
     int nOrigin = myStructure.NodeGetIdAtCoordinate(NuTo::FullVector<double, 3>({0,0,0}), 1.e-6);
 
-    int gNodesXminus = myStructure.GroupCreate(NuTo::Groups::Nodes);
-    int gNodesXplus  = myStructure.GroupCreate(NuTo::Groups::Nodes);
+    int gNodesXminus = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    int gNodesXplus  = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
 
     myStructure.GroupAddNodeCoordinateRange(gNodesXminus, 0, 0, 0);
     myStructure.GroupAddNodeCoordinateRange(gNodesXplus,  0, 1, 1);

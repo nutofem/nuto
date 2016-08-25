@@ -6,6 +6,7 @@
  */
 
 #include "nuto/geometryConcrete/WallTime.h"
+#include "nuto/geometryConcrete/collision/SubBox.h"
 #include "nuto/geometryConcrete/collision/handler/SubBoxHandler.h"
 #include "nuto/geometryConcrete/collision/handler/ParticleHandler.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableWallBase.h"
@@ -13,6 +14,7 @@
 #include "nuto/geometryConcrete/collision/collidables/CollidableWallPhysical.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableWallVirtual.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableWallCylinder.h"
+#include "nuto/math/FullMatrix.h"
 
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
 

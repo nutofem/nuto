@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <eigen3/Eigen/Core>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -9,7 +7,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include <memory>
 
 namespace NuTo
 {
@@ -18,6 +16,12 @@ class ConstitutiveScalar;
 template <int TRows, int TCols> class ConstitutiveMatrix;
 template <int TRows>            class ConstitutiveVector;
 template <int TDim>             class EngineeringStrain;
+namespace Constitutive
+{
+    enum class eInput;
+    enum class eOutput;
+    std::string OutputToString(const eOutput);
+}
 
 class ConstitutiveIOBase
 {
@@ -41,13 +45,13 @@ public:
     //! @return `unique_ptr` to the created object
     template<int TDim>
     static std::unique_ptr<ConstitutiveIOBase> makeConstitutiveIO(
-            NuTo::Constitutive::Output::eOutput outputType);
+            NuTo::Constitutive::eOutput outputType);
     //! Factory for polymorphic construction of constitutive inputs.
     //! @param inputType Determines which derived object is returned
     //! @return `unique_ptr` to the created object
     template<int TDim>
     static std::unique_ptr<ConstitutiveIOBase> makeConstitutiveIO(
-            NuTo::Constitutive::Input::eInput inputType);
+            NuTo::Constitutive::eInput inputType);
 
     ConstitutiveIOBase& operator=(const ConstitutiveIOBase& rOther);
 
@@ -83,12 +87,12 @@ public:
      *  some "pretty asserts" to ensure type safety
      *
      ***************************************************************************/
-    void AssertIsScalar(Constitutive::Output::eOutput rOutputEnum, std::string rMethodName) const;
+    void AssertIsScalar(Constitutive::eOutput rOutputEnum, std::string rMethodName) const;
     // implementation in cpp file, since the dynamic_cast to ConstitutiveScalar
     // requires the full include instead of the forward declaration
 
     template <int TRows>
-    void AssertIsVector(Constitutive::Output::eOutput rOutputEnum, std::string rMethodName) const
+    void AssertIsVector(Constitutive::eOutput rOutputEnum, std::string rMethodName) const
     {
     #ifdef DEBUG
         AssertDimension<TRows, 1>(rOutputEnum, rMethodName);
@@ -100,7 +104,7 @@ public:
     }
 
     template <int TRows, int TCols>
-    void AssertIsMatrix(Constitutive::Output::eOutput rOutputEnum, std::string rMethodName) const
+    void AssertIsMatrix(Constitutive::eOutput rOutputEnum, std::string rMethodName) const
     {
     #ifdef DEBUG
         AssertDimension<TRows, TCols>(rOutputEnum, rMethodName);
@@ -157,7 +161,7 @@ private:
 
     #ifdef DEBUG
     template <int TRows, int TCols>
-    void AssertDimension(Constitutive::Output::eOutput rOutputEnum, const std::string& rMethodName) const
+    void AssertDimension(Constitutive::eOutput rOutputEnum, const std::string& rMethodName) const
     {
         if (GetNumRows() != TRows || GetNumColumns() != TCols)
         {

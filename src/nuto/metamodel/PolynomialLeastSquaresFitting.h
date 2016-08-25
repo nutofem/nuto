@@ -1,10 +1,11 @@
-#ifndef POLYNOMIALLEASTSQUARESFITTING_H
-#define POLYNOMIALLEASTSQUARESFITTING_H
+#pragma once
+
+// parent
+#include "nuto/metamodel/Metamodel.h"
+
 
 #include <vector>
-#include <utility>
-#include "nuto/math/FullVector.h"
-#include "nuto/metamodel/Metamodel.h"
+#include "nuto/math/FullVector_Def.h"
 
 namespace NuTo
 {
@@ -57,4 +58,3 @@ protected:
 
 }   // namespace NuTo
 
-#endif // POLYNOMIALLEASTSQUARESFITTING_H

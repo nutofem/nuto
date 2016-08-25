@@ -1,16 +1,14 @@
-#ifndef ERRORENUM_H_
-#define ERRORENUM_H_
+#pragma once
+
 
 namespace NuTo
 {
-namespace Error
-{
-enum eError
+
+enum class eError
 {
     SUCCESSFUL,
     NO_CONVERGENCE,
     NOT_IMPLEMENTED
 };
-}
-}
-#endif /* ERRORENUM_H_ */
+
+}// namespace NuTo

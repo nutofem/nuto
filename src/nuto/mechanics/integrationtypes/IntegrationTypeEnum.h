@@ -1,16 +1,14 @@
 // $Id$ 
-#ifndef INTEGRATIONTYPEENUM_H_
-#define INTEGRATIONTYPEENUM_H_
+#pragma once
 
 namespace NuTo
 {
-namespace IntegrationType
-{
+
 //! @author Joerg F. Unger
 //! @date May 2, 2010
 //! @brief ...
 
-enum eIntegrationType
+enum class eIntegrationType
 {
     IntegrationType0DBoundary = 0,
     IntegrationType1D2NGauss1Ip,
@@ -47,7 +45,5 @@ enum eIntegrationType
     NumIntegrationTypes,
     NotSet
 };
-}
-}
-#endif /* INTEGRATIONTYPEENUM_H_ */
 
+}// namespace NuTo

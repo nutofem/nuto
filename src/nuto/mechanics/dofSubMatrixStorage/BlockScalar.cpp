@@ -1,4 +1,8 @@
 #include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
+#include "nuto/mechanics/dofSubMatrixStorage/DofStatus.h"
+
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include <assert.h>
 #include <iostream>
 #include <iomanip>
 

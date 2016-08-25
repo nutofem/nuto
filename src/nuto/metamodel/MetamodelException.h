@@ -1,5 +1,4 @@
-#ifndef NUTO_METAMODEL_EXCEPTION_H
-#define NUTO_METAMODEL_EXCEPTION_H
+#pragma once
 
 #include "nuto/base/Exception.h"
 
@@ -53,4 +52,3 @@ public:
     }
 };
 } //namespace NuTo
-#endif //NUTO_METAMODEL_EXCEPTION_H

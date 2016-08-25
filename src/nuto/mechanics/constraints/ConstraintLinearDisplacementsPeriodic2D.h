@@ -1,9 +1,8 @@
 // $Id: ConstraintNodeGroupDisplacements2D.h 265 2010-06-08 08:47:00Z arnold2 $
 
-#ifndef CONSTRAINTDISPLACEMENTS2PERIODIC2D_H
-#define CONSTRAINTDISPLACEMENTS2PERIODIC2D_H
+#pragma once
 
-#include "nuto/mechanics/constraints/ConstraintBase.h"
+
 #include "nuto/mechanics/constraints/ConstraintLinear.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
@@ -79,10 +78,7 @@ public:
 
     //! @brief determines the dof type affected by the constraint
     //! @return dof type
-    Node::eDof GetDofType() const override
-    {
-        return Node::eDof::DISPLACEMENTS;
-    }
+    Node::eDof GetDofType() const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief deserializes (loads) the class
@@ -153,4 +149,3 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLinearDisplacementsPeriodic2D)
 #endif // ENABLE_SERIALIZATION
 
-#endif //CONSTRAINTDISPLACEMENTS2PERIODIC2D_H

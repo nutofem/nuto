@@ -23,13 +23,18 @@
 
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/math/FullMatrix.h"
+#include "nuto/base/ErrorEnum.h"
 #include "nuto/base/Timer.h"
 
 #include "nuto/math/SparseMatrixCSRVector2General.h"
+#include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataBase.h"
+#include "nuto/mechanics/cracks/CrackBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/ElementOutputDummy.h"
 #include "nuto/mechanics/elements/ElementOutputBlockMatrixDouble.h"
 #include "nuto/mechanics/elements/ElementOutputBlockVectorDouble.h"
@@ -37,7 +42,17 @@
 #include "nuto/mechanics/elements/ElementOutputFullMatrixDouble.h"
 #include "nuto/mechanics/elements/ElementOutputFullVectorDouble.h"
 #include "nuto/mechanics/elements/ElementOutputVectorInt.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/groups/GroupBase.h"
+#include "nuto/mechanics/groups/GroupEnum.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
+#include "nuto/mechanics/structures/StructureBaseEnum.h"
 #include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
 #include "nuto/mechanics/structures/StructureOutputBlockVector.h"
 
@@ -486,11 +501,11 @@ void NuTo::Structure::RestoreUpdate (const std::string &filename, std::string rT
 #endif // ENABLE_SERIALIZATION
 
 
-void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<StructureEnum::eOutput, StructureOutputBase*> &rStructureOutput)
+void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<eStructureOutput, StructureOutputBase*> &rStructureOutput)
 {
     std::string outputs = " ";
     for (auto it : rStructureOutput)
-        outputs += StructureEnum::OutputToString(it.first) + " ";
+        outputs += StructureOutputToString(it.first) + " ";
 
     Timer timer(std::string(__FUNCTION__) + outputs, GetShowTime(), GetLogger());
     try
@@ -510,7 +525,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
             iteratorOutput.second->SetZero();
         }
 
-        Error::eError errorGlobal = Error::SUCCESSFUL;
+        eError errorGlobal = eError::SUCCESSFUL;
 #ifdef _OPENMP
         if (mNumProcessors!=0)
         {
@@ -542,34 +557,34 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
         {
             switch (iteratorOutput.first)
             {
-            case NuTo::StructureEnum::HESSIAN0:
+            case NuTo::eStructureOutput::HESSIAN0:
             {
-                elementOutputMap[Element::HESSIAN_0_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(mDofStatus);
+                elementOutputMap[Element::eOutput::HESSIAN_0_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(mDofStatus);
                 break;
             }
-            case NuTo::StructureEnum::HESSIAN1:
+            case NuTo::eStructureOutput::HESSIAN1:
             {
-                elementOutputMap[Element::HESSIAN_1_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(mDofStatus);
+                elementOutputMap[Element::eOutput::HESSIAN_1_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(mDofStatus);
                 break;
             }
-            case NuTo::StructureEnum::HESSIAN2:
+            case NuTo::eStructureOutput::HESSIAN2:
             {
-                elementOutputMap[Element::HESSIAN_2_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(mDofStatus);
+                elementOutputMap[Element::eOutput::HESSIAN_2_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(mDofStatus);
                 break;
             }
-            case NuTo::StructureEnum::HESSIAN2_LUMPED:
+            case NuTo::eStructureOutput::HESSIAN2_LUMPED:
             {
-                elementOutputMap[Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockVectorDouble>(mDofStatus);
+                elementOutputMap[Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE] = std::make_shared<ElementOutputBlockVectorDouble>(mDofStatus);
                 break;
             }
-            case NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT:
+            case NuTo::eStructureOutput::INTERNAL_GRADIENT:
             {
-                elementOutputMap[Element::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(mDofStatus);
+                elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(mDofStatus);
                 break;
             }
-            case NuTo::StructureEnum::eOutput::UPDATE_STATIC_DATA:
+            case NuTo::eStructureOutput::UPDATE_STATIC_DATA:
             {
-                elementOutputMap[Element::UPDATE_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
+                elementOutputMap[Element::eOutput::UPDATE_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
                 break;
             }
             default:
@@ -578,8 +593,8 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
             }
             }
         }
-        elementOutputMap[Element::GLOBAL_ROW_DOF] = std::make_shared<ElementOutputBlockVectorInt>(mDofStatus);
-        elementOutputMap[Element::GLOBAL_COLUMN_DOF] = std::make_shared<ElementOutputBlockVectorInt>(mDofStatus);
+        elementOutputMap[Element::eOutput::GLOBAL_ROW_DOF] = std::make_shared<ElementOutputBlockVectorInt>(mDofStatus);
+        elementOutputMap[Element::eOutput::GLOBAL_COLUMN_DOF] = std::make_shared<ElementOutputBlockVectorInt>(mDofStatus);
 #ifdef _OPENMP
         for (auto elementIter = this->mMIS[misCounter].begin(); elementIter != this->mMIS[misCounter].end(); elementIter++)
         {
@@ -595,11 +610,11 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
 
             // calculate element contribution
             //bool symmetryFlag = false;
-            Error::eError error = elementPtr->Evaluate(rInput, elementOutputMap);
+            eError error = elementPtr->Evaluate(rInput, elementOutputMap);
 
-            if (error != Error::SUCCESSFUL)
+            if (error != eError::SUCCESSFUL)
             {
-                if (errorGlobal == Error::SUCCESSFUL)
+                if (errorGlobal == eError::SUCCESSFUL)
                 {
                     errorGlobal = error;
                 } else if (errorGlobal != error)
@@ -608,8 +623,8 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
                 }
             }
 
-            const auto & elementVectorGlobalDofsRow = elementOutputMap.at(Element::GLOBAL_ROW_DOF)->GetBlockFullVectorInt();
-            const auto & elementVectorGlobalDofsColumn = elementOutputMap.at(Element::GLOBAL_COLUMN_DOF)->GetBlockFullVectorInt();
+            const auto & elementVectorGlobalDofsRow = elementOutputMap.at(Element::eOutput::GLOBAL_ROW_DOF)->GetBlockFullVectorInt();
+            const auto & elementVectorGlobalDofsColumn = elementOutputMap.at(Element::eOutput::GLOBAL_COLUMN_DOF)->GetBlockFullVectorInt();
 
             for (auto& iteratorOutput : rStructureOutput)
             {
@@ -617,54 +632,50 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
 
                 switch (iteratorOutput.first)
                 {
-                case NuTo::StructureEnum::HESSIAN0:
+                case NuTo::eStructureOutput::HESSIAN0:
                 {
-                    const auto& elementMatrix = elementOutputMap.at(Element::HESSIAN_0_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
+                    const auto& elementMatrix = elementOutputMap.at(Element::eOutput::HESSIAN_0_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
                     structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(elementPtr, elementMatrix, elementVectorGlobalDofsRow, elementVectorGlobalDofsColumn, mToleranceStiffnessEntries, GetDofStatus().HasInteractingConstraints());
                     break;
                 }
-                case NuTo::StructureEnum::HESSIAN1:
+                case NuTo::eStructureOutput::HESSIAN1:
                 {
-                    const auto& elementMatrix = elementOutputMap.at(Element::HESSIAN_1_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
+                    const auto& elementMatrix = elementOutputMap.at(Element::eOutput::HESSIAN_1_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
                     structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(elementPtr, elementMatrix, elementVectorGlobalDofsRow, elementVectorGlobalDofsColumn, mToleranceStiffnessEntries, GetDofStatus().HasInteractingConstraints());
                     break;
                 }
 
-                case NuTo::StructureEnum::HESSIAN2:
+                case NuTo::eStructureOutput::HESSIAN2:
                 {
-                    const auto& elementMatrix = elementOutputMap.at(Element::HESSIAN_2_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
+                    const auto& elementMatrix = elementOutputMap.at(Element::eOutput::HESSIAN_2_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
                     structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(elementPtr, elementMatrix, elementVectorGlobalDofsRow, elementVectorGlobalDofsColumn, mToleranceStiffnessEntries, true); // always calculate the KJ and KK
                                                                                                                                                                                                               // since its most likely only needed once,
                                                                                                                                                                                                               // and causes troubles in the test files.
                     break;
                 }
 
-                case NuTo::StructureEnum::HESSIAN2_LUMPED:
+                case NuTo::eStructureOutput::HESSIAN2_LUMPED:
                 {
-                    const auto& elementVector = elementOutputMap.at(Element::LUMPED_HESSIAN_2_TIME_DERIVATIVE)->GetBlockFullVectorDouble();
+                    const auto& elementVector = elementOutputMap.at(Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE)->GetBlockFullVectorDouble();
 
                     structureOutput->AsStructureOutputBlockMatrix().AddElementVectorDiagonal(elementVector, elementVectorGlobalDofsRow, mToleranceStiffnessEntries);
                     break;
                 }
 
-                case NuTo::StructureEnum::eOutput::INTERNAL_GRADIENT:
+                case NuTo::eStructureOutput::INTERNAL_GRADIENT:
                 {
-                    const auto& elementVector = elementOutputMap.at(Element::INTERNAL_GRADIENT)->GetBlockFullVectorDouble();
-
-//                                         // VHIRTHAMTODO: Find a better solution --- WTF????
-//                                         if(elementPtr->GetEnumType() != Element::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE)
-//                                             assert(elementVector.GetNumRows() == elementVectorGlobalDofsRow.GetNumRows());
+                    const auto& elementVector = elementOutputMap.at(Element::eOutput::INTERNAL_GRADIENT)->GetBlockFullVectorDouble();
 
                     structureOutput->AsStructureOutputBlockVector().AddElementVector(elementVector, elementVectorGlobalDofsRow);
                     break;
                 }
 
-                case NuTo::StructureEnum::UPDATE_STATIC_DATA:
+                case NuTo::eStructureOutput::UPDATE_STATIC_DATA:
                     break;
 
                 default:
                 {
-                    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, StructureEnum::OutputToString(iteratorOutput.first) + " requested but not implemented.");
+                    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, StructureOutputToString(iteratorOutput.first) + " requested but not implemented.");
                 }
                 }
             }
@@ -740,7 +751,7 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
                 elementPtr->DeleteNonlocalElements();
                 indexElement.push_back(elementPtr);
                 indexIp.push_back(theIp);
-                indexIpVolume.push_back(ipVolume.at(theIp,0));
+                indexIpVolume.push_back(ipVolume(theIp,0));
             }
         }
     }
@@ -1299,27 +1310,27 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
         switch (elements[elementCount].type)
         {
         case 1: // 	2-node line in 2d/3d
-            shapeType = Interpolation::TRUSSXD;
-            typeOrder = Interpolation::EQUIDISTANT1;
+            shapeType = Interpolation::eShapeType::TRUSSXD;
+            typeOrder = Interpolation::eTypeOrder::EQUIDISTANT1;
             break;
         case 2: // 3-node triangle.
-            shapeType = Interpolation::TRIANGLE2D;
-            typeOrder = Interpolation::EQUIDISTANT1;
+            shapeType = Interpolation::eShapeType::TRIANGLE2D;
+            typeOrder = Interpolation::eTypeOrder::EQUIDISTANT1;
             break;
 
         case 3: // 4-node quadrangle.
-            shapeType = Interpolation::QUAD2D;
-            typeOrder = Interpolation::EQUIDISTANT1;
+            shapeType = Interpolation::eShapeType::QUAD2D;
+            typeOrder = Interpolation::eTypeOrder::EQUIDISTANT1;
             break;
 
         case 4: // 4-node tetrahedron.
-            shapeType = Interpolation::TETRAHEDRON3D;
-            typeOrder = Interpolation::EQUIDISTANT1;
+            shapeType = Interpolation::eShapeType::TETRAHEDRON3D;
+            typeOrder = Interpolation::eTypeOrder::EQUIDISTANT1;
             break;
 
         case 5: // 8-node hexahedron.
-            shapeType = Interpolation::BRICK3D;
-            typeOrder = Interpolation::EQUIDISTANT1;
+            shapeType = Interpolation::eShapeType::BRICK3D;
+            typeOrder = Interpolation::eTypeOrder::EQUIDISTANT1;
             break;
 
 //    	case 6: // 6-node prism.
@@ -1327,8 +1338,8 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
 //    	case 7: // 5-node pyramid.
 
     	case 8: // 3-node second order line (2 nodes associated with the vertices and 1 with the edge).
-            shapeType = Interpolation::TRUSSXD;
-            typeOrder = Interpolation::EQUIDISTANT2;
+            shapeType = Interpolation::eShapeType::TRUSSXD;
+            typeOrder = Interpolation::eTypeOrder::EQUIDISTANT2;
             //ordering is different than in gmsh, fix this first
             {
             NuTo::FullVector<int, Eigen::Dynamic> nodeNumbersCopy(nodeNumbers);
@@ -1338,24 +1349,24 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
             }
             break;
         case 9: // 6-node second order triangle (3 nodes associated with the vertices and 3 with the edges).
-            shapeType = Interpolation::TRIANGLE2D;
-            typeOrder = Interpolation::EQUIDISTANT2;
+            shapeType = Interpolation::eShapeType::TRIANGLE2D;
+            typeOrder = Interpolation::eTypeOrder::EQUIDISTANT2;
             break;
 
         case 10: // 9-node second order quadrangle (4 nodes associated with the vertices, 4 with the edges and 1 with the face).
-            shapeType = Interpolation::QUAD2D;
-            typeOrder = Interpolation::LOBATTO2;
+            shapeType = Interpolation::eShapeType::QUAD2D;
+            typeOrder = Interpolation::eTypeOrder::LOBATTO2;
             break;
 
         case 11: // 10-node second order tetrahedron (4 nodes associated with the vertices and 6 with the edges).
-            shapeType = Interpolation::TETRAHEDRON3D;
-            typeOrder = Interpolation::EQUIDISTANT2;
+            shapeType = Interpolation::eShapeType::TETRAHEDRON3D;
+            typeOrder = Interpolation::eTypeOrder::EQUIDISTANT2;
             break;
 
     	case 12: // 27-node second order hexahedron (8 nodes associated with the vertices, 12 with the edges, 6 with the faces and 1 with the volume).
     	{
-    		shapeType = Interpolation::BRICK3D;
-            typeOrder = Interpolation::LOBATTO2;
+            shapeType = Interpolation::eShapeType::BRICK3D;
+            typeOrder = Interpolation::eTypeOrder::LOBATTO2;
             //ordering is different than in gmsh, fix this first
             NuTo::FullVector<int, Eigen::Dynamic> nodeNumbersGmsh(nodeNumbers);
             nodeNumbers(0)  = nodeNumbersGmsh(4);
@@ -1394,13 +1405,13 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
 //    	case 15: // 1-node point.
 
         case 16: // 8-node second order quadrangle (4 nodes associated with the vertices and 4 with the edges).
-            shapeType = Interpolation::QUAD2D;
-            typeOrder = Interpolation::EQUIDISTANT2;
+            shapeType = Interpolation::eShapeType::QUAD2D;
+            typeOrder = Interpolation::eTypeOrder::EQUIDISTANT2;
             break;
 
         case 17: // 20-node second order hexahedron (8 nodes associated with the vertices and 12 with the edges).
-            shapeType = Interpolation::BRICK3D;
-            typeOrder = Interpolation::EQUIDISTANT2;
+            shapeType = Interpolation::eShapeType::BRICK3D;
+            typeOrder = Interpolation::eTypeOrder::EQUIDISTANT2;
             break;
 
 //    	case 18: // 15-node second order prism (6 nodes associated with the vertices and 9 with the edges).
@@ -1410,15 +1421,15 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
 //    	case 20: // 9-node third order incomplete triangle (3 nodes associated with the vertices, 6 with the edges)
 
         case 21: // 10-node third order triangle (3 nodes associated with the vertices, 6 with the edges, 1 with the face)
-            shapeType = Interpolation::TRIANGLE2D;
-            typeOrder = Interpolation::EQUIDISTANT3;
+            shapeType = Interpolation::eShapeType::TRIANGLE2D;
+            typeOrder = Interpolation::eTypeOrder::EQUIDISTANT3;
             break;
 
 //    	case 22: // 12-node fourth order incomplete triangle (3 nodes associated with the vertices, 9 with the edges)
 
         case 23: // 15-node fourth order triangle (3 nodes associated with the vertices, 9 with the edges, 3 with the face)
-            shapeType = Interpolation::TRIANGLE2D;
-            typeOrder = Interpolation::EQUIDISTANT4;
+            shapeType = Interpolation::eShapeType::TRIANGLE2D;
+            typeOrder = Interpolation::eTypeOrder::EQUIDISTANT4;
             break;
 
 //    	case 24: // 15-node fifth order incomplete triangle (3 nodes associated with the vertices, 12 with the edges)
@@ -1450,7 +1461,7 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
         int groupId = elements[elementCount].tags[0]; // NuTo groupId == gmsh groupId. // This might cause errors if groups exist before the gmsh import.
         boost::ptr_map<int, GroupBase>::iterator itGroup(mGroupMap.find(groupId));
         if (itGroup == mGroupMap.end())
-            GroupCreate(groupId, NuTo::Groups::Elements);
+            GroupCreate(groupId, NuTo::eGroupId::Elements);
 
         int interpolationTypeId;
 
@@ -1460,7 +1471,7 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
         {
             // create a new interpolation type
             interpolationTypeId = InterpolationTypeCreate(Interpolation::ShapeTypeToString(shapeType));
-            InterpolationTypeAdd(interpolationTypeId, Node::COORDINATES, typeOrder);
+            InterpolationTypeAdd(interpolationTypeId, Node::eDof::COORDINATES, typeOrder);
 
             // add it to the map
             groupInterpolationIds[groupId].insert(interpolationTypeId);
@@ -1473,7 +1484,7 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
                 // check if the corresponding interpolation is already in the group
                 const InterpolationType& interpolationType = mInterpolationTypeMap.at(id);
                 Interpolation::eShapeType groupShapeType = interpolationType.GetShapeType();
-                Interpolation::eTypeOrder groupTypeOrder = interpolationType.Get(Node::COORDINATES).GetTypeOrder();
+                Interpolation::eTypeOrder groupTypeOrder = interpolationType.Get(Node::eDof::COORDINATES).GetTypeOrder();
                 if (groupShapeType == shapeType and groupTypeOrder == typeOrder)
                 {
                     exists = true;
@@ -1486,7 +1497,7 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
             {
                 // create a new interpolation type
                 interpolationTypeId = InterpolationTypeCreate(Interpolation::ShapeTypeToString(shapeType));
-                InterpolationTypeAdd(interpolationTypeId, Node::COORDINATES, typeOrder);
+                InterpolationTypeAdd(interpolationTypeId, Node::eDof::COORDINATES, typeOrder);
 
                 // add it to the map
                 groupInterpolationIds[groupId].insert(interpolationTypeId);
@@ -1582,7 +1593,7 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>&
         // add node to map
         this->mNodeMap.insert(id, newNode);
 
-        newNode->Set(Node::COORDINATES, nodeVector[countNode]->Get(Node::COORDINATES) + rOffset);
+        newNode->Set(Node::eDof::COORDINATES, nodeVector[countNode]->Get(Node::eDof::COORDINATES) + rOffset);
 
     }
     //renumbering of dofs for global matrices required

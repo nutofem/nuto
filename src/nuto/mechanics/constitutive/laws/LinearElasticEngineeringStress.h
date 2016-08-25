@@ -1,11 +1,9 @@
 #pragma once
 
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/elements/ElementEnum.h"
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 
-#include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
+
 
 namespace NuTo
 {
@@ -90,7 +88,7 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate1D(ElementBase* rElement, int rIp,
+    NuTo::eError Evaluate1D(ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput) override;
 
@@ -99,7 +97,7 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate2D(ElementBase* rElement, int rIp,
+    NuTo::eError Evaluate2D(ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput) override;
 
@@ -108,7 +106,7 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate3D(ElementBase* rElement, int rIp,
+    NuTo::eError Evaluate3D(ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput) override;
 
@@ -155,7 +153,7 @@ public:
 
     //! @brief ... gets a set of all constitutive output enums that are compatible with the constitutive law
     //! @return ... set of all constitutive output enums that are compatible with the constitutive law
-    virtual bool CheckOutputTypeCompatibility(Constitutive::Output::eOutput rOutputEnum) const override;
+    virtual bool CheckOutputTypeCompatibility(Constitutive::eOutput rOutputEnum) const override;
 
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship

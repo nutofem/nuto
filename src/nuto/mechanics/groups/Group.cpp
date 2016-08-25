@@ -4,6 +4,7 @@
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/groups/GroupEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/loads/LoadBase.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
@@ -14,15 +15,15 @@
 namespace NuTo
 {
 template<>
-Groups::eGroupId Group<NodeBase>::GetType()const
+eGroupId Group<NodeBase>::GetType()const
 {
-    return Groups::Nodes;
+    return eGroupId::Nodes;
 }
 
 template<>
-Groups::eGroupId Group<ElementBase>::GetType()const
+eGroupId Group<ElementBase>::GetType()const
 {
-    return Groups::Elements;
+    return eGroupId::Elements;
 }
 template<>
 std::string Group<NodeBase>::GetTypeString()const

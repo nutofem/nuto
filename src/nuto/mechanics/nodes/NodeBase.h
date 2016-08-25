@@ -4,26 +4,36 @@
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
-#else
-#include <boost/array.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include <map>
-#include <assert.h>
-#include <nuto/math/FullVector_Def.h>
+#ifdef ENABLE_VISUALIZE
+#include <list>
+#include <memory>
+#endif // ENABLE_VISUALIZE
+
+
 
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
 
-#ifdef ENABLE_VISUALIZE
-#include "nuto/visualize/VisualizeBase.h"
-#include "nuto/visualize/VisualizeComponent.h"
-#include "nuto/visualize/VisualizeUnstructuredGrid.h"
-#include <boost/ptr_container/ptr_list.hpp>
-#endif // ENABLE_VISUALIZE
+#include <eigen3/Eigen/Core>
+#include <map>
+#include <set>
+
 
 namespace NuTo
 {
+#ifdef ENABLE_VISUALIZE
+class VisualizeComponent;
+class VisualizeUnstructuredGrid;
+#endif // ENABLE_VISUALIZE
+
+template <class T, int rows> class FullVector;
+
+namespace Node
+{
+    enum class eDof : unsigned char;
+}// namespace Node
+
 //! @author Thomas Titscher, BAM
 //! @date July 2016
 //! @brief ... standard abstract class for all nodes
@@ -117,11 +127,7 @@ public:
 
     //! @brief returns the global dof number for a specific dof type with only one dof (scalar dof)
     //! @param rDof ... specific dof type
-    int GetDof(Node::eDof rDof) const
-    {
-        assert(GetNum(rDof) == 1);
-        return GetDof(rDof, 0);
-    }
+    int GetDof(Node::eDof rDof) const;
 
     //! @brief returns the dof values for a specific dof
     //! @param rDof ... specific dof type
@@ -216,10 +222,7 @@ public:
     {
     }
 
-    bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2)
-    {
-        return nodePtr1->Get(Node::COORDINATES)(0) < nodePtr2->Get(Node::COORDINATES)(0);
-    }
+    bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2);
 };
 
 class greater_XCoordinate2D : public std::binary_function<NodeBase*, NodeBase* , bool>
@@ -229,10 +232,7 @@ public:
     {
     }
 
-    bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2)
-    {
-        return nodePtr1->Get(Node::COORDINATES)(0) > nodePtr2->Get(Node::COORDINATES)(0);
-    }
+    bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2);
 };
 
 class less_YCoordinate2D : public std::binary_function<NodeBase*, NodeBase* , bool>
@@ -242,10 +242,7 @@ public:
     {
     }
 
-    bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2)
-    {
-        return nodePtr1->Get(Node::COORDINATES)(1) < nodePtr2->Get(Node::COORDINATES)(1);
-    }
+    bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2);
 };
 
 class greater_YCoordinate2D : public std::binary_function<NodeBase*, NodeBase* , bool>
@@ -255,10 +252,7 @@ public:
     {
     }
 
-    bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2)
-    {
-        return nodePtr1->Get(Node::COORDINATES)(1) > nodePtr2->Get(Node::COORDINATES)(1);
-    }
+    bool operator()(NodeBase* nodePtr1, NodeBase* nodePtr2);
 };
 
 }//namespace NuTo

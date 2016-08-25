@@ -5,6 +5,10 @@
  *      Author: ttitsche
  */
 
+#include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/elements/ElementShapeFunctions.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation2DQuad.h"
 
 NuTo::Interpolation2DQuad::Interpolation2DQuad(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
@@ -13,20 +17,20 @@ NuTo::Interpolation2DQuad::Interpolation2DQuad(NuTo::Node::eDof rDofType, NuTo::
     Initialize();
 }
 
-NuTo::IntegrationType::eIntegrationType NuTo::Interpolation2DQuad::GetStandardIntegrationType() const
+NuTo::eIntegrationType NuTo::Interpolation2DQuad::GetStandardIntegrationType() const
 {
     switch (mTypeOrder)
     {
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT1:
-        return NuTo::IntegrationType::IntegrationType2D4NGauss4Ip;
+        return NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
-        return NuTo::IntegrationType::IntegrationType2D4NGauss4Ip;
+        return NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip;
     case NuTo::Interpolation::eTypeOrder::LOBATTO2:
-        return NuTo::IntegrationType::IntegrationType2D4NLobatto9Ip;
+        return NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip;
     case NuTo::Interpolation::eTypeOrder::LOBATTO3:
-        return NuTo::IntegrationType::IntegrationType2D4NLobatto16Ip;
+        return NuTo::eIntegrationType::IntegrationType2D4NLobatto16Ip;
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
-        return NuTo::IntegrationType::IntegrationType2D4NLobatto25Ip;
+        return NuTo::eIntegrationType::IntegrationType2D4NLobatto25Ip;
 
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");

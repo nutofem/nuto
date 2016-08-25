@@ -5,8 +5,7 @@
  *      Author: ttitsche
  */
 
-#ifndef ELEMENT1D_H_
-#define ELEMENT1D_H_
+#pragma once
 
 #include "nuto/mechanics/elements/ElementBase.h"
 
@@ -348,4 +347,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::Element1D)
 #endif // ENABLE_SERIALIZATION
 
 
-#endif /* ELEMENT1D_H_ */

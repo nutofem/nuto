@@ -36,6 +36,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss2x2x2Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NLobatto.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 
 //! @brief ... Info routine that prints general information about the allocated integration types
 //! an integration type is only allocated if required (from created elements)
@@ -52,9 +53,9 @@ void NuTo::StructureBase::IntegrationTypeInfo(int rVerboseLevel) const
 //! @brief ... Returns a pointer to an integration type
 //! if the integration type does not exist, the integration type is created
 //! @param identIntegrationType Identifier for an integration type
-NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType(NuTo::IntegrationType::eIntegrationType rEnumIntegrationType)
+NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType(NuTo::eIntegrationType rEnumIntegrationType)
 {
-    boost::ptr_map<std::string, IntegrationTypeBase>::iterator it = mIntegrationTypeMap.find(mMappingIntEnum2String[rEnumIntegrationType]);
+    boost::ptr_map<std::string, IntegrationTypeBase>::iterator it = mIntegrationTypeMap.find(mMappingIntEnum2String[static_cast<int>(rEnumIntegrationType)]);
     if (it != mIntegrationTypeMap.end())
         return it->second;
     else
@@ -63,108 +64,108 @@ NuTo::IntegrationTypeBase* NuTo::StructureBase::GetPtrIntegrationType(NuTo::Inte
         NuTo::IntegrationTypeBase *ptrIntegrationType;
         switch (rEnumIntegrationType)
         {
-        case NuTo::IntegrationType::IntegrationType0DBoundary:
+        case NuTo::eIntegrationType::IntegrationType0DBoundary:
             ptrIntegrationType = new NuTo::IntegrationType0DBoundary();
             break;
-        case NuTo::IntegrationType::IntegrationType1D2NGauss1Ip:
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NGauss1Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType1D2NGauss2Ip:
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NGauss2Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType1D2NBoundaryGauss3Ip:
+        case NuTo::eIntegrationType::IntegrationType1D2NBoundaryGauss3Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NBoundaryGauss3Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType1D2NGauss3Ip:
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss3Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NGauss3Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType1D2NGauss4Ip:
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss4Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NGauss4Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType1D2NGauss5Ip:
+        case NuTo::eIntegrationType::IntegrationType1D2NGauss5Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NGauss5Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType1D2NLobatto3Ip:
+        case NuTo::eIntegrationType::IntegrationType1D2NLobatto3Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto3Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType1D2NLobatto4Ip:
+        case NuTo::eIntegrationType::IntegrationType1D2NLobatto4Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto4Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType1D2NLobatto5Ip:
+        case NuTo::eIntegrationType::IntegrationType1D2NLobatto5Ip:
             ptrIntegrationType = new NuTo::IntegrationType1D2NLobatto5Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType2D3NGauss13Ip:
+        case NuTo::eIntegrationType::IntegrationType2D3NGauss13Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D3NGauss13Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType2D3NGauss16Ip:
+        case NuTo::eIntegrationType::IntegrationType2D3NGauss16Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D3NGauss16Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType2D3NGauss1Ip:
+        case NuTo::eIntegrationType::IntegrationType2D3NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D3NGauss1Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType2D3NGauss3Ip:
+        case NuTo::eIntegrationType::IntegrationType2D3NGauss3Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D3NGauss3Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType2D3NGauss4Ip:
+        case NuTo::eIntegrationType::IntegrationType2D3NGauss4Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D3NGauss4Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType2D3NGauss6Ip:
+        case NuTo::eIntegrationType::IntegrationType2D3NGauss6Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D3NGauss6Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType2D3NGauss12Ip:
+        case NuTo::eIntegrationType::IntegrationType2D3NGauss12Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D3NGauss12Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType2D3NGauss12IpDetail:
+        case NuTo::eIntegrationType::IntegrationType2D3NGauss12IpDetail:
             ptrIntegrationType = new NuTo::IntegrationType2D3NGauss12IpDetail();
             break;
-        case NuTo::IntegrationType::IntegrationType2D4NGauss1Ip:
+        case NuTo::eIntegrationType::IntegrationType2D4NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D4NGauss1Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType2D4NGauss4Ip:
+        case NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D4NGauss4Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType2D4NGauss9Ip:
+        case NuTo::eIntegrationType::IntegrationType2D4NGauss9Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D4NGauss9Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType2D4NLobatto9Ip:
+        case NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D4NLobatto9Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType2D4NLobatto16Ip:
+        case NuTo::eIntegrationType::IntegrationType2D4NLobatto16Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D4NLobatto16Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType2D4NLobatto25Ip:
+        case NuTo::eIntegrationType::IntegrationType2D4NLobatto25Ip:
             ptrIntegrationType = new NuTo::IntegrationType2D4NLobatto25Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType3D4NGauss1Ip:
+        case NuTo::eIntegrationType::IntegrationType3D4NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType3D4NGauss1Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType3D4NGauss4Ip:
+        case NuTo::eIntegrationType::IntegrationType3D4NGauss4Ip:
             ptrIntegrationType = new NuTo::IntegrationType3D4NGauss4Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType3D8NGauss1Ip:
+        case NuTo::eIntegrationType::IntegrationType3D8NGauss1Ip:
             ptrIntegrationType = new NuTo::IntegrationType3D8NGauss1Ip();
             break;
-        case NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip:
+        case NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip:
             ptrIntegrationType = new NuTo::IntegrationType3D8NGauss2x2x2Ip();
         break;
-        case  NuTo::IntegrationType::IntegrationType3D8NLobatto3x3x3Ip:
+        case  NuTo::eIntegrationType::IntegrationType3D8NLobatto3x3x3Ip:
             ptrIntegrationType = new NuTo::IntegrationType3D8NLobatto<3>();
         break;
-        case  NuTo::IntegrationType::IntegrationType3D8NLobatto4x4x4Ip:
+        case  NuTo::eIntegrationType::IntegrationType3D8NLobatto4x4x4Ip:
             ptrIntegrationType = new NuTo::IntegrationType3D8NLobatto<4>();
         break;
-        case  NuTo::IntegrationType::IntegrationType3D8NLobatto5x5x5Ip:
+        case  NuTo::eIntegrationType::IntegrationType3D8NLobatto5x5x5Ip:
             ptrIntegrationType = new NuTo::IntegrationType3D8NLobatto<5>();
         break;
         default:
             throw MechanicsException("[NuTo::StructureBase::GetPtrIntegrationType] Enum of integration type does not exist.");
         }
         // insert new integration type with mMappingIntEnum2String[rEnumIntegrationType] being the string identifier
-        if (mMappingIntEnum2String[rEnumIntegrationType].length() == 0)
+        if (mMappingIntEnum2String[static_cast<int>(rEnumIntegrationType)].length() == 0)
         {
             throw MechanicsException("[NuTo::StructureBase::GetPtrIntegrationType] Enum to String mapping of integration type does not exist, check constructor of StructureBase.");
         }
-        it = mIntegrationTypeMap.insert(mMappingIntEnum2String[rEnumIntegrationType], ptrIntegrationType).first;
+        it = mIntegrationTypeMap.insert(mMappingIntEnum2String[static_cast<int>(rEnumIntegrationType)], ptrIntegrationType).first;
         return it->second;
     }
 }
@@ -187,7 +188,7 @@ boost    ::ptr_map<std::string, IntegrationTypeBase>::iterator it = mIntegration
         {
             if (mMappingIntEnum2String[theIntegrationType] == IntegrationTypeString)
             {
-                return GetPtrIntegrationType((NuTo::IntegrationType::eIntegrationType) theIntegrationType);
+                return GetPtrIntegrationType((NuTo::eIntegrationType) theIntegrationType);
             }
         }
 

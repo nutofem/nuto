@@ -1,11 +1,10 @@
-#ifndef CONJUGATEGRADIENT_NONLINEAR_H
-#define CONJUGATEGRADIENT_NONLINEAR_H
+#pragma once
+
+
+// parent
+#include "nuto/optimize/Optimizer.h"
 
 #include <vector>
-
-#include "nuto/optimize/Optimizer.h"
-#include "nuto/optimize/OptimizeException.h"
-#include "nuto/optimize/CallbackHandler.h"
 
 namespace NuTo
 {
@@ -111,4 +110,3 @@ public:
     int    mShowSteps;
 };
 } //namespace NuTo
-#endif // CONJUGATEGRADIENT_NONLINEAR_H

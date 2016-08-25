@@ -7,7 +7,9 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataGradientDamage.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
 
 //! @brief constructor
 NuTo::ConstitutiveStaticDataGradientDamage::ConstitutiveStaticDataGradientDamage() :
@@ -61,11 +63,11 @@ const NuTo::ConstitutiveStaticDataGradientDamage* NuTo::ConstitutiveStaticDataGr
 //! @brief check, if the static data is compatible with a given element and a given constitutive model
 bool NuTo::ConstitutiveStaticDataGradientDamage::CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType rConstitutiveType, NuTo::Element::eElementType rElementType) const
 {
-    if (rConstitutiveType == NuTo::Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS)
+    if (rConstitutiveType == NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS)
     {
-        if (rElementType == NuTo::Element::CONTINUUMELEMENT)
+        if (rElementType == NuTo::Element::eElementType::CONTINUUMELEMENT)
             return true;
-        if (rElementType == NuTo::Element::CONTINUUMBOUNDARYELEMENT)
+        if (rElementType == NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENT)
             return true;
     }
     return false;

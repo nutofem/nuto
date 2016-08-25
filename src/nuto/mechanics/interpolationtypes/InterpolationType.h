@@ -11,19 +11,28 @@
 #include <boost/serialization/access.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
-#include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
 
-#include <iostream>
+#include <eigen3/Eigen/Dense>
 #include <boost/ptr_container/ptr_map.hpp>
 #include <set>
 
 namespace NuTo
 {
 class StructureBase;
+class IntegrationTypeBase;
 class InterpolationBase;
+enum class eIntegrationType;
+
+namespace Interpolation
+{
+    enum class eShapeType;
+    enum class eTypeOrder;
+}// namespace Interpolation
+
+namespace Node
+{
+    enum class eDof : unsigned char;
+}// namespace Node
 
 class InterpolationType
 {
@@ -54,7 +63,7 @@ public:
 
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type
-    IntegrationType::eIntegrationType GetStandardIntegrationType() const;
+    eIntegrationType GetStandardIntegrationType() const;
 
     //! @brief returns the shape type
     const Interpolation::eShapeType GetShapeType() const;

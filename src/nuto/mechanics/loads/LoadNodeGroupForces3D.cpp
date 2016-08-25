@@ -2,6 +2,7 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/loads/LoadNodeGroupForces3D.h"
 #include "nuto/math/FullMatrix.h"
@@ -41,7 +42,7 @@ void NuTo::LoadNodeGroupForces3D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo:
         {
             for (int dofCount = 0; dofCount < 3; dofCount++)
             {
-                int dof = itNode->second->GetDof(Node::DISPLACEMENTS, dofCount);
+                int dof = itNode->second->GetDof(Node::eDof::DISPLACEMENTS, dofCount);
                 assert(dof >= 0);
                 if (dof < rActiceDofsLoadVector.GetNumRows())
                 {

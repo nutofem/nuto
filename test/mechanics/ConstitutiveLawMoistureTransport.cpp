@@ -1,6 +1,7 @@
 #include "nuto/base/Timer.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataMoistureTransport.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include "nuto/mechanics/tools/MeshGenerator.h"
 
@@ -46,9 +47,9 @@ int main()
     try
     {
         std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> dofIPTMap;
-        dofIPTMap[NuTo::Node::eDof::COORDINATES]            = NuTo::Interpolation::EQUIDISTANT1;
-        dofIPTMap[NuTo::Node::eDof::RELATIVEHUMIDITY]       = NuTo::Interpolation::EQUIDISTANT1;
-        dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::EQUIDISTANT1;
+        dofIPTMap[NuTo::Node::eDof::COORDINATES]            = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
+        dofIPTMap[NuTo::Node::eDof::RELATIVEHUMIDITY]       = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
+        dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
 
         // Constitutive output tests
 
@@ -92,18 +93,18 @@ int main()
         // Simulation Tests --- Interpolation type
 
 
-        dofIPTMap[NuTo::Node::eDof::RELATIVEHUMIDITY]       = NuTo::Interpolation::EQUIDISTANT2;
-        dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::EQUIDISTANT1;
+        dofIPTMap[NuTo::Node::eDof::RELATIVEHUMIDITY]       = NuTo::Interpolation::eTypeOrder::EQUIDISTANT2;
+        dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
         RunSimulationTest_AllDiemnsions(dofIPTMap,2);
 
 
-        dofIPTMap[NuTo::Node::eDof::RELATIVEHUMIDITY]       = NuTo::Interpolation::EQUIDISTANT1;
-        dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::EQUIDISTANT2;
+        dofIPTMap[NuTo::Node::eDof::RELATIVEHUMIDITY]       = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
+        dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::eTypeOrder::EQUIDISTANT2;
         RunSimulationTest_AllDiemnsions(dofIPTMap,2);
 
 
-        dofIPTMap[NuTo::Node::eDof::RELATIVEHUMIDITY]       = NuTo::Interpolation::EQUIDISTANT2;
-        dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::EQUIDISTANT2;
+        dofIPTMap[NuTo::Node::eDof::RELATIVEHUMIDITY]       = NuTo::Interpolation::eTypeOrder::EQUIDISTANT2;
+        dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::eTypeOrder::EQUIDISTANT2;
         RunSimulationTest_AllDiemnsions(dofIPTMap,2);
 
     }

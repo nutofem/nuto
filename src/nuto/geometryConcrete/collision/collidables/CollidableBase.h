@@ -5,22 +5,20 @@
  *      Author: ttitsche
  */
 
-#ifndef COLLIDABLEBASE_H_
-#define COLLIDABLEBASE_H_
+#pragma once
+
 
 #include <iostream>
-#include <list>
-
-#include "nuto/math/FullVector.h"
-#include "nuto/math/FullMatrix.h"
-
-#include "nuto/geometryConcrete/collision/Event.h"
-#include "nuto/geometryConcrete/collision/SubBox.h"
+#include <vector>
 
 namespace NuTo
 {
 class CollidableParticleSphere;
 class CollidableWallBase;
+class SubBox;
+class Event;
+
+typedef std::vector<Event*> LocalEvents;
 
 //! @brief ... Base class for all collidables
 class CollidableBase
@@ -86,7 +84,7 @@ public:
 
 	//! @brief ... returns all old events, that need to be deleted
 	//! @param rEventsToDelete ... return argument
-	virtual void GetLocalEventsToDelete(Event::LocalEvents& rEventsToDelete) const = 0;
+    virtual void GetLocalEventsToDelete(LocalEvents& rEventsToDelete) const = 0;
 
 	//! @brief ... prints the local event list
 	void PrintLocalEvents() const;
@@ -117,10 +115,10 @@ protected:
 	//! @brief ... local event list
 	//! adding single event: through EventBase::AddLocalEvents()
 	//! remove single event: through EventBase::~EventBase()
-	//! clear everything: on collision
-	Event::LocalEvents mLocalEvents;
+    //! clear everything: on collision
+
+    LocalEvents mLocalEvents;
 
 };
 
 } /* namespace NuTo */
-#endif /* COLLIDABLEBASE_H_ */

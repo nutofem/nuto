@@ -1,11 +1,15 @@
 // $Id$
 
-#ifndef VISUALIZEDATABASE_H_
-#define VISUALIZEDATABASE_H_
+#pragma once
+
 #include <iostream>
-#include "nuto/visualize/VisualizeDataType.h"
+
 namespace NuTo
 {
+
+
+enum class eVisualizeDataType;
+
 //! @brief ...
 //! @author Stefan Eckardt, ISM
 //! @date 23.11.2009
@@ -13,9 +17,10 @@ class VisualizeDataBase
 {
 public:
     virtual ~VisualizeDataBase(){};
+
     //! @brief ... get data type
     //! @return ... visualize data type
-    virtual NuTo::VisualizeDataType::eDataType GetDataType() const = 0;
+    virtual NuTo::eVisualizeDataType GetDataType() const = 0;
 
     //! @brief ... get number of data
     //! @return ... number of data
@@ -43,4 +48,3 @@ private:
 
 }
 
-#endif // VISUALIZEDATABASE_H_

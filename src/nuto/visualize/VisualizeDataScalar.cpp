@@ -1,6 +1,8 @@
 // $Id$
 
 #include "nuto/visualize/VisualizeDataScalar.h"
+#include "nuto/visualize/VisualizeDataType.h"
+
 
 // constructor
 NuTo::VisualizeDataScalar::VisualizeDataScalar()
@@ -9,9 +11,9 @@ NuTo::VisualizeDataScalar::VisualizeDataScalar()
 }
 
 // get data type
-NuTo::VisualizeDataType::eDataType NuTo::VisualizeDataScalar::GetDataType() const
+NuTo::eVisualizeDataType NuTo::VisualizeDataScalar::GetDataType() const
 {
-    return NuTo::VisualizeDataType::SCALAR;
+    return NuTo::eVisualizeDataType::SCALAR;
 }
 
 // get number of data

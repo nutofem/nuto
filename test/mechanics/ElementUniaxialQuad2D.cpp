@@ -44,8 +44,8 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
     }
 
     int myInterpolationType = myStructure.InterpolationTypeCreate("Quad2D");
-    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::DISPLACEMENTS, rTypeOrder);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, rTypeOrder);
 
     //create elements
     for (int countY=0; countY<numElementsY; countY++)
@@ -82,11 +82,11 @@ int main(int argc, char* argv[])
 
     try
     {
-        Run(NuTo::Interpolation::EQUIDISTANT1);
-        Run(NuTo::Interpolation::EQUIDISTANT2);
-        Run(NuTo::Interpolation::LOBATTO2);
-        Run(NuTo::Interpolation::LOBATTO3);
-        Run(NuTo::Interpolation::LOBATTO4);
+        Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+        Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+        Run(NuTo::Interpolation::eTypeOrder::LOBATTO2);
+        Run(NuTo::Interpolation::eTypeOrder::LOBATTO3);
+        Run(NuTo::Interpolation::eTypeOrder::LOBATTO4);
     }
     catch (NuTo::Exception& e)
     {

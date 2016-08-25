@@ -1,24 +1,33 @@
-#ifndef INTEGRATIONTYPEBASE_H
-#define INTEGRATIONTYPEBASE_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
+#include <iostream>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include <eigen3/Eigen/Dense>
-
-#ifdef ENABLE_VISUALIZE
-#include "nuto/visualize/CellBase.h"
-#endif // ENABLE_VISUALIZE
-
 #include  <vector>
-#include <iostream>
+
+
+
 namespace NuTo
 {
+#ifdef ENABLE_VISUALIZE
+class CellBase;
+enum class eCellTypes;
+#endif //ENABLE_VISUALIZE
+
+
 class IntegrationPointBase;
+
+namespace Element
+{
+    enum class eElementType;
+}// namespace Element
+
+
 //! @author Jörg F. Unger, ISM
 //! @date November 2009
 //! @brief ... standard abstract class for all integration types
@@ -118,7 +127,7 @@ public:
         unsigned int& NumVisualizationPoints,
         std::vector<double>& VisualizationPointLocalCoordinates,
         unsigned int& NumVisualizationCells,
-        std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+        std::vector<NuTo::eCellTypes>& VisualizationCellType,
         std::vector<unsigned int>& VisualizationCellsIncidence,
         std::vector<unsigned int>& VisualizationCellsIP) const = 0;
 #endif // ENABLE_VISUALIZE
@@ -131,4 +140,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationTypeBase)
 #endif // ENABLE_SERIALIZATION
 
 
-#endif //INTEGRATIONTYPEBASE_H

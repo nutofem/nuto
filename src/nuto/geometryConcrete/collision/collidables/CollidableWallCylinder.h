@@ -5,8 +5,7 @@
  *      Author: ttitsche
  */
 
-#ifndef COLLIDABLEWALLCYLINDER_H_
-#define COLLIDABLEWALLCYLINDER_H_
+#pragma once
 
 #include "nuto/geometryConcrete/collision/collidables/CollidableWallBase.h"
 
@@ -64,4 +63,3 @@ protected:
 };
 
 } /* namespace NuTo */
-#endif /* COLLIDABLEWALLCYLINDER_H_ */

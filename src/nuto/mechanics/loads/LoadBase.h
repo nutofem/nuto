@@ -1,6 +1,5 @@
 // $Id$
-#ifndef LOADBASE_H
-#define LOADBASE_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -14,13 +13,13 @@
 #include <map>
 #endif  // ENABLE_SERIALIZATION
 
-#include "nuto/math/FullMatrix_Def.h"
-#include "nuto/math/FullVector_Def.h"
+#include <eigen3/Eigen/Core>
 #include "nuto/mechanics/MechanicsException.h"
 
 namespace NuTo
 {
 template<class T> class SparseMatrixCSRGeneral;
+template <class T, int rows> class FullVector;
 class NodeBase;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -87,6 +86,4 @@ protected:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::LoadBase)
 #endif // ENABLE_SERIALIZATION
-
-#endif //LOADBASE_H
 

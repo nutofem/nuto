@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include "nuto/mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
 #include "nuto/mechanics/structures/StructureOutputBase.h"
 
@@ -42,7 +43,7 @@ public:
     StructureOutputBlockMatrix(      StructureOutputBlockMatrix&& rOther) = default;
 
     //! @brief destructor
-    ~StructureOutputBlockMatrix() = default;
+    ~StructureOutputBlockMatrix();
 
 
 

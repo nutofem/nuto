@@ -1,16 +1,18 @@
 // $Id$ 
-#ifndef VISUALIZECOMPONENTBASE_H_
-#define VISUALIZECOMPONENTBASE_H_
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/visualize/VisualizeBase.h"
+#include <string>
 
 namespace NuTo
 {
+
+enum class eVisualizeWhat;
+
 //! @author Joerg F. Unger
 //! @date Apr 27, 2010
 //! @brief a base class to store additional information about the data to be plotted (e.g. the element and ip for nonlocal weights or the stress/strain/displacement component, if not all should be exported to the file
@@ -24,7 +26,7 @@ public:
 
     virtual ~VisualizeComponentBase(){};
 
-    virtual NuTo::VisualizeBase::eVisualizeWhat GetComponentEnum()const=0;
+    virtual NuTo::eVisualizeWhat GetComponentEnum()const=0;
 
     virtual std::string GetComponentName()const=0;
 
@@ -48,4 +50,3 @@ protected:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::VisualizeComponentBase)
 #endif // ENABLE_SERIALIZATION
-#endif /* VISUALIZECOMPONENTBASE_H_ */

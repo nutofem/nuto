@@ -1,9 +1,14 @@
 #pragma once
 
 #include "nuto/mechanics/dofSubMatrixStorage/BlockStorageBase.h"
+#include "nuto/mechanics/nodes/DofHash.h"
+
+#include <ostream>
+#include <unordered_map>
 
 namespace NuTo
 {
+
 
 
 //! @author Volker Hirthammer

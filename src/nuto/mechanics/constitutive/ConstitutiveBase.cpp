@@ -1,5 +1,6 @@
 // $Id$
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/math/FullMatrix.h"
 #include <iostream>
 
@@ -158,7 +159,12 @@ double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double rRelativ
 }
 
 
-void NuTo::ConstitutiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw, Constitutive::Input::eInput rModiesInput)
+void NuTo::ConstitutiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw, Constitutive::eInput rModiesInput)
+{
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"The constitutive relationship does not have this functionality.");
+}
+
+void NuTo::ConstitutiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw)
 {
     throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"The constitutive relationship does not have this functionality.");
 }
@@ -166,7 +172,7 @@ void NuTo::ConstitutiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase *rConstit
 
 //! @brief ... checks if a constitutive law has an specific output
 //! @return ... true/false
-bool NuTo::ConstitutiveBase::CheckOutputTypeCompatibility(Constitutive::Output::eOutput rOutputEnum) const
+bool NuTo::ConstitutiveBase::CheckOutputTypeCompatibility(Constitutive::eOutput rOutputEnum) const
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::CheckOutputTypeCompatibility] Function not implemented for this constitutive law.");
 }

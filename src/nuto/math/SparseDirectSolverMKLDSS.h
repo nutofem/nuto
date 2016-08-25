@@ -1,9 +1,7 @@
 // $Id$
 
-#ifndef SPARSE_DIRECT_SOLVER_MKLDSS_H
-#define SPARSE_DIRECT_SOLVER_MKLDSS_H
+#pragma once
 
-#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/math/SparseDirectSolver.h"
 
 namespace NuTo
@@ -56,4 +54,3 @@ protected:
 #endif // HAVE_MKL_DSS
 };
 }
-#endif // SPARSE_DIRECT_SOLVER_MKLDSS_H

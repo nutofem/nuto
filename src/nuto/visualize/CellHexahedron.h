@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef CELLHEXAHEDRON_H_
-#define CELLHEXAHEDRON_H_
+#pragma once
 
 #include "nuto/visualize/CellBase.h"
 
@@ -37,4 +36,3 @@ private:
 
 }
 
-#endif // CELLHEXAHEDRON_H_

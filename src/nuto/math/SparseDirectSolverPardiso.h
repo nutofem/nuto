@@ -1,8 +1,7 @@
-#ifndef SPARSE_DIRECT_SOLVER_PARDISO_H
-#define SPARSE_DIRECT_SOLVER_PARDISO_H
+#pragma once
 
-#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/math/SparseDirectSolver.h"
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
@@ -172,4 +171,3 @@ protected:
     int mVerboseLevel;
 };
 }
-#endif // SPARSE_DIRECT_SOLVER_PARDISO_H

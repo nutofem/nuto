@@ -1,6 +1,4 @@
-#ifndef TIMEDEPENDENCYBASE_H
-#define TIMEDEPENDENCYBASE_H
-
+#pragma once
 
 namespace NuTo
 {
@@ -20,4 +18,3 @@ public:
 };
 } // namespace NuTo
 
-#endif // TIMEDEPENDENCYBASE_H

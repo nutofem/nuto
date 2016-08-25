@@ -1,5 +1,4 @@
-#ifndef NUTO_EXCEPTION_H
-#define NUTO_EXCEPTION_H
+#pragma once
 
 #ifdef HAVE_BOOST
 #include <boost/serialization/vector.hpp>
@@ -90,4 +89,3 @@ public:
 };
 } //namespace NuTo
 
-#endif  // NUTO_EXCEPTION_H

@@ -1,6 +1,5 @@
 // $Id$ 
-#ifndef ELEMENTDATANONLOCALBASE_H_
-#define ELEMENTDATANONLOCALBASE_H_
+#pragma once
 
 #include "nuto/mechanics/elements/ElementDataBase.h"
 
@@ -94,4 +93,3 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataNonlocalBase)
 #endif
 
-#endif /* ELEMENTDATANONLOCALBASE_H_ */

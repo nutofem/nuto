@@ -1,7 +1,10 @@
 #include <iostream>
 #include "nuto/math/FullVector.h"
+#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
+#include "nuto/mechanics/dofSubMatrixStorage/DofStatus.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -19,6 +22,22 @@ NuTo::BlockFullVector<T>::BlockFullVector(const DofStatus& rDofStatus) : BlockSt
     AllocateSubvectors();
 
 }
+
+template <typename T>
+NuTo::BlockFullVector<T>::~BlockFullVector()
+{}
+
+template <typename T>
+NuTo::BlockFullVector<T>::BlockFullVector(const NuTo::BlockFullVector<T>& rOther)
+    : BlockStorageBase(rOther.mDofStatus),
+      mData(rOther.mData)
+{}
+
+template <typename T>
+NuTo::BlockFullVector<T>::BlockFullVector(NuTo::BlockFullVector<T>&& rOther)
+    : BlockStorageBase(rOther.mDofStatus),
+      mData(std::move(rOther.mData))
+{}
 
 template <typename T>
 NuTo::BlockFullVector<T>::BlockFullVector(FullVector<T, Eigen::Dynamic> rData, const DofStatus& rDofStatus, bool rAreActiveDofValues) : BlockStorageBase(rDofStatus)
@@ -48,6 +67,13 @@ NuTo::BlockFullVector<T>& NuTo::BlockFullVector<T>::operator=(const BlockFullVec
 {
     for (auto dof : mDofStatus.GetActiveDofTypes())
         mData[dof] = rOther[dof];
+    return *this;
+}
+
+template<typename T>
+NuTo::BlockFullVector<T>& NuTo::BlockFullVector<T>::operator=(NuTo::BlockFullVector<T> &&rOther)
+{
+    mData = std::move(rOther.mData);
     return *this;
 }
 
@@ -115,6 +141,12 @@ NuTo::FullVector<T, Eigen::Dynamic> NuTo::BlockFullVector<T>::Export() const
         blockStartIndex += numRows;
     }
     return result;
+}
+
+template<typename T>
+NuTo::FullVector<T, Eigen::Dynamic> NuTo::BlockFullVector<T>::Get(std::string rDofRow) const
+{
+    return (*this)[Node::DofToEnum(rDofRow)];
 }
 
 template<typename T>

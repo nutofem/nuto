@@ -3,6 +3,7 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeDisplacements3D.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
@@ -47,14 +48,14 @@ void NuTo::ConstraintLinearNodeDisplacements3D::SetRHS(double rRHS)
 void NuTo::ConstraintLinearNodeDisplacements3D::AddToConstraintMatrix(int& curConstraintEquation,
         NuTo::SparseMatrix<double>& rConstraintMatrix)const
 {
-    if (mNode->GetNum(Node::DISPLACEMENTS)!=3)
+    if (mNode->GetNum(Node::eDof::DISPLACEMENTS)!=3)
         throw MechanicsException("[NuTo::ConstraintLinearNodeDisplacements3D::ConstraintBase] Node does not have displacements or has more than one displacement component.");
     if (std::abs(mDirection[0])>1e-18)
-        rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDof(Node::DISPLACEMENTS, 0),mDirection[0]);
+        rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDof(Node::eDof::DISPLACEMENTS, 0),mDirection[0]);
     if (std::abs(mDirection[1])>1e-18)
-        rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDof(Node::DISPLACEMENTS, 1),mDirection[1]);
+        rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDof(Node::eDof::DISPLACEMENTS, 1),mDirection[1]);
     if (std::abs(mDirection[2])>1e-18)
-        rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDof(Node::DISPLACEMENTS, 2),mDirection[2]);
+        rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDof(Node::eDof::DISPLACEMENTS, 2),mDirection[2]);
 
     curConstraintEquation++;
 }
@@ -65,12 +66,17 @@ void NuTo::ConstraintLinearNodeDisplacements3D::AddToConstraintMatrix(int& curCo
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
 void NuTo::ConstraintLinearNodeDisplacements3D::GetRHS(int& curConstraintEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const
 {
-    if (mNode->GetNum(Node::DISPLACEMENTS)!=3)
+    if (mNode->GetNum(Node::eDof::DISPLACEMENTS)!=3)
         throw MechanicsException("[NuTo::ConstraintLinearNodeDisplacements3D::ConstraintBase] Node does not have displacements or has more than one displacement component.");
 
     rRHS(curConstraintEquation) = mRHS;
 
     curConstraintEquation++;
+}
+
+NuTo::Node::eDof NuTo::ConstraintLinearNodeDisplacements3D::GetDofType() const
+{
+    return Node::eDof::DISPLACEMENTS;
 }
 
 #ifdef ENABLE_SERIALIZATION

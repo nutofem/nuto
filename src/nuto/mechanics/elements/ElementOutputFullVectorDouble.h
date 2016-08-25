@@ -1,8 +1,7 @@
 // $Id $
-#ifndef ELEMENT_OUTPUT_FULLVector_DOUBLE_H_
-#define ELEMENT_OUTPUT_FULLVector_DOUBLE_H_
+#pragma once
 
-#include "nuto/math/FullMatrix.h"
+#include "nuto/math/FullVector_Def.h"
 #include "nuto/mechanics/elements/ElementOutputBase.h"
 
 namespace NuTo
@@ -44,4 +43,3 @@ private:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::ElementOutputFullVectorDouble)
 #endif // ENABLE_SERIALIZATION
-#endif /* ELEMENT_OUTPUT_FULLVector_DOUBLE_H_ */

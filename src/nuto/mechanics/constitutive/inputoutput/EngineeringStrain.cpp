@@ -1,4 +1,5 @@
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
 
 template<int TDim>
 std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::EngineeringStrain<TDim>::clone()
@@ -77,7 +78,7 @@ namespace NuTo
 
 
 template<>
-NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<1>::As3D(double rNu, Section::eSectionType rSectionType) const
+NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<1>::As3D(double rNu, eSectionType rSectionType) const
 {
     EngineeringStrain<3> strain3D;
     double strain = (*this)[0];
@@ -91,13 +92,13 @@ NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<1>::As3D(double rNu, Section:
 }
 
 template<>
-NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<2>::As3D(double rNu, Section::eSectionType rSectionType) const
+NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<2>::As3D(double rNu, eSectionType rSectionType) const
 {
     EngineeringStrain<3> strain3D;
     const EngineeringStrain<2>& v = *this;
     switch (rSectionType)
     {
-    case Section::PLANE_STRAIN:
+    case eSectionType::PLANE_STRAIN:
         strain3D[0] = v[0];
         strain3D[1] = v[1];
         strain3D[2] = 0;
@@ -105,7 +106,7 @@ NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<2>::As3D(double rNu, Section:
         strain3D[4] = 0.;
         strain3D[5] = v[2];
         break;
-    case Section::PLANE_STRESS:
+    case eSectionType::PLANE_STRESS:
         strain3D[0] = v[0];
         strain3D[1] = v[1];
         strain3D[2] = rNu / (rNu - 1.) * (v[0] + v[1]);
@@ -118,11 +119,29 @@ NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<2>::As3D(double rNu, Section:
     }
     return strain3D;
 }
-template<>
 
-NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<3>::As3D(double rNu, Section::eSectionType rSectionType) const
+template<>
+NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<3>::As3D(double rNu, eSectionType rSectionType) const
 {
     return *this;
+}
+
+template<>
+NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<1>::As3D(double rNu) const
+{
+    return As3D(rNu,eSectionType::VOLUME);
+}
+
+template<>
+NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<2>::As3D(double rNu) const
+{
+    return As3D(rNu,eSectionType::VOLUME);
+}
+
+template<>
+NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<3>::As3D(double rNu) const
+{
+    return As3D(rNu,eSectionType::VOLUME);
 }
 
 }  // namespace NuTo
@@ -136,9 +155,13 @@ template double NuTo::EngineeringStrain<3>::InvariantJ2() const;
 
 template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<3>::Deviatoric() const;
 
-template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<1>::As3D(double rNu, Section::eSectionType rSectionType) const;
-template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<2>::As3D(double rNu, Section::eSectionType rSectionType) const;
-template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<3>::As3D(double rNu, Section::eSectionType rSectionType) const;
+template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<1>::As3D(double rNu, eSectionType rSectionType) const;
+template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<2>::As3D(double rNu, eSectionType rSectionType) const;
+template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<3>::As3D(double rNu, eSectionType rSectionType) const;
+
+template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<1>::As3D(double rNu) const;
+template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<2>::As3D(double rNu) const;
+template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<3>::As3D(double rNu) const;
 
 template class NuTo::EngineeringStrain<1>;
 template class NuTo::EngineeringStrain<2>;

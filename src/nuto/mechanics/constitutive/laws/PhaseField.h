@@ -1,14 +1,12 @@
 #pragma once
 
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 
 #include "eigen3/Eigen/Eigenvalues"
 #include <functional>
 namespace NuTo
 {
-
+class ConstitutiveIOBase;
 class ConstitutiveStaticDataHistoryVariableScalar;
 template <int TDim> class EngineeringStrain;
 template <int TRows, int TCols> class ConstitutiveMatrix;
@@ -16,6 +14,11 @@ template <int TRows> class ConstitutiveVector;
 class ConstitutiveScalar;
 class ConstitutiveStaticDataBase;
 class Logger;
+
+namespace Constitutive
+{
+    enum class ePhaseFieldEnergyDecomposition;
+}// namespace Constitutive
 
 
 
@@ -63,7 +66,7 @@ public:
     //! \param[in] rIp Integration point ID
     //! \param[in] rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.)
     //! \param[out] rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate1D(ElementBase* rElement,
+    NuTo::eError Evaluate1D(ElementBase* rElement,
                                    int rIp,
                                    const ConstitutiveInputMap& rConstitutiveInput,
                                    const ConstitutiveOutputMap& rConstitutiveOutput) override;
@@ -73,7 +76,7 @@ public:
     //! \param[in] rIp Integration point ID
     //! \param[in] rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.)
     //! \param[out] rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate2D(ElementBase* rElement,
+    NuTo::eError Evaluate2D(ElementBase* rElement,
                                    int rIp,
                                    const ConstitutiveInputMap& rConstitutiveInput,
                                    const ConstitutiveOutputMap& rConstitutiveOutput) override;
@@ -88,7 +91,7 @@ public:
     //! \param[in] rIp Integration point ID
     //! \param[in] rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.)
     //! \param[out] rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate3D(ElementBase* rElement,
+    NuTo::eError Evaluate3D(ElementBase* rElement,
                                    int rIp,
                                    const ConstitutiveInputMap& rConstitutiveInput,
                                    const ConstitutiveOutputMap& rConstitutiveOutput) override;

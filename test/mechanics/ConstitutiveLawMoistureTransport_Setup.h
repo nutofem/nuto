@@ -1,9 +1,19 @@
 #pragma once
 
 #include "nuto/math/FullVector.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include "nuto/mechanics/tools/MeshGenerator.h"
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
+#include "nuto/mechanics/groups/GroupEnum.h"
+#endif
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -146,13 +156,13 @@ public:
         {
 
 
-            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::RELATIVEHUMIDITY) != 0)
+            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::eDof::RELATIVEHUMIDITY) != 0)
             {
-                mS.NodeGetNodePtr(i)->Set(NuTo::Node::RELATIVEHUMIDITY, 0, InitialRelativeHumidity) ;
+                mS.NodeGetNodePtr(i)->Set(NuTo::Node::eDof::RELATIVEHUMIDITY, 0, InitialRelativeHumidity) ;
             }
-            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::WATERVOLUMEFRACTION) != 0)
+            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::eDof::WATERVOLUMEFRACTION) != 0)
             {
-                mS.NodeGetNodePtr(i)->Set(NuTo::Node::WATERVOLUMEFRACTION, 0, InitialWaterVolumeFraction);
+                mS.NodeGetNodePtr(i)->Set(NuTo::Node::eDof::WATERVOLUMEFRACTION, 0, InitialWaterVolumeFraction);
             }
         }
     }
@@ -210,7 +220,7 @@ void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
     rS.GroupAddElementsFromNodes(eGrpBE, nGrpBE, false);
 
     std::set<NuTo::Node::eDof> controlNodeDofs;
-    controlNodeDofs.insert(NuTo::Node::RELATIVEHUMIDITY);
+    controlNodeDofs.insert(NuTo::Node::eDof::RELATIVEHUMIDITY);
 
     int boundaryControlNodeID = rS.NodeCreateDOFs(controlNodeDofs);
     NuTo::NodeBase* controlNodePtr = rS.NodeGetNodePtr(boundaryControlNodeID);
@@ -228,13 +238,13 @@ void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
         switch(TDim)
         {
         case 1:
-            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::IntegrationType::IntegrationType0DBoundary), elementPtr->GetIpDataType(0));
+            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType0DBoundary), elementPtr->GetIpDataType(0));
             break;
         case 2:
-            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::IntegrationType::IntegrationType1D2NGauss2Ip), elementPtr->GetIpDataType(0));
+            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip), elementPtr->GetIpDataType(0));
             break;
         case 3:
-            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::IntegrationType::IntegrationType2D4NGauss4Ip), elementPtr->GetIpDataType(0));
+            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip), elementPtr->GetIpDataType(0));
             break;
         default:
             throw NuTo::Exception(__PRETTY_FUNCTION__,"Invalid dimension");
@@ -259,13 +269,13 @@ void SetupIntegrationType(NuTo::Structure& rS, int rIPT)
     switch(TDim)
     {
     case 1:
-        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::IntegrationType::IntegrationType1D2NGauss2Ip,NuTo::IpData::STATICDATA);
+        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip,NuTo::IpData::eIpDataType::STATICDATA);
         break;
     case 2:
-        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::IntegrationType::IntegrationType2D4NGauss4Ip,NuTo::IpData::STATICDATA);
+        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip,NuTo::IpData::eIpDataType::STATICDATA);
         break;
     case 3:
-        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip,NuTo::IpData::STATICDATA);
+        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip,NuTo::IpData::eIpDataType::STATICDATA);
         break;
     default:
         throw NuTo::Exception(__PRETTY_FUNCTION__,"Invalid dimension");
@@ -481,10 +491,10 @@ inline void SetupTimeIntegration(NuTo::NewmarkDirect& rTI,
 inline void SetupVisualize(NuTo::Structure& rS)
 {
 #ifdef ENABLE_VISUALIZE
-        int visGrp = rS.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        int visGrp = rS.GroupCreate(NuTo::eGroupId::Elements);
         rS.GroupAddElementsTotal(visGrp);
 
-        rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::RELATIVE_HUMIDITY);
-        rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::WATER_VOLUME_FRACTION);
+        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::RELATIVE_HUMIDITY);
+        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION);
 #endif // ENABLE_VISUALIZE
 }

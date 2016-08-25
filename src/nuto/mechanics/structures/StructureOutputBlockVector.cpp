@@ -1,5 +1,9 @@
+
+#include "nuto/math/FullVector.h"
+#include "nuto/math/SparseMatrixCSRVector2.h"
 #include "nuto/mechanics/structures/StructureOutputBlockVector.h"
 #include "nuto/mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
+#include "nuto/mechanics/dofSubMatrixStorage/DofStatus.h"
 
 NuTo::StructureOutputBlockVector::StructureOutputBlockVector(const DofStatus& rDofStatus, bool rAutomaticResize)
     : StructureOutputBase(),
@@ -8,6 +12,18 @@ NuTo::StructureOutputBlockVector::StructureOutputBlockVector(const DofStatus& rD
 {
     if (rAutomaticResize)
         Resize(rDofStatus.GetNumActiveDofsMap(), rDofStatus.GetNumDependentDofsMap());
+}
+
+NuTo::StructureOutputBlockVector::~StructureOutputBlockVector()
+{
+
+}
+
+NuTo::StructureOutputBlockVector &NuTo::StructureOutputBlockVector::operator=(const NuTo::StructureOutputBlockVector &rOther)
+{
+    J = rOther.J;
+    K = rOther.K;
+    return *this;
 }
 
 

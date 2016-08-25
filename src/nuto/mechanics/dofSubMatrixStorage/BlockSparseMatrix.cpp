@@ -9,7 +9,7 @@
 #include "nuto/math/SparseMatrixCSRVector2General_Def.h"
 #include "nuto/math/SparseMatrixCSRVector2Symmetric_Def.h"
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
-
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 
 #include "nuto/math/SparseMatrixCSRSymmetric.h"
@@ -40,6 +40,16 @@ NuTo::BlockSparseMatrix::BlockSparseMatrix(const BlockSparseMatrix&  rOther) :
             mData[it.first] = std::unique_ptr<SparseMatrixCSRVector2<double>>(new SparseMatrixCSRVector2General<double>(it.second->AsSparseMatrixCSRVector2General()));
     }
 }
+
+NuTo::BlockSparseMatrix::BlockSparseMatrix(NuTo::BlockSparseMatrix &&rOther)
+    :BlockStorageBase(rOther.mDofStatus),
+     mCanBeSymmetric(rOther.mCanBeSymmetric)
+{
+    mData =std::move(rOther.mData);
+}
+
+NuTo::BlockSparseMatrix::~BlockSparseMatrix()
+{}
 
 void NuTo::BlockSparseMatrix::AllocateSubmatrices()
 {
@@ -78,6 +88,13 @@ NuTo::BlockSparseMatrix& NuTo::BlockSparseMatrix::operator =(const BlockSparseMa
     for (auto dofRow : activeDofTypes)
         for (auto dofCol : activeDofTypes)
             (*this)(dofRow, dofCol) = rOther(dofRow, dofCol);
+    return *this;
+}
+
+NuTo::BlockSparseMatrix& NuTo::BlockSparseMatrix::operator=(NuTo::BlockSparseMatrix &&rOther)
+{
+    mCanBeSymmetric = rOther.mCanBeSymmetric;
+    mData = std::move(rOther.mData);
     return *this;
 }
 
@@ -390,6 +407,15 @@ NuTo::SparseMatrixCSRGeneral<double> NuTo::BlockSparseMatrix::ExportToCSRGeneral
 NuTo::SparseMatrixCSRVector2Symmetric<double> NuTo::BlockSparseMatrix::ExportToCSRSymmetric() const
 {
     throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] not implemented.");
+}
+
+NuTo::SparseMatrixCSRVector2General<double> NuTo::BlockSparseMatrix::Get(std::string rDofRow, std::string rDofCol) const
+{
+    auto& ref = (*this)(Node::DofToEnum(rDofRow), Node::DofToEnum(rDofCol));
+    if (ref.IsSymmetric())
+        return ref.AsSparseMatrixCSRVector2Symmetric(); // calls appropriate Vector2General ctor
+    else
+        return ref.AsSparseMatrixCSRVector2General();
 }
 
 

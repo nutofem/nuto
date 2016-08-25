@@ -1,10 +1,9 @@
 // $Id$
 
-#ifndef SPARSE_MATRIX_CSR_H
-#define SPARSE_MATRIX_CSR_H
+#pragma once
+
 #include <vector>
 #include <string>
-#include <climits>
 #include <assert.h>
 #include <iostream>
 #include <fstream>  //for file acces
@@ -22,12 +21,13 @@
 #endif // ENABLE_SERIALIZATION
 #include <boost/foreach.hpp>
 
-#include "nuto/math/FullMatrix.h"
+
 #include "nuto/math/SparseMatrix.h"
 #include "nuto/math/MathException.h"
 
 namespace NuTo
 {
+template <class T, int rows, int cols> class FullMatrix;
 template <class T> class SparseMatrixCSRVector2General;
 
 //! @author Stefan Eckardt, ISM
@@ -348,4 +348,3 @@ protected:
     std::vector<int> mRowIndex;
 };
 }
-#endif // SPARSE_MATRIX_CSR_H

@@ -6,6 +6,8 @@
  */
 
 #include "nuto/mechanics/dofSubMatrixStorage/DofStatus.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include <boost/algorithm/string.hpp>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -31,20 +33,20 @@ std::ostream& operator<<(std::ostream& out, const DofStatus& dofStatus)
     out << "Existing DOF types:\n";
     for(auto dof : dofStatus.mDofTypes)
     {
-        out << dof << "; ";
+        out << Node::DofToString(dof) << "; ";
     }
     out << "Active DOF types:\n";
     for(auto dof : dofStatus.mActiveDofTypes)
     {
-        out << dof << "; ";
+        out << Node::DofToString(dof) << "; ";
     }
     for(auto dof : dofStatus.mNumActiveDofs)
     {
-        out << "Number of active Dofs of type " << dof.first << ": " << dof.second << "\n";
+        out << "Number of active Dofs of type " << Node::DofToString(dof.first) << ": " << dof.second << "\n";
     }
     for(auto dof : dofStatus.mNumDependentDofs)
     {
-        out << "Number of dependent Dofs of type " << dof.first << ": " << dof.second << "\n";
+        out << "Number of dependent Dofs of type " << Node::DofToString(dof.first) << ": " << dof.second << "\n";
     }
     return out;
 }

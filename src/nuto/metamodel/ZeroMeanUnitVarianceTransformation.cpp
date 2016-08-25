@@ -8,6 +8,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif //ENABLE_SERIALIZATION
 
+#include "nuto/math/FullMatrix.h"
 #include "nuto/metamodel/MetamodelException.h"
 #include "nuto/metamodel/ZeroMeanUnitVarianceTransformation.h"
 

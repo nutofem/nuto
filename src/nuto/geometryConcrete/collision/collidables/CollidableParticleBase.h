@@ -5,10 +5,10 @@
  *      Author: ttitsche
  */
 
-#ifndef COLLIDABLEPARTICLEBASE_H_
-#define COLLIDABLEPARTICLEBASE_H_
+#pragma once
 
 #include "nuto/geometryConcrete/collision/collidables/CollidableBase.h"
+#include "nuto/math/FullVector_Def.h"
 
 namespace NuTo
 {
@@ -45,4 +45,3 @@ protected:
 };
 
 } /* namespace NuTo */
-#endif /* COLLIDABLEPARTICLEBASE_H_ */

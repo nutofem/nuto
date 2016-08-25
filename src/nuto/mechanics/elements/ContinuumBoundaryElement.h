@@ -8,22 +8,25 @@
 #pragma once
 
 #include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/elements/ContinuumElement.h"
+
 
 namespace NuTo
 {
 
-namespace BoundaryType
+
+enum class eBoundaryType
 {
-enum eType
-{
-    NOT_SET, NEUMANN_HOMOGENEOUS,   //!< grad nonlocal eq strain * n = 0
+    NOT_SET,
+    NEUMANN_HOMOGENEOUS,   //!< grad nonlocal eq strain * n = 0
     ROBIN_INHOMOGENEOUS,            //!< l * grad nonlocal eq strain * n + nonlocal eq strain = local eq strain
     MACAULAY                        //!< l * grad nonlocal eq strain * n + (nonlocal eq strain - local eq strain)_- = 0
 };
-}
 
 
+class ElementOutputIpData;
+template <int TDim> class ContinuumElement;
+template <typename T> class BlockFullVector;
+template <typename T> class BlockFullMatrix;
 template <int TDim> struct EvaluateDataContinuumBoundary;
 
 
@@ -39,15 +42,12 @@ public:
     //! @param rInput ... constitutive input map for the constitutive law
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness)
     //! and internal force (which includes inertia terms)
-    Error::eError Evaluate(const ConstitutiveInputMap& rInput,
+    eError Evaluate(const ConstitutiveInputMap& rInput,
             std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
 
     //! @brief returns the enum (type of the element)
     //! @return enum
-    virtual NuTo::Element::eElementType GetEnumType() const override
-    {
-        return Element::eElementType::CONTINUUMBOUNDARYELEMENT;
-    }
+    virtual NuTo::Element::eElementType GetEnumType() const override;
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
@@ -57,79 +57,48 @@ public:
     //! @brief returns the local dimension of the element
     //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
     //! @return local dimension
-    virtual int GetLocalDimension() const override
-    {
-        return mBaseElement->GetLocalDimension();
-    }
+    virtual int GetLocalDimension() const override;
 
     //! @brief returns the number of nodes in this element
     //! @return number of nodes
-    int GetNumNodes() const override
-    {
-        return mInterpolationType->GetNumSurfaceNodes(mSurfaceId);
-    }
+    int GetNumNodes() const override;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @return pointer to the node
-    NodeBase* GetNode(int rLocalNodeNumber) override
-    {
-        int nodeId = mInterpolationType->GetSurfaceNodeIndex(mSurfaceId, rLocalNodeNumber);
-        return const_cast<NodeBase*>(mBaseElement->GetNode(nodeId));
-    }
+    NodeBase* GetNode(int rLocalNodeNumber) override;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @return pointer to the node
-    const NodeBase* GetNode(int rLocalNodeNumber) const override
-    {
-        int nodeId = mInterpolationType->GetSurfaceNodeIndex(mSurfaceId, rLocalNodeNumber);
-        return mBaseElement->GetNode(nodeId);
-    }
+    const NodeBase* GetNode(int rLocalNodeNumber) const override;
 
     //! @brief returns the number of nodes in this element that are influenced by it
     //! @remark overridden by boundary elements
     //! @return number of nodes
-    int GetNumInfluenceNodes() const override
-    {
-        return mBaseElement->GetNumNodes();
-    }
+    int GetNumInfluenceNodes() const override;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @remark overridden by boundary elements
     //! @param local node number
     //! @return pointer to the node
-    const NodeBase* GetInfluenceNode(int rLocalNodeNumber) const override
-    {
-        return mBaseElement->GetNode(rLocalNodeNumber);
-    }
+    const NodeBase* GetInfluenceNode(int rLocalNodeNumber) const override;
     //! @brief returns the number of nodes in this element of a specific dof
     //! @brief rDofType dof type
     //! @return number of nodes
-    int GetNumNodes(Node::eDof rDofType) const override
-    {
-        return mInterpolationType->Get(rDofType).GetNumSurfaceNodes(mSurfaceId);
-    }
+    int GetNumNodes(Node::eDof rDofType) const override;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @brief rDofType dof type
     //! @return pointer to the node
-    NodeBase* GetNode(int rLocalNodeNumber, Node::eDof rDofType) override
-    {
-        int nodeId = mInterpolationType->Get(rDofType).GetSurfaceNodeIndex(mSurfaceId, rLocalNodeNumber);
-        return const_cast<NodeBase*>(mBaseElement->GetNode(nodeId));
-    }
+    NodeBase* GetNode(int rLocalNodeNumber, Node::eDof rDofType) override;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number
     //! @brief rDofType dof type
     //! @return pointer to the node
-    const NodeBase* GetNode(int rLocalNodeNumber, Node::eDof rDofType) const override
-    {
-        int nodeId = mInterpolationType->Get(rDofType).GetSurfaceNodeIndex(mSurfaceId, rLocalNodeNumber);
-        return mBaseElement->GetNode(nodeId);
-    }
+    const NodeBase* GetNode(int rLocalNodeNumber, Node::eDof rDofType) const override;
 
     //! @brief sets the rLocalNodeNumber-th node of the element
     //! @param local node number
@@ -165,10 +134,7 @@ public:
 
     //! @brief returns a pointer to the section of an element
     //! @return pointer to section
-    virtual const SectionBase* GetSection() const override
-    {
-        return mBaseElement->GetSection();
-    }
+    virtual const SectionBase* GetSection() const override;
 
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @return rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
@@ -177,19 +143,16 @@ public:
         throw MechanicsException(__PRETTY_FUNCTION__,"Not implemented.");
     }
 
-    virtual Eigen::VectorXd ExtractNodeValues(int rTimeDerivative, Node::eDof rDof) const override
-    {
-        return mBaseElement->ExtractNodeValues(rTimeDerivative, rDof);
-    }
+    virtual Eigen::VectorXd ExtractNodeValues(int rTimeDerivative, Node::eDof rDof) const override;
 
     virtual const Eigen::Vector3d GetGlobalIntegrationPointCoordinates(int rIpNum) const override;
 
-    BoundaryType::eType GetBoundaryConditionType() const
+    eBoundaryType GetBoundaryConditionType() const
     {
         return mBoundaryConditionType;
     }
 
-    void SetBoundaryConditionType(BoundaryType::eType rBoundaryConditionType)
+    void SetBoundaryConditionType(eBoundaryType rBoundaryConditionType)
     {
         mBoundaryConditionType = rBoundaryConditionType;
     }
@@ -284,7 +247,7 @@ protected:
     // surface id
     int mSurfaceId;
 
-    BoundaryType::eType mBoundaryConditionType;
+    eBoundaryType mBoundaryConditionType;
 }
 ;
 

@@ -1,11 +1,16 @@
 // $Id: LoadLoadSurfaceBase3D.cpp 178 2009-12-11 20:53:12Z eckardt4 $
 
 #include <set>
+#include "nuto/math/FullVector.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/loads/LoadSurfaceBase3D.h"
 #include "nuto/mechanics/elements/ContinuumElement.h"
 
@@ -48,7 +53,7 @@ NuTo::LoadSurfaceBase3D::LoadSurfaceBase3D(int rLoadCase, StructureBase* rStruct
 
                 for (int iSurfaceNode = 0; iSurfaceNode < numSurfaceNodes; ++iSurfaceNode)
                 {
-                    surfaceNodes[iSurfaceNode] = elementPtr.GetNode(surfaceNodeIndices.at(iSurfaceNode, 0));
+                    surfaceNodes[iSurfaceNode] = elementPtr.GetNode(surfaceNodeIndices(iSurfaceNode, 0));
 
                 }
 
@@ -93,15 +98,15 @@ NuTo::LoadSurfaceBase3D::LoadSurfaceBase3D(int rLoadCase, StructureBase* rStruct
     }
 
     //set standard integration types for triangles and quads, this can be modified according to the needs
-    mIntegrationTypeTriangleGauss1 = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType2D3NGauss1Ip);
-    mIntegrationTypeTriangleGauss2 = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType2D3NGauss3Ip);
+    mIntegrationTypeTriangleGauss1 = rStructure->GetPtrIntegrationType(eIntegrationType::IntegrationType2D3NGauss1Ip);
+    mIntegrationTypeTriangleGauss2 = rStructure->GetPtrIntegrationType(eIntegrationType::IntegrationType2D3NGauss3Ip);
 
 
-    mIntegrationTypeQuadGauss1 = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType2D4NGauss4Ip);
-    mIntegrationTypeQuadGauss2 = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType2D4NGauss4Ip);
-    mIntegrationTypeQuadLobatto2 = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType2D4NLobatto9Ip);
-    mIntegrationTypeQuadLobatto3 = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType2D4NLobatto16Ip);
-    mIntegrationTypeQuadLobatto4 = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType2D4NLobatto25Ip);
+    mIntegrationTypeQuadGauss1 = rStructure->GetPtrIntegrationType(eIntegrationType::IntegrationType2D4NGauss4Ip);
+    mIntegrationTypeQuadGauss2 = rStructure->GetPtrIntegrationType(eIntegrationType::IntegrationType2D4NGauss4Ip);
+    mIntegrationTypeQuadLobatto2 = rStructure->GetPtrIntegrationType(eIntegrationType::IntegrationType2D4NLobatto9Ip);
+    mIntegrationTypeQuadLobatto3 = rStructure->GetPtrIntegrationType(eIntegrationType::IntegrationType2D4NLobatto16Ip);
+    mIntegrationTypeQuadLobatto4 = rStructure->GetPtrIntegrationType(eIntegrationType::IntegrationType2D4NLobatto25Ip);
 
 }
 
@@ -120,20 +125,20 @@ void NuTo::LoadSurfaceBase3D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
 
 //        std::cout << "Surface: " << surface << std::endl;
 
-        const InterpolationBase& interpolationTypeDisps = elementPtr->GetInterpolationType()->Get(Node::DISPLACEMENTS);
-        const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType()->Get(Node::COORDINATES);
+        const InterpolationBase& interpolationTypeDisps = elementPtr->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS);
+        const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType()->Get(Node::eDof::COORDINATES);
 
         IntegrationTypeBase* integrationType(0);
         switch (elementPtr->GetInterpolationType()->GetShapeType())
         {
-        case Interpolation::TETRAHEDRON3D:
+        case Interpolation::eShapeType::TETRAHEDRON3D:
         {
             switch (interpolationTypeDisps.GetTypeOrder())
             {
-            case Interpolation::EQUIDISTANT1:
+            case Interpolation::eTypeOrder::EQUIDISTANT1:
                 integrationType = mIntegrationTypeTriangleGauss1;
                 break;
-            case Interpolation::EQUIDISTANT2:
+            case Interpolation::eTypeOrder::EQUIDISTANT2:
                 integrationType = mIntegrationTypeTriangleGauss2;
                 break;
             default:
@@ -141,27 +146,27 @@ void NuTo::LoadSurfaceBase3D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             }
         }
             break;
-        case Interpolation::BRICK3D:
+        case Interpolation::eShapeType::BRICK3D:
         {
             switch (interpolationTypeDisps.GetTypeOrder())
             {
-            case Interpolation::EQUIDISTANT1:
+            case Interpolation::eTypeOrder::EQUIDISTANT1:
                 integrationType = mIntegrationTypeQuadGauss1;
                 break;
 
-            case Interpolation::EQUIDISTANT2:
+            case Interpolation::eTypeOrder::EQUIDISTANT2:
                 integrationType = mIntegrationTypeQuadGauss2;
                 break;
 
-            case Interpolation::LOBATTO2:
+            case Interpolation::eTypeOrder::LOBATTO2:
                 integrationType = mIntegrationTypeQuadLobatto2;
                 break;
 
-            case Interpolation::LOBATTO3:
+            case Interpolation::eTypeOrder::LOBATTO3:
                 integrationType = mIntegrationTypeQuadLobatto3;
                 break;
 
-            case Interpolation::LOBATTO4:
+            case Interpolation::eTypeOrder::LOBATTO4:
                 integrationType = mIntegrationTypeQuadLobatto4;
                 break;
 
@@ -176,7 +181,7 @@ void NuTo::LoadSurfaceBase3D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
         if (integrationType == nullptr)
             throw MechanicsException("[NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D] integration types only for 2, 3, 4 and 5 nodes (on the surface) implemented.");
 
-        Eigen::MatrixXd nodeCoordinates = elementPtr->ExtractNodeValues(0, Node::COORDINATES);
+        Eigen::MatrixXd nodeCoordinates = elementPtr->ExtractNodeValues(0, Node::eDof::COORDINATES);
 
         Eigen::Matrix<double, 2, 1> ipCoordsSurface;
         Eigen::Matrix<double, 3, 1> ipCoordsNatural;
@@ -238,10 +243,10 @@ void NuTo::LoadSurfaceBase3D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             for (int iNode = 0; iNode < shapeFunctions.rows(); iNode++)
             {
                 const NodeBase* node = elementPtr->GetNode(interpolationTypeDisps.GetNodeIndex(iNode));
-                assert(node->GetNum(Node::DISPLACEMENTS) == 3);
+                assert(node->GetNum(Node::eDof::DISPLACEMENTS) == 3);
                 for (int iDispDof = 0; iDispDof < 3; iDispDof++)
                 {
-                    int theDof = node->GetDof(Node::DISPLACEMENTS, iDispDof);
+                    int theDof = node->GetDof(Node::eDof::DISPLACEMENTS, iDispDof);
                     double theLoad = shapeFunctions[iNode] * loadVector(iDispDof);
                     if (theDof < rActiceDofsLoadVector.GetNumRows())
                     {

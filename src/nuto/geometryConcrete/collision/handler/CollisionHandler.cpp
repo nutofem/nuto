@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "nuto/geometryConcrete/WallTime.h"
+#include "nuto/geometryConcrete/collision/Event.h"
 #include "nuto/geometryConcrete/collision/handler/CollisionHandler.h"
 #include "nuto/geometryConcrete/collision/SubBox.h"
 #include "nuto/geometryConcrete/collision/handler/SubBoxHandler.h"

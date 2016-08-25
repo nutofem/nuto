@@ -2,6 +2,7 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/sections/SectionTruss.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
 #include <assert.h>
 #include <cmath>
 
@@ -72,9 +73,9 @@ void NuTo::SectionTruss::SetAreaParameters(double* rAreaParameters)
 }
 
 // get section type
-NuTo::Section::eSectionType NuTo::SectionTruss::GetType() const
+NuTo::eSectionType NuTo::SectionTruss::GetType() const
 {
-    return Section::TRUSS;
+    return eSectionType::TRUSS;
 }
 
 // info routine

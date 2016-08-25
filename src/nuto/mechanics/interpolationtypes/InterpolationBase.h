@@ -7,22 +7,22 @@
 
 #pragma once
 
-#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
-#include "nuto/mechanics/elements/ElementShapeFunctions.h"
-#include "nuto/mechanics/structures/StructureBase.h"
-
-
 #include <vector>
-#include <assert.h>
-#include <string>
-#include <sstream>
+#include "eigen3/Eigen/Dense"
 
 namespace NuTo
 {
 class IntegrationTypeBase;
+enum class eIntegrationType;
+namespace Interpolation
+{
+    enum class eTypeOrder;
+}// namespace Interpolation
+
+namespace Node
+{
+    enum class eDof : unsigned char;
+}// namespace Node
 
 //! @brief this class stores the information of the interpolation of a single dof type
 //! @remark the API only allows const access to this class via the InterpolationType.Get(dofType)
@@ -46,7 +46,7 @@ public:
 
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type
-    virtual IntegrationType::eIntegrationType GetStandardIntegrationType() const = 0;
+    virtual eIntegrationType GetStandardIntegrationType() const = 0;
 
     //********************************************
     //             DOF METHODS

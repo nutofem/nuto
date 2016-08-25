@@ -1,6 +1,5 @@
 // $Id$
-#ifndef LOADNODEGROUPFORCES1D_H
-#define LOADNODEGROUPFORCES1D_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -55,5 +54,3 @@ protected:
     double mDirection; //!< direction of the force
 };
 }//namespace NuTo
-#endif //LOADNODEGROUPFORCES1D_H
-

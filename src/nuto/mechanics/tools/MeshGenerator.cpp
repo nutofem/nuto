@@ -1,5 +1,8 @@
 #include "MeshGenerator.h"
 
+
+#include "nuto/math/FullVector.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "boost/progress.hpp"
 
 

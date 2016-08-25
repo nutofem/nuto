@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef FULL_MATRIX_H
-#define FULL_MATRIX_H
+#pragma once
 
 #include <iomanip>  //for setw
 #include <fstream>  //for file acces
@@ -1610,4 +1609,3 @@ void FullMatrix<T,rows,cols>::WriteToFile ( std::ofstream& fileStream, std::stri
 
 } //NAMESPACE NUTO
 
-#endif // FULL_MATRIX_H

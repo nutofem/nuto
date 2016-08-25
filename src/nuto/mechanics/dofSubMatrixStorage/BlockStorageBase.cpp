@@ -6,6 +6,7 @@
  */
 
 #include "nuto/mechanics/dofSubMatrixStorage/BlockStorageBase.h"
+#include "nuto/mechanics/dofSubMatrixStorage/DofStatus.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -41,3 +42,25 @@ void NuTo::BlockStorageBase::serialize(Archive & ar, const unsigned int version)
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::BlockStorageBase)
 #endif // ENABLE_SERIALIZATION
 
+
+NuTo::BlockStorageBase::~BlockStorageBase() {}
+
+int NuTo::BlockStorageBase::GetNumColumns() const
+{
+    return GetNumColumnsDof(mDofStatus.GetDofTypes());
+}
+
+int NuTo::BlockStorageBase::GetNumRows() const
+{
+    return GetNumRowsDof(mDofStatus.GetDofTypes());
+}
+
+int NuTo::BlockStorageBase::GetNumActiveColumns() const
+{
+    return GetNumColumnsDof(mDofStatus.GetActiveDofTypes());
+}
+
+int NuTo::BlockStorageBase::GetNumActiveRows() const
+{
+    return GetNumRowsDof(mDofStatus.GetActiveDofTypes());
+}

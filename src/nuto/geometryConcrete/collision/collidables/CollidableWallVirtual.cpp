@@ -5,8 +5,10 @@
  *      Author: ttitsche
  */
 
+#include "nuto/geometryConcrete/collision/Event.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableWallVirtual.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableParticleSphere.h"
+#include "nuto/geometryConcrete/collision/SubBox.h"
 
 NuTo::CollidableWallVirtual::CollidableWallVirtual(
 		FullVector<double, 3> rPosition,

@@ -1,13 +1,25 @@
 #include "nuto/base/Timer.h"
+#include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include "nuto/mechanics/tools/MeshGenerator.h"
 #include "nuto/physics/PhysicalConstantsSI.h"
 #include "nuto/physics/PhysicalEquationsSI.h"
 #include <array>
-
-
+#include <boost/foreach.hpp>
+#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataMoistureTransport.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/laws/MoistureTransport.h"
+
+#ifdef ENABLE_VISUALIZE
+#include "nuto/mechanics/groups/GroupEnum.h"
+#include "nuto/visualize/VisualizeEnum.h"
+#endif
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -206,13 +218,13 @@ public:
         {
 
 
-            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::RELATIVEHUMIDITY) != 0)
+            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::eDof::RELATIVEHUMIDITY) != 0)
             {
-                mS.NodeGetNodePtr(i)->Set(NuTo::Node::RELATIVEHUMIDITY, 0,InitialRelativeHumidity) ;
+                mS.NodeGetNodePtr(i)->Set(NuTo::Node::eDof::RELATIVEHUMIDITY, 0,InitialRelativeHumidity) ;
             }
-            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::WATERVOLUMEFRACTION) != 0)
+            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::eDof::WATERVOLUMEFRACTION) != 0)
             {
-                mS.NodeGetNodePtr(i)->Set(NuTo::Node::WATERVOLUMEFRACTION, 0,InitialWaterVolumeFraction);
+                mS.NodeGetNodePtr(i)->Set(NuTo::Node::eDof::WATERVOLUMEFRACTION, 0,InitialWaterVolumeFraction);
             }
         }
     }
@@ -291,7 +303,7 @@ void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
     rS.GroupAddElementsFromNodes(eGrpBE, nGrpBE, false);
 
     std::set<NuTo::Node::eDof> controlNodeDofs;
-    controlNodeDofs.insert(NuTo::Node::RELATIVEHUMIDITY);
+    controlNodeDofs.insert(NuTo::Node::eDof::RELATIVEHUMIDITY);
 
     int boundaryControlNodeID = rS.NodeCreateDOFs(controlNodeDofs);
     NuTo::NodeBase* controlNodePtr = rS.NodeGetNodePtr(boundaryControlNodeID);
@@ -309,13 +321,13 @@ void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
         switch(TDim)
         {
         case 1:
-            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::IntegrationType::IntegrationType0DBoundary), elementPtr->GetIpDataType(0));
+            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType0DBoundary), elementPtr->GetIpDataType(0));
             break;
         case 2:
-            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::IntegrationType::IntegrationType1D2NGauss2Ip), elementPtr->GetIpDataType(0));
+            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip), elementPtr->GetIpDataType(0));
             break;
         case 3:
-            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::IntegrationType::IntegrationType2D4NGauss4Ip), elementPtr->GetIpDataType(0));
+            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip), elementPtr->GetIpDataType(0));
             break;
         default:
             throw NuTo::Exception(__PRETTY_FUNCTION__,"Invalid dimension");
@@ -338,13 +350,13 @@ void SetupIntegrationType(NuTo::Structure& rS, int rIPT)
     switch(TDim)
     {
     case 1:
-        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::IntegrationType::IntegrationType1D2NGauss2Ip,NuTo::IpData::STATICDATA);
+        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip,NuTo::IpData::eIpDataType::STATICDATA);
         break;
     case 2:
-        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::IntegrationType::IntegrationType2D4NGauss4Ip,NuTo::IpData::STATICDATA);
+        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip,NuTo::IpData::eIpDataType::STATICDATA);
         break;
     case 3:
-        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip,NuTo::IpData::STATICDATA);
+        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip,NuTo::IpData::eIpDataType::STATICDATA);
         break;
     default:
         throw NuTo::Exception(__PRETTY_FUNCTION__,"Invalid dimension");
@@ -563,16 +575,16 @@ inline void SetupTimeIntegration(NuTo::NewmarkDirect& rTI,
 inline void SetupVisualize(NuTo::Structure& rS, bool rVisualizeShrinkageStrains = false)
 {
 #ifdef ENABLE_VISUALIZE
-        int visGrp = rS.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        int visGrp = rS.GroupCreate(NuTo::eGroupId::Elements);
         rS.GroupAddElementsTotal(visGrp);
-        rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::DISPLACEMENTS);
-        rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::RELATIVE_HUMIDITY);
-        rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::WATER_VOLUME_FRACTION);
-        rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::ENGINEERING_STRAIN);
-        rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::ENGINEERING_STRESS);
-        rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS);
+        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::DISPLACEMENTS);
+        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::RELATIVE_HUMIDITY);
+        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION);
+        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
+        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
         if(rVisualizeShrinkageStrains)
-            rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::SHRINKAGE_STRAIN);
+            rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::SHRINKAGE_STRAIN);
 #endif // ENABLE_VISUALIZE
 }
 
@@ -600,15 +612,15 @@ void CheckMechanicsResultsStressBased(NuTo::Structure& rS)
     BOOST_FOREACH(NodeMap::const_iterator::value_type it, nodePtrMap)
     {
         const NuTo::NodeBase* nodePtr = it.second;
-        if(nodePtr->GetNum(NuTo::Node::DISPLACEMENTS)<1)
+        if(nodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)<1)
         {
             continue;   // Nodes without Displacements cant be checked
         }
         for(int i=0; i<TDim; ++i)
         {
-            double coord = nodePtr->Get(NuTo::Node::COORDINATES)[i];
+            double coord = nodePtr->Get(NuTo::Node::eDof::COORDINATES)[i];
             double refDisp = capStress / TEST_YOUNGSMODULUS * coord;
-            double disp  = nodePtr->Get(NuTo::Node::DISPLACEMENTS)[i];
+            double disp  = nodePtr->Get(NuTo::Node::eDof::DISPLACEMENTS)[i];
             double diff   = std::abs(refDisp) - std::abs(disp);
             const double tolerance = 1e-10;
             if((diff >tolerance || diff < -tolerance))// && coordX > 0)
@@ -637,18 +649,18 @@ void CheckMoistureTransportResults(NuTo::Structure& rS,
         const NuTo::NodeBase* nodePtr = it.second;
 
 
-        if(nodePtr->GetNum(NuTo::Node::WATERVOLUMEFRACTION)>0)
+        if(nodePtr->GetNum(NuTo::Node::eDof::WATERVOLUMEFRACTION)>0)
         {
-            double nodalWVF = nodePtr->Get(NuTo::Node::WATERVOLUMEFRACTION)[0];
+            double nodalWVF = nodePtr->Get(NuTo::Node::eDof::WATERVOLUMEFRACTION)[0];
             double eqWVF = 0.062035;
             if(nodalWVF<eqWVF-tolerance || nodalWVF>eqWVF+tolerance)
             {
                 ++numMismatchingValues;
             }
         }
-        if(nodePtr->GetNum(NuTo::Node::WATERVOLUMEFRACTION)>0)
+        if(nodePtr->GetNum(NuTo::Node::eDof::WATERVOLUMEFRACTION)>0)
         {
-            double nodalRH = nodePtr->Get(NuTo::Node::RELATIVEHUMIDITY)[0];
+            double nodalRH = nodePtr->Get(NuTo::Node::eDof::RELATIVEHUMIDITY)[0];
             double eqRH = 0.4;
             if(nodalRH<eqRH-tolerance || nodalRH>eqRH+tolerance)
             {
@@ -755,9 +767,9 @@ void ShrinkageTestStressBased(  std::array<int,TDim> rN,
     auto LambdaGetBoundaryNodes = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if ((x >= 0.0   - Tol   && x <= 0.0   + Tol) ||
                                             (x >= rL[0] - Tol   && x <= rL[0] + Tol))
                                         {
@@ -766,7 +778,7 @@ void ShrinkageTestStressBased(  std::array<int,TDim> rN,
 
                                         if(TDim>1)
                                         {
-                                            double y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
+                                            double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
                                             if ((y >= 0.0   - Tol   && y <= 0.0   + Tol) ||
                                                 (y >= rL[1] - Tol   && y <= rL[1] + Tol))
                                             {
@@ -775,7 +787,7 @@ void ShrinkageTestStressBased(  std::array<int,TDim> rN,
                                         }
                                         if(TDim>2)
                                         {
-                                            double z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
+                                            double z = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[2];
                                             if ((z >=  0.0   - Tol   && z <= 0.0   + Tol) ||
                                                 (z >=  rL[2] - Tol   && z <= rL[2] + Tol))
                                             {
@@ -820,19 +832,19 @@ void ShrinkageTestStressBased(  std::array<int,TDim> rN,
 
     auto lambdaGetNodeLeftBottomFront = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
                                         double x=0.0,
                                                y=0.0,
                                                z=0.0;
-                                        x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if(TDim>1)
-                                            y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
+                                            y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
                                         if(TDim>2)
-                                            z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
+                                            z = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[2];
 
                                         if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
                                             y >= 0.0   - Tol   && y <= 0.0   + Tol &&
@@ -846,19 +858,19 @@ void ShrinkageTestStressBased(  std::array<int,TDim> rN,
 
     auto lambdaGetNodeLeftTopFront = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
                                         double x=0.0,
                                                y=0.0,
                                                z=0.0;
-                                        x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if(TDim>1)
-                                            y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
+                                            y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
                                         if(TDim>2)
-                                            z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
+                                            z = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[2];
 
                                         if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
                                             y >= 0.0   - Tol   && y <= 0.0   + Tol &&
@@ -872,19 +884,19 @@ void ShrinkageTestStressBased(  std::array<int,TDim> rN,
 
     auto lambdaGetNodeLeftBottomBack = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
                                         double x=0.0,
                                                y=0.0,
                                                z=0.0;
-                                        x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if(TDim>1)
-                                            y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
+                                            y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
                                         if(TDim>2)
-                                            z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
+                                            z = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[2];
 
                                         if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
                                             y >= rL[1] - Tol   && y <= rL[1] + Tol &&
@@ -1016,7 +1028,7 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
 
 
     CL_AIE_Ptr->AddConstitutiveLaw(CL_LE_Ptr);
-    CL_AIE_Ptr->AddConstitutiveLaw(CL_SCSB_Ptr, NuTo::Constitutive::Input::ENGINEERING_STRAIN);
+    CL_AIE_Ptr->AddConstitutiveLaw(CL_SCSB_Ptr, NuTo::Constitutive::eInput::ENGINEERING_STRAIN);
 
     CL_AO_Ptr->AddConstitutiveLaw(CL_AIE_Ptr);
     CL_AO_Ptr->AddConstitutiveLaw(CL_MT_Ptr);
@@ -1041,9 +1053,9 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
     auto LambdaGetBoundaryNodes = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if ((x >= 0.0   - Tol   && x <= 0.0   + Tol) ||
                                             (x >= rL[0] - Tol   && x <= rL[0] + Tol))
                                         {
@@ -1052,7 +1064,7 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
 
                                         if(TDim>1)
                                         {
-                                            double y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
+                                            double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
                                             if ((y >= 0.0   - Tol   && y <= 0.0   + Tol) ||
                                                 (y >= rL[1] - Tol   && y <= rL[1] + Tol))
                                             {
@@ -1061,7 +1073,7 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
                                         }
                                         if(TDim>2)
                                         {
-                                            double z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
+                                            double z = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[2];
                                             if ((z >=  0.0   - Tol   && z <= 0.0   + Tol) ||
                                                 (z >=  rL[2] - Tol   && z <= rL[2] + Tol))
                                             {
@@ -1106,19 +1118,19 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
 
     auto lambdaGetNodeLeftBottomFront = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
                                         double x=0.0,
                                                y=0.0,
                                                z=0.0;
-                                        x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if(TDim>1)
-                                            y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
+                                            y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
                                         if(TDim>2)
-                                            z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
+                                            z = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[2];
 
                                         if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
                                             y >= 0.0   - Tol   && y <= 0.0   + Tol &&
@@ -1132,19 +1144,19 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
 
     auto lambdaGetNodeLeftTopFront = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
                                         double x=0.0,
                                                y=0.0,
                                                z=0.0;
-                                        x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if(TDim>1)
-                                            y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
+                                            y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
                                         if(TDim>2)
-                                            z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
+                                            z = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[2];
 
                                         if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
                                             y >= 0.0   - Tol   && y <= 0.0   + Tol &&
@@ -1158,19 +1170,19 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
 
     auto lambdaGetNodeLeftBottomBack = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
                                         double x=0.0,
                                                y=0.0,
                                                z=0.0;
-                                        x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if(TDim>1)
-                                            y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
+                                            y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
                                         if(TDim>2)
-                                            z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
+                                            z = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[2];
 
                                         if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
                                             y >= rL[1] - Tol   && y <= rL[1] + Tol &&
@@ -1244,10 +1256,10 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
 int main()
 {
     std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> dofIPTMap;
-    dofIPTMap[NuTo::Node::eDof::COORDINATES]            = NuTo::Interpolation::EQUIDISTANT1;
-    dofIPTMap[NuTo::Node::eDof::DISPLACEMENTS]          = NuTo::Interpolation::EQUIDISTANT1;
-    dofIPTMap[NuTo::Node::eDof::RELATIVEHUMIDITY]       = NuTo::Interpolation::EQUIDISTANT1;
-    dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::EQUIDISTANT1;
+    dofIPTMap[NuTo::Node::eDof::COORDINATES]            = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
+    dofIPTMap[NuTo::Node::eDof::DISPLACEMENTS]          = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
+    dofIPTMap[NuTo::Node::eDof::RELATIVEHUMIDITY]       = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
+    dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
 
 
     // STRESS based

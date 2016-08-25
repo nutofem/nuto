@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef CELLPYRAMID_H_
-#define CELLPYRAMID_H_
+#pragma once
 
 #include "nuto/visualize/CellBase.h"
 
@@ -37,4 +36,3 @@ private:
 
 }
 
-#endif // CELLPYRAMID_H_

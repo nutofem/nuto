@@ -1,17 +1,26 @@
 // $Id: SparseDirectSolverMKLDSS.h 625 2013-04-22 16:37:11Z unger3 $
 
-#ifndef EIGEN_SOLVER_ARPACK_H
-#define EIGEN_SOLVER_ARPACK_H
+#pragma once
 
-#include "nuto/math/FullMatrix_Def.h"
-#include "nuto/math/EigenSolverArpackEnum.h"
+
 #include "nuto/base/NuToObject.h"
+#include "nuto/math/MathException.h"
+#include <eigen3/Eigen/Core>
+
 
 namespace NuTo
 {
 // forward declarations
 template<class T> class SparseMatrix;
 template<class T, int rows> class FullVector;
+template <class T, int rows, int cols> class FullMatrix;
+
+namespace EIGEN_SOLVER_ARPACK
+{
+    enum class eDriver;
+    enum class eWhich;
+}// namespace EIGEN_SOLVER_ARPACK
+
 
 //! @author Jörg F. Unger
 //! @date Septemper 2013
@@ -102,4 +111,3 @@ protected:
 
 };
 }
-#endif // EIGEN_SOLVER_ARPACK_H

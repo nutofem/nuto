@@ -16,6 +16,7 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constraints/ConstraintEquationTerm.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 // constructor
 NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node::eDof rDofType, int rDofComponent, double rCoefficient)
@@ -23,36 +24,36 @@ NuTo::ConstraintEquationTerm::ConstraintEquationTerm(const NodeBase* rNode, Node
     assert(rNode != 0);
     switch (rDofType)
     {
-    case Node::DISPLACEMENTS:
+    case Node::eDof::DISPLACEMENTS:
     {
-        int numDisplacements = rNode->GetNum(Node::DISPLACEMENTS);
+        int numDisplacements = rNode->GetNum(Node::eDof::DISPLACEMENTS);
         if (rDofComponent < 0 || rDofComponent >= numDisplacements)
         {
             throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid displacement component.");
         }
     }
     break;
-    case Node::ROTATIONS:
+    case Node::eDof::ROTATIONS:
     {
-        int numRotations = rNode->GetNum(Node::ROTATIONS);
+        int numRotations = rNode->GetNum(Node::eDof::ROTATIONS);
         if (rDofComponent < 0 || rDofComponent >= numRotations)
         {
             throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid displacement component.");
         }
     }
     break;
-    case Node::TEMPERATURE:
+    case Node::eDof::TEMPERATURE:
     {
-        int numTemperature = rNode->GetNum(Node::TEMPERATURE);
+        int numTemperature = rNode->GetNum(Node::eDof::TEMPERATURE);
         if (rDofComponent < 0 || rDofComponent >= numTemperature)
         {
             throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid temerature component.");
         }
     }
     break;
-    case Node::NONLOCALEQSTRAIN:
+    case Node::eDof::NONLOCALEQSTRAIN:
     {
-        int numNonlocalEqStrain = rNode->GetNum(Node::NONLOCALEQSTRAIN);
+        int numNonlocalEqStrain = rNode->GetNum(Node::eDof::NONLOCALEQSTRAIN);
         if (rDofComponent < 0 || rDofComponent >= numNonlocalEqStrain)
         {
             throw MechanicsException("[NuTo::ConstraintEquationTerm::ConstraintEquationTerm] invalid nonlocal eq strain component.");
@@ -84,24 +85,24 @@ int NuTo::ConstraintEquationTerm::GetDof() const
     // determine dof
     switch (this->mDofType)
     {
-    case Node::DISPLACEMENTS:
+    case Node::eDof::DISPLACEMENTS:
     {
-    	return mNode->GetDof(Node::DISPLACEMENTS, this->mDofComponent);
+        return mNode->GetDof(Node::eDof::DISPLACEMENTS, this->mDofComponent);
     }
     break;
-    case Node::ROTATIONS:
+    case Node::eDof::ROTATIONS:
     {
-    	return mNode->GetDof(Node::ROTATIONS, this->mDofComponent);
+        return mNode->GetDof(Node::eDof::ROTATIONS, this->mDofComponent);
     }
     break;
-    case Node::TEMPERATURE:
+    case Node::eDof::TEMPERATURE:
     {
-    	return mNode->GetDof(Node::TEMPERATURE, 0);
+        return mNode->GetDof(Node::eDof::TEMPERATURE, 0);
     }
     break;
-    case Node::NONLOCALEQSTRAIN:
+    case Node::eDof::NONLOCALEQSTRAIN:
     {
-        return mNode->GetDof(Node::NONLOCALEQSTRAIN, 0);
+        return mNode->GetDof(Node::eDof::NONLOCALEQSTRAIN, 0);
     }
     break;
     default:
@@ -114,7 +115,7 @@ int NuTo::ConstraintEquationTerm::GetDof() const
 NuTo::ConstraintEquationTerm::ConstraintEquationTerm()
 {
     this->mNode = 0;
-    this->mDofType = Node::COORDINATES;
+    this->mDofType = Node::eDof::COORDINATES;
     this->mDofComponent = 0;
     this->mCoefficient = 0;
 }

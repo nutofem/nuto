@@ -1,5 +1,8 @@
 #include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataMoistureTransport.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/MechanicsException.h"
+
 
 //! @brief constructor
 NuTo::ConstitutiveStaticDataMoistureTransport::ConstitutiveStaticDataMoistureTransport()
@@ -28,9 +31,9 @@ const NuTo::ConstitutiveStaticDataMoistureTransport* NuTo::ConstitutiveStaticDat
 bool NuTo::ConstitutiveStaticDataMoistureTransport::CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType rConstitutiveType,
                                                                                    NuTo::Element::eElementType rElementType) const
 {
-    if (rConstitutiveType==NuTo::Constitutive::MOISTURE_TRANSPORT)
+    if (rConstitutiveType==NuTo::Constitutive::eConstitutiveType::MOISTURE_TRANSPORT)
     {
-        if (rElementType==NuTo::Element::CONTINUUMELEMENT)
+        if (rElementType==NuTo::Element::eElementType::CONTINUUMELEMENT)
             return true;
         else
             return false;

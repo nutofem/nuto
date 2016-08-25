@@ -9,6 +9,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/mechanics/sections/SectionFibreMatrixBond.h"
 
 // constructor
@@ -34,9 +35,9 @@ double NuTo::SectionFibreMatrixBond::GetCircumference() const
 }
 
 // get section type
-NuTo::Section::eSectionType NuTo::SectionFibreMatrixBond::GetType() const
+NuTo::eSectionType NuTo::SectionFibreMatrixBond::GetType() const
 {
-    return NuTo::Section::FIBRE_MATRIX_BOND;
+    return NuTo::eSectionType::FIBRE_MATRIX_BOND;
 }
 
 // info routine

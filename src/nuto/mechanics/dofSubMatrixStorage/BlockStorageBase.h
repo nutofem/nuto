@@ -6,12 +6,16 @@
 #endif // ENABLE_SERIALIZATION
 
 #include <set>
-#include <unordered_map>      // needed in all base classes
-#include <ostream>  // needed in all base classes
-#include "nuto/mechanics/dofSubMatrixStorage/DofStatus.h"
 
 namespace NuTo
 {
+
+class DofStatus;
+
+namespace Node
+{
+    enum class eDof : unsigned char;
+}// namespace Node
 
 //! @author Thomas Titscher, BAM
 //! @date January 2016
@@ -34,35 +38,23 @@ public:
     BlockStorageBase(const DofStatus& rDofStatus) : mDofStatus(rDofStatus) {}
 
 
-    virtual ~BlockStorageBase() {}
+    virtual ~BlockStorageBase();
 
     //! @brief gets the number of columns of the block storage
     //! @return number of columns
-    int GetNumColumns() const
-    {
-        return GetNumColumnsDof(mDofStatus.GetDofTypes());
-    }
+    int GetNumColumns() const;
 
     //! @brief gets the number of rows of the block storage
     //! @return number of rows
-    int GetNumRows() const
-    {
-        return GetNumRowsDof(mDofStatus.GetDofTypes());
-    }
+    int GetNumRows() const;
 
     //! @brief gets the number of columns of the block storage, only for active dof types
     //! @return number of columns
-    int GetNumActiveColumns() const
-    {
-        return GetNumColumnsDof(mDofStatus.GetActiveDofTypes());
-    }
+    int GetNumActiveColumns() const;
 
     //! @brief gets the number of rows of the block storage, only for active dof types
     //! @return number of rows
-    int GetNumActiveRows() const
-    {
-        return GetNumRowsDof(mDofStatus.GetActiveDofTypes());
-    }
+    int GetNumActiveRows() const;
 
 #ifndef SWIG
 

@@ -2,14 +2,24 @@
 
 #include <memory>
 
+
 #include "nuto/mechanics/dofSubMatrixStorage/BlockStorageBase.h"
-#include "nuto/math/SparseMatrixCSRVector2.h"
-#include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
-#include "nuto/math/SparseMatrixCSRGeneral_Def.h"
-#include "nuto/math/SparseMatrixCSRSymmetric_Def.h"
+#include "nuto/mechanics/nodes/DofHash.h"
+
+#include <eigen3/Eigen/Core>
+#include <ostream>
+#include <unordered_map>
+#include <map>
 
 namespace NuTo
 {
+template <typename T> class BlockFullVector;
+template <class T> class SparseMatrixCSRGeneral;
+template <class T> class SparseMatrixCSRSymmetric;
+template <class T> class SparseMatrixCSRVector2;
+template <class T> class SparseMatrixCSRVector2General;
+template <class T> class SparseMatrixCSRVector2Symmetric;
+template <class T, int rows, int cols>class FullMatrix;
 
 //! @author Thomas Titscher, BAM
 //! @date January 2016
@@ -33,8 +43,12 @@ public:
 #ifndef SWIG
     //! @brief move ctor
     //! @param rOther ... other BlockSparseMatrix
-    BlockSparseMatrix(      BlockSparseMatrix&& rOther) = default;
+    BlockSparseMatrix(      BlockSparseMatrix&& rOther);
 #endif
+
+
+    //! @brief destructor
+    ~BlockSparseMatrix();
 
     //! @brief allocates the submatrices based on the current dof configuration of the structure
     void AllocateSubmatrices();
@@ -49,7 +63,7 @@ public:
     BlockSparseMatrix& operator=(const BlockSparseMatrix&  rOther);
 
     //! @brief move assignment
-    BlockSparseMatrix& operator=(      BlockSparseMatrix&& rOther) = default;
+    BlockSparseMatrix& operator=(      BlockSparseMatrix&& rOther);
 
     friend std::ostream& operator<< (std::ostream &rOut, const NuTo::BlockSparseMatrix& rBlockSparseMatrix);
 
@@ -122,20 +136,15 @@ public:
     NuTo::SparseMatrixCSRGeneral<double>                      ExportToCSRGeneral() const;
     NuTo::SparseMatrixCSRVector2Symmetric<double>             ExportToCSRSymmetric() const;
 
-    NuTo::SparseMatrixCSRVector2General<double> Get(std::string rDofRow, std::string rDofCol) const
-    {
-        auto& ref = (*this)(Node::DofToEnum(rDofRow), Node::DofToEnum(rDofCol));
-        if (ref.IsSymmetric())
-            return ref.AsSparseMatrixCSRVector2Symmetric(); // calls appropriate Vector2General ctor
-        else
-            return ref.AsSparseMatrixCSRVector2General();
-    }
+    NuTo::SparseMatrixCSRVector2General<double> Get(std::string rDofRow, std::string rDofCol) const;
 
 private:
 
     //! @brief storage using a unique_ptr
     //! @todo use std::make_unique as soon as the compiler version allows it
-    std::unordered_map<std::pair<Node::eDof, Node::eDof>, std::unique_ptr<SparseMatrixCSRVector2<double>>, Node::eDofPairHash> mData;
+    std::unordered_map<std::pair<Node::eDof, Node::eDof>,
+                       std::unique_ptr<SparseMatrixCSRVector2<double>>,
+                       Node::eDofPairHash> mData;
 
     bool mCanBeSymmetric;
 };

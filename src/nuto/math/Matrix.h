@@ -1,11 +1,9 @@
 // $Id$
 
-#ifndef MATRIX_H
-#define MATRIX_H
+#pragma once
 
 #include <iomanip>
 #include <fstream>
-#include <sstream>
 #include <iostream>
 #include <string>
 #include <random>
@@ -21,7 +19,6 @@
 #endif// ENABLE_SERIALIZATION
 
 #include <boost/spirit/include/classic_core.hpp>
-#include "nuto/math/Operator.h"
 
 #include "nuto/base/NuToObject.h"
 #include "nuto/math/MathException.h"
@@ -224,4 +221,3 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Matrix<int>)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Matrix<double>)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
-#endif // MATRIX_H

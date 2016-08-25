@@ -1,10 +1,8 @@
 // $Id$
-#ifndef ElementDataVariableConstitutiveIp_H
-#define ElementDataVariableConstitutiveIp_H
+#pragma once
 
 #include "nuto/mechanics/elements/ElementDataVariableConstitutiveBase.h"
 #include "nuto/mechanics/elements/ElementDataIpBase.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
 
 namespace NuTo
 {
@@ -29,10 +27,7 @@ public:
 
    //! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
    //! @param rElement element
-   virtual void InitializeUpdatedConstitutiveLaw(const ElementBase* rElement)
-   {
- 	   throw MechanicsException("[NuTo::ElementDataVariableConstitutiveIp::InitializeUpdatedConstitutiveLaw] need ip for constitutive law assignment.");
-   }
+   virtual void InitializeUpdatedConstitutiveLaw(const ElementBase* rElement);
 
     //! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
     //! @param rElement element
@@ -64,5 +59,3 @@ template<>
 struct is_virtual_base_of<NuTo::ElementDataIpBase, NuTo::ElementDataVariableConstitutiveIp>: public mpl::true_ {};
 }
 #endif // ENABLE_SERIALIZATION
-
-#endif //ElementDataVariableConstitutiveIp_H

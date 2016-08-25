@@ -1,6 +1,5 @@
 // $Id$
-#ifndef IntegrationType3D8NLobatto_H
-#define IntegrationType3D8NLobatto_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -10,6 +9,10 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #endif //ENABLE_SERIALIZATION
+
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
+#endif // ENABLE_VISUALIZE
 
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NLobatto_Def.h"
 
@@ -158,7 +161,7 @@ namespace NuTo
         unsigned int& NumVisualizationPoints,
         std::vector<double>& VisualizationPointLocalCoordinates,
         unsigned int& NumVisualizationCells,
-        std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+        std::vector<NuTo::eCellTypes>& VisualizationCellType,
         std::vector<unsigned int>& VisualizationCellsIncidence,
         std::vector<unsigned int>& VisualizationCellsIP) const
 	{
@@ -222,7 +225,7 @@ namespace NuTo
             {
                 for (int countX = 0; countX<T;countX++,theIp++)
                 {
-                    VisualizationCellType.push_back(NuTo::CellBase::HEXAHEDRON);
+                    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
                     VisualizationCellsIncidence.push_back(countZ*(T+1)*(T+1)+countY*(T+1)+countX);
                     VisualizationCellsIncidence.push_back(countZ*(T+1)*(T+1)+countY*(T+1)+countX+1);
                     VisualizationCellsIncidence.push_back(countZ*(T+1)*(T+1)+(countY+1)*(T+1)+countX+1);
@@ -240,4 +243,3 @@ namespace NuTo
 
 }
 
-#endif //IntegrationType3D8NLobatto_H

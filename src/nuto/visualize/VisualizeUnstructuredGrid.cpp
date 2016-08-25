@@ -13,8 +13,18 @@
 #include "nuto/visualize/CellTetra.h"
 #include "nuto/visualize/CellTriangle.h"
 #include "nuto/visualize/Point.h"
+#include "nuto/visualize/VisualizeDataBase.h"
+#include "nuto/visualize/VisualizeDataType.h"
 #include "nuto/visualize/VisualizeException.h"
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
+
+
+
+NuTo::VisualizeUnstructuredGrid::VisualizeUnstructuredGrid()
+{}
+
+NuTo::VisualizeUnstructuredGrid::~VisualizeUnstructuredGrid()
+{}
 
 // add point
 unsigned int NuTo::VisualizeUnstructuredGrid::AddPoint(const double* rCoordinates)
@@ -25,16 +35,16 @@ unsigned int NuTo::VisualizeUnstructuredGrid::AddPoint(const double* rCoordinate
     {
         switch (this->mPointData[PointDataCount].GetDataType())
         {
-        case NuTo::VisualizeDataType::SCALAR:
+        case NuTo::eVisualizeDataType::SCALAR:
             this->mPoints[PointId].AddDataScalar(PointDataCount);
             break;
-        case NuTo::VisualizeDataType::VECTOR:
+        case NuTo::eVisualizeDataType::VECTOR:
             this->mPoints[PointId].AddDataVector(PointDataCount);
             break;
-        case NuTo::VisualizeDataType::TENSOR:
+        case NuTo::eVisualizeDataType::TENSOR:
             this->mPoints[PointId].AddDataTensor(PointDataCount);
             break;
-        case NuTo::VisualizeDataType::FIELD:
+        case NuTo::eVisualizeDataType::FIELD:
             this->mPoints[PointId].AddDataField(PointDataCount, this->mPointData[PointDataCount].GetNumData());
             break;
         default:
@@ -170,17 +180,17 @@ void NuTo::VisualizeUnstructuredGrid::ExportVtkDataFile(const std::string& rFile
     {
         switch (this->mPointData[PointDataCount].GetDataType())
         {
-        case NuTo::VisualizeDataType::SCALAR:
+        case NuTo::eVisualizeDataType::SCALAR:
             file << "SCALARS " << this->mPointData[PointDataCount].GetIdent() << " double 1" << std::endl;
             file << "LOOKUP_TABLE default" << std::endl;
             break;
-        case NuTo::VisualizeDataType::VECTOR:
+        case NuTo::eVisualizeDataType::VECTOR:
             file << "VECTORS " << this->mPointData[PointDataCount].GetIdent() << " double" << std::endl;
             break;
-        case NuTo::VisualizeDataType::TENSOR:
+        case NuTo::eVisualizeDataType::TENSOR:
             file << "TENSORS " << this->mPointData[PointDataCount].GetIdent() << " double" << std::endl;
             break;
-        case NuTo::VisualizeDataType::FIELD:
+        case NuTo::eVisualizeDataType::FIELD:
             file << "FIELD " << this->mPointData[PointDataCount].GetIdent() << " 1" << std::endl;
             file << this->mPointData[PointDataCount].GetIdent() << " " << this->mPointData[PointDataCount].GetNumData() << " " << this->mPoints.size() << " double" << std::endl;
             break;
@@ -208,17 +218,17 @@ void NuTo::VisualizeUnstructuredGrid::ExportVtkDataFile(const std::string& rFile
     {
         switch (this->mCellData[CellDataCount].GetDataType())
         {
-        case NuTo::VisualizeDataType::SCALAR:
+        case NuTo::eVisualizeDataType::SCALAR:
             file << "SCALARS " << this->mCellData[CellDataCount].GetIdent() << " double 1" << std::endl;
             file << "LOOKUP_TABLE default" << std::endl;
             break;
-        case NuTo::VisualizeDataType::VECTOR:
+        case NuTo::eVisualizeDataType::VECTOR:
             file << "VECTORS " << this->mCellData[CellDataCount].GetIdent() << " double" << std::endl;
             break;
-        case NuTo::VisualizeDataType::TENSOR:
+        case NuTo::eVisualizeDataType::TENSOR:
             file << "TENSORS " << this->mCellData[CellDataCount].GetIdent() << " double" << std::endl;
             break;
-        case NuTo::VisualizeDataType::FIELD:
+        case NuTo::eVisualizeDataType::FIELD:
             file << "FIELD " << this->mCellData[CellDataCount].GetIdent() << " 1" << std::endl;
             file << this->mCellData[CellDataCount].GetIdent() << " " << this->mCellData[CellDataCount].GetNumData() << " " << this->mCells.size() << " double" << std::endl;
             break;
@@ -386,7 +396,7 @@ void NuTo::VisualizeUnstructuredGrid::CheckPoints(const unsigned int rNumPoints,
 void NuTo::VisualizeUnstructuredGrid::DefinePointDataScalar(const std::string& rIdent)
 {
     this->CheckPointDataIdent(rIdent);
-    this->mPointData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::VisualizeDataType::SCALAR));
+    this->mPointData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::eVisualizeDataType::SCALAR));
     unsigned int DataIndex = this->mPointData.size() - 1;
     // add data to all points
     boost::ptr_vector<Point>::iterator PointIter = this->mPoints.begin();
@@ -401,7 +411,7 @@ void NuTo::VisualizeUnstructuredGrid::DefinePointDataScalar(const std::string& r
 void NuTo::VisualizeUnstructuredGrid::DefineCellDataScalar(const std::string& rIdent)
 {
     this->CheckCellDataIdent(rIdent);
-    this->mCellData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::VisualizeDataType::SCALAR));
+    this->mCellData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::eVisualizeDataType::SCALAR));
     unsigned int DataIndex = this->mCellData.size() - 1;
     // add data to all cells
     boost::ptr_vector<CellBase>::iterator CellIter = this->mCells.begin();
@@ -416,7 +426,7 @@ void NuTo::VisualizeUnstructuredGrid::DefineCellDataScalar(const std::string& rI
 void NuTo::VisualizeUnstructuredGrid::DefinePointDataVector(const std::string& rIdent)
 {
     this->CheckPointDataIdent(rIdent);
-    this->mPointData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::VisualizeDataType::VECTOR));
+    this->mPointData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::eVisualizeDataType::VECTOR));
     unsigned int DataIndex = this->mPointData.size() - 1;
     // add data to all points
     boost::ptr_vector<Point>::iterator PointIter = this->mPoints.begin();
@@ -431,7 +441,7 @@ void NuTo::VisualizeUnstructuredGrid::DefinePointDataVector(const std::string& r
 void NuTo::VisualizeUnstructuredGrid::DefineCellDataVector(const std::string& rIdent)
 {
     this->CheckCellDataIdent(rIdent);
-    this->mCellData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::VisualizeDataType::VECTOR));
+    this->mCellData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::eVisualizeDataType::VECTOR));
     unsigned int DataIndex = this->mCellData.size() - 1;
     // add data to all cells
     boost::ptr_vector<CellBase>::iterator CellIter = this->mCells.begin();
@@ -446,7 +456,7 @@ void NuTo::VisualizeUnstructuredGrid::DefineCellDataVector(const std::string& rI
 void NuTo::VisualizeUnstructuredGrid::DefinePointDataTensor(const std::string& rIdent)
 {
     this->CheckPointDataIdent(rIdent);
-    this->mPointData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::VisualizeDataType::TENSOR));
+    this->mPointData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::eVisualizeDataType::TENSOR));
     unsigned int DataIndex = this->mPointData.size() - 1;
     // add data to all points
     boost::ptr_vector<Point>::iterator PointIter = this->mPoints.begin();
@@ -461,7 +471,7 @@ void NuTo::VisualizeUnstructuredGrid::DefinePointDataTensor(const std::string& r
 void NuTo::VisualizeUnstructuredGrid::DefineCellDataTensor(const std::string& rIdent)
 {
     this->CheckCellDataIdent(rIdent);
-    this->mCellData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::VisualizeDataType::TENSOR));
+    this->mCellData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::eVisualizeDataType::TENSOR));
     unsigned int DataIndex = this->mCellData.size() - 1;
     // add data to all cells
     boost::ptr_vector<CellBase>::iterator CellIter = this->mCells.begin();
@@ -476,7 +486,7 @@ void NuTo::VisualizeUnstructuredGrid::DefineCellDataTensor(const std::string& rI
 void NuTo::VisualizeUnstructuredGrid::DefinePointDataField(const std::string& rIdent, unsigned int rNumData)
 {
     this->CheckPointDataIdent(rIdent);
-    this->mPointData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::VisualizeDataType::FIELD));
+    this->mPointData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::eVisualizeDataType::FIELD));
     this->mPointData[this->mPointData.size() - 1].SetNumData(rNumData);
     unsigned int DataIndex = this->mPointData.size() - 1;
     // add data to all points
@@ -492,7 +502,7 @@ void NuTo::VisualizeUnstructuredGrid::DefinePointDataField(const std::string& rI
 void NuTo::VisualizeUnstructuredGrid::DefineCellDataField(const std::string& rIdent, unsigned int rNumData)
 {
     this->CheckCellDataIdent(rIdent);
-    this->mCellData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::VisualizeDataType::FIELD));
+    this->mCellData.push_back(NuTo::VisualizeDataType(rIdent, NuTo::eVisualizeDataType::FIELD));
     this->mCellData[this->mCellData.size() - 1].SetNumData(rNumData);
     unsigned int DataIndex = this->mCellData.size() - 1;
     // add data to all points

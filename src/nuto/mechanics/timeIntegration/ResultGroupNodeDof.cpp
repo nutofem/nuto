@@ -4,6 +4,7 @@
  *  Created on: Dec 18, 2013
  *      Author: junger
  */
+
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/timeIntegration/ResultGroupNodeDof.h"
 #include "nuto/mechanics/nodes/NodeBase.h"

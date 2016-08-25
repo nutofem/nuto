@@ -8,7 +8,6 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/sections/SectionBase.h"
-#include "nuto/mechanics/sections/SectionEnum.h"
 
 namespace NuTo
 {
@@ -34,7 +33,7 @@ public:
 
     //! @brief ... get the section type
     //! @return ... section type
-    virtual Section::eSectionType GetType() const override;
+    virtual eSectionType GetType() const override;
 
     //! @brief ... print information about the section
     //! @param rVerboseLevel ... verbosity of the information

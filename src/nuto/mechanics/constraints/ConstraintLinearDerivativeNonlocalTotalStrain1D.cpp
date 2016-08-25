@@ -13,11 +13,14 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/constraints/ConstraintLinearDerivativeNonlocalTotalStrain1D.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
-
+#include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
 
 // constructor
 NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D::ConstraintLinearDerivativeNonlocalTotalStrain1D(const ElementBase* rParentElement, double rLocalIpCoordinate):
@@ -50,21 +53,21 @@ void NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D::AddToConstraintMatri
 {
 	switch (mParentElement->GetEnumType())
 	{
-	case Element::CONTINUUMELEMENT:
+    case Element::eElementType::CONTINUUMELEMENT:
 	{
         Eigen::VectorXd localIpCoordinate(1);
         localIpCoordinate(0) = mLocalIpCoordinate;
 
-        const auto& interpolationTypeNonlocalTotalStrain = mParentElement->GetInterpolationType()->Get(Node::NONLOCALTOTALSTRAIN);
+        const auto& interpolationTypeNonlocalTotalStrain = mParentElement->GetInterpolationType()->Get(Node::eDof::NONLOCALTOTALSTRAIN);
 		//derivative in natural coordinate system
 		auto derivativeShapeFunctionsNaturalNonlocalTotalStrain = interpolationTypeNonlocalTotalStrain.CalculateDerivativeShapeFunctionsNatural(localIpCoordinate);
 
 		// For 1D, there is only one point, so the detJ can be neglected
 		for (int count=0; count<interpolationTypeNonlocalTotalStrain.GetNumDofs(); count++)
 		{
-		    const NodeBase* node = mParentElement->GetNode(count, Node::NONLOCALTOTALSTRAIN);
+            const NodeBase* node = mParentElement->GetNode(count, Node::eDof::NONLOCALTOTALSTRAIN);
 			rConstraintMatrix.AddValue(curConstraintEquation,
-			        node->GetDof(Node::NONLOCALTOTALSTRAIN, 0),
+                    node->GetDof(Node::eDof::NONLOCALTOTALSTRAIN, 0),
 	        		derivativeShapeFunctionsNaturalNonlocalTotalStrain(count,0));
 		}
 	}
@@ -90,6 +93,11 @@ void NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D::GetRHS(int& curConst
 
     // increase constraint equation number
     curConstraintEquation++;
+}
+
+NuTo::Node::eDof NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D::GetDofType() const
+{
+    return Node::eDof::NONLOCALTOTALSTRAIN;
 }
 
 

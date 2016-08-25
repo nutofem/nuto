@@ -1,5 +1,4 @@
-#ifndef CONSTRAINTLINEARNODERELATIVEHUMIDITY_H
-#define CONSTRAINTLINEARNODERELATIVEHUMIDITY_H
+#pragma once
 
 #include "nuto/mechanics/constraints/ConstraintLinear.h"
 #include "nuto/mechanics/constraints/ConstraintNode.h"
@@ -45,10 +44,7 @@ public:
 
     //! @brief determines the dof type affected by the constraint
     //! @return dof type
-    Node::eDof GetDofType() const override
-    { // @Volker: you forgot to align the "const"s and "override"s ... :)
-        return Node::eDof::RELATIVEHUMIDITY;
-    }
+    Node::eDof GetDofType() const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -78,4 +74,3 @@ protected:
 
 
 
-#endif // CONSTRAINTLINEARNODERELATIVEHUMIDITY_H

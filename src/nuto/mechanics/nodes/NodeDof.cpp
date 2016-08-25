@@ -1,4 +1,7 @@
+
+#include "nuto/math/FullVector.h"
 #include "nuto/mechanics/nodes/NodeDof.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include "nuto/math/CustomBoostSerializationExtensions.h"
@@ -21,7 +24,7 @@ NuTo::NodeDof::NodeDof(int rNumTimeDerivatives, std::map<Node::eDof, int> rDofDi
         // allocate dof values
         int numTimeDerivativesForAllocation = mNumTimeDerivatives + 1; // +1 since the 0th time derivative needs to be stored as well
 
-        if (dofType == Node::COORDINATES)
+        if (dofType == Node::eDof::COORDINATES)
             numTimeDerivativesForAllocation = 1; // no time derivatives for coordinates
 
         mDofValues[dofType].resize(numTimeDerivativesForAllocation);

@@ -1,4 +1,5 @@
 
+#include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType0DBoundary.h"
 #include <assert.h>
 
@@ -64,7 +65,7 @@ void NuTo::IntegrationType0DBoundary::GetVisualizationCells(
     unsigned int& NumVisualizationPoints,
     std::vector<double>& VisualizationPointLocalCoordinates,
     unsigned int& NumVisualizationCells,
-    std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+    std::vector<NuTo::eCellTypes>& VisualizationCellType,
     std::vector<unsigned int>& VisualizationCellsIncidence,
     std::vector<unsigned int>& VisualizationCellsIP) const
 {
@@ -75,9 +76,9 @@ void NuTo::IntegrationType0DBoundary::GetVisualizationCells(
 //    VisualizationPointLocalCoordinates.push_back(0.3873);
 //    VisualizationPointLocalCoordinates.push_back(1);
     NumVisualizationCells = 0;
-//    VisualizationCellType.push_back(NuTo::CellBase::LINE);
-//    VisualizationCellType.push_back(NuTo::CellBase::LINE);
-//    VisualizationCellType.push_back(NuTo::CellBase::LINE);
+//    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
+//    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
+//    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
 //    VisualizationCellsIncidence.push_back(0);
 //    VisualizationCellsIncidence.push_back(1);
 //    VisualizationCellsIncidence.push_back(1);
@@ -96,8 +97,8 @@ bool NuTo::IntegrationType0DBoundary::CheckElementCompatibility(
 {
     switch (rElementType)
     {
-    case Element::CONTINUUMBOUNDARYELEMENT:
-    case Element::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
+    case Element::eElementType::CONTINUUMBOUNDARYELEMENT:
+    case Element::eElementType::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
         return true;
 
     default:

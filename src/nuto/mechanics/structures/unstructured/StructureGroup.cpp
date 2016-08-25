@@ -1,6 +1,13 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/base/Timer.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/groups/GroupEnum.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+
+#include <eigen3/Eigen/Core>
+#include <nuto/math/FullVector.h>
 
 //! @brief ... Adds all elements to a group based on the type
 //! @param ... rIdentGroup identifier for the group
@@ -13,7 +20,7 @@ void NuTo::Structure::GroupAddElementFromType(int rIdentGroup, int rInterpolatio
 		boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
 		if (itGroup==mGroupMap.end())
 			throw MechanicsException("[NuTo::Structure::GroupAddElementFromType] Group with the given identifier does not exist.");
-		if (itGroup->second->GetType()!=Groups::Elements)
+		if (itGroup->second->GetType()!=eGroupId::Elements)
 			throw MechanicsException("[NuTo::Structure::GroupAddElementFromType] Group is not an element group.");
 
 		boost::ptr_map<int,InterpolationType>::iterator itInterpolationType = mInterpolationTypeMap.find(rInterpolationType);
@@ -53,7 +60,7 @@ void NuTo::Structure::GroupAddElement(int rIdentGroup, int rIdElement)
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::GroupAddElement] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=Groups::Elements)
+    if (itGroup->second->GetType()!=eGroupId::Elements)
         throw MechanicsException("[NuTo::Structure::GroupAddElement] An element can be added only to an element group.");
 
     itGroup->second->AddMember(rIdElement, ElementGetElementPtr(rIdElement));
@@ -68,7 +75,7 @@ void NuTo::Structure::GroupAddElementsTotal(int rIdentGroup)
     if (itGroup==mGroupMap.end())
         throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Group with the given identifier does not exist.");
 
-    if (itGroup->second->GetType()!=Groups::Elements)
+    if (itGroup->second->GetType()!=eGroupId::Elements)
         throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t An element can be added only to an element group.");
 
     for (auto const& iPair : mElementMap)
@@ -79,7 +86,7 @@ int NuTo::Structure::GroupGetElementsTotal()
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    int groupId = GroupCreate(Groups::Elements);
+    int groupId = GroupCreate(eGroupId::Elements);
     auto& elementGroup = *(mGroupMap.at(groupId).AsGroupElement());
     for (auto const& iPair : mElementMap)
         elementGroup.AddMember(iPair.first, iPair.second);
@@ -90,7 +97,7 @@ int NuTo::Structure::GroupGetNodesTotal()
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    int groupId = GroupCreate(Groups::Nodes);
+    int groupId = GroupCreate(eGroupId::Nodes);
     auto& elementGroup = *(mGroupMap.at(groupId).AsGroupNode());
     for (auto const& iPair : mNodeMap)
         elementGroup.AddMember(iPair.first, iPair.second);
@@ -104,7 +111,7 @@ void NuTo::Structure::GroupAddNodeFromElementGroupCoordinateRange(int rIdentNode
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentNodeGroup);
     if (itGroup == mGroupMap.end())
         throw MechanicsException(std::string(__PRETTY_FUNCTION__) +": \t Group with the given identifier does not exist.");
-    if (itGroup->second->GetType() != Groups::Nodes)
+    if (itGroup->second->GetType() != eGroupId::Nodes)
         throw MechanicsException(std::string(__PRETTY_FUNCTION__) +": \t A node can be added only to a node group.");
 
     if (rDirection < 0 || rDirection > mDimension)
@@ -116,11 +123,11 @@ void NuTo::Structure::GroupAddNodeFromElementGroupCoordinateRange(int rIdentNode
     for (unsigned int iElement = 0; iElement < elementsInGroup.rows(); ++iElement)
     {
 
-        auto nodesInElement = ElementGetNodes(elementsInGroup.at(iElement,0));
+        auto nodesInElement = ElementGetNodes(elementsInGroup(iElement,0));
 
         for (int iNode = 0; iNode < nodesInElement.rows(); ++iNode)
         {
-            int nodeId = nodesInElement.at(iNode,0);
+            int nodeId = nodesInElement(iNode,0);
             nodesInGroup.insert(nodeId);
         }
     }
@@ -129,7 +136,7 @@ void NuTo::Structure::GroupAddNodeFromElementGroupCoordinateRange(int rIdentNode
     for (auto const & iNodeId : nodesInGroup)
     {
         auto nodePtr = NodeGetNodePtr(iNodeId);
-        double coordinate = nodePtr->Get(Node::COORDINATES)[rDirection];
+        double coordinate = nodePtr->Get(Node::eDof::COORDINATES)[rDirection];
 
         if (coordinate >= rMin and coordinate <= rMax)
             itGroup->second->AddMember(iNodeId, nodePtr);

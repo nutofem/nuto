@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/DofHash.h"
 #include <unordered_map>
 
 

@@ -5,10 +5,12 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/visualize/VisualizeBase.h"
+#include <string>
 
 namespace NuTo
 {
+
+enum class eVisualizeWhat;
 
 class VisualizeComponent
 {
@@ -16,11 +18,11 @@ class VisualizeComponent
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-    VisualizeComponent(NuTo::VisualizeBase::eVisualizeWhat rVisualizeComponent);
+    VisualizeComponent(NuTo::eVisualizeWhat rVisualizeComponent);
 
     virtual ~VisualizeComponent()= default;
 
-    virtual NuTo::VisualizeBase::eVisualizeWhat GetComponentEnum()const;
+    virtual NuTo::eVisualizeWhat GetComponentEnum()const;
 
     virtual std::string GetComponentName()const;
 
@@ -41,7 +43,7 @@ protected:
     VisualizeComponent() = default;
 
 private:
-    VisualizeBase::eVisualizeWhat mVisualizeComponent;
+    eVisualizeWhat mVisualizeComponent;
 
 };
 }

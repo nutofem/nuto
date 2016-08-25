@@ -10,6 +10,8 @@
 #include "nuto/geometryConcrete/collision/collidables/CollidableParticleSphere.h"
 #include "nuto/geometryConcrete/Specimen.h"
 
+#include "nuto/math/FullMatrix.h"
+
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
 #endif

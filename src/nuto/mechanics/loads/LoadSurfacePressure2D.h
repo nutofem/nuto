@@ -1,6 +1,5 @@
 // $Id: LoadSurface3D.h 178 2009-12-11 20:53:12Z eckardt4 $
-#ifndef LoadSurfacePressure2D_H
-#define LoadSurfacePressure2D_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -11,7 +10,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/loads/LoadSurfaceBase2D.h"
 
 namespace NuTo
@@ -72,6 +70,4 @@ private:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::LoadSurfacePressure2D)
 #endif
-
-#endif //LoadSurfacePressure2D_H
 

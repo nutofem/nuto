@@ -1,6 +1,5 @@
 // $Id$
-#ifndef ELEMENT_BASE_H
-#define ELEMENT_BASE_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -10,23 +9,12 @@
 #include <vector>
 #endif //ENABLE_SERIALIZATION
 
+#include <list>
 #include <map>
+#include <eigen3/Eigen/Core>
+#include "nuto/mechanics/MechanicsException.h"
+#include <memory>
 
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h" // for the Input/Output list typedefs
-
-#include "nuto/base/ErrorEnum.h"
-#include "nuto/math/FullMatrix_Def.h"
-#include "nuto/math/FullVector_Def.h"
-#include "nuto/mechanics/elements/ElementDataEnum.h"
-#include "nuto/mechanics/elements/ElementEnum.h"
-#include "nuto/mechanics/elements/ElementShapeFunctions.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
-#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
-
-#ifdef ENABLE_VISUALIZE
-#include "nuto/visualize/VisualizeBase.h"
-#include "nuto/visualize/VisualizeUnstructuredGrid.h"
-#endif // ENABLE_VISUALIZE
 
 namespace NuTo
 {
@@ -50,9 +38,49 @@ class VisualizeComponent;
 class IpDataBase;
 class ElementOutputBase;
 class IpDataStaticDataBase;
+enum class eError;
+template<typename IOEnum> class ConstitutiveIOMap;
 template <int TDim> class ContinuumElement;
 template <int TDim> class ContinuumBoundaryElement;
+template <class T, int rows, int cols> class FullMatrix;
+template <class T, int rows> class FullVector;
 
+#ifdef ENABLE_VISUALIZE
+class VisualizeUnstructuredGrid;
+
+class CellBase;
+enum class eCellTypes;
+#endif // ENABLE_VISUALIZE
+
+namespace Constitutive
+{
+    enum class eInput;
+    enum class eOutput;
+}
+
+using ConstitutiveInputMap = ConstitutiveIOMap<Constitutive::eInput>;
+using ConstitutiveOutputMap = ConstitutiveIOMap<Constitutive::eOutput>;
+
+namespace Element
+{
+    enum class eElementType;
+    enum class eOutput;
+}// namespace Element
+
+namespace ElementData
+{
+    enum class eElementDataType;
+}// namespace ElementData
+
+namespace IpData
+{
+    enum class eIpDataType;
+}// namespace IpData
+
+namespace Node
+{
+    enum class eDof : unsigned char;
+}// namespace Node
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -235,14 +263,14 @@ public:
     //! @brief calculates output data for the element
     //! @param rInput ... constitutive input map for the constitutive law
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
-    virtual Error::eError Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)=0;
+    virtual eError Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)=0;
 
     template<int TDim>
-    Error::eError EvaluateConstitutiveLaw(const ConstitutiveInputMap &rConstitutiveInput, ConstitutiveOutputMap &rConstitutiveOutput, int rIP);
+    eError EvaluateConstitutiveLaw(const ConstitutiveInputMap &rConstitutiveInput, ConstitutiveOutputMap &rConstitutiveOutput, int rIP);
 
     //! @brief calculates output data for the element with a standard input (EULER_BACKWARD static data)
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
-    Error::eError Evaluate(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput);
+    eError Evaluate(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput);
 
     //! @brief integrates the stress over the element
     //! @param rStress integrated stress
@@ -276,7 +304,7 @@ public:
     void SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData);
 
     //! @brief Update the static data of an element
-    //virtual Error::eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)=0;
+    //virtual eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)=0;
 
     Eigen::VectorXd ExtractNodeValues(Node::eDof rDofType) const
     {
@@ -456,7 +484,7 @@ public:
     //! @param rVisualizationList: a list of visualization components to be visualized
     virtual void VisualizeIntegrationPointData(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList);
 
-    virtual void GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType, std::vector<unsigned int>& VisualizationCellsIncidence,
+    virtual void GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType, std::vector<unsigned int>& VisualizationCellsIncidence,
             std::vector<unsigned int>& VisualizationCellsIP) const;
 
 #endif // ENABLE_VISUALIZE
@@ -513,5 +541,4 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::ElementBase)
 #endif // ENABLE_SERIALIZATION
 
-#endif //ELEMENT_BASE_H
 

@@ -1,14 +1,16 @@
 // $Id $
-#ifndef JACOBI_H
-#define JACOBI_H
+#pragma once
+
+
+
+
+
+
+// parent
+#include "nuto/optimize/Optimizer.h"
 
 #include <vector>
-#include <boost/dynamic_bitset.hpp>
-#include <memory>
 
-#include "nuto/optimize/Optimizer.h"
-#include "nuto/optimize/OptimizeException.h"
-#include "nuto/optimize/CallbackHandlerGrid.h"
 
 
 namespace NuTo
@@ -135,4 +137,3 @@ protected:
    	size_t mNumParameters;
 };
 } // namespace NuTo
-#endif // JACOBI_H

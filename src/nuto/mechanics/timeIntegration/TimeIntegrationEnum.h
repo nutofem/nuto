@@ -3,16 +3,15 @@
 
 namespace NuTo
 {
-namespace TimeIntegration
-{
-enum eConvergenceState
-{
-	CONTINUE_ITERATION=0,           //!< continue iteration to converge
-	CONVERGED,                      //!< converged
-    DECREASE_TIME_STEP              //!< no convergence, decrease load step
-};
+//enum class eTimeIntegrationConvergenceState
+//{
+//	CONTINUE_ITERATION=0,           //!< continue iteration to converge
+//	CONVERGED,                      //!< converged
+//    DECREASE_TIME_STEP              //!< no convergence, decrease load step
+//};
 
-enum eResultType
+
+enum class eTimeIntegrationResultType
 {
     TIME = 0,                         //!< time
     NODE_DISPLACEMENT,              //!< nodal diplacement
@@ -26,6 +25,5 @@ enum eResultType
 
 };
 
-}// namespace TimeIntegration
 }// namespace NuTo
 

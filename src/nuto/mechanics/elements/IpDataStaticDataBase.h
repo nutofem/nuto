@@ -1,14 +1,12 @@
 // $Id$ 
-#ifndef IPDATASTATICDATABASE_H_
-#define IPDATASTATICDATABASE_H_
+#pragma once
 
 #include "nuto/mechanics/elements/IpDataBase.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataBase.h"
 #include <boost/ptr_container/ptr_vector.hpp>
 
 namespace NuTo
 {
-
+class ConstitutiveStaticDataBase;
 //! @author Joerg F. Unger
 //! @date Apr 28, 2010
 //! @brief ...
@@ -22,24 +20,11 @@ public:
 
     virtual ~IpDataStaticDataBase();
 
-    ConstitutiveStaticDataBase* GetStaticData(int rTimeStep = 0) override
-    {
-        assert((unsigned) rTimeStep < mStaticData.size());
-        return &(mStaticData[rTimeStep]);
-    }
+    ConstitutiveStaticDataBase* GetStaticData(int rTimeStep = 0) override;
 
-    const ConstitutiveStaticDataBase* GetStaticData(int rTimeStep = 0) const override
-    {
-        assert((unsigned) rTimeStep < mStaticData.size());
-        return &(mStaticData[rTimeStep]);
-    }
+    const ConstitutiveStaticDataBase* GetStaticData(int rTimeStep = 0) const override;
 
-    void SetStaticData(ConstitutiveStaticDataBase* rStaticData) override
-    {
-//        if (mStaticData.empty())
-//            mStaticData.resize(1);
-        mStaticData.insert(mStaticData.begin(), rStaticData);
-    }
+    void SetStaticData(ConstitutiveStaticDataBase* rStaticData) override;
 
     IpDataStaticDataBase& GetStaticDataBase()
     {
@@ -98,4 +83,3 @@ protected:
     boost::ptr_vector<ConstitutiveStaticDataBase> mStaticData;
 };
 }
-#endif /* IPDATASTATICDATABASE_H_ */

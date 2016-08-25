@@ -1,13 +1,17 @@
 // $Id $
-#ifndef ELEMENT_OUTPUT_FULLMATRIX_INT_H_
-#define ELEMENT_OUTPUT_FULLMATRIX_INT_H_
+#pragma once
 
-#include "nuto/math/FullMatrix.h"
+#include "nuto/math/FullMatrix_Def.h"
 
 #include "nuto/mechanics/elements/ElementOutputBase.h"
 
 namespace NuTo
 {
+namespace IpData
+{
+    enum class eIpStaticDataType;
+}// namespace IpData
+
 //! @author Joerg F. Unger
 //! @date Apr 29, 2010
 //! @brief ...
@@ -55,4 +59,3 @@ private:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::ElementOutputIpData)
 #endif // ENABLE_SERIALIZATION
-#endif /* ELEMENT_OUTPUT_FULLMATRIX_INT_H_ */

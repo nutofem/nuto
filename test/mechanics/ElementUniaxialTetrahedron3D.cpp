@@ -23,8 +23,8 @@ void RunGmsh(NuTo::Interpolation::eTypeOrder rTypeOrder)
     myStructure.SetShowTime(false);
 
     int myInterpolationType = myStructure.InterpolationTypeCreate("Tetrahedron3D");
-    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::DISPLACEMENTS, rTypeOrder);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, rTypeOrder);
 
     myStructure.ImportFromGmsh(file, "ConstitutiveLawIP", "NoIPData");
 
@@ -83,8 +83,8 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
             }
 
     int myInterpolationType = myStructure.InterpolationTypeCreate("Tetrahedron3D");
-    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::DISPLACEMENTS, rTypeOrder);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, rTypeOrder);
 
     for (int iZ=0; iZ<numElementsZ; iZ++)
         for (int iY=0; iY<numElementsY; iY++)
@@ -147,8 +147,8 @@ int main(int argc, char* argv[])
 
     try
     {
-        Run(NuTo::Interpolation::EQUIDISTANT1);
-        Run(NuTo::Interpolation::EQUIDISTANT2);
+        Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+        Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
     }
     catch (NuTo::Exception& e)
     {

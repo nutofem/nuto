@@ -29,7 +29,7 @@ public:
 
     int GetIp(void) const override;
 
-    NuTo::VisualizeBase::eVisualizeWhat GetComponentEnum(void) const override;
+    NuTo::eVisualizeWhat GetComponentEnum(void) const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

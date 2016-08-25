@@ -13,6 +13,10 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
+
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+
 //! @brief constructor
 template<int TDim>
 NuTo::ConstitutiveStaticDataMisesPlasticity<TDim>::ConstitutiveStaticDataMisesPlasticity() :
@@ -26,9 +30,9 @@ NuTo::ConstitutiveStaticDataMisesPlasticity<TDim>::ConstitutiveStaticDataMisesPl
 template<int TDim>
 bool NuTo::ConstitutiveStaticDataMisesPlasticity<TDim>::CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType rConstitutiveType, NuTo::Element::eElementType rElementType) const
 {
-    if (rConstitutiveType == NuTo::Constitutive::MISES_PLASTICITY_ENGINEERING_STRESS)
+    if (rConstitutiveType == NuTo::Constitutive::eConstitutiveType::MISES_PLASTICITY_ENGINEERING_STRESS)
     {
-        if (rElementType == Element::CONTINUUMELEMENT)
+        if (rElementType == Element::eElementType::CONTINUUMELEMENT)
             return true;
 
     }

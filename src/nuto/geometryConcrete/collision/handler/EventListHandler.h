@@ -5,15 +5,19 @@
  *      Author: ttitsche
  */
 
-#ifndef EVENTLISTHANDLER_H_
-#define EVENTLISTHANDLER_H_
+#pragma once
 
-#include "nuto/geometryConcrete/collision/Event.h"
 #include <vector>
+#include <boost/ptr_container/ptr_set.hpp>
 
 namespace NuTo
 {
+class CollidableBase;
+class Event;
 class SubBoxHandler;
+
+typedef boost::ptr_set<Event> GlobalEvents;
+typedef std::vector<Event*> LocalEvents;
 
 //! @brief ... class for event list operations
 class EventListHandler
@@ -45,7 +49,7 @@ public:
 
 	//! @brief ... deletes every event in rOldEvents
 	//! @param rOldEvents ... old events that need to be deleted
-	void DeleteOldEvents(Event::LocalEvents& rOldEvents);
+    void DeleteOldEvents(LocalEvents& rOldEvents);
 
 	//! @brief ... returns the time of the most recent event
 	const double GetNextEventTime();
@@ -64,7 +68,7 @@ public:
 	//! @brief ... prints all time mesurement statistics
 	void PrintStatistics(double rTimeTotal);
 private:
-	Event::GlobalEvents mEvents;
+    GlobalEvents mEvents;
 
 	double mTimeUpdate;
 	double mTimeErase;
@@ -79,4 +83,4 @@ private:
 };
 
 } /* namespace NuTo */
-#endif /* EVENTLISTHANDLER_H_ */
+

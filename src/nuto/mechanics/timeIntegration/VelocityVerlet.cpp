@@ -15,12 +15,17 @@
 #include <omp.h>
 # endif
 
+
+#include "nuto/math/SparseMatrixCSRVector2.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
 #include "nuto/mechanics/timeIntegration/VelocityVerlet.h"
 #include "nuto/mechanics/timeIntegration/TimeIntegrationEnum.h"
 #include "nuto/math/FullMatrix.h"
+#include "nuto/base/ErrorEnum.h"
 #include "nuto/base/Timer.h"
 
 //! @brief constructor
@@ -70,7 +75,7 @@ void NuTo::VelocityVerlet::serialize(Archive & ar, const unsigned int version)
 //! @brief perform the time integration
 //! @param rStructure ... structure
 //! @param rTimeDelta ... length of the simulation
-NuTo::Error::eError NuTo::VelocityVerlet::Solve(double rTimeDelta)
+NuTo::eError NuTo::VelocityVerlet::Solve(double rTimeDelta)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -116,10 +121,10 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(double rTimeDelta)
         //calculate lumped mass matrix
         StructureOutputBlockMatrix hessian2 = mStructure->BuildGlobalHessian2Lumped();
         double numericMass = 0;
-        numericMass += hessian2.JJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
-        numericMass += hessian2.JK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
-        numericMass += hessian2.KJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
-        numericMass += hessian2.KK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
+        numericMass += hessian2.JJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
+        numericMass += hessian2.JK(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
+        numericMass += hessian2.KJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
+        numericMass += hessian2.KK(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
 
         numericMass /= mStructure->GetDimension(); // since the mass is added to nodes in every direction
         std::cout << "the total mass is " << numericMass << std::endl;
@@ -137,7 +142,7 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(double rTimeDelta)
         {
          	//increase time step
             curTime += mTimeStep;
-            std::cout << "curTime " << curTime <<   " (" << curTime/rTimeDelta << ") max Disp = "  <<  dof_dt0.J[Node::DISPLACEMENTS].maxCoeff() << std::endl;
+            std::cout << "curTime " << curTime <<   " (" << curTime/rTimeDelta << ") max Disp = "  <<  dof_dt0.J[Node::eDof::DISPLACEMENTS].maxCoeff() << std::endl;
 
             //apply constraints for new time stepdouble RHSConstraint
 //            double timeDependentConstraintFactor(0);
@@ -214,7 +219,7 @@ NuTo::Error::eError NuTo::VelocityVerlet::Solve(double rTimeDelta)
         mStructure->GetLogger()<< "[NuTo::VelocityVerlet::Solve] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << "\n";
 #endif
 #endif
-    return NuTo::Error::SUCCESSFUL;
+    return NuTo::eError::SUCCESSFUL;
 
 }
 

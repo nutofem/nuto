@@ -5,6 +5,10 @@
  *      Author: ttitsche
  */
 
+#include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/elements/ElementShapeFunctions.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation3DBrick.h"
 
 NuTo::Interpolation3DBrick::Interpolation3DBrick(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
@@ -13,20 +17,20 @@ NuTo::Interpolation3DBrick::Interpolation3DBrick(NuTo::Node::eDof rDofType, NuTo
     Initialize();
 }
 
-NuTo::IntegrationType::eIntegrationType NuTo::Interpolation3DBrick::GetStandardIntegrationType() const
+NuTo::eIntegrationType NuTo::Interpolation3DBrick::GetStandardIntegrationType() const
 {
     switch (mTypeOrder)
     {
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT1:
-        return NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip;
+        return NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
-        return NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip;
+        return NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip;
     case NuTo::Interpolation::eTypeOrder::LOBATTO2:
-        return NuTo::IntegrationType::IntegrationType3D8NLobatto3x3x3Ip;
+        return NuTo::eIntegrationType::IntegrationType3D8NLobatto3x3x3Ip;
     case NuTo::Interpolation::eTypeOrder::LOBATTO3:
-        return NuTo::IntegrationType::IntegrationType3D8NLobatto4x4x4Ip;
+        return NuTo::eIntegrationType::IntegrationType3D8NLobatto4x4x4Ip;
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
-        return NuTo::IntegrationType::IntegrationType3D8NLobatto5x5x5Ip;
+        return NuTo::eIntegrationType::IntegrationType3D8NLobatto5x5x5Ip;
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }

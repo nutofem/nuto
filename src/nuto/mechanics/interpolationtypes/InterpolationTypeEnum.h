@@ -5,12 +5,10 @@
  *      Author: ttitsche
  */
 
-#ifndef INTERPOLATIONTYPEENUM_H_
-#define INTERPOLATIONTYPEENUM_H_
+#pragma once
 
 #include <map>
-#include <boost/algorithm/string.hpp>
-#include "nuto/mechanics/MechanicsException.h"
+#include <string>
 
 namespace NuTo
 {
@@ -18,7 +16,7 @@ namespace NuTo
 namespace Interpolation
 {
 
-enum eShapeType
+enum class eShapeType
 {
     SPRING,
     TRUSS1D,
@@ -29,21 +27,13 @@ enum eShapeType
     BRICK3D,
     INTERFACE
 };
-static inline std::map<eShapeType, std::string> GetShapeTypeMap()
-{
-    std::map<eShapeType, std::string> shapeTypeMap;
-    shapeTypeMap[eShapeType::SPRING]        = "SPRING";
-    shapeTypeMap[eShapeType::TRUSS1D]       = "TRUSS1D";
-    shapeTypeMap[eShapeType::TRUSSXD]       = "TRUSSXD";
-    shapeTypeMap[eShapeType::TRIANGLE2D]    = "TRIANGLE2D";
-    shapeTypeMap[eShapeType::QUAD2D]        = "QUAD2D";
-    shapeTypeMap[eShapeType::TETRAHEDRON3D] = "TETRAHEDRON3D";
-    shapeTypeMap[eShapeType::BRICK3D]       = "BRICK3D";
-    shapeTypeMap[eShapeType::INTERFACE]       = "INTERFACE";
-    return shapeTypeMap;
-}
 
-enum eTypeOrder
+const std::map<eShapeType, std::string> GetShapeTypeMap();
+std::string ShapeTypeToString(const eShapeType& rShapeType);
+eShapeType ShapeTypeToEnum(const std::string& rShapeType);
+
+
+enum class eTypeOrder
 {
     EQUIDISTANT1,
     EQUIDISTANT2,
@@ -53,71 +43,11 @@ enum eTypeOrder
     LOBATTO3,
     LOBATTO4
 };
-static inline std::map<eTypeOrder, std::string> GetTypeOrderMap()
-{
-    std::map<eTypeOrder, std::string> typeOrderMap;
-    typeOrderMap[eTypeOrder::EQUIDISTANT1]  = "EQUIDISTANT1";
-    typeOrderMap[eTypeOrder::EQUIDISTANT2]  = "EQUIDISTANT2";
-    typeOrderMap[eTypeOrder::EQUIDISTANT3]  = "EQUIDISTANT3";
-    typeOrderMap[eTypeOrder::EQUIDISTANT4]  = "EQUIDISTANT4";
-    typeOrderMap[eTypeOrder::LOBATTO2]      = "LOBATTO2";
-    typeOrderMap[eTypeOrder::LOBATTO3]      = "LOBATTO3";
-    typeOrderMap[eTypeOrder::LOBATTO4]      = "LOBATTO4";
-    return typeOrderMap;
-}
 
-
-
-
-
-static inline std::string ShapeTypeToString(const eShapeType& rShapeType)
-{
-    try
-    {
-        return GetShapeTypeMap().find(rShapeType)->second;
-    }
-    catch (const std::out_of_range& e)
-    {
-        throw NuTo::MechanicsException("[NuTo::Interpolation::ShapeTypeToString] Enum undefined or not implemented.");
-    }
-}
-
-
-static inline std::string TypeOrderToString(const eTypeOrder& rTypeOrder)
-{
-    try
-    {
-        return GetTypeOrderMap().find(rTypeOrder)->second;
-    }
-    catch (const std::out_of_range& e)
-    {
-        throw NuTo::MechanicsException("[NuTo::Interpolation::TypeOrderToString] Enum undefined or not implemented.");
-    }
-}
-
-static inline eShapeType ShapeTypeToEnum(const std::string& rShapeType)
-{
-    std::string uppercase = boost::to_upper_copy(rShapeType);
-
-    for(auto entry : GetShapeTypeMap())
-        if (entry.second == uppercase)
-            return entry.first;
-
-    throw NuTo::MechanicsException("[NuTo::Interpolation::ShapeTypeToEnum] ShapeType " + rShapeType + " has no enum equivalent or is not implemented.");
-}
-
-static inline eTypeOrder TypeOrderToEnum(const std::string& rTypeOrder)
-{
-    std::string uppercase = boost::to_upper_copy(rTypeOrder);
-
-    for(auto entry : GetTypeOrderMap())
-        if (entry.second == uppercase)
-            return entry.first;
-
-    throw NuTo::MechanicsException("[NuTo::Interpolation::TypeOrderToEnum] TypeOrder " + rTypeOrder + " has no enum equivalent or is not implemented.");
-}
+const std::map<eTypeOrder, std::string> GetTypeOrderMap();
+std::string TypeOrderToString(const eTypeOrder& rTypeOrder);
+eTypeOrder TypeOrderToEnum(const std::string& rTypeOrder);
 
 } // namespace Interpolation
 } // namespace NuTo
 
-#endif /* INTERPOLATIONTYPEENUM_H_ */

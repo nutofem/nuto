@@ -1,19 +1,22 @@
 // $Id$
 
-#ifndef CONSTRAINTEQUATIONTERM_H_
-#define CONSTRAINTEQUATIONTERM_H_
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/nodes/NodeEnum.h"
 
 namespace NuTo
 {
 class NodeBase;
 template<class T> class SparseMatrixCSRGeneral;
+
+namespace Node
+{
+    enum class eDof : unsigned char;
+}// namespace Node
 
 //! @brief ... term in a constraint equation
 //! @author Stefan Eckardt, ISM
@@ -77,4 +80,3 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintEquationTerm)
 #endif // ENABLE_SERIALIZATION
 
-#endif // CONSTRAINTEQUATIONTERM_H_
