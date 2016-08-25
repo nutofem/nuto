@@ -132,7 +132,10 @@ NuTo::BlockFullVector<double> NuTo::BlockSparseMatrix::operator *(const BlockFul
         result[dofRow].Resize((*this)(dofRow, dofRow).GetNumRows()); // automatically sets to zero
         for (auto dofSum : activeDofTypes)
         {
-            result[dofRow] += (*this)(dofRow, dofSum) * rRhs[dofSum];
+            result[dofRow] += (*this)(dofRow, dofSum).operator*(rRhs[dofSum]);
+            // Strange work-around: Calling the operator* directly instead of
+            // using * fixes an error caused by eigen version 3.3~beta2-1
+            // Eigen somehow tries to convert the SparseMatrixCSRVector2<double> to a double type and (obviously) fails.
         }
     }
 
