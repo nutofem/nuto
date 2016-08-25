@@ -23,8 +23,6 @@ public:
 
     // Misc
     // --------------------------------------------------------------------------------------------
-    eBoundaryType mBCType;
-    double mAlpha;                  //!< parameter for robin boundary condition
     double mDetJxWeightIPxSection;
     double mDetJacobian = 0;
 };

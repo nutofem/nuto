@@ -14,15 +14,6 @@ namespace NuTo
 {
 
 
-enum class eBoundaryType
-{
-    NOT_SET,
-    NEUMANN_HOMOGENEOUS,   //!< grad nonlocal eq strain * n = 0
-    ROBIN_INHOMOGENEOUS,            //!< l * grad nonlocal eq strain * n + nonlocal eq strain = local eq strain
-    MACAULAY                        //!< l * grad nonlocal eq strain * n + (nonlocal eq strain - local eq strain)_- = 0
-};
-
-
 class ElementOutputIpData;
 template <int TDim> class ContinuumElement;
 template <typename T> class BlockFullVector;
@@ -147,16 +138,6 @@ public:
 
     virtual const Eigen::Vector3d GetGlobalIntegrationPointCoordinates(int rIpNum) const override;
 
-    eBoundaryType GetBoundaryConditionType() const
-    {
-        return mBoundaryConditionType;
-    }
-
-    void SetBoundaryConditionType(eBoundaryType rBoundaryConditionType)
-    {
-        mBoundaryConditionType = rBoundaryConditionType;
-    }
-
     const ContinuumBoundaryElement<1>& AsContinuumBoundaryElement1D() const override
     {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<1>.");}
 
@@ -246,8 +227,6 @@ protected:
 
     // surface id
     int mSurfaceId;
-
-    eBoundaryType mBoundaryConditionType;
 }
 ;
 

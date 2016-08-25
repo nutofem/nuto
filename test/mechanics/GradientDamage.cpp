@@ -104,22 +104,17 @@ int SetConstitutiveLaw(NuTo::Structure& rStructure)
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::DENSITY, 1.0);
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 30000);
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.2);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS, 1.3);
+    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS, 3);
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER, 0.);
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH, 4.);
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY, 0.021);
     rStructure.ConstitutiveLawSetDamageLaw(lawId, NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING);
 
-//    int myNumberConstitutiveLaw = rStructure.ConstitutiveLawCreate("LinearElasticEngineeringStress");
-//    rStructure.ConstitutiveLawSetDensity(myNumberConstitutiveLaw, 1.0);
-//    rStructure.ConstitutiveLawSetYoungsModulus(myNumberConstitutiveLaw, 30000);
-//    rStructure.ConstitutiveLawSetPoissonsRatio(myNumberConstitutiveLaw, 0.0);
-
     return lawId;
 }
 
-void CheckStiffnesses(NuTo::Structure& rStructure)
+void ApplyDofValues(NuTo::Structure& rStructure)
 {
     double boundaryDisplacement = 1.e-1;
 
@@ -137,6 +132,11 @@ void CheckStiffnesses(NuTo::Structure& rStructure)
         if (node->GetNum(NuTo::Node::eDof::NONLOCALEQSTRAIN) > 0)
             node->Set(NuTo::Node::eDof::NONLOCALEQSTRAIN, disps(0, 0) / 10);
     }
+}
+
+void CheckStiffnesses(NuTo::Structure& rStructure)
+{
+    ApplyDofValues(rStructure);
 
 //    rStructure.Info();
 
@@ -156,8 +156,6 @@ void Visualize(NuTo::Structure& rStructure, std::string rDir)
     rStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
     rStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN);
     rStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::LOCAL_EQ_STRAIN);
-    rStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
-    rStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
     rStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DAMAGE);
 
 
@@ -167,13 +165,45 @@ void Visualize(NuTo::Structure& rStructure, std::string rDir)
     boost::filesystem::create_directory(resultDir);
 
     rStructure.ExportVtkDataFileElements(resultDir+"/Elements.vtu", true);
-    rStructure.ExportVtkDataFileNodes(resultDir+"/Nodes.vtu", true);
 }
 
-void TestStructure1D(NuTo::eBoundaryType rType)
+int AddInterpolationType(NuTo::Structure& rStructure, NuTo::Interpolation::eShapeType rShape)
+{
+    int it = rStructure.InterpolationTypeCreate(rShape);
+    rStructure.InterpolationTypeAdd(it, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    rStructure.InterpolationTypeAdd(it, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    rStructure.InterpolationTypeAdd(it, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    return it;
+}
+
+int AddBoundaryElementsAtCoordinate(NuTo::Structure &s, double rCoordinate)
+{
+    int gNodesBoundary = s.GroupCreate("NODES");
+    s.GroupAddNodeCoordinateRange(gNodesBoundary, 0, rCoordinate - 1.e-6, rCoordinate + 1.e-6);
+
+    int elemGroupBoundary = s.GroupCreate("ELEMENTS");
+    s.GroupAddElementsFromNodes(elemGroupBoundary, gNodesBoundary, false);
+
+    int gBoundaryElements = s.BoundaryElementsCreate(elemGroupBoundary, gNodesBoundary);
+    return s.GroupGetNumMembers(gBoundaryElements);
+}
+
+void AddBoundaryElements(NuTo::Structure& s, double rLength, int rNumExpectedBoundaryElements)
+{
+    int numBoundaryElements = 0;
+    numBoundaryElements += AddBoundaryElementsAtCoordinate(s, 0);
+    numBoundaryElements += AddBoundaryElementsAtCoordinate(s, rLength);
+
+    if (numBoundaryElements != rNumExpectedBoundaryElements)
+    {
+        throw NuTo::MechanicsException("Wrong number of boundary elements. \nCreated: " + std::to_string(numBoundaryElements) + "\nExpected: " + std::to_string(rNumExpectedBoundaryElements));
+    }
+}
+
+void TestStructure1D(bool rUseRobinBoundaryElements)
 {
     NuTo::Timer timer(__FUNCTION__);
-    const int numElements = 5;
+    const int numElements = 2;
     const double length = 100;
     const double area = 10;
 
@@ -192,10 +222,7 @@ void TestStructure1D(NuTo::eBoundaryType rType)
         s.NodeCreate(iNode, nodeCoordinates);
     }
 
-    int interpolationType = s.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRUSS1D);
-    s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    int interpolationType = AddInterpolationType(s, NuTo::Interpolation::eShapeType::TRUSS1D);
 
     // create elements
     NuTo::FullVector<int, Eigen::Dynamic> nodes(2);
@@ -228,25 +255,9 @@ void TestStructure1D(NuTo::eBoundaryType rType)
     s.ElementTotalSetConstitutiveLaw(SetConstitutiveLaw(s));
     s.ElementTotalSetSection(mySection);
 
-    if (rType != NuTo::eBoundaryType::NOT_SET)
+    if (rUseRobinBoundaryElements)
     {
-        int nodeGroupBoundary = s.GroupCreate("NODES");
-        s.GroupAddNodeCoordinateRange(nodeGroupBoundary, 0, -1.e-6, 1.e-6);
-        s.GroupAddNodeCoordinateRange(nodeGroupBoundary, 0, length - 1.e-6, length + 1.e-6);
-
-        int elemGroupBoundary = s.GroupCreate("ELEMENTS");
-        s.GroupAddElementsFromNodes(elemGroupBoundary, nodeGroupBoundary, false);
-
-        assert(s.GroupGetNumMembers(nodeGroupBoundary) == 2);
-        assert(s.GroupGetNumMembers(elemGroupBoundary) == 2);
-
-        int gBoundaryElements = s.BoundaryElementsCreate(elemGroupBoundary, nodeGroupBoundary);
-        auto boundaryElementIds = s.GroupGetMemberIds(gBoundaryElements);
-        for (int iBoundaryElement = 0; iBoundaryElement < boundaryElementIds.GetNumRows(); ++iBoundaryElement)
-        {
-            NuTo::ContinuumBoundaryElement<1>& boundaryElement = s.ElementGetElementPtr(boundaryElementIds.GetValue(iBoundaryElement))->AsContinuumBoundaryElement1D();
-            boundaryElement.SetBoundaryConditionType(rType);
-        }
+        AddBoundaryElements(s, length, 2);
     }
     CheckStiffnesses(s);
     Visualize(s, "TRUSS1D");
@@ -254,7 +265,7 @@ void TestStructure1D(NuTo::eBoundaryType rType)
 
 
 
-void TestStructure2D(NuTo::eBoundaryType rType, NuTo::Interpolation::eShapeType rShape, NuTo::eSectionType rSection)
+void TestStructure2D(NuTo::Interpolation::eShapeType rShape, NuTo::eSectionType rSection, bool rUseRobinBoundaryElements)
 {
     NuTo::Timer timer(std::string(__FUNCTION__) + " " + NuTo::Interpolation::ShapeTypeToString(rShape));
 
@@ -263,7 +274,7 @@ void TestStructure2D(NuTo::eBoundaryType rType, NuTo::Interpolation::eShapeType 
     double lY = 5.;
     double lZ = 2.;
 
-    int numElementsX = 3;
+    int numElementsX = 1;
     int numElementsY = 2;
 
     NuTo::Structure s(2);
@@ -289,10 +300,7 @@ void TestStructure2D(NuTo::eBoundaryType rType, NuTo::Interpolation::eShapeType 
         }
     }
 
-    int myInterpolationType = s.InterpolationTypeCreate(rShape);
-    s.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    s.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    s.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    int myInterpolationType = AddInterpolationType(s, rShape);
 
     //create elements
     for (int countY = 0; countY < numElementsY; countY++)
@@ -332,34 +340,16 @@ void TestStructure2D(NuTo::eBoundaryType rType, NuTo::Interpolation::eShapeType 
     s.ElementTotalSetConstitutiveLaw(myConstitutiveLaw);
     s.ElementTotalSetSection(mySection);
 
-    if (rType != NuTo::eBoundaryType::NOT_SET)
+    if (rUseRobinBoundaryElements)
     {
-        int nodeGroupBoundary = s.GroupCreate("NODES");
-        s.GroupAddNodeCoordinateRange(nodeGroupBoundary, 0, -1.e-6, 1.e-6);
-        s.GroupAddNodeCoordinateRange(nodeGroupBoundary, 0, lX - 1.e-6, lX + 1.e-6);
-
-        int elemGroupBoundary = s.GroupCreate("ELEMENTS");
-        s.GroupAddElementsFromNodes(elemGroupBoundary, nodeGroupBoundary, false);
-
-        assert(s.GroupGetNumMembers(nodeGroupBoundary) >= 4);
-
-
-        int gBoundaryElements = s.BoundaryElementsCreate(elemGroupBoundary, nodeGroupBoundary);
-        assert(s.GroupGetNumMembers(gBoundaryElements) == 2 * numElementsY);
-
-        auto boundaryElementIds = s.GroupGetMemberIds(gBoundaryElements);
-        for (int iBoundaryElement = 0; iBoundaryElement < boundaryElementIds.GetNumRows(); ++iBoundaryElement)
-        {
-            NuTo::ContinuumBoundaryElement<2>& boundaryElement = s.ElementGetElementPtr(boundaryElementIds.GetValue(iBoundaryElement))->AsContinuumBoundaryElement2D();
-            boundaryElement.SetBoundaryConditionType(rType);
-        }
+        AddBoundaryElements(s, lX, 2*numElementsY);
     }
     CheckStiffnesses(s);
     Visualize(s, NuTo::Interpolation::ShapeTypeToString(rShape));
 }
 
 
-void TestStructure3D(NuTo::eBoundaryType rType, NuTo::Interpolation::eShapeType rShape)
+void TestStructure3D(NuTo::Interpolation::eShapeType rShape, bool rUseRobinBoundaryElements)
 {
     NuTo::Timer timer(std::string(__FUNCTION__) + " " + NuTo::Interpolation::ShapeTypeToString(rShape));
 
@@ -378,10 +368,7 @@ void TestStructure3D(NuTo::eBoundaryType rType, NuTo::Interpolation::eShapeType 
     nodeIds[6] = s.NodeCreate(NuTo::FullVector<double, 3> ({lX,lY,lZ}));
     nodeIds[7] = s.NodeCreate(NuTo::FullVector<double, 3> ({ 0,lY,lZ}));
 
-    int myInterpolationType = s.InterpolationTypeCreate(rShape);
-    s.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    s.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    s.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    int myInterpolationType = AddInterpolationType(s, rShape);
 
     if (rShape == NuTo::Interpolation::eShapeType::BRICK3D)
         s.ElementCreate(myInterpolationType, nodeIds, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
@@ -415,26 +402,13 @@ void TestStructure3D(NuTo::eBoundaryType rType, NuTo::Interpolation::eShapeType 
     s.ElementTotalSetSection(mySection);
 
 
-    if (rType != NuTo::eBoundaryType::NOT_SET)
+    if (rUseRobinBoundaryElements)
     {
-        int nodeGroupBoundary = s.GroupCreate("NODES");
-        s.GroupAddNodeCoordinateRange(nodeGroupBoundary, 0, -1.e-6, 1.e-6);
-        s.GroupAddNodeCoordinateRange(nodeGroupBoundary, 0, lX - 1.e-6, lX + 1.e-6);
+        int numExpectedBoundaryElements = 2; // for brick
+        if (rShape == NuTo::Interpolation::eShapeType::TETRAHEDRON3D)
+            numExpectedBoundaryElements = 4;
 
-        int elemGroupBoundary = s.GroupCreate("ELEMENTS");
-        s.GroupAddElementsFromNodes(elemGroupBoundary, nodeGroupBoundary, false);
-
-
-        int gBoundaryElements = s.BoundaryElementsCreate(elemGroupBoundary, nodeGroupBoundary);
-        std::cout << "Num boundary elements: " << s.GroupGetNumMembers(gBoundaryElements) << std::endl;
-        assert(s.GroupGetNumMembers(gBoundaryElements) >= 2);
-
-        auto boundaryElementIds = s.GroupGetMemberIds(gBoundaryElements);
-        for (int iBoundaryElement = 0; iBoundaryElement < boundaryElementIds.GetNumRows(); ++iBoundaryElement)
-        {
-            NuTo::ContinuumBoundaryElement<3>& boundaryElement = s.ElementGetElementPtr(boundaryElementIds.GetValue(iBoundaryElement))->AsContinuumBoundaryElement3D();
-            boundaryElement.SetBoundaryConditionType(rType);
-        }
+        AddBoundaryElements(s, lX, numExpectedBoundaryElements);
     }
 
     CheckStiffnesses(s);
@@ -461,7 +435,7 @@ void SetupNewmark(NuTo::NewmarkDirect& rTimeIntegration, int rBC, std::string rD
 {
     double simulationTime = 1;
     double dispEnd = 0.01;
-    int numLoadSteps = 10;
+    int numLoadSteps = 3;
 
     NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> timeDepDisp(2, 2);
     timeDepDisp << 0, 0, simulationTime, dispEnd;
@@ -487,7 +461,7 @@ void Check1D2D3D()
     double ly = .5;
     double lz = .5;
 
-    int numElements = 11;
+    int numElements = 3;
     int numNodesX = numElements + 1;
     double lengthElementX = lx / numElements;
 
@@ -500,22 +474,13 @@ void Check1D2D3D()
     s2D.SetShowTime(false);
     s3D.SetShowTime(false);
 
-    int interpolationType1D = s1D.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRUSS1D);
-    s1D.InterpolationTypeAdd(interpolationType1D, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    s1D.InterpolationTypeAdd(interpolationType1D, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    s1D.InterpolationTypeAdd(interpolationType1D, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    int interpolationType1D = AddInterpolationType(s1D, NuTo::Interpolation::eShapeType::TRUSS1D);
     s1D.InterpolationTypeSetIntegrationType(interpolationType1D, NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip, NuTo::IpData::eIpDataType::STATICDATA);
 
-    int interpolationType2D = s2D.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
-    s2D.InterpolationTypeAdd(interpolationType2D, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    s2D.InterpolationTypeAdd(interpolationType2D, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    s2D.InterpolationTypeAdd(interpolationType2D, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    int interpolationType2D = AddInterpolationType(s2D, NuTo::Interpolation::eShapeType::QUAD2D);
     s2D.InterpolationTypeSetIntegrationType(interpolationType2D, NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip, NuTo::IpData::eIpDataType::STATICDATA);
 
-    int interpolationType3D = s3D.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::BRICK3D);
-    s3D.InterpolationTypeAdd(interpolationType3D, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    s3D.InterpolationTypeAdd(interpolationType3D, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    s3D.InterpolationTypeAdd(interpolationType3D, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    int interpolationType3D = AddInterpolationType(s3D, NuTo::Interpolation::eShapeType::BRICK3D);
     s3D.InterpolationTypeSetIntegrationType(interpolationType3D, NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip, NuTo::IpData::eIpDataType::STATICDATA);
 
 
@@ -715,6 +680,12 @@ void Check1D2D3D()
 }
 
 }  // namespace NuToTest
+
+void CheckBoundaryElements()
+{
+
+}
+
 }  // namespace GradientDamage
 
 int main()
@@ -727,13 +698,13 @@ int main()
 
         NuToTest::GradientDamage::CheckDamageLaws();
 
-        NuToTest::GradientDamage::TestStructure1D(NuTo::eBoundaryType::ROBIN_INHOMOGENEOUS);
-        NuToTest::GradientDamage::TestStructure2D(NuTo::eBoundaryType::ROBIN_INHOMOGENEOUS, NuTo::Interpolation::eShapeType::QUAD2D, NuTo::eSectionType::PLANE_STRAIN);
-        NuToTest::GradientDamage::TestStructure2D(NuTo::eBoundaryType::ROBIN_INHOMOGENEOUS, NuTo::Interpolation::eShapeType::QUAD2D, NuTo::eSectionType::PLANE_STRESS);
-        NuToTest::GradientDamage::TestStructure2D(NuTo::eBoundaryType::ROBIN_INHOMOGENEOUS, NuTo::Interpolation::eShapeType::TRIANGLE2D, NuTo::eSectionType::PLANE_STRAIN);
-        NuToTest::GradientDamage::TestStructure2D(NuTo::eBoundaryType::ROBIN_INHOMOGENEOUS, NuTo::Interpolation::eShapeType::TRIANGLE2D, NuTo::eSectionType::PLANE_STRESS);
-        NuToTest::GradientDamage::TestStructure3D(NuTo::eBoundaryType::ROBIN_INHOMOGENEOUS, NuTo::Interpolation::eShapeType::BRICK3D);
-        NuToTest::GradientDamage::TestStructure3D(NuTo::eBoundaryType::ROBIN_INHOMOGENEOUS, NuTo::Interpolation::eShapeType::TETRAHEDRON3D);
+        bool useRobinBoundaryElements = true;
+
+        NuToTest::GradientDamage::TestStructure1D(useRobinBoundaryElements);
+        NuToTest::GradientDamage::TestStructure2D(NuTo::Interpolation::eShapeType::QUAD2D, NuTo::eSectionType::PLANE_STRESS, useRobinBoundaryElements);
+        NuToTest::GradientDamage::TestStructure2D(NuTo::Interpolation::eShapeType::TRIANGLE2D, NuTo::eSectionType::PLANE_STRAIN, useRobinBoundaryElements);
+        NuToTest::GradientDamage::TestStructure3D(NuTo::Interpolation::eShapeType::BRICK3D, useRobinBoundaryElements);
+//      NuToTest::GradientDamage::TestStructure3D(NuTo::Interpolation::eShapeType::TETRAHEDRON3D, useRobinBoundaryElements);
 
         NuToTest::GradientDamage::Check1D2D3D();
 
