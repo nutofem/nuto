@@ -2,6 +2,7 @@
 %feature("autodoc","1");
 %{
 //Put headers and other declarations here to be added in the wrapper files
+#include "nuto/math/FullMatrix.h"
 #include "nuto/metamodel/NeuralNetwork.h"
 #include "nuto/metamodel/MultipleLinearRegression.h"
 %}

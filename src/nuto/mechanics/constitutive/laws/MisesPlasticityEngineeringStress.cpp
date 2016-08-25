@@ -12,6 +12,7 @@
 
 #include "nuto/base/ErrorEnum.h"
 #include "nuto/base/Logger.h"
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"

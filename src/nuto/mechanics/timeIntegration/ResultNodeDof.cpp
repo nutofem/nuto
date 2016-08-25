@@ -4,6 +4,8 @@
  *  Created on: Dec 18, 2013
  *      Author: junger
  */
+
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/timeIntegration/ResultNodeDof.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 

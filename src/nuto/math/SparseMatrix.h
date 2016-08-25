@@ -12,12 +12,11 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/math/Matrix.h"
+#include "nuto/math/FullMatrix.h"
 #include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
-template <class T, int rows, int cols> class FullMatrix;
 template<class T> class SparseMatrixCSRGeneral;
 template<class T> class SparseMatrixCSRSymmetric;
 template<class T> class SparseMatrixCSRVector2General;

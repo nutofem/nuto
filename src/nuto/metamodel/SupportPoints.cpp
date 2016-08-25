@@ -17,6 +17,7 @@
 
 #include <boost/math/distributions/normal.hpp>
 
+#include "nuto/math/FullMatrix.h"
 #include "nuto/metamodel/MetamodelException.h"
 #include "nuto/metamodel/SupportPoints.h"
 #include "nuto/metamodel/Transformation.h"
