@@ -15,6 +15,8 @@
 
 #include "nuto/base/ErrorEnum.h"
 #include "nuto/math/FullMatrix.h"
+#include "nuto/math/FullVector.h"
+
 #include "nuto/optimize/NewtonRaphson.h"
 #include "nuto/optimize/OptimizeException.h"
 

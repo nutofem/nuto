@@ -8,6 +8,7 @@
 
 
 #include <random>
+#include <vector>
 
 #include "nuto/metamodel/MetamodelException.h"
 #include "nuto/base/NuToObject.h"

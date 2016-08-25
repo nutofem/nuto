@@ -11,7 +11,7 @@
 //parent
 #include "nuto/base/NuToObject.h"
 
-
+#include <vector>
 #include "nuto/optimize/OptimizeException.h"
 #include <eigen3/Eigen/Core>
 

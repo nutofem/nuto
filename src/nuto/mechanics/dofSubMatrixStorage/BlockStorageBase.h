@@ -3,6 +3,7 @@
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
+#include "nuto/mechanics/dofSubMatrixStorage/DofStatus.h"
 #endif // ENABLE_SERIALIZATION
 
 #include <set>
