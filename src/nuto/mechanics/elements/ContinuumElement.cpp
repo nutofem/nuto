@@ -316,16 +316,16 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian0(Constitutiv
                 rConstitutiveOutput[NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_WV_NN_H0];
                 break;
 
-            case Node::CombineDofs(Node::DISPLACEMENTS, Node::CRACKPHASEFIELD):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_PHASE_FIELD];
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::CRACKPHASEFIELD):
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_PHASE_FIELD];
                 break;
 
-            case Node::CombineDofs(Node::CRACKPHASEFIELD, Node::CRACKPHASEFIELD):
-                rConstitutiveOutput[NuTo::Constitutive::Output::ELASTIC_ENERGY_DAMAGED_PART];
+            case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::CRACKPHASEFIELD):
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::ELASTIC_ENERGY_DAMAGED_PART];
                 break;
 
-            case Node::CombineDofs(Node::CRACKPHASEFIELD, Node::DISPLACEMENTS):
-                rConstitutiveOutput[NuTo::Constitutive::Output::D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN];
+            case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::DISPLACEMENTS):
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN];
                 break;
 
             default:
