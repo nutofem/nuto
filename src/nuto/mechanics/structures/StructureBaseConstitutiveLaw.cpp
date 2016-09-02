@@ -14,6 +14,7 @@
 #include "nuto/mechanics/constitutive/laws/ShrinkageCapillaryStrainBased.h"
 #include "nuto/mechanics/constitutive/laws/ShrinkageCapillaryStressBased.h"
 #include "nuto/mechanics/constitutive/laws/ThermalStrains.h"
+#include "nuto/mechanics/constitutive/laws/LocalDamageModel.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
 // create a new constitutive law
@@ -45,6 +46,7 @@ int NuTo::StructureBase::ConstitutiveLawCreate(Constitutive::eConstitutiveType r
 // create a new constitutive law
 void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConstitutiveType rType)
 {
+    using NuTo::Constitutive::eConstitutiveType;
     // check if constitutive law identifier exists
     boost::ptr_map<int, ConstitutiveBase>::iterator it = this->mConstitutiveLawMap.find(rIdent);
     if (it == this->mConstitutiveLawMap.end())
@@ -53,97 +55,60 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
         ConstitutiveBase* ConstitutiveLawPtr;
         switch (rType)
         {
-        case NuTo::Constitutive::eConstitutiveType::ADDITIVE_INPUT_EXPLICIT:
+        case eConstitutiveType::ADDITIVE_INPUT_EXPLICIT:
             ConstitutiveLawPtr = new NuTo::AdditiveInputExplicit();
             break;
 
-        case NuTo::Constitutive::eConstitutiveType::ADDITIVE_INPUT_IMPLICIT:
+        case eConstitutiveType::ADDITIVE_INPUT_IMPLICIT:
             ConstitutiveLawPtr = new NuTo::AdditiveInputImplicit();
             break;
-        case NuTo::Constitutive::eConstitutiveType::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT:
+
+        case eConstitutiveType::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT:
             ConstitutiveLawPtr = new NuTo::AdditiveOutput();
             break;
 
-        case NuTo::Constitutive::eConstitutiveType::DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS:
-            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
-//            ConstitutiveLawPtr = new NuTo::DamageViscoPlasticityEngineeringStress();
-            break;
-
-        case NuTo::Constitutive::eConstitutiveType::DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS:
-            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
-//            ConstitutiveLawPtr = new NuTo::DamageViscoPlasticityHardeningEngineeringStress();
-            break;
-
-        case NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS:
+        case eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS:
             ConstitutiveLawPtr = new NuTo::GradientDamageEngineeringStress();
             break;
 
-        case NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE:
-            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
-//            ConstitutiveLawPtr = new NuTo::GradientDamageEngineeringStressFatigue();
-            break;
-
-        case NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS:
-            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
-//            ConstitutiveLawPtr = new NuTo::GradientDamagePlasticityEngineeringStress();
-            break;
-
-        case NuTo::Constitutive::eConstitutiveType::HEAT_CONDUCTION:
+        case eConstitutiveType::HEAT_CONDUCTION:
             ConstitutiveLawPtr = new NuTo::HeatConduction();
             break;
 
-        case NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS:
+        case eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS:
             ConstitutiveLawPtr = new NuTo::LinearElasticEngineeringStress();
             break;
 
-        case NuTo::Constitutive::eConstitutiveType::LINEAR_SPRING:
-            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
-//            ConstitutiveLawPtr = new NuTo::LinearSpring();
+        case eConstitutiveType::LOCAL_DAMAGE_MODEL:
+            ConstitutiveLawPtr = new NuTo::LocalDamageModel();
             break;
 
-        case NuTo::Constitutive::eConstitutiveType::MISES_PLASTICITY_ENGINEERING_STRESS:
+        case eConstitutiveType::MISES_PLASTICITY_ENGINEERING_STRESS:
             ConstitutiveLawPtr = new NuTo::MisesPlasticityEngineeringStress();
             break;
 
-        case NuTo::Constitutive::eConstitutiveType::MOISTURE_TRANSPORT:
+        case eConstitutiveType::MOISTURE_TRANSPORT:
             ConstitutiveLawPtr = new NuTo::MoistureTransport();
             break;
 
-        case NuTo::Constitutive::eConstitutiveType::NONLOCAL_DAMAGE_PLASTICITY_ENGINEERING_STRESS:
-            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
-//            ConstitutiveLawPtr = new NuTo::NonlocalDamagePlasticityEngineeringStress();
-            break;
-
-        case NuTo::Constitutive::eConstitutiveType::FIBRE_MATRIX_BOND_STRESS_SLIP:
+        case eConstitutiveType::FIBRE_MATRIX_BOND_STRESS_SLIP:
             ConstitutiveLawPtr = new NuTo::FibreMatrixBondStressSlip();
             break;
 
-        case NuTo::Constitutive::eConstitutiveType::PHASE_FIELD:
-            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
-            //ConstitutiveLawPtr = new NuTo::PhaseField();
-            break;
-
-        case NuTo::Constitutive::eConstitutiveType::SHRINKAGE_CAPILLARY_STRAIN_BASED:
+        case eConstitutiveType::SHRINKAGE_CAPILLARY_STRAIN_BASED:
             ConstitutiveLawPtr = new NuTo::ShrinkageCapillaryStrainBased();
             break;
 
-        case NuTo::Constitutive::eConstitutiveType::SHRINKAGE_CAPILLARY_STRESS_BASED:
+        case eConstitutiveType::SHRINKAGE_CAPILLARY_STRESS_BASED:
             ConstitutiveLawPtr = new NuTo::ShrinkageCapillaryStressBased();
             break;
 
-        case NuTo::Constitutive::eConstitutiveType::STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS:
-            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
-//            ConstitutiveLawPtr = new NuTo::StrainGradientDamagePlasticityEngineeringStress();
-            break;
-
-        case NuTo::Constitutive::eConstitutiveType::THERMAL_STRAINS:
+        case eConstitutiveType::THERMAL_STRAINS:
             ConstitutiveLawPtr = new NuTo::ThermalStrains();
             break;
 
-
-
          default:
-            throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] invalid type of constitutive law.");
+            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
         }
 
         // add section to map (insert does not allow const keys!!!!)
@@ -152,7 +117,7 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             mHaveTmpStaticData = true;
     } else
     {
-        throw NuTo::MechanicsException("[NuTo::StructureBase::ConstitutiveLawCreate] Constitutive law already exists.");
+        throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Constitutive law already exists.");
     }
 }
 

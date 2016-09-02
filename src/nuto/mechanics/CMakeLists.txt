@@ -20,6 +20,7 @@ constitutive/laws/MoistureTransport.cpp
 constitutive/laws/ShrinkageCapillaryStrainBased.cpp
 constitutive/laws/ShrinkageCapillaryStressBased.cpp
 constitutive/laws/ThermalStrains.cpp
+constitutive/laws/LocalDamageModel.cpp
 constitutive/staticData/ConstitutiveStaticDataBase.cpp
 constitutive/staticData/ConstitutiveStaticDataBondStressSlip.cpp
 constitutive/staticData/ConstitutiveStaticDataMoistureTransport.cpp

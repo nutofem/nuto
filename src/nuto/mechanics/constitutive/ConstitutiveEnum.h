@@ -23,6 +23,7 @@ enum class eConstitutiveType
     LATTICE_CONCRETE,                                       //!< material law for lattice model
     LINEAR_ELASTIC_ENGINEERING_STRESS,                      //!< linear-elastic behavior
     LINEAR_SPRING,                                          //!< linear spring model
+    LOCAL_DAMAGE_MODEL,                                     //!< local damage model
     MISES_PLASTICITY_ENGINEERING_STRESS,                    //!< mises plasticity with isotropic and kinematic hardening
     MOISTURE_TRANSPORT,                                     //!< moisture transport model
     MULTISCALE,                                             //!< multiscale model, where the average stress is calculated from a full fine scale model
