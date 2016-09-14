@@ -212,6 +212,7 @@ structures/StructureOutputBase.cpp
 structures/StructureOutputBlockMatrix.cpp
 structures/StructureOutputBlockVector.cpp
 structures/unstructured/Structure.cpp
+structures/unstructured/StructureFETI.cpp
 structures/unstructured/StructureElement.cpp
 structures/unstructured/StructureGroup.cpp
 structures/unstructured/StructureInterpolationType.cpp
@@ -296,6 +297,11 @@ SET(SWIG_MODULE_ModulMechanics_EXTRA_DEPS
 # build static library
 ADD_LIBRARY(NuToMechanics ${NuToMechanics_SOURCES})
 target_link_libraries(NuToMechanics ${ANN_LIBRARIES})
+
+if(ENABLE_MPI)
+    target_link_libraries(NuToMechanics ${MPI_LIBRARIES})
+endif(ENABLE_MPI)
+
 IF (ENABLE_SHOW_TIME)
 #add library for clock_gettime routines
   TARGET_LINK_LIBRARIES(NuToMechanics rt)

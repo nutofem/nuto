@@ -738,7 +738,7 @@ protected:
     //! @sa CrackBase
     crackMap_t mCrackMap;
 
-private:
+protected:
 
     //! @brief creates a node
     //! @param rDOFs
