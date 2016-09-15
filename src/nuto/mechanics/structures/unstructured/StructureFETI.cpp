@@ -29,7 +29,7 @@ NuTo::StructureFETI::StructureFETI(int rDimension, std::string rMeshFile):
     mNumProcesses(MPI::COMM_WORLD.Get_size())
 {
 
-ImportMesh(rMeshFile);
+    ImportMesh(rMeshFile);
 
 }
 
@@ -145,13 +145,12 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
 {
 
     const int num_interface_nodes_global    = 42;
-    const int num_boundary_nodes_global     = 42;
+//    const int num_boundary_nodes_global     = 42;
+        const int num_boundary_nodes_global     = 0;
     const int num_lagrange_multipliers      = mDimension * (num_interface_nodes_global + num_boundary_nodes_global);
-    const int numActiveDofs  = GetNumActiveDofs(NuTo::Node::eDof::DISPLACEMENTS);
+    const int numDofs  = GetNumDofs(NuTo::Node::eDof::DISPLACEMENTS);
 
-    std::cout << "*************************************************** 0 rank "<< numActiveDofs << " " << mRank << std::endl;
-    std::cout << "*************************************************** 0 rank "<< num_lagrange_multipliers << " " << mRank << std::endl;
-    mConnectivityMatrix.resize(num_lagrange_multipliers, numActiveDofs);
+    mConnectivityMatrix.resize(num_lagrange_multipliers, numDofs);
 
     for (const auto& interface : mInterfaces)
         for (const auto& nodeId : interface.mNodeIdsMap)
@@ -160,34 +159,27 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
             NuTo::FullVector<int, Eigen::Dynamic> displacementDofs;
             NodeGetDisplacementDofs(nodeId.second, displacementDofs);
 
-
-
-
-            if (displacementDofs[0] < numActiveDofs)
-                mConnectivityMatrix.insert(globalIndex   , displacementDofs[0]) = interface.mValue;
-            if (displacementDofs[1] < numActiveDofs)
-                mConnectivityMatrix.insert(globalIndex +1, displacementDofs[1]) = interface.mValue;
+            mConnectivityMatrix.insert(globalIndex   , displacementDofs[0]) = interface.mValue;
+            mConnectivityMatrix.insert(globalIndex +1, displacementDofs[1]) = interface.mValue;
         }
 
 
 
 
 
-    for (const auto& boundary : mBoundaries)
-        for (const auto& nodeId : boundary.mNodeIdsMap)
-        {
-            int globalIndex = mDimension * (nodeId.first + num_interface_nodes_global);
-            NuTo::FullVector<int, Eigen::Dynamic> displacementDofs;
-            NodeGetDisplacementDofs(nodeId.second, displacementDofs);
+//    for (const auto& boundary : mBoundaries)
+//        for (const auto& nodeId : boundary.mNodeIdsMap)
+//        {
+//            int globalIndex = mDimension * (nodeId.first + num_interface_nodes_global);
+//            NuTo::FullVector<int, Eigen::Dynamic> displacementDofs;
+//            NodeGetDisplacementDofs(nodeId.second, displacementDofs);
 
 
+//            mConnectivityMatrix.insert(globalIndex   , displacementDofs[0]) = 1.0;
 
-            if (displacementDofs[0] < numActiveDofs)
-                mConnectivityMatrix.insert(globalIndex   , displacementDofs[0]) = 1.0;
 
-            if (displacementDofs[1] < numActiveDofs)
-                mConnectivityMatrix.insert(globalIndex +1, displacementDofs[1]) = 1.0;
-        }
+//            mConnectivityMatrix.insert(globalIndex +1, displacementDofs[1]) = 1.0;
+//        }
 
 
 
@@ -196,22 +188,18 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
 void NuTo::StructureFETI::AssembleRigidBodyModes()
 {
 
-    const int num_interface_nodes_global    = 42;
-    const int num_boundary_nodes_global     = 42;
-    const int numActiveDofs  = GetNumActiveDofs(NuTo::Node::eDof::DISPLACEMENTS);
+    const int numDofs  = GetNumDofs(NuTo::Node::eDof::DISPLACEMENTS);
 
-    mRigidBodyModes.resize(numActiveDofs,3);
+    mRigidBodyModes.resize(numDofs,3);
     for (const auto& node : NodeGetNodeMap())
     {
         NuTo::FullVector<int, Eigen::Dynamic> displacementDofs;
         NodeGetDisplacementDofs(node.first, displacementDofs);
         const Eigen::Matrix<double, 2, 1> coordinates = node.second->Get(NuTo::Node::eDof::COORDINATES);
 
-        if (displacementDofs[0] < numActiveDofs)
-            mRigidBodyModes.block(displacementDofs[0], 0, 1, 3) << 1., 0., -coordinates.at(1, 0);
+        mRigidBodyModes.block(displacementDofs[0], 0, 1, 3) << 1., 0., -coordinates.at(1, 0);
 
-        if (displacementDofs[1] < numActiveDofs)
-            mRigidBodyModes.block(displacementDofs[1], 0, 1, 3) << 0., 1.,  coordinates.at(0, 0);
+        mRigidBodyModes.block(displacementDofs[1], 0, 1, 3) << 0., 1.,  coordinates.at(0, 0);
     }
 
     mInterfaceRigidBodyModes = mConnectivityMatrix * mRigidBodyModes;
@@ -300,39 +288,39 @@ void NuTo::StructureFETI::ImportMesh(std::string rFileName)
     const int num_lagrange_multipliers      = mDimension * (num_interface_nodes_global + num_boundary_nodes_global);
     const int numActiveDofs  = GetNumActiveDofs(NuTo::Node::eDof::DISPLACEMENTS);
 
-//    mConnectivityMatrix.resize(num_lagrange_multipliers, numActiveDofs);
+    //    mConnectivityMatrix.resize(num_lagrange_multipliers, numActiveDofs);
 
-//    for (const auto& interface : interfaces)
-//        for (const auto& nodeId : interface.mNodeIdsMap)
-//        {
-//            int globalIndex = mDimension * nodeId.first;
-//            NuTo::FullVector<int, Eigen::Dynamic> displacementDofs;
-//            NodeGetDisplacementDofs(nodeId.second, displacementDofs);
-//            mConnectivityMatrix.insert(globalIndex   , displacementDofs[0]) = interface.mValue;
-//            mConnectivityMatrix.insert(globalIndex +1, displacementDofs[1]) = interface.mValue;
-//        }
+    //    for (const auto& interface : interfaces)
+    //        for (const auto& nodeId : interface.mNodeIdsMap)
+    //        {
+    //            int globalIndex = mDimension * nodeId.first;
+    //            NuTo::FullVector<int, Eigen::Dynamic> displacementDofs;
+    //            NodeGetDisplacementDofs(nodeId.second, displacementDofs);
+    //            mConnectivityMatrix.insert(globalIndex   , displacementDofs[0]) = interface.mValue;
+    //            mConnectivityMatrix.insert(globalIndex +1, displacementDofs[1]) = interface.mValue;
+    //        }
 
-//    for (const auto& boundary : boundaries)
-//        for (const auto& nodeId : boundary.mNodeIdsMap)
-//        {
-//            int globalIndex = mDimension * (nodeId.first + num_interface_nodes_global);
-//            NuTo::FullVector<int, Eigen::Dynamic> displacementDofs;
-//            NodeGetDisplacementDofs(nodeId.second, displacementDofs);
-//            mConnectivityMatrix.insert(globalIndex   , displacementDofs[0]) = 1.0;
-//            mConnectivityMatrix.insert(globalIndex +1, displacementDofs[1]) = 1.0;
-//        }
+    //    for (const auto& boundary : boundaries)
+    //        for (const auto& nodeId : boundary.mNodeIdsMap)
+    //        {
+    //            int globalIndex = mDimension * (nodeId.first + num_interface_nodes_global);
+    //            NuTo::FullVector<int, Eigen::Dynamic> displacementDofs;
+    //            NodeGetDisplacementDofs(nodeId.second, displacementDofs);
+    //            mConnectivityMatrix.insert(globalIndex   , displacementDofs[0]) = 1.0;
+    //            mConnectivityMatrix.insert(globalIndex +1, displacementDofs[1]) = 1.0;
+    //        }
 
-//    mRigidBodyModes.resize(numActiveDofs,3);
-//    for (const auto& node : NodeGetNodeMap())
-//    {
-//        NuTo::FullVector<int, Eigen::Dynamic> displacementDofs;
-//        NodeGetDisplacementDofs(node.first, displacementDofs);
-//        const Eigen::Matrix<double, 2, 1> coordinates = node.second->Get(NuTo::Node::eDof::COORDINATES);
-//        mRigidBodyModes.block(displacementDofs[0], 0, 1, 3) << 1., 0., -coordinates.at(1, 0);
-//        mRigidBodyModes.block(displacementDofs[1], 0, 1, 3) << 0., 1.,  coordinates.at(0, 0);
-//    }
+    //    mRigidBodyModes.resize(numActiveDofs,3);
+    //    for (const auto& node : NodeGetNodeMap())
+    //    {
+    //        NuTo::FullVector<int, Eigen::Dynamic> displacementDofs;
+    //        NodeGetDisplacementDofs(node.first, displacementDofs);
+    //        const Eigen::Matrix<double, 2, 1> coordinates = node.second->Get(NuTo::Node::eDof::COORDINATES);
+    //        mRigidBodyModes.block(displacementDofs[0], 0, 1, 3) << 1., 0., -coordinates.at(1, 0);
+    //        mRigidBodyModes.block(displacementDofs[1], 0, 1, 3) << 0., 1.,  coordinates.at(0, 0);
+    //    }
 
-//    mInterfaceRigidBodyModes = mConnectivityMatrix * mRigidBodyModes;
+    //    mInterfaceRigidBodyModes = mConnectivityMatrix * mRigidBodyModes;
 
 
 

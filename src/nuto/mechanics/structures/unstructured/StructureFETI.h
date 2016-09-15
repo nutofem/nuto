@@ -71,18 +71,21 @@ public:
     void AssembleRigidBodyModes();
     void AssembleConnectivityMatrix();
     Eigen::MatrixXd             mRigidBodyModes;
-protected:
-    void ImportMesh(std::string rFileName);
-
-
+    Eigen::MatrixXd             mInterfaceRigidBodyModes;
     Eigen::SparseMatrix<double> mConnectivityMatrix;
 
-    Eigen::MatrixXd             mInterfaceRigidBodyModes;
+
     Eigen::MatrixXd             mProjectionMatrix;
     NodeList                    mNodes;
     ElementList                 mElements;
     BoundaryList                mBoundaries;
     InterfaceList               mInterfaces;
+    int                        mNumRigidBodyModes;
+protected:
+    void ImportMesh(std::string rFileName);
+
+
+
 
 };
 } //namespace NuTo
