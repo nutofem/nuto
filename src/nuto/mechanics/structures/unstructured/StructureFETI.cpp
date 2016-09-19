@@ -153,11 +153,11 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
     mConnectivityMatrix.resize(num_lagrange_multipliers, numDofs);
 
     for (const auto& interface : mInterfaces)
-        for (const auto& nodeId : interface.mNodeIdsMap)
+        for (const auto& nodePair : interface.mNodeIdsMap)
         {
-            int globalIndex = mDimension * nodeId.first;
+            int globalIndex = mDimension * nodePair.first;
             NuTo::FullVector<int, Eigen::Dynamic> displacementDofs;
-            NodeGetDisplacementDofs(nodeId.second, displacementDofs);
+            NodeGetDisplacementDofs(nodePair.second, displacementDofs);
 
             mConnectivityMatrix.insert(globalIndex   , displacementDofs[0]) = interface.mValue;
             mConnectivityMatrix.insert(globalIndex +1, displacementDofs[1]) = interface.mValue;
