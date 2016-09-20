@@ -15,6 +15,7 @@
 #include "nuto/mechanics/MechanicsException.h"
 
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
 
@@ -29,7 +30,6 @@ NuTo::LinearElasticEngineeringStress::LinearElasticEngineeringStress() :
     mE = 0.;
     mNu = 0.;
     mRho = 0.;
-    mThermalExpansionCoefficient = 0.;
     SetParametersValid();
 }
 
@@ -93,10 +93,8 @@ NuTo::ConstitutiveInputMap NuTo::LinearElasticEngineeringStress::GetConstitutive
     return constitutiveInputMap;
 }
 
-NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate1D(
-        ElementBase* rElement, int rIp,
-        const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput)
+NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
+        const ConstitutiveOutputMap& rConstitutiveOutput, Constitutive::StaticData::Component*)
 {
     for (auto& itOutput : rConstitutiveOutput)
     {
@@ -104,13 +102,13 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate1D(
         {
         case NuTo::Constitutive::Output::ENGINEERING_STRESS:
         {
-            const auto& engineeringStrain = rConstitutiveInput.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain1D();
-            auto elasticEngineeringStrain = EngineeringStressHelper::CalculateElasticEngineeringStrain<1>(engineeringStrain, *rElement->GetInterpolationType(), rConstitutiveInput, mThermalExpansionCoefficient);
+            const auto& engineeringStrain =
+                rConstitutiveInput.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain1D();
 
             ConstitutiveIOBase& engineeringStress = *itOutput.second;
             engineeringStress.AssertIsVector<1>(itOutput.first, __PRETTY_FUNCTION__);
 
-            engineeringStress[0] = mE * elasticEngineeringStrain[0];
+            engineeringStress[0] = mE * engineeringStrain[0];
             break;
         }
         case NuTo::Constitutive::Output::ENGINEERING_STRESS_VISUALIZE:
@@ -119,10 +117,9 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate1D(
             engineeringStress3D.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
 
             const auto& engineeringStrain = rConstitutiveInput.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain1D();
-            auto elasticEngineeringStrain = EngineeringStressHelper::CalculateElasticEngineeringStrain<1>(engineeringStrain, *rElement->GetInterpolationType(), rConstitutiveInput, mThermalExpansionCoefficient);
 
             engineeringStress3D.SetZero();
-            engineeringStress3D[0] = mE * elasticEngineeringStrain[0];
+            engineeringStress3D[0] = mE * engineeringStrain[0];
             break;
         }
         case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
@@ -157,25 +154,24 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate1D(
 
 
 
-NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(
-        ElementBase* rElement, int rIp,
-        const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput)
+NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
+        const ConstitutiveOutputMap& rConstitutiveOutput, Constitutive::StaticData::Component*)
 {
-    assert(rElement->GetSection() != nullptr); // section needed to determine plane_stress/plane_strain
+    const auto& planeState =
+        *dynamic_cast<ConstitutivePlaneState*>(rConstitutiveInput.at(Constitutive::Input::PLANE_STATE).get());
 
     // calculate coefficients
     double C11, C12, C33;
-    switch (rElement->GetSection()->GetType())
+    switch (planeState.GetPlaneState())
     {
-    case Section::PLANE_STRAIN:
+    case ePlaneState::PLANE_STRAIN:
         std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients3D(mE, mNu);
         break;
-    case Section::PLANE_STRESS:
+    case ePlaneState::PLANE_STRESS:
         std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients2DPlaneStress(mE, mNu);
         break;
     default:
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "[ Invalid type of 2D section behavior found!!!");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
     }
 
 
@@ -189,11 +185,10 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(
             engineeringStress.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
 
             const auto& engineeringStrain = rConstitutiveInput.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
-            auto elasticEngineeringStrain = EngineeringStressHelper::CalculateElasticEngineeringStrain<2>(engineeringStrain, *rElement->GetInterpolationType(), rConstitutiveInput, mThermalExpansionCoefficient);
 
-            engineeringStress[0] = C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1];
-            engineeringStress[1] = C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0];
-            engineeringStress[2] = C33 * elasticEngineeringStrain[2];
+            engineeringStress[0] = C11 * engineeringStrain[0] + C12 * engineeringStrain[1];
+            engineeringStress[1] = C11 * engineeringStrain[1] + C12 * engineeringStrain[0];
+            engineeringStress[2] = C33 * engineeringStrain[2];
             break;
         }
         case NuTo::Constitutive::Output::ENGINEERING_STRESS_VISUALIZE: // for visualization
@@ -202,28 +197,27 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(
             engineeringStress3D.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
 
             const auto& engineeringStrain = rConstitutiveInput.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
-            auto elasticEngineeringStrain = EngineeringStressHelper::CalculateElasticEngineeringStrain<2>(engineeringStrain, *rElement->GetInterpolationType(), rConstitutiveInput, mThermalExpansionCoefficient);
 
-            switch (rElement->GetSection()->GetType())
+            switch (planeState.GetPlaneState())
             {
-            case Section::PLANE_STRAIN:
+            case ePlaneState::PLANE_STRAIN:
             {
-                engineeringStress3D[0] = C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1];
-                engineeringStress3D[1] = C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0];
-                engineeringStress3D[2] = C12 * (elasticEngineeringStrain[0] + elasticEngineeringStrain[1]);
+                engineeringStress3D[0] = C11 * engineeringStrain[0] + C12 * engineeringStrain[1];
+                engineeringStress3D[1] = C11 * engineeringStrain[1] + C12 * engineeringStrain[0];
+                engineeringStress3D[2] = C12 * (engineeringStrain[0] + engineeringStrain[1]);
                 engineeringStress3D[3] = 0.;
                 engineeringStress3D[4] = 0.;
-                engineeringStress3D[5] = C33 * elasticEngineeringStrain[2];
+                engineeringStress3D[5] = C33 * engineeringStrain[2];
                 break;
             }
-            case Section::PLANE_STRESS:
+            case ePlaneState::PLANE_STRESS:
             {
-                engineeringStress3D[0] = C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1];
-                engineeringStress3D[1] = C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0];
+                engineeringStress3D[0] = C11 * engineeringStrain[0] + C12 * engineeringStrain[1];
+                engineeringStress3D[1] = C11 * engineeringStrain[1] + C12 * engineeringStrain[0];
                 engineeringStress3D[2] = 0.;
                 engineeringStress3D[3] = 0.;
                 engineeringStress3D[4] = 0.;
-                engineeringStress3D[5] = C33 * elasticEngineeringStrain[2];
+                engineeringStress3D[5] = C33 * engineeringStrain[2];
                 break;
             }
             default:
@@ -252,7 +246,7 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(
         }
         case NuTo::Constitutive::Output::ENGINEERING_STRAIN_VISUALIZE: // for visualization
         {
-            itOutput.second->AsEngineeringStrain3D() = rConstitutiveInput.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain2D().As3D(mNu, rElement->GetSection()->GetType());
+            itOutput.second->AsEngineeringStrain3D() = rConstitutiveInput.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain2D().As3D(mNu, planeState.GetPlaneState());
         }
             break;
         case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
@@ -274,10 +268,8 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate2D(
 
 
 
-NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate3D(
-        ElementBase* rElement, int rIp,
-        const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput)
+NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
+        const ConstitutiveOutputMap& rConstitutiveOutput, Constitutive::StaticData::Component*)
 {
     double C11=0.0, C12=0.0, C44=0.0;
     if (rConstitutiveOutput.find(NuTo::Constitutive::Output::ENGINEERING_STRESS) != rConstitutiveOutput.end()
@@ -298,14 +290,13 @@ NuTo::Error::eError NuTo::LinearElasticEngineeringStress::Evaluate3D(
             engineeringStress.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
 
             const auto& engineeringStrain = rConstitutiveInput.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
-            auto elasticEngineeringStrain = EngineeringStressHelper::CalculateElasticEngineeringStrain<3>(engineeringStrain, *rElement->GetInterpolationType(), rConstitutiveInput, mThermalExpansionCoefficient);
 
-            engineeringStress[0] = C11 * elasticEngineeringStrain[0] + C12 * (elasticEngineeringStrain[1] + elasticEngineeringStrain[2]);
-            engineeringStress[1] = C11 * elasticEngineeringStrain[1] + C12 * (elasticEngineeringStrain[0] + elasticEngineeringStrain[2]);
-            engineeringStress[2] = C11 * elasticEngineeringStrain[2] + C12 * (elasticEngineeringStrain[0] + elasticEngineeringStrain[1]);
-            engineeringStress[3] = C44 * elasticEngineeringStrain[3];
-            engineeringStress[4] = C44 * elasticEngineeringStrain[4];
-            engineeringStress[5] = C44 * elasticEngineeringStrain[5];
+            engineeringStress[0] = C11 * engineeringStrain[0] + C12 * (engineeringStrain[1] + engineeringStrain[2]);
+            engineeringStress[1] = C11 * engineeringStrain[1] + C12 * (engineeringStrain[0] + engineeringStrain[2]);
+            engineeringStress[2] = C11 * engineeringStrain[2] + C12 * (engineeringStrain[0] + engineeringStrain[1]);
+            engineeringStress[3] = C44 * engineeringStrain[3];
+            engineeringStress[4] = C44 * engineeringStrain[4];
+            engineeringStress[5] = C44 * engineeringStrain[5];
             break;
         }
         case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
@@ -417,8 +408,6 @@ double NuTo::LinearElasticEngineeringStress::GetParameterDouble(NuTo::Constituti
         return this->mRho;
     case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
         return this->mNu;
-    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
-        return this->mThermalExpansionCoefficient;
     case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
         return this->mE;
     default:
@@ -438,9 +427,6 @@ void NuTo::LinearElasticEngineeringStress::SetParameterDouble(NuTo::Constitutive
         break;
     case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
         this->mNu = rValue;
-        break;
-    case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
-        this->mThermalExpansionCoefficient = rValue;
         break;
     case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
         this->mE = rValue;
@@ -503,7 +489,6 @@ void NuTo::LinearElasticEngineeringStress::Info(unsigned short rVerboseLevel, Lo
     rLogger << "    Young's modulus               : " << this->mE << "\n";
     rLogger << "    Poisson's ratio               : " << this->mNu << "\n";
     rLogger << "    Density                       : " << this->mRho << "\n";
-    rLogger << "    thermal expansion coefficient : " << this->mThermalExpansionCoefficient << "\n";
 }
 
 
@@ -513,7 +498,6 @@ void NuTo::LinearElasticEngineeringStress::CheckParameters() const
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, mE);
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::POISSONS_RATIO, mNu);
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::DENSITY, mRho);
-    ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT, mThermalExpansionCoefficient);
 }
 
 

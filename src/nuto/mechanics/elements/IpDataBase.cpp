@@ -1,7 +1,3 @@
-// $Id$ 
-// IpDataBase.cpp
-// created Apr 29, 2010 by Joerg F. Unger
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -17,43 +13,11 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/elements/IpDataBase.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataBase.h"
 
 NuTo::IpDataBase::~IpDataBase()
 {
 	//std::cout << "call Desctructor [NuTo::IpDataBase::~IpDataBase]." << std::endl;
 }
-
-//! @brief sets the fine scale model (deserialization from a binary file)
-void NuTo::IpDataBase::SetFineScaleModel(std::string rFileName, double rMacroLength, double rCoordinates[2], std::string rIpName)
-{
-    throw MechanicsException(__PRETTY_FUNCTION__, "This Ip data type has no fine scale model.");
-}
-
-//! @brief sets the fine scale parameter for all ips
-//! @parameter rName name of the parameter, e.g. YoungsModulus
-//! @parameter rParameter value of the parameter
-void NuTo::IpDataBase::SetFineScaleParameter(const std::string& rName, double rParameter)
-{
-    throw MechanicsException(__PRETTY_FUNCTION__, "This Ip data type has no fine scale model.");
-}
-
-//! @brief sets the fine scale parameter for all ips
-//! @parameter rName name of the parameter, e.g. YoungsModulus
-//! @parameter rParameter value of the parameter
-void NuTo::IpDataBase::SetFineScaleParameter(const std::string& rName, std::string rParameter)
-{
-    throw MechanicsException(__PRETTY_FUNCTION__, "This Ip data type has no fine scale model.");
-}
-
-#ifdef ENABLE_VISUALIZE
-//Visualize for all integration points the fine scale structure
-void NuTo::IpDataBase::VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
-		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const
-{
-    //no fine scale structure
-}
-#endif
 
 //! @brief adds the weight to an integration point, eventually reallocates the data
 //! @param rNonlocalElement the Element (local number from the nonlocal elements)
@@ -80,34 +44,29 @@ const std::vector<double>& NuTo::IpDataBase::GetNonlocalWeights(int rNonlocalEle
 	throw MechanicsException(__PRETTY_FUNCTION__, "This Ip data type cannot store nonlocal weights - check the ip data type.");
 }
 
-NuTo::ConstitutiveStaticDataBase* NuTo::IpDataBase::GetStaticData(int rTimeStep)
+NuTo::Constitutive::StaticData::Component* NuTo::IpDataBase::GetConstitutiveStaticData()
 {
 	throw MechanicsException(__PRETTY_FUNCTION__, "This Ip data type has no static data.");
 }
 
-const NuTo::ConstitutiveStaticDataBase* NuTo::IpDataBase::GetStaticData(int rTimeStep)const
+const NuTo::Constitutive::StaticData::Component* NuTo::IpDataBase::GetConstitutiveStaticData() const
 {
 	throw MechanicsException(__PRETTY_FUNCTION__, "This Ip data type has no static data.");
 }
 
-NuTo::IpDataStaticDataBase& NuTo::IpDataBase::GetStaticDataBase()
+NuTo::IpDataStaticDataBase& NuTo::IpDataBase::GetIpData()
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "This IP data type has no static data.");
 }
 
-const NuTo::IpDataStaticDataBase& NuTo::IpDataBase::GetStaticDataBase() const
+const NuTo::IpDataStaticDataBase& NuTo::IpDataBase::GetIpData() const
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "This IP data type has no static data.");
 }
 
-void NuTo::IpDataBase::SetStaticData(ConstitutiveStaticDataBase* rStaticData)
+void NuTo::IpDataBase::SetConstitutiveStaticData(Constitutive::StaticData::Component* rStaticData)
 {
 	throw MechanicsException(__PRETTY_FUNCTION__, "This Ip data type has no static data.");
-}
-
-void NuTo::IpDataBase::AllocateAdditionalStaticData(int rNumAdditionalStaticData)
-{
-    throw MechanicsException(__PRETTY_FUNCTION__, "This Ip data type cannot allocate additional static data.");
 }
 
 void NuTo::IpDataBase::GetLocalIntegrationPointCoordinates2D(boost::array<double,2 >& rLocalCoordinatesFacet)const
@@ -128,16 +87,6 @@ void NuTo::IpDataBase::GetLocalIntegrationPointCoordinates3D(boost::array<double
 void NuTo::IpDataBase::SetLocalIntegrationPointCoordinates3D(const boost::array<double,3 >& rLocalCoordinatesFacet)
 {
 	throw MechanicsException(__PRETTY_FUNCTION__, "This Ip data type has no static data.");
-}
-
-double NuTo::IpDataBase::GetIntegrationPointWeight()const
-{
-	throw MechanicsException(__PRETTY_FUNCTION__, "This Ip data type has no weight.");
-}
-
-void NuTo::IpDataBase::SetIntegrationPointWeight(double)
-{
-	throw MechanicsException(__PRETTY_FUNCTION__, "This Ip data type has no weight.");
 }
 
 #ifdef ENABLE_SERIALIZATION

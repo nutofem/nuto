@@ -2,6 +2,7 @@
 
 #include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 namespace NuTo
 {
@@ -25,7 +26,8 @@ public:
     //! @param rK ... k parameter, compressiveStrength / tensileStrength
     //! @param rNu ... poisson ratio
     //! @param rSectionType ... only needed for 2D: Plane strain/ plane stress
-    EquivalentStrainModifiedMises(const EngineeringStrain<TDim>& rStrain, double rK, double rNu, Section::eSectionType rSectionType = Section::VOLUME);
+    EquivalentStrainModifiedMises(const EngineeringStrain<TDim>& rStrain, double rK, double rNu,
+            ePlaneState planeState = ePlaneState::PLANE_STRESS);
 
     //! @brief calculates the modified mises equivalent strain
 
@@ -43,7 +45,7 @@ private:
     double mJ2;
     double mA;
     double mNu;
-    Section::eSectionType mSectionType = Section::VOLUME;
+    ePlaneState mPlaneState = ePlaneState::PLANE_STRESS;
 
 };
 

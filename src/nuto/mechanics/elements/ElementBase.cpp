@@ -15,7 +15,7 @@
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataBase.h"
+#include "nuto/mechanics/constitutive/staticData/Component.h"
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIp.h"
@@ -349,30 +349,38 @@ double NuTo::ElementBase::GetIntegrationPointWeight(int rIpNum) const
 
 template<int TDim>
 NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
-                                                               NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
-                                                               int rIP)
+        NuTo::ConstitutiveOutputMap& rConstitutiveOutput, NuTo::ConstitutiveStaticDataBase* staticData, int IP)
 {
     try
     {
-        ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(rIP);
+        ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(IP);
+
         for (auto& itOutput : rConstitutiveOutput)
             if(itOutput.second!=nullptr) //check nullptr because of static data
                 itOutput.second->SetIsCalculated(false);
-        Error::eError error = constitutivePtr->Evaluate<TDim>(this, rIP, rConstitutiveInput, rConstitutiveOutput);
+
+        Error::eError error = constitutivePtr->Evaluate<TDim>(rConstitutiveInput, rConstitutiveOutput, staticData);
+
         for(auto& itOutput : rConstitutiveOutput)
             if(itOutput.second!=nullptr && !itOutput.second->GetIsCalculated()) //check nullptr because of static data
-                throw MechanicsException(__PRETTY_FUNCTION__,std::string("Output ")+Constitutive::OutputToString(itOutput.first)+" not calculated by constitutive law");
-            return error;
-    } catch (NuTo::MechanicsException& e)
+                throw MechanicsException(__PRETTY_FUNCTION__,
+                        "Output "+Constitutive::OutputToString(itOutput.first)+" not calculated by constitutive law");
+
+        return error;
+    }
+    catch (NuTo::MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "error evaluating the constitutive model.");
-        throw e;
+        throw;
     }
 }
 
-template NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw<1>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,NuTo::ConstitutiveOutputMap& rConstitutiveOutput, int rIP);
-template NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw<2>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,NuTo::ConstitutiveOutputMap& rConstitutiveOutput, int rIP);
-template NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw<3>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,NuTo::ConstitutiveOutputMap& rConstitutiveOutput, int rIP);
+template NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw<1>(const NuTo::ConstitutiveInputMap&,
+        NuTo::ConstitutiveOutputMap&, ConstitutiveStaticDataBase*, int);
+template NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw<2>(const NuTo::ConstitutiveInputMap&,
+        NuTo::ConstitutiveOutputMap&, ConstitutiveStaticDataBase*, int);
+template NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw<3>(const NuTo::ConstitutiveInputMap&,
+        NuTo::ConstitutiveOutputMap&, ConstitutiveStaticDataBase*, int);
 
 //! @brief returns the static data of an integration point
 //! @param rIp integration point
@@ -405,10 +413,7 @@ const NuTo::IpDataStaticDataBase& NuTo::ElementBase::GetStaticDataBase(int rIp) 
 //! @param rStaticData static data
 void NuTo::ElementBase::SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData)
 {
-    if (rStaticData->CheckConstitutiveCompatibility(mElementData->GetConstitutiveLaw(rIp)->GetType(), this->GetEnumType()))
-        return this->mElementData->SetStaticData(rIp, rStaticData);
-    else
-        throw MechanicsException("[NuTo::ElementBase::SetStaticData] Static data is not compatible with the element and or constitutive model");
+    return this->mElementData->SetStaticData(rIp, rStaticData);
 }
 
 const Eigen::Vector3d NuTo::ElementBase::GetGlobalIntegrationPointCoordinates(int rIpNum) const

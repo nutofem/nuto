@@ -237,8 +237,14 @@ public:
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
     virtual Error::eError Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)=0;
 
+    //! @brief Evaluate the constitutive law attached to an integration point.
+    //! @param rConstitutiveInput Input map of the constitutive law.
+    //! @param rConstitutiveOuput Output map of the constitutive law.
+    //! @param staticData Pointer to potential static data.
+    //! @param IP The current integration point.
     template<int TDim>
-    Error::eError EvaluateConstitutiveLaw(const ConstitutiveInputMap &rConstitutiveInput, ConstitutiveOutputMap &rConstitutiveOutput, int rIP);
+    Error::eError EvaluateConstitutiveLaw(const ConstitutiveInputMap& rConstitutiveInput,
+            ConstitutiveOutputMap& rConstitutiveOutput, NuTo::ConstitutiveStaticDataBase* staticData, int IP);
 
     //! @brief calculates output data for the element with a standard input (EULER_BACKWARD static data)
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)

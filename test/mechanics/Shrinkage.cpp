@@ -8,6 +8,7 @@
 
 
 #include "nuto/mechanics/constitutive/laws/MoistureTransport.h"
+#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataComposite.h"
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -223,7 +224,8 @@ public:
         {
             for (int theIP=0; theIP< mS.ElementGetElementPtr(i)->GetNumIntegrationPoints(); theIP++)
             {
-                NuTo::ConstitutiveStaticDataMoistureTransport *StaticData = mS.ElementGetElementPtr(i)->GetStaticData(theIP)->AsMoistureTransport();
+                NuTo::ConstitutiveStaticDataComposite* multipleStaticData = dynamic_cast<NuTo::ConstitutiveStaticDataComposite*>(mS.ElementGetElementPtr(i)->GetStaticData(theIP));
+                NuTo::ConstitutiveStaticDataMoistureTransport *StaticData = dynamic_cast<NuTo::ConstitutiveStaticDataMoistureTransport*>(multipleStaticData->at(0));
                 StaticData->SetLastSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
                 StaticData->SetCurrentSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
                 StaticData->SetLastRelHumValue(InitialRelativeHumidity);

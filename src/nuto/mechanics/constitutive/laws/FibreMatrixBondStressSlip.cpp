@@ -16,19 +16,20 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataBondStressSlip.h"
+#include "nuto/mechanics/constitutive/staticData/Leaf.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveMatrixXd.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "nuto/mechanics/elements/IpDataStaticDataBase.h"
 
-NuTo::FibreMatrixBondStressSlip::FibreMatrixBondStressSlip() :
+NuTo::FibreMatrixBondStressSlip::FibreMatrixBondStressSlip(int dimension) :
         ConstitutiveBase(),
         mMaxBondStress(0),
         mResidualBondStress(0),
         mSlipAtMaxBondStress(0),
         mSlipAtResidualBondStress(0),
         mAlpha(0),
-        mNormalStiffness(0)
+        mNormalStiffness(0),
+        mGlobalDimension(dimension)
 {
 }
 
@@ -143,24 +144,24 @@ void NuTo::FibreMatrixBondStressSlip::CheckParameters() const
     assert(mSlipAtResidualBondStress > 0.0 and "Slip at residual bond stress is <= 0 or not initialized properly");
 }
 
-NuTo::Error::eError NuTo::FibreMatrixBondStressSlip::Evaluate1D(ElementBase* rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
+NuTo::Error::eError NuTo::FibreMatrixBondStressSlip::Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
+        const ConstitutiveOutputMap& rConstitutiveOutput,
+        Constitutive::StaticData::Component* staticData)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "IMPLEMENT ME!!!");
     return Error::SUCCESSFUL;
 }
 
-NuTo::Error::eError NuTo::FibreMatrixBondStressSlip::Evaluate2D(ElementBase* rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
+NuTo::Error::eError NuTo::FibreMatrixBondStressSlip::Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
+        const ConstitutiveOutputMap& rConstitutiveOutput, Constitutive::StaticData::Component* staticData)
 {
-    const unsigned globalDimension = rElement->GetStructure()->GetDimension();
     const auto& slip = *rConstitutiveInput.at(Constitutive::Input::INTERFACE_SLIP);
-    ConstitutiveStaticDataBondStressSlip currentStaticData = GetCurrentStaticData(*rElement, rIp, rConstitutiveInput);
+    auto& slipStaticData = *dynamic_cast<Constitutive::StaticData::Leaf<double>*>(staticData);
+    const double slipLastConverged = GetCurrentStaticData(slipStaticData, rConstitutiveInput);
 
-    const double slipLastConverged = currentStaticData.GetSlip();
     const double slipMaxHistory = std::max(slipLastConverged, slip(0,0));
 
     bool performUpdateAtEnd = false;
-
-
 
     /////////////////////////////////////////////////
     //         LOOP OVER OUTPUT REQUESTS           //
@@ -173,7 +174,7 @@ NuTo::Error::eError NuTo::FibreMatrixBondStressSlip::Evaluate2D(ElementBase* rEl
         case NuTo::Constitutive::Output::INTERFACE_CONSTITUTIVE_MATRIX:
         {
             ConstitutiveMatrixXd& constitutiveMatrix = dynamic_cast<ConstitutiveMatrixXd&>(*itOutput.second);
-            constitutiveMatrix.setZero(globalDimension,globalDimension);
+            constitutiveMatrix.setZero(mGlobalDimension,mGlobalDimension);
 
             // the first component of the constitutive matrix is the derivative of the interface stress with respect to the interface slip
             if (std::abs(slip(0,0)) <= mSlipAtMaxBondStress)
@@ -238,7 +239,7 @@ NuTo::Error::eError NuTo::FibreMatrixBondStressSlip::Evaluate2D(ElementBase* rEl
             }
 
             // the normal component of the interface slip is equal to the penalty stiffness to avoid penetration
-            for (unsigned int iDim = 1; iDim < globalDimension; ++iDim)
+            for (unsigned int iDim = 1; iDim < mGlobalDimension; ++iDim)
                 constitutiveMatrix(iDim, iDim) = mNormalStiffness;
 
             break;
@@ -248,7 +249,7 @@ NuTo::Error::eError NuTo::FibreMatrixBondStressSlip::Evaluate2D(ElementBase* rEl
         {
 
             ConstitutiveMatrixXd& bondStress = dynamic_cast<ConstitutiveMatrixXd&>(*itOutput.second);
-            bondStress.setZero(globalDimension,1);
+            bondStress.setZero(mGlobalDimension,1);
 
             // the interface stresses correspond to a modified Bertero-EligeHausen-Popov bond stress-slip model
             if (std::abs(slip(0,0)) <= mSlipAtMaxBondStress)
@@ -333,7 +334,7 @@ NuTo::Error::eError NuTo::FibreMatrixBondStressSlip::Evaluate2D(ElementBase* rEl
             }
 
             // the normal component of the interface slip is equal to the penalty stiffness to avoid penetration
-            for (unsigned int iDim = 1; iDim < globalDimension; ++iDim)
+            for (unsigned int iDim = 1; iDim < mGlobalDimension; ++iDim)
                 bondStress(iDim, 0) = mNormalStiffness * slip(iDim,0);
 
 
@@ -347,36 +348,39 @@ NuTo::Error::eError NuTo::FibreMatrixBondStressSlip::Evaluate2D(ElementBase* rEl
         }
             break;
         default:
-            throw MechanicsException(std::string(__PRETTY_FUNCTION__, "output object ") + NuTo::Constitutive::OutputToString(itOutput.first) + std::string(" could not be calculated, check the allocated material law and the section behavior."));
+            throw MechanicsException(__PRETTY_FUNCTION__, "Output object "
+                    + NuTo::Constitutive::OutputToString(itOutput.first) + " could not be calculated, check the "
+                    "allocated material law and the section behavior.");
         }
     }
 
     //update history variables
     if (performUpdateAtEnd)
-        rElement->GetStaticData(rIp)->AsBondStressSlip()->SetSlip(currentStaticData.GetSlip());
+        slipStaticData.SetData(slipLastConverged);
 
     return Error::SUCCESSFUL;
 }
 
-NuTo::Error::eError NuTo::FibreMatrixBondStressSlip::Evaluate3D(ElementBase* rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
+NuTo::Error::eError NuTo::FibreMatrixBondStressSlip::Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
+        const ConstitutiveOutputMap& rConstitutiveOutput, Constitutive::StaticData::Component* staticData)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "IMPLEMENT ME!!!");
     return Error::SUCCESSFUL;
 }
 
-NuTo::ConstitutiveStaticDataBase* NuTo::FibreMatrixBondStressSlip::AllocateStaticData1D(const ElementBase* rElement) const
+NuTo::Constitutive::StaticData::Component* NuTo::FibreMatrixBondStressSlip::AllocateStaticData1D(const ElementBase*) const
 {
-    return new ConstitutiveStaticDataBondStressSlip;
+    return new Constitutive::StaticData::Leaf<double>;
 }
 
-NuTo::ConstitutiveStaticDataBase* NuTo::FibreMatrixBondStressSlip::AllocateStaticData2D(const ElementBase* rElement) const
+NuTo::Constitutive::StaticData::Component* NuTo::FibreMatrixBondStressSlip::AllocateStaticData2D(const ElementBase*) const
 {
-    return new ConstitutiveStaticDataBondStressSlip;
+    return new Constitutive::StaticData::Leaf<double>;
 }
 
-NuTo::ConstitutiveStaticDataBase* NuTo::FibreMatrixBondStressSlip::AllocateStaticData3D(const ElementBase* rElement) const
+NuTo::Constitutive::StaticData::Component* NuTo::FibreMatrixBondStressSlip::AllocateStaticData3D(const ElementBase*) const
 {
-    return new ConstitutiveStaticDataBondStressSlip;
+    return new Constitutive::StaticData::Leaf<double>;
 }
 
 NuTo::ConstitutiveInputMap NuTo::FibreMatrixBondStressSlip::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType& rInterpolationType) const
@@ -386,7 +390,8 @@ NuTo::ConstitutiveInputMap NuTo::FibreMatrixBondStressSlip::GetConstitutiveInput
     return constitutiveInputMap;
 }
 
-NuTo::ConstitutiveStaticDataBondStressSlip NuTo::FibreMatrixBondStressSlip::GetCurrentStaticData(ElementBase& rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput) const
+double NuTo::FibreMatrixBondStressSlip::GetCurrentStaticData(Constitutive::StaticData::Leaf<double>& slipStaticData,
+        const ConstitutiveInputMap& rConstitutiveInput) const
 {
     auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::Input::CALCULATE_STATIC_DATA);
     if (itCalculateStaticData == rConstitutiveInput.end())
@@ -398,7 +403,7 @@ NuTo::ConstitutiveStaticDataBondStressSlip NuTo::FibreMatrixBondStressSlip::GetC
     {
         case CalculateStaticData::USE_PREVIOUS:
         {
-            return *(rElement.GetStaticData(rIp)->AsBondStressSlip());
+            return slipStaticData.GetData();
         }
 
         case CalculateStaticData::EULER_BACKWARD:
@@ -406,34 +411,22 @@ NuTo::ConstitutiveStaticDataBondStressSlip NuTo::FibreMatrixBondStressSlip::GetC
             const auto& slip = *rConstitutiveInput.at(Constitutive::Input::INTERFACE_SLIP);
 
             int index = calculateStaticData.GetIndexOfPreviousStaticData();
-            const ConstitutiveStaticDataBondStressSlip& oldStaticData = *(rElement.GetStaticDataBase(rIp).GetStaticData(index)->AsBondStressSlip());
-
-            ConstitutiveStaticDataBondStressSlip newStaticData;
-            newStaticData.SetSlip(std::max(slip(0,0), oldStaticData.GetSlip()));
-
-            return newStaticData;
+            double oldSlip = slipStaticData.GetData(index);
+            
+            return std::max(slip(0,0), oldSlip);
         }
 
         case CalculateStaticData::EULER_FORWARD:
         {
-            auto& staticData = rElement.GetStaticDataBase(rIp);
-            assert(staticData.GetNumStaticData() >= 2);
-
             auto itTimeStep = rConstitutiveInput.find(Constitutive::Input::TIME_STEP);
             if (itTimeStep == rConstitutiveInput.end())
                 throw MechanicsException(__PRETTY_FUNCTION__, "TimeStep input needed for EULER_FORWARD.");
             const auto& timeStep = *itTimeStep->second;
 
-            ConstitutiveStaticDataBondStressSlip newStaticData;
-            double newSlip = ConstitutiveCalculateStaticData::EulerForward(
-                    staticData.GetStaticData(1)->AsBondStressSlip()->GetSlip(),
-                    staticData.GetStaticData(2)->AsBondStressSlip()->GetSlip(),
-                    timeStep);
+            assert(slipStaticData.GetNumData() >= 2);
 
-//            std::cout << newKappa << std::endl;
-
-            newStaticData.SetSlip(newSlip);
-            return newStaticData;
+            return ConstitutiveCalculateStaticData::EulerForward(
+                    slipStaticData.GetData(1), slipStaticData.GetData(2), timeStep);
         }
 
         default:

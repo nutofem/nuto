@@ -94,10 +94,8 @@ bool NuTo::HeatConduction::CheckDofCombinationComputable(NuTo::Node::eDof rDofRo
 }
 
 template<int TDim>
-NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
-        int rIp,
-        const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput)
+NuTo::Error::eError NuTo::HeatConduction::Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
+        const ConstitutiveOutputMap& rConstitutiveOutput, Constitutive::StaticData::Component*)
 {
     auto eye = Eigen::MatrixXd::Identity(TDim, TDim);
 

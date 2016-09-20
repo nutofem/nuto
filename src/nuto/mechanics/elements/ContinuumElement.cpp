@@ -1,3 +1,4 @@
+#include <typeinfo>
 #include "nuto/mechanics/elements/ContinuumElement.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 
@@ -19,8 +20,11 @@
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
 
+
 template<int TDim>
-NuTo::ContinuumElement<TDim>::ContinuumElement(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType) :
+NuTo::ContinuumElement<TDim>::ContinuumElement(const NuTo::StructureBase* rStructure,
+        const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType,
+        IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType) :
         NuTo::ElementBase::ElementBase(rStructure, rElementDataType, rIpDataType, rInterpolationType),
         mNodes(rNodes),
         mSection(nullptr)
@@ -38,14 +42,32 @@ NuTo::Error::eError NuTo::ContinuumElement<TDim>::Evaluate(const ConstitutiveInp
     auto constitutiveOutput = GetConstitutiveOutputMap(rElementOutput);
     auto constitutiveInput = GetConstitutiveInputMap(constitutiveOutput);
 
+    if (typeid(mSection) == typeid(SectionPlane))
+    {
+        auto planeState = NuTo::Constitutive::Input::PLANE_STATE;
+        if (mSection->GetType() == NuTo::Section::eSectionType::PLANE_STRESS)
+        {
+            // plane stress is default
+            constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(planeState);
+        }
+        else
+        {
+            constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(planeState);
+            auto& value = *static_cast<ConstitutivePlaneState*>(constitutiveInput[planeState].get());
+            value = NuTo::ePlaneState::PLANE_STRAIN;
+        }
+    }
+
+
     constitutiveInput.Merge(rInput);
 
     for (int theIP = 0; theIP < GetNumIntegrationPoints(); theIP++)
     {
         CalculateNMatrixBMatrixDetJacobian(data, theIP);
         CalculateConstitutiveInputs(constitutiveInput, data);
+        auto staticData = GetStaticData(theIP);
 
-        Error::eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, theIP);
+        Error::eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, staticData, theIP);
         if (error != Error::SUCCESSFUL)
             return error;
         CalculateElementOutputs(rElementOutput, data, theIP, constitutiveInput, constitutiveOutput);

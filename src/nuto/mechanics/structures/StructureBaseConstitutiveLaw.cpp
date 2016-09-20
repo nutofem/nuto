@@ -3,7 +3,7 @@
 
 #include "nuto/mechanics/constitutive/laws/AdditiveInputExplicit.h"
 #include "nuto/mechanics/constitutive/laws/AdditiveInputImplicit.h"
-#include "nuto/mechanics/constitutive/laws/ConstitutiveLawsAdditiveOutput.h"
+#include "nuto/mechanics/constitutive/laws/AdditiveOutput.h"
 #include "nuto/mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "nuto/mechanics/constitutive/laws/HeatConduction.h"
 #include "nuto/mechanics/constitutive/laws/FibreMatrixBondStressSlip.h"
@@ -114,7 +114,7 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             break;
 
         case NuTo::Constitutive::FIBRE_MATRIX_BOND_STRESS_SLIP:
-            ConstitutiveLawPtr = new NuTo::FibreMatrixBondStressSlip();
+            ConstitutiveLawPtr = new NuTo::FibreMatrixBondStressSlip(GetDimension());
             break;
 
         case NuTo::Constitutive::PHASE_FIELD:

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
-#include "nuto/mechanics/sections/SectionEnum.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 #include <type_traits>
 
 namespace NuTo
@@ -66,10 +66,10 @@ public:
     double InvariantJ2() const;
 
 
-    //! @brief calculates the 3D engineering strain.
-    //! @param rNu ... poisson ratio
-    //! @param rSectionType ... defaulted to dummy, needed in 2D for plane stress / plane strain
-    EngineeringStrain<3> As3D(double rNu, Section::eSectionType rSectionType = Section::VOLUME) const;
+    //! @brief Calculates the 3D engineering strain.
+    //! @param rNu Poisson ratio.
+    //! @param rSectionType Defaults to plane stress; needed in 2D.
+    EngineeringStrain<3> As3D(double rNu, ePlaneState = ePlaneState::PLANE_STRESS) const;
 
     //! @brief returns the deviatoric part
     //! @remark only implemented for TDim = 3

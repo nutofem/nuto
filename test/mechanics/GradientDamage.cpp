@@ -596,17 +596,17 @@ void Check1D2D3D()
     {
         NuTo::ElementBase* element = s1D.ElementGetElementPtr(weakElementId);
         for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
-            element->GetStaticData(i)->AsGradientDamage()->SetKappa(kappa);
+            dynamic_cast<NuTo::ConstitutiveStaticDataGradientDamage*>(element->GetStaticData(i))->SetKappa(kappa);
     }
     {
         NuTo::ElementBase* element = s2D.ElementGetElementPtr(weakElementId);
         for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
-            element->GetStaticData(i)->AsGradientDamage()->SetKappa(kappa);
+            dynamic_cast<NuTo::ConstitutiveStaticDataGradientDamage*>(element->GetStaticData(i))->SetKappa(kappa);
     }
     {
         NuTo::ElementBase* element = s3D.ElementGetElementPtr(weakElementId);
         for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
-            element->GetStaticData(i)->AsGradientDamage()->SetKappa(kappa);
+            dynamic_cast<NuTo::ConstitutiveStaticDataGradientDamage*>(element->GetStaticData(i))->SetKappa(kappa);
     }
 
 

@@ -5,6 +5,7 @@
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveMatrixXd.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -133,6 +134,8 @@ std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitu
             return std::make_unique<ConstitutiveMatrixXd>();
         case CALCULATE_STATIC_DATA:
             return std::make_unique<ConstitutiveCalculateStaticData>(NuTo::CalculateStaticData::EULER_BACKWARD);
+        case PLANE_STATE:
+            return std::make_unique<ConstitutivePlaneState>(NuTo::ePlaneState::PLANE_STRESS);
         default:
             throw MechanicsException(__PRETTY_FUNCTION__,
                     "Don't know how to create Constitutive input for this input type");

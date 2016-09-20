@@ -1,6 +1,5 @@
 # $Id$
 SET(NuToBase_SOURCES
-  Exception.cpp
   Logger.cpp
   CallbackInterface.cpp
 )

@@ -150,8 +150,9 @@ NuTo::Error::eError NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMa
 
         try
         {
+            auto staticData = GetStaticData(theIP);
             ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(theIP);
-            Error::eError error = constitutivePtr->Evaluate<2>(this, theIP, constitutiveInput, constitutiveOutput);
+            Error::eError error = constitutivePtr->Evaluate<2>(constitutiveInput, constitutiveOutput, staticData);
             if (error != Error::SUCCESSFUL)
                 return error;
         } catch (NuTo::MechanicsException& e)

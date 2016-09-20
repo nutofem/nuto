@@ -2,34 +2,15 @@
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
 
-
 #include "nuto/math/SparseDirectSolverMUMPS.h"
 #include "nuto/math/SparseDirectSolverMKLPardiso.h"
 #include "nuto/math/SparseDirectSolverPardiso.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 
-
-void NuTo::AdditiveInputImplicit::AddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw, Constitutive::Input::eInput rModiesInput)
-{
-    if(mStaticDataAllocated)
-        throw MechanicsException(__PRETTY_FUNCTION__,"All constitutive laws have to be attached before static data is allocated!");
-    mConstitutiveLaws.push_back(rConstitutiveLaw);
-    AddCalculableDofCombinations(rConstitutiveLaw);
-}
-
-
-bool NuTo::AdditiveInputImplicit::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
-{
-    if(mComputableDofCombinations[rTimeDerivative].find(std::pair<Node::eDof,Node::eDof>(rDofRow,rDofCol)) != mComputableDofCombinations[rTimeDerivative].end())
-        return true;
-    return false;
-}
-
 template <int TDim>
-NuTo::Error::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(NuTo::ElementBase *rElement,
-                                                                               int rIp,
-                                                                               const NuTo::ConstitutiveInputMap &rConstitutiveInput,
-                                                                               const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
+NuTo::Error::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(
+        const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
+        Constitutive::StaticData::Component* staticData)
 {
     static_assert (TDim == 1 || TDim == 2 || TDim == 3 , "Dimensions 1D, 2D & 3D supported.");
 
@@ -38,33 +19,29 @@ NuTo::Error::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(N
 
 
     // Copy inputs for every constitutive law
-    std::vector<NuTo::ConstitutiveInputMap> localInputMapVec(mConstitutiveLaws.size());
-    for(unsigned int i=0; i<mConstitutiveLaws.size(); ++i)
+    std::vector<NuTo::ConstitutiveInputMap> localInputMapVec(mSublaws.size());
+    for (unsigned int i = 0; i < mSublaws.size(); ++i)
     {
-        for(const auto& itInput: rConstitutiveInput)
+        for (const auto& itInput : rConstitutiveInput)
         {
-            localInputMapVec[i].emplace(itInput.first,
-                                       (*itInput.second).clone());
+            localInputMapVec[i].emplace(itInput.first, itInput.second->clone());
         }
     }
 
 
-
     // Copy outputs for every constitutive law
-    std::vector<ConstitutiveOutputMap> localOutputMapVec(mConstitutiveLaws.size());
-    for(unsigned int i=0; i<mConstitutiveLaws.size(); ++i)
+    std::vector<ConstitutiveOutputMap> localOutputMapVec(mSublaws.size());
+    for (unsigned int i = 0; i < mSublaws.size(); ++i)
     {
         for(const auto& itOutput: rConstitutiveOutput)
         {
             if(itOutput.first == Constitutive::Output::UPDATE_STATIC_DATA)
             {
-                localOutputMapVec[i].emplace(itOutput.first,
-                                             nullptr);
+                localOutputMapVec[i].emplace(itOutput.first, nullptr);
             }
             else
             {
-                localOutputMapVec[i].emplace(itOutput.first,
-                                             (*itOutput.second).clone());
+                localOutputMapVec[i].emplace(itOutput.first, itOutput.second->clone());
             }
 
             // temporary: until a better solution is found
@@ -97,13 +74,11 @@ NuTo::Error::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(N
 
     }
 
-
-    for(unsigned int i=0; i<mConstitutiveLaws.size(); ++i)
+    auto& compositeStaticData = *dynamic_cast<Constitutive::StaticData::Composite*>(staticData);
+    for (unsigned int i = 0; i < mSublaws.size(); ++i)
     {
-        error = mConstitutiveLaws[i]->Evaluate<TDim>(rElement,
-                                                     rIp,
-                                                     localInputMapVec[i],
-                                                     localOutputMapVec[i]);
+        error = mSublaws[i]->Evaluate<TDim>(localInputMapVec[i], localOutputMapVec[i],
+                &compositeStaticData.GetComponent(i));
         if(error!=Error::SUCCESSFUL)
             throw Exception(__PRETTY_FUNCTION__,
                             "One or more attached constitutive laws return error codes. Can't handle this");
@@ -114,14 +89,14 @@ NuTo::Error::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(N
        rConstitutiveOutput.find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN) != rConstitutiveOutput.end())
     {
 
-        double numLocalUnknowns = VoigtDim*mConstitutiveLaws.size();
+        double numLocalUnknowns = VoigtDim*mSublaws.size();
         double numTotalUnknowns = numLocalUnknowns + VoigtDim;
 
 
         // Generate lhs matrix
         Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> lhsMat = Eigen::ArrayXXd::Zero(numTotalUnknowns, numTotalUnknowns);
 
-        for(unsigned int i= 0; i<mConstitutiveLaws.size(); ++i)
+        for (unsigned int i = 0; i < mSublaws.size(); ++i)
         {
             unsigned int StartIndex = VoigtDim*i;
 
@@ -249,45 +224,19 @@ NuTo::Error::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(N
 }
 
 
-
-
-NuTo::ConstitutiveInputMap NuTo::AdditiveInputImplicit::GetConstitutiveInputs(const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
-                                                                              const NuTo::InterpolationType &rInterpolationType) const
+NuTo::ConstitutiveInputMap NuTo::AdditiveInputImplicit::GetConstitutiveInputs(
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, const NuTo::InterpolationType &rInterpolationType) const
 {
-    ConstitutiveInputMap constitutiveInputMap;
+    ConstitutiveInputMap constitutiveInputMap =
+        AdditiveBase::GetConstitutiveInputs(rConstitutiveOutput, rInterpolationType);
 
-    for(unsigned int i=0; i<mConstitutiveLaws.size(); ++i)
-    {
-
-        ConstitutiveInputMap singleLawInputMap = mConstitutiveLaws[i]->GetConstitutiveInputs(rConstitutiveOutput,
-                                                                                             rInterpolationType);
-
-        constitutiveInputMap.insert(std::move_iterator<ConstitutiveInputMap::iterator>(singleLawInputMap.begin()),
-                                    std::move_iterator<ConstitutiveInputMap::iterator>(singleLawInputMap.end()));
-    }
-//    // VHIRTHAMTODO: Remove! --- Temporary because static data not implemented correct. Therefore iteration for local values must e performed during each evaluation!
-    const auto& itDEngineeringStressDEngineeringStrain = rConstitutiveOutput.find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN);
+    // VHIRTHAMTODO: Remove! --- Temporary because static data not implemented correct. Therefore iteration for local
+    // values must be performed during each evaluation!
+    const auto& itDEngineeringStressDEngineeringStrain =
+        rConstitutiveOutput.find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN);
     if(itDEngineeringStressDEngineeringStrain != rConstitutiveOutput.end())
     {
         constitutiveInputMap.emplace(Constitutive::Input::ENGINEERING_STRAIN,nullptr);
     }
-
-
-
     return constitutiveInputMap;
-}
-
-
-
-
-void NuTo::AdditiveInputImplicit::AddCalculableDofCombinations(NuTo::ConstitutiveBase *rConstitutiveLaw)
-{
-    std::set<Node::eDof> allDofs = Node::GetDofSet();
-    for (unsigned int i=0; i<mComputableDofCombinations.size(); ++i)
-    for (auto itRow : allDofs)
-        for (auto itCol : allDofs)
-        {
-            if (rConstitutiveLaw->CheckDofCombinationComputable(itRow,itCol,i))
-                    mComputableDofCombinations[i].emplace(itRow,itCol);
-        }
 }

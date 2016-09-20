@@ -7,7 +7,7 @@ constitutive/inputoutput/EngineeringStress.cpp
 constitutive/inputoutput/EquivalentStrain.cpp
 constitutive/laws/AdditiveInputExplicit.cpp
 constitutive/laws/AdditiveInputImplicit.cpp
-constitutive/laws/ConstitutiveLawsAdditiveOutput.cpp
+constitutive/laws/AdditiveOutput.cpp
 constitutive/laws/EngineeringStressHelper.cpp
 constitutive/laws/FibreMatrixBondStressSlip.cpp
 constitutive/laws/GradientDamageEngineeringStress.cpp
@@ -19,14 +19,8 @@ constitutive/laws/MoistureTransport.cpp
 constitutive/laws/ShrinkageCapillaryStrainBased.cpp
 constitutive/laws/ShrinkageCapillaryStressBased.cpp
 constitutive/laws/ThermalStrains.cpp
-constitutive/staticData/ConstitutiveStaticDataBase.cpp
-constitutive/staticData/ConstitutiveStaticDataBondStressSlip.cpp
-constitutive/staticData/ConstitutiveStaticDataMoistureTransport.cpp
-constitutive/staticData/ConstitutiveStaticDataMultipleConstitutiveLaws.cpp
-constitutive/staticData/ConstitutiveStaticDataGradientDamage.cpp
-constitutive/staticData/ConstitutiveStaticDataElasticEnergyDensity.cpp
-constitutive/staticData/ConstitutiveStaticDataHistoryVariableScalar.cpp
-constitutive/staticData/ConstitutiveStaticDataMisesPlasticity.cpp
+constitutive/staticData/Composite.cpp
+constitutive/staticData/DataMoistureTransport.cpp
 )
 
 SET(NuToMechanicsConstraint_SOURCES
@@ -93,7 +87,6 @@ elements/IpDataNonlocalBase.cpp
 elements/IpDataStaticData.cpp
 elements/IpDataStaticDataBase.cpp
 elements/IpDataStaticDataNonlocal.cpp
-elements/IpDataWeightBase.cpp
 )
 
 SET(NuToMechanicsGroups_SOURCES

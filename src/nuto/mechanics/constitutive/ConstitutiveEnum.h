@@ -315,6 +315,7 @@ enum eInput
     CRACK_PHASE_FIELD,                  //!<
     ELASTIC_ENERGY_DENSITY,             //!<
     CALCULATE_STATIC_DATA,
+    PLANE_STATE,                        //!< for telling the law whether there is plane stress or plane strain
     TIME_STEP
 };
 }

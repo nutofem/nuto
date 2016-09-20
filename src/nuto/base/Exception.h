@@ -1,9 +1,4 @@
-#ifndef NUTO_EXCEPTION_H
-#define NUTO_EXCEPTION_H
-
-#ifdef HAVE_BOOST
-#include <boost/serialization/vector.hpp>
-#endif
+#pragma once
 
 #include <string>
 #include <stdexcept>
@@ -11,49 +6,54 @@
 
 namespace NuTo
 {
-//! @author J�rg F. Unger, ISM
-//! @date July 2008
-//! @brief ... base class for all exceptions thrown in NuTo
+//! @brief Base class for all exceptions thrown in NuTo.
 class Exception : public std::exception
 {
 protected:
     std::string mMessage;   //!< error message
-    bool mFatalFlag;        //!< flag to decide, if throwing this exception leads to inconsistencies of the program -> fatal flag=true
+    bool mFatalFlag;        //!< flag to decide, if throwing this exception leads to inconsistencies of the program
+                            //!< -> `mFatalFlag=true`
 
 public:
 
-    //! @brief ...constructor
-    //! @param rMessage ...error message
-    //! @param rFatalFlag ...flag to decide, if the error is fatal or not (exit the program or able to continue in a consistent way)
+    //! @brief Constructor.
+    //! @param rMessage Error message.
+    //! @param rFatalFlag Flag to decide if the error is fatal or not.
+    //!                   (Exit the program or able to continue in a consistent way)
     explicit Exception(const std::string& rMessage, bool rFatalFlag = true) :
         mMessage(rMessage), mFatalFlag(rFatalFlag)
     {}
 
-    //! @brief ...constructor
-    //! @param rCaller ... name of the method that throws
-    //! @param rMessage ...error message
-    //! @param rFatalFlag ...flag to decide, if the error is fatal or not (exit the program or able to continue in a consistent way)
+    //! @brief Constructor.
+    //! @param rCaller Name of the method that throws.
+    //! @param rMessage Error message.
+    //! @param rFatalFlag Flag to decide if the error is fatal or not.
+    //!                   (Exit the program or able to continue in a consistent way)
     explicit Exception(const std::string& rCaller, const std::string& rMessage, bool rFatalFlag = true) :
         mMessage(std::string("[") + rCaller +"]\n" + rMessage), mFatalFlag(rFatalFlag)
     {}
 
-    //! @brief ...constructor
-    //! @param rCaller ... name of the method that throws
-    //! @param rMessage ...error message // overload of const char*, otherwise std::string would be converted to bool and the first ctor is called.
-    //! @param rFatalFlag ...flag to decide, if the error is fatal or not (exit the program or able to continue in a consistent way)
+    //! @brief Constructor.
+    //! @param rCaller Name of the method that throws.
+    //! @param rMessage Error message
+    //  Overload of const char*, otherwise std::string would be converted to bool and the first ctor is called.
+    //! @param rFatalFlag Flag to decide if the error is fatal or not.
+    //!                   (Exit the program or able to continue in a consistent way)
     explicit Exception(const std::string& rCaller, const char* rMessage, bool rFatalFlag = true) :
         mMessage(std::string("[") + rCaller +"]\n" + rMessage), mFatalFlag(rFatalFlag)
     {}
 
-
-    //! @brief ...destructor
+    //! @brief Destructor.
     virtual ~Exception() throw() {}
 
     Exception(const Exception& ) = default;
 
-    //! @brief ... return error message of the exception
-    //! @return ... error message
-    virtual std::string ErrorMessage() const throw();
+    //! @brief Return error message of the exception.
+    //! @return Error message.
+    virtual std::string ErrorMessage() const throw()
+    {
+        return mMessage;
+    }
 
     const char* what() const throw()
     {
@@ -66,28 +66,32 @@ public:
         return error->c_str();
     }
 
-    //! @brief ... add a message to the exception (to be able to rethrow the exception afterwards)
-    //! @param message_ ... message to add
-    void AddMessage(const std::string &message_);
+    //! @brief Add a message to the exception (to be able to rethrow the exception afterwards).
+    //! @param message_ Message to add.
+    void AddMessage(const std::string &rMessage)
+    {
+        mMessage += "\n" + rMessage;
+    }
 
-    //! @brief ...constructor
-    //! @param rCaller ... name of the method that throws
-    //! @param rMessage ...error message
-    void AddMessage(const std::string& rCaller, const std::string& rMessage);
+    //! @brief Add a message to the exception (to be able to rethrow the exception afterwards).
+    //! @param rCaller Name of the method that throws.
+    //! @param message_ Message to add.
+    void AddMessage(const std::string& rCaller, const std::string& rMessage)
+    {
+        mMessage += std::string("\n[") + rCaller + "]\n" + rMessage;
+    }
 
-    //! @brief ... is the exception fatal (inconsistency of the software?)
-    //! @return ... true or false
-    bool IsFatal()const;
+    //! @brief Check whether the exception is fatal/will result in inconsistency of the program.
+    bool IsFatal() const
+    {
+        return mFatalFlag;
+    }
 
-    //! @brief ... clone the exception (important, if called from the base class)
-    //! @return ... a copy of the exception
+    //! @brief Clone the exception.
+    //! @return A copy of the exception.
     virtual Exception* Clone()
     {
         return new Exception(*this);
     }
-
-
 };
 } //namespace NuTo
-
-#endif  // NUTO_EXCEPTION_H

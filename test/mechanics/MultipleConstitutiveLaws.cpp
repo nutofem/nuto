@@ -212,7 +212,7 @@ public:
         {
             for (int theIP=0; theIP< mS.ElementGetElementPtr(i)->GetNumIntegrationPoints(); theIP++)
             {
-                NuTo::ConstitutiveStaticDataMoistureTransport *StaticData = mS.ElementGetElementPtr(i)->GetStaticData(theIP)->AsMoistureTransport();
+                NuTo::ConstitutiveStaticDataMoistureTransport *StaticData = dynamic_cast<NuTo::ConstitutiveStaticDataMoistureTransport*>(mS.ElementGetElementPtr(i)->GetStaticData(theIP));
                 StaticData->SetLastSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
                 StaticData->SetCurrentSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
                 StaticData->SetLastRelHumValue(InitialRelativeHumidity);

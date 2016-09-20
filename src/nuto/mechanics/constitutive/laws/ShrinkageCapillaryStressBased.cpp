@@ -77,10 +77,10 @@ void NuTo::ShrinkageCapillaryStressBased::SetParameterDouble(NuTo::Constitutive:
 }
 
 template <int TDim>
-NuTo::Error::eError NuTo::ShrinkageCapillaryStressBased::EvaluateShrinkageCapillary(NuTo::ElementBase *rElement,
-                                                                                    int rIp,
-                                                                                    const NuTo::ConstitutiveInputMap &rConstitutiveInput,
-                                                                                    const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
+NuTo::Error::eError NuTo::ShrinkageCapillaryStressBased::EvaluateShrinkageCapillary(
+        const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
+        Constitutive::StaticData::Component* staticData)
 {
     constexpr int VoigtDim = NuTo::ConstitutiveIOBase::GetVoigtDim(TDim);
 

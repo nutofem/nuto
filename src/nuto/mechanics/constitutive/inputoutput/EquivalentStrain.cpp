@@ -12,15 +12,15 @@
 namespace NuTo
 {
 template <int TDim>
-EquivalentStrainModifiedMises<TDim>::EquivalentStrainModifiedMises(const EngineeringStrain<TDim>& rStrain, double rK, double rNu, Section::eSectionType rSectionType)
+EquivalentStrainModifiedMises<TDim>::EquivalentStrainModifiedMises(const EngineeringStrain<TDim>& rStrain, double rK, double rNu, ePlaneState planeState)
     : mK1((rK - 1.) / (2. * rK * (1 - 2 * rNu))),
       mK2(3 / (rK * (1 + rNu) * (1 + rNu))),
-      mStrain3D(rStrain.As3D(rNu, rSectionType)),
+      mStrain3D(rStrain.As3D(rNu, planeState)),
       mI1(mStrain3D.InvariantI1()),
       mJ2(mStrain3D.InvariantJ2()),
       mA(std::sqrt(mK1 * mK1 * mI1 * mI1 + mK2 * mJ2)),
       mNu(rNu),
-      mSectionType(rSectionType)
+      mPlaneState(planeState)
 {}
 
 template <int TDim>
@@ -45,7 +45,7 @@ ConstitutiveVector<3> EquivalentStrainModifiedMises<2>::GetDerivative() const
 {
 
     ConstitutiveVector<3> tangent;
-    if (mSectionType == Section::PLANE_STRAIN)
+    if (mPlaneState == ePlaneState::PLANE_STRAIN)
     {
         if (mA == 0)
         {
@@ -66,7 +66,7 @@ ConstitutiveVector<3> EquivalentStrainModifiedMises<2>::GetDerivative() const
         return tangent;
     }
 
-    if (mSectionType == Section::PLANE_STRESS)
+    if (mPlaneState == ePlaneState::PLANE_STRESS)
     {
         double dI1dexxeyy = (1 + mNu / (mNu - 1));
         if (mA == 0)

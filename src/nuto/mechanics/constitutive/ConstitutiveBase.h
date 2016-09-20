@@ -20,17 +20,18 @@
 
 namespace NuTo
 {
-class ConstitutiveStaticDataBase;
+    namespace Constitutive
+    {
+        namespace StaticData
+        {
+            class Component;
+        }
+    }
 class InterpolationType;
 class ElementBase;
 //! @brief Base class for the constitutive relationship, e.g. material laws.
 class ConstitutiveBase
 {
-    // Friend declarations needed for CheckParameters-function of ConstitutiveLawsAdditiveOutput
-    friend class AdditiveInputExplicit;
-    friend class AdditiveInputImplicit;
-    friend class ConstitutiveLawsAdditiveOutput;
-
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
@@ -56,59 +57,51 @@ public:
                                                Node::eDof rDofCol,
                                                int rTimeDerivative) const = 0;
 
-    //! @brief ... evaluate the constitutive relation in 1D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    //! @brief Evaluate the constitutive relation
+    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
+    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
+    //! @param staticData Pointer to the history data.
     template <int TDim>
     NuTo::Error::eError Evaluate(
-            ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput)
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData)
     {
         static_assert (TDim == 1 || TDim == 2 || TDim == 3 , "Dimensions 1D, 2D & 3D supported.");
 
         if (this->mParametersValid == false) CheckParameters();
 
-        if (TDim == 1) return Evaluate1D(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
-        if (TDim == 2) return Evaluate2D(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
-        if (TDim == 3) return Evaluate3D(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
+        if (TDim == 1) return Evaluate1D(rConstitutiveInput, rConstitutiveOutput, staticData);
+        if (TDim == 2) return Evaluate2D(rConstitutiveInput, rConstitutiveOutput, staticData);
+        if (TDim == 3) return Evaluate3D(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
 
-
-    //! @brief ... evaluate the constitutive relation in 1D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    //! @brief Evaluate the constitutive relation in 1D
+    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
+    //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
+    //! @param staticData Pointer to the history data.
     virtual NuTo::Error::eError Evaluate1D(
-            ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) = 0;
 
-    //! @brief ... evaluate the constitutive relation in 2D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    //! @brief Evaluate the constitutive relation in 2D
+    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
+    //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
+    //! @param staticData Pointer to the history data.
     virtual NuTo::Error::eError Evaluate2D(
-            ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) = 0;
 
-    //! @brief ... evaluate the constitutive relation in 3D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    //! @brief Evaluate the constitutive relation in 3D
+    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
+    //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
+    //! @param staticData Pointer to the history data.
     virtual NuTo::Error::eError Evaluate3D(
-            ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
-
-
-
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) = 0;
 
     // parameters /////////////////////////////////////////////////////////////
 
@@ -178,11 +171,6 @@ public:
     //! @return ... equilibrium water volume fraction
     virtual double GetEquilibriumWaterVolumeFraction(double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const;
 
-    //! @brief ... adds a constitutive law to a model that combines multiple constitutive laws (additive, parallel)
-    //! @param rConstitutiveLaw ... additional constitutive law
-    //! @param rModiesInput ... enum which defines wich input is modified by a constitutive law.
-    virtual void  AddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw, Constitutive::Input::eInput rModiesInput = Constitutive::Input::NONE);
-
     //! @brief ... checks if a constitutive law has an specific output
     //! @return ... true/false
     virtual bool CheckOutputTypeCompatibility(NuTo::Constitutive::Output::eOutput rOutputEnum) const;
@@ -220,15 +208,20 @@ public:
 
     //! @brief ... allocate the correct static data
     //! @return ... see brief explanation
-    virtual ConstitutiveStaticDataBase* AllocateStaticData1D(const ElementBase* rElement)const;
+    //! @todo Element pointer is not used in any of the currently implemented laws; remove!
+    virtual Constitutive::StaticData::Component* AllocateStaticData1D(const ElementBase*) const { return nullptr; }
 
     //! @brief ... allocate the correct static data
     //! @return ... see brief explanation
-    virtual ConstitutiveStaticDataBase* AllocateStaticData2D(const ElementBase* rElement)const;
+    virtual Constitutive::StaticData::Component* AllocateStaticData2D(const ElementBase*) const { return nullptr; }
 
     //! @brief ... allocate the correct static data
     //! @return ... see brief explanation
-    virtual ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement)const;
+    virtual Constitutive::StaticData::Component* AllocateStaticData3D(const ElementBase*) const { return nullptr; }
+
+    //! @brief ... check parameters of the constitutive relationship
+    //! if one check fails, an exception is thrown
+    virtual void CheckParameters() const = 0;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -238,10 +231,6 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 protected:
-    //! @brief ... check parameters of the constitutive relationship
-    //! if one check fails, an exception is thrown
-    virtual void CheckParameters() const = 0;
-
     //! @brief ... flag which is <B>true</B> if all parameters of the constitutive relationship are valid and <B>false</B> otherwise
     bool mParametersValid;
 

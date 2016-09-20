@@ -560,7 +560,7 @@ NuTo::Error::eError NuTo::PhaseField::Evaluate2D(ElementBase* rElement, int rIp,
     const auto& calculateStaticData = dynamic_cast<const ConstitutiveCalculateStaticData&>(*itCalculateStaticData->second);
     int index = calculateStaticData.GetIndexOfPreviousStaticData();
 
-    const ConstitutiveStaticDataHistoryVariableScalar& oldStaticData = *(rElement->GetStaticDataBase(rIp).GetStaticData(index)->AsHistoryVariableScalar());
+    const ConstitutiveStaticDataHistoryVariableScalar& oldStaticData = *dynamic_cast<ConstitutiveStaticDataHistoryVariableScalar*>(rElement->GetStaticDataBase(rIp).GetStaticData(index));
 
     double staticData = 0.0;
 
@@ -582,7 +582,7 @@ NuTo::Error::eError NuTo::PhaseField::Evaluate2D(ElementBase* rElement, int rIp,
     }
 
     // update history variables
-    rElement->GetStaticData(rIp)->AsHistoryVariableScalar()->SetHistoryVariable(staticData);
+    dynamic_cast<ConstitutiveStaticDataHistoryVariableScalar*>(rElement->GetStaticData(rIp))->SetHistoryVariable(staticData);
     return Error::SUCCESSFUL;
 }
 
