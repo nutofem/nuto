@@ -284,8 +284,10 @@ void NuTo::StructureOutputBlockMatrix::CwiseInvert()
 }
 
 
+namespace NuTo
+{
 //! @brief output stream operator for outputs with cout or files
-std::ostream& NuTo::operator<<(std::ostream &rOut, const NuTo::StructureOutputBlockMatrix &rStructureOutputBlockMatrix)
+std::ostream& operator<<(std::ostream &rOut, const NuTo::StructureOutputBlockMatrix &rStructureOutputBlockMatrix)
 {
     rOut << "Active Dofs --- Active Dofs" << std::endl;
     rOut << rStructureOutputBlockMatrix.JJ << std::endl;
@@ -297,3 +299,4 @@ std::ostream& NuTo::operator<<(std::ostream &rOut, const NuTo::StructureOutputBl
     rOut << rStructureOutputBlockMatrix.KK << std::endl;
     return rOut;
 }
+}  // namespace NuTo

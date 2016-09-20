@@ -376,7 +376,7 @@ NuTo::eError NuTo::ElementBase::EvaluateConstitutiveLaw(const NuTo::Constitutive
         for(auto& itOutput : rConstitutiveOutput)
             if(itOutput.second!=nullptr && !itOutput.second->GetIsCalculated()) //check nullptr because of static data
                 throw MechanicsException(__PRETTY_FUNCTION__,std::string("Output ")+Constitutive::OutputToString(itOutput.first)+" not calculated by constitutive law");
-            return error;
+        return error;
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "error evaluating the constitutive model.");

@@ -100,7 +100,7 @@ void CheckDamageLaws()
 int SetConstitutiveLaw(NuTo::Structure& rStructure)
 {
     // create a damage law
-    int lawId = rStructure.ConstitutiveLawCreate("Gradient_Damage_Engineering_Stress");
+    int lawId = rStructure.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS);
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::DENSITY, 1.0);
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 30000);
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.2);

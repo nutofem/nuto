@@ -34,7 +34,8 @@ template <int TDim>
 NuTo::ContinuumBoundaryElement<TDim>::ContinuumBoundaryElement(const ContinuumElement<TDim> *rBaseElement, int rSurfaceId)
 : ElementBase::ElementBase(rBaseElement->GetStructure(), rBaseElement->GetElementDataType(), rBaseElement->GetIpDataType(0), rBaseElement->GetInterpolationType()),
   mBaseElement(rBaseElement),
-  mSurfaceId(rSurfaceId)
+  mSurfaceId(rSurfaceId),
+  mAlphaUserDefined(-1)
 {}
 
 template <int TDim>
@@ -114,11 +115,11 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiv
             break;
 
         case Element::eOutput::UPDATE_STATIC_DATA:
-            constitutiveOutput[NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA] = 0;
+            constitutiveOutput[Constitutive::eOutput::UPDATE_STATIC_DATA] = 0;
             break;
 
         case Element::eOutput::UPDATE_TMP_STATIC_DATA:
-            constitutiveOutput[NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA] = 0;
+            constitutiveOutput[Constitutive::eOutput::UPDATE_TMP_STATIC_DATA] = 0;
             break;
 
         case Element::eOutput::IP_DATA:
@@ -213,6 +214,11 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateConstitutiveInputs(const Con
         }
         case Constitutive::eInput::NONLOCAL_EQ_STRAIN:
         {
+            if (mAlphaUserDefined == -1) // just to put it somewhere...
+                rData.mAlpha = CalculateAlpha();
+            else
+                rData.mAlpha = mAlphaUserDefined;
+
             auto& nonLocalEqStrain = *static_cast<ConstitutiveScalar*>(it.second.get());
             nonLocalEqStrain.AsScalar() = rData.mN.at(Node::eDof::NONLOCALEQSTRAIN) * rData.mNodalValues.at(Node::eDof::NONLOCALEQSTRAIN);
             break;
@@ -304,9 +310,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputInternalGradien
         {
             const auto& localEqStrain = *static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::LOCAL_EQ_STRAIN).get());
             const auto& nonlocalEqStrain = *static_cast<ConstitutiveScalar*>(constitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN).get());
-            const auto& nonlocalParameterXi = *static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::NONLOCAL_PARAMETER_XI).get());
-            double alpha = std::sqrt(nonlocalParameterXi[0]);
-            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection / alpha * rData.mN.at(Node::eDof::NONLOCALEQSTRAIN).transpose() * (nonlocalEqStrain[0] - localEqStrain[0]);
+            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection / rData.mAlpha * rData.mN.at(Node::eDof::NONLOCALEQSTRAIN).transpose() * (nonlocalEqStrain[0] - localEqStrain[0]);
             break;
         }
 
@@ -355,16 +359,12 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputHessian0(BlockF
             case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::DISPLACEMENTS):
             {
                 const auto& tangentLocalEqStrainStrain = *static_cast<ConstitutiveVector<VoigtDim>*>(constitutiveOutput.at(Constitutive::eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN).get());
-                const auto& nonlocalParameterXi = *static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::NONLOCAL_PARAMETER_XI).get());
-                double alpha = std::sqrt(nonlocalParameterXi[0]);
-                hessian0 -= rData.mDetJxWeightIPxSection * alpha * rData.mN.at(dofRow).transpose() * tangentLocalEqStrainStrain.transpose() * rData.mB.at(dofCol);
+                hessian0 -= rData.mDetJxWeightIPxSection * rData.mAlpha * rData.mN.at(dofRow).transpose() * tangentLocalEqStrainStrain.transpose() * rData.mB.at(dofCol);
                 break;
             }
             case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::NONLOCALEQSTRAIN):
             {
-                const auto& nonlocalParameterXi = *static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::NONLOCAL_PARAMETER_XI).get());
-                double alpha = std::sqrt(nonlocalParameterXi[0]);
-                hessian0 += rData.mN.at(dofRow).transpose() * rData.mN.at(dofRow) * rData.mDetJxWeightIPxSection / alpha;
+                hessian0 += rData.mN.at(dofRow).transpose() * rData.mN.at(dofRow) * rData.mDetJxWeightIPxSection / rData.mAlpha;
                 break;
             }
             case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::RELATIVEHUMIDITY):
@@ -444,7 +444,6 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapInternalGrad
 
         case Node::eDof::NONLOCALEQSTRAIN:
             rConstitutiveOutput[eOutput::LOCAL_EQ_STRAIN] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(eOutput::LOCAL_EQ_STRAIN);
-            rConstitutiveOutput[eOutput::NONLOCAL_PARAMETER_XI] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(eOutput::NONLOCAL_PARAMETER_XI);
             break;
 
         case Node::eDof::RELATIVEHUMIDITY:
@@ -485,12 +484,10 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(Con
                 break;
 
             case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::DISPLACEMENTS):
-                rConstitutiveOutput[eOutput::NONLOCAL_PARAMETER_XI] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(eOutput::NONLOCAL_PARAMETER_XI);
                 rConstitutiveOutput[eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN);
                 break;
 
             case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::NONLOCALEQSTRAIN):
-                rConstitutiveOutput[eOutput::NONLOCAL_PARAMETER_XI] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(eOutput::NONLOCAL_PARAMETER_XI);
                 break;
 
             case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::RELATIVEHUMIDITY):
@@ -770,8 +767,17 @@ Eigen::VectorXd ContinuumBoundaryElement<TDim>::ExtractNodeValues(int rTimeDeriv
     return mBaseElement->ExtractNodeValues(rTimeDerivative, rDof);
 }
 
+template <int TDim>
+double ContinuumBoundaryElement<TDim>::CalculateAlpha()
+{
+    int theIP = 0; // This is a bit of a hack... I am sorry.
 
+    if (GetConstitutiveLaw(theIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER) != 0)
+        throw MechanicsException(__PRETTY_FUNCTION__, "The case c != const is currently not supported. Set eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER to 0.");
 
+    double c = GetConstitutiveLaw(theIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS);
+    return std::sqrt(c);
+}
 
 
 

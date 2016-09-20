@@ -134,6 +134,20 @@ public:
         throw MechanicsException(__PRETTY_FUNCTION__,"Not implemented.");
     }
 
+    //! @brief getter for alpha parameter
+    double GetAlpha() const
+    {
+        return mAlphaUserDefined;
+    }
+
+    //! @brief setter for alpha parameter
+    void SetAlpha(double rAlpha)
+    {
+        mAlphaUserDefined = rAlpha;
+    }
+
+
+
     virtual Eigen::VectorXd ExtractNodeValues(int rTimeDerivative, Node::eDof rDof) const override;
 
     virtual const Eigen::Vector3d GetGlobalIntegrationPointCoordinates(int rIpNum) const override;
@@ -209,6 +223,9 @@ protected:
 
     double CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const;
 
+    //! @brief calculates the alpha parameter as alpha = sqrt(nonlocal radius)
+    double CalculateAlpha();
+
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
     void ReorderNodes() override
     {
@@ -227,6 +244,9 @@ protected:
 
     // surface id
     int mSurfaceId;
+
+    // alpha parameter for the gradient damage boundary condition
+    int mAlphaUserDefined;
 }
 ;
 

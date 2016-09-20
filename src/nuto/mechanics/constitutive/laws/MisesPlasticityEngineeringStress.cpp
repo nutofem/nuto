@@ -1063,12 +1063,14 @@ void NuTo::MisesPlasticityEngineeringStress::Info(unsigned short rVerboseLevel, 
     this->ConstitutiveBase::Info(rVerboseLevel, rLogger);
     rLogger << "    Young's modulus: " << this->mE << "\n";
     rLogger << "    Poisson's ratio: " << this->mNu << "\n";
-	rLogger << "    multilinear yield strength: (interval,epsilon,sigma)" << "\n";
+    rLogger << "    multilinear yield strength: (interval,epsilon,sigma)" << "\n";
     for (unsigned int count=0; count<mSigma.size(); count++)
-    	rLogger << "       " << count<< " : " << this->mSigma[count].first << "    " << this->mSigma[count].second << "\n";
-	rLogger << "    multilinear hardening modulus: (interval,epsilon,H')" << "\n";
+        rLogger << "       " << count<< " : " << this->mSigma[count].first << "    " << this->mSigma[count].second << "\n";
+
+    rLogger << "    multilinear hardening modulus: (interval,epsilon,H')" << "\n";
     for (unsigned int count=0; count<mH.size(); count++)
-    	rLogger << "       " << count<< " : " << this->mH[count].first << "    " << this->mH[count].second << "\n";
+        rLogger << "       " << count<< " : " << this->mH[count].first << "    " << this->mH[count].second << "\n";
+
     rLogger << "    mThermalExpansionCoefficient: " << this->mThermalExpansionCoefficient << "\n";
 }
 
