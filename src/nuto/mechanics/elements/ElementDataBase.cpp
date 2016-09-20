@@ -44,7 +44,7 @@ void NuTo::ElementDataBase::SetConstitutiveLaw(const ElementBase* rElement, int 
 //! @brief returns the static data of an integration point
 //! @param rIp integration point
 //! @return static data
-NuTo::ConstitutiveStaticDataBase* NuTo::ElementDataBase::GetStaticData(int rIp)
+NuTo::Constitutive::StaticData::Component* NuTo::ElementDataBase::GetStaticData(int rIp)
 {
 	throw MechanicsException("[NuTo::ElementDataBase::GetStaticData] Not implemented for the ElementDataClass - check the allocated element data type.");
 }

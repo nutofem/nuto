@@ -49,13 +49,12 @@ public:
     virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
                                                        const InterpolationType& rInterpolationType) const = 0;
 
-    //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
-    //! @param rDofRow ... row dof
-    //! @param rDofCol ... column dof
-    //! @param rTimeDerivative ... time derivative
-    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow,
-                                               Node::eDof rDofCol,
-                                               int rTimeDerivative) const = 0;
+    //! @brief Determines which submatrices of a multi-doftype problem can be solved by the constitutive law.
+    //! @param rDofRow Row DOF.
+    //! @param rDofCol Column DOF.
+    //! @param rTimeDerivative Time derivative.
+    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol,
+            int rTimeDerivative) const = 0;
 
     //! @brief Evaluate the constitutive relation
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).

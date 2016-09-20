@@ -705,17 +705,17 @@ void NuTo::ContinuumBoundaryElement<TDim>::Visualize(VisualizeUnstructuredGrid& 
 namespace NuTo
 {
 template<>
-NuTo::ConstitutiveStaticDataBase* ContinuumBoundaryElement<1>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
+NuTo::Constitutive::StaticData::Component* ContinuumBoundaryElement<1>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
 {
     return rConstitutiveLaw->AllocateStaticData1D(this);
 }
 template<>
-NuTo::ConstitutiveStaticDataBase* ContinuumBoundaryElement<2>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
+NuTo::Constitutive::StaticData::Component* ContinuumBoundaryElement<2>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
 {
     return rConstitutiveLaw->AllocateStaticData2D(this);
 }
 template<>
-NuTo::ConstitutiveStaticDataBase* ContinuumBoundaryElement<3>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
+NuTo::Constitutive::StaticData::Component* ContinuumBoundaryElement<3>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
 {
     return rConstitutiveLaw->AllocateStaticData3D(this);
 }

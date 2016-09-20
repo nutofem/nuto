@@ -36,11 +36,11 @@ BOOST_AUTO_TEST_CASE(add_and_retrieve_scalars)
     BOOST_CHECK_EQUAL(historyVariable.GetData(), 1337);
     BOOST_CHECK_EQUAL(historyVariable.GetNumData(), 5);
 
-    Leaf<double> historyVariableTwo = *historyVariable.Clone();
-    BOOST_CHECK(historyVariable == historyVariableTwo);
+    Leaf<double>* historyVariableTwo = historyVariable.Clone();
+    BOOST_CHECK(historyVariable == *historyVariableTwo);
 
-    historyVariableTwo.SetData(27);
-    BOOST_CHECK(historyVariable != historyVariableTwo);
+    historyVariableTwo->SetData(27);
+    BOOST_CHECK(historyVariable != *historyVariableTwo);
 }
 
 
@@ -59,19 +59,19 @@ BOOST_AUTO_TEST_CASE(add_and_retrieve_custom_types)
     moistureData.AllocateAdditionalData(3);
     BOOST_CHECK_EQUAL(moistureData.GetNumData(), 4);
 
-    moistureData.GetData(3).SetSorptionHistoryDesorption(false);
-    BOOST_CHECK(!moistureData.GetData(3).GetSorptionHistoryDesorption());
+    moistureData.GetData(3).SetDesorption(false);
+    BOOST_CHECK(!moistureData.GetData(3).IsDesorption());
 
     moistureData.SaveData();
     moistureData.SaveData();
     moistureData.RestoreData();
     moistureData.RestoreData();
 
-    Leaf<DataMoistureTransport> moistureDataTwo = *moistureData.Clone();
+    Leaf<DataMoistureTransport>* moistureDataTwo = moistureData.Clone();
 
-    BOOST_CHECK(moistureData == moistureDataTwo);
+    BOOST_CHECK(moistureData == *moistureDataTwo);
 
     currentData.SetLastRelHumValue(500.4);
-    moistureDataTwo.SetData(currentData);
-    BOOST_CHECK(moistureData != moistureDataTwo);
+    moistureDataTwo->SetData(currentData);
+    BOOST_CHECK(moistureData != *moistureDataTwo);
 }

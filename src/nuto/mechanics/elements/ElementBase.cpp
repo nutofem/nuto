@@ -1,4 +1,4 @@
-// $Id$
+#include "nuto/mechanics/elements/ElementBase.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -17,7 +17,6 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "nuto/mechanics/constitutive/staticData/Component.h"
 #include "nuto/mechanics/constraints/ConstraintBase.h"
-#include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIp.h"
 #include "nuto/mechanics/elements/ElementDataVariableConstitutiveIp.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIpCrack.h"
@@ -349,7 +348,7 @@ double NuTo::ElementBase::GetIntegrationPointWeight(int rIpNum) const
 
 template<int TDim>
 NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
-        NuTo::ConstitutiveOutputMap& rConstitutiveOutput, NuTo::ConstitutiveStaticDataBase* staticData, int IP)
+        NuTo::ConstitutiveOutputMap& rConstitutiveOutput, NuTo::Constitutive::StaticData::Component* staticData, int IP)
 {
     try
     {
@@ -385,7 +384,7 @@ template NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw<3>(const
 //! @brief returns the static data of an integration point
 //! @param rIp integration point
 //! @return static data pointer
-const NuTo::ConstitutiveStaticDataBase* NuTo::ElementBase::GetStaticData(int rIp) const
+const NuTo::Constitutive::StaticData::Component* NuTo::ElementBase::GetStaticData(int rIp) const
 {
     return this->mElementData->GetStaticData(rIp);
 }
@@ -393,7 +392,7 @@ const NuTo::ConstitutiveStaticDataBase* NuTo::ElementBase::GetStaticData(int rIp
 //! @brief returns the static data of an integration point
 //! @param rIp integration point
 //! @return static data pointer
-NuTo::ConstitutiveStaticDataBase* NuTo::ElementBase::GetStaticData(int rIp)
+NuTo::Constitutive::StaticData::Component* NuTo::ElementBase::GetStaticData(int rIp)
 {
     return this->mElementData->GetStaticData(rIp);
 }

@@ -244,7 +244,7 @@ public:
     //! @param IP The current integration point.
     template<int TDim>
     Error::eError EvaluateConstitutiveLaw(const ConstitutiveInputMap& rConstitutiveInput,
-            ConstitutiveOutputMap& rConstitutiveOutput, NuTo::ConstitutiveStaticDataBase* staticData, int IP);
+            ConstitutiveOutputMap& rConstitutiveOutput, NuTo::Constitutive::StaticData::Component* staticData, int IP);
 
     //! @brief calculates output data for the element with a standard input (EULER_BACKWARD static data)
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
@@ -260,17 +260,17 @@ public:
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
-    virtual ConstitutiveStaticDataBase* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const=0;
+    virtual Constitutive::StaticData::Component* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const=0;
 
     //! @brief Returns the static data for an integration point of an element
     //! @param rIp integration point
     //! @return static data
-    ConstitutiveStaticDataBase* GetStaticData(int rIp);
+    Constitutive::StaticData::Component* GetStaticData(int rIp);
 
     //! @brief Returns the static data for an integration point of an element
     //! @param rIp integration point
     //! @return static data
-    const ConstitutiveStaticDataBase* GetStaticData(int rIp) const;
+    const Constitutive::StaticData::Component* GetStaticData(int rIp) const;
 
     IpDataStaticDataBase& GetStaticDataBase(int rIp);
 

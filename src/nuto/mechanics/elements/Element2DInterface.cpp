@@ -167,7 +167,7 @@ NuTo::Error::eError NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMa
 }
 
 
-NuTo::ConstitutiveStaticDataBase* NuTo::Element2DInterface::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
+NuTo::Constitutive::StaticData::Component* NuTo::Element2DInterface::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
 {
     return rConstitutiveLaw->AllocateStaticData1D(this);
 }

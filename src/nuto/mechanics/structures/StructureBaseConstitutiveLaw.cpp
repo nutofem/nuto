@@ -60,7 +60,7 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             ConstitutiveLawPtr = new NuTo::AdditiveInputImplicit();
             break;
         case NuTo::Constitutive::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT:
-            ConstitutiveLawPtr = new NuTo::ConstitutiveLawsAdditiveOutput();
+            ConstitutiveLawPtr = new NuTo::AdditiveOutput();
             break;
 
         case NuTo::Constitutive::DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS:
