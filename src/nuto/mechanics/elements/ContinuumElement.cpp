@@ -65,7 +65,7 @@ NuTo::Error::eError NuTo::ContinuumElement<TDim>::Evaluate(const ConstitutiveInp
     {
         CalculateNMatrixBMatrixDetJacobian(data, theIP);
         CalculateConstitutiveInputs(constitutiveInput, data);
-        auto staticData = GetStaticData(theIP);
+        auto staticData = GetConstitutiveStaticData(theIP);
 
         Error::eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, staticData, theIP);
         if (error != Error::SUCCESSFUL)
@@ -1371,17 +1371,20 @@ double NuTo::ContinuumElement<3>::CalculateDetJxWeightIPxSection(double rDetJaco
 }
 
 template<>
-NuTo::ConstitutiveStaticDataBase* ContinuumElement<1>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
+NuTo::Constitutive::StaticData::Component* ContinuumElement<1>::AllocateStaticData(
+        const ConstitutiveBase* rConstitutiveLaw) const
 {
     return rConstitutiveLaw->AllocateStaticData1D(this);
 }
 template<>
-NuTo::ConstitutiveStaticDataBase* ContinuumElement<2>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
+NuTo::Constitutive::StaticData::Component* ContinuumElement<2>::AllocateStaticData(
+        const ConstitutiveBase* rConstitutiveLaw) const
 {
     return rConstitutiveLaw->AllocateStaticData2D(this);
 }
 template<>
-NuTo::ConstitutiveStaticDataBase* ContinuumElement<3>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
+NuTo::Constitutive::StaticData::Component* ContinuumElement<3>::AllocateStaticData(
+        const ConstitutiveBase* rConstitutiveLaw) const
 {
     return rConstitutiveLaw->AllocateStaticData3D(this);
 }

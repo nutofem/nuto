@@ -4,6 +4,7 @@
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
 #include "nuto/mechanics/constitutive/staticData/Leaf.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 
 // VHIRTHAMTODO Check deactivated routines, if they are still needed
 // VHIRTHAMTODO Rebuild CheckXYZ routines ---> CheckParameterDouble of base class
@@ -81,7 +82,7 @@ public:
     }
 
     //! @brief ... calculates the sorption Curve coefficients when the sorption direction has changed
-    void CalculateSorptionCurveCoefficients(Constitutive::StaticData::DataMoistureTransport* rStaticData,
+    void CalculateSorptionCurveCoefficients(Constitutive::StaticData::DataMoistureTransport& rStaticData,
             double rRelativeHumidity);
 
 private:
@@ -348,6 +349,11 @@ public:
         return false;
     }
 
+    //! @brief Set the control node for this law.
+    void SetControlNode(NuTo::NodeBase* node)
+    {
+        mControlNode = node;
+    }
 
 protected:
 
@@ -398,5 +404,8 @@ protected:
 
     //! @brief Density of saturated water vapor \f$ \rho_v \f$.
     double mDensitySaturatedWaterVapor = 1.0;
+
+    //! @brief Control node
+    NuTo::NodeBase* mControlNode = nullptr;
 };
 }

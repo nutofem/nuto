@@ -31,8 +31,6 @@ public:
             const InterpolationType& rInterpolationType) const override;
 
     //! @brief Evaluate the constitutive relation.
-    //! @param rElement Element
-    //! @param rIp Integration point
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output to the constitutive law
     template<int TDim>

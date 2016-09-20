@@ -26,6 +26,13 @@ public:
     Component(const Component&) = delete;
     Component& operator=(const Component&) = delete;
 
+    //! @brief Puts current static data to previous static data, previous to pre-previous, etc.
+    //! The current data is copied to the previous data, all others are moved.
+    virtual void ShiftToPast() = 0;
+
+    //! @brief Puts previous static data to current static data, pre-previous to previous, etc.
+    virtual void ShiftToFuture() = 0;
+
 protected:
     //! @brief Private constructor, use @ref Create() to allocate a component on the heap.
     Component() = default;

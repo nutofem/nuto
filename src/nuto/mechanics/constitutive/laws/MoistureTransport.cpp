@@ -323,7 +323,7 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
             //Calculation
             Eigen::Matrix<double, 1, 1>& internalGradientRH_Boundary_N = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
 
-            double relativeHumidityBoundary = rElement->GetBoundaryControlNode()->Get(Node::RELATIVEHUMIDITY).at(0,0);
+            double relativeHumidityBoundary = mControlNode->Get(Node::RELATIVEHUMIDITY).at(0,0);
             internalGradientRH_Boundary_N(0,0) =    mBoundaryDiffusionCoefficientRH * (inputData.mRelativeHumidity - relativeHumidityBoundary);
         }
             break;
@@ -335,8 +335,8 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
             //Calculation
             Eigen::Matrix<double, 1, 1>& internalGradientWV_Boundary_N = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
 
-            double waterVolumeFractionBoundary = GetEquilibriumWaterVolumeFraction(rElement->GetBoundaryControlNode()->Get(Node::RELATIVEHUMIDITY).at(0,0),
-                                                                                   StaticData->GetCurrentSorptionCoeff());
+            double waterVolumeFractionBoundary = GetEquilibriumWaterVolumeFraction(
+                    mControlNode->Get(Node::RELATIVEHUMIDITY).at(0,0), staticData.GetCurrentSorptionCoeff());
             internalGradientWV_Boundary_N(0,0) =    mBoundaryDiffusionCoefficientWV * (inputData.mWaterVolumeFraction - waterVolumeFractionBoundary);
         }
             break;
@@ -502,14 +502,14 @@ void NuTo::MoistureTransport::CalculateSorptionCurveCoefficients(
 
                 ITDelta = -Jacobi.Inverse() * ITRhs;
                 ITDofs  += ITDelta;
-                Residual = ITRhs.Abs().ColumnwiseMaxCoeff()(0,0);
+                residual = ITRhs.Abs().ColumnwiseMaxCoeff()(0,0);
                 iteration++;
             }
 
-            rStaticData->mCurrentSorptionCoeff(0)    = ITDofs(2);
-            rStaticData->mCurrentSorptionCoeff(1)    = ITDofs(1);
-            rStaticData->mCurrentSorptionCoeff(2)    = ITDofs(0);
-            rStaticData->mCurrentJunctionPoint       = ITDofs(3);
+            NuTo::FullVector<double, Eigen::Dynamic> newSorptionCoeff {{ITDofs(2), ITDofs(1), ITDofs(0)}};
+            staticData.SetCurrentSorptionCoeff(newSorptionCoeff);
+            staticData.SetCurrentJunctionPoint(ITDofs(3));
+
         }
 
         // adsorption to desorption
@@ -582,7 +582,7 @@ void NuTo::MoistureTransport::CalculateSorptionCurveCoefficients(
 
                 ITDelta = -Jacobi.Inverse() * ITRhs;
                 ITDofs  += ITDelta;
-                Residual = ITRhs.Abs().ColumnwiseMaxCoeff()(0,0);
+                residual = ITRhs.Abs().ColumnwiseMaxCoeff()(0,0);
                 iteration++;
             }
             

@@ -262,24 +262,25 @@ public:
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
     virtual Constitutive::StaticData::Component* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const=0;
 
-    //! @brief Returns the static data for an integration point of an element
-    //! @param rIp integration point
-    //! @return static data
-    Constitutive::StaticData::Component* GetStaticData(int rIp);
+    //! @brief Returns the constitutive static data for an integration point of an element.
+    //! @param rIp Integration point.
+    //! @return Pointer to the static data.
+    Constitutive::StaticData::Component* GetConstitutiveStaticData(int rIp);
 
-    //! @brief Returns the static data for an integration point of an element
-    //! @param rIp integration point
-    //! @return static data
-    const Constitutive::StaticData::Component* GetStaticData(int rIp) const;
+    //! @brief Returns the constitutive static data for an integration point of an element.
+    //! @param rIp Integration point.
+    //! @return Pointer to the static data.
+    const Constitutive::StaticData::Component* GetConstitutiveStaticData(int rIp) const;
 
-    IpDataStaticDataBase& GetStaticDataBase(int rIp);
+    //! @brief Sets the constitutive static data for an integration point of an element.
+    //! @param rIp Integration point.
+    //! @param rStaticData Pointer to the static data.
+    void SetConstitutiveStaticData(int rIp, Constitutive::StaticData::Component* rStaticData);
 
-    const IpDataStaticDataBase& GetStaticDataBase(int rIp) const;
+    IpDataStaticDataBase& GetIpData(int rIp);
 
-    //! @brief sets the static data for an integration point of an element
-    //! @param rIp integration point
-    //! @param rStaticData static data
-    void SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData);
+    const IpDataStaticDataBase& GetIpData(int rIp) const;
+
 
     //! @brief Update the static data of an element
     //virtual Error::eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)=0;

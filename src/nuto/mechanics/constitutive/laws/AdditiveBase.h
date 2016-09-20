@@ -56,6 +56,9 @@ public:
     virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
                                                        const InterpolationType& rInterpolationType) const override;
 
+    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol,
+            int rTimeDerivative) const;
+
 protected:
     //! @brief Debug variable to avoid that a constitutive law can be attached after allocation of static data.
     mutable bool mStaticDataAllocated = false;

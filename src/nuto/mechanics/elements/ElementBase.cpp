@@ -375,45 +375,42 @@ NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw(const NuTo::Const
 }
 
 template NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw<1>(const NuTo::ConstitutiveInputMap&,
-        NuTo::ConstitutiveOutputMap&, ConstitutiveStaticDataBase*, int);
+        NuTo::ConstitutiveOutputMap&, Constitutive::StaticData::Component*, int);
 template NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw<2>(const NuTo::ConstitutiveInputMap&,
-        NuTo::ConstitutiveOutputMap&, ConstitutiveStaticDataBase*, int);
+        NuTo::ConstitutiveOutputMap&, Constitutive::StaticData::Component*, int);
 template NuTo::Error::eError NuTo::ElementBase::EvaluateConstitutiveLaw<3>(const NuTo::ConstitutiveInputMap&,
-        NuTo::ConstitutiveOutputMap&, ConstitutiveStaticDataBase*, int);
+        NuTo::ConstitutiveOutputMap&, Constitutive::StaticData::Component*, int);
 
-//! @brief returns the static data of an integration point
-//! @param rIp integration point
-//! @return static data pointer
-const NuTo::Constitutive::StaticData::Component* NuTo::ElementBase::GetStaticData(int rIp) const
+
+const NuTo::Constitutive::StaticData::Component* NuTo::ElementBase::GetConstitutiveStaticData(int rIp) const
 {
-    return this->mElementData->GetStaticData(rIp);
+    return this->mElementData->GetConstitutiveStaticData(rIp);
 }
 
-//! @brief returns the static data of an integration point
-//! @param rIp integration point
-//! @return static data pointer
-NuTo::Constitutive::StaticData::Component* NuTo::ElementBase::GetStaticData(int rIp)
+
+NuTo::Constitutive::StaticData::Component* NuTo::ElementBase::GetConstitutiveStaticData(int rIp)
 {
-    return this->mElementData->GetStaticData(rIp);
+    return this->mElementData->GetConstitutiveStaticData(rIp);
 }
 
-NuTo::IpDataStaticDataBase& NuTo::ElementBase::GetStaticDataBase(int rIp)
+
+void NuTo::ElementBase::SetConstitutiveStaticData(int rIp, Constitutive::StaticData::Component* rStaticData)
 {
-    return mElementData->GetStaticDataBase(rIp);
+    return this->mElementData->SetConstitutiveStaticData(rIp, rStaticData);
 }
 
-const NuTo::IpDataStaticDataBase& NuTo::ElementBase::GetStaticDataBase(int rIp) const
+
+NuTo::IpDataStaticDataBase& NuTo::ElementBase::GetIpData(int rIp)
 {
-    return mElementData->GetStaticDataBase(rIp);
+    return mElementData->GetIpData(rIp);
 }
 
-//! @brief sets the static data for an integration point of an element
-//! @param rIp integration point
-//! @param rStaticData static data
-void NuTo::ElementBase::SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData)
+
+const NuTo::IpDataStaticDataBase& NuTo::ElementBase::GetIpData(int rIp) const
 {
-    return this->mElementData->SetStaticData(rIp, rStaticData);
+    return mElementData->GetIpData(rIp);
 }
+
 
 const Eigen::Vector3d NuTo::ElementBase::GetGlobalIntegrationPointCoordinates(int rIpNum) const
 {

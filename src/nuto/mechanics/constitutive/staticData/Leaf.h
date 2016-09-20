@@ -82,7 +82,7 @@ public:
 
     //! @brief Puts current static data to previous static data, previous to pre-previous, etc.
     //! The current data is copied to the previous data, all others are moved.
-    void SaveData()
+    void ShiftToPast() override
     {
         if (mData.size() < 2)
             throw MechanicsException(__PRETTY_FUNCTION__, "There need to be at least two time steps allocated.");
@@ -92,7 +92,7 @@ public:
     }
 
     //! @brief Puts previous static data to current static data, pre-previous to previous, etc.
-    void RestoreData()
+    void ShiftToFuture() override
     {
         if (mData.size() < 2)
             throw MechanicsException(__PRETTY_FUNCTION__, "There need to be at least two time steps allocated.");

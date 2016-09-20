@@ -42,9 +42,9 @@ NuTo::Error::eError NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const Constit
     {
         CalculateNMatrixBMatrixDetJacobian(data, theIP);
         CalculateConstitutiveInputs(constitutiveInput, data);
+        auto staticData = GetConstitutiveStaticData(theIP);
 
-
-        Error::eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, theIP);
+        Error::eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, staticData, theIP);
         if (error != Error::SUCCESSFUL)
             return error;
         CalculateElementOutputs(rElementOutput, data, theIP, constitutiveInput, constitutiveOutput);

@@ -12,7 +12,6 @@
 
 #include "nuto/mechanics/constitutive/laws/PhaseField.h"
 #include "nuto/mechanics/constitutive/laws/EngineeringStressHelper.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataHistoryVariableScalar.h"
 
 #include "nuto/base/Logger.h"
 #include "nuto/mechanics/MechanicsException.h"

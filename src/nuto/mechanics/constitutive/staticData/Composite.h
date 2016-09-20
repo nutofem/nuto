@@ -26,6 +26,10 @@ public:
 
     unsigned int GetNumComponents() const;
 
+    void ShiftToPast() override;
+
+    void ShiftToFuture() override;
+
 private:
     Composite() = default;
     boost::ptr_vector<Component> mComponents;

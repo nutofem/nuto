@@ -35,3 +35,21 @@ unsigned int Composite::GetNumComponents() const
 {
     return mComponents.size();
 }
+
+
+void Composite::ShiftToPast()
+{
+    for (auto& it : mComponents)
+    {
+        it.ShiftToPast();
+    }
+}
+
+
+void Composite::ShiftToFuture()
+{
+    for (auto& it : mComponents)
+    {
+        it.ShiftToFuture();
+    }
+}

@@ -26,13 +26,13 @@ BOOST_AUTO_TEST_CASE(add_and_retrieve_scalars)
     BOOST_CHECK_EQUAL(historyVariable.GetNumData(), 5);
 
     historyVariable.SetData(1337);
-    historyVariable.SaveData(); // 1337 should be at [1]
-    historyVariable.SaveData(); // 1337 should be at [2]
+    historyVariable.ShiftToPast(); // 1337 should be at [1]
+    historyVariable.ShiftToPast(); // 1337 should be at [2]
     BOOST_CHECK_EQUAL(historyVariable.GetData(2), 1337);
     BOOST_CHECK_EQUAL(historyVariable.GetNumData(), 5); // should not alter number of static data
 
-    historyVariable.RestoreData(); // 1337 should be back at [1]
-    historyVariable.RestoreData(); // 1337 should be back at [0]
+    historyVariable.ShiftToFuture(); // 1337 should be back at [1]
+    historyVariable.ShiftToFuture(); // 1337 should be back at [0]
     BOOST_CHECK_EQUAL(historyVariable.GetData(), 1337);
     BOOST_CHECK_EQUAL(historyVariable.GetNumData(), 5);
 
@@ -62,10 +62,10 @@ BOOST_AUTO_TEST_CASE(add_and_retrieve_custom_types)
     moistureData.GetData(3).SetDesorption(false);
     BOOST_CHECK(!moistureData.GetData(3).IsDesorption());
 
-    moistureData.SaveData();
-    moistureData.SaveData();
-    moistureData.RestoreData();
-    moistureData.RestoreData();
+    moistureData.ShiftToPast();
+    moistureData.ShiftToPast();
+    moistureData.ShiftToFuture();
+    moistureData.ShiftToFuture();
 
     Leaf<DataMoistureTransport>* moistureDataTwo = moistureData.Clone();
 

@@ -14,7 +14,6 @@ namespace NuTo
         namespace StaticData
         {
             class Component;
-            template<typename T> class Leaf;
         }
     }
 

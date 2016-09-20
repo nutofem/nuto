@@ -829,7 +829,7 @@ void NuTo::StructureBase::ElementGroupAllocateAdditionalStaticData(int rElementG
         ElementBase* element = ElementGetElementPtr(elementIds[iElement]);
         for (int iIp = 0; iIp < element->GetNumIntegrationPoints(); ++iIp)
         {
-            element->GetStaticDataBase(iIp).AllocateAdditionalStaticData(rNumAdditionalStaticData);
+            element->GetIpData(iIp).AllocateAdditionalStaticData(rNumAdditionalStaticData);
         }
     }
 
@@ -977,7 +977,7 @@ NuTo::Error::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 }
 
 //! @brief saves static data of all elements
-void NuTo::StructureBase::ElementTotalSaveStaticData()
+void NuTo::StructureBase::ElementTotalShiftStaticDataToPast()
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
@@ -999,8 +999,8 @@ void NuTo::StructureBase::ElementTotalSaveStaticData()
             ElementBase* element = elementVector[iElement];
             for (int iIP = 0; iIP < element->GetNumIntegrationPoints(); ++iIP)
             {
-                auto& ipDataBase = elementVector[iElement]->GetStaticDataBase(iIP);
-                ipDataBase.SaveStaticData();
+                auto staticData = elementVector[iElement]->GetConstitutiveStaticData(iIP);
+                staticData->ShiftToPast();
             }
         } catch (NuTo::Exception& e)
         {
@@ -1015,8 +1015,8 @@ void NuTo::StructureBase::ElementTotalSaveStaticData()
         throw exception;
 }
 
-//! @brief restores static data of a all elements
-void NuTo::StructureBase::ElementTotalRestoreStaticData()
+
+void NuTo::StructureBase::ElementTotalShiftStaticDataToFuture()
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
@@ -1038,8 +1038,8 @@ void NuTo::StructureBase::ElementTotalRestoreStaticData()
             ElementBase* element = elementVector[iElement];
             for (int iIP = 0; iIP < element->GetNumIntegrationPoints(); ++iIP)
             {
-                auto& ipDataBase = elementVector[iElement]->GetStaticDataBase(iIP);
-                ipDataBase.RestoreStaticData();
+                auto staticData = elementVector[iElement]->GetConstitutiveStaticData(iIP);
+                staticData->ShiftToFuture();
             }
         } catch (NuTo::Exception& e)
         {
