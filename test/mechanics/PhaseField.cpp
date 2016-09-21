@@ -1,7 +1,6 @@
 
 #include "nuto/mechanics/constitutive/laws/PhaseField.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataHistoryVariableScalar.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
@@ -54,10 +53,8 @@ double EvaluatePhaseFieldModel(const Eigen::Vector3d& rStrain, const double rCra
     auto& tangentStressStrain = *static_cast<NuTo::ConstitutiveMatrix<VoigtDim, VoigtDim>*>(myConstitutiveOutputMap.at(eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN).get());
     tangentStressStrain.setZero();
 
-    NuTo::ConstitutiveStaticDataHistoryVariableScalar staticData;
-    staticData.SetHistoryVariable(0.0);
-
-    rPhaseField->Evaluate2DAnisotropicSpectralDecomposition(staticData, myConstitutiveInputMap, myConstitutiveOutputMap);
+    double oldEnergyDensity = 0.0;
+    rPhaseField->Evaluate2DAnisotropicSpectralDecomposition(oldEnergyDensity, myConstitutiveInputMap, myConstitutiveOutputMap);
 
     cout << "Outputs:"                       << endl;
     cout << "engineeringStress.AsVector()"   << endl << engineeringStress.AsVector()   << endl;

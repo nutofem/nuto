@@ -6,7 +6,7 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataMoistureTransport.h"
+#include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
 #include "nuto/mechanics/elements/ElementOutputBlockVectorDouble.h"
 #include "nuto/mechanics/elements/ElementOutputBlockMatrixDouble.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
@@ -302,8 +302,9 @@ void ConstitutiveOutputTests(std::map<NuTo::Node::eDof,NuTo::Interpolation::eTyp
 
     NuTo::ConstitutiveInputMap  constitutiveInputMap   = ConstitutiveOutputTest_CreateConstitutiveInputMap<TDim>();
     NuTo::ConstitutiveOutputMap  constitutiveOutputMap  = ConstitutiveOutputTest_CreateConstitutiveOutputMap<TDim>();
+    auto staticData = element.GetConstitutiveStaticData(0);
 
-    constLaw.Evaluate<TDim>(&element,0,constitutiveInputMap,constitutiveOutputMap);
+    constLaw.Evaluate<TDim>(constitutiveInputMap,constitutiveOutputMap, staticData);
 
     ConstitutiveOutputTest_CheckAndPrintResults<TDim>(constitutiveOutputMap);
 
@@ -371,7 +372,8 @@ void ConstitutiveOutputTests(std::map<NuTo::Node::eDof,NuTo::Interpolation::eTyp
 
     MT.SetupStaticData(); //VHIRTHAMTODO Check static data Coeffs in contitutive law or somewhere else --- maybe assert!!!
 
-    boundaryConstLaw.Evaluate<TDim>(&boundaryElement,0,constitutiveInputMapBoundary,constitutiveOutputMapBoundary);
+    staticData = boundaryElement.GetConstitutiveStaticData(0);
+    boundaryConstLaw.Evaluate<TDim>(constitutiveInputMapBoundary, constitutiveOutputMapBoundary, staticData);
 
 
     ConstitutiveOutputTest_CheckAndPrintResultsBoundary<TDim>(constitutiveOutputMapBoundary);

@@ -25,8 +25,7 @@ NuTo::Constitutive::StaticData::Component* NuTo::AdditiveBase::AllocateStaticDat
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "Invalid dimension.");
         }
-        if (subComponent != nullptr)
-            composite->AddComponent(subComponent);
+        composite->AddComponent(subComponent);
     }
     return composite;
 }

@@ -30,6 +30,7 @@ public:
 
     void ShiftToFuture() override;
 
+    void AllocateAdditionalData(int numAdditionalData) override;
 private:
     Composite() = default;
     boost::ptr_vector<Component> mComponents;

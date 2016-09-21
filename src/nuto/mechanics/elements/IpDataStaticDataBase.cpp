@@ -9,6 +9,7 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/elements/IpDataStaticDataBase.h"
+#include "nuto/mechanics/elements/ElementBase.h"
 
 NuTo::IpDataStaticDataBase::IpDataStaticDataBase() : IpDataBase()
 {
@@ -16,6 +17,15 @@ NuTo::IpDataStaticDataBase::IpDataStaticDataBase() : IpDataBase()
 
 NuTo::IpDataStaticDataBase::~IpDataStaticDataBase()
 {
+}
+
+
+void NuTo::IpDataStaticDataBase::Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive)
+{
+    mStaticData = nullptr;
+
+    if (rConstitutive != nullptr)
+        mStaticData = rElement->AllocateStaticData(rConstitutive);
 }
 
 #ifdef ENABLE_SERIALIZATION

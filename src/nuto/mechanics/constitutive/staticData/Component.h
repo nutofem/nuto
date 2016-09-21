@@ -33,6 +33,9 @@ public:
     //! @brief Puts previous static data to current static data, pre-previous to previous, etc.
     virtual void ShiftToFuture() = 0;
 
+    //! @brief Allocate more time steps for the static data component.
+    virtual void AllocateAdditionalData(int numAdditionalData) = 0;
+
 protected:
     //! @brief Private constructor, use @ref Create() to allocate a component on the heap.
     Component() = default;

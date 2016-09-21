@@ -829,7 +829,7 @@ void NuTo::StructureBase::ElementGroupAllocateAdditionalStaticData(int rElementG
         ElementBase* element = ElementGetElementPtr(elementIds[iElement]);
         for (int iIp = 0; iIp < element->GetNumIntegrationPoints(); ++iIp)
         {
-            element->GetIpData(iIp).AllocateAdditionalStaticData(rNumAdditionalStaticData);
+            element->GetConstitutiveStaticData(iIp)->AllocateAdditionalData(rNumAdditionalStaticData);
         }
     }
 

@@ -32,13 +32,14 @@ BOOST_AUTO_TEST_CASE(additive_strains)
     ThermalStrains thermalStrains;
     thermalStrains.SetParameterDouble(Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT, 0.5);
 
-    additiveLaw.AddConstitutiveLaw(&linElastic);
-    additiveLaw.AddConstitutiveLaw(&thermalStrains, Constitutive::Input::ENGINEERING_STRAIN);
+    additiveLaw.AddConstitutiveLaw(linElastic);
+    additiveLaw.AddConstitutiveLaw(thermalStrains, Constitutive::Input::ENGINEERING_STRAIN);
 
     // Create input data
     ConstitutiveInputMap inputMap;
     inputMap[Constitutive::Input::TEMPERATURE] = ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::Input::TEMPERATURE);
     inputMap[Constitutive::Input::ENGINEERING_STRAIN] = ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::Input::ENGINEERING_STRAIN);
+    inputMap[Constitutive::Input::PLANE_STATE] = ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::Input::PLANE_STATE);
     (*static_cast<ConstitutiveScalar*>(inputMap.at(Constitutive::Input::TEMPERATURE).get()))[0] = 1.0;
     (*static_cast<EngineeringStrain<2>*>(inputMap.at(Constitutive::Input::ENGINEERING_STRAIN).get()))[0] = 1.0;
     (*static_cast<EngineeringStrain<2>*>(inputMap.at(Constitutive::Input::ENGINEERING_STRAIN).get()))[1] = 1.0;
@@ -46,21 +47,24 @@ BOOST_AUTO_TEST_CASE(additive_strains)
 
     // ask for stress as output
     ConstitutiveOutputMap outputMap;
-    outputMap[Constitutive::Output::ENGINEERING_STRESS] = ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::Output::ENGINEERING_STRESS);
-    outputMap[Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN] = ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN);
-    outputMap[Constitutive::Output::THERMAL_STRAIN] = ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::Output::THERMAL_STRAIN);
+    outputMap[Constitutive::Output::ENGINEERING_STRESS] = 
+        ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::Output::ENGINEERING_STRESS);
+    outputMap[Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN] = 
+        ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN);
+    outputMap[Constitutive::Output::THERMAL_STRAIN] =
+        ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::Output::THERMAL_STRAIN);
 
-    // mock up an element; ideally, this would not be necessary
-    std::vector<NuTo::NodeBase*> mockNodes;
-    InterpolationType interpolationType(Interpolation::TRIANGLE2D, 2);
-    IntegrationType2D3NGauss1Ip integrationType;
-    interpolationType.UpdateIntegrationType(integrationType);
-    auto element = ContinuumElement<2>(nullptr, mockNodes, ElementData::CONSTITUTIVELAWIP, IpData::NOIPDATA, &interpolationType);
-    auto section = SectionPlane(Section::PLANE_STRESS);
-    element.SetSection(&section);
+    //// mock up an element; ideally, this would not be necessary
+    //std::vector<NuTo::NodeBase*> mockNodes;
+    //InterpolationType interpolationType(Interpolation::TRIANGLE2D, 2);
+    //IntegrationType2D3NGauss1Ip integrationType;
+    //interpolationType.UpdateIntegrationType(integrationType);
+    //auto element = ContinuumElement<2>(nullptr, mockNodes, ElementData::CONSTITUTIVELAWIP, IpData::NOIPDATA, &interpolationType);
+    //auto section = SectionPlane(Section::PLANE_STRESS);
+    //element.SetSection(&section);
 
     // evaluate the additive input law
-    additiveLaw.Evaluate2D(&element, 0, inputMap, outputMap);
+    additiveLaw.Evaluate2D(inputMap, outputMap, nullptr);
 
     // compare to expected results
     const auto& stress = *static_cast<EngineeringStress<2>*>(outputMap.at(Constitutive::Output::ENGINEERING_STRESS).get());

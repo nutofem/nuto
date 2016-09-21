@@ -96,6 +96,32 @@ NuTo::ElementDataIpBase::~ElementDataIpBase()
 //    std::cout << "NuTo::ElementDataIpBase::~ElementDataIpBase()" << std::endl;
 }
 
+//! @brief returns the weight of an integration point
+//! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+//! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+//! @param rIp number of ip
+//! @return weight
+double NuTo::ElementDataIpBase::GetIntegrationPointWeight(int rIp)const
+{
+    assert(rIp<(int)mIpData.size() && rIp>=0);
+    if (mIntegrationType!=0)
+        return mIntegrationType->GetIntegrationPointWeight(rIp);
+    else
+        return mIpData[rIp].GetIntegrationPointWeight();
+}
+
+//! @brief sets the weight of an integration point
+//! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+//! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+//! @param rIpNum number of the integration point
+//! @param weight
+void NuTo::ElementDataIpBase::SetIntegrationPointWeight(int rIp, double rWeight)
+{
+    assert(rIp<(int)mIpData.size() && rIp>=0);
+    mIpData[rIp].SetIntegrationPointWeight(rWeight);
+}
+
+
 //! @brief Sets the integration type of an element.
 //! @note Implemented with an exception for all elements, reimplementation required for those elements which actually
 //! need an integration type

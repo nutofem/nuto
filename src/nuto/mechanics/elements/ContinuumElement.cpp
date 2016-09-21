@@ -42,19 +42,19 @@ NuTo::Error::eError NuTo::ContinuumElement<TDim>::Evaluate(const ConstitutiveInp
     auto constitutiveOutput = GetConstitutiveOutputMap(rElementOutput);
     auto constitutiveInput = GetConstitutiveInputMap(constitutiveOutput);
 
-    if (typeid(mSection) == typeid(SectionPlane))
+    if (TDim == 2)
     {
         auto planeState = NuTo::Constitutive::Input::PLANE_STATE;
         if (mSection->GetType() == NuTo::Section::eSectionType::PLANE_STRESS)
         {
             // plane stress is default
-            constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(planeState);
+            constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<2>(planeState);
         }
-        else
+        if (mSection->GetType() == NuTo::Section::eSectionType::PLANE_STRAIN)
         {
-            constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(planeState);
+            constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<2>(planeState);
             auto& value = *static_cast<ConstitutivePlaneState*>(constitutiveInput[planeState].get());
-            value = NuTo::ePlaneState::PLANE_STRAIN;
+            value.SetPlaneState(NuTo::ePlaneState::PLANE_STRAIN);
         }
     }
 
@@ -580,6 +580,7 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(ConstitutiveInput
         }
         case Constitutive::Input::TIME_STEP:
         case Constitutive::Input::CALCULATE_STATIC_DATA:
+        case Constitutive::Input::PLANE_STATE:
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive input for " + Constitutive::InputToString(it.first) + " not implemented.");

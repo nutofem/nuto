@@ -53,3 +53,12 @@ void Composite::ShiftToFuture()
         it.ShiftToFuture();
     }
 }
+
+
+void Composite::AllocateAdditionalData(int numAdditionalData)
+{
+    for (auto& it : mComponents)
+    {
+        it.AllocateAdditionalData(numAdditionalData);
+    }
+}

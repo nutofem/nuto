@@ -5,6 +5,9 @@
 
 
 #include "nuto/mechanics/constitutive/laws/MoistureTransport.h"
+#include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
+#include "nuto/mechanics/constitutive/laws/AdditiveOutput.h"
+#include "nuto/mechanics/constitutive/laws/AdditiveInputExplicit.h"
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -208,15 +211,18 @@ public:
 
     void SetupStaticData()
     {
+        using namespace NuTo::Constitutive::StaticData;
         for (int i=0; i<mS.GetNumElements(); i++)
         {
             for (int theIP=0; theIP< mS.ElementGetElementPtr(i)->GetNumIntegrationPoints(); theIP++)
             {
-                NuTo::ConstitutiveStaticDataMoistureTransport *StaticData = dynamic_cast<NuTo::ConstitutiveStaticDataMoistureTransport*>(mS.ElementGetElementPtr(i)->GetStaticData(theIP));
-                StaticData->SetLastSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
-                StaticData->SetCurrentSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
-                StaticData->SetLastRelHumValue(InitialRelativeHumidity);
-                StaticData->SetSorptionHistoryDesorption(SorptionHistoryDesorption);
+                auto& multipleStaticData= *dynamic_cast<Composite*>(mS.ElementGetElementPtr(i)->GetConstitutiveStaticData(theIP));
+                auto& singleStaticData = *dynamic_cast<Leaf<DataMoistureTransport>*>(multipleStaticData.GetComponent(0));
+                auto& moistureData = singleStaticData.GetData();
+                moistureData.SetLastSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
+                moistureData.SetCurrentSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
+                moistureData.SetLastRelHumValue(InitialRelativeHumidity);
+                moistureData.SetDesorption(SorptionHistoryDesorption);
             }
         }
     }
@@ -701,7 +707,8 @@ void AdditiveOutputTest(std::array<int,TDim> rN,
 
     NuTo::ConstitutiveBase* CL_LE_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LE_ID);
     NuTo::ConstitutiveBase* CL_MT_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_MT_ID);
-    NuTo::ConstitutiveBase* CL_CLAL_Ptr = S.ConstitutiveLawGetConstitutiveLawPtr(CL_CLAL_ID);
+    NuTo::AdditiveOutput* CL_CLAL_Ptr =
+        static_cast<NuTo::AdditiveOutput*>(S.ConstitutiveLawGetConstitutiveLawPtr(CL_CLAL_ID));
 
     TimeControl tCtrl;
     tCtrl.t_final = 293.0 * 24.0 * 60.0 * 60.0;
@@ -719,10 +726,8 @@ void AdditiveOutputTest(std::array<int,TDim> rN,
     MechanicsControl MeCtrl(S,*CL_LE_Ptr);
     MeCtrl.SetParametersConstitutiveLaw();
 
-
-    CL_CLAL_Ptr->AddConstitutiveLaw(CL_LE_Ptr);
-    CL_CLAL_Ptr->AddConstitutiveLaw(CL_MT_Ptr);
-
+    CL_CLAL_Ptr->AddConstitutiveLaw(*CL_LE_Ptr);
+    CL_CLAL_Ptr->AddConstitutiveLaw(*CL_MT_Ptr);
 
 
     SetupStructure(S,testName);
@@ -923,12 +928,13 @@ void AdditiveInputImplicitTest(std::array<int,TDim> rN,
     int CL_AII_ID   = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::ADDITIVE_INPUT_IMPLICIT);
 
 
-    NuTo::ConstitutiveBase* CL_LE1_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LE1_ID);
-    NuTo::ConstitutiveBase* CL_LE2_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LE2_ID);
-    NuTo::ConstitutiveBase* CL_AII_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_AII_ID);
+    NuTo::ConstitutiveBase* CL_LE1_Ptr = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LE1_ID);
+    NuTo::ConstitutiveBase* CL_LE2_Ptr = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LE2_ID);
+    NuTo::AdditiveInputExplicit* CL_AII_Ptr =
+        static_cast<NuTo::AdditiveInputExplicit*>(S.ConstitutiveLawGetConstitutiveLawPtr(CL_AII_ID));
 
-    CL_AII_Ptr->AddConstitutiveLaw(CL_LE1_Ptr);
-    CL_AII_Ptr->AddConstitutiveLaw(CL_LE2_Ptr);
+    CL_AII_Ptr->AddConstitutiveLaw(*CL_LE1_Ptr);
+    CL_AII_Ptr->AddConstitutiveLaw(*CL_LE2_Ptr);
 
     MechanicsControl MeCtrl1(S,*CL_LE1_Ptr);
     MechanicsControl MeCtrl2(S,*CL_LE2_Ptr);

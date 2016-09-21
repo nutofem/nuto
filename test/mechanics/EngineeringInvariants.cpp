@@ -38,9 +38,9 @@ void CheckInvariants(NuTo::EngineeringStrain<3> r)
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "second deviatoric strain invariant incorrect.");
 }
 
-//! param rSectionType ... dummy for 1D/3D, 2D: plane stress/plane strain
+//! param planeState Defaults to plane stress; for 1D/3D irrelevant
 template <int TDim>
-void CheckLocalEqStrainDerivativesMises(NuTo::Section::eSectionType rSectionType = NuTo::Section::VOLUME)
+void CheckLocalEqStrainDerivativesMises(NuTo::ePlaneState planeState = NuTo::ePlaneState::PLANE_STRESS)
 {
     constexpr int VDim = NuTo::ConstitutiveIOBase::GetVoigtDim(TDim);
 
@@ -69,7 +69,7 @@ void CheckLocalEqStrainDerivativesMises(NuTo::Section::eSectionType rSectionType
         NuTo::EngineeringStrain<TDim> strain;
         strain.AsVector() = strainCase;
 
-        NuTo::EquivalentStrainModifiedMises<TDim> modMises(strain, k, nu, rSectionType);
+        NuTo::EquivalentStrainModifiedMises<TDim> modMises(strain, k, nu, planeState);
 
         double localEqStrain0 = modMises.Get();
 
@@ -80,7 +80,7 @@ void CheckLocalEqStrainDerivativesMises(NuTo::Section::eSectionType rSectionType
         for (int i = 0; i < VDim; ++i)
         {
             strain[i] += delta;
-            NuTo::EquivalentStrainModifiedMises<TDim> modMises1(strain, k, nu, rSectionType);
+            NuTo::EquivalentStrainModifiedMises<TDim> modMises1(strain, k, nu, planeState);
             tangent_CDF[i] = (modMises1.Get() - localEqStrain0) / delta;
             strain[i] -= delta;
         }
@@ -118,18 +118,18 @@ int main()
             e3D.AsVector() = Eigen::Matrix<double, 6, 1>::Random();
 
             CheckInvariants(e1D.As3D(0.3));
-            CheckInvariants(e2D.As3D(0.3, NuTo::Section::PLANE_STRAIN));
-            CheckInvariants(e2D.As3D(0.3, NuTo::Section::PLANE_STRESS));
+            CheckInvariants(e2D.As3D(0.3, NuTo::ePlaneState::PLANE_STRAIN));
+            CheckInvariants(e2D.As3D(0.3, NuTo::ePlaneState::PLANE_STRESS));
             CheckInvariants(e3D);
         }
         timer.Reset("CheckLocalEqStrainDerivativesMises<1>");
         CheckLocalEqStrainDerivativesMises<1>();
 
         timer.Reset("CheckLocalEqStrainDerivativesMises<2> PLANE_STRAIN");
-        CheckLocalEqStrainDerivativesMises<2>(NuTo::Section::PLANE_STRAIN);
+        CheckLocalEqStrainDerivativesMises<2>(NuTo::ePlaneState::PLANE_STRAIN);
 
         timer.Reset("CheckLocalEqStrainDerivativesMises<2> PLANE_STRESS");
-        CheckLocalEqStrainDerivativesMises<2>(NuTo::Section::PLANE_STRESS);
+        CheckLocalEqStrainDerivativesMises<2>(NuTo::ePlaneState::PLANE_STRESS);
 
         timer.Reset("CheckLocalEqStrainDerivativesMises<3>");
         CheckLocalEqStrainDerivativesMises<3>();

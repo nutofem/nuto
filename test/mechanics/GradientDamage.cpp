@@ -9,8 +9,6 @@
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include "nuto/mechanics/timeIntegration/ImplEx.h"
 
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataGradientDamage.h"
-
 #include "nuto/mechanics/elements/ContinuumBoundaryElement.h"
 #include "nuto/math/SparseMatrixCSRVector2General.h"
 
@@ -596,17 +594,17 @@ void Check1D2D3D()
     {
         NuTo::ElementBase* element = s1D.ElementGetElementPtr(weakElementId);
         for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
-            dynamic_cast<NuTo::ConstitutiveStaticDataGradientDamage*>(element->GetStaticData(i))->SetKappa(kappa);
+            dynamic_cast<NuTo::Constitutive::StaticData::Leaf<double>*>(element->GetConstitutiveStaticData(i))->SetData(kappa);
     }
     {
         NuTo::ElementBase* element = s2D.ElementGetElementPtr(weakElementId);
         for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
-            dynamic_cast<NuTo::ConstitutiveStaticDataGradientDamage*>(element->GetStaticData(i))->SetKappa(kappa);
+            dynamic_cast<NuTo::Constitutive::StaticData::Leaf<double>*>(element->GetConstitutiveStaticData(i))->SetData(kappa);
     }
     {
         NuTo::ElementBase* element = s3D.ElementGetElementPtr(weakElementId);
         for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
-            dynamic_cast<NuTo::ConstitutiveStaticDataGradientDamage*>(element->GetStaticData(i))->SetKappa(kappa);
+            dynamic_cast<NuTo::Constitutive::StaticData::Leaf<double>*>(element->GetConstitutiveStaticData(i))->SetData(kappa);
     }
 
 

@@ -114,6 +114,20 @@ public:
     //! @param localCoordinatesFacet
     void SetLocalIntegrationPointCoordinates3D(int rIp, const boost::array<double,3 >& rLocalCoordinates);
 
+    //! @brief returns the weight of an integration point
+    //! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+    //! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+    //! @param rIp number of ip
+    //! @return weight
+    double GetIntegrationPointWeight(int rIp)const;
+
+    //! @brief sets the weight of an integration point
+    //! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+    //! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+    //! @param rIpNum number of the integration point
+    //! @param weight
+    void SetIntegrationPointWeight(int rIp, double rWeight);
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

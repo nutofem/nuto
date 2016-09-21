@@ -1,6 +1,6 @@
 #include "nuto/base/Timer.h"
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataMoistureTransport.h"
+#include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include "nuto/mechanics/tools/MeshGenerator.h"
 

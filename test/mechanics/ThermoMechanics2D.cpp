@@ -10,6 +10,7 @@
 #include "nuto/math/LinearInterpolation.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/constitutive/laws/AdditiveInputExplicit.h"
+#include "nuto/mechanics/constitutive/laws/AdditiveOutput.h"
 #include "nuto/mechanics/constitutive/laws/ThermalStrains.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 
@@ -84,19 +85,21 @@ void SetConstitutiveLaws(NuTo::Structure &structure, int group, Properties prope
     structure.ConstitutiveLawSetParameterDouble(thermal_strains_id,
             NuTo::Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT, properties.expansionCoeff);
 
-    NuTo::ConstitutiveBase* additive_input = structure.ConstitutiveLawGetConstitutiveLawPtr(additive_input_id);
-    NuTo::ConstitutiveBase* additive_output = structure.ConstitutiveLawGetConstitutiveLawPtr(additive_output_id);
+    auto additive_input = 
+        static_cast<NuTo::AdditiveInputExplicit*>(structure.ConstitutiveLawGetConstitutiveLawPtr(additive_input_id));
+    auto additive_output = 
+        static_cast<NuTo::AdditiveOutput*>(structure.ConstitutiveLawGetConstitutiveLawPtr(additive_output_id));
     NuTo::ConstitutiveBase* lin_elastic = structure.ConstitutiveLawGetConstitutiveLawPtr(lin_elastic_id);
     NuTo::ConstitutiveBase* thermal_strains = structure.ConstitutiveLawGetConstitutiveLawPtr(thermal_strains_id);
     NuTo::ConstitutiveBase* heat_conduction = structure.ConstitutiveLawGetConstitutiveLawPtr(heat_conduction_id);
 
     thermal_strains->SetParameterFunction(ExpansionFunction);
 
-    additive_input->AddConstitutiveLaw(lin_elastic);
-    additive_input->AddConstitutiveLaw(thermal_strains, NuTo::Constitutive::Input::ENGINEERING_STRAIN);
+    additive_input->AddConstitutiveLaw(*lin_elastic);
+    additive_input->AddConstitutiveLaw(*thermal_strains, NuTo::Constitutive::Input::ENGINEERING_STRAIN);
 
-    additive_output->AddConstitutiveLaw(additive_input);
-    additive_output->AddConstitutiveLaw(heat_conduction);
+    additive_output->AddConstitutiveLaw(*additive_input);
+    additive_output->AddConstitutiveLaw(*heat_conduction);
 
     structure.ElementGroupSetConstitutiveLaw(group, additive_output_id);
 }
@@ -133,7 +136,7 @@ int main()
 
     // import mesh
     auto groupIndices = structure.ImportFromGmsh("./TwoElements.msh",
-            "ConstitutiveLawIp", "StaticDataNonLocal");
+            "ConstitutiveLawIp", "NoIpData");
 
     // create section
     double thickness = 20.0;

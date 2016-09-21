@@ -1,4 +1,4 @@
-#include "nuto/mechanics/constitutive/laws/ConstitutiveLawsAdditiveOutput.h"
+#include "nuto/mechanics/constitutive/laws/AdditiveOutput.h"
 #include "nuto/mechanics/constitutive/laws/LinearElasticEngineeringStress.h"
 #include "nuto/mechanics/constitutive/laws/ThermalStrains.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
@@ -23,7 +23,7 @@ using namespace NuTo;
 BOOST_AUTO_TEST_CASE(additive_stresses)
 {
     // Create constitutive laws
-    ConstitutiveLawsAdditiveOutput additiveLaw;
+    AdditiveOutput additiveLaw;
 
     // two "springs" in parallel; their stiffnesses add up
     // i.e. unit strain should result in stresses of two
@@ -35,12 +35,13 @@ BOOST_AUTO_TEST_CASE(additive_stresses)
     linElasticTwo.SetParameterDouble(Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.0);
     linElasticTwo.SetParameterDouble(Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.0);
 
-    additiveLaw.AddConstitutiveLaw(&linElasticOne);
-    additiveLaw.AddConstitutiveLaw(&linElasticTwo);
+    additiveLaw.AddConstitutiveLaw(linElasticOne);
+    additiveLaw.AddConstitutiveLaw(linElasticTwo);
 
     // Create input data
     ConstitutiveInputMap inputMap;
     inputMap[Constitutive::Input::ENGINEERING_STRAIN] = ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::Input::ENGINEERING_STRAIN);
+    inputMap[Constitutive::Input::PLANE_STATE] = ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::Input::PLANE_STATE);
     (*static_cast<EngineeringStrain<2>*>(inputMap.at(Constitutive::Input::ENGINEERING_STRAIN).get()))[0] = 1.0;
     (*static_cast<EngineeringStrain<2>*>(inputMap.at(Constitutive::Input::ENGINEERING_STRAIN).get()))[1] = 1.0;
     (*static_cast<EngineeringStrain<2>*>(inputMap.at(Constitutive::Input::ENGINEERING_STRAIN).get()))[2] = 0.0;
@@ -50,17 +51,17 @@ BOOST_AUTO_TEST_CASE(additive_stresses)
     outputMap[Constitutive::Output::ENGINEERING_STRESS] = 
         ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::Output::ENGINEERING_STRESS);
 
-    // mock up an element; ideally, this would not be necessary
-    std::vector<NuTo::NodeBase*> mockNodes;
-    InterpolationType interpolationType(Interpolation::TRIANGLE2D, 2);
-    IntegrationType2D3NGauss1Ip integrationType;
-    interpolationType.UpdateIntegrationType(integrationType);
-    auto element = ContinuumElement<2>(nullptr, mockNodes, ElementData::CONSTITUTIVELAWIP, IpData::NOIPDATA, &interpolationType);
-    auto section = SectionPlane(Section::PLANE_STRESS);
-    element.SetSection(&section);
+    //// mock up an element; ideally, this would not be necessary
+    //std::vector<NuTo::NodeBase*> mockNodes;
+    //InterpolationType interpolationType(Interpolation::TRIANGLE2D, 2);
+    //IntegrationType2D3NGauss1Ip integrationType;
+    //interpolationType.UpdateIntegrationType(integrationType);
+    //auto element = ContinuumElement<2>(nullptr, mockNodes, ElementData::CONSTITUTIVELAWIP, IpData::NOIPDATA, &interpolationType);
+    //auto section = SectionPlane(Section::PLANE_STRESS);
+    //element.SetSection(&section);
 
     // evaluate the additive input law
-    additiveLaw.Evaluate2D(&element, 0, inputMap, outputMap);
+    additiveLaw.Evaluate2D(inputMap, outputMap, nullptr);
 
     // compare to expected results
     const auto& stress = *static_cast<EngineeringStress<2>*>(outputMap.at(Constitutive::Output::ENGINEERING_STRESS).get());
