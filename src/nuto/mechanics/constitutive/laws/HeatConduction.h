@@ -42,17 +42,26 @@ public:
     NuTo::Error::eError Evaluate1D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
+            Constitutive::StaticData::Component* staticData) override
+    {
+        return Evaluate<1>(rConstitutiveInput, rConstitutiveOutput, staticData);
+    }
 
     NuTo::Error::eError Evaluate2D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
+            Constitutive::StaticData::Component* staticData) override
+    {
+        return Evaluate<2>(rConstitutiveInput, rConstitutiveOutput, staticData);
+    }
 
     NuTo::Error::eError Evaluate3D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
+            Constitutive::StaticData::Component* staticData) override
+    {
+        return Evaluate<3>(rConstitutiveInput, rConstitutiveOutput, staticData);
+    }
 
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow ... row dof

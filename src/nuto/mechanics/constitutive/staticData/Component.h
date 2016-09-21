@@ -22,7 +22,7 @@ public:
     //! @brief Return a new copy of the object.
     virtual Component* Clone() const = 0;
 
-    // make component uncopyable, so that all components are heap allocated
+    // make component uncopyable to prevent slicing; use `Clone()`
     Component(const Component&) = delete;
     Component& operator=(const Component&) = delete;
 

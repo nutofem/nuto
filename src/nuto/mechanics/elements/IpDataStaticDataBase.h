@@ -2,7 +2,6 @@
 
 #include "nuto/mechanics/elements/IpDataBase.h"
 #include "nuto/mechanics/constitutive/staticData/Component.h"
-#include <boost/ptr_container/ptr_vector.hpp>
 
 namespace NuTo
 {
@@ -42,9 +41,6 @@ public:
         return *this;
     }
 
-    //! @brief copies the "current" ([0]) static data rNumAdditionalStaticData times
-    void AllocateAdditionalStaticData(int rNumAdditionalStaticData) override;
-
     void Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive) override;
 
 #ifdef ENABLE_SERIALIZATION
@@ -56,7 +52,6 @@ public:
 #endif  // ENABLE_SERIALIZATION
 
 protected:
-
     Constitutive::StaticData::Component* mStaticData;
 };
 }

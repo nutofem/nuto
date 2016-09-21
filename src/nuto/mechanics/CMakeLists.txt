@@ -5,6 +5,7 @@ constitutive/inputoutput/ConstitutiveIOMap.cpp
 constitutive/inputoutput/EngineeringStrain.cpp
 constitutive/inputoutput/EngineeringStress.cpp
 constitutive/inputoutput/EquivalentStrain.cpp
+constitutive/laws/AdditiveBase.cpp
 constitutive/laws/AdditiveInputExplicit.cpp
 constitutive/laws/AdditiveInputImplicit.cpp
 constitutive/laws/AdditiveOutput.cpp
@@ -20,6 +21,7 @@ constitutive/laws/ShrinkageCapillaryStrainBased.cpp
 constitutive/laws/ShrinkageCapillaryStressBased.cpp
 constitutive/laws/ThermalStrains.cpp
 constitutive/staticData/Composite.cpp
+constitutive/staticData/DataMisesPlasticity.cpp
 constitutive/staticData/DataMoistureTransport.cpp
 )
 

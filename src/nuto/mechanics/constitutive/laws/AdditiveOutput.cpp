@@ -1,4 +1,4 @@
-#include "AdditiveOutput.h"
+#include "nuto/mechanics/constitutive/laws/AdditiveOutput.h"
 #include "nuto/mechanics/constitutive/staticData/Composite.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
@@ -122,3 +122,11 @@ NuTo::Error::eError NuTo::AdditiveOutput::Evaluate(const NuTo::ConstitutiveInput
     }
     return error;
 }
+
+
+template NuTo::Error::eError NuTo::AdditiveOutput::Evaluate<1>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, Constitutive::StaticData::Component* staticData);
+template NuTo::Error::eError NuTo::AdditiveOutput::Evaluate<2>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, Constitutive::StaticData::Component* staticData);
+template NuTo::Error::eError NuTo::AdditiveOutput::Evaluate<3>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, Constitutive::StaticData::Component* staticData);

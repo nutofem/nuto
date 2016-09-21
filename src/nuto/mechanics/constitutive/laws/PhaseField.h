@@ -10,7 +10,6 @@
 namespace NuTo
 {
 
-class ConstitutiveStaticDataHistoryVariableScalar;
 template <int TDim> class EngineeringStrain;
 template <int TRows, int TCols> class ConstitutiveMatrix;
 template <int TRows> class ConstitutiveVector;
@@ -86,11 +85,10 @@ public:
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) override;
 
-    double Evaluate2DAnisotropicSpectralDecomposition(
-            const ConstitutiveStaticDataHistoryVariableScalar& rOldStaticData,
+    double Evaluate2DAnisotropicSpectralDecomposition(const double oldEnergyDensity,
             const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
 
-    double Evaluate2DIsotropic(const ConstitutiveStaticDataHistoryVariableScalar& rOldStaticData,
+    double Evaluate2DIsotropic(const double oldEnergyDensity,
             const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
 
     //! @brief calculates the error of the extrapolation

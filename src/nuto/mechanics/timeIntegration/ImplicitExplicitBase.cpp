@@ -13,7 +13,6 @@
 
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataGradientDamage.h"
 
 
 NuTo::ImplicitExplicitBase::ImplicitExplicitBase(StructureBase* rStructure) : TimeIntegrationBase(rStructure)
@@ -197,7 +196,7 @@ NuTo::Error::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 
 //                std::cout << "Bfore SaveStaticData" << std::endl;
 //                mCallback->Exit(*mStructure);
-                mStructure->ElementTotalSaveStaticData();   // shift static data by one to the past
+                mStructure->ElementTotalShiftStaticDataToPast();   // shift static data by one to the past
                 timeStep.SetCurrentTimeStep(mTimeStep);     // shift time steps by one to the past
 
 //                std::cout << "after SaveStaticData" << std::endl;
