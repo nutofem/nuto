@@ -461,6 +461,9 @@ IF(ENABLE_MY_EXAMPLES)
   ADD_SUBDIRECTORY(myNutoExamples)
 ENDIF(ENABLE_MY_EXAMPLES)
 
+# This makes qtcreator show header-only classes...
+FILE(GLOB_RECURSE HeaderFiles "*.h")
+add_custom_target(headers SOURCES ${HeaderFiles})
 
 #MESSAGE(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
 #MESSAGE(STATUS "CMAKE_C_COMPILER: ${CMAKE_C_COMPILER}")

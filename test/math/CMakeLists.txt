@@ -47,4 +47,8 @@ if(ENABLE_UNIT_TESTS)
     add_executable(Interpolation Interpolation.cpp)
     target_link_libraries(Interpolation NuToMath NuToBase)
     add_test(c::unit::Interpolation ${CMAKE_CURRENT_BUILD_DIR}/Interpolation)
+
+    add_executable(SerializeData SerializeData.cpp)
+    target_link_libraries(SerializeData NuToMath NuToBase)
+    add_test(c::unit::SerializeData ${CMAKE_CURRENT_BUILD_DIR}/SerializeData)
 endif()

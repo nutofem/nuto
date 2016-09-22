@@ -115,7 +115,7 @@ NuTo::BlockFullVector<double> NuTo::BlockSparseMatrix::operator *(const BlockFul
         result[dofRow].Resize((*this)(dofRow, dofRow).GetNumRows()); // automatically sets to zero
         for (auto dofSum : activeDofTypes)
         {
-            result[dofRow] += (*this)(dofRow, dofSum) * rRhs[dofSum];
+            result[dofRow] += (*this)(dofRow, dofSum).operator*(rRhs[dofSum]);
         }
     }
 
@@ -392,9 +392,9 @@ NuTo::SparseMatrixCSRVector2Symmetric<double> NuTo::BlockSparseMatrix::ExportToC
     throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] not implemented.");
 }
 
-
-//! @brief output stream operator for outputs with cout or files
-std::ostream &NuTo::operator<<(std::ostream &rOut, const NuTo::BlockSparseMatrix &rBlockSparseMatrix)
+namespace NuTo
+{
+std::ostream& operator<<(std::ostream &rOut, const NuTo::BlockSparseMatrix &rBlockSparseMatrix)
 {
     Eigen::IOFormat cleanFormat(Eigen::StreamPrecision, 0, " ", "\n", "|", " |");
     for (auto dof1 : rBlockSparseMatrix.mDofStatus.GetActiveDofTypes())
@@ -406,6 +406,7 @@ std::ostream &NuTo::operator<<(std::ostream &rOut, const NuTo::BlockSparseMatrix
         }
     }
     return rOut;
+}
 }
 
 #ifdef ENABLE_SERIALIZATION
