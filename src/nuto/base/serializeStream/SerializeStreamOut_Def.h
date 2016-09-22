@@ -4,7 +4,7 @@
 
 namespace Eigen
 {
-template <typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols> class Eigen::Matrix;
+template <typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols> class Matrix;
 }
 
 namespace NuTo

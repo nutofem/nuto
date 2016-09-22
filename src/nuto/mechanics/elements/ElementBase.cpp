@@ -179,14 +179,10 @@ void NuTo::ElementBase::SetConstitutiveLaw(ConstitutiveBase* rConstitutiveLaw)
     //check compatibility between element type and constitutive law
     if (rConstitutiveLaw->CheckElementCompatibility(this->GetEnumType()))
     {
-        //printf("check element constitutive was positive.\n");
-
         mElementData->SetConstitutiveLaw(this, rConstitutiveLaw);
     } else
     {
-        std::stringstream message;
-        message << "[NuTo::ElementBase::SetConstitutiveLaw] Constitutive Law " << mStructure->ConstitutiveLawGetId(rConstitutiveLaw) << " does not match element type of element " << mStructure->ElementGetId(this) << "." << std::endl;
-        throw MechanicsException(message.str());
+        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive Law " + std::to_string(mStructure->ConstitutiveLawGetId(rConstitutiveLaw)) + " does not match element type of element " + std::to_string(mStructure->ElementGetId(this)) + ".");
     }
 }
 

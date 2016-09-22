@@ -111,7 +111,7 @@ private:
     std::vector<T> mData;
 };
 
-} // namspace StaticData
+} // namespace StaticData
 } // namespace Constitutive
 } // namespace NuTo
 
