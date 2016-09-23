@@ -382,10 +382,18 @@ public:
     //! @param rDisplacements matrix (one column) with the displacements
     void NodeGetDisplacements(int rNode, int rTimeDerivative, FullVector<double,Eigen::Dynamic>& rDisplacements)const;
 
+#ifndef SWIG
+    //! @brief gets the dof     identifiers of a node
+    //! @param rNodeId node     identifier
+    //! @param rDof             degree of freedom
+    //! @return A vector of ids that correspond to rDof of rNodeId
+    std::vector<int> NodeGetDofIds(const int rNodeId, Node::eDof rDof)const;
+#endif
+
     //! @brief gets the displacement dofs of a node
     //! @param rIdent node identifier
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeGetDisplacementDofs(int rNode, FullVector<int,Eigen::Dynamic>& rDisplacementDofs)const;
+    void NodeGetDisplacementDofs(int rNode, FullVector<int,Eigen::Dynamic>& rDisplacementDofs)const;    
 
     //! @brief gets the rotations of a node
     //! @param rNode node identifier

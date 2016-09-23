@@ -2,8 +2,9 @@
 #pragma once
 
 #include "nuto/mechanics/structures/unstructured/Structure.h"
-#include <eigen3/Eigen/Sparse>
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
+#include <eigen3/Eigen/Sparse>
 #include <cstring>
 #include <fstream>
 
@@ -42,10 +43,13 @@ private:
         int mValue;
     };
 
-    using NodeList      = std::vector<Node>;
-    using ElementList   = std::vector<Element>;
-    using BoundaryList  = std::vector<Boundary>;
-    using InterfaceList = std::vector<Interface>;
+    using NodeList          = std::vector<Node>;
+    using ElementList       = std::vector<Element>;
+    using BoundaryList      = std::vector<Boundary>;
+    using InterfaceList     = std::vector<Interface>;
+    using Matrix            = Eigen::MatrixXd;
+    using SparseMatrix      = Eigen::SparseMatrix<double>;
+    using SparseMatrixMap   = std::map<NuTo::Node::eDof, SparseMatrix>;
 
     NodeList        ReadNodeData        (std::ifstream& file);
     ElementList     ReadElementData     (std::ifstream& file);
@@ -53,36 +57,41 @@ private:
     InterfaceList   ReadInterfaceData   (std::ifstream& file);
 
 
+
 public:
     //! @brief Constructor
     //! @param rDimension   Structural dimension (1,2 or 3)
     //! @param rMeshFile    mesh file
-    StructureFETI(int rDimension, std::string rMeshFile);
+    StructureFETI(int rDimension);
 
     const int mRank;
     const int mNumProcesses;
 
     void FindKeywordInFile(std::ifstream &file, std::string keyword);
 
-    const Eigen::SparseMatrix<double>& GetConnectivityMatrix() {return mConnectivityMatrix;}
-    Eigen::MatrixXd GetRigidBodyModes();
-    Eigen::MatrixXd GetInterfaceRigidBodyModes();
-    Eigen::SparseMatrix<double> &AssembleStiffnessMatrix();
-    void AssembleRigidBodyModes();
+
+    Matrix&                      GetRigidBodyModes()           {return mRigidBodyModes;}
+    Matrix&                      GetInterfaceRigidBodyModes()  {return mInterfaceRigidBodyModes;}
+    SparseMatrix&                GetConnectivityMatrix()       {return mConnectivityMatrix;}
+
+//    Eigen::SparseMatrix<double> &AssembleStiffnessMatrix();
+//    void AssembleRigidBodyModes();
     void AssembleConnectivityMatrix();
-    Eigen::MatrixXd             mRigidBodyModes;
-    Eigen::MatrixXd             mInterfaceRigidBodyModes;
-    Eigen::SparseMatrix<double> mConnectivityMatrix;
 
 
-    Eigen::MatrixXd             mProjectionMatrix;
-    NodeList                    mNodes;
-    ElementList                 mElements;
-    BoundaryList                mBoundaries;
-    InterfaceList               mInterfaces;
+    Matrix                      mRigidBodyModes;
+    Matrix                      mInterfaceRigidBodyModes;
+    SparseMatrix                mConnectivityMatrix;
+
+    Matrix                     mProjectionMatrix;
+    NodeList                   mNodes;
+    ElementList                mElements;
+    BoundaryList               mBoundaries;
+    InterfaceList              mInterfaces;
     int                        mNumRigidBodyModes;
+    void ImportMesh(std::string rFileName, const int interpolationTypeId);
 protected:
-    void ImportMesh(std::string rFileName);
+
 
 
 
