@@ -816,7 +816,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(
             const auto& N       = *(rData.mN.at(Node::eDof::CRACKPHASEFIELD));
             const auto& B       = rData.mB.at(Node::eDof::CRACKPHASEFIELD);
             const auto& d       = rData.mNodalValues.at(Node::eDof::CRACKPHASEFIELD);
-            const auto& d_dt    = rData.mNodalValues_dt1.at(Node::eDof::CRACKPHASEFIELD);
+//            const auto& d_dt    = rData.mNodalValues_dt1.at(Node::eDof::CRACKPHASEFIELD);
 
             const auto& kappa   = (*static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::ELASTIC_ENERGY_DAMAGED_PART).get()))[0];
             const auto  visco   = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::ARTIFICIAL_VISCOSITY);
@@ -826,7 +826,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(
                                                                           +      G * l *B.transpose() * B
                                                                               )* d
                                                                           -      2. * N.transpose() * kappa
-                                                                          +      N.transpose() * N * d_dt*visco
+//                                                                          +      N.transpose() * N * d_dt*visco
                                                                          );
             break;
         }
