@@ -21,7 +21,7 @@ if(DOXYGEN_FOUND)
     configure_file(footer.html ${CMAKE_CURRENT_BINARY_DIR}/footer.html COPYONLY)
     configure_file(customdoxygen.css ${CMAKE_CURRENT_BINARY_DIR}/customdoxygen.css COPYONLY)
     configure_file(doxy-boot.js ${CMAKE_CURRENT_BINARY_DIR}/doxy-boot.js COPYONLY)
-    configure_file(../README.md ${CMAKE_CURRENT_BINARY_DIR}/README.md COPYONLY)
+    configure_file(DoxygenLayout.xml ${CMAKE_CURRENT_BINARY_DIR}/DoxygenLayout.xml COPYONLY)
 
     # clean doc path
     set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES "${CMAKE_CURRENT_BINARY_DIR}/nuto")
