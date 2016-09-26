@@ -5,18 +5,15 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include <set>
+#include <eigen3/Eigen/Core>
+
+#include <functional>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
-#include "nuto/base/ErrorEnum.h"
-#include "nuto/math/FullMatrix_Def.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
-#include "nuto/mechanics/elements/ElementEnum.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 
 namespace NuTo
 {
@@ -29,9 +26,37 @@ namespace NuTo
     }
 class InterpolationType;
 class ElementBase;
+class InterpolationType;
+class Logger;
+enum class eError;
+template<typename IOEnum> class ConstitutiveIOMap;
+template <class T, int rows> class FullVector;
+template <class T, int rows, int cols> class FullMatrix;
+
+namespace Element
+{
+    enum class eElementType;
+}// namespace Element
+
+namespace Constitutive
+{
+    enum class eConstitutiveParameter;
+    enum class eConstitutiveType;
+    enum class eInput;
+    enum class eOutput;
+}// namespace Constitutive
+
+namespace Node
+{
+    enum class eDof : unsigned char;
+}// namespace Node
+using ConstitutiveInputMap = ConstitutiveIOMap<Constitutive::eInput>;
+using ConstitutiveOutputMap = ConstitutiveIOMap<Constitutive::eOutput>;
+
 //! @brief Base class for the constitutive relationship, e.g. material laws.
 class ConstitutiveBase
 {
+
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
@@ -61,7 +86,7 @@ public:
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     //! @param staticData Pointer to the history data.
     template <int TDim>
-    NuTo::Error::eError Evaluate(
+    NuTo::eError Evaluate(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData)
@@ -79,7 +104,7 @@ public:
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
     //! @param staticData Pointer to the history data.
-    virtual NuTo::Error::eError Evaluate1D(
+    virtual NuTo::eError Evaluate1D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) = 0;
@@ -88,7 +113,7 @@ public:
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
     //! @param staticData Pointer to the history data.
-    virtual NuTo::Error::eError Evaluate2D(
+    virtual NuTo::eError Evaluate2D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) = 0;
@@ -97,8 +122,8 @@ public:
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
     //! @param staticData Pointer to the history data.
-    virtual NuTo::Error::eError Evaluate3D(
-            const ConstitutiveInputMap& rConstitutiveInput,
+    virtual NuTo::eError Evaluate3D(
+    		const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) = 0;
 
@@ -172,7 +197,7 @@ public:
 
     //! @brief ... checks if a constitutive law has an specific output
     //! @return ... true/false
-    virtual bool CheckOutputTypeCompatibility(NuTo::Constitutive::Output::eOutput rOutputEnum) const;
+    virtual bool CheckOutputTypeCompatibility(NuTo::Constitutive::eOutput rOutputEnum) const;
 
     ///////////////////////////////////////////////////////////////////////////
 

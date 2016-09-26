@@ -1,6 +1,5 @@
 // $Id$
-#ifndef LOADNODE_H
-#define LOADNODE_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -98,5 +97,4 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::LoadNode)
 #endif
 
-#endif //LOADNODE_H
 

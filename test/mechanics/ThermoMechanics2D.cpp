@@ -9,10 +9,17 @@
 #include "nuto/math/SparseDirectSolverMUMPS.h"
 #include "nuto/math/LinearInterpolation.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/laws/AdditiveInputExplicit.h"
 #include "nuto/mechanics/constitutive/laws/AdditiveOutput.h"
 #include "nuto/mechanics/constitutive/laws/ThermalStrains.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/groups/GroupEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
 struct Properties
 {
@@ -96,7 +103,8 @@ void SetConstitutiveLaws(NuTo::Structure &structure, int group, Properties prope
     thermal_strains->SetParameterFunction(ExpansionFunction);
 
     additive_input->AddConstitutiveLaw(*lin_elastic);
-    additive_input->AddConstitutiveLaw(*thermal_strains, NuTo::Constitutive::Input::ENGINEERING_STRAIN);
+    additive_input->AddConstitutiveLaw(*thermal_strains, NuTo::Constitutive::eInput::ENGINEERING_STRAIN);
+
 
     additive_output->AddConstitutiveLaw(*additive_input);
     additive_output->AddConstitutiveLaw(*heat_conduction);
@@ -106,26 +114,26 @@ void SetConstitutiveLaws(NuTo::Structure &structure, int group, Properties prope
 
 void SetInterpolation(NuTo::Structure& structure, int group)
 {
-    structure.InterpolationTypeAdd(group, NuTo::Node::DISPLACEMENTS,
+    structure.InterpolationTypeAdd(group, NuTo::Node::eDof::DISPLACEMENTS,
             NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    structure.InterpolationTypeAdd(group, NuTo::Node::TEMPERATURE,
+    structure.InterpolationTypeAdd(group, NuTo::Node::eDof::TEMPERATURE,
             NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
     structure.InterpolationTypeSetIntegrationType(group,
-            NuTo::IntegrationType::IntegrationType2D3NGauss4Ip, NuTo::IpData::NOIPDATA);
+            NuTo::eIntegrationType::IntegrationType2D3NGauss4Ip, NuTo::IpData::eIpDataType::NOIPDATA);
 }
 
 void SetVisualization(NuTo::Structure& structure)
 {
-    int visualizationGroup = structure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    int visualizationGroup = structure.GroupCreate(NuTo::eGroupId::Elements);
     structure.GroupAddElementsTotal(visualizationGroup);
 
-    structure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::CONSTITUTIVE);
-    structure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
-    structure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::TEMPERATURE);
-    structure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
-    structure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
-    structure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::THERMAL_STRAIN);
-    structure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS);
+    structure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::CONSTITUTIVE);
+    structure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    structure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::TEMPERATURE);
+    structure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+    structure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
+    structure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::THERMAL_STRAIN);
+    structure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
 }
 
 int main()
@@ -171,8 +179,8 @@ int main()
     // set boundary conditions and loads
     auto nodesWest = structure.GroupCreate("Nodes");
     auto nodesEast = structure.GroupCreate("Nodes");
-    auto nodesSouth = structure.GroupCreate(NuTo::Groups::Nodes);
-    auto nodesNorth = structure.GroupCreate(NuTo::Groups::Nodes);
+    auto nodesSouth = structure.GroupCreate(NuTo::eGroupId::Nodes);
+    auto nodesNorth = structure.GroupCreate(NuTo::eGroupId::Nodes);
     structure.GroupAddNodeCoordinateRange(nodesWest, 0, 0.0, 0.0);
     structure.GroupAddNodeCoordinateRange(nodesEast, 0, 100.0,100.0);
     structure.GroupAddNodeCoordinateRange(nodesSouth, 1, 0.0, 0.0);

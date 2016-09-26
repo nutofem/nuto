@@ -5,9 +5,9 @@
  *      Author: ttitsche
  */
 
-#ifndef GEOMETRYCONCRETE_GEOMETRYCONCRETE_H_
-#define GEOMETRYCONCRETE_GEOMETRYCONCRETE_H_
+#pragma once
 
+//member
 #include "nuto/math/FullMatrix_Def.h"
 
 namespace NuTo
@@ -127,4 +127,3 @@ private:
 
 } /* namespace NuTo */
 
-#endif /* GEOMETRYCONCRETE_GEOMETRYCONCRETE_H_ */

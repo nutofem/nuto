@@ -2,6 +2,7 @@
 #include "nuto/mechanics/constitutive/laws/PhaseField.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
@@ -22,15 +23,15 @@ std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string n
 using std::cout;
 using std::endl;
 using NuTo::Constitutive::ePhaseFieldEnergyDecomposition;
-using NuTo::Constitutive::Input::eInput;
-using NuTo::Constitutive::Output::eOutput;
+using NuTo::Constitutive::eInput;
+using NuTo::Constitutive::eOutput;
 
 double EvaluatePhaseFieldModel(const Eigen::Vector3d& rStrain, const double rCrackPhaseField, NuTo::PhaseField* rPhaseField)
 {
     constexpr int VoigtDim = NuTo::ConstitutiveIOBase::GetVoigtDim(2);
 
     NuTo::ConstitutiveInputMap myConstitutiveInputMap;
-    myConstitutiveInputMap[eInput::CALCULATE_STATIC_DATA] = std::make_unique<NuTo::ConstitutiveCalculateStaticData>(NuTo::CalculateStaticData::EULER_BACKWARD);
+    myConstitutiveInputMap[eInput::CALCULATE_STATIC_DATA] = std::make_unique<NuTo::ConstitutiveCalculateStaticData>(NuTo::eCalculateStaticData::EULER_BACKWARD);
 
     myConstitutiveInputMap[eInput::ENGINEERING_STRAIN]    = NuTo::ConstitutiveIOBase::makeConstitutiveIO<2>(eInput::ENGINEERING_STRAIN);
     auto& engineeringStrain= *static_cast<NuTo::EngineeringStrain<2>*>(myConstitutiveInputMap.at(eInput::ENGINEERING_STRAIN).get());

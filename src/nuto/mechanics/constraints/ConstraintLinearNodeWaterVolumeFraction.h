@@ -1,5 +1,4 @@
-#ifndef CONSTRAINTLINEARNODEWATERVOLUMEFRACTION_H
-#define CONSTRAINTLINEARNODEWATERVOLUMEFRACTION_H
+#pragma once
 
 #include "nuto/mechanics/constraints/ConstraintLinear.h"
 #include "nuto/mechanics/constraints/ConstraintNode.h"
@@ -41,10 +40,7 @@ public:
 
     //! @brief determines the dof type affected by the constraint
     //! @return dof type
-    Node::eDof GetDofType() const override
-    {
-        return Node::eDof::WATERVOLUMEFRACTION;
-    }
+    Node::eDof GetDofType() const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -77,4 +73,3 @@ protected:
 
 
 
-#endif // CONSTRAINTLINEARNODEWATERVOLUMEFRACTION_H

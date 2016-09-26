@@ -15,12 +15,12 @@ std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string n
 
 BOOST_AUTO_TEST_CASE(modify_value_in_map)
 {
-    using namespace NuTo::Constitutive::Input;
+    using namespace NuTo::Constitutive;
     ConstitutiveInputMap inputMap;
-    inputMap[TEMPERATURE] = ConstitutiveIOBase::makeConstitutiveIO<1>(TEMPERATURE);
-    double& innertemp = (*inputMap.at(TEMPERATURE))[0];
+    inputMap[eInput::TEMPERATURE] = ConstitutiveIOBase::makeConstitutiveIO<1>(eInput::TEMPERATURE);
+    double& innertemp = (*inputMap.at(eInput::TEMPERATURE))[0];
     innertemp = 5.0;
-    auto value_in_map = (*inputMap[TEMPERATURE])[0];
+    auto value_in_map = (*inputMap[eInput::TEMPERATURE])[0];
     BOOST_CHECK_EQUAL(value_in_map, 5.0);
 }
 
@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(create_input)
 {
     ConstitutiveInputMap inputMap;
     // Scalar
-    auto inputType = NuTo::Constitutive::Input::eInput::TEMPERATURE;
+    auto inputType = NuTo::Constitutive::eInput::TEMPERATURE;
     inputMap[inputType] = ConstitutiveIOBase::makeConstitutiveIO<1>(inputType);
     double& innertemp = (*inputMap.at(inputType))[0];
     innertemp = 5.0;
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(create_input)
     BOOST_CHECK_EQUAL(value_in_map, 5.0);
 
     // Vector
-    inputType = NuTo::Constitutive::Input::eInput::TEMPERATURE_GRADIENT;
+    inputType = NuTo::Constitutive::eInput::TEMPERATURE_GRADIENT;
     inputMap[inputType] = ConstitutiveIOBase::makeConstitutiveIO<2>(inputType);
     auto& innergrad = static_cast<ConstitutiveVector<2>*>(inputMap.at(inputType).get())->AsVector();
     innergrad[0] = 5.0; innergrad[1] = 7.0;
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(create_input)
     BOOST_CHECK_EQUAL(second, 7.0);
 
     // Engineering Strain
-    inputType = NuTo::Constitutive::Input::eInput::ENGINEERING_STRAIN;
+    inputType = NuTo::Constitutive::eInput::ENGINEERING_STRAIN;
     inputMap[inputType] = ConstitutiveIOBase::makeConstitutiveIO<3>(inputType);
     auto& innerstrain = static_cast<EngineeringStrain<3>*>(inputMap.at(inputType).get())->AsEngineeringStrain3D();
     innerstrain[0] = 1.0; innerstrain[3] = 6.0; innerstrain[5] = 3.0;
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(create_input)
 BOOST_AUTO_TEST_CASE(copy_construction)
 {
     ConstitutiveInputMap inputMap;
-    auto inputType = NuTo::Constitutive::Input::eInput::TEMPERATURE;
+    auto inputType = NuTo::Constitutive::eInput::TEMPERATURE;
     inputMap[inputType] = ConstitutiveIOBase::makeConstitutiveIO<1>(inputType);
     double& temp = (*inputMap.at(inputType))[0];
     temp = 5.0;

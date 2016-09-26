@@ -1,13 +1,20 @@
+#include "nuto/base/ErrorEnum.h"
 #include "nuto/mechanics/constitutive/laws/ThermalStrains.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 using namespace NuTo;
 
 template <int TDim>
-Error::eError ThermalStrains::Evaluate(const ConstitutiveInputMap &rConstitutiveInput,
-        const ConstitutiveOutputMap &rConstitutiveOutput, Constitutive::StaticData::Component*)
+NuTo::eError ThermalStrains::Evaluate(
+        const ConstitutiveInputMap &rConstitutiveInput,
+        const ConstitutiveOutputMap &rConstitutiveOutput,
+        Constitutive::StaticData::Component*)
 {
     
     auto eye = Eigen::MatrixXd::Identity(TDim, TDim);
@@ -17,7 +24,7 @@ Error::eError ThermalStrains::Evaluate(const ConstitutiveInputMap &rConstitutive
     std::array<double, 2> strain;
     try
     {
-        temperature = (*rConstitutiveInput.at(Constitutive::Input::TEMPERATURE))[0];
+        temperature = (*rConstitutiveInput.at(Constitutive::eInput::TEMPERATURE))[0];
         strain = NonlinearExpansionCoeff(temperature);
     }
     catch(const std::bad_function_call& e)
@@ -30,7 +37,7 @@ Error::eError ThermalStrains::Evaluate(const ConstitutiveInputMap &rConstitutive
     {
         switch(itOutput.first)
         {
-        case Constitutive::Output::ENGINEERING_STRAIN:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN:
         {
             Eigen::Matrix<double, voigtDim, 1>& engineeringStrain =
                 static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second.get())->AsVector();
@@ -39,8 +46,7 @@ Error::eError ThermalStrains::Evaluate(const ConstitutiveInputMap &rConstitutive
             itOutput.second->SetIsCalculated(true);
             break;
         }
-
-        case Constitutive::Output::THERMAL_STRAIN:
+        case NuTo::Constitutive::eOutput::THERMAL_STRAIN:
         {
             Eigen::Matrix<double, TDim, TDim>& engineeringStrain =
                 static_cast<ConstitutiveMatrix<TDim, TDim>*>(itOutput.second.get())->AsMatrix();
@@ -48,8 +54,7 @@ Error::eError ThermalStrains::Evaluate(const ConstitutiveInputMap &rConstitutive
             itOutput.second->SetIsCalculated(true);
             break;
         }
-
-        case Constitutive::Output::D_STRAIN_D_TEMPERATURE:
+        case NuTo::Constitutive::eOutput::D_STRAIN_D_TEMPERATURE:
         {
             Eigen::Matrix<double, voigtDim, 1>& dStrainDTemperature =
                 static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second.get())->AsVector();
@@ -63,20 +68,20 @@ Error::eError ThermalStrains::Evaluate(const ConstitutiveInputMap &rConstitutive
         }
             break;
 
-        case Constitutive::Output::UPDATE_STATIC_DATA:
-        case Constitutive::Output::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
             break;
         default:
             continue;
         }
     }
-    return Error::SUCCESSFUL;
+    return NuTo::eError::SUCCESSFUL;
 }
 
 bool ThermalStrains::CheckDofCombinationComputable(Node::eDof rDofRow,
             Node::eDof rDofCol, int) const
 {
-    if(Node::CombineDofs(rDofRow, rDofCol) == Node::CombineDofs(Node::DISPLACEMENTS, Node::TEMPERATURE))
+    if(Node::CombineDofs(rDofRow, rDofCol) == Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::TEMPERATURE))
         return true;
 
     return false;
@@ -92,14 +97,14 @@ ConstitutiveInputMap ThermalStrains::GetConstitutiveInputs(const ConstitutiveOut
         switch (itOutput.first)
         {
 
-        case Constitutive::Output::ENGINEERING_STRAIN:
-        case Constitutive::Output::THERMAL_STRAIN:
-        case Constitutive::Output::D_STRAIN_D_TEMPERATURE:
-            constitutiveInputMap[Constitutive::Input::TEMPERATURE];
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN:
+        case NuTo::Constitutive::eOutput::THERMAL_STRAIN:
+        case NuTo::Constitutive::eOutput::D_STRAIN_D_TEMPERATURE:
+            constitutiveInputMap[Constitutive::eInput::TEMPERATURE];
             break;
 
-        case Constitutive::Output::UPDATE_TMP_STATIC_DATA:
-        case Constitutive::Output::UPDATE_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
             break;
         default:
             break;
@@ -109,19 +114,19 @@ ConstitutiveInputMap ThermalStrains::GetConstitutiveInputs(const ConstitutiveOut
     return constitutiveInputMap;
 }
 
-bool ThermalStrains::CheckElementCompatibility(Element::eElementType rElementType) const
+bool NuTo::ThermalStrains::CheckElementCompatibility(Element::eElementType rElementType) const
 {
     switch (rElementType)
     {
-    case Element::CONTINUUMELEMENT:
-    case Element::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
+    case NuTo::Element::eElementType::CONTINUUMELEMENT:
+    case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
         return true;
     default:
         return false;
     }
 }
 
-void ThermalStrains::SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue)
+void NuTo::ThermalStrains::SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue)
 {
     switch(rIdentifier)
     {
@@ -135,7 +140,12 @@ void ThermalStrains::SetParameterDouble(Constitutive::eConstitutiveParameter rId
     }
 }
 
-void ThermalStrains::SetParameterFunction(std::function<std::array<double, 2>(double)> ExpansionFunction)
+Constitutive::eConstitutiveType NuTo::ThermalStrains::GetType() const
+{
+    return Constitutive::eConstitutiveType::THERMAL_STRAINS;
+}
+
+void NuTo::ThermalStrains::SetParameterFunction(std::function<std::array<double, 2>(double)> ExpansionFunction)
 {
     NonlinearExpansionCoeff = ExpansionFunction;
 }

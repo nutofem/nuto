@@ -12,20 +12,12 @@
 #include <boost/ptr_container/serialize_ptr_list.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "boost/filesystem.hpp"
-#include <iostream>
-#include <fstream>
-#ifdef SHOW_TIME
-#include <ctime>
-#endif
-
-# ifdef _OPENMP
-#include <omp.h>
-# endif
-
 
 #include "nuto/optimize/NonlinearSolverBase.h"
 #include "nuto/optimize/OptimizeException.h"
+
+#include "nuto/math/FullVector.h"
+#include "nuto/math/FullMatrix.h"
 
 using namespace std;
 

@@ -12,10 +12,11 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/visualize/VisualizeComponentNonlocalWeight.h"
+#include "nuto/visualize/VisualizeEnum.h"
 #include "nuto/visualize/VisualizeException.h"
 #include <sstream>
 
-NuTo::VisualizeComponentNonlocalWeight::VisualizeComponentNonlocalWeight(int rElementId, int rIp) : VisualizeComponent::VisualizeComponent(NuTo::VisualizeBase::NONLOCAL_WEIGHT)
+NuTo::VisualizeComponentNonlocalWeight::VisualizeComponentNonlocalWeight(int rElementId, int rIp) : VisualizeComponent::VisualizeComponent(NuTo::eVisualizeWhat::NONLOCAL_WEIGHT)
 {
     mElementId = rElementId;
     mIp = rIp;
@@ -38,9 +39,9 @@ std::string NuTo::VisualizeComponentNonlocalWeight::GetComponentName()const
 	return out.str();
 }
 
-NuTo::VisualizeBase::eVisualizeWhat NuTo::VisualizeComponentNonlocalWeight::GetComponentEnum(void) const
+NuTo::eVisualizeWhat NuTo::VisualizeComponentNonlocalWeight::GetComponentEnum(void) const
 {
-    return NuTo::VisualizeBase::NONLOCAL_WEIGHT;
+    return NuTo::eVisualizeWhat::NONLOCAL_WEIGHT;
 }
 
 

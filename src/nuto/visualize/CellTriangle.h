@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef CELLTRIANGLE_H_
-#define CELLTRIANGLE_H_
+#pragma once
 
 #include "nuto/visualize/CellBase.h"
 
@@ -37,4 +36,3 @@ private:
 
 }
 
-#endif // CELLTRIANGLE_H_

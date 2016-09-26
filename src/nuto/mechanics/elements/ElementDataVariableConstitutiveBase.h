@@ -1,9 +1,8 @@
 // $Id$
-#ifndef ELEMENTDATAVARIABLECONSTITUTIVEBASE_H_
-#define ELEMENTDATAVARIABLECONSTITUTIVEBASE_H_
+#pragma once
 
 #include "nuto/mechanics/elements/ElementDataBase.h"
-#include "nuto/mechanics/MechanicsException.h"
+
 
 namespace NuTo
 {
@@ -55,4 +54,3 @@ protected:
 };
 }//namespace NuTo
 
-#endif /* ELEMENTDATAVARIABLECONSTITUTIVEBASE_H_ */

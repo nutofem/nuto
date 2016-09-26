@@ -5,7 +5,13 @@
  *      Author: ttitsche
  */
 
+#include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 
 //! @brief creates a new interpolation type, calls the enum method
 //! @param rShape ... element shape "TRUSS", "TRIANGLE", "QUAD", "TET", "BRICK", etc.
@@ -58,7 +64,7 @@ void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationType
 //! @brief sets the integration type for a specific interpolation type
 //! @param rInterpolationTypeId ... interpolation type id
 //! @param rIntegrationType ... integration type enum
-void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationTypeId, IntegrationType::eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType)
+void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationTypeId, eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType)
 {
     InterpolationTypeSetIntegrationType(rInterpolationTypeId, GetPtrIntegrationType(rIntegrationType), rIpDataType);
 }
@@ -150,7 +156,7 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node:
     InterpolationType* interpolationType = itIterator->second;
     interpolationType->AddDofInterpolation(rDofType, rTypeOrder);
 
-    IntegrationType::eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
+    eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
     const IntegrationTypeBase* integrationType = this->GetPtrIntegrationType(integrationTypeEnum);
 
     interpolationType->UpdateIntegrationType(*integrationType);

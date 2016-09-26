@@ -5,8 +5,7 @@
  *      Author: ttitsche
  */
 
-#ifndef COLLIDABLEWALLPHYSICAL_H_
-#define COLLIDABLEWALLPHYSICAL_H_
+#pragma once
 
 #include "nuto/geometryConcrete/collision/collidables/CollidableWallBase.h"
 
@@ -42,4 +41,3 @@ public:
 };
 
 } /* namespace NuTo */
-#endif /* COLLIDABLEWALLPHYSICAL_H_ */

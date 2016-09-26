@@ -16,35 +16,34 @@ public:
     ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
                                                const InterpolationType& rInterpolationType) const override;
     template<int TDim>
-    NuTo::Error::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
-                                 const ConstitutiveOutputMap& rConstitutiveOutput,
+    NuTo::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
+                          const ConstitutiveOutputMap& rConstitutiveOutput,
                                  Constitutive::StaticData::Component* staticData);
 
-    NuTo::Error::eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
-                                   const ConstitutiveOutputMap& rConstitutiveOutput,
-                                   Constitutive::StaticData::Component* staticData) override
+    NuTo::eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
+                            const ConstitutiveOutputMap& rConstitutiveOutput,
+                            Constitutive::StaticData::Component* staticData) override
     {
         return Evaluate<1>(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
 
-    NuTo::Error::eError Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
+    NuTo::eError Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
                                    const ConstitutiveOutputMap& rConstitutiveOutput,
                                    Constitutive::StaticData::Component* staticData) override
     {
         return Evaluate<2>(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
 
-    NuTo::Error::eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
+
+    NuTo::eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
                                    const ConstitutiveOutputMap& rConstitutiveOutput,
                                    Constitutive::StaticData::Component* staticData) override
     {
         return Evaluate<3>(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
 
-    Constitutive::eConstitutiveType GetType() const override
-    {
-        return NuTo::Constitutive::THERMAL_STRAINS;
-    }
+    //! @brief Get type of constitutive relationship
+    Constitutive::eConstitutiveType GetType() const override;
 
     bool HaveTmpStaticData() const override { return false; }
 

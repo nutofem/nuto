@@ -5,7 +5,9 @@
  *      Author: ttitsche
  */
 
+#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation3D.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 NuTo::Interpolation3D::Interpolation3D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
         InterpolationBase::InterpolationBase(rDofType, rTypeOrder, rDimension)
@@ -17,17 +19,17 @@ int NuTo::Interpolation3D::GetNumDofsPerNode() const
 {
     switch (mDofType)
     {
-    case NuTo::Node::COORDINATES:
+    case NuTo::Node::eDof::COORDINATES:
         return 3;
-    case NuTo::Node::DISPLACEMENTS:
+    case NuTo::Node::eDof::DISPLACEMENTS:
         return 3;
-    case NuTo::Node::TEMPERATURE:
+    case NuTo::Node::eDof::TEMPERATURE:
         return 1;
-    case NuTo::Node::NONLOCALEQSTRAIN:
+    case NuTo::Node::eDof::NONLOCALEQSTRAIN:
         return 1;
-    case NuTo::Node::RELATIVEHUMIDITY:
+    case NuTo::Node::eDof::RELATIVEHUMIDITY:
         return 1;
-    case NuTo::Node::WATERVOLUMEFRACTION:
+    case NuTo::Node::eDof::WATERVOLUMEFRACTION:
         return 1;
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "dof type not found.");

@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef RungeKuttaBase_H
-#define RungeKuttaBase_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -37,7 +36,7 @@ public:
 
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
-    NuTo::Error::eError Solve(double rTimeDelta);
+    NuTo::eError Solve(double rTimeDelta);
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const;
@@ -72,4 +71,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::RungeKuttaBase)
 
 
 
-#endif // RungeKuttaBase_H

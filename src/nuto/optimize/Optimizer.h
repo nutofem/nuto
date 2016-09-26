@@ -1,17 +1,26 @@
-#ifndef OPTIMIZER_H
-#define OPTIMIZER_H
+#pragma once
 
+#ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/vector.hpp>
+#endif //ENABLE_SERIALIZATION
+
+
+#include <cfloat>
 #include <string>
 
+
+
+// parent
 #include "nuto/base/NuToObject.h"
-#include "nuto/optimize/OptimizeException.h"
+
+#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/optimize/CallbackHandler.h"
 #include "nuto/optimize/CallbackHandlerGrid.h"
-#include <cfloat>
-#include <limits.h>
+#include "nuto/optimize/OptimizeException.h"
+
 namespace NuTo
 {
+
 
 //! @author Joerg F. Unger, ISM
 //! @date September 2009
@@ -22,7 +31,7 @@ class Optimizer : public NuToObject
 	friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-    typedef enum
+    enum class eOptimizationReturnAttributes
     {
         MAXFUNCTIONCALLS=1,   //maximum number of function calls is reached
         MAXGRADIENTCALLS,   //maximum number of gradient calls is reached
@@ -32,7 +41,7 @@ public:
         MINOBJECTIVE,       //objective is smaller than a prescribed value
         DELTAOBJECTIVEBETWEENCYCLES,  //decrease in objective function between two consecutive cycles is smaller than prescribed value
         REACHINGMACHINEPRECISION  //machine precision is reached for the norm of the increment
-    } optimization_return_attributes;
+    };
     
     Optimizer(unsigned int rNumParameters,unsigned int rNumEqualConstraints,unsigned int rNumInEqualConstraints) : NuToObject()
     {
@@ -165,4 +174,4 @@ protected:
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Optimize)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
-#endif // OPTIMIZER_H
+

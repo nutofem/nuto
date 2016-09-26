@@ -1,10 +1,6 @@
 // $Id: $
 
-#ifndef ResultGroupNodeForce_H
-#define ResultGroupNodeForce_H
-
-#include <ctime>
-#include <array>
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -12,13 +8,13 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/timeIntegration/ResultGroupNodeDof.h"
-#include "nuto/base/ErrorEnum.h"
-#include "nuto/mechanics/MechanicsException.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
 
 namespace NuTo
 {
+
+template <class T, int rows, int cols> class  FullMatrix;
+template <class T, int rows> class  FullVector;
+
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard abstract class for all results
@@ -34,10 +30,7 @@ public:
     //! @brief number of dofs (e.g. number of displacement components of a node
     int GetNumData(const StructureBase& rStructure)const;
 
-    NuTo::TimeIntegration::eResultType GetResultType()const
-    {
-    	return NuTo::TimeIntegration::GROUP_NODE_FORCE;
-    }
+    NuTo::eTimeIntegrationResultType GetResultType()const;
 
     void CalculateValues(const StructureBase& rStructure,
     		const FullVector<double,Eigen::Dynamic>& rResidual_j,
@@ -74,4 +67,3 @@ protected:
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ResultGroupNodeForce)
 #endif // SWIG
 #endif  // ENABLE_SERIALIZATION
-#endif // ResultGroupNodeForce_H

@@ -9,7 +9,7 @@
 #include "nuto/math/SparseMatrixCSRVector2General_Def.h"
 #include "nuto/math/SparseMatrixCSRVector2Symmetric_Def.h"
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
-
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 
 #include "nuto/math/SparseMatrixCSRSymmetric.h"
@@ -40,6 +40,16 @@ NuTo::BlockSparseMatrix::BlockSparseMatrix(const BlockSparseMatrix&  rOther) :
             mData[it.first] = std::unique_ptr<SparseMatrixCSRVector2<double>>(new SparseMatrixCSRVector2General<double>(it.second->AsSparseMatrixCSRVector2General()));
     }
 }
+
+NuTo::BlockSparseMatrix::BlockSparseMatrix(NuTo::BlockSparseMatrix &&rOther)
+    :BlockStorageBase(rOther.mDofStatus),
+     mCanBeSymmetric(rOther.mCanBeSymmetric)
+{
+    mData =std::move(rOther.mData);
+}
+
+NuTo::BlockSparseMatrix::~BlockSparseMatrix()
+{}
 
 void NuTo::BlockSparseMatrix::AllocateSubmatrices()
 {
@@ -81,6 +91,13 @@ NuTo::BlockSparseMatrix& NuTo::BlockSparseMatrix::operator =(const BlockSparseMa
     return *this;
 }
 
+NuTo::BlockSparseMatrix& NuTo::BlockSparseMatrix::operator=(NuTo::BlockSparseMatrix &&rOther)
+{
+    mCanBeSymmetric = rOther.mCanBeSymmetric;
+    mData = std::move(rOther.mData);
+    return *this;
+}
+
 //NuTo::BlockSparseMatrix& NuTo::BlockSparseMatrix::operator =(BlockSparseMatrix&& rOther)
 //{
 //    const auto& activeDofs = mDofStatus.GetActiveDofTypes();
@@ -116,6 +133,9 @@ NuTo::BlockFullVector<double> NuTo::BlockSparseMatrix::operator *(const BlockFul
         for (auto dofSum : activeDofTypes)
         {
             result[dofRow] += (*this)(dofRow, dofSum).operator*(rRhs[dofSum]);
+            // Strange work-around: Calling the operator* directly instead of
+            // using * fixes an error caused by eigen version 3.3~beta2-1
+            // Eigen somehow tries to convert the SparseMatrixCSRVector2<double> to a double type and (obviously) fails.
         }
     }
 
@@ -392,6 +412,16 @@ NuTo::SparseMatrixCSRVector2Symmetric<double> NuTo::BlockSparseMatrix::ExportToC
     throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] not implemented.");
 }
 
+NuTo::SparseMatrixCSRVector2General<double> NuTo::BlockSparseMatrix::Get(std::string rDofRow, std::string rDofCol) const
+{
+    auto& ref = (*this)(Node::DofToEnum(rDofRow), Node::DofToEnum(rDofCol));
+    if (ref.IsSymmetric())
+        return ref.AsSparseMatrixCSRVector2Symmetric(); // calls appropriate Vector2General ctor
+    else
+        return ref.AsSparseMatrixCSRVector2General();
+}
+
+
 namespace NuTo
 {
 std::ostream& operator<<(std::ostream &rOut, const NuTo::BlockSparseMatrix &rBlockSparseMatrix)
@@ -408,7 +438,6 @@ std::ostream& operator<<(std::ostream &rOut, const NuTo::BlockSparseMatrix &rBlo
     return rOut;
 }
 }
-
 #ifdef ENABLE_SERIALIZATION
 
 

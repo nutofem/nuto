@@ -1,11 +1,15 @@
 // $Id$
 
+#include <boost/foreach.hpp>
+#include "nuto/math/SparseMatrixCSRVector2.h"
+
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/groups/GroupEnum.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ContinuumElement.h"
-#include "nuto/mechanics/constraints/ConstraintEnum.h"
 #include "nuto/mechanics/constraints/ConstraintLinearDerivativeNonlocalTotalStrain1D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearDisplacementsPeriodic2D.h"
 #include "nuto/mechanics/constraints/ConstraintLinearEquation.h"
@@ -22,6 +26,9 @@
 #include "nuto/mechanics/constraints/ConstraintLinearNodeTemperature.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeWaterVolumeFraction.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "ANN/ANN.h"
 
 //! @brief adds a displacement constraint equation for a node
@@ -380,7 +387,7 @@ int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(int rGroupIden
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::ConstraintSetDisplacementNodeGroup] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+    if (itGroup->second->GetType()!=NuTo::eGroupId::Nodes)
         throw MechanicsException("[NuTo::Structure::ConstraintSetDisplacementNodeGroup] Group is not a node group.");
     Group<NodeBase> *nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
     assert(nodeGroup!=0);
@@ -397,7 +404,7 @@ int NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup(int rGroupIdent, d
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::ConstraintLinearSetRotationNodeGroup] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+    if (itGroup->second->GetType()!=NuTo::eGroupId::Nodes)
         throw MechanicsException("[NuTo::Structure::ConstraintLinearSetRotationNodeGroup] Group is not a node group.");
     Group<NodeBase> *nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
     assert(nodeGroup!=0);
@@ -414,7 +421,7 @@ int NuTo::StructureBase::ConstraintLinearSetTemperatureNodeGroup(int rGroupIdent
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::ConstraintLinearSetTemperatureNodeGroup] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+    if (itGroup->second->GetType()!=NuTo::eGroupId::Nodes)
         throw MechanicsException("[NuTo::Structure::ConstraintLinearSetTemperatureNodeGroup] Group is not a node group.");
     Group<NodeBase> *nodeGroup = dynamic_cast<Group<NodeBase>*>(itGroup->second);
     assert(nodeGroup!=0);
@@ -692,7 +699,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
 {
     this->mNodeNumberingRequired = true;
 
-    int nodeGroup = GroupCreate(Groups::Nodes);
+    int nodeGroup = GroupCreate(eGroupId::Nodes);
     GroupAddNodesFromElements(nodeGroup, rElementGroup);
     NuTo::FullVector<int, -1> nodeGroupIds = GroupGetMemberIds(nodeGroup);
 
@@ -719,20 +726,20 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
 
     for (int iNode = 0; iNode < GroupGetNumMembers(nodeGroup); ++iNode)
     {
-        Eigen::VectorXd tmpMatrix = NodeGetNodePtr(nodeGroupIds.at(iNode, 0))->Get(Node::COORDINATES);
+        Eigen::VectorXd tmpMatrix = NodeGetNodePtr(nodeGroupIds(iNode, 0))->Get(Node::eDof::COORDINATES);
 
         for (int iDim = 0; iDim < dim; ++iDim)
-            dataPoints[iNode][iDim] = tmpMatrix.at(iDim,0);
+            dataPoints[iNode][iDim] = tmpMatrix(iDim,0);
 
     }
 
 
 
 
-    Eigen::VectorXd queryNodeCoords = NodeGetNodePtr(rNode)->Get(Node::COORDINATES);
+    Eigen::VectorXd queryNodeCoords = NodeGetNodePtr(rNode)->Get(Node::eDof::COORDINATES);
 
     for (int iDim = 0; iDim < dim; ++iDim)
-        queryPoint[iDim] = queryNodeCoords.at(iDim,0);
+        queryPoint[iDim] = queryNodeCoords(iDim,0);
 
 
 //    std::cout << "queryPoint: \n" << queryPoint[0] << std::endl;
@@ -768,7 +775,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     //
     /////////////////////////////////////
 
-    int nearestElements =  GroupCreate(Groups::Elements);
+    int nearestElements =  GroupCreate(eGroupId::Elements);
     GroupAddElementsFromNodes(nearestElements, nodeGroup, false);
     NuTo::FullVector<int, -1> elementGroupIds = GroupGetMemberIds(nearestElements);
 
@@ -862,8 +869,8 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
 
 
     // Coordinate interpolation must be linear so the shape function derivatives are constant!
-    assert(elementPtr->GetInterpolationType()->Get(Node::COORDINATES).GetTypeOrder() == Interpolation::EQUIDISTANT1);
-    const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = elementPtr->GetInterpolationType()->Get(Node::COORDINATES).GetDerivativeShapeFunctionsNatural(0);
+    assert(elementPtr->GetInterpolationType()->Get(Node::eDof::COORDINATES).GetTypeOrder() == Interpolation::eTypeOrder::EQUIDISTANT1);
+    const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = elementPtr->GetInterpolationType()->Get(Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(0);
 
     // real coordinates of every node in rElement
     Eigen::VectorXd elementNodeCoords = elementPtr->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
@@ -890,7 +897,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     }
 
 
-    auto shapeFunctions = elementPtr->GetInterpolationType()->Get(Node::DISPLACEMENTS).CalculateShapeFunctions(elementNaturalNodeCoords);
+    auto shapeFunctions = elementPtr->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS).CalculateShapeFunctions(elementNaturalNodeCoords);
 
     //find unused integer id
     std::vector<int> unusedId(dim);
@@ -905,19 +912,19 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
             unusedId[iDim]++;
             it = mConstraintMap.find(unusedId[iDim]);
         }
-        ConstraintLinearEquationCreate(unusedId[iDim], rNode, NuTo::Node::DISPLACEMENTS, iDim, 1.0, 0.0);
+        ConstraintLinearEquationCreate(unusedId[iDim], rNode, NuTo::Node::eDof::DISPLACEMENTS, iDim, 1.0, 0.0);
     }
 
 
     for (int iNode = 0; iNode < shapeFunctions.rows(); ++iNode)
     {
-        int localNodeId = elementPtr->GetInterpolationType()->Get(Node::DISPLACEMENTS).GetNodeIndex(iNode);
-        int globalNodeId = NodeGetId(elementPtr->GetNode(localNodeId, Node::DISPLACEMENTS));
+        int localNodeId = elementPtr->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS).GetNodeIndex(iNode);
+        int globalNodeId = NodeGetId(elementPtr->GetNode(localNodeId, Node::eDof::DISPLACEMENTS));
 //        std::cout << "globalNodeId \t" << globalNodeId << std::endl;
         double coefficient = -shapeFunctions(iNode, 0);
 
         for (int iDim = 0; iDim < dim; ++iDim)
-            ConstraintLinearEquationAddTerm(unusedId[iDim], globalNodeId, Node::DISPLACEMENTS, iDim, coefficient);
+            ConstraintLinearEquationAddTerm(unusedId[iDim], globalNodeId, Node::eDof::DISPLACEMENTS, iDim, coefficient);
 
     }
 
@@ -977,7 +984,7 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
     std::transform(rDof.begin(), rDof.end(), std::back_inserter(dofString), (int(*)(int)) toupper);
     if(dofString == "X_DISPLACEMENT")
     {
-        rDofType = NuTo::Node::DISPLACEMENTS;
+        rDofType = NuTo::Node::eDof::DISPLACEMENTS;
         rDofComponent = 0;
     }
     else if(dofString == "Y_DISPLACEMENT")
@@ -986,7 +993,7 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
         {
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationGetDofInformationFromString] y-displacement dofs are only available in 2D or 3D structures.");
         }
-        rDofType = NuTo::Node::DISPLACEMENTS;
+        rDofType = NuTo::Node::eDof::DISPLACEMENTS;
         rDofComponent = 1;
     }
     else if(dofString == "Z_DISPLACEMENT")
@@ -995,7 +1002,7 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
         {
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationGetDofInformationFromString] z-displacement dofs are only available in 3D structures.");
         }
-        rDofType = NuTo::Node::DISPLACEMENTS;
+        rDofType = NuTo::Node::eDof::DISPLACEMENTS;
         rDofComponent = 2;
     }
     else if(dofString == "X_ROTATION")
@@ -1004,7 +1011,7 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
         {
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationGetDofInformationFromString] x-rotation dofs are only available in 3D structures.");
         }
-        rDofType = NuTo::Node::ROTATIONS;
+        rDofType = NuTo::Node::eDof::ROTATIONS;
         rDofComponent = 0;
     }
     else if(dofString == "Y_ROTATION")
@@ -1013,12 +1020,12 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
         {
             throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationGetDofInformationFromString] y-rotation dofs are only available in 3D structures.");
         }
-        rDofType = NuTo::Node::ROTATIONS;
+        rDofType = NuTo::Node::eDof::ROTATIONS;
         rDofComponent = 1;
     }
     else if(dofString == "Z_ROTATION")
     {
-        rDofType = NuTo::Node::ROTATIONS;
+        rDofType = NuTo::Node::eDof::ROTATIONS;
         if(this->mDimension == 2)
         {
             rDofComponent = 0; // in 2D only one rotation
@@ -1034,12 +1041,12 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
     }
     else if(dofString == "TEMPERATURE")
     {
-        rDofType = NuTo::Node::TEMPERATURE;
+        rDofType = NuTo::Node::eDof::TEMPERATURE;
         rDofComponent = 0;
     }
     else if(dofString == "NONLOCALEQSTRAIN")
     {
-        rDofType = NuTo::Node::NONLOCALEQSTRAIN;
+        rDofType = NuTo::Node::eDof::NONLOCALEQSTRAIN;
         rDofComponent = 0;
     }
     else
@@ -1079,7 +1086,7 @@ int NuTo::StructureBase::ConstraintLinearDisplacementsSetPeriodic2D(double rAngl
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rNodeGroupUpperId);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::ConstraintSetPeriodicBoundaryConditions2D] Group of upper nodes with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+    if (itGroup->second->GetType()!=NuTo::eGroupId::Nodes)
         throw MechanicsException("[NuTo::Structure::ConstraintSetPeriodicBoundaryConditions2D] Group of upper nodes is not a node group.");
     Group<NodeBase> *nodeGroupUpperPtr = dynamic_cast<Group<NodeBase>*>(itGroup->second);
     assert(nodeGroupUpperPtr!=0);
@@ -1087,7 +1094,7 @@ int NuTo::StructureBase::ConstraintLinearDisplacementsSetPeriodic2D(double rAngl
      itGroup = mGroupMap.find(rNodeGroupLowerId);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::ConstraintSetPeriodicBoundaryConditions2D] Group of lower nodes with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+    if (itGroup->second->GetType()!=NuTo::eGroupId::Nodes)
         throw MechanicsException("[NuTo::Structure::ConstraintSetPeriodicBoundaryConditions2D] Group of lower nodes is not a node group.");
     Group<NodeBase> *nodeGroupLowerPtr = dynamic_cast<Group<NodeBase>*>(itGroup->second);
     assert(nodeGroupLowerPtr!=0);
@@ -1095,7 +1102,7 @@ int NuTo::StructureBase::ConstraintLinearDisplacementsSetPeriodic2D(double rAngl
     itGroup = mGroupMap.find(rNodeGroupLeftId);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::ConstraintSetPeriodicBoundaryConditions2D] Group of left nodes with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+    if (itGroup->second->GetType()!=NuTo::eGroupId::Nodes)
         throw MechanicsException("[NuTo::Structure::ConstraintSetPeriodicBoundaryConditions2D] Group of left nodes is not a node group.");
     Group<NodeBase> *nodeGroupLeftPtr = dynamic_cast<Group<NodeBase>*>(itGroup->second);
     assert(nodeGroupLeftPtr!=0);
@@ -1103,7 +1110,7 @@ int NuTo::StructureBase::ConstraintLinearDisplacementsSetPeriodic2D(double rAngl
     itGroup = mGroupMap.find(rNodeGroupRightId);
     if (itGroup==mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::ConstraintSetPeriodicBoundaryConditions2D] Group of right nodes with the given identifier does not exist.");
-    if (itGroup->second->GetType()!=NuTo::Groups::Nodes)
+    if (itGroup->second->GetType()!=NuTo::eGroupId::Nodes)
         throw MechanicsException("[NuTo::Structure::ConstraintSetPeriodicBoundaryConditions2D] Group of right nodes is not a node group.");
     Group<NodeBase> *nodeGroupRightPtr = dynamic_cast<Group<NodeBase>*>(itGroup->second);
     assert(nodeGroupRightPtr!=0);
@@ -1170,6 +1177,12 @@ void NuTo::StructureBase::ConstraintDelete(int rConstraintId)
     this->mNodeNumberingRequired = true;
 }
 
+
+int NuTo::StructureBase::ConstraintGetNumLinearConstraints(std::string rDof) const
+{
+    return ConstraintGetNumLinearConstraints(Node::DofToEnum(rDof));
+}
+
 //! @brief releases a constraint, (remove from the list but don't delete it)
 //!@param rConstraintEquation id of the constraint equation
 //! @return ptr to constraint
@@ -1210,13 +1223,13 @@ int NuTo::StructureBase::ConstraintLinearSetNode(NuTo::Node::eDof rDOFType,
 {
     switch(rDOFType)
     {
-    case Node::DISPLACEMENTS:
+    case Node::eDof::DISPLACEMENTS:
         return ConstraintLinearSetDisplacementNode(rNode,rDirection,rValue);
 
-    case Node::RELATIVEHUMIDITY:
+    case Node::eDof::RELATIVEHUMIDITY:
         return ConstraintLinearSetRelativeHumidityNode(rNode,rValue);
 
-    case Node::TEMPERATURE:
+    case Node::eDof::TEMPERATURE:
         return ConstraintLinearSetTemperatureNode(rNode, rValue);
 
     default:

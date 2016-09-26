@@ -1,14 +1,12 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/elements/ElementEnum.h"
-
 #include "nuto/mechanics/constitutive/staticData/Leaf.h"
 #include "nuto/mechanics/constitutive/staticData/DataMisesPlasticity.h"
 
 namespace NuTo
 {
+
 template <int TDim> class EngineeringStrain;
 class Logger;
 //! @brief Mises plasticity with isotropic and kinematic hardening.
@@ -31,7 +29,7 @@ public:
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     //! @param staticData Pointer to the history data.
-    virtual NuTo::Error::eError Evaluate1D(
+    virtual NuTo::eError Evaluate1D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) override;
@@ -40,7 +38,7 @@ public:
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     //! @param staticData Pointer to the history data.
-    virtual NuTo::Error::eError Evaluate2D(
+    virtual NuTo::eError Evaluate2D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) override;
@@ -49,7 +47,7 @@ public:
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     //! @param staticData Pointer to the history data.
-    virtual NuTo::Error::eError Evaluate3D(
+    virtual NuTo::eError Evaluate3D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) override;
@@ -83,7 +81,7 @@ public:
     //! @param rNewStress New stress. If a `nullptr` is given, no values are written.
     //! @param rNewTangent New tangent matrix. If a `nullptr` is given, no values are written.
     //! @param rNewStaticData New static data. If a `nullptr` is given, no values are written.
-    NuTo::Error::eError ReturnMapping2D(Constitutive::StaticData::DataMisesPlasticity<3>& oldStaticData,
+    NuTo::eError ReturnMapping2D(Constitutive::StaticData::DataMisesPlasticity<3>& oldStaticData,
             const EngineeringStrain<2>& rEngineeringStrain,
             ConstitutiveIOBase* rNewStress,
             ConstitutiveIOBase* rNewTangent,
@@ -94,7 +92,7 @@ public:
     //! @param rNewStress New stress. If a `nullptr` is given, no values are written.
     //! @param rNewTangent New tangent matrix. If a `nullptr` is given, no values are written.
     //! @param rNewStaticData New static data. If a `nullptr` is given, no values are written.
-    NuTo::Error::eError ReturnMapping3D(Constitutive::StaticData::DataMisesPlasticity<3>& oldStaticData,
+    NuTo::eError ReturnMapping3D(Constitutive::StaticData::DataMisesPlasticity<3>& oldStaticData,
     		const EngineeringStrain<3>& rEngineeringStrain,
     		ConstitutiveIOBase* rNewStress,
     		ConstitutiveIOBase* rNewTangent,

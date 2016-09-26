@@ -5,6 +5,7 @@
 #include "nuto/visualize/VisualizeDataScalar.h"
 #include "nuto/visualize/VisualizeDataVector.h"
 #include "nuto/visualize/VisualizeDataTensor.h"
+#include "nuto/visualize/VisualizeDataType.h"
 #include "nuto/visualize/VisualizeDataField.h"
 
 // constructor
@@ -14,6 +15,9 @@ NuTo::Point::Point(const double* rCoordinates)
     this->mCoordinates[1] = rCoordinates[1];
     this->mCoordinates[2] = rCoordinates[2];
 }
+
+NuTo::Point::~Point()
+{}
 
 // add scalar data
 void NuTo::Point::AddDataScalar(unsigned int rDataIndex)
@@ -42,7 +46,7 @@ void NuTo::Point::SetDataScalar(unsigned int rDataIndex, double rData)
     {
         throw NuTo::VisualizeException("[NuTo::Point::SetDataVector] invalid data index.");
     }
-    if (this->mData[rDataIndex].GetDataType() != NuTo::VisualizeDataType::SCALAR)
+    if (this->mData[rDataIndex].GetDataType() != NuTo::eVisualizeDataType::SCALAR)
     {
         throw NuTo::VisualizeException("[NuTo::Point::SetDataScalar] invalid data type.");
     }
@@ -56,7 +60,7 @@ void NuTo::Point::SetDataVector(unsigned int rDataIndex, double rData[3])
     {
         throw NuTo::VisualizeException("[NuTo::Point::SetDataVector] invalid data index.");
     }
-    if (this->mData[rDataIndex].GetDataType() != NuTo::VisualizeDataType::VECTOR)
+    if (this->mData[rDataIndex].GetDataType() != NuTo::eVisualizeDataType::VECTOR)
     {
         throw NuTo::VisualizeException("[NuTo::Point::SetDataVector] invalid data type.");
     }

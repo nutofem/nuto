@@ -1,5 +1,10 @@
 #include "nuto/mechanics/constitutive/laws/AdditiveBase.h"
 #include "nuto/mechanics/constitutive/staticData/Composite.h"
+#include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
+
 
 template <int TDim>
 NuTo::Constitutive::StaticData::Component* NuTo::AdditiveBase::AllocateStaticData(const NuTo::ElementBase *rElement) const
@@ -32,7 +37,7 @@ NuTo::Constitutive::StaticData::Component* NuTo::AdditiveBase::AllocateStaticDat
 
 
 void NuTo::AdditiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiveLaw,
-        Constitutive::Input::eInput rModiesInput)
+        Constitutive::eInput rModiesInput)
 {
     if(rConstitutiveLaw.HaveTmpStaticData())
         throw MechanicsException(__PRETTY_FUNCTION__,

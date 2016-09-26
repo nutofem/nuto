@@ -1,7 +1,5 @@
 #pragma once
 
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constitutive/staticData/Leaf.h"
 
@@ -14,8 +12,14 @@ template <int TDim> class EngineeringStrain;
 template <int TRows, int TCols> class ConstitutiveMatrix;
 template <int TRows> class ConstitutiveVector;
 class ConstitutiveScalar;
-class ConstitutiveStaticDataBase;
+class ConstitutiveIOBase;
 class Logger;
+
+namespace Constitutive
+{
+    enum class ePhaseFieldEnergyDecomposition;
+
+}// namespace Constitutive
 
 
 
@@ -62,25 +66,27 @@ public:
     //! \param[in] rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.)
     //! \param[out] rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.)
     //! \param staticData Pointer to history data
-    NuTo::Error::eError Evaluate1D(
+    NuTo::eError Evaluate1D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) override;
+
 
     //! \brief Evaluate the constitutive law in 2D
     //! \param[in] rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.)
     //! \param[out] rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.)
     //! \param staticData Pointer to history data
-    NuTo::Error::eError Evaluate2D(
+    NuTo::eError Evaluate2D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) override;
+
 
     //! \brief Evaluate the constitutive law in 3D
     //! \param[in] rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.)
     //! \param[out] rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.)
     //! \param staticData Pointer to history data
-    NuTo::Error::eError Evaluate3D(
+    NuTo::eError Evaluate3D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) override;

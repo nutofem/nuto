@@ -1,6 +1,5 @@
 // $Id$
-#ifndef MORTON_ORDER_H
-#define MORTON_ORDER_H
+#pragma once
 
 #include <stdint.h>
 #include <limits>
@@ -110,4 +109,3 @@ public:
 
 };
 } // namespace NuTo
-#endif // MOTRON_ORDER_H

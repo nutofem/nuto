@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef SPARSE_MATRIX_CSR_SYMMETRIC_H
-#define SPARSE_MATRIX_CSR_SYMMETRIC_H
+#pragma once
 
 #include "nuto/math/MathException.h"
 
@@ -146,9 +145,9 @@ void NuTo::SparseMatrixCSRSymmetric<T>::AddValue(int rRow, int rColumn, const T&
 
 //! @brief ... return the matrix type
 template<class T>
-NuTo::SparseMatrixEnum::eType NuTo::SparseMatrixCSRSymmetric<T>::GetSparseMatrixType()const
+NuTo::eSparseMatrixType NuTo::SparseMatrixCSRSymmetric<T>::GetSparseMatrixType()const
 {
-    return NuTo::SparseMatrixEnum::CSRSYMMETRIC;
+    return NuTo::eSparseMatrixType::CSRSYMMETRIC;
 }
 
 //! @brief ... print info about the object
@@ -246,4 +245,3 @@ const NuTo::SparseMatrixCSRSymmetric<T>& NuTo::SparseMatrixCSRSymmetric<T>::AsSp
 }
 
 
-#endif // SPARSE_MATRIX_CSR_SYMMETRIC_H

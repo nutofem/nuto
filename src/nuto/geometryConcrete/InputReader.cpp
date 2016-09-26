@@ -5,6 +5,7 @@
  *      Author: ttitsche
  */
 
+#include "nuto/math/FullVector.h"
 #include "nuto/geometryConcrete/InputReader.h"
 #include "nuto/base/Exception.h"
 #include <sstream>

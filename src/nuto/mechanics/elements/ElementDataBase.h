@@ -1,6 +1,5 @@
 // $Id$
-#ifndef ELEMENT_DATA_BASE_H
-#define ELEMENT_DATA_BASE_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -8,19 +7,12 @@
 #include <boost/ptr_container/ptr_list.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#ifdef ENABLE_VISUALIZE
-#include "nuto/visualize/VisualizeUnstructuredGrid.h"
-#include <boost/ptr_container/ptr_list.hpp>
-#endif // ENABLE_VISUALIZE
 
 #include <string>
 #include <vector>
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/array.hpp>
 
-#include "nuto/math/FullMatrix_Def.h"
-#include "nuto/mechanics/elements/ElementDataEnum.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
+
 
 namespace NuTo
 {
@@ -40,6 +32,17 @@ class ElementBase;
 class IpDataBase;
 class VisualizeComponentBase;
 class IpDataStaticDataBase;
+
+namespace ElementData
+{
+    enum class eElementDataType;
+}// namespace ElementData
+
+namespace IpData
+{
+    enum class eIpDataType;
+}// namespace IpData
+
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -261,6 +264,4 @@ protected:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataBase)
 #endif // ENABLE_SERIALIZATION
-
-#endif //ELEMENT_DATA_BASE_H
 

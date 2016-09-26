@@ -1,6 +1,5 @@
 // $Id$
-#ifndef ELEMENTDATACONSTITUTIVEIPCRACK_H_
-#define ELEMENTDATACONSTITUTIVEIPCRACK_H_
+#pragma once
 
 #include "nuto/mechanics/elements/ElementDataConstitutiveBase.h"
 #include "nuto/mechanics/elements/ElementDataCrackBase.h"
@@ -44,4 +43,3 @@ protected:
 }
 
 
-#endif /* ELEMENTDATACONSTITUTIVEIPCRACK_H_ */

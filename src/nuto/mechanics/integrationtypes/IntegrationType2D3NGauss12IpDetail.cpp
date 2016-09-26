@@ -9,6 +9,10 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif //ENABLE_SERIALIZATION
 
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
+#endif // ENABLE_VISUALIZE
+
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss12IpDetail.h"
 #include "nuto/math/DelaunayVoronoi.h"
 #include <assert.h>
@@ -86,7 +90,7 @@ NuTo::IntegrationType2D3NGauss12IpDetail::IntegrationType2D3NGauss12IpDetail()
 
     for (unsigned int i = 0; i < numCells; ++i)
     {
-        mVisualizationCellTypes[i] = NuTo::CellBase::TRIANGLE;
+        mVisualizationCellTypes[i] = NuTo::eCellTypes::TRIANGLE;
         mVisualizationCellIndices[3*i  ] = cells[i][0];
         mVisualizationCellIndices[3*i+1] = cells[i][1];
         mVisualizationCellIndices[3*i+2] = cells[i][2];
@@ -144,7 +148,7 @@ std::string NuTo::IntegrationType2D3NGauss12IpDetail::GetStrIdentifierStatic()
 }
 
 #ifdef ENABLE_VISUALIZE
-void NuTo::IntegrationType2D3NGauss12IpDetail::GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+void NuTo::IntegrationType2D3NGauss12IpDetail::GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType,
         std::vector<unsigned int>& VisualizationCellsIncidence, std::vector<unsigned int>& VisualizationCellsIP) const
 {
 

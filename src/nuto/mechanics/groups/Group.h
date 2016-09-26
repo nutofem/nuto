@@ -1,6 +1,4 @@
-#ifndef GROUP_H
-#define GROUP_H
-#include <algorithm>
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -17,7 +15,7 @@
 #include <map>
 #endif // ENABLE_SERIALIZATION
 
-
+#include "nuto/math/FullVector_Def.h"
 #include "nuto/mechanics/groups/GroupBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 
@@ -136,11 +134,11 @@ public:
     //! @return group members (id)
     NuTo::FullVector<int,Eigen::Dynamic> GetMemberIds()const
     {
-    	NuTo::FullVector<int,Eigen::Dynamic> members((int)this->size());
-    	int count(0);
-    	for (auto it = this->begin(); it!=this->end(); it++, count++)
-    		members(count) = it->first;
-    	return members;
+        NuTo::FullVector<int,Eigen::Dynamic> members((int)this->size());
+        int count(0);
+        for (auto it = this->begin(); it!=this->end(); it++, count++)
+            members(count) = it->first;
+        return members;
     }
 
     //! @brief adds a group member
@@ -252,7 +250,7 @@ public:
 
     //! @brief gives the group type
     //! @return group type
-    Groups::eGroupId GetType()const;
+    eGroupId GetType()const;
 
     //! @brief gives the group type
     //! @return group type as string
@@ -272,5 +270,4 @@ BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((std::map<int,NuTo::NodeBase*>)))
 BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((std::map<int,NuTo::ElementBase*>)))
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
-#endif //GROUP_H
 

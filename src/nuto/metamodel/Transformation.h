@@ -5,18 +5,19 @@ Bauhaus-Universitaet Weimar
 Author: Joerg F. Unger,  Septermber 2009
 *******************************************************************************/
 
-#ifndef TRANSFORMATION_H
-#define TRANSFORMATION_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include "nuto/math/FullMatrix.h"
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
+
+template <class T, int rows, int cols> class FullMatrix;
 //! @author Joerg F. Unger, ISM
 //! @date September 2009
 //! @brief abstract base class for the Transformations
@@ -56,4 +57,3 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Transformation)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
-#endif /* TRANSFORMATION_H */

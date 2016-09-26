@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
 namespace NuTo
 {
@@ -35,7 +36,7 @@ public:
     //! @param rConstitutiveLaw Constitutive law to be added.
     //! @param rModiesInput Enum which defines which input is modified by a constitutive law.
     virtual void AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiveLaw,
-            Constitutive::Input::eInput rModiesInput = Constitutive::Input::NONE);
+            Constitutive::eInput rModiesInput = Constitutive::eInput::NONE);
 
     //! @brief Check compatibility between element type and type of constitutive relationship.
     //! @param rElementType Element type.

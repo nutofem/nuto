@@ -5,8 +5,7 @@
  *      Author: ttitsche
  */
 
-#ifndef WALLTIME_H_
-#define WALLTIME_H_
+#pragma once
 
 #include <string>
 
@@ -28,4 +27,3 @@ public:
 };
 
 } /* namespace NuTo */
-#endif /* WALLTIME_H_ */

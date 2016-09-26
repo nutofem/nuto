@@ -1,10 +1,5 @@
 // $Id: $
-
-#ifndef ResultGroupNodeDof_H
-#define ResultGroupNodeDof_H
-
-#include <ctime>
-#include <array>
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -12,10 +7,6 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/timeIntegration/ResultBase.h"
-#include "nuto/base/ErrorEnum.h"
-#include "nuto/mechanics/MechanicsException.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
 
 namespace NuTo
 {
@@ -26,6 +17,9 @@ template <class T>
 class Group;
 
 class NodeBase;
+
+template <class T, int rows, int cols> class  FullMatrix;
+template <class T, int rows> class  FullVector;
 
 class ResultGroupNodeDof : public ResultBase
 {
@@ -75,4 +69,3 @@ protected:
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ResultGroupNodeDof)
 #endif // SWIG
 #endif  // ENABLE_SERIALIZATION
-#endif // ResultGroupNodeDof_H

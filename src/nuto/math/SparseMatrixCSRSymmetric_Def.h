@@ -1,16 +1,14 @@
 // $Id: SparseMatrixCSRSymmetric.h 494 2011-03-27 19:15:08Z res2002 $
 
-#ifndef SPARSE_MATRIX_CSR_SYMMETRIC_DEF_H
-#define SPARSE_MATRIX_CSR_SYMMETRIC_DEF_H
+#pragma once
+
 
 #include "nuto/math/SparseMatrixCSR.h"
-#include "nuto/math/FullMatrix.h"
-//the template class SparseMatrixCSRVector2Symmetric is split into definition and implementation, include only the definition here
-#include "nuto/math/SparseMatrixCSRVector2Symmetric_Def.h"
 
 namespace NuTo
 {
 template <class T> class SparseMatrixCSRGeneral;
+template <class T> class SparseMatrixCSRVector2Symmetric;
 //! @author Stefan Eckardt, ISM
 //! @date July 2009
 //! @brief ... class for symmetric sparse matrices which are stored in CSR format
@@ -48,7 +46,7 @@ public:
     void AddValue(int rRow, int rColumn, const T& rValue);
 
     //! @brief ... return the matrix type
-    NuTo::SparseMatrixEnum::eType GetSparseMatrixType()const;
+    NuTo::eSparseMatrixType GetSparseMatrixType()const;
 
     //! @brief ... print info about the object
     void Info() const;
@@ -135,4 +133,3 @@ public:
 protected:
 };
 }
-#endif // SPARSE_MATRIX_CSR_SYMMETRIC_DEF_H

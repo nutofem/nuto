@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef VISUALIZEEXCEPTION_H_
-#define VISUALIZEEXCEPTION_H_
+#pragma once
 
 #include "nuto/base/Exception.h"
 
@@ -56,4 +55,3 @@ public:
 
 }
 
-#endif // VISUALIZEEXCEPTION_H_ 

@@ -1,7 +1,6 @@
 // $Id: ConstraintLagrangeNodeDisplacements2D.h -1   $
 
-#ifndef CONSTRAINTNODEDISPLACEMENTS1D_H
-#define CONSTRAINTLAGRANGENODEDISPLACEMENTS1D_H
+#pragma once
 
 #include "nuto/mechanics/constraints/ConstraintLagrange.h"
 #include "nuto/mechanics/constraints/ConstraintNodeGroup.h"
@@ -121,6 +120,4 @@ protected:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLagrangeNodeGroupDisplacements1D)
 #endif // ENABLE_SERIALIZATION
-
-#endif //CONSTRAINTLAGRANGENODEDISPLACEMENTS1D_H
 

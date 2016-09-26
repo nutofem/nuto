@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef NUTO_MATH_EXCEPTION_H
-#define NUTO_MATH_EXCEPTION_H
+#pragma once
 
 #include "nuto/base/Exception.h"
 
@@ -68,4 +67,3 @@ public:
 };
 
 } //namespace NuTo
-#endif //NUTO_MATH_EXCEPTION_H

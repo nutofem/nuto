@@ -36,7 +36,7 @@ public:
     StructureOutputBlockVector(      StructureOutputBlockVector&& rOther) = default;
 
     //! @brief destructor
-    ~StructureOutputBlockVector() = default;
+    ~StructureOutputBlockVector();
 
 
 
@@ -45,7 +45,7 @@ public:
 
 
     //! @brief copy assignment operator
-    StructureOutputBlockVector& operator=(const StructureOutputBlockVector&  rOther) = default;
+    StructureOutputBlockVector& operator=(const StructureOutputBlockVector&  rOther);
 
 
     //! @brief move assignment operator

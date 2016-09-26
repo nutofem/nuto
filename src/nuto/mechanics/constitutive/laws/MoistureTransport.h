@@ -1,15 +1,23 @@
 #pragma once
 
+// TODO: Replace with std::array!
 #include "nuto/math/FullVector.h"
+
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
-#include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
-#include "nuto/mechanics/constitutive/staticData/Leaf.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 
 // VHIRTHAMTODO Check deactivated routines, if they are still needed
 // VHIRTHAMTODO Rebuild CheckXYZ routines ---> CheckParameterDouble of base class
 namespace NuTo
 {
+
+namespace Constitutive {
+namespace StaticData {
+class Component;
+class DataMoistureTransport;
+}}
+
+enum class eDof;
 
 //VHIRTHAMTODO make doxygen/latex description
 //! @brief ... moisture transport model
@@ -56,30 +64,24 @@ private:
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
     template <int TDim>
-    NuTo::Error::eError EvaluateMoistureTransport(const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput, Constitutive::StaticData::Component* staticData);
+    NuTo::eError EvaluateMoistureTransport(
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData);
+
 
 public:
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    Constitutive::StaticData::Component* AllocateStaticData1D(const ElementBase* rElement) const override
-    {
-        return new Constitutive::StaticData::Leaf<Constitutive::StaticData::DataMoistureTransport>();
-    }
+    Constitutive::StaticData::Component* AllocateStaticData1D(const ElementBase* rElement) const override;
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    Constitutive::StaticData::Component* AllocateStaticData2D(const ElementBase* rElement) const override
-    {
-        return new Constitutive::StaticData::Leaf<Constitutive::StaticData::DataMoistureTransport>();
-    }
+    Constitutive::StaticData::Component* AllocateStaticData2D(const ElementBase* rElement) const override;
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    Constitutive::StaticData::Component* AllocateStaticData3D(const ElementBase* rElement) const override
-    {
-        return new Constitutive::StaticData::Leaf<Constitutive::StaticData::DataMoistureTransport>();
-    }
+    Constitutive::StaticData::Component* AllocateStaticData3D(const ElementBase* rElement) const override;
 
     //! @brief ... calculates the sorption Curve coefficients when the sorption direction has changed
     void CalculateSorptionCurveCoefficients(Constitutive::StaticData::DataMoistureTransport& rStaticData,
@@ -91,39 +93,19 @@ private:
     //! @param rValue ... value to be checked
     //! @param rLimLower ... lower limit
     //! @param rLimUpper ... upper limit
-    void CheckValueInLimits(std::string rCallingFunction, double rValue, double rLimLower, double rLimUpper) const
-    {
-        if(rValue < rLimLower || rValue > rLimUpper)
-            throw NuTo::MechanicsException(rCallingFunction,"Value(" + std::to_string(rValue) + ") exceeds limits ["+std::to_string(rLimLower)+","+std::to_string(rLimUpper)+"]");
-    }
+    void CheckValueInLimits(std::string rCallingFunction, double rValue, double rLimLower, double rLimUpper) const;
 
     //! @brief Checks if a value is greater than zero. Throws if not.
     //! @param rCallingFunction ... name of the calling function
     //! @param rValue ... value to be checked
     //! @param rCountZeroAsPositive ... sets if zero should be counted as positive value or not
-    void CheckValuePositive(std::string rCallingFunction, double rValue, bool rCountZeroAsPositive = false) const
-    {
-        if (rValue<0.0 || (!rCountZeroAsPositive && rValue <= 0.0))
-            throw NuTo::MechanicsException(rCallingFunction,"Value(" + std::to_string(rValue) + ") not positive");
-    }
+    void CheckValuePositive(std::string rCallingFunction, double rValue, bool rCountZeroAsPositive = false) const;
 
 
     //! @brief ... Checks the sorption coefficients
     //! @param rCallingFunction ... name of the calling function
     //! @param rSorptionCoefficients ... Sorption coefficients
-    void CheckSorptionCoefficients(std::string rCallingFunction, NuTo::FullVector<double,Eigen::Dynamic> rSorptionCoefficients) const
-    {
-            if (rSorptionCoefficients.GetNumRows() < 3 || rSorptionCoefficients.GetNumRows() > 4)
-                throw NuTo::MechanicsException(rCallingFunction,"The vector for the desorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
-            if (rSorptionCoefficients.GetNumRows() == 4 && rSorptionCoefficients(0)!=0.0)
-                throw NuTo::MechanicsException(rCallingFunction,"The first desorption coefficients (constant term) has to be zero");
-            for(int i =0; i<rSorptionCoefficients.GetNumRows(); ++i)
-            {
-               if(rSorptionCoefficients(i)!=0)
-                   return;
-            }
-            throw NuTo::MechanicsException(rCallingFunction,"All sorption coefficients are zero!");
-    }
+    void CheckSorptionCoefficients(std::string rCallingFunction, NuTo::FullVector<double,Eigen::Dynamic> rSorptionCoefficients) const;
 
 public:
 
@@ -196,7 +178,7 @@ public:
 
 //    //! @brief ... checks if a constitutive law has an specific output
 //    //! @return ... true/false
-//    virtual bool                                    CheckOutputTypeCompatibility                                (Constitutive::Output::eOutput rOutputEnum) const override;
+//    virtual bool                                    CheckOutputTypeCompatibility                                (Constitutive::eOutput rOutputEnum) const override;
 
     //! @brief ... check parameters of the constitutive relationship
     //! if one check fails, an exception is thrwon
@@ -258,11 +240,12 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput, Constitutive::StaticData::Component* staticData) override
+    virtual NuTo::eError Evaluate1D(
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) override
     {
         return EvaluateMoistureTransport<1>(rConstitutiveInput, rConstitutiveOutput, staticData);
-
     }
 
     //! @brief ... evaluate the constitutive relation in 2D
@@ -270,8 +253,10 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput, Constitutive::StaticData::Component* staticData) override
+    virtual NuTo::eError Evaluate2D(
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) override
     {
         return EvaluateMoistureTransport<2>(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
@@ -281,8 +266,10 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput, Constitutive::StaticData::Component* staticData) override
+    virtual NuTo::eError Evaluate3D(
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) override
     {
         return EvaluateMoistureTransport<3>(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
@@ -337,10 +324,7 @@ public:
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship
     //! @sa eConstitutiveType
-    virtual Constitutive::eConstitutiveType GetType() const override
-    {
-        return NuTo::Constitutive::MOISTURE_TRANSPORT;
-    }
+    virtual Constitutive::eConstitutiveType GetType() const override;
 
     //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
     //! @return ... see brief explanation

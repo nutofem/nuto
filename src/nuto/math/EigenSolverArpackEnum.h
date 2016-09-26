@@ -1,12 +1,10 @@
-#ifndef EIGEN_SOLVER_ARPACK_ENUM_H_
-#define EIGEN_SOLVER_ARPACK_ENUM_H_
-
+#pragma once
 
 namespace NuTo
 {
 namespace EIGEN_SOLVER_ARPACK
 {
-enum eDriver
+enum class eDriver
 {
 	DSDRV1=0,            //!< regular eigenvalue problem (see documentation of arpack (section 3.5 page 31)
 	DSDRV2,
@@ -22,7 +20,7 @@ enum eDriver
 	DNDRV6
 };
 
-enum eWhich
+enum class eWhich
 {
     LA=0,            //!< regular eigenvalue problem (see documentation of arpack (section 3.5 page 31)
     SA,
@@ -38,5 +36,3 @@ enum eWhich
 
 }//EigenSolverArpack
 }//Nuto
-#endif /* CONSTITUTIVEENUM_H_ */
-

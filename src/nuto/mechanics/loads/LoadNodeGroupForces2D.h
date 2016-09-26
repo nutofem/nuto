@@ -1,6 +1,5 @@
 // $Id$
-#ifndef LOADNODEGROUPFORCES2D_H
-#define LOADNODEGROUPFORCES2D_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -56,5 +55,3 @@ protected:
     double mDirection[2]; //!< direction of the applied constraint
 };
 }//namespace NuTo
-#endif //LOADNODEGROUPFORCES2D_H
-

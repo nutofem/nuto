@@ -1,7 +1,6 @@
 // $Id: ConstraintLinearDerivativeNonlocalTotalStrain1D.h 625 2013-04-22 16:37:11Z unger3 $
 
-#ifndef CONSTRAINTLINEARDERIVATIVENONLOCALTOTALSTRAIN_H
-#define CONSTRAINTLINEARDERIVATIVENONLOCALTOTALSTRAIN_H
+#pragma once
 
 #include "nuto/mechanics/constraints/ConstraintLinear.h"
 
@@ -53,10 +52,7 @@ public:
 
     //! @brief determines the dof type affected by the constraint
     //! @return dof type
-    Node::eDof GetDofType() const override
-    {
-        return Node::eDof::NONLOCALTOTALSTRAIN;
-    }
+    Node::eDof GetDofType() const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes (saves) the class
@@ -92,5 +88,3 @@ protected:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D)
 #endif // ENABLE_SERIALIZATION
-#endif //CONSTRAINTLINEARDERIVATIVENONLOCALTOTALSTRAIN_H
-

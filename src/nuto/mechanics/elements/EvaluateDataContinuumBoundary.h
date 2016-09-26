@@ -23,9 +23,9 @@ public:
 
     // Misc
     // --------------------------------------------------------------------------------------------
-    BoundaryType::eType mBCType;
-    double mAlpha;                  //!< parameter for robin boundary condition
     double mDetJxWeightIPxSection;
     double mDetJacobian = 0;
+
+    double mAlpha;
 };
 } /* namespace NuTo */

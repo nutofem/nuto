@@ -1,9 +1,13 @@
 
 #include <boost/assign/ptr_map_inserter.hpp>
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/timeIntegration/ResultElementIpData.h"
-#include "nuto/mechanics/elements/ElementOutputIpData.h"
-
 #include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/elements/ElementOutputIpData.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 NuTo::ResultElementIpData::ResultElementIpData(const std::string& rIdent, int rElementId, NuTo::IpData::eIpStaticDataType rIpDataType) :
         ResultBase(rIdent),
@@ -31,11 +35,11 @@ void NuTo::ResultElementIpData::CalculateValues(const StructureBase& rStructure,
     const ElementBase* element(rStructure.ElementGetElementPtr(mElementId));
 
     std::map<NuTo::Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
-    elementOutput[Element::IP_DATA] = std::make_shared<ElementOutputIpData>(mIpDataType);
+    elementOutput[Element::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>(mIpDataType);
 
     const_cast<ElementBase*>(element)->Evaluate(elementOutput);
 
-    const auto& ipDataResult = elementOutput.at(Element::IP_DATA)->GetIpData().GetIpDataMap()[mIpDataType];
+    const auto& ipDataResult = elementOutput.at(Element::eOutput::IP_DATA)->GetIpData().GetIpDataMap()[mIpDataType];
 
     // iterate over all ips
     assert(ipDataResult.GetNumColumns() == element->GetNumIntegrationPoints());
@@ -52,16 +56,16 @@ int NuTo::ResultElementIpData::GetNumData(const StructureBase& rStructure) const
 
     switch (mIpDataType)
     {
-    case NuTo::IpData::ENGINEERING_STRESS:
-    case NuTo::IpData::ENGINEERING_STRAIN:
-    case NuTo::IpData::SHRINKAGE_STRAIN:
+    case NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS:
+    case NuTo::IpData::eIpStaticDataType::ENGINEERING_STRAIN:
+    case NuTo::IpData::eIpStaticDataType::SHRINKAGE_STRAIN:
         numComponents = 6;
         break;
-    case NuTo::IpData::DAMAGE:
+    case NuTo::IpData::eIpStaticDataType::DAMAGE:
         numComponents = 1;
         break;
-    case NuTo::IpData::SLIP:
-    case NuTo::IpData::BOND_STRESS:
+    case NuTo::IpData::eIpStaticDataType::SLIP:
+    case NuTo::IpData::eIpStaticDataType::BOND_STRESS:
         numComponents = 3;
             break;
     default:
@@ -73,24 +77,31 @@ int NuTo::ResultElementIpData::GetNumData(const StructureBase& rStructure) const
 }
 
 
-NuTo::TimeIntegration::eResultType NuTo::ResultElementIpData::GetResultType() const
+NuTo::eTimeIntegrationResultType NuTo::ResultElementIpData::GetResultType() const
 {
     switch (mIpDataType)
     {
-    case NuTo::IpData::ENGINEERING_STRESS:
-        return NuTo::TimeIntegration::ELEMENT_IP_STRESS;
-    case NuTo::IpData::ENGINEERING_STRAIN:
-        return NuTo::TimeIntegration::ELEMENT_IP_STRAIN;
-    case NuTo::IpData::DAMAGE:
-        return NuTo::TimeIntegration::ELEMENT_IP_DAMAGE;
-    case NuTo::IpData::BOND_STRESS:
-        return NuTo::TimeIntegration::ELEMENT_IP_BOND_STRESS;
-    case NuTo::IpData::SLIP:
-        return NuTo::TimeIntegration::ELEMENT_IP_SLIP;
+    case NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS:
+        return NuTo::eTimeIntegrationResultType::ELEMENT_IP_STRESS;
+    case NuTo::IpData::eIpStaticDataType::ENGINEERING_STRAIN:
+        return NuTo::eTimeIntegrationResultType::ELEMENT_IP_STRAIN;
+    case NuTo::IpData::eIpStaticDataType::DAMAGE:
+        return NuTo::eTimeIntegrationResultType::ELEMENT_IP_DAMAGE;
+    case NuTo::IpData::eIpStaticDataType::BOND_STRESS:
+        return NuTo::eTimeIntegrationResultType::ELEMENT_IP_BOND_STRESS;
+    case NuTo::IpData::eIpStaticDataType::SLIP:
+        return NuTo::eTimeIntegrationResultType::ELEMENT_IP_SLIP;
     default:
         throw MechanicsException(std::string(__PRETTY_FUNCTION__) + "\t: Ip data type not supported yet.");
     } // switch
 
+}
+
+void NuTo::ResultElementIpData::Info() const
+{
+    std::cout << "ResultElementIpData Info:      " << std::endl;
+    std::cout << "Integration point data type:   " << IpData::IpStaticDataTypeToString(mIpDataType) << std::endl;
+    std::cout << "Element id:                    " << mElementId << std::endl;
 }
 
 

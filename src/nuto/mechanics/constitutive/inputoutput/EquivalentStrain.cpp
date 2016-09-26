@@ -6,6 +6,7 @@
  */
 
 #include "nuto/mechanics/constitutive/inputoutput/EquivalentStrain.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
 #include <iomanip>
 
 

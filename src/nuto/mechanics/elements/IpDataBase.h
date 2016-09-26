@@ -6,8 +6,6 @@
 #endif  // ENABLE_SERIALIZATION
 
 #ifdef ENABLE_VISUALIZE
-#include "nuto/visualize/VisualizeBase.h"
-#include "nuto/visualize/VisualizeUnstructuredGrid.h"
 #include <boost/ptr_container/ptr_list.hpp>
 #endif // ENABLE_VISUALIZE
 
@@ -15,9 +13,6 @@
 #include <vector>
 
 #include <boost/array.hpp>
-
-#include "nuto/math/FullMatrix_Def.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
 
 namespace NuTo
 {
@@ -32,6 +27,20 @@ class IpDataStaticDataBase;
             class Component;
         }
     }
+
+
+namespace IpData
+{
+    enum class eIpDataType;
+}// namespace IpData
+
+#ifdef ENABLE_VISUALIZE
+class VisualizeUnstructuredGrid;
+#endif // ENABLE_VISUALIZE
+
+//! @author Joerg F. Unger
+//! @date Apr 28, 2010
+//! @brief ...
 class IpDataBase
 {
 #ifdef ENABLE_SERIALIZATION

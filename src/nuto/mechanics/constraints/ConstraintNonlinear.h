@@ -1,7 +1,6 @@
 // $Id: ConstraintLagrange.h 328 2010-10-01 14:39:32Z unger3 $
 
-#ifndef CONSTRAINTNONLINEAR_H
-#define CONSTRAINTNONLINEAR_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -77,5 +76,3 @@ public:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintNonlinear)
 #endif // ENABLE_SERIALIZATION
-#endif //CONSTRAINTNONLINEAR_H
-

@@ -1,5 +1,6 @@
 // $Id$
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/math/FullMatrix.h"
 #include <iostream>
 
@@ -158,15 +159,13 @@ double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double rRelativ
 }
 
 
+
 //! @brief ... checks if a constitutive law has an specific output
 //! @return ... true/false
-bool NuTo::ConstitutiveBase::CheckOutputTypeCompatibility(Constitutive::Output::eOutput rOutputEnum) const
+bool NuTo::ConstitutiveBase::CheckOutputTypeCompatibility(Constitutive::eOutput rOutputEnum) const
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::CheckOutputTypeCompatibility] Function not implemented for this constitutive law.");
 }
-
-
-
 
 // modify parameter validity flag
 void NuTo::ConstitutiveBase::SetParametersValid()

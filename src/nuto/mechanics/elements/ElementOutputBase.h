@@ -1,16 +1,20 @@
 // $Id $
 #pragma once
-#include <boost/assert.hpp>
+
 #include <vector>
-#include "nuto/math/FullMatrix_Def.h"
-#include "nuto/math/FullVector_Def.h"
-#include "nuto/mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
-#include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
+
+
 
 namespace NuTo
 {
 class ElementOutputIpData;
+
+
+template <class T, int rows, int cols> class FullMatrix;
+template <class T, int rows> class FullVector;
+template <typename T> class BlockFullMatrix;
+template <typename T> class BlockFullVector;
+
 //! @author Joerg F. Unger
 //! @date Apr 29, 2010
 //! @brief ...

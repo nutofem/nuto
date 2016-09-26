@@ -5,16 +5,12 @@
  *      Author: ttitsche
  */
 
-#ifndef EVENT_H_
-#define EVENT_H_
+#pragma once
 
-#include <iostream>
-#include <list>
+
 #include <boost/ptr_container/ptr_set.hpp>
-#include <boost/ptr_container/ptr_unordered_set.hpp>
-#include <boost/ptr_container/ptr_list.hpp>
-#include <nuto/base/Exception.h>
-#include <iostream>
+#include <vector>
+
 
 namespace NuTo
 {
@@ -122,4 +118,3 @@ private:
 } /* namespace NuTo */
 
 
-#endif /* EVENT_H_ */

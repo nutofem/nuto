@@ -5,10 +5,9 @@
  *      Author: ttitsche
  */
 
-#ifndef SPECIMEN_H_
-#define SPECIMEN_H_
+#pragma once
 
-#include "nuto/math/FullVector.h"
+#include "nuto/math/FullVector_Def.h"
 
 namespace NuTo
 {
@@ -65,4 +64,3 @@ private:
 };
 
 } /* namespace NuTo */
-#endif /* SPECIMEN_H_ */

@@ -1,10 +1,7 @@
 // $Id: $
 
-#ifndef ResultNodeDof_H
-#define ResultNodeDof_H
+#pragma once
 
-#include <ctime>
-#include <array>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -12,14 +9,14 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/timeIntegration/ResultBase.h"
-#include "nuto/base/ErrorEnum.h"
-#include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/MechanicsException.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
+
 
 namespace NuTo
 {
+
+class StructureBase;
+template <class T, int rows, int cols> class  FullMatrix;
+
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard abstract class for all results
@@ -68,4 +65,3 @@ protected:
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ResultNodeDof)
 #endif // SWIG
 #endif  // ENABLE_SERIALIZATION
-#endif // ResultNodeDof_H

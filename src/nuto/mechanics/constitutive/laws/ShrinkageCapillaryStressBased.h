@@ -27,18 +27,7 @@ public:
     //! @brief ... check compatibility between element type and type of constitutive relationship
     //! @param rElementType ... element type
     //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-    virtual bool CheckElementCompatibility( Element::eElementType rElementType) const override
-    {
-        switch (rElementType)
-        {
-        case NuTo::Element::CONTINUUMELEMENT:
-        case NuTo::Element::CONTINUUMBOUNDARYELEMENT:
-        case NuTo::Element::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
-            return true;
-        default:
-            return false;
-        }
-    }
+    virtual bool CheckElementCompatibility( Element::eElementType rElementType) const override;
 
     //! @brief ... check parameters of the constitutive relationship
     //! if one check fails, an exception is thrwon
@@ -49,7 +38,7 @@ public:
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     //! @param staticData Pointer to the history data.
     template <int TDim>
-    NuTo::Error::eError EvaluateShrinkageCapillary(const ConstitutiveInputMap& rConstitutiveInput,
+    NuTo::eError EvaluateShrinkageCapillary(const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData);
 
@@ -57,7 +46,7 @@ public:
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     //! @param staticData Pointer to the history data.
-    virtual NuTo::Error::eError Evaluate1D(
+    virtual NuTo::eError Evaluate1D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) override
@@ -69,7 +58,7 @@ public:
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     //! @param staticData Pointer to the history data.
-    virtual NuTo::Error::eError Evaluate2D(
+    virtual NuTo::eError Evaluate2D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) override
@@ -81,7 +70,7 @@ public:
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     //! @param staticData Pointer to the history data.
-    virtual NuTo::Error::eError Evaluate3D(
+    virtual NuTo::eError Evaluate3D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) override
@@ -99,10 +88,7 @@ public:
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship
     //! @sa eConstitutiveType
-    virtual Constitutive::eConstitutiveType GetType() const override
-    {
-        return NuTo::Constitutive::SHRINKAGE_CAPILLARY_STRESS_BASED;
-    }
+    virtual Constitutive::eConstitutiveType GetType() const override;
 
     //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter

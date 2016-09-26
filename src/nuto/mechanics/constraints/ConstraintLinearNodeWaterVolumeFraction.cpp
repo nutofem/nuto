@@ -1,6 +1,7 @@
 #include "ConstraintLinearNodeWaterVolumeFraction.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 
 
@@ -17,11 +18,11 @@ void NuTo::ConstraintLinearNodeWaterVolumeFraction::AddToConstraintMatrix(int& c
                                    NuTo::SparseMatrix<double>& rConstraintMatrix) const
 {
     // add constraint to constrain matrix
-    if (mNode->GetNum(Node::WATERVOLUMEFRACTION)!=1)
+    if (mNode->GetNum(Node::eDof::WATERVOLUMEFRACTION)!=1)
     {
         throw MechanicsException("[NuTo::ConstraintLinearNodeWaterVolumeFraction::AddToConstraintMatrix] Node does not have a water volume fraction component or has more than one water volume fraction component.");
     }
-    rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDof(Node::WATERVOLUMEFRACTION), 1);
+    rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDof(Node::eDof::WATERVOLUMEFRACTION), 1);
 
     // increase constraint equation number
     curConstraintEquation++;
@@ -49,7 +50,7 @@ double NuTo::ConstraintLinearNodeWaterVolumeFraction::GetRHS() const
 void NuTo::ConstraintLinearNodeWaterVolumeFraction::GetRHS(int& rCurConstraintEquation, NuTo::FullVector<double,Eigen::Dynamic>& rRHS) const
 {
     // add constraint to constrain matrix
-    if (mNode->GetNum(Node::WATERVOLUMEFRACTION)!=1)
+    if (mNode->GetNum(Node::eDof::WATERVOLUMEFRACTION)!=1)
     {
         throw MechanicsException("[NuTo::ConstraintLinearNodeWaterVolumeFraction::GetRHS] Node does not have water volume fraction or has more than one water volume fraction component.");
     }
@@ -66,6 +67,11 @@ void NuTo::ConstraintLinearNodeWaterVolumeFraction::GetRHS(int& rCurConstraintEq
 void NuTo::ConstraintLinearNodeWaterVolumeFraction::Info(unsigned short rVerboseLevel) const
 {
     throw MechanicsException("[NuTo::ConstraintLinearNodeWaterVolumeFraction::Info] to be implemented.");
+}
+
+NuTo::Node::eDof NuTo::ConstraintLinearNodeWaterVolumeFraction::GetDofType() const
+{
+    return Node::eDof::WATERVOLUMEFRACTION;
 }
 
 

@@ -27,7 +27,7 @@ int NuTo::MisesWielandt::Optimize()
     int numGradientCalls(0),   // number of gradient calls
 		curIteration(0);       //number of iterations
 
- 	optimization_return_attributes returnValue;
+    eOptimizationReturnAttributes returnValue;
 
 	std::fstream outputTime;
 	std::string filename = "timeOutput";
@@ -58,7 +58,7 @@ int NuTo::MisesWielandt::Optimize()
 		 if (numGradientCalls>mMaxGradientCalls)
 		 {
 			 converged = true;
-			 returnValue = MAXGRADIENTCALLS;
+             returnValue = eOptimizationReturnAttributes::MAXGRADIENTCALLS;
 			 break;
 			 //return MAXGRADIENTCALLS;
 		 }
@@ -106,13 +106,13 @@ int NuTo::MisesWielandt::Optimize()
 			if((lambda-prevLambda)>=0&&(lambda-prevLambda)<tol)
 			{
 				converged = true;
-				returnValue = DELTAOBJECTIVEBETWEENCYCLES;
+                returnValue = eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES;
 				break;
 			}
 			else if((lambda-prevLambda)<0&&(lambda-prevLambda)>-tol)
 			{
 				converged = true;
-				returnValue = DELTAOBJECTIVEBETWEENCYCLES;
+                returnValue = eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES;
 				break;
 			}
 		}
@@ -142,22 +142,22 @@ int NuTo::MisesWielandt::Optimize()
 		std::cout<< "[MisesWielandt] Active convergence criterion..... " ;
 		switch (returnValue)
 		{
-			case MAXFUNCTIONCALLS:
+            case eOptimizationReturnAttributes::MAXFUNCTIONCALLS:
 				std::cout<< "Maximum number of function calls reached." << std::endl;
 				break;
-			case MAXGRADIENTCALLS:
+            case eOptimizationReturnAttributes::MAXGRADIENTCALLS:
 				std::cout<< "Maximum number of gradient calls reached." << std::endl;
 				break;
-			case MAXHESSIANCALLS:
+            case eOptimizationReturnAttributes::MAXHESSIANCALLS:
 				std::cout<< "Maximum number of hessian calls reached." << std::endl;
 				break;
-			case MAXITERATIONS:
+            case eOptimizationReturnAttributes::MAXITERATIONS:
 				std::cout<< "Maximum number of iterations reached." << std::endl;
 				break;
-			case NORMGRADIENT:
+            case eOptimizationReturnAttributes::NORMGRADIENT:
 				std::cout<< "lambda_min of preconditioned gradient smaller than prescribed value." << std::endl;
 				break;
-			case DELTAOBJECTIVEBETWEENCYCLES:
+            case eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES:
 				std::cout<< "Decrease in objective function between two consecutive cycles is smaller than prescribed value."<<std::endl;
 				break;
 			default:
@@ -166,7 +166,7 @@ int NuTo::MisesWielandt::Optimize()
 		}
 		std::cout << std::endl;
 	}
-	return returnValue;
+    return static_cast<int>(returnValue);
 }
 
 #ifdef ENABLE_SERIALIZATION

@@ -1,6 +1,5 @@
 // $Id$
-#ifndef SPARSE_DIRECT_SOLVER_MUMPS_H
-#define SPARSE_DIRECT_SOLVER_MUMPS_H
+#pragma once
 
 #ifdef HAVE_MUMPS
 extern "C"
@@ -10,13 +9,14 @@ extern "C"
 #endif // HAVE_MUMPS
 
 
-#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/math/SparseDirectSolver.h"
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
 // forward declarations
 template<class T> class SparseMatrixCSR;
+template <class T, int rows, int cols> class FullMatrix;
 template<class T, int rows> class FullVector;
 class EigenSolverArpack;
 
@@ -82,4 +82,4 @@ protected:
 
 };
 }
-#endif // SPARSE_DIRECT_SOLVER_MUMPS_H
+

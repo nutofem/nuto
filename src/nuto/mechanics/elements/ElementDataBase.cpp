@@ -12,6 +12,7 @@
 #include <assert.h>
 
 #include "nuto/mechanics/elements/ElementDataBase.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/MechanicsException.h"
 
 //! @brief constructor
@@ -269,7 +270,7 @@ const bool NuTo::ElementDataBase::IsCracked() const
 //! @return enum of ElementDataType
 const NuTo::ElementData::eElementDataType NuTo::ElementDataBase::GetElementDataType()const
 {
-    return NuTo::ElementData::NOELEMENTDATA;
+    return NuTo::ElementData::eElementDataType::NOELEMENTDATA;
 }
 
 #ifdef ENABLE_SERIALIZATION

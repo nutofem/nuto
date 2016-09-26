@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef CONSTRAINTBASE_H
-#define CONSTRAINTBASE_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -9,10 +8,9 @@
 #include <map>
 #endif  // ENABLE_SERIALIZATION
 
-#include "nuto/math/FullMatrix_Def.h"
-#include "nuto/math/FullVector_Def.h"
-#include "nuto/mechanics/constraints/ConstraintEnum.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
+
+#include <eigen3/Eigen/Core>
+
 
 
 namespace NuTo
@@ -22,7 +20,17 @@ class ConstraintLinear;
 class ConstraintNonlinear;
 class ConstraintLagrange;
 template<int TDim> class EngineeringStrain;
+template <class T, int rows> class FullVector;
+template <class T, int rows, int cols> class FullMatrix;
 template<class T> class SparseMatrixCSRGeneral;
+
+
+
+
+namespace Node
+{
+    enum class eDof : unsigned char;
+}// namespace Node
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -135,5 +143,3 @@ protected:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintBase)
 #endif // ENABLE_SERIALIZATION
-#endif //CONSTRAINTBASE_H
-

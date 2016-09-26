@@ -1,11 +1,14 @@
 // $Id$
 
-#ifndef NuToObject_H
-#define NuToObject_H
+#pragma once
 
-#include <string>
 #include "nuto/base/Exception.h"
+
+// STL:
+#include <string>
 #include <fstream>
+
+
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -241,4 +244,3 @@ protected:
 #endif
 };
 }
-#endif //NuToObject_H

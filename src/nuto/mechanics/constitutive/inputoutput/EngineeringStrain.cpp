@@ -1,4 +1,5 @@
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
 
 template<int TDim>
 std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::EngineeringStrain<TDim>::clone()
@@ -119,13 +120,12 @@ NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<2>::As3D(double rNu, ePlaneSt
     }
     return strain3D;
 }
-template<>
 
+template<>
 NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<3>::As3D(double, ePlaneState) const
 {
     return *this;
 }
-
 }  // namespace NuTo
 
 
@@ -137,9 +137,11 @@ template double NuTo::EngineeringStrain<3>::InvariantJ2() const;
 
 template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<3>::Deviatoric() const;
 
+
 template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<1>::As3D(double, ePlaneState) const;
 template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<2>::As3D(double, ePlaneState) const;
 template NuTo::EngineeringStrain<3> NuTo::EngineeringStrain<3>::As3D(double, ePlaneState) const;
+
 
 template class NuTo::EngineeringStrain<1>;
 template class NuTo::EngineeringStrain<2>;

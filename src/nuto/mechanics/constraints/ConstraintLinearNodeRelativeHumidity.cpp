@@ -1,6 +1,7 @@
 # include "ConstraintLinearNodeRelativeHumidity.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 
 
@@ -16,11 +17,11 @@ NuTo::ConstraintLinearNodeRelativeHumidity::ConstraintLinearNodeRelativeHumidity
 void  NuTo::ConstraintLinearNodeRelativeHumidity::AddToConstraintMatrix(int& curConstraintEquation, NuTo::SparseMatrix<double>& rConstraintMatrix) const
 {
     // add constraint to constrain matrix
-    if (mNode->GetNum(Node::RELATIVEHUMIDITY)!=1)
+    if (mNode->GetNum(Node::eDof::RELATIVEHUMIDITY)!=1)
     {
         throw MechanicsException("[NuTo::ConstraintLinearNodeRelativeHumidity::AddToConstraintMatrix] Node does not have a relative humidity component or has more than one relative humidity component.");
     }
-    rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDof(Node::RELATIVEHUMIDITY), 1);
+    rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDof(Node::eDof::RELATIVEHUMIDITY), 1);
 
     // increase constraint equation number
     curConstraintEquation++;
@@ -54,7 +55,7 @@ void NuTo::ConstraintLinearNodeRelativeHumidity::SetRHS(double rRHS)
 void NuTo::ConstraintLinearNodeRelativeHumidity::GetRHS                                          (int& rCurConstraintEquation, NuTo::FullVector<double,Eigen::Dynamic>& rRHS) const
 {
     // add constraint to constrain matrix
-    if (mNode->GetNum(Node::RELATIVEHUMIDITY)!=1)
+    if (mNode->GetNum(Node::eDof::RELATIVEHUMIDITY)!=1)
     {
         throw MechanicsException("[NuTo::ConstraintLinearNodeRelativeHumidity::GetRHS] Node does not have a relative humidity component or has more than one relative humidity component.");
     }
@@ -70,6 +71,11 @@ void NuTo::ConstraintLinearNodeRelativeHumidity::GetRHS                         
 void NuTo::ConstraintLinearNodeRelativeHumidity::Info(unsigned short rVerboseLevel) const
 {
     throw MechanicsException("[NuTo::ConstraintLinearNodeRelativeHumidity::Info] to be implemented.");
+}
+
+NuTo::Node::eDof NuTo::ConstraintLinearNodeRelativeHumidity::GetDofType() const
+{ // @Volker: you forgot to align the "const"s and "override"s ... :)
+    return Node::eDof::RELATIVEHUMIDITY;
 }
 
 #ifdef ENABLE_SERIALIZATION

@@ -1,14 +1,14 @@
 // $Id$
 
-#ifndef METAMODEL_H
-#define METAMODEL_H
+#pragma once
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include <string>
+
 #include <random>
+#include <vector>
 
 #include "nuto/metamodel/MetamodelException.h"
 #include "nuto/base/NuToObject.h"
@@ -142,4 +142,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::Metamodel)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::Metamodel)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
-#endif // METAMODEL_H

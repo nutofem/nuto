@@ -13,6 +13,7 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupTemperature.h"
 #include "nuto/math/FullMatrix.h"
@@ -53,10 +54,10 @@ void NuTo::ConstraintLinearNodeGroupTemperature::AddToConstraintMatrix(int& curC
 {
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {
-        if (itNode->second->GetNum(Node::TEMPERATURE)!=1)
+        if (itNode->second->GetNum(Node::eDof::TEMPERATURE)!=1)
             throw MechanicsException("[NuTo::ConstraintLinearNodeGroupTemperature::AddToConstraintMatrix] Node does not have temperature dof.");
 
-        rConstraintMatrix.AddValue(curConstraintEquation,itNode->second->GetDof(Node::TEMPERATURE),1);
+        rConstraintMatrix.AddValue(curConstraintEquation,itNode->second->GetDof(Node::eDof::TEMPERATURE),1);
 
         curConstraintEquation++;
     }
@@ -70,11 +71,16 @@ void NuTo::ConstraintLinearNodeGroupTemperature::GetRHS(int& curConstraintEquati
 {
 	for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
 	{
-		if (itNode->second->GetNum(Node::TEMPERATURE)!=1)
+        if (itNode->second->GetNum(Node::eDof::TEMPERATURE)!=1)
 			throw MechanicsException("[NuTo::ConstraintLinearNodeGroupTemperature::GetRHS] Node does not have a temperature component.");
 		rRHS(curConstraintEquation) = mRHS;
 		curConstraintEquation++;
 	}
+}
+
+NuTo::Node::eDof NuTo::ConstraintLinearNodeGroupTemperature::GetDofType() const
+{
+    return Node::eDof::TEMPERATURE;
 }
 
 

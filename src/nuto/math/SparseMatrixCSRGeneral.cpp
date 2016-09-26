@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 
+#include "nuto/math/FullMatrix.h"
 #include "nuto/math/Matrix.h"
 #include "nuto/math/SparseMatrix.h"
 #include "nuto/math/SparseMatrixCSR.h"
@@ -45,9 +46,9 @@ SparseMatrixCSRGeneral<double>::SparseMatrixCSRGeneral(const FullMatrix<double, 
     {
         for (int col = 0; col < rFullMatrix.GetNumColumns(); col++)
         {
-        	if (std::abs(rFullMatrix.at(row,col)) > tolerance)
+            if (std::abs(rFullMatrix(row,col)) > tolerance)
             {
-                this->mValues.push_back(rFullMatrix.at(row,col));
+                this->mValues.push_back(rFullMatrix(row,col));
                 this->mColumns.push_back(col);
             }
         }

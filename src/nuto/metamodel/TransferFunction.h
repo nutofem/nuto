@@ -5,8 +5,7 @@
  Author: Joerg F. Unger,  September 2009
 *******************************************************************************/
 
-#ifndef TRANSFER_FUNCTION_H
-#define TRANSFER_FUNCTION_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -359,4 +358,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::TanSigTransferFunction)
 BOOST_CLASS_EXPORT_KEY(NuTo::PosLinTransferFunction)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
-#endif // TRANSFER_FUNCTION_H

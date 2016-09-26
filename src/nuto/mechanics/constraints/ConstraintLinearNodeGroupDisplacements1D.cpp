@@ -13,6 +13,7 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeGroupDisplacements1D.h"
 #include "nuto/math/FullMatrix.h"
@@ -56,12 +57,12 @@ void NuTo::ConstraintLinearNodeGroupDisplacements1D::AddToConstraintMatrix(int& 
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {
         // add constraint to constrain matrix
-        if (itNode->second->GetNum(Node::DISPLACEMENTS)!=1)
+        if (itNode->second->GetNum(Node::eDof::DISPLACEMENTS)!=1)
         {
             throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements1D::AddToConstraintMatrix] Node does not have displacements or has more than one displacement component.");
         }
 
-        rConstraintMatrix.AddValue(curConstraintEquation,itNode->second->GetDof(Node::DISPLACEMENTS, 0),1);
+        rConstraintMatrix.AddValue(curConstraintEquation,itNode->second->GetDof(Node::eDof::DISPLACEMENTS, 0),1);
 
         // increase constraint equation number
         curConstraintEquation++;
@@ -78,7 +79,7 @@ void NuTo::ConstraintLinearNodeGroupDisplacements1D::GetRHS(int& curConstraintEq
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {
         // add constraint to constrain matrix
-        if (itNode->second->GetNum(Node::DISPLACEMENTS)!=1)
+        if (itNode->second->GetNum(Node::eDof::DISPLACEMENTS)!=1)
         {
             throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements1D::AddToConstraintMatrix] Node does not have displacements or has more than one displacement component.");
         }
@@ -89,6 +90,11 @@ void NuTo::ConstraintLinearNodeGroupDisplacements1D::GetRHS(int& curConstraintEq
         // increase constraint equation number
         curConstraintEquation++;
     }
+}
+
+NuTo::Node::eDof NuTo::ConstraintLinearNodeGroupDisplacements1D::GetDofType() const
+{
+    return Node::eDof::DISPLACEMENTS;
 }
 
 #ifdef ENABLE_SERIALIZATION

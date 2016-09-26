@@ -5,6 +5,7 @@
 #include "nuto/visualize/VisualizeDataScalar.h"
 #include "nuto/visualize/VisualizeDataVector.h"
 #include "nuto/visualize/VisualizeDataTensor.h"
+#include "nuto/visualize/VisualizeDataType.h"
 #include "nuto/visualize/VisualizeDataField.h"
 
 // constructor
@@ -14,16 +15,16 @@ NuTo::CellBase::CellBase(const std::vector<VisualizeDataType>& rDataTypes)
     {
         switch (rDataTypes[DataCount].GetDataType())
         {
-        case NuTo::VisualizeDataType::SCALAR:
+        case NuTo::eVisualizeDataType::SCALAR:
             this->AddDataScalar(DataCount);
             break;
-        case NuTo::VisualizeDataType::VECTOR:
+        case NuTo::eVisualizeDataType::VECTOR:
             this->AddDataVector(DataCount);
             break;
-        case NuTo::VisualizeDataType::TENSOR:
+        case NuTo::eVisualizeDataType::TENSOR:
             this->AddDataTensor(DataCount);
             break;
-        case NuTo::VisualizeDataType::FIELD:
+        case NuTo::eVisualizeDataType::FIELD:
             this->AddDataField(DataCount, rDataTypes[DataCount].GetNumData());
             break;
         default:
@@ -31,6 +32,8 @@ NuTo::CellBase::CellBase(const std::vector<VisualizeDataType>& rDataTypes)
         }
     }
 }
+
+NuTo::CellBase::~CellBase(){}
 
 // get point data
 const NuTo::VisualizeDataBase* NuTo::CellBase::GetData(unsigned int rDataIndex) const
@@ -79,7 +82,7 @@ void NuTo::CellBase::SetDataScalar(unsigned int rDataIndex, double rData)
     {
         throw NuTo::VisualizeException("[NuTo::CellBase::SetDataTensor] invalid data index.");
     }
-    if (this->mData[rDataIndex].GetDataType() != NuTo::VisualizeDataType::SCALAR)
+    if (this->mData[rDataIndex].GetDataType() != NuTo::eVisualizeDataType::SCALAR)
     {
         throw NuTo::VisualizeException("[NuTo::CellBase::SetDataScalar] invalid data type.");
     }
@@ -93,7 +96,7 @@ void NuTo::CellBase::SetDataTensor(unsigned int rDataIndex, double rData[9])
     {
         throw NuTo::VisualizeException("[NuTo::CellBase::SetDataTensor] invalid data index.");
     }
-    if (this->mData[rDataIndex].GetDataType() != NuTo::VisualizeDataType::TENSOR)
+    if (this->mData[rDataIndex].GetDataType() != NuTo::eVisualizeDataType::TENSOR)
     {
         throw NuTo::VisualizeException("[NuTo::CellBase::SetDataTensor] invalid data type.");
     }
@@ -107,7 +110,7 @@ void NuTo::CellBase::SetDataVector(unsigned int rDataIndex, double rData[3])
     {
         throw NuTo::VisualizeException("[NuTo::CellBase::SetDataVector] invalid data index.");
     }
-    if (this->mData[rDataIndex].GetDataType() != NuTo::VisualizeDataType::VECTOR)
+    if (this->mData[rDataIndex].GetDataType() != NuTo::eVisualizeDataType::VECTOR)
     {
         throw NuTo::VisualizeException("[NuTo::CellBase::SetDataVector] invalid data type.");
     }

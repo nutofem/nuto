@@ -2,8 +2,6 @@
 
 
 
-#include "nuto/mechanics/nodes/NodeEnum.h"
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
@@ -14,6 +12,11 @@
 
 namespace NuTo
 {
+
+namespace Node
+{
+    enum class eDof : unsigned char;
+}// namespace Node
 
 //! @brief class to store state of the current dof setup
 //! @remark gets modified by the structure after each change of the active/inactive dof types

@@ -9,6 +9,10 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif //ENABLE_SERIALIZATION
 
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
+#endif // ENABLE_VISUALIZE
+
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
 #include <assert.h>
@@ -90,7 +94,7 @@ void NuTo::IntegrationType2D4NLobatto16Ip::GetVisualizationCells(
     unsigned int& NumVisualizationPoints,
     std::vector<double>& VisualizationPointLocalCoordinates,
     unsigned int& NumVisualizationCells,
-    std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+    std::vector<NuTo::eCellTypes>& VisualizationCellType,
     std::vector<unsigned int>& VisualizationCellsIncidence,
     std::vector<unsigned int>& VisualizationCellsIP) const
 {
@@ -204,7 +208,7 @@ void NuTo::IntegrationType2D4NLobatto16Ip::GetVisualizationCells(
 NumVisualizationCells = 16;
 
     // cell 0
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(0);
     VisualizationCellsIncidence.push_back(1);
     VisualizationCellsIncidence.push_back(6);
@@ -212,7 +216,7 @@ NumVisualizationCells = 16;
     VisualizationCellsIP.push_back(0);
 
     // cell 1
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(1);
     VisualizationCellsIncidence.push_back(2);
     VisualizationCellsIncidence.push_back(7);
@@ -220,7 +224,7 @@ NumVisualizationCells = 16;
     VisualizationCellsIP.push_back(1);
 
     // cell 2
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(2);
     VisualizationCellsIncidence.push_back(3);
     VisualizationCellsIncidence.push_back(8);
@@ -228,7 +232,7 @@ NumVisualizationCells = 16;
     VisualizationCellsIP.push_back(2);
 
     // cell 3
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(3);
     VisualizationCellsIncidence.push_back(4);
     VisualizationCellsIncidence.push_back(9);
@@ -236,7 +240,7 @@ NumVisualizationCells = 16;
     VisualizationCellsIP.push_back(3);
 
     // cell 4
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(5);
     VisualizationCellsIncidence.push_back(6);
     VisualizationCellsIncidence.push_back(11);
@@ -244,7 +248,7 @@ NumVisualizationCells = 16;
     VisualizationCellsIP.push_back(4);
 
     // cell 5
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(6);
     VisualizationCellsIncidence.push_back(7);
     VisualizationCellsIncidence.push_back(12);
@@ -252,7 +256,7 @@ NumVisualizationCells = 16;
     VisualizationCellsIP.push_back(5);
 
     // cell 6
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(7);
     VisualizationCellsIncidence.push_back(8);
     VisualizationCellsIncidence.push_back(13);
@@ -260,7 +264,7 @@ NumVisualizationCells = 16;
     VisualizationCellsIP.push_back(6);
 
     // cell 7
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(8);
     VisualizationCellsIncidence.push_back(9);
     VisualizationCellsIncidence.push_back(14);
@@ -268,7 +272,7 @@ NumVisualizationCells = 16;
     VisualizationCellsIP.push_back(7);
 
     // cell 8
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(10);
     VisualizationCellsIncidence.push_back(11);
     VisualizationCellsIncidence.push_back(16);
@@ -276,7 +280,7 @@ NumVisualizationCells = 16;
     VisualizationCellsIP.push_back(8);
 
     // cell 9
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(11);
     VisualizationCellsIncidence.push_back(12);
     VisualizationCellsIncidence.push_back(17);
@@ -284,7 +288,7 @@ NumVisualizationCells = 16;
     VisualizationCellsIP.push_back(9);
 
     // cell 10
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(12);
     VisualizationCellsIncidence.push_back(13);
     VisualizationCellsIncidence.push_back(18);
@@ -292,7 +296,7 @@ NumVisualizationCells = 16;
     VisualizationCellsIP.push_back(10);
 
     // cell 11
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(13);
     VisualizationCellsIncidence.push_back(14);
     VisualizationCellsIncidence.push_back(19);
@@ -300,7 +304,7 @@ NumVisualizationCells = 16;
     VisualizationCellsIP.push_back(11);
 
     // cell 12
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(15);
     VisualizationCellsIncidence.push_back(16);
     VisualizationCellsIncidence.push_back(21);
@@ -308,7 +312,7 @@ NumVisualizationCells = 16;
     VisualizationCellsIP.push_back(12);
 
     // cell 13
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(16);
     VisualizationCellsIncidence.push_back(17);
     VisualizationCellsIncidence.push_back(22);
@@ -316,7 +320,7 @@ NumVisualizationCells = 16;
     VisualizationCellsIP.push_back(13);
 
     // cell 14
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(17);
     VisualizationCellsIncidence.push_back(18);
     VisualizationCellsIncidence.push_back(23);
@@ -324,7 +328,7 @@ NumVisualizationCells = 16;
     VisualizationCellsIP.push_back(14);
 
     // cell 15
-    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     VisualizationCellsIncidence.push_back(18);
     VisualizationCellsIncidence.push_back(19);
     VisualizationCellsIncidence.push_back(24);

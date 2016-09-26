@@ -5,6 +5,10 @@
  *      Author: ttitsche
  */
 
+#include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/elements/ElementShapeFunctions.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation1DTruss.h"
 
 #ifdef ENABLE_SERIALIZATION
@@ -22,24 +26,24 @@ NuTo::Interpolation1DTruss::Interpolation1DTruss(NuTo::Node::eDof rDofType, NuTo
     Initialize();
 }
 
-NuTo::IntegrationType::eIntegrationType NuTo::Interpolation1DTruss::GetStandardIntegrationType() const
+NuTo::eIntegrationType NuTo::Interpolation1DTruss::GetStandardIntegrationType() const
 {
     switch (mTypeOrder)
     {
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT1:
-        return NuTo::IntegrationType::IntegrationType1D2NGauss1Ip;
+        return NuTo::eIntegrationType::IntegrationType1D2NGauss1Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
-        return NuTo::IntegrationType::IntegrationType1D2NGauss2Ip;
+        return NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT3:
-        return NuTo::IntegrationType::IntegrationType1D2NGauss3Ip;
+        return NuTo::eIntegrationType::IntegrationType1D2NGauss3Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT4:
-            return NuTo::IntegrationType::IntegrationType1D2NGauss4Ip;
+            return NuTo::eIntegrationType::IntegrationType1D2NGauss4Ip;
     case NuTo::Interpolation::eTypeOrder::LOBATTO2:
-        return NuTo::IntegrationType::IntegrationType1D2NLobatto3Ip;
+        return NuTo::eIntegrationType::IntegrationType1D2NLobatto3Ip;
     case NuTo::Interpolation::eTypeOrder::LOBATTO3:
-        return NuTo::IntegrationType::IntegrationType1D2NLobatto4Ip;
+        return NuTo::eIntegrationType::IntegrationType1D2NLobatto4Ip;
     case NuTo::Interpolation::eTypeOrder::LOBATTO4:
-        return NuTo::IntegrationType::IntegrationType1D2NLobatto5Ip;
+        return NuTo::eIntegrationType::IntegrationType1D2NLobatto5Ip;
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }

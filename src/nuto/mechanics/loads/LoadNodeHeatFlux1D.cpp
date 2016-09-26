@@ -1,6 +1,7 @@
 #include <assert.h>
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/loads/LoadNodeHeatFlux1D.h"
 #include "nuto/math/FullMatrix.h"
 
@@ -30,7 +31,7 @@ void NuTo::LoadNodeHeatFlux1D::AddLoadToGlobalSubVectors(int rLoadCase,
     assert(rDependentDofsLoadVector.GetNumColumns()==1);
     try
     {
-        int dof = mNode->GetDof(Node::TEMPERATURE);
+        int dof = mNode->GetDof(Node::eDof::TEMPERATURE);
         assert(dof >= 0);
         if (dof < rActiceDofsLoadVector.GetNumRows())
         {

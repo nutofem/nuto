@@ -1,10 +1,22 @@
 #include "nuto/math/FullMatrix.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/groups/GroupEnum.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/MechanicsException.h"
 
+
+#include "nuto/visualize/VisualizeEnum.h"
+
+
 #define PRINTRESULT false
 
-void CheckTriangle(NuTo::IntegrationType::eIntegrationType rIntegrationType)
+void CheckTriangle(NuTo::eIntegrationType rIntegrationType)
 {
     //create structure
     NuTo::Structure myStructure(2);
@@ -15,10 +27,10 @@ void CheckTriangle(NuTo::IntegrationType::eIntegrationType rIntegrationType)
             0,  0,  10, 10;
     myStructure.NodesCreate(nodeCoordinates);
 
-    int interpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::TRIANGLE2D);
-    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
-    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT4);
-    myStructure.InterpolationTypeSetIntegrationType(interpolationType, rIntegrationType, NuTo::IpData::NOIPDATA);
+    int interpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRIANGLE2D);
+    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT4);
+    myStructure.InterpolationTypeSetIntegrationType(interpolationType, rIntegrationType, NuTo::IpData::eIpDataType::NOIPDATA);
 
 
     //create element
@@ -48,29 +60,29 @@ void CheckTriangle(NuTo::IntegrationType::eIntegrationType rIntegrationType)
     myStructure.ElementTotalSetSection(mySection);
 
     NuTo::ElementBase* element = myStructure.ElementGetElementPtr(0);
-    for (int i = 0; i < element->GetNumNodes(NuTo::Node::DISPLACEMENTS); ++i)
+    for (int i = 0; i < element->GetNumNodes(NuTo::Node::eDof::DISPLACEMENTS); ++i)
     {
-        NuTo::NodeBase* node = element->GetNode(i, NuTo::Node::DISPLACEMENTS);
-        Eigen::Vector2d coord = node->Get(NuTo::Node::COORDINATES);
+        NuTo::NodeBase* node = element->GetNode(i, NuTo::Node::eDof::DISPLACEMENTS);
+        Eigen::Vector2d coord = node->Get(NuTo::Node::eDof::COORDINATES);
         Eigen::Vector2d displ(coord.x()*coord.x(), 0);
-        node->Set(NuTo::Node::DISPLACEMENTS, displ);
+        node->Set(NuTo::Node::eDof::DISPLACEMENTS, displ);
     }
 
     element = myStructure.ElementGetElementPtr(1);
-    for (int i = 0; i < element->GetNumNodes(NuTo::Node::DISPLACEMENTS); ++i)
+    for (int i = 0; i < element->GetNumNodes(NuTo::Node::eDof::DISPLACEMENTS); ++i)
     {
-        NuTo::NodeBase* node = element->GetNode(i, NuTo::Node::DISPLACEMENTS);
-        Eigen::Vector2d coord = node->Get(NuTo::Node::COORDINATES);
+        NuTo::NodeBase* node = element->GetNode(i, NuTo::Node::eDof::DISPLACEMENTS);
+        Eigen::Vector2d coord = node->Get(NuTo::Node::eDof::COORDINATES);
         Eigen::Vector2d displ(coord.x()*coord.x(), 0);
-        node->Set(NuTo::Node::DISPLACEMENTS, displ);
+        node->Set(NuTo::Node::eDof::DISPLACEMENTS, displ);
 
     }
 
-    int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    int visualizationGroup = myStructure.GroupCreate(NuTo::eGroupId::Elements);
     myStructure.GroupAddElementsTotal(visualizationGroup);
 
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
 
     myStructure.ExportVtkDataFileElements("./voronoi.vtk");
 
@@ -80,7 +92,7 @@ int main()
 {
     try
     {
-        CheckTriangle(NuTo::IntegrationType::IntegrationType2D3NGauss12IpDetail);
+        CheckTriangle(NuTo::eIntegrationType::IntegrationType2D3NGauss12IpDetail);
     }
     catch (NuTo::Exception& e)
     {

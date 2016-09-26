@@ -1,6 +1,7 @@
 #include <boost/filesystem.hpp>
 
 #include "nuto/base/Timer.h"
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/sections/SectionTruss.h"
 
@@ -9,13 +10,22 @@
 #include "nuto/mechanics/timeIntegration/ImplEx.h"
 
 #include "nuto/mechanics/elements/ContinuumBoundaryElement.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/groups/GroupEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 
-#include "nuto/mechanics/elements/IpDataStaticData.h"
+#include "nuto/mechanics/constitutive/staticData/Leaf.h"
 
+
+#include "nuto/mechanics/elements/IpDataStaticData.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
 namespace NuToTest {
 namespace ImplEx {
@@ -41,84 +51,6 @@ int SetConstitutiveLaw(NuTo::Structure& rStructure)
 //    rStructure.ConstitutiveLawSetPoissonsRatio(myNumberConstitutiveLaw, 0.0);
 
     return lawId;
-}
-
-void SaveRestoreStaticData()
-{
-    // on IP level:
-
-    NuTo::Structure s(1);
-
-
-    NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(1);
-    NuTo::FullVector<int, Eigen::Dynamic> nodes(2);
-    nodeCoordinates(0) = 0;
-    nodes(0) = s.NodeCreate(nodeCoordinates);
-    nodeCoordinates(0) = 1;
-    nodes(1) = s.NodeCreate(nodeCoordinates);
-
-    int interpolationType = s.InterpolationTypeCreate(NuTo::Interpolation::TRUSS1D);
-    s.InterpolationTypeAdd(interpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
-
-    NuTo::ElementBase* element = s.ElementGetElementPtr(s.ElementCreate(interpolationType, nodes, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA));
-
-    s.ElementSetConstitutiveLaw(s.ElementGetId(element), NuToTest::ImplEx::SetConstitutiveLaw(s));
-
-    auto& staticData = *dynamic_cast<NuTo::Constitutive::StaticData::Leaf<double>*>(element->GetConstitutiveStaticData(0));
-
-    staticData.SetData(42.0);
-    // 42 is now at the "current" static data
-
-    staticData.AllocateAdditionalData(4);
-    if (staticData.GetData(4) != 42)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "AllocateAdditionalStaticData went wrong.");
-
-    if (staticData.GetNumData() != 5)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "AllocateAdditionalStaticData did not allocate the right amount of data.");
-
-    staticData.SetData(1337.0);
-
-    staticData.ShiftToPast(); // 1337 should be at [1]
-    staticData.ShiftToPast(); // 1337 should be at [2]
-
-    if (staticData.GetData(2) != 1337)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "SaveStaticData went wrong.");
-
-    if (staticData.GetNumData() != 5)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "SaveStaticData changed the number of static data (which is wrong).");
-
-
-    staticData.ShiftToFuture(); // 1337 should be back at [1]
-    staticData.ShiftToFuture(); // 1337 should be back at [0]
-
-    if (staticData.GetData() != 1337.0)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "RestoreStaticData went wrong.");
-
-    if (staticData.GetNumData() != 5)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "RestoreStaticData changed the number of static data (which is wrong).");
-
-
-    // on structural level:
-    s.ElementTotalShiftStaticDataToPast(); // 1337 should be at [1]
-    s.ElementTotalShiftStaticDataToPast(); // 1337 should be at [2]
-
-    if (staticData.GetData(2) != 1337.0)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "SaveStaticData went wrong.");
-
-    if (staticData.GetNumData() != 5)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "SaveStaticData changed the number of static data (which is wrong).");
-
-
-    s.ElementTotalShiftStaticDataToFuture(); // 1337 should be back at [1]
-    s.ElementTotalShiftStaticDataToFuture(); // 1337 should be back at [0]
-
-    if (staticData.GetData() != 1337.0)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "RestoreStaticData went wrong.");
-
-    if (staticData.GetNumData() != 5)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "RestoreStaticData changed the number of static data (which is wrong).");
-
-
 }
 
 void Extrapolate()
@@ -197,11 +129,11 @@ void ImplEx()
         s.NodeCreate(iNode, nodeCoordinates);
     }
 
-    int interpolationType = s.InterpolationTypeCreate(NuTo::Interpolation::TRUSS1D);
-    s.InterpolationTypeAdd(interpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
-    s.InterpolationTypeAdd(interpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT2);
-    s.InterpolationTypeAdd(interpolationType, NuTo::Node::NONLOCALEQSTRAIN, NuTo::Interpolation::EQUIDISTANT1);
-//    s.InterpolationTypeSetIntegrationType(interpolationType, NuTo::IntegrationType::IntegrationType1D2NGauss2Ip, NuTo::IpData::STATICDATA);
+    int interpolationType = s.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRUSS1D);
+    s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::NONLOCALEQSTRAIN, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+//    s.InterpolationTypeSetIntegrationType(interpolationType, NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip, NuTo::IpData::STATICDATA);
 
     // create elements
     NuTo::FullVector<int, Eigen::Dynamic> nodes(2);
@@ -209,7 +141,7 @@ void ImplEx()
     {
         nodes(0) = iElement;
         nodes(1) = iElement + 1;
-        s.ElementCreate(interpolationType, nodes, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::STATICDATA);
+        s.ElementCreate(interpolationType, nodes, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
     }
 
     // create sections
@@ -237,7 +169,7 @@ void ImplEx()
 
     s.ConstraintLinearSetDisplacementNode(0, NuTo::FullVector<double, 1>::UnitX(), 0.0);
 
-    int gNodeBC = s.GroupCreate(NuTo::Groups::Nodes);
+    int gNodeBC = s.GroupCreate(NuTo::eGroupId::Nodes);
     s.GroupAddNodeCoordinateRange(gNodeBC, 0, length, length);
     int iNodeBC = s.GroupGetMemberIds(gNodeBC)[0];
 
@@ -245,12 +177,12 @@ void ImplEx()
 
     int visualizationGroup = s.GroupGetElementsTotal();
 
-    s.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
-    s.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN);
-    s.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::LOCAL_EQ_STRAIN);
-    s.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
-    s.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
-    s.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DAMAGE);
+    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN);
+    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::LOCAL_EQ_STRAIN);
+    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
+    s.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DAMAGE);
 
     s.CalculateMaximumIndependentSets();
 
@@ -267,10 +199,10 @@ void ImplEx()
     myIntegrationScheme.SetTimeStep(simulationTime / numLoadSteps);
     myIntegrationScheme.SetAutomaticTimeStepping(true);
 
-    myIntegrationScheme.AddCalculationStep({NuTo::Node::DISPLACEMENTS});
-    myIntegrationScheme.AddCalculationStep({NuTo::Node::NONLOCALEQSTRAIN});
+    myIntegrationScheme.AddCalculationStep({NuTo::Node::eDof::DISPLACEMENTS});
+    myIntegrationScheme.AddCalculationStep({NuTo::Node::eDof::NONLOCALEQSTRAIN});
 
-    myIntegrationScheme.AddDofWithConstantHessian0(NuTo::Node::NONLOCALEQSTRAIN);
+    myIntegrationScheme.AddDofWithConstantHessian0(NuTo::Node::eDof::NONLOCALEQSTRAIN);
 
     myIntegrationScheme.AddResultGroupNodeForce("Force", gNodeBC);
     myIntegrationScheme.AddResultNodeDisplacements("Displ", iNodeBC);
@@ -295,8 +227,6 @@ int main()
     try
     {
         NuTo::Timer Timer("ImplEx", true);
-
-        NuToTest::ImplEx::SaveRestoreStaticData();
 
         NuToTest::ImplEx::Extrapolate();
 

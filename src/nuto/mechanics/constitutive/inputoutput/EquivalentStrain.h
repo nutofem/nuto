@@ -1,11 +1,11 @@
 #pragma once
 
-#include "nuto/mechanics/sections/SectionEnum.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 namespace NuTo
 {
+
+
 
 
 /*! @brief This file contains a collection of static functions to
@@ -46,6 +46,7 @@ private:
     double mA;
     double mNu;
     ePlaneState mPlaneState = ePlaneState::PLANE_STRESS;
+
 
 };
 

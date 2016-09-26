@@ -1,5 +1,9 @@
 // $Id$
 
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
+#endif // ENABLE_VISUALIZE
+
 #include "nuto/mechanics/integrationtypes/IntegrationType2DMod.h"
 
 #include <assert.h>
@@ -97,7 +101,7 @@ void NuTo::IntegrationType2DMod::GetVisualizationCells(
     unsigned int& rNumVisualizationPoints,
     std::vector<double>& rVisualizationPointLocalCoordinates,
     unsigned int& rNumVisualizationCells,
-    std::vector<NuTo::CellBase::eCellTypes>& rVisualizationCellType,
+    std::vector<NuTo::eCellTypes>& rVisualizationCellType,
     std::vector<unsigned int>& rVisualizationCellsIncidence,
     std::vector<unsigned int>& rVisualizationCellsIP) const
 {
@@ -105,12 +109,12 @@ void NuTo::IntegrationType2DMod::GetVisualizationCells(
 	rNumVisualizationPoints=0;
 	rVisualizationPointLocalCoordinates=std::vector<double>(0);
 	rNumVisualizationCells=0;
-	rVisualizationCellType=std::vector<NuTo::CellBase::eCellTypes>(0);
+	rVisualizationCellType=std::vector<NuTo::eCellTypes>(0);
 	rVisualizationCellsIncidence=std::vector<unsigned int>(0);
 	rVisualizationCellsIP=std::vector<unsigned int>(0);
 
 	unsigned int numVisualizationPoints=0;
-	NuTo::CellBase::eCellTypes visualizationCellType=NuTo::CellBase::eCellTypes::QUAD;
+	NuTo::eCellTypes visualizationCellType=NuTo::eCellTypes::QUAD;
 	std::vector<double> visualizationPointLocalCoordinates(0);
 	std::vector<unsigned int> visualizationCellsIncidence(0);
 

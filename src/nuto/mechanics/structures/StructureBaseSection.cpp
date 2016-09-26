@@ -3,6 +3,7 @@
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/mechanics/sections/SectionSpring.h"
 #include "nuto/mechanics/sections/SectionTruss.h"
 #include "nuto/mechanics/sections/SectionPlane.h"
@@ -17,19 +18,19 @@ int NuTo::StructureBase::SectionCreate(const std::string& rType)
     std::transform(rType.begin(), rType.end(), std::back_inserter(SectionTypeString), (int (*)(int)) toupper);
 
     // get section type from string
-Section    ::eSectionType SectionType;
+    eSectionType SectionType;
     if (SectionTypeString == "TRUSS")
     {
-        SectionType = Section::TRUSS;
+        SectionType = eSectionType::TRUSS;
     } else if (SectionTypeString == "PLANE_STRAIN")
     {
-        SectionType = Section::PLANE_STRAIN;
+        SectionType = eSectionType::PLANE_STRAIN;
     } else if (SectionTypeString == "PLANE_STRESS")
     {
-        SectionType = Section::PLANE_STRESS;
+        SectionType = eSectionType::PLANE_STRESS;
     } else if (SectionTypeString == "VOLUME")
     {
-        SectionType = Section::VOLUME;
+        SectionType = eSectionType::VOLUME;
     } else
     {
         throw NuTo::MechanicsException("[NuTo::StructureBase::SectionCreate] invalid section type.");
@@ -38,7 +39,7 @@ Section    ::eSectionType SectionType;
 }
 
 // create a new section
-int NuTo::StructureBase::SectionCreate(Section::eSectionType rType)
+int NuTo::StructureBase::SectionCreate(eSectionType rType)
 {
     //find unused integer id
     int id(0);
@@ -53,20 +54,20 @@ int NuTo::StructureBase::SectionCreate(Section::eSectionType rType)
     SectionBase* SectionPtr;
     switch (rType)
     {
-    case Section::SPRING:
+    case eSectionType::SPRING:
         SectionPtr = new SectionSpring();
         break;
-    case Section::TRUSS:
+    case eSectionType::TRUSS:
         SectionPtr = new SectionTruss();
         break;
-    case Section::PLANE_STRAIN:
-    case Section::PLANE_STRESS:
+    case eSectionType::PLANE_STRAIN:
+    case eSectionType::PLANE_STRESS:
         SectionPtr = new SectionPlane(rType);
         break;
-    case Section::VOLUME:
+    case eSectionType::VOLUME:
         SectionPtr = new SectionVolume();
         break;
-    case Section::FIBRE_MATRIX_BOND:
+    case eSectionType::FIBRE_MATRIX_BOND:
         SectionPtr = new SectionFibreMatrixBond();
         break;
     default:

@@ -1,13 +1,13 @@
 // $Id$
 
-#ifndef ZEROMEANUNITVARIANCETRANSFORMATION_H
-#define ZEROMEANUNITVARIANCETRANSFORMATION_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+// parent
 #include "nuto/metamodel/Transformation.h"
 
 namespace NuTo
@@ -71,4 +71,3 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::ZeroMeanUnitVarianceTransformation)
 #endif  // ENABLE_SERIALIZATION
 
-#endif // ZEROMEANUNITVARIANCETRANSFORMATION_H

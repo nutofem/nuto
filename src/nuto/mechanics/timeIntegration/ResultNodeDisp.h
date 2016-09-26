@@ -1,10 +1,7 @@
 // $Id: $
 
-#ifndef ResultNodeDisp_H
-#define ResultNodeDisp_H
+#pragma once
 
-#include <ctime>
-#include <array>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -12,13 +9,13 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/timeIntegration/ResultNodeDof.h"
-#include "nuto/base/ErrorEnum.h"
-#include "nuto/mechanics/MechanicsException.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
+
 
 namespace NuTo
 {
+
+template <class T, int rows, int cols> class  FullMatrix;
+
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard abstract class for all results
@@ -37,10 +34,7 @@ public:
     //! @brief number of data points per time step (e.g. number of displacement components of a node
     int GetNumData(const StructureBase& rStructure)const;
 
-    NuTo::TimeIntegration::eResultType GetResultType()const
-    {
-    	return NuTo::TimeIntegration::NODE_DISPLACEMENT;
-    }
+    NuTo::eTimeIntegrationResultType GetResultType()const;
 
     std::string GetTypeId() const
     {
@@ -65,4 +59,3 @@ protected:
 };
 }
 
-#endif // ResultNodeDisp_H

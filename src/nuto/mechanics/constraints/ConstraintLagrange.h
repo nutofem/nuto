@@ -1,7 +1,6 @@
 // $Id: ConstraintLagrange.h 328 2010-10-01 14:39:32Z unger3 $
 
-#ifndef CONSTRAINTLAGRANGE_H
-#define CONSTRAINTLAGRANGE_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -9,13 +8,17 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include <vector>
-#include "nuto/mechanics/constraints/ConstraintEnum.h"
 #include "nuto/mechanics/constraints/ConstraintNonlinear.h"
 
 namespace NuTo
 {
 class ConstraintLinear;
 template<class T> class SparseMatrixCSRVector2Symmetric;
+
+namespace Constraint
+{
+    enum class eEquationSign;
+}//namespace Constraint
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -103,5 +106,5 @@ protected:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLagrange)
 #endif // ENABLE_SERIALIZATION
-#endif //CONSTRAINTLAGRANGE_H
+
 

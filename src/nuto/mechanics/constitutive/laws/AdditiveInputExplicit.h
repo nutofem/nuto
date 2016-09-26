@@ -23,22 +23,23 @@ public:
     //! @param rConstitutiveLaw ... additional constitutive law
     //! @param rModiesInput ... enum which defines wich input is modified by a constitutive law.
     virtual void  AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiveLaw, 
-            Constitutive::Input::eInput rModiesInput = Constitutive::Input::NONE) override;
+            Constitutive::eInput rModiesInput = Constitutive::eInput::NONE) override;
 
     //! @brief Evaluate the constitutive relation.
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
-    virtual NuTo::Error::eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
+    virtual NuTo::eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
                                            const ConstitutiveOutputMap& rConstitutiveOutput,
                                            Constitutive::StaticData::Component* staticData) override
     {
         return EvaluateAdditiveInputExplicit<1>(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
 
+
     //! @brief Evaluate the constitutive relation.
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
-    virtual NuTo::Error::eError Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
+    virtual NuTo::eError Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
                                            const ConstitutiveOutputMap& rConstitutiveOutput,
                                            Constitutive::StaticData::Component* staticData) override
     {
@@ -48,7 +49,7 @@ public:
     //! @brief Evaluate the constitutive relation.
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
-    virtual NuTo::Error::eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
+    virtual NuTo::eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
                                            const ConstitutiveOutputMap& rConstitutiveOutput,
                                            Constitutive::StaticData::Component* staticData) override
     {
@@ -65,10 +66,7 @@ public:
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship
     //! @sa eConstitutiveType
-    virtual Constitutive::eConstitutiveType GetType() const override
-    {
-        return NuTo::Constitutive::ADDITIVE_INPUT_EXPLICIT;
-    }
+    virtual Constitutive::eConstitutiveType GetType() const override;
 
 private:
     //! @brief Applies sublaw dependent modifications to the main laws inputs and the global outputs
@@ -92,16 +90,15 @@ private:
     //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
     //! @param staticData Pointer to the static data.
     template <int TDim>
-    NuTo::Error::eError EvaluateAdditiveInputExplicit(const ConstitutiveInputMap& rConstitutiveInput,
+    eError EvaluateAdditiveInputExplicit(const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput, Constitutive::StaticData::Component* staticData);
-
 
     //! @brief Gets the enum of the sublaw output that is needed to calculate the specified derivative
     //! @param rParameter: Enum of the parameter whose derivative is needed
     //! @param rMainDerivative: The requested global derivative
     //! @return Sublaw derivative enum
-    Constitutive::Output::eOutput GetDerivativeEnumSublaw(Constitutive::Output::eOutput rParameter,
-                                                          Constitutive::Output::eOutput rMainDerivative) const;
+    Constitutive::eOutput GetDerivativeEnumSublaw(Constitutive::eOutput rParameter,
+                                                          Constitutive::eOutput rMainDerivative) const;
 
 
     //! @brief Gets a modified output map for the sublaws depending on the main laws inputs and the specified modified Input (see Member: mModifiedInputs)
@@ -116,6 +113,6 @@ private:
 
     //! @brief Vector storing which input they modify.
     //! @note Only for @ref AdditiveInputExplicit and @ref AdditiveInputImplicit
-    std::vector<Constitutive::Input::eInput> mInputsToModify;
+    std::vector<Constitutive::eInput> mInputsToModify;
 };
 }

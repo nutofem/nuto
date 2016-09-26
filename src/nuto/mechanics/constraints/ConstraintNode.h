@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef CONSTRAINTNODE_H
-#define CONSTRAINTNODE_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -9,7 +8,6 @@
 #include <boost/serialization/split_member.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/constraints/ConstraintEnum.h"
 
 namespace NuTo
 {
@@ -88,6 +86,4 @@ protected:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintNode)
 #endif // ENABLE_SERIALIZATION
-
-#endif //CONSTRAINTNODE_H
 

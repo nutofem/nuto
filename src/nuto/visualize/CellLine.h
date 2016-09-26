@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef CELLLINE_H_
-#define CELLLINE_H_
+#pragma once
 
 #include "nuto/visualize/CellBase.h"
 
@@ -37,4 +36,3 @@ private:
 
 }
 
-#endif // CELLLINE_H_ 

@@ -8,7 +8,9 @@
 #include "nuto/mechanics/timeIntegration/ResultGroupNodeForce.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 NuTo::ResultGroupNodeForce::ResultGroupNodeForce(const std::string& rIdent, int rGroupNodeId) : ResultGroupNodeDof(rIdent, rGroupNodeId)
 {
@@ -23,7 +25,12 @@ int NuTo::ResultGroupNodeForce::GetNumData(const StructureBase& rStructure)const
     if(groupNode.GetNumMembers() < 1)
     	throw MechanicsException("[NuTo::ResultGroupNodeForce::GetNumData] Group has no members.");
 
-	return groupNode.begin()->second->GetNum(Node::DISPLACEMENTS);
+	return groupNode.begin()->second->GetNum(Node::eDof::DISPLACEMENTS);
+}
+
+NuTo::eTimeIntegrationResultType NuTo::ResultGroupNodeForce::GetResultType() const
+{
+    return NuTo::eTimeIntegrationResultType::GROUP_NODE_FORCE;
 }
 
 
@@ -35,19 +42,19 @@ void NuTo::ResultGroupNodeForce::CalculateValues(const StructureBase& rStructure
 
     for (auto& itNode : nodeGroup)
     {
-        assert(itNode.second->GetNum(Node::DISPLACEMENTS) == rStructure.GetDimension());
+        assert(itNode.second->GetNum(Node::eDof::DISPLACEMENTS) == rStructure.GetDimension());
 
         for (int iDim = 0; iDim < rStructure.GetDimension(); iDim++)
         {
-            int theDof = itNode.second->GetDof(Node::DISPLACEMENTS, iDim);
+            int theDof = itNode.second->GetDof(Node::eDof::DISPLACEMENTS, iDim);
 
-            if (theDof < rStructure.GetNumActiveDofs(Node::DISPLACEMENTS))
+            if (theDof < rStructure.GetNumActiveDofs(Node::eDof::DISPLACEMENTS))
             {
                 rResult(0, iDim) += rResidual_j(theDof);
             }
             else
             {
-                rResult(0, iDim) += rResidual_k(theDof - rStructure.GetNumActiveDofs(Node::DISPLACEMENTS));
+                rResult(0, iDim) += rResidual_k(theDof - rStructure.GetNumActiveDofs(Node::eDof::DISPLACEMENTS));
             }
         }
     }

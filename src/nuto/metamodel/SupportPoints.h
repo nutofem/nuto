@@ -6,20 +6,22 @@ Author: Joerg F. Unger,  Septermber 2009
 *******************************************************************************/
 
 
-#ifndef SUPPORTPOINTS_H
-#define SUPPORTPOINTS_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
-#include <boost/ptr_container/ptr_list.hpp>
 
-#include "nuto/metamodel/Transformation.h"
-#include "nuto/math/FullMatrix.h"
+
+#include "nuto/math/FullMatrix_Def.h"
+#include <boost/ptr_container/ptr_list.hpp>
 
 namespace NuTo
 {
+
+class Transformation;
+
 //! @author Joerg F. Unger, ISM
 //! @date September 2009
 //! @brief stores the support points
@@ -249,4 +251,3 @@ private:
 
 };
 } // namespace nuto
-#endif /* SUPPORTPOINTS_H */

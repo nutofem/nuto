@@ -9,16 +9,25 @@
 #endif // ENABLE_SERIALIZATION
 
 #include <iostream>
+#include "nuto/base/ErrorEnum.h"
 #include "nuto/base/Logger.h"
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/laws/MisesPlasticityEngineeringStress.h"
 #include "nuto/mechanics/constitutive/staticData/DataMisesPlasticity.h"
 #include "nuto/mechanics/constitutive/laws/EngineeringStressHelper.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/sections/SectionBase.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
 
 using namespace NuTo::Constitutive;
 
@@ -67,22 +76,22 @@ NuTo::ConstitutiveInputMap NuTo::MisesPlasticityEngineeringStress::GetConstituti
 {
     ConstitutiveInputMap constitutiveInputMap;
 
-    constitutiveInputMap[Input::ENGINEERING_STRAIN];
-    if (rInterpolationType.IsConstitutiveInput(Node::TEMPERATURE))
-        constitutiveInputMap[Input::TEMPERATURE];
+    constitutiveInputMap[Constitutive::eInput::ENGINEERING_STRAIN];
+    if (rInterpolationType.IsConstitutiveInput(Node::eDof::TEMPERATURE))
+        constitutiveInputMap[Constitutive::eInput::TEMPERATURE];
 
 
     for (auto& itOutput : rConstitutiveOutput)
     {
         switch (itOutput.first)
         {
-        case Output::ENGINEERING_STRESS:
-        case Output::ENGINEERING_STRESS_VISUALIZE:
-        case Output::ENGINEERING_STRAIN_VISUALIZE:
-        case Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE:
-        case Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
-        case Output::UPDATE_TMP_STATIC_DATA:
-        case Output::UPDATE_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
+        case NuTo::Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_VISUALIZE:
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__,
@@ -94,24 +103,25 @@ NuTo::ConstitutiveInputMap NuTo::MisesPlasticityEngineeringStress::GetConstituti
     return constitutiveInputMap;
 }
 
-NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate1D(
-        const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput,
+NuTo::eError NuTo::MisesPlasticityEngineeringStress::Evaluate1D(
+        const ConstitutiveInputMap& rConstitutiveInput,
+        const ConstitutiveOutputMap& rConstitutiveOutput,
         StaticData::Component*)
 {
     throw NuTo::MechanicsException("[NuTo::MisesPlasticityEngineeringStress::Evaluate1D] not implemented for 1D.");
 }
 
-NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate2D(
+NuTo::eError NuTo::MisesPlasticityEngineeringStress::Evaluate2D(
         const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput,
         StaticData::Component* staticData)
 {
 
     const auto& planeState =
-        *dynamic_cast<ConstitutivePlaneState*>(rConstitutiveInput.at(Input::PLANE_STATE).get());
+        *dynamic_cast<ConstitutivePlaneState*>(rConstitutiveInput.at(Constitutive::eInput::PLANE_STATE).get());
     if (planeState.GetPlaneState() != ePlaneState::PLANE_STRAIN)
         throw MechanicsException(__PRETTY_FUNCTION__, "Only implemented for PLANE_STRAIN");
 
-    const auto& engineeringStrain = rConstitutiveInput.at(Input::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
+    const auto& engineeringStrain = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
 
     StaticData::DataMisesPlasticity<3> newStaticData;
     StaticData::DataMisesPlasticity<3>* newStaticDataPtr = nullptr;
@@ -128,30 +138,31 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate2D(
     {
         switch(itOutput.first)
         {
-        case Output::ENGINEERING_STRESS:
-        case Output::ENGINEERING_STRESS_VISUALIZE:
+        case Constitutive::eOutput::ENGINEERING_STRESS:
+        case Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
         {
             engineeringStressPtr = &engineeringStress;
             break;
         }
 
-        case Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+        case Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
         {
             tangent = itOutput.second.get();
-            tangent->AssertIsMatrix<3,3>(Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN, __FUNCTION__);
+            tangent->AssertIsMatrix<3,3>(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN, __FUNCTION__);
             break;
         }
 
-        case Output::ENGINEERING_STRAIN_VISUALIZE:
+        case Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
             strainRequested = true;
             break;
 
-        case Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE:
-        case Output::UPDATE_STATIC_DATA:
+        case Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_VISUALIZE:
+        case Constitutive::eOutput::UPDATE_STATIC_DATA:
             newStaticDataPtr = &newStaticData;
             continue;
 
-        case Output::UPDATE_TMP_STATIC_DATA:
+        case Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
+
             continue;
         default:
             continue;
@@ -166,9 +177,9 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate2D(
     }
     else
     {
-        NuTo::Error::eError errorReturnMapping = ReturnMapping2D(misesStaticData.GetData(), engineeringStrain,
+        eError errorReturnMapping = ReturnMapping2D(misesStaticData.GetData(), engineeringStrain,
                 engineeringStressPtr, tangent, newStaticDataPtr);
-        if (errorReturnMapping != Error::SUCCESSFUL)
+        if (errorReturnMapping != eError::SUCCESSFUL)
             return errorReturnMapping;
     }
 
@@ -176,14 +187,14 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate2D(
     {
         switch (itOutput.first)
         {
-        case Output::ENGINEERING_STRESS:
+        case Constitutive::eOutput::ENGINEERING_STRESS:
         {
             ConstitutiveIOBase& engineeringStress2D = *itOutput.second;
             engineeringStress2D.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
             engineeringStress2D = engineeringStress;
             break;
         }
-        case Output::ENGINEERING_STRESS_VISUALIZE:
+        case Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
         {
             ConstitutiveIOBase& engineeringStress3D = *itOutput.second;
             engineeringStress3D.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
@@ -193,9 +204,9 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate2D(
             engineeringStress3D[5] = engineeringStress[2];
             break;
         }
-        case Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN: // calculated via ptr in return mapping
+        case Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN: // calculated via ptr in return mapping
             break;
-        case Output::ENGINEERING_STRAIN_VISUALIZE:
+        case Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
         {
             ConstitutiveIOBase& engineeringStrain3D = *itOutput.second;
             engineeringStrain3D.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
@@ -205,15 +216,15 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate2D(
             engineeringStrain3D[5] = (engineeringStrain)[2];
             break;
         }
-        case Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE:
+        case Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_VISUALIZE:
         {
             auto& engineeringPlasticStrain = *dynamic_cast<EngineeringStrain<3>*>(itOutput.second.get());
             engineeringPlasticStrain = newStaticData.GetPlasticStrain();
             break;
         }
-        case Output::UPDATE_TMP_STATIC_DATA:
+        case Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
             continue;
-        case Output::UPDATE_STATIC_DATA:
+        case Constitutive::eOutput::UPDATE_STATIC_DATA:
         {
             misesStaticData.SetData(newStaticData);
         }
@@ -226,16 +237,17 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate2D(
 
     //update history variables but for linear elastic, there is nothing to do
 
-    return Error::SUCCESSFUL;
+    return eError::SUCCESSFUL;
 }
 
 
-NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate3D(
+
+NuTo::eError NuTo::MisesPlasticityEngineeringStress::Evaluate3D(
         const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput,
         StaticData::Component* staticData)
 {
 
-    const auto& engineeringStrain = rConstitutiveInput.at(Input::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
+    const auto& engineeringStrain = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
 
     ConstitutiveIOBase* engineeringStress                      = nullptr;
     ConstitutiveIOBase* tangent                                = nullptr;
@@ -251,38 +263,38 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate3D(
     {
         switch(itOutput.first)
         {
-        case Output::ENGINEERING_STRESS:
+        case Constitutive::eOutput::ENGINEERING_STRESS:
         {
             engineeringStress = itOutput.second.get();
-            engineeringStress->AssertIsVector<6>(Output::ENGINEERING_STRESS, __FUNCTION__);
+            engineeringStress->AssertIsVector<6>(Constitutive::eOutput::ENGINEERING_STRESS, __FUNCTION__);
             break;
         }
 
-        case Output::ENGINEERING_STRESS_VISUALIZE:
+        case Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
         {
             // use the ENGINEERING_STRESS for visualization. if not, set the pointer
-            if (rConstitutiveOutput.find(Output::ENGINEERING_STRESS) == rConstitutiveOutput.end())
+            if (rConstitutiveOutput.find(Constitutive::eOutput::ENGINEERING_STRESS) == rConstitutiveOutput.end())
             {
                 engineeringStress = itOutput.second.get();
-                engineeringStress->AssertIsVector<6>(Output::ENGINEERING_STRESS_VISUALIZE, __FUNCTION__);
+                engineeringStress->AssertIsVector<6>(Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE, __FUNCTION__);
             }
             break;
         }
 
-        case Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+        case Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
         {
             tangent = itOutput.second.get();
-            tangent->AssertIsMatrix<6,6>(Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN, __FUNCTION__);
+            tangent->AssertIsMatrix<6,6>(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN, __FUNCTION__);
             break;
         }
-        case Output::ENGINEERING_STRAIN_VISUALIZE:
+        case Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
             strainRequested = true;
             break;
-        case Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE:
-        case Output::UPDATE_STATIC_DATA:
+        case Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_VISUALIZE:
+        case Constitutive::eOutput::UPDATE_STATIC_DATA:
             newStaticDataPtr = &newStaticData;
             continue;
-        case Output::UPDATE_TMP_STATIC_DATA:
+        case Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
             continue;
         default:
             continue;
@@ -297,9 +309,9 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate3D(
     }
     else
     {
-        NuTo::Error::eError errorReturnMapping = ReturnMapping3D(misesStaticData.GetData(), engineeringStrain,
+        eError errorReturnMapping = ReturnMapping3D(misesStaticData.GetData(), engineeringStrain,
                 engineeringStress, tangent, newStaticDataPtr);
-        if (errorReturnMapping != Error::SUCCESSFUL)
+        if (errorReturnMapping != eError::SUCCESSFUL)
             return errorReturnMapping;
     }
 
@@ -307,31 +319,31 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate3D(
     {
         switch (itOutput.first)
         {
-        case Output::ENGINEERING_STRESS:
-        case Output::ENGINEERING_STRESS_VISUALIZE:
+        case Constitutive::eOutput::ENGINEERING_STRESS:
+        case Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
         {
             ConstitutiveIOBase& engineeringStress3D = *itOutput.second;
             engineeringStress3D = *engineeringStress;
             break;
         }
-        case Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:     // calculated via ptr in return mapping
+        case Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:     // calculated via ptr in return mapping
             break;
-        case Output::ENGINEERING_STRAIN_VISUALIZE:
+        case Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
         {
             ConstitutiveIOBase& engineeringStrain3D = *itOutput.second;
             engineeringStrain3D.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
             engineeringStrain3D = engineeringStrain;
             break;
         }
-        case Output::ENGINEERING_PLASTIC_STRAIN_VISUALIZE:
+        case Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_VISUALIZE:
         {
             auto& engineeringPlasticStrain = *dynamic_cast<EngineeringStrain<3>*>(itOutput.second.get());
             engineeringPlasticStrain = newStaticData.GetPlasticStrain();
             break;
         }
-        case Output::UPDATE_TMP_STATIC_DATA:
+        case Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
             continue;
-        case Output::UPDATE_STATIC_DATA:
+        case Constitutive::eOutput::UPDATE_STATIC_DATA:
         {
             misesStaticData.SetData(newStaticData);
         }
@@ -344,7 +356,7 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::Evaluate3D(
 
     //update history variables but for linear elastic, there is nothing to do
 
-	return Error::SUCCESSFUL;
+    return eError::SUCCESSFUL;
 }
 
 
@@ -358,14 +370,14 @@ StaticData::Component* NuTo::MisesPlasticityEngineeringStress::AllocateStaticDat
 StaticData::Component* NuTo::MisesPlasticityEngineeringStress::AllocateStaticData2D(
 		const ElementBase* rElement) const
 {
-    return new StaticData::Leaf<StaticData::DataMisesPlasticity<3>>;
+    return StaticData::Leaf<StaticData::DataMisesPlasticity<3>>::Create(StaticData::DataMisesPlasticity<3>());
 }
 
 
 StaticData::Component* NuTo::MisesPlasticityEngineeringStress::AllocateStaticData3D(
 		const ElementBase* rElement) const
 {
-    return new StaticData::Leaf<StaticData::DataMisesPlasticity<3>>;
+    return StaticData::Leaf<StaticData::DataMisesPlasticity<3>>::Create(StaticData::DataMisesPlasticity<3>());
 }
 
 bool NuTo::MisesPlasticityEngineeringStress::CheckDofCombinationComputable(Node::eDof rDofRow,
@@ -374,8 +386,8 @@ bool NuTo::MisesPlasticityEngineeringStress::CheckDofCombinationComputable(Node:
 {
     assert(rTimeDerivative>-1);
     if(rTimeDerivative<1 &&
-            rDofRow == Node::DISPLACEMENTS &&
-            rDofCol == Node::DISPLACEMENTS)
+            rDofRow == Node::eDof::DISPLACEMENTS &&
+            rDofCol == Node::eDof::DISPLACEMENTS)
     {
         return true;
     }
@@ -383,7 +395,7 @@ bool NuTo::MisesPlasticityEngineeringStress::CheckDofCombinationComputable(Node:
 }
 
 
-NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping2D(
+NuTo::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping2D(
         StaticData::DataMisesPlasticity<3>& oldStaticData,
         const EngineeringStrain<2>& rEngineeringStrain,
         ConstitutiveIOBase* rNewStress,
@@ -404,7 +416,7 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping2D(
     EngineeringStress<3> newStress3D;
     ConstitutiveMatrix<6,6> newTangent3D;
 
-    NuTo::Error::eError error = ReturnMapping3D(oldStaticData, engineeringStrain3D, &newStress3D, &newTangent3D,
+    NuTo::eError error = ReturnMapping3D(oldStaticData, engineeringStrain3D, &newStress3D, &newTangent3D,
             rNewStaticData);
 
 
@@ -436,7 +448,7 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping2D(
     return error;
 }
 
-NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
+NuTo::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
         StaticData::DataMisesPlasticity<3>& oldStaticData,
         const EngineeringStrain<3>& rEngineeringStrain,
         ConstitutiveIOBase* rNewStress,
@@ -500,7 +512,7 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
 //    printf("Xi trial %g %g %g %g %g %g\n",xi_trial[0],xi_trial[1],xi_trial[2],xi_trial[3],xi_trial[4],xi_trial[5]);
 
     // norm of deviator
-    norm_dev = sqrt(xi_trial[0]*xi_trial[0]+xi_trial[1]*xi_trial[1]+xi_trial[2]*xi_trial[2]+
+    norm_dev = std::sqrt(xi_trial[0]*xi_trial[0]+xi_trial[1]*xi_trial[1]+xi_trial[2]*xi_trial[2]+
                     2.*(xi_trial[3]*xi_trial[3]+xi_trial[4]*xi_trial[4]+xi_trial[5]*xi_trial[5]));
 
     //determine radius of yield function
@@ -569,7 +581,7 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
         }
 
         // static data is unchanged
-        return Error::SUCCESSFUL;
+        return eError::SUCCESSFUL;
     }
 
     //plastic loading
@@ -604,7 +616,7 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
         std::cout << "back stress" << back_stress[0] << " " << back_stress[1] << " " << back_stress[2] << " " << back_stress[3] << " " << back_stress[4] << " " << back_stress[5] << " " <<"\n";
         std::cout << "[NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D] No convergence after 100 steps, check the source code." << "\n";
 
-        return Error::NO_CONVERGENCE;
+        return eError::NO_CONVERGENCE;
 
     }
 
@@ -707,7 +719,7 @@ NuTo::Error::eError NuTo::MisesPlasticityEngineeringStress::ReturnMapping3D(
         (*rNewTangent)(5,5) =   (	 0.5*factor 		 +factor2*df_dsigma[5]*df_dsigma[5]);
     }
 
-    return Error::SUCCESSFUL;
+    return eError::SUCCESSFUL;
 }
 
 
@@ -912,9 +924,9 @@ void NuTo::MisesPlasticityEngineeringStress::AddHardeningModulus(double rEpsilon
 }
 
 
-eConstitutiveType NuTo::MisesPlasticityEngineeringStress::GetType() const
+NuTo::Constitutive::eConstitutiveType NuTo::MisesPlasticityEngineeringStress::GetType() const
 {
-    return MISES_PLASTICITY_ENGINEERING_STRESS;
+    return Constitutive::eConstitutiveType::MISES_PLASTICITY_ENGINEERING_STRESS;
 }
 
 
@@ -922,7 +934,7 @@ bool NuTo::MisesPlasticityEngineeringStress::CheckElementCompatibility(NuTo::Ele
 {
     switch (rElementType)
     {
-    case NuTo::Element::CONTINUUMELEMENT:
+    case NuTo::Element::eElementType::CONTINUUMELEMENT:
         return true;
     default:
         return false;
@@ -979,10 +991,11 @@ void NuTo::MisesPlasticityEngineeringStress::Info(unsigned short rVerboseLevel, 
     this->ConstitutiveBase::Info(rVerboseLevel, rLogger);
     rLogger << "    Young's modulus: " << this->mE << "\n";
     rLogger << "    Poisson's ratio: " << this->mNu << "\n";
-	rLogger << "    multilinear yield strength: (interval,epsilon,sigma)" << "\n";
+    rLogger << "    multilinear yield strength: (interval,epsilon,sigma)" << "\n";
     for (unsigned int count=0; count<mSigma.size(); count++)
-    	rLogger << "       " << count<< " : " << this->mSigma[count].first << "    " << this->mSigma[count].second << "\n";
-	rLogger << "    multilinear hardening modulus: (interval,epsilon,H')" << "\n";
+        rLogger << "       " << count<< " : " << this->mSigma[count].first << "    " << this->mSigma[count].second << "\n";
+
+    rLogger << "    multilinear hardening modulus: (interval,epsilon,H')" << "\n";
     for (unsigned int count=0; count<mH.size(); count++)
     	rLogger << "       " << count<< " : " << this->mH[count].first << "    " << this->mH[count].second << "\n";
 }

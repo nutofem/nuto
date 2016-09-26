@@ -9,13 +9,14 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/mechanics/sections/SectionPlane.h"
 
 // constructor
-NuTo::SectionPlane::SectionPlane(Section::eSectionType rSectionType)
+NuTo::SectionPlane::SectionPlane(eSectionType rSectionType)
 {
     this->mThickness = 0.0;
-    if (rSectionType==Section::PLANE_STRAIN || rSectionType==Section::PLANE_STRESS)
+    if (rSectionType==eSectionType::PLANE_STRAIN || rSectionType==eSectionType::PLANE_STRESS)
     	this->mSectionType = rSectionType;
     else
     {
@@ -40,7 +41,7 @@ double NuTo::SectionPlane::GetThickness() const
 }
 
 // get section type
-NuTo::Section::eSectionType NuTo::SectionPlane::GetType() const
+NuTo::eSectionType NuTo::SectionPlane::GetType() const
 {
     return mSectionType;
 }
@@ -51,9 +52,9 @@ void NuTo::SectionPlane::Info(unsigned short rVerboseLevel) const
     this->SectionBase::Info(rVerboseLevel);
     std::cout << "    section type: 2D" << std::endl;
     std::cout << "    section thickness: " << this->mThickness << std::endl;
-    if (mSectionType==Section::PLANE_STRAIN)
+    if (mSectionType==eSectionType::PLANE_STRAIN)
         std::cout << "    section stress state: plane strain" << std::endl;
-    else if (mSectionType==Section::PLANE_STRESS)
+    else if (mSectionType==eSectionType::PLANE_STRESS)
         std::cout << "    section stress state: plane stress" << std::endl;
 }
 

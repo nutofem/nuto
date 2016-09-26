@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef NEURALNETWORK_H
-#define NEURALNETWORK_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -9,17 +8,24 @@
 #include <boost/serialization/vector.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include <string>
 
+
+
+// parent
 #include "nuto/metamodel/Metamodel.h"
-#include "nuto/metamodel/TransferFunction.h"
 #include "nuto/optimize/CallbackHandler.h"
+
+
 #include "nuto/metamodel/MetamodelException.h"
 #include <eigen3/Eigen/Core>
+#include <string>
 
 
 namespace NuTo
 {
+
+class TransferFunction;
+
 //! @author Joerg F. Unger, ISM
 //! @date September 2009
 //! @brief ... standard abstract class for all metamodels in NuTo
@@ -264,4 +270,3 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::NeuralNetwork)
 #endif //SWIG
 #endif  // ENABLE_SERIALIZATION
-#endif // NEURALNETWORK_H

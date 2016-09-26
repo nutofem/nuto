@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef NUTOMATH_H
-#define NUTOMATH_H
+#pragma once
 
 class NuToMath
 {
@@ -14,4 +13,3 @@ public:
     } serialization_attributes;
 };
 
-#endif // NUTOMATH_H

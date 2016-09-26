@@ -5,7 +5,9 @@
  *      Author: ttitsche
  */
 
+#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation1D.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -32,19 +34,19 @@ int NuTo::Interpolation1D::GetNumDofsPerNode() const
 {
     switch (mDofType)
     {
-    case NuTo::Node::COORDINATES:
+    case NuTo::Node::eDof::COORDINATES:
         return mDimension;
-    case NuTo::Node::DISPLACEMENTS:
+    case NuTo::Node::eDof::DISPLACEMENTS:
         return mDimension;
-    case NuTo::Node::TEMPERATURE:
+    case NuTo::Node::eDof::TEMPERATURE:
         return 1;
-    case NuTo::Node::NONLOCALEQSTRAIN:
+    case NuTo::Node::eDof::NONLOCALEQSTRAIN:
         return 1;
-    case NuTo::Node::NONLOCALEQPLASTICSTRAIN:
+    case NuTo::Node::eDof::NONLOCALEQPLASTICSTRAIN:
         return 2;
-    case NuTo::Node::RELATIVEHUMIDITY:
+    case NuTo::Node::eDof::RELATIVEHUMIDITY:
         return 1;
-    case NuTo::Node::WATERVOLUMEFRACTION:
+    case NuTo::Node::eDof::WATERVOLUMEFRACTION:
         return 1;
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "dof type not found.");

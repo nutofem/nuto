@@ -6,14 +6,14 @@ Author: Joerg F. Unger,  Septermber 2009
 *******************************************************************************/
 
 
-#ifndef MINMAXTRANSFORMATION_H
-#define MINMAXTRANSFORMATION_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+// parent
 #include "nuto/metamodel/Transformation.h"
 
 namespace NuTo
@@ -80,4 +80,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::MinMaxTransformation)
 #endif // SWIG
 #endif  // ENABLE_SERIALIZATION
 
-#endif /* MINMAXTRANSFORMATION_H */

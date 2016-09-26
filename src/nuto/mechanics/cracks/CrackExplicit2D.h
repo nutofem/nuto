@@ -1,21 +1,25 @@
 // $Id$
-#ifndef CrackExplicit2D_H
-#define CrackExplicit2D_H
+#pragma once
 
-#include <list>
 
 #include "nuto/mechanics/cracks/CrackBase.h"
-#include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/MechanicsException.h"
+#include <list>
 
-#ifdef ENABLE_VISUALIZE
-#include "nuto/visualize/VisualizeUnstructuredGrid.h"
-#endif // ENABLE_VISUALIZE
+
+
+
+
 
 
 namespace NuTo
 {
+class ElementBase;
+class NodeBase;
+#ifdef ENABLE_VISUALIZE
+class VisualizeUnstructuredGrid;
+#endif // ENABLE_VISUALIZE
+
+
 //! @author Daniel Arnold, ISM
 //! @date October 2010
 //! @brief ... class for 2D explicit cracks
@@ -126,6 +130,4 @@ public:
 
 };
 }//namespace NuTo
-
-#endif //CrackExplicit2D_H
 

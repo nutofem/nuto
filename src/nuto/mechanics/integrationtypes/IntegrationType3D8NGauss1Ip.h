@@ -1,6 +1,5 @@
 // $Id: IntegrationType3D8NGauss1Ip.h 138 2009-12-02 09:19:55Z eckardt4 $
-#ifndef IntegrationType3D8NGauss1Ip_H
-#define IntegrationType3D8NGauss1Ip_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -65,7 +64,7 @@ public:
         unsigned int& NumVisualizationPoints,
         std::vector<double>& VisualizationPointLocalCoordinates,
         unsigned int& NumVisualizationCells,
-        std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+        std::vector<NuTo::eCellTypes>& VisualizationCellType,
         std::vector<unsigned int>& VisualizationCellsIncidence,
         std::vector<unsigned int>& VisualizationCellsIP) const;
 #endif // ENABLE_VISUALIZE
@@ -76,4 +75,3 @@ protected:
 };
 }
 
-#endif //IntegrationType3D8NGauss1Ip_H

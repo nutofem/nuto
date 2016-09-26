@@ -1,7 +1,6 @@
 // $Id: ConstraintLinearNodeGroupRotations2D.h 520 2011-04-18 14:02:26Z unger3 $
 
-#ifndef CONSTRAINTNODEGROUPRotations2D_H
-#define CONSTRAINTNODEGROUPRotations2D_H
+#pragma once
 
 #include "nuto/mechanics/constraints/ConstraintLinear.h"
 #include "nuto/mechanics/constraints/ConstraintNodeGroup.h"
@@ -55,10 +54,7 @@ public:
 
     //! @brief determines the dof type affected by the constraint
     //! @return dof type
-    Node::eDof GetDofType() const override
-    {
-        return Node::eDof::ROTATIONS;
-    }
+    Node::eDof GetDofType() const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -78,5 +74,4 @@ protected:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLinearNodeGroupRotations2D)
 #endif // ENABLE_SERIALIZATION
-#endif //CONSTRAINTNODEGROUPRotations2D_H
 

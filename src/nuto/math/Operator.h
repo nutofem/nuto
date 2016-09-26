@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef OPERATOR_H
-#define OPERATOR_H
+#pragma once
 
 #include "nuto/math/MathException.h"
 
@@ -237,4 +236,3 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::DyadicOperator<int>)
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::DyadicOperator<double>)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
-#endif // OPERATOR_H

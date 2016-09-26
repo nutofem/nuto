@@ -16,9 +16,9 @@ template<typename T>
 class Leaf : public Component
 {
 public:
-    static Leaf<T>* Create()
+    static Leaf<T>* Create(const T& rInitialValue)
     {
-        return new Leaf<T>();
+        return new Leaf<T>(rInitialValue);
     }
 
     virtual Leaf<T>* Clone() const override
@@ -57,7 +57,7 @@ public:
         if (mData.empty())
             mData.push_back(newData);
         else
-            mData.at(0) = newData;
+            mData[0] = newData;
     }
 
     //! @brief Get the data at `timestep`.
@@ -65,6 +65,8 @@ public:
     //!                 the current time step.
     T& GetData(int timeStep = 0)
     {
+        if (timeStep > GetNumData() - 1)
+            throw MechanicsException(__PRETTY_FUNCTION__, "You requested time step " + std::to_string(timeStep) + ". Number of allocated time steps: " + std::to_string(GetNumData()));
         return mData.at(timeStep);
     }
 
@@ -108,6 +110,14 @@ public:
     }
 
 private:
+    Leaf() = default;
+
+    Leaf(const T& rInitialValue)
+    {
+        mData.clear();
+        mData.push_back(rInitialValue);
+    }
+
     std::vector<T> mData;
 };
 

@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef NUTOMATH_H
-#define NUTOMATH_H
+#pragma once
 
 namespace NuTo
 {
@@ -36,4 +35,3 @@ public:
 #endif
 };
 }
-#endif // NUTOMATH_H

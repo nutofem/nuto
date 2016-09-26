@@ -1,5 +1,6 @@
 SET(NuToMechanicsConstitutive_SOURCES
 constitutive/ConstitutiveBase.cpp
+constitutive/ConstitutiveEnum.cpp
 constitutive/inputoutput/ConstitutiveIOBase.cpp
 constitutive/inputoutput/ConstitutiveIOMap.cpp
 constitutive/inputoutput/EngineeringStrain.cpp
@@ -15,6 +16,7 @@ constitutive/laws/GradientDamageEngineeringStress.cpp
 constitutive/laws/PhaseField.cpp
 constitutive/laws/HeatConduction.cpp
 constitutive/laws/LinearElasticEngineeringStress.cpp
+#constitutive/laws/LocalDamageModel.cpp
 constitutive/laws/MisesPlasticityEngineeringStress.cpp
 constitutive/laws/MoistureTransport.cpp
 constitutive/laws/ShrinkageCapillaryStrainBased.cpp
@@ -77,14 +79,17 @@ elements/Element1DInXD.cpp
 elements/Element2DInterface.cpp
 elements/ElementDataConstitutiveIp.cpp
 elements/ElementDataConstitutiveIpNonlocal.cpp
+elements/ElementDataEnum.cpp
 elements/ElementDataIpBase.cpp
 elements/ElementDataNonlocalBase.cpp
 elements/ElementDataVariableConstitutiveBase.cpp
 elements/ElementDataVariableConstitutiveIp.cpp
+elements/ElementEnum.cpp
 elements/ElementOutputBase.cpp
 elements/ElementShapeFunctions.cpp
 elements/IpDataBase.cpp
 elements/IpDataEmpty.cpp
+elements/IpDataEnum.cpp
 elements/IpDataNonlocalBase.cpp
 elements/IpDataStaticData.cpp
 elements/IpDataStaticDataBase.cpp
@@ -138,8 +143,9 @@ integrationtypes/IntegrationTypeBase.cpp
 )
 
 SET(NuToMechanicsInterpolationtypes_SOURCE
-interpolationtypes/InterpolationType.cpp
 interpolationtypes/InterpolationBase.cpp
+interpolationtypes/InterpolationType.cpp
+interpolationtypes/InterpolationTypeEnum.cpp
 interpolationtypes/Interpolation1D.cpp
 interpolationtypes/Interpolation1DTruss.cpp
 interpolationtypes/Interpolation1DInterface.cpp
@@ -173,6 +179,7 @@ loads/LoadSurfacePressure3D.cpp
 SET(NuToMechanicsNodes_SOURCES
 nodes/NodeBase.cpp
 nodes/NodeDof.cpp
+nodes/NodeEnum.cpp
 )
 
 SET(NuToMechanicsSection_SOURCES
@@ -189,6 +196,7 @@ structures/StructureBase.cpp
 structures/StructureBaseConstitutiveLaw.cpp
 structures/StructureBaseConstraints.cpp
 structures/StructureBaseElement.cpp
+structures/StructureBaseEnum.cpp
 structures/StructureBaseGroup.cpp
 structures/StructureBaseIntegrationTypes.cpp
 structures/StructureBaseLoad.cpp

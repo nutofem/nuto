@@ -9,12 +9,16 @@
 #include "nuto/math/SparseMatrixCSRSymmetric.h"
 #include "nuto/math/SparseDirectSolverMUMPS.h"
 #include "nuto/math/SparseDirectSolverPardiso.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 #include "nuto/mechanics/timeIntegration/RungeKutta4.h"
 
@@ -79,8 +83,8 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
     }
 
     int interpolationType = myStructure->InterpolationTypeCreate("TRUSS1D");
-    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::COORDINATES, rElementTypeIdent);
-    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::DISPLACEMENTS, rElementTypeIdent);
+    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, rElementTypeIdent);
+    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, rElementTypeIdent);
 
     int numNodes = node;
 
@@ -132,7 +136,7 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
       ^
 */
 NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
-                     //NuTo::IntegrationType::eIntegrationType rIntegrationTypeIdent,
+                     //NuTo::eIntegrationType rIntegrationTypeIdent,
                      int rNumNodesPerElementInOneDir,
                      NuTo::FullVector<double, Eigen::Dynamic>& nodeCoordinatesFirstElement,
                      int NumElementsX, int NumElementsY, double& DisplacementCorrect)
@@ -206,8 +210,8 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
     }
 
     int interpolationType = myStructure->InterpolationTypeCreate("QUAD2D");
-    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::DISPLACEMENTS, rElementTypeIdent);
-    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::COORDINATES, rElementTypeIdent);
+    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, rElementTypeIdent);
+    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, rElementTypeIdent);
 
     /** Elements **/
     NuTo::FullVector<int,Eigen::Dynamic> elementIncidence(rNumNodesPerElementInOneDir*rNumNodesPerElementInOneDir);
@@ -314,7 +318,7 @@ void solve(NuTo::Structure *myStructure, double solution, double tol = 1.e-6)
 
 //    double DisplacementCorrect = (Force*Length)/(Area*YoungsModulus);
 
-    double nodeDisp = myStructure->NodeGetNodePtr(myStructure->GetNumNodes()-1)->Get(NuTo::Node::DISPLACEMENTS)[0];
+    double nodeDisp = myStructure->NodeGetNodePtr(myStructure->GetNumNodes()-1)->Get(NuTo::Node::eDof::DISPLACEMENTS)[0];
 
     std::cout << "Displacement last node FEM:\n" << nodeDisp << std::endl;
     std::cout << "Displacement last node analytical:\n" << solution << std::endl;

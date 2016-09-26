@@ -1,6 +1,5 @@
 // $Id$
-#ifndef ELEMENTDATACONSTITUTIVEBASE_H_
-#define ELEMENTDATACONSTITUTIVEBASE_H_
+#pragma once
 
 #include "nuto/mechanics/elements/ElementDataBase.h"
 
@@ -58,4 +57,3 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataConstitutiveBase)
 #endif // ENABLE_SERIALIZATION
 
-#endif /* ELEMENTDATACONSTITUTIVEBASE_H_ */

@@ -12,6 +12,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/base/CallbackInterface.h"
+#include "nuto/base/Exception.h"
 
 // serializes the class
 #ifdef ENABLE_SERIALIZATION
@@ -34,3 +35,8 @@ void NuTo::CallbackInterface::serialize(Archive & ar, const unsigned int version
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::CallbackInterface)
 #endif // ENABLE_SERIALIZATION
+
+bool NuTo::CallbackInterface::Exit(NuTo::StructureBase &) const
+{
+    throw Exception(__PRETTY_FUNCTION__, "not implemented for this callback.");
+}

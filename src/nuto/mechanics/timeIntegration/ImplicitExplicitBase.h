@@ -8,13 +8,14 @@
 #pragma once
 
 #include "nuto/mechanics/timeIntegration/TimeIntegrationBase.h"
-#include "nuto/math/SparseDirectSolverMUMPS.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 
 namespace NuTo
 {
 
 class ConstitutiveTimeStep;
+class SparseDirectSolverMUMPS;
 
 //! @brief Base class for implicit/explicit time integration schemes like ImplEx and CycleJump
 class ImplicitExplicitBase : public TimeIntegrationBase
@@ -23,11 +24,11 @@ public:
 
     ImplicitExplicitBase(StructureBase* rStructure);
 
-    virtual ~ImplicitExplicitBase() = default;
+    virtual ~ImplicitExplicitBase();
 
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
-    virtual NuTo::Error::eError Solve(double rTimeDelta) override;
+    virtual NuTo::eError Solve(double rTimeDelta) override;
 
     //! @brief returns true, if the method is only conditionally stable (for unconditional stable, this is false)
     bool HasCriticalTimeStep() const override {

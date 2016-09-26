@@ -5,6 +5,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include <boost/filesystem.hpp>
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/timeIntegration/ResultBase.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 //! @brief constructor

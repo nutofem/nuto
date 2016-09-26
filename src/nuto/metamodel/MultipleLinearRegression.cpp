@@ -13,6 +13,7 @@
 #include <boost/math/distributions/students_t.hpp>
 #include <boost/math/distributions/fisher_f.hpp>
 
+#include "nuto/math/FullMatrix.h"
 
 #include "nuto/metamodel/MetamodelException.h"
 #include "nuto/metamodel/MultipleLinearRegression.h"

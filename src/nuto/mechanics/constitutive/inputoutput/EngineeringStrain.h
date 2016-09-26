@@ -2,10 +2,14 @@
 
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
+
 #include <type_traits>
 
 namespace NuTo
 {
+
+enum class eSectionType;
+
 
 //! @brief ... Engineering strain
 /*!

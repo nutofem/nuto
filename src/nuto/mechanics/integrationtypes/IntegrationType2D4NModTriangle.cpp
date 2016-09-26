@@ -80,7 +80,7 @@ void NuTo::IntegrationType2D4NModTriangle::AddIntegrationPoints(std::vector< std
 		unsigned int NumVisualizationPoints;
 		std::vector< double > VisualizationPointLocalCoordinates;
 		unsigned int NumVisualizationCells;
-		std::vector< NuTo::CellBase::eCellTypes > VisualizationCellType;
+		std::vector< NuTo::eCellTypes > VisualizationCellType;
 		std::vector< unsigned int > VisualizationCellsIncidence;
 		std::vector< unsigned int > VisualizationCellsIP ;
 		intTypeRef.GetVisualizationCells 	( NumVisualizationPoints, VisualizationPointLocalCoordinates, NumVisualizationCells, VisualizationCellType, VisualizationCellsIncidence, VisualizationCellsIP);
@@ -117,10 +117,10 @@ void NuTo::IntegrationType2D4NModTriangle::AddIntegrationPoints(std::vector< std
 			/// find start position
 			for(unsigned short iVis=0; iVis<idFound;++iVis){
 				switch (VisualizationCellType[iVis]) {
-					case NuTo::CellBase::TRIANGLE:
+					case NuTo::eCellTypes::TRIANGLE:
 						startId+=3;
 						break;
-					case NuTo::CellBase::QUAD:
+					case NuTo::eCellTypes::QUAD:
 						startId+=4;
 						break;
 					default:
@@ -128,10 +128,10 @@ void NuTo::IntegrationType2D4NModTriangle::AddIntegrationPoints(std::vector< std
 				}
 			}
 			switch (VisualizationCellType[idFound]) {
-				case NuTo::CellBase::TRIANGLE:
+				case NuTo::eCellTypes::TRIANGLE:
 					numPtCell=3;
 					break;
-				case NuTo::CellBase::QUAD:
+				case NuTo::eCellTypes::QUAD:
 					numPtCell=4;
 					break;
 				default:

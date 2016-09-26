@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef CONSTRAINTNODEDISPLACEMENTS3D_H
-#define CONSTRAINTNODEDISPLACEMENTS3D_H
+#pragma once
 
 #include "nuto/mechanics/constraints/ConstraintLinear.h"
 #include "nuto/mechanics/constraints/ConstraintNode.h"
@@ -52,10 +51,7 @@ public:
 
     //! @brief determines the dof type affected by the constraint
     //! @return dof type
-    Node::eDof GetDofType() const override
-    {
-        return Node::eDof::DISPLACEMENTS;
-    }
+    Node::eDof GetDofType() const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -83,5 +79,3 @@ protected:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLinearNodeDisplacements3D)
 #endif // ENABLE_SERIALIZATION
-#endif //CONSTRAINTNODEDISPLACEMENTS3D_H
-

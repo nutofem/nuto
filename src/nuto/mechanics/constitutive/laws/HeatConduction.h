@@ -34,12 +34,12 @@ public:
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output to the constitutive law
     template<int TDim>
-    NuTo::Error::eError Evaluate(
+    NuTo::eError Evaluate(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData);
 
-    NuTo::Error::eError Evaluate1D(
+    NuTo::eError Evaluate1D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) override
@@ -47,7 +47,7 @@ public:
         return Evaluate<1>(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
 
-    NuTo::Error::eError Evaluate2D(
+    NuTo::eError Evaluate2D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) override
@@ -55,7 +55,7 @@ public:
         return Evaluate<2>(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
 
-    NuTo::Error::eError Evaluate3D(
+    NuTo::eError Evaluate3D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) override
@@ -87,7 +87,7 @@ public:
 
     //! @brief Gets a set of all constitutive output enums that are compatible with the constitutive law.
     //! @return Set of all constitutive output enums that are compatible with the constitutive law
-    virtual bool CheckOutputTypeCompatibility(Constitutive::Output::eOutput rOutputEnum) const override;
+    virtual bool CheckOutputTypeCompatibility(Constitutive::eOutput rOutputEnum) const override;
 
     //! @brief Get type of constitutive relationship.
     //! @return Type of constitutive relationship

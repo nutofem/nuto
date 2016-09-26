@@ -1,5 +1,5 @@
 #include "nuto/mechanics/constitutive/laws/EngineeringStressHelper.h"
-
+#include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 
 std::tuple<double, double, double> NuTo::EngineeringStressHelper::CalculateCoefficients2DPlaneStress(double mE, double mNu)
 {

@@ -1,4 +1,7 @@
+
+#include "nuto/math/FullVector.h"
 #include "nuto/mechanics/nodes/NodeDof.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include "nuto/math/CustomBoostSerializationExtensions.h"
@@ -6,27 +9,25 @@
 #include <boost/serialization/vector.hpp>
 #endif // ENABLE_SERIALIZATION
 
-NuTo::NodeDof::NodeDof(int rNumTimeDerivatives, std::map<Node::eDof, int> rDofDimensions)
-     : NodeBase::NodeBase(), mNumTimeDerivatives(rNumTimeDerivatives)
+NuTo::NodeDof::NodeDof(std::map<Node::eDof, NodeDofInfo> rDofInfos)
+     : NodeBase::NodeBase()
 {
-    for (auto& it : rDofDimensions)
+    for (auto& it : rDofInfos)
     {
         Node::eDof dofType = it.first;
-        int dofDimension = it.second;
+        const NodeDofInfo& info = it.second;
 
         // allocate global dof numbers
-        mDofNumbers[dofType] = Eigen::VectorXi::Zero(dofDimension);
-
+        if (info.mIsDof)
+        {
+            mDofNumbers[dofType] = Eigen::VectorXi::Zero(info.mDimension);
+        }
 
         // allocate dof values
-        int numTimeDerivativesForAllocation = mNumTimeDerivatives + 1; // +1 since the 0th time derivative needs to be stored as well
-
-        if (dofType == Node::COORDINATES)
-            numTimeDerivativesForAllocation = 1; // no time derivatives for coordinates
-
-        mDofValues[dofType].resize(numTimeDerivativesForAllocation);
-        for (int i = 0; i < numTimeDerivativesForAllocation; ++i)
-            mDofValues[dofType][i] = Eigen::VectorXd::Zero(dofDimension);
+        int vectorSize = info.mNumTimeDerivatives +1; // +1 since 0th time derivative --> size 1, ...
+        mDofValues[dofType].resize(vectorSize);
+        for (int i = 0; i < vectorSize; ++i)
+            mDofValues[dofType][i] = Eigen::VectorXd::Zero(info.mDimension);
     }
 }
 
@@ -53,14 +54,19 @@ void NuTo::NodeDof::SetGlobalDofValues(
         const FullVector<double, Eigen::Dynamic>& rActiveDofValues,
         const FullVector<double, Eigen::Dynamic>& rDependentDofValues)
 {
-    assert(mNumTimeDerivatives >= rTimeDerivative);
-    if (mDofNumbers.find(rDofType) == mDofNumbers.end())
-        return;
+    auto it = mDofValues.find(rDofType);
 
-    for (int i = 0; i < mDofNumbers[rDofType].rows(); ++i)
+    if (mDofValues.find(rDofType) == mDofValues.end())
+        return; // the node does not have the requested dof type
+
+    assert(GetNumTimeDerivatives(rDofType) >= rTimeDerivative);
+
+    auto& values = it->second[rTimeDerivative];
+
+    for (int i = 0; i < values.rows(); ++i)
     {
         double dofValueToSet = GetDofValueFromVector(mDofNumbers[rDofType][i], rActiveDofValues, rDependentDofValues);
-        mDofValues[rDofType][rTimeDerivative][i] = dofValueToSet; // this might need some assertions.
+        values[i] = dofValueToSet;
     }
 }
 
@@ -70,16 +76,18 @@ void NuTo::NodeDof::GetGlobalDofValues(
         FullVector<double, Eigen::Dynamic>& rActiveDofValues,
         FullVector<double, Eigen::Dynamic>& rDependentDofValues) const
 {
-    assert(mNumTimeDerivatives >= rTimeDerivative);
+    const auto& it = mDofValues.find(rDofType);
 
-    const auto& it = mDofNumbers.find(rDofType);
+    if (it == mDofValues.end())
+        return; // the node does not have the requested dof type
 
-    if (it == mDofNumbers.end())
-        return;
+    assert(GetNumTimeDerivatives(rDofType) >= rTimeDerivative);
 
-    for (int i = 0; i < it->second.rows(); ++i)
+    auto& values = it->second[rTimeDerivative];
+
+    for (int i = 0; i < values.rows(); ++i)
     {
-        double dofValueToWrite = mDofValues.at(rDofType)[rTimeDerivative][i];
+        double dofValueToWrite = values[i];
         WriteNodeValueToVector(mDofNumbers.at(rDofType)[i], dofValueToWrite, rActiveDofValues, rDependentDofValues);
     }
 }
@@ -97,6 +105,19 @@ void NuTo::NodeDof::RenumberGlobalDofs(Node::eDof rDofType, std::vector<int>& rM
     }
 }
 
+int NuTo::NodeDof::GetNumTimeDerivatives(Node::eDof rDof) const
+{
+    const auto& it = mDofValues.find(rDof);
+    if (it == mDofValues.end())
+        return 0;
+
+    return it->second.size() - 1; // -1: dt 0 --> size 1; dt 1 --> size 2; ...
+}
+
+bool NuTo::NodeDof::IsDof(Node::eDof rDof) const
+{
+    return mDofNumbers.find(rDof) != mDofNumbers.end();
+}
 
 
 int NuTo::NodeDof::GetNumDofs() const
@@ -110,50 +131,53 @@ int NuTo::NodeDof::GetNumDofs() const
 
 int NuTo::NodeDof::GetNum(Node::eDof rDof) const
 {
-    const auto& it = mDofNumbers.find(rDof);
-    if (it != mDofNumbers.end())
-        return it->second.rows();
-    else
+    const auto& it = mDofValues.find(rDof);
+    if (it == mDofValues.end())
         return 0;
+
+    return it->second[0].rows();
 }
 
 int NuTo::NodeDof::GetDof(Node::eDof rDof, int rComponent) const
 {
-    try
-    {
-        return mDofNumbers.at(rDof)[rComponent];
-    }
-    catch (...)
-    {
+    const auto& it = mDofNumbers.find(rDof);
+    if (it == mDofNumbers.end())
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
-    }
+
+    if (rComponent >= it->second.size())
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Cannot access component " + std::to_string(rComponent) + ". Component " + std::to_string(it->second.size()) + " was requested.");
+
+    return it->second[rComponent];
 }
 
 const Eigen::VectorXd& NuTo::NodeDof::Get(Node::eDof rDof, int rTimeDerivative) const
 {
-    try
-    {
-        return mDofValues.at(rDof)[rTimeDerivative];
-    }
-    catch (...)
-    {
+    const auto& it = mDofValues.find(rDof);
+    if (it == mDofValues.end())
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
-    }
+
+    if (rTimeDerivative >= (int)it->second.size())
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Cannot access time derivative " + std::to_string(rTimeDerivative) + ". This node only has " + std::to_string(it->second.size()) + ".");
+
+    return it->second[rTimeDerivative];
 }
 
 void NuTo::NodeDof::Set(Node::eDof rDof, int rTimeDerivative , const Eigen::VectorXd& rValue)
 {
-    if (mDofValues.find(rDof) == mDofValues.end())
+    auto it = mDofValues.find(rDof);
+    if (it == mDofValues.end())
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Cannot access dof type " + Node::DofToString(rDof));
 
+    if (rTimeDerivative >= (int)it->second.size())
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Cannot access time derivative " + std::to_string(rTimeDerivative) + ". This node only has " + std::to_string(it->second.size()) + ".");
 
-    mDofValues[rDof][rTimeDerivative] = rValue;
+    it->second[rTimeDerivative] = rValue;
 }
 
 std::set<NuTo::Node::eDof> NuTo::NodeDof::GetDofTypes() const
 {
     std::set<Node::eDof> dofTypes;
-    for (auto it : mDofNumbers)
+    for (auto it : mDofValues)
         dofTypes.insert(it.first);
     return dofTypes;
 }
@@ -161,15 +185,11 @@ std::set<NuTo::Node::eDof> NuTo::NodeDof::GetDofTypes() const
 std::string NuTo::NodeDof::GetNodeTypeStr() const
 {
     std::stringstream nodeDofype;
-
-    if (mNumTimeDerivatives > 0)
-        nodeDofype << "TimeDerivatives:" << mNumTimeDerivatives << "\n";
-
     for (auto& it : mDofValues)
-        nodeDofype << Node::DofToString(it.first) << ": " << it.second[0].rows() << "\n";
-
+    {
+        nodeDofype << Node::DofToString(it.first) << ": " << it.second[0].rows() << " dt:" << it.second.size() << "\n";
+    }
     return nodeDofype.str();
-
 }
 
 NuTo::NodeBase* NuTo::NodeDof::Clone() const
@@ -229,7 +249,6 @@ void NuTo::NodeDof::serialize(Archive & ar, const unsigned int version)
     std::cout << "start serialize NodeDof" << "\n";
 #endif
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(NodeBase)
-       & BOOST_SERIALIZATION_NVP(mNumTimeDerivatives)
        & BOOST_SERIALIZATION_NVP(mDofValues)
        & BOOST_SERIALIZATION_NVP(mDofNumbers);
 #ifdef DEBUG_SERIALIZATION

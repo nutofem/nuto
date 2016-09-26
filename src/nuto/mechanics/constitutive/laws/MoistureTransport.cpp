@@ -1,15 +1,24 @@
 #include "nuto/mechanics/constitutive/laws/MoistureTransport.h"
 
+#include "nuto/base/ErrorEnum.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/constitutive/staticData/Leaf.h"
+#include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
 #include "nuto/math/Math.h"
 
 #include <limits>
 
 template <int TDim>
-NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
-        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, Constitutive::StaticData::Component* staticDataIn)
+NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport(
+        const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
+        Constitutive::StaticData::Component* staticDataIn)
 {
     auto& leaf = *static_cast<Constitutive::StaticData::Leaf<Constitutive::StaticData::DataMoistureTransport>*>(staticDataIn);
     auto& staticData = leaf.GetData();
@@ -20,32 +29,32 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
     {
         switch(itInput.first)
         {
-        case NuTo::Constitutive::Input::RELATIVE_HUMIDITY:
+        case NuTo::Constitutive::eInput::RELATIVE_HUMIDITY:
             inputData.mRelativeHumidity = (*itInput.second)[0];
             break;
 
-        case NuTo::Constitutive::Input::RELATIVE_HUMIDITY_DT1:
+        case NuTo::Constitutive::eInput::RELATIVE_HUMIDITY_DT1:
             inputData.mRelativeHumidity_dt1 = (*itInput.second)[0];
             break;
 
-        case NuTo::Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT:
+        case NuTo::Constitutive::eInput::RELATIVE_HUMIDITY_GRADIENT:
             inputData.mRelativeHumidity_Gradient = static_cast<ConstitutiveVector<TDim>*>(itInput.second.get())->AsVector();
             break;
 
-        case NuTo::Constitutive::Input::WATER_VOLUME_FRACTION:
+        case NuTo::Constitutive::eInput::WATER_VOLUME_FRACTION:
             inputData.mWaterVolumeFraction = (*itInput.second)[0];
             break;
 
-        case NuTo::Constitutive::Input::WATER_VOLUME_FRACTION_DT1:
+        case NuTo::Constitutive::eInput::WATER_VOLUME_FRACTION_DT1:
             inputData.mWaterVolumeFraction_dt1 = (*itInput.second)[0];
             break;
 
-        case NuTo::Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT:
+        case NuTo::Constitutive::eInput::WATER_VOLUME_FRACTION_GRADIENT:
             inputData.mWaterVolumeFraction_Gradient = static_cast<ConstitutiveVector<TDim>*>(itInput.second.get())->AsVector();
             break;
 
-        case NuTo::Constitutive::Input::CALCULATE_STATIC_DATA:
-        case NuTo::Constitutive::Input::TIME_STEP:
+        case NuTo::Constitutive::eInput::CALCULATE_STATIC_DATA:
+        case NuTo::Constitutive::eInput::TIME_STEP:
             break;
 
         default:
@@ -64,7 +73,8 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
         // ----------------------------------------------------------------------------------------
         // Internal Gradient
         //-----------------------------------------------------------------------------------------
-        case NuTo::Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_B:
+
+        case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_B:
         {
             //Asserts
             itOutput.second->AssertIsVector<TDim>(itOutput.first,__PRETTY_FUNCTION__);
@@ -76,7 +86,9 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
             internalGradientRH_B = mDiffusionCoefficientRH* pow(1 - (inputData.mWaterVolumeFraction / mPoreVolumeFraction), mDiffusionExponentRH) * inputData.mRelativeHumidity_Gradient;
         }
             break;
-        case NuTo::Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_N:
+
+
+        case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_N:
         {
             //Asserts
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
@@ -96,7 +108,8 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
                                                                                                                   + currentSorptionCoeff(2) * inputData.mRelativeHumidity * inputData.mRelativeHumidity);
         }
             break;
-        case NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_B:
+
+        case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_B:
         {
             //Asserts
             itOutput.second->AssertIsVector<TDim>(itOutput.first,__PRETTY_FUNCTION__);
@@ -109,7 +122,8 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
                                           * pow(inputData.mWaterVolumeFraction / mPoreVolumeFraction, mDiffusionExponentWV);
         }
             break;
-        case NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_N:
+
+        case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_N:
         {
             //Asserts
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
@@ -131,7 +145,9 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
         // ----------------------------------------------------------------------------------------
         // Hessian 0 (Stiffness)
         //-----------------------------------------------------------------------------------------
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_BB_H0:
+
+
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_RH_BB_H0:
         {
             //Asserts
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
@@ -143,7 +159,8 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
                                                   * pow(1 - (inputData.mWaterVolumeFraction / mPoreVolumeFraction), mDiffusionExponentRH);
         }
             break;
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_NN_H0:
+
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_RH_NN_H0:
         {
             //Asserts
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
@@ -169,7 +186,9 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
             }
         }
             break;
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_BN_H0:
+
+
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_WV_BN_H0:
         {
             //Asserts
             itOutput.second->AssertIsVector<TDim>(itOutput.first,__PRETTY_FUNCTION__);
@@ -189,7 +208,9 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
             }
         }
             break;
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_NN_H0:
+
+
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_WV_NN_H0:
         {
             //Asserts
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
@@ -208,7 +229,8 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
             }
         }
             break;
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_RH_NN_H0:
+
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_RH_NN_H0:
         {
             //Asserts
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
@@ -233,7 +255,8 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
 
         }
             break;
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BB_H0:
+
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_WV_BB_H0:
         {
             //Asserts
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
@@ -245,7 +268,9 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
                                                   * pow(inputData.mWaterVolumeFraction / mPoreVolumeFraction, mDiffusionExponentWV);
         }
             break;
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BN_H0:
+
+
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_WV_BN_H0:
         {
             //Asserts
             itOutput.second->AssertIsVector<TDim>(itOutput.first,__PRETTY_FUNCTION__);
@@ -265,7 +290,10 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
             }
         }
             break;
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_NN_H0:
+
+
+
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_WV_NN_H0:
         {
             //Asserts
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
@@ -278,7 +306,8 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
         // ----------------------------------------------------------------------------------------
         // Hessian 1 (Damping)
         //-----------------------------------------------------------------------------------------
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_NN_H1:
+
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_RH_NN_H1:
         {
             //Asserts
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
@@ -289,7 +318,9 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
             internalGradientRH_dRH_NN_H1(0,0) =     mDensitySaturatedWaterVapor     * (mPoreVolumeFraction  - inputData.mWaterVolumeFraction);
         }
             break;
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_NN_H1:
+
+
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_WV_NN_H1:
         {
             //Asserts
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
@@ -300,7 +331,9 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
             internalGradientRH_dWV_NN_H1(0,0) =   - mDensitySaturatedWaterVapor * inputData.mRelativeHumidity;
         }
             break;
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_NN_H1:
+
+
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_WV_NN_H1:
         {
             //Asserts
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
@@ -315,7 +348,8 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
         // Boundary - Internal Gradient
         //-----------------------------------------------------------------------------------------
         //VHIRTHAMTODO --- Check everything again --- asserts missing etc.
-        case NuTo::Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N:
+
+        case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N:
         {
             //Asserts
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
@@ -323,11 +357,11 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
             //Calculation
             Eigen::Matrix<double, 1, 1>& internalGradientRH_Boundary_N = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
 
-            double relativeHumidityBoundary = mControlNode->Get(Node::RELATIVEHUMIDITY).at(0,0);
+            double relativeHumidityBoundary = mControlNode->Get(Node::eDof::RELATIVEHUMIDITY).at(0,0);
             internalGradientRH_Boundary_N(0,0) =    mBoundaryDiffusionCoefficientRH * (inputData.mRelativeHumidity - relativeHumidityBoundary);
         }
             break;
-        case NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N:
+        case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N:
         {
             //Asserts
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
@@ -336,14 +370,16 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
             Eigen::Matrix<double, 1, 1>& internalGradientWV_Boundary_N = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
 
             double waterVolumeFractionBoundary = GetEquilibriumWaterVolumeFraction(
-                    mControlNode->Get(Node::RELATIVEHUMIDITY).at(0,0), staticData.GetCurrentSorptionCoeff());
+                    mControlNode->Get(Node::eDof::RELATIVEHUMIDITY).at(0,0), staticData.GetCurrentSorptionCoeff());
+
             internalGradientWV_Boundary_N(0,0) =    mBoundaryDiffusionCoefficientWV * (inputData.mWaterVolumeFraction - waterVolumeFractionBoundary);
         }
             break;
         // ----------------------------------------------------------------------------------------
         // Boundary - Hessian 0 (Stiffness)
         //-----------------------------------------------------------------------------------------
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0:
+
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0:
         {
             //Asserts
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
@@ -354,7 +390,9 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
             internalGradientRH_dRH_Boundary_NN_H0(0,0) =    mBoundaryDiffusionCoefficientRH;
         }
             break;
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0:
+
+
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0:
         {
             //Asserts
             itOutput.second->AssertIsScalar(itOutput.first,__PRETTY_FUNCTION__);
@@ -369,7 +407,9 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
         // ----------------------------------------------------------------------------------------
         // Static data
         //-----------------------------------------------------------------------------------------
-        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
+
+
+        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
         {
 
             if (staticData.GetLastRelHumValue() > inputData.mRelativeHumidity)
@@ -392,13 +432,32 @@ NuTo::Error::eError NuTo::MoistureTransport::EvaluateMoistureTransport(const NuT
         }
         itOutput.second->SetIsCalculated(true);
     }
-    return NuTo::Error::SUCCESSFUL;
+    return NuTo::eError::SUCCESSFUL;
 }
 
 
+
+
+
+
+NuTo::Constitutive::StaticData::Component* NuTo::MoistureTransport::AllocateStaticData1D(const NuTo::ElementBase *rElement) const
+{
+    return Constitutive::StaticData::Leaf<Constitutive::StaticData::DataMoistureTransport>::Create(Constitutive::StaticData::DataMoistureTransport());
+}
+
+NuTo::Constitutive::StaticData::Component* NuTo::MoistureTransport::AllocateStaticData2D(const NuTo::ElementBase *rElement) const
+{
+    return Constitutive::StaticData::Leaf<Constitutive::StaticData::DataMoistureTransport>::Create(Constitutive::StaticData::DataMoistureTransport());
+}
+
+NuTo::Constitutive::StaticData::Component* NuTo::MoistureTransport::AllocateStaticData3D(const NuTo::ElementBase *rElement) const
+{
+    return Constitutive::StaticData::Leaf<Constitutive::StaticData::DataMoistureTransport>::Create(Constitutive::StaticData::DataMoistureTransport());
+}
+
 //! @brief ... calculates the sorption Curve coefficients when the sorption direction has changed
 void NuTo::MoistureTransport::CalculateSorptionCurveCoefficients(
-        Constitutive::StaticData::DataMoistureTransport& staticData, double relativeHumidity)
+          Constitutive::StaticData::DataMoistureTransport& staticData, double relativeHumidity)
 {
     if(mEnableSorptionHysteresis)
     {
@@ -598,6 +657,32 @@ void NuTo::MoistureTransport::CalculateSorptionCurveCoefficients(
     }
 }
 
+void NuTo::MoistureTransport::CheckValueInLimits(std::string rCallingFunction, double rValue, double rLimLower, double rLimUpper) const
+{
+    if(rValue < rLimLower || rValue > rLimUpper)
+        throw NuTo::MechanicsException(rCallingFunction,"Value(" + std::to_string(rValue) + ") exceeds limits ["+std::to_string(rLimLower)+","+std::to_string(rLimUpper)+"]");
+}
+
+void NuTo::MoistureTransport::CheckValuePositive(std::string rCallingFunction, double rValue, bool rCountZeroAsPositive) const
+{
+    if (rValue<0.0 || (!rCountZeroAsPositive && rValue <= 0.0))
+        throw NuTo::MechanicsException(rCallingFunction,"Value(" + std::to_string(rValue) + ") not positive");
+}
+
+void NuTo::MoistureTransport::CheckSorptionCoefficients(std::string rCallingFunction, NuTo::FullVector<double, Eigen::Dynamic> rSorptionCoefficients) const
+{
+    if (rSorptionCoefficients.GetNumRows() < 3 || rSorptionCoefficients.GetNumRows() > 4)
+        throw NuTo::MechanicsException(rCallingFunction,"The vector for the desorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
+    if (rSorptionCoefficients.GetNumRows() == 4 && rSorptionCoefficients(0)!=0.0)
+        throw NuTo::MechanicsException(rCallingFunction,"The first desorption coefficients (constant term) has to be zero");
+    for(int i =0; i<rSorptionCoefficients.GetNumRows(); ++i)
+    {
+        if(rSorptionCoefficients(i)!=0)
+            return;
+    }
+    throw NuTo::MechanicsException(rCallingFunction,"All sorption coefficients are zero!");
+}
+
 
 
 
@@ -609,14 +694,14 @@ bool NuTo::MoistureTransport::CheckDofCombinationComputable(NuTo::Node::eDof rDo
 
     switch (Node::CombineDofs(rDofRow, rDofCol))
     {
-    case Node::CombineDofs(Node::WATERVOLUMEFRACTION,   Node::RELATIVEHUMIDITY):
+    case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION,   Node::eDof::RELATIVEHUMIDITY):
         if (rTimeDerivative<1)
             return true;
         else
             return false;
-    case Node::CombineDofs(Node::RELATIVEHUMIDITY,      Node::RELATIVEHUMIDITY):
-    case Node::CombineDofs(Node::RELATIVEHUMIDITY,      Node::WATERVOLUMEFRACTION):
-    case Node::CombineDofs(Node::WATERVOLUMEFRACTION,   Node::WATERVOLUMEFRACTION):
+    case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY,      Node::eDof::RELATIVEHUMIDITY):
+    case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY,      Node::eDof::WATERVOLUMEFRACTION):
+    case Node::CombineDofs(Node::eDof::WATERVOLUMEFRACTION,   Node::eDof::WATERVOLUMEFRACTION):
         if (rTimeDerivative<2)
             return true;
         else
@@ -637,8 +722,8 @@ bool                                        NuTo::MoistureTransport::CheckElemen
 {
     switch (rElementType)
     {
-    case NuTo::Element::CONTINUUMELEMENT:
-    case NuTo::Element::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
+    case NuTo::Element::eElementType::CONTINUUMELEMENT:
+    case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
         return true;
     default:
         return false;
@@ -684,102 +769,102 @@ NuTo::ConstitutiveInputMap NuTo::MoistureTransport::GetConstitutiveInputs(  cons
 
         // Internal Gradient
         // ----------------------------------------------------------------------------------------
-        case NuTo::Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_B:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT] = nullptr;
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
+        case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_B:
+            constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY_GRADIENT] = nullptr;
+            constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
-        case NuTo::Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_N:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_DT1] = nullptr;
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_DT1] = nullptr;
+        case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_N:
+            constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY] = nullptr;
+            constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY_DT1] = nullptr;
+            constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION] = nullptr;
+            constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION_DT1] = nullptr;
             break;
 
-        case NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_B:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT] = nullptr;
+        case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_B:
+            constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION] = nullptr;
+            constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION_GRADIENT] = nullptr;
             break;
 
-        case NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_N:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_DT1] = nullptr;
+        case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_N:
+            constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY] = nullptr;
+            constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION] = nullptr;
+            constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION_DT1] = nullptr;
             break;
 
 
         // Hessian 0
         // ----------------------------------------------------------------------------------------
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_BB_H0:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_RH_BB_H0:
+            constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_NN_H0:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_DT1] = nullptr;
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_RH_NN_H0:
+            constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY] = nullptr;
+            constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY_DT1] = nullptr;
             break;
 
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_BN_H0:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_GRADIENT] = nullptr;
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_WV_BN_H0:
+            constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY_GRADIENT] = nullptr;
+            constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_NN_H0:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY_DT1] = nullptr;
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_WV_NN_H0:
+            constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY_DT1] = nullptr;
             break;
 
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_RH_NN_H0:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_RH_NN_H0:
+            constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY] = nullptr;
             break;
 
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BB_H0:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_WV_BB_H0:
+            constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BN_H0:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION_GRADIENT] = nullptr;
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_WV_BN_H0:
+            constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION] = nullptr;
+            constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION_GRADIENT] = nullptr;
             break;
 
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_NN_H0:
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_WV_NN_H0:
             break;
 
 
         // Hessian 1
         // ----------------------------------------------------------------------------------------
 
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_NN_H1:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_RH_NN_H1:
+            constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_WV_NN_H1:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_WV_NN_H1:
+            constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY] = nullptr;
             break;
 
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_NN_H1:
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_WV_NN_H1:
             break;
 
         // Boundary
         // ----------------------------------------------------------------------------------------
 
-        case NuTo::Constitutive::Output::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY] = nullptr;
+        case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N:
+            constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY] = nullptr;
             break;
 
-        case NuTo::Constitutive::Output::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N:
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION] = nullptr;
+        case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N:
+            constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION] = nullptr;
             break;
 
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0:
-        case NuTo::Constitutive::Output::D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0:
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0:
+        case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0:
             break;
 
         // Misc
         // ----------------------------------------------------------------------------------------
 
 
-        case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
-        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
             break;
         default:
             continue;
@@ -791,6 +876,10 @@ NuTo::ConstitutiveInputMap NuTo::MoistureTransport::GetConstitutiveInputs(  cons
     return constitutiveInputMap;
 }
 
+NuTo::Constitutive::eConstitutiveType NuTo::MoistureTransport::GetType() const
+{
+    return NuTo::Constitutive::eConstitutiveType::MOISTURE_TRANSPORT;
+}
 
 //! @brief ... gets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter

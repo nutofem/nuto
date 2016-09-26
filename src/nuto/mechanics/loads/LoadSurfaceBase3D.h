@@ -12,11 +12,11 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/loads/LoadBase.h"
 
 namespace NuTo
 {
+class IntegrationTypeBase;
 class NodeBase;
 template<int TDim> class ContinuumElement;
 class StructureBase;

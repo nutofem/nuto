@@ -1,8 +1,7 @@
 // $Id $
-#ifndef ELEMENT_OUTPUT_FULLMATRIX_INT_H_
-#define ELEMENT_OUTPUT_FULLMATRIX_INT_H_
+#pragma once
 
-#include "nuto/math/FullMatrix.h"
+#include "nuto/math/FullMatrix_Def.h"
 
 #include "nuto/mechanics/elements/ElementOutputBase.h"
 
@@ -44,4 +43,3 @@ private:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::ElementOutputFullMatrixInt)
 #endif // ENABLE_SERIALIZATION
-#endif /* ELEMENT_OUTPUT_FULLMATRIX_INT_H_ */

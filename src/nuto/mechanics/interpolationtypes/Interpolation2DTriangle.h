@@ -5,8 +5,7 @@
  *      Author: ttitsche
  */
 
-#ifndef INTERPOLATION2DTRIANGLE_H_
-#define INTERPOLATION2DTRIANGLE_H_
+#pragma once
 
 #include "nuto/mechanics/interpolationtypes/Interpolation2D.h"
 
@@ -31,7 +30,7 @@ public:
 
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type
-    IntegrationType::eIntegrationType GetStandardIntegrationType() const override;
+    eIntegrationType GetStandardIntegrationType() const override;
 
     //! @brief returns the natural coordinates of the dof node
     //! @param rDofType ... dof type
@@ -75,4 +74,3 @@ private:
 
 } /* namespace NuTo */
 
-#endif /* INTERPOLATIONTYPE2DTRIANGLE_H_ */

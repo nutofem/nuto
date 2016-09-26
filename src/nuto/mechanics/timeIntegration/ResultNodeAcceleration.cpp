@@ -5,8 +5,12 @@
  *      Author: junger
  */
 
+#include "nuto/math/FullMatrix.h"
+#include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/timeIntegration/ResultNodeAcceleration.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 NuTo::ResultNodeAcceleration::ResultNodeAcceleration(const std::string& rIdent, int rNodeId) : ResultNodeDof(rIdent, rNodeId)
 {
@@ -17,14 +21,19 @@ void NuTo::ResultNodeAcceleration::CalculateValues(const StructureBase& rStructu
 {
     const NodeBase* node(rStructure.NodeGetNodePtr(mNodeId));
 
-    rValues = node->Get(Node::DISPLACEMENTS, 2).transpose();
+    rValues = node->Get(Node::eDof::DISPLACEMENTS, 2).transpose();
 }
 
 //! @brief number of data points per time step (e.g. number of Accelerationlacement components of a node
 int NuTo::ResultNodeAcceleration::GetNumData(const StructureBase& rStructure)const
 {
     const NodeBase* node(rStructure.NodeGetNodePtr(mNodeId));
-    return node->GetNum(Node::DISPLACEMENTS);
+    return node->GetNum(Node::eDof::DISPLACEMENTS);
+}
+
+NuTo::eTimeIntegrationResultType NuTo::ResultNodeAcceleration::GetResultType() const
+{
+    return NuTo::eTimeIntegrationResultType::NODE_ACCELERATION;
 }
 
 

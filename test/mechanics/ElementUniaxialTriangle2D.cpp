@@ -43,8 +43,8 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
     }
 
     int myInterpolationType = myStructure.InterpolationTypeCreate("Triangle2D");
-    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::DISPLACEMENTS, rTypeOrder);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, rTypeOrder);
 
     //create elements
     for (int countY=0; countY<numElementsY; countY++)
@@ -84,10 +84,10 @@ int main(int argc, char* argv[])
 
     try
     {
-        Run(NuTo::Interpolation::EQUIDISTANT1);
-        Run(NuTo::Interpolation::EQUIDISTANT2);
-        Run(NuTo::Interpolation::EQUIDISTANT3);
-        Run(NuTo::Interpolation::EQUIDISTANT4);
+        Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+        Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+        Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT3);
+        Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT4);
     }
     catch (NuTo::Exception& e)
     {

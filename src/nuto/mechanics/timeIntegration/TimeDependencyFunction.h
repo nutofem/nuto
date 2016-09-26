@@ -1,6 +1,6 @@
-#ifndef TIMEDEPENDENCYFUNCTION
-#define TIMEDEPENDENCYFUNCTION
+#pragma once
 
+#include "nuto/mechanics/timeIntegration/TimeDependencyBase.h"
 #include <functional>
 
 namespace NuTo
@@ -29,6 +29,4 @@ private:
 };
 } // namespace NuTo
 
-
-#endif // TIMEDEPENDENCYFUNCTION
 

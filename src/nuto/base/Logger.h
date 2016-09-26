@@ -12,9 +12,12 @@
 #include <boost/serialization/split_member.hpp>
 #endif // ENABLE_SERIALIZATION
 
+// STL:
 #include <iostream>
 #include <fstream>
 #include <string>
+
+// INHERITANCE:
 #include "nuto/base/NuToObject.h"
 
 namespace NuTo

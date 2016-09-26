@@ -1,6 +1,5 @@
 // $Id$
-#ifndef IntegrationType1D2NGauss2Ip_H
-#define IntegrationType1D2NGauss2Ip_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -73,7 +72,7 @@ public:
         unsigned int& NumVisualizationPoints,
         std::vector<double>& VisualizationPointLocalCoordinates,
         unsigned int& NumVisualizationCells,
-        std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+        std::vector<NuTo::eCellTypes>& VisualizationCellType,
         std::vector<unsigned int>& VisualizationCellsIncidence,
         std::vector<unsigned int>& VisualizationCellsIP) const;
 #endif // ENABLE_VISUALIZE
@@ -87,4 +86,3 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType1D2NGauss2Ip)
 #endif
 
-#endif //IntegrationType1D2NGauss2Ip_H

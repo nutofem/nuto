@@ -3,17 +3,17 @@
 #include "nuto/visualize/VisualizeDataType.h"
 #include "nuto/visualize/VisualizeException.h"
 
-NuTo::VisualizeDataType::VisualizeDataType(const std::string& rIdent, eDataType rDataType) : mIdent(rIdent), mDataType(rDataType)
+NuTo::VisualizeDataType::VisualizeDataType(const std::string& rIdent, eVisualizeDataType rDataType) : mIdent(rIdent), mDataType(rDataType)
 {
     switch (rDataType)
     {
-    case NuTo::VisualizeDataType::SCALAR:
+    case NuTo::eVisualizeDataType::SCALAR:
         this->mNumData = 1;
         break;
-    case NuTo::VisualizeDataType::VECTOR:
+    case NuTo::eVisualizeDataType::VECTOR:
         this->mNumData = 3;
         break;
-    case NuTo::VisualizeDataType::TENSOR:
+    case NuTo::eVisualizeDataType::TENSOR:
         this->mNumData = 9;
         break;
     default:
@@ -23,7 +23,7 @@ NuTo::VisualizeDataType::VisualizeDataType(const std::string& rIdent, eDataType 
 
 void NuTo::VisualizeDataType::SetNumData(unsigned int& rNumData)
 {
-    if (this->mDataType != NuTo::VisualizeDataType::FIELD)
+    if (this->mDataType != NuTo::eVisualizeDataType::FIELD)
     {
         throw NuTo::VisualizeException("[NuTo::DataType::SetNumEntries] Number of entries can only be changed for FIELD data.");
     }

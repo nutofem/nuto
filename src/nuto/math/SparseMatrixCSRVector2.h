@@ -1,10 +1,8 @@
 // $Id: SparseMatrixCSRVector2.h 235 2010-04-22 09:25:38Z arnold2 $
 
-#ifndef SPARSE_MATRIX_CSR_VECTOR2_H
-#define SPARSE_MATRIX_CSR_VECTOR2_H
+#pragma once
 #include <vector>
 #include <string>
-#include <climits>
 #include <assert.h>
 #include <iostream>
 #include <fstream>  //for file acces
@@ -20,12 +18,9 @@
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
 #endif // ENABLE_SERIALIZATION
-#include <boost/foreach.hpp>
 
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
+#include "nuto/math/FullVector_Def.h"
 #include "nuto/math/SparseMatrix.h"
-#include "nuto/math/MathException.h"
 
 namespace NuTo
 {
@@ -478,4 +473,3 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::SparseMatrixCSRVector2<int>)
 #endif  // SWIG
 #endif  // ENABLE_SERIALIZATION
 
-#endif // SPARSE_MATRIX_CSR_VECTOR2_H

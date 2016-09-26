@@ -1,11 +1,21 @@
 #pragma once
 
-#include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
+#include <tuple>
 
 namespace NuTo
 {
+
+// forward declarations
+class InterpolationType;
+template<typename IOEnum> class ConstitutiveIOMap;
+template <int TDim> class EngineeringStrain;
+namespace Constitutive
+{
+    enum class eInput;
+}
+using ConstitutiveInputMap = ConstitutiveIOMap<Constitutive::eInput>;
+
+
 
 class EngineeringStressHelper
 {

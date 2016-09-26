@@ -1,7 +1,8 @@
 // $Id$
 
 #include "nuto/mechanics/sections/SectionSpring.h"
-
+#include "nuto/mechanics/sections/SectionEnum.h"
+#include <iostream>
 
 // constructor
 NuTo::SectionSpring::SectionSpring()
@@ -10,9 +11,9 @@ NuTo::SectionSpring::SectionSpring()
 
 
 // get section type
-NuTo::Section::eSectionType NuTo::SectionSpring::GetType() const
+NuTo::eSectionType NuTo::SectionSpring::GetType() const
 {
-    return Section::SPRING;
+    return eSectionType::SPRING;
 }
 
 // info routine

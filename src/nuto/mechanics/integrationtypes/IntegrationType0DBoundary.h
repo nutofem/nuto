@@ -1,6 +1,5 @@
 // $Id$
-#ifndef INTEGRATIONTYPE0DBOUNDARY_H
-#define INTEGRATIONTYPE0DBOUNDARY_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -11,7 +10,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif //ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/integrationtypes/IntegrationType1D.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 
 namespace NuTo
 {
@@ -76,10 +75,9 @@ public:
         unsigned int& NumVisualizationPoints,
         std::vector<double>& VisualizationPointLocalCoordinates,
         unsigned int& NumVisualizationCells,
-        std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+        std::vector<NuTo::eCellTypes>& VisualizationCellType,
         std::vector<unsigned int>& VisualizationCellsIncidence,
         std::vector<unsigned int>& VisualizationCellsIP) const;
 #endif // ENABLE_VISUALIZE
 };
 }
-#endif //INTEGRATIONTYPE0DBOUNDARY_H

@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef MULTIPLELINEARREGRESSION_H_
-#define MULTIPLELINEARREGRESSION_H_
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -9,6 +8,7 @@
 #include <boost/serialization/vector.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+//parent
 #include "nuto/metamodel/Metamodel.h"
 
 namespace NuTo
@@ -236,4 +236,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::MultipleLinearRegression)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
-#endif /* MULTIPLELINEARREGRESSION_H_ */

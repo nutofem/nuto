@@ -1,12 +1,15 @@
 #include "AdditiveInputExplicit.h"
+#include "nuto/base/ErrorEnum.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
 #include "nuto/mechanics/constitutive/staticData/Composite.h"
 
 void NuTo::AdditiveInputExplicit::AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiveLaw,
-        Constitutive::Input::eInput rModiesInput)
+        Constitutive::eInput rModiesInput)
 {
-    if(rModiesInput == Constitutive::Input::NONE)
+    if(rModiesInput == Constitutive::eInput::NONE)
     {
         if (mMainLaw != nullptr)
             throw MechanicsException(__PRETTY_FUNCTION__,
@@ -53,6 +56,11 @@ NuTo::ConstitutiveInputMap NuTo::AdditiveInputExplicit::GetConstitutiveInputs(
     return mainLawConstitutiveInputMap.Merge(sublawsConstitutiveInputMap);
 }
 
+NuTo::Constitutive::eConstitutiveType NuTo::AdditiveInputExplicit::GetType() const
+{
+    return NuTo::Constitutive::eConstitutiveType::ADDITIVE_INPUT_EXPLICIT;
+}
+
 
 template <int TDim>
 void NuTo::AdditiveInputExplicit::ApplySublawOutputs(const ConstitutiveInputMap& rMainLawInput,
@@ -60,12 +68,12 @@ void NuTo::AdditiveInputExplicit::ApplySublawOutputs(const ConstitutiveInputMap&
 {
     for (const auto& it : rSublawOutput)
     {
-        if (it.first == Constitutive::Output::ENGINEERING_STRAIN)
+        if (it.first == Constitutive::eOutput::ENGINEERING_STRAIN)
         {
             // Modify input strain for main constitutive law
-            assert(rSublawOutput.at(Constitutive::Output::ENGINEERING_STRAIN)!=nullptr);
-            assert(rMainLawInput.at(Constitutive::Input::ENGINEERING_STRAIN)!=nullptr);
-            *static_cast<EngineeringStrain<TDim>*>(rMainLawInput.at(Constitutive::Input::ENGINEERING_STRAIN).get()) -= *static_cast<EngineeringStrain<TDim>*>(rSublawOutput.at(Constitutive::Output::ENGINEERING_STRAIN).get());
+            assert(rSublawOutput.at(Constitutive::eOutput::ENGINEERING_STRAIN)!=nullptr);
+            assert(rMainLawInput.at(Constitutive::eInput::ENGINEERING_STRAIN)!=nullptr);
+            *static_cast<EngineeringStrain<TDim>*>(rMainLawInput.at(Constitutive::eInput::ENGINEERING_STRAIN).get()) -= *static_cast<EngineeringStrain<TDim>*>(rSublawOutput.at(Constitutive::eOutput::ENGINEERING_STRAIN).get());
         }
         else if (rConstitutiveOutput.count(it.first) and rConstitutiveOutput.at(it.first) != nullptr)
         {
@@ -85,17 +93,17 @@ void NuTo::AdditiveInputExplicit::CalculateDerivatives(const ConstitutiveOutputM
     {
         switch(itOutput.first)
         {
-        case Constitutive::Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
-        case Constitutive::Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:
-        case Constitutive::Output::D_ENGINEERING_STRESS_D_TEMPERATURE:
+        case Constitutive::eOutput::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
+        case Constitutive::eOutput::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:
+        case Constitutive::eOutput::D_ENGINEERING_STRESS_D_TEMPERATURE:
         {
             for (unsigned int i = 0; i < mSublaws.size(); ++i)
             {
-                if(mInputsToModify[i] == Constitutive::Input::ENGINEERING_STRAIN)
+                if(mInputsToModify[i] == Constitutive::eInput::ENGINEERING_STRAIN)
                 {
                     // Get the corresponding sublaw output
-                    Constitutive::Output::eOutput derivativeOutputEnum =
-                        GetDerivativeEnumSublaw(Constitutive::Output::ENGINEERING_STRAIN, itOutput.first);
+                    Constitutive::eOutput derivativeOutputEnum =
+                        GetDerivativeEnumSublaw(Constitutive::eOutput::ENGINEERING_STRAIN, itOutput.first);
 
                     const ConstitutiveOutputMap::iterator& sublawOutput = rSublawOutputVec[i].find(derivativeOutputEnum);
 
@@ -104,7 +112,7 @@ void NuTo::AdditiveInputExplicit::CalculateDerivatives(const ConstitutiveOutputM
                         continue;
                     else
                     {
-                        assert(rConstitutiveOutput.count(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN));
+                        assert(rConstitutiveOutput.count(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN));
                         assert(itOutput.second->GetIsCalculated() == false &&
                                 "Currently it is not supported that multiple sublaws write to the same derivative");
                         if(sublawOutput->second->GetIsCalculated() == false)
@@ -112,7 +120,7 @@ void NuTo::AdditiveInputExplicit::CalculateDerivatives(const ConstitutiveOutputM
                                     + Constitutive::OutputToString(sublawOutput->first) + 
                                     ", which is necessary to determine " + Constitutive::OutputToString(itOutput.first)
                                     + " was requested  from a sublaw but has not been calculated!" );
-                        const auto& tangentStressStrain = *static_cast<ConstitutiveMatrix<VoigtDim, VoigtDim>*>(rConstitutiveOutput.at(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN).get());
+                        const auto& tangentStressStrain = *static_cast<ConstitutiveMatrix<VoigtDim, VoigtDim>*>(rConstitutiveOutput.at(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN).get());
                         const auto& sublawDerivative = *static_cast<ConstitutiveVector<VoigtDim>*>(sublawOutput->second.get());
 
                         (static_cast<EngineeringStress<TDim>*>(itOutput.second.get()))->AsVector() = tangentStressStrain * sublawDerivative;
@@ -133,11 +141,11 @@ void NuTo::AdditiveInputExplicit::CalculateDerivatives(const ConstitutiveOutputM
 
 
 template <int TDim>
-NuTo::Error::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit(
+NuTo::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit(
         const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
         NuTo::Constitutive::StaticData::Component* staticData)
 {
-    Error::eError error = Error::SUCCESSFUL;
+    eError error = eError::SUCCESSFUL;
     // Copy inputs for main law, because they might be modified by the sublaws and these modifications will be passed above the borders of this law.
     NuTo::ConstitutiveInputMap mainLawInputMap = rConstitutiveInput;
 
@@ -151,7 +159,7 @@ NuTo::Error::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit(
 
         // evaluate sublaw
         mSublaws[i]->Evaluate<TDim>(rConstitutiveInput, sublawOutputMapVec[i], staticData);
-        if(error != Error::SUCCESSFUL)
+        if(error != eError::SUCCESSFUL)
             throw MechanicsException(__PRETTY_FUNCTION__,
                     "Attached constitutive law returned an error code. Can't handle this");
 
@@ -169,22 +177,22 @@ NuTo::Error::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit(
 }
 
 
-NuTo::Constitutive::Output::eOutput NuTo::AdditiveInputExplicit::GetDerivativeEnumSublaw(NuTo::Constitutive::Output::eOutput rParameter,
-                                                                                         NuTo::Constitutive::Output::eOutput rMainDerivative) const
+NuTo::Constitutive::eOutput NuTo::AdditiveInputExplicit::GetDerivativeEnumSublaw(NuTo::Constitutive::eOutput rParameter,
+                                                                                         NuTo::Constitutive::eOutput rMainDerivative) const
 {
     switch (rParameter)
     {
-    case Constitutive::Output::ENGINEERING_STRAIN:
+    case Constitutive::eOutput::ENGINEERING_STRAIN:
         switch(rMainDerivative)
         {
-        case Constitutive::Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
-            return Constitutive::Output::D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY;
+        case Constitutive::eOutput::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
+            return Constitutive::eOutput::D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY;
 
-        case Constitutive::Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:
-            return Constitutive::Output::D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION;
+        case Constitutive::eOutput::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:
+            return Constitutive::eOutput::D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION;
 
-        case Constitutive::Output::D_ENGINEERING_STRESS_D_TEMPERATURE:
-            return Constitutive::Output::D_STRAIN_D_TEMPERATURE;
+        case Constitutive::eOutput::D_ENGINEERING_STRESS_D_TEMPERATURE:
+            return Constitutive::eOutput::D_STRAIN_D_TEMPERATURE;
 
         default:
             throw Exception(__PRETTY_FUNCTION__,
@@ -211,18 +219,17 @@ NuTo::ConstitutiveOutputMap NuTo::AdditiveInputExplicit::GetSublawOutputMap(
     {
         switch (itMainLawOutput.first)
         {
-        case Constitutive::Output::SHRINKAGE_STRAIN_VISUALIZE:
-        case Constitutive::Output::THERMAL_STRAIN:
+        case Constitutive::eOutput::SHRINKAGE_STRAIN_VISUALIZE:
+        case Constitutive::eOutput::THERMAL_STRAIN:
             modifiedOutputMap.emplace(itMainLawOutput.first,itMainLawOutput.second->clone());
             break;
-
-        case Constitutive::Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
-        case Constitutive::Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:
-        case Constitutive::Output::D_ENGINEERING_STRESS_D_TEMPERATURE:
-            if(mInputsToModify[rSublawIndex] == Constitutive::Input::ENGINEERING_STRAIN)
+        case Constitutive::eOutput::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
+        case Constitutive::eOutput::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:
+        case Constitutive::eOutput::D_ENGINEERING_STRESS_D_TEMPERATURE:
+            if(mInputsToModify[rSublawIndex] == Constitutive::eInput::ENGINEERING_STRAIN)
             {
-                Constitutive::Output::eOutput derivativeOutputEnum = 
-                    GetDerivativeEnumSublaw(Constitutive::Output::ENGINEERING_STRAIN, itMainLawOutput.first);
+                Constitutive::eOutput derivativeOutputEnum =
+                    GetDerivativeEnumSublaw(Constitutive::eOutput::ENGINEERING_STRAIN, itMainLawOutput.first);
                 modifiedOutputMap.emplace(derivativeOutputEnum,
                     ConstitutiveIOBase::makeConstitutiveIO<TDim>(derivativeOutputEnum));
             }
@@ -236,14 +243,15 @@ NuTo::ConstitutiveOutputMap NuTo::AdditiveInputExplicit::GetSublawOutputMap(
     // Add sublaw outputs depending on main law inputs
     switch (mInputsToModify[rSublawIndex])
     {
-    case Constitutive::Input::ENGINEERING_STRAIN:
+    case Constitutive::eInput::ENGINEERING_STRAIN:
         for (const auto& itMainLawInput : rMainLawInputMap)
         {
             switch (itMainLawInput.first)
             {
-            case Constitutive::Input::ENGINEERING_STRAIN:
-                modifiedOutputMap.emplace(Constitutive::Output::ENGINEERING_STRAIN,
-                    ConstitutiveIOBase::makeConstitutiveIO<TDim>(Constitutive::Output::ENGINEERING_STRAIN));
+            case Constitutive::eInput::ENGINEERING_STRAIN:
+                modifiedOutputMap.emplace(Constitutive::eOutput::ENGINEERING_STRAIN,
+                    ConstitutiveIOBase::makeConstitutiveIO<TDim>(Constitutive::eOutput::ENGINEERING_STRAIN));
+
                 break;
             default:
                 break;

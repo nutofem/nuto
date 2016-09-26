@@ -13,7 +13,6 @@
 #endif // ENABLE_SERIALIZATION
 
 
-#include "nuto/visualize/VisualizeUnstructuredGrid.h"
 #include <boost/ptr_container/ptr_list.hpp>
 
 
@@ -36,6 +35,7 @@
 #include "nuto/math/SparseMatrixCSRVector2General.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/groups/GroupBase.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss3Ip.h"
@@ -65,16 +65,30 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType3D8NLobatto.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType0DBoundary.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
+#include "nuto/mechanics/loads/LoadBase.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/sections/SectionBase.h"
+#include "nuto/mechanics/structures/StructureBaseEnum.h"
 #include "nuto/mechanics/structures/StructureOutputBase.h"
+#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
+#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
+#include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
 #include "nuto/visualize/VisualizeComponent.h"
 #include "nuto/visualize/VisualizeComponentNonlocalWeight.h"
 #endif // ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
 
 
 NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObject(),
@@ -92,68 +106,68 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
     mNodeNumberingRequired = true;
     mNumExtrapolatedCycles = 0;
 
-    mMappingIntEnum2String.resize(NuTo::IntegrationType::NumIntegrationTypes);
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType1D2NGauss1Ip]=
+    mMappingIntEnum2String.resize(static_cast<unsigned int>(NuTo::eIntegrationType::NumIntegrationTypes));
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss1Ip)]=
         NuTo::IntegrationType1D2NGauss1Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType1D2NGauss2Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip)]=
         NuTo::IntegrationType1D2NGauss2Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType1D2NGauss3Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss3Ip)]=
         NuTo::IntegrationType1D2NGauss3Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType1D2NGauss4Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss4Ip)]=
         NuTo::IntegrationType1D2NGauss4Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType1D2NGauss5Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss5Ip)]=
         NuTo::IntegrationType1D2NGauss5Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType1D2NLobatto3Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto3Ip)]=
         NuTo::IntegrationType1D2NLobatto3Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType1D2NLobatto4Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto4Ip)]=
         NuTo::IntegrationType1D2NLobatto4Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType1D2NLobatto5Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto5Ip)]=
         NuTo::IntegrationType1D2NLobatto5Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss13Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss13Ip)]=
         NuTo::IntegrationType2D3NGauss13Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss16Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss16Ip)]=
         NuTo::IntegrationType2D3NGauss16Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss1Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss1Ip)]=
         NuTo::IntegrationType2D3NGauss1Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss3Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss3Ip)]=
         NuTo::IntegrationType2D3NGauss3Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss4Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss4Ip)]=
             NuTo::IntegrationType2D3NGauss4Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss6Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss6Ip)]=
             NuTo::IntegrationType2D3NGauss6Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss12Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss12Ip)]=
                 NuTo::IntegrationType2D3NGauss12Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D3NGauss12IpDetail]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss12IpDetail)]=
                 NuTo::IntegrationType2D3NGauss12IpDetail::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D4NGauss1Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NGauss1Ip)]=
         NuTo::IntegrationType2D4NGauss1Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D4NGauss4Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip)]=
         NuTo::IntegrationType2D4NGauss4Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D4NGauss9Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NGauss9Ip)]=
         NuTo::IntegrationType2D4NGauss9Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D4NLobatto9Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip)]=
         NuTo::IntegrationType2D4NLobatto9Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D4NLobatto16Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NLobatto16Ip)]=
         NuTo::IntegrationType2D4NLobatto16Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType2D4NLobatto25Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NLobatto25Ip)]=
         NuTo::IntegrationType2D4NLobatto25Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType3D4NGauss1Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D4NGauss1Ip)]=
         NuTo::IntegrationType3D4NGauss1Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType3D4NGauss4Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D4NGauss4Ip)]=
         NuTo::IntegrationType3D4NGauss4Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType3D8NGauss1Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NGauss1Ip)]=
         NuTo::IntegrationType3D8NGauss1Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip)]=
         NuTo::IntegrationType3D8NGauss2x2x2Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType3D8NLobatto3x3x3Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NLobatto3x3x3Ip)]=
         NuTo::IntegrationType3D8NLobatto<3>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType3D8NLobatto4x4x4Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NLobatto4x4x4Ip)]=
         NuTo::IntegrationType3D8NLobatto<4>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType3D8NLobatto5x5x5Ip]=
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NLobatto5x5x5Ip)]=
         NuTo::IntegrationType3D8NLobatto<5>::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType1D2NBoundaryGauss3Ip] =
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NBoundaryGauss3Ip)] =
         NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetStrIdentifierStatic();
-    mMappingIntEnum2String[NuTo::IntegrationType::IntegrationType0DBoundary] =
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType0DBoundary)] =
         NuTo::IntegrationType0DBoundary::GetStrIdentifierStatic();
 
     mNumLoadCases = 1;
@@ -170,6 +184,9 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
 #endif // _OPENMP
 
 }
+
+NuTo::StructureBase::~StructureBase()
+{}
 
 int NuTo::StructureBase::GetDimension()const
 {
@@ -339,7 +356,7 @@ void NuTo::StructureBase::GetElementsByGroup(Group<ElementBase>* rElementGroup, 
 
 
 // add visualization components for an element group
-void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, VisualizeBase::eVisualizeWhat rVisualizeComponent)
+void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, eVisualizeWhat rVisualizeComponent)
 {
 #ifdef ENABLE_VISUALIZE
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -357,8 +374,8 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, Visualize
         mGroupVisualizeComponentsMap.insert(std::pair<int,std::list<std::shared_ptr<VisualizeComponent>>>(rElementGroup, visualizationPtrList));
         // mGroupVisualizeComponentsMap.emplace(rElementGroup, visualizationPtrList);       //<- use this for gcc version 4.9 or higher!
 
-        mGroupVisualizationType.insert(std::pair<int, VisualizeBase::eVisualizationType>(rElementGroup, VisualizeBase::VORONOI_CELL));
-        // mGroupVisualizationType.emplace(rElementGroup, VisualizeBase::VORONOI_CELL);     //<- use this for gcc version 4.9 or higher!
+        mGroupVisualizationType.insert(std::pair<int, eVisualizationType>(rElementGroup, eVisualizationType::VORONOI_CELL));
+        // mGroupVisualizationType.emplace(rElementGroup, eVisualizeWhat::VORONOI_CELL);     //<- use this for gcc version 4.9 or higher!
     } else
     {
         mGroupVisualizeComponentsMap.at(rElementGroup).push_back(std::make_shared<VisualizeComponent>(VisualizeComponent(rVisualizeComponent)));
@@ -384,61 +401,61 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, const std
 {
     std::cout << rVisualizeComponent << std::endl;
     if (rVisualizeComponent == "Accelerations")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::ACCELERATION);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::ACCELERATION);
     else if (rVisualizeComponent == "AngularAccelerations")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::ANGULAR_ACCELERATION);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::ANGULAR_ACCELERATION);
     else if (rVisualizeComponent == "AngularVelocities")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::ANGULAR_VELOCITY);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::ANGULAR_VELOCITY);
     else if (rVisualizeComponent == "BondStress")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::BOND_STRESS);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::BOND_STRESS);
     else if (rVisualizeComponent == "Constitutive")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::CONSTITUTIVE);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::CONSTITUTIVE);
     else if (rVisualizeComponent == "Crack")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::CRACK);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::CRACK);
     else if (rVisualizeComponent == "Damage")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::DAMAGE);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::DAMAGE);
     else if (rVisualizeComponent == "Displacements")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::DISPLACEMENTS);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::DISPLACEMENTS);
     else if (rVisualizeComponent == "Element")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::ELEMENT);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::ELEMENT);
     else if (rVisualizeComponent == "EngineeringPlasticStrain")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::ENGINEERING_PLASTIC_STRAIN);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::ENGINEERING_PLASTIC_STRAIN);
     else if (rVisualizeComponent == "EngineeringStrain")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::ENGINEERING_STRAIN);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::ENGINEERING_STRAIN);
     else if (rVisualizeComponent == "EngineeringStress")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::ENGINEERING_STRESS);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::ENGINEERING_STRESS);
     else if (rVisualizeComponent == "HeatFlux")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::HEAT_FLUX);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::HEAT_FLUX);
     else if (rVisualizeComponent == "LatticeStrain")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::LATTICE_STRAIN);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::LATTICE_STRAIN);
     else if (rVisualizeComponent == "LatticeStress")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::LATTICE_STRESS);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::LATTICE_STRESS);
     else if (rVisualizeComponent == "LocalEqStrain")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::LOCAL_EQ_STRAIN);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::LOCAL_EQ_STRAIN);
     else if (rVisualizeComponent == "NonlocalEqStrain")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::NONLOCAL_EQ_STRAIN);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::NONLOCAL_EQ_STRAIN);
     else if (rVisualizeComponent == "ParticleRadius")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::PARTICLE_RADIUS);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::PARTICLE_RADIUS);
     else if (rVisualizeComponent == "PrincipalEngineeringStress")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::PRINCIPAL_ENGINEERING_STRESS);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
     else if (rVisualizeComponent == "RelativeHumidity")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::RELATIVE_HUMIDITY);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::RELATIVE_HUMIDITY);
     else if (rVisualizeComponent == "Rotations")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::ROTATION);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::ROTATION);
     else if (rVisualizeComponent == "Section")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::SECTION);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::SECTION);
     else if (rVisualizeComponent == "ShrinkageStrain")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::SHRINKAGE_STRAIN);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::SHRINKAGE_STRAIN);
     else if (rVisualizeComponent == "Slip")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::SLIP);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::SLIP);
     else if (rVisualizeComponent == "Temperature")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::TEMPERATURE);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::TEMPERATURE);
     else if (rVisualizeComponent == "TotalInelasticEqStrain")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::TOTAL_INELASTIC_EQ_STRAIN);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::TOTAL_INELASTIC_EQ_STRAIN);
     else if (rVisualizeComponent == "Velocities")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::VELOCITY);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::VELOCITY);
     else if (rVisualizeComponent == "WaterVolumeFraction")
-        AddVisualizationComponent(rElementGroup, VisualizeBase::WATER_VOLUME_FRACTION);
+        AddVisualizationComponent(rElementGroup, eVisualizeWhat::WATER_VOLUME_FRACTION);
     else
         throw MechanicsException(__PRETTY_FUNCTION__, "Visualization component not implemented or misspelled.");
 
@@ -471,8 +488,8 @@ void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementG
             mGroupVisualizeComponentsMap.insert(std::pair<int,std::list<std::shared_ptr<VisualizeComponent>>>(rElementGroup, visualizationPtrList));
             // mGroupVisualizeComponentsMap.emplace(rElementGroup, visualizationPtrList);       //<- use this for gcc version 4.9 or higher!
 
-            mGroupVisualizationType.insert(std::pair<int, VisualizeBase::eVisualizationType>(rElementGroup, VisualizeBase::VORONOI_CELL));
-            // mGroupVisualizationType.emplace(rElementGroup, VisualizeBase::VORONOI_CELL);     //<- use this for gcc version 4.9 or higher!
+            mGroupVisualizationType.insert(std::pair<int, eVisualizationType>(rElementGroup, eVisualizationType::VORONOI_CELL));
+            // mGroupVisualizationType.emplace(rElementGroup, eVisualizeWhat::VORONOI_CELL);     //<- use this for gcc version 4.9 or higher!
 
 
         } else
@@ -494,7 +511,7 @@ void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementG
 }
 
 
-void NuTo::StructureBase::SetVisualizationType(const int rElementGroup, const VisualizeBase::eVisualizationType rVisualizationType)
+void NuTo::StructureBase::SetVisualizationType(const int rElementGroup, const eVisualizationType rVisualizationType)
 {
     // check if the element group exists
     if (mGroupMap.find(rElementGroup) == mGroupMap.end())
@@ -591,54 +608,54 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
         switch (it.get()->GetComponentEnum())
         {
 
-        case NuTo::VisualizeBase::SECTION:
-        case NuTo::VisualizeBase::CONSTITUTIVE:
-        case NuTo::VisualizeBase::TOTAL_INELASTIC_EQ_STRAIN:
-        case NuTo::VisualizeBase::NONLOCAL_WEIGHT:
-        case NuTo::VisualizeBase::LOCAL_EQ_STRAIN:
-        case NuTo::VisualizeBase::ELEMENT:
-        case NuTo::VisualizeBase::DAMAGE:
+        case NuTo::eVisualizeWhat::SECTION:
+        case NuTo::eVisualizeWhat::CONSTITUTIVE:
+        case NuTo::eVisualizeWhat::TOTAL_INELASTIC_EQ_STRAIN:
+        case NuTo::eVisualizeWhat::NONLOCAL_WEIGHT:
+        case NuTo::eVisualizeWhat::LOCAL_EQ_STRAIN:
+        case NuTo::eVisualizeWhat::ELEMENT:
+        case NuTo::eVisualizeWhat::DAMAGE:
             rVisualize.DefineCellDataScalar(it.get()->GetComponentName());
             break;
 
-        case NuTo::VisualizeBase::HEAT_FLUX:
-        case NuTo::VisualizeBase::SLIP:
-        case NuTo::VisualizeBase::CRACK:
-        case NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS:
-        case NuTo::VisualizeBase::LATTICE_STRESS:
-        case NuTo::VisualizeBase::LATTICE_STRAIN:
-        case NuTo::VisualizeBase::LATTICE_PLASTIC_STRAIN:
+        case NuTo::eVisualizeWhat::HEAT_FLUX:
+        case NuTo::eVisualizeWhat::SLIP:
+        case NuTo::eVisualizeWhat::CRACK:
+        case NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS:
+        case NuTo::eVisualizeWhat::LATTICE_STRESS:
+        case NuTo::eVisualizeWhat::LATTICE_STRAIN:
+        case NuTo::eVisualizeWhat::LATTICE_PLASTIC_STRAIN:
             rVisualize.DefineCellDataVector(it.get()->GetComponentName());
             break;
 
-        case NuTo::VisualizeBase::BOND_STRESS:
-        case NuTo::VisualizeBase::ENGINEERING_PLASTIC_STRAIN:
-        case NuTo::VisualizeBase::ENGINEERING_STRAIN:
-        case NuTo::VisualizeBase::ENGINEERING_STRESS:
-        case NuTo::VisualizeBase::SHRINKAGE_STRAIN:
-        case NuTo::VisualizeBase::THERMAL_STRAIN:
+        case NuTo::eVisualizeWhat::BOND_STRESS:
+        case NuTo::eVisualizeWhat::ENGINEERING_PLASTIC_STRAIN:
+        case NuTo::eVisualizeWhat::ENGINEERING_STRAIN:
+        case NuTo::eVisualizeWhat::ENGINEERING_STRESS:
+        case NuTo::eVisualizeWhat::SHRINKAGE_STRAIN:
+        case NuTo::eVisualizeWhat::THERMAL_STRAIN:
             rVisualize.DefineCellDataTensor(it.get()->GetComponentName());
             break;
 
-        case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
-        case NuTo::VisualizeBase::RELATIVE_HUMIDITY:
-        case NuTo::VisualizeBase::WATER_VOLUME_FRACTION:
-        case NuTo::VisualizeBase::TEMPERATURE:
-        case NuTo::VisualizeBase::CRACK_PHASE_FIELD:
+        case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
+        case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
+        case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
+        case NuTo::eVisualizeWhat::TEMPERATURE:
+        case NuTo::eVisualizeWhat::CRACK_PHASE_FIELD:
             rVisualize.DefinePointDataScalar(it.get()->GetComponentName());
             break;
 
-        case NuTo::VisualizeBase::DISPLACEMENTS:
-//        case NuTo::VisualizeBase::ENGINEERING_STRAIN: // this is a test
-        case NuTo::VisualizeBase::VELOCITY:
-        case NuTo::VisualizeBase::ACCELERATION:
+        case NuTo::eVisualizeWhat::DISPLACEMENTS:
+//        case NuTo::eVisualizeWhat::ENGINEERING_STRAIN: // this is a test
+        case NuTo::eVisualizeWhat::VELOCITY:
+        case NuTo::eVisualizeWhat::ACCELERATION:
             rVisualize.DefinePointDataVector(it.get()->GetComponentName());
             break;
 
-        case NuTo::VisualizeBase::PARTICLE_RADIUS:
-        case NuTo::VisualizeBase::ROTATION:
-        case NuTo::VisualizeBase::ANGULAR_VELOCITY:
-        case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
+        case NuTo::eVisualizeWhat::PARTICLE_RADIUS:
+        case NuTo::eVisualizeWhat::ROTATION:
+        case NuTo::eVisualizeWhat::ANGULAR_VELOCITY:
+        case NuTo::eVisualizeWhat::ANGULAR_ACCELERATION:
             //do nothing;
             break;
 
@@ -658,19 +675,19 @@ void NuTo::StructureBase::DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVi
     {
         switch (it.get()->GetComponentEnum())
         {
-        case NuTo::VisualizeBase::DISPLACEMENTS:
-        case NuTo::VisualizeBase::ROTATION:
-        case NuTo::VisualizeBase::VELOCITY:
-        case NuTo::VisualizeBase::ACCELERATION:
-        case NuTo::VisualizeBase::ANGULAR_VELOCITY:
-        case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
+        case NuTo::eVisualizeWhat::DISPLACEMENTS:
+        case NuTo::eVisualizeWhat::ROTATION:
+        case NuTo::eVisualizeWhat::VELOCITY:
+        case NuTo::eVisualizeWhat::ACCELERATION:
+        case NuTo::eVisualizeWhat::ANGULAR_VELOCITY:
+        case NuTo::eVisualizeWhat::ANGULAR_ACCELERATION:
             rVisualize.DefinePointDataVector(it.get()->GetComponentName());
             break;
-        case NuTo::VisualizeBase::PARTICLE_RADIUS:
-        case NuTo::VisualizeBase::TEMPERATURE:
-        case NuTo::VisualizeBase::NONLOCAL_EQ_STRAIN:
-        case NuTo::VisualizeBase::RELATIVE_HUMIDITY:
-        case NuTo::VisualizeBase::WATER_VOLUME_FRACTION:
+        case NuTo::eVisualizeWhat::PARTICLE_RADIUS:
+        case NuTo::eVisualizeWhat::TEMPERATURE:
+        case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
+        case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
+        case NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION:
             rVisualize.DefinePointDataScalar(it.get()->GetComponentName());
             break;
         default:
@@ -687,32 +704,52 @@ void NuTo::StructureBase::DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVi
 
 
 //! @brief ... evaluates the structure
-void NuTo::StructureBase::Evaluate(const ConstitutiveInputMap& rInput, std::map<StructureEnum::eOutput, StructureOutputBase *> &rStructureOutput)
+void NuTo::StructureBase::Evaluate(const ConstitutiveInputMap& rInput, std::map<eStructureOutput, StructureOutputBase *> &rStructureOutput)
 {
     throw MechanicsException("[NuTo::StructureBase::Evaluate] Not implemented.");
 }
 
-NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian(StructureEnum::eOutput rOutput)
+NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian(eStructureOutput rOutput)
 {
-    Timer timer(std::string(__FUNCTION__) + ": " + StructureEnum::OutputToString(rOutput), GetShowTime(), GetLogger());
+    Timer timer(std::string(__FUNCTION__) + ": " + StructureOutputToString(rOutput), GetShowTime(), GetLogger());
     if (mNodeNumberingRequired) NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
-    std::set<StructureEnum::eOutput> supportedTypes({StructureEnum::HESSIAN0, StructureEnum::HESSIAN1, StructureEnum::HESSIAN2, StructureEnum::HESSIAN2_LUMPED});
+    std::set<eStructureOutput> supportedTypes({eStructureOutput::HESSIAN0, eStructureOutput::HESSIAN1, eStructureOutput::HESSIAN2, eStructureOutput::HESSIAN2_LUMPED});
     if (supportedTypes.find(rOutput) == supportedTypes.end())
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] " + StructureEnum::OutputToString(rOutput) + " is not a matrix type or is not supported right now.");
+        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] " + StructureOutputToString(rOutput) + " is not a matrix type or is not supported right now.");
 
     StructureOutputBlockMatrix hessian(mDofStatus, true);
 
-    std::map<StructureEnum::eOutput, StructureOutputBase *> evaluateMap;
+    std::map<eStructureOutput, StructureOutputBase *> evaluateMap;
     evaluateMap[rOutput] = &hessian;
 
     ConstitutiveInputMap input;
-    input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
-            CalculateStaticData::EULER_BACKWARD);
+    input[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
+            eCalculateStaticData::EULER_BACKWARD);
 
     Evaluate(input, evaluateMap);
 
     return hessian;
+}
+
+NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian0()
+{
+    return BuildGlobalHessian(eStructureOutput::HESSIAN0);
+}
+
+NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian1()
+{
+    return BuildGlobalHessian(eStructureOutput::HESSIAN1);
+}
+
+NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian2()
+{
+    return BuildGlobalHessian(eStructureOutput::HESSIAN2);
+}
+
+NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian2Lumped()
+{
+    return BuildGlobalHessian(eStructureOutput::HESSIAN2_LUMPED);
 }
 
 
@@ -723,12 +760,12 @@ NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalInternalGradien
 
     StructureOutputBlockVector internalGradient(mDofStatus, true);
 
-    std::map<StructureEnum::eOutput, StructureOutputBase *> evaluateMap;
-    evaluateMap[StructureEnum::INTERNAL_GRADIENT] = &internalGradient;
+    std::map<eStructureOutput, StructureOutputBase *> evaluateMap;
+    evaluateMap[eStructureOutput::INTERNAL_GRADIENT] = &internalGradient;
 
     ConstitutiveInputMap input;
-    input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
-            CalculateStaticData::EULER_BACKWARD);
+    input[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
+            eCalculateStaticData::EULER_BACKWARD);
 
     Evaluate(input, evaluateMap);
 
@@ -889,6 +926,8 @@ bool NuTo::StructureBase::CheckHessian0_Submatrix(const BlockSparseMatrix& rHess
     return isSubmatrixCorrect;
 }
 
+
+
 void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int rLoadCase)
 {
     NuTo::Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -947,10 +986,10 @@ NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalExternalLoadVec
 
     StructureOutputBlockVector externalLoad(GetDofStatus(), true);
 
-    if (DofTypeIsActive(Node::DISPLACEMENTS))
+    if (DofTypeIsActive(Node::eDof::DISPLACEMENTS))
     {
-        auto& vectorJ = externalLoad.J[Node::DISPLACEMENTS];
-        auto& vectorK = externalLoad.K[Node::DISPLACEMENTS];
+        auto& vectorJ = externalLoad.J[Node::eDof::DISPLACEMENTS];
+        auto& vectorK = externalLoad.K[Node::eDof::DISPLACEMENTS];
 
 
         // loop over all loads
@@ -961,10 +1000,10 @@ NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalExternalLoadVec
             loadIter++;
         }
     }
-    if (DofTypeIsActive(Node::TEMPERATURE))
+    if (DofTypeIsActive(Node::eDof::TEMPERATURE))
     {
-        auto& vectorJ = externalLoad.J[Node::TEMPERATURE];
-        auto& vectorK = externalLoad.K[Node::TEMPERATURE];
+        auto& vectorJ = externalLoad.J[Node::eDof::TEMPERATURE];
+        auto& vectorK = externalLoad.K[Node::eDof::TEMPERATURE];
 
         // loop over all loads
         boost::ptr_map<int,LoadBase>::const_iterator loadIter = this->mLoadMap.begin();
@@ -1072,8 +1111,8 @@ void NuTo::StructureBase::UpdateDofStatus()
         activeDofTypes.insert(activeDofs.begin(), activeDofs.end());
 
     }
-    dofTypes.erase(Node::COORDINATES);
-    activeDofTypes.erase(Node::COORDINATES);
+    dofTypes.erase(Node::eDof::COORDINATES);
+    activeDofTypes.erase(Node::eDof::COORDINATES);
 
     mDofStatus.SetDofTypes(dofTypes);
     mDofStatus.SetActiveDofTypes(activeDofTypes);

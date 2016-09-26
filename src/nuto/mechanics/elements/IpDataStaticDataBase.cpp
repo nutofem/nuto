@@ -19,7 +19,6 @@ NuTo::IpDataStaticDataBase::~IpDataStaticDataBase()
 {
 }
 
-
 void NuTo::IpDataStaticDataBase::Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive)
 {
     mStaticData = nullptr;

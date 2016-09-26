@@ -9,8 +9,17 @@
 //
 //============================================================================
 
+#include "nuto/math/FullMatrix.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/groups/GroupEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
 #include <boost/filesystem.hpp>
 #include <iostream>
@@ -95,13 +104,13 @@ int main(int argc, char* argv[])
         std::cout << "**      Section                  **" << std::endl;
         std::cout << "***********************************" << std::endl;
 
-        int matrixSection = myStructure.SectionCreate(NuTo::Section::PLANE_STRESS);
+        int matrixSection = myStructure.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
         myStructure.SectionSetThickness(matrixSection, Parameters::mMatrixThickness);
 
-        int fibreSection = myStructure.SectionCreate(NuTo::Section::TRUSS);
+        int fibreSection = myStructure.SectionCreate(NuTo::eSectionType::TRUSS);
         myStructure.SectionSetArea(fibreSection, Parameters::mFibreCrossSection);
 
-        int fibreMatrixBond = myStructure.SectionCreate(NuTo::Section::FIBRE_MATRIX_BOND);
+        int fibreMatrixBond = myStructure.SectionCreate(NuTo::eSectionType::FIBRE_MATRIX_BOND);
         myStructure.SectionSetCircumference(fibreMatrixBond, Parameters::mFibreCircumference);
 
         std::cout << "***********************************" << std::endl;
@@ -129,22 +138,22 @@ int main(int argc, char* argv[])
         std::cout << "***********************************" << std::endl;
 
         int matrixInterpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRIANGLE2D);
-        myStructure.InterpolationTypeAdd(matrixInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT2);
-        myStructure.InterpolationTypeAdd(matrixInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT2);
+        myStructure.InterpolationTypeAdd(matrixInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+        myStructure.InterpolationTypeAdd(matrixInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
         int fibreInterpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRUSSXD);
-        myStructure.InterpolationTypeAdd(fibreInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT2);
-        myStructure.InterpolationTypeAdd(fibreInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT2);
+        myStructure.InterpolationTypeAdd(fibreInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+        myStructure.InterpolationTypeAdd(fibreInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
         int interfaceInterpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::INTERFACE);
-        myStructure.InterpolationTypeAdd(interfaceInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT2);
-        myStructure.InterpolationTypeAdd(interfaceInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT2);
+        myStructure.InterpolationTypeAdd(interfaceInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+        myStructure.InterpolationTypeAdd(interfaceInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
         std::cout << "***********************************" << std::endl;
         std::cout << "**      Import Mesh File         **" << std::endl;
         std::cout << "***********************************" << std::endl;
 
-        auto createdGroupIdMatrix = myStructure.ImportFromGmsh(meshFile.string(), NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+        auto createdGroupIdMatrix = myStructure.ImportFromGmsh(meshFile.string(), NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
 
         int groupIdFibre = createdGroupIdMatrix.GetValue(0, 0);
         int groupIdMatrix = createdGroupIdMatrix.GetValue(1, 0);
@@ -186,7 +195,7 @@ int main(int argc, char* argv[])
         std::cout << "**      Boundary Conditions      **" << std::endl;
         std::cout << "***********************************" << std::endl;
 
-        int groupNodeBCLeft = myStructure.GroupCreate(NuTo::Groups::eGroupId::Nodes);
+        int groupNodeBCLeft = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
         myStructure.GroupAddNodeCoordinateRange(groupNodeBCLeft, 0, -1e-6, +1e-6);
         myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodeBCLeft, Parameters::mDirectionX, 0);
 
@@ -210,11 +219,11 @@ int main(int argc, char* argv[])
         std::cout << "**      Visualization            **" << std::endl;
         std::cout << "***********************************" << std::endl;
 
-        int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        int visualizationGroup = myStructure.GroupCreate(NuTo::eGroupId::Elements);
         myStructure.GroupAddElementsTotal(visualizationGroup);
 
-        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
-        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::CONSTITUTIVE);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::CONSTITUTIVE);
 
 
         std::cout << "***********************************" << std::endl;

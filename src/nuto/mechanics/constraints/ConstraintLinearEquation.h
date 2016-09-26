@@ -2,11 +2,9 @@
 
 #pragma once
 
-#include <vector>
-#include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/constraints/ConstraintLinear.h"
-#include "nuto/mechanics/constraints/ConstraintEquationTerm.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
+#include <vector>
+
 
 namespace NuTo
 {
@@ -70,13 +68,7 @@ public:
 
     //! @brief determines the dof type affected by the constraint
     //! @return dof type
-    Node::eDof GetDofType() const override
-    {
-        if (mTerms.size() != 0)
-            return mTerms[0].GetDofType();
-        else
-            throw MechanicsException("[NuTo::ConstraintLinearEquation::GetDofType] Equation has no terms.");
-    }
+    Node::eDof GetDofType() const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

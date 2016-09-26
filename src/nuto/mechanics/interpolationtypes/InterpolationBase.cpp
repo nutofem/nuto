@@ -243,7 +243,7 @@ void NuTo::InterpolationBase::Initialize()
 #ifdef ENABLE_SERIALIZATION
 NuTo::InterpolationBase::InterpolationBase():
     mTypeOrder(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1),
-    mDofType(NuTo::Node::COORDINATES),
+    mDofType(NuTo::Node::eDof::COORDINATES),
     mDimension(0)
 {
 }

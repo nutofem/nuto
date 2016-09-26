@@ -5,11 +5,10 @@
  *      Author: ttitsche
  */
 
-#ifndef SUBBOX_H_
-#define SUBBOX_H_
+#pragma once
 
 #include <list>
-#include "nuto/geometryConcrete/collision/Event.h"
+#include <vector>
 
 namespace NuTo
 {
@@ -72,4 +71,3 @@ private:
 };
 
 } /* namespace NuTo */
-#endif /* SUBBOX_H_ */

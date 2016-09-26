@@ -5,17 +5,18 @@
  *      Author: ttitsche
  */
 
-#ifndef SUBBOXHANDLER_H_
-#define SUBBOXHANDLER_H_
+#pragma once
 
-#include "nuto/geometryConcrete/collision/collidables/CollidableBase.h"
-#include "nuto/geometryConcrete/collision/SubBox.h"
+
+//member
 #include "nuto/geometryConcrete/Specimen.h"
 
 namespace NuTo
 {
-class ParticleHandler;
+class CollidableWallBase;
 class CollidableWallCylinder;
+class ParticleHandler;
+class SubBox;
 
 
 //! @brief ... builds and handles sub boxes
@@ -93,4 +94,3 @@ private:
 };
 
 } /* namespace NuTo */
-#endif /* SUBBOXHANDLER_H_ */

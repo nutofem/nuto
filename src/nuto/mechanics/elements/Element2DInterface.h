@@ -9,10 +9,12 @@
 #pragma once
 
 #include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveMatrixXd.h"
+
 namespace NuTo
 {
 class ElementOutputIpData;
+template <typename T> class BlockFullVector;
+template <typename T> class BlockFullMatrix;
 
 struct EvaluateData
 {
@@ -46,15 +48,12 @@ public:
     //! @brief calculates output data for the element
     //! @param rInput ... constitutive input map for the constitutive law
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
-    Error::eError Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
+    eError Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput) override;
 
 
     //! @brief returns the enum (type of the element)
     //! @return enum
-    NuTo::Element::eElementType GetEnumType() const override
-    {
-        return Element::eElementType::ELEMENT2DINTERFACE;
-    }
+    NuTo::Element::eElementType GetEnumType() const override;
 
     //! @brief returns the local dimension of the element
     //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
@@ -170,7 +169,7 @@ private:
     Eigen::MatrixXd CalculateTransformationMatrix(unsigned int rGlobalDimension, unsigned int rNumberOfNodes);
 
 #ifdef ENABLE_VISUALIZE
-    void GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+    void GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType,
             std::vector<unsigned int>& VisualizationCellsIncidence, std::vector<unsigned int>& VisualizationCellsIP) const override;
 
     void Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) override;

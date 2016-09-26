@@ -1,9 +1,13 @@
 #include "ShrinkageCapillaryStrainBased.h"
 
 
-
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
+#include "nuto/base/ErrorEnum.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/physics/PhysicalConstantsSI.h"
 #include "nuto/physics/PhysicalEquationsSI.h"
 
@@ -14,12 +18,25 @@
 bool NuTo::ShrinkageCapillaryStrainBased::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
 {
     if(rTimeDerivative == 0 &&
-       rDofRow == Node::DISPLACEMENTS &&
-       (rDofCol == Node::RELATIVEHUMIDITY || rDofCol == Node::WATERVOLUMEFRACTION))
+       rDofRow == Node::eDof::DISPLACEMENTS &&
+       (rDofCol == Node::eDof::RELATIVEHUMIDITY || rDofCol == Node::eDof::WATERVOLUMEFRACTION))
     {
         return true;
     }
     return false;
+}
+
+bool NuTo::ShrinkageCapillaryStrainBased::CheckElementCompatibility(NuTo::Element::eElementType rElementType) const
+{
+    switch (rElementType)
+    {
+    case NuTo::Element::eElementType::CONTINUUMELEMENT:
+    case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENT:
+    case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
+        return true;
+    default:
+        return false;
+    }
 }
 
 void NuTo::ShrinkageCapillaryStrainBased::CheckParameters() const
@@ -39,14 +56,14 @@ NuTo::ConstitutiveInputMap NuTo::ShrinkageCapillaryStrainBased::GetConstitutiveI
     {
         switch (itOutput.first)
         {
-        case Constitutive::Output::ENGINEERING_STRESS:      //VHIRTHAMTODO Temporary, because additiveInputExplicit isn't correct so far.
-        case Constitutive::Output::ENGINEERING_STRAIN:
-        case Constitutive::Output::ENGINEERING_STRAIN_VISUALIZE:
-        case Constitutive::Output::ENGINEERING_STRESS_VISUALIZE:
-        case Constitutive::Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:        //VHIRTHAMTODO must be the derivative of the strain instead of stress
-        case Constitutive::Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:    //VHIRTHAMTODO must be the derivative of the strain instead of stress
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
+        case Constitutive::eOutput::ENGINEERING_STRESS:      //VHIRTHAMTODO Temporary, because additiveInputExplicit isn't correct so far.
+        case Constitutive::eOutput::ENGINEERING_STRAIN:
+        case Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
+        case Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
+        case Constitutive::eOutput::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:        //VHIRTHAMTODO must be the derivative of the strain instead of stress
+        case Constitutive::eOutput::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:    //VHIRTHAMTODO must be the derivative of the strain instead of stress
+            constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY];
+            constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION];
             return constitutiveInputMap;
 
         default:
@@ -54,6 +71,11 @@ NuTo::ConstitutiveInputMap NuTo::ShrinkageCapillaryStrainBased::GetConstitutiveI
         }
     }
     return constitutiveInputMap;
+}
+
+NuTo::Constitutive::eConstitutiveType NuTo::ShrinkageCapillaryStrainBased::GetType() const
+{
+    return NuTo::Constitutive::eConstitutiveType::SHRINKAGE_CAPILLARY_STRAIN_BASED;
 }
 
 double NuTo::ShrinkageCapillaryStrainBased::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
@@ -96,7 +118,7 @@ void NuTo::ShrinkageCapillaryStrainBased::SetParameterDouble(NuTo::Constitutive:
 }
 
 template <int TDim>
-NuTo::Error::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapillary(
+NuTo::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapillary(
         const NuTo::ConstitutiveInputMap &rConstitutiveInput, 
         const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
         Constitutive::StaticData::Component* staticData)
@@ -107,11 +129,11 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapill
     {
         switch(itInput.first)
         {
-        case Constitutive::Input::RELATIVE_HUMIDITY:
+        case Constitutive::eInput::RELATIVE_HUMIDITY:
             relativeHumidity     = (*itInput.second)[0];
             break;
 
-        case Constitutive::Input::WATER_VOLUME_FRACTION:
+        case Constitutive::eInput::WATER_VOLUME_FRACTION:
             waterVolumeFraction  = (*itInput.second)[0];
             break;
 
@@ -128,7 +150,7 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapill
 
         switch(itOutput.first)
         {
-        case NuTo::Constitutive::Output::ENGINEERING_STRAIN:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN:
         {
             //Asserts
             itOutput.second->AssertIsVector<ConstitutiveIOBase::GetVoigtDim(TDim)>(itOutput.first,__PRETTY_FUNCTION__);
@@ -152,7 +174,7 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapill
         }
 
 
-        case NuTo::Constitutive::Output::SHRINKAGE_STRAIN_VISUALIZE:
+        case NuTo::Constitutive::eOutput::SHRINKAGE_STRAIN_VISUALIZE:
         {
             //Asserts
             itOutput.second->AssertIsVector<ConstitutiveIOBase::GetVoigtDim(3)>(itOutput.first,__PRETTY_FUNCTION__);
@@ -175,7 +197,7 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapill
             break;
         }
 
-        case NuTo::Constitutive::Output::D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY:
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRAIN_D_RELATIVE_HUMIDITY:
         {
             itOutput.second->AssertIsVector<ConstitutiveIOBase::GetVoigtDim(TDim)>(itOutput.first,__PRETTY_FUNCTION__);
             assert(relativeHumidity    > std::numeric_limits<double>::min());
@@ -193,7 +215,7 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapill
             break;
         }
 
-        case NuTo::Constitutive::Output::D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION:
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRAIN_D_WATER_VOLUME_FRACTION:
         {
             itOutput.second->AssertIsVector<ConstitutiveIOBase::GetVoigtDim(TDim)>(itOutput.first,__PRETTY_FUNCTION__);
             assert(relativeHumidity    > std::numeric_limits<double>::min());
@@ -214,5 +236,5 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapill
         }
         itOutput.second->SetIsCalculated(true);
     }
-    return Error::SUCCESSFUL;
+    return eError::SUCCESSFUL;
 }
