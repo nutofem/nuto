@@ -28,8 +28,7 @@ class MoistureTransport : public ConstitutiveBase
 public:
 
     //! @brief constructor
-    MoistureTransport()
-        :   ConstitutiveBase()
+    MoistureTransport(NuTo::NodeBase* controlNode) : ConstitutiveBase(), mControlNode(controlNode)
     {}
 
 

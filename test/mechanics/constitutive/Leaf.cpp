@@ -18,9 +18,9 @@ using namespace NuTo::Constitutive::StaticData;
 
 BOOST_AUTO_TEST_CASE(add_and_retrieve_scalars)
 {
-    Leaf<double> historyVariable;
+    auto historyVariablePtr = Leaf<double>::Create(42.0);
+    auto& historyVariable = *historyVariablePtr;
 
-    historyVariable.SetData(42); // 42 is now at the "current" static data
     historyVariable.AllocateAdditionalData(4);
     BOOST_CHECK_EQUAL(historyVariable.GetData(4), 42);
     BOOST_CHECK_EQUAL(historyVariable.GetNumData(), 5);
@@ -46,7 +46,8 @@ BOOST_AUTO_TEST_CASE(add_and_retrieve_scalars)
 
 BOOST_AUTO_TEST_CASE(add_and_retrieve_custom_types)
 {
-    Leaf<DataMoistureTransport> moistureData;
+    auto moistureDataPtr = Leaf<DataMoistureTransport>::Create(DataMoistureTransport());
+    auto& moistureData = *moistureDataPtr;
 
     moistureData.SetData(DataMoistureTransport());
     BOOST_CHECK_EQUAL(moistureData.GetNumData(), 1);

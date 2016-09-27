@@ -21,11 +21,11 @@ void foo(Component* bla) {}
 BOOST_AUTO_TEST_CASE(build_a_simple_tree)
 {
     auto& composite = *Composite::Create();
-    composite.AddComponent(Leaf<double>::Create());
+    composite.AddComponent(Leaf<double>::Create(0.0));
     composite.AddComponent(Composite::Create());
     auto& subComposite = dynamic_cast<Composite&>(composite.GetComponent(1));
     Composite* subCompositeCopy = dynamic_cast<Composite&>(composite.GetComponent(1)).Clone();
-    subComposite.AddComponent(Leaf<double>::Create());
-    subComposite.AddComponent(Leaf<double>::Create());
+    subComposite.AddComponent(Leaf<double>::Create(0.0));
+    subComposite.AddComponent(Leaf<double>::Create(0.0));
     foo(&subComposite.GetComponent(0));
 }

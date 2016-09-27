@@ -57,7 +57,7 @@ public:
         if (mData.empty())
             mData.push_back(newData);
         else
-            mData[0] = newData;
+            mData.at(0) = newData;
     }
 
     //! @brief Get the data at `timestep`.
@@ -114,8 +114,7 @@ private:
 
     Leaf(const T& rInitialValue)
     {
-        mData.clear();
-        mData.push_back(rInitialValue);
+        SetData(rInitialValue);
     }
 
     std::vector<T> mData;

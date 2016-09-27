@@ -88,10 +88,12 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             break;
 
         case eConstitutiveType::MOISTURE_TRANSPORT:
-            ConstitutiveLawPtr = new NuTo::MoistureTransport();
+            // parameter is a pointer to the control node, but it might not be allocated at this time
+            ConstitutiveLawPtr = new NuTo::MoistureTransport(nullptr);
             break;
 
         case eConstitutiveType::FIBRE_MATRIX_BOND_STRESS_SLIP:
+            // parameter is the global dimension
             ConstitutiveLawPtr = new NuTo::FibreMatrixBondStressSlip(GetDimension());
             break;
 
