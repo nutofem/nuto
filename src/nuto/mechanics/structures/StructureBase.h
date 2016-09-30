@@ -243,6 +243,8 @@ public:
 
     void SolveGlobalSystemStaticElastic(int rLoadCase = 0);
 
+    void Contact(const std::vector<int> &rElementGroups);
+
     NuTo::StructureOutputBlockMatrix BuildGlobalHessian0_CDF(double rDelta);
 
     bool CheckHessian0(double rDelta, double rRelativeTolerance, bool rPrintWrongMatrices = true);
@@ -1103,6 +1105,16 @@ public:
     //! @return integer id to delete or modify the load
     int LoadSurfacePressureCreate2D(int rLoadCase, int rElementGroupId, int rNodeGroupId, double rPressure);
 
+    //! @brief adds a surface load pressure-function to 2D elements
+    //! @param rElementGroupId ... specifies the elements with surface loads
+    //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group, the surface is considered to be loaded
+    //! @param rLoadFunction ... pressure function on the boundary
+    //! @return integer id to delete or modify the load
+    int LoadSurfacePressureFunctionCreate2D(int rLoadCase,
+                                            int rElementGroupId,
+                                            int rNodeGroupId,
+                                            const std::function<NuTo::FullVector<double,2>(NuTo::FullVector<double,2>)> &rLoadFunction);
+
     //! @brief adds a surface load (pressure) to 3D solid elements
     //! @param rElementGroupId ... specifies the elements with surface loads
     //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group, the
@@ -1509,13 +1521,17 @@ public:
     //! @param ... rMin ... minimum value
     //! @param ... rMax ... maximum value
     virtual void GroupAddNodeCoordinateRange(int rIdentGroup, int rDirection, double rMin, double rMax);
-
 #ifndef SWIG
     //! @brief ... Adds all nodes which fulfill the conditions specified in a std::function
     //! @param ... rIdentGroup identifier for the group
     //! @param ... rFunction std::function
-    void GroupAddNodeFunction(int rIdentGroup,
-                              std::function<bool (NodeBase*)> rFunction);
+    void GroupAddNodeFunction(int rIdentGroup, std::function<bool (NodeBase*)> rFunction);
+
+    //! @brief ... Adds all nodes which fulfill the conditions specified in a std::function
+    //! @param ... rIdentNewGroup identifier for the group where to add the nodes
+    //! @param ... rIdentOldGroup identifier for the group where the ids are searched
+    //! @param ... rFunction std::function
+    void GroupAddNodeFunction(int rIdentNewGroup, int rIdentOldGroup,  std::function<bool(NuTo::NodeBase *)> rFunction);
 #endif
 
     //! @brief ... Adds an element to an element group

@@ -6,6 +6,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/loads/LoadSurfaceBase2D.h"
+#include "nuto/mechanics/loads/LoadSurfacePressureFunction2D.h"
 #include "nuto/mechanics/elements/ContinuumElement.h"
 
 //! @brief constructor
@@ -192,9 +193,16 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             else
                 ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface);
 
+            Eigen::MatrixXd N = interpolationTypeCoords.CalculateMatrixN(ipCoordsNatural);
+
+            std::cout << "N: " << N << std::endl;
+            std::cout << "nodeCoordinates: " << nodeCoordinates << std::endl;
+
             ipCoordsGlobal = interpolationTypeCoords.CalculateMatrixN(ipCoordsNatural) * nodeCoordinates;
 
-            // #######################################
+            std::cout << "ipCoordsGlobal:       \n " << ipCoordsGlobal  << std::endl;
+
+            // ########################### ############
             // ##  Calculate the surface jacobian
             // ## = || [dX / dXi] * [dXi / dAlpha] ||
             // #######################################
@@ -206,17 +214,22 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             // in case of non IGA - just an identity matrix
             const Eigen::Matrix2d jacobianIGA = elementPtr->CalculateJacobianParametricSpaceIGA();// = [dXi / d\tilde{Xi}]
 
-            const Eigen::Matrix2d jacobian = jacobianStd*jacobianIGA;
 
             derivativeNaturalSurfaceCoordinates = interpolationTypeCoords.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, surface); // = [dXi / dAlpha]
-            double detJacobian = (jacobian * derivativeNaturalSurfaceCoordinates).norm();                           // = || [dX / dXi] * [dXi / dAlpha] ||
+
+            std::cout << "derivativeNaturalSurfaceCoordinates:        \n" << derivativeNaturalSurfaceCoordinates  << std::endl;
+            std::cout << "jacobianStd:       \n " << jacobianStd  << std::endl;
+
+            double detJacobian = (jacobianStd * jacobianIGA * derivativeNaturalSurfaceCoordinates).norm(); // = || [dX / dXi] * [dXi / dAlpha] ||
+
+            std::cout << "J2:       \n " <<  (jacobianIGA * derivativeNaturalSurfaceCoordinates).norm()  << std::endl;
 
             // #######################################
             // ##  Calculate surface normal vector
             // ## = ( dY / dAlpha     -dX/dAlpha).T
             // #######################################
             // dXdAlpha :  [2 x NumNodes*2] * [NumNodes*2 x 1] * [2 x 1] = [2 x 1]
-            Eigen::Vector2d surfaceTangentVector = jacobian * derivativeNaturalSurfaceCoordinates;
+            Eigen::Vector2d surfaceTangentVector = jacobianStd * derivativeNaturalSurfaceCoordinates;
             surfaceTangentVector.normalize();
             NuTo::FullVector<double, 2> surfaceNormalVector;
             surfaceNormalVector(0) = surfaceTangentVector.at(1, 0);
@@ -238,8 +251,8 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             CalculateSurfaceLoad(ipCoordsGlobal, surfaceNormalVector, loadVector);
             loadVector *= factor;
 
-//			std::cout << "load vector with weights \n" << loadVector << std::endl;
-//			std::cout << "detJ " << detJacobian << " weight " << integrationType->GetIntegrationPointWeight(theIp) << std::endl;
+            std::cout << "load vector with weights \n" << loadVector << std::endl;
+            std::cout << "detJ " << detJacobian << " weight " << integrationType->GetIntegrationPointWeight(theIp) << ", factor "<< factor << std::endl;
 
             //add load vector to global vector
             for (int iNode = 0; iNode < shapeFunctions.rows(); iNode++)
@@ -252,7 +265,7 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
                     double theLoad = shapeFunctions[iNode] * loadVector(iDispDof);
                     if (theDof < rActiveDofsLoadVector.GetNumRows())
                     {
-//						std::cout << "add to dof " << theDof << " " << theLoad << std::endl;
+                        std::cout << "node: " << iNode << ", add to dof " << theDof << " " << theLoad << std::endl;
                         rActiveDofsLoadVector(theDof) += theLoad;
                     }
                     else

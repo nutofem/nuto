@@ -53,6 +53,7 @@ class IpDataStaticDataBase;
 template <int TDim> class ContinuumElement;
 template <int TDim> class ContinuumElementIGA;
 template <int TDim> class ContinuumBoundaryElement;
+template <int TDim> class ContinuumContactElement;
 
 
 //! @author Jörg F. Unger, ISM

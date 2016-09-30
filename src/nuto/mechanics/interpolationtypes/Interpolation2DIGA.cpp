@@ -5,12 +5,15 @@ NuTo::Interpolation2DIGA::Interpolation2DIGA(NuTo::Node::eDof rDofType,
                                              int rDimension,
                                              const Eigen::Vector2i &rDegree,
                                              const Eigen::VectorXd &rKnotsX,
-                                             const Eigen::VectorXd &rKnotsY)
+                                             const Eigen::VectorXd &rKnotsY,
+                                             const Eigen::MatrixXd &rWeights)
                         :
                                   InterpolationBaseIGA::InterpolationBaseIGA(rDofType, rTypeOrder, rDimension),
                                   mDegree(rDegree),
                                   mKnotsX(rKnotsX),
-                                  mKnotsY(rKnotsY)
+                                  mKnotsY(rKnotsY),
+                                  mWeights(rWeights)
+
 {
     Initialize();
 }
@@ -71,22 +74,22 @@ Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateShapeFunctions(const Eigen::V
     spanIdx(0) = ShapeFunctionsIGA::FindSpan(rCoordinates(0), mDegree(0), mKnotsX);
     spanIdx(1) = ShapeFunctionsIGA::FindSpan(rCoordinates(1), mDegree(1), mKnotsY);
 
-    return ShapeFunctionsIGA::BasisFunctions2D(rCoordinates, spanIdx, mDegree, mKnotsX, mKnotsY);
+    return ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(0, rCoordinates, spanIdx, mDegree, mKnotsX, mKnotsY, mWeights);
 }
 
 
 Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates, const Eigen::Vector2i &rKnotIDs) const
 {
     assert(rKnotIDs.rows() == 2 );
-    assert(rKnotIDs(0)-1 < mKnotsX.rows());
-    assert(rKnotIDs(1)-1 < mKnotsX.rows());
+    assert(rKnotIDs(0) < mKnotsX.rows());
+    assert(rKnotIDs(1) < mKnotsY.rows());
 
     Eigen::Vector2d parameter;
 
     parameter(0) = transformation(rCoordinates(0), mKnotsX(rKnotIDs(0)), mKnotsX(rKnotIDs(0) + 1));
     parameter(1) = transformation(rCoordinates(1), mKnotsY(rKnotIDs(1)), mKnotsY(rKnotIDs(1) + 1));
 
-    return ShapeFunctionsIGA::BasisFunctions2D(parameter, rKnotIDs, mDegree, mKnotsX, mKnotsY);
+    return ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(0, parameter, rKnotIDs, mDegree, mKnotsX, mKnotsY, mWeights);
 }
 
 Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateShapeFunctions(int rIP, const Eigen::VectorXi &rKnotIDs) const
@@ -110,23 +113,21 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateDerivativeShapeFunctionsNatur
     spanIdx(0) = ShapeFunctionsIGA::FindSpan(rCoordinates(0), mDegree(0), mKnotsX);
     spanIdx(1) = ShapeFunctionsIGA::FindSpan(rCoordinates(1), mDegree(1), mKnotsY);
 
-    Eigen::Matrix<double, Eigen::Dynamic, 2> shapeFunctionsAndDerivatives = ShapeFunctionsIGA::BasisFunctionsAndDerivatives2D(rCoordinates, spanIdx, mDegree, mKnotsX, mKnotsY);
-    return shapeFunctionsAndDerivatives;
+    return ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(1, rCoordinates, spanIdx, mDegree, mKnotsX, mKnotsY, mWeights);
 }
 
 Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd &rCoordinates, const Eigen::VectorXi &rKnotIDs) const
 {
     assert(rKnotIDs.rows() == 2);
-    assert(rKnotIDs(0)-1 < mKnotsX.rows());
-    assert(rKnotIDs(1)-1 < mKnotsX.rows());
+    assert(rKnotIDs(0) < mKnotsX.rows());
+    assert(rKnotIDs(1) < mKnotsY.rows());
 
     Eigen::Vector2d parameter;
 
     parameter(0) = transformation(rCoordinates(0), mKnotsX(rKnotIDs(0)), mKnotsX(rKnotIDs(0) + 1));
     parameter(1) = transformation(rCoordinates(1), mKnotsY(rKnotIDs(1)), mKnotsY(rKnotIDs(1) + 1));
 
-    Eigen::Matrix<double, Eigen::Dynamic, 2> shapeFunctionsAndDerivatives = ShapeFunctionsIGA::BasisFunctionsAndDerivatives2D(parameter, rKnotIDs, mDegree, mKnotsX, mKnotsY);
-    return shapeFunctionsAndDerivatives;
+    return ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(1, parameter, rKnotIDs, mDegree, mKnotsX, mKnotsY, mWeights);
 }
 
 Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateDerivativeShapeFunctionsNatural(int rIP, const Eigen::VectorXi &rKnotIDs) const
@@ -153,17 +154,15 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixN(const Eigen::VectorXd
 Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixN(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const
 {
     assert(rKnotIDs.rows() == 2 );
-    assert(rKnotIDs(0)-1 < mKnotsX.rows());
-    assert(rKnotIDs(1)-1 < mKnotsX.rows());
+    assert(rKnotIDs(0) < mKnotsX.rows());
+    assert(rKnotIDs(1) < mKnotsY.rows());
 
     Eigen::Vector2d parameter;
 
     parameter(0) = transformation(rCoordinates(0), mKnotsX(rKnotIDs(0)), mKnotsX(rKnotIDs(0) + 1));
     parameter(1) = transformation(rCoordinates(1), mKnotsY(rKnotIDs(1)), mKnotsY(rKnotIDs(1) + 1));
 
-    auto shapeFunctions = ShapeFunctionsIGA::BasisFunctions2D(parameter, rKnotIDs, mDegree, mKnotsX, mKnotsY);
-
-    return ConstructMatrixN(shapeFunctions);
+    return ConstructMatrixN(ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(0, parameter, rKnotIDs, mDegree, mKnotsX, mKnotsY, mWeights));
 }
 
 Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixN(int rIP, const Eigen::VectorXi &rKnotIDs) const

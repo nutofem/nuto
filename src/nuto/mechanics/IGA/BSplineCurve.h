@@ -14,6 +14,10 @@
 
 namespace NuTo
 {
+//! @author Peter Otto, BAM
+//! @date July, 2016
+//! @brief ... class for B spline/NURBS curves, with IGA specific functions
+//! @brief ... B spline/NURBS specific algorithms taken from Piegl, Tiller 'The NURBS book' 1996
 class BSplineCurve
 {
 public:
@@ -28,6 +32,7 @@ public:
     //! @param rControlPoints ... control points
     BSplineCurve(const Eigen::MatrixXd &rKnots,
                  const Eigen::MatrixXd &rControlPoints,
+                 const Eigen::VectorXd &rWeights,
                  int rDegree);
 
     //! @brief ... constructor (interpolation of a point sequence)
@@ -59,6 +64,10 @@ public:
     //! @return ... matrix containing the coordinates of the control points
     const Eigen::MatrixXd GetControlPoints() const {return mControlPoints;}
 
+    //! @brief ... get weights
+    //! @return ... matrix containing the weights
+    const Eigen::VectorXd GetWeights() const {return mWeights;}
+
     //! @brief ... get the control points
     //! @return ... matrix containing the coordinates of the control points
     Eigen::VectorXd GetControlPoint(int rControlPointID) const
@@ -75,7 +84,7 @@ public:
     //! @return ... maximum knot parameter
     double GetMaxKnotValue() const
     {
-        int numrows = mKnots.rows();
+        int numrows = mKnots.rows() - 1;
         return mKnots[numrows];
     }
 
@@ -107,6 +116,10 @@ public:
     //! @return ... vector of control point ids
     Eigen::VectorXi GetElementControlPointIDs(int rElementID) const;
 
+    //! @brief ... get the multiplicity of a knot
+    //! @return ... multiplicity
+    int GetMultiplicityOfKnot(double rKnot);
+
     //! @brief ... returns the Bézier extraction operator for the element with ID rElementID
     //! @param rElementID ... element ID
     //! @return ... matrix representing the Bézier extraction operator
@@ -123,7 +136,7 @@ public:
     //! @return ... the span index
     Eigen::VectorXd BasisFunctions(double rParameter) const;
 
-    Eigen::MatrixXd BasisFunctionsAndDerivatives(double rParameter, int maxDer) const;
+    Eigen::MatrixXd BasisFunctionsAndDerivatives(double rParameter, int der) const;
 
     /** Parametrization **/
 
@@ -163,7 +176,9 @@ public:
     Eigen::MatrixXd CurvePoints(const Eigen::VectorXd &rParameter) const;
 
     /** Knot insertion **/
-
+    void InsertKnot(double rKnotToInsert, int rMultiplicity);
+    void RefineKnots(const Eigen::VectorXd &rKnotsToInsert);
+    void DuplicateKnots();
 
 
     /** Degree elevation **/
@@ -175,6 +190,9 @@ private:
 
     //! @brief Control points of the BSpline curve (# rows = num control points)
     Eigen::MatrixXd mControlPoints;
+
+    //! @brief Weights to NURBS
+    Eigen::VectorXd mWeights;
 
     //! @brief Degree of the polynomials (order = mDegree+1)
     int mDegree;

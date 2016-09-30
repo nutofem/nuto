@@ -15,7 +15,7 @@ protected:
 
 public:
 
-    Interpolation1DIGA(NuTo::Node::eDof rDofType,  NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension, int rDegree, const Eigen::VectorXd &rKnots);
+    Interpolation1DIGA(NuTo::Node::eDof rDofType,  NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension, int rDegree, const Eigen::VectorXd &rKnots, const Eigen::VectorXd &rWeights);
 
     // --- Integration --- //
     //! @brief determines the standard integration type depending on shape, type and order
@@ -164,6 +164,9 @@ private:
 
     //! @brief Knot vector
     Eigen::VectorXd mKnots;
+
+    //! @brief weights
+    Eigen::MatrixXd mWeights;
 
     //! @brief polynomial degree
     int mDegree;

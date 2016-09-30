@@ -74,6 +74,7 @@ SET(NuToMechanicsElements_SOURCES
 elements/ContinuumElement.cpp	
 elements/ContinuumBoundaryElement.cpp
 elements/ContinuumBoundaryElementConstrainedControlNode.cpp
+elements/ContinuumContactElement.cpp
 elements/ElementBase.cpp
 elements/ElementDataBase.cpp
 elements/ElementDataConstitutiveBase.cpp
@@ -184,6 +185,7 @@ loads/LoadSurfaceConstDirection2D.cpp
 loads/LoadSurfaceConstDirection3D.cpp
 loads/LoadSurfacePressure2D.cpp
 loads/LoadSurfacePressure3D.cpp
+loads/LoadSurfacePressureFunction2D.cpp
 )
 
 SET(NuToMechanicsNodes_SOURCES

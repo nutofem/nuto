@@ -1,8 +1,9 @@
 #include "nuto/mechanics/interpolationtypes/Interpolation1DIGA.h"
 
-NuTo::Interpolation1DIGA::Interpolation1DIGA(NuTo::Node::eDof rDofType,  NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension, int rDegree, const Eigen::VectorXd &rKnots)
+NuTo::Interpolation1DIGA::Interpolation1DIGA(NuTo::Node::eDof rDofType,  NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension, int rDegree, const Eigen::VectorXd &rKnots, const Eigen::VectorXd &rWeights)
     : InterpolationBaseIGA::InterpolationBaseIGA(rDofType, rTypeOrder, rDimension),
       mKnots(rKnots),
+      mWeights(rWeights),
       mDegree(rDegree)
 {
     Initialize();
@@ -75,12 +76,12 @@ int NuTo::Interpolation1DIGA::GetNumDofsPerNode() const
 Eigen::VectorXd NuTo::Interpolation1DIGA::CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const
 {
     int spanIdx = ShapeFunctionsIGA::FindSpan(rCoordinates(0,0), mDegree, mKnots);
-    return ShapeFunctionsIGA::BasisFunctions(rCoordinates(0,0), spanIdx, mDegree, mKnots);
+    return ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(0, rCoordinates(0,0), spanIdx, mDegree, mKnots, mWeights);
 }
 
 Eigen::VectorXd NuTo::Interpolation1DIGA::CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates, int rKnotID) const
 {
-    return ShapeFunctionsIGA::BasisFunctions(rCoordinates(0,0), rKnotID, mDegree, mKnots);
+    return ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(0, rCoordinates(0,0), rKnotID, mDegree, mKnots, mWeights);
 }
 
 Eigen::VectorXd NuTo::Interpolation1DIGA::CalculateShapeFunctions(int rIP, const Eigen::VectorXi &rKnotIDs) const
@@ -101,15 +102,13 @@ Eigen::VectorXd NuTo::Interpolation1DIGA::CalculateShapeFunctions(int rIP, const
 Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd &rCoordinates) const
 {
     int spanIdx = ShapeFunctionsIGA::FindSpan(rCoordinates(0,0), mDegree, mKnots);
-    Eigen::MatrixXd shapeFunctionsAndDerivatives = ShapeFunctionsIGA::BasisFunctionsAndDerivatives(rCoordinates(0,0), spanIdx, 1, mDegree, mKnots);
-    return (shapeFunctionsAndDerivatives.row(1)).transpose();
+    return ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(1, rCoordinates(0,0), spanIdx, mDegree, mKnots, mWeights);
 }
 
 
 Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateDerivativeShapeFunctionsNatural(const Eigen::VectorXd &rCoordinates, const Eigen::VectorXi &rKnotIDs) const
 {
-    Eigen::MatrixXd shapeFunctionsAndDerivatives = ShapeFunctionsIGA::BasisFunctionsAndDerivatives(rCoordinates(0,0), rKnotIDs(0), 1, mDegree, mKnots);
-    return (shapeFunctionsAndDerivatives.row(1)).transpose();
+    return ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(1, rCoordinates(0,0), rKnotIDs(0), mDegree, mKnots, mWeights);
 }
 
 Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateDerivativeShapeFunctionsNatural(int rIP, const Eigen::VectorXi &rKnotIDs) const

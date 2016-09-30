@@ -143,7 +143,8 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId,
                                            NuTo::Node::eDof rDofType,
                                            NuTo::Interpolation::eTypeOrder rTypeOrder,
                                            const Eigen::VectorXi &rDegree,
-                                           const std::vector<Eigen::VectorXd> &rKnots)
+                                           const std::vector<Eigen::VectorXd> &rKnots,
+                                           const Eigen::MatrixXd &rWeights)
 {
     boost::ptr_map<int,InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
     // check if identifier exists
@@ -151,7 +152,7 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId,
         throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeAdd] Interpolation type does not exist.");
 
     InterpolationType* interpolationType = itIterator->second;
-    interpolationType->AddDofInterpolation(rDofType, rTypeOrder, rDegree, rKnots);
+    interpolationType->AddDofInterpolation(rDofType, rTypeOrder, rDegree, rKnots, rWeights);
 
     IntegrationType::eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
     const IntegrationTypeBase* integrationType = this->GetPtrIntegrationType(integrationTypeEnum);

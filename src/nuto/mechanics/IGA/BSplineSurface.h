@@ -1,6 +1,8 @@
 #pragma once
 
 #include "nuto/mechanics/IGA/BSplineCurve.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include <set>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/export.hpp>
@@ -14,6 +16,13 @@
 
 namespace NuTo
 {
+//! @author Peter Otto, BAM
+//! @date July, 2016
+//! @brief ... class for B spline surfaces, with IGA specific functions
+//! @brief ... B spline/NURBS specific algorithms taken from Piegl, Tiller 'The NURBS book' 1996
+
+class Structure;
+
 class BSplineSurface
 {
 public:
@@ -29,7 +38,8 @@ public:
     BSplineSurface(const Eigen::Vector2i &rDegree,
                    const Eigen::VectorXd &rKnotsX,
                    const Eigen::VectorXd &rKnotsY,
-                   const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> &rControlPoints);
+                   const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> &rControlPoints,
+                   const Eigen::MatrixXd &rWeights);
 
     //! @brief ... constructor (interpolation of a point cloud)
     //! @param rDegree ... degree of the polynomial
@@ -40,21 +50,55 @@ public:
 
     /** Getter **/
 
-    // Control points //
+    // --- Control points --- //
+
+    int GetDimension() const {return mControlPoints(0).rows();}
+
     int GetNumControlPoints() const;
+
     int GetNumControlPoints(int dir) const;
-    Eigen::VectorXd GetControlPoint(int rControlPointIDX, int rControlPointIDY) const;
 
+    Eigen::VectorXd GetControlPoint(int rControlPointIDY, int rControlPointIDX) const;
 
-    // Knot vector //
+    const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic>& GetControlPoints() const {return mControlPoints;}
+
+    const Eigen::MatrixXd& GetWeights() const {return mWeights;}
+
+    // --- Knot vector --- //
+
+    int GetNumKnots(int dir) const;
+
     const Eigen::VectorXd& GetKnotVector(int dir) const;
+
     int GetElementFirstKnotID(int rElementIDinDir, int dir) const;
+
     Eigen::MatrixXd GetElementKnots(int rElementIDX, int rElementIDY) const;
+
     Eigen::VectorXi GetElementKnotIDs(int rElementIDX, int rElementIDY) const;
 
-    // Elements //
+    int GetMultiplicityOfKnot(double rKnot, int dir) const;
+
+    // --- Elements --- //
+
     int GetNumIGAElements(int dir) const;
+
+    int GetNumIGAElements() const;
+
     Eigen::VectorXi GetElementControlPointIDs(int rElementIDX, int rElementIDY) const;
+
+    Eigen::VectorXi GetElementControlPointIDsGlobal(int rElementIDX, int rElementIDY, const Eigen::MatrixXi &rNodeIDs) const;
+
+    Eigen::MatrixXd GetKnotIDControlPoints(const Eigen::Vector2i &rKnotIDs) const;
+
+    // --- Points --- //
+
+    Eigen::VectorXd SurfacePoint(const Eigen::Vector2d &rParameter) const;
+
+    Eigen::MatrixXd SurfacePoints(const Eigen::MatrixXd &rParameter) const;
+
+    // --- Degree --- //
+
+    const Eigen::Vector2i& GetDegree() const {return mDegree;}
 
     /** Parametrization **/
 
@@ -64,6 +108,17 @@ public:
     void ParametrizationChordLengthMethod(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rPoints,
                                           FullVector<double, Eigen::Dynamic>& rParametersX,
                                           FullVector<double, Eigen::Dynamic>& rParametersY);
+
+    /** Knot refinement **/
+    void DuplicateKnots(int dir);
+
+    void InsertKnot(double rKnotToInsert, int rMultiplicity, int dir);
+
+    void RefineKnots(const Eigen::VectorXd &rKnotsToInsert, int dir);
+
+    /** build structure **/
+
+    void buildIGAStructure(NuTo::Structure &rStructure, const std::set<NuTo::Node::eDof> &setOfDOFS, int rGroupElements, int rGroupNodes);
 
 private:
 
@@ -75,6 +130,9 @@ Eigen::VectorXd mKnotsY;
 
 //! @brief Degree of the polynomials
 Eigen::Vector2i mDegree;
+
+//! @brief weights for nurbs
+Eigen::MatrixXd mWeights;
 
 //! @brief Control points of the BSpline curve
 Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> mControlPoints;

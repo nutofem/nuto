@@ -62,7 +62,7 @@ NuTo::InterpolationBase& NuTo::InterpolationType::GetNonConst(Node::eDof rDofTyp
     return *(interpolationTypeIterator->second);
 }
 
-void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, const Eigen::VectorXi &rDegree, const std::vector<Eigen::VectorXd> &rKnots)
+void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, const Eigen::VectorXi &rDegree, const std::vector<Eigen::VectorXd> &rKnots, const Eigen::MatrixXd &rWeights)
 {
     if (IsDof(rDofType))
         throw NuTo::MechanicsException("[NuTo::InterpolationTypeBase::AddDofInterpolation] Dof " + NuTo::Node::DofToString(rDofType) + " exists.");
@@ -81,10 +81,10 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
         throw NuTo::MechanicsException("[NuTo::InterpolationTypeBase::AddDofInterpolation] This method is for IG interpolation, please use the 'AddDofInterpolation(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder)'.");
         break;
     case Interpolation::eShapeType::IGA1D:
-        newType = new Interpolation1DIGA(rDofType, rTypeOrder, mDimension, rDegree(0), rKnots[0]);
+        newType = new Interpolation1DIGA(rDofType, rTypeOrder, mDimension, rDegree(0), rKnots[0], rWeights);
         break;
     case Interpolation::eShapeType::IGA2D:
-        newType = new Interpolation2DIGA(rDofType, rTypeOrder, mDimension, rDegree, rKnots[0], rKnots[1]);
+        newType = new Interpolation2DIGA(rDofType, rTypeOrder, mDimension, rDegree, rKnots[0], rKnots[1], rWeights);
         break;
     default:
         throw NuTo::MechanicsException("[NuTo::InterpolationType::AddDofInterpolation] ShapeType " + NuTo::Interpolation::ShapeTypeToString(mShapeType) + " not implemented.");
@@ -115,6 +115,8 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
         mNodeDofs.resize(size);
     else if(mNodeDofs.size() != size)
         throw NuTo::MechanicsException("[NuTo::InterpolationType::AddDofInterpolation] The number of dofs per IGA element isn't equal!");
+
+    mNodeCoordinates.resize(size);
 
     newType->mNodeIndices.resize(size);
 

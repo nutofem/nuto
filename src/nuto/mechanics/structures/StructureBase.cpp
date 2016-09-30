@@ -917,6 +917,11 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int rLoadCase)
     NodeMergeDofValues(0, deltaDof_dt0);
 }
 
+void NuTo::StructureBase::Contact(const std::vector<int> &rElementGroups)
+{
+
+}
+
 
 NuTo::BlockFullVector<double> NuTo::StructureBase::SolveBlockSystem(const BlockSparseMatrix& rMatrix, const BlockFullVector<double>& rVector) const
 {

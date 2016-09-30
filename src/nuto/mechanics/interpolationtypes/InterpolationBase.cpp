@@ -21,11 +21,11 @@
 
 NuTo::InterpolationBase::InterpolationBase(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
     mDofType(rDofType),
-    mTypeOrder(rTypeOrder),
     mIsConstitutiveInput(true),
     mIsActive(true),
     mNumDofs(-1),
     mNumNodes(-1),
+    mTypeOrder(rTypeOrder),
     mUpdateRequired(true),
     mDimension(rDimension)
 {

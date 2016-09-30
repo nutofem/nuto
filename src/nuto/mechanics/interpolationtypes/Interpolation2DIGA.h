@@ -21,7 +21,8 @@ public:
                        int rDimension,
                        const Eigen::Vector2i &rDegree,
                        const Eigen::VectorXd &rKnotsX,
-                       const Eigen::VectorXd &rKnotsY);
+                       const Eigen::VectorXd &rKnotsY,
+                       const Eigen::MatrixXd &rWeights);
 
     int GetSplineDegree(int dir) const override
     {
@@ -163,6 +164,9 @@ protected:
 
     //! @brief Knot vector y
     Eigen::VectorXd mKnotsY;
+
+    //! @brief weights
+    Eigen::MatrixXd mWeights;
 
     //! @brief integration point coordinates
     Eigen::Matrix<double, Eigen::Dynamic, 2> mIPCoordinates;

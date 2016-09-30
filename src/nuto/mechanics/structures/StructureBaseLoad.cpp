@@ -14,6 +14,7 @@
 #include "nuto/mechanics/loads/LoadSurfaceConstDirection2D.h"
 #include "nuto/mechanics/loads/LoadSurfaceConstDirection3D.h"
 #include "nuto/mechanics/loads/LoadSurfacePressure2D.h"
+#include "nuto/mechanics/loads/LoadSurfacePressureFunction2D.h"
 #include "nuto/mechanics/loads/LoadSurfacePressure3D.h"
 
 // adds a force for a node
@@ -266,6 +267,31 @@ int NuTo::StructureBase::LoadSurfacePressureCreate2D(int rLoadCase, int rElement
     // create load
     LoadSurfaceBase2D* loadPtr;
     loadPtr = new NuTo::LoadSurfacePressure2D(rLoadCase, &(*this), rElementGroupId, rNodeGroupId, rPressure);
+
+    // insert load in load map
+    this->mLoadMap.insert(id,loadPtr);
+    return id;
+}
+
+int NuTo::StructureBase::LoadSurfacePressureFunctionCreate2D(int rLoadCase,
+                                                             int rElementGroupId,
+                                                             int rNodeGroupId,
+                                                             const std::function<NuTo::FullVector<double,2>(NuTo::FullVector<double,2>)> &rLoadFunction)
+{
+    if (rLoadCase>=mNumLoadCases)
+        throw MechanicsException("[NuTo::StructureBase::LoadSurfacePressureFunctionCreate2D] Load case number larger than total number of load cases. Use myStructure.SetNumLoadCases(num) to set the maximum number");
+    //find unused integer id
+    int id(0);
+    boost::ptr_map<int,LoadBase>::iterator it = this->mLoadMap.find(id);
+    while (it != this->mLoadMap.end())
+    {
+        id++;
+        it = this->mLoadMap.find(id);
+    }
+
+    // create load
+    LoadSurfaceBase2D* loadPtr;
+    loadPtr = new NuTo::LoadSurfacePressureFunction2D(rLoadCase, &(*this), rElementGroupId, rNodeGroupId, rLoadFunction);
 
     // insert load in load map
     this->mLoadMap.insert(id,loadPtr);

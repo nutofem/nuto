@@ -107,7 +107,7 @@ void NuTo::ContinuumElementIGA<TDim>::CalculateNMatrixBMatrixDetJacobian(Evaluat
 
     Eigen::Matrix<double, TDim, TDim> jacobian = this->CalculateJacobian(derivativeShapeFunctionsGeometryNatural, rData.mNodalValues[Node::COORDINATES]);
 
-    // there are two mappings in IGA: 1) reference element => parametric space (knots) 2) parametric space => physical space
+    // there are two mappings in IGA: 1) reference element <=> parametric space (knots) 2) parametric space <=> physical space
     // the B-matrix only the invJac of mapping 2) is needed
     rData.mDetJacobian = jacobian.determinant();
     for(int i = 0; i < TDim; i++) rData.mDetJacobian *= 0.5*(mKnots(i,1) - mKnots(i,0));

@@ -15,8 +15,9 @@ NuTo::LoadSurfaceConstDirection2D::LoadSurfaceConstDirection2D(int rLoadCase, St
 //! @param rCoordinates ... global coordinates
 //! @param rNormal ... normal to the surface (pointing outwards)
 //! @param rLoadVector ... load vector
-void NuTo::LoadSurfaceConstDirection2D::CalculateSurfaceLoad(NuTo::FullVector<double,2>& rCoordinates,NuTo::FullVector<double,2>& rNormal,
-		NuTo::FullVector<double,2>& rLoadVector)const
+void NuTo::LoadSurfaceConstDirection2D::CalculateSurfaceLoad(NuTo::FullVector<double,2>& rCoordinates,
+                                                             NuTo::FullVector<double,2>& rNormal,
+                                                             NuTo::FullVector<double,2>& rLoadVector) const
 {
-	rLoadVector = mLoadVector;
+    rLoadVector = mLoadVector;
 }

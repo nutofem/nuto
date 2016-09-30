@@ -231,19 +231,42 @@ namespace ShapeFunctionsIGA
 int FindSpan(double rParameter, int rDegree, const Eigen::VectorXd &rKnots);
 
 Eigen::VectorXd BasisFunctions(double rParameter, int spanIdx, int rDegree, const Eigen::VectorXd &rKnots);
-Eigen::MatrixXd BasisFunctionsAndDerivatives(double rParameter, int spanIdx, int maxDer, int rDegree, const Eigen::VectorXd &rKnots);
+Eigen::MatrixXd BasisFunctionsAndDerivatives(int der, double rParameter, int spanIdx, int rDegree, const Eigen::VectorXd &rKnots);
 
-Eigen::VectorXd BasisFunctions2D(const Eigen::VectorXd& rCoordinates,
-                                 const Eigen::Vector2i& rSpanIdx,
-                                 const Eigen::Vector2i& rDegree,
-                                 const Eigen::VectorXd &rKnotsX,
-                                 const Eigen::VectorXd &rKnotsY);
+Eigen::VectorXd BasisFunctionsRat(double rParameter, int spanIdx, int rDegree, const Eigen::VectorXd &rKnots, const Eigen::VectorXd &rWeights);
+Eigen::VectorXd BasisFunctionsAndDerivativesRat(int der, double rParameter, int spanIdx, int rDegree, const Eigen::VectorXd &rKnots, const Eigen::VectorXd &rWeights);
 
-Eigen::Matrix<double, Eigen::Dynamic, 2> BasisFunctionsAndDerivatives2D(const Eigen::VectorXd& rCoordinates,
-                                                                        const Eigen::Vector2i &rSpanIdx,
-                                                                        const Eigen::Vector2i &rDegree,
-                                                                        const Eigen::VectorXd &rKnotsX,
-                                                                        const Eigen::VectorXd &rKnotsY);
+//! @brief ... calculate the derivative of NURBS basis functions
+//! @param rCoordinates ... parameters (u,v)
+//! @param rSpanIdx ... span index of u and v
+//! @param rDegree ... degree in x and y directions
+//! @param rKnotsX ... knot vector in x direction
+//! @param rKnotsY ... knot vector in y direction
+//! @param rWeights ... weights for NURBS (if every entry == 1 => B spline)
+//! @return ... the vector containing the derivatives
+Eigen::VectorXd BasisFunctions2DRat(const Eigen::VectorXd &rCoordinates,
+                                    const Eigen::Vector2i &rSpanIdx,
+                                    const Eigen::Vector2i &rDegree,
+                                    const Eigen::VectorXd &rKnotsX,
+                                    const Eigen::VectorXd &rKnotsY,
+                                    const Eigen::MatrixXd &rWeights);
+
+//! @brief ... calculate the derivative of NURBS basis functions
+//! @param der ... the derivative to calculate (possibilities: 0,1,2 -- no more implemented)
+//! @param rCoordinates ... parameters (u,v)
+//! @param rSpanIdx ... span index of u and v
+//! @param rDegree ... degree in x and y directions
+//! @param rKnotsX ... knot vector in x direction
+//! @param rKnotsY ... knot vector in y direction
+//! @param rWeights ... weights for NURBS (if every entry == 1 => B spline)
+//! @return ... the matrix containing the derivatives
+Eigen::MatrixXd BasisFunctionsAndDerivatives2DRat(int                    der,
+                                                  const Eigen::VectorXd &rCoordinates,
+                                                  const Eigen::Vector2i &rSpanIdx,
+                                                  const Eigen::Vector2i &rDegree,
+                                                  const Eigen::VectorXd &rKnotsX,
+                                                  const Eigen::VectorXd &rKnotsY,
+                                                  const Eigen::MatrixXd &rWeights);
 
 
 /////////////////////////////// BERNSTEIN //////////////////////////////////////////////////////////////////////

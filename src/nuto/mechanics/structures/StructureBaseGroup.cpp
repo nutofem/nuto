@@ -254,6 +254,48 @@ void NuTo::StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, int rDire
 }
 
 //! @brief ... Adds all nodes which fulfill the conditions specified in a std::function
+//! @param ... rIdentNewGroup identifier for the group where to add the nodes
+//! @param ... rIdentOldGroup identifier for the group where the ids are searched
+//! @param ... rFunction std::function
+void NuTo::StructureBase::GroupAddNodeFunction(int rIdentNewGroup, int rIdentOldGroup,  std::function<bool(NuTo::NodeBase *)> rFunction)
+{
+#ifdef SHOW_TIME
+    std::clock_t start, end;
+    start = clock();
+#endif
+    boost::ptr_map<int, GroupBase>::iterator itGroupOld = mGroupMap.find(rIdentOldGroup);
+    if (itGroupOld == mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCoordinateRange] Old group with the given identifier does not exist.");
+    if (itGroupOld->second->GetType() != Groups::Nodes)
+        throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCoordinateRange] A node can be added only to a node group.");
+
+    boost::ptr_map<int, GroupBase>::iterator itGroupNew = mGroupMap.find(rIdentNewGroup);
+    if (itGroupNew == mGroupMap.end())
+        throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCoordinateRange] New group with the given identifier does not exist.");
+    if (itGroupNew->second->GetType() != Groups::Nodes)
+        throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCoordinateRange] A node can be added only to a node group.");
+
+
+    NuTo::FullVector<int,Eigen::Dynamic> members;
+    this->NodeGroupGetMembers(rIdentOldGroup,  members);
+
+    for (unsigned int countNode = 0; countNode < members.rows(); countNode++)
+    {
+        NodeBase* nodePtr = this->NodeGetNodePtr(members(countNode));
+        if (nodePtr->GetNum(Node::COORDINATES) < 1)
+            continue;
+
+        if (rFunction(nodePtr))
+            itGroupNew->second->AddMember(members(countNode), nodePtr);
+    }
+#ifdef SHOW_TIME
+    end = clock();
+    if (mShowTime)
+        std::cout << "[NuTo::StructureBase::GroupAddNodeCoordinateRange] " << difftime(end, start) / CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
+//! @brief ... Adds all nodes which fulfill the conditions specified in a std::function
 //! @param ... rIdentGroup identifier for the group
 //! @param ... rFunction std::function
 void NuTo::StructureBase::GroupAddNodeFunction(int rIdentGroup, std::function<bool(NuTo::NodeBase *)> rFunction)

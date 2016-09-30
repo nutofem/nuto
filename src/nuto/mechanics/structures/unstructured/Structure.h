@@ -615,7 +615,7 @@ public:
     //! @param rInterpolationTypeId ... interpolation type id
     //! @param rDofType ... dof type
     //! @param rTypeOrder ... type and order of interpolation
-    void InterpolationTypeAdd(int rInterpolationTypeId, int rDegree, const Eigen::VectorXd &rKnots);
+//    void InterpolationTypeAdd(int rInterpolationTypeId, int rDegree, const Eigen::VectorXd &rKnots);
 
     //! @brief adds a dof to a interpolation type
     //! @param rInterpolationTypeId ... interpolation type id
@@ -632,7 +632,8 @@ public:
                               NuTo::Node::eDof rDofType,
                               Interpolation::eTypeOrder rTypeOrder,
                               const Eigen::VectorXi &rDegree,
-                              const std::vector<Eigen::VectorXd> &rKnots);
+                              const std::vector<Eigen::VectorXd> &rKnots,
+                              const Eigen::MatrixXd &rWeights);
 
 #endif //SWIG
 

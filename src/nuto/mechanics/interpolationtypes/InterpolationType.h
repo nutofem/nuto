@@ -41,7 +41,7 @@ public:
 
     //! @brief adds a dof type and the corresponding interpolation of IGA type
     //! @param rDofType ... dof type
-    void AddDofInterpolation(Node::eDof rDofType, Interpolation::eTypeOrder rTypeOrder, const Eigen::VectorXi &rDegree, const std::vector<Eigen::VectorXd> &rKnots);
+    void AddDofInterpolation(Node::eDof rDofType, Interpolation::eTypeOrder rTypeOrder, const Eigen::VectorXi &rDegree, const std::vector<Eigen::VectorXd> &rKnots, const Eigen::MatrixXd &rWeights);
 
     //! @brief adds a dof type and the corresponding interpolation order, calculate and store
     //! @param rDofType ... dof type

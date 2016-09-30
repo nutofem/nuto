@@ -23,10 +23,11 @@ enum eElementType
     ELEMENT1DSPRING,                                //!< one dimensional spring element
     ELEMENT2D,                                      //!< two dimensional element
     ELEMENT2DINTERFACE,                             //!< two dimensional element
-    INTERFACEIGA,                                   //!< interface element isogeometric analysis (e.g. contact)
+    CONTACTINTERFACE,                               //!< conatact interface element
     ELEMENT3D,                                      //!< three dimensional element
     PLANE2D4N,
     PLANE2D3N,
+
 
 };
 
@@ -77,7 +78,7 @@ enum eUpdateType
 
 enum eOutput
 {
-        CONTACT_FORCE,                   //!< contact force after mortar discretization
+        GAP_MATRIX_MORTAR,               //!< gap matrix according to mortar discretization
 	INTERNAL_GRADIENT,               //!<
 	INTERNAL_GRADIENT_ELASTIC,       //!< calculates internal gradient for the case that the state variables remain unchanged
 	EXTERNAL_GRADIENT,               //!< TODO: calculate external forces in element
