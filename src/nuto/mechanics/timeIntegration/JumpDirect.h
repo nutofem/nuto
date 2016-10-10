@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef JUMPDIRECT_H
-#define JUMPDIRECT_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -393,4 +392,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::JumpDirect)
 
 
 
-#endif // JumpDirect_H

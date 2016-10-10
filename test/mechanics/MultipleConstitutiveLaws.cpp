@@ -1,10 +1,21 @@
+#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include "nuto/mechanics/tools/MeshGenerator.h"
 #include <array>
-
-
+#include <boost/foreach.hpp>
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/laws/MoistureTransport.h"
+#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataMoistureTransport.h"
+#include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
+#include "nuto/mechanics/groups/GroupEnum.h"
+#endif
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -195,13 +206,13 @@ public:
         {
 
 
-            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::RELATIVEHUMIDITY) != 0)
+            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::eDof::RELATIVEHUMIDITY) != 0)
             {
-                mS.NodeGetNodePtr(i)->Set(NuTo::Node::RELATIVEHUMIDITY, 0,InitialRelativeHumidity) ;
+                mS.NodeGetNodePtr(i)->Set(NuTo::Node::eDof::RELATIVEHUMIDITY, 0,InitialRelativeHumidity) ;
             }
-            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::WATERVOLUMEFRACTION) != 0)
+            if(mS.NodeGetNodePtr(i)->GetNum(NuTo::Node::eDof::WATERVOLUMEFRACTION) != 0)
             {
-                mS.NodeGetNodePtr(i)->Set(NuTo::Node::WATERVOLUMEFRACTION, 0, InitialWaterVolumeFraction);
+                mS.NodeGetNodePtr(i)->Set(NuTo::Node::eDof::WATERVOLUMEFRACTION, 0, InitialWaterVolumeFraction);
             }
         }
     }
@@ -280,7 +291,7 @@ void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
     rS.GroupAddElementsFromNodes(eGrpBE, nGrpBE, false);
 
     std::set<NuTo::Node::eDof> controlNodeDofs;
-    controlNodeDofs.insert(NuTo::Node::RELATIVEHUMIDITY);
+    controlNodeDofs.insert(NuTo::Node::eDof::RELATIVEHUMIDITY);
 
     int boundaryControlNodeID = rS.NodeCreateDOFs(controlNodeDofs);
     NuTo::NodeBase* controlNodePtr = rS.NodeGetNodePtr(boundaryControlNodeID);
@@ -298,13 +309,13 @@ void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
         switch(TDim)
         {
         case 1:
-            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::IntegrationType::IntegrationType0DBoundary), elementPtr->GetIpDataType(0));
+            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType0DBoundary), elementPtr->GetIpDataType(0));
             break;
         case 2:
-            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::IntegrationType::IntegrationType1D2NGauss2Ip), elementPtr->GetIpDataType(0));
+            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip), elementPtr->GetIpDataType(0));
             break;
         case 3:
-            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::IntegrationType::IntegrationType2D4NGauss4Ip), elementPtr->GetIpDataType(0));
+            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip), elementPtr->GetIpDataType(0));
             break;
         default:
             throw NuTo::Exception(__PRETTY_FUNCTION__,"Invalid dimension");
@@ -327,13 +338,13 @@ void SetupIntegrationType(NuTo::Structure& rS, int rIPT)
     switch(TDim)
     {
     case 1:
-        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::IntegrationType::IntegrationType1D2NGauss2Ip,NuTo::IpData::STATICDATA);
+        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip,NuTo::IpData::eIpDataType::STATICDATA);
         break;
     case 2:
-        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::IntegrationType::IntegrationType2D4NGauss4Ip,NuTo::IpData::STATICDATA);
+        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip,NuTo::IpData::eIpDataType::STATICDATA);
         break;
     case 3:
-        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::IntegrationType::IntegrationType3D8NGauss2x2x2Ip,NuTo::IpData::STATICDATA);
+        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip,NuTo::IpData::eIpDataType::STATICDATA);
         break;
     default:
         throw NuTo::Exception(__PRETTY_FUNCTION__,"Invalid dimension");
@@ -552,12 +563,12 @@ inline void SetupTimeIntegration(NuTo::NewmarkDirect& rTI,
 inline void SetupVisualize(NuTo::Structure& rS)
 {
 #ifdef ENABLE_VISUALIZE
-        int visGrp = rS.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        int visGrp = rS.GroupCreate(NuTo::eGroupId::Elements);
         rS.GroupAddElementsTotal(visGrp);
-        rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::DISPLACEMENTS);
-        rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::RELATIVE_HUMIDITY);
-        rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::WATER_VOLUME_FRACTION);
-        rS.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS);
+        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::DISPLACEMENTS);
+        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::RELATIVE_HUMIDITY);
+        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::WATER_VOLUME_FRACTION);
+        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
 #endif // ENABLE_VISUALIZE
 }
 
@@ -579,12 +590,12 @@ void CheckMechanicsResults(NuTo::Structure& rS)
     BOOST_FOREACH(NodeMap::const_iterator::value_type it, nodePtrMap)
     {
         const NuTo::NodeBase* nodePtr = it.second;
-        if(nodePtr->GetNum(NuTo::Node::DISPLACEMENTS)<1)
+        if(nodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)<1)
         {
             continue;   // Nodes without Displacements cant be checked
         }
-        double coordX = nodePtr->Get(NuTo::Node::COORDINATES)[0];
-        double dispX  = nodePtr->Get(NuTo::Node::DISPLACEMENTS)[0];
+        double coordX = nodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+        double dispX  = nodePtr->Get(NuTo::Node::eDof::DISPLACEMENTS)[0];
         double diff   = std::abs(coordX * 0.1) - std::abs(dispX);
         constexpr const double tolerance = 1e-6;
         if((diff >tolerance || diff < -tolerance))// && coordX > 0)
@@ -636,15 +647,15 @@ void CheckMoistureTransportResults(NuTo::Structure& rS,
         const NuTo::NodeBase* nodePtr = it.second;
 
 
-        if(nodePtr->GetNum(NuTo::Node::WATERVOLUMEFRACTION)<1)
+        if(nodePtr->GetNum(NuTo::Node::eDof::WATERVOLUMEFRACTION)<1)
         {
             continue;   // Nodes without WVF cant be checked --- for example boundary control node
         }
 
-        double relevantNodeCoord = nodePtr->Get(NuTo::Node::COORDINATES)[0];
+        double relevantNodeCoord = nodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
         int relevantIndex = static_cast<int>(std::round(relevantNodeCoord / deltaL));
 
-        double nodalWVF = nodePtr->Get(NuTo::Node::WATERVOLUMEFRACTION)[0];
+        double nodalWVF = nodePtr->Get(NuTo::Node::eDof::WATERVOLUMEFRACTION)[0];
         double paperWVF = PaperValues[relevantIndex];
         if(std::abs(nodalWVF-paperWVF) > tolerance)
         {
@@ -681,7 +692,7 @@ void AdditiveOutputTest(std::array<int,TDim> rN,
     assert((rL[0] == 0.16) && "The length in flow direction (x) must be 0.16m for direct comparison with paper values");
 
 
-    std::string testName = std::string("ConstitutiveLawsAdditiveOutput") + std::to_string(TDim) +"D";
+    std::string testName = std::string("AdditiveOutput") + std::to_string(TDim) +"D";
     if(rStaggered)
         testName += "_staggered";
     std::string resultDir = std::string("./MultipleConstitutiveLaws_") + testName;
@@ -745,9 +756,9 @@ void AdditiveOutputTest(std::array<int,TDim> rN,
     auto LambdaGetBoundaryNodes = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if ((x >= 0.0   - Tol   && x <= 0.0   + Tol) ||
                                             (x >= rL[0] - Tol   && x <= rL[0] + Tol))
                                         {
@@ -792,12 +803,12 @@ void AdditiveOutputTest(std::array<int,TDim> rN,
 
     auto lambdaGetNodesLeftSide = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if (x >= 0.0   - Tol   && x <= 0.0   + Tol)
                                         {
                                             return true;
@@ -808,19 +819,19 @@ void AdditiveOutputTest(std::array<int,TDim> rN,
 
     auto lambdaGetNodeLeftBottom = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
                                         double x=0.0,
                                                y=0.0,
                                                z=0.0;
-                                        x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if(TDim>1)
-                                            y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
+                                            y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
                                         if(TDim>2)
-                                            z = rNodePtr->Get(NuTo::Node::COORDINATES)[2];
+                                            z = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[2];
 
                                         if (x >= 0.0   - Tol   && x <= 0.0   + Tol &&
                                             y >= 0.0   - Tol   && y <= 0.0   + Tol &&
@@ -834,12 +845,12 @@ void AdditiveOutputTest(std::array<int,TDim> rN,
 
     auto lambdaGetNodesRightSide = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
-                                    if(rNodePtr->GetNum(NuTo::Node::DISPLACEMENTS)==0)
+                                    if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)
                                         return false;
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if (x >= rL[0] - Tol   && x <= rL[0] + Tol)
                                         {
                                             return true;
@@ -1049,10 +1060,10 @@ void AdditiveInputImplicitTest(std::array<int,TDim> rN,
     SetupMultiProcessor(S);
 
 #ifdef ENABLE_VISUALIZE
-        int visGrp = S.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        int visGrp = S.GroupCreate(NuTo::eGroupId::Elements);
         S.GroupAddElementsTotal(visGrp);
-        S.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::DISPLACEMENTS);
-        S.AddVisualizationComponent(visGrp, NuTo::VisualizeBase::PRINCIPAL_ENGINEERING_STRESS);
+        S.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::DISPLACEMENTS);
+        S.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
 #endif // ENABLE_VISUALIZE
 
     SetupTimeIntegration(TI,
@@ -1072,10 +1083,10 @@ void AdditiveInputImplicitTest(std::array<int,TDim> rN,
 int main()
 {
     std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> dofIPTMap;
-    dofIPTMap[NuTo::Node::eDof::COORDINATES]            = NuTo::Interpolation::EQUIDISTANT1;
-    dofIPTMap[NuTo::Node::eDof::DISPLACEMENTS]          = NuTo::Interpolation::EQUIDISTANT1;
-    dofIPTMap[NuTo::Node::eDof::RELATIVEHUMIDITY]       = NuTo::Interpolation::EQUIDISTANT1;
-    dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::EQUIDISTANT1;
+    dofIPTMap[NuTo::Node::eDof::COORDINATES]            = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
+    dofIPTMap[NuTo::Node::eDof::DISPLACEMENTS]          = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
+    dofIPTMap[NuTo::Node::eDof::RELATIVEHUMIDITY]       = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
+    dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
 
     AdditiveOutputTest<1>({16},
                           {0.16},
@@ -1108,8 +1119,8 @@ int main()
 // Solver (MUMPS / PARDISO aren't thread save! Find other solution in constitutive law to solve local system)
 #ifndef _OPENMP
     dofIPTMap.clear();
-    dofIPTMap[NuTo::Node::eDof::COORDINATES]            = NuTo::Interpolation::EQUIDISTANT1;
-    dofIPTMap[NuTo::Node::eDof::DISPLACEMENTS]          = NuTo::Interpolation::EQUIDISTANT1;
+    dofIPTMap[NuTo::Node::eDof::COORDINATES]            = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
+    dofIPTMap[NuTo::Node::eDof::DISPLACEMENTS]          = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
 
     AdditiveInputImplicitTest<1>({16},
                                  {0.16},

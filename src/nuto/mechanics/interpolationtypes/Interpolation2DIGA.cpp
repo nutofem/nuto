@@ -1,3 +1,9 @@
+#include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/elements/ElementShapeFunctions.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation2DIGA.h"
 
 NuTo::Interpolation2DIGA::Interpolation2DIGA(NuTo::Node::eDof rDofType,
@@ -18,19 +24,19 @@ NuTo::Interpolation2DIGA::Interpolation2DIGA(NuTo::Node::eDof rDofType,
     Initialize();
 }
 
-NuTo::IntegrationType::eIntegrationType NuTo::Interpolation2DIGA::GetStandardIntegrationType() const
+NuTo::eIntegrationType NuTo::Interpolation2DIGA::GetStandardIntegrationType() const
 {
     // its tensor product
     switch (std::max(mDegree(0), mDegree(1)))
     {
     case 0: // (0+0+1)/2 = 0.5 ips
-        return NuTo::IntegrationType::IntegrationType2D4NGauss1Ip;
+        return NuTo::eIntegrationType::IntegrationType2D4NGauss1Ip;
     case 1: // (1+1+1)/2 = 1.5 ips or (1+1+3)/2 = 2.5 ips lobatto
-        return NuTo::IntegrationType::IntegrationType2D4NGauss4Ip;
+        return NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip;
     case 2: // (2+2+1)/2 = 2.5 ips or (2+2+3)/2 = 3.5 ips lobatto
-        return NuTo::IntegrationType::IntegrationType2D4NGauss9Ip;
+        return NuTo::eIntegrationType::IntegrationType2D4NGauss9Ip;
     case 3: // (3+3+1)/2 = 3.5 ips or (3+3+3)/2 = 4.5 ips lobatto
-        return NuTo::IntegrationType::IntegrationType2D4NLobatto25Ip;
+        return NuTo::eIntegrationType::IntegrationType2D4NLobatto25Ip;
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + std::to_string(std::max(mDegree(0), mDegree(1))) + " IGA not implemented");
     }
@@ -45,19 +51,19 @@ int NuTo::Interpolation2DIGA::GetNumDofsPerNode() const
 {
     switch (mDofType)
     {
-    case NuTo::Node::COORDINATES:
+    case NuTo::Node::eDof::COORDINATES:
         return mDimension;
-    case NuTo::Node::DISPLACEMENTS:
+    case NuTo::Node::eDof::DISPLACEMENTS:
         return mDimension;
-    case NuTo::Node::TEMPERATURE:
+    case NuTo::Node::eDof::TEMPERATURE:
         return 1;
-    case NuTo::Node::NONLOCALEQSTRAIN:
+    case NuTo::Node::eDof::NONLOCALEQSTRAIN:
         return 1;
-    case NuTo::Node::NONLOCALEQPLASTICSTRAIN:
+    case NuTo::Node::eDof::NONLOCALEQPLASTICSTRAIN:
         return 2;
-    case NuTo::Node::RELATIVEHUMIDITY:
+    case NuTo::Node::eDof::RELATIVEHUMIDITY:
         return 1;
-    case NuTo::Node::WATERVOLUMEFRACTION:
+    case NuTo::Node::eDof::WATERVOLUMEFRACTION:
         return 1;
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "dof type not found.");

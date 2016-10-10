@@ -1,13 +1,20 @@
 #pragma once
 
-#include "nuto/math/FullVector_Def.h"
+
 #include "nuto/mechanics/dofSubMatrixStorage/BlockStorageBase.h"
-#include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
+#include "nuto/mechanics/nodes/DofHash.h"
+#include "eigen3/Eigen/Core"
+
+#include <ostream>
+#include <unordered_map>
+#include <map>
 
 namespace NuTo
 {
+class BlockScalar;
 
 
+template <class T, int rows> class FullVector;
 //! @author Thomas Titscher, BAM
 //! @date January 2016
 //! @brief ... class for all block vectors with basic operators +,-,*(scalar)
@@ -27,11 +34,14 @@ public:
     BlockFullVector(const DofStatus& rDofStatus);
 
     //! @brief copy constructor
-    BlockFullVector(const BlockFullVector&  rOther) = default;
+    BlockFullVector(const BlockFullVector&  rOther);
+
+    //! @brief destructor
+    ~BlockFullVector();
 
 #ifndef SWIG
     //! @brief move constructor
-    BlockFullVector(      BlockFullVector&& rOther) = default;
+    BlockFullVector(      BlockFullVector&& rOther);
 #endif
 
     //! @brief import constructor
@@ -51,7 +61,7 @@ public:
 
     //! @brief move assignment
     //! @remark moves all values, moving only the active dof types is somehow slower.
-    BlockFullVector& operator=(      BlockFullVector&& rOther) = default;
+    BlockFullVector& operator=(      BlockFullVector&& rOther);
 
     //! @brief non-const access
           NuTo::FullVector<T, Eigen::Dynamic>& operator[](Node::eDof rDofRow);
@@ -143,10 +153,7 @@ public:
     //! @brief Exports the active dof type values to a FullVector
     NuTo::FullVector<T, Eigen::Dynamic> Export() const;
 
-    NuTo::FullVector<T, Eigen::Dynamic> Get(std::string rDofRow) const
-    {
-        return (*this)[Node::DofToEnum(rDofRow)];
-    }
+    NuTo::FullVector<T, Eigen::Dynamic> Get(std::string rDofRow) const;
 
 private:
 

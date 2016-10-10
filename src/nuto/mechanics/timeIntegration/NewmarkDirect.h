@@ -1,20 +1,21 @@
 // $Id$
 
-#ifndef NEWMARKDIRECT_H
-#define NEWMARKDIRECT_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/timeIntegration/NewmarkBase.h"
-#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
-#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
 #include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
+#include "nuto/mechanics/timeIntegration/NewmarkBase.h"
 
 
 namespace NuTo
 {
+
+class StructureOutputBlockMatrix;
+class StructureOutputBlockVector;
+
 //! @author Jörg F. Unger, NU
 //! @date February 2012
 //! @brief ... standard class for implicit timeintegration (static Newton Raphson or NewmarkDirect for dynamics)
@@ -139,7 +140,7 @@ public:
 
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
-    NuTo::Error::eError Solve(double rTimeDelta);
+    NuTo::eError Solve(double rTimeDelta);
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const;
@@ -233,4 +234,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::NewmarkDirect)
 
 
 
-#endif // NewmarkDirect_H

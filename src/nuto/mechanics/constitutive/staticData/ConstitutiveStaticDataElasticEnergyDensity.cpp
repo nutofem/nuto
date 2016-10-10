@@ -8,7 +8,9 @@
 #endif // ENABLE_SERIALIZATION
 
 
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataElasticEnergyDensity.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
 
 
 
@@ -19,9 +21,9 @@ NuTo::ConstitutiveStaticDataElasticEnergyDensity::ConstitutiveStaticDataElasticE
 
 bool NuTo::ConstitutiveStaticDataElasticEnergyDensity::CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType rConstitutiveType, NuTo::Element::eElementType rElementType) const
 {
-    if (rConstitutiveType == NuTo::Constitutive::PHASE_FIELD)
+    if (rConstitutiveType == NuTo::Constitutive::eConstitutiveType::PHASE_FIELD)
     {
-        if (rElementType == NuTo::Element::CONTINUUMELEMENT)
+        if (rElementType == NuTo::Element::eElementType::CONTINUUMELEMENT)
             return true;
     }
     return false;

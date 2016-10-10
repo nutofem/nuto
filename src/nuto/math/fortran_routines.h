@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef _FORTRAN_ROUTINES_
-#define _FORTRAN_ROUTINES_
+#pragma once
 
 extern "C"
 {
@@ -9,4 +8,3 @@ extern "C"
     double *alpha, const double *a, int *lda, const double *b, int *ldb,
     double *beta, double *c, int *ldc);
 }
-#endif

@@ -5,6 +5,7 @@
  *      Author: ttitsche
  */
 
+#include "nuto/math/FullMatrix.h"
 #include "nuto/geometryConcrete/collision/collidables/CollidableParticleBase.h"
 
 NuTo::CollidableParticleBase::CollidableParticleBase(

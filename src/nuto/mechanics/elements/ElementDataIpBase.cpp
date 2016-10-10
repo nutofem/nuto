@@ -15,7 +15,9 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/elements/ElementDataIpBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/IpDataBase.h"
 #include "nuto/mechanics/elements/IpDataEmpty.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/elements/IpDataStaticData.h"
 #include "nuto/mechanics/elements/IpDataStaticDataNonlocal.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
@@ -35,15 +37,15 @@ NuTo::ElementDataIpBase::ElementDataIpBase(const ElementBase *rElement, const Nu
 	{
 		switch (rIpDataType)
 		{
-		case NuTo::IpData::NOIPDATA:
+        case NuTo::IpData::eIpDataType::NOIPDATA:
 			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]empty\n");
 			mIpData.push_back(new IpDataEmpty());
 			break;
-		case NuTo::IpData::STATICDATA:
+        case NuTo::IpData::eIpDataType::STATICDATA:
 			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]STATICDATA\n");
 			mIpData.push_back(new IpDataStaticData());
 			break;
-		case NuTo::IpData::STATICDATANONLOCAL:
+        case NuTo::IpData::eIpDataType::STATICDATANONLOCAL:
 			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]STATICDATANONLOCAL\n");
 			mIpData.push_back(new IpDataStaticDataNonlocal());
 			break;
@@ -69,15 +71,15 @@ NuTo::ElementDataIpBase::ElementDataIpBase(const ElementBase *rElement, int rNum
 	{
 		switch (rIpDataType)
 		{
-		case NuTo::IpData::NOIPDATA:
+        case NuTo::IpData::eIpDataType::NOIPDATA:
 			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]empty\n");
 			mIpData.push_back(new IpDataEmpty());
 			break;
-		case NuTo::IpData::STATICDATA:
+        case NuTo::IpData::eIpDataType::STATICDATA:
 			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]STATICDATA\n");
 			mIpData.push_back(new IpDataStaticData());
 			break;
-		case NuTo::IpData::STATICDATANONLOCAL:
+        case NuTo::IpData::eIpDataType::STATICDATANONLOCAL:
 			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]STATICDATANONLOCAL\n");
 			mIpData.push_back(new IpDataStaticDataNonlocal());
 			break;
@@ -146,13 +148,13 @@ void NuTo::ElementDataIpBase::SetIntegrationType(const ElementBase* rElement, co
 	{
 		switch (rIpDataType)
 		{
-		case NuTo::IpData::NOIPDATA:
+        case NuTo::IpData::eIpDataType::NOIPDATA:
 			mIpData.push_back(new IpDataEmpty());
 			break;
-		case NuTo::IpData::STATICDATA:
+        case NuTo::IpData::eIpDataType::STATICDATA:
 			mIpData.push_back(new IpDataStaticData());
 			break;
-		case NuTo::IpData::STATICDATANONLOCAL:
+        case NuTo::IpData::eIpDataType::STATICDATANONLOCAL:
 			mIpData.push_back(new IpDataStaticDataNonlocal());
 			break;
 		default:

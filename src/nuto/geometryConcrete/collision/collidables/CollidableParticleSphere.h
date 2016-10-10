@@ -5,8 +5,7 @@
  *      Author: ttitsche
  */
 
-#ifndef COLLIDABLEPARTICLESPHERE_H_
-#define COLLIDABLEPARTICLESPHERE_H_
+#pragma once
 
 #include "nuto/geometryConcrete/collision/collidables/CollidableParticleBase.h"
 
@@ -88,7 +87,7 @@ public:
 
 	//! @brief ... returns all old events, that need to be deleted
 	//! @param rEventsToDelete ... return argument
-	void GetLocalEventsToDelete(Event::LocalEvents& rEventsToDelete) const;
+    void GetLocalEventsToDelete(LocalEvents& rEventsToDelete) const;
 
 	//! @brief ... exports the sphere position and its radius to as a row in a Nx4-matrix
 	//! @param rInitialRadius ... switch to export mRadius or mRadius0
@@ -157,4 +156,3 @@ private:
 };
 
 } /* namespace NuTo */
-#endif /* COLLIDABLEPARTICLESPHERE_H_ */

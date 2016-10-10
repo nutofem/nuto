@@ -1,10 +1,6 @@
 // $Id: TimeIntegrationBase.h 593 2012-02-03 23:50:23Z unger3 $
 
-#ifndef TIMEINTEGRATIONBASE_H
-#define TIMEINTEGRATIONBASE_H
-
-#include <ctime>
-#include <array>
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -13,22 +9,31 @@
 
 #include <boost/ptr_container/ptr_map.hpp>
 
+
+// parent class
 #include "nuto/base/NuToObject.h"
-#include "nuto/base/CallbackInterface.h"
-#include "nuto/base/ErrorEnum.h"
-#include "nuto/mechanics/MechanicsException.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
-#include "nuto/mechanics/timeIntegration/ResultBase.h"
-#include "nuto/mechanics/timeIntegration/TimeDependencyBase.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
-#include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
+
+// member
+#include "nuto/math/FullMatrix_Def.h"
+#include "nuto/math/FullVector_Def.h"
 #include "nuto/mechanics/structures/StructureOutputBlockVector.h"
 
 namespace NuTo
 {
-class StructureBase;
+class CallbackInterface;
 class NodeBase;
+class ResultBase;
+class StructureBase;
+class TimeDependencyBase;
+enum class eError;
+
+template <typename T> class BlockFullVector;
+
+namespace IpData
+{
+    enum class eIpStaticDataType;
+}// namespace IpData
+
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard abstract class for all mechanical structures
@@ -42,12 +47,11 @@ public:
     TimeIntegrationBase(StructureBase* rStructure);
 
     //! @brief deconstructor
-    virtual ~TimeIntegrationBase()
-    {}
+    virtual ~TimeIntegrationBase();
 
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
-    virtual NuTo::Error::eError Solve(double rTimeDelta)=0;
+    virtual NuTo::eError Solve(double rTimeDelta)=0;
 
     //! @brief sets the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
     void ResetForNextLoad();
@@ -365,4 +369,3 @@ protected:
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::TimeIntegrationBase)
 #endif // SWIG
 #endif  // ENABLE_SERIALIZATION
-#endif // TIMEINTEGRATIONBASE_H

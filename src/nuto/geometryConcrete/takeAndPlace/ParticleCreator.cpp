@@ -9,6 +9,7 @@
 #include "nuto/geometryConcrete/InputReader.h"
 #include "nuto/base/Exception.h"
 #include "nuto/geometryConcrete/WallTime.h"
+#include "nuto/math/FullMatrix.h"
 
 
 NuTo::ParticleCreator::ParticleCreator(NuTo::Specimen rSpecimen, const double rShrinkage, const long rNumMaxTries)

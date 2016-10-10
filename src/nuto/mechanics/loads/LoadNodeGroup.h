@@ -1,6 +1,5 @@
 // $Id$
-#ifndef LOADNODEGROUP_H
-#define LOADNODEGROUP_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -11,7 +10,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/loads/LoadBase.h"
 
 namespace NuTo
@@ -53,5 +51,3 @@ protected:
     const Group<NodeBase>* mGroup;
 };
 }//namespace NuTo
-#endif //LOADNODEGROUP_H
-

@@ -6,6 +6,7 @@
  */
 #include "nuto/mechanics/timeIntegration/ResultTime.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/timeIntegration/TimeIntegrationEnum.h"
 
 NuTo::ResultTime::ResultTime(const std::string& rIdent) : ResultBase(rIdent)
 {
@@ -23,4 +24,9 @@ void NuTo::ResultTime::CalculateAndAddValues(const StructureBase& rStructure, in
 		this->Resize(rStructure, 2*(rTimeStepPlot+1),false);
 	}
 	mData(rTimeStepPlot,0) = rTime;
+}
+
+NuTo::eTimeIntegrationResultType NuTo::ResultTime::GetResultType() const
+{
+    return NuTo::eTimeIntegrationResultType::TIME;
 }

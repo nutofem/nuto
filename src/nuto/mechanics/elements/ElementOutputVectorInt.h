@@ -1,6 +1,5 @@
 // $Id $
-#ifndef ELEMENT_OUTPUT_VECTOR_INT_H_
-#define ELEMENT_OUTPUT_VECTOR_INT_H_
+#pragma once
 
 #include "nuto/mechanics/elements/ElementOutputBase.h"
 
@@ -42,4 +41,3 @@ private:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::ElementOutputVectorInt)
 #endif // ENABLE_SERIALIZATION
-#endif /* ElementOutputVectorInt */

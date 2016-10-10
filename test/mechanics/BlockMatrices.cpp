@@ -17,6 +17,7 @@
 #include "nuto/mechanics/elements/ElementOutputBlockMatrixDouble.h"
 #include "nuto/mechanics/dofSubMatrixStorage/DofStatus.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 
 //! @brief converts a NuTo SparseMatrix in Vector2 format to a Eigen SparseMatrix
@@ -52,16 +53,16 @@ void BlockFullVectorTest()
     NuTo::Timer timer("BVT - BlockFullVectorTest:Init");
 
     NuTo::DofStatus s;
-    s.SetDofTypes       ({NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE});
-    s.SetActiveDofTypes ({NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE});
+    s.SetDofTypes       ({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
+    s.SetActiveDofTypes ({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
 
 
     NuTo::BlockFullVector<int> v1(s), v2(s);
-    v1[NuTo::Node::DISPLACEMENTS] = NuTo::FullVector<int, Eigen::Dynamic>({1,1,1});
-    v2[NuTo::Node::DISPLACEMENTS] = NuTo::FullVector<int, Eigen::Dynamic>({2,2,2});
+    v1[NuTo::Node::eDof::DISPLACEMENTS] = NuTo::FullVector<int, Eigen::Dynamic>({1,1,1});
+    v2[NuTo::Node::eDof::DISPLACEMENTS] = NuTo::FullVector<int, Eigen::Dynamic>({2,2,2});
 
-    v1[NuTo::Node::TEMPERATURE] = NuTo::FullVector<int, Eigen::Dynamic>({10,10});
-    v2[NuTo::Node::TEMPERATURE] = NuTo::FullVector<int, Eigen::Dynamic>({20,20});
+    v1[NuTo::Node::eDof::TEMPERATURE] = NuTo::FullVector<int, Eigen::Dynamic>({10,10});
+    v2[NuTo::Node::eDof::TEMPERATURE] = NuTo::FullVector<int, Eigen::Dynamic>({20,20});
 
     /*
      * Export
@@ -121,23 +122,23 @@ void BlockFullVectorTest()
      * ActiveDofTypes
      */
     timer.Reset("BVT:ActiveDofTypes");
-    s.SetActiveDofTypes({NuTo::Node::DISPLACEMENTS});
+    s.SetActiveDofTypes({NuTo::Node::eDof::DISPLACEMENTS});
 
     if (v1.Export().GetNumRows() != 3)      throw NuTo::MechanicsException("[BVT:ActiveDofTypes] Exported v1 has wrong size.");
 
 
-    if (v1[NuTo::Node::TEMPERATURE] != (v1+v1)[NuTo::Node::TEMPERATURE])
+    if (v1[NuTo::Node::eDof::TEMPERATURE] != (v1+v1)[NuTo::Node::eDof::TEMPERATURE])
                                             throw NuTo::MechanicsException("[BVT:ActiveDofTypes] Addition changes inactive dofs.");
-    if (v1[NuTo::Node::TEMPERATURE] != (v1-v1)[NuTo::Node::TEMPERATURE])
+    if (v1[NuTo::Node::eDof::TEMPERATURE] != (v1-v1)[NuTo::Node::eDof::TEMPERATURE])
                                             throw NuTo::MechanicsException("[BVT:ActiveDofTypes] Subtraction changes inactive dofs.");
-    if (v1[NuTo::Node::TEMPERATURE] != (v1*2)[NuTo::Node::TEMPERATURE])
+    if (v1[NuTo::Node::eDof::TEMPERATURE] != (v1*2)[NuTo::Node::eDof::TEMPERATURE])
                                             throw NuTo::MechanicsException("[BVT:ActiveDofTypes] Multiplication changes inactive dofs.");
 
     v1.Info();
 
 
 
-    s.SetActiveDofTypes({NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE});
+    s.SetActiveDofTypes({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
 
     /*
      * import
@@ -173,8 +174,8 @@ void BlockFullMatrixTest()
     NuTo::Timer timer("BlockFullMatrixTest:Init");
 
     NuTo::DofStatus s;
-    s.SetDofTypes       ({NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE});
-    s.SetActiveDofTypes ({NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE});
+    s.SetDofTypes       ({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
+    s.SetActiveDofTypes ({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
 
     NuTo::BlockFullMatrix<double> m(s);
 
@@ -182,14 +183,14 @@ void BlockFullMatrixTest()
     int numD = 3;
     int numT = 2;
 
-    m(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS) = NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>::Random(numD, numD);
+    m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS) = NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>::Random(numD, numD);
 
-    m(NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE ).Resize(numD,numT);
-    m(NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE ) << 1, 2, 3, 1, 2, 3;
+    m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ).Resize(numD,numT);
+    m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ) << 1, 2, 3, 1, 2, 3;
 
-    m(NuTo::Node::TEMPERATURE,  NuTo::Node::DISPLACEMENTS) = m(NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE ).Trans();
+    m(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::DISPLACEMENTS) = m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ).Trans();
 
-    auto& matrixTT = m(NuTo::Node::TEMPERATURE,  NuTo::Node::TEMPERATURE );
+    auto& matrixTT = m(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::TEMPERATURE );
     matrixTT.Resize(numT,numT);
 
     m.Info();
@@ -203,8 +204,8 @@ void BlockSparseMatrixTest()
     NuTo::Timer timer("BMT - BlockSparseMatrixTest:Init");
 
     NuTo::DofStatus s;
-    s.SetDofTypes       ({NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE});
-    s.SetActiveDofTypes ({NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE});
+    s.SetDofTypes       ({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
+    s.SetActiveDofTypes ({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
 
     NuTo::BlockSparseMatrix m(s);
 
@@ -212,18 +213,18 @@ void BlockSparseMatrixTest()
     size_t numT = 2;
     double density = 1;
 
-    m(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(numD,numD,density);
-    m(NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(numD,numT,density);
-    m(NuTo::Node::TEMPERATURE,  NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(numT,numD,density);
-    m(NuTo::Node::TEMPERATURE,  NuTo::Node::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(numT,numT,density);
+    m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(numD,numD,density);
+    m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(numD,numT,density);
+    m(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(numT,numD,density);
+    m(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(numT,numT,density);
     m.CheckDimensions();
     m.Info();
 
     timer.Reset("BMT - vector*matrix");
 
     NuTo::BlockFullVector<double> v(s);
-    v[NuTo::Node::DISPLACEMENTS] = NuTo::FullVector<double, Eigen::Dynamic>::Random(numD);
-    v[NuTo::Node::TEMPERATURE ] = NuTo::FullVector<double, Eigen::Dynamic>::Random(numT);
+    v[NuTo::Node::eDof::DISPLACEMENTS] = NuTo::FullVector<double, Eigen::Dynamic>::Random(numD);
+    v[NuTo::Node::eDof::TEMPERATURE ] = NuTo::FullVector<double, Eigen::Dynamic>::Random(numT);
 
     auto result = m*v*4 + m*v;
 
@@ -258,40 +259,40 @@ void StructureOutputBlockMatrixTestGeneral(int rNumDAct, int rNumTAct, int rNumD
 {
     NuTo::Timer timer("StructureOutputBlockMatrixTestGeneral::DefineRandomMatrices");
     NuTo::DofStatus s;
-    s.SetDofTypes       ({NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE});
-    s.SetActiveDofTypes ({NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE});
+    s.SetDofTypes       ({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
+    s.SetActiveDofTypes ({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
 
 
     NuTo::StructureOutputBlockMatrix BM4(s);
 
-    BM4.JJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDAct, rNumDAct, rDensity);
-    BM4.JJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDAct, rNumTAct, rDensity);
-    BM4.JJ(NuTo::Node::TEMPERATURE,  NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTAct, rNumDAct, rDensity);
-    BM4.JJ(NuTo::Node::TEMPERATURE,  NuTo::Node::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTAct, rNumTAct, rDensity);
+    BM4.JJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDAct, rNumDAct, rDensity);
+    BM4.JJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDAct, rNumTAct, rDensity);
+    BM4.JJ(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTAct, rNumDAct, rDensity);
+    BM4.JJ(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTAct, rNumTAct, rDensity);
 
-    BM4.JK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDAct, rNumDDep, rDensity);
-    BM4.JK(NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDAct, rNumTDep, rDensity);
-    BM4.JK(NuTo::Node::TEMPERATURE,  NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTAct, rNumDDep, rDensity);
-    BM4.JK(NuTo::Node::TEMPERATURE,  NuTo::Node::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTAct, rNumTDep, rDensity);
+    BM4.JK(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDAct, rNumDDep, rDensity);
+    BM4.JK(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDAct, rNumTDep, rDensity);
+    BM4.JK(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTAct, rNumDDep, rDensity);
+    BM4.JK(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTAct, rNumTDep, rDensity);
 
-    BM4.KJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDDep, rNumDAct, rDensity);
-    BM4.KJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDDep, rNumTAct, rDensity);
-    BM4.KJ(NuTo::Node::TEMPERATURE,  NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTDep, rNumDAct, rDensity);
-    BM4.KJ(NuTo::Node::TEMPERATURE,  NuTo::Node::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTDep, rNumTAct, rDensity);
+    BM4.KJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDDep, rNumDAct, rDensity);
+    BM4.KJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDDep, rNumTAct, rDensity);
+    BM4.KJ(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTDep, rNumDAct, rDensity);
+    BM4.KJ(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTDep, rNumTAct, rDensity);
 
-    BM4.KK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDDep, rNumDDep, rDensity);
-    BM4.KK(NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDDep, rNumTDep, rDensity);
-    BM4.KK(NuTo::Node::TEMPERATURE,  NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTDep, rNumDDep, rDensity);
-    BM4.KK(NuTo::Node::TEMPERATURE,  NuTo::Node::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTDep, rNumTDep, rDensity);
+    BM4.KK(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDDep, rNumDDep, rDensity);
+    BM4.KK(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDDep, rNumTDep, rDensity);
+    BM4.KK(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTDep, rNumDDep, rDensity);
+    BM4.KK(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTDep, rNumTDep, rDensity);
 
     BM4.CheckDimensions();
 
 
     NuTo::BlockSparseMatrix CMatrix(s, false);
-    CMatrix(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDDep, rNumDAct, rDensity);
-    CMatrix(NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE ).Resize(                                               rNumDDep, rNumTAct);
-    CMatrix(NuTo::Node::TEMPERATURE,  NuTo::Node::DISPLACEMENTS).Resize(                                               rNumTDep, rNumDAct);
-    CMatrix(NuTo::Node::TEMPERATURE,  NuTo::Node::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTDep, rNumTAct, rDensity);
+    CMatrix(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDDep, rNumDAct, rDensity);
+    CMatrix(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ).Resize(                                               rNumDDep, rNumTAct);
+    CMatrix(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::DISPLACEMENTS).Resize(                                               rNumTDep, rNumDAct);
+    CMatrix(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumTDep, rNumTAct, rDensity);
 
     NuTo::BlockSparseMatrix hessian(s, true);
     hessian = BM4.JJ;  // just to get every sub matrix ...
@@ -355,22 +356,22 @@ void StructureOutputBlockMatrixTestSymmetric(int rNumDAct, int rNumDDep, double 
 {
     NuTo::Timer timer("StructureOutputBlockMatrixTestSymmetric::DefineRandomMatrices");
     NuTo::DofStatus s;
-    s.SetDofTypes       ({NuTo::Node::DISPLACEMENTS});
-    s.SetActiveDofTypes ({NuTo::Node::DISPLACEMENTS});
-    s.SetIsSymmetric    (NuTo::Node::DISPLACEMENTS, true);
+    s.SetDofTypes       ({NuTo::Node::eDof::DISPLACEMENTS});
+    s.SetActiveDofTypes ({NuTo::Node::eDof::DISPLACEMENTS});
+    s.SetIsSymmetric    (NuTo::Node::eDof::DISPLACEMENTS, true);
 
     NuTo::StructureOutputBlockMatrix BM4(s);
 
-    BM4.JJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2Symmetric<double>::Random(rNumDAct, rDensity);
-    BM4.JK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDAct, rNumDDep, rDensity);
-    BM4.KJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS) = BM4.JK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).AsSparseMatrixCSRVector2General().Transpose();
-    BM4.KK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2Symmetric<double>::Random(rNumDDep, rDensity);
+    BM4.JJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2Symmetric<double>::Random(rNumDAct, rDensity);
+    BM4.JK(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDAct, rNumDDep, rDensity);
+    BM4.KJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS) = BM4.JK(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).AsSparseMatrixCSRVector2General().Transpose();
+    BM4.KK(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2Symmetric<double>::Random(rNumDDep, rDensity);
     BM4.CheckDimensions();
 
     timer.Reset("StructureOutputBlockMatrixTestSymmetric::Export");
 
     NuTo::BlockSparseMatrix CMatrix(s, false);
-    CMatrix(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDDep, rNumDAct, rDensity);
+    CMatrix(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(rNumDDep, rNumDAct, rDensity);
 
     NuTo::BlockSparseMatrix hessian(s, true);
     hessian = BM4.JJ;  // just to get every sub matrix ...
@@ -469,8 +470,8 @@ void BlockScalarTest()
 {
     NuTo::Timer timer("BlockScalarTest");
     NuTo::DofStatus s;
-    s.SetDofTypes       ({NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE, NuTo::Node::WATERVOLUMEFRACTION});
-    s.SetActiveDofTypes ({NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE});
+    s.SetDofTypes       ({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE, NuTo::Node::eDof::WATERVOLUMEFRACTION});
+    s.SetActiveDofTypes ({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
 
     std::cout << "Active Dofs: DISPLACEMENTS / TEMPERATURE" << std::endl << std::endl;
     NuTo::BlockScalar A(s); A.DefineDefaultValueToIninitializedDofTypes(-3.);
@@ -636,8 +637,8 @@ void SerializationTest(std::string rFileType)
 {
     NuTo::Timer timer("SerializationTest");
 #ifdef ENABLE_SERIALIZATION
-    const std::set<NuTo::Node::eDof>& dofTypes          = {NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE};
-    const std::set<NuTo::Node::eDof>& activeDofTypes    = {NuTo::Node::DISPLACEMENTS, NuTo::Node::TEMPERATURE};
+    const std::set<NuTo::Node::eDof>& dofTypes          = {NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE};
+    const std::set<NuTo::Node::eDof>& activeDofTypes    = {NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE};
 
     {
         NuTo::DofStatus s;
@@ -645,20 +646,20 @@ void SerializationTest(std::string rFileType)
         s.SetActiveDofTypes (activeDofTypes);
         NuTo::BlockFullMatrix<double> BM_A(s);
         NuTo::BlockFullMatrix<double> BM_B(s);
-        BM_A(NuTo::Node::DISPLACEMENTS,NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(4, 4, 1.0,1);
-        BM_A(NuTo::Node::DISPLACEMENTS,NuTo::Node::TEMPERATURE )  = NuTo::SparseMatrixCSRVector2General<double>::Random(4, 2, 1.0,2);
-        BM_A(NuTo::Node::TEMPERATURE  ,NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(2, 4, 1.0,3);
-        BM_A(NuTo::Node::TEMPERATURE  ,NuTo::Node::TEMPERATURE )  = NuTo::SparseMatrixCSRVector2General<double>::Random(2, 2, 1.0,4);
+        BM_A(NuTo::Node::eDof::DISPLACEMENTS,NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(4, 4, 1.0,1);
+        BM_A(NuTo::Node::eDof::DISPLACEMENTS,NuTo::Node::eDof::TEMPERATURE )  = NuTo::SparseMatrixCSRVector2General<double>::Random(4, 2, 1.0,2);
+        BM_A(NuTo::Node::eDof::TEMPERATURE  ,NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(2, 4, 1.0,3);
+        BM_A(NuTo::Node::eDof::TEMPERATURE  ,NuTo::Node::eDof::TEMPERATURE )  = NuTo::SparseMatrixCSRVector2General<double>::Random(2, 2, 1.0,4);
 
-        BM_B(NuTo::Node::DISPLACEMENTS,NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(4, 4, 1.0,5);
-        BM_B(NuTo::Node::DISPLACEMENTS,NuTo::Node::TEMPERATURE  ) = NuTo::SparseMatrixCSRVector2General<double>::Random(4, 2, 1.0,6);
-        BM_B(NuTo::Node::TEMPERATURE  ,NuTo::Node::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(2, 4, 1.0,7);
-        BM_B(NuTo::Node::TEMPERATURE  ,NuTo::Node::TEMPERATURE  ) = NuTo::SparseMatrixCSRVector2General<double>::Random(2, 2, 1.0,8);
+        BM_B(NuTo::Node::eDof::DISPLACEMENTS,NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(4, 4, 1.0,5);
+        BM_B(NuTo::Node::eDof::DISPLACEMENTS,NuTo::Node::eDof::TEMPERATURE  ) = NuTo::SparseMatrixCSRVector2General<double>::Random(4, 2, 1.0,6);
+        BM_B(NuTo::Node::eDof::TEMPERATURE  ,NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(2, 4, 1.0,7);
+        BM_B(NuTo::Node::eDof::TEMPERATURE  ,NuTo::Node::eDof::TEMPERATURE  ) = NuTo::SparseMatrixCSRVector2General<double>::Random(2, 2, 1.0,8);
 
         BM_A.CheckDimensions();
         Save(BM_A,"Tmp",rFileType);
-        s.SetDofTypes({NuTo::Node::DISPLACEMENTS});
-        s.SetActiveDofTypes ({NuTo::Node::TEMPERATURE });
+        s.SetDofTypes({NuTo::Node::eDof::DISPLACEMENTS});
+        s.SetActiveDofTypes ({NuTo::Node::eDof::TEMPERATURE });
         Restore(BM_B,"Tmp",rFileType);
 
         if(BM_A.GetNumActiveColumns()   != BM_B.GetNumActiveColumns()   ||

@@ -1,17 +1,13 @@
-#ifndef SPARSEMATRIXENUM_H_
-#define SPARSEMATRIXENUM_H_
+#pragma once
 
 namespace NuTo
 {
-namespace SparseMatrixEnum
-{
-enum eType
+
+enum class eSparseMatrixType
 {
     CSRGENERAL=0,
     CSRSYMMETRIC,
     CSRVECTOR2GENERAL,
     CSRVECTOR2SYMMETRIC
 };
-}
-}
-#endif /* SPARSEMATRIXENUM_H_ */
+}// namespace NuTo

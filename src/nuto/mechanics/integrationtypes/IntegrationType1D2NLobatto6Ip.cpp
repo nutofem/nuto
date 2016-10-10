@@ -1,3 +1,16 @@
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif //ENABLE_SERIALIZATION
+
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
+#endif // ENABLE_VISUALIZE
+
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto6Ip.h"
 #include <assert.h>
 
@@ -55,7 +68,7 @@ void NuTo::IntegrationType1D2NLobatto6Ip::GetVisualizationCells(
     unsigned int& NumVisualizationPoints,
     std::vector<double>& VisualizationPointLocalCoordinates,
     unsigned int& NumVisualizationCells,
-    std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+    std::vector<NuTo::eCellTypes>& VisualizationCellType,
     std::vector<unsigned int>& VisualizationCellsIncidence,
     std::vector<unsigned int>& VisualizationCellsIP) const
 {
@@ -68,12 +81,12 @@ void NuTo::IntegrationType1D2NLobatto6Ip::GetVisualizationCells(
     VisualizationPointLocalCoordinates.push_back(0.52514);
     VisualizationPointLocalCoordinates.push_back( 1.);
     NumVisualizationCells = 6;
-    VisualizationCellType.push_back(NuTo::CellBase::LINE);
-    VisualizationCellType.push_back(NuTo::CellBase::LINE);
-    VisualizationCellType.push_back(NuTo::CellBase::LINE);
-    VisualizationCellType.push_back(NuTo::CellBase::LINE);
-    VisualizationCellType.push_back(NuTo::CellBase::LINE);
-    VisualizationCellType.push_back(NuTo::CellBase::LINE);
+    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
+    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
+    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
+    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
+    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
+    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
 
     VisualizationCellsIncidence.push_back(0);
     VisualizationCellsIncidence.push_back(1);

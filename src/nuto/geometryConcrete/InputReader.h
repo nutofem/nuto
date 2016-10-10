@@ -5,11 +5,9 @@
  *      Author: ttitsche
  */
 
-#ifndef INPUTREADER_H_
-#define INPUTREADER_H_
+#pragma once
 
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
+#include "nuto/math/FullMatrix_Def.h"
 
 
 #include <string>
@@ -62,7 +60,7 @@ shrinkage = 0.10;              0.0 -> no EDMD
 
 namespace NuTo
 {
-
+template <class T, int rows> class FullVector;
 class InputReader
 {
 public:
@@ -131,4 +129,3 @@ private:
 };
 
 } /* namespace NuTo */
-#endif /* INPUTREADER_H_ */

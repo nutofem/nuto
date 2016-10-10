@@ -15,9 +15,13 @@
 #include <omp.h>
 # endif
 
+#include "nuto/math/SparseMatrixCSRVector2.h"
+#include "nuto/base/ErrorEnum.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
 #include "nuto/mechanics/timeIntegration/RungeKuttaBase.h"
 #include "nuto/mechanics/timeIntegration/TimeIntegrationEnum.h"
 #include "nuto/math/FullMatrix.h"
@@ -64,7 +68,7 @@ void NuTo::RungeKuttaBase::serialize(Archive & ar, const unsigned int version)
 //! @brief perform the time integration
 //! @param rStructure ... structure
 //! @param rTimeDelta ... length of the simulation
-NuTo::Error::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
+NuTo::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 {
     NuTo::Timer timer(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
@@ -105,10 +109,10 @@ NuTo::Error::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 
         StructureOutputBlockMatrix hessian2 = mStructure->BuildGlobalHessian2Lumped();
         double numericMass = 0;
-        numericMass += hessian2.JJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
-        numericMass += hessian2.JK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
-        numericMass += hessian2.KJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
-        numericMass += hessian2.KK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
+        numericMass += hessian2.JJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
+        numericMass += hessian2.JK(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
+        numericMass += hessian2.KJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
+        numericMass += hessian2.KK(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
 
         numericMass /= mStructure->GetDimension(); // since the mass is added to nodes in every direction
         std::cout << "the total mass is " << numericMass << std::endl;
@@ -127,7 +131,7 @@ NuTo::Error::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         while (curTime < rTimeDelta)
         {
          	//calculate for delta_t = 0
-            std::cout << "curTime " << curTime <<   " (" << curTime/rTimeDelta << ") max Disp = "  <<  dof_dt0.J[Node::DISPLACEMENTS].maxCoeff() << std::endl;
+            std::cout << "curTime " << curTime <<   " (" << curTime/rTimeDelta << ") max Disp = "  <<  dof_dt0.J[Node::eDof::DISPLACEMENTS].maxCoeff() << std::endl;
             auto dof_dt0_new = dof_dt0;
             auto dof_dt1_new = dof_dt1;
 
@@ -226,7 +230,7 @@ NuTo::Error::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         throw e;
     }
 
-    return NuTo::Error::SUCCESSFUL;
+    return NuTo::eError::SUCCESSFUL;
 
 }
 

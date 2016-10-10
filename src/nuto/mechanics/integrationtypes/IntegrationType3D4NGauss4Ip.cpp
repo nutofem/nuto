@@ -3,6 +3,9 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
 #include <assert.h>
 
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
+#endif // ENABLE_VISUALIZE
 
 //! @brief constructor
 NuTo::IntegrationType3D4NGauss4Ip::IntegrationType3D4NGauss4Ip()
@@ -77,7 +80,7 @@ void NuTo::IntegrationType3D4NGauss4Ip::GetVisualizationCells(
     unsigned int& NumVisualizationPoints,
     std::vector<double>& VisualizationPointLocalCoordinates,
     unsigned int& NumVisualizationCells,
-    std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+    std::vector<NuTo::eCellTypes>& VisualizationCellType,
     std::vector<unsigned int>& VisualizationCellsIncidence,
     std::vector<unsigned int>& VisualizationCellsIP) const
 {
@@ -161,7 +164,7 @@ void NuTo::IntegrationType3D4NGauss4Ip::GetVisualizationCells(
     NumVisualizationCells = 4;
 
     // cell 0
-    VisualizationCellType.push_back(NuTo::CellBase::HEXAHEDRON);
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
     VisualizationCellsIncidence.push_back(0);
     VisualizationCellsIncidence.push_back(4);
     VisualizationCellsIncidence.push_back(13);
@@ -173,7 +176,7 @@ void NuTo::IntegrationType3D4NGauss4Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(0);
 
     // cell 1
-    VisualizationCellType.push_back(NuTo::CellBase::HEXAHEDRON);
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
     VisualizationCellsIncidence.push_back(1);
     VisualizationCellsIncidence.push_back(5);
     VisualizationCellsIncidence.push_back(13);
@@ -185,7 +188,7 @@ void NuTo::IntegrationType3D4NGauss4Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(1);
 
     // cell 2
-    VisualizationCellType.push_back(NuTo::CellBase::HEXAHEDRON);
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
     VisualizationCellsIncidence.push_back(6);
     VisualizationCellsIncidence.push_back(13);
     VisualizationCellsIncidence.push_back(5);
@@ -197,7 +200,7 @@ void NuTo::IntegrationType3D4NGauss4Ip::GetVisualizationCells(
     VisualizationCellsIP.push_back(2);
 
     // cell 3
-    VisualizationCellType.push_back(NuTo::CellBase::HEXAHEDRON);
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
     VisualizationCellsIncidence.push_back(7);
     VisualizationCellsIncidence.push_back(12);
     VisualizationCellsIncidence.push_back(8);

@@ -1,7 +1,6 @@
 // $Id: FullVector.h 624 2013-04-15 14:35:59Z unger3 $
 
-#ifndef FULL_VECTOR_H
-#define FULL_VECTOR_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 // serialize
@@ -110,4 +109,3 @@ void FullVector<T,rows>::ConservativeResize ( int rRows)
 
 } //NAMESPACE NUTO
 
-#endif // FULL_VECTOR_H

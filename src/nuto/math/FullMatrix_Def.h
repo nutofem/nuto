@@ -1,7 +1,6 @@
 // $Id: FullMatrix.h 623 2013-04-05 08:14:22Z unger3 $
 
-#ifndef FULL_MATRIX_DEF_H
-#define FULL_MATRIX_DEF_H
+#pragma once
 
 //plugins for the eigen matrices
 #define EIGEN_MATRIXBASE_PLUGIN "nuto/math/MatrixBaseAddons.h"
@@ -531,4 +530,3 @@ BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::FullMatrix<int,Eigen::Dynamic,
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
-#endif // FULL_MATRIX_DEF_H

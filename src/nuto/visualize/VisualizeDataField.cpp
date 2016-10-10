@@ -1,6 +1,7 @@
 // $Id$
 
 #include "nuto/visualize/VisualizeDataField.h"
+#include "nuto/visualize/VisualizeDataType.h"
 
 // constructor
 NuTo::VisualizeDataField::VisualizeDataField(unsigned int rNumData) : mNumData(rNumData)
@@ -29,9 +30,9 @@ NuTo::VisualizeDataField::~VisualizeDataField()
 }
 
 // get data type
-NuTo::VisualizeDataType::eDataType NuTo::VisualizeDataField::GetDataType() const
+NuTo::eVisualizeDataType NuTo::VisualizeDataField::GetDataType() const
 {
-    return NuTo::VisualizeDataType::FIELD;
+    return NuTo::eVisualizeDataType::FIELD;
 }
 
 // get number of data

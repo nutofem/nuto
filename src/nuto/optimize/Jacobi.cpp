@@ -41,7 +41,7 @@ int NuTo::Jacobi::Optimize(std::vector<double> &v,std::vector<double> &f)
     int  numGradientCalls(0),   // number of gradient calls
 		 curIteration(0);      //number of iterations
 
-    optimization_return_attributes returnValue;
+    eOptimizationReturnAttributes returnValue;
 
 
 	std::vector<double> vNext(mNumParameters+3,0.);
@@ -68,7 +68,7 @@ int NuTo::Jacobi::Optimize(std::vector<double> &v,std::vector<double> &f)
 		 if (numGradientCalls>mMaxGradientCalls)
 		 {
 			 converged = true;
-			 returnValue = MAXGRADIENTCALLS;
+             returnValue = eOptimizationReturnAttributes::MAXGRADIENTCALLS;
 			 break;
 			 //return MAXGRADIENTCALLS;
 		 }
@@ -76,7 +76,7 @@ int NuTo::Jacobi::Optimize(std::vector<double> &v,std::vector<double> &f)
 		 if (curIteration>mMaxIterations)
 		 {
 			 converged = true;
-			 returnValue = MAXITERATIONS;
+             returnValue = eOptimizationReturnAttributes::MAXITERATIONS;
 			 break;
 			 //return MAXGRADIENTCALLS;
 		 }
@@ -97,7 +97,7 @@ int NuTo::Jacobi::Optimize(std::vector<double> &v,std::vector<double> &f)
 		if (rErrorNorm < mAccuracyGradient*mAccuracyGradient)
 		{
 			converged = true;
-			returnValue = DELTAOBJECTIVEBETWEENCYCLES;
+            returnValue = eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES;
 			break;
 		}
 	}
@@ -114,13 +114,13 @@ int NuTo::Jacobi::Optimize(std::vector<double> &v,std::vector<double> &f)
 		std::cout<< "[Jacobi::Optimize] Active convergence criterion..... " ;
 		switch (returnValue)
 		{
-			case MAXGRADIENTCALLS:
+            case eOptimizationReturnAttributes::MAXGRADIENTCALLS:
 				std::cout<< "Maximum number of gradient calls reached." << std::endl;
 				break;
-			case MAXITERATIONS:
+            case eOptimizationReturnAttributes::MAXITERATIONS:
 				std::cout<< "Maximum number of iterations reached." << std::endl;
 				break;
-			case DELTAOBJECTIVEBETWEENCYCLES:
+            case eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES:
 				std::cout<< "Norm of error smaller than prescribed value." << std::endl;
 				objective=sqrt(rErrorNorm);
 				break;
@@ -139,7 +139,7 @@ int NuTo::Jacobi::Optimize(std::vector<double> &v,std::vector<double> &f)
 		}
 		std::cout << std::endl;
 	}
-	return returnValue;
+    return static_cast<int>(returnValue);
 }
 
 #ifdef ENABLE_SERIALIZATION

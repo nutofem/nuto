@@ -12,7 +12,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/sections/SectionBase.h"
-#include "nuto/math/Matrix.h"
+#include <vector>
 
 namespace NuTo
 {
@@ -47,7 +47,7 @@ public:
 
     //! @brief ... get the section type
     //! @return ... section type
-    virtual Section::eSectionType GetType() const;
+    virtual eSectionType GetType() const;
 
     //! @brief ... print information about the section
     //! @param rVerboseLevel ... verbosity of the information

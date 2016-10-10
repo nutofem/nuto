@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef NUTO_OPTIMIZE_EXCEPTION_H
-#define NUTO_OPTIMIZE_EXCEPTION_H
+#pragma once
 
 #include "nuto/base/Exception.h"
 
@@ -55,4 +54,3 @@ public:
 
 };
 } //namespace NuTo
-#endif //NUTO_OPTIMIZE_EXCEPTION_H

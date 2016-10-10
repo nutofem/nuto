@@ -1,6 +1,5 @@
 // $Id: IntegrationType2D3NGauss16Ip.h 309 2010-09-22 22:21:24Z unger3 $
-#ifndef IntegrationType2D3NGauss16Ip_H
-#define IntegrationType2D3NGauss16Ip_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -60,7 +59,7 @@ public:
         unsigned int& NumVisualizationPoints,
         std::vector<double>& VisualizationPointLocalCoordinates,
         unsigned int& NumVisualizationCells,
-        std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+        std::vector<NuTo::eCellTypes>& VisualizationCellType,
         std::vector<unsigned int>& VisualizationCellsIncidence,
         std::vector<unsigned int>& VisualizationCellsIP) const;
 #endif // ENABLE_VISUALIZE
@@ -74,4 +73,3 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType2D3NGauss16Ip)
 #endif // ENABLE_SERIALIZATION
 
-#endif //IntegrationType2D3NGauss16Ip_H

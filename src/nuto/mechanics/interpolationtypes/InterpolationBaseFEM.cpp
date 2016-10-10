@@ -97,6 +97,11 @@ Eigen::MatrixXd NuTo::InterpolationBaseFEM::CalculateMatrixN(const Eigen::Vector
     return matrixN;
 }
 
+int NuTo::InterpolationBaseFEM::GetSplineDegree(int dir) const
+{
+    throw MechanicsException(__PRETTY_FUNCTION__, "Use 'GetTypeOrder' instead!");
+}
+
 const Eigen::VectorXd& NuTo::InterpolationBaseFEM::GetNaturalNodeCoordinates(int rNodeIndex) const
 {
     assert(rNodeIndex < mNumNodes);

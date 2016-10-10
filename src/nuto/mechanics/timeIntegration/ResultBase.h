@@ -1,20 +1,16 @@
 // $Id: $
 
 #pragma once
-#include <ctime>
-#include <array>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/base/NuToObject.h"
-#include "nuto/base/ErrorEnum.h"
+
+#include "nuto/math/FullMatrix_Def.h"
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
-#include "nuto/mechanics/timeIntegration/TimeIntegrationEnum.h"
+
 namespace NuTo
 {
 class ResultNodeDof;
@@ -22,6 +18,8 @@ class ResultGroupNodeDof;
 class ResultTime;
 class ResultElementIpData;
 class StructureBase;
+enum class eTimeIntegrationResultType;
+
 //! @author Jörg F. Unger, BAM
 //! @date December 2013
 //! @brief ... standard abstract class for all results
@@ -48,7 +46,7 @@ public:
     //! @brief number of data points per time step (e.g. number of displacement components of a node)
     virtual int GetNumData(const StructureBase& rStructure)const=0;
 
-    virtual NuTo::TimeIntegration::eResultType GetResultType()const = 0;
+    virtual NuTo::eTimeIntegrationResultType GetResultType()const = 0;
 
     virtual ResultNodeDof* AsResultNodeDof()
     {

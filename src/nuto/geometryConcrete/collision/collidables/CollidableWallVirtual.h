@@ -5,8 +5,7 @@
  *      Author: ttitsche
  */
 
-#ifndef COLLIDABLEWALLVIRTUAL_H_
-#define COLLIDABLEWALLVIRTUAL_H_
+#pragma once
 
 #include "nuto/geometryConcrete/collision/collidables/CollidableWallBase.h"
 namespace NuTo
@@ -59,4 +58,3 @@ private:
 };
 
 } /* namespace NuTo */
-#endif /* COLLIDABLEWALLVIRTUAL_H_ */

@@ -71,7 +71,7 @@ public:
         unsigned int& NumVisualizationPoints,
         std::vector<double>& VisualizationPointLocalCoordinates,
         unsigned int& NumVisualizationCells,
-        std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+        std::vector<NuTo::eCellTypes>& VisualizationCellType,
         std::vector<unsigned int>& VisualizationCellsIncidence,
         std::vector<unsigned int>& VisualizationCellsIP) const;
 #endif // ENABLE_VISUALIZE
@@ -84,7 +84,7 @@ protected:
     std::vector<double> mVisualizationPointCoordinates;
     std::vector<unsigned int> mVisualizationCellIndices;
     std::vector<unsigned int> mVisualizationCellIPIndices;
-    std::vector<NuTo::CellBase::eCellTypes> mVisualizationCellTypes;
+    std::vector<NuTo::eCellTypes> mVisualizationCellTypes;
 #endif // ENABLE_VISUALIZE
 };
 }

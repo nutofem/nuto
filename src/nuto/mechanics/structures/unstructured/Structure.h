@@ -1,26 +1,30 @@
 // $Id$
 
-#ifndef STRUCTURE_H
-#define STRUCTURE_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #endif // ENABLE_SERIALIZATION
-#include <set>
+
+
+#include "nuto/mechanics/structures/StructureBase.h"
 
 #include <boost/ptr_container/ptr_map.hpp>
-
-#include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/structures/StructureBaseEnum.h"
-#include "nuto/mechanics/cracks/CrackBase.h"
-#include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/elements/ElementDataEnum.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
-#include "nuto/mechanics/nodes/NodeBase.h"
+#include <set>
 
 namespace NuTo
 {
+namespace ElementData
+{
+    enum class eElementDataType;
+}// namespace ElementData
+
+namespace Interpolation
+{
+    enum class eShapeType;
+    enum class eTypeOrder;
+}// namespace Interpolation
+
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for irregular (unstructured) structures
@@ -120,7 +124,7 @@ public:
 #ifndef SWIG
 
     //! @brief ... evaluates the structure
-    virtual void Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<StructureEnum::eOutput, StructureOutputBase*> &rStructureOutput) override;
+    virtual void Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<eStructureOutput, StructureOutputBase*> &rStructureOutput) override;
 
 #endif
 
@@ -507,6 +511,7 @@ public:
                        ElementData::eElementDataType rElementDataType,
                        IpData::eIpDataType rIpDataType);
 
+
     //! @brief Creates an element
     //! @param rElementNumber ... element number
     //! @param rInterpolationTypeId ... interpolation type id
@@ -518,6 +523,9 @@ public:
                        const std::vector<NodeBase*>& rNodeVector,
                        ElementData::eElementDataType rElementDataType,
                        IpData::eIpDataType rIpDataType);
+
+
+    void ElementCreate(int rElementNumber, int rInterpolationTypeId, const std::vector<int>& rNodeIds, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
 
 
 
@@ -603,7 +611,7 @@ public:
     //! @param rInterpolationTypeId ... interpolation type id
     //! @param rIntegrationType ... integration type enum
     //! @param rIpDataType ... ip data type enum
-    void InterpolationTypeSetIntegrationType(int rInterpolationTypeId, IntegrationType::eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType);
+    void InterpolationTypeSetIntegrationType(int rInterpolationTypeId, eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType);
 
     //! @brief sets the integration type for a specific interpolation type
     //! @param rInterpolationTypeId ... interpolation type id
@@ -869,6 +877,11 @@ private:
     //! @param rCoordinates coordinates of the node
     //! @return node pointer
     NodeBase* NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+
+    //! @brief determines the dimensionality of a dof type
+    //! @param rDof ... specific dof type
+    //! @return dimension
+    int GetDofDimension(Node::eDof rDof);
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION
@@ -877,4 +890,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::Structure)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
-#endif // STRUCTURE_H

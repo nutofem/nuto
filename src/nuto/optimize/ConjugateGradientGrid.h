@@ -1,21 +1,16 @@
 // $Id $
-#ifndef CONJUGATE_GRADIENT_GRID_H
-#define CONJUGATE_GRADIENT_GRID_H
 
-#ifdef ENABLE_EIGEN
-//#include <eigen2/Eigen/Core>
-//#include <eigen3/Eigen/Dense>
-#endif
+#pragma once
 
 
-#include <vector>
-#include <boost/dynamic_bitset.hpp>
-#include <memory>
 
+
+
+// parent
 #include "nuto/optimize/Optimizer.h"
-#include "nuto/optimize/OptimizeException.h"
-#include "nuto/optimize/CallbackHandlerGrid.h"
 
+#include "nuto/optimize/CallbackHandlerGrid.h"
+#include <vector>
 
 namespace NuTo
 {
@@ -133,4 +128,3 @@ protected:
    	size_t mNumParameters;
 };
 } // namespace NuTo
-#endif // CONJUGATE_GRADIENT_GRID_H

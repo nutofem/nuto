@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataMultipleConstitutiveLaws.h"
+
 
 #include <set>
 #include <vector>
@@ -9,12 +9,12 @@
 namespace NuTo
 {
 
-class ConstitutiveLawsAdditiveOutput : public ConstitutiveBase
+class AdditiveOutput : public ConstitutiveBase
 {
 public:
 
     //! @brief constructor
-    ConstitutiveLawsAdditiveOutput()
+    AdditiveOutput()
         : ConstitutiveBase()
     {
         mComputableDofCombinations.resize(2); //VHIRTHAMTODO ---> Get number time derivatives during construction (as parameter)
@@ -25,39 +25,25 @@ public:
     //! @brief ... adds a constitutive law to a model that combines multiple constitutive laws (additive, parallel)
     //! @param rConstitutiveLaw ... additional constitutive law
     //! @param rModiesInput ... enum which defines wich input is modified by a constitutive law.
-    virtual void  AddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw, Constitutive::Input::eInput rModiesInput = Constitutive::Input::NONE) override
-    {
-        if(mStaticDataAllocated)
-            throw MechanicsException(__PRETTY_FUNCTION__,"All constitutive laws have to be attached before static data is allocated!");
-        mConstitutiveLaws.push_back(rConstitutiveLaw);
-        AddCalculableDofCombinations(rConstitutiveLaw);
-    }
+    virtual void  AddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw, Constitutive::eInput rModiesInput) override;
 
+    //! @brief ... adds a constitutive law to a model that combines multiple constitutive laws (additive, parallel)
+    //! @param rConstitutiveLaw ... additional constitutive law
+    //! @param rModiesInput ... enum which defines wich input is modified by a constitutive law.
+    virtual void  AddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw);
 
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData1D(const ElementBase* rElement) const override
-    {
-        mStaticDataAllocated = true;
-        return new ConstitutiveStaticDataMultipleConstitutiveLaws(mConstitutiveLaws,rElement,1);
-    }
+    ConstitutiveStaticDataBase* AllocateStaticData1D(const ElementBase* rElement) const override;
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData2D(const ElementBase* rElement) const override
-    {
-        mStaticDataAllocated = true;
-        return new ConstitutiveStaticDataMultipleConstitutiveLaws(mConstitutiveLaws,rElement,2);
-    }
+    ConstitutiveStaticDataBase* AllocateStaticData2D(const ElementBase* rElement) const override;
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const override
-    {
-        mStaticDataAllocated = true;
-        return new ConstitutiveStaticDataMultipleConstitutiveLaws(mConstitutiveLaws,rElement,3);
-    }
+    ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const override;
 
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow ... row dof
@@ -91,7 +77,7 @@ public:
     }
 
     template <int TDim>
-    NuTo::Error::eError Evaluate(ElementBase* rElement, int rIp,
+    NuTo::eError Evaluate(ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput);
 
@@ -100,7 +86,7 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError Evaluate1D(ElementBase* rElement,
+    virtual NuTo::eError Evaluate1D(ElementBase* rElement,
                                            int rIp,
                                            const ConstitutiveInputMap& rConstitutiveInput,
                                            const ConstitutiveOutputMap& rConstitutiveOutput) override;
@@ -110,7 +96,7 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError Evaluate2D(ElementBase* rElement,
+    virtual NuTo::eError Evaluate2D(ElementBase* rElement,
                                            int rIp,
                                            const ConstitutiveInputMap& rConstitutiveInput,
                                            const ConstitutiveOutputMap& rConstitutiveOutput) override;
@@ -120,7 +106,7 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError Evaluate3D(ElementBase* rElement,
+    virtual NuTo::eError Evaluate3D(ElementBase* rElement,
                                            int rIp,
                                            const ConstitutiveInputMap& rConstitutiveInput,
                                            const ConstitutiveOutputMap& rConstitutiveOutput) override;
@@ -137,10 +123,7 @@ public:
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship
     //! @sa eConstitutiveType
-    virtual Constitutive::eConstitutiveType GetType() const override
-    {
-        return NuTo::Constitutive::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT;
-    }
+    virtual Constitutive::eConstitutiveType GetType() const override;
 
     //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
     //! @return ... see brief explanation

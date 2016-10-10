@@ -5,31 +5,54 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include <set>
+#include <eigen3/Eigen/Core>
+
+#include <functional>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
-#include "nuto/base/ErrorEnum.h"
-#include "nuto/math/FullMatrix_Def.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
-#include "nuto/mechanics/elements/ElementEnum.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 
 namespace NuTo
 {
 class ConstitutiveStaticDataBase;
-class InterpolationType;
 class ElementBase;
+class InterpolationType;
+class Logger;
+enum class eError;
+template<typename IOEnum> class ConstitutiveIOMap;
+template <class T, int rows> class FullVector;
+template <class T, int rows, int cols> class FullMatrix;
+
+namespace Element
+{
+    enum class eElementType;
+}// namespace Element
+
+namespace Constitutive
+{
+    enum class eConstitutiveParameter;
+    enum class eConstitutiveType;
+    enum class eInput;
+    enum class eOutput;
+}// namespace Constitutive
+
+namespace Node
+{
+    enum class eDof : unsigned char;
+}// namespace Node
+using ConstitutiveInputMap = ConstitutiveIOMap<Constitutive::eInput>;
+using ConstitutiveOutputMap = ConstitutiveIOMap<Constitutive::eOutput>;
+
 //! @brief Base class for the constitutive relationship, e.g. material laws.
 class ConstitutiveBase
 {
-    // Friend declarations needed for CheckParameters-function of ConstitutiveLawsAdditiveOutput
+    // Friend declarations needed for CheckParameters-function of AdditiveOutput
     friend class AdditiveInputExplicit;
     friend class AdditiveInputImplicit;
-    friend class ConstitutiveLawsAdditiveOutput;
+    friend class AdditiveOutput;
 
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -62,7 +85,7 @@ public:
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
     template <int TDim>
-    NuTo::Error::eError Evaluate(
+    NuTo::eError Evaluate(
             ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput)
@@ -82,7 +105,7 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError Evaluate1D(
+    virtual NuTo::eError Evaluate1D(
             ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
@@ -92,7 +115,7 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError Evaluate2D(
+    virtual NuTo::eError Evaluate2D(
             ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
@@ -102,7 +125,7 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::Error::eError Evaluate3D(
+    virtual NuTo::eError Evaluate3D(
             ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
@@ -181,11 +204,15 @@ public:
     //! @brief ... adds a constitutive law to a model that combines multiple constitutive laws (additive, parallel)
     //! @param rConstitutiveLaw ... additional constitutive law
     //! @param rModiesInput ... enum which defines wich input is modified by a constitutive law.
-    virtual void  AddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw, Constitutive::Input::eInput rModiesInput = Constitutive::Input::NONE);
+    virtual void  AddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw, Constitutive::eInput rModiesInput);
+
+    //! @brief ... adds a constitutive law to a model that combines multiple constitutive laws (additive, parallel)
+    //! @param rConstitutiveLaw ... additional constitutive law
+    virtual void  AddConstitutiveLaw(NuTo::ConstitutiveBase* rConstitutiveLaw);
 
     //! @brief ... checks if a constitutive law has an specific output
     //! @return ... true/false
-    virtual bool CheckOutputTypeCompatibility(NuTo::Constitutive::Output::eOutput rOutputEnum) const;
+    virtual bool CheckOutputTypeCompatibility(NuTo::Constitutive::eOutput rOutputEnum) const;
 
     ///////////////////////////////////////////////////////////////////////////
 

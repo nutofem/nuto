@@ -1,5 +1,7 @@
 #include "ConstitutiveStaticDataMultipleConstitutiveLaws.h"
-
+#include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
 
 
 
@@ -96,7 +98,7 @@ void NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::AllocateStaticData3D(
 
 NuTo::ConstitutiveStaticDataMoistureTransport *NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::AsMoistureTransport()
 {
-    auto itConstLawStaticData = mStaticData.find(Constitutive::MOISTURE_TRANSPORT);
+    auto itConstLawStaticData = mStaticData.find(Constitutive::eConstitutiveType::MOISTURE_TRANSPORT);
     if (itConstLawStaticData == mStaticData.end())
     {
         throw MechanicsException(__PRETTY_FUNCTION__,"No constitutive static data for moisture transport found!");
@@ -107,7 +109,7 @@ NuTo::ConstitutiveStaticDataMoistureTransport *NuTo::ConstitutiveStaticDataMulti
 
 const NuTo::ConstitutiveStaticDataMoistureTransport *NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::AsMoistureTransport() const
 {
-    auto itConstLawStaticData = mStaticData.find(Constitutive::MOISTURE_TRANSPORT);
+    auto itConstLawStaticData = mStaticData.find(Constitutive::eConstitutiveType::MOISTURE_TRANSPORT);
     if (itConstLawStaticData == mStaticData.end())
     {
         throw MechanicsException(__PRETTY_FUNCTION__,"No constitutive static data for moisture transport found!");
@@ -121,7 +123,7 @@ bool NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::CheckConstitutiveComp
 {
     switch(rConstitutiveType)
     {
-    case Constitutive::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT:
+    case Constitutive::eConstitutiveType::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT:
         break;
     default:
         return false;
@@ -129,7 +131,7 @@ bool NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::CheckConstitutiveComp
 
     switch(rElementType)
     {
-    case Element::CONTINUUMELEMENT:
+    case Element::eElementType::CONTINUUMELEMENT:
         break;
     default:
         return false;

@@ -14,6 +14,7 @@
 #include <assert.h>
 #include <iostream>
 #include "nuto/mechanics/elements/IpDataEmpty.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
 
 NuTo::IpDataEmpty::IpDataEmpty()
 {
@@ -28,7 +29,7 @@ void NuTo::IpDataEmpty::Initialize(const ElementBase* rElement, const Constituti
 //! @return enum of IPDataType
 NuTo::IpData::eIpDataType NuTo::IpDataEmpty::GetIpDataType()const
 {
-    return NuTo::IpData::NOIPDATA;
+    return NuTo::IpData::eIpDataType::NOIPDATA;
 }
 
 #ifdef ENABLE_SERIALIZATION

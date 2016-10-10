@@ -17,10 +17,24 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
 
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
+
 #include "nuto/mechanics/IGA/BSplineCurve.h"
 #include "nuto/mechanics/IGA/BSplineSurface.h"
 
+#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+
+#include "nuto/mechanics/groups/GroupEnum.h"
+
 #include <boost/filesystem.hpp>
+
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
+#endif
 
 #define PRINTRESULT true
 
@@ -86,8 +100,8 @@ NuTo::Structure* buildStructure1D(double& DisplacementCorrect, int refinements)
     parameters[num-1] = 1.;
 
     std::set<NuTo::Node::eDof> setOfDOFS;
-    setOfDOFS.insert(NuTo::Node::COORDINATES);
-    setOfDOFS.insert(NuTo::Node::DISPLACEMENTS);
+    setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
+    setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
 
     /** create nodes **/
     for(int i = 0; i < curve.GetNumControlPoints(); i++)
@@ -102,8 +116,8 @@ NuTo::Structure* buildStructure1D(double& DisplacementCorrect, int refinements)
 
     std::vector<Eigen::VectorXd> vecKnots;
     vecKnots.push_back(curve.GetKnotVector());
-    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::SPLINE, vecDegree, vecKnots, curve.GetWeights());
-    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::SPLINE, vecDegree, vecKnots, curve.GetWeights());
+    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::SPLINE, vecDegree, vecKnots, curve.GetWeights());
+    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::SPLINE, vecDegree, vecKnots, curve.GetWeights());
 
     /** create elements **/
     NuTo::FullVector<int, Eigen::Dynamic> elementIncidence(degree+1);
@@ -217,8 +231,8 @@ void contactPatchTest()
     }
 
     std::set<NuTo::Node::eDof> setOfDOFS;
-    setOfDOFS.insert(NuTo::Node::COORDINATES);
-    setOfDOFS.insert(NuTo::Node::DISPLACEMENTS);
+    setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
+    setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
 
     int groupNodesSlave  = myStructure->GroupCreate("Nodes");
     int groupNodesMaster = myStructure->GroupCreate("Nodes");
@@ -244,9 +258,9 @@ void contactPatchTest()
     auto LambdaGetBoundaryNodeslower = [](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
-                                        double y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
+                                        double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
                                         if ((y >= 0 - Tol && y <= 0 + Tol))
                                         {
                                             return true;
@@ -386,8 +400,8 @@ NuTo::Structure* constantStress(double& DisplacementCorrect, int refinements, co
     }
 
     std::set<NuTo::Node::eDof> setOfDOFS;
-    setOfDOFS.insert(NuTo::Node::COORDINATES);
-    setOfDOFS.insert(NuTo::Node::DISPLACEMENTS);
+    setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
+    setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
 
     int groupNodes  = myStructure->GroupCreate("Nodes");
     int groupElements = myStructure->GroupCreate("Elements");
@@ -627,8 +641,8 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
     /**************/
 
     std::set<NuTo::Node::eDof> setOfDOFS;
-    setOfDOFS.insert(NuTo::Node::COORDINATES);
-    setOfDOFS.insert(NuTo::Node::DISPLACEMENTS);
+    setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
+    setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
 
     if (PRINTRESULT) std::cout << "Nodes:\n";
     /** create nodes **/
@@ -657,14 +671,14 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
     vecKnots.push_back(surface.GetKnotVector(1));
 
     myStructure->InterpolationTypeAdd(interpolationType,
-                                      NuTo::Node::COORDINATES,
+                                      NuTo::Node::eDof::COORDINATES,
                                       NuTo::Interpolation::eTypeOrder::SPLINE,
                                       degree,
                                       vecKnots,
                                       surface.GetWeights());
 
     myStructure->InterpolationTypeAdd(interpolationType,
-                                      NuTo::Node::DISPLACEMENTS,
+                                      NuTo::Node::eDof::DISPLACEMENTS,
                                       NuTo::Interpolation::eTypeOrder::SPLINE,
                                       degree,
                                       vecKnots,
@@ -730,9 +744,9 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
     auto LambdaGetBoundaryNodesLeft = [](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if ((x >= -4 - Tol && x <= -4 + Tol))
                                         {
                                             return true;
@@ -744,9 +758,9 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
     auto LambdaGetBoundaryNodesUpper = [](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
-                                        double y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
+                                        double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
                                         if ((y >= 4 - Tol && y <= 4 + Tol))
                                         {
                                             return true;
@@ -759,9 +773,9 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
     auto LambdaGetBoundaryNodesLower = [](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
-                                        double y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
+                                        double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
                                         if ((y >= 0 - Tol && y <= 0 + Tol))
                                         {
                                             return true;
@@ -773,9 +787,9 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
     auto LambdaGetBoundaryNodesRight = [](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if ((x >= 0 - Tol && x <= 0 + Tol))
                                         {
                                             return true;
@@ -787,10 +801,10 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
     auto LambdaGetBoundaryNodesCorner = [](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
-                                        double y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
+                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+                                        double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
                                         if ((y >= 4 - Tol && y <= 4 + Tol) && (x >= -4 - Tol && x <= -4 + Tol) )
                                         {
                                             return true;
@@ -799,13 +813,13 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
                                     return false;
                                 };  // GetBoundaryNodesLambda
 
-    int groupNodesLeft  = myStructure->GroupCreate(NuTo::Groups::eGroupId::Nodes);
-    int groupNodesUpper = myStructure->GroupCreate(NuTo::Groups::eGroupId::Nodes);
+    int groupNodesLeft  = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+    int groupNodesUpper = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
 
-    int groupNodesLower = myStructure->GroupCreate(NuTo::Groups::eGroupId::Nodes);
-    int groupNodesRight = myStructure->GroupCreate(NuTo::Groups::eGroupId::Nodes);
+    int groupNodesLower = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+    int groupNodesRight = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
 
-    int groupNodesCorner = myStructure->GroupCreate(NuTo::Groups::eGroupId::Nodes);
+    int groupNodesCorner = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
 
     myStructure->GroupAddNodeFunction(groupNodesLower, LambdaGetBoundaryNodesLower);
     myStructure->GroupAddNodeFunction(groupNodesRight, LambdaGetBoundaryNodesRight);
@@ -898,13 +912,13 @@ void solve(NuTo::Structure *myStructure, double solution, const std::string &res
 {
     myStructure->SolveGlobalSystemStaticElastic();
 
-    double nodeDisp = myStructure->NodeGetNodePtr(myStructure->GetNumNodes()-1)->Get(NuTo::Node::DISPLACEMENTS)[0];
+    double nodeDisp = myStructure->NodeGetNodePtr(myStructure->GetNumNodes()-1)->Get(NuTo::Node::eDof::DISPLACEMENTS)[0];
 
     if (PRINTRESULT)
     {
         std::cout << "Displacement node numerical: \n";
         for(int i = 0; i < myStructure->GetNumNodes(); i++)
-            std::cout << i << ": \n" << myStructure->NodeGetNodePtr(i)->Get(NuTo::Node::DISPLACEMENTS) << std::endl;
+            std::cout << i << ": \n" << myStructure->NodeGetNodePtr(i)->Get(NuTo::Node::eDof::DISPLACEMENTS) << std::endl;
     }
 
     std::cout << "Dimension: " << myStructure->GetDimension() << std::endl;
@@ -912,9 +926,9 @@ void solve(NuTo::Structure *myStructure, double solution, const std::string &res
     std::cout << "Displacement last node analytical:\n" << solution << std::endl;
 
     int visualizationGroup = myStructure->GroupGetElementsTotal();
-    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
-    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
-    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
+    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
 
     myStructure->ExportVtkDataFileElements(resultDir+"/Elements" + name + ".vtu", true);
     myStructure->ExportVtkDataFileNodes(resultDir+"/Nodes" + name + ".vtu", true);
@@ -934,12 +948,12 @@ void solve(NuTo::Structure *myStructure, double solution, const std::string &res
 void Neumann(const std::string &resultDir, const std::string &rMeshFile, const std::string &fileName, int BC)
 {
     NuTo::Structure myStructure(2);
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndices = myStructure.ImportFromGmsh(rMeshFile + fileName, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::NOIPDATA);
+    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndices = myStructure.ImportFromGmsh(rMeshFile + fileName, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::NOIPDATA);
 
     std::cout << groupIndices.size() << std::endl;
 
     int interpolationType = groupIndices.GetValue(0, 1);
-    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::LOBATTO3);
+    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS,  NuTo::Interpolation::eTypeOrder::LOBATTO3);
 
     myStructure.SetVerboseLevel(10);
     myStructure.ElementConvertToInterpolationType(groupIndices.GetValue(0, 0));
@@ -966,9 +980,9 @@ void Neumann(const std::string &resultDir, const std::string &rMeshFile, const s
     auto LambdaGetBoundaryNodesLeft = [](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if ((x >= -4 - Tol && x <= -4 + Tol))
                                         {
                                             return true;
@@ -980,9 +994,9 @@ void Neumann(const std::string &resultDir, const std::string &rMeshFile, const s
     auto LambdaGetBoundaryNodesUpper = [](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
-                                        double y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
+                                        double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
                                         if ((y >= 4 - Tol && y <= 4 + Tol))
                                         {
                                             return true;
@@ -994,9 +1008,9 @@ void Neumann(const std::string &resultDir, const std::string &rMeshFile, const s
     auto LambdaGetBoundaryNodesLowerSymmetry = [](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
-                                        double y = rNodePtr->Get(NuTo::Node::COORDINATES)[1];
+                                        double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
                                         if ((y >= 0 - Tol && y <= 0 + Tol))
                                         {
                                             return true;
@@ -1008,9 +1022,9 @@ void Neumann(const std::string &resultDir, const std::string &rMeshFile, const s
     auto LambdaGetBoundaryNodesRightSymmetry = [](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if ((x >= 0 - Tol && x <= 0 + Tol))
                                         {
                                             return true;
@@ -1021,10 +1035,10 @@ void Neumann(const std::string &resultDir, const std::string &rMeshFile, const s
 
 
 
-    int groupNodeBCLeft  = myStructure.GroupCreate(NuTo::Groups::eGroupId::Nodes);
-    int groupNodeBCUpper = myStructure.GroupCreate(NuTo::Groups::eGroupId::Nodes);
-    int groupNodeBCRightSymmetry = myStructure.GroupCreate(NuTo::Groups::eGroupId::Nodes);
-    int groupNodeBCLowerSymmetry  = myStructure.GroupCreate(NuTo::Groups::eGroupId::Nodes);
+    int groupNodeBCLeft  = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    int groupNodeBCUpper = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    int groupNodeBCRightSymmetry = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    int groupNodeBCLowerSymmetry  = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
 
     myStructure.GroupAddNodeFunction(groupNodeBCLeft, LambdaGetBoundaryNodesLeft);
     myStructure.GroupAddNodeFunction(groupNodeBCUpper, LambdaGetBoundaryNodesUpper);
@@ -1078,9 +1092,9 @@ void Neumann(const std::string &resultDir, const std::string &rMeshFile, const s
     myStructure.SolveGlobalSystemStaticElastic();
 
     int visualizationGroup = myStructure.GroupGetElementsTotal();
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
 
     myStructure.ExportVtkDataFileElements(resultDir + "/Elements" + fileName + ".vtu", true);
     myStructure.ExportVtkDataFileNodes(resultDir + "/Nodes" + fileName + ".vtu", true);
@@ -1091,12 +1105,12 @@ void Neumann(const std::string &resultDir, const std::string &rMeshFile, const s
 void Dirichlet(const std::string &resultDir, const std::string &rMeshFile, const std::string &fileName)
 {
     NuTo::Structure myStructure(2);
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndices = myStructure.ImportFromGmsh(rMeshFile + fileName, NuTo::ElementData::CONSTITUTIVELAWIP, NuTo::IpData::NOIPDATA);
+    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndices = myStructure.ImportFromGmsh(rMeshFile + fileName, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::NOIPDATA);
 
     std::cout << groupIndices.size() << std::endl;
 
     int interpolationType = groupIndices.GetValue(0, 1);
-    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::LOBATTO3);
+    myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::LOBATTO3);
 
     myStructure.SetVerboseLevel(10);
     myStructure.ElementConvertToInterpolationType(groupIndices.GetValue(0, 0));
@@ -1121,9 +1135,9 @@ void Dirichlet(const std::string &resultDir, const std::string &rMeshFile, const
     auto LambdaGetBoundaryNodesRight = [](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if ((x >= 4.0 - Tol && x <= 4.0 + Tol))
                                         {
                                             return true;
@@ -1135,9 +1149,9 @@ void Dirichlet(const std::string &resultDir, const std::string &rMeshFile, const
     auto LambdaGetBoundaryNodesLeft = [](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::COORDINATES)>0)
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
                                     {
-                                        double x = rNodePtr->Get(NuTo::Node::COORDINATES)[0];
+                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
                                         if ((x >= -4 - Tol && x <= -4 + Tol))
                                         {
                                             return true;
@@ -1148,8 +1162,8 @@ void Dirichlet(const std::string &resultDir, const std::string &rMeshFile, const
 
 
 
-    int groupNodeBCRight = myStructure.GroupCreate(NuTo::Groups::eGroupId::Nodes);
-    int groupNodeBCLeft  = myStructure.GroupCreate(NuTo::Groups::eGroupId::Nodes);
+    int groupNodeBCRight = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    int groupNodeBCLeft  = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
 
     myStructure.GroupAddNodeFunction(groupNodeBCRight, LambdaGetBoundaryNodesRight);
     myStructure.GroupAddNodeFunction(groupNodeBCLeft, LambdaGetBoundaryNodesLeft);
@@ -1169,9 +1183,9 @@ void Dirichlet(const std::string &resultDir, const std::string &rMeshFile, const
     myStructure.SolveGlobalSystemStaticElastic();
 
     int visualizationGroup = myStructure.GroupGetElementsTotal();
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
 
     myStructure.ExportVtkDataFileElements(resultDir + "/Elements" + fileName + ".vtu", true);
     myStructure.ExportVtkDataFileNodes(resultDir + "/Nodes" + fileName + ".vtu", true);

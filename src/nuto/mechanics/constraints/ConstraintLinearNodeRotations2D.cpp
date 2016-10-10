@@ -13,6 +13,7 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/constraints/ConstraintLinearNodeRotations2D.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
@@ -43,9 +44,9 @@ void NuTo::ConstraintLinearNodeRotations2D::SetRHS(double rRHS)
 void NuTo::ConstraintLinearNodeRotations2D::AddToConstraintMatrix(int& curConstraintEquation,
         NuTo::SparseMatrix<double>& rConstraintMatrix)const
 {
-    if (mNode->GetNum(Node::ROTATIONS)!=1)
+    if (mNode->GetNum(Node::eDof::ROTATIONS)!=1)
         throw MechanicsException("[NuTo::ConstraintLinearNodeRotations2D::AddToConstraintMatrix] Node does not have a rotation component.");
-    rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDof(Node::ROTATIONS, 0),1);
+    rConstraintMatrix.AddValue(curConstraintEquation,mNode->GetDof(Node::eDof::ROTATIONS, 0),1);
 
     curConstraintEquation++;
 }
@@ -58,6 +59,11 @@ void NuTo::ConstraintLinearNodeRotations2D::GetRHS(int& curConstraintEquation,Nu
 {
     rRHS(curConstraintEquation) = mRHS;
     curConstraintEquation++;
+}
+
+NuTo::Node::eDof NuTo::ConstraintLinearNodeRotations2D::GetDofType() const
+{
+    return Node::eDof::ROTATIONS;
 }
 
 #ifdef ENABLE_SERIALIZATION

@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef NystroemQinZhu_H
-#define NystroemQinZhu_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -102,4 +101,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::NystroemQinZhu)
 
 
 
-#endif // NystroemQinZhu_H

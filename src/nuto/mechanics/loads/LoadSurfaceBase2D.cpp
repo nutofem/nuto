@@ -1,13 +1,20 @@
 // $Id: LoadLoadSurfaceBase2D.cpp 178 2009-12-11 20:53:12Z eckardt4 $
 #include <set>
+#include "nuto/math/FullVector.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/loads/LoadSurfaceBase2D.h"
 #include "nuto/mechanics/loads/LoadSurfacePressureFunction2D.h"
 #include "nuto/mechanics/elements/ContinuumElement.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+
 
 //! @brief constructor
 NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStructure, int rElementGroupId, int rNodeGroupId) :
@@ -50,7 +57,7 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
 
                 for (int iSurfaceNode = 0; iSurfaceNode < numSurfaceNodes; ++iSurfaceNode)
                 {
-                    surfaceNodes[iSurfaceNode] = elementPtr.GetNode(surfaceNodeIndices.at(iSurfaceNode, 0));
+                    surfaceNodes[iSurfaceNode] = elementPtr.GetNode(surfaceNodeIndices(iSurfaceNode, 0));
                 }
 
                 //check, if all surface nodes are in the node group
@@ -88,14 +95,14 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
     }
 
     //set standard integration types for triangles and quads, this can be modified according to the needs
-    mIntegrationType2NPtr = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NGauss1Ip);
-    mIntegrationType3NPtr = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NGauss2Ip);
-    mIntegrationType4NPtr = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NGauss3Ip);
-    mIntegrationType5NPtr = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NGauss4Ip);
+    mIntegrationType2NPtr = rStructure->GetPtrIntegrationType(eIntegrationType::IntegrationType1D2NGauss1Ip);
+    mIntegrationType3NPtr = rStructure->GetPtrIntegrationType(eIntegrationType::IntegrationType1D2NGauss2Ip);
+    mIntegrationType4NPtr = rStructure->GetPtrIntegrationType(eIntegrationType::IntegrationType1D2NGauss3Ip);
+    mIntegrationType5NPtr = rStructure->GetPtrIntegrationType(eIntegrationType::IntegrationType1D2NGauss4Ip);
 
-    mIntegrationType3NPtrLobatto = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NLobatto3Ip);
-    mIntegrationType4NPtrLobatto = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NLobatto4Ip);
-    mIntegrationType5NPtrLobatto = rStructure->GetPtrIntegrationType(IntegrationType::IntegrationType1D2NLobatto5Ip);
+    mIntegrationType3NPtrLobatto = rStructure->GetPtrIntegrationType(eIntegrationType::IntegrationType1D2NLobatto3Ip);
+    mIntegrationType4NPtrLobatto = rStructure->GetPtrIntegrationType(eIntegrationType::IntegrationType1D2NLobatto4Ip);
+    mIntegrationType5NPtrLobatto = rStructure->GetPtrIntegrationType(eIntegrationType::IntegrationType1D2NLobatto5Ip);
 
 }
 
@@ -111,34 +118,34 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
         const auto* elementPtr = it.first;
         int surface = it.second;
 
-        const InterpolationBase& interpolationTypeDisps = elementPtr->GetInterpolationType()->Get(Node::DISPLACEMENTS);
-        const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType()->Get(Node::COORDINATES);
+        const InterpolationBase& interpolationTypeDisps = elementPtr->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS);
+        const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType()->Get(Node::eDof::COORDINATES);
 
         IntegrationTypeBase* integrationType(0);
         switch (interpolationTypeDisps.GetTypeOrder())
         {
-        case Interpolation::EQUIDISTANT1:
+        case Interpolation::eTypeOrder::EQUIDISTANT1:
             integrationType = mIntegrationType2NPtr;
             break;
-        case Interpolation::EQUIDISTANT2:
+        case Interpolation::eTypeOrder::EQUIDISTANT2:
             integrationType = mIntegrationType3NPtr;
             break;
-        case Interpolation::EQUIDISTANT3:
+        case Interpolation::eTypeOrder::EQUIDISTANT3:
             integrationType = mIntegrationType4NPtr;
             break;
-        case Interpolation::EQUIDISTANT4:
+        case Interpolation::eTypeOrder::EQUIDISTANT4:
             integrationType = mIntegrationType5NPtr;
             break;
-        case Interpolation::LOBATTO2:
+        case Interpolation::eTypeOrder::LOBATTO2:
             integrationType = mIntegrationType3NPtrLobatto;
             break;
-        case Interpolation::LOBATTO3:
+        case Interpolation::eTypeOrder::LOBATTO3:
             integrationType = mIntegrationType4NPtrLobatto;
             break;
-        case Interpolation::LOBATTO4:
+        case Interpolation::eTypeOrder::LOBATTO4:
             integrationType = mIntegrationType5NPtrLobatto;
             break;
-        case Interpolation::SPLINE:
+        case Interpolation::eTypeOrder::SPLINE:
         {
             int degree = interpolationTypeDisps.GetSurfaceDegree(surface);
             switch (degree)
@@ -167,7 +174,7 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             throw MechanicsException("[NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D] integration types only for 2, 3, 4 and 5 nodes (on the surface) implemented.");
         }
 
-        Eigen::VectorXd nodeCoordinates = elementPtr->ExtractNodeValues(0, Node::COORDINATES);
+        Eigen::VectorXd nodeCoordinates = elementPtr->ExtractNodeValues(0, Node::eDof::COORDINATES);
 
         Eigen::Matrix<double, 1, 1> ipCoordsSurface;
         Eigen::Matrix<double, 2, 1> ipCoordsNatural;
@@ -188,7 +195,7 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             integrationType->GetLocalIntegrationPointCoordinates1D(theIp, tmp);
             ipCoordsSurface(0) = tmp;
 
-            if (interpolationTypeDisps.GetTypeOrder() == Interpolation::SPLINE)
+            if (interpolationTypeDisps.GetTypeOrder() == Interpolation::eTypeOrder::SPLINE)
                 ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface, elementPtr->GetKnots());
             else
                 ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface);
@@ -232,8 +239,8 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             Eigen::Vector2d surfaceTangentVector = jacobianStd * derivativeNaturalSurfaceCoordinates;
             surfaceTangentVector.normalize();
             NuTo::FullVector<double, 2> surfaceNormalVector;
-            surfaceNormalVector(0) = surfaceTangentVector.at(1, 0);
-            surfaceNormalVector(1) = -surfaceTangentVector.at(0, 0);
+            surfaceNormalVector(0) = surfaceTangentVector(1, 0);
+            surfaceNormalVector(1) = -surfaceTangentVector(0, 0);
 
 //            std::cout << "Global IP coordinate:        " << ipCoordsGlobal.transpose()      << std::endl;
 //            std::cout << "Surface tangent vector @ IP: " << surfaceTangentVector.transpose()<< std::endl;
@@ -258,10 +265,10 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             for (int iNode = 0; iNode < shapeFunctions.rows(); iNode++)
             {
                 const NodeBase* node = elementPtr->GetNode(interpolationTypeDisps.GetNodeIndex(iNode));
-                assert(node->GetNum(Node::DISPLACEMENTS) == 2);
+                assert(node->GetNum(Node::eDof::DISPLACEMENTS) == 2);
                 for (int iDispDof = 0; iDispDof < 2; iDispDof++)
                 {
-                    int theDof = node->GetDof(Node::DISPLACEMENTS, iDispDof);
+                    int theDof = node->GetDof(Node::eDof::DISPLACEMENTS, iDispDof);
                     double theLoad = shapeFunctions[iNode] * loadVector(iDispDof);
                     if (theDof < rActiveDofsLoadVector.GetNumRows())
                     {

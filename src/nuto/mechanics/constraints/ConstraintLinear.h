@@ -1,7 +1,6 @@
 // $Id: ConstraintLinear.h 328 2010-10-01 14:39:32Z unger3 $
 
-#ifndef CONSTRAINTLINEAR_H
-#define CONSTRAINTLINEAR_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -9,7 +8,6 @@
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/constraints/ConstraintBase.h"
-#include "nuto/mechanics/constraints/ConstraintEnum.h"
 
 namespace NuTo
 {
@@ -82,5 +80,3 @@ protected:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintLinear)
 #endif // ENABLE_SERIALIZATION
-#endif //CONSTRAINTLINEAR_H
-

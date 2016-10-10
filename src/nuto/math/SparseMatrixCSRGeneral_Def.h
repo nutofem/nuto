@@ -1,16 +1,16 @@
 // $Id: SparseMatrixCSRGeneral_Def.h 300 2010-07-22 19:21:39Z unger3 $
 
-#ifndef SPARSE_MATRIX_CSR_GENERAL_DEF_H
-#define SPARSE_MATRIX_CSR_GENERAL_DEF_H
+#pragma once
+
 
 #include "nuto/math/SparseMatrixCSR.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
-//the template class SparseMatrixCSRVector2General is split into definition and implementation, include only the definition here
-#include "nuto/math/SparseMatrixCSRVector2General_Def.h"
 
 namespace NuTo
 {
+template <class T, int rows, int cols> class FullMatrix;
+template <class T, int rows> class FullVector;
+template <class T> class SparseMatrixCSRVector2General;
+
 //! @author Stefan Eckardt, ISM
 //! @date July 2009
 //! @brief ... class for general sparse matrices which are stored in CSR format
@@ -65,7 +65,7 @@ public:
     void AddValue(int rRow, int rColumn, const T& rValue);
 
     //! @brief ... return the matrix type
-    NuTo::SparseMatrixEnum::eType GetSparseMatrixType()const;
+    NuTo::eSparseMatrixType GetSparseMatrixType()const;
 
     //! @brief ... print info about the object
     void Info() const;
@@ -194,4 +194,3 @@ protected:
 };
 }
 
-#endif // SPARSE_MATRIX_CSR_GENERAL_DEF_H

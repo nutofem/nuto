@@ -1,14 +1,17 @@
 // $Id$
 
-#ifndef NUTO_DEBUG_H
-#define NUTO_DEBUG_H
+#pragma once
 
 #ifdef DEBUG
 
+
+// STL:
 #include <iostream>
 
-#include <boost/typeof/typeof.hpp>
+// Other:
 #include <boost/foreach.hpp>
+#include <boost/typeof/typeof.hpp>
+
 
 //! @author Daniel Arnold, ISM
 //! @date April 2010
@@ -38,4 +41,3 @@
 #endif //DEBUG
 
 
-#endif //NUTO_DEBUG_H

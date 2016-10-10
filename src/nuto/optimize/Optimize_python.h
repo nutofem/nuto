@@ -1,10 +1,8 @@
-#ifndef OPTIMIZER_H
-#define OPTIMIZER_H
+#pragma once
 
 #include <Python.h>
-#include <vector>
 
-#include "Optimizer.h"
+
 
 namespace NuTo
 {
@@ -37,4 +35,3 @@ private:
 */
 };
 } //namespace NuTo
-#endif // OPTIMIZER_H

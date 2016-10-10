@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef NEWTONRAPHSON_H
-#define NEWTONRAPHSON_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -81,14 +80,14 @@ public:
 
     //! @brief perform iteration
     //! @param rUnknown ... unknown vector
-    NuTo::Error::eError Solve(NuTo::FullVector<double,Eigen::Dynamic> &rUnknown);
+    NuTo::eError Solve(NuTo::FullVector<double,Eigen::Dynamic> &rUnknown);
 
     //! @brief ... the routine performs line search correction of the Newton step
     void LineSearch(NuTo::FullVector<double,Eigen::Dynamic> &rXold, const double rFold, NuTo::FullVector<double,Eigen::Dynamic> &rG, NuTo::FullVector<double,Eigen::Dynamic> &rP,
     		NuTo::FullVector<double,Eigen::Dynamic> &rX, double &rF, const double rStpmax, bool &rCheck, NuTo::FullVector<double,Eigen::Dynamic> &rFvec) const;
 
     //! @brief ... the routine performs Newton-Raphson integration
-    NuTo::Error::eError NewtonRaphsonIterator(NuTo::FullVector<double,Eigen::Dynamic> &x, bool &check) const;
+    NuTo::eError NewtonRaphsonIterator(NuTo::FullVector<double,Eigen::Dynamic> &x, bool &check) const;
 
     //! @brief ... Return the name of the class, this is important for the serialize routines
     //! @return    class name
@@ -117,4 +116,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::NewtonRaphson)
 
 
 
-#endif // NewtonRaphson_H

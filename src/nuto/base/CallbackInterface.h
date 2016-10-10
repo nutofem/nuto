@@ -7,12 +7,14 @@
 
 #pragma once
 
-#include "nuto/base/Exception.h"
 
+// Other:
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
+
+
 
 namespace NuTo
 {
@@ -37,10 +39,7 @@ public:
 
     //! @brief Exit function, returns true if a certain state of the structure is reached
     //! @param StructureBase& ... not const since most of the useful methods require an Evaluate, which is non-const
-    virtual bool Exit(StructureBase&) const
-    {
-        throw Exception(__PRETTY_FUNCTION__, "not implemented for this callback.");
-    }
+    virtual bool Exit(StructureBase&) const;
 };
 
 } /* namespace NuTo */

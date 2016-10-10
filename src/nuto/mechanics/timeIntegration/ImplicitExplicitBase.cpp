@@ -5,21 +5,32 @@
  *      Author: ttitsche
  */
 
+#include "nuto/base/CallbackInterface.h"
+#include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/timeIntegration/ImplicitExplicitBase.h"
+#include "nuto/base/ErrorEnum.h"
 #include "nuto/base/Timer.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/structures/StructureBaseEnum.h"
+#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
 #include "nuto/mechanics/structures/StructureOutputDummy.h"
+#include "nuto/math/SparseDirectSolverMUMPS.h"
 
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 #include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataGradientDamage.h"
 
 
 NuTo::ImplicitExplicitBase::ImplicitExplicitBase(StructureBase* rStructure) : TimeIntegrationBase(rStructure)
 {}
 
-NuTo::Error::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
+NuTo::ImplicitExplicitBase::~ImplicitExplicitBase()
+{}
+
+NuTo::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 {
     NuTo::Timer timerFull(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
@@ -69,16 +80,16 @@ NuTo::Error::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
         \*---------------------------------*/
 
         // Declare output maps
-        std::map<NuTo::StructureEnum::eOutput, NuTo::StructureOutputBase*> evalUpdateStaticData;
+        std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evalUpdateStaticData;
         StructureOutputDummy dummy;
-        evalUpdateStaticData                [StructureEnum::UPDATE_STATIC_DATA] = &dummy;
+        evalUpdateStaticData                [eStructureOutput::UPDATE_STATIC_DATA] = &dummy;
 
-        std::map<NuTo::StructureEnum::eOutput, NuTo::StructureOutputBase*> evalInternalGradient;
-        evalInternalGradient                [StructureEnum::INTERNAL_GRADIENT] = &intForce;
+        std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evalInternalGradient;
+        evalInternalGradient                [eStructureOutput::INTERNAL_GRADIENT] = &intForce;
 
-        std::map<NuTo::StructureEnum::eOutput, NuTo::StructureOutputBase*> evalInternalGradientAndHessian0;
-        evalInternalGradientAndHessian0     [StructureEnum::INTERNAL_GRADIENT] = &intForce;
-        evalInternalGradientAndHessian0     [StructureEnum::HESSIAN0] = &hessian0;
+        std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evalInternalGradientAndHessian0;
+        evalInternalGradientAndHessian0     [eStructureOutput::INTERNAL_GRADIENT] = &intForce;
+        evalInternalGradientAndHessian0     [eStructureOutput::HESSIAN0] = &hessian0;
 
         /*---------------------------------*\
         |    Declare and fill Input map     |
@@ -87,10 +98,10 @@ NuTo::Error::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 
 
         ConstitutiveInputMap input;
-        input[Constitutive::Input::TIME_STEP] = std::make_unique<ConstitutiveTimeStep>(2);
-        auto& timeStep = *static_cast<ConstitutiveTimeStep*>(input[Constitutive::Input::TIME_STEP].get());
-        input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(CalculateStaticData::USE_PREVIOUS ,1);
-        auto& calculateStaticData = *static_cast<ConstitutiveCalculateStaticData*>(input[Constitutive::Input::CALCULATE_STATIC_DATA].get());
+        input[Constitutive::eInput::TIME_STEP] = std::make_unique<ConstitutiveTimeStep>(2);
+        auto& timeStep = *static_cast<ConstitutiveTimeStep*>(input[Constitutive::eInput::TIME_STEP].get());
+        input[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(eCalculateStaticData::USE_PREVIOUS ,1);
+        auto& calculateStaticData = *static_cast<ConstitutiveCalculateStaticData*>(input[Constitutive::eInput::CALCULATE_STATIC_DATA].get());
 
         timeStep.SetCurrentTimeStep(mTimeStep);
         timeStep.SetCurrentTimeStep(mTimeStep);
@@ -137,7 +148,7 @@ NuTo::Error::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
                 // if a single active dof is in mDofsWithConstantHessian
                 bool usePreFactorizedHessian = activeDofSet.size() == 1 && mDofsWithConstantHessian.find(*activeDofSet.begin()) != mDofsWithConstantHessian.end();
 
-                calculateStaticData.SetCalculateStaticData(CalculateStaticData::USE_PREVIOUS);
+                calculateStaticData.SetCalculateStaticData(eCalculateStaticData::USE_PREVIOUS);
                 calculateStaticData.SetIndexOfPreviousStaticData(0);
 
                 if (usePreFactorizedHessian)
@@ -178,7 +189,7 @@ NuTo::Error::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 
 
             if (mCallback && mCallback->Exit(*mStructure))
-                return Error::SUCCESSFUL;
+                return eError::SUCCESSFUL;
 
             bool acceptSolution = true;
 
@@ -188,7 +199,7 @@ NuTo::Error::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
             if (acceptSolution)
             {
                 // save the new implicit history variables
-                calculateStaticData.SetCalculateStaticData(CalculateStaticData::EULER_BACKWARD);
+                calculateStaticData.SetCalculateStaticData(eCalculateStaticData::EULER_BACKWARD);
                 calculateStaticData.SetIndexOfPreviousStaticData(1);
                 mStructure->Evaluate(input, evalUpdateStaticData);
 
@@ -208,7 +219,7 @@ NuTo::Error::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 
 
 
-                calculateStaticData.SetCalculateStaticData(CalculateStaticData::USE_PREVIOUS);
+                calculateStaticData.SetCalculateStaticData(eCalculateStaticData::USE_PREVIOUS);
                 mStructure->Evaluate(input, evalInternalGradient);
                 residual = intForce - extForce;
                 PostProcess(residual);
@@ -250,7 +261,7 @@ NuTo::Error::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
     }
 
 
-    return NuTo::Error::SUCCESSFUL;
+    return NuTo::eError::SUCCESSFUL;
 
 }
 

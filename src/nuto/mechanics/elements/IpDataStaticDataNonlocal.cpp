@@ -11,6 +11,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/elements/IpDataStaticDataNonlocal.h"
 NuTo::IpDataStaticDataNonlocal::IpDataStaticDataNonlocal() :NuTo::IpDataBase::IpDataBase() ,
     NuTo::IpDataStaticDataBase::IpDataStaticDataBase() , NuTo::IpDataNonlocalBase::IpDataNonlocalBase()
@@ -26,7 +27,7 @@ NuTo::IpDataStaticDataNonlocal::~IpDataStaticDataNonlocal()
 //! @return enum of IPDataType
 NuTo::IpData::eIpDataType NuTo::IpDataStaticDataNonlocal::GetIpDataType()const
 {
-    return NuTo::IpData::STATICDATANONLOCAL;
+    return NuTo::IpData::eIpDataType::STATICDATANONLOCAL;
 }
 
 #ifdef ENABLE_SERIALIZATION

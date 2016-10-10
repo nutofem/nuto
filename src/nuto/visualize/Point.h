@@ -1,21 +1,29 @@
 // $Id$
 
-#ifndef POINT_H_
-#define POINT_H_
+#pragma once
+
 #include <boost/ptr_container/ptr_vector.hpp>
-#include "nuto/visualize/VisualizeDataBase.h"
+
 
 namespace NuTo
 {
+
+class VisualizeDataBase;
+
 //! @brief ... point for visualization
 //! @author Stefan Eckardt, ISM
 //! @date November 2009
 class Point
 {
 public:
+
+
     //! @brief ... constructor
     //! @param rCoordinates ... point coordinates
     Point(const double* rCoordinates);
+
+    //! @brief destructor
+    ~Point();
 
     //! @brief ... add scalar data
     //! @param rDataIndex ... index in data vector (zero based indexing)
@@ -62,4 +70,3 @@ private:
 
 }
 
-#endif // POINT_H_ 

@@ -1,10 +1,11 @@
 #pragma once
 
-#include "nuto/mechanics/sections/SectionEnum.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
+
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 namespace NuTo
 {
+
+
 
 
 /*! @brief This file contains a collection of static functions to
@@ -24,8 +25,13 @@ public:
     //! @param rStrain ... engineering strain
     //! @param rK ... k parameter, compressiveStrength / tensileStrength
     //! @param rNu ... poisson ratio
+    EquivalentStrainModifiedMises(const EngineeringStrain<TDim>& rStrain, double rK, double rNu);
+
+    //! @param rStrain ... engineering strain
+    //! @param rK ... k parameter, compressiveStrength / tensileStrength
+    //! @param rNu ... poisson ratio
     //! @param rSectionType ... only needed for 2D: Plane strain/ plane stress
-    EquivalentStrainModifiedMises(const EngineeringStrain<TDim>& rStrain, double rK, double rNu, Section::eSectionType rSectionType = Section::VOLUME);
+    EquivalentStrainModifiedMises(const EngineeringStrain<TDim>& rStrain, double rK, double rNu, eSectionType rSectionType);
 
     //! @brief calculates the modified mises equivalent strain
 
@@ -43,7 +49,7 @@ private:
     double mJ2;
     double mA;
     double mNu;
-    Section::eSectionType mSectionType = Section::VOLUME;
+    eSectionType mSectionType;
 
 };
 

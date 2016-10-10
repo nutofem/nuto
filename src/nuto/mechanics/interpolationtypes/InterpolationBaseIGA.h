@@ -1,17 +1,20 @@
 #pragma once
 
-#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
-#include "nuto/mechanics/elements/ElementShapeFunctions.h"
-#include "nuto/mechanics/structures/StructureBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
 
+#include "nuto/mechanics/MechanicsException.h"
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include "nuto/math/CustomBoostSerializationExtensions.h"
+#endif  // ENABLE_SERIALIZATION
 
 #include <vector>
-#include <assert.h>
-#include <string>
-#include <sstream>
 
 namespace NuTo
 {
@@ -39,7 +42,7 @@ public:
 
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type
-    virtual IntegrationType::eIntegrationType GetStandardIntegrationType() const = 0;
+    virtual eIntegrationType GetStandardIntegrationType() const = 0;
 
     //********************************************
     //             NODE METHODS
@@ -179,19 +182,19 @@ public:
 
 
 #ifdef ENABLE_SERIALIZATION
-//    //! @brief serializes the class, this is the load routine
-//    //! @param ar         archive
-//    //! @param version    version
-//    template<class Archive>
-//    void load(Archive & ar, const unsigned int version);
+    //! @brief serializes the class, this is the load routine
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void load(Archive & ar, const unsigned int version);
 
-//    //! @brief serializes the class, this is the save routine
-//    //! @param ar         archive
-//    //! @param version    version
-//    template<class Archive>
-//    void save(Archive & ar, const unsigned int version) const;
+    //! @brief serializes the class, this is the save routine
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void save(Archive & ar, const unsigned int version) const;
 
-//    BOOST_SERIALIZATION_SPLIT_MEMBER()
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);

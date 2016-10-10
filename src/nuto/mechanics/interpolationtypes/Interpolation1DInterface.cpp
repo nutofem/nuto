@@ -1,4 +1,8 @@
 
+#include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/elements/ElementShapeFunctions.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation1DInterface.h"
 
 NuTo::Interpolation1DInterface::Interpolation1DInterface(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
@@ -8,18 +12,18 @@ NuTo::Interpolation1DInterface::Interpolation1DInterface(NuTo::Node::eDof rDofTy
     Initialize();
 }
 
-NuTo::IntegrationType::eIntegrationType NuTo::Interpolation1DInterface::GetStandardIntegrationType() const
+NuTo::eIntegrationType NuTo::Interpolation1DInterface::GetStandardIntegrationType() const
 {
     switch (mTypeOrder)
     {
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT1:
     {
-//        return NuTo::IntegrationType::IntegrationType1D2NGauss2Ip;
-        return NuTo::IntegrationType::IntegrationType1D2NLobatto3Ip;
+//        return NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip;
+        return NuTo::eIntegrationType::IntegrationType1D2NLobatto3Ip;
     }
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
     {
-        return NuTo::IntegrationType::IntegrationType1D2NGauss3Ip;
+        return NuTo::eIntegrationType::IntegrationType1D2NGauss3Ip;
     }
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");

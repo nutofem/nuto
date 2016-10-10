@@ -1,6 +1,5 @@
 // $Id$
-#ifndef LOADNODEFORCES1D_H
-#define LOADNODEFORCES1D_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -62,6 +61,4 @@ private:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::LoadNodeForces1D)
 #endif
-
-#endif //LOADNODEFORCES1D_H
 

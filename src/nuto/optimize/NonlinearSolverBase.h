@@ -1,32 +1,32 @@
 
-#ifndef NONLINEARSOLVERBASE_H
-#define NONLINEARSOLVERBASE_H
+#pragma once
 
-
-#include <ctime>
-#include <array>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include <boost/ptr_container/ptr_map.hpp>
-#include <boost/function.hpp>
 
 
+
+
+
+// parent
 #include "nuto/base/NuToObject.h"
-#include "nuto/base/ErrorEnum.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
 
-//#include "nuto/mechanics/constitutive/mechanics/GradientDamageEngineeringStressFatigue.h"
-//#include "nuto/mechanics/constitutive/mechanics/ConstitutiveStaticDataGradientDamage1DFatigue.h"
+#include "nuto/math/FullVector_Def.h"
 
-
+#include <boost/function.hpp>
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
+
+enum class eError;
+
+template<class T, int rows, int cols> class FullMatrix;
+
 //! @author Kindrachuk
 //! @date December 2015
 //! @brief ... standard abstract class for all solvers of nonlinear systems of equations
@@ -45,7 +45,7 @@ public:
 
     //! @brief perform solving
     //! @param rUnknown ... unknown vector
-    virtual NuTo::Error::eError Solve(NuTo::FullVector<double,Eigen::Dynamic> &rUnknown)=0;
+    virtual NuTo::eError Solve(NuTo::FullVector<double,Eigen::Dynamic> &rUnknown)=0;
 
     //! @brief sets the pointer to the residual function
     //! @param rParam ... parameters necessary to evaluate the residual
@@ -161,4 +161,3 @@ protected:
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::NonlinearSolverBase)
 #endif // SWIG
 #endif  // ENABLE_SERIALIZATION
-#endif // NONLINEARSOLVERBASE_H

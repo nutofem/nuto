@@ -1,7 +1,10 @@
 // $Id$
 
-#include "nuto/mechanics/integrationtypes/IntegrationPointBase.h"
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
+#endif //ENABLE_VISUALIZE
 
+#include "nuto/mechanics/integrationtypes/IntegrationPointBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 
 // constructor
@@ -19,13 +22,13 @@ NuTo::IntegrationPointBase::IntegrationPointBase(const std::vector<double>& rCoo
 	switch (rBoundingBox.size()){
 	case 6:
 		mNumVisualizationPoints=3;
-		mVisualizationCellType=NuTo::CellBase::TRIANGLE;
+        mVisualizationCellType=NuTo::eCellTypes::TRIANGLE;
 		mVisualizationPointLocalCoordinates = rBoundingBox;
 		mVisualizationCellsIncidence=std::vector<unsigned int>({0,1,2});
 		break;
 	case 8:
 		mNumVisualizationPoints=4;
-		mVisualizationCellType=NuTo::CellBase::QUAD;
+        mVisualizationCellType=NuTo::eCellTypes::QUAD;
 		mVisualizationPointLocalCoordinates = rBoundingBox;
 		mVisualizationCellsIncidence=std::vector<unsigned int>({0,1,2,3});
 		break;
@@ -89,8 +92,8 @@ template<class Archive> void NuTo::IntegrationPointBase::serialize(Archive & ar,
 #endif // ENABLE_SERIALIZATION
 
 #ifdef ENABLE_VISUALIZE
-void NuTo::IntegrationPointBase::GetVisualizationCell( 	unsigned int& rNumVisualizationPoints,
-														NuTo::CellBase::eCellTypes& rVisualizationCellType,
+void NuTo::IntegrationPointBase::GetVisualizationCell( 	unsigned int rNumVisualizationPoints,
+                                                        NuTo::eCellTypes rVisualizationCellType,
 														std::vector<double>& rVisualizationPointLocalCoordinates,
 														std::vector<unsigned int>& rVisualizationCellsIncidence ) const
 {

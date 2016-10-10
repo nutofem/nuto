@@ -1,12 +1,10 @@
+#pragma once
 
-#ifndef MisesPlasticityEngineeringStress_H
-#define MisesPlasticityEngineeringStress_H
-
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 
 namespace NuTo
 {
+class ConstitutiveIOBase;
 template <int TDim> class ConstitutiveStaticDataMisesPlasticity;
 template <int TDim> class EngineeringStrain;
 class Logger;
@@ -32,7 +30,7 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate1D(ElementBase* rElement, int rIp,
+    NuTo::eError Evaluate1D(ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput) override;
 
@@ -41,7 +39,7 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate2D(ElementBase* rElement, int rIp,
+    NuTo::eError Evaluate2D(ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput) override;
 
@@ -50,7 +48,7 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::Error::eError Evaluate3D(ElementBase* rElement, int rIp,
+    NuTo::eError Evaluate3D(ElementBase* rElement, int rIp,
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput) override;
 
@@ -82,7 +80,7 @@ public:
     //! @param rNewStress ... new stress (if a 0-pointer is given, no values are written)
     //! @param rNewTangent ... new tangent matrix (if a 0-pointer is given, no values are written)
     //! @param rNewStaticData ... new static data (if a 0-pointer is given, no values are written)
-    NuTo::Error::eError ReturnMapping2D(const ElementBase* rElement,int rIp,
+    NuTo::eError ReturnMapping2D(const ElementBase* rElement,int rIp,
             const EngineeringStrain<2>& rEngineeringStrain,
             ConstitutiveIOBase* rNewStress,
             ConstitutiveIOBase* rNewTangent,
@@ -96,7 +94,7 @@ public:
     //! @param rNewStress ... new stress (if a 0-pointer is given, no values are written)
     //! @param rNewTangent ... new tangent matrix (if a 0-pointer is given, no values are written)
     //! @param rNewStaticData ... new static data (if a 0-pointer is given, no values are written)
-    NuTo::Error::eError ReturnMapping3D(const ElementBase* rElement,int rIp,
+    NuTo::eError ReturnMapping3D(const ElementBase* rElement,int rIp,
     		const EngineeringStrain<3>& rEngineeringStrain,
     		ConstitutiveIOBase* rNewStress,
     		ConstitutiveIOBase* rNewTangent,
@@ -215,4 +213,3 @@ protected:
 #ifdef ENABLE_SERIALIZATION
 BOOST_CLASS_EXPORT_KEY(NuTo::MisesPlasticityEngineeringStress)
 #endif // ENABLE_SERIALIZATION
-#endif // ConstitutiveMisesPlasticity_H_

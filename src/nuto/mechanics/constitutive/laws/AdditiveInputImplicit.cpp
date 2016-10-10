@@ -1,6 +1,11 @@
 #include "AdditiveInputImplicit.h"
+#include "nuto/base/ErrorEnum.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
+#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataMultipleConstitutiveLaws.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 
 #include "nuto/math/SparseDirectSolverMUMPS.h"
@@ -9,12 +14,50 @@
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 
 
-void NuTo::AdditiveInputImplicit::AddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw, Constitutive::Input::eInput rModiesInput)
+NuTo::ConstitutiveStaticDataBase *NuTo::AdditiveInputImplicit::AllocateStaticData1D(const NuTo::ElementBase *rElement) const
+{
+    mStaticDataAllocated = true;
+    std::vector<NuTo::ConstitutiveBase*> tempVec;
+    for(unsigned int i=0; i<mConstitutiveLaws.size(); ++i)
+    {
+        tempVec.push_back(mConstitutiveLaws[i]);
+    }
+    return new ConstitutiveStaticDataMultipleConstitutiveLaws(tempVec,rElement,1);
+}
+
+NuTo::ConstitutiveStaticDataBase *NuTo::AdditiveInputImplicit::AllocateStaticData2D(const NuTo::ElementBase *rElement) const
+{
+    mStaticDataAllocated = true;
+    std::vector<NuTo::ConstitutiveBase*> tempVec;
+    for(unsigned int i=0; i<mConstitutiveLaws.size(); ++i)
+    {
+        tempVec.push_back(mConstitutiveLaws[i]);
+    }
+    return new ConstitutiveStaticDataMultipleConstitutiveLaws(tempVec,rElement,2);
+}
+
+NuTo::ConstitutiveStaticDataBase *NuTo::AdditiveInputImplicit::AllocateStaticData3D(const NuTo::ElementBase *rElement) const
+{
+    mStaticDataAllocated = true;
+    std::vector<NuTo::ConstitutiveBase*> tempVec;
+    for(unsigned int i=0; i<mConstitutiveLaws.size(); ++i)
+    {
+        tempVec.push_back(mConstitutiveLaws[i]);
+    }
+    return new ConstitutiveStaticDataMultipleConstitutiveLaws(tempVec,rElement,3);
+}
+
+void NuTo::AdditiveInputImplicit::AddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw, Constitutive::eInput rModiesInput)
 {
     if(mStaticDataAllocated)
         throw MechanicsException(__PRETTY_FUNCTION__,"All constitutive laws have to be attached before static data is allocated!");
     mConstitutiveLaws.push_back(rConstitutiveLaw);
     AddCalculableDofCombinations(rConstitutiveLaw);
+}
+
+void NuTo::AdditiveInputImplicit::AddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw)
+{
+    AddConstitutiveLaw(rConstitutiveLaw,Constitutive::eInput::NONE);
 }
 
 
@@ -26,14 +69,14 @@ bool NuTo::AdditiveInputImplicit::CheckDofCombinationComputable(NuTo::Node::eDof
 }
 
 template <int TDim>
-NuTo::Error::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(NuTo::ElementBase *rElement,
+NuTo::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(NuTo::ElementBase *rElement,
                                                                                int rIp,
                                                                                const NuTo::ConstitutiveInputMap &rConstitutiveInput,
                                                                                const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
 {
     static_assert (TDim == 1 || TDim == 2 || TDim == 3 , "Dimensions 1D, 2D & 3D supported.");
 
-    Error::eError error = Error::SUCCESSFUL;
+    eError error = eError::SUCCESSFUL;
     const constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
 
 
@@ -56,7 +99,7 @@ NuTo::Error::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(N
     {
         for(const auto& itOutput: rConstitutiveOutput)
         {
-            if(itOutput.first == Constitutive::Output::UPDATE_STATIC_DATA)
+            if(itOutput.first == Constitutive::eOutput::UPDATE_STATIC_DATA)
             {
                 localOutputMapVec[i].emplace(itOutput.first,
                                              nullptr);
@@ -68,28 +111,28 @@ NuTo::Error::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(N
             }
 
             // temporary: until a better solution is found
-            if(itOutput.first == Constitutive::Output::ENGINEERING_STRESS &&
-               rConstitutiveOutput.find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN) == rConstitutiveOutput.end())
-                localOutputMapVec[i].emplace(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,
+            if(itOutput.first == Constitutive::eOutput::ENGINEERING_STRESS &&
+               rConstitutiveOutput.find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN) == rConstitutiveOutput.end())
+                localOutputMapVec[i].emplace(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,
                                              std::make_unique<ConstitutiveMatrix<VoigtDim,VoigtDim>>());
 
             // temporary: Implementation of static data not completed
-            if(itOutput.first == Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN &&
-               rConstitutiveOutput.find(Constitutive::Output::ENGINEERING_STRESS) == rConstitutiveOutput.end())
-                localOutputMapVec[i].emplace(Constitutive::Output::ENGINEERING_STRESS,
+            if(itOutput.first == Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN &&
+               rConstitutiveOutput.find(Constitutive::eOutput::ENGINEERING_STRESS) == rConstitutiveOutput.end())
+                localOutputMapVec[i].emplace(Constitutive::eOutput::ENGINEERING_STRESS,
                                              std::make_unique<ConstitutiveVector<VoigtDim>>());
 
 
             // temporary: Implementation of static data not completed
-            if(itOutput.first == Constitutive::Output::ENGINEERING_STRESS_VISUALIZE)
+            if(itOutput.first == Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE)
             {
-                if(rConstitutiveOutput.find(Constitutive::Output::ENGINEERING_STRESS) == rConstitutiveOutput.end())
-                    localOutputMapVec[i].emplace(Constitutive::Output::ENGINEERING_STRESS,
+                if(rConstitutiveOutput.find(Constitutive::eOutput::ENGINEERING_STRESS) == rConstitutiveOutput.end())
+                    localOutputMapVec[i].emplace(Constitutive::eOutput::ENGINEERING_STRESS,
                                                  std::make_unique<ConstitutiveVector<VoigtDim>>());
 
 
-                if (rConstitutiveOutput.find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN) == rConstitutiveOutput.end())
-                    localOutputMapVec[i].emplace(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,
+                if (rConstitutiveOutput.find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN) == rConstitutiveOutput.end())
+                    localOutputMapVec[i].emplace(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,
                                                  std::make_unique<ConstitutiveMatrix<VoigtDim,VoigtDim>>());
             }
         }
@@ -104,14 +147,14 @@ NuTo::Error::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(N
                                                      rIp,
                                                      localInputMapVec[i],
                                                      localOutputMapVec[i]);
-        if(error!=Error::SUCCESSFUL)
+        if(error!=eError::SUCCESSFUL)
             throw Exception(__PRETTY_FUNCTION__,
                             "One or more attached constitutive laws return error codes. Can't handle this");
     }
 
-    if(rConstitutiveOutput.find(Constitutive::Output::ENGINEERING_STRESS) != rConstitutiveOutput.end() ||
-       rConstitutiveOutput.find(Constitutive::Output::ENGINEERING_STRESS_VISUALIZE) != rConstitutiveOutput.end() ||
-       rConstitutiveOutput.find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN) != rConstitutiveOutput.end())
+    if(rConstitutiveOutput.find(Constitutive::eOutput::ENGINEERING_STRESS) != rConstitutiveOutput.end() ||
+       rConstitutiveOutput.find(Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE) != rConstitutiveOutput.end() ||
+       rConstitutiveOutput.find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN) != rConstitutiveOutput.end())
     {
 
         double numLocalUnknowns = VoigtDim*mConstitutiveLaws.size();
@@ -126,10 +169,10 @@ NuTo::Error::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(N
             unsigned int StartIndex = VoigtDim*i;
 
 #ifdef DEBUG
-            localOutputMapVec[i].find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)->second.get()->AssertIsMatrix<VoigtDim,VoigtDim>(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,
+            localOutputMapVec[i].find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)->second.get()->AssertIsMatrix<VoigtDim,VoigtDim>(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,
                                                                                                                                                         __PRETTY_FUNCTION__);
 #endif
-            lhsMat.block(StartIndex,StartIndex,VoigtDim,VoigtDim) = (*static_cast<ConstitutiveMatrix<VoigtDim,VoigtDim>*>(localOutputMapVec[i].find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)->second.get()));
+            lhsMat.block(StartIndex,StartIndex,VoigtDim,VoigtDim) = (*static_cast<ConstitutiveMatrix<VoigtDim,VoigtDim>*>(localOutputMapVec[i].find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)->second.get()));
             lhsMat.block(numLocalUnknowns,StartIndex,VoigtDim,VoigtDim) = Eigen::MatrixXd::Identity(VoigtDim,VoigtDim);
             lhsMat.block(StartIndex,numLocalUnknowns,VoigtDim,VoigtDim) = Eigen::MatrixXd::Identity(VoigtDim,VoigtDim) * -1.0;
         }
@@ -138,10 +181,10 @@ NuTo::Error::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(N
         // Generate rhs vector
 #ifdef DEBUG
         // WATCHOUT There is no funtion which takes input enums, so I took the equivalent output enum even though the variable is an input!!!
-        rConstitutiveInput.find(Constitutive::Input::ENGINEERING_STRAIN)->second.get()->AssertIsVector<VoigtDim>(Constitutive::Output::ENGINEERING_STRAIN,
+        rConstitutiveInput.find(Constitutive::eInput::ENGINEERING_STRAIN)->second.get()->AssertIsVector<VoigtDim>(Constitutive::eOutput::ENGINEERING_STRAIN,
                                                                                                                  __PRETTY_FUNCTION__);
 #endif
-        const ConstitutiveVector<VoigtDim>& globalStrain = *static_cast<ConstitutiveVector<VoigtDim>*>(rConstitutiveInput.find(Constitutive::Input::ENGINEERING_STRAIN)->second.get());
+        const ConstitutiveVector<VoigtDim>& globalStrain = *static_cast<ConstitutiveVector<VoigtDim>*>(rConstitutiveInput.find(Constitutive::eInput::ENGINEERING_STRAIN)->second.get());
         FullVector<double,Eigen::Dynamic> rhsVec(numTotalUnknowns);
         rhsVec.setZero();
         for(unsigned int i=0; i<VoigtDim; ++i)
@@ -176,7 +219,7 @@ NuTo::Error::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(N
         {
             switch(itOutput.first)
             {
-            case Constitutive::Output::ENGINEERING_STRESS:
+            case Constitutive::eOutput::ENGINEERING_STRESS:
 
                 for(unsigned int i=0; i<VoigtDim; ++i)
                 {
@@ -185,7 +228,7 @@ NuTo::Error::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(N
                 itOutput.second->SetIsCalculated(true);
                 break;
 
-            case Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+            case Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
             {
 
                 Eigen::Matrix<double,VoigtDim,VoigtDim> BlockProduct(VoigtDim,VoigtDim);
@@ -201,7 +244,7 @@ NuTo::Error::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(N
             }
                 break;
 
-            case Constitutive::Output::ENGINEERING_STRESS_VISUALIZE:
+            case Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
 
                 switch(TDim)
                 {
@@ -266,15 +309,20 @@ NuTo::ConstitutiveInputMap NuTo::AdditiveInputImplicit::GetConstitutiveInputs(co
                                     std::move_iterator<ConstitutiveInputMap::iterator>(singleLawInputMap.end()));
     }
 //    // VHIRTHAMTODO: Remove! --- Temporary because static data not implemented correct. Therefore iteration for local values must e performed during each evaluation!
-    const auto& itDEngineeringStressDEngineeringStrain = rConstitutiveOutput.find(Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN);
+    const auto& itDEngineeringStressDEngineeringStrain = rConstitutiveOutput.find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN);
     if(itDEngineeringStressDEngineeringStrain != rConstitutiveOutput.end())
     {
-        constitutiveInputMap.emplace(Constitutive::Input::ENGINEERING_STRAIN,nullptr);
+        constitutiveInputMap.emplace(Constitutive::eInput::ENGINEERING_STRAIN,nullptr);
     }
 
 
 
     return constitutiveInputMap;
+}
+
+NuTo::Constitutive::eConstitutiveType NuTo::AdditiveInputImplicit::GetType() const
+{
+    return NuTo::Constitutive::eConstitutiveType::ADDITIVE_INPUT_IMPLICIT;
 }
 
 

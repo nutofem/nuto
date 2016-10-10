@@ -1,6 +1,5 @@
 // $Id$
-#ifndef IntegrationType2DMod_H
-#define IntegrationType2DMod_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -12,12 +11,12 @@
 #endif //ENABLE_SERIALIZATION
 
 #include <boost/ptr_container/ptr_map.hpp>
-
-#include "nuto/mechanics/integrationtypes/IntegrationPointBase.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D.h"
 
 namespace NuTo
 {
+class IntegrationPointBase;
+
 //! @author Daniel Arnold, ISM
 //! @date February 2011
 //! @brief ... integration types in 2D with four nodes and modifiable integration points
@@ -71,7 +70,7 @@ public:
         unsigned int& NumVisualizationPoints,
         std::vector<double>& VisualizationPointLocalCoordinates,
         unsigned int& NumVisualizationCells,
-        std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+        std::vector<NuTo::eCellTypes>& VisualizationCellType,
         std::vector<unsigned int>& VisualizationCellsIncidence,
         std::vector<unsigned int>& VisualizationCellsIP) const;
 #endif // ENABLE_VISUALIZE
@@ -92,4 +91,3 @@ protected:
 };
 }
 
-#endif //IntegrationType2DMod_H

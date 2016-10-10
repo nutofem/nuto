@@ -1,4 +1,5 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 
 template<typename IOEnum>
 NuTo::ConstitutiveIOMap<IOEnum>::ConstitutiveIOMap(const ConstitutiveIOMap<IOEnum>& other)
@@ -45,5 +46,5 @@ NuTo::ConstitutiveIOMap<IOEnum>& NuTo::ConstitutiveIOMap<IOEnum>::Merge(const Co
     return *this;
 }
 
-template class NuTo::ConstitutiveIOMap<NuTo::Constitutive::Input::eInput>;
-template class NuTo::ConstitutiveIOMap<NuTo::Constitutive::Output::eOutput>;
+template class NuTo::ConstitutiveIOMap<NuTo::Constitutive::eInput>;
+template class NuTo::ConstitutiveIOMap<NuTo::Constitutive::eOutput>;

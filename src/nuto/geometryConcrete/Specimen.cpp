@@ -5,6 +5,7 @@
  *      Author: ttitsche
  */
 
+#include "nuto/math/FullVector.h"
 #include "nuto/geometryConcrete/Specimen.h"
 
 NuTo::Specimen::Specimen(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBoundingBox,

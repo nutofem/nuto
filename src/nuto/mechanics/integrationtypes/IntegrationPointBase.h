@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef INTEGRATIONPOINTBASE_H
-#define INTEGRATIONPOINTBASE_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -12,12 +11,16 @@
 #include <vector>
 #endif //ENABLE_SERIALIZATION
 
-#ifdef ENABLE_VISUALIZE
-#include "nuto/visualize/CellBase.h"
-#endif // ENABLE_VISUALIZE
 
 namespace NuTo
 {
+#ifdef ENABLE_VISUALIZE
+class CellBase;
+enum class eCellTypes;
+#endif // ENABLE_VISUALIZE
+
+
+
 //! @author Daniel Arnold, ISM
 //! @date Febrauary 2011
 //! @brief ... standard abstract class for all modifyable integration points
@@ -84,10 +87,10 @@ public:
      * contains the information of the number of belonging visualization points, the cell type,
      * the coordiantes and the incidences
      */
-    void GetVisualizationCell( 	unsigned int& rNumVisualizationPoints,
-    							NuTo::CellBase::eCellTypes& rVisualizationCellType,
-    							std::vector<double>& rVisualizationPointLocalCoordinates,
-    							std::vector<unsigned int>& rVisualizationCellsIncidence ) const;
+    void GetVisualizationCell(unsigned int rNumVisualizationPoints,
+                                eCellTypes rVisualizationCellType,
+                                std::vector<double>& rVisualizationPointLocalCoordinates,
+                                std::vector<unsigned int>& rVisualizationCellsIncidence ) const;
 #endif // ENABLE_VISUALIZE
 
 
@@ -106,7 +109,7 @@ protected:
     std::vector<double> mCoords;
 #ifdef ENABLE_VISUALIZE
     unsigned int mNumVisualizationPoints;
-    NuTo::CellBase::eCellTypes mVisualizationCellType;
+    NuTo::eCellTypes mVisualizationCellType;
     std::vector<double> mVisualizationPointLocalCoordinates;
     std::vector<unsigned int> mVisualizationCellsIncidence;
 #endif // ENABLE_VISUALIZE
@@ -119,4 +122,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationPointBase)
 BOOST_CLASS_TRACKING(NuTo::IntegrationPointBase, track_always)
 #endif // ENABLE_SERIALIZATION
 
-#endif //INTEGRATIONPOINTBASE_H

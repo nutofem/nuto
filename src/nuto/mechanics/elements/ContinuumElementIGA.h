@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nuto/mechanics/elements/ContinuumElement.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 
 namespace NuTo
@@ -33,10 +34,7 @@ public:
 
     //! @brief returns the enum (type of the element)
     //! @return enum
-    NuTo::Element::eElementType GetEnumType() const override
-    {
-        return Element::eElementType::CONTINUUMELEMENTIGA;
-    }
+    NuTo::Element::eElementType GetEnumType() const override;
 
     //! @brief Calculates the the jacobian of the mapping between the refernce element and parametric space (knots)
     //! @param rKnots ... knots of the element

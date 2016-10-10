@@ -12,6 +12,7 @@
 #include <boost/ptr_container/serialize_ptr_vector.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataBase.h"
 #include "nuto/mechanics/elements/IpDataStaticDataBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/elements/ElementBase.h"
@@ -22,6 +23,25 @@ NuTo::IpDataStaticDataBase::IpDataStaticDataBase() : IpDataBase()
 
 NuTo::IpDataStaticDataBase::~IpDataStaticDataBase()
 {
+}
+
+NuTo::ConstitutiveStaticDataBase *NuTo::IpDataStaticDataBase::GetStaticData(int rTimeStep)
+{
+    assert((unsigned) rTimeStep < mStaticData.size());
+    return &(mStaticData[rTimeStep]);
+}
+
+const NuTo::ConstitutiveStaticDataBase *NuTo::IpDataStaticDataBase::GetStaticData(int rTimeStep) const
+{
+    assert((unsigned) rTimeStep < mStaticData.size());
+    return &(mStaticData[rTimeStep]);
+}
+
+void NuTo::IpDataStaticDataBase::SetStaticData(NuTo::ConstitutiveStaticDataBase *rStaticData)
+{
+    //        if (mStaticData.empty())
+    //            mStaticData.resize(1);
+    mStaticData.insert(mStaticData.begin(), rStaticData);
 }
 
 void NuTo::IpDataStaticDataBase::Initialize(const ElementBase* rElement, const ConstitutiveBase* rConstitutive)

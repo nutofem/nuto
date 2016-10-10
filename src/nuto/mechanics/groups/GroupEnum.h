@@ -1,15 +1,8 @@
 // $Id$ 
-#ifndef GROUPENUM_H_
-#define GROUPENUM_H_
+#pragma once
 
 namespace NuTo
 {
-namespace Groups
-{
-enum eGroupId {
-	Nodes=0,
-	Elements
-};
-}
-}
-#endif /* GROUPENUM_H_ */
+enum class eGroupId {Nodes = 0,
+                     Elements};
+}// namespace NuTo

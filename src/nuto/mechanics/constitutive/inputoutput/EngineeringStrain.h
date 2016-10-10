@@ -1,11 +1,13 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
-#include "nuto/mechanics/sections/SectionEnum.h"
 #include <type_traits>
 
 namespace NuTo
 {
+
+enum class eSectionType;
+
 
 //! @brief ... Engineering strain
 /*!
@@ -69,7 +71,11 @@ public:
     //! @brief calculates the 3D engineering strain.
     //! @param rNu ... poisson ratio
     //! @param rSectionType ... defaulted to dummy, needed in 2D for plane stress / plane strain
-    EngineeringStrain<3> As3D(double rNu, Section::eSectionType rSectionType = Section::VOLUME) const;
+    EngineeringStrain<3> As3D(double rNu, eSectionType rSectionType) const;
+
+    //! @brief calculates the 3D engineering strain.
+    //! @param rNu ... poisson ratio
+    EngineeringStrain<3> As3D(double rNu) const;
 
     //! @brief returns the deviatoric part
     //! @remark only implemented for TDim = 3

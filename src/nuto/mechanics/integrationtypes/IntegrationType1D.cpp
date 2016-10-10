@@ -2,6 +2,7 @@
 // IntegrationType1D.cpp
 // created Apr 30, 2010 by Joerg F. Unger
 
+#include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D.h"
 
 //! @brief ... check compatibility between element type and type of constitutive relationship
@@ -11,10 +12,10 @@ bool NuTo::IntegrationType1D::CheckElementCompatibility(NuTo::Element::eElementT
 {
     switch (rElementType)
     {
-    case NuTo::Element::CONTINUUMELEMENT:
-    case NuTo::Element::CONTINUUMBOUNDARYELEMENT:
-    case NuTo::Element::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
-    case NuTo::Element::ELEMENT1DINXD:
+    case NuTo::Element::eElementType::CONTINUUMELEMENT:
+    case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENT:
+    case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
+    case NuTo::Element::eElementType::ELEMENT1DINXD:
         return true;
     default:
         return false;

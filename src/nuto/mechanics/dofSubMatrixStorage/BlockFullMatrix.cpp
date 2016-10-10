@@ -1,6 +1,9 @@
 #include <sstream>
+#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
+#include "nuto/mechanics/dofSubMatrixStorage/DofStatus.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/math/FullMatrix.h"
 
 #ifdef ENABLE_SERIALIZATION
@@ -25,6 +28,23 @@ NuTo::BlockFullMatrix<T>::BlockFullMatrix(const DofStatus& rDofStatus) : BlockSt
 }
 
 template<typename T>
+NuTo::BlockFullMatrix<T>::~BlockFullMatrix()
+{}
+
+
+template<typename T>
+NuTo::BlockFullMatrix<T>::BlockFullMatrix(const NuTo::BlockFullMatrix<T> &rOther)
+    : BlockStorageBase(rOther.mDofStatus),
+      mData(rOther.mData)
+{}
+
+template<typename T>
+NuTo::BlockFullMatrix<T>::BlockFullMatrix(NuTo::BlockFullMatrix<T>&& rOther)
+    : BlockStorageBase(rOther.mDofStatus),
+      mData(std::move(rOther.mData))
+{}
+
+template<typename T>
 NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& NuTo::BlockFullMatrix<T>::operator ()(Node::eDof rDofRow, Node::eDof rDofCol)
 {
     auto data = mData.find(std::make_pair(rDofRow, rDofCol));
@@ -38,6 +58,23 @@ const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& NuTo::BlockFullMatrix
     auto data = mData.find(std::make_pair(rDofRow, rDofCol));
     assert (data != mData.end());
     return (*data).second;
+}
+
+template<typename T>
+NuTo::BlockFullMatrix<T>& NuTo::BlockFullMatrix<T>::operator =(const NuTo::BlockFullMatrix<T> &rOther)
+{
+    const auto& activeDofTypes = mDofStatus.GetActiveDofTypes();
+    for (auto dofRow : activeDofTypes)
+        for (auto dofCol : activeDofTypes)
+            (*this)(dofRow, dofCol) = rOther(dofRow, dofCol);
+    return *this;
+}
+
+template<typename T>
+NuTo::BlockFullMatrix<T>& NuTo::BlockFullMatrix<T>::operator =(NuTo::BlockFullMatrix<T>&& rOther)
+{
+    mData = std::move(rOther.mData);
+    return *this;
 }
 
 template<typename T>
@@ -168,6 +205,12 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockFullMatrix<T>::Ex
         blockStartRow += (*this)(dofRow, dofRow).GetNumRows();
     }
     return result;
+}
+
+template<typename T>
+NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockFullMatrix<T>::Get(std::string rDofRow, std::string rDofCol) const
+{
+    return (*this)(Node::DofToEnum(rDofRow), Node::DofToEnum(rDofCol));
 }
 
 namespace NuTo

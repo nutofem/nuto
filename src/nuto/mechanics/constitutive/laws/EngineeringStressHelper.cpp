@@ -1,5 +1,5 @@
 #include "nuto/mechanics/constitutive/laws/EngineeringStressHelper.h"
-
+#include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 
 template <int TDim>
 NuTo::EngineeringStrain<TDim> NuTo::EngineeringStressHelper::CalculateElasticEngineeringStrain(

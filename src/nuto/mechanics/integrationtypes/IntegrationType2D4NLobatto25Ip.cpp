@@ -9,6 +9,10 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif //ENABLE_SERIALIZATION
 
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
+#endif // ENABLE_VISUALIZE
+
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
 #include <assert.h>
@@ -90,7 +94,7 @@ void NuTo::IntegrationType2D4NLobatto25Ip::GetVisualizationCells(
     unsigned int& NumVisualizationPoints,
     std::vector<double>& VisualizationPointLocalCoordinates,
     unsigned int& NumVisualizationCells,
-    std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+    std::vector<NuTo::eCellTypes>& VisualizationCellType,
     std::vector<unsigned int>& VisualizationCellsIncidence,
     std::vector<unsigned int>& VisualizationCellsIP) const
 {
@@ -156,7 +160,7 @@ void NuTo::IntegrationType2D4NLobatto25Ip::GetVisualizationCells(
     {
     	for (int countx=0; countx<5; countx++)
     	{
-    	    VisualizationCellType.push_back(NuTo::CellBase::QUAD);
+    	    VisualizationCellType.push_back(NuTo::eCellTypes::QUAD);
     	    VisualizationCellsIncidence.push_back(county*6+countx);
     	    VisualizationCellsIncidence.push_back(county*6+countx+1);
     	    VisualizationCellsIncidence.push_back((county+1)*6+countx+1);

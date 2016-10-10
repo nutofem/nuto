@@ -17,7 +17,9 @@
 #include "nuto/math/CustomBoostSerializationExtensions.h"
 #endif
 
+#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationType.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 
 #include "nuto/mechanics/interpolationtypes/Interpolation2DTriangle.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation2DQuad.h"
@@ -27,6 +29,9 @@
 #include "nuto/mechanics/interpolationtypes/Interpolation1DInterface.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation1DIGA.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation2DIGA.h"
+
+#include "nuto/mechanics/nodes/NodeEnum.h"
+
 #include <boost/foreach.hpp>
 
 #include <iomanip>
@@ -95,7 +100,7 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
 
     mNumDofs += newType->GetNumDofs();
 
-    if (rDofType == Node::COORDINATES)
+    if (rDofType == Node::eDof::COORDINATES)
     {
         SetIsActive(false, rDofType);
         SetIsConstitutiveInput(false, rDofType);
@@ -168,7 +173,7 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
 
     mNumDofs += newType->GetNumDofs();
 
-    if (rDofType == Node::COORDINATES)
+    if (rDofType == Node::eDof::COORDINATES)
     {
         SetIsActive(false, rDofType);
         SetIsConstitutiveInput(false, rDofType);
@@ -219,7 +224,7 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
     for (auto dof : mActiveDofs)
         mNumActiveDofs += Get(dof).GetNumDofs();
 
-    if (rDofType == Node::COORDINATES)
+    if (rDofType == Node::eDof::COORDINATES)
         UpdateNodeRenumberingIndices();
 
     if (mIntegrationType != nullptr)
@@ -267,7 +272,7 @@ const NuTo::Interpolation::eShapeType NuTo::InterpolationType::GetShapeType() co
     return mShapeType;
 }
 
-NuTo::IntegrationType::eIntegrationType NuTo::InterpolationType::GetStandardIntegrationType() const
+NuTo::eIntegrationType NuTo::InterpolationType::GetStandardIntegrationType() const
 {
     return Get(GetDofWithHighestStandardIntegrationOrder()).GetStandardIntegrationType();
 }
@@ -282,22 +287,22 @@ NuTo::Node::eDof NuTo::InterpolationType::GetDofWithHighestStandardIntegrationOr
         int currentOrder = 0;
         switch (order)
         {
-        case Interpolation::EQUIDISTANT1:
+        case Interpolation::eTypeOrder::EQUIDISTANT1:
             currentOrder = 1;
             break;
-        case Interpolation::LOBATTO2:
-        case Interpolation::EQUIDISTANT2:
+        case Interpolation::eTypeOrder::LOBATTO2:
+        case Interpolation::eTypeOrder::EQUIDISTANT2:
             currentOrder = 2;
             break;
-        case Interpolation::LOBATTO3:
-        case Interpolation::EQUIDISTANT3:
+        case Interpolation::eTypeOrder::LOBATTO3:
+        case Interpolation::eTypeOrder::EQUIDISTANT3:
             currentOrder = 3;
             break;
-        case Interpolation::LOBATTO4:
-        case Interpolation::EQUIDISTANT4:
+        case Interpolation::eTypeOrder::LOBATTO4:
+        case Interpolation::eTypeOrder::EQUIDISTANT4:
             currentOrder = 4;
             break;
-        case Interpolation::SPLINE:
+        case Interpolation::eTypeOrder::SPLINE:
         {
             int dim = Get(dof).GetLocalDimension();
             if      (dim == 1) currentOrder =  Get(dof).GetSplineDegree(0) + 1;
@@ -320,12 +325,12 @@ NuTo::Node::eDof NuTo::InterpolationType::GetDofWithHighestStandardIntegrationOr
 
 Eigen::VectorXi NuTo::InterpolationType::GetSurfaceNodeIndices(int rSurface) const
 {
-    assert(IsDof(Node::COORDINATES));
-    const InterpolationBase& interpolationType = Get(Node::COORDINATES);
+    assert(IsDof(Node::eDof::COORDINATES));
+    const InterpolationBase& interpolationType = Get(Node::eDof::COORDINATES);
 
     Interpolation::eTypeOrder order = interpolationType.GetTypeOrder();
 
-    if(order !=  Interpolation::SPLINE)
+    if(order !=  Interpolation::eTypeOrder::SPLINE)
     {
         const auto& surfaceEdgesCoordinates = interpolationType.GetSurfaceEdgesCoordinates(rSurface);
 
@@ -517,7 +522,7 @@ void NuTo::InterpolationType::UpdateNodeRenumberingIndices()
     mNodeRenumberingIndices.resize(0, 2);
 
     // loop over all points i (with coordinates)
-    const InterpolationBase& it = Get(Node::COORDINATES);
+    const InterpolationBase& it = Get(Node::eDof::COORDINATES);
 
     // why -1? the last check is done for i=num-2 vs j=num-1
     for (int i = 0; i < it.GetNumNodes() - 1; ++i)
@@ -528,17 +533,17 @@ void NuTo::InterpolationType::UpdateNodeRenumberingIndices()
 
         switch (mShapeType)
         {
-        case Interpolation::SPRING:
-        case Interpolation::TRUSS1D:
-        case Interpolation::TRUSSXD:
-        case Interpolation::INTERFACE:
+        case Interpolation::eShapeType::SPRING:
+        case Interpolation::eShapeType::TRUSS1D:
+        case Interpolation::eShapeType::TRUSSXD:
+        case Interpolation::eShapeType::INTERFACE:
             // reflect at (0,0,0) n = (1,0,0)
             x_i_prime = -x_i;
             break;
-        case Interpolation::TRIANGLE2D:
-        case Interpolation::QUAD2D:
-        case Interpolation::TETRAHEDRON3D:
-        case Interpolation::BRICK3D:
+        case Interpolation::eShapeType::TRIANGLE2D:
+        case Interpolation::eShapeType::QUAD2D:
+        case Interpolation::eShapeType::TETRAHEDRON3D:
+        case Interpolation::eShapeType::BRICK3D:
             // reflect at (0,0,0) n = (1,-1,0)
             x_i_prime[0] = x_i[1];
             x_i_prime[1] = x_i[0];

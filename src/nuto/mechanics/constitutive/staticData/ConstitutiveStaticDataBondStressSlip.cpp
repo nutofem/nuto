@@ -1,4 +1,6 @@
 #include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataBondStressSlip.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/MechanicsException.h"
 
 NuTo::ConstitutiveStaticDataBondStressSlip::ConstitutiveStaticDataBondStressSlip() :
@@ -40,9 +42,9 @@ NuTo::ConstitutiveStaticDataBondStressSlip* NuTo::ConstitutiveStaticDataBondStre
 
 bool NuTo::ConstitutiveStaticDataBondStressSlip::CheckConstitutiveCompatibility(NuTo::Constitutive::eConstitutiveType rConstitutiveType, NuTo::Element::eElementType rElementType) const
 {
-    if (rConstitutiveType == NuTo::Constitutive::FIBRE_MATRIX_BOND_STRESS_SLIP)
+    if (rConstitutiveType == NuTo::Constitutive::eConstitutiveType::FIBRE_MATRIX_BOND_STRESS_SLIP)
     {
-        if (rElementType == NuTo::Element::ELEMENT2DINTERFACE)
+        if (rElementType == NuTo::Element::eElementType::ELEMENT2DINTERFACE)
             return true;
         else
             return false;

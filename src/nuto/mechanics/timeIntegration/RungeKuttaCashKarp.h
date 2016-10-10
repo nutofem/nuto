@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef RungeKuttaCashKarp_H
-#define RungeKuttaCashKarp_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -98,4 +97,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::RungeKuttaCashKarp)
 
 
 
-#endif // RungeKuttaCashKarp_H

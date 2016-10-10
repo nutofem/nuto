@@ -1,6 +1,5 @@
 // $Id$
-#ifndef IPDATAEMPTY_H_
-#define IPDATAEMPTY_H_
+#pragma once
 
 #include "nuto/mechanics/elements/IpDataBase.h"
 
@@ -39,4 +38,3 @@ template<>
 struct is_virtual_base_of<NuTo::IpDataBase, NuTo::IpDataEmpty>: public mpl::true_ {};
 }
 #endif // ENABLE_SERIALIZATION
-#endif /* IPDATAEMPTY_H_ */

@@ -1,9 +1,6 @@
 // $Id$
 
-#ifndef CONSTRAINTNODEGROUP_H
-#define CONSTRAINTNODEGROUP_H
-
-#include "nuto/mechanics/constraints/ConstraintEnum.h"
+#pragma once
 
 namespace NuTo
 {
@@ -41,5 +38,4 @@ protected:
 #ifdef ENABLE_SERIALIZATION
 //BOOST_CLASS_EXPORT_KEY(NuTo::ConstraintNodeGroup)
 #endif // ENABLE_SERIALIZATION
-#endif //CONSTRAINTNODEGROUP_H
 

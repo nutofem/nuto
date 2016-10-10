@@ -14,7 +14,9 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation2D.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 NuTo::Interpolation2D::Interpolation2D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
         InterpolationBaseFEM::InterpolationBaseFEM(rDofType, rTypeOrder, rDimension)
@@ -40,15 +42,15 @@ int NuTo::Interpolation2D::GetNumDofsPerNode() const
 {
     switch (mDofType)
     {
-    case NuTo::Node::COORDINATES:
-    case NuTo::Node::DISPLACEMENTS:
-    case NuTo::Node::NONLOCALEQPLASTICSTRAIN:
+    case NuTo::Node::eDof::COORDINATES:
+    case NuTo::Node::eDof::DISPLACEMENTS:
+    case NuTo::Node::eDof::NONLOCALEQPLASTICSTRAIN:
         return 2;
-    case NuTo::Node::TEMPERATURE:
-    case NuTo::Node::NONLOCALEQSTRAIN:
-    case NuTo::Node::RELATIVEHUMIDITY:
-    case NuTo::Node::WATERVOLUMEFRACTION:
-    case NuTo::Node::CRACKPHASEFIELD:
+    case NuTo::Node::eDof::TEMPERATURE:
+    case NuTo::Node::eDof::NONLOCALEQSTRAIN:
+    case NuTo::Node::eDof::RELATIVEHUMIDITY:
+    case NuTo::Node::eDof::WATERVOLUMEFRACTION:
+    case NuTo::Node::eDof::CRACKPHASEFIELD:
         return 1;
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "dof type not found.");

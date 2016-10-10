@@ -6,16 +6,6 @@
  *      Author: ttitsche
  */
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include "nuto/math/CustomBoostSerializationExtensions.h"
-#endif  // ENABLE_SERIALIZATION
-
 #include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 
@@ -111,7 +101,7 @@ bool NuTo::InterpolationBase::NodeIsOnSurface(int rSurface, const Eigen::VectorX
 #ifdef ENABLE_SERIALIZATION
 NuTo::InterpolationBase::InterpolationBase():
     mTypeOrder(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1),
-    mDofType(NuTo::Node::COORDINATES),
+    mDofType(NuTo::Node::eDof::COORDINATES),
     mDimension(0)
 {
 }
@@ -128,12 +118,13 @@ void NuTo::InterpolationBase::serialize(Archive & ar, const unsigned int version
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize InterpolationBase" << std::endl;
 #endif
-    ar & boost::serialization::make_nvp("mTypeOrder", const_cast<NuTo::Interpolation::eTypeOrder&>(mTypeOrder));
     ar & boost::serialization::make_nvp("mDofType", const_cast<NuTo::Node::eDof&>(mDofType));
     ar & BOOST_SERIALIZATION_NVP(mIsConstitutiveInput);
     ar & BOOST_SERIALIZATION_NVP(mIsActive);
     ar & BOOST_SERIALIZATION_NVP(mNumDofs);
     ar & BOOST_SERIALIZATION_NVP(mNumNodes);
+
+    ar & boost::serialization::make_nvp("mTypeOrder", const_cast<NuTo::Interpolation::eTypeOrder&>(mTypeOrder));
 
     ar & BOOST_SERIALIZATION_NVP(mNodeIndices);
 

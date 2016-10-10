@@ -1,3 +1,5 @@
+
+#include "nuto/math/FullVector.h"
 #include "nuto/metamodel/PolynomialLeastSquaresFitting.h"
 #include <nuto/math/SparseDirectSolverMUMPS.h>
 #include <nuto/math/SparseMatrixCSRGeneral.h>

@@ -12,6 +12,7 @@
 #include <assert.h>
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIpNonlocal.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/IpDataBase.h"
 
 
@@ -83,7 +84,7 @@ const std::vector<double>& NuTo::ElementDataConstitutiveIpNonlocal::GetNonlocalW
 //! @return enum of ElementDataType
 const NuTo::ElementData::eElementDataType NuTo::ElementDataConstitutiveIpNonlocal::GetElementDataType()const
 {
-    return NuTo::ElementData::CONSTITUTIVELAWIPNONLOCAL;
+    return NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIPNONLOCAL;
 }
 
 //! @brief delete the nonlocal elements

@@ -1,6 +1,7 @@
 #include "nuto/mechanics/IGA/BSplineSurface.h"
 #include "nuto/mechanics/elements/ElementShapeFunctions.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 
 NuTo::BSplineSurface::BSplineSurface(const Eigen::Vector2i &rDegree,
                                      const Eigen::VectorXd &rKnotsX,

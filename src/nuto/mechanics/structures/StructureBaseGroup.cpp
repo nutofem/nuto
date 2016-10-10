@@ -2,10 +2,14 @@
 
 #include <set>
 
+#include "nuto/math/FullVector.h"
+
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/groups/GroupEnum.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 void NuTo::StructureBase::GroupInfo(int rVerboseLevel) const
 {
@@ -68,13 +72,13 @@ int NuTo::StructureBase::GroupCreate(const std::string& rType)
 
 if(    GroupTypeString==std::string("ELEMENTS"))
     {
-        GroupCreate(groupNumber,NuTo::Groups::Elements);
+        GroupCreate(groupNumber,NuTo::eGroupId::Elements);
     }
     else
     {
         if (GroupTypeString==std::string("NODES"))
         {
-            GroupCreate(groupNumber,NuTo::Groups::Nodes);
+            GroupCreate(groupNumber,NuTo::eGroupId::Nodes);
         }
         else
         {
@@ -93,7 +97,7 @@ if(    GroupTypeString==std::string("ELEMENTS"))
 //! @brief ... Creates a group for the structure
 //! @param ... rType  type of the group, e.g. "NODES" or "ELEMENTS"
 //! @return ... rIdent identifier for the group
-int NuTo::StructureBase::GroupCreate(NuTo::Groups::eGroupId rEnumType)
+int NuTo::StructureBase::GroupCreate(NuTo::eGroupId rEnumType)
 {
 #ifdef SHOW_TIME
     std::clock_t start, end;
@@ -122,7 +126,7 @@ int NuTo::StructureBase::GroupCreate(NuTo::Groups::eGroupId rEnumType)
 //! @brief ... Creates a group for the structure
 //! @param ... rIdent identifier for the group
 //! @param ... rType  type of the group
-void NuTo::StructureBase::GroupCreate(int id, NuTo::Groups::eGroupId rEnumType)
+void NuTo::StructureBase::GroupCreate(int id, NuTo::eGroupId rEnumType)
 {
     boost::ptr_map<int, GroupBase>::iterator it = mGroupMap.find(id);
     if (it != mGroupMap.end())
@@ -130,10 +134,10 @@ void NuTo::StructureBase::GroupCreate(int id, NuTo::Groups::eGroupId rEnumType)
 
     switch (rEnumType)
     {
-    case NuTo::Groups::Elements:
+    case NuTo::eGroupId::Elements:
         mGroupMap.insert(id, new NuTo::Group<ElementBase>);
         break;
-    case NuTo::Groups::Nodes:
+    case NuTo::eGroupId::Nodes:
         mGroupMap.insert(id, new NuTo::Group<NodeBase>);
         break;
     default:
@@ -179,7 +183,7 @@ void NuTo::StructureBase::GroupAddNode(int rIdentGroup, int rIdNode)
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::GroupAddNode] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType() != Groups::Nodes)
+    if (itGroup->second->GetType() != eGroupId::Nodes)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNode] A node can be added only to a node group.");
 
     itGroup->second->AddMember(rIdNode, NodeGetNodePtr(rIdNode));
@@ -202,7 +206,7 @@ void NuTo::StructureBase::GroupAddElement(int rIdentGroup, int rIdElement)
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::GroupAddElement] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType() != Groups::Elements)
+    if (itGroup->second->GetType() != eGroupId::Elements)
         throw MechanicsException("[NuTo::StructureBase::GroupAddElement] An element can be added only to an element group.");
 
     itGroup->second->AddMember(rIdElement, ElementGetElementPtr(rIdElement));
@@ -227,7 +231,7 @@ void NuTo::StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, int rDire
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCoordinateRange] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType() != Groups::Nodes)
+    if (itGroup->second->GetType() != eGroupId::Nodes)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCoordinateRange] A node can be added only to a node group.");
 
     if (rDirection < 0 || rDirection > mDimension)
@@ -239,9 +243,9 @@ void NuTo::StructureBase::GroupAddNodeCoordinateRange(int rIdentGroup, int rDire
     for (unsigned int countNode = 0; countNode < nodeVector.size(); countNode++)
     {
         NodeBase* nodePtr(nodeVector[countNode].second);
-        if (nodePtr->GetNum(Node::COORDINATES) < 1)
+        if (nodePtr->GetNum(Node::eDof::COORDINATES) < 1)
             continue;
-        double coordinate = nodePtr->Get(Node::COORDINATES)[rDirection];
+        double coordinate = nodePtr->Get(Node::eDof::COORDINATES)[rDirection];
 
         if (coordinate >= rMin && coordinate <= rMax)
             itGroup->second->AddMember(nodeVector[countNode].first, nodePtr);
@@ -266,13 +270,13 @@ void NuTo::StructureBase::GroupAddNodeFunction(int rIdentNewGroup, int rIdentOld
     boost::ptr_map<int, GroupBase>::iterator itGroupOld = mGroupMap.find(rIdentOldGroup);
     if (itGroupOld == mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCoordinateRange] Old group with the given identifier does not exist.");
-    if (itGroupOld->second->GetType() != Groups::Nodes)
+    if (itGroupOld->second->GetType() != eGroupId::Nodes)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCoordinateRange] A node can be added only to a node group.");
 
     boost::ptr_map<int, GroupBase>::iterator itGroupNew = mGroupMap.find(rIdentNewGroup);
     if (itGroupNew == mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCoordinateRange] New group with the given identifier does not exist.");
-    if (itGroupNew->second->GetType() != Groups::Nodes)
+    if (itGroupNew->second->GetType() != eGroupId::Nodes)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCoordinateRange] A node can be added only to a node group.");
 
 
@@ -282,7 +286,7 @@ void NuTo::StructureBase::GroupAddNodeFunction(int rIdentNewGroup, int rIdentOld
     for (unsigned int countNode = 0; countNode < members.rows(); countNode++)
     {
         NodeBase* nodePtr = this->NodeGetNodePtr(members(countNode));
-        if (nodePtr->GetNum(Node::COORDINATES) < 1)
+        if (nodePtr->GetNum(Node::eDof::COORDINATES) < 1)
             continue;
 
         if (rFunction(nodePtr))
@@ -307,7 +311,7 @@ void NuTo::StructureBase::GroupAddNodeFunction(int rIdentGroup, std::function<bo
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeFunction] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType() != Groups::Nodes)
+    if (itGroup->second->GetType() != eGroupId::Nodes)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeFunction] A node can be added only to a node group.");
 
     std::vector<std::pair<int, NodeBase*> > nodeVector;
@@ -340,7 +344,7 @@ void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullVec
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeRadiusRange] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType() != Groups::Nodes)
+    if (itGroup->second->GetType() != eGroupId::Nodes)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeRadiusRange] A node can be added only to a node group.");
 
     if (rCenter.GetNumRows() != mDimension || rCenter.GetNumColumns() != 1)
@@ -357,9 +361,9 @@ void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullVec
     for (unsigned int countNode = 0; countNode < nodeVector.size(); countNode++)
     {
         NodeBase* nodePtr(nodeVector[countNode].second);
-        if (nodePtr->GetNum(Node::COORDINATES) < 1)
+        if (nodePtr->GetNum(Node::eDof::COORDINATES) < 1)
             continue;
-        Eigen::VectorXd dCoordinates = nodePtr->Get(Node::COORDINATES) - rCenter;
+        Eigen::VectorXd dCoordinates = nodePtr->Get(Node::eDof::COORDINATES) - rCenter;
         double r2 = dCoordinates.dot(dCoordinates);
 
         if (r2 >= rMin2 && r2 <= rMax2)
@@ -387,7 +391,7 @@ void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, NuTo:
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rIdentGroup);
     if (itGroup == mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCylinderRadiusRange] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType() != Groups::Nodes)
+    if (itGroup->second->GetType() != eGroupId::Nodes)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCylinderRadiusRange] A node can be added only to a node group.");
 
     if (rCenter.GetNumRows() != mDimension || rCenter.GetNumColumns() != 1)
@@ -413,10 +417,10 @@ void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, NuTo:
         for (unsigned int countNode = 0; countNode < nodeVector.size(); countNode++)
         {
             NodeBase* nodePtr(nodeVector[countNode].second);
-            if (nodePtr->GetNum(Node::COORDINATES) != 2)
+            if (nodePtr->GetNum(Node::eDof::COORDINATES) != 2)
                 continue;
             double r2(0.);
-            coordinates = nodePtr->Get(Node::COORDINATES);
+            coordinates = nodePtr->Get(Node::eDof::COORDINATES);
             vecDelta = coordinates - rCenter;
 
             r2 = (vecDelta(0) * vecDelta(0) + vecDelta(1) * vecDelta(1));
@@ -445,10 +449,10 @@ void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, NuTo:
         for (unsigned int countNode = 0; countNode < nodeVector.size(); countNode++)
         {
             NodeBase* nodePtr(nodeVector[countNode].second);
-            if (nodePtr->GetNum(Node::COORDINATES) != 3)
+            if (nodePtr->GetNum(Node::eDof::COORDINATES) != 3)
                 continue;
             double r2(0.);
-            coordinates = nodePtr->Get(Node::COORDINATES);
+            coordinates = nodePtr->Get(Node::eDof::COORDINATES);
             vecPtrCenter = coordinates - rCenter;
 
             //get projection onto axis

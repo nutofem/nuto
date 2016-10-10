@@ -1,13 +1,15 @@
 #pragma once
 
-#include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+
 #include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataBase.h"
 
 #include <map>
-#include <memory>
+#include <vector>
 
 namespace NuTo
 {
+class ConstitutiveBase;
+
 
 //! @brief ... static data for combined constitutive laws
 //! @author Volker Hirthammer, BAM

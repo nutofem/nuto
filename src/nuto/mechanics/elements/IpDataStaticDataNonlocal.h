@@ -1,6 +1,5 @@
 // $Id$ 
-#ifndef IPDATASTATICDATANONLOCAL_H_
-#define IPDATASTATICDATANONLOCAL_H_
+#pragma once
 
 #include "nuto/mechanics/elements/IpDataStaticDataBase.h"
 #include "nuto/mechanics/elements/IpDataNonlocalBase.h"
@@ -42,4 +41,3 @@ template<>
 struct is_virtual_base_of<NuTo::IpDataNonlocalBase, NuTo::IpDataStaticDataNonlocal>: public mpl::true_ {};
 }
 #endif // ENABLE_SERIALIZATION
-#endif /* IPDATASTATICDATANONLOCAL_H_ */

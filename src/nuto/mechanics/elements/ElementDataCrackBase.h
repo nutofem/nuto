@@ -1,14 +1,15 @@
 // $Id$
-#ifndef ELEMENTDATACRACKBASE_H_
-#define ELEMENTDATACRACKBASE_H_
+#pragma once
 
 #include "nuto/mechanics/elements/ElementDataBase.h"
-#include "nuto/mechanics/cracks/CrackBase.h"
+
 
 #include <vector>
 
 namespace NuTo
 {
+class CrackBase;
+
 //! @author Daniel Arnold
 //! @date October 2010
 //! @brief class to store the crack informations for the elements
@@ -47,4 +48,3 @@ protected:
     bool isCracked;
 };
 }
-#endif // ELEMENTDATACRACKBASE_H_

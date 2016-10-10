@@ -5,6 +5,10 @@
  *      Author: ttitsche
  */
 
+#include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/elements/ElementShapeFunctions.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation3DTetrahedron.h"
 
 NuTo::Interpolation3DTetrahedron::Interpolation3DTetrahedron(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
@@ -13,14 +17,14 @@ NuTo::Interpolation3DTetrahedron::Interpolation3DTetrahedron(NuTo::Node::eDof rD
     Initialize();
 }
 
-NuTo::IntegrationType::eIntegrationType NuTo::Interpolation3DTetrahedron::GetStandardIntegrationType() const
+NuTo::eIntegrationType NuTo::Interpolation3DTetrahedron::GetStandardIntegrationType() const
 {
     switch (mTypeOrder)
     {
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT1:
-        return NuTo::IntegrationType::IntegrationType3D4NGauss1Ip;
+        return NuTo::eIntegrationType::IntegrationType3D4NGauss1Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
-        return NuTo::IntegrationType::IntegrationType3D4NGauss4Ip;
+        return NuTo::eIntegrationType::IntegrationType3D4NGauss4Ip;
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }

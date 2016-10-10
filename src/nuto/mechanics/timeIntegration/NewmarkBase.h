@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef NEWMARKBASE_H
-#define NEWMARKBASE_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -25,7 +24,7 @@ public:
     //! @brief constructor
     NewmarkBase(StructureBase* rStructure);
 
-    virtual NuTo::Error::eError Solve(double rTimeDelta)=0;
+    virtual NuTo::eError Solve(double rTimeDelta)=0;
 
     void SetDampingCoefficientMass(double rMuDampingMass)
     {
@@ -140,4 +139,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::NewmarkBase)
 
 
 
-#endif // NEWMARKBASE_H

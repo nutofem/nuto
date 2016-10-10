@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include <vector>
+#include "nuto/math/FullMatrix.h"
 #include "nuto/metamodel/NeuralNetwork.h"
 #include "nuto/optimize/ConjugateGradientNonLinear.h"
 #include "nuto/metamodel/TransferFunction.h"

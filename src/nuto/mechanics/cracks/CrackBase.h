@@ -1,19 +1,18 @@
 // $Id$
 
-#ifndef CrackBase_H
-#define CrackBase_H
+#pragma once
 
 #include <string>
 #include <vector>
 
-#ifdef ENABLE_VISUALIZE
-#include "nuto/visualize/VisualizeUnstructuredGrid.h"
-#endif // ENABLE_VISUALIZE
 
 namespace NuTo
 {
 class ElementBase;
 class NodeBase;
+#ifdef ENABLE_VISUALIZE
+class VisualizeUnstructuredGrid;
+#endif // ENABLE_VISUALIZE
 
 //! @author Daniel Arnold, ISM
 //! @date October 2010
@@ -72,4 +71,3 @@ protected:
 
 }; //class definition
 }
-#endif //CrackBase_H

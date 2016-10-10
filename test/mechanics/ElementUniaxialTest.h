@@ -5,13 +5,27 @@
  *      Author: ttitsche
  */
 
-#ifndef ELEMENTUNIAXIALTEST_H_
-#define ELEMENTUNIAXIALTEST_H_
+#pragma once
 
+#include "nuto/math/SparseMatrixCSRVector2.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
+#include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/groups/GroupEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
+#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
 #include "nuto/math/SparseDirectSolverMUMPS.h"
 #include <boost/filesystem.hpp>
+#include "nuto/math/FullMatrix.h"
+
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
+#endif
 
 #define DEBUG_PRINT true
 
@@ -58,7 +72,7 @@ private:
 
     void SetConstitutiveLaw(NuTo::Structure& rStructure)
     {
-        rStructure.ConstitutiveLawCreate(0, NuTo::Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS);
+        rStructure.ConstitutiveLawCreate(0, NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
         rStructure.ConstitutiveLawSetParameterDouble(0,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, E);
         rStructure.ConstitutiveLawSetParameterDouble(0,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,nu);
         rStructure.ConstitutiveLawSetParameterDouble(0,NuTo::Constitutive::eConstitutiveParameter::DENSITY, rho);
@@ -129,9 +143,9 @@ private:
 
         auto internalGradient = rStructure.BuildGlobalInternalGradient();
 
-        if (internalGradient.J.CalculateNormL2()[NuTo::Node::DISPLACEMENTS] > 1e-8)
+        if (internalGradient.J.CalculateNormL2()[NuTo::Node::eDof::DISPLACEMENTS] > 1e-8)
         {
-            internalGradient.J[NuTo::Node::DISPLACEMENTS].Info();
+            internalGradient.J[NuTo::Node::eDof::DISPLACEMENTS].Info();
             throw NuTo::MechanicsException("[NuToTest::ElementUniaxialTest::Solve] residual force vector is not zero.");
         }
     }
@@ -204,10 +218,10 @@ private:
         auto hessian2 = rStructure.BuildGlobalHessian2();
 
         double numericMass = 0;
-        numericMass += hessian2.JJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
-        numericMass += hessian2.JK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
-        numericMass += hessian2.KJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
-        numericMass += hessian2.KK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
+        numericMass += hessian2.JJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
+        numericMass += hessian2.JK(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
+        numericMass += hessian2.KJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
+        numericMass += hessian2.KK(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
 
         numericMass /= rStructure.GetDimension(); // since the mass is added to nodes in every direction
 
@@ -222,10 +236,10 @@ private:
         hessian2 = rStructure.BuildGlobalHessian2Lumped();
 
         numericMass = 0;
-        numericMass += hessian2.JJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
-        numericMass += hessian2.JK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
-        numericMass += hessian2.KJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
-        numericMass += hessian2.KK(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).Sum();
+        numericMass += hessian2.JJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
+        numericMass += hessian2.JK(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
+        numericMass += hessian2.KJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
+        numericMass += hessian2.KK(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).Sum();
 
         numericMass /= rStructure.GetDimension(); // since the mass is added to nodes in every direction
 
@@ -261,16 +275,16 @@ private:
             elementID++;
         }
         std::string fileName = NuTo::Interpolation::ShapeTypeToString(element->GetInterpolationType()->GetShapeType());
-        fileName += NuTo::Interpolation::TypeOrderToString(element->GetInterpolationType()->Get(NuTo::Node::DISPLACEMENTS).GetTypeOrder());
+        fileName += NuTo::Interpolation::TypeOrderToString(element->GetInterpolationType()->Get(NuTo::Node::eDof::DISPLACEMENTS).GetTypeOrder());
         fileName += ".vtu";
         directory /= fileName;
 
-        int visualizationGroup = rStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        int visualizationGroup = rStructure.GroupCreate(NuTo::eGroupId::Elements);
         rStructure.GroupAddElementsTotal(visualizationGroup);
 
-        rStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
-        rStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
-        rStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
+        rStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+        rStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+        rStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
 
         rStructure.ExportVtkDataFileElements(directory.string(),true);
 
@@ -286,4 +300,3 @@ private:
 
 }//namespace NuToTest
 
-#endif /* ELEMENTUNIAXIALTEST_H_ */

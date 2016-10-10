@@ -7,8 +7,11 @@
 
 #include "nuto/mechanics/timeIntegration/ImplEx.h"
 #include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
+#include "nuto/mechanics/structures/StructureBaseEnum.h"
 #include "nuto/mechanics/structures/StructureOutputDummy.h"
 
 
@@ -26,19 +29,22 @@ NuTo::ImplEx::ImplEx(StructureBase* rStructure) : ImplicitExplicitBase(rStructur
     mExtrapolationErrorThreshold = -1.;
 }
 
+NuTo::ImplEx::~ImplEx()
+{}
+
 void NuTo::ImplEx::ExtrapolateStaticData(const ConstitutiveTimeStep& rTimeStep)
 {
     // Setup input list with the timeStep and the option to use EULER_FORWARD
     ConstitutiveInputMap input;
-    input[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
-            CalculateStaticData::EULER_FORWARD);
-    input[Constitutive::Input::TIME_STEP] = std::make_unique<ConstitutiveTimeStep>(rTimeStep);
+    input[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
+            eCalculateStaticData::EULER_FORWARD);
+    input[Constitutive::eInput::TIME_STEP] = std::make_unique<ConstitutiveTimeStep>(rTimeStep);
 
 
     // Setup output map to store the static data
-    std::map<NuTo::StructureEnum::eOutput, NuTo::StructureOutputBase*> evalUpdateStaticData;
+    std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evalUpdateStaticData;
     StructureOutputDummy dummy;
-    evalUpdateStaticData[StructureEnum::UPDATE_STATIC_DATA] = &dummy;
+    evalUpdateStaticData[eStructureOutput::UPDATE_STATIC_DATA] = &dummy;
 
     mStructure->Evaluate(input, evalUpdateStaticData);
 }

@@ -7,22 +7,32 @@
 
 #pragma once
 
-#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
-#include "nuto/mechanics/elements/ElementShapeFunctions.h"
-#include "nuto/mechanics/structures/StructureBase.h"
-
-
 #include <vector>
-#include <assert.h>
-#include <string>
-#include <sstream>
+#include "eigen3/Eigen/Dense"
+
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include "nuto/math/CustomBoostSerializationExtensions.h"
+#endif  // ENABLE_SERIALIZATION
 
 namespace NuTo
 {
 class IntegrationTypeBase;
+enum class eIntegrationType;
+namespace Interpolation
+{
+    enum class eTypeOrder;
+}// namespace Interpolation
+
+namespace Node
+{
+    enum class eDof : unsigned char;
+}// namespace Node
 
 //! @brief this class stores the information of the interpolation of a single dof type
 //! @remark the API only allows const access to this class via the InterpolationType.Get(dofType)
@@ -48,7 +58,7 @@ public:
 
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type
-    virtual IntegrationType::eIntegrationType GetStandardIntegrationType() const = 0;
+    virtual eIntegrationType GetStandardIntegrationType() const = 0;
 
     //********************************************
     //             DOF METHODS
@@ -197,19 +207,19 @@ public:
     virtual int GetSurfaceDegree(int rSurface) const = 0;
 
 #ifdef ENABLE_SERIALIZATION
-//    //! @brief serializes the class, this is the load routine
-//    //! @param ar         archive
-//    //! @param version    version
-//    template<class Archive>
-//    void load(Archive & ar, const unsigned int version);
+    //! @brief serializes the class, this is the load routine
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void load(Archive & ar, const unsigned int version);
 
-//    //! @brief serializes the class, this is the save routine
-//    //! @param ar         archive
-//    //! @param version    version
-//    template<class Archive>
-//    void save(Archive & ar, const unsigned int version) const;
+    //! @brief serializes the class, this is the save routine
+    //! @param ar         archive
+    //! @param version    version
+    template<class Archive>
+    void save(Archive & ar, const unsigned int version) const;
 
-//    BOOST_SERIALIZATION_SPLIT_MEMBER()
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);

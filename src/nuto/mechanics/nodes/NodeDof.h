@@ -1,11 +1,20 @@
 #pragma once
 
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/DofHash.h"
 #include <unordered_map>
 
 
 namespace NuTo
 {
+struct NodeDofInfo
+{
+    int mDimension;
+    int mNumTimeDerivatives;
+    bool mIsDof;
+};
+
+
 //! @author Thomas Titscher, BAM
 //! @date July 2016
 //! @brief ... standard class for all nodes
@@ -16,7 +25,9 @@ class NodeDof: public NodeBase
     NodeDof() {}
 #endif // ENABLE_SERIALIZATION
 public:
-    NodeDof(int rNumTimeDerivatives, std::map<Node::eDof, int> rDofDimensions);
+    //! @brief ctor
+    //! @param contains the information for each dof type
+    NodeDof(std::map<Node::eDof, NodeDofInfo> rDofInfos);
 
     //! @brief sets the global dofs numbers for each dof type
     //! @param rDofNumbers ... map containing the dof type and the current number
@@ -42,11 +53,12 @@ public:
     void RenumberGlobalDofs(Node::eDof rDofType, std::vector<int>& rMappingInitialToNewOrdering) override;
 
     //! @brief returns the number of time derivatives stored at the node
+    //! @param rDof ... specific dof type
     //! @return number of derivatives
-    int GetNumTimeDerivatives() const override
-    {
-        return mNumTimeDerivatives;
-    }
+    int GetNumTimeDerivatives(Node::eDof rDof) const override;
+
+    //! @brief returns if the dof type rDof is an actual degree of freedom (in contrast to COORDINATES)
+    bool IsDof(Node::eDof rDof) const override;
 
     //*************************************************
     //************       ACCESS         ***************
@@ -109,8 +121,6 @@ private:
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
     inline void WriteNodeValueToVector(int rDofNumber, double rDofValue, FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const;
-
-    int mNumTimeDerivatives;
 
     //! @brief stores the dof values (std::vector for time derivatives, VectorXd for values)
     std::unordered_map<Node::eDof, std::vector<Eigen::VectorXd>, Node::eDofHash> mDofValues;

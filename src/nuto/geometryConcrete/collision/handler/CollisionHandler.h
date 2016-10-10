@@ -5,15 +5,15 @@
  *      Author: ttitsche
  */
 
-#ifndef COLLISIONHANDLER_H_
-#define COLLISIONHANDLER_H_
+#pragma once
 
-#include "nuto/geometryConcrete/collision/Event.h"
+
 #include "nuto/geometryConcrete/collision/handler/EventListHandler.h"
-#include "nuto/geometryConcrete/collision/handler/ParticleHandler.h"
+
 
 namespace NuTo
 {
+class ParticleHandler;
 class SubBoxHandler;
 class Logger;
 
@@ -67,4 +67,3 @@ private:
 };
 
 } /* namespace NuTo */
-#endif /* COLLISIONHANDLER_H_ */

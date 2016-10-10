@@ -1,8 +1,4 @@
-#ifndef STRUCTUREOUTPUTBASE_H
-#define STRUCTUREOUTPUTBASE_H
-
-#include <nuto/math/SparseMatrixCSRVector2.h>
-#include <nuto/mechanics/structures/StructureBaseEnum.h>
+#pragma once
 
 namespace NuTo
 {
@@ -38,5 +34,3 @@ public:
 };
 
 } // namespace NuTo
-
-#endif // STRUCTUREOUTPUTBASE_H

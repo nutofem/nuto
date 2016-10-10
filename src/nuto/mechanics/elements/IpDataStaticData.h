@@ -1,6 +1,5 @@
 // $Id$ 
-#ifndef IPDATASTATICDATA_H_
-#define IPDATASTATICDATA_H_
+#pragma once
 
 #include "nuto/mechanics/elements/IpDataStaticDataBase.h"
 
@@ -42,4 +41,3 @@ template<>
 struct is_virtual_base_of<NuTo::IpDataStaticDataBase, NuTo::IpDataStaticData>: public mpl::true_ {};
 }
 #endif // ENABLE_SERIALIZATION
-#endif /* IPDATASTATICDATA_H_ */

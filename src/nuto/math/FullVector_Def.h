@@ -1,7 +1,6 @@
 // $Id: FullVector.h 623 2013-04-05 08:14:22Z unger3 $
 
-#ifndef FULL_VECTOR_DEF_H
-#define FULL_VECTOR_DEF_H
+#pragma once
 
 #include "nuto/math/FullMatrix_Def.h"
 
@@ -75,4 +74,3 @@ BOOST_CLASS_EXPORT_KEY(BOOST_IDENTITY_TYPE((NuTo::FullVector<int,Eigen::Dynamic>
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
-#endif // FULL_VECTOR_DEF_H

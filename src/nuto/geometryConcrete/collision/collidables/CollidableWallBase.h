@@ -5,10 +5,10 @@
  *      Author: ttitsche
  */
 
-#ifndef COLLIDABLEWALLBASE_H_
-#define COLLIDABLEWALLBASE_H_
+#pragma once
 
 #include "nuto/geometryConcrete/collision/collidables/CollidableBase.h"
+#include "nuto/math/FullVector_Def.h"
 
 namespace NuTo
 {
@@ -80,7 +80,7 @@ public:
 #endif
 
 	//! @brief ... does nothing as all other wall events are still legal
-	void GetLocalEventsToDelete(Event::LocalEvents& rEventsToDelete) const;
+    void GetLocalEventsToDelete(LocalEvents& rEventsToDelete) const;
 
 	//! @brief ... returns whether a sphere is on the positive side of this wall
 	//! @param rSphere ... sphere to test
@@ -124,4 +124,3 @@ private:
 };
 
 } /* namespace NuTo */
-#endif /* COLLIDABLEWALLBASE_H_ */

@@ -1,35 +1,27 @@
 // $Id$
+#pragma once
 
-#ifndef CELLBASE_H_
-#define CELLBASE_H_
 #include <boost/ptr_container/ptr_vector.hpp>
-#include "nuto/visualize/VisualizeDataBase.h"
-#include "nuto/visualize/VisualizeDataType.h"
+
 
 namespace NuTo
 {
+
+class VisualizeDataBase;
+class VisualizeDataType;
+
 //! @brief ... base class for visualization cells
 //! @author Stefan Eckardt, ISM
 //! @date November 2009
 class CellBase
 {
 public:
-    enum eCellTypes
-    {
-        VERTEX,
-        LINE,
-        TRIANGLE,
-        QUAD,
-        TETRAEDER,
-        HEXAHEDRON,
-        PYRAMID
-    };
 
     //! @brief constructor
     //! @param rDataTypes ... data type definitions
     CellBase(const std::vector<VisualizeDataType>& rDataTypes);
 
-    virtual ~CellBase(){};
+    virtual ~CellBase();
 
     //! @brief ... return number of cell points
     //! @return ... number of cell points
@@ -82,4 +74,3 @@ protected:
 
 }
 
-#endif // CELLBASE_H_ 

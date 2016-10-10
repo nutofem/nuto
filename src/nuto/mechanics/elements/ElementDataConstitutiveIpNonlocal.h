@@ -1,6 +1,5 @@
 // $Id$ 
-#ifndef ELEMENTDATACONSTITUTIVEIPNONLOCAL_H_
-#define ELEMENTDATACONSTITUTIVEIPNONLOCAL_H_
+#pragma once
 
 #include "nuto/mechanics/elements/ElementDataConstitutiveBase.h"
 #include "nuto/mechanics/elements/ElementDataNonlocalBase.h"
@@ -89,4 +88,3 @@ struct is_virtual_base_of<NuTo::ElementDataIpBase, NuTo::ElementDataConstitutive
 }
 #endif // ENABLE_SERIALIZATION
 
-#endif /* ELEMENTDATACONSTITUTIVEIPNONLOCAL_H_ */

@@ -1,6 +1,10 @@
 #include "nuto/mechanics/constitutive/laws/HeatConduction.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveMatrix.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+
 #define BOOST_TEST_MODULE HeatConductionTest
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
@@ -27,8 +31,8 @@ BOOST_AUTO_TEST_CASE(tangent_matrix)
 
     ConstitutiveInputMap input_map;
     ConstitutiveOutputMap output_map;
-    output_map[Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT] =
-            ConstitutiveIOBase::makeConstitutiveIO<3>(Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT);
+    output_map[Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT] =
+            ConstitutiveIOBase::makeConstitutiveIO<3>(Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT);
 
     // evaluate tangent
     ElementBase* some_element = nullptr;
@@ -40,7 +44,7 @@ BOOST_AUTO_TEST_CASE(tangent_matrix)
                              0, conductivity, 0,
                              0, 0, conductivity;
     Eigen::Matrix<double, 3, 3> calculated_conductivity =
-            *static_cast<ConstitutiveMatrix<3,3>*>(output_map.at(Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT).get());
+            *static_cast<ConstitutiveMatrix<3,3>*>(output_map.at(Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT).get());
     BOOST_CHECK_EQUAL(calculated_conductivity, expected_conductivity);
 
     // should throw exception, because conductivity is below zero
@@ -51,8 +55,8 @@ BOOST_AUTO_TEST_CASE(tangent_matrix)
 BOOST_AUTO_TEST_CASE(dofCombinations)
 {
     // combinations HeatConduction can compute
-    auto rowDof = Node::TEMPERATURE;
-    auto colDof = Node::TEMPERATURE;
+    auto rowDof = Node::eDof::TEMPERATURE;
+    auto colDof = Node::eDof::TEMPERATURE;
     int timeDerivative = 0;
     HeatConduction heatConduction;
     BOOST_CHECK(heatConduction.CheckDofCombinationComputable(rowDof, colDof, timeDerivative));
@@ -60,6 +64,6 @@ BOOST_AUTO_TEST_CASE(dofCombinations)
     BOOST_CHECK(heatConduction.CheckDofCombinationComputable(rowDof, colDof, timeDerivative));
 
     // combinations it can't
-    colDof = NuTo::Node::DISPLACEMENTS;
+    colDof = NuTo::Node::eDof::DISPLACEMENTS;
     BOOST_CHECK(!heatConduction.CheckDofCombinationComputable(rowDof, colDof, timeDerivative));
 }

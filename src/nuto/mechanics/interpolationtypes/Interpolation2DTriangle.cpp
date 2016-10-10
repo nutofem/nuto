@@ -5,6 +5,10 @@
  *      Author: ttitsche
  */
 
+#include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/elements/ElementShapeFunctions.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation2DTriangle.h"
 
 NuTo::Interpolation2DTriangle::Interpolation2DTriangle(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
@@ -13,18 +17,18 @@ NuTo::Interpolation2DTriangle::Interpolation2DTriangle(NuTo::Node::eDof rDofType
     Initialize();
 }
 
-NuTo::IntegrationType::eIntegrationType NuTo::Interpolation2DTriangle::GetStandardIntegrationType() const
+NuTo::eIntegrationType NuTo::Interpolation2DTriangle::GetStandardIntegrationType() const
 {
     switch (mTypeOrder)
     {
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT1:
-        return NuTo::IntegrationType::IntegrationType2D3NGauss1Ip;
+        return NuTo::eIntegrationType::IntegrationType2D3NGauss1Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
-        return NuTo::IntegrationType::IntegrationType2D3NGauss3Ip;
+        return NuTo::eIntegrationType::IntegrationType2D3NGauss3Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT3:
-        return NuTo::IntegrationType::IntegrationType2D3NGauss6Ip;
+        return NuTo::eIntegrationType::IntegrationType2D3NGauss6Ip;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT4:
-        return NuTo::IntegrationType::IntegrationType2D3NGauss12Ip;
+        return NuTo::eIntegrationType::IntegrationType2D3NGauss12Ip;
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }

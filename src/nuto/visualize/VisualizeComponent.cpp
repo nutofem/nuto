@@ -11,10 +11,11 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "nuto/visualize/VisualizeComponent.h"
+#include "nuto/visualize/VisualizeEnum.h"
 #include "nuto/visualize/VisualizeException.h"
 
 
-NuTo::VisualizeComponent::VisualizeComponent(NuTo::VisualizeBase::eVisualizeWhat rVisualizeComponent) :
+NuTo::VisualizeComponent::VisualizeComponent(NuTo::eVisualizeWhat rVisualizeComponent) :
         mVisualizeComponent(rVisualizeComponent)
 {
 }
@@ -33,7 +34,7 @@ int NuTo::VisualizeComponent::GetIp()const
 }
 
 
-NuTo::VisualizeBase::eVisualizeWhat NuTo::VisualizeComponent::GetComponentEnum() const
+NuTo::eVisualizeWhat NuTo::VisualizeComponent::GetComponentEnum() const
 {
     return mVisualizeComponent;
 }
@@ -42,65 +43,65 @@ std::string NuTo::VisualizeComponent::GetComponentName() const
 {
     switch (mVisualizeComponent)
     {
-    case VisualizeBase::ACCELERATION:
+    case eVisualizeWhat::ACCELERATION:
         return "Accelerations";
-    case VisualizeBase::ANGULAR_ACCELERATION:
+    case eVisualizeWhat::ANGULAR_ACCELERATION:
         return "AngularAccelerations";
-    case VisualizeBase::ANGULAR_VELOCITY:
+    case eVisualizeWhat::ANGULAR_VELOCITY:
         return "AngularVelocities";
-    case VisualizeBase::BOND_STRESS:
+    case eVisualizeWhat::BOND_STRESS:
         return "BondStress";
-    case VisualizeBase::CONSTITUTIVE:
+    case eVisualizeWhat::CONSTITUTIVE:
         return "ConstitutiveModel";
-    case VisualizeBase::CRACK:
+    case eVisualizeWhat::CRACK:
         return "Crack";
-    case VisualizeBase::DAMAGE:
+    case eVisualizeWhat::DAMAGE:
         return "Damage";
-    case VisualizeBase::CRACK_PHASE_FIELD:
+    case eVisualizeWhat::CRACK_PHASE_FIELD:
         return "CrackPhaseField";
-    case VisualizeBase::DISPLACEMENTS:
+    case eVisualizeWhat::DISPLACEMENTS:
         return "Displacements";
-    case VisualizeBase::ELEMENT:
+    case eVisualizeWhat::ELEMENT:
         return "Element";
-    case VisualizeBase::ENGINEERING_PLASTIC_STRAIN:
+    case eVisualizeWhat::ENGINEERING_PLASTIC_STRAIN:
         return "EngineeringPlasticStrain";
-    case VisualizeBase::ENGINEERING_STRAIN:
+    case eVisualizeWhat::ENGINEERING_STRAIN:
         return "EngineeringStrain";
-    case VisualizeBase::ENGINEERING_STRESS:
+    case eVisualizeWhat::ENGINEERING_STRESS:
         return "EngineeringStress";
-    case VisualizeBase::HEAT_FLUX:
+    case eVisualizeWhat::HEAT_FLUX:
         return "HeatFlux";
-    case VisualizeBase::LATTICE_STRAIN:
+    case eVisualizeWhat::LATTICE_STRAIN:
         return "LatticeStrain";
-    case VisualizeBase::LATTICE_STRESS:
+    case eVisualizeWhat::LATTICE_STRESS:
         return "LatticeStress";
-    case VisualizeBase::LOCAL_EQ_STRAIN:
+    case eVisualizeWhat::LOCAL_EQ_STRAIN:
         return "LocalEqStrain";
-    case VisualizeBase::NONLOCAL_EQ_STRAIN:
+    case eVisualizeWhat::NONLOCAL_EQ_STRAIN:
         return "NonlocalEqStrain";
-    case VisualizeBase::PARTICLE_RADIUS:
+    case eVisualizeWhat::PARTICLE_RADIUS:
         return "ParticleRadius";
-    case VisualizeBase::PRINCIPAL_ENGINEERING_STRESS:
+    case eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS:
         return "PrincipalEngineeringStress";
-    case VisualizeBase::RELATIVE_HUMIDITY:
+    case eVisualizeWhat::RELATIVE_HUMIDITY:
         return "RelativeHumidity";
-    case VisualizeBase::ROTATION:
+    case eVisualizeWhat::ROTATION:
         return "Rotations";
-    case VisualizeBase::SECTION:
+    case eVisualizeWhat::SECTION:
         return "Section";
-    case VisualizeBase::SHRINKAGE_STRAIN:
+    case eVisualizeWhat::SHRINKAGE_STRAIN:
         return "ShrinkageStrains";
-    case VisualizeBase::SLIP:
+    case eVisualizeWhat::SLIP:
         return "Slip";
-    case VisualizeBase::TEMPERATURE:
+    case eVisualizeWhat::TEMPERATURE:
         return "Temperature";
-    case VisualizeBase::THERMAL_STRAIN:
+    case eVisualizeWhat::THERMAL_STRAIN:
         return "ThermalStrain";
-    case VisualizeBase::TOTAL_INELASTIC_EQ_STRAIN:
+    case eVisualizeWhat::TOTAL_INELASTIC_EQ_STRAIN:
         return "TotalInelasticEqStrain";
-    case VisualizeBase::VELOCITY:
+    case eVisualizeWhat::VELOCITY:
         return "Velocities";
-    case VisualizeBase::WATER_VOLUME_FRACTION:
+    case eVisualizeWhat::WATER_VOLUME_FRACTION:
         return "WaterVolumeFraction";
     default:
         throw VisualizeException(__PRETTY_FUNCTION__, "Visualization component not implemented.");

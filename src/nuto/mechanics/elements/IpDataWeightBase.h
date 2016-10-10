@@ -1,9 +1,8 @@
 // $Id: $
-#ifndef IpDataWeightBase_H_
-#define IpDataWeightBase_H_
+#pragma once
 
 #include "nuto/mechanics/elements/IpDataBase.h"
-#include "boost/array.hpp"
+
 
 namespace NuTo
 {
@@ -42,4 +41,3 @@ protected:
 	double mWeight;
 };
 }
-#endif /* IpDataWeightBase_H_ */

@@ -1,7 +1,6 @@
 // $Id$
 
-#ifndef RungeKutta2_H
-#define RungeKutta2_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -95,4 +94,3 @@ BOOST_CLASS_EXPORT_KEY(NuTo::RungeKutta2)
 
 
 
-#endif // RungeKutta2_H

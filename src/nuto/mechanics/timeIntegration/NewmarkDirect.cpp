@@ -10,15 +10,22 @@
 #endif // ENABLE_SERIALIZATION
 
 
-#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "nuto/base/CallbackInterface.h"
+#include "nuto/base/ErrorEnum.h"
 #include "nuto/base/Timer.h"
+#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/timeIntegration/ResultGroupNodeForce.h"
 #include "nuto/mechanics/timeIntegration/TimeIntegrationEnum.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/structures/StructureBaseEnum.h"
+#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 
 //! @brief constructor
 //! @param mDimension number of nodes
@@ -46,7 +53,7 @@ void NuTo::NewmarkDirect::Info()const
     NewmarkBase::Info();
 }
 
-NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
+NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
 {
     NuTo::Timer timerFull(__PRETTY_FUNCTION__, mStructure->GetShowTime(), mStructure->GetLogger());
 
@@ -140,21 +147,21 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
         \*---------------------------------*/
 
         // Declare output maps
-        std::map<NuTo::StructureEnum::eOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient;
-        std::map<NuTo::StructureEnum::eOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient_Hessian0Hessian1;
-        std::map<NuTo::StructureEnum::eOutput, NuTo::StructureOutputBase*> evaluate_Hessian0_Hessian1;
+        std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient;
+        std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_InternalGradient_Hessian0Hessian1;
+        std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evaluate_Hessian0_Hessian1;
 
-        evaluate_InternalGradient                       [StructureEnum::INTERNAL_GRADIENT] = &intForce;
-        evaluate_InternalGradient_Hessian0Hessian1      [StructureEnum::INTERNAL_GRADIENT] = &intForce;
+        evaluate_InternalGradient                       [eStructureOutput::INTERNAL_GRADIENT] = &intForce;
+        evaluate_InternalGradient_Hessian0Hessian1      [eStructureOutput::INTERNAL_GRADIENT] = &intForce;
 
-        evaluate_InternalGradient_Hessian0Hessian1      [StructureEnum::HESSIAN0] = &hessian0;
-        evaluate_Hessian0_Hessian1                      [StructureEnum::HESSIAN0] = &hessian0;
+        evaluate_InternalGradient_Hessian0Hessian1      [eStructureOutput::HESSIAN0] = &hessian0;
+        evaluate_Hessian0_Hessian1                      [eStructureOutput::HESSIAN0] = &hessian0;
 
         if (mStructure->GetNumTimeDerivatives() >= 1 && mMuDampingMass == 0.)
         {
             hessian1.Resize(dofStatus.GetNumActiveDofsMap(), dofStatus.GetNumDependentDofsMap());
-            evaluate_InternalGradient_Hessian0Hessian1  [StructureEnum::HESSIAN1] = &hessian1;
-            evaluate_Hessian0_Hessian1                  [StructureEnum::HESSIAN1] = &hessian1;
+            evaluate_InternalGradient_Hessian0Hessian1  [eStructureOutput::HESSIAN1] = &hessian1;
+            evaluate_Hessian0_Hessian1                  [eStructureOutput::HESSIAN1] = &hessian1;
         }
 
         if (mStructure->GetNumTimeDerivatives() >= 2)
@@ -172,8 +179,8 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
         }
 
         ConstitutiveInputMap inputMap;
-        inputMap[Constitutive::Input::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
-                CalculateStaticData::EULER_BACKWARD);
+        inputMap[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
+                eCalculateStaticData::EULER_BACKWARD);
 
         ExtractDofValues(lastConverged_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2);
 
@@ -403,7 +410,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                     }
 
                     if (mCallback && mCallback->Exit(*mStructure))
-                        return NuTo::Error::SUCCESSFUL;
+                        return NuTo::eError::SUCCESSFUL;
 
                 }
                 else
@@ -433,7 +440,7 @@ NuTo::Error::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
         e.AddMessage("[NuTo::NewmarkDirect::Solve] performing Newton-Raphson iteration.");
         throw e;
     }
-    return NuTo::Error::SUCCESSFUL;
+    return NuTo::eError::SUCCESSFUL;
 
 }
 
@@ -506,7 +513,7 @@ void NuTo::NewmarkDirect::CalculateResidualKForPostprocessing(
 
     bool hasNodeForce = false;
     for (const auto& it : mResultMap)
-        if(it.second->GetResultType() == TimeIntegration::GROUP_NODE_FORCE)
+        if(it.second->GetResultType() == eTimeIntegrationResultType::GROUP_NODE_FORCE)
         {
             hasNodeForce = true;
             break; // exit loop
@@ -569,7 +576,7 @@ void NuTo::NewmarkDirect::PrintInfoStagger() const
     //! @brief Prints Info about the current iteration
 void NuTo::NewmarkDirect::PrintInfoIteration(const BlockScalar& rNormResidual, int rIteration) const
 {
-    if (mStructure->GetDofStatus().GetDofTypes().find(Node::NONLOCALEQSTRAIN) != mStructure->GetDofStatus().GetDofTypes().end())
+    if (mStructure->GetDofStatus().GetDofTypes().find(Node::eDof::NONLOCALEQSTRAIN) != mStructure->GetDofStatus().GetDofTypes().end())
         return; // Hi Volker. Nothing wrong with the 1 line iteration output in the Solve() method. IMO.
                 // And please consider line search...
 

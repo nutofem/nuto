@@ -44,10 +44,7 @@ public:
 
     //! @brief Determines the dof type affected by the constraint.
     //! @return DOF type
-    Node::eDof GetDofType() const override
-    {
-        return Node::eDof::TEMPERATURE;
-    }
+    Node::eDof GetDofType() const override;
 
 protected:
     double mRHS = 0.0;

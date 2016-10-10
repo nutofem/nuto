@@ -1,6 +1,5 @@
 // $Id$ 
-#ifndef IPDATANONLOCALBASE_H_
-#define IPDATANONLOCALBASE_H_
+#pragma once
 
 #include <vector>
 #include "nuto/mechanics/elements/IpDataBase.h"
@@ -50,4 +49,3 @@ protected:
 	std::vector<std::vector<double> > mNonlocalWeights;
 };
 }
-#endif /* IPDATANONLOCALBASE_H_ */

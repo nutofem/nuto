@@ -3,6 +3,7 @@
 #include "nuto/mechanics/cracks/CrackBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 
+
 //! @brief Constructor
 NuTo::CrackBase::CrackBase()
 {}

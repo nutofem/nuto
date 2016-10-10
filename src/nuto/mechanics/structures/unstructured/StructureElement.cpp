@@ -3,17 +3,33 @@
 #include <assert.h>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
+
+#include "nuto/math/FullMatrix.h"
+
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
+
 
 #include "nuto/mechanics/elements/ContinuumElement.h"
 #include "nuto/mechanics/elements/ContinuumElementIGA.h"
 #include "nuto/mechanics/elements/ContinuumBoundaryElement.h"
 #include "nuto/mechanics/elements/ContinuumBoundaryElementConstrainedControlNode.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/Element1DInXD.h"
 #include "nuto/mechanics/elements/Element2DInterface.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 #include "nuto/mechanics/groups/Group.h"
+#include "nuto/mechanics/groups/GroupEnum.h"
+
+#include <eigen3/Eigen/Core>
 
 //! @brief returns the number of nodes
 //! @return number of nodes
@@ -83,7 +99,7 @@ void NuTo::Structure::ElementInfo(const ElementBase* rElement, int rVerboseLevel
     std::cout << "element : " << rElement->ElementGetId() << std::endl;
     if (rVerboseLevel > 2)
     {
-        std::cout << "\tenum::type=" << rElement->GetEnumType() << std::endl;
+        std::cout << "\tenum::type=" << Element::ElementTypeToString(rElement->GetEnumType()) << std::endl;
         if (rVerboseLevel > 3)
         {
             std::cout << "\tNodes:";
@@ -96,7 +112,7 @@ void NuTo::Structure::ElementInfo(const ElementBase* rElement, int rVerboseLevel
                 for (int iIp = 0; iIp < rElement->GetNumIntegrationPoints(); ++iIp)
                 {
                     Eigen::Vector3d coor = rElement->GetGlobalIntegrationPointCoordinates(iIp);
-                    std::cout << "\t\t" << iIp << ": [" << coor.at(0,0) << ";" << coor.at(1,0) << ";" << coor.at(2,0) << "]" << std::endl;
+                    std::cout << "\t\t" << iIp << ": [" << coor(0,0) << ";" << coor(1,0) << ";" << coor(2,0) << "]" << std::endl;
                 }
             }
         }
@@ -167,7 +183,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
     if (itGroup == mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::ElementConvertToInterpolationType] Group with the given identifier does not exist.");
 
-    if (itGroup->second->GetType() != NuTo::Groups::Elements)
+    if (itGroup->second->GetType() != NuTo::eGroupId::Elements)
         throw MechanicsException("[NuTo::Structure::ElementConvertToInterpolationType] Group is not an element group.");
 
     Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
@@ -278,7 +294,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
     if (itGroup == mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::ElementConvertToInterpolationType] Group with the given identifier does not exist.");
 
-    if (itGroup->second->GetType() != NuTo::Groups::Elements)
+    if (itGroup->second->GetType() != NuTo::eGroupId::Elements)
         throw MechanicsException("[NuTo::Structure::ElementConvertToInterpolationType] Group is not an element group.");
 
     Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
@@ -317,16 +333,16 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
 
 
     // find the bounding box corners = max/min x,y,z coordinates, initialize with random node coordinates
-    Eigen::VectorXd boundingBoxMax = elements[0]->GetNode(0)->Get(Node::COORDINATES);
-    Eigen::VectorXd boundingBoxMin = elements[0]->GetNode(0)->Get(Node::COORDINATES);
+    Eigen::VectorXd boundingBoxMax = elements[0]->GetNode(0)->Get(Node::eDof::COORDINATES);
+    Eigen::VectorXd boundingBoxMin = elements[0]->GetNode(0)->Get(Node::eDof::COORDINATES);
 
     for (ElementBase* element : elements)
     {
         // loop through nodes with coordinates
-        for (int iNode = 0; iNode < element->GetNumNodes(Node::COORDINATES); ++iNode)
+        for (int iNode = 0; iNode < element->GetNumNodes(Node::eDof::COORDINATES); ++iNode)
         {
-            NodeBase* node = element->GetNode(iNode, Node::COORDINATES);
-            Eigen::VectorXd nodeCoordinates = node->Get(Node::COORDINATES);
+            NodeBase* node = element->GetNode(iNode, Node::eDof::COORDINATES);
+            Eigen::VectorXd nodeCoordinates = node->Get(Node::eDof::COORDINATES);
             assert(nodeCoordinates.rows() == mDimension);
             boundingBoxMax = boundingBoxMax.cwiseMax(nodeCoordinates);
             boundingBoxMin = boundingBoxMin.cwiseMin(nodeCoordinates);
@@ -392,11 +408,11 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
         {
 
             Eigen::VectorXd naturalNodeCoordinates = interpolationType->GetNaturalNodeCoordinates(iNode);
-            Eigen::VectorXd globalNodeCoordinates = element->InterpolateDofGlobal(naturalNodeCoordinates, Node::COORDINATES);
+            Eigen::VectorXd globalNodeCoordinates = element->InterpolateDofGlobal(naturalNodeCoordinates, Node::eDof::COORDINATES);
 
             Eigen::Vector3i boxIndex3D = Eigen::Vector3i::Zero(); // default access is the first box
             for (int iDim = 0; iDim < mDimension; ++iDim)
-                boxIndex3D[iDim] = std::floor((globalNodeCoordinates.at(iDim,0) - boundingBoxMin.at(iDim,0)) / deltaBox.at(iDim,0));
+                boxIndex3D[iDim] = std::floor((globalNodeCoordinates(iDim,0) - boundingBoxMin(iDim,0)) / deltaBox(iDim,0));
 
             // 3D-index --> 1D-index mapping
             int boxIndex1D = boxIndex3D[0] + boxIndex3D[1] * numBoxes[0] + boxIndex3D[2] * numBoxes[0] * numBoxes[1];
@@ -452,7 +468,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
 
             NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(tmpNode.coords);
 
-            if (nodeDofs.find(Node::COORDINATES) != nodeDofs.end())
+            if (nodeDofs.find(Node::eDof::COORDINATES) != nodeDofs.end())
             {
 
                 // If the node is a coordinate node, it should already be in the elements mNodes, check that:
@@ -648,6 +664,21 @@ int NuTo::Structure::ElementCreate(int rInterpolationTypeId,
     return elementNumber;
 }
 
+void  NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId, const std::vector<int>& rNodeIds, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
+{
+    std::vector<NodeBase*> nodeVector;
+    for (const auto& nodeId : rNodeIds)
+        nodeVector.push_back(NodeGetNodePtr(nodeId));
+
+    ElementCreate(rElementNumber, rInterpolationTypeId, nodeVector, rElementDataType, rIpDataType);
+}
+
+//! @brief Creates an element
+//! @param rInterpolationTypeId interpolation type id
+//! @param rNodeVector pointers to the corresponding nodes
+//! @param rElementDataType Element data for the elements
+//! @param rIpDataType Integration point data for the elements
+//! @return int rElementNumber
 int NuTo::Structure::ElementCreate(int rInterpolationTypeId, const std::vector<NodeBase*>& rNodeNumbers, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType)
 {
     //find unused integer id
@@ -744,10 +775,10 @@ void NuTo::Structure::ElementCreate(int rElementNumber,
 
     InterpolationType* interpolationType = itIterator->second;
 
-    if (interpolationType->IsDof(Node::COORDINATES) == false)
+    if (interpolationType->IsDof(Node::eDof::COORDINATES) == false)
         throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] COORDINATE interpolation required.");
 
-    unsigned int numNodesCoordinates = interpolationType->Get(Node::COORDINATES).GetNumNodes();
+    unsigned int numNodesCoordinates = interpolationType->Get(Node::eDof::COORDINATES).GetNumNodes();
     if (numNodesCoordinates != rNodeVector.size())
         throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] COORDINATE interpolation requires " + std::to_string(numNodesCoordinates) + " nodes. " + std::to_string(rNodeVector.size()) + " are provided.");
 
@@ -755,7 +786,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber,
 
     if (interpolationType->GetCurrentIntegrationType() == nullptr)
     {
-        IntegrationType::eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
+        eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
         IntegrationTypeBase* integrationType = GetPtrIntegrationType(integrationTypeEnum);
         interpolationType->UpdateIntegrationType(*integrationType);
     }
@@ -821,10 +852,10 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
 
     InterpolationType* interpolationType = itIterator->second;
 
-    if (interpolationType->IsDof(Node::COORDINATES) == false)
+    if (interpolationType->IsDof(Node::eDof::COORDINATES) == false)
         throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] COORDINATE interpolation required.");
 
-    unsigned int numNodesCoordinates = interpolationType->Get(Node::COORDINATES).GetNumNodes();
+    unsigned int numNodesCoordinates = interpolationType->Get(Node::eDof::COORDINATES).GetNumNodes();
     if (numNodesCoordinates != rNodeVector.size())
         throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] COORDINATE interpolation requires " + std::to_string(numNodesCoordinates) + " nodes. " + std::to_string(rNodeVector.size()) + " are provided.");
 
@@ -832,7 +863,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
 
     if (interpolationType->GetCurrentIntegrationType() == nullptr)
     {
-        IntegrationType::eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
+        eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
         IntegrationTypeBase* integrationType = GetPtrIntegrationType(integrationTypeEnum);
         interpolationType->UpdateIntegrationType(*integrationType);
     }
@@ -949,13 +980,13 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
     boost::ptr_map<int, GroupBase>::iterator itGroupElements = mGroupMap.find(rElementGroupId);
     if (itGroupElements == mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group with the given identifier does not exist.");
-    if (itGroupElements->second->GetType() != NuTo::Groups::Elements)
+    if (itGroupElements->second->GetType() != NuTo::eGroupId::Elements)
         throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group is not an element group.");
 
     boost::ptr_map<int, GroupBase>::iterator itGroupBoundaryNodes = mGroupMap.find(rNodeGroupId);
     if (itGroupBoundaryNodes == mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group with the given identifier does not exist.");
-    if (itGroupBoundaryNodes->second->GetType() != NuTo::Groups::Nodes)
+    if (itGroupBoundaryNodes->second->GetType() != NuTo::eGroupId::Nodes)
         throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group is not a node group.");
 
     Group<ElementBase>& elementGroup    = *(itGroupElements->second->AsGroupElement());
@@ -990,7 +1021,7 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
 
                 for (int iSurfaceNode = 0; iSurfaceNode < numSurfaceNodes; ++iSurfaceNode)
                 {
-                    surfaceNodes[iSurfaceNode] = elementPtr->GetNode(surfaceNodeIndices.at(iSurfaceNode, 0));
+                    surfaceNodes[iSurfaceNode] = elementPtr->GetNode(surfaceNodeIndices(iSurfaceNode, 0));
                 }
 
                 //check, if all surface nodes are in the node group
@@ -1023,11 +1054,11 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
                     ElementBase* boundaryElement = nullptr;
                     ConstitutiveBase* constitutiveLaw = elementPtr->GetConstitutiveLaw(0);
 
-                    IntegrationType::eIntegrationType integrationType = IntegrationType::NotSet;
+                    eIntegrationType integrationType = eIntegrationType::NotSet;
 
                     switch (elementPtr->GetEnumType())
                     {
-                    case Element::CONTINUUMELEMENT:
+                    case Element::eElementType::CONTINUUMELEMENT:
                         switch (elementPtr->GetLocalDimension())
                         {
                         case 1:
@@ -1040,7 +1071,7 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
                             {
                                 boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<1>(&elementPtr->AsContinuumElement1D(), surfaceId,rControlNode);
                             }
-                            integrationType = IntegrationType::IntegrationType0DBoundary;
+                            integrationType = eIntegrationType::IntegrationType0DBoundary;
                             break;
                         }
                         case 2:
@@ -1057,34 +1088,34 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
                             auto it = std::find(mMappingIntEnum2String.begin(), mMappingIntEnum2String.end(), interpolationType->GetCurrentIntegrationType()->GetStrIdentifier());
                             if (it == mMappingIntEnum2String.end()) break;
 
-                            switch ((int)std::distance(mMappingIntEnum2String.begin(), it)) // Oh my god. Someone please remove this "map"
+                            switch ((eIntegrationType)std::distance(mMappingIntEnum2String.begin(), it)) // Oh my god. Someone please remove this "map" <--- Totally agree with Thomas (vhirtham)
                             {
-                            case IntegrationType::IntegrationType2D3NGauss1Ip:
-                            case IntegrationType::IntegrationType2D4NGauss1Ip:
-                                integrationType = IntegrationType::IntegrationType1D2NGauss1Ip;
+                            case eIntegrationType::IntegrationType2D3NGauss1Ip:
+                            case eIntegrationType::IntegrationType2D4NGauss1Ip:
+                                integrationType = eIntegrationType::IntegrationType1D2NGauss1Ip;
                                 break;
-                            case IntegrationType::IntegrationType2D3NGauss3Ip:
-                            case IntegrationType::IntegrationType2D4NGauss4Ip:
-                                integrationType = IntegrationType::IntegrationType1D2NGauss2Ip;
+                            case eIntegrationType::IntegrationType2D3NGauss3Ip:
+                            case eIntegrationType::IntegrationType2D4NGauss4Ip:
+                                integrationType = eIntegrationType::IntegrationType1D2NGauss2Ip;
                                 break;
-                            case IntegrationType::IntegrationType2D3NGauss6Ip:
-                            case IntegrationType::IntegrationType2D4NGauss9Ip:
-                                integrationType = IntegrationType::IntegrationType1D2NGauss3Ip;
+                            case eIntegrationType::IntegrationType2D3NGauss6Ip:
+                            case eIntegrationType::IntegrationType2D4NGauss9Ip:
+                                integrationType = eIntegrationType::IntegrationType1D2NGauss3Ip;
                                 break;
-                            case IntegrationType::IntegrationType2D3NGauss12Ip:
-                                integrationType = IntegrationType::IntegrationType1D2NGauss5Ip;
-                                break;
-
-                            case IntegrationType::IntegrationType2D4NLobatto9Ip:
-                                integrationType = IntegrationType::IntegrationType1D2NLobatto3Ip;
+                            case eIntegrationType::IntegrationType2D3NGauss12Ip:
+                                integrationType = eIntegrationType::IntegrationType1D2NGauss5Ip;
                                 break;
 
-                            case IntegrationType::IntegrationType2D4NLobatto16Ip:
-                                integrationType = IntegrationType::IntegrationType1D2NLobatto4Ip;
+                            case eIntegrationType::IntegrationType2D4NLobatto9Ip:
+                                integrationType = eIntegrationType::IntegrationType1D2NLobatto3Ip;
                                 break;
 
-                            case IntegrationType::IntegrationType2D4NLobatto25Ip:
-                                integrationType = IntegrationType::IntegrationType1D2NLobatto5Ip;
+                            case eIntegrationType::IntegrationType2D4NLobatto16Ip:
+                                integrationType = eIntegrationType::IntegrationType1D2NLobatto4Ip;
+                                break;
+
+                            case eIntegrationType::IntegrationType2D4NLobatto25Ip:
+                                integrationType = eIntegrationType::IntegrationType1D2NLobatto5Ip;
                                 break;
 
                                 default:
@@ -1109,34 +1140,34 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
                             auto it = std::find(mMappingIntEnum2String.begin(), mMappingIntEnum2String.end(), interpolationType->GetCurrentIntegrationType()->GetStrIdentifier());
                             if (it == mMappingIntEnum2String.end()) break;
 
-                            switch ((int)std::distance(mMappingIntEnum2String.begin(), it))
+                            switch ((eIntegrationType)std::distance(mMappingIntEnum2String.begin(), it))
                             {
-                            case IntegrationType::IntegrationType3D4NGauss1Ip:
-                                integrationType = IntegrationType::IntegrationType2D3NGauss1Ip;
+                            case eIntegrationType::IntegrationType3D4NGauss1Ip:
+                                integrationType = eIntegrationType::IntegrationType2D3NGauss1Ip;
                                 break;
 
-                            case IntegrationType::IntegrationType3D4NGauss4Ip:
-                                integrationType = IntegrationType::IntegrationType2D3NGauss3Ip;
+                            case eIntegrationType::IntegrationType3D4NGauss4Ip:
+                                integrationType = eIntegrationType::IntegrationType2D3NGauss3Ip;
                                 break;
 
-                            case IntegrationType::IntegrationType3D8NGauss1Ip:
-                                integrationType = IntegrationType::IntegrationType2D4NGauss1Ip;
+                            case eIntegrationType::IntegrationType3D8NGauss1Ip:
+                                integrationType = eIntegrationType::IntegrationType2D4NGauss1Ip;
                                 break;
 
-                            case IntegrationType::IntegrationType3D8NGauss2x2x2Ip:
-                                integrationType = IntegrationType::IntegrationType2D4NGauss4Ip;
+                            case eIntegrationType::IntegrationType3D8NGauss2x2x2Ip:
+                                integrationType = eIntegrationType::IntegrationType2D4NGauss4Ip;
                                 break;
 
-                            case IntegrationType::IntegrationType3D8NLobatto3x3x3Ip:
-                                integrationType = IntegrationType::IntegrationType2D4NLobatto9Ip;
+                            case eIntegrationType::IntegrationType3D8NLobatto3x3x3Ip:
+                                integrationType = eIntegrationType::IntegrationType2D4NLobatto9Ip;
                                 break;
 
-                            case IntegrationType::IntegrationType3D8NLobatto4x4x4Ip:
-                                integrationType = IntegrationType::IntegrationType2D4NLobatto16Ip;
+                            case eIntegrationType::IntegrationType3D8NLobatto4x4x4Ip:
+                                integrationType = eIntegrationType::IntegrationType2D4NLobatto16Ip;
                                 break;
 
-                            case IntegrationType::IntegrationType3D8NLobatto5x5x5Ip:
-                                integrationType = IntegrationType::IntegrationType2D4NLobatto16Ip;
+                            case eIntegrationType::IntegrationType3D8NLobatto5x5x5Ip:
+                                integrationType = eIntegrationType::IntegrationType2D4NLobatto16Ip;
                                 break;
 
                             default:
@@ -1160,7 +1191,7 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
                     mElementMap.insert(elementId, boundaryElement);
                     newBoundaryElementIds.push_back(elementId);
 
-                    if (integrationType == IntegrationType::NotSet)
+                    if (integrationType == eIntegrationType::NotSet)
                         throw MechanicsException(__PRETTY_FUNCTION__, "Could not automatically determine integration type of the boundary element.");
 
                     boundaryElement->SetIntegrationType(GetPtrIntegrationType(integrationType), ipDataType);
@@ -1185,7 +1216,7 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
 
     }
 
-    int boundaryElementGroup = GroupCreate(Groups::Elements);
+    int boundaryElementGroup = GroupCreate(eGroupId::Elements);
     for (int boundaryElementId : newBoundaryElementIds)
         GroupAddElement(boundaryElementGroup, boundaryElementId);
 
@@ -1205,20 +1236,20 @@ std::pair<int,int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId,
     boost::ptr_map<int, GroupBase>::iterator itGroupElements = mGroupMap.find(rElementGroupId);
     if (itGroupElements == mGroupMap.end())
         throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group with the given identifier does not exist.");
-    if (itGroupElements->second->GetType() != NuTo::Groups::Elements)
+    if (itGroupElements->second->GetType() != NuTo::eGroupId::Elements)
         throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group is not an element group.");
 
 
     // gets member ids from an element group. The element group must only contain truss elements
     auto elementIds = GroupGetMemberIds(rElementGroupId);
 
-    int groupElementsInterface = GroupCreate(NuTo::Groups::eGroupId::Elements);
-    int groupElementsFibre = GroupCreate(NuTo::Groups::eGroupId::Elements);
+    int groupElementsInterface = GroupCreate(NuTo::eGroupId::Elements);
+    int groupElementsFibre = GroupCreate(NuTo::eGroupId::Elements);
 
     // loop over elements in element group
     for (int i = 0; i < elementIds.size(); ++i)
     {
-        auto nodeIds = ElementGetNodes(elementIds.at(i,0));
+        auto nodeIds = ElementGetNodes(elementIds(i,0));
 
         assert( (nodeIds.size() == 2 or nodeIds.size() == 3) and "Only implemented for the 4 node and 6 node interface element");
 
@@ -1229,9 +1260,9 @@ std::pair<int,int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId,
         for (int k = 0; k < nodeIds.size(); ++k)
         {
             FullVector<double, Eigen::Dynamic> nodeCoordinates;
-            NodeGetCoordinates(nodeIds.at(k,0), nodeCoordinates);
+            NodeGetCoordinates(nodeIds(k,0), nodeCoordinates);
 
-            int groupNodes = GroupCreate(NuTo::Groups::eGroupId::Nodes);
+            int groupNodes = GroupCreate(NuTo::eGroupId::Nodes);
             GroupAddNodeRadiusRange(groupNodes, nodeCoordinates, 0.0, 1e-6);
 
             // create an additional node at the same position if it has not been created already
@@ -1239,20 +1270,20 @@ std::pair<int,int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId,
             {
                 assert(GroupGetNumMembers(groupNodes) == 2 and "This group should have exactly two members. Check what went wrong!");
                 auto groupNodeMemberIds = GroupGetMemberIds(groupNodes);
-                if (groupNodeMemberIds.at(0,0) == nodeIds.at(k,0))
+                if (groupNodeMemberIds(0,0) == nodeIds(k,0))
                 {
-                    nodeIdsFibre[k] = groupNodeMemberIds.at(1,0);
+                    nodeIdsFibre[k] = groupNodeMemberIds(1,0);
 
                 } else
                 {
-                    nodeIdsFibre[k] = groupNodeMemberIds.at(0,0);
+                    nodeIdsFibre[k] = groupNodeMemberIds(0,0);
                 }
             }
             else
             {
                 std::set<NuTo::Node::eDof> dofs;
-                dofs.insert(NuTo::Node::COORDINATES);
-                dofs.insert(NuTo::Node::DISPLACEMENTS);
+                dofs.insert(NuTo::Node::eDof::COORDINATES);
+                dofs.insert(NuTo::Node::eDof::DISPLACEMENTS);
 
                 nodeIdsFibre[k] = NodeCreate(nodeCoordinates, dofs);
 
@@ -1279,7 +1310,7 @@ std::pair<int,int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId,
         GroupAddElement(groupElementsFibre, newElementFibre);
 
         // delete  old element
-        ElementDelete(elementIds.at(i,0));
+        ElementDelete(elementIds(i,0));
 
     }
 
@@ -1299,7 +1330,7 @@ void NuTo::Structure::ElementGroupDelete(int rGroupNumber, bool deleteNodes)
     boost::ptr_map<int, GroupBase>::iterator itGroup = mGroupMap.find(rGroupNumber);
     if (itGroup == mGroupMap.end())
         throw MechanicsException("[NuTo::StructureBase::ElementGroupDelete] Group with the given identifier does not exist.");
-    if (itGroup->second->GetType() != NuTo::Groups::Elements)
+    if (itGroup->second->GetType() != NuTo::eGroupId::Elements)
         throw MechanicsException("[NuTo::StructureBase::ElementGroupDelete] Group is not an element group.");
 
 //the group has to be copied, since the elements are removed from this group, which invalidates the iterators
@@ -1378,7 +1409,7 @@ void NuTo::Structure::ElementDeleteInternal(int rElementId)
         // Search for elements in groups: using a loop over all groups
         for (boost::ptr_map<int, GroupBase>::iterator groupIt = mGroupMap.begin(); groupIt != mGroupMap.end(); ++groupIt)
         {
-            if (groupIt->second->GetType() == NuTo::Groups::Elements)
+            if (groupIt->second->GetType() == NuTo::eGroupId::Elements)
             {
                 if (groupIt->second->Contain(rElementId))
                 {

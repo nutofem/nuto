@@ -10,19 +10,27 @@
 
 #include <numeric>
 
+#include "nuto/math/SparseMatrixCSRGeneral.h"
+
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+#include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "nuto/mechanics/constitutive/laws/PhaseField.h"
 #include "nuto/mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataHistoryVariableScalar.h"
 
+#include "nuto/base/ErrorEnum.h"
 #include "nuto/base/Logger.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "nuto/mechanics/elements/IpDataStaticDataBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 #include "eigen3/Eigen/Eigenvalues"
 #include "eigen3/Eigen/Dense"
@@ -57,13 +65,13 @@ NuTo::ConstitutiveInputMap NuTo::PhaseField::GetConstitutiveInputs(const Constit
 {
     ConstitutiveInputMap constitutiveInputMap;
 
-    constitutiveInputMap[Constitutive::Input::ENGINEERING_STRAIN];
-    constitutiveInputMap[Constitutive::Input::CRACK_PHASE_FIELD];
+    constitutiveInputMap[Constitutive::eInput::ENGINEERING_STRAIN];
+    constitutiveInputMap[Constitutive::eInput::CRACK_PHASE_FIELD];
 
     return constitutiveInputMap;
 }
 
-NuTo::Error::eError NuTo::PhaseField::Evaluate1D(ElementBase* rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
+NuTo::eError NuTo::PhaseField::Evaluate1D(ElementBase* rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }
@@ -83,12 +91,12 @@ double NuTo::PhaseField::CalculateComponentsSpectralDecompositionDStressDStrain(
     const Eigen::Matrix<double,2,1> eigenVec01 = rEigenSolver.eigenvectors().col(1);
 
 
-    const double eigenVal00         = rEigenSolver.eigenvalues().at(0,0);
-    const double eigenVal01         = rEigenSolver.eigenvalues().at(1,0);
+    const double eigenVal00         = rEigenSolver.eigenvalues()(0,0);
+    const double eigenVal01         = rEigenSolver.eigenvalues()(1,0);
     const double traceStrain        = eigenVal00 + eigenVal01;
 
 
-    double Cijkl        =      mLameLambda * rStepFunction(traceStrain) * kroneckerDelta.at(i,j) * kroneckerDelta.at(k,l)
+    double Cijkl        =      mLameLambda * rStepFunction(traceStrain) * kroneckerDelta(i,j) * kroneckerDelta(k,l)
                              + 2 * mLameMu * rStepFunction(eigenVal00)  * eigenVec00[i] * eigenVec00[j] * eigenVec00[k] * eigenVec00[l]
                              + 2 * mLameMu * rStepFunction(eigenVal01)  * eigenVec01[i] * eigenVec01[j] * eigenVec01[k] * eigenVec01[l];
 
@@ -204,8 +212,8 @@ void NuTo::PhaseField::CalculateSpectralDecompositionDStressDStrain(Constitutive
 double NuTo::PhaseField::Evaluate2DIsotropic(const ConstitutiveStaticDataHistoryVariableScalar& rOldStaticData, const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
 {
 
-    const auto& engineeringStrain   = rConstitutiveInput.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
-    const auto& damage              = *rConstitutiveInput.at(Constitutive::Input::CRACK_PHASE_FIELD);
+    const auto& engineeringStrain   = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
+    const auto& damage              = *rConstitutiveInput.at(Constitutive::eInput::CRACK_PHASE_FIELD);
 
     // calculate coefficients
     double C11, C12, C33;
@@ -231,7 +239,7 @@ double NuTo::PhaseField::Evaluate2DIsotropic(const ConstitutiveStaticDataHistory
     {
         switch (itOutput.first)
         {
-        case NuTo::Constitutive::Output::ENGINEERING_STRESS:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS:
         {
             ConstitutiveIOBase& engineeringStress = *itOutput.second;
             engineeringStress.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
@@ -243,7 +251,7 @@ double NuTo::PhaseField::Evaluate2DIsotropic(const ConstitutiveStaticDataHistory
 
             break;
         }
-        case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
         {
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsMatrix<3,3>(itOutput.first, __PRETTY_FUNCTION__);
@@ -265,7 +273,7 @@ double NuTo::PhaseField::Evaluate2DIsotropic(const ConstitutiveStaticDataHistory
 
             break;
         }
-        case NuTo::Constitutive::Output::ENGINEERING_STRESS_VISUALIZE:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
         {
             ConstitutiveIOBase& engineeringStress3D = *itOutput.second;
             engineeringStress3D.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
@@ -284,13 +292,13 @@ double NuTo::PhaseField::Evaluate2DIsotropic(const ConstitutiveStaticDataHistory
             break;
         }
 
-        case NuTo::Constitutive::Output::ENGINEERING_STRAIN_VISUALIZE:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
         {
-            itOutput.second->AsEngineeringStrain3D() = engineeringStrain.As3D(mPoissonsRatio, Section::PLANE_STRAIN);
+            itOutput.second->AsEngineeringStrain3D() = engineeringStrain.As3D(mPoissonsRatio, eSectionType::PLANE_STRAIN);
             break;
         }
 
-        case NuTo::Constitutive::Output::ELASTIC_ENERGY_DAMAGED_PART:
+        case NuTo::Constitutive::eOutput::ELASTIC_ENERGY_DAMAGED_PART:
         {
 
             ConstitutiveIOBase& elasticEnergyLoadTerm = *itOutput.second;
@@ -300,7 +308,7 @@ double NuTo::PhaseField::Evaluate2DIsotropic(const ConstitutiveStaticDataHistory
             break;
         }
 
-        case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_PHASE_FIELD:
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_PHASE_FIELD:
         {
 
             ConstitutiveIOBase& dStressDPhaseField = *itOutput.second;
@@ -318,7 +326,7 @@ double NuTo::PhaseField::Evaluate2DIsotropic(const ConstitutiveStaticDataHistory
             break;
         }
 
-        case NuTo::Constitutive::Output::D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN:
+        case NuTo::Constitutive::eOutput::D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN:
         {
             // the tangent  is equal to the damaged part of the engineering stress for loading and zero for unloading
             ConstitutiveIOBase& tangent = *itOutput.second;
@@ -341,13 +349,13 @@ double NuTo::PhaseField::Evaluate2DIsotropic(const ConstitutiveStaticDataHistory
             break;
         }
 
-        case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
         {
             throw MechanicsException(__PRETTY_FUNCTION__,"tmp_static_data has to be updated without any other outputs, call it separately.");
         }
             continue;
 
-        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
         {
             performUpdateAtEnd = true;
 
@@ -387,8 +395,8 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const Consti
 
     constexpr double residualEnergyDensity = 1.e-8;
 
-    const auto& engineeringStrain   = rConstitutiveInput.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
-    const auto& damage              = *rConstitutiveInput.at(Constitutive::Input::CRACK_PHASE_FIELD);
+    const auto& engineeringStrain   = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
+    const auto& damage              = *rConstitutiveInput.at(Constitutive::eInput::CRACK_PHASE_FIELD);
 
 
 
@@ -404,8 +412,8 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const Consti
 
     Eigen::SelfAdjointEigenSolver<Matrix2d> eigenSolver(strainMatrix);
 
-    const double    eigenVal00 = eigenSolver.eigenvalues().at(0,0);
-    const double    eigenVal01 = eigenSolver.eigenvalues().at(1,0);
+    const double    eigenVal00 = eigenSolver.eigenvalues()(0,0);
+    const double    eigenVal01 = eigenSolver.eigenvalues()(1,0);
 
     const Vector2d  eigenVec00 = eigenSolver.eigenvectors().col(0);
     const Vector2d  eigenVec01 = eigenSolver.eigenvectors().col(1);
@@ -429,7 +437,7 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const Consti
     {
         switch (itOutput.first)
         {
-        case NuTo::Constitutive::Output::ENGINEERING_STRESS:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS:
         {
             ConstitutiveIOBase& engineeringStress = *itOutput.second;
             engineeringStress.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
@@ -444,7 +452,7 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const Consti
 
             break;
         }
-        case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
         {
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsMatrix<3,3>(itOutput.first, __PRETTY_FUNCTION__);
@@ -456,7 +464,7 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const Consti
             break;
         }
 
-        case NuTo::Constitutive::Output::ENGINEERING_STRESS_VISUALIZE:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
         {
             ConstitutiveIOBase& engineeringStress3D = *itOutput.second;
             engineeringStress3D.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
@@ -466,13 +474,13 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const Consti
             break;
         }
 
-        case NuTo::Constitutive::Output::ENGINEERING_STRAIN_VISUALIZE:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
         {
             throw MechanicsException(__PRETTY_FUNCTION__,"Visualization of strain not implemented for the anisotropic phase-field model!");
             break;
         }
 
-        case NuTo::Constitutive::Output::ELASTIC_ENERGY_DAMAGED_PART:
+        case NuTo::Constitutive::eOutput::ELASTIC_ENERGY_DAMAGED_PART:
         {
             ConstitutiveIOBase& elasticEnergyLoadTerm = *itOutput.second;
             elasticEnergyLoadTerm[0] =  currentStaticData.GetHistoryVariable();
@@ -480,7 +488,7 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const Consti
             break;
         }
 
-        case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_PHASE_FIELD:
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_PHASE_FIELD:
         {
 
             ConstitutiveIOBase& dStressDPhaseFieldVoigt = *itOutput.second;
@@ -488,14 +496,14 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const Consti
 
             const double factor = -2*(1-damage[0]);
 
-            dStressDPhaseFieldVoigt[0] = factor * stressPlus.at(0,0);
-            dStressDPhaseFieldVoigt[1] = factor * stressPlus.at(1,1);
-            dStressDPhaseFieldVoigt[2] = factor * stressPlus.at(1,0);
+            dStressDPhaseFieldVoigt[0] = factor * stressPlus(0,0);
+            dStressDPhaseFieldVoigt[1] = factor * stressPlus(1,1);
+            dStressDPhaseFieldVoigt[2] = factor * stressPlus(1,0);
 
             break;
         }
 
-        case NuTo::Constitutive::Output::D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN:
+        case NuTo::Constitutive::eOutput::D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN:
         {
 
             ConstitutiveIOBase& tangent = *itOutput.second;
@@ -503,9 +511,9 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const Consti
 
             if (elasticEnergyPlus == currentStaticData.GetHistoryVariable())
             {
-                tangent[0] = stressPlus.at(0,0);
-                tangent[1] = stressPlus.at(1,1);
-                tangent[2] = stressPlus.at(1,0);
+                tangent[0] = stressPlus(0,0);
+                tangent[1] = stressPlus(1,1);
+                tangent[2] = stressPlus(1,0);
             } else
             {
                 // unloading
@@ -515,13 +523,13 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const Consti
             break;
         }
 
-        case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
         {
             throw MechanicsException(__PRETTY_FUNCTION__,"tmp_static_data has to be updated without any other outputs, call it separately.");
         }
             continue;
 
-        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
         {
             performUpdateAtEnd = true;
 
@@ -547,13 +555,13 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const Consti
 }
 
 
-NuTo::Error::eError NuTo::PhaseField::Evaluate2D(ElementBase* rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
+NuTo::eError NuTo::PhaseField::Evaluate2D(ElementBase* rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
 {
 
-    if (rElement->GetSection()->GetType() != Section::PLANE_STRAIN)
+    if (rElement->GetSection()->GetType() != eSectionType::PLANE_STRAIN)
         throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "[ Invalid type of 2D section behavior found!!!");
 
-    auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::Input::CALCULATE_STATIC_DATA);
+    auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
     if (itCalculateStaticData == rConstitutiveInput.end())
         throw MechanicsException(__PRETTY_FUNCTION__, "You need to specify the way the static data should be calculated (input list).");
 
@@ -583,10 +591,10 @@ NuTo::Error::eError NuTo::PhaseField::Evaluate2D(ElementBase* rElement, int rIp,
 
     // update history variables
     rElement->GetStaticData(rIp)->AsHistoryVariableScalar()->SetHistoryVariable(staticData);
-    return Error::SUCCESSFUL;
+    return eError::SUCCESSFUL;
 }
 
-NuTo::Error::eError NuTo::PhaseField::Evaluate3D(ElementBase* rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
+NuTo::eError NuTo::PhaseField::Evaluate3D(ElementBase* rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }
@@ -620,10 +628,10 @@ bool NuTo::PhaseField::CheckDofCombinationComputable(Node::eDof rDofRow, Node::e
     case 0:
         switch (Node::CombineDofs(rDofRow, rDofCol))
         {
-        case Node::CombineDofs(Node::DISPLACEMENTS, Node::DISPLACEMENTS):
-        case Node::CombineDofs(Node::DISPLACEMENTS, Node::CRACKPHASEFIELD):
-        case Node::CombineDofs(Node::CRACKPHASEFIELD, Node::DISPLACEMENTS):
-        case Node::CombineDofs(Node::CRACKPHASEFIELD, Node::CRACKPHASEFIELD):
+        case Node::CombineDofs(Node::eDof::DISPLACEMENTS,   Node::eDof::DISPLACEMENTS):
+        case Node::CombineDofs(Node::eDof::DISPLACEMENTS,   Node::eDof::CRACKPHASEFIELD):
+        case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::DISPLACEMENTS):
+        case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::CRACKPHASEFIELD):
             return true;
         default:
             return false;
@@ -632,7 +640,7 @@ bool NuTo::PhaseField::CheckDofCombinationComputable(Node::eDof rDofRow, Node::e
     case 1:
         switch (Node::CombineDofs(rDofRow, rDofCol))
         {
-        case Node::CombineDofs(Node::CRACKPHASEFIELD, Node::CRACKPHASEFIELD):
+        case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::CRACKPHASEFIELD):
             return true;
         default:
             return false;
@@ -686,7 +694,7 @@ bool NuTo::PhaseField::CheckElementCompatibility(Element::eElementType rElementT
 {
     switch (rElementType)
     {
-    case NuTo::Element::CONTINUUMELEMENT:
+    case NuTo::Element::eElementType::CONTINUUMELEMENT:
         return true;
     default:
         return false;

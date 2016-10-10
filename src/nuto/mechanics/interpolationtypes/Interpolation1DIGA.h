@@ -20,7 +20,7 @@ public:
     // --- Integration --- //
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type
-    IntegrationType::eIntegrationType GetStandardIntegrationType() const override;
+    eIntegrationType GetStandardIntegrationType() const override;
 
     //! @brief stores the integration point coordinates
     void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType) override;

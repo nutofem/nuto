@@ -2,70 +2,99 @@
 
 #pragma once
 
-#include <map>
-#include <set>
-#include <array>
 #include <functional>
-#include <string>
+#include <list>
+#include <map>
 #include <memory>
+#include <set>
+#include <string>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include <boost/ptr_container/ptr_map.hpp>
-#include <boost/ptr_container/ptr_list.hpp>
 
-
-#include "nuto/base/Logger.h"
+// parent class
 #include "nuto/base/NuToObject.h"
-#include "nuto/math/FullMatrix_Def.h"
-#include "nuto/math/SparseMatrixCSRGeneral.h"
-#include "nuto/mechanics/constitutive/ConstitutiveBase.h"
-#include "nuto/mechanics/constraints/ConstraintBase.h"
-#include "nuto/mechanics/groups/GroupBase.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
-#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
-#include "nuto/mechanics/loads/LoadBase.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
-#include "nuto/mechanics/sections/SectionBase.h"
-#include "nuto/mechanics/sections/SectionEnum.h"
-#include "nuto/mechanics/structures/StructureBaseEnum.h"
 
-
-#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
-#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
-#include "nuto/mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
-#include "nuto/mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
+// class member
+#include <boost/ptr_container/ptr_map.hpp>
+#include "nuto/base/Logger.h"
+#include "nuto/math/FullVector_Def.h"
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
 #include "nuto/mechanics/dofSubMatrixStorage/DofStatus.h"
 
-#include "nuto/visualize/VisualizeBase.h"
+
+#include "nuto/mechanics/MechanicsException.h"
+
 
 
 namespace NuTo
 {
+class ConstitutiveBase;
+class ConstitutiveStaticDataMultiscale2DPlaneStrain;
+class ConstraintBase;
+class CrackBase;
 class ElementBase;
-class NodeBase;
+class EngineeringStrain2D;
+class GroupBase;
+class IntegrationTypeBase;
 class InterpolationBase;
 class InterpolationType;
-//template <typename T> class BlockFullMatrix;
-template<class T, int rows> class FullVector;
+class LoadBase;
+class NewtonRaphsonAuxRoutinesBase;
+class NodeBase;
+class SectionBase;
+class StructureOutputBase;
+class StructureOutputBlockMatrix;
+class StructureOutputBlockVector;
+class VisualizeComponent;
+class VisualizeUnstructuredGrid;
+template<typename T> class BlockFullMatrix;
+template<typename T> class BlockFullVector;
+template<typename IOEnum> class ConstitutiveIOMap;
+template<class T> class Group;
 template<class T, int rows, int cols> class FullMatrix;
+template<class T, int rows> class FullVector;
 template<class T> class SparseMatrixCSRSymmetric;
 template<class T> class SparseMatrixCSRGeneral;
 template<class T> class SparseMatrixCSRVector2General;
 template<class T> class SparseMatrixCSRVector2Symmetric;
-class EngineeringStrain2D;
-class NewtonRaphsonAuxRoutinesBase;
-class CrackBase;
-class ConstitutiveStaticDataMultiscale2DPlaneStrain;
-class StructureOutputBase;
 
-class VisualizeUnstructuredGrid;
-class VisualizeComponent;
+enum class eError;
+enum class eGroupId;
+enum class eIntegrationType;
+enum class eSectionType;
+enum class eStructureOutput;
+enum class eVisualizationType;
+enum class eVisualizeWhat;
+
+namespace Constitutive
+{
+    enum class eConstitutiveParameter;
+    enum class eConstitutiveType;
+    enum class eDamageLawType;
+    enum class eInput;
+    enum class eOutput;
+}// namespace Constitutive
+
+
+namespace Element
+{
+    enum class eOutput;
+}// namespace Element
+
+namespace IpData
+{
+    enum class eIpDataType;
+    enum class eIpStaticDataType;
+}// namespace IpData
+
+
+using ConstitutiveInputMap = ConstitutiveIOMap<Constitutive::eInput>;
+using ConstitutiveOutputMap = ConstitutiveIOMap<Constitutive::eOutput>;
 
 
 //! @author Jörg F. Unger, ISM
@@ -85,8 +114,7 @@ public:
     StructureBase(int mDimension);
 
     //! @brief deconstructor
-    virtual ~StructureBase()
-    {}
+    virtual ~StructureBase();
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -157,12 +185,12 @@ public:
     //! @brief Add rVisualizeComponent to an element group for the visualization
     //! @param rElementGroup: element group
     //! @param rVisualizeComponent: visualization component, i.e. displacements, stresses...
-    void AddVisualizationComponent(int rElementGroup, VisualizeBase::eVisualizeWhat rVisualizeComponent);
+    void AddVisualizationComponent(int rElementGroup, eVisualizeWhat rVisualizeComponent);
 
     //! @brief Set tje visualization type for an element group
     //! @param rElementGroup: element group
     //! @param rVisualizeComponent: visualization type, i.e. voronoi cell, extrapolated...
-    void SetVisualizationType(const int rElementGroup, const VisualizeBase::eVisualizationType rVisualizationType);
+    void SetVisualizationType(const int rElementGroup, const eVisualizationType rVisualizationType);
 
     //! @brief ... define the data sets (scalar, vector etc for the visualize routine based on the mVisualizecomponents for an element plot
     void DefineVisualizeElementData(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)const;
@@ -171,7 +199,10 @@ public:
     void DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)const;
 
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
-    void ElementVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList, const std::vector<ElementBase*>& rElements, const VisualizeBase::eVisualizationType rVisualizationType = VisualizeBase::VORONOI_CELL);
+    void ElementVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList, const std::vector<ElementBase*>& rElements);
+
+    //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
+    void ElementVectorAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList, const std::vector<ElementBase*>& rElements, const eVisualizationType rVisualizationType);
 
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
     void ElementTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList);
@@ -187,7 +218,7 @@ public:
 #ifndef SWIG
 
     //! @brief ... evaluates the structure
-    virtual void Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<StructureEnum::eOutput, StructureOutputBase*> &rStructureOutput);
+    virtual void Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<eStructureOutput, StructureOutputBase*> &rStructureOutput);
 
 
 #endif // SWIG
@@ -207,29 +238,14 @@ public:
 
 #ifndef SWIG
 
-    NuTo::StructureOutputBlockMatrix BuildGlobalHessian(StructureEnum::eOutput rOutput);
+    NuTo::StructureOutputBlockMatrix BuildGlobalHessian(eStructureOutput rOutput);
 
 #endif //SWIG
 
-    NuTo::StructureOutputBlockMatrix BuildGlobalHessian0()
-    {
-        return BuildGlobalHessian(StructureEnum::eOutput::HESSIAN0);
-    }
-
-    NuTo::StructureOutputBlockMatrix BuildGlobalHessian1()
-    {
-        return BuildGlobalHessian(StructureEnum::eOutput::HESSIAN1);
-    }
-
-    NuTo::StructureOutputBlockMatrix BuildGlobalHessian2()
-    {
-        return BuildGlobalHessian(StructureEnum::eOutput::HESSIAN2);
-    }
-
-    NuTo::StructureOutputBlockMatrix BuildGlobalHessian2Lumped()
-    {
-        return BuildGlobalHessian(StructureEnum::eOutput::HESSIAN2_LUMPED);
-    }
+    NuTo::StructureOutputBlockMatrix BuildGlobalHessian0();
+    NuTo::StructureOutputBlockMatrix BuildGlobalHessian1();
+    NuTo::StructureOutputBlockMatrix BuildGlobalHessian2();
+    NuTo::StructureOutputBlockMatrix BuildGlobalHessian2Lumped();
 
     NuTo::StructureOutputBlockVector BuildGlobalInternalGradient();
 
@@ -411,10 +427,7 @@ public:
 
     //! @brief extract dof values (e.g. displacements, temperatures to the nodes) (time derivative = 0)
     //! @return ... StructureBlockVector containing the dofs (J and K)
-    NuTo::StructureOutputBlockVector NodeExtractDofValues() const
-    {
-        return NodeExtractDofValues(0);
-    }
+    NuTo::StructureOutputBlockVector NodeExtractDofValues() const;
 
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
@@ -425,10 +438,7 @@ public:
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! @param rDofValues ... StructureBlockVector containing the dofs (J and K)
-    void NodeMergeDofValues(int rTimeDerivative, const NuTo::StructureOutputBlockVector& rDofValues)
-    {
-        NodeMergeDofValues(rTimeDerivative, rDofValues.J, rDofValues.K);
-    }
+    void NodeMergeDofValues(int rTimeDerivative, const NuTo::StructureOutputBlockVector& rDofValues);
 
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
@@ -527,17 +537,17 @@ public:
     //! @brief builds the element hessian0
     //! @param rElement ... element
     //! @return BlockFullMatrix containing the hessian
-    BlockFullMatrix<double> ElementBuildHessian0(ElementBase* rElement) { return ElementBuildHessian(Element::HESSIAN_0_TIME_DERIVATIVE, rElement); }
+    BlockFullMatrix<double> ElementBuildHessian0(ElementBase* rElement);
 
     //! @brief builds the element hessian1
     //! @param rElement ... element
     //! @return BlockFullMatrix containing the hessian
-    BlockFullMatrix<double> ElementBuildHessian1(ElementBase* rElement) { return ElementBuildHessian(Element::HESSIAN_1_TIME_DERIVATIVE, rElement); }
+    BlockFullMatrix<double> ElementBuildHessian1(ElementBase* rElement);
 
     //! @brief builds the element hessian2
     //! @param rElement ... element
     //! @return BlockFullMatrix containing the hessian
-    BlockFullMatrix<double> ElementBuildHessian2(ElementBase* rElement) { return ElementBuildHessian(Element::HESSIAN_2_TIME_DERIVATIVE, rElement); }
+    BlockFullMatrix<double> ElementBuildHessian2(ElementBase* rElement);
 
     //! @brief builds the element vector of global row dofs
     //! @param rElement ... element
@@ -553,9 +563,9 @@ public:
 
 #endif // SWIG
 
-    NuTo::BlockFullMatrix<double> ElementBuildHessian0        (int rElementId) { return ElementBuildHessian0 (ElementGetElementPtr(rElementId)); }
-    NuTo::BlockFullMatrix<double> ElementBuildHessian1        (int rElementId) { return ElementBuildHessian1 (ElementGetElementPtr(rElementId)); }
-    NuTo::BlockFullMatrix<double> ElementBuildHessian2        (int rElementId) { return ElementBuildHessian2 (ElementGetElementPtr(rElementId)); }
+    NuTo::BlockFullMatrix<double> ElementBuildHessian0        (int rElementId);
+    NuTo::BlockFullMatrix<double> ElementBuildHessian1        (int rElementId);
+    NuTo::BlockFullMatrix<double> ElementBuildHessian2        (int rElementId);
 
     NuTo::BlockFullVector<double> ElementBuildInternalGradient(int rElementId) { return ElementBuildInternalGradient(ElementGetElementPtr(rElementId)); }
     NuTo::BlockFullVector<int>    ElementBuildGlobalDofsRow   (int rElementId) { return ElementBuildGlobalDofsRow   (ElementGetElementPtr(rElementId)); }
@@ -656,42 +666,27 @@ public:
     //! @param rElemIdent  element number
     //! @param rType static ip data type
     //! @param rIPData matrix with (... x numIP), x varies depending on IPData type
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetStaticIPData(int rElementId, std::string rType)
-    {
-        return ElementGetStaticIPData(rElementId, IpData::IpStaticDataTypeToEnum(rType));
-    }
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetStaticIPData(int rElementId, std::string rType);
 
     //! @brief calculates the engineering strain
     //! @param rElemIdent  element number
     //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetEngineeringStrain(int rElementId)
-    {
-        return ElementGetStaticIPData(rElementId, IpData::ENGINEERING_STRAIN);
-    }
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetEngineeringStrain(int rElementId);
 
     //! @brief calculates the engineering plastic strain
     //! @param rElemIdent  element number
     //! @param rEngineerungStrain engineering plastic strain (return value, always 6xnumIp matrix)
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetEngineeringPlasticStrain(int rElementId)
-    {
-        return ElementGetStaticIPData(rElementId, IpData::ENGINEERING_PLASTIC_STRAIN);
-    }
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetEngineeringPlasticStrain(int rElementId);
 
     //! @brief calculates the engineering stress
     //! @param rElemIdent  element number
     //! @param rEingineeringStress Engineering Stress (return value, always 6xnumIp matrix)
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetEngineeringStress(int rElementId)
-    {
-        return ElementGetStaticIPData(rElementId, IpData::ENGINEERING_STRESS);
-    }
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetEngineeringStress(int rElementId);
 
     //! @brief calculates the damage
     //! @param rElemIdent  identifier for the element
     //! @param rDamage (return value, always 1xnumIp matrix)
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetDamage(int rElementId)
-    {
-        return ElementGetStaticIPData(rElementId, IpData::DAMAGE);
-    }
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetDamage(int rElementId);
 
     //! @brief calculates the global integration point coordinates
     //! @param rElemIdent  identifier for the element
@@ -713,11 +708,11 @@ public:
     void ElementGroupAllocateAdditionalStaticData(int rElementGroupId, int rNumAdditionalStaticData);
 
     //! @brief updates the history data of a all elements
-    NuTo::Error::eError ElementTotalUpdateStaticData();
+    NuTo::eError ElementTotalUpdateStaticData();
 
     //! @brief updates the temprory static data of a all elements
     //! its is a const function, since only mutuable data (instead of const) is updated (kind of temporary data)
-    NuTo::Error::eError ElementTotalUpdateTmpStaticData();
+    NuTo::eError ElementTotalUpdateTmpStaticData();
 
     //! @brief saves static data of a all elements
     void ElementTotalSaveStaticData();
@@ -945,7 +940,7 @@ public:
     //! @brief returns the number of constraint equations for a specific dof type
     //! @return number of constraints
     //! @param rDofType  dof type
-    int ConstraintGetNumLinearConstraints(std::string rDof) const {return ConstraintGetNumLinearConstraints(Node::DofToEnum(rDof));}
+    int ConstraintGetNumLinearConstraints(std::string rDof) const;
 
 
     //! @brief calculates the constraint matrix that builds relations between the nodal degrees of freedom (before gauss elimination)
@@ -1308,10 +1303,7 @@ public:
 
     //! @brief ... set damage law
     //! @param rDamageLaw ... damage law
-    void ConstitutiveLawSetDamageLaw(int rIdent, std::string rDamageLaw)
-    {
-        ConstitutiveLawSetDamageLaw(rIdent, Constitutive::DamageLawToEnum(rDamageLaw));
-    }
+    void ConstitutiveLawSetDamageLaw(int rIdent, std::string rDamageLaw);
 
 
 
@@ -1424,7 +1416,7 @@ public:
     //! @brief ... create a new section
     //! @param rIdent ... section identifier
     //! @param rType ... section type
-    int SectionCreate(Section::eSectionType rType);
+    int SectionCreate(eSectionType rType);
 
     //! @brief ... get the pointer to a section from the section identifier
     //! @param rIdent ... section identifier
@@ -1469,12 +1461,12 @@ public:
     //! @brief ... Creates a group for the structure
     //! @param ... rType  type of the group, e.g. "NODES" or "ELEMENTS"
     //! @return ... rIdent identifier for the group
-    int GroupCreate(NuTo::Groups::eGroupId rEnumType);
+    int GroupCreate(NuTo::eGroupId rEnumType);
 
     //! @brief ... Creates a group for the structure
     //! @param ... rIdent identifier for the group
     //! @param ... rType  type of the group
-    void GroupCreate(int id, NuTo::Groups::eGroupId rEnumType);
+    void GroupCreate(int id, NuTo::eGroupId rEnumType);
 #endif
 
     //! @brief ... Creates a group for the structure
@@ -1600,7 +1592,7 @@ public:
     //! @brief ... Returns a pointer to an integration type
     //! if the integration type does not exist (in the map), the integration type is created
     //! @param identIntegrationType Identifier for an integration type
-    NuTo::IntegrationTypeBase* GetPtrIntegrationType(NuTo::IntegrationType::eIntegrationType rIdentIntegrationType);
+    NuTo::IntegrationTypeBase* GetPtrIntegrationType(NuTo::eIntegrationType rIdentIntegrationType);
 #endif //SWIG
 
     //*************************************************
@@ -1890,7 +1882,7 @@ protected:
     std::map<int, std::list<std::shared_ptr<VisualizeComponent>>> mGroupVisualizeComponentsMap;
 
     //! @brief ... map storing the type of visualization for the output (VTK) file
-    std::map<int, VisualizeBase::eVisualizationType> mGroupVisualizationType;
+    std::map<int, eVisualizationType> mGroupVisualizationType;
 
     //! @brief summarizes information to dof numbering, active dof types, symmetric dof types, constant dof types
     DofStatus mDofStatus;

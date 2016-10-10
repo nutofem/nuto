@@ -1,9 +1,13 @@
 #include "ShrinkageCapillaryStressBased.h"
 
 
-
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
+#include "nuto/base/ErrorEnum.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/physics/PhysicalConstantsSI.h"
 #include "nuto/physics/PhysicalEquationsSI.h"
 
@@ -14,12 +18,25 @@
 bool NuTo::ShrinkageCapillaryStressBased::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
 {
     if(rTimeDerivative == 0 &&
-       rDofRow == Node::DISPLACEMENTS &&
-       (rDofCol == Node::RELATIVEHUMIDITY || rDofCol == Node::WATERVOLUMEFRACTION))
+       rDofRow == Node::eDof::DISPLACEMENTS &&
+       (rDofCol == Node::eDof::RELATIVEHUMIDITY || rDofCol == Node::eDof::WATERVOLUMEFRACTION))
     {
         return true;
     }
     return false;
+}
+
+bool NuTo::ShrinkageCapillaryStressBased::CheckElementCompatibility(NuTo::Element::eElementType rElementType) const
+{
+    switch (rElementType)
+    {
+    case NuTo::Element::eElementType::CONTINUUMELEMENT:
+    case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENT:
+    case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
+        return true;
+    default:
+        return false;
+    }
 }
 
 void NuTo::ShrinkageCapillaryStressBased::CheckParameters() const
@@ -39,11 +56,11 @@ NuTo::ConstitutiveInputMap NuTo::ShrinkageCapillaryStressBased::GetConstitutiveI
     {
         switch (itOutput.first)
         {
-        case Constitutive::Output::ENGINEERING_STRESS:
-        case Constitutive::Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
-        case Constitutive::Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:
-            constitutiveInputMap[Constitutive::Input::RELATIVE_HUMIDITY];
-            constitutiveInputMap[Constitutive::Input::WATER_VOLUME_FRACTION];
+        case Constitutive::eOutput::ENGINEERING_STRESS:
+        case Constitutive::eOutput::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
+        case Constitutive::eOutput::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:
+            constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY];
+            constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION];
             return constitutiveInputMap;
 
         default:
@@ -51,6 +68,11 @@ NuTo::ConstitutiveInputMap NuTo::ShrinkageCapillaryStressBased::GetConstitutiveI
         }
     }
     return constitutiveInputMap;
+}
+
+NuTo::Constitutive::eConstitutiveType NuTo::ShrinkageCapillaryStressBased::GetType() const
+{
+    return NuTo::Constitutive::eConstitutiveType::SHRINKAGE_CAPILLARY_STRESS_BASED;
 }
 
 double NuTo::ShrinkageCapillaryStressBased::GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
@@ -77,7 +99,7 @@ void NuTo::ShrinkageCapillaryStressBased::SetParameterDouble(NuTo::Constitutive:
 }
 
 template <int TDim>
-NuTo::Error::eError NuTo::ShrinkageCapillaryStressBased::EvaluateShrinkageCapillary(NuTo::ElementBase *rElement,
+NuTo::eError NuTo::ShrinkageCapillaryStressBased::EvaluateShrinkageCapillary(NuTo::ElementBase *rElement,
                                                                                     int rIp,
                                                                                     const NuTo::ConstitutiveInputMap &rConstitutiveInput,
                                                                                     const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
@@ -90,11 +112,11 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStressBased::EvaluateShrinkageCapill
     {
         switch(itInput.first)
         {
-        case Constitutive::Input::RELATIVE_HUMIDITY:
+        case Constitutive::eInput::RELATIVE_HUMIDITY:
             relativeHumidity     = (*itInput.second)[0];
             break;
 
-        case Constitutive::Input::WATER_VOLUME_FRACTION:
+        case Constitutive::eInput::WATER_VOLUME_FRACTION:
             waterVolumeFraction  = (*itInput.second)[0];
             break;
 
@@ -109,7 +131,7 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStressBased::EvaluateShrinkageCapill
 
         switch(itOutput.first)
         {
-        case NuTo::Constitutive::Output::ENGINEERING_STRESS:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS:
         {
             //Asserts
             itOutput.second->AssertIsVector<VoigtDim>(itOutput.first,__PRETTY_FUNCTION__);
@@ -131,7 +153,7 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStressBased::EvaluateShrinkageCapill
             break;
         }
 
-        case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
         {
             assert(relativeHumidity    > std::numeric_limits<double>::min());
             assert(waterVolumeFraction > std::numeric_limits<double>::min());
@@ -148,7 +170,7 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStressBased::EvaluateShrinkageCapill
             break;
         }
 
-        case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:
         {
             assert(relativeHumidity    > std::numeric_limits<double>::min());
 
@@ -168,5 +190,5 @@ NuTo::Error::eError NuTo::ShrinkageCapillaryStressBased::EvaluateShrinkageCapill
         }
         itOutput.second->SetIsCalculated(true);
     }
-    return Error::SUCCESSFUL;
+    return eError::SUCCESSFUL;
 }

@@ -3,6 +3,9 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss5Ip.h"
 #include <assert.h>
 
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
+#endif // ENABLE_VISUALIZE
 
 // constructor
 NuTo::IntegrationType1D2NGauss5Ip::IntegrationType1D2NGauss5Ip()
@@ -84,7 +87,7 @@ void NuTo::IntegrationType1D2NGauss5Ip::GetVisualizationCells(
     unsigned int& NumVisualizationPoints,
     std::vector<double>& VisualizationPointLocalCoordinates,
     unsigned int& NumVisualizationCells,
-    std::vector<NuTo::CellBase::eCellTypes>& VisualizationCellType,
+    std::vector<NuTo::eCellTypes>& VisualizationCellType,
     std::vector<unsigned int>& VisualizationCellsIncidence,
     std::vector<unsigned int>& VisualizationCellsIP) const
 {
@@ -95,10 +98,10 @@ void NuTo::IntegrationType1D2NGauss5Ip::GetVisualizationCells(
     VisualizationPointLocalCoordinates.push_back(0.444444);
     VisualizationPointLocalCoordinates.push_back(1);
     NumVisualizationCells = 4;
-    VisualizationCellType.push_back(NuTo::CellBase::LINE);
-    VisualizationCellType.push_back(NuTo::CellBase::LINE);
-    VisualizationCellType.push_back(NuTo::CellBase::LINE);
-    VisualizationCellType.push_back(NuTo::CellBase::LINE);
+    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
+    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
+    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
+    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
     VisualizationCellsIncidence.push_back(0);
     VisualizationCellsIncidence.push_back(1);
     VisualizationCellsIncidence.push_back(1);

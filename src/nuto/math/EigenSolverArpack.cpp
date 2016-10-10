@@ -165,16 +165,16 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
 			solverRequired = true;
 			switch (rK.GetSparseMatrixType())
 			{
-			case SparseMatrixEnum::CSRGENERAL:
+			case eSparseMatrixType::CSRGENERAL:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not possible.");
 			break;
-			case SparseMatrixEnum::CSRSYMMETRIC:
+			case eSparseMatrixType::CSRSYMMETRIC:
 				solveMatrix = new NuTo::SparseMatrixCSRSymmetric<double>(rK.AsSparseMatrixCSRSymmetric());
 			break;
-			case SparseMatrixEnum::CSRVECTOR2GENERAL:
+			case eSparseMatrixType::CSRVECTOR2GENERAL:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not possible.");
 			break;
-			case SparseMatrixEnum::CSRVECTOR2SYMMETRIC:
+			case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
 				solveMatrix = new NuTo::SparseMatrixCSRSymmetric<double>(rK.AsSparseMatrixCSRVector2Symmetric());
 			break;
 			default:
@@ -194,16 +194,16 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
 				throw MathException("[NuTo::EigenSolverArpack::Solve] second matrix (M) required.");
 			switch (rM->GetSparseMatrixType())
 			{
-			case SparseMatrixEnum::CSRGENERAL:
+			case eSparseMatrixType::CSRGENERAL:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
 			break;
-			case SparseMatrixEnum::CSRSYMMETRIC:
+			case eSparseMatrixType::CSRSYMMETRIC:
 				solveMatrix = new NuTo::SparseMatrixCSRSymmetric<double>(rM->AsSparseMatrixCSRSymmetric());
 			break;
-			case SparseMatrixEnum::CSRVECTOR2GENERAL:
+			case eSparseMatrixType::CSRVECTOR2GENERAL:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
 			break;
-			case SparseMatrixEnum::CSRVECTOR2SYMMETRIC:
+			case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
 				solveMatrix = new NuTo::SparseMatrixCSRSymmetric<double>(rM->AsSparseMatrixCSRVector2Symmetric());
 			break;
 			default:
@@ -219,16 +219,16 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
 
 			switch (rK.GetSparseMatrixType())
 			{
-			case SparseMatrixEnum::CSRGENERAL:
+			case eSparseMatrixType::CSRGENERAL:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
 			break;
-			case SparseMatrixEnum::CSRSYMMETRIC:
+			case eSparseMatrixType::CSRSYMMETRIC:
 				solveMatrix = new NuTo::SparseMatrixCSRSymmetric<double>(rK.AsSparseMatrixCSRSymmetric());
 			break;
-			case SparseMatrixEnum::CSRVECTOR2GENERAL:
+			case eSparseMatrixType::CSRVECTOR2GENERAL:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
 			break;
-			case SparseMatrixEnum::CSRVECTOR2SYMMETRIC:
+			case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
 				solveMatrix = new NuTo::SparseMatrixCSRSymmetric<double>(rK.AsSparseMatrixCSRVector2Symmetric());
 			break;
 			default:
@@ -237,16 +237,16 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
 			//subtract shift
 			switch (rM->GetSparseMatrixType())
 			{
-			case SparseMatrixEnum::CSRGENERAL:
+			case eSparseMatrixType::CSRGENERAL:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
 			break;
-			case SparseMatrixEnum::CSRSYMMETRIC:
+			case eSparseMatrixType::CSRSYMMETRIC:
 				(*solveMatrix) += rM->AsSparseMatrixCSRSymmetric()*(-mSigmaR);
 			break;
-			case SparseMatrixEnum::CSRVECTOR2GENERAL:
+			case eSparseMatrixType::CSRVECTOR2GENERAL:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
 			break;
-			case SparseMatrixEnum::CSRVECTOR2SYMMETRIC:
+			case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
 				(*solveMatrix) += rM->AsSparseMatrixCSRVector2Symmetric()*(-mSigmaR);
 			break;
 			default:
@@ -262,16 +262,16 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
 
 			switch (rK.GetSparseMatrixType())
 			{
-			case SparseMatrixEnum::CSRGENERAL:
+			case eSparseMatrixType::CSRGENERAL:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
 			break;
-			case SparseMatrixEnum::CSRSYMMETRIC:
+			case eSparseMatrixType::CSRSYMMETRIC:
 				solveMatrix = new NuTo::SparseMatrixCSRSymmetric<double>(rK.AsSparseMatrixCSRSymmetric());
 			break;
-			case SparseMatrixEnum::CSRVECTOR2GENERAL:
+			case eSparseMatrixType::CSRVECTOR2GENERAL:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
 			break;
-			case SparseMatrixEnum::CSRVECTOR2SYMMETRIC:
+			case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
 				solveMatrix = new NuTo::SparseMatrixCSRSymmetric<double>(rK.AsSparseMatrixCSRVector2Symmetric());
 			break;
 			default:
@@ -280,16 +280,16 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
 			//subtract shift
 			switch (rM->GetSparseMatrixType())
 			{
-			case SparseMatrixEnum::CSRGENERAL:
+			case eSparseMatrixType::CSRGENERAL:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
 			break;
-			case SparseMatrixEnum::CSRSYMMETRIC:
+			case eSparseMatrixType::CSRSYMMETRIC:
 				(*solveMatrix) += rM->AsSparseMatrixCSRSymmetric()*(-mSigmaR);
 			break;
-			case SparseMatrixEnum::CSRVECTOR2GENERAL:
+			case eSparseMatrixType::CSRVECTOR2GENERAL:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
 			break;
-			case SparseMatrixEnum::CSRVECTOR2SYMMETRIC:
+			case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
 				(*solveMatrix) += rM->AsSparseMatrixCSRVector2Symmetric()*(-mSigmaR);
 			break;
 			default:
@@ -305,16 +305,16 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
 
 			switch (rK.GetSparseMatrixType())
 			{
-			case SparseMatrixEnum::CSRGENERAL:
+			case eSparseMatrixType::CSRGENERAL:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
 			break;
-			case SparseMatrixEnum::CSRSYMMETRIC:
+			case eSparseMatrixType::CSRSYMMETRIC:
 				solveMatrix = new NuTo::SparseMatrixCSRSymmetric<double>(rK.AsSparseMatrixCSRSymmetric());
 			break;
-			case SparseMatrixEnum::CSRVECTOR2GENERAL:
+			case eSparseMatrixType::CSRVECTOR2GENERAL:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
 			break;
-			case SparseMatrixEnum::CSRVECTOR2SYMMETRIC:
+			case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
 				solveMatrix = new NuTo::SparseMatrixCSRSymmetric<double>(rK.AsSparseMatrixCSRVector2Symmetric());
 			break;
 			default:
@@ -323,16 +323,16 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
 			//subtract shift
 			switch (rM->GetSparseMatrixType())
 			{
-			case SparseMatrixEnum::CSRGENERAL:
+			case eSparseMatrixType::CSRGENERAL:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRGENERAL to SparseMatrixCSRSymmetric not implemented.");
 			break;
-			case SparseMatrixEnum::CSRSYMMETRIC:
+			case eSparseMatrixType::CSRSYMMETRIC:
 				(*solveMatrix) += rM->AsSparseMatrixCSRSymmetric()*(-mSigmaR);
 			break;
-			case SparseMatrixEnum::CSRVECTOR2GENERAL:
+			case eSparseMatrixType::CSRVECTOR2GENERAL:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRVECTOR2GENERAL to SparseMatrixCSRSymmetric not implemented.");
 			break;
-			case SparseMatrixEnum::CSRVECTOR2SYMMETRIC:
+			case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
 				(*solveMatrix) += rM->AsSparseMatrixCSRVector2Symmetric()*(-mSigmaR);
 			break;
 			default:
@@ -361,16 +361,16 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
 			solverRequired = true;
 			switch (rK.GetSparseMatrixType())
 			{
-			case SparseMatrixEnum::CSRGENERAL:
+			case eSparseMatrixType::CSRGENERAL:
 				solveMatrix = new NuTo::SparseMatrixCSRGeneral<double>(rK.AsSparseMatrixCSRGeneral());
 			break;
-			case SparseMatrixEnum::CSRSYMMETRIC:
+			case eSparseMatrixType::CSRSYMMETRIC:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRSYMMETRIC to SparseMatrixCSRGeneral not possible.");
 			break;
-			case SparseMatrixEnum::CSRVECTOR2GENERAL:
+			case eSparseMatrixType::CSRVECTOR2GENERAL:
 				solveMatrix = new NuTo::SparseMatrixCSRGeneral<double>(rK.AsSparseMatrixCSRVector2General());
 			break;
-			case SparseMatrixEnum::CSRVECTOR2SYMMETRIC:
+			case eSparseMatrixType::CSRVECTOR2SYMMETRIC:
 				throw MathException("[NuTo::EigenSolverArpack::Solve] Conversion from CSRVECTOR2SYMMETRIC to SparseMatrixCSRGeneral not possible.");
 			break;
 			default:

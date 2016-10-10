@@ -10,16 +10,21 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "nuto/mechanics/constitutive/laws/EngineeringStressHelper.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/EquivalentStrain.h"
 #include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataGradientDamage.h"
 
+#include "nuto/base/ErrorEnum.h"
 #include "nuto/base/Logger.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
@@ -81,23 +86,23 @@ NuTo::ConstitutiveInputMap NuTo::GradientDamageEngineeringStress::GetConstitutiv
     ConstitutiveInputMap constitutiveInputMap;
 
     // Always allocate these two guys. For a dof separated approach, this could be handled more efficiently.
-    constitutiveInputMap[Constitutive::Input::ENGINEERING_STRAIN];
-    constitutiveInputMap[Constitutive::Input::NONLOCAL_EQ_STRAIN];
+    constitutiveInputMap[Constitutive::eInput::ENGINEERING_STRAIN];
+    constitutiveInputMap[Constitutive::eInput::NONLOCAL_EQ_STRAIN];
 
     return constitutiveInputMap;
 }
 
-NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
+NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
         ElementBase* rElement, int rIp,
         const ConstitutiveInputMap& rConstitutiveInput,
         const ConstitutiveOutputMap& rConstitutiveOutput)
 {
-    if (rElement->GetSection()->GetType() != Section::TRUSS)
+    if (rElement->GetSection()->GetType() != eSectionType::TRUSS)
         throw MechanicsException(__PRETTY_FUNCTION__, "only truss sections are implemented.");
 
     // get constitutive inputs
-    const auto& engineeringStrain = rConstitutiveInput.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain1D();
-    const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::Input::NONLOCAL_EQ_STRAIN);
+    const auto& engineeringStrain = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain1D();
+    const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN);
 
     auto elasticEngineeringStrain = EngineeringStressHelper::CalculateElasticEngineeringStrain<1>(engineeringStrain, *rElement->GetInterpolationType(), rConstitutiveInput, mThermalExpansionCoefficient);
 
@@ -113,7 +118,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
     {
         switch (itOutput.first)
         {
-        case NuTo::Constitutive::Output::ENGINEERING_STRESS:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS:
         {
             ConstitutiveIOBase& engineeringStress = *itOutput.second;
             engineeringStress.AssertIsVector<1>(itOutput.first, __PRETTY_FUNCTION__);
@@ -122,7 +127,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
             break;
         }
 
-        case NuTo::Constitutive::Output::LOCAL_EQ_STRAIN:
+        case NuTo::Constitutive::eOutput::LOCAL_EQ_STRAIN:
         {
             ConstitutiveIOBase& localEqStrainOut = *itOutput.second;
             localEqStrainOut.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
@@ -131,7 +136,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
             break;
         }
 
-        case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
         {
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsMatrix<1,1>(itOutput.first, __PRETTY_FUNCTION__);
@@ -140,7 +145,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
             break;
         }
 
-        case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN:
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN:
         {
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsVector<1>(itOutput.first, __PRETTY_FUNCTION__);
@@ -157,7 +162,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
             break;
         }
 
-        case NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_D_STRAIN:
+        case NuTo::Constitutive::eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN:
         {
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsVector<1>(itOutput.first, __PRETTY_FUNCTION__);
@@ -165,7 +170,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
             break;
         }
 
-        case NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_XI_D_STRAIN:
+        case NuTo::Constitutive::eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN:
         {
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsVector<1>(itOutput.first, __PRETTY_FUNCTION__);
@@ -173,7 +178,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
             tangent[0] = CalculateLocalEqStrainXiFactor(localEqStrain, nonlocalEqStrain[0]) * eeq.GetDerivative()[0];
             break;
         }
-        case NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI:
+        case NuTo::Constitutive::eOutput::NONLOCAL_PARAMETER_XI:
         {
             ConstitutiveIOBase& xi = *itOutput.second;
             xi.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
@@ -182,13 +187,13 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
             break;
         }
 
-        case NuTo::Constitutive::Output::ENGINEERING_STRAIN_VISUALIZE:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
         {
             itOutput.second->AsEngineeringStrain3D() = engineeringStrain.As3D(mNu);
             break;
         }
 
-        case NuTo::Constitutive::Output::ENGINEERING_STRESS_VISUALIZE:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
         {
             ConstitutiveIOBase& engineeringStress = *itOutput.second;
             engineeringStress.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
@@ -198,7 +203,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
             break;
         }
 
-        case NuTo::Constitutive::Output::DAMAGE:
+        case NuTo::Constitutive::eOutput::DAMAGE:
         {
             ConstitutiveIOBase& damage = *itOutput.second;
             damage.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
@@ -207,7 +212,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
             break;
         }
 
-        case NuTo::Constitutive::Output::EXTRAPOLATION_ERROR:
+        case NuTo::Constitutive::eOutput::EXTRAPOLATION_ERROR:
         {
             ConstitutiveIOBase& error = *itOutput.second;
             error.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
@@ -216,13 +221,13 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
             break;
         }
 
-        case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
         {
             throw MechanicsException(__PRETTY_FUNCTION__, "tmp_static_data has to be updated without any other outputs, call it separately.");
             continue;
         }
 
-        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
         {
             performUpdateAtEnd = true;
             continue;
@@ -241,17 +246,17 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
     if (performUpdateAtEnd)
         rElement->GetStaticData(rIp)->AsGradientDamage()->SetKappa(currentStaticData.GetKappa());
 
-    return Error::SUCCESSFUL;
+    return eError::SUCCESSFUL;
 }
 
-NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
+NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
         ElementBase* rElement, int rIp,
         const ConstitutiveInputMap& rConstitutiveInput,
         const ConstitutiveOutputMap& rConstitutiveOutput)
 {
     // get constitutive inputs
-    const auto& engineeringStrain = rConstitutiveInput.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
-    const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::Input::NONLOCAL_EQ_STRAIN);
+    const auto& engineeringStrain = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
+    const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN);
 
     auto elasticEngineeringStrain = EngineeringStressHelper::CalculateElasticEngineeringStrain<2>(engineeringStrain, *rElement->GetInterpolationType(), rConstitutiveInput, mThermalExpansionCoefficient);
 
@@ -268,10 +273,10 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
     double C11, C12, C33;
     switch (rElement->GetSection()->GetType())
     {
-    case Section::PLANE_STRAIN:
+    case eSectionType::PLANE_STRAIN:
         std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients3D(mE, mNu);
         break;
-    case Section::PLANE_STRESS:
+    case eSectionType::PLANE_STRESS:
         std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients2DPlaneStress(mE, mNu);
         break;
     default:
@@ -284,7 +289,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
     {
         switch (itOutput.first)
         {
-        case NuTo::Constitutive::Output::ENGINEERING_STRESS:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS:
         {
             ConstitutiveIOBase& engineeringStress = *itOutput.second;
             engineeringStress.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
@@ -294,7 +299,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
             break;
         }
 
-        case NuTo::Constitutive::Output::LOCAL_EQ_STRAIN:
+        case NuTo::Constitutive::eOutput::LOCAL_EQ_STRAIN:
         {
             ConstitutiveIOBase& localEqStrainOut = *itOutput.second;
             localEqStrainOut.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
@@ -303,7 +308,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
             break;
         }
 
-        case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
         {
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsMatrix<3,3>(itOutput.first, __PRETTY_FUNCTION__);
@@ -322,7 +327,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
             break;
         }
 
-        case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN:
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN:
         {
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
@@ -343,7 +348,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
         }
 
 
-        case NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_D_STRAIN:
+        case NuTo::Constitutive::eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN:
         {
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
@@ -351,7 +356,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
             break;
         }
 
-        case NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_XI_D_STRAIN:
+        case NuTo::Constitutive::eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN:
         {
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
@@ -361,7 +366,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
             tangent = eeqDerivative;
             break;
         }
-        case NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI:
+        case NuTo::Constitutive::eOutput::NONLOCAL_PARAMETER_XI:
         {
             ConstitutiveIOBase& xi = *itOutput.second;
             xi.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
@@ -370,13 +375,13 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
             break;
         }
 
-        case NuTo::Constitutive::Output::ENGINEERING_STRESS_VISUALIZE:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
         {
             ConstitutiveIOBase& engineeringStress3D = *itOutput.second;
             engineeringStress3D.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
             switch (rElement->GetSection()->GetType())
             {
-            case Section::PLANE_STRAIN:
+            case eSectionType::PLANE_STRAIN:
                 engineeringStress3D[0] = (1 - omega) * (C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1]);
                 engineeringStress3D[1] = (1 - omega) * (C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0]);
                 engineeringStress3D[2] = (1 - omega) *  C12 *(elasticEngineeringStrain[0] + elasticEngineeringStrain[1]);
@@ -384,7 +389,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
                 engineeringStress3D[4] = 0.;
                 engineeringStress3D[5] = (1 - omega) *  C33 * elasticEngineeringStrain[2];
                 break;
-            case Section::PLANE_STRESS:
+            case eSectionType::PLANE_STRESS:
                 engineeringStress3D[0] = (1 - omega) * (C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1]);
                 engineeringStress3D[1] = (1 - omega) * (C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0]);
                 engineeringStress3D[2] = 0.;
@@ -398,13 +403,13 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
             break;
         }
 
-        case NuTo::Constitutive::Output::ENGINEERING_STRAIN_VISUALIZE:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
         {
             itOutput.second->AsEngineeringStrain3D() = engineeringStrain.As3D(mNu, rElement->GetSection()->GetType());
             break;
         }
 
-        case NuTo::Constitutive::Output::DAMAGE:
+        case NuTo::Constitutive::eOutput::DAMAGE:
         {
             ConstitutiveIOBase& damage = *itOutput.second;
             damage.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
@@ -413,7 +418,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
             break;
         }
 
-        case NuTo::Constitutive::Output::EXTRAPOLATION_ERROR:
+        case NuTo::Constitutive::eOutput::EXTRAPOLATION_ERROR:
         {
             ConstitutiveIOBase& error = *itOutput.second;
             error.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
@@ -422,12 +427,12 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
             break;
         }
 
-        case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
         {
             throw MechanicsException(__PRETTY_FUNCTION__,"tmp_static_data has to be updated without any other outputs, call it separately.");
         }
             continue;
-        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
         {
             performUpdateAtEnd = true;
         }
@@ -447,7 +452,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
     if (performUpdateAtEnd)
         rElement->GetStaticData(rIp)->AsGradientDamage()->SetKappa(currentStaticData.GetKappa());
 
-    return Error::SUCCESSFUL;
+    return eError::SUCCESSFUL;
 }
 
 //! @brief ... evaluate the constitutive relation in 3D
@@ -455,14 +460,14 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
 //! @param rIp ... integration point
 //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
 //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
+NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
         ElementBase* rElement, int rIp,
         const ConstitutiveInputMap& rConstitutiveInput,
         const ConstitutiveOutputMap& rConstitutiveOutput)
 {
     // get constitutive inputs
-    const auto& engineeringStrain = rConstitutiveInput.at(Constitutive::Input::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
-    const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::Input::NONLOCAL_EQ_STRAIN);
+    const auto& engineeringStrain = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
+    const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN);
 
     auto elasticEngineeringStrain = EngineeringStressHelper::CalculateElasticEngineeringStrain<3>(engineeringStrain, *rElement->GetInterpolationType(), rConstitutiveInput, mThermalExpansionCoefficient);
 
@@ -482,8 +487,8 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
     {
         switch (itOutput.first)
         {
-        case NuTo::Constitutive::Output::ENGINEERING_STRESS:
-        case NuTo::Constitutive::Output::ENGINEERING_STRESS_VISUALIZE:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
         {
             ConstitutiveIOBase& engineeringStress = *itOutput.second;
             engineeringStress.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
@@ -496,13 +501,13 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
             break;
         }
 
-        case NuTo::Constitutive::Output::ENGINEERING_STRAIN_VISUALIZE:
+        case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
         {
             itOutput.second->AsEngineeringStrain3D() = engineeringStrain;
             break;
         }
 
-        case NuTo::Constitutive::Output::LOCAL_EQ_STRAIN:
+        case NuTo::Constitutive::eOutput::LOCAL_EQ_STRAIN:
         {
             ConstitutiveIOBase& localEqStrainOut = *itOutput.second;
             localEqStrainOut.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
@@ -511,7 +516,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
             break;
         }
 
-        case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
         {
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsMatrix<6,6>(itOutput.first, __PRETTY_FUNCTION__);
@@ -537,7 +542,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
             tangent(5, 5) = (1 - omega) * C44;
             break;
         }
-        case NuTo::Constitutive::Output::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN:
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN:
         {
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
@@ -562,7 +567,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
             break;
         }
 
-        case NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_D_STRAIN:
+        case NuTo::Constitutive::eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN:
         {
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
@@ -570,7 +575,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
             break;
         }
 
-        case NuTo::Constitutive::Output::D_LOCAL_EQ_STRAIN_XI_D_STRAIN:
+        case NuTo::Constitutive::eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN:
         {
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
@@ -581,7 +586,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
             tangent = eeqDerivative;
             break;
         }
-        case NuTo::Constitutive::Output::NONLOCAL_PARAMETER_XI:
+        case NuTo::Constitutive::eOutput::NONLOCAL_PARAMETER_XI:
         {
             ConstitutiveIOBase& xi = *itOutput.second;
             xi.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
@@ -590,7 +595,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
             break;
         }
 
-        case NuTo::Constitutive::Output::DAMAGE:
+        case NuTo::Constitutive::eOutput::DAMAGE:
         {
             ConstitutiveIOBase& damage = *itOutput.second;
             damage.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
@@ -599,7 +604,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
             break;
         }
 
-        case NuTo::Constitutive::Output::EXTRAPOLATION_ERROR:
+        case NuTo::Constitutive::eOutput::EXTRAPOLATION_ERROR:
         {
             ConstitutiveIOBase& error = *itOutput.second;
             error.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
@@ -608,13 +613,13 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
             break;
         }
 
-        case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
         {
             throw MechanicsException(__PRETTY_FUNCTION__, "tmp_static_data has to be updated without any other outputs, call it separately.");
             continue;
         }
 
-        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
         {
             performUpdateAtEnd = true;
             continue;
@@ -633,12 +638,12 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
     if (performUpdateAtEnd)
         rElement->GetStaticData(rIp)->AsGradientDamage()->SetKappa(currentStaticData.GetKappa());
 
-    return Error::SUCCESSFUL;
+    return eError::SUCCESSFUL;
 }
 
 NuTo::ConstitutiveStaticDataGradientDamage NuTo::GradientDamageEngineeringStress::GetCurrentStaticData(ElementBase& rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput) const
 {
-    auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::Input::CALCULATE_STATIC_DATA);
+    auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
     if (itCalculateStaticData == rConstitutiveInput.end())
         throw MechanicsException(__PRETTY_FUNCTION__, "You need to specify the way the static data should be calculated (input list).");
 
@@ -646,15 +651,15 @@ NuTo::ConstitutiveStaticDataGradientDamage NuTo::GradientDamageEngineeringStress
 
     switch (calculateStaticData.GetCalculateStaticData())
     {
-        case CalculateStaticData::USE_PREVIOUS:
+        case eCalculateStaticData::USE_PREVIOUS:
         {
             int index = calculateStaticData.GetIndexOfPreviousStaticData();
             return *(rElement.GetStaticDataBase(rIp).GetStaticData(index)->AsGradientDamage());
         }
 
-        case CalculateStaticData::EULER_BACKWARD:
+        case eCalculateStaticData::EULER_BACKWARD:
         {
-            const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::Input::NONLOCAL_EQ_STRAIN);
+            const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN);
 
             int index = calculateStaticData.GetIndexOfPreviousStaticData();
             const ConstitutiveStaticDataGradientDamage& oldStaticData = *(rElement.GetStaticDataBase(rIp).GetStaticData(index)->AsGradientDamage());
@@ -665,12 +670,12 @@ NuTo::ConstitutiveStaticDataGradientDamage NuTo::GradientDamageEngineeringStress
             return newStaticData;
         }
 
-        case CalculateStaticData::EULER_FORWARD:
+        case eCalculateStaticData::EULER_FORWARD:
         {
             auto& staticData = rElement.GetStaticDataBase(rIp);
             assert(staticData.GetNumStaticData() >= 2);
 
-            auto itTimeStep = rConstitutiveInput.find(Constitutive::Input::TIME_STEP);
+            auto itTimeStep = rConstitutiveInput.find(Constitutive::eInput::TIME_STEP);
             if (itTimeStep == rConstitutiveInput.end())
                 throw MechanicsException(__PRETTY_FUNCTION__, "TimeStep input needed for EULER_FORWARD.");
             const auto& timeStep = *(itTimeStep->second);
@@ -697,13 +702,13 @@ double NuTo::GradientDamageEngineeringStress::CalculateStaticDataExtrapolationEr
     // static data 1 contains the implicit data \kappa_n-1
     // static data 2 contains the implicit data \kappa_n-2
 
-    auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::Input::CALCULATE_STATIC_DATA);
+    auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
     if (itCalculateStaticData == rConstitutiveInput.end())
         throw MechanicsException(__PRETTY_FUNCTION__, "You need to specify the way the static data should be calculated (input list).");
 
     const auto& ipData = rElement.GetStaticDataBase(rIp);
 
-    double eeq = (*rConstitutiveInput.at(Constitutive::Input::NONLOCAL_EQ_STRAIN))[0];
+    double eeq = (*rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN))[0];
     double k_n_t = ipData.GetStaticData(0)->AsGradientDamage()->GetKappa();
     double k_n_1 = ipData.GetStaticData(1)->AsGradientDamage()->GetKappa();
 
@@ -745,10 +750,10 @@ bool NuTo::GradientDamageEngineeringStress::CheckDofCombinationComputable(NuTo::
     {
         switch (Node::CombineDofs(rDofRow, rDofCol))
         {
-        case Node::CombineDofs(Node::DISPLACEMENTS,      Node::DISPLACEMENTS):
-        case Node::CombineDofs(Node::DISPLACEMENTS,      Node::NONLOCALEQSTRAIN):
-        case Node::CombineDofs(Node::NONLOCALEQSTRAIN,   Node::DISPLACEMENTS):
-        case Node::CombineDofs(Node::NONLOCALEQSTRAIN,   Node::NONLOCALEQSTRAIN):
+        case Node::CombineDofs(Node::eDof::DISPLACEMENTS,      Node::eDof::DISPLACEMENTS):
+        case Node::CombineDofs(Node::eDof::DISPLACEMENTS,      Node::eDof::NONLOCALEQSTRAIN):
+        case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN,   Node::eDof::DISPLACEMENTS):
+        case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN,   Node::eDof::NONLOCALEQSTRAIN):
             return true;
         default:
             return false;
@@ -782,7 +787,7 @@ double NuTo::GradientDamageEngineeringStress::GetParameterDouble(NuTo::Constitut
     case Constitutive::eConstitutiveParameter::YOUNGS_MODULUS:
         return mE;
     case Constitutive::eConstitutiveParameter::DAMAGE_LAW:
-        return mDamageLawType;
+        return static_cast<double>(mDamageLawType);
     default:
         throw MechanicsException(__PRETTY_FUNCTION__,"Constitutive law does not have the requested variable");
     }
@@ -835,7 +840,7 @@ void NuTo::GradientDamageEngineeringStress::SetParameterDouble(NuTo::Constitutiv
 //! @sa eConstitutiveType
 NuTo::Constitutive::eConstitutiveType NuTo::GradientDamageEngineeringStress::GetType() const
 {
-    return NuTo::Constitutive::GRADIENT_DAMAGE_ENGINEERING_STRESS;
+    return NuTo::Constitutive::eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS;
 }
 
 //! @brief ... check compatibility between element type and type of constitutive relationship
@@ -845,9 +850,9 @@ bool NuTo::GradientDamageEngineeringStress::CheckElementCompatibility(NuTo::Elem
 {
     switch (rElementType)
     {
-    case NuTo::Element::CONTINUUMELEMENT:
+    case NuTo::Element::eElementType::CONTINUUMELEMENT:
         return true;
-    case NuTo::Element::CONTINUUMBOUNDARYELEMENT:
+    case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENT:
         return true;
 
     default:

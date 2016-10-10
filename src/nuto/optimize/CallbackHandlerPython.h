@@ -1,9 +1,9 @@
-#ifndef CALLBACKHANDLERPYTHON_H
-#define CALLBACKHANDLERPYTHON_H
+#pragma once
+
+// parent
+#include "nuto/optimize/CallbackHandler.h"
 
 #include <Python.h>
-#include "nuto/optimize/CallbackHandler.h"
-#include "nuto/optimize/OptimizeException.h"
 
 namespace NuTo
 {
@@ -97,4 +97,3 @@ private:
     
 };
 } //namespace NuTo
-#endif // CALLBACKHANDLERPYTHON_H

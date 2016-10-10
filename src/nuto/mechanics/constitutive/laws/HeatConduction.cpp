@@ -7,7 +7,10 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/laws/HeatConduction.h"
+#include "nuto/base/ErrorEnum.h"
 #include "nuto/base/Logger.h"
 #include "nuto/mechanics/MechanicsException.h"
 
@@ -16,6 +19,8 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 
 #include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/ElementEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 NuTo::HeatConduction::HeatConduction() : ConstitutiveBase()
 {
@@ -53,25 +58,25 @@ NuTo::ConstitutiveInputMap NuTo::HeatConduction::GetConstitutiveInputs(
     {
         switch (itOutput.first)
         {
-        case NuTo::Constitutive::Output::HEAT_FLUX:
+        case NuTo::Constitutive::eOutput::HEAT_FLUX:
         {
-            constitutiveInputMap[Constitutive::Input::TEMPERATURE_GRADIENT];
+            constitutiveInputMap[Constitutive::eInput::TEMPERATURE_GRADIENT];
             break;
         }
-        case NuTo::Constitutive::Output::HEAT_CHANGE:
+        case NuTo::Constitutive::eOutput::HEAT_CHANGE:
         {
-            constitutiveInputMap[Constitutive::Input::TEMPERATURE_CHANGE];
+            constitutiveInputMap[Constitutive::eInput::TEMPERATURE_CHANGE];
             break;
         }
-        case NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT:
-        case NuTo::Constitutive::Output::D_HEAT_D_TEMPERATURE:
+        case NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT:
+        case NuTo::Constitutive::eOutput::D_HEAT_D_TEMPERATURE:
         {
             // for nonlinear:
-            //constitutiveInputMap[Constitutive::Input::TEMPERATURE];
+            //constitutiveInputMap[Constitutive::eInput::TEMPERATURE];
             break;
         }
-        case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
-        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
             break;
         default:
             continue;
@@ -85,8 +90,8 @@ bool NuTo::HeatConduction::CheckDofCombinationComputable(NuTo::Node::eDof rDofRo
 {
     assert(rTimeDerivative>-1);
     if (rTimeDerivative<=2 &&
-        rDofRow == Node::TEMPERATURE &&
-        rDofCol == Node::TEMPERATURE)
+        rDofRow == Node::eDof::TEMPERATURE &&
+        rDofCol == Node::eDof::TEMPERATURE)
     {
         return true;
     }
@@ -94,7 +99,7 @@ bool NuTo::HeatConduction::CheckDofCombinationComputable(NuTo::Node::eDof rDofRo
 }
 
 template<int TDim>
-NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
+NuTo::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
         int rIp,
         const ConstitutiveInputMap& rConstitutiveInput,
         const ConstitutiveOutputMap& rConstitutiveOutput)
@@ -106,14 +111,14 @@ NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
     {
         switch(itInput.first)
         {
-        case NuTo::Constitutive::Input::TEMPERATURE_GRADIENT:
+        case NuTo::Constitutive::eInput::TEMPERATURE_GRADIENT:
             inputData.mTemperatureGradient = static_cast<ConstitutiveVector<TDim>*>(itInput.second.get())->AsVector();
             break;
-        case NuTo::Constitutive::Input::TEMPERATURE_CHANGE:
+        case NuTo::Constitutive::eInput::TEMPERATURE_CHANGE:
             inputData.mTemperatureChange = (*itInput.second)[0];
             break;
-        case NuTo::Constitutive::Input::CALCULATE_STATIC_DATA:
-        case NuTo::Constitutive::Input::TIME_STEP:
+        case NuTo::Constitutive::eInput::CALCULATE_STATIC_DATA:
+        case NuTo::Constitutive::eInput::TIME_STEP:
             break;
         default:
             continue;
@@ -124,32 +129,32 @@ NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
     {
         switch (itOutput.first)
         {
-        case NuTo::Constitutive::Output::HEAT_FLUX:
+        case NuTo::Constitutive::eOutput::HEAT_FLUX:
         {
             Eigen::Matrix<double, TDim, 1>& heatFlux = *static_cast<ConstitutiveVector<TDim>*>(itOutput.second.get());
             heatFlux = -mK * eye * inputData.mTemperatureGradient;
             break;
         }
-        case NuTo::Constitutive::Output::HEAT_CHANGE:
+        case NuTo::Constitutive::eOutput::HEAT_CHANGE:
         {
             Eigen::Matrix<double, 1, 1>& heatChange = *static_cast<ConstitutiveScalar*>(itOutput.second.get());
             heatChange(0, 0) = mCt * mRho * inputData.mTemperatureChange;
             break;
         }
-        case NuTo::Constitutive::Output::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT:
+        case NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT:
         {
             Eigen::Matrix<double, TDim, TDim>& conductivity = *static_cast<ConstitutiveMatrix<TDim, TDim>*>(itOutput.second.get());
             conductivity = mK * eye;
             break;
         }
-        case NuTo::Constitutive::Output::D_HEAT_D_TEMPERATURE:
+        case NuTo::Constitutive::eOutput::D_HEAT_D_TEMPERATURE:
         {
             Eigen::Matrix<double, 1, 1>& tangent = *static_cast<ConstitutiveScalar*>(itOutput.second.get());
             tangent(0,0) = mCt * mRho;
             break;
         }
-        case NuTo::Constitutive::Output::UPDATE_TMP_STATIC_DATA:
-        case NuTo::Constitutive::Output::UPDATE_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
+        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
         {
             //nothing to be done for update routine
             continue;
@@ -159,7 +164,7 @@ NuTo::Error::eError NuTo::HeatConduction::Evaluate(NuTo::ElementBase *rElement,
         }
         itOutput.second->SetIsCalculated(true);
     }
-    return Error::SUCCESSFUL;
+    return eError::SUCCESSFUL;
 }
 
 bool NuTo::HeatConduction::CheckHaveParameter(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
@@ -212,11 +217,11 @@ void NuTo::HeatConduction::SetParameterDouble(NuTo::Constitutive::eConstitutiveP
     }
 }
 
-bool NuTo::HeatConduction::CheckOutputTypeCompatibility(NuTo::Constitutive::Output::eOutput rOutputEnum) const
+bool NuTo::HeatConduction::CheckOutputTypeCompatibility(NuTo::Constitutive::eOutput rOutputEnum) const
 {
     switch (rOutputEnum)
     {
-    case Constitutive::Output::HEAT_FLUX:
+    case Constitutive::eOutput::HEAT_FLUX:
     {
         return true;
     }
@@ -229,14 +234,14 @@ bool NuTo::HeatConduction::CheckOutputTypeCompatibility(NuTo::Constitutive::Outp
 
 NuTo::Constitutive::eConstitutiveType NuTo::HeatConduction::GetType() const
 {
-    return NuTo::Constitutive::HEAT_CONDUCTION;
+    return NuTo::Constitutive::eConstitutiveType::HEAT_CONDUCTION;
 }
 
 bool NuTo::HeatConduction::CheckElementCompatibility(NuTo::Element::eElementType rElementType) const
 {
     switch (rElementType)
     {
-    case NuTo::Element::CONTINUUMELEMENT:
+    case NuTo::Element::eElementType::CONTINUUMELEMENT:
         return true;
     default:
         return false;

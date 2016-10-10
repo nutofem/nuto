@@ -261,6 +261,8 @@ if(ENABLE_UNIT_TESTS)
 set(NuToBoostComponents ${NuToBoostComponents} unit_test_framework)
 endif(ENABLE_UNIT_TESTS)
 
+message(STATUS "Requesting BOOST components ${NuToBoostComponents} - at least version ${NuToBoostRequiredVersion} required.")
+
 FIND_PACKAGE(Boost ${NuToBoostRequiredVersion} COMPONENTS ${NuToBoostComponents} REQUIRED)
 
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
@@ -461,6 +463,9 @@ IF(ENABLE_MY_EXAMPLES)
   ADD_SUBDIRECTORY(myNutoExamples)
 ENDIF(ENABLE_MY_EXAMPLES)
 
+# This makes qtcreator show header-only classes...
+FILE(GLOB_RECURSE HeaderFiles "*.h")
+add_custom_target(headers SOURCES ${HeaderFiles})
 
 #MESSAGE(STATUS "CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
 #MESSAGE(STATUS "CMAKE_C_COMPILER: ${CMAKE_C_COMPILER}")

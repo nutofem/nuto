@@ -3,6 +3,9 @@
 #include "boost/filesystem.hpp"
 
 #include "nuto/math/FullMatrix.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 
 #include "nuto/mechanics/timeIntegration/RungeKutta4.h"
@@ -45,8 +48,8 @@ void Run(NuTo::Structure& myStructure, NuTo::RungeKuttaBase& rTimeIntegrationSch
     myStructure.SetNumTimeDerivatives(2);
 
     int myInterpolationType = myStructure.InterpolationTypeCreate("Quad2D");
-    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
     //section
     double thickness(1);

@@ -1,7 +1,6 @@
 // $Id: SparseMatrixCSRVector2General.h 235 2010-04-22 09:25:38Z arnold2 $
 
-#ifndef SPARSE_MATRIX_CSR_VECTOR2_GENERAL_H
-#define SPARSE_MATRIX_CSR_VECTOR2_GENERAL_H
+#pragma once
 
 #include <algorithm>
 
@@ -163,9 +162,9 @@ void NuTo::SparseMatrixCSRVector2General<T>::AddValue(int rRow, int rColumn, con
 
 //! @brief ... return the matrix type
 template<class T>
-NuTo::SparseMatrixEnum::eType NuTo::SparseMatrixCSRVector2General<T>::GetSparseMatrixType()const
+NuTo::eSparseMatrixType NuTo::SparseMatrixCSRVector2General<T>::GetSparseMatrixType()const
 {
-    return NuTo::SparseMatrixEnum::CSRVECTOR2GENERAL;
+    return NuTo::eSparseMatrixType::CSRVECTOR2GENERAL;
 }
 
 //! @brief ... import matrix from slang object stored in  a text file
@@ -990,4 +989,3 @@ const NuTo::SparseMatrixCSRVector2General<T>& NuTo::SparseMatrixCSRVector2Genera
 	return *this;
 }
 
-#endif // SPARSE_MATRIX_CSR_VECTOR2_GENERAL_H

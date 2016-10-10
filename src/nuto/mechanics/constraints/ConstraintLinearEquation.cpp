@@ -15,8 +15,10 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/constraints/ConstraintEquationTerm.h"
 #include "nuto/mechanics/constraints/ConstraintLinearEquation.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 // constructor
 NuTo::ConstraintLinearEquation::ConstraintLinearEquation(const NodeBase* rNode, Node::eDof rDofType, int rDofComponent, double rCoefficient, double rRhsValue)
@@ -86,6 +88,14 @@ double NuTo::ConstraintLinearEquation::GetRHS()const
 int NuTo::ConstraintLinearEquation::GetNumLinearConstraints()const
 {
     return 1;
+}
+
+NuTo::Node::eDof NuTo::ConstraintLinearEquation::GetDofType() const
+{
+    if (mTerms.size() != 0)
+        return mTerms[0].GetDofType();
+    else
+        throw MechanicsException("[NuTo::ConstraintLinearEquation::GetDofType] Equation has no terms.");
 }
 
 #ifdef ENABLE_SERIALIZATION

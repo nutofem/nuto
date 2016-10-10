@@ -1,6 +1,5 @@
 // $Id$
-#ifndef IntegrationType2D_H
-#define IntegrationType2D_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -54,4 +53,3 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType2D)
 #endif // ENABLE_SERIALIZATION
 
-#endif //IntegrationType2D_H

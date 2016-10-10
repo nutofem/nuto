@@ -9,7 +9,9 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
+#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/elements/ElementDataVariableConstitutiveIp.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/IpDataBase.h"
 #include <assert.h>
 
@@ -33,10 +35,15 @@ NuTo::ElementDataVariableConstitutiveIp::~ElementDataVariableConstitutiveIp()
 //	std::cout << "NuTo::ElementDataConstitutiveStaticData::~ElementDataConstitutiveStaticData()" << std::endl;
 }
 
+void NuTo::ElementDataVariableConstitutiveIp::InitializeUpdatedConstitutiveLaw(const NuTo::ElementBase *rElement)
+{
+    throw MechanicsException("[NuTo::ElementDataVariableConstitutiveIp::InitializeUpdatedConstitutiveLaw] need ip for constitutive law assignment.");
+}
+
 //! @brief updates the data related to changes of the constitutive model (e.g. reallocation of static data, nonlocal weights etc.)
 //! @param rElement element
 void NuTo::ElementDataVariableConstitutiveIp::InitializeUpdatedConstitutiveLaw(const ElementBase* rElement,
-		int rNumIp)
+                                                                               int rNumIp)
 {
 	//reinitialize ip data (f.e. if different static data or nonlocal data are required with another constitutive model)
 	mIpData[rNumIp].Initialize(rElement,mVarConstitutiveLaw[rNumIp]);
@@ -61,7 +68,7 @@ void NuTo::ElementDataVariableConstitutiveIp::InitializeUpdatedConstitutiveLaw(c
 //! @return enum of ElementDataType
 const NuTo::ElementData::eElementDataType NuTo::ElementDataVariableConstitutiveIp::GetElementDataType()const
 {
-    return NuTo::ElementData::VARIABLECONSTITUTIVELAWIP;
+    return NuTo::ElementData::eElementDataType::VARIABLECONSTITUTIVELAWIP;
 }
 
 #ifdef ENABLE_SERIALIZATION

@@ -1,13 +1,17 @@
 // $Id$
-#ifndef CALLBACKHANDLERGRID_H
-#define CALLBACKHANDLERGRID_H
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+
+
+// parent
 #include "nuto/base/NuToObject.h"
+
+
 #include <boost/dynamic_bitset.hpp>
 #include "nuto/optimize/OptimizeException.h"
 #include <iostream>
@@ -156,4 +160,3 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::CallbackHandlerGrid)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
-#endif // CALLBACKHANDLERPYTHON_H

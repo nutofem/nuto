@@ -34,7 +34,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		 curCycle(0);           //number of iterations without restart
 
 
-	optimization_return_attributes returnValue;
+    eOptimizationReturnAttributes returnValue;
 #ifdef _OPENACC
 #pragma acc data  copyin()
 #endif
@@ -72,7 +72,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 	if (numFunctionCalls++>mMaxFunctionCalls)
 	{
 		converged = true;
-		returnValue = MAXFUNCTIONCALLS;
+        returnValue = eOptimizationReturnAttributes::MAXFUNCTIONCALLS;
 	}
 
 
@@ -83,7 +83,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		 if (numGradientCalls>mMaxGradientCalls)
 		 {
 			 converged = true;
-			 returnValue = MAXGRADIENTCALLS;
+             returnValue = eOptimizationReturnAttributes::MAXGRADIENTCALLS;
 			 break;
 		 }
 
@@ -96,7 +96,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 			if (numHessianCalls>mMaxHessianCalls)
 			{
 				converged = true;
-				returnValue = MAXHESSIANCALLS;
+                returnValue = eOptimizationReturnAttributes::MAXHESSIANCALLS;
 				break;
 			}
 
@@ -258,14 +258,14 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		if (norm<rAccuracyGradientSquare)
 		{
 			converged = true;
-			returnValue = NORMGRADIENT;
+            returnValue = eOptimizationReturnAttributes::NORMGRADIENT;
 		}
 
 
 		if (curIteration>mMaxIterations)
 		{
 			converged = true;
-			returnValue = MAXITERATIONS;
+            returnValue = eOptimizationReturnAttributes::MAXITERATIONS;
 			break;
 		}
 
@@ -273,7 +273,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		if (numFunctionCalls>mMaxFunctionCalls)
 		{
 			converged = true;
-			returnValue = MAXFUNCTIONCALLS;
+            returnValue = eOptimizationReturnAttributes::MAXFUNCTIONCALLS;
 			break;
 		}
 	}
@@ -304,22 +304,22 @@ int NuTo::ConjugateGradientGrid::Optimize()
 		std::cout<< "Active convergence criterion..... " ;
 		switch (returnValue)
 		{
-			case MAXFUNCTIONCALLS:
+            case eOptimizationReturnAttributes::MAXFUNCTIONCALLS:
 				std::cout<< "Maximum number of function calls reached." << std::endl;
 				break;
-			case MAXGRADIENTCALLS:
+            case eOptimizationReturnAttributes::MAXGRADIENTCALLS:
 				std::cout<< "Maximum number of gradient calls reached." << std::endl;
 				break;
-			case MAXHESSIANCALLS:
+            case eOptimizationReturnAttributes::MAXHESSIANCALLS:
 				std::cout<< "Maximum number of hessian calls reached." << std::endl;
 				break;
-			case MAXITERATIONS:
+            case eOptimizationReturnAttributes::MAXITERATIONS:
 				std::cout<< "Maximum number of iterations reached." << std::endl;
 				break;
-			case NORMGRADIENT:
+            case eOptimizationReturnAttributes::NORMGRADIENT:
 				std::cout<< "Norm of preconditioned gradient smaller than prescribed value." << std::endl;
 				break;
-			case DELTAOBJECTIVEBETWEENCYCLES:
+            case eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES:
 				std::cout<< "Residual discrepancy is smaller." << std::endl;
 				break;
 			default:
@@ -338,7 +338,7 @@ int NuTo::ConjugateGradientGrid::Optimize()
 //		std::cout << std::endl;
 	}
 	objective=sqrt(betaNumerator);
-	return returnValue;
+    return static_cast<int>(returnValue);
 }
 
 #ifdef ENABLE_SERIALIZATION

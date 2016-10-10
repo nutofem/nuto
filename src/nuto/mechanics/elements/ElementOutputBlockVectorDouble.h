@@ -2,6 +2,7 @@
 
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "nuto/mechanics/elements/ElementOutputBase.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 namespace NuTo
 {

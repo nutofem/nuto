@@ -2,8 +2,10 @@
 
 
 #include "nuto/math/SparseMatrixCSRVector2.h"
+#include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
+#include "nuto/mechanics/dofSubMatrixStorage/DofStatus.h"
 #include "nuto/mechanics/structures/StructureOutputBlockVector.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 
@@ -18,6 +20,9 @@ NuTo::StructureOutputBlockMatrix::StructureOutputBlockMatrix(const DofStatus &rD
     if (rAutomaticResize)
         Resize(rDofStatus.GetNumActiveDofsMap(), rDofStatus.GetNumDependentDofsMap());
 }
+
+NuTo::StructureOutputBlockMatrix::~StructureOutputBlockMatrix()
+{}
 
 void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
         const ElementBase* rElementPtr,
@@ -279,8 +284,10 @@ void NuTo::StructureOutputBlockMatrix::CwiseInvert()
 }
 
 
+namespace NuTo
+{
 //! @brief output stream operator for outputs with cout or files
-std::ostream& NuTo::operator<<(std::ostream &rOut, const NuTo::StructureOutputBlockMatrix &rStructureOutputBlockMatrix)
+std::ostream& operator<<(std::ostream &rOut, const NuTo::StructureOutputBlockMatrix &rStructureOutputBlockMatrix)
 {
     rOut << "Active Dofs --- Active Dofs" << std::endl;
     rOut << rStructureOutputBlockMatrix.JJ << std::endl;
@@ -292,3 +299,4 @@ std::ostream& NuTo::operator<<(std::ostream &rOut, const NuTo::StructureOutputBl
     rOut << rStructureOutputBlockMatrix.KK << std::endl;
     return rOut;
 }
+}  // namespace NuTo

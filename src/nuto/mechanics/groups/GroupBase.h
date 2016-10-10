@@ -1,8 +1,5 @@
 // $Id$
-#ifndef GroupBase_H
-#define GroupBase_H
-
-#include <string>
+#pragma once
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
@@ -10,16 +7,17 @@
 #include <map>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/groups/GroupEnum.h"
-#include "nuto/math/FullVector_Def.h"
+#include <eigen3/Eigen/Core>
+#include <string>
 
 namespace NuTo
 {
 class StructureBase;
 class ElementBase;
 class NodeBase;
-template <class T>
-class Group;
+template <class T> class Group;
+template <class T, int rows> class FullVector;
+enum class eGroupId;
 
 //! @author Jörg F. Unger, ISM
 //! @date November 2009
@@ -74,7 +72,7 @@ public:
 
 	//! @brief gives the group type
 	//! @return group type
-	virtual Groups::eGroupId GetType()const=0;
+    virtual eGroupId GetType()const=0;
 
 	//! @brief gives the group type as a string
 	//! @return group type
@@ -159,4 +157,3 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::GroupBase)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
 
-#endif //GroupBase_H

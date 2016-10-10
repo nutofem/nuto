@@ -1,10 +1,10 @@
 // $Id$
-#ifndef ElementDataConstitutiveIp_H
-#define ElementDataConstitutiveIp_H
+#pragma once
 
 #include "nuto/mechanics/elements/ElementDataConstitutiveBase.h"
 #include "nuto/mechanics/elements/ElementDataIpBase.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/MechanicsException.h"
+
 
 namespace NuTo
 {
@@ -67,4 +67,3 @@ struct is_virtual_base_of<NuTo::ElementDataIpBase, NuTo::ElementDataConstitutive
 BOOST_CLASS_EXPORT_KEY(NuTo::ElementDataConstitutiveIp)
 #endif // ENABLE_SERIALIZATION
 
-#endif //ElementDataConstitutiveIp_H

@@ -1,5 +1,10 @@
+#include "nuto/base/ErrorEnum.h"
+
+#include "nuto/math/FullMatrix.h"
+
 #include "nuto/mechanics/elements/ContinuumElementIGA.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
 
 #include "nuto/mechanics/sections/SectionTruss.h"
 #include "nuto/mechanics/sections/SectionPlane.h"
@@ -7,14 +12,26 @@
 #include "nuto/mechanics/elements/ElementOutputIpData.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
 
+#include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationType.h"
 
+#include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/EvaluateDataContinuum.h"
+#include "nuto/mechanics/elements/IpDataEnum.h"
 
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 
+#include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
+#include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
+#include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
+
+#include "nuto/mechanics/structures/StructureBase.h"
 
 template<int TDim>
 NuTo::ContinuumElementIGA<TDim>::ContinuumElementIGA(const NuTo::StructureBase*          rStructure,
@@ -31,6 +48,12 @@ NuTo::ContinuumElementIGA<TDim>::ContinuumElementIGA(const NuTo::StructureBase* 
 {}
 
 template<int TDim>
+NuTo::Element::eElementType NuTo::ContinuumElementIGA<TDim>::GetEnumType() const
+{
+    return Element::eElementType::CONTINUUMELEMENTIGA;
+}
+
+template<int TDim>
 Eigen::Matrix<double, TDim, TDim> NuTo::ContinuumElementIGA<TDim>::CalculateJacobianParametricSpaceIGA() const
 {
     Eigen::Matrix<double, TDim, TDim> jac;
@@ -43,12 +66,12 @@ Eigen::Matrix<double, TDim, TDim> NuTo::ContinuumElementIGA<TDim>::CalculateJaco
 template<int TDim>
 const Eigen::VectorXd NuTo::ContinuumElementIGA<TDim>::GetIntegrationPointVolume() const
 {
-    Eigen::MatrixXd nodeCoordinates = this->ExtractNodeValues(0, Node::COORDINATES);
+    Eigen::MatrixXd nodeCoordinates = this->ExtractNodeValues(0, Node::eDof::COORDINATES);
 
     Eigen::VectorXd volume(this->GetNumIntegrationPoints());
     for (int theIP = 0; theIP < this->GetNumIntegrationPoints(); theIP++)
     {
-        Eigen::MatrixXd derivativeShapeFunctionsNatural = this->mInterpolationType->Get(Node::COORDINATES).CalculateDerivativeShapeFunctionsNatural(theIP, mKnotIDs);
+        Eigen::MatrixXd derivativeShapeFunctionsNatural = this->mInterpolationType->Get(Node::eDof::COORDINATES).CalculateDerivativeShapeFunctionsNatural(theIP, mKnotIDs);
         double detJacobian = this->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates).determinant();
         volume[theIP] = detJacobian * this->mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP);
     }
@@ -67,20 +90,20 @@ void NuTo::ContinuumElementIGA<TDim>::CheckElement()
 
     int theIP = 0;
 
-    Eigen::MatrixXd derivativeShapeFunctions = this->mInterpolationType->Get(Node::COORDINATES).CalculateDerivativeShapeFunctionsNatural(theIP, mKnotIDs);
-    Eigen::MatrixXd nodeCoordinates = this->ExtractNodeValues(0, Node::COORDINATES);
+    Eigen::MatrixXd derivativeShapeFunctions = this->mInterpolationType->Get(Node::eDof::COORDINATES).CalculateDerivativeShapeFunctionsNatural(theIP, mKnotIDs);
+    Eigen::MatrixXd nodeCoordinates = this->ExtractNodeValues(0, Node::eDof::COORDINATES);
     double detJacobian = this->CalculateJacobian(derivativeShapeFunctions, nodeCoordinates).determinant();
     if (detJacobian < 0)
     {
         this->ReorderNodes();
         // recalculate node coordinates after reordering
-        nodeCoordinates = this->ExtractNodeValues(0, Node::COORDINATES);
+        nodeCoordinates = this->ExtractNodeValues(0, Node::eDof::COORDINATES);
     }
 
     double size = 0;
     for (int iIP = 0; iIP < numIntegrationPoints; ++iIP)
     {
-        Eigen::MatrixXd derivativeShapeFunctions = this->mInterpolationType->Get(Node::COORDINATES).CalculateDerivativeShapeFunctionsNatural(iIP, mKnotIDs);
+        Eigen::MatrixXd derivativeShapeFunctions = this->mInterpolationType->Get(Node::eDof::COORDINATES).CalculateDerivativeShapeFunctionsNatural(iIP, mKnotIDs);
         detJacobian = this->CalculateJacobian(derivativeShapeFunctions, nodeCoordinates).determinant();
         if (detJacobian <= 0)
         {
@@ -103,9 +126,9 @@ template<int TDim>
 void NuTo::ContinuumElementIGA<TDim>::CalculateNMatrixBMatrixDetJacobian(EvaluateDataContinuum<TDim> &rData, int rTheIP) const
 {
     // calculate Jacobian
-    const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = this->mInterpolationType->Get(Node::COORDINATES).CalculateDerivativeShapeFunctionsNatural(rTheIP, mKnotIDs);
+    const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = this->mInterpolationType->Get(Node::eDof::COORDINATES).CalculateDerivativeShapeFunctionsNatural(rTheIP, mKnotIDs);
 
-    Eigen::Matrix<double, TDim, TDim> jacobian = this->CalculateJacobian(derivativeShapeFunctionsGeometryNatural, rData.mNodalValues[Node::COORDINATES]);
+    Eigen::Matrix<double, TDim, TDim> jacobian = this->CalculateJacobian(derivativeShapeFunctionsGeometryNatural, rData.mNodalValues[Node::eDof::COORDINATES]);
 
     // there are two mappings in IGA: 1) reference element <=> parametric space (knots) 2) parametric space <=> physical space
     // the B-matrix only the invJac of mapping 2) is needed
@@ -120,7 +143,7 @@ void NuTo::ContinuumElementIGA<TDim>::CalculateNMatrixBMatrixDetJacobian(Evaluat
     // calculate shape functions and their derivatives
     for (auto dof : this->mInterpolationType->GetDofs())
     {
-        if (dof == Node::COORDINATES)
+        if (dof == Node::eDof::COORDINATES)
             continue;
         const InterpolationBase& interpolationType = this->mInterpolationType->Get(dof);
         rData.mNIGA[dof] = interpolationType.CalculateMatrixN(rTheIP, mKnotIDs);
@@ -173,10 +196,10 @@ namespace NuTo // template specialization in *.cpp somehow requires the definiti
 template<>
 double NuTo::ContinuumElementIGA<1>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
 {
-    Eigen::MatrixXd matrixN = mInterpolationType->Get(Node::COORDINATES).CalculateMatrixN(rTheIP, mKnotIDs);
-    Eigen::VectorXd globalIPCoordinate = matrixN * ExtractNodeValues(0, Node::COORDINATES);
+    Eigen::MatrixXd matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).CalculateMatrixN(rTheIP, mKnotIDs);
+    Eigen::VectorXd globalIPCoordinate = matrixN * ExtractNodeValues(0, Node::eDof::COORDINATES);
 
-    return rDetJacobian * mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP) * mSection->GetArea() * mSection->AsSectionTruss()->GetAreaFactor(globalIPCoordinate.at(0, 0));
+    return rDetJacobian * mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP) * mSection->GetArea() * mSection->AsSectionTruss()->GetAreaFactor(globalIPCoordinate(0, 0));
 }
 
 template<>

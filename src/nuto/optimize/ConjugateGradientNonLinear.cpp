@@ -1,5 +1,5 @@
 // $Id$
-
+#include "nuto/math/FullMatrix.h"
 #include "nuto/optimize/ConjugateGradientNonLinear.h"
 #define machine_precision 1e-15
 #define tol 1e-8  //sqrt machine_precision
@@ -38,7 +38,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
         curIteration(0),       //number of iterations
         curCycle(0);           //number of iterations without restart
 
-    optimization_return_attributes returnValue;
+    eOptimizationReturnAttributes returnValue;
 
     bool BrentsMethodConverged;
 
@@ -66,14 +66,14 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
     if (numFunctionCalls>mMaxFunctionCalls)
     {
         converged = true;
-        returnValue = MAXHESSIANCALLS;
+        returnValue = eOptimizationReturnAttributes::MAXHESSIANCALLS;
     }
     while(!converged)
     {
         if (objective<mMinObjective)
         {
             converged = true;
-            returnValue = MINOBJECTIVE;
+            returnValue = eOptimizationReturnAttributes::MINOBJECTIVE;
             break;
         }
 
@@ -83,7 +83,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
         if (numGradientCalls>mMaxGradientCalls)
         {
             converged = true;
-            returnValue = MAXGRADIENTCALLS;
+            returnValue = eOptimizationReturnAttributes::MAXGRADIENTCALLS;
             break;
             //return MAXGRADIENTCALLS;
         }
@@ -97,7 +97,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
             if (numHessianCalls>mMaxHessianCalls)
             {
                 converged = true;
-                returnValue = MAXHESSIANCALLS;
+                returnValue = eOptimizationReturnAttributes::MAXHESSIANCALLS;
                 break;
             }
             gradientScaled = scaleFactorsInv.asDiagonal()*gradientOrig;
@@ -108,7 +108,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
             if (normGrad<mAccuracyGradientScaled)
             {
                 converged = true;
-                returnValue = NORMGRADIENT;
+                returnValue = eOptimizationReturnAttributes::NORMGRADIENT;
                 break;
             }
 
@@ -134,7 +134,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                 if (std::abs(objectiveLastRestart-objective)/objective<mMinDeltaObjBetweenRestarts)
                 {
                     converged = true;
-                    returnValue = DELTAOBJECTIVEBETWEENCYCLES;
+                    returnValue = eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES;
                     break;
                     //return DELTAOBJECTIVEBETWEENCYCLES;
                 }
@@ -144,7 +144,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                     {
                         {
                             converged = true;
-                            returnValue = DELTAOBJECTIVEBETWEENCYCLES;
+                            returnValue = eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES;
                             break;
                         }
                     }
@@ -156,7 +156,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                 if (numHessianCalls>mMaxHessianCalls)
                 {
                     converged = true;
-                    returnValue = MAXHESSIANCALLS;
+                    returnValue = eOptimizationReturnAttributes::MAXHESSIANCALLS;
                     break;
                 }
 
@@ -176,7 +176,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                 if (normGrad<mAccuracyGradientScaled)
                 {
                     converged = true;
-                    returnValue = NORMGRADIENT;
+                    returnValue = eOptimizationReturnAttributes::NORMGRADIENT;
                     break;
                 }
                 curCycle = 0;
@@ -206,7 +206,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                      if (numHessianCalls>mMaxHessianCalls)
                      {
                          converged = true;
-                         returnValue = MAXHESSIANCALLS;
+                         returnValue = eOptimizationReturnAttributes::MAXHESSIANCALLS;
                          break;
                      }
 
@@ -226,7 +226,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                      if (normGrad<mAccuracyGradientScaled)
                      {
                          converged = true;
-                         returnValue = NORMGRADIENT;
+                         returnValue = eOptimizationReturnAttributes::NORMGRADIENT;
                          break;
                      }
                      curCycle = 0;
@@ -276,7 +276,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
         if (curIteration>mMaxIterations)
         {
             converged = true;
-            returnValue = MAXITERATIONS;
+            returnValue = eOptimizationReturnAttributes::MAXITERATIONS;
             break;
         }
 
@@ -301,7 +301,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
         if (numFunctionCalls>mMaxFunctionCalls)
         {
             converged = true;
-            returnValue = MAXFUNCTIONCALLS;
+            returnValue = eOptimizationReturnAttributes::MAXFUNCTIONCALLS;
             break;
         }
 
@@ -327,7 +327,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                 if (numFunctionCalls>mMaxFunctionCalls)
                 {
                     converged = true;
-                    returnValue = MAXFUNCTIONCALLS;
+                    returnValue = eOptimizationReturnAttributes::MAXFUNCTIONCALLS;
                     break;
                 }
             }
@@ -352,13 +352,13 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
                 if (numFunctionCalls>mMaxFunctionCalls)
                 {
                     converged = true;
-                    returnValue = MAXFUNCTIONCALLS;
+                    returnValue = eOptimizationReturnAttributes::MAXFUNCTIONCALLS;
                     break;
                 }
                 if (std::abs(objective-intermediateObjective)<machine_precision)
                 {
                     converged = true;
-                    returnValue = REACHINGMACHINEPRECISION;
+                    returnValue = eOptimizationReturnAttributes::REACHINGMACHINEPRECISION;
                     break;
                 }
             }
@@ -388,7 +388,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
             if (numFunctionCalls>mMaxFunctionCalls)
             {
                 converged = true;
-                returnValue = MAXFUNCTIONCALLS;
+                returnValue = eOptimizationReturnAttributes::MAXFUNCTIONCALLS;
                 break;
             }
             if (objective<intermediateObjective)
@@ -493,28 +493,28 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
         std::cout<< "Active convergence criterion..... " ;
         switch (returnValue)
         {
-            case MAXFUNCTIONCALLS:
+            case eOptimizationReturnAttributes::MAXFUNCTIONCALLS:
                 std::cout<< "Maximum number of function calls reached." << std::endl;
                 break;
-            case MAXGRADIENTCALLS:
+            case eOptimizationReturnAttributes::MAXGRADIENTCALLS:
                 std::cout<< "Maximum number of gradient calls reached." << std::endl;
                 break;
-            case MAXHESSIANCALLS:
+            case eOptimizationReturnAttributes::MAXHESSIANCALLS:
                 std::cout<< "Maximum number of hessian calls reached." << std::endl;
                 break;
-            case MAXITERATIONS:
+            case eOptimizationReturnAttributes::MAXITERATIONS:
                 std::cout<< "Maximum number of iterations reached." << std::endl;
                 break;
-            case NORMGRADIENT:
+            case eOptimizationReturnAttributes::NORMGRADIENT:
                 std::cout<< "Norm of preconditioned gradient smaller than prescribed value." << std::endl;
                 break;
-            case MINOBJECTIVE:
+            case eOptimizationReturnAttributes::MINOBJECTIVE:
                 std::cout<< "Objective smaller than prescribed value." << std::endl;
                 break;
-            case DELTAOBJECTIVEBETWEENCYCLES:
+            case eOptimizationReturnAttributes::DELTAOBJECTIVEBETWEENCYCLES:
                 std::cout<< "Delta objective between two restarts of the conjugate gradient method is smaller than prescribed minimum." << std::endl;
                 break;
-            case REACHINGMACHINEPRECISION:
+            case eOptimizationReturnAttributes::REACHINGMACHINEPRECISION:
                 std::cout<< "The machine precision is reached within the initial phase of the linesearch." << std::endl;
                 break;
             default:
@@ -522,7 +522,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
         }
         std::cout << std::endl;
     }
-    return returnValue;
+    return static_cast<int>(returnValue);
 }
 
 void NuTo::ConjugateGradientNonLinear::CalcScalingFactors(int& numHessianCalls, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& hessianOrig, Eigen::VectorXd& scaleFactorsInv)

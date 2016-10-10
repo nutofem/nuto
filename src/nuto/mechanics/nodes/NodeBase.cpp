@@ -1,5 +1,9 @@
 // $Id$
 #include "nuto/mechanics/nodes/NodeBase.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/visualize/VisualizeComponent.h"
+#include "nuto/visualize/VisualizeEnum.h"
+#include "nuto/visualize/VisualizeUnstructuredGrid.h"
 #include <assert.h>
 
 #ifdef ENABLE_VISUALIZE
@@ -16,8 +20,8 @@ Eigen::Vector3d NuTo::NodeBase::GetPointVectorData(Node::eDof rDofType, int rTim
 void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) const
 {
     Eigen::Matrix<double, 3, 1> coordinates = Eigen::Matrix<double, 3, 1>::Zero();
-    int dim = this->GetNum(Node::COORDINATES);
-    coordinates.block(0,0,dim, 1) = this->Get(Node::COORDINATES);
+    int dim = this->GetNum(Node::eDof::COORDINATES);
+    coordinates.block(0,0,dim, 1) = this->Get(Node::eDof::COORDINATES);
 
     unsigned int PointId = rVisualize.AddPoint(coordinates.data());
     //	std::cout << "add point " << PointId << std::endl;
@@ -28,46 +32,46 @@ void NuTo::NodeBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const std:
     {
         switch (it.get()->GetComponentEnum())
         {
-        case NuTo::VisualizeBase::DISPLACEMENTS:
+        case NuTo::eVisualizeWhat::DISPLACEMENTS:
         {
-            if (GetNum(Node::DISPLACEMENTS) == 0)
+            if (GetNum(Node::eDof::DISPLACEMENTS) == 0)
                 break;
-            rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GetPointVectorData(Node::DISPLACEMENTS, 0).data());
+            rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GetPointVectorData(Node::eDof::DISPLACEMENTS, 0).data());
         }
         break;
-        case NuTo::VisualizeBase::VELOCITY:
+        case NuTo::eVisualizeWhat::VELOCITY:
         {
-            if (GetNum(Node::DISPLACEMENTS) == 0 && GetNumTimeDerivatives() < 1)
+            if (GetNum(Node::eDof::DISPLACEMENTS) == 0 && GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < 1)
                 break;
-            rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GetPointVectorData(Node::DISPLACEMENTS, 1).data());
+            rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GetPointVectorData(Node::eDof::DISPLACEMENTS, 1).data());
         }
         break;
-        case NuTo::VisualizeBase::ACCELERATION:
+        case NuTo::eVisualizeWhat::ACCELERATION:
         {
-            if (GetNum(Node::DISPLACEMENTS) == 0 && GetNumTimeDerivatives() < 2)
+            if (GetNum(Node::eDof::DISPLACEMENTS) == 0 && GetNumTimeDerivatives(Node::eDof::DISPLACEMENTS) < 2)
                 break;
-            rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GetPointVectorData(Node::DISPLACEMENTS, 2).data());
+            rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GetPointVectorData(Node::eDof::DISPLACEMENTS, 2).data());
         }
         break;
-        case NuTo::VisualizeBase::ROTATION:
+        case NuTo::eVisualizeWhat::ROTATION:
         {
-            if (GetNum(Node::ROTATIONS) == 0)
+            if (GetNum(Node::eDof::ROTATIONS) == 0)
                 break;
-            rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GetPointVectorData(Node::ROTATIONS, 0).data());
+            rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GetPointVectorData(Node::eDof::ROTATIONS, 0).data());
         }
         break;
-        case NuTo::VisualizeBase::ANGULAR_VELOCITY:
+        case NuTo::eVisualizeWhat::ANGULAR_VELOCITY:
         {
-            if (GetNum(Node::ROTATIONS) == 0 && GetNumTimeDerivatives() < 1)
+            if (GetNum(Node::eDof::ROTATIONS) == 0 && GetNumTimeDerivatives(Node::eDof::ROTATIONS) < 1)
                 break;
-            rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GetPointVectorData(Node::ROTATIONS, 1).data());
+            rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GetPointVectorData(Node::eDof::ROTATIONS, 1).data());
         }
         break;
-        case NuTo::VisualizeBase::ANGULAR_ACCELERATION:
+        case NuTo::eVisualizeWhat::ANGULAR_ACCELERATION:
         {
-            if (GetNum(Node::ROTATIONS) == 0 && GetNumTimeDerivatives() < 2)
+            if (GetNum(Node::eDof::ROTATIONS) == 0 && GetNumTimeDerivatives(Node::eDof::ROTATIONS) < 2)
                  break;
-             rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GetPointVectorData(Node::ROTATIONS, 2).data());
+             rVisualize.SetPointDataVector(PointId, it.get()->GetComponentName(), GetPointVectorData(Node::eDof::ROTATIONS, 2).data());
         }
         break;
         default:
@@ -100,3 +104,29 @@ void NuTo::NodeBase::serialize(Archive & ar, const unsigned int version)
 }
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::NodeBase)
 #endif // ENABLE_SERIALIZATION
+
+bool NuTo::less_XCoordinate2D::operator()(NuTo::NodeBase *nodePtr1, NuTo::NodeBase *nodePtr2)
+{
+    return nodePtr1->Get(Node::eDof::COORDINATES)(0) < nodePtr2->Get(Node::eDof::COORDINATES)(0);
+}
+
+bool NuTo::greater_XCoordinate2D::operator()(NuTo::NodeBase *nodePtr1, NuTo::NodeBase *nodePtr2)
+{
+    return nodePtr1->Get(Node::eDof::COORDINATES)(0) > nodePtr2->Get(Node::eDof::COORDINATES)(0);
+}
+
+bool NuTo::less_YCoordinate2D::operator()(NuTo::NodeBase *nodePtr1, NuTo::NodeBase *nodePtr2)
+{
+    return nodePtr1->Get(Node::eDof::COORDINATES)(1) < nodePtr2->Get(Node::eDof::COORDINATES)(1);
+}
+
+bool NuTo::greater_YCoordinate2D::operator()(NuTo::NodeBase *nodePtr1, NuTo::NodeBase *nodePtr2)
+{
+    return nodePtr1->Get(Node::eDof::COORDINATES)(1) > nodePtr2->Get(Node::eDof::COORDINATES)(1);
+}
+
+int NuTo::NodeBase::GetDof(NuTo::Node::eDof rDof) const
+{
+    assert(GetNum(rDof) == 1);
+    return GetDof(rDof, 0);
+}
