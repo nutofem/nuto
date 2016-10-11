@@ -116,9 +116,10 @@ NuTo::StructureOutputBlockVector& NuTo::StructureOutputBlockVector::operator /=(
     return *this;
 }
 
-
+namespace NuTo
+{
 //! @brief stream operator for outputs with cout or files
-std::ostream& NuTo::operator<<(std::ostream &rOut, const NuTo::StructureOutputBlockVector& rStructureOutputBlockVector)
+std::ostream& operator<<(std::ostream &rOut, const NuTo::StructureOutputBlockVector& rStructureOutputBlockVector)
 {
     rOut << "Active Dofs" << std::endl;
     rOut << rStructureOutputBlockVector.J << std::endl;
@@ -126,7 +127,7 @@ std::ostream& NuTo::operator<<(std::ostream &rOut, const NuTo::StructureOutputBl
     rOut << rStructureOutputBlockVector.K << std::endl;
     return rOut;
 }
-
+}
 void NuTo::StructureOutputBlockVector::SetZero()
 {
     J.SetZero();

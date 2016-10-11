@@ -4,6 +4,7 @@
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
+
 #include <eigen3/Eigen/Sparse>
 #include <cstring>
 #include <fstream>
@@ -40,6 +41,7 @@ private:
     struct Interface
     {
         std::map<int, int> mNodeIdsMap;
+        std::vector<int> mNodeIds;
         int mValue;
     };
 
@@ -89,6 +91,8 @@ public:
     BoundaryList               mBoundaries;
     InterfaceList              mInterfaces;
     int                        mNumRigidBodyModes;
+    int                        mNumInterfaceNodesTotal = 42;
+    void ImportMeshJson(std::string rFileName, const int interpolationTypeId);
     void ImportMesh(std::string rFileName, const int interpolationTypeId);
 protected:
 

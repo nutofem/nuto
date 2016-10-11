@@ -43,6 +43,11 @@ OPTION(ENABLE_VISUALIZE "enables the visualization package" FALSE)
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts ${CMAKE_MODULE_PATH})
 INCLUDE(NuToMacros)
 
+
+
+find_package(jsoncpp REQUIRED)
+
+
 if(ENABLE_MPI)
     find_package(MPI REQUIRED)
     include_directories(${MPI_INCLUDE_PATH})

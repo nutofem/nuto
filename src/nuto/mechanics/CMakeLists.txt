@@ -297,6 +297,7 @@ SET(SWIG_MODULE_ModulMechanics_EXTRA_DEPS
 # build static library
 ADD_LIBRARY(NuToMechanics ${NuToMechanics_SOURCES})
 target_link_libraries(NuToMechanics ${ANN_LIBRARIES})
+target_link_libraries(NuToMechanics jsoncpp)
 
 if(ENABLE_MPI)
     target_link_libraries(NuToMechanics ${MPI_LIBRARIES})

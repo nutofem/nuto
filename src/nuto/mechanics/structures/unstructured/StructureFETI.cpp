@@ -1,4 +1,5 @@
 #include <mpi/mpi.h>
+#include <jsoncpp/json/json.h>
 #include "nuto/mechanics/structures/unstructured/StructureFETI.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 
@@ -160,12 +161,12 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
     int numLagrangeMultipliers  = 0;
 
     // this should be read from the mesh file
-    const int numInterfaceNodesTotal    = 42;
+//    const int numInterfaceNodesTotal    = 42;
 
     for (const auto& dofType : dofTypes)
     {
         numActiveDofs           += GetNumActiveDofs(dofType);
-        numLagrangeMultipliers  += GetDofDimension(dofType) * numInterfaceNodesTotal;
+        numLagrangeMultipliers  += GetDofDimension(dofType) * mNumInterfaceNodesTotal;
     }
 
     mConnectivityMatrix.resize(numLagrangeMultipliers, numActiveDofs);
@@ -187,8 +188,15 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
 
             }
 
-        offsetRows += GetDofDimension(dofType) * numInterfaceNodesTotal;
+        offsetRows += GetDofDimension(dofType) * mNumInterfaceNodesTotal;
         offsetCols += GetNumActiveDofs(dofType);
+    }
+
+    if (mRank == 0)
+    {
+//        std::cout << mConnectivityMatrix << std::endl;
+        std::cout << mConnectivityMatrix.rows() << std::endl;
+        std::cout << mConnectivityMatrix.cols() << std::endl;
     }
 }
 
@@ -268,6 +276,102 @@ void NuTo::StructureFETI::ImportMesh(std::string rFileName, const int interpolat
 
     for (const auto& element : mElements)
         ElementCreate(element.mId,interpolationTypeId, element.mNodeIds,eElementDataType::CONSTITUTIVELAWIP,eIpDataType::STATICDATA);
+
+    ElementTotalConvertToInterpolationType();
+
+    NodeBuildGlobalDofs();
+
+}
+
+
+void NuTo::StructureFETI::ImportMeshJson(std::string rFileName, const int interpolationTypeId)
+{
+
+    Json::Value root;
+    Json::Reader reader;
+
+    std::ifstream file(rFileName.c_str(), std::ios::in);
+
+    if(not reader.parse(file,root, false))
+        throw MechanicsException(__PRETTY_FUNCTION__, "Error parsing mesh file.");
+
+
+
+    // only supports nodes.size() == 1
+    for (auto const& nodes : root["Nodes"])
+    {
+        mNodes.resize(nodes["Coordinates"].size());
+        for (unsigned i = 0; i < mNodes.size(); ++i)
+        {
+            mNodes[i].mCoordinates[0] = nodes["Coordinates"][i][0].asDouble();
+            mNodes[i].mCoordinates[1] = nodes["Coordinates"][i][1].asDouble();
+            mNodes[i].mCoordinates[2] = nodes["Coordinates"][i][2].asDouble();
+            mNodes[i].mId             = nodes["Indices"][i].asInt();
+        }
+
+
+    }
+
+
+
+    // only supports elements.size() == 1
+    for (auto const& elements : root["Elements"])
+    {
+        mElements.resize(elements["NodalConnectivity"].size());
+
+        for (unsigned i = 0; i < mElements.size(); ++i)
+        {
+            // restricted to linear quads
+            mElements[i].mNodeIds.resize(4);
+
+            mElements[i].mNodeIds[0] = elements["NodalConnectivity"][i][0].asInt();
+            mElements[i].mNodeIds[1] = elements["NodalConnectivity"][i][1].asInt();
+            mElements[i].mNodeIds[2] = elements["NodalConnectivity"][i][2].asInt();
+            mElements[i].mNodeIds[3] = elements["NodalConnectivity"][i][3].asInt();
+            mElements[i].mId            = elements["Indices"][i].asInt();
+        }
+    }
+
+
+    mInterfaces.resize(root["Interface"].size());
+    for (unsigned i = 0; i < mInterfaces.size(); ++i)
+    {
+
+        int globalId = root["Interface"][i]["GlobalStartId"][0].asInt();
+
+        mInterfaces[i].mValue = root["Interface"][i]["Value"][0].asInt();
+
+        for (unsigned k = 0; k < root["Interface"][i]["NodeIds"][0].size(); ++k)
+        {
+            mInterfaces[i].mNodeIdsMap.emplace(globalId, root["Interface"][i]["NodeIds"][0][k].asInt());
+
+            globalId++;
+        }
+
+
+    }
+
+    mNumInterfaceNodesTotal = root["NumInterfaceNodes"][0].asInt();
+
+    file.close();
+
+
+    for (const auto& node : mNodes)
+    {
+        //        std::cout << node.mId << std::endl;
+        NodeCreate(node.mId, node.mCoordinates.head(2));
+    }
+
+    //    NodeInfo(10);
+    //std::cout << "element ids"<< std::endl;
+
+    for (const auto& element : mElements)
+    {
+        //        std::cout << element.mId << std::endl;
+        //        std::cout << element.mNodeIds[0] << element.mNodeIds[1] << element.mNodeIds[2] << element.mNodeIds[3] << std::endl;
+        ElementCreate(element.mId,interpolationTypeId, element.mNodeIds,eElementDataType::CONSTITUTIVELAWIP,eIpDataType::STATICDATA);
+    }
+
 
     ElementTotalConvertToInterpolationType();
 
