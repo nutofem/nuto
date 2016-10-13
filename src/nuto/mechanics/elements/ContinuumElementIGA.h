@@ -70,7 +70,7 @@ public:
 
     Eigen::VectorXd InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const;
 
-    Eigen::VectorXd InterpolateDofGlobalSurfaceDerivative(int rTimeDerivative, int rSurfaceId, const Eigen::VectorXd& rNaturalCoordinates, int rDerivative, int rDirection) const override;
+    Eigen::VectorXd InterpolateDofGlobalSurfaceDerivative(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative, int rDirection) const override;
 
     const ContinuumElementIGA<1>& AsContinuumElementIGA1D() const override
     {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElementIGA<1>.");}
