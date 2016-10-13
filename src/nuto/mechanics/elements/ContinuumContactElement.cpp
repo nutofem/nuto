@@ -205,4 +205,4 @@ void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(
 
 template class NuTo::ContinuumContactElement<1>;
 template class NuTo::ContinuumContactElement<2>;
-template class NuTo::ContinuumContactElement<3>;
+

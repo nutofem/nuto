@@ -34,6 +34,7 @@ protected:
     std::vector<std::pair<const ContinuumElement<TDim>*, int> > mElementsMaster;
 
     const IntegrationTypeBase *mIntegrationType;
+
 };
 } /* namespace NuTo */
 

@@ -221,29 +221,19 @@ double NuTo::ContinuumElementIGA<2>::CalculateDetJxWeightIPxSection(double rDetJ
     return rDetJacobian * mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP) * mSection->GetThickness();
 }
 
-template<>
-double NuTo::ContinuumElementIGA<3>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
-{
-    return rDetJacobian * mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP);
-}
-
 }  // namespace NuTo
 
 template class NuTo::ContinuumElementIGA<1>;
 template class NuTo::ContinuumElementIGA<2>;
-template class NuTo::ContinuumElementIGA<3>;
 
 
 #ifdef ENABLE_SERIALIZATION
 template void NuTo::ContinuumElementIGA<1>::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
 template void NuTo::ContinuumElementIGA<2>::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
-template void NuTo::ContinuumElementIGA<3>::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
 template void NuTo::ContinuumElementIGA<1>::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
 template void NuTo::ContinuumElementIGA<2>::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
-template void NuTo::ContinuumElementIGA<3>::serialize(boost::archive::xml_oarchive & ar, const unsigned int version);
 template void NuTo::ContinuumElementIGA<1>::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
 template void NuTo::ContinuumElementIGA<2>::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
-template void NuTo::ContinuumElementIGA<3>::serialize(boost::archive::text_oarchive & ar, const unsigned int version);
 template<int TDim>
 template<class Archive>
 void NuTo::ContinuumElementIGA<TDim>::save(Archive & ar, const unsigned int version)const
@@ -251,13 +241,9 @@ void NuTo::ContinuumElementIGA<TDim>::save(Archive & ar, const unsigned int vers
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize ContinuumElementIGA " << std::endl;
 #endif
-    ar & boost::serialization::make_nvp("ContinuumElementIGA_ElementBase",boost::serialization::base_object<ElementBase >(*this));
-    ar & boost::serialization::make_nvp("mSection", const_cast<SectionBase*&>(mSection));
-
-    const std::uintptr_t* mNodesAddress = reinterpret_cast<const std::uintptr_t*>(mNodes.data());
-    int size = mNodes.size();
-    ar & boost::serialization::make_nvp("mNodes_size", size);
-    ar & boost::serialization::make_nvp("mNodes", boost::serialization::make_array(mNodesAddress, size));
+    ar & boost::serialization::make_nvp("ContinuumElement",boost::serialization::base_object<ContinuumElement<TDim> >(*this));
+    ar & boost::serialization::make_nvp("mKnots_size", mKnots);
+    ar & boost::serialization::make_nvp("mKnotIDs_size", mKnotIDs);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize ContinuumElementIGA" << std::endl;
 #endif
@@ -265,13 +251,10 @@ void NuTo::ContinuumElementIGA<TDim>::save(Archive & ar, const unsigned int vers
 
 template void NuTo::ContinuumElementIGA<1>::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
 template void NuTo::ContinuumElementIGA<2>::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
-template void NuTo::ContinuumElementIGA<3>::serialize(boost::archive::binary_iarchive & ar, const unsigned int version);
 template void NuTo::ContinuumElementIGA<1>::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
 template void NuTo::ContinuumElementIGA<2>::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
-template void NuTo::ContinuumElementIGA<3>::serialize(boost::archive::xml_iarchive & ar, const unsigned int version);
 template void NuTo::ContinuumElementIGA<1>::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template void NuTo::ContinuumElementIGA<2>::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
-template void NuTo::ContinuumElementIGA<3>::serialize(boost::archive::text_iarchive & ar, const unsigned int version);
 template<int TDim>
 template<class Archive>
 void NuTo::ContinuumElementIGA<TDim>::load(Archive & ar, const unsigned int version)
@@ -279,35 +262,14 @@ void NuTo::ContinuumElementIGA<TDim>::load(Archive & ar, const unsigned int vers
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start deserialize ContinuumElementIGA " << std::endl;
 #endif
-    ar & boost::serialization::make_nvp("ContinuumElementIGA_ElementBase",boost::serialization::base_object<ElementBase >(*this));
-    ar & boost::serialization::make_nvp("mSection", const_cast<SectionBase*&>(mSection));
-
-    int size = 0;
-    ar & boost::serialization::make_nvp("mNodes_size", size);
-    std::uintptr_t* mNodesAddress = new std::uintptr_t[size];
-    ar & boost::serialization::make_nvp("mNodes", boost::serialization::make_array(mNodesAddress, size));
-    mNodes.assign(reinterpret_cast<NodeBase**>(&mNodesAddress[0]), reinterpret_cast<NodeBase**>(&mNodesAddress[size]));
+    ar & boost::serialization::make_nvp("ContinuumElementIGA_ElementBase",boost::serialization::base_object<ContinuumElement<TDim> >(*this));
+    ar & BOOST_SERIALIZATION_NVP(mKnots);
+    ar & BOOST_SERIALIZATION_NVP(mKnotIDs);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish deserialize ContinuumElementIGA" << std::endl;
 #endif
 }
 
-template<int TDim>
-void NuTo::ContinuumElementIGA<TDim>::SetNodePtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mNodeMapCast)
-{
-    for(std::vector<NodeBase*>::iterator it = mNodes.begin(); it != mNodes.end(); it++)
-    {
-        std::map<std::uintptr_t, std::uintptr_t>::const_iterator itCast = mNodeMapCast.find(reinterpret_cast<std::uintptr_t>(*it));
-        if (itCast!=mNodeMapCast.end())
-        {
-            *it = reinterpret_cast<NodeBase*>(itCast->second);
-        }
-        else
-            throw MechanicsException(__PRETTY_FUNCTION__, "The NodeBase-Pointer could not be updated.");
-    }
-}
-
 BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::ContinuumElementIGA<1>)), "ContinuumElementIGA_1")
 BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::ContinuumElementIGA<2>)), "ContinuumElementIGA_2")
-BOOST_CLASS_EXPORT_GUID(BOOST_IDENTITY_TYPE((NuTo::ContinuumElementIGA<3>)), "ContinuumElementIGA_3")
 #endif // ENABLE_SERIALIZATION

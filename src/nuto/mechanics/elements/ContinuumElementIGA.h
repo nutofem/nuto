@@ -122,12 +122,6 @@ private:
     void save(Archive & ar, const unsigned int version) const;
 
     BOOST_SERIALIZATION_SPLIT_MEMBER()
-
-    //! @brief NodeBase-Pointer are not serialized to avoid cyclic dependencies, but are serialized as Pointer-Address (uintptr_t)
-    //! Deserialization of the NodeBase-Pointer is done by searching and casting back the Address in the map
-    //! @param mNodeMapCast   std::map containing the old and new Addresses
-    virtual void SetNodePtrAfterSerialization(const std::map<std::uintptr_t, std::uintptr_t>& mNodeMapCast) override;
-
 #endif  // ENABLE_SERIALIZATION
 };
 

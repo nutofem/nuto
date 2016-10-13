@@ -5,7 +5,7 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include "nuto/math/EigenBoostSerialization.h"
+#include "nuto/math/CustomBoostSerializationExtensions.h"
 #endif  // ENABLE_SERIALIZATION
 
 #include "nuto/mechanics/interpolationtypes/InterpolationBaseIGA.h"

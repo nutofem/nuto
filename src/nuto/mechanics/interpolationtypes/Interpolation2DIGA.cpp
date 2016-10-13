@@ -387,6 +387,7 @@ void NuTo::Interpolation2DIGA::serialize(Archive & ar, const unsigned int versio
     ar & BOOST_SERIALIZATION_NVP(mDegree);
     ar & BOOST_SERIALIZATION_NVP(mKnotsX);
     ar & BOOST_SERIALIZATION_NVP(mKnotsY);
+    ar & BOOST_SERIALIZATION_NVP(mWeights);
     ar & BOOST_SERIALIZATION_NVP(mIPCoordinates);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize Interpolation1DIGA" << std::endl;
