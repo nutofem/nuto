@@ -161,7 +161,8 @@ void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(
     Eigen::VectorXd coordinatedIPSlave;
 
     double temp[2];
-    switch (TDim) {
+    switch (TDim)
+    {
     case 1:
     {
         mIntegrationType->GetLocalIntegrationPointCoordinates1D(rTheIP, temp[0]);
@@ -181,18 +182,20 @@ void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(
         break;
     }
 
-
+    // ===> Get the starting point for iteration
     double minDistance = std::numeric_limits<double>::infinity();
-    for(auto &it : mElementsMaster)
+    auto it = mElementsMaster.begin();
+    for(; it != mElementsMaster.end(); it++)
     {
-        const auto* elementPtr = it.first;
-        int surfaceId = it.second;
+        const auto* elementPtr = it->first;
+        int surfaceId = it->second;
 
         // ===> Get the position on the master curve/surface
         // ===> Compare and set to minimum if though
-        Eigen::VectorXd param(1);
-        param << 0.;
-        Eigen::VectorXd coordinatesMaster = elementPtr->InterpolateDofGlobalSurfaceDerivative(0, surfaceId, param, 0, 0);
+
+        const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType()->Get(Node::eDof::COORDINATES);
+        Eigen::VectorXd parameter = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(rNaturalCoordinates, surfaceId, mKnots);
+        Eigen::VectorXd coordinatesMaster = elementPtr->InterpolateDofGlobalSurfaceDerivative(0, parameter, 0, 0);
         double distance = (coordinatesMaster - coordinatedIPSlave).norm();
         if(minDistance < distance) minDistance = distance;
     }
