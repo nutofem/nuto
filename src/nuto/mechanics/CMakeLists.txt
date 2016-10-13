@@ -64,14 +64,6 @@ dofSubMatrixStorage/BlockFullVector.cpp
 dofSubMatrixStorage/BlockFullMatrix.cpp
 )
 
-SET(NuToMechanicsCrack_SOURCES
-cracks/CrackBase.cpp
-cracks/CrackExplicit2D.cpp
-elements/ElementDataCrackBase.cpp
-elements/ElementDataConstitutiveIpCrack.cpp
-structures/unstructured/StructureCrack.cpp
-)
-
 SET(NuToMechanicsElements_SOURCES
 elements/ContinuumElement.cpp	
 elements/ContinuumBoundaryElement.cpp

@@ -53,8 +53,6 @@ std::string NuTo::VisualizeComponent::GetComponentName() const
         return "BondStress";
     case eVisualizeWhat::CONSTITUTIVE:
         return "ConstitutiveModel";
-    case eVisualizeWhat::CRACK:
-        return "Crack";
     case eVisualizeWhat::DAMAGE:
         return "Damage";
     case eVisualizeWhat::CRACK_PHASE_FIELD:

@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -236,40 +234,6 @@ const std::vector<double>& NuTo::ElementDataBase::GetNonlocalWeights(int rIp, in
     throw MechanicsException("[NuTo::ElementDataBase::GetNonlocalWeights] Not implemented for the ElementDataBase class - check the allocated element data type..");
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//! functions defined in @link ElementDataCrackBase.h @endlink
-
-//! @brief gets the cracks of an element
-//! @return vector to cracks
-std::vector<NuTo::CrackBase*>& NuTo::ElementDataBase::GetCracks()
-{
-    throw MechanicsException("[NuTo::ElementDataBase::GetCracks] Not implemented for the ElementDataBase class - check the allocated element data type..");
-}
-//! @brief gets the number of cracks for an element
-//! @return number of cracks
-int NuTo::ElementDataBase::GetNumCracks()const
-{
-    throw MechanicsException("[NuTo::ElementDataBase::GetNumCracks] Not implemented for the ElementDataBase class - check the allocated element data type..");
-}
-//! @brief adds a crack to the element
-//! @param rCrack  crack
-//! @return the local crack number, the crack is either append to the list, or the existing local number is returned
-unsigned int NuTo::ElementDataBase::AddCrack(NuTo::CrackBase* rCrack)
-{
-    throw MechanicsException("[NuTo::ElementDataBase::AddCrack] Not implemented for the ElementDataBase class - check the allocated element data type..");
-}
-//! @brief Set the information that the element is already cracked or not
-//! @param bool (Input) cracked or not
-void NuTo::ElementDataBase::IsCracked(const bool rIsCracked)
-{
-    throw MechanicsException("[NuTo::ElementDataBase::IsCracked] Not implemented for the ElementDataBase class - check the allocated element data type..");
-}
-//! @brief Give the information if the element is already cracked or not
-//! @return bool false: elements with this elementDataType are not cracked
-const bool NuTo::ElementDataBase::IsCracked() const
-{
-    return false;
-}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //! @brief returns the enum of element data type
 //! @return enum of ElementDataType

@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -30,7 +28,6 @@
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataBase.h"
-#include "nuto/mechanics/cracks/CrackBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/ElementEnum.h"

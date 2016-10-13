@@ -36,7 +36,6 @@ namespace NuTo
 class ConstitutiveBase;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain;
 class ConstraintBase;
-class CrackBase;
 class ElementBase;
 class EngineeringStrain2D;
 class GroupBase;
@@ -1593,31 +1592,6 @@ public:
     //! if the integration type does not exist (in the map), the integration type is created
     //! @param identIntegrationType Identifier for an integration type
     NuTo::IntegrationTypeBase* GetPtrIntegrationType(NuTo::eIntegrationType rIdentIntegrationType);
-#endif //SWIG
-
-    //*************************************************
-    //************    Crack routines    ***************
-    //**  pure virtual                               **
-    //*************************************************
-	//! @brief returns the number of cracks
-	//! @return number of cracks
-	virtual unsigned int GetNumCracks()const=0;
-
-#ifndef SWIG
-	//! @brief a reference to a crack
-	//! @param identifier
-	//! @return reference to a cracks
-	virtual CrackBase* CrackGetCrackPtr(int rIdent)=0;
-
-	//! @brief a reference to a crack
-	//! @param identifier
-	//! @return reference to a crack
-	virtual const CrackBase* CrackGetCrackPtr(int rIdent)const=0;
-
-	//! @brief gives the identifier of a crack
-	//! @param reference to a crack
-	//! @return identifier
-	virtual int CrackGetId(const CrackBase* rCrack)const=0;
 #endif //SWIG
 
     //*************************************************

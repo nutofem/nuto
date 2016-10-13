@@ -410,8 +410,6 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, const std
         AddVisualizationComponent(rElementGroup, eVisualizeWhat::BOND_STRESS);
     else if (rVisualizeComponent == "Constitutive")
         AddVisualizationComponent(rElementGroup, eVisualizeWhat::CONSTITUTIVE);
-    else if (rVisualizeComponent == "Crack")
-        AddVisualizationComponent(rElementGroup, eVisualizeWhat::CRACK);
     else if (rVisualizeComponent == "Damage")
         AddVisualizationComponent(rElementGroup, eVisualizeWhat::DAMAGE);
     else if (rVisualizeComponent == "Displacements")
@@ -620,7 +618,6 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
 
         case NuTo::eVisualizeWhat::HEAT_FLUX:
         case NuTo::eVisualizeWhat::SLIP:
-        case NuTo::eVisualizeWhat::CRACK:
         case NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS:
         case NuTo::eVisualizeWhat::LATTICE_STRESS:
         case NuTo::eVisualizeWhat::LATTICE_STRAIN:

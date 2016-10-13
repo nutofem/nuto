@@ -36,7 +36,7 @@ OPTION(ENABLE_PYTHON_TESTS "create makefiles for python tests" TRUE)
 OPTION(ENABLE_SHOW_TIME "shows for each python command the execution time" TRUE)
 OPTION(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" FALSE)
 OPTION(ENABLE_SERIALIZATION "enables serialization" FALSE)
-OPTION(ENABLE_UNIT_TESTS "use Boost Test library for unit tests" FALSE)
+OPTION(ENABLE_UNIT_TESTS "use Boost Test library for unit tests" TRUE)
 OPTION(ENABLE_VERBOSELEVEL "enables status messages during the execution by setting the verboselevel" FALSE)
 OPTION(ENABLE_VISUALIZE "enables the visualization package" FALSE)
 

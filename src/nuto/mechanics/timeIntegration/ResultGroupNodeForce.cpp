@@ -25,7 +25,7 @@ int NuTo::ResultGroupNodeForce::GetNumData(const StructureBase& rStructure)const
     if(groupNode.GetNumMembers() < 1)
     	throw MechanicsException("[NuTo::ResultGroupNodeForce::GetNumData] Group has no members.");
 
-	return groupNode.begin()->second->GetNum(Node::eDof::DISPLACEMENTS);
+    return groupNode.begin()->second->GetNum(Node::eDof::DISPLACEMENTS);
 }
 
 NuTo::eTimeIntegrationResultType NuTo::ResultGroupNodeForce::GetResultType() const

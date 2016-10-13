@@ -1,5 +1,3 @@
-// $Id$
-
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -45,9 +43,6 @@ public:
     typedef std::map<nodeBasePtr_t, nodeBasePtr_t> nodeBasePtrMap_t;
     typedef std::set<nodeBasePtr_t> nodeBasePtrSet_t;
     typedef std::vector<nodeBasePtr_t> nodeBasePtrVec_t;
-    typedef CrackBase* crackBasePtr_t;
-    typedef std::vector<crackBasePtr_t> crackBasePtrVec_t;
-    typedef boost::ptr_map<int, CrackBase> crackMap_t;
 
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
@@ -663,94 +658,8 @@ public:
     //! @parameters rSpheres (coordinates x,y,z and radius)
     void MeshCreateLattice3D(int rTypeOfSpecimen, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheres, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rTetraeders);
 
-    //*************************************************************
-    //************         Crack routines        ******************
-    //**  defined in structures/unstructured/StructureCrack.cpp **
-    //*************************************************************
-    //! @brief returns the number of cracks
-    //! @return number of cracks
-    unsigned int GetNumCracks() const;
 
-    //! @brief ... Info routine that prints general information about the cracks
-    //! @param ... rVerboseLevel describes how detailed the information is
-    void CrackInfo(int rVerboseLevel) const;
-
-    //! @brief ... create a new crack
-    //! @param rIdent ... crack identifier
-    int CrackCreate();
-
-    //! @brief ... create a new crack with given node-Id's
-    //! @param rNodes ... vector of node-Id's
-    int CrackCreate(NuTo::FullVector<int, Eigen::Dynamic>& rNodes);
-
-    //! @brief ... delete an existing crack
-    //! @param rIdent ... crack identifier,Eigen::Dynamic
-    void CrackDelete(int rIdent);
-
-    //! @brief ... extends an existing crack
-    //! @param rIdent (Input) ... crack identifier
-    //! @param rNode (Input) ... node Id to be attended to the crack
-    void CrackPushBack(const int rIdent, const int rNodeNumber);
-    void CrackPushFront(const int rIdent, const int rNodeNumber);
-
-    //! @brief ... shortens an existing crack
-    //! @param rIdent ... crack identifier
-    void CrackPopBack(int rIdent);
-    void CrackPopFront(int rIdent);
-
-    //! @brief ... merge all cracks to the existing structure
-    void InitiateCracks();
-    //! @brief ... merge specified crack to the existing structure
-    //! @param rIdent ... crack identifier
-    void InitiateCrack(const int rIdent);
-
-    //! @brief ... Initialize the PhantomNodeMethod to the structure
-    void InitiatePhantomNodeMethod();
-
-    //! @brief ... take cracked elements and initiate PhantomNodeMethod
-    //! @param rNumIp (Input) ... number of integration points for the new (cracked) elements
-    //! @return  ... id vector of cracked elements
-    NuTo::FullVector<int, Eigen::Dynamic> InitiatePhantomNodeMethod(int rNumIp);
-
-    //! @brief ... take cracked elements and initiate PhantomNodeMethod
-    //! @param rNumIp (Input) ... number of integration points for the new (cracked) elements
-    //! @return  ... id vector of cracked elements
-    NuTo::FullVector<int, Eigen::Dynamic> InitiatePhantomNodeMethodTriangle(int rNumIp);
 #ifndef SWIG
-    //! @brief ... extends an existing crack
-    //! @param rIdent ... crack identifier
-    //! @param rNode ... pointer to the node to be attended to the crack
-    void CrackPushBack(int rIdent, NodeBase* rNode);
-    void CrackPushFront(int rIdent, NodeBase* rNode);
-
-    //! @brief ... merge all cracks to the existing structure
-    //! @param rCrackedElems (Output) ... vector of cracked elements
-    void InitiateCracks(elementBasePtrSet_t & rCrackedElems);
-
-    //! @brief ... merge specified crack to the existing structure
-    //! @param rIdent (Input) ... crack identifier
-    //! @param rCrackedElems (Output) ... vector of cracked elements
-    void InitiateCrack(const int rIdent, elementBasePtrSet_t & rCrackedElems);
-
-    //! @brief ... Initialize the PhantomNodeMethod to the structure: rCrackedElems will be doubled after initialization
-    //! @param rCrackedElems (Input) ... vector of cracked elements
-    void InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedElems);
-
-    //! @brief returns a reference to a crack
-    //! @param identifier
-    //! @return reference to a crack
-    CrackBase* CrackGetCrackPtr(int rIdent);
-
-    //! @brief returns a const reference to a crack
-    //! @param identifier
-    //! @return const reference to a crack
-    const CrackBase* CrackGetCrackPtr(int rIdent) const;
-
-    //! @brief gives the identifier of a crack
-    //! @param pointer to a crack
-    //! @return identifier
-    int CrackGetId(const CrackBase* rCrack) const;
-
     //! @brief copy and move the structure
     //! most of the data is kept, but e.g. nonlocal data and
     //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
@@ -839,14 +748,6 @@ protected:
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
     void GetNodesTotal(std::vector<std::pair<int, NodeBase*> >& rNodes);
-
-    //! @brief ... store all cracks of a structure in a vector
-    //! @param rElements ... vector of const crack pointer
-    void GetCracksTotal(std::vector<const CrackBase*>& rCracks) const;
-
-    //! @brief ... store all cracks of a structure in a vector
-    //! @param rElements ... vector of crack pointer
-    void GetCracksTotal(std::vector<CrackBase*>& rCracks);
 #endif
 
     //! @brief deletes a node
@@ -865,10 +766,6 @@ protected:
 
     boost::ptr_map<int, NodeBase> mNodeMap;
     boost::ptr_map<int, ElementBase> mElementMap;
-
-    //! @brief ... map storing the cracks and a pointer to the objects
-    //! @sa CrackBase
-    crackMap_t mCrackMap;
 
 private:
 

@@ -13,10 +13,6 @@ NuTo::ElementData::eElementDataType NuTo::ElementData::ElementDataTypeToEnum(con
     {
         elementDataType = NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP;
     }
-    else if (uppercase == "CONSTITUTIVELAWIPCRACK")
-    {
-        elementDataType = NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIPCRACK;
-    }
     else if (uppercase == "CONSTITUTIVELAWIPNONLOCAL")
     {
         elementDataType = NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIPNONLOCAL;

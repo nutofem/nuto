@@ -40,7 +40,6 @@ enum class eVisualizeWhat
     CONSTITUTIVE,                   //!< visualize constitutive id
     SECTION,                        //!< visualize section id
     ELEMENT,                        //!< visualize element id
-    CRACK,                          //!< visualize crack id
     PRINCIPAL_ENGINEERING_STRESS,   //!< visualize principal stresses
     PARTICLE_RADIUS,                //!< visualize radius of particles/nodes
     LATTICE_STRAIN,                 //!< visualize strain of lattice models
