@@ -190,7 +190,7 @@ Eigen::VectorXd NuTo::ContinuumElementIGA<TDim>::InterpolateDofGlobal(int rTimeD
 }
 
 template<int TDim>
-Eigen::VectorXd NuTo::ContinuumElementIGA<TDim>::InterpolateDofGlobalSurfaceDerivative(int rTimeDerivative, int rSurfaceId, const Eigen::VectorXd& rParameter, int rDerivative, int rDirection) const
+Eigen::VectorXd NuTo::ContinuumElementIGA<TDim>::InterpolateDofGlobalSurfaceDerivative(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative, int rDirection) const
 {
 //    const InterpolationBase& interpolationTypeCoords = this->GetInterpolationType()->Get(Node::eDof::COORDINATES);
 //    Eigen::VectorXd parameter = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(rNaturalCoordinates, rSurfaceId, mKnots);
