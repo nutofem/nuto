@@ -11,10 +11,11 @@ if(MINGW AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
 endif()
 
 # options
-OPTION(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" FALSE)
+OPTION(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
 OPTION(ENABLE_ARPACK "enables ARPACK libraries (for the solution of eigenvalue problems)" FALSE)
 OPTION(ENABLE_C++_TESTS "create makefiles for c++ tests" TRUE)
 OPTION(ENABLE_CGAL "enables CGAL libraries (for cracks only)" FALSE)
+OPTION(ENABLE_COVERAGE "Set compiler flag for coverage analysis" FALSE)
 OPTION(ENABLE_DEBUG "enables debug information" TRUE)
 OPTION(ENABLE_DEBUG_SERIALIZATION "prints additional debug information during serialization" FALSE)
 OPTION(ENABLE_EXAMPLES "enables examples" FALSE)
@@ -146,6 +147,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -msse4")
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --system-header-prefix=boost/ --system-header-prefix=eigen3/ -Wno-inconsistent-missing-override -Wno-missing-braces")
 endif()
+
+if(ENABLE_COVERAGE)
+    include(Coverage)
+endif()
+
 # there is an error in the numpy headers, which produces a warning that is
 # fatal when using pedantic-errors
 if(ENABLE_NUMPY)
