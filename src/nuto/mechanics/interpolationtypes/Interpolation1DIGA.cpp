@@ -160,6 +160,56 @@ Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateMatrixN(int rIP,  const Eigen
 }
 
 
+Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const
+{
+    assert(rDerivative >= 0 && rDerivative <= 2);
+    assert(!mUpdateRequired);
+    assert(rKnotIDs.rows() == 1 );
+    assert(rDirection == 0);
+
+    Eigen::VectorXd shapeFunctions;
+
+    switch (rDerivative)
+    {
+    case 0:
+        shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
+        break;
+    case 1:
+    {
+        if     (rDirection == 0) // d/dx
+        {
+            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
+        }
+        else if(rDirection == 1) // d/dy
+        {
+            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
+        }
+        break;
+    }
+    case 2:
+    {
+        if     (rDirection == 0) // d²/d²xx
+        {
+            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
+        }
+        else if(rDirection == 1) // d²/d²yy
+        {
+            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
+        }
+        else if(rDirection == 2) // d²/d²xy = d²/d²yx
+        {
+            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
+        }
+        break;
+    }
+    default:
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Maximum derivative is of order 2!");
+        break;
+    }
+
+    return shapeFunctions.transpose();
+}
+
 int NuTo::Interpolation1DIGA::CalculateNumNodes() const
 {
     return mDegree+1;

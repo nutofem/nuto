@@ -110,6 +110,16 @@ public:
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
     }
+
+    //! @brief returns the N matrix at a parameter, which fits to the knot vector (e.g. 3D: N & 0 & 0 \\ 0 & N & 0 \\ 0 & 0 & N ...)
+    //! @param rParameters ... parameter on the curve
+    //! @param rKnotIDs ... knot span
+    //! @param rDerivative ... the order of derivative (only 0,1,2 possible)
+    //! @param rDirection ... for 1D only 0 (in 2D 0(x) and 1(y))
+    virtual Eigen::MatrixXd CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const override
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "So far implemeneted only for IGA!");
+    }
     //********************************************
     //       DERIVATIVE SHAPE FUNCTIONS NATURAL
     //********************************************

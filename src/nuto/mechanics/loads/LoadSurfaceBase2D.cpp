@@ -202,12 +202,7 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
 
             Eigen::MatrixXd N = interpolationTypeCoords.CalculateMatrixN(ipCoordsNatural);
 
-            std::cout << "N: " << N << std::endl;
-            std::cout << "nodeCoordinates: " << nodeCoordinates << std::endl;
-
             ipCoordsGlobal = interpolationTypeCoords.CalculateMatrixN(ipCoordsNatural) * nodeCoordinates;
-
-            std::cout << "ipCoordsGlobal:       \n " << ipCoordsGlobal  << std::endl;
 
             // ########################### ############
             // ##  Calculate the surface jacobian
@@ -224,12 +219,7 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
 
             derivativeNaturalSurfaceCoordinates = interpolationTypeCoords.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, surface); // = [dXi / dAlpha]
 
-            std::cout << "derivativeNaturalSurfaceCoordinates:        \n" << derivativeNaturalSurfaceCoordinates  << std::endl;
-            std::cout << "jacobianStd:       \n " << jacobianStd  << std::endl;
-
             double detJacobian = (jacobianStd * jacobianIGA * derivativeNaturalSurfaceCoordinates).norm(); // = || [dX / dXi] * [dXi / dAlpha] ||
-
-            std::cout << "J2:       \n " <<  (jacobianIGA * derivativeNaturalSurfaceCoordinates).norm()  << std::endl;
 
             // #######################################
             // ##  Calculate surface normal vector
@@ -241,10 +231,6 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             NuTo::FullVector<double, 2> surfaceNormalVector;
             surfaceNormalVector(0) = surfaceTangentVector(1, 0);
             surfaceNormalVector(1) = -surfaceTangentVector(0, 0);
-
-//            std::cout << "Global IP coordinate:        " << ipCoordsGlobal.transpose()      << std::endl;
-//            std::cout << "Surface tangent vector @ IP: " << surfaceTangentVector.transpose()<< std::endl;
-//            std::cout << "Surface normal vector  @ IP: " << surfaceNormalVector.transpose() << std::endl;
 
             // calculate 2D shape functions
             shapeFunctions = interpolationTypeDisps.CalculateShapeFunctions(ipCoordsNatural);
@@ -258,9 +244,6 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             CalculateSurfaceLoad(ipCoordsGlobal, surfaceNormalVector, loadVector);
             loadVector *= factor;
 
-            std::cout << "load vector with weights \n" << loadVector << std::endl;
-            std::cout << "detJ " << detJacobian << " weight " << integrationType->GetIntegrationPointWeight(theIp) << ", factor "<< factor << std::endl;
-
             //add load vector to global vector
             for (int iNode = 0; iNode < shapeFunctions.rows(); iNode++)
             {
@@ -272,7 +255,6 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
                     double theLoad = shapeFunctions[iNode] * loadVector(iDispDof);
                     if (theDof < rActiveDofsLoadVector.GetNumRows())
                     {
-                        std::cout << "node: " << iNode << ", add to dof " << theDof << " " << theLoad << std::endl;
                         rActiveDofsLoadVector(theDof) += theLoad;
                     }
                     else

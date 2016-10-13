@@ -180,7 +180,6 @@ void NuTo::ContinuumElementIGA<TDim>::SetNode(int rLocalNodeNumber, NodeBase* rN
 template<int TDim>
 Eigen::VectorXd NuTo::ContinuumElementIGA<TDim>::InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const
 {
-
     const InterpolationBase& interpolationType = this->mInterpolationType->Get(rDofType);
     Eigen::MatrixXd nodalValues = this->ExtractNodeValues(rTimeDerivative, rDofType);
     Eigen::MatrixXd matrixN = interpolationType.CalculateMatrixN(rNaturalCoordinates, mKnotIDs);
@@ -190,6 +189,20 @@ Eigen::VectorXd NuTo::ContinuumElementIGA<TDim>::InterpolateDofGlobal(int rTimeD
     return matrixN * nodalValues;
 }
 
+template<int TDim>
+Eigen::VectorXd NuTo::ContinuumElementIGA<TDim>::InterpolateDofGlobalSurfaceDerivative(int rTimeDerivative, int rSurfaceId, const Eigen::VectorXd& rNaturalCoordinates, int rDerivative, int rDirection) const
+{
+    const InterpolationBase& interpolationTypeCoords = this->GetInterpolationType()->Get(Node::eDof::COORDINATES);
+    Eigen::VectorXd parameter = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(rNaturalCoordinates, rSurfaceId, mKnots);
+
+    Eigen::VectorXd nodalInitial       = this->ExtractNodeValues(rTimeDerivative, Node::eDof::COORDINATES);
+    Eigen::VectorXd nodalDisplacements = this->ExtractNodeValues(rTimeDerivative, Node::eDof::DISPLACEMENTS);
+
+    Eigen::MatrixXd matrixNDerivative = this->mInterpolationType->Get(Node::eDof::COORDINATES).CalculateMatrixNDerivative(parameter, mKnotIDs, rDerivative, rDirection);
+
+    return matrixNDerivative * (nodalInitial + nodalDisplacements);
+}
+
 namespace NuTo // template specialization in *.cpp somehow requires the definition to be in the namespace...
 {
 
@@ -197,7 +210,7 @@ template<>
 double NuTo::ContinuumElementIGA<1>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
 {
     Eigen::MatrixXd matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).CalculateMatrixN(rTheIP, mKnotIDs);
-    Eigen::VectorXd globalIPCoordinate = matrixN * ExtractNodeValues(0, Node::eDof::COORDINATES);
+    Eigen::VectorXd globalIPCoordinate = matrixN * this->ExtractNodeValues(0, Node::eDof::COORDINATES);
 
     return rDetJacobian * mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP) * mSection->GetArea() * mSection->AsSectionTruss()->GetAreaFactor(globalIPCoordinate(0, 0));
 }

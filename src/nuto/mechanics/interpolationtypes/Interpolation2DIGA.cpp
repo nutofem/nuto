@@ -182,6 +182,58 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixN(int rIP, const Eigen:
     return CalculateMatrixN(IPcoordinates, rKnotIDs);
 }
 
+Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters,
+                                                                     const Eigen::VectorXi& rKnotIDs,
+                                                                     int rDerivative,
+                                                                     int rDirection) const
+{
+    assert(rDerivative >= 0 && rDerivative <= 2);
+    assert(rKnotIDs(0) < mKnotsX.rows());
+    assert(rKnotIDs(1) < mKnotsY.rows());
+
+    Eigen::MatrixXd shapeFunctions;
+
+    switch (rDerivative)
+    {
+    case 0:
+        shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(rDerivative, rParameters, rKnotIDs, mDegree, mKnotsX, mKnotsY, mWeights).col(0);
+        break;
+    case 1:
+    {
+        if     (rDirection == 0) // d/dx
+        {
+            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(rDerivative, rParameters, rKnotIDs, mDegree, mKnotsX, mKnotsY, mWeights).col(0);
+        }
+        else if(rDirection == 1) // d/dy
+        {
+            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(rDerivative, rParameters, rKnotIDs, mDegree, mKnotsX, mKnotsY, mWeights).col(1);
+        }
+        break;
+    }
+    case 2:
+    {
+        if     (rDirection == 0) // d²/d²xx
+        {
+            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(rDerivative, rParameters, rKnotIDs, mDegree, mKnotsX, mKnotsY, mWeights).col(0);
+        }
+        else if(rDirection == 1) // d²/d²yy
+        {
+            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(rDerivative, rParameters, rKnotIDs, mDegree, mKnotsX, mKnotsY, mWeights).col(1);
+        }
+        else if(rDirection == 2) // d²/d²xy = d²/d²yx
+        {
+            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(rDerivative, rParameters, rKnotIDs, mDegree, mKnotsX, mKnotsY, mWeights).col(2);
+        }
+        break;
+    }
+    default:
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Maximum derivative is of order 2!");
+        break;
+    }
+
+    return ConstructMatrixN(shapeFunctions);
+}
+
 Eigen::MatrixXd  NuTo::Interpolation2DIGA::ConstructMatrixN(Eigen::VectorXd rShapeFunctions) const
 {
     int numNodes = GetNumNodes();
@@ -209,9 +261,9 @@ Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateNaturalSurfaceCoordinates(con
     case 1:
         return Eigen::Vector2d(rKnots(0,1), transformation(rNaturalSurfaceCoordinates(0), rKnots(1,0), rKnots(1,1)));
     case 2:
-        return Eigen::Vector2d(rKnots(0,1) - transformation(rNaturalSurfaceCoordinates(0), rKnots(0,0), rKnots(0,1)), rKnots(1,1));
+        return Eigen::Vector2d(transformation(rNaturalSurfaceCoordinates(0), rKnots(0,1), rKnots(0,0)), rKnots(1,1));
     case 3:
-        return Eigen::Vector2d(rKnots(0,0), rKnots(1,1) - transformation(rNaturalSurfaceCoordinates(0), rKnots(1,0), rKnots(1,1)));
+        return Eigen::Vector2d(rKnots(0,0), transformation(rNaturalSurfaceCoordinates(0), rKnots(1,1), rKnots(1,0)));
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
     }

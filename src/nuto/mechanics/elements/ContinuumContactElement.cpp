@@ -23,9 +23,9 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
-
 #include "nuto/mechanics/groups/Group.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
+
 template <int TDim>
 NuTo::ContinuumContactElement<TDim>::ContinuumContactElement(const ContinuumElement<TDim> *rSlaveElement,
                                                              int rSurfaceId,
@@ -155,38 +155,52 @@ void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(
                                                                                 const ConstitutiveOutputMap& constitutiveOutput,
                                                                                 int rTheIP) const
 {
-    // 1) Projection of the rTheIP on the master element => \xi^s_{IP}, \xi^m_*, n^m_*
-    double minDistance = 0.;
+    // ===> Projection of the rTheIP on the master element => \xi^s_{IP}, \xi^m_*, n^m_*
+
+    // ===> Get the position \xi^s_{IP}
+    Eigen::VectorXd coordinatedIPSlave;
+
+    double temp[2];
+    switch (TDim) {
+    case 1:
+    {
+        mIntegrationType->GetLocalIntegrationPointCoordinates1D(rTheIP, temp[0]);
+        coordinatedIPSlave.resize(1);
+        coordinatedIPSlave(0) = temp[0];
+        break;
+    }
+    case 2:
+    {
+        mIntegrationType->GetLocalIntegrationPointCoordinates2D(rTheIP, temp);
+        coordinatedIPSlave.resize(2);
+        coordinatedIPSlave << temp[0], temp[1];
+        break;
+    }
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__, "Contact between 2D and 3D bodies implemented.");
+        break;
+    }
+
+
+    double minDistance = std::numeric_limits<double>::infinity();
     for(auto &it : mElementsMaster)
     {
         const auto* elementPtr = it.first;
-        int surface = it.second;
+        int surfaceId = it.second;
 
-        double knotParameter;
-
-        Eigen::MatrixXd knots   = elementPtr->GetKnots();
-        Eigen::VectorXi knotIDs = elementPtr->GetKnotIDs();
-        switch (surface)
-        {
-        case 0:
-               knotParameter =  knots(0,0);
-            break;
-        case 1:
-               knotParameter =  knots(1,1);
-            break;
-        case 2:
-               knotParameter =  knots(0,0);
-            break;
-        case 3:
-               knotParameter =  knots(1,1);
-            break;
-        default:
-            break;
-        }
-
+        // ===> Get the position on the master curve/surface
+        // ===> Compare and set to minimum if though
+        Eigen::VectorXd param(1);
+        param << 0.;
+        Eigen::VectorXd coordinatesMaster = elementPtr->InterpolateDofGlobalSurfaceDerivative(0, surfaceId, param, 0, 0);
+        double distance = (coordinatesMaster - coordinatedIPSlave).norm();
+        if(minDistance < distance) minDistance = distance;
     }
 
-    // 2) Assemble the element gap matrix => \int_{\Gamma_e} F(ShapeFunctionsSlave(\xi^s), ShapeFunctionsMaster(\xi^*), n^*) d\Gamma
+    // ===> Newton for projection (get \xi^m_*, n^m_*)
+
+
+    // ===> Assemble the element gap matrix => \int_{\Gamma_e} F(ShapeFunctionsSlave(\xi^s), ShapeFunctionsMaster(\xi^*), n^*) d\Gamma
 }
 
 template class NuTo::ContinuumContactElement<1>;

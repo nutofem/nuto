@@ -38,125 +38,15 @@
 
 #define PRINTRESULT true
 
-/*
- |>*----*----*----*----*  -->F
+/*  ||>*----*----*----*----*
+       |    |    |    |    | -->
+       |    |    |    |    |
+    ||>*----*----*----*----*     Sigma
+       |    |    |    |    | -->
+       |    |    |    |    |
+    ||>*----*----*----*----*
+       ^
 */
-NuTo::Structure* buildStructure1D(double& DisplacementCorrect, int refinements)
-{
-    /** paramaters **/
-    double  YoungsModulus = 20000.;
-    double  Area = 100.0*0.1;
-    double  Length = 1000.0;
-    double  Force = 1.;
-
-    DisplacementCorrect = (Force*Length)/(Area*YoungsModulus);
-
-    /** Structure 1D **/
-    NuTo::Structure* myStructure = new NuTo::Structure(1);
-
-#ifdef _OPENMP
-    int numThreads = 1;
-    myStructure->SetNumProcessors(numThreads);
-#endif
-
-    /** create section **/
-    int Section = myStructure->SectionCreate("Truss");
-    myStructure->SectionSetArea(Section, Area);
-
-    /** create material law **/
-    int Material = myStructure->ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
-    myStructure->ConstitutiveLawSetParameterDouble(Material, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
-
-    /** create IGA structure **/
-
-    // create IGA curve
-    int degree = 3;
-    int numPoints = 10;
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> points(numPoints,1);
-    for(int i = 0; i < numPoints; i++)
-    {
-        points(i,0) = i*Length/(numPoints-1);
-    }
-
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> AInv;
-
-    NuTo::BSplineCurve curve(degree, points, AInv);
-
-    for(int i = 0; i < refinements; i++)
-    {
-        curve.DuplicateKnots();
-    }
-
-    if (PRINTRESULT) std::cout << "Control points: \n" << curve.GetControlPoints() << std::endl;
-    if (PRINTRESULT) std::cout << "Knots: \n" << curve.GetKnotVector() << std::endl;
-
-    if (PRINTRESULT) std::cout << "Control points: \n" << curve.GetControlPoints() << std::endl;
-    if (PRINTRESULT) std::cout << "Knots: \n" << curve.GetKnotVector() << std::endl;
-
-    int num = 100;
-    NuTo::FullVector<double, Eigen::Dynamic> parameters(num);
-    double inc = (1./num);
-    for(int i = 1; i < num-1; i++) parameters[i] = i*inc;
-    parameters[num-1] = 1.;
-
-    std::set<NuTo::Node::eDof> setOfDOFS;
-    setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
-    setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
-
-    /** create nodes **/
-    for(int i = 0; i < curve.GetNumControlPoints(); i++)
-    {
-        myStructure->NodeCreateDOFs(i, setOfDOFS, curve.GetControlPoint(i));
-    }
-
-    int interpolationType = myStructure->InterpolationTypeCreate("IGA1D");
-
-    Eigen::VectorXi vecDegree(1);
-    vecDegree(0) = degree;
-
-    std::vector<Eigen::VectorXd> vecKnots;
-    vecKnots.push_back(curve.GetKnotVector());
-    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::SPLINE, vecDegree, vecKnots, curve.GetWeights());
-    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::SPLINE, vecDegree, vecKnots, curve.GetWeights());
-
-    /** create elements **/
-    NuTo::FullVector<int, Eigen::Dynamic> elementIncidence(degree+1);
-    for(int element = 0; element < curve.GetNumIGAElements(); element++)
-    {
-        elementIncidence = curve.GetElementControlPointIDs(element);
-        myStructure->ElementCreate(interpolationType, elementIncidence, curve.GetElementKnots(element), curve.GetElementKnotIDs(element));
-        if (PRINTRESULT) std::cout << "Incidence: \n" << elementIncidence << std::endl;
-    }
-
-    myStructure->ElementTotalSetSection(Section);
-    myStructure->ElementTotalSetConstitutiveLaw(Material);
-
-    /** set boundary conditions and loads **/
-    NuTo::FullVector<double,Eigen::Dynamic> direction(1);
-    direction(0) = 1;
-    // first node is fixed
-    myStructure->ConstraintLinearSetDisplacementNode(0, direction, 0.0);
-    myStructure->SetNumLoadCases(1);
-    myStructure->LoadCreateNodeForce(0, curve.GetNumControlPoints()-1, direction, Force);
-
-    /** start analysis **/
-
-    myStructure->CalculateMaximumIndependentSets();
-    myStructure->NodeInfo(10);
-    myStructure->NodeBuildGlobalDofs();
-
-    return myStructure;
-}
-
-Eigen::Vector2d rightPressure(Eigen::Vector2d pos)
-{
-    double stress = -10.;
-    double Hight = 5.;
-    Eigen::Vector2d stressRet(0, stress * pos(1) * (pos(1) - Hight) );
-    std::cout << "Load_Upper: " << stressRet << std::cout;
-    return stressRet;
-}
-
 NuTo::BSplineSurface buildRect2D(double x0, double y0, double Height, double Length)
 {
     /** Knots and control points **/
@@ -191,11 +81,8 @@ NuTo::BSplineSurface buildRect2D(double x0, double y0, double Height, double Len
         for(int j = 0; j < numControlPointsX; j++)
         {
             controlPoints(i,j) = Eigen::Vector2d(x0 + incrx*j, y0 + incry*i);
-            if (PRINTRESULT) std::cout << "(" << controlPoints(i, j)(0) << "," << controlPoints(i, j)(1) << ")" << "  ";
         }
-        std::cout << std::endl;
     }
-    std::cout << std::endl;
 
     Eigen::MatrixXd weights(numControlPointsY, numControlPointsX);
     weights.setOnes(numControlPointsY, numControlPointsX);
@@ -203,111 +90,7 @@ NuTo::BSplineSurface buildRect2D(double x0, double y0, double Height, double Len
     return NuTo::BSplineSurface(degree, knotsX, knotsY, controlPoints, weights);
 }
 
-void contactPatchTest()
-{
-    NuTo::Structure* myStructure = new NuTo::Structure(2);
 
-    /** parameters **/
-    double  YoungsModulus = 20000.;
-    double  PoissonRatio = 0.3;
-    double  Height = 5.;
-    // there should be no dependency, because the pressure at the boundary is predefined
-    double  Thickness = 2.123548;
-    double  Length = 10;
-
-    NuTo::BSplineSurface slave  = buildRect2D(0,      0,  Height, Length);
-    NuTo::BSplineSurface master = buildRect2D(0, -Height, Height, Length);
-
-    for(int i = 0; i < 3; i++)
-    {
-        slave.DuplicateKnots(0);
-        slave.DuplicateKnots(1);
-    }
-
-    for(int i = 0; i < 1; i++)
-    {
-        master.DuplicateKnots(0);
-        master.DuplicateKnots(1);
-    }
-
-    std::set<NuTo::Node::eDof> setOfDOFS;
-    setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
-    setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
-
-    int groupNodesSlave  = myStructure->GroupCreate("Nodes");
-    int groupNodesMaster = myStructure->GroupCreate("Nodes");
-
-    int groupElementsSlave  = myStructure->GroupCreate("Elements");
-    int groupElementsMaster = myStructure->GroupCreate("Elements");
-
-    slave.buildIGAStructure (*myStructure, setOfDOFS, groupElementsSlave, groupNodesSlave);
-    master.buildIGAStructure(*myStructure, setOfDOFS, groupElementsMaster, groupNodesMaster);
-
-    /** create section **/
-    int mySection = myStructure->SectionCreate("Plane_Stress");
-    myStructure->SectionSetThickness(mySection,Thickness);
-
-    /** create constitutive law **/
-    int myMatLin = myStructure->ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
-    myStructure->ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
-    myStructure->ConstitutiveLawSetParameterDouble(myMatLin, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, PoissonRatio);
-
-    int groupNodesSlaveContact  = myStructure->GroupCreate("Nodes");
-    int groupNodesMasterContact  = myStructure->GroupCreate("Nodes");
-
-    auto LambdaGetBoundaryNodeslower = [](NuTo::NodeBase* rNodePtr) -> bool
-                                {
-                                    double Tol = 1.e-6;
-                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
-                                    {
-                                        double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
-                                        if ((y >= 0 - Tol && y <= 0 + Tol))
-                                        {
-                                            return true;
-                                        }
-                                    }
-                                    return false;
-                                };  // LambdaGetBoundaryNodeslower
-
-    myStructure->GroupAddNodeFunction(groupNodesSlaveContact, groupNodesSlave,  LambdaGetBoundaryNodeslower);
-    myStructure->GroupAddNodeFunction(groupNodesMasterContact, groupNodesMaster,  LambdaGetBoundaryNodeslower);
-
-
-    NuTo::FullVector<int,Eigen::Dynamic> rMembers;
-    myStructure->NodeGroupGetMembers(groupNodesSlaveContact,  rMembers);
-    std::cout << "groupNodesSlaveContact: \n" << rMembers.transpose() << std::endl;
-
-    myStructure->NodeGroupGetMembers(groupNodesMasterContact,  rMembers);
-    std::cout << "groupNodesMasterContact: \n" << rMembers.transpose() << std::endl;
-
-    int groupElementsSlaveContact   = myStructure->GroupCreate("Elements");
-    int groupElementsMasterContact  = myStructure->GroupCreate("Elements");
-
-    myStructure->GroupAddElementsFromNodes(groupElementsMasterContact, groupNodesMasterContact, false);
-    myStructure->GroupAddElementsFromNodes(groupElementsSlaveContact, groupNodesSlaveContact, false);
-
-    myStructure->ElementGroupGetMembers(groupElementsSlaveContact,  rMembers);
-    std::cout << "groupElementsSlaveContact: \n" << rMembers.transpose() << std::endl;
-
-    myStructure->ElementGroupGetMembers(groupElementsMasterContact,  rMembers);
-    std::cout << "groupNodesMasterContact: \n" << rMembers.transpose() << std::endl;
-
-    std::vector<int> groups;
-    groups.push_back(groupElementsSlaveContact);
-    groups.push_back(groupElementsMasterContact);
-    myStructure->Contact(groups);
-}
-
-/*
-   ||>*----*----*----*----*
-      |    |    |    |    | -->
-      |    |    |    |    |
-   ||>*----*----*----*----*     Sigma
-      |    |    |    |    | -->
-      |    |    |    |    |
-   ||>*----*----*----*----*
-      ^
-*/
 NuTo::Structure* constantStress(double& DisplacementCorrect, int refinements, const std::string &resultDir)
 {
     /** parameters **/
@@ -340,63 +123,10 @@ NuTo::Structure* constantStress(double& DisplacementCorrect, int refinements, co
     myStructure->ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS,YoungsModulus);
     myStructure->ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,PoissonRatio);
 
-    int numX = 100;
-    int numY = 100;
-    Eigen::MatrixXd parameters(numX*numY, 2);
-    int count = 0;
-    double incrX = 1./(numX-1);
-    double incrY = 1./(numY-1);
-    for(int i = 0; i < numX; i++)
-    {
-        for(int j = 0; j < numY; j++)
-        {
-            parameters(count, 0) = incrX*i;
-            parameters(count, 1) = incrY*j;
-            count++;
-        }
-    }
-
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> plateWithHole = surface.SurfacePoints(parameters);
-    boost::filesystem::path resultFileName(resultDir);
-    std::string ident("Rectangle");
-    resultFileName /= ident+".dat";
-    plateWithHole.WriteToFile(resultFileName.string(), "  ");
-
-    for(int i = 0; i < surface.GetNumControlPoints(1); i++)
-    {
-        for(int j = 0; j < surface.GetNumControlPoints(0); j++)
-        {
-            if (PRINTRESULT) std::cout << "(" << surface.GetControlPoint(i, j)(0) << "," <<  surface.GetControlPoint(i, j)(1) << ")" << "  ";
-        }
-    }
-
-
-    for(int i = 0; i < surface.GetNumControlPoints(1); i++)
-    {
-        for(int j = 0; j < surface.GetNumControlPoints(0); j++)
-        {
-            if (PRINTRESULT) std::cout << "(" << surface.GetControlPoint(i, j)(0) << "," <<  surface.GetControlPoint(i, j)(1) << ")" << "  ";
-        }
-        std::cout << std::endl ;
-    }
-    std::cout << std::endl ;
-
     for(int i = 0; i < refinements; i++)
     {
         surface.DuplicateKnots(0);
         surface.DuplicateKnots(1);
-    }
-
-    if (PRINTRESULT) std::cout << "KnotsX: \n" << surface.GetKnotVector(0) << std::endl;
-    if (PRINTRESULT) std::cout << "KnotsY: \n" << surface.GetKnotVector(1)  << std::endl << std::endl;
-
-    for(int i = 0; i < surface.GetNumControlPoints(1); i++)
-    {
-        for(int j = 0; j < surface.GetNumControlPoints(0); j++)
-        {
-            if (PRINTRESULT) std::cout << "(" << surface.GetControlPoint(i, j)(0) << "," <<  surface.GetControlPoint(i, j)(1) << ")" << "  ";
-        }
-        std::cout << std::endl ;
     }
 
     std::set<NuTo::Node::eDof> setOfDOFS;
@@ -419,67 +149,35 @@ NuTo::Structure* constantStress(double& DisplacementCorrect, int refinements, co
     // Dirichlet
     NuTo::FullVector<double,Eigen::Dynamic> direction(2);
 
-
-    if (PRINTRESULT) std::cout <<  "Nodes fixed left: ";
-
     direction << 1, 0;
     for(int i = 0; i < surface.GetNumControlPoints(1); i++)
     {
         myStructure->ConstraintLinearSetDisplacementNode(i*surface.GetNumControlPoints(0), direction, 0.0);
-        if (PRINTRESULT) std::cout << i*surface.GetNumControlPoints(0) << ", ";
     }
-
-    if (PRINTRESULT) std::cout << std::endl;
-
-    if (PRINTRESULT) std::cout <<  "Nodes fixed bottom: ";
 
     direction << 0, 1;
     for(int i = 0; i <  surface.GetNumControlPoints(0); i++)
     {
         myStructure->ConstraintLinearSetDisplacementNode(i, direction, 0.0);
-        if (PRINTRESULT) std::cout << i << ", ";
     }
-    if (PRINTRESULT) std::cout << std::endl;
-
-
 
     // right boundary
     int groupNumberNodesLeft = myStructure->GroupCreate("NODES");
 
-    if (PRINTRESULT) std::cout <<  "Pressure on nodes: ";
-
     for(int i = 1; i <=  surface.GetNumControlPoints(1); i++)
     {
         myStructure->GroupAddNode(groupNumberNodesLeft, i*surface.GetNumControlPoints(0) - 1);
-        if (PRINTRESULT) std::cout << i* surface.GetNumControlPoints(0) - 1 << ", ";
     }
-    if (PRINTRESULT) std::cout << std::endl;
-
-    if (PRINTRESULT) std::cout <<  "Pressure on elements: ";
 
     int groupNumberElementsLeft = myStructure->GroupCreate("ELEMENTS");
     for(int i = 1; i <= surface.GetNumIGAElements(1); i++)
     {
         myStructure->GroupAddElement(groupNumberElementsLeft, i*surface.GetNumIGAElements(0) - 1);
-        if (PRINTRESULT) std::cout << i*surface.GetNumIGAElements(0) - 1 << ", ";
     }
-    if (PRINTRESULT) std::cout << std::endl;
 
-    //NuTo::FullVector<double, 2> ForceVecRight({Force,0.});
     myStructure->SetNumLoadCases(1);
-    //myStructure->LoadSurfaceConstDirectionCreate2D(0, groupNumberElementsLeft, groupNumberNodesLeft, ForceVecRight);
 
     myStructure->LoadSurfacePressureCreate2D(0, groupNumberElementsLeft, groupNumberNodesLeft, -Stress);
-
-//    ///////////////// stress function on the right ////////////////////////
-
-//    std::function<Eigen::Vector2d(Eigen::Vector2d)> stress_right  = rightPressure;
-
-//    myStructure->LoadSurfacePressureFunctionCreate2D(0, groupNumberElementsLeft,  groupNumberNodesLeft, stress_right);
-
-//    ///////////////////////////////////////////////////////////////////////
-
-
 
     myStructure->CalculateMaximumIndependentSets();
     myStructure->NodeBuildGlobalDofs();
@@ -542,7 +240,6 @@ Eigen::Vector2d exact_plate_hole_left(Eigen::VectorXd pt)
 {
     Eigen::VectorXd stress = exact_plate_hole(pt);
     Eigen::Vector2d stressRet(-stress(0), -stress(2));
-    std::cout << "Load_Left: " << stressRet << std::endl;
     return stressRet;
 }
 
@@ -550,7 +247,6 @@ Eigen::Vector2d exact_plate_hole_upper(Eigen::VectorXd pt)
 {
     Eigen::VectorXd stress = exact_plate_hole(pt);
     Eigen::Vector2d stressRet(-stress(2), -stress(1));
-    std::cout << "Load_Upper: " << stressRet << std::endl;
     return stressRet;
 }
 
@@ -598,43 +294,11 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
 
     NuTo::BSplineSurface surface(degree, knotsX, knotsY, controlPts, weights);
 
-    int numX = 100;
-    int numY = 1;
-    Eigen::MatrixXd parameters(numX*numY, 2);
-    int count = 0;
-    double incrX = 1./(numX-1);
-    for(int i = 0; i < numX; i++)
-    {
-            parameters(count, 0) = incrX*i;
-            parameters(count, 1) = 1.;
-            count++;
-    }
-
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> plateWithHole = surface.SurfacePoints(parameters);
-    boost::filesystem::path resultFileName(resultDir);
-    std::string ident("plateWithHole");
-    resultFileName /= ident+".dat";
-    plateWithHole.WriteToFile(resultFileName.string(), "  ");
-
     for(int i = 0; i < refine; i++)
     {
         surface.DuplicateKnots(0);
         surface.DuplicateKnots(1);
     }
-
-    for(int i = 0; i < surface.GetNumControlPoints(1); i++)
-    {
-        for(int j = 0; j < surface.GetNumControlPoints(0); j++)
-        {
-            if (PRINTRESULT) std::cout << "(" << surface.GetControlPoint(i, j)(0) << "," <<  surface.GetControlPoint(i, j)(1) << ")" << "  ";
-        }
-    }
-
-    plateWithHole = surface.SurfacePoints(parameters);
-    ident = "plateWithHoleRefined";
-    resultFileName = resultDir;
-    resultFileName /= ident+".dat";
-    plateWithHole.WriteToFile(resultFileName.string(), "  ");
 
     /**************/
     // Structure  //
@@ -644,59 +308,10 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
     setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
     setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
 
-    if (PRINTRESULT) std::cout << "Nodes:\n";
-    /** create nodes **/
-    count = 0;
-    for(int i = 0; i < surface.GetNumControlPoints(1); i++)
-    {
-        for(int j = 0; j < surface.GetNumControlPoints(0); j++)
-        {
-            myStructure->NodeCreateDOFs(count, setOfDOFS, surface.GetControlPoint(i,j));
-            if (PRINTRESULT) std::cout << "ID: " << count << ", Coordinate: "  << "(" << surface.GetControlPoint(i, j)(0) << "," <<  surface.GetControlPoint(i, j)(1) << "), weight: " << surface.GetWeights()(i,j) <<std::endl;
-            count++;
-        }
-    }
+    int groupNodes  = myStructure->GroupCreate("Nodes");
+    int groupElements = myStructure->GroupCreate("Elements");
 
-    std::cout << "Knots X: \n" << surface.GetKnotVector(0).transpose() << std::endl;
-    std::cout << "Knots Y: \n" << surface.GetKnotVector(1).transpose() << std::endl;
-
-    std::cout << std::flush;
-
-    if (PRINTRESULT)    std::cout << std::endl;
-
-    int interpolationType = myStructure->InterpolationTypeCreate("IGA2D");
-
-    std::vector<Eigen::VectorXd> vecKnots;
-    vecKnots.push_back(surface.GetKnotVector(0));
-    vecKnots.push_back(surface.GetKnotVector(1));
-
-    myStructure->InterpolationTypeAdd(interpolationType,
-                                      NuTo::Node::eDof::COORDINATES,
-                                      NuTo::Interpolation::eTypeOrder::SPLINE,
-                                      degree,
-                                      vecKnots,
-                                      surface.GetWeights());
-
-    myStructure->InterpolationTypeAdd(interpolationType,
-                                      NuTo::Node::eDof::DISPLACEMENTS,
-                                      NuTo::Interpolation::eTypeOrder::SPLINE,
-                                      degree,
-                                      vecKnots,
-                                      surface.GetWeights());
-
-    /** create elements **/
-    Eigen::VectorXi elementIncidence((degree(0)+1)*(degree(1)+1));
-    int numElementsX = surface.GetNumIGAElements(0);
-    int numElementsY = surface.GetNumIGAElements(1);
-    for(int elementY = 0; elementY < numElementsY; elementY++)
-    {
-        for(int elementX = 0; elementX < numElementsX; elementX++)
-        {
-            elementIncidence = surface.GetElementControlPointIDs(elementX, elementY);
-            if (PRINTRESULT) std::cout << "Incidence: \n" << elementIncidence << std::endl;
-            myStructure->ElementCreate(interpolationType, elementIncidence, surface.GetElementKnots(elementX, elementY), surface.GetElementKnotIDs(elementX, elementY));
-        }
-    }
+    surface.buildIGAStructure(*myStructure, setOfDOFS, groupElements, groupNodes);
 
     /** create section **/
     double Thickness = 1.;
@@ -720,26 +335,17 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
     int groupElementsLeft  = myStructure->GroupCreate("ELEMENTS");
     int groupElementsUpper = myStructure->GroupCreate("ELEMENTS");
 
-    if (PRINTRESULT) std::cout << "Neumann elements left: ";
     int start = (surface.GetNumIGAElements(1)-1) * surface.GetNumIGAElements(0);
     for(int i = start; i < start + surface.GetNumIGAElements(0)/2; i++)
     {
-        if (PRINTRESULT) std::cout << i << ", ";
         myStructure->GroupAddElement(groupElementsLeft, i);
     }
 
-    if (PRINTRESULT) std::cout << "\n";
-
-
-    if (PRINTRESULT) std::cout << "Neumann elements upper: ";
     start += surface.GetNumIGAElements(0)/2;
     for(int i = start; i < surface.GetNumIGAElements(); i++)
     {
-        if (PRINTRESULT) std::cout << i << ", ";
         myStructure->GroupAddElement(groupElementsUpper, i);
     }
-
-    if (PRINTRESULT) std::cout << "\n";
 
     auto LambdaGetBoundaryNodesLeft = [](NuTo::NodeBase* rNodePtr) -> bool
                                 {
@@ -830,45 +436,26 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
     myStructure->GroupAddNodeFunction(groupNodesCorner, LambdaGetBoundaryNodesCorner);
 
     NuTo::FullVector<int,Eigen::Dynamic> rMembers;
-    myStructure->NodeGroupGetMembers(groupNodesLeft, rMembers);
-    std::cout << "Node Members group Left: \n" << rMembers << std::endl;
-
-    myStructure->NodeGroupGetMembers(groupNodesUpper, rMembers);
-    std::cout << "Node Members group Upper: \n" << rMembers << std::endl;
-
-    myStructure->ElementGroupGetMembers(groupElementsUpper, rMembers);
-    std::cout << "Element Members group Upper: \n" << rMembers << std::endl;
-
-    myStructure->ElementGroupGetMembers(groupElementsLeft, rMembers);
-    std::cout << "Element Members group Left: \n" << rMembers << std::endl;
-
 
     myStructure->NodeGroupGetMembers(groupNodesLower, rMembers);
-    std::cout << "Node Members group Lower: \n" << rMembers << std::endl;
 
     int countDBC = 0;
     NuTo::FullVector<double,Eigen::Dynamic> direction(2);
     direction << 0 ,1;
-    if (PRINTRESULT) std::cout << "Dirichlet nodes in y dir : ";
     for(int i = 0; i < rMembers.rows(); i++)
     {
-        if (PRINTRESULT) std::cout <<  rMembers(i) << ", ";
         countDBC = myStructure->ConstraintLinearSetDisplacementNode(rMembers(i), direction, 0.0);
     }
-    std::cout << "\n";
+
 
     myStructure->NodeGroupGetMembers(groupNodesRight, rMembers);
-    std::cout << "Node Members group Right: \n" << rMembers << std::endl;
 
-    if (PRINTRESULT) std::cout << "Dirichlet nodes in x dir : ";
     direction << 1, 0;
     for(int i = 0; i < rMembers.rows(); i++)
     {
-        if (PRINTRESULT) std::cout <<  rMembers(i) << ", ";
         countDBC = myStructure->ConstraintLinearSetDisplacementNode(rMembers(i), direction, 0.0);
     }
 
-    std::cout << "\n";
 
     myStructure->SetNumLoadCases(1);
 
@@ -892,8 +479,8 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
 //    std::cout << "Node Members group Corner: \n" << rMembers << std::endl;
 //    for(int dof = 0; dof < 1; dof++)
 //    {
-//        myStructure->ConstraintLinearEquationCreate (countDBC, rMembers(0), NuTo::Node::DISPLACEMENTS, dof, 1., 0.);
-//        myStructure->ConstraintLinearEquationAddTerm(countDBC, rMembers(1), NuTo::Node::DISPLACEMENTS, dof, -1.);
+//        myStructure->ConstraintLinearEquationCreate (countDBC, rMembers(0), NuTo::Node::eDof::DISPLACEMENTS, dof, 1., 0.);
+//        myStructure->ConstraintLinearEquationAddTerm(countDBC, rMembers(1), NuTo::Node::eDof::DISPLACEMENTS, dof, -1.);
 //        countDBC++;
 //    }
 
@@ -906,24 +493,11 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
 }
 
 
-
-
 void solve(NuTo::Structure *myStructure, double solution, const std::string &resultDir, const std::string &name, bool exc, double tol = 1.e-6)
 {
     myStructure->SolveGlobalSystemStaticElastic();
 
     double nodeDisp = myStructure->NodeGetNodePtr(myStructure->GetNumNodes()-1)->Get(NuTo::Node::eDof::DISPLACEMENTS)[0];
-
-    if (PRINTRESULT)
-    {
-        std::cout << "Displacement node numerical: \n";
-        for(int i = 0; i < myStructure->GetNumNodes(); i++)
-            std::cout << i << ": \n" << myStructure->NodeGetNodePtr(i)->Get(NuTo::Node::eDof::DISPLACEMENTS) << std::endl;
-    }
-
-    std::cout << "Dimension: " << myStructure->GetDimension() << std::endl;
-    std::cout << "Displacement last node numerical:\n" << nodeDisp << std::endl;
-    std::cout << "Displacement last node analytical:\n" << solution << std::endl;
 
     int visualizationGroup = myStructure->GroupGetElementsTotal();
     myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
@@ -937,7 +511,7 @@ void solve(NuTo::Structure *myStructure, double solution, const std::string &res
     {
         if (fabs(nodeDisp - solution)/fabs(solution) > tol)
         {
-            throw NuTo::Exception("[LobattoIntegration] : displacement is not correct");
+            throw NuTo::Exception("[IGA] : displacement is not correct");
         }
     }
 
@@ -945,12 +519,10 @@ void solve(NuTo::Structure *myStructure, double solution, const std::string &res
 
 
 //! @brief Imports a mesh file and builds the hessian and the internal gradient.
-void Neumann(const std::string &resultDir, const std::string &rMeshFile, const std::string &fileName, int BC)
+void Neumann(const std::string &resultDir, const std::string &path, const std::string &fileName, int BC)
 {
     NuTo::Structure myStructure(2);
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndices = myStructure.ImportFromGmsh(rMeshFile + fileName, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::NOIPDATA);
-
-    std::cout << groupIndices.size() << std::endl;
+    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndices = myStructure.ImportFromGmsh(path + fileName, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::NOIPDATA);
 
     int interpolationType = groupIndices.GetValue(0, 1);
     myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS,  NuTo::Interpolation::eTypeOrder::LOBATTO3);
@@ -1102,12 +674,10 @@ void Neumann(const std::string &resultDir, const std::string &rMeshFile, const s
 
 
 //! @brief Imports a mesh file and builds the hessian and the internal gradient.
-void Dirichlet(const std::string &resultDir, const std::string &rMeshFile, const std::string &fileName)
+void Dirichlet(const std::string &resultDir, const std::string &path, const std::string &fileName)
 {
     NuTo::Structure myStructure(2);
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndices = myStructure.ImportFromGmsh(rMeshFile + fileName, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::NOIPDATA);
-
-    std::cout << groupIndices.size() << std::endl;
+    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndices = myStructure.ImportFromGmsh(path + fileName, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::NOIPDATA);
 
     int interpolationType = groupIndices.GetValue(0, 1);
     myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::LOBATTO3);
@@ -1210,32 +780,23 @@ int main()
     // create result directory
     boost::filesystem::create_directory(resultDir);
 
-    // 1D
-    myStructure = buildStructure1D(solution, 1);
-    solve(myStructure, solution, resultDir, "1d", true);
-
     // 2D constant stress
-
-    myStructure = constantStress(solution, 0, resultDir);
-    solve(myStructure, solution, resultDir, "Rectangle0", true);
-
     myStructure = constantStress(solution, 1, resultDir);
     solve(myStructure, solution, resultDir, "Rectangle1", true);
 
-    contactPatchTest();
-
     // plate with hole
-//    myStructure = buildPlateWithHole2DNeumann(resultDir, 2, 1);
-//    solve(myStructure, solution, resultDir, "Hole2", false);
 
-//    myStructure = buildPlateWithHole2DNeumann(resultDir, 5, 1);
-//    solve(myStructure, solution, resultDir, "Hole5", false);
+//    Eigen::VectorXd vec = exact_plate_hole(Eigen::Vector2d(0.,1.));
+//    std::cout << "Vector: " << vec << std::endl;
 
-//    std::string meshFile2D = "/home/potto1/igafem/igafem/gmshFiles/";
+    myStructure = buildPlateWithHole2DNeumann(resultDir, 5, 0);
+    solve(myStructure, solution, resultDir, "Hole5", false);
 
-//    std::string fileName = "11-voidedF2.msh";
-////    Dirichlet(resultDir, meshFile2D, fileName);
-//    Neumann(resultDir, meshFile2D, fileName, 1);
+    std::string path = "./";
+
+    std::string fileName = "PlateWithHole.msh";
+    Neumann(resultDir, path, fileName, 0);
+//    Dirichlet(resultDir, meshFile2D, fileName);
 
     return 0;
 }

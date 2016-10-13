@@ -193,6 +193,7 @@ protected:
     virtual void CalculateNMatrixBMatrixDetJacobian(EvaluateDataContinuum<TDim>& data, int rTheIP) const;
 
 
+
     //! @brief Turns rDerivativeShapeFunctions into the B-Matrix for the displacements
     //! @remark: (N0,x & N0,y \\ ...)   --> (N0,x & 0 \\ 0 & N0,y \\ N0,y & N0,x)
     void BlowToBMatrixEngineeringStrain(Eigen::MatrixXd& rDerivativeShapeFunctions) const;

@@ -424,6 +424,9 @@ public:
     virtual const Eigen::VectorXi& GetKnotIDs() const
     {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Only implemented in ContinuumElementIGA.");}
 
+    virtual Eigen::VectorXd InterpolateDofGlobalSurfaceDerivative(int rTimeDerivative, int rSurfaceId, const Eigen::VectorXd& rNaturalCoordinates, int rDerivative, int rDirection) const
+    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Only implemented in ContinuumElementIGA.");}
+
     virtual const ContinuumElement<1>& AsContinuumElement1D() const
     {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<1>.");}
 
