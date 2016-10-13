@@ -499,6 +499,7 @@ void solve(NuTo::Structure *myStructure, double solution, const std::string &res
 
     double nodeDisp = myStructure->NodeGetNodePtr(myStructure->GetNumNodes()-1)->Get(NuTo::Node::eDof::DISPLACEMENTS)[0];
 
+#ifdef ENABLE_VISUALIZE
     int visualizationGroup = myStructure->GroupGetElementsTotal();
     myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
     myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
@@ -506,6 +507,7 @@ void solve(NuTo::Structure *myStructure, double solution, const std::string &res
 
     myStructure->ExportVtkDataFileElements(resultDir+"/Elements" + name + ".vtu", true);
     myStructure->ExportVtkDataFileNodes(resultDir+"/Nodes" + name + ".vtu", true);
+#endif
 
     if(exc)
     {
@@ -663,6 +665,7 @@ void Neumann(const std::string &resultDir, const std::string &path, const std::s
 
     myStructure.SolveGlobalSystemStaticElastic();
 
+#ifdef ENABLE_VISUALIZE
     int visualizationGroup = myStructure.GroupGetElementsTotal();
     myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
     myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
@@ -670,6 +673,7 @@ void Neumann(const std::string &resultDir, const std::string &path, const std::s
 
     myStructure.ExportVtkDataFileElements(resultDir + "/Elements" + fileName + ".vtu", true);
     myStructure.ExportVtkDataFileNodes(resultDir + "/Nodes" + fileName + ".vtu", true);
+#endif
 }
 
 
@@ -752,6 +756,7 @@ void Dirichlet(const std::string &resultDir, const std::string &path, const std:
 
     myStructure.SolveGlobalSystemStaticElastic();
 
+#ifdef ENABLE_VISUALIZE
     int visualizationGroup = myStructure.GroupGetElementsTotal();
     myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
     myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
@@ -759,6 +764,7 @@ void Dirichlet(const std::string &resultDir, const std::string &path, const std:
 
     myStructure.ExportVtkDataFileElements(resultDir + "/Elements" + fileName + ".vtu", true);
     myStructure.ExportVtkDataFileNodes(resultDir + "/Nodes" + fileName + ".vtu", true);
+#endif
 }
 
 
