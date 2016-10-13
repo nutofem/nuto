@@ -7,7 +7,6 @@ namespace Constitutive
 namespace StaticData
 {
 
-template<class T> class Leaf;
 //! @brief Base class for static data.
 //! 
 //! The static data is an example of the composite design pattern, albeit implemented poorly. That is, there is a 
@@ -33,13 +32,6 @@ public:
 
     //! @brief Allocate more time steps for the static data component.
     virtual void AllocateAdditionalData(int numAdditionalData) = 0;
-
-    template<typename T>
-    T& Get()
-    {
-        auto& leaf = dynamic_cast<Leaf<T>&>(*this);
-        return leaf.GetData();
-    }
 
 protected:
     //! @brief Private constructor, use @ref Create() to allocate a component on the heap.

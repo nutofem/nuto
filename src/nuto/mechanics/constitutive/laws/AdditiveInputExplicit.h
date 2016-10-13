@@ -11,6 +11,29 @@ namespace NuTo
 class AdditiveInputExplicit : public AdditiveBase
 {
 public:
+    //! @brief Create a new static data object for an integration point.
+    //! @return Pointer to the new object.
+    Constitutive::StaticData::Component* AllocateStaticData1D(const ElementBase* rElement) const override
+    {
+        return AllocateStaticData<1>(rElement);
+    }
+
+    //! @brief Create a new static data object for an integration point.
+    //! @return Pointer to the new object.
+    Constitutive::StaticData::Component* AllocateStaticData2D(const ElementBase* rElement) const override
+    {
+        return AllocateStaticData<2>(rElement);
+    }
+
+    //! @brief Create a new static data object for an integration point.
+    //! @return Pointer to the new object.
+    Constitutive::StaticData::Component* AllocateStaticData3D(const ElementBase* rElement) const override
+    {
+        return AllocateStaticData<3>(rElement);
+    }
+
+    template <int TDim>
+    Constitutive::StaticData::Component* AllocateStaticData(const NuTo::ElementBase *rElement) const;
 
     //! @brief constructor
     AdditiveInputExplicit() : AdditiveBase()

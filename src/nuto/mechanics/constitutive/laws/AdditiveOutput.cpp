@@ -32,10 +32,7 @@ NuTo::eError NuTo::AdditiveOutput::Evaluate(const NuTo::ConstitutiveInputMap &rC
                 singleOutput[output.first] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(output.first);
             }
 
-            if (staticData == nullptr)
-                error = mSublaws[i]->Evaluate<TDim>(rConstitutiveInput, singleOutput, nullptr);
-            else
-                error = mSublaws[i]->Evaluate<TDim>(rConstitutiveInput, singleOutput, &localStaticData.GetComponent(i));
+            error = mSublaws[i]->Evaluate<TDim>(rConstitutiveInput, singleOutput, &localStaticData.GetComponent(i));
 
             for (const auto& output : singleOutput)
             {

@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-
+#include "nuto/mechanics/constitutive/staticData/EmptyLeaf.h"
 
 namespace NuTo
 {
@@ -233,15 +233,15 @@ public:
     //! @brief ... allocate the correct static data
     //! @return ... see brief explanation
     //! @todo Element pointer is not used in any of the currently implemented laws; remove!
-    virtual Constitutive::StaticData::Component* AllocateStaticData1D(const ElementBase*) const { return nullptr; }
+    virtual Constitutive::StaticData::Component* AllocateStaticData1D(const ElementBase*) const { return Constitutive::StaticData::EmptyLeaf::Create(); }
 
     //! @brief ... allocate the correct static data
     //! @return ... see brief explanation
-    virtual Constitutive::StaticData::Component* AllocateStaticData2D(const ElementBase*) const { return nullptr; }
+    virtual Constitutive::StaticData::Component* AllocateStaticData2D(const ElementBase*) const { return Constitutive::StaticData::EmptyLeaf::Create(); }
 
     //! @brief ... allocate the correct static data
     //! @return ... see brief explanation
-    virtual Constitutive::StaticData::Component* AllocateStaticData3D(const ElementBase*) const { return nullptr; }
+    virtual Constitutive::StaticData::Component* AllocateStaticData3D(const ElementBase*) const { return Constitutive::StaticData::EmptyLeaf::Create(); }
 
     //! @brief ... check parameters of the constitutive relationship
     //! if one check fails, an exception is thrown

@@ -46,12 +46,12 @@ const std::vector<double>& NuTo::IpDataBase::GetNonlocalWeights(int rNonlocalEle
 
 NuTo::Constitutive::StaticData::Component* NuTo::IpDataBase::GetConstitutiveStaticData()
 {
-    return nullptr;
+    throw MechanicsException(__PRETTY_FUNCTION__, "This IP data type has no static data.");
 }
 
 const NuTo::Constitutive::StaticData::Component* NuTo::IpDataBase::GetConstitutiveStaticData() const
 {
-    return nullptr;
+    throw MechanicsException(__PRETTY_FUNCTION__, "This IP data type has no static data.");
 }
 
 NuTo::IpDataStaticDataBase& NuTo::IpDataBase::GetIpData()

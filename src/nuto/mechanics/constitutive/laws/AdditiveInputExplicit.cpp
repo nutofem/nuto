@@ -6,6 +6,30 @@
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
 #include "nuto/mechanics/constitutive/staticData/Composite.h"
 
+template <int TDim>
+NuTo::Constitutive::StaticData::Component* NuTo::AdditiveInputExplicit::AllocateStaticData(const NuTo::ElementBase *rElement) const
+{
+    auto composite =
+        static_cast<Constitutive::StaticData::Composite*>(AdditiveBase::AllocateStaticData<TDim>(rElement));
+    Constitutive::StaticData::Component* mainComponent;
+    switch (TDim)
+    {
+    case 1:
+        mainComponent = mMainLaw->AllocateStaticData1D(rElement);
+        break;
+    case 2:
+        mainComponent = mMainLaw->AllocateStaticData2D(rElement);
+        break;
+    case 3:
+        mainComponent = mMainLaw->AllocateStaticData3D(rElement);
+        break;
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__, "Invalid dimension.");
+    }
+    composite->AddComponent(mainComponent);
+    return composite;
+}
+
 void NuTo::AdditiveInputExplicit::AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiveLaw,
         Constitutive::eInput rModiesInput)
 {
@@ -152,13 +176,14 @@ NuTo::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit(
     // evaluate sublaws
     std::vector<NuTo::ConstitutiveOutputMap> sublawOutputMapVec;
 
+    auto& localStaticData = *dynamic_cast<Constitutive::StaticData::Composite*>(staticData);
     for (unsigned int i = 0; i < mSublaws.size(); ++i)
     {
         // Get the sublaw specific output map depending on the main laws inputs and the global outputs
         sublawOutputMapVec.emplace_back(GetSublawOutputMap<TDim>(rConstitutiveInput, rConstitutiveOutput, i));
 
-        // evaluate sublaw
-        mSublaws[i]->Evaluate<TDim>(rConstitutiveInput, sublawOutputMapVec[i], staticData);
+        mSublaws[i]->Evaluate<TDim>(rConstitutiveInput, sublawOutputMapVec[i], &localStaticData.GetComponent(i+1));
+
         if(error != eError::SUCCESSFUL)
             throw MechanicsException(__PRETTY_FUNCTION__,
                     "Attached constitutive law returned an error code. Can't handle this");
@@ -167,8 +192,7 @@ NuTo::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit(
         ApplySublawOutputs<TDim>(mainLawInputMap, rConstitutiveOutput, sublawOutputMapVec[i]);
     }
 
-    // evaluate main law
-    error = mMainLaw->Evaluate<TDim>(mainLawInputMap, rConstitutiveOutput, staticData);
+    error = mMainLaw->Evaluate<TDim>(mainLawInputMap, rConstitutiveOutput, &localStaticData.GetComponent(0));
 
     // calculate derivatives that depend on outputs from the main law and the sublaws
     CalculateDerivatives<TDim>(rConstitutiveOutput, sublawOutputMapVec);

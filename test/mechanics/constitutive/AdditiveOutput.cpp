@@ -55,23 +55,14 @@ BOOST_AUTO_TEST_CASE(additive_stresses)
     (*static_cast<EngineeringStrain<2>*>(inputMap.at(Constitutive::eInput::ENGINEERING_STRAIN).get()))[1] = 1.0;
     (*static_cast<EngineeringStrain<2>*>(inputMap.at(Constitutive::eInput::ENGINEERING_STRAIN).get()))[2] = 0.0;
 
-
     // ask for stress as output
     ConstitutiveOutputMap outputMap;
     outputMap[Constitutive::eOutput::ENGINEERING_STRESS] =
         ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::eOutput::ENGINEERING_STRESS);
 
-    //// mock up an element; ideally, this would not be necessary
-    //std::vector<NuTo::NodeBase*> mockNodes;
-    //InterpolationType interpolationType(Interpolation::TRIANGLE2D, 2);
-    //IntegrationType2D3NGauss1Ip integrationType;
-    //interpolationType.UpdateIntegrationType(integrationType);
-    //auto element = ContinuumElement<2>(nullptr, mockNodes, ElementData::CONSTITUTIVELAWIP, IpData::NOIPDATA, &interpolationType);
-    //auto section = SectionPlane(Section::PLANE_STRESS);
-    //element.SetSection(&section);
-
     // evaluate the additive input law
-    additiveLaw.Evaluate2D(inputMap, outputMap, nullptr);
+    auto staticData = additiveLaw.AllocateStaticData<2>(nullptr);
+    additiveLaw.Evaluate2D(inputMap, outputMap, staticData);
 
     // compare to expected results
     const auto& stress = *static_cast<EngineeringStress<2>*>(outputMap.at(Constitutive::eOutput::ENGINEERING_STRESS).get());

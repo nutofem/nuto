@@ -123,4 +123,3 @@ private:
 } // namespace StaticData
 } // namespace Constitutive
 } // namespace NuTo
-

@@ -18,6 +18,7 @@
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/groups/GroupEnum.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include "nuto/visualize/VisualizeEnum.h"
 
@@ -119,7 +120,7 @@ void SetInterpolation(NuTo::Structure& structure, int group)
     structure.InterpolationTypeAdd(group, NuTo::Node::eDof::TEMPERATURE,
             NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
     structure.InterpolationTypeSetIntegrationType(group,
-            NuTo::eIntegrationType::IntegrationType2D3NGauss4Ip, NuTo::IpData::eIpDataType::NOIPDATA);
+            NuTo::eIntegrationType::IntegrationType2D3NGauss4Ip, NuTo::IpData::eIpDataType::STATICDATA);
 }
 
 void SetVisualization(NuTo::Structure& structure)
@@ -144,7 +145,7 @@ int main()
 
     // import mesh
     auto groupIndices = structure.ImportFromGmsh("./TwoElements.msh",
-            "ConstitutiveLawIp", "NoIpData");
+            NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
 
     // create section
     double thickness = 20.0;

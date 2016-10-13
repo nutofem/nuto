@@ -39,8 +39,9 @@ NuTo::ElementDataIpBase::ElementDataIpBase(const ElementBase *rElement, const Nu
 		{
         case NuTo::IpData::eIpDataType::NOIPDATA:
 			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]empty\n");
-			mIpData.push_back(new IpDataEmpty());
-			break;
+#warning "This now allocates the 'wrong' data type, to be changed soon."
+            mIpData.push_back(new IpDataStaticData());
+            break;
         case NuTo::IpData::eIpDataType::STATICDATA:
 			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]STATICDATA\n");
 			mIpData.push_back(new IpDataStaticData());
@@ -73,7 +74,8 @@ NuTo::ElementDataIpBase::ElementDataIpBase(const ElementBase *rElement, int rNum
 		{
         case NuTo::IpData::eIpDataType::NOIPDATA:
 			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]empty\n");
-			mIpData.push_back(new IpDataEmpty());
+#warning "This now allocates the 'wrong' data type, to be changed soon."
+            mIpData.push_back(new IpDataStaticData());
 			break;
         case NuTo::IpData::eIpDataType::STATICDATA:
 			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]STATICDATA\n");
@@ -140,7 +142,8 @@ void NuTo::ElementDataIpBase::SetIntegrationType(const ElementBase* rElement,
 		switch (rIpDataType)
 		{
         case NuTo::IpData::eIpDataType::NOIPDATA:
-			mIpData.push_back(new IpDataEmpty());
+#warning "This now allocates the 'wrong' data type, to be changed soon."
+            mIpData.push_back(new IpDataStaticData());
 			break;
         case NuTo::IpData::eIpDataType::STATICDATA:
 			mIpData.push_back(new IpDataStaticData());
