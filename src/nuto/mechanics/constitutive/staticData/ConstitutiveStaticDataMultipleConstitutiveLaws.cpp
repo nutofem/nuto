@@ -123,7 +123,7 @@ bool NuTo::ConstitutiveStaticDataMultipleConstitutiveLaws::CheckConstitutiveComp
 {
     switch(rConstitutiveType)
     {
-    case Constitutive::eConstitutiveType::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT:
+    case Constitutive::eConstitutiveType::ADDITIVE_OUTPUT:
         break;
     default:
         return false;

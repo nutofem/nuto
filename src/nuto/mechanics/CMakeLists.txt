@@ -14,6 +14,7 @@ constitutive/laws/FibreMatrixBondStressSlip.cpp
 constitutive/laws/GradientDamageEngineeringStress.cpp
 constitutive/laws/PhaseField.cpp
 constitutive/laws/HeatConduction.cpp
+constitutive/laws/LinearDampingEngineeringStress.cpp
 constitutive/laws/LinearElasticEngineeringStress.cpp
 constitutive/laws/MisesPlasticityEngineeringStress.cpp
 constitutive/laws/MoistureTransport.cpp

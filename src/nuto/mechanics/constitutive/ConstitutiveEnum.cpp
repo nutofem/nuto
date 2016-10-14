@@ -8,7 +8,7 @@ const std::map<NuTo::Constitutive::eConstitutiveType, std::string> NuTo::Constit
 {
     const std::map<eConstitutiveType, std::string> map =
     {{eConstitutiveType::ADDITIVE_INPUT_EXPLICIT,                                   "ADDITIVE_INPUT_EXPLICIT"},
-        {eConstitutiveType::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT,                      "CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT"},
+        {eConstitutiveType::ADDITIVE_OUTPUT,                      "ADDITIVE_OUTPUT"},
         {eConstitutiveType::DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS,             "DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS"},
         {eConstitutiveType::DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS,   "DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS"},
         {eConstitutiveType::FIBRE_MATRIX_BOND_STRESS_SLIP,                          "FIBRE_MATRIX_BOND_STRESS_SLIP"},
@@ -17,6 +17,7 @@ const std::map<NuTo::Constitutive::eConstitutiveType, std::string> NuTo::Constit
         {eConstitutiveType::GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS,          "GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS"},
         {eConstitutiveType::HEAT_CONDUCTION,                                        "HEAT_CONDUCTION"},
         {eConstitutiveType::LATTICE_CONCRETE,                                       "LATTICE_CONCRETE"},
+        {eConstitutiveType::LINEAR_DAMPING_ENGINEERING_STRESS,                      "LINEAR_DAMPING_ENGINEERING_STRESS"},
         {eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS,                      "LINEAR_ELASTIC_ENGINEERING_STRESS"},
         {eConstitutiveType::LINEAR_SPRING,                                          "LINEAR_SPRING"},
         {eConstitutiveType::MISES_PLASTICITY_ENGINEERING_STRESS,                    "MISES_PLASTICITY_ENGINEERING_STRESS"},
@@ -93,6 +94,7 @@ const std::map<NuTo::Constitutive::eConstitutiveParameter, std::string> NuTo::Co
         {eConstitutiveParameter::BOUNDARY_DIFFUSION_COEFFICIENT_RH,         "BOUNDARY_DIFFUSION_COEFFICIENT_RH"},
         {eConstitutiveParameter::BOUNDARY_DIFFUSION_COEFFICIENT_WV,         "BOUNDARY_DIFFUSION_COEFFICIENT_WV"},
         {eConstitutiveParameter::COMPRESSIVE_STRENGTH,                      "COMPRESSIVE_STRENGTH"},
+        {eConstitutiveParameter::DAMPING_COEFFICIENT,                       "DAMPING_COEFFICIENT"},
         {eConstitutiveParameter::DAMAGE_DISTRIBUTION,                       "DAMAGE_DISTRIBUTION"},
         {eConstitutiveParameter::DAMAGE_LAW,                                "DAMAGE_LAW"},
         {eConstitutiveParameter::DENSITY,                                   "DENSITY"},

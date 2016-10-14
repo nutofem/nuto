@@ -12,7 +12,7 @@ enum class eConstitutiveType
 {
     ADDITIVE_INPUT_EXPLICIT,                                //!< container for multiple constitutive laws linked by a shared input
     ADDITIVE_INPUT_IMPLICIT,                                //!< container for multiple constitutive laws linked by a shared input
-    CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT,                      //!< container for multiple constitutive laws linked by addition of their outputs
+    ADDITIVE_OUTPUT,                                        //!< container for multiple constitutive laws linked by addition of their outputs
     DAMAGE_VISCO_PLASTICITY_ENGINEERING_STRESS,             //!< viscoplastic damage model
     DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS,   //!< viscoplastic damage model with hardening
     FIBRE_MATRIX_BOND_STRESS_SLIP,                          //!< material model for the matrix-fibre interface
@@ -21,6 +21,7 @@ enum class eConstitutiveType
     GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS,          //!< gradient damage plasticity model
     HEAT_CONDUCTION,                                        //!< Heat conduction
     LATTICE_CONCRETE,                                       //!< material law for lattice model
+    LINEAR_DAMPING_ENGINEERING_STRESS,                      //!< linear damping
     LINEAR_ELASTIC_ENGINEERING_STRESS,                      //!< linear-elastic behavior
     LINEAR_SPRING,                                          //!< linear spring model
     LOCAL_DAMAGE_MODEL,                                     //!< local damage model
@@ -95,6 +96,7 @@ enum class eConstitutiveParameter
     BOUNDARY_DIFFUSION_COEFFICIENT_RH,          //!<
     BOUNDARY_DIFFUSION_COEFFICIENT_WV,          //!<
     COMPRESSIVE_STRENGTH,                       //!<
+    DAMPING_COEFFICIENT,                        //!<
     DAMAGE_DISTRIBUTION,                        //!<
     DAMAGE_LAW,                                 //!<
     DENSITY,                                    //!<
@@ -153,6 +155,7 @@ enum class eInput
 {
     NONE,                               //!< for constitutive law additive input explicit (AddConstitutiveLaw-function)
     ENGINEERING_STRAIN,                 //!<
+    ENGINEERING_STRAIN_DT1,             //!< first time derivative of the engineering strain
     TEMPERATURE,                        //!< Temperature \f$T\f$
     TEMPERATURE_GRADIENT,               //!< Temperature gradient \f$\nabla T\f$
     TEMPERATURE_CHANGE,                 //!< First time derivative \f$\frac{\partial T}{\partial t}\f$

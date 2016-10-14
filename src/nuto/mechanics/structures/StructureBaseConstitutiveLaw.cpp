@@ -1,21 +1,22 @@
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/MechanicsException.h"
 
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/laws/AdditiveInputExplicit.h"
 #include "nuto/mechanics/constitutive/laws/AdditiveInputImplicit.h"
 #include "nuto/mechanics/constitutive/laws/AdditiveOutput.h"
+#include "nuto/mechanics/constitutive/laws/FibreMatrixBondStressSlip.h"
 #include "nuto/mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "nuto/mechanics/constitutive/laws/HeatConduction.h"
-#include "nuto/mechanics/constitutive/laws/FibreMatrixBondStressSlip.h"
+#include "nuto/mechanics/constitutive/laws/LinearDampingEngineeringStress.h"
 #include "nuto/mechanics/constitutive/laws/LinearElasticEngineeringStress.h"
-#include "nuto/mechanics/constitutive/laws/MoistureTransport.h"
+#include "nuto/mechanics/constitutive/laws/LocalDamageModel.h"
 #include "nuto/mechanics/constitutive/laws/MisesPlasticityEngineeringStress.h"
+#include "nuto/mechanics/constitutive/laws/MoistureTransport.h"
 #include "nuto/mechanics/constitutive/laws/PhaseField.h"
 #include "nuto/mechanics/constitutive/laws/ShrinkageCapillaryStrainBased.h"
 #include "nuto/mechanics/constitutive/laws/ShrinkageCapillaryStressBased.h"
 #include "nuto/mechanics/constitutive/laws/ThermalStrains.h"
-#include "nuto/mechanics/constitutive/laws/LocalDamageModel.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
 // create a new constitutive law
 int NuTo::StructureBase::ConstitutiveLawCreate(const std::string& rType)
@@ -63,7 +64,7 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             ConstitutiveLawPtr = new NuTo::AdditiveInputImplicit();
             break;
 
-        case eConstitutiveType::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT:
+        case eConstitutiveType::ADDITIVE_OUTPUT:
             ConstitutiveLawPtr = new NuTo::AdditiveOutput();
             break;
 
@@ -73,6 +74,10 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
 
         case eConstitutiveType::HEAT_CONDUCTION:
             ConstitutiveLawPtr = new NuTo::HeatConduction();
+            break;
+
+        case eConstitutiveType::LINEAR_DAMPING_ENGINEERING_STRESS:
+            ConstitutiveLawPtr = new NuTo::LinearDampingEngineeringStress();
             break;
 
         case eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS:

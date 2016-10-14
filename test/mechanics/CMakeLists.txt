@@ -463,6 +463,19 @@ ENDIF(MINGW)
 ADD_TEST(c::mechanics::Shrinkage ${CMAKE_CURRENT_BUILD_DIR}/Shrinkage)
 
 
+
+ADD_EXECUTABLE(SpringDamperCombination SpringDamperCombination.cpp)
+TARGET_LINK_LIBRARIES(SpringDamperCombination NuToMechanics NuToMath NuToBase)
+if(ENABLE_VISUALIZE)
+    target_link_libraries(SpringDamperCombination NuToVisualize)
+endif()
+IF(MINGW)
+    SET_TARGET_PROPERTIES(SpringDamperCombination PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)
+ADD_TEST(c::mechanics::SpringDamperCombination ${CMAKE_CURRENT_BUILD_DIR}/SpringDamperCombination)
+
+
+
 ENDIF(ENABLE_C++_TESTS)
 
 if(ENABLE_UNIT_TESTS)

@@ -7,6 +7,7 @@
 
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"

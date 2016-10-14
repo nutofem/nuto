@@ -706,7 +706,7 @@ void AdditiveOutputTest(std::array<int,TDim> rN,
     NuTo::NewmarkDirect TI(&S);
     int CL_LE_ID   = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
     int CL_MT_ID   = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::MOISTURE_TRANSPORT);
-    int CL_CLAL_ID = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT);
+    int CL_CLAL_ID = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::ADDITIVE_OUTPUT);
 
 
 

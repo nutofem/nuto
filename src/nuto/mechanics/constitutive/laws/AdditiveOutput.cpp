@@ -206,7 +206,7 @@ NuTo::ConstitutiveInputMap NuTo::AdditiveOutput::GetConstitutiveInputs(
 
 NuTo::Constitutive::eConstitutiveType NuTo::AdditiveOutput::GetType() const
 {
-    return NuTo::Constitutive::eConstitutiveType::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT;
+    return NuTo::Constitutive::eConstitutiveType::ADDITIVE_OUTPUT;
 }
 
 
