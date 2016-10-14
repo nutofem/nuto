@@ -1,7 +1,9 @@
 #pragma once
-
 namespace NuTo
 {
+class SerializeStreamIn;
+class SerializeStreamOut;
+
 namespace Constitutive
 {
 namespace StaticData
@@ -32,6 +34,12 @@ public:
 
     //! @brief Allocate more time steps for the static data component.
     virtual void AllocateAdditionalData(int numAdditionalData) = 0;
+
+    virtual void WriteComponent(SerializeStreamOut& rStream) {};
+    virtual void ReadComponent(SerializeStreamIn& rStream) {};
+
+    friend NuTo::SerializeStreamOut& operator<<(NuTo::SerializeStreamOut& rStream, Component& rData);
+    friend NuTo::SerializeStreamIn& operator>>(NuTo::SerializeStreamIn& rStream, Component& rData);
 
 protected:
     //! @brief Private constructor, use @ref Create() to allocate a component on the heap.

@@ -20,11 +20,26 @@ std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string n
 namespace NuToSerializeStaticData
 {
 
+
+
+
 template <typename T>
 void SerializeLeaf(T value)
 {
 //    auto leaf = NuTo::Constitutive::StaticData::Leaf<T>::Create(value);
-//    std::cout << leaf->GetData();
+//
+//    {
+//        NuTo::SerializeStreamOut s("File.dat", false);
+//        s << *leaf;
+//    }
+//
+//    auto leafFromFile = NuTo::Constitutive::StaticData::Leaf<T>::Create(0.);
+//
+//    {
+//        NuTo::SerializeStreamIn s("File.dat", false);
+//        s >> *leafFromFile;
+//    }
+//    std::cout << leafFromFile->GetData();
 }
 
 

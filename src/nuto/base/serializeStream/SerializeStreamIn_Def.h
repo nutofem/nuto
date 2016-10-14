@@ -22,15 +22,21 @@ public:
     virtual ~SerializeStreamIn()                     = default;
     SerializeStreamIn(const SerializeStreamIn&)      = delete;
 
-    //! @brief perfect(?) forwarding to ReadData
-    template<class ...Args>
-    void SerializeData(Args&... rValue);
+    template <typename T>
+    void NuToSerializeNumber(T &rData);
 
-    //! @brief Reads a double from the stream
-    void ReadData(double& rValue);
-
-    //! @brief Reads an Eigen::Matrix from the stream
     template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
-    void ReadData(Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols> & rMatrix);
+    void NuToSerializeMatrix(Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix);
+
+
+    //! @brief in-stream operator
+    //! @param rStream NuTo input stream
+    //! @param rData the data from the input stream goes here
+    template <typename T>
+    friend SerializeStreamIn& operator>>(SerializeStreamIn& rStream, T& rData)
+    {
+        rData.NuToSerializeRead(rStream);
+        return rStream;
+    }
 };
-}
+} // namespace NuTo

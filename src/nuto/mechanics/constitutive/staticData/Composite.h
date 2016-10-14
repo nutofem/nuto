@@ -31,9 +31,17 @@ public:
     void ShiftToFuture() override;
 
     void AllocateAdditionalData(int numAdditionalData) override;
+
+    void WriteComponent(SerializeStreamOut& rStream) override;
+
+    void ReadComponent(SerializeStreamIn& rStream) override;
+
 private:
     Composite() = default;
     boost::ptr_vector<Component> mComponents;
+
+    template <typename TStream>
+    void SerializeComponent(TStream& rStream);
 };
 
 } // namspace StaticData

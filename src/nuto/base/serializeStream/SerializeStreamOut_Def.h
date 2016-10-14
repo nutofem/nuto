@@ -22,15 +22,17 @@ public:
 
     SerializeStreamOut(const SerializeStreamOut&)     = delete;
 
-    //! @brief perfect(?) forwarding to WriteData
-    template<class ...Args>
-    void SerializeData(const Args&... rValue);
+    template <typename T>
+    friend SerializeStreamOut& operator<<(SerializeStreamOut& rStream, const T& rData)
+    {
+        rData.NuToSerializeWrite(rStream);
+        return rStream;
+    }
 
-    //! @brief Writes a double to the stream
-    void WriteData(double rValue);
+    template <typename T>
+    void NuToSerializeNumber(const T &rData);
 
-    //! @brief Writes an Eigen::Matrix to the stream
     template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
-    void WriteData(const Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols> & rMatrix);
+    void NuToSerializeMatrix(const Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix);
 };
-}
+} // namespace NuTo

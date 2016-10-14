@@ -2,6 +2,7 @@
 
 #include "nuto/base/serializeStream/SerializeStreamOut_Def.h"
 #include <eigen3/Eigen/Core>
+#include <typeinfo>
 
 NuTo::SerializeStreamOut::SerializeStreamOut(const std::string& rFile, bool rIsBinary)
     : SerializeStreamBase(rIsBinary)
@@ -18,28 +19,22 @@ NuTo::SerializeStreamOut::SerializeStreamOut(const std::string& rFile, bool rIsB
     }
 }
 
-template<class ...Args>
-void NuTo::SerializeStreamOut::SerializeData(const Args&... rValue)
-{
-    WriteData(rValue...);
-}
-
-void NuTo::SerializeStreamOut::WriteData(double rValue)
+template <typename T>
+void NuTo::SerializeStreamOut::NuToSerializeNumber(const T &rData)
 {
     if (mIsBinary)
     {
-        mFileStream.write(reinterpret_cast<const char*>(&rValue), sizeof(double));
+        mFileStream.write(reinterpret_cast<const char*>(&rData), sizeof(T));
     }
     else
     {
-        mFileStream << "double : " << std::endl; // one line of debug info
-        mFileStream << rValue << std::endl;
+        mFileStream << typeid(rData).name() << ":" << std::endl; // one line of debug info
+        mFileStream << rData << std::endl;
     }
 }
 
-
 template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
-void NuTo::SerializeStreamOut::WriteData(const Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols> & rMatrix)
+void NuTo::SerializeStreamOut::NuToSerializeMatrix(const Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols> &rMatrix)
 {
     const auto& rows = rMatrix.rows();
     const auto& cols = rMatrix.cols();

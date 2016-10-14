@@ -5,6 +5,9 @@
 #include "nuto/mechanics/constitutive/staticData/Component.h"
 #include "nuto/mechanics/MechanicsException.h"
 
+#include "nuto/base/serializeStream/SerializeStreamIn.h"
+#include "nuto/base/serializeStream/SerializeStreamOut.h"
+
 namespace NuTo
 {
 namespace Constitutive
@@ -109,12 +112,29 @@ public:
         return mData.size();
     }
 
+    void WriteComponent(SerializeStreamOut& rStream) override
+    {
+        SerializeComponent(rStream);
+    }
+
+    void ReadComponent(SerializeStreamIn& rStream) override
+    {
+        SerializeComponent(rStream);
+    }
+
 private:
     Leaf() = default;
 
     Leaf(const T& rInitialValue)
     {
         SetData(rInitialValue);
+    }
+
+    template <typename TStream>
+    void SerializeComponent(TStream& rStream)
+    {
+        for (T& data : mData)
+            rStream.SerializeData(data);
     }
 
     std::vector<T> mData;

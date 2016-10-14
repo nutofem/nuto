@@ -1,5 +1,5 @@
 if(ENABLE_UNIT_TESTS)
-    foreach(test HeatConduction ConstitutiveIO AdditiveInput AdditiveOutput StaticData NuToSerializeStaticData)
+    foreach(test HeatConduction ConstitutiveIO AdditiveInput AdditiveOutput StaticData)
         add_executable(${test} ${test}.cpp)
         target_link_libraries(${test} NuToMechanics NuToMath NuToBase)
         if(ENABLE_VISUALIZE)
@@ -8,6 +8,7 @@ if(ENABLE_UNIT_TESTS)
         add_test(c::unit::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
     endforeach()
 
+    # UNIT TESTS WITHOUT LINKING THE FULL NuToMechanics LIB
     add_executable(Leaf Leaf.cpp
         ${CMAKE_SOURCE_DIR}/src/nuto/mechanics/constitutive/staticData/DataMoistureTransport.cpp
         ${CMAKE_SOURCE_DIR}/src/nuto/math/Matrix.cpp ${CMAKE_SOURCE_DIR}/src/nuto/math/FullMatrix.cpp)
@@ -18,5 +19,11 @@ if(ENABLE_UNIT_TESTS)
         ${CMAKE_SOURCE_DIR}/src/nuto/mechanics/constitutive/staticData/Composite.cpp)
     target_link_libraries(Composite ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
     add_test(c::unit::Composite ${CMAKE_CURRENT_BUILD_DIR}/Composite)
+
+    add_executable(NuToSerializeStaticData NuToSerializeStaticData.cpp
+            ${CMAKE_SOURCE_DIR}/src/nuto/mechanics/constitutive/staticData/Component.cpp
+            ${CMAKE_SOURCE_DIR}/src/nuto/mechanics/constitutive/staticData/Composite.cpp)
+    target_link_libraries(NuToSerializeStaticData ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} NuToBase NuToMath)
+    add_test(c::unit::NuToSerializeStaticData ${CMAKE_CURRENT_BUILD_DIR}/NuToSerializeStaticData)
 
 endif()

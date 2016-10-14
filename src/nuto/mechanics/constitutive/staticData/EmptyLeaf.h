@@ -24,6 +24,9 @@ public:
     void ShiftToPast() override {};
     void ShiftToFuture() override {};
     void AllocateAdditionalData(int) override {};
+
+    void WriteComponent(SerializeStreamOut& rStream) override {}
+    void ReadComponent(SerializeStreamIn& rStream) override {}
 };
 
 } // namespace StaticData

@@ -23,81 +23,119 @@ std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string n
 namespace SerializeDataTest
 {
 
+//! @remark provide rZero for proper initialization of the primitive types
 template <typename T>
-void WriteAndRead(const std::string& rFile, bool rIsBinary, const T& rValue, T& rValueFromFile)
+T WriteReadNumber(const std::string &rFile, bool rIsBinary, const T &rValue, T rZero)
 {
     // write
     {
         NuTo::SerializeStreamOut streamOut(rFile, rIsBinary);
-        streamOut.WriteData(rValue);
+        streamOut.NuToSerializeNumber(rValue);
     } // out stream out of scope and f***ing closes the f***ing file. Damnit.
 
     // read
     NuTo::SerializeStreamIn streamIn(rFile, rIsBinary);
-    streamIn.ReadData(rValueFromFile);
+    streamIn.NuToSerializeNumber(rZero);
+
+    return rZero;
 }
 
-void Double(const std::string& rFile, bool rIsBinary)
+BOOST_AUTO_TEST_CASE(SerializeDouble)
 {
-    double value = 1337.6174e42;
-    double valueFromFile = -42;
-
-    WriteAndRead(rFile, rIsBinary, value, valueFromFile);
-    BOOST_CHECK_CLOSE(value, valueFromFile, 1.e-10);
+    double d = 13.37e42;
+    BOOST_CHECK_CLOSE(d, WriteReadNumber("DoubleText.dat", false, d, 0.), 1.e-10);
+    BOOST_CHECK_CLOSE(d, WriteReadNumber("DoubleBinary.dat", true, d, 0.), 1.e-10);
 }
 
-void EigenMatrixDynamic(const std::string& rFile, bool rIsBinary)
+BOOST_AUTO_TEST_CASE(SerializeInt)
 {
-    Eigen::MatrixXd values = Eigen::MatrixXd::Random(3, 15);
-    Eigen::MatrixXd valuesFromFile(3, 15);
-
-    WriteAndRead(rFile, rIsBinary, values, valuesFromFile);
-    BOOST_CHECK_CLOSE(values.norm(), valuesFromFile.norm(), 1.e-10);
+    int i = 6174;
+    BOOST_CHECK_EQUAL(i, WriteReadNumber("IntText.dat", false, i, 0));
+    BOOST_CHECK_EQUAL(i, WriteReadNumber("IntBinary.dat", true, i, 0));
 }
 
-void EigenMatrixFixed(const std::string& rFile, bool rIsBinary)
+BOOST_AUTO_TEST_CASE(SerializeBool)
 {
-    Eigen::Matrix3d values = Eigen::Matrix3d::Random();
-    Eigen::Matrix3d valuesFromFile;
-
-    WriteAndRead(rFile, rIsBinary, values, valuesFromFile);
-    BOOST_CHECK_CLOSE(values.norm(), valuesFromFile.norm(), 1.e-10);
+    bool b = true;
+    BOOST_CHECK_EQUAL(b, WriteReadNumber("BoolText.dat", false, b, false));
+    BOOST_CHECK_EQUAL(b, WriteReadNumber("BoolBinary.dat", true, b, false));
 }
 
-void FullVector(const std::string& rFile, bool rIsBinary)
+BOOST_AUTO_TEST_CASE(SerializeEnum)
 {
-    NuTo::FullVector<double> values = NuTo::FullVector<double>::Random(4);
-    NuTo::FullVector<double> valuesFromFile(4);
-
-    WriteAndRead(rFile, rIsBinary, values, valuesFromFile);
-    BOOST_CHECK_CLOSE(values.norm(), valuesFromFile.norm(), 1.e-10);
+    enum eEnum{A, B};
+    eEnum e = B;
+    BOOST_CHECK_EQUAL(e, WriteReadNumber<eEnum>("EnumText.dat", false, e, A));
+    BOOST_CHECK_EQUAL(e, WriteReadNumber<eEnum>("EnumBinary.dat", true, e, A));
 }
+
+template <typename T>
+T WriteReadMatrix(const std::string &rFile, bool rIsBinary, const T &rValue)
+{
+    // write
+    {
+        NuTo::SerializeStreamOut streamOut(rFile, rIsBinary);
+        streamOut.NuToSerializeMatrix(rValue);
+    } // out stream out of scope and f***ing closes the f***ing file. Damnit.
+
+    // read
+    T valueFromFile = rValue;
+    valueFromFile.setZero();
+    NuTo::SerializeStreamIn streamIn(rFile, rIsBinary);
+    streamIn.NuToSerializeMatrix(valueFromFile);
+
+    return valueFromFile;
+}
+
+
+BOOST_AUTO_TEST_CASE(SerializeEigen)
+{
+    {
+        Eigen::MatrixXd m = Eigen::MatrixXd::Random(3,2);
+        BOOST_CHECK_CLOSE(m.norm(), WriteReadMatrix("EigenDynamicText.dat", false, m).norm(), 1.e-10);
+        BOOST_CHECK_CLOSE(m.norm(), WriteReadMatrix("EigenDynamicBinary.dat", true, m).norm(), 1.e-10);
+    }
+    {
+        Eigen::Vector3d m = Eigen::Vector3d::Random();
+        BOOST_CHECK_CLOSE(m.norm(), WriteReadMatrix("EigenFixedText.dat", false, m).norm(), 1.e-10);
+        BOOST_CHECK_CLOSE(m.norm(), WriteReadMatrix("EigenFixedBinary.dat", true, m).norm(), 1.e-10);
+    }
+    {
+        NuTo::FullVector<double, Eigen::Dynamic> m = Eigen::VectorXd::Random(2);
+        BOOST_CHECK_CLOSE(m.norm(), WriteReadMatrix("NuToVectorDynamicText.dat", false, m).norm(), 1.e-10);
+        BOOST_CHECK_CLOSE(m.norm(), WriteReadMatrix("NuToVectorDynamicBinary.dat", true, m).norm(), 1.e-10);
+    }
+    {
+        NuTo::FullMatrix<double, 2,2> m = Eigen::Matrix2d::Random();
+        BOOST_CHECK_CLOSE(m.norm(), WriteReadMatrix("NuToMatrixFixedText.dat", false, m).norm(), 1.e-10);
+        BOOST_CHECK_CLOSE(m.norm(), WriteReadMatrix("NuToMatrixFixedBinary.dat", true, m).norm(), 1.e-10);
+    }
+}
+
+
 
 class CompoundDataBase
 {
 public:
     virtual ~CompoundDataBase() = default;
-    friend NuTo::SerializeStreamOut& operator<<(NuTo::SerializeStreamOut& rStream, CompoundDataBase& rData)
+
+
+    virtual void NuToSerializeWrite(NuTo::SerializeStreamOut& rStream) const
     {
-        rData.WriteMyData(rStream);
-        return rStream;
+        rStream.NuToSerializeNumber(mScalar);
+    }
+    virtual void NuToSerializeRead(NuTo::SerializeStreamIn& rStream)
+    {
+        rStream.NuToSerializeNumber(mScalar);
     }
 
-    friend NuTo::SerializeStreamIn& operator>>(NuTo::SerializeStreamIn& rStream, CompoundDataBase& rData)
-    {
-        rData.ReadMyData(rStream);
-        return rStream;
-    }
-
-    virtual void WriteMyData(NuTo::SerializeStreamOut& rStream) = 0;
-    virtual void ReadMyData(NuTo::SerializeStreamIn& rStream) = 0;
+    double mScalar;
 };
 
 class CompoundData : public CompoundDataBase
 {
 public:
 
-    double mScalar;
     Eigen::Vector3d mVector;
     NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> mMatrix;
 
@@ -115,22 +153,17 @@ public:
         mMatrix.setZero(rRows, rCols);
     }
 
-    void ReadMyData(NuTo::SerializeStreamIn& rStream) override
+    virtual void NuToSerializeWrite(NuTo::SerializeStreamOut& rStream) const override
     {
-        SerializeMyData(rStream);
+        CompoundDataBase::NuToSerializeWrite(rStream);  // explicitly call the base class serialization
+        rStream.NuToSerializeMatrix(mVector);
+        rStream.NuToSerializeMatrix(mMatrix);
     }
-    void WriteMyData(NuTo::SerializeStreamOut& rStream) override
+    virtual void NuToSerializeRead(NuTo::SerializeStreamIn& rStream) override
     {
-        SerializeMyData(rStream);
-    }
-
-private:
-    template <typename TStream>
-    void SerializeMyData(TStream& rStream)
-    {
-        rStream.SerializeData(mScalar);
-        rStream.SerializeData(mVector);
-        rStream.SerializeData(mMatrix);
+        CompoundDataBase::NuToSerializeRead(rStream);  // explicitly call the base class serialization
+        rStream.NuToSerializeMatrix(mVector);
+        rStream.NuToSerializeMatrix(mMatrix);
     }
 };
 
@@ -161,9 +194,11 @@ void CheckCompoundData(const std::string& rFile, bool rIsBinary)
     streamIn >> valuesFromFile1;
     streamIn >> valuesFromFile2;
 
+    BOOST_CHECK_CLOSE(values1.mScalar,          valuesFromFile1.mScalar,        1.e-10);
     BOOST_CHECK_CLOSE(values1.mVector.norm(),   valuesFromFile1.mVector.norm(), 1.e-10);
     BOOST_CHECK_CLOSE(values1.mMatrix.norm(),   valuesFromFile1.mMatrix.norm(), 1.e-10);
 
+    BOOST_CHECK_CLOSE(values2.mScalar,          valuesFromFile2.mScalar,        1.e-10);
     BOOST_CHECK_CLOSE(values2.mVector.norm(),   valuesFromFile2.mVector.norm(), 1.e-10);
     BOOST_CHECK_CLOSE(values2.mMatrix.norm(),   valuesFromFile2.mMatrix.norm(), 1.e-10);
 }
@@ -202,6 +237,8 @@ void CheckVectorCompoundData(const std::string& rFile, bool rIsBinary)
     timer.Reset("Cleanup");
     for (size_t i = 0; i < num; ++i)
     {
+        BOOST_CHECK_CLOSE(static_cast<CompoundData*>(&*values[i])->mScalar,
+                          static_cast<CompoundData*>(&*valuesFromFile[i])->mScalar, 1.e-10);
         BOOST_CHECK_CLOSE(static_cast<CompoundData*>(&*values[i])->mVector.norm(),
                           static_cast<CompoundData*>(&*valuesFromFile[i])->mVector.norm(), 1.e-10);
         BOOST_CHECK_CLOSE(static_cast<CompoundData*>(&*values[i])->mMatrix.norm(),
@@ -210,19 +247,9 @@ void CheckVectorCompoundData(const std::string& rFile, bool rIsBinary)
 
 }
 
+BOOST_AUTO_TEST_CASE(SerializeCompoundDataText)         { CheckCompoundData      ("CompoundDataText.dat"             , false);}
+BOOST_AUTO_TEST_CASE(SerializeCompoundDataBinary)       { CheckCompoundData      ("CompoundDataBinary.dat"           , true );}
+BOOST_AUTO_TEST_CASE(SerializeVectorCompoundDataText)   { CheckVectorCompoundData("VectorCompoundDataText.dat"       , false);}
+BOOST_AUTO_TEST_CASE(SerializeVectorCompoundDataBinary) { CheckVectorCompoundData("VectorCompoundDataBinary.dat"     , true );}
 
 }
-
-BOOST_AUTO_TEST_CASE(SerializeDoubleText)               { SerializeDataTest::Double                 ("DoubleText.dat"                   , false);}
-BOOST_AUTO_TEST_CASE(SerializeDoubleBinary)             { SerializeDataTest::Double                 ("DoubleBinary.dat"                 , true );}
-BOOST_AUTO_TEST_CASE(SerializeEigenMatrixDynamicText)   { SerializeDataTest::EigenMatrixDynamic     ("EigenMatrixDynamicText.dat"       , false);}
-BOOST_AUTO_TEST_CASE(SerializeEigenMatrixDynamicBinary) { SerializeDataTest::EigenMatrixDynamic     ("EigenMatrixDynamicBinary.dat"     , true );}
-BOOST_AUTO_TEST_CASE(SerializeEigenMatrixFixedText)     { SerializeDataTest::EigenMatrixFixed       ("EigenMatrixFixedText.dat"         , false);}
-BOOST_AUTO_TEST_CASE(SerializeEigenMatrixFixedBinary)   { SerializeDataTest::EigenMatrixFixed       ("EigenMatrixFixedBinary.dat"       , true );}
-BOOST_AUTO_TEST_CASE(SerializeFullVectorText)           { SerializeDataTest::FullVector             ("FullVectorText.dat"               , false);}
-BOOST_AUTO_TEST_CASE(SerializeFullVectorBinary)         { SerializeDataTest::FullVector             ("FullVectorBinary.dat"             , true );}
-BOOST_AUTO_TEST_CASE(SerializeCompoundDataText)         { SerializeDataTest::CheckCompoundData      ("CompoundDataText.dat"             , false);}
-BOOST_AUTO_TEST_CASE(SerializeCompoundDataBinary)       { SerializeDataTest::CheckCompoundData      ("CompoundDataBinary.dat"           , true );}
-BOOST_AUTO_TEST_CASE(SerializeVectorCompoundDataText)   { SerializeDataTest::CheckVectorCompoundData("VectorCompoundDataText.dat"       , false);}
-BOOST_AUTO_TEST_CASE(SerializeVectorCompoundDataBinary) { SerializeDataTest::CheckVectorCompoundData("VectorCompoundDataBinary.dat"     , true );}
-
