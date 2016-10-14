@@ -7,3 +7,5 @@
 @ref Doxygen
 
 @ref Coverage
+
+@ref BoostPtrContainer
