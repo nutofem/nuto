@@ -1,15 +1,5 @@
-
-
- #EXECUTE_PROCESS(COMMAND ${SWIG_EXECUTABLE} -swiglib
- # OUTPUT_VARIABLE SWIG_swiglib_output
-  
-  # ERROR_VARIABLE SWIG_swiglib_error
-  # RESULT_VARIABLE SWIG_swiglib_result
-  # )
-
-
 execute_process(
-COMMAND python -c "import numpy; print numpy.get_include()"
+COMMAND /usr/bin/env python -c "import numpy; print numpy.get_include()"
 OUTPUT_VARIABLE PYTHON_SYS_PATH
 )
 string(STRIP ${PYTHON_SYS_PATH} PYTHON_SYS_PATH)
@@ -23,8 +13,6 @@ ENDIF(NOT NUMPY_I_PATH AND NOT DEFINED $ENV{NUMPY_I_PATH})
 
 set(rt "rt-NOTFOUND")
 find_file(rt "numpy.i" ${NUMPY_I_PATH} NO_DEFAULT_PATH)
-
-string(STRIP ${PYTHON_SYS_PATH} SWIG_swiglib_output)
 
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(NUMPY DEFAULT_MSG NUMPY_INCLUDE_PATH)
