@@ -20,19 +20,16 @@ public:
     SerializeStreamOut(const std::string& rFile, bool rIsBinary);
     virtual ~SerializeStreamOut()                     = default;
 
-    SerializeStreamOut(const SerializeStreamOut&)     = delete;
-
     template <typename T>
-    friend SerializeStreamOut& operator<<(SerializeStreamOut& rStream, const T& rData)
-    {
-        rData.NuToSerializeWrite(rStream);
-        return rStream;
-    }
+    friend SerializeStreamOut& operator<<(SerializeStreamOut& rStream, const T& rData);
 
-    template <typename T>
-    void NuToSerializeNumber(const T &rData);
+    friend SerializeStreamOut& operator<<(SerializeStreamOut& rStream, double rData);
 
     template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
-    void NuToSerializeMatrix(const Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix);
+    friend SerializeStreamOut& operator<<(SerializeStreamOut& rStream, const Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix);
+
+    template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
+    void SaveMatrix(const Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix);
+
 };
 } // namespace NuTo

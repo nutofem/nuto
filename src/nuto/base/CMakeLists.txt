@@ -3,7 +3,7 @@ SET(NuToBase_SOURCES
   Logger.cpp
   CallbackInterface.cpp
   serializeStream/SerializeStreamBase.cpp
-)
+        )
 
 SET(NuToBase_SWIG_MODULES
   ModulNuToBase

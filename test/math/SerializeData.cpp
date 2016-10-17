@@ -30,12 +30,12 @@ T WriteReadNumber(const std::string &rFile, bool rIsBinary, const T &rValue, T r
     // write
     {
         NuTo::SerializeStreamOut streamOut(rFile, rIsBinary);
-        streamOut.NuToSerializeNumber(rValue);
+        streamOut << rValue;
     } // out stream out of scope and f***ing closes the f***ing file. Damnit.
 
     // read
     NuTo::SerializeStreamIn streamIn(rFile, rIsBinary);
-    streamIn.NuToSerializeNumber(rZero);
+    streamIn >> rZero;
 
     return rZero;
 }
@@ -47,42 +47,20 @@ BOOST_AUTO_TEST_CASE(SerializeDouble)
     BOOST_CHECK_CLOSE(d, WriteReadNumber("DoubleBinary.dat", true, d, 0.), 1.e-10);
 }
 
-BOOST_AUTO_TEST_CASE(SerializeInt)
-{
-    int i = 6174;
-    BOOST_CHECK_EQUAL(i, WriteReadNumber("IntText.dat", false, i, 0));
-    BOOST_CHECK_EQUAL(i, WriteReadNumber("IntBinary.dat", true, i, 0));
-}
-
-BOOST_AUTO_TEST_CASE(SerializeBool)
-{
-    bool b = true;
-    BOOST_CHECK_EQUAL(b, WriteReadNumber("BoolText.dat", false, b, false));
-    BOOST_CHECK_EQUAL(b, WriteReadNumber("BoolBinary.dat", true, b, false));
-}
-
-BOOST_AUTO_TEST_CASE(SerializeEnum)
-{
-    enum eEnum{A, B};
-    eEnum e = B;
-    BOOST_CHECK_EQUAL(e, WriteReadNumber<eEnum>("EnumText.dat", false, e, A));
-    BOOST_CHECK_EQUAL(e, WriteReadNumber<eEnum>("EnumBinary.dat", true, e, A));
-}
-
 template <typename T>
 T WriteReadMatrix(const std::string &rFile, bool rIsBinary, const T &rValue)
 {
     // write
     {
         NuTo::SerializeStreamOut streamOut(rFile, rIsBinary);
-        streamOut.NuToSerializeMatrix(rValue);
+        streamOut << rValue;
     } // out stream out of scope and f***ing closes the f***ing file. Damnit.
 
     // read
     T valueFromFile = rValue;
     valueFromFile.setZero();
     NuTo::SerializeStreamIn streamIn(rFile, rIsBinary);
-    streamIn.NuToSerializeMatrix(valueFromFile);
+    streamIn >> valueFromFile;
 
     return valueFromFile;
 }
@@ -91,7 +69,7 @@ T WriteReadMatrix(const std::string &rFile, bool rIsBinary, const T &rValue)
 BOOST_AUTO_TEST_CASE(SerializeEigen)
 {
     {
-        Eigen::MatrixXd m = Eigen::MatrixXd::Random(3,2);
+        Eigen::MatrixXd m = Eigen::MatrixXd::Random(3, 2);
         BOOST_CHECK_CLOSE(m.norm(), WriteReadMatrix("EigenDynamicText.dat", false, m).norm(), 1.e-10);
         BOOST_CHECK_CLOSE(m.norm(), WriteReadMatrix("EigenDynamicBinary.dat", true, m).norm(), 1.e-10);
     }
@@ -100,6 +78,9 @@ BOOST_AUTO_TEST_CASE(SerializeEigen)
         BOOST_CHECK_CLOSE(m.norm(), WriteReadMatrix("EigenFixedText.dat", false, m).norm(), 1.e-10);
         BOOST_CHECK_CLOSE(m.norm(), WriteReadMatrix("EigenFixedBinary.dat", true, m).norm(), 1.e-10);
     }
+}
+BOOST_AUTO_TEST_CASE(SerializeNuTo)
+{
     {
         NuTo::FullVector<double, Eigen::Dynamic> m = Eigen::VectorXd::Random(2);
         BOOST_CHECK_CLOSE(m.norm(), WriteReadMatrix("NuToVectorDynamicText.dat", false, m).norm(), 1.e-10);
@@ -119,14 +100,13 @@ class CompoundDataBase
 public:
     virtual ~CompoundDataBase() = default;
 
-
-    virtual void NuToSerializeWrite(NuTo::SerializeStreamOut& rStream) const
+    virtual void NuToSerializeSave(NuTo::SerializeStreamOut& rStream) const
     {
-        rStream.NuToSerializeNumber(mScalar);
+        rStream << mScalar;
     }
-    virtual void NuToSerializeRead(NuTo::SerializeStreamIn& rStream)
+    virtual void NuToSerializeLoad(NuTo::SerializeStreamIn& rStream)
     {
-        rStream.NuToSerializeNumber(mScalar);
+        rStream >> mScalar;
     }
 
     double mScalar;
@@ -153,17 +133,17 @@ public:
         mMatrix.setZero(rRows, rCols);
     }
 
-    virtual void NuToSerializeWrite(NuTo::SerializeStreamOut& rStream) const override
+    virtual void NuToSerializeSave(NuTo::SerializeStreamOut& rStream) const override
     {
-        CompoundDataBase::NuToSerializeWrite(rStream);  // explicitly call the base class serialization
-        rStream.NuToSerializeMatrix(mVector);
-        rStream.NuToSerializeMatrix(mMatrix);
+        CompoundDataBase::NuToSerializeSave(rStream);  // explicitly call the base class serialization
+        rStream << mVector;
+        rStream << mMatrix;
     }
-    virtual void NuToSerializeRead(NuTo::SerializeStreamIn& rStream) override
+    virtual void NuToSerializeLoad(NuTo::SerializeStreamIn& rStream) override
     {
-        CompoundDataBase::NuToSerializeRead(rStream);  // explicitly call the base class serialization
-        rStream.NuToSerializeMatrix(mVector);
-        rStream.NuToSerializeMatrix(mMatrix);
+        CompoundDataBase::NuToSerializeLoad(rStream);  // explicitly call the base class serialization
+        rStream >> mVector;
+        rStream >> mMatrix;
     }
 };
 

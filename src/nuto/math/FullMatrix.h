@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+
 //using namespace std;
 #include <boost/tokenizer.hpp>
 
@@ -37,6 +38,9 @@
 #include "nuto/math/MathException.h"
 #include "nuto/math/fortran_routines.h"
 #include "nuto/math/SparseMatrix.h"
+#include "nuto/base/serializeStream/SerializeStreamIn_Def.h"
+#include "nuto/base/serializeStream/SerializeStreamOut_Def.h"
+
 
 
 namespace NuTo
@@ -1606,6 +1610,19 @@ void FullMatrix<T,rows,cols>::WriteToFile ( std::ofstream& fileStream, std::stri
 	}
 }
 
+//! @brief serializes the Matrix to the NuTo::SerializeStreamOut
+template<class T, int rows, int cols>
+void FullMatrix<T,rows,cols>::NuToSerializeSave(SerializeStreamOut& rStream) const
+{
+    rStream.SaveMatrix(*this);
+}
+
+//! @brief serializes the Matrix to the NuTo::SerializeStreamIn
+template<class T, int rows, int cols>
+void FullMatrix<T,rows,cols>::NuToSerializeLoad(SerializeStreamIn& rStream)
+{
+    rStream.LoadMatrix(*this);
+}
 
 } //NAMESPACE NUTO
 

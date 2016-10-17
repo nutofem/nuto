@@ -12,25 +12,46 @@ NuTo::SerializeStreamIn::SerializeStreamIn(const std::string& rFile, bool rIsBin
         mFileStream.open(rFile, std::ios_base::in);
 }
 
-template <typename T>
-void NuTo::SerializeStreamIn::NuToSerializeNumber(T &rData)
+
+namespace NuTo
 {
-    if (mIsBinary)
+template <typename T>
+SerializeStreamIn& operator>>(SerializeStreamIn& rStream, T& rData)
+{
+    rData.NuToSerializeLoad(rStream);
+    return rStream;
+}
+
+SerializeStreamIn& operator>>(SerializeStreamIn& rStream, double &rData)
+{
+    if (rStream.mIsBinary)
     {
-        mFileStream.read(reinterpret_cast<char*>(&rData), sizeof(T));
+        rStream.mFileStream.read(reinterpret_cast<char*>(&rData), sizeof(double));
     }
     else
     {
         std::string line;
-        std::getline(mFileStream, line); // ignore one line of debug info
-        std::getline(mFileStream, line); // extract value
-        rData = static_cast<T>(std::stod(line));
+        std::getline(rStream.mFileStream, line); // ignore one line of debug info
+        std::getline(rStream.mFileStream, line); // extract value
+        rData = static_cast<double>(std::stod(line));
     }
+    return rStream;
 }
 
 
+
 template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
-void NuTo::SerializeStreamIn::NuToSerializeMatrix(Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix) {
+SerializeStreamIn& operator>>(SerializeStreamIn& rStream, Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix)
+{
+    rStream.LoadMatrix(rMatrix);
+    return rStream;
+}
+
+} // namespace NuTo
+
+template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
+void NuTo::SerializeStreamIn::LoadMatrix(Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix)
+{
     const auto &rows = rMatrix.rows();
     const auto &cols = rMatrix.cols();
     auto *data = rMatrix.data();
