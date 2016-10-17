@@ -26,15 +26,24 @@ public:
     //! @param rStream NuTo input stream
     //! @param rData the data from the input stream goes here
     template <typename T>
-    friend SerializeStreamIn& operator>>(SerializeStreamIn& rStream, T& rData);
+    inline friend SerializeStreamIn& operator >> (SerializeStreamIn& rStream, T& rData)
+    {
+        rStream.Serialize(rData);
+        return rStream;
+    }
 
-    friend SerializeStreamIn& operator>>(SerializeStreamIn& rStream, double &rData);
+    template <typename T>
+    void Serialize(T& rData);
+
+    void Serialize(double &rData);
+
+    void Serialize(bool &rData);
 
     template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
-    friend SerializeStreamIn& operator>>(SerializeStreamIn& rStream, Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols> &rMatrix);
+    void Serialize(Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix);
 
     template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
-    void LoadMatrix(Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols> &rMatrix);
+    void LoadMatrix(Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix);
 
 };
 } // namespace NuTo

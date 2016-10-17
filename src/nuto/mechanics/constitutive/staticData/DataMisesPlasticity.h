@@ -5,6 +5,8 @@
 
 namespace NuTo
 {
+class SerializeStreamIn;
+class SerializeStreamOut;
 class MisesPlasticityEngineeringStress;
 
 namespace Constitutive
@@ -35,6 +37,20 @@ public:
     //! @brief Set the back stress.
     void SetBackStress(EngineeringStress<TDim> newBackStress);
 
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize output stream
+    virtual void NuToSerializeSave(SerializeStreamOut& rStream)
+    {
+        SerializeDataMisesPlasticity(rStream);
+    }
+
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize input stream
+    virtual void NuToSerializeLoad(SerializeStreamIn& rStream)
+    {
+        SerializeDataMisesPlasticity(rStream);
+    }
+
 protected:
     //! @brief Accumulated plastic strain (is not always equivalent to epsilon_p)
     double mEpsilonPEq;
@@ -44,8 +60,14 @@ protected:
 
     //! @brief back stress
     EngineeringStress<TDim> mSigmaB;
+
+private:
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize input/output stream
+    template <typename TStream>
+    void SerializeDataMisesPlasticity(TStream &rStream);
 };
 
-}
-}
-}
+} // namespace StaticData
+} // namespace Constitutive
+} // namespace NuTo

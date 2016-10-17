@@ -25,8 +25,13 @@ public:
     void ShiftToFuture() override {};
     void AllocateAdditionalData(int) override {};
 
-    void WriteComponent(SerializeStreamOut& rStream) override {}
-    void ReadComponent(SerializeStreamIn& rStream) override {}
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize output stream
+    virtual void NuToSerializeSave(SerializeStreamOut& rStream) override {}
+
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize input stream
+    virtual void NuToSerializeLoad(SerializeStreamIn& rStream) override {}
 };
 
 } // namespace StaticData

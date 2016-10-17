@@ -453,11 +453,13 @@ public:
     //! @brief ... sorts the rows of a matrix based on the entries in column rCol
     FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> SortRow(int rCol);
 
+#ifndef SWIG
     //! @brief serializes the Matrix to the NuTo::SerializeStreamOut
     void NuToSerializeSave(SerializeStreamOut& rStream) const;
 
     //! @brief serializes the Matrix to the NuTo::SerializeStreamIn
     void NuToSerializeLoad(SerializeStreamIn& rStream);
+#endif // SWIG
 
 private:
     //! @brief ... writes a matrix to a file

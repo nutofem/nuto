@@ -1,5 +1,7 @@
 #include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/base/serializeStream/SerializeStreamIn.h"
+#include "nuto/base/serializeStream/SerializeStreamOut.h"
 
 using namespace NuTo::Constitutive::StaticData;
 
@@ -137,3 +139,31 @@ void DataMoistureTransport::SetCurrentJunctionPoint(double newCurrentJunctionPoi
 {
     mCurrentJunctionPoint = newCurrentJunctionPoint;
 }
+
+namespace NuTo{namespace Constitutive{ namespace StaticData{
+std::ostream& operator<<(std::ostream& os, const DataMoistureTransport& data)
+{
+    os << "SorptionHistoryDesorption: "     << data.mSorptionHistoryDesorption << "\n";
+    os << "Last relative humidity value: "  << data.mLastRelHumValue << "\n";
+    os << "Last junction point: "           << data.mLastJunctionPoint << "\n";
+    os << "Current junction point: "        << data.mCurrentJunctionPoint << "\n";
+
+    os << "Current sorption coefficients: " << data.mCurrentSorptionCoeff << "\n";
+    os << "Last sorption coefficients: "    << data.mLastSorptionCoeff << "\n";
+    return os;
+}
+}}} // namespaces
+
+template <typename TStream>
+void DataMoistureTransport::SerializeDataMoistureTransport(TStream &rStream)
+{
+    rStream.Serialize(mSorptionHistoryDesorption);
+    rStream.Serialize(mLastRelHumValue);
+    rStream.Serialize(mLastJunctionPoint);
+    rStream.Serialize(mCurrentJunctionPoint);
+    rStream.Serialize(mCurrentSorptionCoeff);
+    rStream.Serialize(mLastRelHumValue);
+}
+
+template void DataMoistureTransport::SerializeDataMoistureTransport<NuTo::SerializeStreamIn>(SerializeStreamIn& rStream);
+template void DataMoistureTransport::SerializeDataMoistureTransport<NuTo::SerializeStreamOut>(SerializeStreamOut& rStream);

@@ -4,6 +4,8 @@
 
 namespace NuTo
 {
+class SerializeStreamIn;
+class SerializeStreamOut;
 namespace Constitutive
 {
 namespace StaticData
@@ -52,21 +54,25 @@ public:
 
     void SetCurrentJunctionPoint(double newCurrentJunctionPoint);
 
-    friend std::ostream& operator<<(std::ostream& os, const DataMoistureTransport& data)
-    {
-        os << "SorptionHistoryDesorption: "     << data.mSorptionHistoryDesorption << "\n";
-        os << "Last relative humidity value: "  << data.mLastRelHumValue << "\n";
-        os << "Last junction point: "           << data.mLastJunctionPoint << "\n";
-        os << "Current junction point: "        << data.mCurrentJunctionPoint << "\n";
-
-        os << "Current sorption coefficients: " << data.mCurrentSorptionCoeff << "\n";
-        os << "Last sorption coefficients: "    << data.mLastSorptionCoeff << "\n";
-        return os;
-    }
+    friend std::ostream& operator<<(std::ostream& os, const DataMoistureTransport& data);
 
     bool operator==(const DataMoistureTransport& rhs) const;
 
     bool operator!=(const DataMoistureTransport& rhs) const;
+
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize output stream
+    virtual void NuToSerializeSave(SerializeStreamOut& rStream)
+    {
+        SerializeDataMoistureTransport(rStream);
+    }
+
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize input stream
+    virtual void NuToSerializeLoad(SerializeStreamIn& rStream)
+    {
+        SerializeDataMoistureTransport(rStream);
+    }
 
 protected:
     bool   mSorptionHistoryDesorption = true;
@@ -76,6 +82,12 @@ protected:
 
     FullVector<double,Eigen::Dynamic> mCurrentSorptionCoeff {{0.0, 0.0, 0.0}};
     FullVector<double,Eigen::Dynamic> mLastSorptionCoeff    {{0.0, 0.0, 0.0}};
+
+private:
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize input/output stream
+    template <typename TStream>
+    void SerializeDataMoistureTransport(TStream &rStream);
 };
 
 } // namespace StaticData

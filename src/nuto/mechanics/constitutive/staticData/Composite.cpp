@@ -1,6 +1,6 @@
 #include "nuto/mechanics/constitutive/staticData/Composite.h"
-#include "nuto/base/serializeStream/SerializeStreamIn_Def.h"
-#include "nuto/base/serializeStream/SerializeStreamOut_Def.h"
+#include "nuto/base/serializeStream/SerializeStreamIn.h"
+#include "nuto/base/serializeStream/SerializeStreamOut.h"
 
 using namespace NuTo::Constitutive::StaticData;
 
@@ -65,21 +65,26 @@ void Composite::AllocateAdditionalData(int numAdditionalData)
     }
 }
 
-void Composite::WriteComponent(SerializeStreamOut& rStream)
+void Composite::NuToSerializeSave(SerializeStreamOut &rStream)
 {
-    SerializeComponent(rStream);
+    Component::NuToSerializeSave(rStream);
+    SerializeComposite(rStream);
 }
 
-void Composite::ReadComponent(SerializeStreamIn& rStream)
+void Composite::NuToSerializeLoad(SerializeStreamIn &rStream)
 {
-    SerializeComponent(rStream);
+    Component::NuToSerializeLoad(rStream);
+    SerializeComposite(rStream);
 }
 
 template <typename TStream>
-void Composite::SerializeComponent(TStream& rStream)
+void Composite::SerializeComposite(TStream &rStream)
 {
-
+    for (Component& component : mComponents)
+    {
+        rStream.Serialize(component);
+    }
 }
 
-template void Composite::SerializeComponent<NuTo::SerializeStreamIn>(SerializeStreamIn& rStream);
-template void Composite::SerializeComponent<NuTo::SerializeStreamOut>(SerializeStreamOut& rStream);
+template void Composite::SerializeComposite<NuTo::SerializeStreamIn>(SerializeStreamIn& rStream);
+template void Composite::SerializeComposite<NuTo::SerializeStreamOut>(SerializeStreamOut& rStream);

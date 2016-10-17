@@ -17,8 +17,19 @@ namespace StaticData
 class Composite : public Component
 {
 public:
+
+    //! @brief Return a new copy of the object.
     static Composite* Create();
+
+    //! @brief Return a new copy of the object.
     Composite* Clone() const override;
+
+    // make component uncopyable to prevent slicing; use `Clone()`
+    Composite(const Composite&) = delete;
+
+    // make component uncopyable to prevent slicing; use `Clone()`
+    Composite& operator=(const Composite&) = delete;
+
 
     void AddComponent(Component* newComponent);
 
@@ -32,16 +43,22 @@ public:
 
     void AllocateAdditionalData(int numAdditionalData) override;
 
-    void WriteComponent(SerializeStreamOut& rStream) override;
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize output stream
+    virtual void NuToSerializeSave(SerializeStreamOut& rStream) override;
 
-    void ReadComponent(SerializeStreamIn& rStream) override;
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize input stream
+    virtual void NuToSerializeLoad(SerializeStreamIn& rStream) override;
 
 private:
     Composite() = default;
     boost::ptr_vector<Component> mComponents;
 
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize input/output stream
     template <typename TStream>
-    void SerializeComponent(TStream& rStream);
+    void SerializeComposite(TStream &rStream);
 };
 
 } // namspace StaticData

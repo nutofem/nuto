@@ -162,7 +162,7 @@ private:
     double mNormalStiffness;
 
     //! @brief Global dimension of the structure the fibres are embedded in.
-    int mGlobalDimension;
+    unsigned int mGlobalDimension;
 };
 
 }

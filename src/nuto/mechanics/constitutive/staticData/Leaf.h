@@ -112,14 +112,20 @@ public:
         return mData.size();
     }
 
-    void WriteComponent(SerializeStreamOut& rStream) override
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize output stream
+    virtual void NuToSerializeSave(SerializeStreamOut& rStream) override
     {
-        SerializeComponent(rStream);
+        Component::NuToSerializeSave(rStream);
+        SerializeLeaf(rStream);
     }
 
-    void ReadComponent(SerializeStreamIn& rStream) override
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize input stream
+    virtual void NuToSerializeLoad(SerializeStreamIn& rStream) override
     {
-        SerializeComponent(rStream);
+        Component::NuToSerializeLoad(rStream);
+        SerializeLeaf(rStream);
     }
 
 private:
@@ -130,11 +136,14 @@ private:
         SetData(rInitialValue);
     }
 
+
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize input/output stream
     template <typename TStream>
-    void SerializeComponent(TStream& rStream)
+    void SerializeLeaf(TStream &rStream)
     {
         for (T& data : mData)
-            rStream.SerializeData(data);
+            rStream.Serialize(data);
     }
 
     std::vector<T> mData;

@@ -21,12 +21,21 @@ public:
     virtual ~SerializeStreamOut()                     = default;
 
     template <typename T>
-    friend SerializeStreamOut& operator<<(SerializeStreamOut& rStream, const T& rData);
+    inline friend SerializeStreamOut& operator << (SerializeStreamOut& rStream, T& rData)
+    {
+        rStream.Serialize(rData);
+        return rStream;
+    }
 
-    friend SerializeStreamOut& operator<<(SerializeStreamOut& rStream, double rData);
+    template <typename T>
+    void Serialize(T& rData);
+
+    void Serialize(double rData);
+
+    void Serialize(bool rData);
 
     template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
-    friend SerializeStreamOut& operator<<(SerializeStreamOut& rStream, const Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix);
+    void Serialize(Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix);
 
     template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
     void SaveMatrix(const Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix);

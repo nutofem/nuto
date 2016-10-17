@@ -12,8 +12,11 @@ NuTo::SerializeStream provides a little framework to serialize data apart from b
 ### Functionality
 
 - output in binary / plain text via flag in constructor of NuTo::SerializeStreamIn / NuTo::SerializeStreamOut
-- serialization with the __operator <<__ for saving and __operator >>__ for restoring the data
-- both operators are implemented for the types __double__ and __Eigen::Matrix<...>__
+- serialization with the __Serialize(rData)__ method for both saving and loading
+    - You should use this method as seen in the example. This ensures saving and loading in the same way.
+    - Downside: The rData argument cannot be constant anymore... 
+- additional wrapping with __operator <<__ for saving and __operator >>__ for restoring
+- __Serialize()__ is implemented for the types __double__ and __Eigen::Matrix<...>__
 - every other class needs to implement the methods
     - NuToSerializeSave(NuTo::SerializeStreamOut&) const
     - NuToSerializeLoad(NuTo::SerializeStreamIn&)
@@ -26,34 +29,48 @@ boost::serialize provides the luxury feature of automatically calling the __Deri
 class Base
 {
 public:
-    virtual NuToSerializeSave(SerializeStreamOut& rStream) const
+    virtual NuToSerializeSave(SerializeStreamOut& rStream)
     {
-        rStream << mData;
+        Serialize(rStream);
     }
 
     virtual NuToSerializeLoad(SerializeStreamIn& rStream)
     {
-        rStream >> mData;
+        Serialize(rStream);
     }
-private:        
+private:    
+    
+    template <typename TStream>
+    void SerializeMe(TStream& rStream)
+    {
+        rStream.Serialize(mData);
+    }
+    
     double mData;
 };
 
 class Derived : public Base
 {
 public:
-    virtual NuToSerializeSave(SerializeStreamOut& rStream) const override
+    virtual NuToSerializeSave(SerializeStreamOut& rStream) override
     {
         Base::NuToSerializeSave(rStream);
-        rStream << mData;
+        SerializeMe(rStream);
     }
 
     virtual NuToSerializeLoad(SerializeStreamIn& rStream) override
     {
         Base::NuToSerializeLoad(rStream);
-        rStream >> mData;
+        SerializeMe(rStream);
     }
 private:
+    template <typename TStream>
+    void SerializeMe(TStream& rStream)
+    {
+        rStream.Serialize(mData);
+    }
+
+
     Eigen::Matrix3d mData;
 };
 ~~~

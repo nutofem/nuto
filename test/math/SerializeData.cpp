@@ -25,17 +25,17 @@ namespace SerializeDataTest
 
 //! @remark provide rZero for proper initialization of the primitive types
 template <typename T>
-T WriteReadNumber(const std::string &rFile, bool rIsBinary, const T &rValue, T rZero)
+T WriteReadNumber(const std::string &rFile, bool rIsBinary, T &rValue, T rZero)
 {
     // write
     {
         NuTo::SerializeStreamOut streamOut(rFile, rIsBinary);
-        streamOut << rValue;
+        streamOut.Serialize(rValue);
     } // out stream out of scope and f***ing closes the f***ing file. Damnit.
 
     // read
     NuTo::SerializeStreamIn streamIn(rFile, rIsBinary);
-    streamIn >> rZero;
+    streamIn.Serialize(rZero);
 
     return rZero;
 }
@@ -48,19 +48,19 @@ BOOST_AUTO_TEST_CASE(SerializeDouble)
 }
 
 template <typename T>
-T WriteReadMatrix(const std::string &rFile, bool rIsBinary, const T &rValue)
+T WriteReadMatrix(const std::string &rFile, bool rIsBinary, T &rValue)
 {
     // write
     {
         NuTo::SerializeStreamOut streamOut(rFile, rIsBinary);
-        streamOut << rValue;
+        streamOut.Serialize(rValue);
     } // out stream out of scope and f***ing closes the f***ing file. Damnit.
 
     // read
     T valueFromFile = rValue;
     valueFromFile.setZero();
     NuTo::SerializeStreamIn streamIn(rFile, rIsBinary);
-    streamIn >> valueFromFile;
+    streamIn.Serialize(valueFromFile);
 
     return valueFromFile;
 }
@@ -100,13 +100,13 @@ class CompoundDataBase
 public:
     virtual ~CompoundDataBase() = default;
 
-    virtual void NuToSerializeSave(NuTo::SerializeStreamOut& rStream) const
+    virtual void NuToSerializeSave(NuTo::SerializeStreamOut& rStream)
     {
-        rStream << mScalar;
+        rStream.Serialize(mScalar);
     }
     virtual void NuToSerializeLoad(NuTo::SerializeStreamIn& rStream)
     {
-        rStream >> mScalar;
+        rStream.Serialize(mScalar);
     }
 
     double mScalar;
@@ -133,18 +133,25 @@ public:
         mMatrix.setZero(rRows, rCols);
     }
 
-    virtual void NuToSerializeSave(NuTo::SerializeStreamOut& rStream) const override
+    virtual void NuToSerializeSave(NuTo::SerializeStreamOut& rStream) override
     {
         CompoundDataBase::NuToSerializeSave(rStream);  // explicitly call the base class serialization
-        rStream << mVector;
-        rStream << mMatrix;
+        SerializeMe(rStream);
     }
     virtual void NuToSerializeLoad(NuTo::SerializeStreamIn& rStream) override
     {
         CompoundDataBase::NuToSerializeLoad(rStream);  // explicitly call the base class serialization
-        rStream >> mVector;
-        rStream >> mMatrix;
+        SerializeMe(rStream);
     }
+
+private:
+    template <typename TStream>
+    void SerializeMe(TStream& rStream)
+    {
+        rStream.Serialize(mVector);
+        rStream.Serialize(mMatrix);
+    }
+
 };
 
 

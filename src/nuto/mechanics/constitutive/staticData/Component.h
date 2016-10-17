@@ -21,8 +21,13 @@ public:
     //! @brief Return a new copy of the object.
     virtual Component* Clone() const = 0;
 
+    //! @brief virtual destructor
+    virtual ~Component() = default;
+
     // make component uncopyable to prevent slicing; use `Clone()`
     Component(const Component&) = delete;
+
+    // make component uncopyable to prevent slicing; use `Clone()`
     Component& operator=(const Component&) = delete;
 
     //! @brief Puts current static data to previous static data, previous to pre-previous, etc.
@@ -33,13 +38,16 @@ public:
     virtual void ShiftToFuture() = 0;
 
     //! @brief Allocate more time steps for the static data component.
+    //! @param numAdditionalData number of additional static data components
     virtual void AllocateAdditionalData(int numAdditionalData) = 0;
 
-    virtual void WriteComponent(SerializeStreamOut& rStream) {};
-    virtual void ReadComponent(SerializeStreamIn& rStream) {};
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize output stream
+    virtual void NuToSerializeSave(SerializeStreamOut& rStream) {/* no members to serialize */};
 
-    friend NuTo::SerializeStreamOut& operator<<(NuTo::SerializeStreamOut& rStream, Component& rData);
-    friend NuTo::SerializeStreamIn& operator>>(NuTo::SerializeStreamIn& rStream, Component& rData);
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize input stream
+    virtual void NuToSerializeLoad(SerializeStreamIn& rStream) {/* no members to serialize */};
 
 protected:
     //! @brief Private constructor, use @ref Create() to allocate a component on the heap.
