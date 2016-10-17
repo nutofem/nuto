@@ -117,6 +117,9 @@ NuTo::Constitutive::StaticData::Component* GetComposite(double rA, double rB, do
     auto& subComposite = dynamic_cast<Composite&>(composite->GetComponent(1));
     subComposite.AddComponent(Leaf<double>::Create(rB));
     subComposite.AddComponent(Leaf<double>::Create(rC));
+
+    composite->AllocateAdditionalData(3);
+
     return composite;
 }
 
@@ -124,7 +127,11 @@ void CheckLeafDouble(NuTo::Constitutive::StaticData::Component& c1, NuTo::Consti
 {
     auto& l1 = dynamic_cast<NuTo::Constitutive::StaticData::Leaf<double>&>(c1);
     auto& l2 = dynamic_cast<NuTo::Constitutive::StaticData::Leaf<double>&>(c2);
-    BOOST_CHECK_CLOSE(l1.GetData(), l2.GetData(), 1.e-10);
+
+    BOOST_CHECK_EQUAL(l1.GetNumData(), l2.GetNumData());
+
+    for (auto i = 0; i < l1.GetNumData(); ++i)
+        BOOST_CHECK_CLOSE(l1.GetData(i), l2.GetData(i), 1.e-10);
 }
 
 void CheckComposite(NuTo::Constitutive::StaticData::Component& c1, NuTo::Constitutive::StaticData::Component& c2)
