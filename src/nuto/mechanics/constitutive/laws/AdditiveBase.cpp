@@ -1,39 +1,7 @@
 #include "nuto/mechanics/constitutive/laws/AdditiveBase.h"
-#include "nuto/mechanics/constitutive/staticData/Composite.h"
-#include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
-
-
-template <int TDim>
-NuTo::Constitutive::StaticData::Component* NuTo::AdditiveBase::AllocateStaticData(const NuTo::ElementBase *rElement) const
-{
-    mStaticDataAllocated = true;    // <--- muteable member, so don't care about constness of this function
-
-    auto composite = Constitutive::StaticData::Composite::Create();
-    Constitutive::StaticData::Component* subComponent;
-
-    for (auto sublaw : mSublaws)
-    {
-        switch (TDim)
-        {
-        case 1:
-            subComponent = sublaw->AllocateStaticData1D(rElement);
-            break;
-        case 2:
-            subComponent = sublaw->AllocateStaticData2D(rElement);
-            break;
-        case 3:
-            subComponent = sublaw->AllocateStaticData3D(rElement);
-            break;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Invalid dimension.");
-        }
-        composite->AddComponent(subComponent);
-    }
-    return composite;
-}
 
 
 void NuTo::AdditiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiveLaw,

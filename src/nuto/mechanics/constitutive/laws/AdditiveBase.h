@@ -3,6 +3,9 @@
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
+#include "nuto/mechanics/constitutive/staticData/Composite.h"
+#include "nuto/mechanics/MechanicsException.h"
+
 namespace NuTo
 {
 class AdditiveBase : public ConstitutiveBase
@@ -30,7 +33,33 @@ public:
     }
 
     template <int TDim>
-    Constitutive::StaticData::Component* AllocateStaticData(const NuTo::ElementBase *rElement) const;
+    Constitutive::StaticData::Component* AllocateStaticData(const NuTo::ElementBase *rElement) const
+    {
+        mStaticDataAllocated = true;    // <--- muteable member, so don't care about constness of this function
+
+        auto composite = Constitutive::StaticData::Composite::Create();
+        Constitutive::StaticData::Component* subComponent;
+
+        for (auto sublaw : mSublaws)
+        {
+            switch (TDim)
+            {
+            case 1:
+                subComponent = sublaw->AllocateStaticData1D(rElement);
+                break;
+            case 2:
+                subComponent = sublaw->AllocateStaticData2D(rElement);
+                break;
+            case 3:
+                subComponent = sublaw->AllocateStaticData3D(rElement);
+                break;
+            default:
+                throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Invalid dimension.");
+            }
+            composite->AddComponent(subComponent);
+        }
+        return composite;
+    }
 
     //! @brief Adds a constitutive law to a model that combines multiple constitutive laws (additive, parallel)
     //! @param rConstitutiveLaw Constitutive law to be added.
