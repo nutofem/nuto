@@ -750,9 +750,9 @@ void ShrinkageTestStressBased(  std::array<int,TDim> rN,
     CL_SCSB_Ptr->SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::TEMPERATURE, TEST_TEMPERATURE);
 
 
+    CL_AL_Ptr->AddConstitutiveLaw(*CL_MT_Ptr);
     CL_AL_Ptr->AddConstitutiveLaw(*CL_LE_Ptr);
     CL_AL_Ptr->AddConstitutiveLaw(*CL_SCSB_Ptr);
-    CL_AL_Ptr->AddConstitutiveLaw(*CL_MT_Ptr);
 
 
 
@@ -1041,8 +1041,8 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
     CL_AIE_Ptr->AddConstitutiveLaw(*CL_LE_Ptr);
     CL_AIE_Ptr->AddConstitutiveLaw(*CL_SCSB_Ptr, NuTo::Constitutive::eInput::ENGINEERING_STRAIN);
 
-    CL_AO_Ptr->AddConstitutiveLaw(*CL_AIE_Ptr);
     CL_AO_Ptr->AddConstitutiveLaw(*CL_MT_Ptr);
+    CL_AO_Ptr->AddConstitutiveLaw(*CL_AIE_Ptr);
 
     SetupStructure(S,testName);
     int SEC = SetupSection<TDim>(S);
