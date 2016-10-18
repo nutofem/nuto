@@ -160,7 +160,7 @@ Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateMatrixN(int rIP,  const Eigen
 }
 
 
-Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const
+Eigen::VectorXd NuTo::Interpolation1DIGA::CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const
 {
     assert(rDerivative >= 0 && rDerivative <= 2);
     assert(!mUpdateRequired);

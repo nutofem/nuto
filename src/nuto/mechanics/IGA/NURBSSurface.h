@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nuto/mechanics/IGA/BSplineCurve.h"
+#include "nuto/mechanics/IGA/NURBSCurve.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 #include <set>
 
@@ -23,19 +23,19 @@ namespace NuTo
 
 class Structure;
 
-class BSplineSurface
+class NURBSSurface
 {
 public:
     /** Constructors **/
 
     //! @brief ... default constructor
-    BSplineSurface(){}
+    NURBSSurface(){}
 
     //! @brief ... constructor
     //! @param rDegree ... degree of the polynomial
     //! @param rKnots ... knot vector
     //! @param rControlPoints ... control points
-    BSplineSurface(const Eigen::Vector2i &rDegree,
+    NURBSSurface(const Eigen::Vector2i &rDegree,
                    const Eigen::VectorXd &rKnotsX,
                    const Eigen::VectorXd &rKnotsY,
                    const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> &rControlPoints,
@@ -44,7 +44,7 @@ public:
     //! @brief ... constructor (interpolation of a point cloud)
     //! @param rDegree ... degree of the polynomial
     //! @param rPoints ... points to interpolate
-    BSplineSurface(const Eigen::Vector2i &rDegree,
+    NURBSSurface(const Eigen::Vector2i &rDegree,
                    const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> &rPoints,
                    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> &AInv);
 
@@ -136,8 +136,6 @@ Eigen::MatrixXd mWeights;
 
 //! @brief Control points of the BSpline curve
 Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> mControlPoints;
-
-
 
 };
 }

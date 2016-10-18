@@ -162,8 +162,8 @@ interpolationtypes/Interpolation2DIGA.cpp
 )
 
 SET(NuToMechanicsIGA_SOURCE
-IGA/BSplineCurve.cpp
-IGA/BSplineSurface.cpp
+IGA/NURBSCurve.cpp
+IGA/NURBSSurface.cpp
 )
 
 SET(NuToMechanicsLoads_SOURCES

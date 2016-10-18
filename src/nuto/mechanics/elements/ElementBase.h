@@ -413,6 +413,9 @@ public:
     virtual Eigen::VectorXd InterpolateDofGlobalSurfaceDerivative(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative, int rDirection) const
     {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Only implemented in ContinuumElementIGA.");}
 
+    virtual Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> InterpolateDofGlobalSurfaceDerivativeTotal(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative) const
+    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Only implemented in ContinuumElementIGA.");}
+
     virtual const ContinuumElement<1>& AsContinuumElement1D() const
     {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<1>.");}
 

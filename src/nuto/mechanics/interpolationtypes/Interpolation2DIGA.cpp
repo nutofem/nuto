@@ -182,7 +182,7 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixN(int rIP, const Eigen:
     return CalculateMatrixN(IPcoordinates, rKnotIDs);
 }
 
-Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters,
+Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters,
                                                                      const Eigen::VectorXi& rKnotIDs,
                                                                      int rDerivative,
                                                                      int rDirection) const
@@ -191,7 +191,7 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixNDerivative(const Eigen
     assert(rKnotIDs(0) < mKnotsX.rows());
     assert(rKnotIDs(1) < mKnotsY.rows());
 
-    Eigen::MatrixXd shapeFunctions;
+    Eigen::VectorXd shapeFunctions;
 
     switch (rDerivative)
     {

@@ -107,7 +107,7 @@ public:
     //! @param rKnotIDs ... knot ids specifying the knot interval the rCoordinates are lying in (no need to search)
     Eigen::MatrixXd CalculateMatrixN(int rIP, const Eigen::VectorXi &rKnotIDs) const override;
 
-    Eigen::MatrixXd CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const override;
+    Eigen::VectorXd CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const override;
 
     Eigen::MatrixXd ConstructMatrixN(Eigen::VectorXd rShapeFunctions) const;
 

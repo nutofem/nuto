@@ -150,16 +150,11 @@ void NuTo::ContinuumContactElement<TDim>::ProjectIntegrationPointOnMaster()
 }
 
 template<int TDim>
-void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(BlockFullMatrix<double>& rGapMatrix,
-                                                                                EvaluateDataContinuumBoundary<TDim> &rData,
-                                                                                const ConstitutiveOutputMap& constitutiveOutput,
-                                                                                int rTheIP) const
+void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(BlockFullMatrix<double> &rGapMatrix, EvaluateDataContinuumBoundary<TDim> &rData, const ConstitutiveOutputMap &constitutiveOutput, int rTheIP) const
 {
     // ===> Projection of the rTheIP on the master element => \xi^s_{IP}, \xi^m_*, n^m_*
 
-    // ===> Get the position \xi^s_{IP}
     Eigen::VectorXd coordinatedIPSlave;
-
     double temp[2];
     switch (TDim)
     {
@@ -182,31 +177,107 @@ void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(
         break;
     }
 
+    // ===> Get the position \xi^s_{IP}
+    const InterpolationBase& interpolationTypeCoordsSlave = this->GetInterpolationType()->Get(Node::eDof::COORDINATES);
+    Eigen::VectorXd parameter = interpolationTypeCoordsSlave.CalculateNaturalSurfaceCoordinates(coordinatedIPSlave, this->mSurfaceId, this->mBaseElement->GetKnots());
+    Eigen::VectorXd coordinatesIPSlave  = this->InterpolateDofGlobalSurfaceDerivative(0, parameter, 0, 0);
+
     // ===> Get the starting point for iteration
     double minDistance = std::numeric_limits<double>::infinity();
     Eigen::VectorXd parameterMin;
-    for(auto &it : mElementsMaster)
+
+    auto itMin =  mElementsMaster.begin();
+    auto it =  mElementsMaster.begin();
+    for(; it != mElementsMaster.end(); it++)
     {
-        const auto* elementPtr = it.first;
-        int surfaceId = it.second;
+        const auto* elementPtr = it->first;
+        int surfaceId = it->second;
 
         // ===> Get the position on the master curve/surface
         // ===> Compare and set to minimum if though
-
-        const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType()->Get(Node::eDof::COORDINATES);
-        Eigen::VectorXd referenceCoordinates(1);
-        referenceCoordinates(0);
-        Eigen::VectorXd parameter = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(referenceCoordinates, surfaceId, elementPtr->GetKnots());
+        const InterpolationBase& interpolationTypeCoordsMaster = elementPtr->GetInterpolationType()->Get(Node::eDof::COORDINATES);
+        Eigen::VectorXd referenceCoordinates(1); referenceCoordinates(0);
+        parameter = interpolationTypeCoordsMaster.CalculateNaturalSurfaceCoordinates(referenceCoordinates, surfaceId, elementPtr->GetKnots());
         Eigen::VectorXd coordinatesMaster = elementPtr->InterpolateDofGlobalSurfaceDerivative(0, parameter, 0, 0);
         double distance = (coordinatesMaster - coordinatedIPSlave).norm();
         if(minDistance < distance)
         {
             minDistance = distance;
             parameterMin = parameter;
+            itMin = it;
         }
     }
 
     // ===> Newton for projection (get \xi^m_*, n^m_*)
+    double tol = 1.e-10;
+    double error = 1.;
+    while(error > tol)
+    {
+        // ==> function (dprime)
+        Eigen::VectorXd r = coordinatesIPSlave - itMin->first->InterpolateDofGlobalSurfaceDerivative(0, parameter, 0, 0);
+        Eigen::VectorXd dprime(TDim-1, 1);
+        dprime.setZero(TDim-1);
+        Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> prime = itMin->first->InterpolateDofGlobalSurfaceDerivativeTotal(0, parameter, 1);
+        Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> primeprime = itMin->first->InterpolateDofGlobalSurfaceDerivativeTotal(0, parameter, 2);
+
+        for(int j = 0; j < prime.cols(); j++)
+            dprime(j) += r.dot(prime(0,j));
+
+        // ==> derivative
+        Eigen::MatrixXd dprimeprime(TDim - 1, TDim - 1);
+        dprimeprime.setZero(TDim - 1, TDim - 1);
+
+        for(int i = 0; i < prime.cols() ; i++)
+            for(int j = 0; j < prime.cols() ; j++)
+            {
+                dprimeprime(i,j) = prime(0,i).dot(prime(0,j)) +  r.dot(primeprime(i,j));
+            }
+
+        // ==> iteration step
+        Eigen::VectorXd increment = dprimeprime.colPivHouseholderQr().solve(-dprime);
+        parameter += increment;
+
+        // ===> New parameter value (check in which element)
+        auto itPlus = itMin;
+        auto itMinus = itMin;
+
+        Eigen::MatrixXd knots = itMin->first->GetKnots();
+        for(int i = 0; i < knots.rows(); i++)
+        {
+            if(knots(i,0) > parameter(i) ||  knots(i,1) <= parameter(i))
+            {
+                while(itPlus != mElementsMaster.end() ||  itMinus != mElementsMaster.begin())
+                {
+                    if(itPlus != mElementsMaster.end())
+                    {
+                        itPlus++;
+                        Eigen::MatrixXd knots = itPlus->first->GetKnots();
+                        if(knots(i,0) <= parameter(i) &&  knots(i,1) > parameter(i))
+                        {
+                            itMin = itPlus;
+                            break;
+                        }
+                    }
+                    if(itMinus != mElementsMaster.begin())
+                    {
+                        itMinus++;
+                        Eigen::MatrixXd knots = itMinus->first->GetKnots();
+                        if(knots(i,0) <= parameter(i) &&  knots(i,1) > parameter(i))
+                        {
+                            itMin = itMinus;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        error = (coordinatesIPSlave - itMin->first->InterpolateDofGlobalSurfaceDerivative(0, parameter, 0, 0)).norm();
+    }
+    // ==> normal vector
+
+//    itMin
+
+
 
 
     // ===> Assemble the element gap matrix => \int_{\Gamma_e} F(ShapeFunctionsSlave(\xi^s), ShapeFunctionsMaster(\xi^*), n^*) d\Gamma

@@ -22,8 +22,8 @@
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 
-#include "nuto/mechanics/IGA/BSplineCurve.h"
-#include "nuto/mechanics/IGA/BSplineSurface.h"
+#include "nuto/mechanics/IGA/NURBSCurve.h"
+#include "nuto/mechanics/IGA/NURBSSurface.h"
 
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
@@ -47,7 +47,7 @@
     ||>*----*----*----*----*
        ^
 */
-NuTo::BSplineSurface buildRect2D(double x0, double y0, double Height, double Length)
+NuTo::NURBSSurface buildRect2D(double x0, double y0, double Height, double Length)
 {
     /** Knots and control points **/
     int numElementsX = 1;
@@ -87,7 +87,7 @@ NuTo::BSplineSurface buildRect2D(double x0, double y0, double Height, double Len
     Eigen::MatrixXd weights(numControlPointsY, numControlPointsX);
     weights.setOnes(numControlPointsY, numControlPointsX);
 
-    return NuTo::BSplineSurface(degree, knotsX, knotsY, controlPoints, weights);
+    return NuTo::NURBSSurface(degree, knotsX, knotsY, controlPoints, weights);
 }
 
 
@@ -104,7 +104,7 @@ NuTo::Structure* constantStress(double& DisplacementCorrect, int refinements, co
 
     DisplacementCorrect = (Stress*Length)/YoungsModulus;
 
-    NuTo::BSplineSurface surface = buildRect2D(0, 0, Height, Length);
+    NuTo::NURBSSurface surface = buildRect2D(0, 0, Height, Length);
 
     /** Structure 2D **/
     NuTo::Structure* myStructure = new NuTo::Structure(2);
@@ -292,7 +292,7 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
 
     Eigen::Vector2i degree(2,2);
 
-    NuTo::BSplineSurface surface(degree, knotsX, knotsY, controlPts, weights);
+    NuTo::NURBSSurface surface(degree, knotsX, knotsY, controlPts, weights);
 
     for(int i = 0; i < refine; i++)
     {

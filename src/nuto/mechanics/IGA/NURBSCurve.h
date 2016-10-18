@@ -18,19 +18,19 @@ namespace NuTo
 //! @date July, 2016
 //! @brief ... class for B spline/NURBS curves, with IGA specific functions
 //! @brief ... B spline/NURBS specific algorithms taken from Piegl, Tiller 'The NURBS book' 1996
-class BSplineCurve
+class NURBSCurve
 {
 public:
     /** Constructors **/
 
     //! @brief ... default constructor
-    BSplineCurve(){}
+    NURBSCurve(){}
 
     //! @brief ... constructor
     //! @param rDegree ... degree of the polynomial
     //! @param rKnots ... knot vector
     //! @param rControlPoints ... control points
-    BSplineCurve(const Eigen::MatrixXd &rKnots,
+    NURBSCurve(const Eigen::MatrixXd &rKnots,
                  const Eigen::MatrixXd &rControlPoints,
                  const Eigen::VectorXd &rWeights,
                  int rDegree);
@@ -38,7 +38,7 @@ public:
     //! @brief ... constructor (interpolation of a point sequence)
     //! @param rDegree ... degree of the polynomial
     //! @param rPoints ... points to interpolate
-    BSplineCurve(int rDegree,
+    NURBSCurve(int rDegree,
                  const Eigen::MatrixXd& rPoints,
                  Eigen::MatrixXd &AInv);
 

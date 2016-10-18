@@ -1,9 +1,9 @@
-#include "nuto/mechanics/IGA/BSplineSurface.h"
+#include "nuto/mechanics/IGA/NURBSSurface.h"
 #include "nuto/mechanics/elements/ElementShapeFunctions.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 
-NuTo::BSplineSurface::BSplineSurface(const Eigen::Vector2i &rDegree,
+NuTo::NURBSSurface::NURBSSurface(const Eigen::Vector2i &rDegree,
                                      const Eigen::VectorXd &rKnotsX,
                                      const Eigen::VectorXd &rKnotsY,
                                      const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> &rControlPoints,
@@ -12,7 +12,7 @@ NuTo::BSplineSurface::BSplineSurface(const Eigen::Vector2i &rDegree,
     : mKnotsX(rKnotsX), mKnotsY(rKnotsY), mDegree(rDegree), mWeights(rWeights), mControlPoints(rControlPoints)
 {}
 
-NuTo::BSplineSurface::BSplineSurface(const Eigen::Vector2i &rDegree,
+NuTo::NURBSSurface::NURBSSurface(const Eigen::Vector2i &rDegree,
                                      const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> &rPoints,
                                      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> &AInv)
 
@@ -21,43 +21,43 @@ NuTo::BSplineSurface::BSplineSurface(const Eigen::Vector2i &rDegree,
 // TODO
 }
 
-void NuTo::BSplineSurface::ParametrizationChordLengthMethod(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rPoints,
+void NuTo::NURBSSurface::ParametrizationChordLengthMethod(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rPoints,
                                                             FullVector<double, Eigen::Dynamic>& rParametersX,
                                                             FullVector<double, Eigen::Dynamic>& rParametersY)
 {
 // TODO
 }
 
-int NuTo::BSplineSurface::GetNumControlPoints(int dir) const
+int NuTo::NURBSSurface::GetNumControlPoints(int dir) const
 {
     assert(dir == 0 || dir == 1);
     return ((dir == 0) ? mControlPoints.cols() : mControlPoints.rows());
 }
 
-int NuTo::BSplineSurface::GetNumControlPoints() const
+int NuTo::NURBSSurface::GetNumControlPoints() const
 {
     return mControlPoints.rows()*mControlPoints.cols();
 }
 
-Eigen::VectorXd NuTo::BSplineSurface::GetControlPoint(int rControlPointIDY, int rControlPointIDX) const
+Eigen::VectorXd NuTo::NURBSSurface::GetControlPoint(int rControlPointIDY, int rControlPointIDX) const
 {
     assert(rControlPointIDY >= 0 && rControlPointIDY < GetNumControlPoints(1));
     assert(rControlPointIDX >= 0 && rControlPointIDX < GetNumControlPoints(0));
     return mControlPoints(rControlPointIDY, rControlPointIDX);
 }
 
-int NuTo::BSplineSurface::GetNumKnots(int dir) const
+int NuTo::NURBSSurface::GetNumKnots(int dir) const
 {
     assert(dir == 0 || dir == 1);
     return ((dir == 0) ? mKnotsX.rows() : mKnotsY.rows());
 }
-const Eigen::VectorXd& NuTo::BSplineSurface::GetKnotVector(int dir) const
+const Eigen::VectorXd& NuTo::NURBSSurface::GetKnotVector(int dir) const
 {
     assert(dir == 0 || dir == 1);
     return ((dir == 0) ? mKnotsX : mKnotsY);
 }
 
-int NuTo::BSplineSurface::GetElementFirstKnotID(int rElementIDinDir, int dir) const
+int NuTo::NURBSSurface::GetElementFirstKnotID(int rElementIDinDir, int dir) const
 {
     assert(dir == 0 || dir == 1);
 
@@ -76,12 +76,12 @@ int NuTo::BSplineSurface::GetElementFirstKnotID(int rElementIDinDir, int dir) co
         }
     }
     if (knotID == -1)
-        throw Exception("[BSplineSurface::GetElementFirstKnotID] ElementId not found.");
+        throw Exception("[NURBSSurface::GetElementFirstKnotID] ElementId not found.");
 
     return knotID;
 }
 
-Eigen::MatrixXd NuTo::BSplineSurface::GetElementKnots(int rElementIDX, int rElementIDY) const
+Eigen::MatrixXd NuTo::NURBSSurface::GetElementKnots(int rElementIDX, int rElementIDY) const
 {
     int knotIDX = GetElementFirstKnotID(rElementIDX, 0);
     int knotIDY = GetElementFirstKnotID(rElementIDY, 1);
@@ -92,7 +92,7 @@ Eigen::MatrixXd NuTo::BSplineSurface::GetElementKnots(int rElementIDX, int rElem
     return knots;
 }
 
-Eigen::VectorXi NuTo::BSplineSurface::GetElementKnotIDs(int rElementIDX, int rElementIDY) const
+Eigen::VectorXi NuTo::NURBSSurface::GetElementKnotIDs(int rElementIDX, int rElementIDY) const
 {
     int knotIDX = GetElementFirstKnotID(rElementIDX, 0);
     int knotIDY = GetElementFirstKnotID(rElementIDY, 1);
@@ -102,7 +102,7 @@ Eigen::VectorXi NuTo::BSplineSurface::GetElementKnotIDs(int rElementIDX, int rEl
     return knots;
 }
 
-int NuTo::BSplineSurface::GetMultiplicityOfKnot(double rKnot, int dir) const
+int NuTo::NURBSSurface::GetMultiplicityOfKnot(double rKnot, int dir) const
 {
     const Eigen::VectorXd &knots = (dir == 0) ? mKnotsX : mKnotsY;
     int spanIdx = ShapeFunctionsIGA::FindSpan(rKnot, mDegree(dir), knots);
@@ -115,7 +115,7 @@ int NuTo::BSplineSurface::GetMultiplicityOfKnot(double rKnot, int dir) const
     return count;
 }
 
-int NuTo::BSplineSurface::GetNumIGAElements(int dir) const
+int NuTo::NURBSSurface::GetNumIGAElements(int dir) const
 {
     assert(dir == 0 || dir == 1);
     const Eigen::VectorXd &knots = (dir == 0) ? mKnotsX : mKnotsY;
@@ -130,13 +130,13 @@ int NuTo::BSplineSurface::GetNumIGAElements(int dir) const
     return numElements;
 }
 
-int NuTo::BSplineSurface::GetNumIGAElements() const
+int NuTo::NURBSSurface::GetNumIGAElements() const
 {
     return GetNumIGAElements(0)*GetNumIGAElements(1);
 }
 
 
-Eigen::VectorXi NuTo::BSplineSurface::GetElementControlPointIDs(int rElementIDX, int rElementIDY) const
+Eigen::VectorXi NuTo::NURBSSurface::GetElementControlPointIDs(int rElementIDX, int rElementIDY) const
 {
     Eigen::VectorXi ids((mDegree(0)+1)*(mDegree(1)+1));
 
@@ -158,7 +158,7 @@ Eigen::VectorXi NuTo::BSplineSurface::GetElementControlPointIDs(int rElementIDX,
     return ids;
 }
 
-Eigen::VectorXi NuTo::BSplineSurface::GetElementControlPointIDsGlobal(int rElementIDX, int rElementIDY, const Eigen::MatrixXi &rNodeIDs) const
+Eigen::VectorXi NuTo::NURBSSurface::GetElementControlPointIDsGlobal(int rElementIDX, int rElementIDY, const Eigen::MatrixXi &rNodeIDs) const
 {
     Eigen::VectorXi ids((mDegree(0)+1)*(mDegree(1)+1));
 
@@ -180,7 +180,7 @@ Eigen::VectorXi NuTo::BSplineSurface::GetElementControlPointIDsGlobal(int rEleme
     return ids;
 }
 
-Eigen::MatrixXd NuTo::BSplineSurface::GetKnotIDControlPoints(const Eigen::Vector2i &rKnotIDs) const
+Eigen::MatrixXd NuTo::NURBSSurface::GetKnotIDControlPoints(const Eigen::Vector2i &rKnotIDs) const
 {
     Eigen::MatrixXd coords((mDegree(0)+1)*(mDegree(1)+1), GetDimension());
 
@@ -199,7 +199,7 @@ Eigen::MatrixXd NuTo::BSplineSurface::GetKnotIDControlPoints(const Eigen::Vector
     return coords;
 }
 
-Eigen::VectorXd NuTo::BSplineSurface::SurfacePoint(const Eigen::Vector2d &rParameter) const
+Eigen::VectorXd NuTo::NURBSSurface::SurfacePoint(const Eigen::Vector2d &rParameter) const
 {
     Eigen::Vector2i span;
     span(0) = ShapeFunctionsIGA::FindSpan(rParameter(0), mDegree(0), mKnotsX);
@@ -216,7 +216,7 @@ Eigen::VectorXd NuTo::BSplineSurface::SurfacePoint(const Eigen::Vector2d &rParam
     return coordinates;
 }
 
-Eigen::MatrixXd NuTo::BSplineSurface::SurfacePoints(const Eigen::MatrixXd &rParameter) const
+Eigen::MatrixXd NuTo::NURBSSurface::SurfacePoints(const Eigen::MatrixXd &rParameter) const
 {
     assert(rParameter.cols() == 2);
 
@@ -230,7 +230,7 @@ Eigen::MatrixXd NuTo::BSplineSurface::SurfacePoints(const Eigen::MatrixXd &rPara
     return coordinates;
 }
 
-void NuTo::BSplineSurface::InsertKnot(double rKnotToInsert, int rMultiplicity, int dir)
+void NuTo::NURBSSurface::InsertKnot(double rKnotToInsert, int rMultiplicity, int dir)
 {
     assert(dir == 0 || dir == 1);
 
@@ -287,10 +287,8 @@ void NuTo::BSplineSurface::InsertKnot(double rKnotToInsert, int rMultiplicity, i
     mControlPoints = newControlPoints;
 }
 
-void NuTo::BSplineSurface::RefineKnots(const Eigen::VectorXd &rKnotsToInsert, int dir)
+void NuTo::NURBSSurface::RefineKnots(const Eigen::VectorXd &rKnotsToInsert, int dir)
 {
-    // TODO: find a bug!
-
     assert(dir == 0 || dir == 1);
 
     Eigen::VectorXd &knots = (dir == 0) ? mKnotsX : mKnotsY;
@@ -427,7 +425,7 @@ void NuTo::BSplineSurface::RefineKnots(const Eigen::VectorXd &rKnotsToInsert, in
 
 }
 
-void NuTo::BSplineSurface::DuplicateKnots(int dir)
+void NuTo::NURBSSurface::DuplicateKnots(int dir)
 {
     assert(dir == 0 || dir == 1);
 
@@ -442,7 +440,7 @@ void NuTo::BSplineSurface::DuplicateKnots(int dir)
     RefineKnots(knotsToInsert, dir);
 }
 
-void NuTo::BSplineSurface::buildIGAStructure(NuTo::Structure &rStructure, const std::set<NuTo::Node::eDof> &rSetOfDOFS, int rGroupElements, int rGroupNodes)
+void NuTo::NURBSSurface::buildIGAStructure(NuTo::Structure &rStructure, const std::set<NuTo::Node::eDof> &rSetOfDOFS, int rGroupElements, int rGroupNodes)
 {
     assert(rStructure.GetDimension() == 2);
 

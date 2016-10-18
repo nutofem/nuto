@@ -4,6 +4,10 @@
 
 namespace NuTo
 {
+
+class NURBSCurve;
+class NURBSSurface;
+
 template<int TDim>
 class ContinuumContactElement: public ContinuumBoundaryElement<TDim>
 {
@@ -20,7 +24,8 @@ public:
     void ProjectIntegrationPointOnMaster();
 
     void CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
-                                 EvaluateDataContinuumBoundary<TDim> &rData, int rTheIP,
+                                 EvaluateDataContinuumBoundary<TDim> &rData,
+                                 int rTheIP,
                                  const ConstitutiveInputMap& constitutiveInput,
                                  const ConstitutiveOutputMap& constitutiveOutput) const;
 
@@ -31,7 +36,8 @@ public:
 
 protected:
 
-    std::vector<std::pair<const ContinuumElement<TDim>*, int> > mElementsMaster;
+//    std::vector<std::pair<const ContinuumElement<TDim>*, int> > mElementsMaster;
+
 
     const IntegrationTypeBase *mIntegrationType;
 

@@ -72,6 +72,8 @@ public:
 
     Eigen::VectorXd InterpolateDofGlobalSurfaceDerivative(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative, int rDirection) const override;
 
+    Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> InterpolateDofGlobalSurfaceDerivativeTotal(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative) const override;
+
     const ContinuumElementIGA<1>& AsContinuumElementIGA1D() const override
     {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElementIGA<1>.");}
 
