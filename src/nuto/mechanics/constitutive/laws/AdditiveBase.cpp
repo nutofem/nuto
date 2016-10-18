@@ -4,6 +4,19 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 
 
+<<<<<<< d01a56254d3bd1c3998b4b5753246030ff04d4fa
+=======
+
+NuTo::AdditiveBase::AdditiveBase()
+{
+    mComputableDofCombinations.resize(3);
+}
+
+
+
+
+
+>>>>>>> Move template in AdditiveBase to the header
 void NuTo::AdditiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiveLaw,
         Constitutive::eInput rModiesInput)
 {

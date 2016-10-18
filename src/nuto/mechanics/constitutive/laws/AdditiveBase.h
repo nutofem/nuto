@@ -11,6 +11,10 @@ namespace NuTo
 class AdditiveBase : public ConstitutiveBase
 {
 public:
+    //! @brief ctor
+    AdditiveBase();
+
+
     //! @brief Create a new static data object for an integration point.
     //! @return Pointer to the new object.
     Constitutive::StaticData::Component* AllocateStaticData1D(const ElementBase* rElement) const override
