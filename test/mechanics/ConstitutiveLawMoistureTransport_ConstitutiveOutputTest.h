@@ -193,10 +193,12 @@ NuTo::ConstitutiveInputMap ConstitutiveOutputTest_CreateConstitutiveInputMapBoun
 {
     using namespace NuTo::Constitutive;
     NuTo::ConstitutiveInputMap constitutiveInputMap;
-    constitutiveInputMap[eInput::RELATIVE_HUMIDITY]     = NuTo::ConstitutiveIOBase::makeConstitutiveIO<TDim>(eInput::RELATIVE_HUMIDITY);
-    constitutiveInputMap[eInput::WATER_VOLUME_FRACTION] = NuTo::ConstitutiveIOBase::makeConstitutiveIO<TDim>(eInput::WATER_VOLUME_FRACTION);
+    constitutiveInputMap[eInput::RELATIVE_HUMIDITY]             = NuTo::ConstitutiveIOBase::makeConstitutiveIO<TDim>(eInput::RELATIVE_HUMIDITY);
+    constitutiveInputMap[eInput::RELATIVE_HUMIDITY_BOUNDARY]    = NuTo::ConstitutiveIOBase::makeConstitutiveIO<TDim>(eInput::RELATIVE_HUMIDITY_BOUNDARY);
+    constitutiveInputMap[eInput::WATER_VOLUME_FRACTION]         = NuTo::ConstitutiveIOBase::makeConstitutiveIO<TDim>(eInput::WATER_VOLUME_FRACTION);
 
     (*constitutiveInputMap.at(eInput::RELATIVE_HUMIDITY))[0] = 1.0;
+    (*constitutiveInputMap.at(eInput::RELATIVE_HUMIDITY_BOUNDARY))[0] = 0.4;
     (*constitutiveInputMap.at(eInput::WATER_VOLUME_FRACTION))[0] = 1.0;
 
     return constitutiveInputMap;

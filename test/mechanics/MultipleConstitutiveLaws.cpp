@@ -228,7 +228,7 @@ public:
             for (int theIP=0; theIP< mS.ElementGetElementPtr(i)->GetNumIntegrationPoints(); theIP++)
             {
                 auto& multipleStaticData= *dynamic_cast<Composite*>(mS.ElementGetElementPtr(i)->GetConstitutiveStaticData(theIP));
-                auto& singleStaticData = dynamic_cast<Leaf<DataMoistureTransport>&>(multipleStaticData.GetComponent(0));
+                auto& singleStaticData = dynamic_cast<Leaf<DataMoistureTransport>&>(multipleStaticData.GetComponent(1));
                 auto& moistureData = singleStaticData.GetData();
                 moistureData.SetLastSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
                 moistureData.SetCurrentSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));

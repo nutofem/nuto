@@ -4,7 +4,7 @@
 #include "nuto/math/FullVector.h"
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
-#include "nuto/mechanics/nodes/NodeBase.h"
+
 
 // VHIRTHAMTODO Check deactivated routines, if they are still needed
 // VHIRTHAMTODO Rebuild CheckXYZ routines ---> CheckParameterDouble of base class
@@ -28,7 +28,7 @@ class MoistureTransport : public ConstitutiveBase
 public:
 
     //! @brief constructor
-    MoistureTransport(NuTo::NodeBase* controlNode) : ConstitutiveBase(), mControlNode(controlNode)
+    MoistureTransport() : ConstitutiveBase()
     {}
 
 
@@ -332,11 +332,6 @@ public:
         return false;
     }
 
-    //! @brief Set the control node for this law.
-    void SetControlNode(NuTo::NodeBase* node)
-    {
-        mControlNode = node;
-    }
 
 protected:
 
@@ -388,7 +383,5 @@ protected:
     //! @brief Density of saturated water vapor \f$ \rho_v \f$.
     double mDensitySaturatedWaterVapor = 1.0;
 
-    //! @brief Control node
-    NuTo::NodeBase* mControlNode = nullptr;
 };
 }

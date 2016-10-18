@@ -19,6 +19,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationType.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/sections/SectionTruss.h"
 #include "nuto/mechanics/sections/SectionPlane.h"
@@ -227,6 +228,12 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateConstitutiveInputs(const Con
         {
             auto& relativeHumidity = *static_cast<ConstitutiveScalar*>(it.second.get());
             relativeHumidity.AsScalar() = rData.mN.at(Node::eDof::RELATIVEHUMIDITY) * rData.mNodalValues.at(Node::eDof::RELATIVEHUMIDITY);
+            break;
+        }
+        case Constitutive::eInput::RELATIVE_HUMIDITY_BOUNDARY:
+        {
+            auto& relativeHumidityBoundary = *static_cast<ConstitutiveScalar*>(it.second.get());
+            relativeHumidityBoundary.AsScalar() = this->GetBoundaryControlNode()->Get(Node::eDof::RELATIVEHUMIDITY);
             break;
         }
         case Constitutive::eInput::WATER_VOLUME_FRACTION:

@@ -117,6 +117,7 @@ std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitu
         case eInput::CRACK_PHASE_FIELD:
         case eInput::NONLOCAL_EQ_STRAIN:
         case eInput::RELATIVE_HUMIDITY:
+        case eInput::RELATIVE_HUMIDITY_BOUNDARY:
         case eInput::RELATIVE_HUMIDITY_DT1:
         case eInput::WATER_VOLUME_FRACTION:
         case eInput::WATER_VOLUME_FRACTION_DT1:

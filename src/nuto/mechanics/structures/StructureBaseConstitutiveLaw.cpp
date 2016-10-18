@@ -89,7 +89,7 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
 
         case eConstitutiveType::MOISTURE_TRANSPORT:
             // parameter is a pointer to the control node, but it might not be allocated at this time
-            ConstitutiveLawPtr = new NuTo::MoistureTransport(nullptr);
+            ConstitutiveLawPtr = new NuTo::MoistureTransport();
             break;
 
         case eConstitutiveType::FIBRE_MATRIX_BOND_STRESS_SLIP:

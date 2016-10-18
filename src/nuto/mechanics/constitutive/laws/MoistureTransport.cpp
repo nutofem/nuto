@@ -357,7 +357,7 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport(
             //Calculation
             Eigen::Matrix<double, 1, 1>& internalGradientRH_Boundary_N = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
 
-            double relativeHumidityBoundary = mControlNode->Get(Node::eDof::RELATIVEHUMIDITY).at(0,0);
+            double relativeHumidityBoundary = (*rConstitutiveInput.at(Constitutive::eInput::RELATIVE_HUMIDITY_BOUNDARY))[0]; //mControlNode->Get(Node::eDof::RELATIVEHUMIDITY).at(0,0);
             internalGradientRH_Boundary_N(0,0) =    mBoundaryDiffusionCoefficientRH * (inputData.mRelativeHumidity - relativeHumidityBoundary);
         }
             break;
@@ -370,7 +370,7 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport(
             Eigen::Matrix<double, 1, 1>& internalGradientWV_Boundary_N = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
 
             double waterVolumeFractionBoundary = GetEquilibriumWaterVolumeFraction(
-                    mControlNode->Get(Node::eDof::RELATIVEHUMIDITY).at(0,0), staticData.GetCurrentSorptionCoeff());
+                    (*rConstitutiveInput.at(Constitutive::eInput::RELATIVE_HUMIDITY_BOUNDARY))[0], staticData.GetCurrentSorptionCoeff());
 
             internalGradientWV_Boundary_N(0,0) =    mBoundaryDiffusionCoefficientWV * (inputData.mWaterVolumeFraction - waterVolumeFractionBoundary);
         }
@@ -849,10 +849,12 @@ NuTo::ConstitutiveInputMap NuTo::MoistureTransport::GetConstitutiveInputs(  cons
 
         case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N:
             constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY] = nullptr;
+            constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY_BOUNDARY] = nullptr;
             break;
 
         case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N:
             constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION] = nullptr;
+            constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY_BOUNDARY] = nullptr;
             break;
 
         case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0:
