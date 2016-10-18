@@ -14,9 +14,12 @@ NuTo::AdditiveBase::AdditiveBase()
 
 
 
+<<<<<<< 6b742a9a3377a6cdd2f1a5801a7b7e0a56905321
 
 
 >>>>>>> Move template in AdditiveBase to the header
+=======
+>>>>>>> Multiple constitutive laws test works now (again)
 void NuTo::AdditiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiveLaw,
         Constitutive::eInput rModiesInput)
 {
