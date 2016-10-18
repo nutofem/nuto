@@ -19,6 +19,8 @@ class DataMisesPlasticity
 {
     friend class MisesPlasticityEngineeringStress;
 public:
+    DataMisesPlasticity();
+
     //! @brief Get the equivalent plastic strain.
     double GetEquivalentPlasticStrain() const;
 

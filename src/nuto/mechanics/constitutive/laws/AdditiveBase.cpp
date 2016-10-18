@@ -121,3 +121,7 @@ NuTo::ConstitutiveInputMap NuTo::AdditiveBase::GetConstitutiveInputs(
     }
     return constitutiveInputMap;
 }
+
+template NuTo::Constitutive::StaticData::Component* NuTo::AdditiveBase::AllocateStaticData<1>(const NuTo::ElementBase *rElement) const;
+template NuTo::Constitutive::StaticData::Component* NuTo::AdditiveBase::AllocateStaticData<2>(const NuTo::ElementBase *rElement) const;
+template NuTo::Constitutive::StaticData::Component* NuTo::AdditiveBase::AllocateStaticData<3>(const NuTo::ElementBase *rElement) const;

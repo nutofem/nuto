@@ -249,3 +249,16 @@ NuTo::ConstitutiveInputMap NuTo::AdditiveInputImplicit::GetConstitutiveInputs(
     }
     return constitutiveInputMap;
 }
+
+
+template NuTo::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit<1>(
+    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
+    Constitutive::StaticData::Component* staticData);
+
+template NuTo::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit<2>(
+    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
+    Constitutive::StaticData::Component* staticData);
+
+template NuTo::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit<3>(
+    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
+    Constitutive::StaticData::Component* staticData);

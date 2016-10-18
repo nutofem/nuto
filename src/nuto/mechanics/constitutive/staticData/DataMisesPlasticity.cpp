@@ -4,6 +4,14 @@
 
 using namespace NuTo::Constitutive::StaticData;
 
+template <int TDim>
+DataMisesPlasticity<TDim>::DataMisesPlasticity()
+{
+    mEpsilonPEq = 0.;
+    mEpsilonP.SetZero();
+    mSigmaB.SetZero();
+}
+
 template<int TDim>
 double DataMisesPlasticity<TDim>::GetEquivalentPlasticStrain() const
 {

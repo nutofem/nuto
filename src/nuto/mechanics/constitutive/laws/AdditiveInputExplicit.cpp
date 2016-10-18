@@ -287,3 +287,26 @@ NuTo::ConstitutiveOutputMap NuTo::AdditiveInputExplicit::GetSublawOutputMap(
     }
     return modifiedOutputMap;
 }
+
+
+// maybe think about a *h file for the template implementations
+
+template NuTo::Constitutive::StaticData::Component* NuTo::AdditiveInputExplicit::AllocateStaticData<1>(const NuTo::ElementBase *rElement) const;
+template NuTo::Constitutive::StaticData::Component* NuTo::AdditiveInputExplicit::AllocateStaticData<2>(const NuTo::ElementBase *rElement) const;
+template NuTo::Constitutive::StaticData::Component* NuTo::AdditiveInputExplicit::AllocateStaticData<3>(const NuTo::ElementBase *rElement) const;
+
+template void NuTo::AdditiveInputExplicit::ApplySublawOutputs<1>(const ConstitutiveInputMap& rMainLawInput, const ConstitutiveOutputMap& rConstitutiveOutput, const ConstitutiveOutputMap& rSublawOutput);
+template void NuTo::AdditiveInputExplicit::ApplySublawOutputs<2>(const ConstitutiveInputMap& rMainLawInput, const ConstitutiveOutputMap& rConstitutiveOutput, const ConstitutiveOutputMap& rSublawOutput);
+template void NuTo::AdditiveInputExplicit::ApplySublawOutputs<3>(const ConstitutiveInputMap& rMainLawInput, const ConstitutiveOutputMap& rConstitutiveOutput, const ConstitutiveOutputMap& rSublawOutput);
+
+template void NuTo::AdditiveInputExplicit::CalculateDerivatives<1>(const ConstitutiveOutputMap& rConstitutiveOutput, std::vector<ConstitutiveOutputMap>& rSublawOutputVec);
+template void NuTo::AdditiveInputExplicit::CalculateDerivatives<2>(const ConstitutiveOutputMap& rConstitutiveOutput, std::vector<ConstitutiveOutputMap>& rSublawOutputVec);
+template void NuTo::AdditiveInputExplicit::CalculateDerivatives<3>(const ConstitutiveOutputMap& rConstitutiveOutput, std::vector<ConstitutiveOutputMap>& rSublawOutputVec);
+
+template NuTo::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit<1>(const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, NuTo::Constitutive::StaticData::Component* staticData);
+template NuTo::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit<2>(const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, NuTo::Constitutive::StaticData::Component* staticData);
+template NuTo::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit<3>(const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, NuTo::Constitutive::StaticData::Component* staticData);
+
+template NuTo::ConstitutiveOutputMap NuTo::AdditiveInputExplicit::GetSublawOutputMap<1>(const NuTo::ConstitutiveInputMap& rMainLawInputMap, const NuTo::ConstitutiveOutputMap& rMainLawOutputMap, unsigned int rSublawIndex) const;
+template NuTo::ConstitutiveOutputMap NuTo::AdditiveInputExplicit::GetSublawOutputMap<2>(const NuTo::ConstitutiveInputMap& rMainLawInputMap, const NuTo::ConstitutiveOutputMap& rMainLawOutputMap, unsigned int rSublawIndex) const;
+template NuTo::ConstitutiveOutputMap NuTo::AdditiveInputExplicit::GetSublawOutputMap<3>(const NuTo::ConstitutiveInputMap& rMainLawInputMap, const NuTo::ConstitutiveOutputMap& rMainLawOutputMap, unsigned int rSublawIndex) const;
