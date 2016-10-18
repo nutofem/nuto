@@ -4,8 +4,6 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 
 
-<<<<<<< d01a56254d3bd1c3998b4b5753246030ff04d4fa
-=======
 
 NuTo::AdditiveBase::AdditiveBase()
 {
@@ -14,12 +12,7 @@ NuTo::AdditiveBase::AdditiveBase()
 
 
 
-<<<<<<< 6b742a9a3377a6cdd2f1a5801a7b7e0a56905321
 
-
->>>>>>> Move template in AdditiveBase to the header
-=======
->>>>>>> Multiple constitutive laws test works now (again)
 void NuTo::AdditiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiveLaw,
         Constitutive::eInput rModiesInput)
 {
