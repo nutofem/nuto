@@ -21,6 +21,7 @@
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 #include "nuto/mechanics/constitutive/staticData/Component.h"
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIp.h"
@@ -38,6 +39,7 @@
 #include "nuto/mechanics/groups/GroupBase.h"
 #include "nuto/mechanics/loads/LoadBase.h"
 #include "nuto/mechanics/sections/SectionBase.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/visualize/VisualizeEnum.h"
 
@@ -1630,4 +1632,21 @@ void NuTo::ElementBase::ReorderNodes()
     }
     if (mStructure->GetVerboseLevel() > 5)
     	mStructure->GetLogger() << "\n";
+}
+
+
+void NuTo::ElementBase::AddPlaneStateToInput(ConstitutiveInputMap& constitutiveInput) const
+{
+    auto planeState = NuTo::Constitutive::eInput::PLANE_STATE;
+    if (GetSection()->GetType() == NuTo::eSectionType::PLANE_STRESS)
+    {
+        // plane stress is default
+        constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<2>(planeState);
+    }
+    if (GetSection()->GetType() == NuTo::eSectionType::PLANE_STRAIN)
+    {
+        constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<2>(planeState);
+        auto& value = *static_cast<ConstitutivePlaneState*>(constitutiveInput[planeState].get());
+        value.SetPlaneState(NuTo::ePlaneState::PLANE_STRAIN);
+    }
 }

@@ -49,6 +49,8 @@ NuTo::eError NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const ConstitutiveIn
     auto constitutiveInput  = GetConstitutiveInputMap(constitutiveOutput);
     constitutiveInput.Merge(rInput);
 
+    if (TDim == 2) AddPlaneStateToInput(constitutiveInput);
+
     for (int theIP = 0; theIP < GetNumIntegrationPoints(); theIP++)
     {
         CalculateNMatrixBMatrixDetJacobian(data, theIP);
@@ -244,6 +246,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateConstitutiveInputs(const Con
         }
         case Constitutive::eInput::TIME_STEP:
         case Constitutive::eInput::CALCULATE_STATIC_DATA:
+        case Constitutive::eInput::PLANE_STATE:
             break;
 
         default:

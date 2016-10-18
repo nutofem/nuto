@@ -550,6 +550,8 @@ protected:
     ElementDataBase *mElementData;
 
     const InterpolationType* mInterpolationType;
+
+    void AddPlaneStateToInput(ConstitutiveInputMap& input) const;
 };
 }    //namespace NuTo
 

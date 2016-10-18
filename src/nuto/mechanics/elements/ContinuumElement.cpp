@@ -57,22 +57,7 @@ NuTo::eError NuTo::ContinuumElement<TDim>::Evaluate(const ConstitutiveInputMap& 
     auto constitutiveOutput = GetConstitutiveOutputMap(rElementOutput);
     auto constitutiveInput = GetConstitutiveInputMap(constitutiveOutput);
 
-    if (TDim == 2)
-    {
-        auto planeState = NuTo::Constitutive::eInput::PLANE_STATE;
-        if (mSection->GetType() == NuTo::eSectionType::PLANE_STRESS)
-        {
-            // plane stress is default
-            constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<2>(planeState);
-        }
-        if (mSection->GetType() == NuTo::eSectionType::PLANE_STRAIN)
-        {
-            constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<2>(planeState);
-            auto& value = *static_cast<ConstitutivePlaneState*>(constitutiveInput[planeState].get());
-            value.SetPlaneState(NuTo::ePlaneState::PLANE_STRAIN);
-        }
-    }
-
+    if (TDim == 2) AddPlaneStateToInput(constitutiveInput);
 
     constitutiveInput.Merge(rInput);
 

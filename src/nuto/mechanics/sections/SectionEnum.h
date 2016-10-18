@@ -1,4 +1,3 @@
-// $Id$ 
 #pragma once
 
 namespace NuTo
