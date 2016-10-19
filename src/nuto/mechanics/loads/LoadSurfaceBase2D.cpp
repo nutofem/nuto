@@ -8,6 +8,7 @@
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/loads/LoadSurfaceBase2D.h"
+#include "nuto/mechanics/loads/LoadSurfacePressureFunction2D.h"
 #include "nuto/mechanics/elements/ContinuumElement.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
@@ -37,6 +38,7 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
 //loop over all elements
     Eigen::VectorXi surfaceNodeIndices;
     std::vector<const NodeBase*> surfaceNodes;
+
     for (auto itElement : *elementGroup)
     {
         try
@@ -105,9 +107,9 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
 }
 
 //! @brief adds the load to global sub-vectors
-//! @param rActiceDofsLoadVector ... global load vector which correspond to the active dofs
+//! @param rActiveDofsLoadVector ... global load vector which correspond to the active dofs
 //! @param rDependentDofsLoadVector ... global load vector which correspond to the dependent dofs
-void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double, Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double, Eigen::Dynamic>& rDependentDofsLoadVector) const
+void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double, Eigen::Dynamic>& rActiveDofsLoadVector, NuTo::FullVector<double, Eigen::Dynamic>& rDependentDofsLoadVector) const
 {
     if (rLoadCase != mLoadCase)
         return;
@@ -143,6 +145,31 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
         case Interpolation::eTypeOrder::LOBATTO4:
             integrationType = mIntegrationType5NPtrLobatto;
             break;
+        case Interpolation::eTypeOrder::SPLINE:
+        {
+            int degree = interpolationTypeDisps.GetSurfaceDegree(surface);
+            switch (degree)
+            {
+            case 0: // (0+1)/2 = 0.5 ips
+                integrationType = mIntegrationType2NPtr;
+                break;
+            case 1: // 2/2 = 1 ips or (1+3)/2 = 2 ips lobatto
+                integrationType = mIntegrationType2NPtr;
+                break;
+            case 2: // (2+1)/2 = 1.5 ips or (2+3)/2 = 2.5 ips lobatto
+                integrationType = mIntegrationType3NPtr;
+                break;
+            case 3: // (3+1)/2 = 2 ips or (3+3)/2 = 3 ips lobatto
+                integrationType = mIntegrationType3NPtr;
+                break;
+            case 4: // (4+1)/2 = 2.5 ips or (4+3)/2 = 3.5 ips lobatto
+                integrationType = mIntegrationType4NPtr;
+                break;
+            default:
+                throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + std::to_string(degree) + " IGA not implemented");
+            }
+            break;
+        }
         default:
             throw MechanicsException("[NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D] integration types only for 2, 3, 4 and 5 nodes (on the surface) implemented.");
         }
@@ -168,34 +195,42 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             integrationType->GetLocalIntegrationPointCoordinates1D(theIp, tmp);
             ipCoordsSurface(0) = tmp;
 
-            ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface);
+            if (interpolationTypeDisps.GetTypeOrder() == Interpolation::eTypeOrder::SPLINE)
+                ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface, elementPtr->GetKnots());
+            else
+                ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface);
+
+            Eigen::MatrixXd N = interpolationTypeCoords.CalculateMatrixN(ipCoordsNatural);
+
             ipCoordsGlobal = interpolationTypeCoords.CalculateMatrixN(ipCoordsNatural) * nodeCoordinates;
 
-            // #######################################
+            // ########################### ############
             // ##  Calculate the surface jacobian
             // ## = || [dX / dXi] * [dXi / dAlpha] ||
             // #######################################
+
             derivativeShapeFunctionsNatural = interpolationTypeCoords.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural);
 
-            const Eigen::Matrix2d jacobian = elementPtr->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates);// = [dX / dXi]
+            const Eigen::Matrix2d jacobianStd = elementPtr->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates);// = [dX / dXi]
+
+            // in case of non IGA - just an identity matrix
+            const Eigen::Matrix2d jacobianIGA = elementPtr->CalculateJacobianParametricSpaceIGA();// = [dXi / d\tilde{Xi}]
+
 
             derivativeNaturalSurfaceCoordinates = interpolationTypeCoords.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, surface); // = [dXi / dAlpha]
-            double detJacobian = (jacobian * derivativeNaturalSurfaceCoordinates).norm();                           // = || [dX / dXi] * [dXi / dAlpha] ||
+
+            double detJacobian = (jacobianStd * jacobianIGA * derivativeNaturalSurfaceCoordinates).norm(); // = || [dX / dXi] * [dXi / dAlpha] ||
 
             // #######################################
             // ##  Calculate surface normal vector
             // ## = ( dY / dAlpha     -dX/dAlpha).T
             // #######################################
             // dXdAlpha :  [2 x NumNodes*2] * [NumNodes*2 x 1] * [2 x 1] = [2 x 1]
-            Eigen::Vector2d surfaceTangentVector = jacobian * derivativeNaturalSurfaceCoordinates;
+            Eigen::Vector2d surfaceTangentVector = jacobianStd * derivativeNaturalSurfaceCoordinates;
             surfaceTangentVector.normalize();
             NuTo::FullVector<double, 2> surfaceNormalVector;
             surfaceNormalVector(0) = surfaceTangentVector(1, 0);
             surfaceNormalVector(1) = -surfaceTangentVector(0, 0);
-
-//            std::cout << "Global IP coordinate:        " << ipCoordsGlobal.transpose()      << std::endl;
-//            std::cout << "Surface tangent vector @ IP: " << surfaceTangentVector.transpose()<< std::endl;
-//            std::cout << "Surface normal vector  @ IP: " << surfaceNormalVector.transpose() << std::endl;
 
             // calculate 2D shape functions
             shapeFunctions = interpolationTypeDisps.CalculateShapeFunctions(ipCoordsNatural);
@@ -209,9 +244,6 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             CalculateSurfaceLoad(ipCoordsGlobal, surfaceNormalVector, loadVector);
             loadVector *= factor;
 
-//			std::cout << "load vector with weights \n" << loadVector << std::endl;
-//			std::cout << "detJ " << detJacobian << " weight " << integrationType->GetIntegrationPointWeight(theIp) << std::endl;
-
             //add load vector to global vector
             for (int iNode = 0; iNode < shapeFunctions.rows(); iNode++)
             {
@@ -221,14 +253,13 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
                 {
                     int theDof = node->GetDof(Node::eDof::DISPLACEMENTS, iDispDof);
                     double theLoad = shapeFunctions[iNode] * loadVector(iDispDof);
-                    if (theDof < rActiceDofsLoadVector.GetNumRows())
+                    if (theDof < rActiveDofsLoadVector.GetNumRows())
                     {
-//						std::cout << "add to dof " << theDof << " " << theLoad << std::endl;
-                        rActiceDofsLoadVector(theDof) += theLoad;
+                        rActiveDofsLoadVector(theDof) += theLoad;
                     }
                     else
                     {
-                        rDependentDofsLoadVector(theDof - rActiceDofsLoadVector.GetNumRows()) += theLoad;
+                        rDependentDofsLoadVector(theDof - rActiveDofsLoadVector.GetNumRows()) += theLoad;
                     }
                 }
             }

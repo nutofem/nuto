@@ -271,6 +271,20 @@ IF(MINGW)
 ENDIF(MINGW)
 ADD_TEST(c::mechanics::LobattoIntegration ${CMAKE_CURRENT_BUILD_DIR}/LobattoIntegration)
 
+CONFIGURE_FILE(PlateWithHole.msh ${CMAKE_CURRENT_BINARY_DIR})
+ADD_EXECUTABLE(IGA IGA.cpp)
+TARGET_LINK_LIBRARIES(IGA NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} )
+IF (ENABLE_VISUALIZE)
+  TARGET_LINK_LIBRARIES(IGA NuToVisualize)
+ENDIF (ENABLE_VISUALIZE)
+IF(MUMPS_FOUND)
+  TARGET_LINK_LIBRARIES(IGA ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+ENDIF(MUMPS_FOUND)
+IF(MINGW)
+  SET_TARGET_PROPERTIES(IGA PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)
+ADD_TEST(c::mechanics::IGA ${CMAKE_CURRENT_BUILD_DIR}/IGA)
+
 # NonlocalDamagePlasticityModel
 # ADD_EXECUTABLE(NonlocalDamagePlasticityModel NonlocalDamagePlasticityModel.cpp)
 # TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityModel NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
@@ -447,6 +461,19 @@ IF(MINGW)
     SET_TARGET_PROPERTIES(Shrinkage PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
 ENDIF(MINGW)
 ADD_TEST(c::mechanics::Shrinkage ${CMAKE_CURRENT_BUILD_DIR}/Shrinkage)
+
+
+
+ADD_EXECUTABLE(SpringDamperCombination SpringDamperCombination.cpp)
+TARGET_LINK_LIBRARIES(SpringDamperCombination NuToMechanics NuToMath NuToBase)
+if(ENABLE_VISUALIZE)
+    target_link_libraries(SpringDamperCombination NuToVisualize)
+endif()
+IF(MINGW)
+    SET_TARGET_PROPERTIES(SpringDamperCombination PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
+ENDIF(MINGW)
+ADD_TEST(c::mechanics::SpringDamperCombination ${CMAKE_CURRENT_BUILD_DIR}/SpringDamperCombination)
+
 
 
 ENDIF(ENABLE_C++_TESTS)

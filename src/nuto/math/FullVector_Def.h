@@ -38,7 +38,7 @@ public:
     //! @param entries_ ... vector containing the matrix in column-major orientation
     FullVector<T,rows> ( const std::vector<T>& entries_ );
 
-   //! @brief ... copy constructor
+    //! @brief ... copy constructor
     //! @param  rOther ... copied element
     FullVector<T,rows> ( const FullVector<T,rows>& rOther );
 

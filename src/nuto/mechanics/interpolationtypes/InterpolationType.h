@@ -49,6 +49,10 @@ public:
 
     const InterpolationBase& Get(const Node::eDof& rDofType) const;
 
+    //! @brief adds a dof type and the corresponding interpolation of IGA type
+    //! @param rDofType ... dof type
+    void AddDofInterpolation(Node::eDof rDofType, Interpolation::eTypeOrder rTypeOrder, const Eigen::VectorXi &rDegree, const std::vector<Eigen::VectorXd> &rKnots, const Eigen::MatrixXd &rWeights);
+
     //! @brief adds a dof type and the corresponding interpolation order, calculate and store
     //! @param rDofType ... dof type
     //! @param rTypeOrder ... type and order of interpolation
@@ -131,10 +135,6 @@ public:
 
     //! @brief returns the number of surfaces
     int GetNumSurfaces() const;
-
-    //********************************************
-    //               DEBUGGING
-    //********************************************
 
     //! @brief returns the dof interpolation information as a string
     std::string Info() const;

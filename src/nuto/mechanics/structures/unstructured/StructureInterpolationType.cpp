@@ -7,6 +7,7 @@
 
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
@@ -141,13 +142,59 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, const std::
     InterpolationTypeAdd(rInterpolationTypeId,Node::DofToEnum(rDofType), Interpolation::TypeOrderToEnum(rTypeOrder));
 }
 
+//! @brief adds a dof to IGA interpolation type
+//! @param rInterpolationTypeId ... interpolation type id
+//! @param rDofType ... dof type
+//! @param rTypeOrder ... type and order of interpolation
+void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId,
+                                           NuTo::Node::eDof rDofType,
+                                           NuTo::Interpolation::eTypeOrder rTypeOrder,
+                                           const Eigen::VectorXi &rDegree,
+                                           const std::vector<Eigen::VectorXd> &rKnots,
+                                           const Eigen::MatrixXd &rWeights)
+{
+    boost::ptr_map<int,InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
+    // check if identifier exists
+    if (itIterator == mInterpolationTypeMap.end())
+        throw NuTo::MechanicsException("[NuTo::Structure::InterpolationTypeAdd] Interpolation type does not exist.");
+
+    InterpolationType* interpolationType = itIterator->second;
+    interpolationType->AddDofInterpolation(rDofType, rTypeOrder, rDegree, rKnots, rWeights);
+
+    eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
+    const IntegrationTypeBase* integrationType = this->GetPtrIntegrationType(integrationTypeEnum);
+
+    interpolationType->UpdateIntegrationType(*integrationType);
+    if (mVerboseLevel > 2)
+        mLogger << "[NuTo::Structure::InterpolationTypeAdd] Updated IntegrationType to " << integrationType->GetStrIdentifier() << ".\n";
+
+    // update all elements
+    // disable show time
+
+    bool showTime = GetShowTime();
+    SetShowTime(false);
+
+    int elementGroupId = GroupCreate("Elements");
+    GroupAddElementFromType(elementGroupId, rInterpolationTypeId);
+
+    NuTo::FullVector<int, Eigen::Dynamic> elementIds = GroupGetMemberIds(elementGroupId);
+    for (int iElement = 0; iElement < elementIds.GetNumRows(); ++iElement)
+    {
+        ElementBase* element = ElementGetElementPtr(elementIds.GetValue(iElement));
+        element->SetIntegrationType(integrationType, element->GetIpDataType(0));
+    }
+
+    GroupDelete(elementGroupId);
+    UpdateDofStatus();
+    SetShowTime(showTime);
+}
+
 //! @brief adds a dof to a interpolation type
 //! @param rInterpolationTypeId ... interpolation type id
 //! @param rDofType ... dof type
 //! @param rTypeOrder ... type and order of interpolation
 void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder)
 {
-
     boost::ptr_map<int,InterpolationType>::iterator itIterator = mInterpolationTypeMap.find(rInterpolationTypeId);
     // check if identifier exists
     if (itIterator == mInterpolationTypeMap.end())
@@ -182,5 +229,4 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node:
     GroupDelete(elementGroupId);
     UpdateDofStatus();
     SetShowTime(showTime);
-
 }

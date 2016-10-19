@@ -213,31 +213,6 @@ public:
     //! @return enum of ElementDataType
     virtual const NuTo::ElementData::eElementDataType GetElementDataType()const;
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //! functions defined in @link ElementDataCrackBase.h @endlink
-
-    //! @brief gets the cracks of an element
-    //! @return vector to cracks
-    virtual std::vector<CrackBase*>& GetCracks();
-
-    //! @brief Set the information that the element is already cracked or not
-    //! @param bool (Input) cracked or not
-    virtual void IsCracked(const bool rIsCracked);
-
-    //! @brief Give the information if the element is already cracked or not
-    //! @return bool false: elements with this elementDataType are not cracked
-    virtual const bool IsCracked() const;
-
-    //! @brief gets the number of cracks for an element
-    //! @return number of cracks
-    virtual int GetNumCracks()const;
-
-	//! @brief adds a crack to the element
-	//! @param rCrack  crack
-	//! @return the local crack number, the crack is either append to the list, or the existing local number is returned
-    virtual unsigned int AddCrack(CrackBase* rCrack);
-
-
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive

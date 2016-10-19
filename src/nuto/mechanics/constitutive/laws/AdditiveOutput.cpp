@@ -127,7 +127,7 @@ NuTo::eError NuTo::AdditiveOutput::Evaluate(const NuTo::ConstitutiveInputMap &rC
 
 NuTo::Constitutive::eConstitutiveType NuTo::AdditiveOutput::GetType() const
 {
-    return NuTo::Constitutive::eConstitutiveType::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT;
+    return NuTo::Constitutive::eConstitutiveType::ADDITIVE_OUTPUT;
 }
 
 template NuTo::eError NuTo::AdditiveOutput::Evaluate<1>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,

@@ -1,5 +1,9 @@
 // $Id: IntegrationType1D2NLobatto3Ip.cpp 345 2010-10-19 07:50:21Z arnold2 $
 
+#ifdef ENABLE_VISUALIZE
+#include "nuto/visualize/VisualizeEnum.h"
+#endif // ENABLE_VISUALIZE
+
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
 #include <assert.h>
 

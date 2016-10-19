@@ -483,6 +483,7 @@ bool NuTo::LinearElasticEngineeringStress::CheckElementCompatibility(NuTo::Eleme
     switch (rElementType)
     {
     case NuTo::Element::eElementType::CONTINUUMELEMENT:
+    case NuTo::Element::eElementType::CONTINUUMELEMENTIGA:
     case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:
     case NuTo::Element::eElementType::ELEMENT1DINXD:
         return true;

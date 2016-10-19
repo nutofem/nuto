@@ -36,7 +36,6 @@ namespace NuTo
 class ConstitutiveBase;
 class ConstitutiveStaticDataMultiscale2DPlaneStrain;
 class ConstraintBase;
-class CrackBase;
 class ElementBase;
 class EngineeringStrain2D;
 class GroupBase;
@@ -258,6 +257,8 @@ public:
 
 
     void SolveGlobalSystemStaticElastic(int rLoadCase = 0);
+
+    void Contact(const std::vector<int> &rElementGroups);
 
     NuTo::StructureOutputBlockMatrix BuildGlobalHessian0_CDF(double rDelta);
 
@@ -1098,6 +1099,16 @@ public:
     //! @return integer id to delete or modify the load
     int LoadSurfacePressureCreate2D(int rLoadCase, int rElementGroupId, int rNodeGroupId, double rPressure);
 
+    //! @brief adds a surface load pressure-function to 2D elements
+    //! @param rElementGroupId ... specifies the elements with surface loads
+    //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group, the surface is considered to be loaded
+    //! @param rLoadFunction ... pressure function on the boundary
+    //! @return integer id to delete or modify the load
+    int LoadSurfacePressureFunctionCreate2D(int rLoadCase,
+                                            int rElementGroupId,
+                                            int rNodeGroupId,
+                                            const std::function<NuTo::FullVector<double,2>(NuTo::FullVector<double,2>)> &rLoadFunction);
+
     //! @brief adds a surface load (pressure) to 3D solid elements
     //! @param rElementGroupId ... specifies the elements with surface loads
     //! @param rNodeGroupId ... specifies the surfaces (if all nodes of an elemental surface is included in this group, the
@@ -1501,13 +1512,17 @@ public:
     //! @param ... rMin ... minimum value
     //! @param ... rMax ... maximum value
     virtual void GroupAddNodeCoordinateRange(int rIdentGroup, int rDirection, double rMin, double rMax);
-
 #ifndef SWIG
     //! @brief ... Adds all nodes which fulfill the conditions specified in a std::function
     //! @param ... rIdentGroup identifier for the group
     //! @param ... rFunction std::function
-    void GroupAddNodeFunction(int rIdentGroup,
-                              std::function<bool (NodeBase*)> rFunction);
+    void GroupAddNodeFunction(int rIdentGroup, std::function<bool (NodeBase*)> rFunction);
+
+    //! @brief ... Adds all nodes which fulfill the conditions specified in a std::function
+    //! @param ... rIdentNewGroup identifier for the group where to add the nodes
+    //! @param ... rIdentOldGroup identifier for the group where the ids are searched
+    //! @param ... rFunction std::function
+    void GroupAddNodeFunction(int rIdentNewGroup, int rIdentOldGroup,  std::function<bool(NuTo::NodeBase *)> rFunction);
 #endif
 
     //! @brief ... Adds an element to an element group
@@ -1577,31 +1592,6 @@ public:
     //! if the integration type does not exist (in the map), the integration type is created
     //! @param identIntegrationType Identifier for an integration type
     NuTo::IntegrationTypeBase* GetPtrIntegrationType(NuTo::eIntegrationType rIdentIntegrationType);
-#endif //SWIG
-
-    //*************************************************
-    //************    Crack routines    ***************
-    //**  pure virtual                               **
-    //*************************************************
-	//! @brief returns the number of cracks
-	//! @return number of cracks
-	virtual unsigned int GetNumCracks()const=0;
-
-#ifndef SWIG
-	//! @brief a reference to a crack
-	//! @param identifier
-	//! @return reference to a cracks
-	virtual CrackBase* CrackGetCrackPtr(int rIdent)=0;
-
-	//! @brief a reference to a crack
-	//! @param identifier
-	//! @return reference to a crack
-	virtual const CrackBase* CrackGetCrackPtr(int rIdent)const=0;
-
-	//! @brief gives the identifier of a crack
-	//! @param reference to a crack
-	//! @return identifier
-	virtual int CrackGetId(const CrackBase* rCrack)const=0;
 #endif //SWIG
 
     //*************************************************

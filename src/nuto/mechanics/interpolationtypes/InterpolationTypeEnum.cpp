@@ -13,7 +13,9 @@ const std::map<NuTo::Interpolation::eShapeType, std::string> NuTo::Interpolation
         {eShapeType::QUAD2D,        "QUAD2D"},
         {eShapeType::TETRAHEDRON3D, "TETRAHEDRON3D"},
         {eShapeType::BRICK3D,       "BRICK3D"},
-        {eShapeType::INTERFACE,     "INTERFACE"}};
+        {eShapeType::INTERFACE,     "INTERFACE"},
+        {eShapeType::IGA1D,         "IGA1D"},
+        {eShapeType::IGA2D,         "IGA2D"}};
     return shapeTypeMap;
 }
 
@@ -26,7 +28,8 @@ const std::map<NuTo::Interpolation::eTypeOrder, std::string> NuTo::Interpolation
         {eTypeOrder::EQUIDISTANT4,  "EQUIDISTANT4"},
         {eTypeOrder::LOBATTO2,      "LOBATTO2"},
         {eTypeOrder::LOBATTO3,      "LOBATTO3"},
-        {eTypeOrder::LOBATTO4,      "LOBATTO4"}};
+        {eTypeOrder::LOBATTO4,      "LOBATTO4"},
+        {eTypeOrder::SPLINE,        "SPLINE"}};
     return typeOrderMap;
 }
 

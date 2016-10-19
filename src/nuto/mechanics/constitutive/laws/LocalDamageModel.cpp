@@ -20,6 +20,7 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveMatrixXd.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/IpDataStaticDataBase.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
@@ -143,11 +144,9 @@ void NuTo::LocalDamageModel::Info(unsigned short rVerboseLevel, Logger& rLogger)
 
 }
 
-// check parameters
-void NuTo::LocalDamageModel::CheckParameters() const
-{
 
-}
+void NuTo::LocalDamageModel::CheckParameters() const {}
+
 
 NuTo::eError NuTo::LocalDamageModel::Evaluate1D(
         const ConstitutiveInputMap& rConstitutiveInput,
@@ -161,48 +160,52 @@ NuTo::eError NuTo::LocalDamageModel::Evaluate1D(
 NuTo::eError NuTo::LocalDamageModel::Evaluate2D(
         const ConstitutiveInputMap& rConstitutiveInput,
         const ConstitutiveOutputMap& rConstitutiveOutput,
-        Constitutive::StaticData::Component* staticData)
+        Constitutive::StaticData::Component* rStaticData)
 {
     auto itCalculateStaticData = rConstitutiveInput.find(eInput::CALCULATE_STATIC_DATA);
     const auto& calculateStaticData = dynamic_cast<const ConstitutiveCalculateStaticData&>(*itCalculateStaticData->second);
     int index = calculateStaticData.GetIndexOfPreviousStaticData();
 
-    const auto& oldStaticData = rStaticData
+    auto& gradientStaticData = *dynamic_cast<Constitutive::StaticData::Leaf<double>*>(rStaticData);
+    double oldKappa = gradientStaticData.GetData(index);
 
-    double staticData =  Evaluate2D(rElement->GetSection()->GetType(), oldStaticData, rConstitutiveInput, rConstitutiveOutput);
+    const auto& planeState =
+        *dynamic_cast<ConstitutivePlaneState*>(rConstitutiveInput.at(Constitutive::eInput::PLANE_STATE).get());
+    double newKappa = Evaluate2D(planeState, oldKappa, rConstitutiveInput, rConstitutiveOutput);
 
     // update history variables
-    rElement->GetStaticData(rIp)->AsGradientDamage()->SetKappa(staticData);
+    gradientStaticData.GetData() = newKappa;
     return eError::SUCCESSFUL;
 }
 
-double NuTo::LocalDamageModel::Evaluate2D(NuTo::eSectionType rSectionType, const ConstitutiveStaticDataGradientDamage& rOldStaticData, const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
+
+double NuTo::LocalDamageModel::Evaluate2D(NuTo::ConstitutivePlaneState planeState, double oldKappa,
+        const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
 {
     // get constitutive inputs
     const auto& elasticEngineeringStrain = rConstitutiveInput.at(eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
 
-    EquivalentStrainModifiedMises<2> eeq(elasticEngineeringStrain, mCompressiveStrength/mTensileStrength, mPoissonsRatio, rSectionType);
+    EquivalentStrainModifiedMises<2> eeq(elasticEngineeringStrain, mCompressiveStrength/mTensileStrength,
+            mPoissonsRatio, planeState.GetPlaneState());
     double localEqStrain = eeq.Get();
 
-    ConstitutiveStaticDataGradientDamage currentStaticData;
-    currentStaticData.SetKappa(std::max(localEqStrain, rOldStaticData.GetKappa()));
-    double omega = CalculateDamage(currentStaticData.GetKappa());
+    double kappa = std::max(localEqStrain, oldKappa);
+    double omega = CalculateDamage(kappa);
 
     bool performUpdateAtEnd = false;
 
-
     // calculate coefficients
     double C11, C12, C33;
-    switch (rSectionType)
+    switch (planeState.GetPlaneState())
     {
-    case eSectionType::PLANE_STRAIN:
+    case ePlaneState::PLANE_STRAIN:
         std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients3D(mYoungsModulus, mPoissonsRatio);
         break;
-    case eSectionType::PLANE_STRESS:
+    case ePlaneState::PLANE_STRESS:
         std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients2DPlaneStress(mYoungsModulus, mPoissonsRatio);
         break;
     default:
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "[ Invalid type of 2D section behavior found!!!");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
     }
 
 
@@ -282,17 +285,15 @@ double NuTo::LocalDamageModel::Evaluate2D(NuTo::eSectionType rSectionType, const
     // return old/new history variables
     if (performUpdateAtEnd)
     {
-        return currentStaticData.GetKappa();
+        return kappa;
     }
     else
     {
-        return rOldStaticData.GetKappa();
+        return oldKappa;
     }
-
-
 }
 
-NuTo::eError NuTo::LocalDamageModel::Evaluate1D(
+NuTo::eError NuTo::LocalDamageModel::Evaluate3D(
         const ConstitutiveInputMap& rConstitutiveInput,
         const ConstitutiveOutputMap& rConstitutiveOutput,
         Constitutive::StaticData::Component* staticData)
@@ -304,19 +305,19 @@ NuTo::eError NuTo::LocalDamageModel::Evaluate1D(
 NuTo::Constitutive::StaticData::Component* NuTo::LocalDamageModel::AllocateStaticData1D(
         const ElementBase* rElement) const
 {
-    return new Constitutive::StaticData::Leaf<double>;
+    return Constitutive::StaticData::Leaf<double>::Create(0.0);
 }
 
 NuTo::Constitutive::StaticData::Component* NuTo::LocalDamageModel::AllocateStaticData2D(
         const ElementBase* rElement) const
 {
-    return new Constitutive::StaticData::Leaf<double>;
+    return Constitutive::StaticData::Leaf<double>::Create(0.0);
 }
 
 NuTo::Constitutive::StaticData::Component* NuTo::LocalDamageModel::AllocateStaticData3D(
         const ElementBase* rElement) const
 {
-    return new Constitutive::StaticData::Leaf<double>;
+    return Constitutive::StaticData::Leaf<double>::Create(0.0);
 }
 
 NuTo::ConstitutiveInputMap NuTo::LocalDamageModel::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType& rInterpolationType) const
@@ -328,45 +329,53 @@ NuTo::ConstitutiveInputMap NuTo::LocalDamageModel::GetConstitutiveInputs(const C
     return constitutiveInputMap;
 }
 
-NuTo::ConstitutiveStaticDataGradientDamage NuTo::LocalDamageModel::GetCurrentStaticData(ElementBase& rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput) const
-{
-    auto itCalculateStaticData = rConstitutiveInput.find(eInput::CALCULATE_STATIC_DATA);
-    if (itCalculateStaticData == rConstitutiveInput.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "You need to specify the way the static data should be calculated (input list).");
 
-    const auto& calculateStaticData = *static_cast<const ConstitutiveCalculateStaticData*>(itCalculateStaticData->second.get());
+double NuTo::LocalDamageModel::GetCurrentStaticData(Constitutive::StaticData::Leaf<double>& damage,
+        const ConstitutiveInputMap& rConstitutiveInput) const
+{
+    auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
+    if (itCalculateStaticData == rConstitutiveInput.end())
+        throw MechanicsException(__PRETTY_FUNCTION__,
+                "You need to specify the way the static data should be calculated (input list).");
+
+    const auto& calculateStaticData =
+        *static_cast<const ConstitutiveCalculateStaticData*>(itCalculateStaticData->second.get());
 
     switch (calculateStaticData.GetCalculateStaticData())
     {
+        case eCalculateStaticData::USE_PREVIOUS:
+        {
+            int index = calculateStaticData.GetIndexOfPreviousStaticData();
+            return damage.GetData(index);
+        }
+        case eCalculateStaticData::EULER_BACKWARD:
+        {
 
-    case eCalculateStaticData::USE_PREVIOUS:
-    {
-        int index = calculateStaticData.GetIndexOfPreviousStaticData();
-        return *(rElement.GetStaticDataBase(rIp).GetStaticData(index)->AsGradientDamage());
+            int index = calculateStaticData.GetIndexOfPreviousStaticData();
+            double oldKappa = damage.GetData(index);
+            const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN);
+            return std::max(nonlocalEqStrain[0], oldKappa);
+        }
+
+        case eCalculateStaticData::EULER_FORWARD:
+        {
+            auto itTimeStep = rConstitutiveInput.find(Constitutive::eInput::TIME_STEP);
+            if (itTimeStep == rConstitutiveInput.end())
+                throw MechanicsException(__PRETTY_FUNCTION__, "TimeStep input needed for EULER_FORWARD.");
+            const auto& timeStep = *(itTimeStep->second);
+
+            assert(damage.GetNumData() >= 2);
+
+            return ConstitutiveCalculateStaticData::EulerForward(
+                    damage.GetData(1), damage.GetData(2), timeStep);
+        }
+
+        default:
+            throw MechanicsException(__PRETTY_FUNCTION__, "Cannot calculate the static data in the requested way.");
     }
 
-    case eCalculateStaticData::EULER_BACKWARD:
-    {
-        const auto& engineeringStrain = rConstitutiveInput.at(eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
-
-        auto elasticEngineeringStrain = EngineeringStressHelper::CalculateElasticEngineeringStrain<2>(engineeringStrain, *rElement.GetInterpolationType(), rConstitutiveInput, 0.);
-
-        EquivalentStrainModifiedMises<2> eeq(elasticEngineeringStrain, mCompressiveStrength/mTensileStrength, mPoissonsRatio, rElement.GetSection()->GetType());
-        double localEqStrain = eeq.Get();
-
-        int index = calculateStaticData.GetIndexOfPreviousStaticData();
-        const ConstitutiveStaticDataGradientDamage& oldStaticData = *(rElement.GetStaticDataBase(rIp).GetStaticData(index)->AsGradientDamage());
-
-        ConstitutiveStaticDataGradientDamage newStaticData;
-        newStaticData.SetKappa(std::max(localEqStrain, oldStaticData.GetKappa()));
-
-        return newStaticData;
-    }
-
-    default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Cannot calculate the static data in the requested way.");
-    }
 }
+
 
 double NuTo::LocalDamageModel::CalculateDamage(double rKappa) const
 {

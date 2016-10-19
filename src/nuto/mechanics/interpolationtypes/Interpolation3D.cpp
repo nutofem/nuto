@@ -10,7 +10,7 @@
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
 NuTo::Interpolation3D::Interpolation3D(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
-        InterpolationBase::InterpolationBase(rDofType, rTypeOrder, rDimension)
+        InterpolationBaseFEM::InterpolationBaseFEM(rDofType, rTypeOrder, rDimension)
 {
 
 }

@@ -15,14 +15,15 @@ constitutive/laws/FibreMatrixBondStressSlip.cpp
 constitutive/laws/GradientDamageEngineeringStress.cpp
 constitutive/laws/PhaseField.cpp
 constitutive/laws/HeatConduction.cpp
+constitutive/laws/LinearDampingEngineeringStress.cpp
 constitutive/laws/LinearElasticEngineeringStress.cpp
-#constitutive/laws/LocalDamageModel.cpp
+constitutive/laws/LocalDamageModel.cpp
 constitutive/laws/MisesPlasticityEngineeringStress.cpp
 constitutive/laws/MoistureTransport.cpp
 constitutive/laws/ShrinkageCapillaryStrainBased.cpp
 constitutive/laws/ShrinkageCapillaryStressBased.cpp
 constitutive/laws/ThermalStrains.cpp
-        constitutive/staticData/Composite.cpp
+constitutive/staticData/Composite.cpp
 constitutive/staticData/DataMisesPlasticity.cpp
 constitutive/staticData/DataMoistureTransport.cpp
 )
@@ -60,23 +61,17 @@ dofSubMatrixStorage/BlockFullVector.cpp
 dofSubMatrixStorage/BlockFullMatrix.cpp
 )
 
-SET(NuToMechanicsCrack_SOURCES
-cracks/CrackBase.cpp
-cracks/CrackExplicit2D.cpp
-elements/ElementDataCrackBase.cpp
-elements/ElementDataConstitutiveIpCrack.cpp
-structures/unstructured/StructureCrack.cpp
-)
-
 SET(NuToMechanicsElements_SOURCES
 elements/ContinuumElement.cpp	
 elements/ContinuumBoundaryElement.cpp
 elements/ContinuumBoundaryElementConstrainedControlNode.cpp
+elements/ContinuumContactElement.cpp
 elements/ElementBase.cpp
 elements/ElementDataBase.cpp
 elements/ElementDataConstitutiveBase.cpp
 elements/Element1DInXD.cpp
 elements/Element2DInterface.cpp
+elements/ContinuumElementIGA.cpp
 elements/ElementDataConstitutiveIp.cpp
 elements/ElementDataConstitutiveIpNonlocal.cpp
 elements/ElementDataEnum.cpp
@@ -115,6 +110,7 @@ integrationtypes/IntegrationType1D2NGauss5Ip.cpp
 integrationtypes/IntegrationType1D2NLobatto3Ip.cpp
 integrationtypes/IntegrationType1D2NLobatto4Ip.cpp
 integrationtypes/IntegrationType1D2NLobatto5Ip.cpp
+integrationtypes/IntegrationType1D2NLobatto6Ip.cpp
 integrationtypes/IntegrationType2D.cpp
 integrationtypes/IntegrationType2D3NGauss13Ip.cpp
 integrationtypes/IntegrationType2D3NGauss16Ip.cpp
@@ -144,6 +140,8 @@ integrationtypes/IntegrationTypeBase.cpp
 
 SET(NuToMechanicsInterpolationtypes_SOURCE
 interpolationtypes/InterpolationBase.cpp
+interpolationtypes/InterpolationBaseFEM.cpp
+interpolationtypes/InterpolationBaseIGA.cpp
 interpolationtypes/InterpolationType.cpp
 interpolationtypes/InterpolationTypeEnum.cpp
 interpolationtypes/Interpolation1D.cpp
@@ -155,6 +153,13 @@ interpolationtypes/Interpolation2DQuad.cpp
 interpolationtypes/Interpolation3D.cpp
 interpolationtypes/Interpolation3DTetrahedron.cpp
 interpolationtypes/Interpolation3DBrick.cpp
+interpolationtypes/Interpolation1DIGA.cpp
+interpolationtypes/Interpolation2DIGA.cpp
+)
+
+SET(NuToMechanicsIGA_SOURCE
+IGA/BSplineCurve.cpp
+IGA/BSplineSurface.cpp
 )
 
 SET(NuToMechanicsLoads_SOURCES
@@ -174,6 +179,7 @@ loads/LoadSurfaceConstDirection2D.cpp
 loads/LoadSurfaceConstDirection3D.cpp
 loads/LoadSurfacePressure2D.cpp
 loads/LoadSurfacePressure3D.cpp
+loads/LoadSurfacePressureFunction2D.cpp
 )
 
 SET(NuToMechanicsNodes_SOURCES
@@ -255,6 +261,7 @@ ${NuToMechanicsElements_SOURCES}
 ${NuToMechanicsGroups_SOURCES}
 ${NuToMechanicsIntegrationtypes_SOURCES} 
 ${NuToMechanicsInterpolationtypes_SOURCE} 
+${NuToMechanicsIGA_SOURCE}
 ${NuToMechanicsLoads_SOURCES}
 ${NuToMechanicsNodes_SOURCES} 
 ${NuToMechanicsSection_SOURCES} 

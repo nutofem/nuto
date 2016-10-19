@@ -25,7 +25,9 @@ enum class eShapeType
     QUAD2D,
     TETRAHEDRON3D,
     BRICK3D,
-    INTERFACE
+    INTERFACE,
+    IGA1D,
+    IGA2D
 };
 
 const std::map<eShapeType, std::string> GetShapeTypeMap();
@@ -41,7 +43,8 @@ enum class eTypeOrder
     EQUIDISTANT4,
     LOBATTO2,
     LOBATTO3,
-    LOBATTO4
+    LOBATTO4,
+    SPLINE
 };
 
 const std::map<eTypeOrder, std::string> GetTypeOrderMap();

@@ -70,7 +70,7 @@ void SetConstitutiveLaws(NuTo::Structure &structure, int group, Properties prope
     int additive_input_id = structure.ConstitutiveLawCreate(
             NuTo::Constitutive::eConstitutiveType::ADDITIVE_INPUT_EXPLICIT);
     int additive_output_id = structure.ConstitutiveLawCreate(
-            NuTo::Constitutive::eConstitutiveType::CONSTITUTIVE_LAWS_ADDITIVE_OUTPUT);
+            NuTo::Constitutive::eConstitutiveType::ADDITIVE_OUTPUT);
 
     int lin_elastic_id = structure.ConstitutiveLawCreate(
             NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);

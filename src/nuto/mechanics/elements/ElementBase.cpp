@@ -25,7 +25,6 @@
 #include "nuto/mechanics/constitutive/staticData/Component.h"
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIp.h"
-#include "nuto/mechanics/elements/ElementDataConstitutiveIpCrack.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIpNonlocal.h"
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/ElementDataVariableConstitutiveIp.h"
@@ -73,9 +72,6 @@ NuTo::ElementBase::ElementBase(const StructureBase* rStructure, ElementData::eEl
     case NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIPNONLOCAL:
         ptrElementData = new NuTo::ElementDataConstitutiveIpNonlocal(this, integrationType, rIpDataType);
         break;
-    case NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIPCRACK:
-        ptrElementData = new NuTo::ElementDataConstitutiveIpCrack(this, integrationType, rIpDataType);
-        break;
     case NuTo::ElementData::eElementDataType::VARIABLECONSTITUTIVELAWIP:
         ptrElementData = new NuTo::ElementDataVariableConstitutiveIp(this, integrationType, rIpDataType);
         break;
@@ -102,9 +98,6 @@ NuTo::ElementBase::ElementBase(const StructureBase* rStructure, ElementData::eEl
         break;
     case NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIPNONLOCAL:
         ptrElementData = new NuTo::ElementDataConstitutiveIpNonlocal(this, rNumIp, rIpDataType);
-        break;
-    case NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIPCRACK:
-        ptrElementData = new NuTo::ElementDataConstitutiveIpCrack(this, rNumIp, rIpDataType);
         break;
     case NuTo::ElementData::eElementDataType::VARIABLECONSTITUTIVELAWIP:
         ptrElementData = new NuTo::ElementDataVariableConstitutiveIp(this, rNumIp, rIpDataType);
@@ -672,7 +665,6 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
         case NuTo::eVisualizeWhat::ANGULAR_VELOCITY:
         case NuTo::eVisualizeWhat::ANGULAR_ACCELERATION:
         case NuTo::eVisualizeWhat::CONSTITUTIVE:
-        case NuTo::eVisualizeWhat::CRACK:
         case NuTo::eVisualizeWhat::DISPLACEMENTS:
         case NuTo::eVisualizeWhat::ELEMENT:
         case NuTo::eVisualizeWhat::NONLOCAL_WEIGHT:
@@ -1034,21 +1026,6 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
                 unsigned int CellId = CellIdVec[CellCount];
                 rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), elementId);
             }
-        }
-            break;
-        case NuTo::eVisualizeWhat::CRACK:
-        {
-            std::vector<NuTo::CrackBase*> elementCracks = this->GetDataPtr()->GetCracks();
-            //! @todo [DA] change SetCellDataVector to variable data size
-            if (2 < elementCracks.size())
-                throw NuTo::VisualizeException("[NuTo::ElementBase::Visualize::CRACK] cannot visualize more than 3 cracks per elements");
-            double elementCrackIds[] =
-            { -1.0, -1.0, -1.0 };
-            unsigned int crackCount = 0;
-            BOOST_FOREACH(const NuTo::CrackBase* thisCrack, elementCracks)
-                elementCrackIds[crackCount++] = this->mStructure->CrackGetId(thisCrack);
-            for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
-                rVisualize.SetCellDataVector(CellIdVec[CellCount], it.get()->GetComponentName(), elementCrackIds);
         }
             break;
         case NuTo::eVisualizeWhat::PARTICLE_RADIUS:
@@ -1557,27 +1534,6 @@ void NuTo::ElementBase::GetIntegratedStrain(FullMatrix<double, Eigen::Dynamic, E
     {
         rStrain += (ipStress.col(countIP) * (ipVolume[countIP]));
     }
-}
-
-//! @brief Returns the vector of crack pointers of an element
-//! @return crack pointer vector
-const std::vector<NuTo::CrackBase*> NuTo::ElementBase::GetCracks() const
-{
-    return this->mElementData->GetCracks();
-}
-
-//! @brief Set the information that the element is already cracked or not
-//! @param bool cracked or not
-void NuTo::ElementBase::IsCracked(const bool rIsCracked)
-{
-    this->mElementData->IsCracked(rIsCracked);
-}
-
-//! @brief Give the information if the element is already cracked or not
-//! @return bool cracked or not
-const bool NuTo::ElementBase::IsCracked() const
-{
-    return this->mElementData->IsCracked();
 }
 
 

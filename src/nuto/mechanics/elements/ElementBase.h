@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -20,12 +19,12 @@ namespace NuTo
 {
 
 namespace Constitutive {
-namespace StaticData {
-class Component;
-}
+    namespace StaticData {
+        class Component;
+    }
 }
 
-class CrackBase;
+class BoundaryGradientDamage1D;
 class ConstitutiveBase;
 class ConstitutiveStaticDataBase;
 class ElementDataBase;
@@ -47,7 +46,9 @@ class IpDataStaticDataBase;
 enum class eError;
 template<typename IOEnum> class ConstitutiveIOMap;
 template <int TDim> class ContinuumElement;
+template <int TDim> class ContinuumElementIGA;
 template <int TDim> class ContinuumBoundaryElement;
+template <int TDim> class ContinuumContactElement;
 template <class T, int rows, int cols> class FullMatrix;
 template <class T, int rows> class FullVector;
 
@@ -414,19 +415,29 @@ public:
     //! @return True if coordinates are within the element, False otherwise
     virtual bool CheckPointInside(const double* rGlobCoords) const;
 
-    //! @brief Returns the vector of crack pointers of an element
-    //! @return crack pointer vector
-    virtual const std::vector<CrackBase*> GetCracks() const;
-
-    //! @brief Set the information that the element is already cracked or not
-    //! @param bool (Input) cracked or not
-    void IsCracked(const bool rIsCracked);
-
-    //! @brief Give the information if the element is already cracked or not
-    //! @return bool cracked or not
-    const bool IsCracked() const;
-
     void Info() const;
+
+    //! @brief returns the knots of the element
+    //! @return reference on the matrix containing the knots
+    virtual const Eigen::MatrixXd& GetKnots() const
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Only implemented in ContinuumElementIGA.");
+    }
+
+    //! @brief returns the knotIDs of the element
+    //! @return reference on the vector containing the knotIDs
+    virtual const Eigen::VectorXi& GetKnotIDs() const
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Only implemented in ContinuumElementIGA.");
+    }
+
+    virtual Eigen::VectorXd InterpolateDofGlobalSurfaceDerivative(int, const Eigen::VectorXd&, int, int) const
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Only implemented in ContinuumElementIGA.");
+    }
 
     virtual const ContinuumElement<1>& AsContinuumElement1D() const
     {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<1>.");}
@@ -445,6 +456,42 @@ public:
 
     virtual ContinuumElement<3>& AsContinuumElement3D()
     {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<3>.");}
+
+    virtual const ContinuumElementIGA<1>& AsContinuumElementIGA1D() const
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Element is not of type ContinuumElementIGA<1>.");
+    }
+
+    virtual const ContinuumElementIGA<2>& AsContinuumElementIGA2D() const
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Element is not of type ContinuumElementIGA<2>.");
+    }
+
+    virtual const ContinuumElementIGA<3>& AsContinuumElementIGA3D() const
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Element is not of type ContinuumElementIGA<3>.");
+    }
+
+    virtual ContinuumElementIGA<1>& AsContinuumElementIGA1D()
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Element is not of type ContinuumElementIGA<1>.");
+    }
+
+    virtual ContinuumElementIGA<2>& AsContinuumElementIGA2D()
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Element is not of type ContinuumElementIGA<2>.");
+    }
+
+    virtual ContinuumElementIGA<3>& AsContinuumElementIGA3D()
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Element is not of type ContinuumElementIGA<3>.");
+    }
 
 
     virtual const ContinuumBoundaryElement<1>& AsContinuumBoundaryElement1D() const

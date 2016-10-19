@@ -5,16 +5,18 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 # Get information during make
 SET(CMAKE_VERBOSE_MAKEFILE OFF)
 
+
 # Check for Mingw64
 if(MINGW AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
   set(MINGW64 TRUE)
 endif()
 
 # options
-OPTION(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" FALSE)
+OPTION(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
 OPTION(ENABLE_ARPACK "enables ARPACK libraries (for the solution of eigenvalue problems)" FALSE)
 OPTION(ENABLE_C++_TESTS "create makefiles for c++ tests" TRUE)
 OPTION(ENABLE_CGAL "enables CGAL libraries (for cracks only)" FALSE)
+OPTION(ENABLE_COVERAGE "Set compiler flag for coverage analysis" FALSE)
 OPTION(ENABLE_DEBUG "enables debug information" TRUE)
 OPTION(ENABLE_DEBUG_SERIALIZATION "prints additional debug information during serialization" FALSE)
 OPTION(ENABLE_EXAMPLES "enables examples" FALSE)
@@ -35,7 +37,7 @@ OPTION(ENABLE_PYTHON_TESTS "create makefiles for python tests" TRUE)
 OPTION(ENABLE_SHOW_TIME "shows for each python command the execution time" TRUE)
 OPTION(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" FALSE)
 OPTION(ENABLE_SERIALIZATION "enables serialization" FALSE)
-OPTION(ENABLE_UNIT_TESTS "use Boost Test library for unit tests" FALSE)
+OPTION(ENABLE_UNIT_TESTS "use Boost Test library for unit tests" TRUE)
 OPTION(ENABLE_VERBOSELEVEL "enables status messages during the execution by setting the verboselevel" FALSE)
 OPTION(ENABLE_VISUALIZE "enables the visualization package" FALSE)
 
@@ -146,6 +148,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -msse4")
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --system-header-prefix=boost/ --system-header-prefix=eigen3/ -Wno-inconsistent-missing-override -Wno-missing-braces")
 endif()
+
+if(ENABLE_COVERAGE)
+    include(Coverage)
+endif()
+
 # there is an error in the numpy headers, which produces a warning that is
 # fatal when using pedantic-errors
 if(ENABLE_NUMPY)
@@ -425,6 +432,7 @@ IF(ENABLE_MKL)
 ENDIF(ENABLE_MKL)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src)
+
 
 # build nuto
 ADD_SUBDIRECTORY(src)

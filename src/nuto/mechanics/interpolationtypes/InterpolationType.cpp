@@ -27,6 +27,9 @@
 #include "nuto/mechanics/interpolationtypes/Interpolation3DBrick.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation1DTruss.h"
 #include "nuto/mechanics/interpolationtypes/Interpolation1DInterface.h"
+#include "nuto/mechanics/interpolationtypes/Interpolation1DIGA.h"
+#include "nuto/mechanics/interpolationtypes/Interpolation2DIGA.h"
+
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
 #include <boost/foreach.hpp>
@@ -62,6 +65,75 @@ NuTo::InterpolationBase& NuTo::InterpolationType::GetNonConst(Node::eDof rDofTyp
         throw NuTo::MechanicsException("[NuTo::InterpolationType::Get] Dof " + Node::DofToString(rDofType) + " is not a member of this interpolation type. Add it first.");
 
     return *(interpolationTypeIterator->second);
+}
+
+void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, const Eigen::VectorXi &rDegree, const std::vector<Eigen::VectorXd> &rKnots, const Eigen::MatrixXd &rWeights)
+{
+    if (IsDof(rDofType))
+        throw NuTo::MechanicsException("[NuTo::InterpolationTypeBase::AddDofInterpolation] Dof " + NuTo::Node::DofToString(rDofType) + " exists.");
+
+    InterpolationBase* newType;
+    switch (mShapeType)
+    {
+    case Interpolation::eShapeType::SPRING:
+    case Interpolation::eShapeType::TRUSS1D:
+    case Interpolation::eShapeType::TRUSSXD:
+    case Interpolation::eShapeType::TRIANGLE2D:
+    case Interpolation::eShapeType::QUAD2D:
+    case Interpolation::eShapeType::TETRAHEDRON3D:
+    case Interpolation::eShapeType::BRICK3D:
+    case Interpolation::eShapeType::INTERFACE:
+        throw NuTo::MechanicsException("[NuTo::InterpolationTypeBase::AddDofInterpolation] This method is for IG interpolation, please use the 'AddDofInterpolation(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder)'.");
+        break;
+    case Interpolation::eShapeType::IGA1D:
+        newType = new Interpolation1DIGA(rDofType, rTypeOrder, mDimension, rDegree(0), rKnots[0], rWeights);
+        break;
+    case Interpolation::eShapeType::IGA2D:
+        newType = new Interpolation2DIGA(rDofType, rTypeOrder, mDimension, rDegree, rKnots[0], rKnots[1], rWeights);
+        break;
+    default:
+        throw NuTo::MechanicsException("[NuTo::InterpolationType::AddDofInterpolation] ShapeType " + NuTo::Interpolation::ShapeTypeToString(mShapeType) + " not implemented.");
+    }
+
+    mInterpolations.insert(rDofType, newType);
+    mDofs.insert(rDofType);
+
+    mNumDofs += newType->GetNumDofs();
+
+    if (rDofType == Node::eDof::COORDINATES)
+    {
+        SetIsActive(false, rDofType);
+        SetIsConstitutiveInput(false, rDofType);
+    }
+    else
+    {
+        SetIsActive(true, rDofType);
+        SetIsConstitutiveInput(true, rDofType);
+    }
+
+    // IGA: same number of dofs per element => just insert the new dof into the set
+    // calculate mNodeDofs, mNodeCoordinates and mNodeIndices
+
+    size_t size = newType->GetNumNodes();
+
+    if (mNodeDofs.size() == 0)
+        mNodeDofs.resize(size);
+    else if(mNodeDofs.size() != size)
+        throw NuTo::MechanicsException("[NuTo::InterpolationType::AddDofInterpolation] The number of dofs per IGA element isn't equal!");
+
+    mNodeCoordinates.resize(size);
+
+    newType->mNodeIndices.resize(size);
+
+    for(size_t i = 0; i < size; i++)
+    {
+        newType->mNodeIndices[i] = i;
+        mNodeDofs[i].insert(rDofType);
+    }
+
+
+    if (mIntegrationType != nullptr)
+        newType->UpdateIntegrationType(*mIntegrationType);
 }
 
 void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder)
@@ -105,13 +177,14 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
     {
         SetIsActive(false, rDofType);
         SetIsConstitutiveInput(false, rDofType);
-    } else
+    }
+    else
     {
         SetIsActive(true, rDofType);
         SetIsConstitutiveInput(true, rDofType);
     }
 
-// calculate mNodeDofs, mNodeCoordinates and mNodeIndices
+    // calculate mNodeDofs, mNodeCoordinates and mNodeIndices
     mNodeDofs.resize(mNodeDofs.size() + newType->GetNumNodes());
 
     newType->mNodeIndices.resize(newType->GetNumNodes());
@@ -229,6 +302,14 @@ NuTo::Node::eDof NuTo::InterpolationType::GetDofWithHighestStandardIntegrationOr
         case Interpolation::eTypeOrder::EQUIDISTANT4:
             currentOrder = 4;
             break;
+        case Interpolation::eTypeOrder::SPLINE:
+        {
+            int dim = Get(dof).GetLocalDimension();
+            if      (dim == 1) currentOrder =  Get(dof).GetSplineDegree(0) + 1;
+            else if (dim == 2) currentOrder =  Get(dof).GetSplineDegree(0) + Get(dof).GetSplineDegree(1) + 2;
+            else               throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "3D IGA is not implemented yet.");
+        }
+            break;
         default:
             throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Standard integration type for " + Interpolation::TypeOrderToString(order) + " is not implemented.");
         }
@@ -247,29 +328,37 @@ Eigen::VectorXi NuTo::InterpolationType::GetSurfaceNodeIndices(int rSurface) con
     assert(IsDof(Node::eDof::COORDINATES));
     const InterpolationBase& interpolationType = Get(Node::eDof::COORDINATES);
 
-    const auto& surfaceEdgesCoordinates = interpolationType.GetSurfaceEdgesCoordinates(rSurface);
+    Interpolation::eTypeOrder order = interpolationType.GetTypeOrder();
 
-    Eigen::VectorXi surfaceNodeIndices(surfaceEdgesCoordinates.size());
-
-    for (unsigned int i = 0; i < surfaceEdgesCoordinates.size(); ++i)
+    if(order !=  Interpolation::eTypeOrder::SPLINE)
     {
-        const Eigen::VectorXd& naturalSurfaceEdgeCoordinate = surfaceEdgesCoordinates[i];
-//        std::cout << naturalSurfaceEdgeCoordinate << std::endl;
-        Eigen::VectorXd shapeFunctions = interpolationType.CalculateShapeFunctions(naturalSurfaceEdgeCoordinate);
-//        std::cout << shapeFunctions << std::endl;
-        assert(std::abs(shapeFunctions.norm() - 1) < 1.e-8);
-        int indexNodeCoordinate;                                        // index in the coordinate interpolation
+        const auto& surfaceEdgesCoordinates = interpolationType.GetSurfaceEdgesCoordinates(rSurface);
 
-#ifdef DEBUG
-        double value = shapeFunctions.maxCoeff(&indexNodeCoordinate);   // find the index where the shape function is 1
-        assert(std::abs(value - 1) < 1.e-8);
-#else
-        shapeFunctions.maxCoeff(&indexNodeCoordinate);   // find the index where the shape function is 1
-#endif
-        surfaceNodeIndices(i) = interpolationType.GetNodeIndex(indexNodeCoordinate); // index in the Element::mNodes vector
+        Eigen::VectorXi surfaceNodeIndices(surfaceEdgesCoordinates.size());
+
+        for (unsigned int i = 0; i < surfaceEdgesCoordinates.size(); ++i)
+        {
+            const Eigen::VectorXd& naturalSurfaceEdgeCoordinate = surfaceEdgesCoordinates[i];
+    //        std::cout << naturalSurfaceEdgeCoordinate << std::endl;
+            Eigen::VectorXd shapeFunctions = interpolationType.CalculateShapeFunctions(naturalSurfaceEdgeCoordinate);
+    //        std::cout << shapeFunctions << std::endl;
+            assert(std::abs(shapeFunctions.norm() - 1) < 1.e-8);
+            int indexNodeCoordinate;                                        // index in the coordinate interpolation
+
+    #ifdef DEBUG
+            double value = shapeFunctions.maxCoeff(&indexNodeCoordinate);   // find the index where the shape function is 1
+            assert(std::abs(value - 1) < 1.e-8);
+    #else
+            shapeFunctions.maxCoeff(&indexNodeCoordinate);   // find the index where the shape function is 1
+    #endif
+            surfaceNodeIndices(i) = interpolationType.GetNodeIndex(indexNodeCoordinate); // index in the Element::mNodes vector
+        }
+        return surfaceNodeIndices;
     }
-
-    return surfaceNodeIndices;
+    else
+    {
+        return interpolationType.GetSurfaceNodeIndices(rSurface);
+    }
 }
 
 int NuTo::InterpolationType::GetNumSurfaces() const
@@ -349,6 +438,7 @@ const Eigen::VectorXd& NuTo::InterpolationType::GetNaturalNodeCoordinates(int rN
     assert((unsigned int )rNodeIndex < mNodeCoordinates.size());
     return mNodeCoordinates[rNodeIndex];
 }
+
 int NuTo::InterpolationType::GetNumNodes() const
 {
     return mNodeCoordinates.size();

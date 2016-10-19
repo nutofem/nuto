@@ -1,5 +1,3 @@
-// $Id$
-
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -8,7 +6,6 @@
 
 
 #include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/cracks/CrackBase.h"
 #include <boost/ptr_container/ptr_map.hpp>
 #include <set>
 
@@ -28,6 +25,7 @@ namespace Interpolation
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard class for irregular (unstructured) structures
+
 class Structure: public StructureBase
 {
 #ifdef ENABLE_SERIALIZATION
@@ -44,9 +42,6 @@ public:
     typedef std::map<nodeBasePtr_t, nodeBasePtr_t> nodeBasePtrMap_t;
     typedef std::set<nodeBasePtr_t> nodeBasePtrSet_t;
     typedef std::vector<nodeBasePtr_t> nodeBasePtrVec_t;
-    typedef CrackBase* crackBasePtr_t;
-    typedef std::vector<crackBasePtr_t> crackBasePtrVec_t;
-    typedef boost::ptr_map<int, CrackBase> crackMap_t;
 
     //! @brief constructor
     //! @param mDimension  Structural dimension (1,2 or 3)
@@ -316,27 +311,80 @@ public:
     //! @brief info about the elements in the Structure
     void ElementInfo(int rVerboseLevel) const;
 
+//***************************************************//
+//************ ElementCreate routines ***************//
+//***************************************************//
+
+    //---------------------------------------------------------------------------------------------------------------------------
+    //! @brief Creates an IGA element, where the knot indices, beside the nodes (control points), are part of the data structures
+    //! @param rInterpolationTypeId ... interpolation type id
+    //! @param rNodeNumbers ... node indices
+    //! @param rKnots ... knots defining the element
+    //! @param rKnotIDs ... starting knot ids of the element in each element direction
+    int ElementCreate(int rInterpolationTypeId,
+                      const Eigen::VectorXi &rNodeNumbers,
+                      const Eigen::MatrixXd &rKnots,
+                      const Eigen::VectorXi &rKnotIDs);
+
     //! @brief Creates an element
     //! @param rInterpolationTypeId interpolation type id
     //! @param rNodeNumbers node indices
-    //! @return int rElementNumber
     int ElementCreate(int rInterpolationTypeId, const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers);
+
+    //---------------------------------------------------------------------------------------------------------------------------
+    //! @brief Creates an IGA element, where the knot indices, beside the nodes (control points), are part of the data structures
+    //! @param rInterpolationTypeId ... interpolation type id
+    //! @param rNodeNumbers  ... node indices
+    //! @param rKnots ... knots defining the element
+    //! @param rKnotIDs ... starting knot ids of the element in each element direction
+    //! @param rElementDataType  ... Element data for the elements
+    //! @param rIpDataType  ... Integration point data for the elements
+    int ElementCreate(int   rInterpolationTypeId,
+                      const Eigen::VectorXi &rNodeNumbers,
+                      const Eigen::MatrixXd &rKnots,
+                      const Eigen::VectorXi &rKnotIDs,
+                      const std::string     &rElementDataType,
+                      const std::string     &rIpDataType);
 
     //! @brief Creates an element
     //! @param rInterpolationTypeId interpolation type id
     //! @param rNodeNumbers node indices
     //! @param rElementDataType Element data for the elements
     //! @param rIpDataType Integration point data for the elements
-    //! @return int rElementNumber
-    int ElementCreate(int rInterpolationTypeId, const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
+    int ElementCreate(int rInterpolationTypeId,
+                      const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers,
+                      const std::string& rElementDataType,
+                      const std::string& rIpDataType);
+
+    //---------------------------------------------------------------------------------------------------------------------------
+    //! @brief Creates an IGA element, where the knot indices, beside the nodes (control points), are part of the data structures
+    //! @param rElementNumber ... element number
+    //! @param rInterpolationTypeId ... interpolation type id
+    //! @param rNodeNumbers  ... node indices
+    //! @param rKnots ... knots defining the element
+    //! @param rKnotIDs ... starting knot ids of the element in each element direction
+    //! @param rElementDataType  ... Element data for the elements
+    //! @param rIpDataType  ... Integration point data for the elements
+    void ElementCreate(int rElementNumber,
+                       int rInterpolationTypeId,
+                       const Eigen::VectorXi &rNodeNumbers,
+                       const Eigen::MatrixXd &rKnots,
+                       const Eigen::VectorXi &rKnotIDs,
+                       const std::string     &rElementDataType,
+                       const std::string     &rIpDataType);
 
     //! @brief Creates an element
-    //! @param rElementNumber element number
-    //! @param rInterpolationTypeId interpolation type id
-    //! @param rNodeNumbers vector of node indices
-    //! @param rElementType element type
-    //! @param rIpDataType Integration point data for the elements
-    void ElementCreate(int rElementNumber, int rInterpolationTypeId, const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
+    //! @param rElementNumber ... element number
+    //! @param rInterpolationTypeId ... interpolation type id
+    //! @param rNodeNumbers  ... node indices
+    //! @param rElementDataType  ... Element data for the elements
+    //! @param rIpDataType  ... Integration point data for the elements
+    void ElementCreate(int rElementNumber,
+                       int rInterpolationTypeId,
+                       const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers,
+                       const std::string& rElementDataType,
+                       const std::string& rIpDataType);
+
 
     //! @brief creates multiple elements and adds them to an element group
     //! @param rInterpolationTypeId interpolation type id
@@ -386,31 +434,94 @@ public:
     //! @param rItElement iterator of the map
     void ElementDeleteInternal(int rElementId);
 
+    //---------------------------------------------------------------------------------------------------------------------------
+    //! @brief Creates an IGA element, where the knot indices, beside the nodes (control points), are part of the data structures
+    //! @param rInterpolationTypeId ... interpolation type id
+    //! @param rNodeNumbers ... pointers to the corresponding nodes
+    //! @param rKnots ... knots defining the element
+    //! @param rKnotIDs ... starting knot ids of the element in each element direction
+    //! @param rElementDataType ... Element data for the elements
+    //! @param rIpDataType ... Integration point data for the elements
+    //! @return int rElementNumber
+    int ElementCreate(int rInterpolationTypeId,
+                      const std::vector<NodeBase*> &rNodeNumbers,
+                      const Eigen::MatrixXd &rKnots,
+                      const Eigen::VectorXi &rKnotIDs,
+                      ElementData::eElementDataType rElementDataType,
+                      IpData::eIpDataType rIpDataType);
+
     //! @brief Creates an element
     //! @param rInterpolationTypeId interpolation type id
     //! @param rNodeVector pointers to the corresponding nodes
     //! @param rElementDataType Element data for the elements
     //! @param rIpDataType Integration point data for the elements
     //! @return int rElementNumber
-    int ElementCreate(int rInterpolationTypeId, const std::vector<NodeBase*>& rNodeVector, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
+    int ElementCreate(int rInterpolationTypeId,
+                      const std::vector<NodeBase*>& rNodeVector,
+                      ElementData::eElementDataType rElementDataType,
+                      IpData::eIpDataType rIpDataType);
+
+    //---------------------------------------------------------------------------------------------------------------------------
+    //! @brief Creates an IGA element, where the knot indices, beside the nodes (control points), are part of the data structures
+    //! @param rInterpolationTypeId ... interpolation type id
+    //! @param rNodeNumbers ... node ids to the corresponding nodes
+    //! @param rKnots ... knots defining the element
+    //! @param rKnotIDs ... starting knot ids of the element in each element direction
+    //! @param rElementDataType ... Element data for the elements
+    //! @param rIpDataType ... Integration point data for the elements
+    //! @return int rElementNumber
+    int ElementCreate(int rInterpolationTypeId,
+                      const Eigen::VectorXi &rNodeNumbers,
+                      const Eigen::MatrixXd &rKnots,
+                      const Eigen::VectorXi &rKnotIDs,
+                      ElementData::eElementDataType rElementDataType,
+                      IpData::eIpDataType rIpDataType);
 
     //! @brief Creates an element
-    //! @param rInterpolationTypeId interpolation type id
-    //! @param rNodeNumbers node indices
-    //! @param rElementDataType Element data for the elements
-    //! @param rIpDataType Integration point data for the elements
+    //! @param rInterpolationTypeId ... interpolation type id
+    //! @param rNodeNumbers...  node indices
+    //! @param rElementDataType ... Element data for the elements
+    //! @param rIpDataType ... Integration point data for the elements
     //! @return int rElementNumber
-    int ElementCreate(int rInterpolationTypeId, const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
+    int ElementCreate(int rInterpolationTypeId,
+                      const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers,
+                      ElementData::eElementDataType rElementDataType,
+                      IpData::eIpDataType rIpDataType);
+
+    //---------------------------------------------------------------------------------------------------------------------------
+    //! @brief Creates an IGA element, where the knot indices, beside the nodes (control points), are part of the data structures
+    //! @param rElementNumber ... element number
+    //! @param rInterpolationTypeId ... interpolation type id
+    //! @param rNodeVector ... pointers to the corresponding nodes
+    //! @param rKnots ... knots defining the element
+    //! @param rKnotIDs ... starting knot ids of the element in each element direction
+    //! @param rElementType ... element type
+    //! @param rIpDataType ... Integration point data for the elements
+    void ElementCreate(int rElementNumber,
+                       int rInterpolationTypeId,
+                       const std::vector<NodeBase*> &rNodeVector,
+                       const Eigen::MatrixXd &rKnots,
+                       const Eigen::VectorXi &rKnotIDs,
+                       ElementData::eElementDataType rElementDataType,
+                       IpData::eIpDataType rIpDataType);
+
+
+    //! @brief Creates an element
+    //! @param rElementNumber ... element number
+    //! @param rInterpolationTypeId ... interpolation type id
+    //! @param rNodeVector ... pointers to the corresponding nodes
+    //! @param rElementType ...  element type
+    //! @param rIpDataType ...  Integration point data for the elements
+    void ElementCreate(int rElementNumber,
+                       int rInterpolationTypeId,
+                       const std::vector<NodeBase*>& rNodeVector,
+                       ElementData::eElementDataType rElementDataType,
+                       IpData::eIpDataType rIpDataType);
+
 
     void ElementCreate(int rElementNumber, int rInterpolationTypeId, const std::vector<int>& rNodeIds, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
 
-    //! @brief Creates an element
-    //! @param rElementNumber element number
-    //! @param rInterpolationTypeId interpolation type id
-    //! @param rNodeVector pointers to the corresponding nodes
-    //! @param rElementType element type
-    //! @param rIpDataType Integration point data for the elements
-    void ElementCreate(int rElementNumber, int rInterpolationTypeId, const std::vector<NodeBase*>& rNodeVector, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
+
 
     //! @brief Returns the internal enum (number) for the element types
     //! @param Element name in Nuto
@@ -483,7 +594,6 @@ public:
     //! @param rTypeOrder ... type and order of interpolation
     void InterpolationTypeAdd(int rInterpolationTypeId, const std::string& rDofType, const std::string& rTypeOrder);
 
-
 #ifndef SWIG
 
     //! @brief creates a new interpolation type
@@ -503,6 +613,12 @@ public:
     //! @param rIpDataType ... ip data type enum
     void InterpolationTypeSetIntegrationType(int rInterpolationTypeId, IntegrationTypeBase* rIntegrationType, IpData::eIpDataType rIpDataType);
 
+    //! @brief adds a dof to a IGA interpolation type
+    //! @param rInterpolationTypeId ... interpolation type id
+    //! @param rDofType ... dof type
+    //! @param rTypeOrder ... type and order of interpolation
+//    void InterpolationTypeAdd(int rInterpolationTypeId, int rDegree, const Eigen::VectorXd &rKnots);
+
     //! @brief adds a dof to a interpolation type
     //! @param rInterpolationTypeId ... interpolation type id
     //! @param rDofType ... dof type
@@ -510,8 +626,18 @@ public:
     void InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder);
 
 
-#endif //SWIG
+    //! @brief adds a dof to a interpolation type
+    //! @param rInterpolationTypeId ... interpolation type id
+    //! @param rDofType ... dof type
+    //! @param rTypeOrder ... type and order of interpolation
+    void InterpolationTypeAdd(int rInterpolationTypeId,
+                              NuTo::Node::eDof rDofType,
+                              Interpolation::eTypeOrder rTypeOrder,
+                              const Eigen::VectorXi &rDegree,
+                              const std::vector<Eigen::VectorXd> &rKnots,
+                              const Eigen::MatrixXd &rWeights);
 
+#endif //SWIG
 
     //***********************************************************
     //************         Mesh routines        *****************
@@ -531,94 +657,8 @@ public:
     //! @parameters rSpheres (coordinates x,y,z and radius)
     void MeshCreateLattice3D(int rTypeOfSpecimen, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheres, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rTetraeders);
 
-    //*************************************************************
-    //************         Crack routines        ******************
-    //**  defined in structures/unstructured/StructureCrack.cpp **
-    //*************************************************************
-    //! @brief returns the number of cracks
-    //! @return number of cracks
-    unsigned int GetNumCracks() const;
 
-    //! @brief ... Info routine that prints general information about the cracks
-    //! @param ... rVerboseLevel describes how detailed the information is
-    void CrackInfo(int rVerboseLevel) const;
-
-    //! @brief ... create a new crack
-    //! @param rIdent ... crack identifier
-    int CrackCreate();
-
-    //! @brief ... create a new crack with given node-Id's
-    //! @param rNodes ... vector of node-Id's
-    int CrackCreate(NuTo::FullVector<int, Eigen::Dynamic>& rNodes);
-
-    //! @brief ... delete an existing crack
-    //! @param rIdent ... crack identifier,Eigen::Dynamic
-    void CrackDelete(int rIdent);
-
-    //! @brief ... extends an existing crack
-    //! @param rIdent (Input) ... crack identifier
-    //! @param rNode (Input) ... node Id to be attended to the crack
-    void CrackPushBack(const int rIdent, const int rNodeNumber);
-    void CrackPushFront(const int rIdent, const int rNodeNumber);
-
-    //! @brief ... shortens an existing crack
-    //! @param rIdent ... crack identifier
-    void CrackPopBack(int rIdent);
-    void CrackPopFront(int rIdent);
-
-    //! @brief ... merge all cracks to the existing structure
-    void InitiateCracks();
-    //! @brief ... merge specified crack to the existing structure
-    //! @param rIdent ... crack identifier
-    void InitiateCrack(const int rIdent);
-
-    //! @brief ... Initialize the PhantomNodeMethod to the structure
-    void InitiatePhantomNodeMethod();
-
-    //! @brief ... take cracked elements and initiate PhantomNodeMethod
-    //! @param rNumIp (Input) ... number of integration points for the new (cracked) elements
-    //! @return  ... id vector of cracked elements
-    NuTo::FullVector<int, Eigen::Dynamic> InitiatePhantomNodeMethod(int rNumIp);
-
-    //! @brief ... take cracked elements and initiate PhantomNodeMethod
-    //! @param rNumIp (Input) ... number of integration points for the new (cracked) elements
-    //! @return  ... id vector of cracked elements
-    NuTo::FullVector<int, Eigen::Dynamic> InitiatePhantomNodeMethodTriangle(int rNumIp);
 #ifndef SWIG
-    //! @brief ... extends an existing crack
-    //! @param rIdent ... crack identifier
-    //! @param rNode ... pointer to the node to be attended to the crack
-    void CrackPushBack(int rIdent, NodeBase* rNode);
-    void CrackPushFront(int rIdent, NodeBase* rNode);
-
-    //! @brief ... merge all cracks to the existing structure
-    //! @param rCrackedElems (Output) ... vector of cracked elements
-    void InitiateCracks(elementBasePtrSet_t & rCrackedElems);
-
-    //! @brief ... merge specified crack to the existing structure
-    //! @param rIdent (Input) ... crack identifier
-    //! @param rCrackedElems (Output) ... vector of cracked elements
-    void InitiateCrack(const int rIdent, elementBasePtrSet_t & rCrackedElems);
-
-    //! @brief ... Initialize the PhantomNodeMethod to the structure: rCrackedElems will be doubled after initialization
-    //! @param rCrackedElems (Input) ... vector of cracked elements
-    void InitiatePhantomNodeMethod(elementBasePtrSet_t & rCrackedElems);
-
-    //! @brief returns a reference to a crack
-    //! @param identifier
-    //! @return reference to a crack
-    CrackBase* CrackGetCrackPtr(int rIdent);
-
-    //! @brief returns a const reference to a crack
-    //! @param identifier
-    //! @return const reference to a crack
-    const CrackBase* CrackGetCrackPtr(int rIdent) const;
-
-    //! @brief gives the identifier of a crack
-    //! @param pointer to a crack
-    //! @return identifier
-    int CrackGetId(const CrackBase* rCrack) const;
-
     //! @brief copy and move the structure
     //! most of the data is kept, but e.g. nonlocal data and
     //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
@@ -707,14 +747,6 @@ protected:
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
     void GetNodesTotal(std::vector<std::pair<int, NodeBase*> >& rNodes);
-
-    //! @brief ... store all cracks of a structure in a vector
-    //! @param rElements ... vector of const crack pointer
-    void GetCracksTotal(std::vector<const CrackBase*>& rCracks) const;
-
-    //! @brief ... store all cracks of a structure in a vector
-    //! @param rElements ... vector of crack pointer
-    void GetCracksTotal(std::vector<CrackBase*>& rCracks);
 #endif
 
     //! @brief deletes a node
@@ -733,10 +765,6 @@ protected:
 
     boost::ptr_map<int, NodeBase> mNodeMap;
     boost::ptr_map<int, ElementBase> mElementMap;
-
-    //! @brief ... map storing the cracks and a pointer to the objects
-    //! @sa CrackBase
-    crackMap_t mCrackMap;
 
 private:
 

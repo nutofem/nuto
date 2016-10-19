@@ -6,26 +6,16 @@
  *      Author: ttitsche
  */
 
-#ifdef ENABLE_SERIALIZATION
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include "nuto/math/CustomBoostSerializationExtensions.h"
-#endif  // ENABLE_SERIALIZATION
-
 #include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 
 NuTo::InterpolationBase::InterpolationBase(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension) :
-    mTypeOrder(rTypeOrder),
     mDofType(rDofType),
     mIsConstitutiveInput(true),
     mIsActive(true),
     mNumDofs(-1),
     mNumNodes(-1),
+    mTypeOrder(rTypeOrder),
     mUpdateRequired(true),
     mDimension(rDimension)
 {
@@ -34,79 +24,6 @@ NuTo::InterpolationBase::InterpolationBase(Node::eDof rDofType, NuTo::Interpolat
 NuTo::Interpolation::eTypeOrder NuTo::InterpolationBase::GetTypeOrder() const
 {
     return mTypeOrder;
-}
-
-//! @brief calculate and store the shape functions and their derivatives
-//! @param rIntegrationType ... integration type
-void NuTo::InterpolationBase::UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType)
-{
-    int numIPs = rIntegrationType.GetNumIntegrationPoints();
-
-    mShapeFunctions.clear();
-    mMatrixN.clear();
-    mDerivativeShapeFunctionsNatural.clear();
-
-    mShapeFunctions.resize(numIPs);
-    mMatrixN.resize(numIPs);
-    mDerivativeShapeFunctionsNatural.resize(numIPs);
-
-    int dim = rIntegrationType.GetCoordinateDimension();
-    for (int iIP = 0; iIP < numIPs; ++iIP)
-    {
-        Eigen::VectorXd IPcoordinates;
-        switch (dim)
-        {
-        case 1:
-        {
-            double coordinate1D;
-            rIntegrationType.GetLocalIntegrationPointCoordinates1D(iIP, coordinate1D);
-            IPcoordinates.resize(1);
-            IPcoordinates(0) = coordinate1D;
-        }
-            break;
-        case 2:
-        {
-            double coordinate2D[2];
-            rIntegrationType.GetLocalIntegrationPointCoordinates2D(iIP, coordinate2D);
-            IPcoordinates = Eigen::Matrix<double, 2, 1>(coordinate2D);
-        }
-            break;
-        case 3:
-        {
-            double coordinate3D[3];
-            rIntegrationType.GetLocalIntegrationPointCoordinates3D(iIP, coordinate3D);
-            IPcoordinates = Eigen::Matrix<double, 3, 1>(coordinate3D);
-        }
-            break;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "only implemented for dimension 1,2 and 3");
-        }
-        mShapeFunctions[iIP] = CalculateShapeFunctions(IPcoordinates);
-        mMatrixN[iIP] = CalculateMatrixN(IPcoordinates);
-        mDerivativeShapeFunctionsNatural[iIP] = CalculateDerivativeShapeFunctionsNatural(IPcoordinates);
-
-    }
-    mUpdateRequired = false;
-}
-
-Eigen::MatrixXd NuTo::InterpolationBase::CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const
-{
-
-    auto shapeFunctions = CalculateShapeFunctions(rCoordinates);
-    if (GetLocalDimension() == 1) return shapeFunctions.transpose();
-
-    int numNodes = GetNumNodes();
-    int dimBlock = GetNumDofsPerNode();
-
-    assert (shapeFunctions.rows() == numNodes);
-
-    Eigen::MatrixXd matrixN(dimBlock, numNodes * dimBlock);
-    for (int iNode = 0, iBlock = 0; iNode < numNodes; ++iNode, iBlock += dimBlock)
-    {
-        matrixN.block(0, iBlock, dimBlock, dimBlock) = Eigen::MatrixXd::Identity(dimBlock, dimBlock) * shapeFunctions(iNode);
-    }
-
-    return matrixN;
 }
 
 bool NuTo::InterpolationBase::IsActive() const
@@ -155,53 +72,6 @@ int NuTo::InterpolationBase::GetSurfaceNodeIndex(int rSurface, int rNodeDofIndex
     return mSurfaceNodeIndices[rSurface][rNodeDofIndex];
 }
 
-const Eigen::VectorXd& NuTo::InterpolationBase::GetNaturalNodeCoordinates(int rNodeIndex) const
-{
-    assert(rNodeIndex < mNumNodes);
-    assert((unsigned int) rNodeIndex < mNodeCoordinates.size());
-    return mNodeCoordinates[rNodeIndex];
-}
-
-const Eigen::VectorXd& NuTo::InterpolationBase::GetShapeFunctions(int rIP) const
-{
-    assert(rIP < (int )mShapeFunctions.size());
-    assert(not mUpdateRequired);
-    return mShapeFunctions.at(rIP);
-}
-
-const Eigen::MatrixXd& NuTo::InterpolationBase::GetMatrixN(int rIP) const
-{
-    assert(rIP < (int )mMatrixN.size());
-    assert(not mUpdateRequired);
-    return mMatrixN.at(rIP);
-}
-
-const Eigen::MatrixXd& NuTo::InterpolationBase::GetDerivativeShapeFunctionsNatural(int rIP) const
-{
-    assert(rIP < (int )mDerivativeShapeFunctionsNatural.size());
-    assert(not mUpdateRequired);
-    return mDerivativeShapeFunctionsNatural.at(rIP);
-}
-
-void NuTo::InterpolationBase::CalculateSurfaceNodeIds()
-{
-    mSurfaceNodeIndices.clear();
-    mSurfaceNodeIndices.resize(GetNumSurfaces());
-    for (int iSurface = 0; iSurface < GetNumSurfaces(); ++iSurface)
-    {
-        auto& surfaceNodeIndices = mSurfaceNodeIndices[iSurface];
-        surfaceNodeIndices.reserve(GetNumSurfaceNodes(iSurface));
-
-        for (int iNode = 0; iNode < GetNumNodes(); ++iNode)
-        {
-            if (NodeIsOnSurface(iSurface, GetNaturalNodeCoordinates(iNode)))
-            {
-                surfaceNodeIndices.push_back(iNode);
-            }
-        }
-    }
-}
-
 bool NuTo::InterpolationBase::NodeIsOnSurface(int rSurface, const Eigen::VectorXd& rNaturalNodeCoordinate) const
 {
     auto surfaceEdgeCoordinates = GetSurfaceEdgesCoordinates(rSurface);
@@ -228,18 +98,6 @@ bool NuTo::InterpolationBase::NodeIsOnSurface(int rSurface, const Eigen::VectorX
     return std::abs(det) < 1.e-10;
 }
 
-void NuTo::InterpolationBase::Initialize()
-{
-    mNumNodes = CalculateNumNodes();
-    mNumDofs = mNumNodes*GetNumDofsPerNode();
-
-
-    mNodeCoordinates.resize(mNumNodes);
-    for (int i = 0; i < mNumNodes; ++i)
-        mNodeCoordinates[i] = CalculateNaturalNodeCoordinates(i);
-
-}
-
 #ifdef ENABLE_SERIALIZATION
 NuTo::InterpolationBase::InterpolationBase():
     mTypeOrder(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1),
@@ -260,19 +118,16 @@ void NuTo::InterpolationBase::serialize(Archive & ar, const unsigned int version
 #ifdef DEBUG_SERIALIZATION
     std::cout << "start serialize InterpolationBase" << std::endl;
 #endif
-    ar & boost::serialization::make_nvp("mTypeOrder", const_cast<NuTo::Interpolation::eTypeOrder&>(mTypeOrder));
     ar & boost::serialization::make_nvp("mDofType", const_cast<NuTo::Node::eDof&>(mDofType));
     ar & BOOST_SERIALIZATION_NVP(mIsConstitutiveInput);
     ar & BOOST_SERIALIZATION_NVP(mIsActive);
     ar & BOOST_SERIALIZATION_NVP(mNumDofs);
     ar & BOOST_SERIALIZATION_NVP(mNumNodes);
 
+    ar & boost::serialization::make_nvp("mTypeOrder", const_cast<NuTo::Interpolation::eTypeOrder&>(mTypeOrder));
+
     ar & BOOST_SERIALIZATION_NVP(mNodeIndices);
 
-    ar & BOOST_SERIALIZATION_NVP(mNodeCoordinates);
-    ar & BOOST_SERIALIZATION_NVP(mShapeFunctions);
-    ar & BOOST_SERIALIZATION_NVP(mMatrixN);
-    ar & BOOST_SERIALIZATION_NVP(mDerivativeShapeFunctionsNatural);
     ar & BOOST_SERIALIZATION_NVP(mSurfaceNodeIndices);
     ar & BOOST_SERIALIZATION_NVP(mUpdateRequired);
     ar & boost::serialization::make_nvp("mDimension", const_cast<int&>(mDimension));

@@ -23,23 +23,23 @@ NuTo::LoadNodeForces1D::LoadNodeForces1D(int rLoadCase, const NodeBase* rNode, d
 }
 
 // adds the load to global sub-vectors
-void NuTo::LoadNodeForces1D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const
+void NuTo::LoadNodeForces1D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rActiveDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const
 {
     if (rLoadCase!=mLoadCase)
     	return;
-    assert(rActiceDofsLoadVector.GetNumColumns()==1);
+    assert(rActiveDofsLoadVector.GetNumColumns()==1);
     assert(rDependentDofsLoadVector.GetNumColumns()==1);
     try
     {
         int dof = mNode->GetDof(Node::eDof::DISPLACEMENTS, 0);
         assert(dof >= 0);
-        if (dof < rActiceDofsLoadVector.GetNumRows())
+        if (dof < rActiveDofsLoadVector.GetNumRows())
         {
-            rActiceDofsLoadVector(dof,0) += this->mDirection * this->mValue;
+            rActiveDofsLoadVector(dof,0) += this->mDirection * this->mValue;
         }
         else
         {
-            dof -= rActiceDofsLoadVector.GetNumRows();
+            dof -= rActiveDofsLoadVector.GetNumRows();
             assert(dof < rDependentDofsLoadVector.GetNumRows());
             rDependentDofsLoadVector(dof,0) += this->mDirection * this->mValue;
         }

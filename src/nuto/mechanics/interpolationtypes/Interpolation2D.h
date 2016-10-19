@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationBaseFEM.h"
 
 namespace NuTo
 {
 
-class Interpolation2D: public InterpolationBase
+class Interpolation2D: public InterpolationBaseFEM
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -28,6 +28,11 @@ public:
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... natural surface edge coordinates
     std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const override;
+
+    Eigen::VectorXi GetSurfaceNodeIndices(int rSurface) const override
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Implemented in NuTo::InterpolationType::GetSurfaceNodeIndices.");
+    }
 
     //! @brief return the number of dofs per node depending on dimension
     int GetNumDofsPerNode() const override;

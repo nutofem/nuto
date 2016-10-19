@@ -8,6 +8,7 @@ const std::map<NuTo::Element::eElementType, std::string> NuTo::Element::GetEleme
 {
     const std::map<eElementType, std::string> map =
        {{eElementType::CONTINUUMELEMENT,"CONTINUUMELEMENT"},
+        {eElementType::CONTINUUMELEMENTIGA,"CONTINUUMELEMENTIGA"},
         {eElementType::CONTINUUMBOUNDARYELEMENT, "CONTINUUMBOUNDARYELEMENT"},
         {eElementType::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE, "CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE"},
         {eElementType::ELEMENT1DINXD, "ELEMENT1DINXD"},

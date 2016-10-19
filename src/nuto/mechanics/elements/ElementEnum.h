@@ -15,31 +15,34 @@ enum class eElementType
     CONTINUUMBOUNDARYELEMENT,                       //!< boundary of continuum element
     CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE, //!< boundary of 2D element --> 1D surface with additional node as dependency
     CONTINUUMELEMENT,                               //!< continuum element, dimension should not matter
+    CONTINUUMELEMENTIGA,                            //!< continuum element iga, dimension should not matter
     ELEMENT1DINXD,                                  //!< one dimensional element in 2D or 3D
     ELEMENT1DSPRING,                                //!< one dimensional spring element
     ELEMENT2D,                                      //!< two dimensional element
     ELEMENT2DINTERFACE,                             //!< two dimensional element
+    CONTACTINTERFACE,                               //!< conatact interface element
     ELEMENT3D,                                      //!< three dimensional element
     PLANE2D4N,
     PLANE2D3N,
 
-};
 
+};
 
 const std::map<eElementType, std::string> GetElementTypeMap();
 std::string ElementTypeToString(eElementType rType);
 eElementType ElementTypeToEnum(std::string rType);
 
+
 enum class eUpdateType
 {
     STATICDATA=0,		          //!< @ToDo[eUpdateType]: Description
     TMPSTATICDATA,		          //!< @ToDo[eUpdateType]: Description
-    CRACK,				          //!< update for crack informations
     SWITCHMULTISCALE2NONLINEAR    //!< move the fine scale model in a multiscale approach to the nonlinear part
 };
 
 enum class eOutput
 {
+    GAP_MATRIX_MORTAR,               //!< gap matrix according to mortar discretization
 	INTERNAL_GRADIENT,               //!<
 	INTERNAL_GRADIENT_ELASTIC,       //!< calculates internal gradient for the case that the state variables remain unchanged
 	EXTERNAL_GRADIENT,               //!< TODO: calculate external forces in element

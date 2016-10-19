@@ -21,6 +21,7 @@ namespace Constitutive
         template <typename T> class Leaf;
     }
 }// namespace Constitutive
+class ConstitutivePlaneState;
 
 class LocalDamageModel: public ConstitutiveBase
 {
@@ -56,6 +57,9 @@ public:
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) override;
+
+    double Evaluate2D(NuTo::ConstitutivePlaneState planeState, double oldKappa,
+            const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
 
     //! @brief Evaluate the constitutive relation in 2D
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).

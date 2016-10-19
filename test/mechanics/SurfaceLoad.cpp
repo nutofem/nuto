@@ -400,6 +400,85 @@ void SurfaceLoadQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
     std::cout << "[SurfaceLoad::SurfaceLoadQuad2D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;
 }
 
+void SurfaceLoadQuad2DIGA(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
+{
+    NuTo::Structure myStructure(2);
+    myStructure.SetShowTime(false);
+
+    int interpolationType = myStructure.InterpolationTypeCreate("IGA2D");
+
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> nodeCoords(2,4);
+
+    double lx = 2;
+    double ly = 5;
+    double thickness = 13.;
+
+    nodeCoords <<
+            0, lx, 0, -lx,
+           -ly, 0,ly, 0;
+
+
+    Eigen::Vector2i degree(1,1);
+
+    Eigen::MatrixXd weights(2,2);
+    weights << 1, 1, 1, 1;
+
+    Eigen::VectorXd knots(4);
+    knots << 0,0,1,1;
+
+    std::vector<Eigen::VectorXd> vecKnots;
+    vecKnots.push_back(knots);
+    vecKnots.push_back(knots);
+
+    myStructure.InterpolationTypeAdd(interpolationType,
+                                     NuTo::Node::eDof::COORDINATES,
+                                     NuTo::Interpolation::eTypeOrder::SPLINE,
+                                     degree,
+                                     vecKnots,
+                                     weights);
+
+    myStructure.InterpolationTypeAdd(interpolationType,
+                                     NuTo::Node::eDof::DISPLACEMENTS,
+                                     NuTo::Interpolation::eTypeOrder::SPLINE,
+                                     degree,
+                                     vecKnots,
+                                     weights);
+
+    std::set<NuTo::Node::eDof> setOfDOFS;
+    setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
+    setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
+
+    for(int i = 0; i < nodeCoords.cols(); i++)
+        myStructure.NodeCreateDOFs(0, setOfDOFS, nodeCoords.col(i));
+
+    Eigen::Matrix2d elementKnots(2,2);
+    elementKnots << 0, 1, 0, 1;
+
+    Eigen::Vector2i elementKnotIDs(2,2);
+
+    Eigen::VectorXi elementIncidence(4);
+    elementIncidence << 0, 1, 2, 3;
+
+    myStructure.ElementCreate(interpolationType,
+                               elementIncidence,
+                               elementKnots,
+                               elementKnotIDs);
+
+    int section = myStructure.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
+    myStructure.SectionSetThickness(section, thickness);
+    myStructure.ElementTotalSetSection(section);
+
+    NuTo::FullVector<double, Eigen::Dynamic> load(2);
+    load << 42.,-M_PI;
+
+//    int groupnode = myStructure.GroupCreate("Nodes");
+//    myStructure.GroupAddNode(myStructure, nodeIds.GetValue(0));
+//    myStructure.GroupAddNode(myStructure, nodeIds.GetValue(1));
+
+//    int groupelement = myStructure.GroupCreate("ELEMENTS");
+//    myStructure.LoadSurfaceConstDirectionCreate2D(0, groupelement, s, load);
+}
+
 void SurfaceLoadTetrahedron3D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
 {
     NuTo::Structure myStructure(3);
@@ -509,7 +588,6 @@ int main()
     // 4) analytical solution as reference
     try
     {
-
         HydrostaticPressureTriangle2D(      NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
         HydrostaticPressureTriangle2D(      NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
         HydrostaticPressureTriangle2D(      NuTo::Interpolation::eTypeOrder::EQUIDISTANT3);
@@ -549,9 +627,6 @@ int main()
         SurfaceLoadBrick3D(                 NuTo::Interpolation::eTypeOrder::LOBATTO2);
         SurfaceLoadBrick3D(                 NuTo::Interpolation::eTypeOrder::LOBATTO3);
         SurfaceLoadBrick3D(                 NuTo::Interpolation::eTypeOrder::LOBATTO4);
-
-
-
     }
     catch (NuTo::Exception& e)
     {

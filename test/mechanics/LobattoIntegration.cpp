@@ -21,8 +21,13 @@
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
 #include "nuto/mechanics/timeIntegration/RungeKutta4.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
-#define PRINTRESULT false
+#include <boost/filesystem.hpp>
+
+#include <set>
+
+#define PRINTRESULT true
 
 /*
  |>*----*----*----*----*  -->F
@@ -63,10 +68,14 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
     double elementBegin = 0.;
     NuTo::FullVector<double,Eigen::Dynamic> nodeCoordinates(1);
 
+    std::set<NuTo::Node::eDof> setOfDOFS;
+    setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
+    setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
+
     int node = 0;
     // first node
     nodeCoordinates(0) = factor*nodeCoordinatesFirstElement(0);
-    myStructure->NodeCreate(node, nodeCoordinates);
+    myStructure->NodeCreateDOFs(node, setOfDOFS, nodeCoordinates);
     if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) << std::endl;
     node++;
     // following nodes
@@ -76,7 +85,7 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
         {
             nodeCoordinates(0) = factor*(nodeCoordinatesFirstElement(j) + elementBegin);
             if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) << std::endl;
-            myStructure->NodeCreate(node, nodeCoordinates);
+            myStructure->NodeCreateDOFs(node, setOfDOFS, nodeCoordinates);
             node++;
         }
         elementBegin+=elementLength;
@@ -104,7 +113,7 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
         myStructure->ElementCreate(interpolationType, elementIncidence);
     }
 
-    myStructure->ElementTotalConvertToInterpolationType(1e-6,3);
+//    myStructure->ElementTotalConvertToInterpolationType(1e-6,3);
     myStructure->ElementTotalSetSection(Section);
     myStructure->ElementTotalSetConstitutiveLaw(Material);
 
@@ -119,6 +128,7 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
     /** start analysis **/
 
     myStructure->CalculateMaximumIndependentSets();
+    myStructure->NodeInfo(10);
     myStructure->NodeBuildGlobalDofs();
 
     return myStructure;
@@ -322,6 +332,17 @@ void solve(NuTo::Structure *myStructure, double solution, double tol = 1.e-6)
 
     std::cout << "Displacement last node FEM:\n" << nodeDisp << std::endl;
     std::cout << "Displacement last node analytical:\n" << solution << std::endl;
+
+    int visualizationGroup = myStructure->GroupGetElementsTotal();
+    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
+
+    std::string resultDir = "./ResultsLobatto";
+    boost::filesystem::create_directory(resultDir);
+
+    myStructure->ExportVtkDataFileElements(resultDir+"/Elements.vtu", true);
+    myStructure->ExportVtkDataFileNodes(resultDir+"/Nodes.vtu", true);
 
     if (fabs(nodeDisp - solution)/fabs(solution) > tol)
     {
