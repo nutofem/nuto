@@ -60,7 +60,7 @@ public:
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
-    ConstitutiveStaticDataBase* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const override;
+    Constitutive::StaticData::Component* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const override;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number

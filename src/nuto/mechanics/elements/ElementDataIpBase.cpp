@@ -39,8 +39,9 @@ NuTo::ElementDataIpBase::ElementDataIpBase(const ElementBase *rElement, const Nu
 		{
         case NuTo::IpData::eIpDataType::NOIPDATA:
 			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]empty\n");
-			mIpData.push_back(new IpDataEmpty());
-			break;
+#warning "This now allocates the 'wrong' data type, to be changed soon."
+            mIpData.push_back(new IpDataStaticData());
+            break;
         case NuTo::IpData::eIpDataType::STATICDATA:
 			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]STATICDATA\n");
 			mIpData.push_back(new IpDataStaticData());
@@ -73,7 +74,8 @@ NuTo::ElementDataIpBase::ElementDataIpBase(const ElementBase *rElement, int rNum
 		{
         case NuTo::IpData::eIpDataType::NOIPDATA:
 			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]empty\n");
-			mIpData.push_back(new IpDataEmpty());
+#warning "This now allocates the 'wrong' data type, to be changed soon."
+            mIpData.push_back(new IpDataStaticData());
 			break;
         case NuTo::IpData::eIpDataType::STATICDATA:
 			//printf("[NuTo::ElementDataIpBase::ElementDataIpBase]STATICDATA\n");
@@ -86,7 +88,8 @@ NuTo::ElementDataIpBase::ElementDataIpBase(const ElementBase *rElement, int rNum
 		default:
 			throw MechanicsException("[NuTo::ElementDataIpBase::ElementDataIpBase] Ip data type not known.");
 		}
-		//initialize data without constitutive law - store zeros as pointers e.g. to static data reallocation, when constitutive model is modified
+        //initialize data without constitutive law - store zeros as pointers e.g. to static data reallocation, when
+        //constitutive model is modified
 		mIpData[theIp].Initialize(rElement, (ConstitutiveBase*)0);
 	}
 }
@@ -97,49 +100,39 @@ NuTo::ElementDataIpBase::~ElementDataIpBase()
 //    std::cout << "NuTo::ElementDataIpBase::~ElementDataIpBase()" << std::endl;
 }
 
-//! @brief sets the fine scale model (deserialization from a binary file)
-void NuTo::ElementDataIpBase::SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale, double rCoordinates[2], std::string rIPName)
+//! @brief returns the weight of an integration point
+//! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+//! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+//! @param rIp number of ip
+//! @return weight
+double NuTo::ElementDataIpBase::GetIntegrationPointWeight(int rIp)const
 {
     assert(rIp<(int)mIpData.size() && rIp>=0);
-    mIpData[rIp].SetFineScaleModel(rFileName, rLengthCoarseScale, rCoordinates, rIPName);
+    if (mIntegrationType!=0)
+        return mIntegrationType->GetIntegrationPointWeight(rIp);
+    else
+        return mIpData[rIp].GetIntegrationPointWeight();
 }
 
-//! @brief sets the fine scale parameter for all ips
-//! @parameter rName name of the parameter, e.g. YoungsModulus
-//! @parameter rParameter value of the parameter
-void NuTo::ElementDataIpBase::SetFineScaleParameter(int rIp, const std::string& rName, double rParameter)
+//! @brief sets the weight of an integration point
+//! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
+//! there is no standard integration type for the element and the local coordinates are stored directly at the ip
+//! @param rIpNum number of the integration point
+//! @param weight
+void NuTo::ElementDataIpBase::SetIntegrationPointWeight(int rIp, double rWeight)
 {
     assert(rIp<(int)mIpData.size() && rIp>=0);
-    mIpData[rIp].SetFineScaleParameter(rName, rParameter);
+    mIpData[rIp].SetIntegrationPointWeight(rWeight);
 }
 
-//! @brief sets the fine scale parameter for all ips
-//! @parameter rName name of the parameter, e.g. YoungsModulus
-//! @parameter rParameter value of the parameter
-void NuTo::ElementDataIpBase::SetFineScaleParameter(int rIp, const std::string& rName, std::string rParameter)
-{
-    assert(rIp<(int)mIpData.size() && rIp>=0);
-    mIpData[rIp].SetFineScaleParameter(rName, rParameter);
-}
 
-#ifdef ENABLE_VISUALIZE
-//Visualize for all integration points the fine scale structure
-void NuTo::ElementDataIpBase::VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
-		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const
-{
-    for (unsigned int ip=0; ip<mIpData.size();ip++)
-    {
-        mIpData[ip].VisualizeIpMultiscale(rVisualize, rWhat,rVisualizeDamage);
-    }
-}
-#endif
-
-//! @brief sets the integration type of an element
-//! implemented with an exception for all elements, reimplementation required for those elements
-//! which actually need an integration type
-//! @param rElement pointer to element
-//! @param rIntegrationType pointer to integration type
-void NuTo::ElementDataIpBase::SetIntegrationType(const ElementBase* rElement, const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType)
+//! @brief Sets the integration type of an element.
+//! @note Implemented with an exception for all elements, reimplementation required for those elements which actually
+//! need an integration type
+//! @param rElement Pointer to the element.
+//! @param rIntegrationType Pointer to the integration type.
+void NuTo::ElementDataIpBase::SetIntegrationType(const ElementBase* rElement,
+        const NuTo::IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType)
 {
 	mIntegrationType = rIntegrationType;
 	mIpData.clear();
@@ -149,7 +142,8 @@ void NuTo::ElementDataIpBase::SetIntegrationType(const ElementBase* rElement, co
 		switch (rIpDataType)
 		{
         case NuTo::IpData::eIpDataType::NOIPDATA:
-			mIpData.push_back(new IpDataEmpty());
+#warning "This now allocates the 'wrong' data type, to be changed soon."
+            mIpData.push_back(new IpDataStaticData());
 			break;
         case NuTo::IpData::eIpDataType::STATICDATA:
 			mIpData.push_back(new IpDataStaticData());
@@ -197,46 +191,46 @@ NuTo::IpData::eIpDataType NuTo::ElementDataIpBase::GetIpDataType(int  rIp)const
 //! @brief returns the static data of an integration point
 //! @param rIp integration point
 //! @return static data
-NuTo::ConstitutiveStaticDataBase* NuTo::ElementDataIpBase::GetStaticData(int rIp)
+NuTo::Constitutive::StaticData::Component* NuTo::ElementDataIpBase::GetConstitutiveStaticData(int rIp)
 {
     assert(rIp<(int)mIpData.size() && rIp>=0);
-    return mIpData[rIp].GetStaticData();
+    return mIpData[rIp].GetConstitutiveStaticData();
 }
 
 //! @brief returns the static data of an integration point
 //! @param rIp integration point
 //! @return static data
-const NuTo::ConstitutiveStaticDataBase* NuTo::ElementDataIpBase::GetStaticData(int rIp)const
+const NuTo::Constitutive::StaticData::Component* NuTo::ElementDataIpBase::GetConstitutiveStaticData(int rIp)const
 {
     assert(rIp<(int)mIpData.size() && rIp>=0);
-	return mIpData[rIp].GetStaticData();
+	return mIpData[rIp].GetConstitutiveStaticData();
 }
 
 //! @brief returns the static data of an integration point
 //! @param rIp integration point
 //! @return static data
-NuTo::IpDataStaticDataBase& NuTo::ElementDataIpBase::GetStaticDataBase(int rIp)
+NuTo::IpDataStaticDataBase& NuTo::ElementDataIpBase::GetIpData(int rIp)
 {
     assert(rIp<(int)mIpData.size() && rIp>=0);
-    return mIpData[rIp].GetStaticDataBase();
+    return mIpData[rIp].GetIpData();
 }
 
 //! @brief returns the static data of an integration point
 //! @param rIp integration point
 //! @return static data
-const NuTo::IpDataStaticDataBase& NuTo::ElementDataIpBase::GetStaticDataBase(int rIp)const
+const NuTo::IpDataStaticDataBase& NuTo::ElementDataIpBase::GetIpData(int rIp) const
 {
     assert(rIp<(int)mIpData.size() && rIp>=0);
-    return mIpData[rIp].GetStaticDataBase();
+    return mIpData[rIp].GetIpData();
 }
 
 //! @brief sets the static data for an integration point of an element
 //! @param rIp integration point
 //! @param rStaticData static data
-void NuTo::ElementDataIpBase::SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData)
+void NuTo::ElementDataIpBase::SetConstitutiveStaticData(int rIp, Constitutive::StaticData::Component* rStaticData)
 {
     assert(rIp<(int)mIpData.size() && rIp>=0);
-	mIpData[rIp].SetStaticData(rStaticData);
+	mIpData[rIp].SetConstitutiveStaticData(rStaticData);
 }
 
 //! @brief returns the local coordinate of an integration point
@@ -281,31 +275,6 @@ void NuTo::ElementDataIpBase::SetLocalIntegrationPointCoordinates3D(int rIp, con
 {
     assert(rIp<(int)mIpData.size() && rIp>=0);
 	mIpData[rIp].SetLocalIntegrationPointCoordinates3D(rLocalCoordinates);
-}
-
-//! @brief returns the weight of an integration point
-//! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
-//! there is no standard integration type for the element and the local coordinates are stored directly at the ip
-//! @param rIp number of ip
-//! @return weight
-double NuTo::ElementDataIpBase::GetIntegrationPointWeight(int rIp)const
-{
-    assert(rIp<(int)mIpData.size() && rIp>=0);
-    if (mIntegrationType!=0)
-    	return mIntegrationType->GetIntegrationPointWeight(rIp);
-    else
-	    return mIpData[rIp].GetIntegrationPointWeight();
-}
-
-//! @brief sets the weight of an integration point
-//! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)
-//! there is no standard integration type for the element and the local coordinates are stored directly at the ip
-//! @param rIpNum number of the integration point
-//! @param weight
-void NuTo::ElementDataIpBase::SetIntegrationPointWeight(int rIp, double rWeight)
-{
-    assert(rIp<(int)mIpData.size() && rIp>=0);
-	mIpData[rIp].SetIntegrationPointWeight(rWeight);
 }
 
 #ifdef ENABLE_SERIALIZATION

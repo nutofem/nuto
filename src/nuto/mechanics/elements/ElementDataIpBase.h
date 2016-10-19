@@ -42,25 +42,6 @@ public:
 
 	virtual ~ElementDataIpBase();
 
-    //! @brief sets the fine scale model (deserialization from a binary file)
-    virtual void SetFineScaleModel(int rIp, std::string rFileName, double rLengthCoarseScale, double rCoordinates[2], std::string rIPName);
-
-    //! @brief sets the fine scale parameter for all ips
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    virtual void SetFineScaleParameter(int rIp, const std::string& rName, double rParameter);
-
-    //! @brief sets the fine scale parameter for all ips
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    virtual void SetFineScaleParameter(int rIp, const std::string& rName, std::string rParameter);
-
-#ifdef ENABLE_VISUALIZE
-    //Visualize for all integration points the fine scale structure
-    void VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
-    		const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const;
-#endif
-
     //! @brief sets the integration type of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
     //! which actually need an integration type
@@ -87,27 +68,27 @@ public:
     //! @brief returns the static data of an integration point
     //! @param rIp integration point
     //! @return static data
-    ConstitutiveStaticDataBase* GetStaticData(int rIp);
+    Constitutive::StaticData::Component* GetConstitutiveStaticData(int rIp);
 
     //! @brief returns the static data of an integration point
     //! @param rIp integration point
     //! @return static data
-    const ConstitutiveStaticDataBase* GetStaticData(int rIp)const;
+    const Constitutive::StaticData::Component* GetConstitutiveStaticData(int rIp) const;
 
     //! @brief returns the static data of an integration point
     //! @param rIp integration point
     //! @return static data
-    IpDataStaticDataBase& GetStaticDataBase(int rIp);
+    IpDataStaticDataBase& GetIpData(int rIp);
 
     //! @brief returns the static data of an integration point
     //! @param rIp integration point
     //! @return static data
-    const IpDataStaticDataBase& GetStaticDataBase(int rIp)const;
+    const IpDataStaticDataBase& GetIpData(int rIp) const;
 
     //! @brief sets the static data for an integration point of an element
     //! @param rIp integration point
     //! @param rStaticData static data
-    void SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData);
+    void SetConstitutiveStaticData(int rIp, Constitutive::StaticData::Component* rStaticData);
 
     //! @brief returns the local coordinate of an integration point
     //! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)

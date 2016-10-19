@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 namespace NuTo
 {
@@ -25,13 +25,9 @@ public:
     //! @param rStrain ... engineering strain
     //! @param rK ... k parameter, compressiveStrength / tensileStrength
     //! @param rNu ... poisson ratio
-    EquivalentStrainModifiedMises(const EngineeringStrain<TDim>& rStrain, double rK, double rNu);
-
-    //! @param rStrain ... engineering strain
-    //! @param rK ... k parameter, compressiveStrength / tensileStrength
-    //! @param rNu ... poisson ratio
     //! @param rSectionType ... only needed for 2D: Plane strain/ plane stress
-    EquivalentStrainModifiedMises(const EngineeringStrain<TDim>& rStrain, double rK, double rNu, eSectionType rSectionType);
+    EquivalentStrainModifiedMises(const EngineeringStrain<TDim>& rStrain, double rK, double rNu,
+            ePlaneState planeState = ePlaneState::PLANE_STRESS);
 
     //! @brief calculates the modified mises equivalent strain
 
@@ -49,7 +45,8 @@ private:
     double mJ2;
     double mA;
     double mNu;
-    eSectionType mSectionType;
+    ePlaneState mPlaneState = ePlaneState::PLANE_STRESS;
+
 
 };
 

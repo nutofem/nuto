@@ -40,44 +40,39 @@ void NuTo::ElementDataBase::SetConstitutiveLaw(const ElementBase* rElement, int 
 	throw MechanicsException("[NuTo::ElementDataBase::SetConstitutiveLaw] Not implemented for the ElementDataClass - check the allocated element data type..");
 }
 
-//! @brief returns the static data of an integration point
-//! @param rIp integration point
-//! @return static data
-NuTo::ConstitutiveStaticDataBase* NuTo::ElementDataBase::GetStaticData(int rIp)
+
+NuTo::Constitutive::StaticData::Component* NuTo::ElementDataBase::GetConstitutiveStaticData(int rIp)
 {
-	throw MechanicsException("[NuTo::ElementDataBase::GetStaticData] Not implemented for the ElementDataClass - check the allocated element data type.");
+	throw MechanicsException(__PRETTY_FUNCTION__,
+            "Not implemented for the ElementDataClass - check the allocated element data type.");
 }
 
-//! @brief returns the static data of an integration point
-//! @param rIp integration point
-//! @return static data
-const NuTo::ConstitutiveStaticDataBase* NuTo::ElementDataBase::GetStaticData(int rIp)const
+
+const NuTo::Constitutive::StaticData::Component* NuTo::ElementDataBase::GetConstitutiveStaticData(int rIp) const
 {
-	throw MechanicsException("[NuTo::ElementDataBase::GetStaticData] Not implemented for the ElementDataClass - check the allocated element data type..");
+	throw MechanicsException(__PRETTY_FUNCTION__,
+            "Not implemented for the ElementDataClass - check the allocated element data type..");
 }
 
-//! @brief returns the static data of an integration point
-//! @param rIp integration point
-//! @return static data
-NuTo::IpDataStaticDataBase& NuTo::ElementDataBase::GetStaticDataBase(int rIp)
+
+NuTo::IpDataStaticDataBase& NuTo::ElementDataBase::GetIpData(int rIp)
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for the ElementDataClass - check the allocated element data type.");
+    throw MechanicsException(__PRETTY_FUNCTION__,
+            "Not implemented for the ElementDataClass - check the allocated element data type.");
 }
 
-//! @brief returns the static data of an integration point
-//! @param rIp integration point
-//! @return static data
-const NuTo::IpDataStaticDataBase& NuTo::ElementDataBase::GetStaticDataBase(int rIp)const
+
+const NuTo::IpDataStaticDataBase& NuTo::ElementDataBase::GetIpData(int rIp) const
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for the ElementDataClass - check the allocated element data type.");
+    throw MechanicsException(__PRETTY_FUNCTION__,
+            "Not implemented for the ElementDataClass - check the allocated element data type.");
 }
 
-//! @brief sets the static data for an integration point of an element
-//! @param rIp integration point
-//! @param rStaticData static data
-void NuTo::ElementDataBase::SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData)
+
+void NuTo::ElementDataBase::SetConstitutiveStaticData(int rIp, Constitutive::StaticData::Component* rStaticData)
 {
-	throw MechanicsException("[NuTo::ElementDataBase::SetStaticData] Not implemented for the ElementDataClass - check the allocated element data type..");
+	throw MechanicsException(__PRETTY_FUNCTION__,
+            "Not implemented for the ElementDataClass - check the allocated element data type..");
 }
 
 //! @brief returns the local coordinate of an integration point

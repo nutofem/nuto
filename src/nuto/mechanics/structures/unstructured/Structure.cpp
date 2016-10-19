@@ -25,9 +25,10 @@
 #include "nuto/base/Timer.h"
 
 #include "nuto/math/SparseMatrixCSRVector2General.h"
+#include "nuto/mechanics/constitutive/staticData/Component.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataBase.h"
+
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
@@ -1642,9 +1643,8 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>&
         //set static data
         for (int countIp = 0; countIp < integrationType->GetNumIntegrationPoints(); countIp++)
         {
-            ConstitutiveStaticDataBase* clonedStaticData = oldElementPtr->GetStaticData(countIp)->Clone();
-            newElementPtr->SetStaticData(countIp, clonedStaticData);
-            //newElementPtr->SetStaticData(countIp,(oldElementPtr->GetStaticData(countIp))->Clone());
+            auto clonedStaticData = oldElementPtr->GetConstitutiveStaticData(countIp)->Clone();
+            newElementPtr->SetConstitutiveStaticData(countIp, clonedStaticData);
         }
     }
 

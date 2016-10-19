@@ -16,8 +16,14 @@
 
 namespace NuTo
 {
+    namespace Constitutive
+    {
+        namespace StaticData
+        {
+            class Component;
+        }
+    }
 
-class ConstitutiveStaticDataBase;
 class ConstitutiveBase;
 class CrackBase;
 class IntegrationTypeBase;
@@ -79,31 +85,30 @@ public:
      //! @param rIp Ip
     virtual void InitializeUpdatedConstitutiveLaw(const ElementBase* rElement,int rIp)=0;
 
-    //! @brief returns the static data of an integration point
-    //! @param rIp integration point
-    //! @return static data
-    virtual ConstitutiveStaticDataBase* GetStaticData(int rIp);
+    //! @brief Returns the constitutive static data of an integration point.
+    //! @param rIp Integration point.
+    //! @return Pointer to the static data.
+    virtual Constitutive::StaticData::Component* GetConstitutiveStaticData(int rIp);
 
-    //! @brief returns the static data of an integration point
-    //! @param rIp integration point
-    //! @return static data
-    virtual const ConstitutiveStaticDataBase* GetStaticData(int rIp)const;
+    //! @brief Returns the constitutive static data of an integration point.
+    //! @param rIp Integration point.
+    //! @return Pointer to the static data.
+    virtual const Constitutive::StaticData::Component* GetConstitutiveStaticData(int rIp) const;
 
-    //! @brief returns the static data of an integration point
-    //! @param rIp integration point
-    //! @return static data
-    virtual IpDataStaticDataBase& GetStaticDataBase(int rIp);
+    //! @brief Sets the static data for an integration point of an element.
+    //! @param rIp Integration point.
+    //! @param rStaticData Pointer to the static data.
+    virtual void SetConstitutiveStaticData(int rIp, Constitutive::StaticData::Component* rStaticData);
 
-    //! @brief returns the static data of an integration point
-    //! @param rIp integration point
-    //! @return static data
-    virtual const IpDataStaticDataBase& GetStaticDataBase(int rIp)const;
+    //! @brief Returns the static data of an integration point.
+    //! @param rIp Integration point.
+    //! @return Pointer to the static data.
+    virtual IpDataStaticDataBase& GetIpData(int rIp);
 
-
-    //! @brief sets the static data for an integration point of an element
-    //! @param rIp integration point
-    //! @param rStaticData static data
-    virtual void SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData);
+    //! @brief Returns the static data of an integration point.
+    //! @param rIp Integration point.
+    //! @return Pointer to the static data.
+    virtual const IpDataStaticDataBase& GetIpData(int rIp)const;
 
     //! @brief returns the local coordinate of an integration point
     //! usually, it is easier to use the integration type, but for some problems (lattice, XFEM)

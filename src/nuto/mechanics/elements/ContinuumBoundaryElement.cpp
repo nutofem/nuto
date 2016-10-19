@@ -19,6 +19,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationType.h"
+#include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/sections/SectionTruss.h"
 #include "nuto/mechanics/sections/SectionPlane.h"
@@ -48,13 +49,15 @@ NuTo::eError NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const ConstitutiveIn
     auto constitutiveInput  = GetConstitutiveInputMap(constitutiveOutput);
     constitutiveInput.Merge(rInput);
 
+    if (TDim == 2) AddPlaneStateToInput(constitutiveInput);
+
     for (int theIP = 0; theIP < GetNumIntegrationPoints(); theIP++)
     {
         CalculateNMatrixBMatrixDetJacobian(data, theIP);
         CalculateConstitutiveInputs(constitutiveInput, data);
+        auto staticData = GetConstitutiveStaticData(theIP);
 
-
-        eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, theIP);
+        eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, staticData, theIP);
         if (error != eError::SUCCESSFUL)
             return error;
         CalculateElementOutputs(rElementOutput, data, theIP, constitutiveInput, constitutiveOutput);
@@ -229,6 +232,12 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateConstitutiveInputs(const Con
             relativeHumidity.AsScalar() = rData.mN.at(Node::eDof::RELATIVEHUMIDITY) * rData.mNodalValues.at(Node::eDof::RELATIVEHUMIDITY);
             break;
         }
+        case Constitutive::eInput::RELATIVE_HUMIDITY_BOUNDARY:
+        {
+            auto& relativeHumidityBoundary = *static_cast<ConstitutiveScalar*>(it.second.get());
+            relativeHumidityBoundary.AsScalar() = this->GetBoundaryControlNode()->Get(Node::eDof::RELATIVEHUMIDITY);
+            break;
+        }
         case Constitutive::eInput::WATER_VOLUME_FRACTION:
         {
             auto& waterVolumeFraction = *static_cast<ConstitutiveScalar*>(it.second.get());
@@ -237,6 +246,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateConstitutiveInputs(const Con
         }
         case Constitutive::eInput::TIME_STEP:
         case Constitutive::eInput::CALCULATE_STATIC_DATA:
+        case Constitutive::eInput::PLANE_STATE:
             break;
 
         default:
@@ -682,17 +692,17 @@ void NuTo::ContinuumBoundaryElement<TDim>::Visualize(VisualizeUnstructuredGrid& 
 namespace NuTo
 {
 template<>
-NuTo::ConstitutiveStaticDataBase* ContinuumBoundaryElement<1>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
+NuTo::Constitutive::StaticData::Component* ContinuumBoundaryElement<1>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
 {
     return rConstitutiveLaw->AllocateStaticData1D(this);
 }
 template<>
-NuTo::ConstitutiveStaticDataBase* ContinuumBoundaryElement<2>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
+NuTo::Constitutive::StaticData::Component* ContinuumBoundaryElement<2>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
 {
     return rConstitutiveLaw->AllocateStaticData2D(this);
 }
 template<>
-NuTo::ConstitutiveStaticDataBase* ContinuumBoundaryElement<3>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
+NuTo::Constitutive::StaticData::Component* ContinuumBoundaryElement<3>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
 {
     return rConstitutiveLaw->AllocateStaticData3D(this);
 }

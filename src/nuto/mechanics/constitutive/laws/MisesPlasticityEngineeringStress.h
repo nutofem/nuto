@@ -1,16 +1,15 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/mechanics/constitutive/staticData/Leaf.h"
+#include "nuto/mechanics/constitutive/staticData/DataMisesPlasticity.h"
 
 namespace NuTo
 {
-class ConstitutiveIOBase;
-template <int TDim> class ConstitutiveStaticDataMisesPlasticity;
+
 template <int TDim> class EngineeringStrain;
 class Logger;
-//! @brief ... mises plasticity with isotropic and kinematic hardening
-//! @author Jörg F. Unger, ISM
-//! @date December 2009
+//! @brief Mises plasticity with isotropic and kinematic hardening.
 class MisesPlasticityEngineeringStress: public ConstitutiveBase
 {
 #ifdef ENABLE_SERIALIZATION
@@ -23,46 +22,50 @@ public:
     //! @param rConstitutiveOutput ... desired constitutive outputs
     //! @param rInterpolationType ... interpolation type to determine additional inputs
     //! @return constitutive inputs needed for the evaluation
-    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType& rInterpolationType) const override;
+    ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
+            const InterpolationType& rInterpolationType) const override;
 
-    //! @brief ... evaluate the constitutive relation in 1D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::eError Evaluate1D(ElementBase* rElement, int rIp,
+    //! @brief Evaluate the constitutive relation in 1D
+    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
+    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
+    //! @param staticData Pointer to the history data.
+    virtual NuTo::eError Evaluate1D(
             const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput) override;
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) override;
 
-    //! @brief ... evaluate the constitutive relation in 2D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::eError Evaluate2D(ElementBase* rElement, int rIp,
+    //! @brief Evaluate the constitutive relation in 2D
+    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
+    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
+    //! @param staticData Pointer to the history data.
+    virtual NuTo::eError Evaluate2D(
             const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput) override;
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) override;
 
-    //! @brief ... evaluate the constitutive relation in 3D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::eError Evaluate3D(ElementBase* rElement, int rIp,
+    //! @brief Evaluate the constitutive relation in 3D
+    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
+    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
+    //! @param staticData Pointer to the history data.
+    virtual NuTo::eError Evaluate3D(
             const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput) override;
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) override;
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData1D(const ElementBase* rElement) const;
+    Constitutive::StaticData::Component* AllocateStaticData1D(
+            const ElementBase* rElement) const override;
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData2D(const ElementBase* rElement) const;
+    Constitutive::StaticData::Component* AllocateStaticData2D(
+            const ElementBase* rElement) const override;
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const;
+    Constitutive::StaticData::Component* AllocateStaticData3D(
+            const ElementBase* rElement) const override;
 
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow ... row dof
@@ -73,33 +76,27 @@ public:
                                                 int rTimeDerivative) const override;
 
 
-    //! @brief ... performs the return mapping procedure in 3D
-    //! @param rElement ... structure
-    //! @param rIp ... integration point
-    //! @param rEngineeringStrain ... engineering strain
-    //! @param rNewStress ... new stress (if a 0-pointer is given, no values are written)
-    //! @param rNewTangent ... new tangent matrix (if a 0-pointer is given, no values are written)
-    //! @param rNewStaticData ... new static data (if a 0-pointer is given, no values are written)
-    NuTo::eError ReturnMapping2D(const ElementBase* rElement,int rIp,
+    //! @brief Performs the return mapping procedure in 2D.
+    //! @param rEngineeringStrain Engineering strain.
+    //! @param rNewStress New stress. If a `nullptr` is given, no values are written.
+    //! @param rNewTangent New tangent matrix. If a `nullptr` is given, no values are written.
+    //! @param rNewStaticData New static data. If a `nullptr` is given, no values are written.
+    NuTo::eError ReturnMapping2D(Constitutive::StaticData::DataMisesPlasticity<3>& oldStaticData,
             const EngineeringStrain<2>& rEngineeringStrain,
             ConstitutiveIOBase* rNewStress,
             ConstitutiveIOBase* rNewTangent,
-            ConstitutiveStaticDataMisesPlasticity<3>* rNewStaticData,
-            Logger& rLogger)const;
+            Constitutive::StaticData::DataMisesPlasticity<3>* rNewStaticData) const;
 
-    //! @brief ... performs the return mapping procedure in 3D
-    //! @param rElement ... structure
-    //! @param rIp ... integration point
-    //! @param rEngineeringStrain ... engineering strain
-    //! @param rNewStress ... new stress (if a 0-pointer is given, no values are written)
-    //! @param rNewTangent ... new tangent matrix (if a 0-pointer is given, no values are written)
-    //! @param rNewStaticData ... new static data (if a 0-pointer is given, no values are written)
-    NuTo::eError ReturnMapping3D(const ElementBase* rElement,int rIp,
+    //! @brief Performs the return mapping procedure in 3D.
+    //! @param rEngineeringStrain Engineering strain.
+    //! @param rNewStress New stress. If a `nullptr` is given, no values are written.
+    //! @param rNewTangent New tangent matrix. If a `nullptr` is given, no values are written.
+    //! @param rNewStaticData New static data. If a `nullptr` is given, no values are written.
+    NuTo::eError ReturnMapping3D(Constitutive::StaticData::DataMisesPlasticity<3>& oldStaticData,
     		const EngineeringStrain<3>& rEngineeringStrain,
     		ConstitutiveIOBase* rNewStress,
     		ConstitutiveIOBase* rNewTangent,
-    		ConstitutiveStaticDataMisesPlasticity<3>* rNewStaticData,
-    		Logger& rLogger)const;
+    		Constitutive::StaticData::DataMisesPlasticity<3>* rNewStaticData) const;
 
     // parameters /////////////////////////////////////////////////////////////
 
@@ -185,9 +182,6 @@ protected:
 
     //! @brief ... equivalent strain with hardening modulus
     std::vector<std::pair<double, double> > mH;
-
-    //! @brief ... thermal expansion coefficient
-    double mThermalExpansionCoefficient;
 
     //! @brief ... check yield strength is positive
     //! @param rSigma ... yield strength

@@ -1,4 +1,4 @@
-// $Id$
+#include "nuto/mechanics/elements/ElementBase.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -17,13 +17,13 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataBase.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
+#include "nuto/mechanics/constitutive/staticData/Component.h"
 #include "nuto/mechanics/constraints/ConstraintBase.h"
-#include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIp.h"
 #include "nuto/mechanics/elements/ElementDataConstitutiveIpNonlocal.h"
 #include "nuto/mechanics/elements/ElementDataEnum.h"
@@ -38,6 +38,7 @@
 #include "nuto/mechanics/groups/GroupBase.h"
 #include "nuto/mechanics/loads/LoadBase.h"
 #include "nuto/mechanics/sections/SectionBase.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/visualize/VisualizeEnum.h"
 
@@ -187,14 +188,10 @@ void NuTo::ElementBase::SetConstitutiveLaw(ConstitutiveBase* rConstitutiveLaw)
     //check compatibility between element type and constitutive law
     if (rConstitutiveLaw->CheckElementCompatibility(this->GetEnumType()))
     {
-        //printf("check element constitutive was positive.\n");
-
         mElementData->SetConstitutiveLaw(this, rConstitutiveLaw);
     } else
     {
-        std::stringstream message;
-        message << "[NuTo::ElementBase::SetConstitutiveLaw] Constitutive Law " << mStructure->ConstitutiveLawGetId(rConstitutiveLaw) << " does not match element type of element " << mStructure->ElementGetId(this) << "." << std::endl;
-        throw MechanicsException(message.str());
+        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive Law " + std::to_string(mStructure->ConstitutiveLawGetId(rConstitutiveLaw)) + " does not match element type of element " + std::to_string(mStructure->ElementGetId(this)) + ".");
     }
 }
 
@@ -355,68 +352,71 @@ double NuTo::ElementBase::GetIntegrationPointWeight(int rIpNum) const
 }
 
 template<int TDim>
-NuTo::eError NuTo::ElementBase::EvaluateConstitutiveLaw(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
-                                                               NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
-                                                               int rIP)
+NuTo::eError NuTo::ElementBase::EvaluateConstitutiveLaw(
+        const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+        NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
+        NuTo::Constitutive::StaticData::Component* staticData, int IP)
 {
     try
     {
-        ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(rIP);
+        ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(IP);
+
         for (auto& itOutput : rConstitutiveOutput)
             if(itOutput.second!=nullptr) //check nullptr because of static data
                 itOutput.second->SetIsCalculated(false);
-        eError error = constitutivePtr->Evaluate<TDim>(this, rIP, rConstitutiveInput, rConstitutiveOutput);
+        eError error = constitutivePtr->Evaluate<TDim>(rConstitutiveInput, rConstitutiveOutput, staticData);
+
         for(auto& itOutput : rConstitutiveOutput)
             if(itOutput.second!=nullptr && !itOutput.second->GetIsCalculated()) //check nullptr because of static data
-                throw MechanicsException(__PRETTY_FUNCTION__,std::string("Output ")+Constitutive::OutputToString(itOutput.first)+" not calculated by constitutive law");
+                throw MechanicsException(__PRETTY_FUNCTION__,
+                        "Output "+Constitutive::OutputToString(itOutput.first)+" not calculated by constitutive law");
+
         return error;
-    } catch (NuTo::MechanicsException& e)
+    }
+    catch (NuTo::MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "error evaluating the constitutive model.");
-        throw e;
+        throw;
     }
 }
 
-template NuTo::eError NuTo::ElementBase::EvaluateConstitutiveLaw<1>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,NuTo::ConstitutiveOutputMap& rConstitutiveOutput, int rIP);
-template NuTo::eError NuTo::ElementBase::EvaluateConstitutiveLaw<2>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,NuTo::ConstitutiveOutputMap& rConstitutiveOutput, int rIP);
-template NuTo::eError NuTo::ElementBase::EvaluateConstitutiveLaw<3>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,NuTo::ConstitutiveOutputMap& rConstitutiveOutput, int rIP);
+template NuTo::eError NuTo::ElementBase::EvaluateConstitutiveLaw<1>(const NuTo::ConstitutiveInputMap&,
+        NuTo::ConstitutiveOutputMap&, Constitutive::StaticData::Component*, int);
+template NuTo::eError NuTo::ElementBase::EvaluateConstitutiveLaw<2>(const NuTo::ConstitutiveInputMap&,
+        NuTo::ConstitutiveOutputMap&, Constitutive::StaticData::Component*, int);
+template NuTo::eError NuTo::ElementBase::EvaluateConstitutiveLaw<3>(const NuTo::ConstitutiveInputMap&,
+        NuTo::ConstitutiveOutputMap&, Constitutive::StaticData::Component*, int);
 
-//! @brief returns the static data of an integration point
-//! @param rIp integration point
-//! @return static data pointer
-const NuTo::ConstitutiveStaticDataBase* NuTo::ElementBase::GetStaticData(int rIp) const
+
+const NuTo::Constitutive::StaticData::Component* NuTo::ElementBase::GetConstitutiveStaticData(int rIp) const
 {
-    return this->mElementData->GetStaticData(rIp);
+    return this->mElementData->GetConstitutiveStaticData(rIp);
 }
 
-//! @brief returns the static data of an integration point
-//! @param rIp integration point
-//! @return static data pointer
-NuTo::ConstitutiveStaticDataBase* NuTo::ElementBase::GetStaticData(int rIp)
+
+NuTo::Constitutive::StaticData::Component* NuTo::ElementBase::GetConstitutiveStaticData(int rIp)
 {
-    return this->mElementData->GetStaticData(rIp);
+    return this->mElementData->GetConstitutiveStaticData(rIp);
 }
 
-NuTo::IpDataStaticDataBase& NuTo::ElementBase::GetStaticDataBase(int rIp)
+
+void NuTo::ElementBase::SetConstitutiveStaticData(int rIp, Constitutive::StaticData::Component* rStaticData)
 {
-    return mElementData->GetStaticDataBase(rIp);
+    return this->mElementData->SetConstitutiveStaticData(rIp, rStaticData);
 }
 
-const NuTo::IpDataStaticDataBase& NuTo::ElementBase::GetStaticDataBase(int rIp) const
+
+NuTo::IpDataStaticDataBase& NuTo::ElementBase::GetIpData(int rIp)
 {
-    return mElementData->GetStaticDataBase(rIp);
+    return mElementData->GetIpData(rIp);
 }
 
-//! @brief sets the static data for an integration point of an element
-//! @param rIp integration point
-//! @param rStaticData static data
-void NuTo::ElementBase::SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData)
+
+const NuTo::IpDataStaticDataBase& NuTo::ElementBase::GetIpData(int rIp) const
 {
-    if (rStaticData->CheckConstitutiveCompatibility(mElementData->GetConstitutiveLaw(rIp)->GetType(), this->GetEnumType()))
-        return this->mElementData->SetStaticData(rIp, rStaticData);
-    else
-        throw MechanicsException("[NuTo::ElementBase::SetStaticData] Static data is not compatible with the element and or constitutive model");
+    return mElementData->GetIpData(rIp);
 }
+
 
 const Eigen::Vector3d NuTo::ElementBase::GetGlobalIntegrationPointCoordinates(int rIpNum) const
 {
@@ -1588,4 +1588,21 @@ void NuTo::ElementBase::ReorderNodes()
     }
     if (mStructure->GetVerboseLevel() > 5)
     	mStructure->GetLogger() << "\n";
+}
+
+
+void NuTo::ElementBase::AddPlaneStateToInput(ConstitutiveInputMap& constitutiveInput) const
+{
+    auto planeState = NuTo::Constitutive::eInput::PLANE_STATE;
+    if (GetSection()->GetType() == NuTo::eSectionType::PLANE_STRESS)
+    {
+        // plane stress is default
+        constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<2>(planeState);
+    }
+    if (GetSection()->GetType() == NuTo::eSectionType::PLANE_STRAIN)
+    {
+        constitutiveInput[planeState] = ConstitutiveIOBase::makeConstitutiveIO<2>(planeState);
+        auto& value = *static_cast<ConstitutivePlaneState*>(constitutiveInput[planeState].get());
+        value.SetPlaneState(NuTo::ePlaneState::PLANE_STRAIN);
+    }
 }

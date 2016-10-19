@@ -42,7 +42,7 @@ public:
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
-    virtual ConstitutiveStaticDataBase* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const;
+    virtual Constitutive::StaticData::Component* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const;
 
 
     //! @brief returns the local dimension of the element

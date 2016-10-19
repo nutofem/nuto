@@ -713,11 +713,11 @@ public:
     //! its is a const function, since only mutuable data (instead of const) is updated (kind of temporary data)
     NuTo::eError ElementTotalUpdateTmpStaticData();
 
-    //! @brief saves static data of a all elements
-    void ElementTotalSaveStaticData();
+    //! @brief For each integration point, shift the constitutive static data one step into the past.
+    void ElementTotalShiftStaticDataToPast();
 
-    //! @brief restores static data of a all elements
-    void ElementTotalRestoreStaticData();
+    //! @brief For each integration point, shift the constitutive static data one step into the future.
+    void ElementTotalShiftStaticDataToFuture();
 
     //! @brief extrapolates static data of a all elements
     void ElementTotalExtrapolateStaticData();

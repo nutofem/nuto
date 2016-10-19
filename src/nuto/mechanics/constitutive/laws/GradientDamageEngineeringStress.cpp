@@ -1,6 +1,3 @@
-// $Id: GradientDamageEngineeringStress.cpp 612 2012-08-13 07:31:23Z unger3 $
-// GradientDamageEngineeringStress.cpp
-// created Apr 26, 2010 by Joerg F. Unger
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -15,23 +12,21 @@
 #include "nuto/mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/EquivalentStrain.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataGradientDamage.h"
 
 #include "nuto/base/ErrorEnum.h"
 #include "nuto/base/Logger.h"
 #include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
+#include "nuto/mechanics/constitutive/staticData/Leaf.h"
 #include "nuto/mechanics/elements/IpDataStaticDataBase.h"
 
-#define MAX_OMEGA 0.999
-//#define ENABLE_DEBUG
+const double MAX_OMEGA = 0.999;
 
 NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress() :
         ConstitutiveBase(),
@@ -93,23 +88,19 @@ NuTo::ConstitutiveInputMap NuTo::GradientDamageEngineeringStress::GetConstitutiv
 }
 
 NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
-        ElementBase* rElement, int rIp,
         const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput)
+        const ConstitutiveOutputMap& rConstitutiveOutput,
+        Constitutive::StaticData::Component* staticData)
 {
-    if (rElement->GetSection()->GetType() != eSectionType::TRUSS)
-        throw MechanicsException(__PRETTY_FUNCTION__, "only truss sections are implemented.");
-
     // get constitutive inputs
     const auto& engineeringStrain = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain1D();
     const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN);
+ 
+    auto& damageStaticData = *dynamic_cast<Constitutive::StaticData::Leaf<double>*>(staticData);
+    double kappa = GetCurrentStaticData(damageStaticData, rConstitutiveInput);
+    double omega = CalculateDamage(kappa);
 
-    auto elasticEngineeringStrain = EngineeringStressHelper::CalculateElasticEngineeringStrain<1>(engineeringStrain, *rElement->GetInterpolationType(), rConstitutiveInput, mThermalExpansionCoefficient);
-
-    ConstitutiveStaticDataGradientDamage currentStaticData = GetCurrentStaticData(*rElement, rIp, rConstitutiveInput);
-    double omega = CalculateDamage(currentStaticData.GetKappa());
-
-    EquivalentStrainModifiedMises<1> eeq(elasticEngineeringStrain, mCompressiveStrength/mTensileStrength, mNu);
+    EquivalentStrainModifiedMises<1> eeq(engineeringStrain, mCompressiveStrength/mTensileStrength, mNu);
     double localEqStrain = eeq.Get();
 
     bool performUpdateAtEnd = false;
@@ -123,7 +114,7 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
             ConstitutiveIOBase& engineeringStress = *itOutput.second;
             engineeringStress.AssertIsVector<1>(itOutput.first, __PRETTY_FUNCTION__);
 
-            engineeringStress[0] = (1. - omega) * mE *  elasticEngineeringStrain[0];
+            engineeringStress[0] = (1. - omega) * mE *  engineeringStrain[0];
             break;
         }
 
@@ -149,10 +140,10 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
         {
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsVector<1>(itOutput.first, __PRETTY_FUNCTION__);
-            if (nonlocalEqStrain[0] == currentStaticData.GetKappa())
+            if (nonlocalEqStrain[0] == kappa)
             {
                 // loading
-                tangent(0, 0) = -CalculateDerivativeDamage(nonlocalEqStrain[0]) * mE * elasticEngineeringStrain[0];
+                tangent(0, 0) = -CalculateDerivativeDamage(nonlocalEqStrain[0]) * mE * engineeringStrain[0];
 
             } else
             {
@@ -199,7 +190,7 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
             engineeringStress.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
 
             engineeringStress.SetZero();
-            engineeringStress[0] = (1. - omega) * mE *  elasticEngineeringStrain[0];
+            engineeringStress[0] = (1. - omega) * mE *  engineeringStrain[0];
             break;
         }
 
@@ -217,7 +208,7 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
             ConstitutiveIOBase& error = *itOutput.second;
             error.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
 
-            error[0] = CalculateStaticDataExtrapolationError(*rElement, rIp, rConstitutiveInput);
+            error[0] = CalculateStaticDataExtrapolationError(damageStaticData, rConstitutiveInput);
             break;
         }
 
@@ -244,26 +235,28 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate1D(
 
     //update history variables
     if (performUpdateAtEnd)
-        rElement->GetStaticData(rIp)->AsGradientDamage()->SetKappa(currentStaticData.GetKappa());
+        damageStaticData.SetData(kappa);
 
     return eError::SUCCESSFUL;
 }
 
 NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
-        ElementBase* rElement, int rIp,
         const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput)
+        const ConstitutiveOutputMap& rConstitutiveOutput,
+        Constitutive::StaticData::Component* staticData)
 {
     // get constitutive inputs
     const auto& engineeringStrain = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
     const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN);
+    const auto& planeState =
+        *dynamic_cast<ConstitutivePlaneState*>(rConstitutiveInput.at(Constitutive::eInput::PLANE_STATE).get());
 
-    auto elasticEngineeringStrain = EngineeringStressHelper::CalculateElasticEngineeringStrain<2>(engineeringStrain, *rElement->GetInterpolationType(), rConstitutiveInput, mThermalExpansionCoefficient);
+    auto& damageStaticData = *dynamic_cast<Constitutive::StaticData::Leaf<double>*>(staticData);
+    double kappa = GetCurrentStaticData(damageStaticData, rConstitutiveInput);
+    double omega = CalculateDamage(kappa);
 
-    ConstitutiveStaticDataGradientDamage currentStaticData = GetCurrentStaticData(*rElement, rIp, rConstitutiveInput);
-    double omega = CalculateDamage(currentStaticData.GetKappa());
-
-    EquivalentStrainModifiedMises<2> eeq(elasticEngineeringStrain, mCompressiveStrength/mTensileStrength, mNu, rElement->GetSection()->GetType());
+    EquivalentStrainModifiedMises<2> eeq(engineeringStrain, mCompressiveStrength/mTensileStrength, mNu,
+            planeState.GetPlaneState());
     double localEqStrain = eeq.Get();
 
     bool performUpdateAtEnd = false;
@@ -271,16 +264,16 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
 
     // calculate coefficients
     double C11, C12, C33;
-    switch (rElement->GetSection()->GetType())
+    switch (planeState.GetPlaneState())
     {
-    case eSectionType::PLANE_STRAIN:
+    case ePlaneState::PLANE_STRAIN:
         std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients3D(mE, mNu);
         break;
-    case eSectionType::PLANE_STRESS:
+    case ePlaneState::PLANE_STRESS:
         std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients2DPlaneStress(mE, mNu);
         break;
     default:
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "[ Invalid type of 2D section behavior found!!!");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
     }
 
 
@@ -293,9 +286,9 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
         {
             ConstitutiveIOBase& engineeringStress = *itOutput.second;
             engineeringStress.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
-            engineeringStress[0] = (1 - omega) * (C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1]);
-            engineeringStress[1] = (1 - omega) * (C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0]);
-            engineeringStress[2] = (1 - omega) *  C33 * elasticEngineeringStrain[2];
+            engineeringStress[0] = (1 - omega) * (C11 * engineeringStrain[0] + C12 * engineeringStrain[1]);
+            engineeringStress[1] = (1 - omega) * (C11 * engineeringStrain[1] + C12 * engineeringStrain[0]);
+            engineeringStress[2] = (1 - omega) *  C33 * engineeringStrain[2];
             break;
         }
 
@@ -331,13 +324,13 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
         {
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
-            if (nonlocalEqStrain[0] == currentStaticData.GetKappa())
+            if (nonlocalEqStrain[0] == kappa)
             {
                 // loading
                 double damageDerivative = CalculateDerivativeDamage(nonlocalEqStrain[0]);
-                tangent[0] = -damageDerivative * (C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1]);
-                tangent[1] = -damageDerivative * (C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0]);
-                tangent[2] = -damageDerivative * (C33 * elasticEngineeringStrain[2]);
+                tangent[0] = -damageDerivative * (C11 * engineeringStrain[0] + C12 * engineeringStrain[1]);
+                tangent[1] = -damageDerivative * (C11 * engineeringStrain[1] + C12 * engineeringStrain[0]);
+                tangent[2] = -damageDerivative * (C33 * engineeringStrain[2]);
             }
             else
             {
@@ -379,23 +372,23 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
         {
             ConstitutiveIOBase& engineeringStress3D = *itOutput.second;
             engineeringStress3D.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
-            switch (rElement->GetSection()->GetType())
+            switch (planeState.GetPlaneState())
             {
-            case eSectionType::PLANE_STRAIN:
-                engineeringStress3D[0] = (1 - omega) * (C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1]);
-                engineeringStress3D[1] = (1 - omega) * (C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0]);
-                engineeringStress3D[2] = (1 - omega) *  C12 *(elasticEngineeringStrain[0] + elasticEngineeringStrain[1]);
+            case ePlaneState::PLANE_STRAIN:
+                engineeringStress3D[0] = (1 - omega) * (C11 * engineeringStrain[0] + C12 * engineeringStrain[1]);
+                engineeringStress3D[1] = (1 - omega) * (C11 * engineeringStrain[1] + C12 * engineeringStrain[0]);
+                engineeringStress3D[2] = (1 - omega) *  C12 *(engineeringStrain[0] + engineeringStrain[1]);
                 engineeringStress3D[3] = 0.;
                 engineeringStress3D[4] = 0.;
-                engineeringStress3D[5] = (1 - omega) *  C33 * elasticEngineeringStrain[2];
+                engineeringStress3D[5] = (1 - omega) *  C33 * engineeringStrain[2];
                 break;
-            case eSectionType::PLANE_STRESS:
-                engineeringStress3D[0] = (1 - omega) * (C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1]);
-                engineeringStress3D[1] = (1 - omega) * (C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0]);
+            case ePlaneState::PLANE_STRESS:
+                engineeringStress3D[0] = (1 - omega) * (C11 * engineeringStrain[0] + C12 * engineeringStrain[1]);
+                engineeringStress3D[1] = (1 - omega) * (C11 * engineeringStrain[1] + C12 * engineeringStrain[0]);
                 engineeringStress3D[2] = 0.;
                 engineeringStress3D[3] = 0.;
                 engineeringStress3D[4] = 0.;
-                engineeringStress3D[5] = (1 - omega) * C33 * elasticEngineeringStrain[2];
+                engineeringStress3D[5] = (1 - omega) * C33 * engineeringStrain[2];
                 break;
             default:
                 throw MechanicsException(__PRETTY_FUNCTION__,"Invalid type of 2D section behavior found!!!");
@@ -405,7 +398,7 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
 
         case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
         {
-            itOutput.second->AsEngineeringStrain3D() = engineeringStrain.As3D(mNu, rElement->GetSection()->GetType());
+            itOutput.second->AsEngineeringStrain3D() = engineeringStrain.As3D(mNu, planeState.GetPlaneState());
             break;
         }
 
@@ -423,7 +416,7 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
             ConstitutiveIOBase& error = *itOutput.second;
             error.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
 
-            error[0] = CalculateStaticDataExtrapolationError(*rElement, rIp, rConstitutiveInput);
+            error[0] = CalculateStaticDataExtrapolationError(damageStaticData, rConstitutiveInput);
             break;
         }
 
@@ -437,11 +430,6 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
             performUpdateAtEnd = true;
         }
             continue;
-//        default:
-//            throw MechanicsException(
-//                    std::string(__PRETTY_FUNCTION__,"output object ") + NuTo::Constitutive::OutputToString(itOutput.first)
-//                            + std::string(" could not be calculated, check the allocated material law and the section behavior."));
-//        }
         default:
             continue;
         }
@@ -450,7 +438,7 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
 
     //update history variables
     if (performUpdateAtEnd)
-        rElement->GetStaticData(rIp)->AsGradientDamage()->SetKappa(currentStaticData.GetKappa());
+        damageStaticData.SetData(kappa);
 
     return eError::SUCCESSFUL;
 }
@@ -461,20 +449,19 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate2D(
 //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
 //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
 NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
-        ElementBase* rElement, int rIp,
         const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput)
+        const ConstitutiveOutputMap& rConstitutiveOutput,
+        Constitutive::StaticData::Component* staticData)
 {
     // get constitutive inputs
     const auto& engineeringStrain = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
     const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN);
 
-    auto elasticEngineeringStrain = EngineeringStressHelper::CalculateElasticEngineeringStrain<3>(engineeringStrain, *rElement->GetInterpolationType(), rConstitutiveInput, mThermalExpansionCoefficient);
+    auto& damageStaticData = *dynamic_cast<Constitutive::StaticData::Leaf<double>*>(staticData);
+    double kappa = GetCurrentStaticData(damageStaticData, rConstitutiveInput);
+    double omega = CalculateDamage(kappa);
 
-    ConstitutiveStaticDataGradientDamage currentStaticData = GetCurrentStaticData(*rElement, rIp, rConstitutiveInput);
-    double omega = CalculateDamage(currentStaticData.GetKappa());
-
-    EquivalentStrainModifiedMises<3> eeq(elasticEngineeringStrain, mCompressiveStrength/mTensileStrength, mNu);
+    EquivalentStrainModifiedMises<3> eeq(engineeringStrain, mCompressiveStrength/mTensileStrength, mNu);
     double localEqStrain = eeq.Get();
 
     bool performUpdateAtEnd = false;
@@ -492,12 +479,12 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
         {
             ConstitutiveIOBase& engineeringStress = *itOutput.second;
             engineeringStress.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
-            engineeringStress[0] = (1 - omega) * (C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[2]);
-            engineeringStress[1] = (1 - omega) * (C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[2]);
-            engineeringStress[2] = (1 - omega) * (C11 * elasticEngineeringStrain[2] + C12 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1]);
-            engineeringStress[3] = (1 - omega) *  C44 * elasticEngineeringStrain[3];
-            engineeringStress[4] = (1 - omega) *  C44 * elasticEngineeringStrain[4];
-            engineeringStress[5] = (1 - omega) *  C44 * elasticEngineeringStrain[5];
+            engineeringStress[0] = (1 - omega) * (C11 * engineeringStrain[0] + C12 * engineeringStrain[1] + C12 * engineeringStrain[2]);
+            engineeringStress[1] = (1 - omega) * (C11 * engineeringStrain[1] + C12 * engineeringStrain[0] + C12 * engineeringStrain[2]);
+            engineeringStress[2] = (1 - omega) * (C11 * engineeringStrain[2] + C12 * engineeringStrain[0] + C12 * engineeringStrain[1]);
+            engineeringStress[3] = (1 - omega) *  C44 * engineeringStrain[3];
+            engineeringStress[4] = (1 - omega) *  C44 * engineeringStrain[4];
+            engineeringStress[5] = (1 - omega) *  C44 * engineeringStrain[5];
             break;
         }
 
@@ -547,17 +534,17 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
 
-            if (nonlocalEqStrain[0] == currentStaticData.GetKappa())
+            if (nonlocalEqStrain[0] == kappa)
             {
                 // loading
                 double damageDerivative = CalculateDerivativeDamage(nonlocalEqStrain[0]);
-                tangent[0] = -damageDerivative * (C11 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[2] );
-                tangent[1] = -damageDerivative * (C11 * elasticEngineeringStrain[1] + C12 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[2] );
-                tangent[2] = -damageDerivative * (C11 * elasticEngineeringStrain[2] + C12 * elasticEngineeringStrain[0] + C12 * elasticEngineeringStrain[1] );
+                tangent[0] = -damageDerivative * (C11 * engineeringStrain[0] + C12 * engineeringStrain[1] + C12 * engineeringStrain[2] );
+                tangent[1] = -damageDerivative * (C11 * engineeringStrain[1] + C12 * engineeringStrain[0] + C12 * engineeringStrain[2] );
+                tangent[2] = -damageDerivative * (C11 * engineeringStrain[2] + C12 * engineeringStrain[0] + C12 * engineeringStrain[1] );
 
-                tangent[3] = -damageDerivative * (C44 * elasticEngineeringStrain[3]);
-                tangent[4] = -damageDerivative * (C44 * elasticEngineeringStrain[4]);
-                tangent[5] = -damageDerivative * (C44 * elasticEngineeringStrain[5]);
+                tangent[3] = -damageDerivative * (C44 * engineeringStrain[3]);
+                tangent[4] = -damageDerivative * (C44 * engineeringStrain[4]);
+                tangent[5] = -damageDerivative * (C44 * engineeringStrain[5]);
 
             } else
             {
@@ -609,7 +596,7 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
             ConstitutiveIOBase& error = *itOutput.second;
             error.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
 
-            error[0] = CalculateStaticDataExtrapolationError(*rElement, rIp, rConstitutiveInput);
+            error[0] = CalculateStaticDataExtrapolationError(damageStaticData, rConstitutiveInput);
             break;
         }
 
@@ -636,58 +623,49 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate3D(
 
     //update history variables
     if (performUpdateAtEnd)
-        rElement->GetStaticData(rIp)->AsGradientDamage()->SetKappa(currentStaticData.GetKappa());
+        damageStaticData.SetData(kappa);
 
     return eError::SUCCESSFUL;
 }
 
-NuTo::ConstitutiveStaticDataGradientDamage NuTo::GradientDamageEngineeringStress::GetCurrentStaticData(ElementBase& rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput) const
+double NuTo::GradientDamageEngineeringStress::GetCurrentStaticData(Constitutive::StaticData::Leaf<double>& damage,
+        const ConstitutiveInputMap& rConstitutiveInput) const
 {
     auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
     if (itCalculateStaticData == rConstitutiveInput.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "You need to specify the way the static data should be calculated (input list).");
+        throw MechanicsException(__PRETTY_FUNCTION__,
+                "You need to specify the way the static data should be calculated (input list).");
 
-    const auto& calculateStaticData = *static_cast<const ConstitutiveCalculateStaticData*>(itCalculateStaticData->second.get());
+    const auto& calculateStaticData =
+        *static_cast<const ConstitutiveCalculateStaticData*>(itCalculateStaticData->second.get());
 
     switch (calculateStaticData.GetCalculateStaticData())
     {
         case eCalculateStaticData::USE_PREVIOUS:
         {
             int index = calculateStaticData.GetIndexOfPreviousStaticData();
-            return *(rElement.GetStaticDataBase(rIp).GetStaticData(index)->AsGradientDamage());
+            return damage.GetData(index);
         }
-
         case eCalculateStaticData::EULER_BACKWARD:
         {
-            const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN);
 
             int index = calculateStaticData.GetIndexOfPreviousStaticData();
-            const ConstitutiveStaticDataGradientDamage& oldStaticData = *(rElement.GetStaticDataBase(rIp).GetStaticData(index)->AsGradientDamage());
-
-            ConstitutiveStaticDataGradientDamage newStaticData;
-            newStaticData.SetKappa(std::max(nonlocalEqStrain[0], oldStaticData.GetKappa()));
-
-            return newStaticData;
+            double oldKappa = damage.GetData(index);
+            const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN);
+            return std::max(nonlocalEqStrain[0], oldKappa);
         }
 
         case eCalculateStaticData::EULER_FORWARD:
         {
-            auto& staticData = rElement.GetStaticDataBase(rIp);
-            assert(staticData.GetNumStaticData() >= 2);
-
             auto itTimeStep = rConstitutiveInput.find(Constitutive::eInput::TIME_STEP);
             if (itTimeStep == rConstitutiveInput.end())
                 throw MechanicsException(__PRETTY_FUNCTION__, "TimeStep input needed for EULER_FORWARD.");
             const auto& timeStep = *(itTimeStep->second);
 
-            ConstitutiveStaticDataGradientDamage newStaticData;
-            double newKappa = ConstitutiveCalculateStaticData::EulerForward(
-                    staticData.GetStaticData(1)->AsGradientDamage()->GetKappa(),
-                    staticData.GetStaticData(2)->AsGradientDamage()->GetKappa(),
-                    timeStep);
+            assert(damage.GetNumData() >= 2);
 
-            newStaticData.SetKappa(newKappa);
-            return newStaticData;
+            return ConstitutiveCalculateStaticData::EulerForward(
+                    damage.GetData(1), damage.GetData(2), timeStep);
         }
 
         default:
@@ -696,7 +674,9 @@ NuTo::ConstitutiveStaticDataGradientDamage NuTo::GradientDamageEngineeringStress
 
 }
 
-double NuTo::GradientDamageEngineeringStress::CalculateStaticDataExtrapolationError(ElementBase& rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput) const
+double NuTo::GradientDamageEngineeringStress::CalculateStaticDataExtrapolationError(
+        Constitutive::StaticData::Leaf<double>& damage,
+        const ConstitutiveInputMap& rConstitutiveInput) const
 {
     // static data 0 contains the extrapolated values \tilde \kappa_n
     // static data 1 contains the implicit data \kappa_n-1
@@ -706,43 +686,34 @@ double NuTo::GradientDamageEngineeringStress::CalculateStaticDataExtrapolationEr
     if (itCalculateStaticData == rConstitutiveInput.end())
         throw MechanicsException(__PRETTY_FUNCTION__, "You need to specify the way the static data should be calculated (input list).");
 
-    const auto& ipData = rElement.GetStaticDataBase(rIp);
-
     double eeq = (*rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN))[0];
-    double k_n_t = ipData.GetStaticData(0)->AsGradientDamage()->GetKappa();
-    double k_n_1 = ipData.GetStaticData(1)->AsGradientDamage()->GetKappa();
+    double k_n_t = damage.GetData(0);
+    double k_n_1 = damage.GetData(1);
 
     double k_n = std::max(eeq, k_n_1); // calculate kappa implicitly
     return std::abs(k_n - k_n_t);
 }
 
 
-//! @brief ... create new static data object for an integration point
-//! @return ... pointer to static data object
-NuTo::ConstitutiveStaticDataBase* NuTo::GradientDamageEngineeringStress::AllocateStaticData1D(const ElementBase* rElement) const
+NuTo::Constitutive::StaticData::Component* NuTo::GradientDamageEngineeringStress::AllocateStaticData1D(
+        const ElementBase* rElement) const
 {
-    return new ConstitutiveStaticDataGradientDamage;
+    return Constitutive::StaticData::Leaf<double>::Create(0.);
 }
 
-//! @brief ... create new static data object for an integration point
-//! @return ... pointer to static data object
-NuTo::ConstitutiveStaticDataBase* NuTo::GradientDamageEngineeringStress::AllocateStaticData2D(const ElementBase* rElement) const
+NuTo::Constitutive::StaticData::Component* NuTo::GradientDamageEngineeringStress::AllocateStaticData2D(
+        const ElementBase* rElement) const
 {
-    return new ConstitutiveStaticDataGradientDamage;
+    return Constitutive::StaticData::Leaf<double>::Create(0.);
 }
 
-//! @brief ... create new static data object for an integration point
-//! @return ... pointer to static data object
-NuTo::ConstitutiveStaticDataBase* NuTo::GradientDamageEngineeringStress::AllocateStaticData3D(const ElementBase* rElement) const
+NuTo::Constitutive::StaticData::Component* NuTo::GradientDamageEngineeringStress::AllocateStaticData3D(
+        const ElementBase* rElement) const
 {
-    return new ConstitutiveStaticDataGradientDamage;
+    return Constitutive::StaticData::Leaf<double>::Create(0.);
 }
 
 
-//! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
-//! @param rDofRow ... row dof
-//! @param rDofCol ... column dof
-//! @param rTimeDerivative ... time derivative
 bool NuTo::GradientDamageEngineeringStress::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
 {
     assert(rTimeDerivative>-1);
@@ -859,9 +830,6 @@ bool NuTo::GradientDamageEngineeringStress::CheckElementCompatibility(NuTo::Elem
         return false;
     }
 }
-
-
-
 
 //! @brief ... print information about the object
 //! @param rVerboseLevel ... verbosity of the information

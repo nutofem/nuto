@@ -97,7 +97,8 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             break;
 
         case eConstitutiveType::FIBRE_MATRIX_BOND_STRESS_SLIP:
-            ConstitutiveLawPtr = new NuTo::FibreMatrixBondStressSlip();
+            // parameter is the global dimension
+            ConstitutiveLawPtr = new NuTo::FibreMatrixBondStressSlip(GetDimension());
             break;
 
         case eConstitutiveType::SHRINKAGE_CAPILLARY_STRAIN_BASED:
@@ -113,7 +114,8 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
             break;
 
          default:
-            throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                    "Constitutive law " + Constitutive::ConstitutiveTypeToString(rType) + " currently not supported.");
         }
 
         // add section to map (insert does not allow const keys!!!!)

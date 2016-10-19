@@ -10,6 +10,8 @@
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
+#include "nuto/mechanics/constitutive/staticData/Leaf.h"
+
 
 #include <iostream>
 
@@ -53,8 +55,8 @@ double EvaluateLocalDamageModelModel(const Eigen::Vector3d& rStrain, NuTo::Local
     auto& tangentStressStrain = *static_cast<NuTo::ConstitutiveMatrix<VoigtDim, VoigtDim>*>(myConstitutiveOutputMap.at(eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN).get());
     tangentStressStrain.SetZero();
 
-    NuTo::ConstitutiveStaticDataGradientDamage staticData;
-    staticData.SetKappa(0.0);
+    NuTo::Constitutive::StaticData::Leaf<double> staticData;
+    staticData.SetData(0.0);
 
     rLocalDamageModel->Evaluate2D(NuTo::eSectionType::PLANE_STRAIN, staticData, myConstitutiveInputMap, myConstitutiveOutputMap);
 

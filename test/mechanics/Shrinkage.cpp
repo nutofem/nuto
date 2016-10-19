@@ -12,9 +12,12 @@
 #include "nuto/physics/PhysicalEquationsSI.h"
 #include <array>
 #include <boost/foreach.hpp>
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataMoistureTransport.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/laws/MoistureTransport.h"
+#include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
+#include "nuto/mechanics/constitutive/staticData/Leaf.h"
+#include "nuto/mechanics/constitutive/laws/AdditiveOutput.h"
+#include "nuto/mechanics/constitutive/laws/AdditiveInputExplicit.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/mechanics/groups/GroupEnum.h"
@@ -231,15 +234,20 @@ public:
 
     void SetupStaticData()
     {
+        using namespace NuTo::Constitutive::StaticData;
         for (int i=0; i<mS.GetNumElements(); i++)
         {
             for (int theIP=0; theIP< mS.ElementGetElementPtr(i)->GetNumIntegrationPoints(); theIP++)
             {
-                NuTo::ConstitutiveStaticDataMoistureTransport *StaticData = mS.ElementGetElementPtr(i)->GetStaticData(theIP)->AsMoistureTransport();
-                StaticData->SetLastSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
-                StaticData->SetCurrentSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
-                StaticData->SetLastRelHumValue(InitialRelativeHumidity);
-                StaticData->SetSorptionHistoryDesorption(SorptionHistoryDesorption);
+                // this can't work! there are two different static data trees this is trying to handle,
+                // one for stress based and one for strain based
+                auto& multipleStaticData = *dynamic_cast<Composite*>(mS.ElementGetElementPtr(i)->GetConstitutiveStaticData(theIP));
+                auto& singleStaticData = dynamic_cast<Leaf<DataMoistureTransport>&>(multipleStaticData.GetComponent(0));
+                auto& moistureData = singleStaticData.GetData();
+                moistureData.SetLastSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
+                moistureData.SetCurrentSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
+                moistureData.SetLastRelHumValue(InitialRelativeHumidity);
+                moistureData.SetDesorption(SorptionHistoryDesorption);
             }
         }
     }
@@ -717,7 +725,8 @@ void ShrinkageTestStressBased(  std::array<int,TDim> rN,
     NuTo::ConstitutiveBase* CL_LE_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LE_ID);
     NuTo::ConstitutiveBase* CL_SCSB_Ptr = S.ConstitutiveLawGetConstitutiveLawPtr(CL_SCSB_ID);
     NuTo::ConstitutiveBase* CL_MT_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_MT_ID);
-    NuTo::ConstitutiveBase* CL_AL_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_AL_ID);
+    NuTo::AdditiveOutput* CL_AL_Ptr =
+        static_cast<NuTo::AdditiveOutput*>(S.ConstitutiveLawGetConstitutiveLawPtr(CL_AL_ID));
 
     TimeControl tCtrl;
     tCtrl.t_final = 365.0 * 24.0 * 60.0 * 60.0;
@@ -741,9 +750,9 @@ void ShrinkageTestStressBased(  std::array<int,TDim> rN,
     CL_SCSB_Ptr->SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::TEMPERATURE, TEST_TEMPERATURE);
 
 
-    CL_AL_Ptr->AddConstitutiveLaw(CL_LE_Ptr);
-    CL_AL_Ptr->AddConstitutiveLaw(CL_SCSB_Ptr);
-    CL_AL_Ptr->AddConstitutiveLaw(CL_MT_Ptr);
+    CL_AL_Ptr->AddConstitutiveLaw(*CL_MT_Ptr);
+    CL_AL_Ptr->AddConstitutiveLaw(*CL_LE_Ptr);
+    CL_AL_Ptr->AddConstitutiveLaw(*CL_SCSB_Ptr);
 
 
 
@@ -996,11 +1005,13 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
     int CL_AO_ID        = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::ADDITIVE_OUTPUT);
 
 
-    NuTo::ConstitutiveBase* CL_LE_Ptr       = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LE_ID);
-    NuTo::ConstitutiveBase* CL_SCSB_Ptr     = S.ConstitutiveLawGetConstitutiveLawPtr(CL_SCSB_ID);
-    NuTo::ConstitutiveBase* CL_AIE_Ptr      = S.ConstitutiveLawGetConstitutiveLawPtr(CL_AIE_ID);
-    NuTo::ConstitutiveBase* CL_MT_Ptr       = S.ConstitutiveLawGetConstitutiveLawPtr(CL_MT_ID);
-    NuTo::ConstitutiveBase* CL_AO_Ptr       = S.ConstitutiveLawGetConstitutiveLawPtr(CL_AO_ID);
+    auto CL_LE_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LE_ID);
+    auto CL_SCSB_Ptr = S.ConstitutiveLawGetConstitutiveLawPtr(CL_SCSB_ID);
+    auto CL_MT_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_MT_ID);
+    auto CL_AIE_Ptr =
+        static_cast<NuTo::AdditiveInputExplicit*>(S.ConstitutiveLawGetConstitutiveLawPtr(CL_AIE_ID));
+    auto CL_AO_Ptr =
+        static_cast<NuTo::AdditiveOutput*>(S.ConstitutiveLawGetConstitutiveLawPtr(CL_AO_ID));
 
     TimeControl tCtrl;
     tCtrl.t_final = 365.0 * 24.0 * 60.0 * 60.0;
@@ -1027,11 +1038,11 @@ void ShrinkageTestStrainBased(  std::array<int,TDim> rN,
 
 
 
-    CL_AIE_Ptr->AddConstitutiveLaw(CL_LE_Ptr);
-    CL_AIE_Ptr->AddConstitutiveLaw(CL_SCSB_Ptr, NuTo::Constitutive::eInput::ENGINEERING_STRAIN);
+    CL_AIE_Ptr->AddConstitutiveLaw(*CL_LE_Ptr);
+    CL_AIE_Ptr->AddConstitutiveLaw(*CL_SCSB_Ptr, NuTo::Constitutive::eInput::ENGINEERING_STRAIN);
 
-    CL_AO_Ptr->AddConstitutiveLaw(CL_AIE_Ptr);
-    CL_AO_Ptr->AddConstitutiveLaw(CL_MT_Ptr);
+    CL_AO_Ptr->AddConstitutiveLaw(*CL_MT_Ptr);
+    CL_AO_Ptr->AddConstitutiveLaw(*CL_AIE_Ptr);
 
     SetupStructure(S,testName);
     int SEC = SetupSection<TDim>(S);

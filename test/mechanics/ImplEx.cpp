@@ -6,7 +6,6 @@
 #include "nuto/mechanics/sections/SectionTruss.h"
 
 #include "nuto/mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataGradientDamage.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include "nuto/mechanics/timeIntegration/ImplEx.h"
 
@@ -21,6 +20,9 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
+
+#include "nuto/mechanics/constitutive/staticData/Leaf.h"
+
 
 #include "nuto/mechanics/elements/IpDataStaticData.h"
 #include "nuto/visualize/VisualizeEnum.h"
@@ -49,86 +51,6 @@ int SetConstitutiveLaw(NuTo::Structure& rStructure)
 //    rStructure.ConstitutiveLawSetPoissonsRatio(myNumberConstitutiveLaw, 0.0);
 
     return lawId;
-}
-
-void SaveRestoreStaticData()
-{
-    // on IP level:
-
-    NuTo::Structure s(1);
-
-
-    NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(1);
-    NuTo::FullVector<int, Eigen::Dynamic> nodes(2);
-    nodeCoordinates(0) = 0;
-    nodes(0) = s.NodeCreate(nodeCoordinates);
-    nodeCoordinates(0) = 1;
-    nodes(1) = s.NodeCreate(nodeCoordinates);
-
-    int interpolationType = s.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRUSS1D);
-    s.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-
-    NuTo::ElementBase* element = s.ElementGetElementPtr(s.ElementCreate(interpolationType, nodes, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA));
-
-    s.ElementSetConstitutiveLaw(s.ElementGetId(element), NuToTest::ImplEx::SetConstitutiveLaw(s));
-
-    NuTo::IpDataStaticDataBase& ipData = element->GetStaticDataBase(0);
-
-    ipData.GetStaticData()->AsGradientDamage()->SetKappa(42);
-    // 42 is now at the "current" static data
-
-    ipData.AllocateAdditionalStaticData(4);
-    if (ipData.GetStaticData(4)->AsGradientDamage()->GetKappa() != 42)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "AllocateAdditionalStaticData went wrong.");
-
-    if (ipData.GetNumStaticData() != 5)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "AllocateAdditionalStaticData did not allocate the right amount of data.");
-
-    ipData.GetStaticData()->AsGradientDamage()->SetKappa(1337);
-
-    ipData.SaveStaticData(); // 1337 should be at [1]
-    ipData.SaveStaticData(); // 1337 should be at [2]
-
-    if (ipData.GetStaticData(2)->AsGradientDamage()->GetKappa() != 1337)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "SaveStaticData went wrong.");
-
-    if (ipData.GetNumStaticData() != 5)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "SaveStaticData changed the number of static data (which is wrong).");
-
-
-    ipData.RestoreStaticData(); // 42 should be back at [1]
-    ipData.RestoreStaticData(); // 42 should be back at [0]
-
-    if (ipData.GetStaticData()->AsGradientDamage()->GetKappa() != 1337)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "RestoreStaticData went wrong.");
-
-    if (ipData.GetNumStaticData() != 5)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "RestoreStaticData changed the number of static data (which is wrong).");
-
-
-    // on structural level:
-
-
-    s.ElementTotalSaveStaticData(); // 1337 should be at [1]
-    s.ElementTotalSaveStaticData(); // 1337 should be at [2]
-
-    if (ipData.GetStaticData(2)->AsGradientDamage()->GetKappa() != 1337)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "SaveStaticData went wrong.");
-
-    if (ipData.GetNumStaticData() != 5)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "SaveStaticData changed the number of static data (which is wrong).");
-
-
-    s.ElementTotalRestoreStaticData(); // 42 should be back at [1]
-    s.ElementTotalRestoreStaticData(); // 42 should be back at [0]
-
-    if (ipData.GetStaticData()->AsGradientDamage()->GetKappa() != 1337)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "RestoreStaticData went wrong.");
-
-    if (ipData.GetNumStaticData() != 5)
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "RestoreStaticData changed the number of static data (which is wrong).");
-
-
 }
 
 void Extrapolate()
@@ -235,7 +157,7 @@ void ImplEx()
     double kappa_star =  kappa_i * 3;
     auto eWeak = s.ElementGetElementPtr(numElements/2.);
     for (int i = 0; i < eWeak->GetNumIntegrationPoints(); ++i)
-        eWeak->GetStaticData(i)->AsGradientDamage()->SetKappa(kappa_star);
+        dynamic_cast<NuTo::Constitutive::StaticData::Leaf<double>*>(eWeak->GetConstitutiveStaticData(i))->SetData(kappa_star);
 
 //
 //    int mySection2 = s.SectionCreate("Truss");
@@ -305,8 +227,6 @@ int main()
     try
     {
         NuTo::Timer Timer("ImplEx", true);
-
-        NuToTest::ImplEx::SaveRestoreStaticData();
 
         NuToTest::ImplEx::Extrapolate();
 

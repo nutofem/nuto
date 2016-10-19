@@ -214,8 +214,6 @@ NuTo::StructureOutputBlockVector NuTo::StructureOutputBlockMatrix::operator *(co
     return result;
 }
 
-//! @brief checks the dimensions of all the submatrices for consistency
-//! @return true if matrix dimensions are consistent, false if not
 void NuTo::StructureOutputBlockMatrix::CheckDimensions() const
 {
     JJ.CheckDimensions();
@@ -283,10 +281,8 @@ void NuTo::StructureOutputBlockMatrix::CwiseInvert()
     KK.CwiseInvert();
 }
 
-
 namespace NuTo
 {
-//! @brief output stream operator for outputs with cout or files
 std::ostream& operator<<(std::ostream &rOut, const NuTo::StructureOutputBlockMatrix &rStructureOutputBlockMatrix)
 {
     rOut << "Active Dofs --- Active Dofs" << std::endl;

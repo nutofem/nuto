@@ -166,8 +166,10 @@ NuTo::eError NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInp
 
         try
         {
+            auto staticData = GetConstitutiveStaticData(theIP);
             ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(theIP);
-            eError error = constitutivePtr->Evaluate<2>(this, theIP, constitutiveInput, constitutiveOutput);
+
+            eError error = constitutivePtr->Evaluate<2>(constitutiveInput, constitutiveOutput, staticData);
             if (error != eError::SUCCESSFUL)
                 return error;
         } catch (NuTo::MechanicsException& e)
@@ -187,7 +189,7 @@ NuTo::Element::eElementType NuTo::Element2DInterface::GetEnumType() const
 }
 
 
-NuTo::ConstitutiveStaticDataBase* NuTo::Element2DInterface::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
+NuTo::Constitutive::StaticData::Component* NuTo::Element2DInterface::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
 {
     return rConstitutiveLaw->AllocateStaticData1D(this);
 }

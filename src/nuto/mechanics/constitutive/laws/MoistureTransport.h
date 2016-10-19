@@ -6,15 +6,18 @@
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 
 
-
-
 // VHIRTHAMTODO Check deactivated routines, if they are still needed
 // VHIRTHAMTODO Rebuild CheckXYZ routines ---> CheckParameterDouble of base class
 namespace NuTo
 {
 
-class ConstitutiveStaticDataMoistureTransport;
+namespace Constitutive {
+namespace StaticData {
+class Component;
+class DataMoistureTransport;
+}}
 
+enum class eDof;
 
 //VHIRTHAMTODO make doxygen/latex description
 //! @brief ... moisture transport model
@@ -25,8 +28,7 @@ class MoistureTransport : public ConstitutiveBase
 public:
 
     //! @brief constructor
-    MoistureTransport()
-        :   ConstitutiveBase()
+    MoistureTransport() : ConstitutiveBase()
     {}
 
 
@@ -61,27 +63,29 @@ private:
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
     template <int TDim>
-    NuTo::eError EvaluateMoistureTransport(  ElementBase* rElement,
-                                                    int rIp,
-                                                    const ConstitutiveInputMap& rConstitutiveInput,
-                                                    const ConstitutiveOutputMap& rConstitutiveOutput);
+    NuTo::eError EvaluateMoistureTransport(
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData);
+
 
 public:
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData1D(const ElementBase* rElement) const override;
+    Constitutive::StaticData::Component* AllocateStaticData1D(const ElementBase* rElement) const override;
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData2D(const ElementBase* rElement) const override;
+    Constitutive::StaticData::Component* AllocateStaticData2D(const ElementBase* rElement) const override;
 
     //! @brief ... create new static data object for an integration point
     //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const override;
+    Constitutive::StaticData::Component* AllocateStaticData3D(const ElementBase* rElement) const override;
 
     //! @brief ... calculates the sorption Curve coefficients when the sorption direction has changed
-    void                                            CalculateSorptionCurveCoefficients                          (ConstitutiveStaticDataMoistureTransport* rStaticData,
-                                                                                                                 double rRelativeHumidity);
+    void CalculateSorptionCurveCoefficients(Constitutive::StaticData::DataMoistureTransport& rStaticData,
+            double rRelativeHumidity);
+
 private:
     //! @brief Checks if a value is within certain limits
     //! @param rCallingFunction ... name of the calling function
@@ -235,16 +239,12 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::eError Evaluate1D( ElementBase* rElement,
-                                            int rIp,
-                                            const ConstitutiveInputMap& rConstitutiveInput,
-                                            const ConstitutiveOutputMap& rConstitutiveOutput) override
+    virtual NuTo::eError Evaluate1D(
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) override
     {
-        return EvaluateMoistureTransport<1>(rElement,
-                                            rIp,
-                                            rConstitutiveInput,
-                                            rConstitutiveOutput);
-
+        return EvaluateMoistureTransport<1>(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
 
     //! @brief ... evaluate the constitutive relation in 2D
@@ -252,15 +252,12 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::eError Evaluate2D( ElementBase* rElement,
-                                            int rIp,
-                                            const ConstitutiveInputMap& rConstitutiveInput,
-                                            const ConstitutiveOutputMap& rConstitutiveOutput) override
+    virtual NuTo::eError Evaluate2D(
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) override
     {
-        return EvaluateMoistureTransport<2>(rElement,
-                                            rIp,
-                                            rConstitutiveInput,
-                                            rConstitutiveOutput);
+        return EvaluateMoistureTransport<2>(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
 
     //! @brief ... evaluate the constitutive relation in 3D
@@ -268,47 +265,44 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::eError Evaluate3D( ElementBase* rElement,
-                                            int rIp,
-                                            const ConstitutiveInputMap& rConstitutiveInput,
-                                            const ConstitutiveOutputMap& rConstitutiveOutput) override
+    virtual NuTo::eError Evaluate3D(
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) override
     {
-        return EvaluateMoistureTransport<3>(rElement,
-                                            rIp,
-                                            rConstitutiveInput,
-                                            rConstitutiveOutput);
+        return EvaluateMoistureTransport<3>(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
 
 
     //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
-    virtual bool                                    GetParameterBool                                            (Constitutive::eConstitutiveParameter rIdentifier) const override;
+    virtual bool GetParameterBool(Constitutive::eConstitutiveParameter rIdentifier) const override;
 
     //! @brief ... sets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
-    virtual void                                    SetParameterBool                                            (Constitutive::eConstitutiveParameter rIdentifier, bool rValue) override;
+    virtual void SetParameterBool(Constitutive::eConstitutiveParameter rIdentifier, bool rValue) override;
 
     //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
-    virtual double                                  GetParameterDouble                                          (Constitutive::eConstitutiveParameter rIdentifier) const override;
+    virtual double GetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier) const override;
 
     //! @brief ... sets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
-    virtual void                                    SetParameterDouble                                          (Constitutive::eConstitutiveParameter rIdentifier, double rValue) override;
+    virtual void SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue) override;
 
     //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
-    virtual NuTo::FullVector<double,Eigen::Dynamic> GetParameterFullVectorDouble                                (Constitutive::eConstitutiveParameter rIdentifier) const override;
+    virtual NuTo::FullVector<double,Eigen::Dynamic> GetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier) const override;
 
     //! @brief ... sets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
-    virtual void                                    SetParameterFullVectorDouble                                (Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double,Eigen::Dynamic> rValue) override;
+    virtual void SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double,Eigen::Dynamic> rValue) override;
 
 
     //VHIRTHAMTODO Check if static function better?
@@ -316,16 +310,15 @@ public:
     //! @param rRelativeHumidity ... relative humidity
     //! @param rCoeffs ... polynomial coefficients of the sorption curve
     //! @return ... equilibrium water volume fraction
-    virtual double                                  GetEquilibriumWaterVolumeFraction                          (double rRelativeHumidity,
-                                                                                                                NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const override;
+    virtual double GetEquilibriumWaterVolumeFraction(double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const override;
 
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs
     //! @param rInterpolationType ... interpolation type to determine additional inputs
     //! @return constitutive inputs needed for the evaluation
-    virtual ConstitutiveInputMap GetConstitutiveInputs( const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                        const InterpolationType& rInterpolationType) const override;
+    virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
+                                                       const InterpolationType& rInterpolationType) const override;
 
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship
@@ -339,69 +332,56 @@ public:
         return false;
     }
 
-//    //! @brief ... print information about the object
-//    //! @param rVerboseLevel ... verbosity of the information
-//    void                                            Info                                                       (unsigned short rVerboseLevel, Logger& rLogger) const;
-
 
 protected:
 
+    //! @brief Coefficients of the adsorption curve.
+    FullVector<double,Eigen::Dynamic>   mAdsorptionCoeff {{0.0, 0.0, 0.0}};
 
-    //! @brief ... Coefficients of the adsorption curve
-    FullVector<double,Eigen::Dynamic>   mAdsorptionCoeff                    {{0.0, 0.0, 0.0}};
+    //! @brief Coefficients of the desorption curve.
+    FullVector<double,Eigen::Dynamic>   mDesorptionCoeff {{0.0, 0.0, 0.0}};
 
-    //! @brief ... Coefficients of the desorption curve
-    FullVector<double,Eigen::Dynamic>   mDesorptionCoeff                    {{0.0, 0.0, 0.0}};
+    //! @brief Controls if a modified tangential stiffness should be used during Newton iteration (less terms to calculate in Hessian_0).
+    bool mEnableModifiedTangentialStiffness = false;
 
+    //! @brief Controls if the sorption hysteresis model should be used.
+    bool mEnableSorptionHysteresis = false;
 
+    //! @brief Boundary surface relative humidity diffusion coefficient.
+    double mBoundaryDiffusionCoefficientRH = 1.0;
 
-    //! @brief ... Controls if a modified tangential stiffness should be used during Newton iteration (less terms to calculate in Hessian_0)
-    bool                                mEnableModifiedTangentialStiffness  = false;
+    //! @brief Boundary surface water volume fraction diffusion coefficient.
+    double mBoundaryDiffusionCoefficientWV = 1.0;
 
-    //! @brief ... Controls if the sorption hysteresis model should be used
-    bool                                mEnableSorptionHysteresis           = false;
+    //! @brief Relative humidity diffusion coefficient \f$ D_v \f$.
+    double mDiffusionCoefficientRH = 1.0;
 
+    //! @brief Water phase diffusion coefficient \f$ D_w \f$.
+    double mDiffusionCoefficientWV = 1.0;
 
+    //! @brief Relative humidity diffusion exponent \f$ \alpha_V \f$.
+    double mDiffusionExponentRH = 1.0;
 
-    //! @brief ... Boundary surface relative humidity diffusion coefficient
-    double                              mBoundaryDiffusionCoefficientRH     = 1.0;
+    //! @brief Water volume fraction diffusion exponent \f$ \alpha_W \f$.
+    double mDiffusionExponentWV = 1.0;
 
-    //! @brief ... Boundary surface water volume fraction diffusion coefficient
-    double                              mBoundaryDiffusionCoefficientWV     = 1.0;
+    //! @brief Pore Volume Fraction of the specimen \f$ E_p \f$.
+    double mPoreVolumeFraction = 0.5;
 
-    //! @brief ... Relative humidity diffusion coefficient \f$ D_v \f$
-    double                              mDiffusionCoefficientRH             = 1.0;
+    //! @brief gradient correction when switching to adsorption.
+    double mGradientCorrDesorptionAdsorption = 0.0;
 
-    //! @brief ... Water phase diffusion coefficient \f$ D_w \f$
-    double                              mDiffusionCoefficientWV             = 1.0;
+    //! @brief gradient correction when switching to desorption.
+    double mGradientCorrAdsorptionDesorption = 0.0;
 
-    //! @brief ... Relative humidity diffusion exponent \f$ \alpha_V \f$
-    double                              mDiffusionExponentRH                = 1.0;
+    //! @brief Mass exchange rate between vapor phase and water phase \f$ R \f$.
+    double mMassExchangeRate = 1.0;
 
-    //! @brief ... Water volume fraction diffusion exponent \f$ \alpha_W \f$
-    double                              mDiffusionExponentWV                = 1.0;
+    //! @brief Density of water \f$ \rho_w \f$.
+    double mDensityWater = 1.0;
 
-    //! @brief ... Pore Volume Fraction of the specimen \f$ E_p \f$
-    double                              mPoreVolumeFraction                 = 0.5;
-
-    //! @brief ... gradient correction when switching to adsorption
-    double                              mGradientCorrDesorptionAdsorption   = 0.0;
-
-    //! @brief ... gradient correction when switching to desorption
-    double                              mGradientCorrAdsorptionDesorption   = 0.0;
-
-    //! @brief ... Mass exchange rate between vapor phase and water phase \f$ R \f$
-    double                              mMassExchangeRate                   = 1.0;
-
-    //! @brief ... Density of water \f$ \rho_w \f$
-    double                              mDensityWater                       = 1.0;
-
-    //! @brief ... Density of saturated water vapor \f$ \rho_v \f$
-    double                              mDensitySaturatedWaterVapor         = 1.0;
+    //! @brief Density of saturated water vapor \f$ \rho_v \f$.
+    double mDensitySaturatedWaterVapor = 1.0;
 
 };
-
-
 }
-
-

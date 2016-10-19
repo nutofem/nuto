@@ -1,9 +1,10 @@
 # $Id$
 SET(NuToBase_SOURCES
-  Exception.cpp
   Logger.cpp
   CallbackInterface.cpp
-)
+  serializeStream/SerializeStreamBase.cpp
+  serializeStream/SerializeStreamIn.cpp
+  serializeStream/SerializeStreamOut.cpp)
 
 SET(NuToBase_SWIG_MODULES
   ModulNuToBase

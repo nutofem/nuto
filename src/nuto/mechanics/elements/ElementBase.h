@@ -17,6 +17,13 @@
 
 namespace NuTo
 {
+
+namespace Constitutive {
+    namespace StaticData {
+        class Component;
+    }
+}
+
 class BoundaryGradientDamage1D;
 class ConstitutiveBase;
 class ConstitutiveStaticDataBase;
@@ -265,8 +272,17 @@ public:
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
     virtual eError Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rOutput)=0;
 
+    //! @brief Evaluate the constitutive law attached to an integration point.
+    //! @param rConstitutiveInput Input map of the constitutive law.
+    //! @param rConstitutiveOuput Output map of the constitutive law.
+    //! @param staticData Pointer to potential static data.
+    //! @param IP The current integration point.
     template<int TDim>
-    eError EvaluateConstitutiveLaw(const ConstitutiveInputMap &rConstitutiveInput, ConstitutiveOutputMap &rConstitutiveOutput, int rIP);
+    eError EvaluateConstitutiveLaw(
+            const ConstitutiveInputMap& rConstitutiveInput,
+            ConstitutiveOutputMap& rConstitutiveOutput,
+            NuTo::Constitutive::StaticData::Component* staticData, int IP);
+
 
     //! @brief calculates output data for the element with a standard input (EULER_BACKWARD static data)
     //! @param rOutput ...  coefficient matrix 0 1 or 2  (mass, damping and stiffness) and internal force (which includes inertia terms)
@@ -282,26 +298,27 @@ public:
 
     //! @brief Allocates static data for an integration point of an element
     //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
-    virtual ConstitutiveStaticDataBase* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const=0;
+    virtual Constitutive::StaticData::Component* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const=0;
 
-    //! @brief Returns the static data for an integration point of an element
-    //! @param rIp integration point
-    //! @return static data
-    ConstitutiveStaticDataBase* GetStaticData(int rIp);
+    //! @brief Returns the constitutive static data for an integration point of an element.
+    //! @param rIp Integration point.
+    //! @return Pointer to the static data.
+    Constitutive::StaticData::Component* GetConstitutiveStaticData(int rIp);
 
-    //! @brief Returns the static data for an integration point of an element
-    //! @param rIp integration point
-    //! @return static data
-    const ConstitutiveStaticDataBase* GetStaticData(int rIp) const;
+    //! @brief Returns the constitutive static data for an integration point of an element.
+    //! @param rIp Integration point.
+    //! @return Pointer to the static data.
+    const Constitutive::StaticData::Component* GetConstitutiveStaticData(int rIp) const;
 
-    IpDataStaticDataBase& GetStaticDataBase(int rIp);
+    //! @brief Sets the constitutive static data for an integration point of an element.
+    //! @param rIp Integration point.
+    //! @param rStaticData Pointer to the static data.
+    void SetConstitutiveStaticData(int rIp, Constitutive::StaticData::Component* rStaticData);
 
-    const IpDataStaticDataBase& GetStaticDataBase(int rIp) const;
+    IpDataStaticDataBase& GetIpData(int rIp);
 
-    //! @brief sets the static data for an integration point of an element
-    //! @param rIp integration point
-    //! @param rStaticData static data
-    void SetStaticData(int rIp, ConstitutiveStaticDataBase* rStaticData);
+    const IpDataStaticDataBase& GetIpData(int rIp) const;
+
 
     //! @brief Update the static data of an element
     //virtual eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)=0;
@@ -403,15 +420,24 @@ public:
     //! @brief returns the knots of the element
     //! @return reference on the matrix containing the knots
     virtual const Eigen::MatrixXd& GetKnots() const
-    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Only implemented in ContinuumElementIGA.");}
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Only implemented in ContinuumElementIGA.");
+    }
 
     //! @brief returns the knotIDs of the element
     //! @return reference on the vector containing the knotIDs
     virtual const Eigen::VectorXi& GetKnotIDs() const
-    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Only implemented in ContinuumElementIGA.");}
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Only implemented in ContinuumElementIGA.");
+    }
 
-    virtual Eigen::VectorXd InterpolateDofGlobalSurfaceDerivative(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative, int rDirection) const
-    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Only implemented in ContinuumElementIGA.");}
+    virtual Eigen::VectorXd InterpolateDofGlobalSurfaceDerivative(int, const Eigen::VectorXd&, int, int) const
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Only implemented in ContinuumElementIGA.");
+    }
 
     virtual const ContinuumElement<1>& AsContinuumElement1D() const
     {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<1>.");}
@@ -432,22 +458,40 @@ public:
     {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<3>.");}
 
     virtual const ContinuumElementIGA<1>& AsContinuumElementIGA1D() const
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__ , "Element is not of type ContinuumElementIGA<1>.");}
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Element is not of type ContinuumElementIGA<1>.");
+    }
 
     virtual const ContinuumElementIGA<2>& AsContinuumElementIGA2D() const
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElementIGA<2>.");}
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Element is not of type ContinuumElementIGA<2>.");
+    }
 
     virtual const ContinuumElementIGA<3>& AsContinuumElementIGA3D() const
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElementIGA<3>.");}
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Element is not of type ContinuumElementIGA<3>.");
+    }
 
     virtual ContinuumElementIGA<1>& AsContinuumElementIGA1D()
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElementIGA<1>.");}
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Element is not of type ContinuumElementIGA<1>.");
+    }
 
     virtual ContinuumElementIGA<2>& AsContinuumElementIGA2D()
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElementIGA<2>.");}
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Element is not of type ContinuumElementIGA<2>.");
+    }
 
     virtual ContinuumElementIGA<3>& AsContinuumElementIGA3D()
-    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElementIGA<3>.");}
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Element is not of type ContinuumElementIGA<3>.");
+    }
 
 
     virtual const ContinuumBoundaryElement<1>& AsContinuumBoundaryElement1D() const
@@ -553,6 +597,8 @@ protected:
     ElementDataBase *mElementData;
 
     const InterpolationType* mInterpolationType;
+
+    void AddPlaneStateToInput(ConstitutiveInputMap& input) const;
 };
 }    //namespace NuTo
 

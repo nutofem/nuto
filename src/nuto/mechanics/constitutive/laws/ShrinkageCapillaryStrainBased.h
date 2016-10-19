@@ -16,18 +16,6 @@ public:
         : ConstitutiveBase()
     {}
 
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData1D(const ElementBase* rElement) const override {return nullptr;}
-
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData2D(const ElementBase* rElement) const override  {return nullptr;}
-
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const override  {return nullptr;}
-
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow ... row dof
     //! @param rDofCol ... column dof
@@ -45,66 +33,51 @@ public:
     //! if one check fails, an exception is thrwon
     virtual void CheckParameters() const override;
 
-    //! @brief ... evaluate the constitutive relation
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    //! @brief Evaluate the constitutive relation.
+    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
+    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
+    //! @param staticData Pointer to the history data.
     template <int TDim>
-    NuTo::eError EvaluateShrinkageCapillary( ElementBase* rElement,
-                                                    int rIp,
-                                                    const ConstitutiveInputMap& rConstitutiveInput,
-                                                    const ConstitutiveOutputMap& rConstitutiveOutput);
+    NuTo::eError EvaluateShrinkageCapillary(
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData);
 
-
-    //! @brief ... evaluate the constitutive relation of every attached constitutive law in 1D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::eError Evaluate1D(ElementBase* rElement,
-                                           int rIp,
-                                           const ConstitutiveInputMap& rConstitutiveInput,
-                                           const ConstitutiveOutputMap& rConstitutiveOutput) override
+    //! @brief Evaluate the constitutive relation in 1D
+    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
+    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
+    //! @param staticData Pointer to the history data.
+    virtual NuTo::eError Evaluate1D(
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) override
     {
-        return EvaluateShrinkageCapillary<1>(rElement,
-                                             rIp,
-                                             rConstitutiveInput,
-                                             rConstitutiveOutput);
+        return EvaluateShrinkageCapillary<1>(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
 
-    //! @brief ... evaluate the constitutive relation of every attached constitutive law in 2D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::eError Evaluate2D(ElementBase* rElement,
-                                           int rIp,
-                                           const ConstitutiveInputMap& rConstitutiveInput,
-                                           const ConstitutiveOutputMap& rConstitutiveOutput) override
+    //! @brief Evaluate the constitutive relation in 2D
+    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
+    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
+    //! @param staticData Pointer to the history data.
+    virtual NuTo::eError Evaluate2D(
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) override
     {
-        return EvaluateShrinkageCapillary<2>(rElement,
-                                             rIp,
-                                             rConstitutiveInput,
-                                             rConstitutiveOutput);
+        return EvaluateShrinkageCapillary<2>(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
 
-    //! @brief ... evaluate the constitutive relation of every attached constitutive law relation in 3D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::eError Evaluate3D(ElementBase* rElement,
-                                           int rIp,
-                                           const ConstitutiveInputMap& rConstitutiveInput,
-                                           const ConstitutiveOutputMap& rConstitutiveOutput) override
+    //! @brief Evaluate the constitutive relation in 3D
+    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
+    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
+    //! @param staticData Pointer to the history data.
+    virtual NuTo::eError Evaluate3D(
+            const ConstitutiveInputMap& rConstitutiveInput,
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) override
     {
-        return EvaluateShrinkageCapillary<3>(rElement,
-                                             rIp,
-                                             rConstitutiveInput,
-                                             rConstitutiveOutput);
+        return EvaluateShrinkageCapillary<3>(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
-
 
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs

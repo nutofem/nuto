@@ -167,17 +167,17 @@ enum class eInput
     NONLOCAL_TOTAL_STRAIN_REAL_1D,      //!<
     NONLOCAL_TOTAL_STRAIN_VIRT_1D,      //!<
     RELATIVE_HUMIDITY,                  //!<
-    RELATIVE_HUMIDITY_BOUNDARY,         //!<
+    RELATIVE_HUMIDITY_BOUNDARY,         //!< control node relative humidity
     RELATIVE_HUMIDITY_DT1,              //!< first time derivative
     RELATIVE_HUMIDITY_GRADIENT,         //!<
     WATER_VOLUME_FRACTION,              //!<
-    WATER_VOLUME_FRACTION_BOUNDARY,     //!<
     WATER_VOLUME_FRACTION_DT1,          //!< first time derivative
     WATER_VOLUME_FRACTION_GRADIENT,     //!<
     INTERFACE_SLIP,                     //!<
     CRACK_PHASE_FIELD,                  //!<
     ELASTIC_ENERGY_DENSITY,             //!<
     CALCULATE_STATIC_DATA,
+    PLANE_STATE,                        //!< for telling the law whether there is plane stress or plane strain
     TIME_STEP
 };
 

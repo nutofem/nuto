@@ -1,5 +1,3 @@
-# $Id$
-
 # NuTo specific cmake macros
 #
 # Stefan Eckardt, Institute of Structural Mechanics, Bauhaus-University Weimar, August 2009
@@ -99,12 +97,7 @@ function(NUTO_SWIG_MODULE module_name interface_file install_path)
   # link library
   SWIG_LINK_LIBRARIES(${module_name} ${libraries} ${PYTHON_LIBRARIES})
   # check for unresolved symbols
-  IF( NOT WIN32 AND NOT CYGWIN )
-    SET_TARGET_PROPERTIES(${SWIG_MODULE_${module_name}_REAL_NAME} PROPERTIES LINK_FLAGS -Wl,-z,defs)
-  ENDIF( NOT WIN32 AND NOT CYGWIN )
-  IF(MINGW)
-    SET_TARGET_PROPERTIES(${SWIG_MODULE_${module_name}_REAL_NAME} PROPERTIES LINK_FLAGS "-shared -Wl,--enable-auto-import")
-  ENDIF(MINGW)
+  SET_TARGET_PROPERTIES(${SWIG_MODULE_${module_name}_REAL_NAME} PROPERTIES LINK_FLAGS -Wl,-z,defs)
   # Additional build flags for module
   SET_SOURCE_FILES_PROPERTIES("${swig_generated_file_fullname}" PROPERTIES COMPILE_FLAGS "${PYTHON_C_FLAGS}")
 

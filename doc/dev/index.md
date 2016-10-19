@@ -6,6 +6,8 @@
 
 @ref Doxygen
 
+@ref NuToSerializeStream
+
 @ref Coverage
 
 @ref BoostPtrContainer

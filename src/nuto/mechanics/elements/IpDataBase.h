@@ -1,4 +1,3 @@
-// $Id$ 
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -18,10 +17,17 @@
 namespace NuTo
 {
 class ConstitutiveBase;
-class ConstitutiveStaticDataBase;
 class ElementBase;
 class VisualizeComponentBase;
 class IpDataStaticDataBase;
+    namespace Constitutive
+    {
+        namespace StaticData
+        {
+            class Component;
+        }
+    }
+
 
 namespace IpData
 {
@@ -62,17 +68,15 @@ public :
 	//! @return nonlocal weights
 	virtual const std::vector<double>& GetNonlocalWeights(int rNonlocalElement)const;
 
-	virtual ConstitutiveStaticDataBase* GetStaticData(int rTimeStep = 0);
+	virtual Constitutive::StaticData::Component* GetConstitutiveStaticData();
 
-    virtual const ConstitutiveStaticDataBase* GetStaticData(int rTimeStep = 0)const;
+    virtual const Constitutive::StaticData::Component* GetConstitutiveStaticData() const;
 
-    virtual void SetStaticData(ConstitutiveStaticDataBase* rStaticData);
+    virtual void SetConstitutiveStaticData(Constitutive::StaticData::Component* rStaticData);
 
-    virtual IpDataStaticDataBase& GetStaticDataBase();
+    virtual IpDataStaticDataBase& GetIpData();
 
-    virtual const IpDataStaticDataBase& GetStaticDataBase() const;
-
-    virtual void AllocateAdditionalStaticData(int rNumAdditionalStaticData);
+    virtual const IpDataStaticDataBase& GetIpData() const;
 
     virtual void GetLocalIntegrationPointCoordinates2D(boost::array<double,2 >& rLocalCoordinatesFacet)const;
 
@@ -82,33 +86,12 @@ public :
 
 	virtual void SetLocalIntegrationPointCoordinates3D(const boost::array<double,3 >& rLocalCoordinatesFacet);
 
-	virtual double GetIntegrationPointWeight()const;
+    virtual double GetIntegrationPointWeight() const;
 
-	virtual void SetIntegrationPointWeight(double);
-
-
+    virtual void SetIntegrationPointWeight(double);
     //! @brief returns the enum of IP data type
     //! @return enum of IPDataType
     virtual NuTo::IpData::eIpDataType GetIpDataType()const=0;
-
-    //! @brief sets the fine scale model (deserialization from a binary file)
-    virtual void SetFineScaleModel(std::string rFileName, double rMacroLength, double rCoordinates[2], std::string rIPName);
-
-    //! @brief sets the fine scale parameter for all ips
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    virtual void SetFineScaleParameter(const std::string& rName, double rParameter);
-
-    //! @brief sets the fine scale parameter for all ips
-    //! @parameter rName name of the parameter, e.g. YoungsModulus
-    //! @parameter rParameter value of the parameter
-    virtual void SetFineScaleParameter(const std::string& rName, std::string rParameter);
-
-#ifdef ENABLE_VISUALIZE
-	//Visualize for all integration points the fine scale structure
-	virtual void VisualizeIpMultiscale(VisualizeUnstructuredGrid& rVisualize,
-			const boost::ptr_list<NuTo::VisualizeComponentBase>& rWhat, bool rVisualizeDamage)const;
-#endif
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

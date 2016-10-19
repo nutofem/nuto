@@ -30,58 +30,38 @@ public:
             const ConstitutiveOutputMap& rConstitutiveOutput,
             const InterpolationType& rInterpolationType) const override;
 
-    //! @brief Evaluate the constitutive relation in 1D.
-    //! @param rElement Element
-    //! @param rIp Integration point
+    //! @brief Evaluate the constitutive relation.
     //! @param rConstitutiveInput Input to the constitutive law
     //! @param rConstitutiveOutput Output to the constitutive law
     template<int TDim>
-    NuTo::eError Evaluate(ElementBase* rElement, int rIp,
+    NuTo::eError Evaluate(
             const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput);
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData);
 
-    virtual NuTo::eError Evaluate1D(ElementBase* rElement, int rIp,
+    NuTo::eError Evaluate1D(
             const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput) override
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) override
     {
-        return Evaluate<1>(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
+        return Evaluate<1>(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
 
-    //! @brief ... evaluate the constitutive relation in 2D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::eError Evaluate2D(ElementBase* rElement, int rIp,
+    NuTo::eError Evaluate2D(
             const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput) override
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) override
     {
-        return Evaluate<2>(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
+        return Evaluate<2>(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
 
-    //! @brief ... evaluate the constitutive relation in 3D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::eError Evaluate3D(ElementBase* rElement, int rIp,
+    NuTo::eError Evaluate3D(
             const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput) override
+            const ConstitutiveOutputMap& rConstitutiveOutput,
+            Constitutive::StaticData::Component* staticData) override
     {
-        return Evaluate<3>(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
+        return Evaluate<3>(rConstitutiveInput, rConstitutiveOutput, staticData);
     }
-
-    //! @brief Create new static data object for an integration point.
-    //! @return Pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData1D(const ElementBase* rElement) const override {return nullptr;}
-
-    //! @brief Create new static data object for an integration point.
-    //! @return Pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData2D(const ElementBase* rElement) const override  {return nullptr;}
-
-    //! @brief Create new static data object for an integration point.
-    //! @return Pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const override  {return nullptr;}
 
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow ... row dof

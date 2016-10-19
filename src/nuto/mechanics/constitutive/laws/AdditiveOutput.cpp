@@ -1,62 +1,23 @@
-#include "AdditiveOutput.h"
-#include "nuto/base/ErrorEnum.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/constitutive/laws/AdditiveOutput.h"
+#include "nuto/mechanics/constitutive/staticData/Composite.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataMultipleConstitutiveLaws.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
-
-//VHIRTHAMTODO --- maybe store possible dof combinations one time in a set when constitutive law is added instead of looping over each law every time
-void NuTo::AdditiveOutput::AddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw, NuTo::Constitutive::eInput rModiesInput)
-{
-    if(mStaticDataAllocated)
-        throw MechanicsException(__PRETTY_FUNCTION__,"All constitutive laws have to be attached before static data is allocated!");
-    mConstitutiveLaws.push_back(rConstitutiveLaw);
-    AddCalculableDofCombinations(rConstitutiveLaw);
-}
-
-void NuTo::AdditiveOutput::AddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw)
-{
-    AddConstitutiveLaw(rConstitutiveLaw, NuTo::Constitutive::eInput::NONE);
-}
-
-NuTo::ConstitutiveStaticDataBase *NuTo::AdditiveOutput::AllocateStaticData1D(const NuTo::ElementBase *rElement) const
-{
-    mStaticDataAllocated = true;
-    return new ConstitutiveStaticDataMultipleConstitutiveLaws(mConstitutiveLaws,rElement,1);
-}
-
-NuTo::ConstitutiveStaticDataBase *NuTo::AdditiveOutput::AllocateStaticData2D(const NuTo::ElementBase *rElement) const
-{
-    mStaticDataAllocated = true;
-    return new ConstitutiveStaticDataMultipleConstitutiveLaws(mConstitutiveLaws,rElement,2);
-}
-
-NuTo::ConstitutiveStaticDataBase *NuTo::AdditiveOutput::AllocateStaticData3D(const NuTo::ElementBase *rElement) const
-{
-    mStaticDataAllocated = true;
-    return new ConstitutiveStaticDataMultipleConstitutiveLaws(mConstitutiveLaws,rElement,3);
-}
-
-bool NuTo::AdditiveOutput::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
-{
-    if(mComputableDofCombinations[rTimeDerivative].find(std::pair<Node::eDof,Node::eDof>(rDofRow,rDofCol)) != mComputableDofCombinations[rTimeDerivative].end())
-        return true;
-    return false;
-}
+#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/base/ErrorEnum.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 
 template <int TDim>
-NuTo::eError NuTo::AdditiveOutput::Evaluate(NuTo::ElementBase* rElement, int rIp,
-        const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
+NuTo::eError NuTo::AdditiveOutput::Evaluate(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, Constitutive::StaticData::Component* staticData)
 {
     using namespace Constitutive;
     eError error = eError::SUCCESSFUL;
     constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
 
+    auto& localStaticData = *dynamic_cast<Constitutive::StaticData::Composite*>(staticData);
     for (auto& output : rConstitutiveOutput)
     {
         if (output.second != nullptr) output.second->SetZero();
@@ -64,7 +25,7 @@ NuTo::eError NuTo::AdditiveOutput::Evaluate(NuTo::ElementBase* rElement, int rIp
 
     try
     {
-        for(unsigned int i = 0; i < mConstitutiveLaws.size(); ++i)
+        for (unsigned int i = 0; i < mSublaws.size(); ++i)
         {
             NuTo::ConstitutiveOutputMap singleOutput;
             for (auto& output : rConstitutiveOutput)
@@ -72,7 +33,7 @@ NuTo::eError NuTo::AdditiveOutput::Evaluate(NuTo::ElementBase* rElement, int rIp
                 singleOutput[output.first] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(output.first);
             }
 
-           error = mConstitutiveLaws[i]->Evaluate<TDim>(rElement, rIp, rConstitutiveInput, singleOutput);
+            error = mSublaws[i]->Evaluate<TDim>(rConstitutiveInput, singleOutput, &localStaticData.GetComponent(i));
 
             for (const auto& output : singleOutput)
             {
@@ -153,7 +114,6 @@ NuTo::eError NuTo::AdditiveOutput::Evaluate(NuTo::ElementBase* rElement, int rIp
                     default:
                         throw Exception(__PRETTY_FUNCTION__,
                                         "Output is not implemented or can't be handled.");
-
                     } // switch outputs
                 } // if not nullptr and IsCalculated
             } // for each output
@@ -165,44 +125,6 @@ NuTo::eError NuTo::AdditiveOutput::Evaluate(NuTo::ElementBase* rElement, int rIp
         throw;
     }
     return error;
-
-}
-
-
-NuTo::eError NuTo::AdditiveOutput::Evaluate1D(NuTo::ElementBase *rElement, int rIp,
-        const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
-{
-    return NuTo::AdditiveOutput::Evaluate<1>(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
-}
-
-
-NuTo::eError NuTo::AdditiveOutput::Evaluate2D(NuTo::ElementBase *rElement, int rIp,
-        const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
-{
-    return NuTo::AdditiveOutput::Evaluate<2>(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
-}
-
-
-NuTo::eError NuTo::AdditiveOutput::Evaluate3D(NuTo::ElementBase *rElement, int rIp,
-        const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
-{
-    return NuTo::AdditiveOutput::Evaluate<3>(rElement, rIp, rConstitutiveInput, rConstitutiveOutput);
-}
-
-
-NuTo::ConstitutiveInputMap NuTo::AdditiveOutput::GetConstitutiveInputs(
-        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, const NuTo::InterpolationType &rInterpolationType) const
-{
-    ConstitutiveInputMap constitutiveInputMap;
-
-    for(unsigned int i=0; i<mConstitutiveLaws.size(); ++i)
-    {
-        ConstitutiveInputMap singleLawInputMap = mConstitutiveLaws[i]->GetConstitutiveInputs(rConstitutiveOutput,
-                                                                                             rInterpolationType);
-        constitutiveInputMap.Merge(singleLawInputMap);
-    }
-
-    return constitutiveInputMap;
 }
 
 NuTo::Constitutive::eConstitutiveType NuTo::AdditiveOutput::GetType() const
@@ -210,15 +132,9 @@ NuTo::Constitutive::eConstitutiveType NuTo::AdditiveOutput::GetType() const
     return NuTo::Constitutive::eConstitutiveType::ADDITIVE_OUTPUT;
 }
 
-
-void NuTo::AdditiveOutput::AddCalculableDofCombinations(NuTo::ConstitutiveBase *rConstitutiveLaw)
-{
-    std::set<Node::eDof> allDofs = Node::GetDofSet();
-    for (unsigned int i=0; i<mComputableDofCombinations.size(); ++i)
-        for (auto itRow : allDofs)
-            for (auto itCol : allDofs)
-            {
-                if (rConstitutiveLaw->CheckDofCombinationComputable(itRow,itCol,i))
-                        mComputableDofCombinations[i].emplace(itRow,itCol);
-            }
-}
+template NuTo::eError NuTo::AdditiveOutput::Evaluate<1>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, Constitutive::StaticData::Component* staticData);
+template NuTo::eError NuTo::AdditiveOutput::Evaluate<2>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, Constitutive::StaticData::Component* staticData);
+template NuTo::eError NuTo::AdditiveOutput::Evaluate<3>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, Constitutive::StaticData::Component* staticData);

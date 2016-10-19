@@ -1,3 +1,4 @@
+#include <typeinfo>
 #include "nuto/base/ErrorEnum.h"
 
 #include "nuto/math/FullMatrix.h"
@@ -8,6 +9,8 @@
 
 #include "nuto/mechanics/sections/SectionTruss.h"
 #include "nuto/mechanics/sections/SectionPlane.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
+
 #include "nuto/mechanics/elements/ElementOutputBase.h"
 #include "nuto/mechanics/elements/ElementOutputIpData.h"
 #include "nuto/mechanics/elements/ElementDataBase.h"
@@ -34,7 +37,9 @@
 #include "nuto/mechanics/structures/StructureBase.h"
 
 template<int TDim>
-NuTo::ContinuumElement<TDim>::ContinuumElement(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType) :
+NuTo::ContinuumElement<TDim>::ContinuumElement(const NuTo::StructureBase* rStructure,
+        const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType,
+        IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType) :
         NuTo::ElementBase::ElementBase(rStructure, rElementDataType, rIpDataType, rInterpolationType),
         mNodes(rNodes),
         mSection(nullptr)
@@ -52,14 +57,17 @@ NuTo::eError NuTo::ContinuumElement<TDim>::Evaluate(const ConstitutiveInputMap& 
     auto constitutiveOutput = GetConstitutiveOutputMap(rElementOutput);
     auto constitutiveInput = GetConstitutiveInputMap(constitutiveOutput);
 
+    if (TDim == 2) AddPlaneStateToInput(constitutiveInput);
+
     constitutiveInput.Merge(rInput);
 
     for (int theIP = 0; theIP < GetNumIntegrationPoints(); theIP++)
     {
         CalculateNMatrixBMatrixDetJacobian(data, theIP);
         CalculateConstitutiveInputs(constitutiveInput, data);
+        auto* staticData = GetConstitutiveStaticData(theIP);
 
-        eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, theIP);
+        eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, staticData, theIP);
         if (error != eError::SUCCESSFUL)
             return error;
         CalculateElementOutputs(rElementOutput, data, theIP, constitutiveInput, constitutiveOutput);
@@ -599,6 +607,7 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(ConstitutiveInput
         }
         case Constitutive::eInput::TIME_STEP:
         case Constitutive::eInput::CALCULATE_STATIC_DATA:
+        case Constitutive::eInput::PLANE_STATE:
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive input for " + Constitutive::InputToString(it.first) + " not implemented.");
@@ -1399,17 +1408,20 @@ double NuTo::ContinuumElement<3>::CalculateDetJxWeightIPxSection(double rDetJaco
 }
 
 template<>
-NuTo::ConstitutiveStaticDataBase* ContinuumElement<1>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
+NuTo::Constitutive::StaticData::Component* ContinuumElement<1>::AllocateStaticData(
+        const ConstitutiveBase* rConstitutiveLaw) const
 {
     return rConstitutiveLaw->AllocateStaticData1D(this);
 }
 template<>
-NuTo::ConstitutiveStaticDataBase* ContinuumElement<2>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
+NuTo::Constitutive::StaticData::Component* ContinuumElement<2>::AllocateStaticData(
+        const ConstitutiveBase* rConstitutiveLaw) const
 {
     return rConstitutiveLaw->AllocateStaticData2D(this);
 }
 template<>
-NuTo::ConstitutiveStaticDataBase* ContinuumElement<3>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
+NuTo::Constitutive::StaticData::Component* ContinuumElement<3>::AllocateStaticData(
+        const ConstitutiveBase* rConstitutiveLaw) const
 {
     return rConstitutiveLaw->AllocateStaticData3D(this);
 }

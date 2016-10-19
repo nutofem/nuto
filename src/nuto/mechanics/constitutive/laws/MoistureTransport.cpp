@@ -4,34 +4,24 @@
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataMoistureTransport.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/constitutive/staticData/Leaf.h"
+#include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
 #include "nuto/math/Math.h"
 
 #include <limits>
 
-
-
-
-
-
-
-//! @brief ... evaluate the constitutive relation
-//! @param rElement ... element
-//! @param rIp ... integration point
-//! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-//! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
 template <int TDim>
-NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBase *rElement,
-                                                                        int rIp,
-                                                                        const NuTo::ConstitutiveInputMap &rConstitutiveInput,
-                                                                        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
+NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport(
+        const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
+        Constitutive::StaticData::Component* staticDataIn)
 {
-
-    ConstitutiveStaticDataMoistureTransport *StaticData = (rElement->GetStaticData(rIp))->AsMoistureTransport();
+    auto& leaf = *static_cast<Constitutive::StaticData::Leaf<Constitutive::StaticData::DataMoistureTransport>*>(staticDataIn);
+    auto& staticData = leaf.GetData();
 
     // Copy input data to input struct
     InputData<TDim> inputData;
@@ -84,8 +74,6 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
         // Internal Gradient
         //-----------------------------------------------------------------------------------------
 
-
-
         case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_B:
         {
             //Asserts
@@ -100,9 +88,6 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
             break;
 
 
-
-
-
         case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_N:
         {
             //Asserts
@@ -113,19 +98,16 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
             assert(inputData.mWaterVolumeFraction_dt1   !=  std::numeric_limits<double>::min());
 
             //Calculation
+            auto currentSorptionCoeff = staticData.GetCurrentSorptionCoeff();
             Eigen::Matrix<double, 1, 1>& internalGradientRH_N = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
             internalGradientRH_N(0,0) =     mDensitySaturatedWaterVapor * (mPoreVolumeFraction - inputData.mWaterVolumeFraction)    * inputData.mRelativeHumidity_dt1
                                           - mDensitySaturatedWaterVapor *  inputData.mWaterVolumeFraction_dt1                       * inputData.mRelativeHumidity
                                           - mMassExchangeRate           *  inputData.mWaterVolumeFraction
-                                          + mMassExchangeRate           *          inputData.mRelativeHumidity * (  StaticData->mCurrentSorptionCoeff(0)
-                                                                                                                  + StaticData->mCurrentSorptionCoeff(1) * inputData.mRelativeHumidity
-                                                                                                                  + StaticData->mCurrentSorptionCoeff(2) * inputData.mRelativeHumidity * inputData.mRelativeHumidity);
+                                          + mMassExchangeRate           *          inputData.mRelativeHumidity * (  currentSorptionCoeff(0)
+                                                                                                                  + currentSorptionCoeff(1) * inputData.mRelativeHumidity
+                                                                                                                  + currentSorptionCoeff(2) * inputData.mRelativeHumidity * inputData.mRelativeHumidity);
         }
             break;
-
-
-
-
 
         case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_B:
         {
@@ -141,10 +123,6 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
         }
             break;
 
-
-
-
-
         case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_N:
         {
             //Asserts
@@ -154,21 +132,19 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
             assert(inputData.mWaterVolumeFraction_dt1   !=  std::numeric_limits<double>::min());
 
             //Calculation
+            auto currentSorptionCoeff = staticData.GetCurrentSorptionCoeff();
             Eigen::Matrix<double, 1, 1>& internalGradientWV_N = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
             internalGradientWV_N(0,0) =     mDensityWater       * inputData.mWaterVolumeFraction_dt1
                                           + mMassExchangeRate   * inputData.mWaterVolumeFraction
-                                          - mMassExchangeRate   * inputData.mRelativeHumidity   * ( StaticData->mCurrentSorptionCoeff(0)
-                                                                                                  + StaticData->mCurrentSorptionCoeff(1) * inputData.mRelativeHumidity
-                                                                                                  + StaticData->mCurrentSorptionCoeff(2) * inputData.mRelativeHumidity * inputData.mRelativeHumidity);
+                                          - mMassExchangeRate   * inputData.mRelativeHumidity   * ( currentSorptionCoeff(0)
+                                                                                                  + currentSorptionCoeff(1) * inputData.mRelativeHumidity
+                                                                                                  + currentSorptionCoeff(2) * inputData.mRelativeHumidity * inputData.mRelativeHumidity);
         }
             break;
-
-
 
         // ----------------------------------------------------------------------------------------
         // Hessian 0 (Stiffness)
         //-----------------------------------------------------------------------------------------
-
 
 
         case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_RH_BB_H0:
@@ -184,10 +160,6 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
         }
             break;
 
-
-
-
-
         case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_RH_NN_H0:
         {
             //Asserts
@@ -196,26 +168,24 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
             assert(inputData.mRelativeHumidity_dt1      !=  std::numeric_limits<double>::min());
 
             //Calculation
-            CalculateSorptionCurveCoefficients(StaticData, inputData.mRelativeHumidity);    //VHIRTHAMTODO ---> find better place to calculate, maybe in inputData
+            CalculateSorptionCurveCoefficients(staticData, inputData.mRelativeHumidity);    //VHIRTHAMTODO ---> find better place to calculate, maybe in inputData
             Eigen::Matrix<double, 1, 1>& internalGradientRH_dRH_NN_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
+            auto currentSorptionCoeff = staticData.GetCurrentSorptionCoeff();
             if(mEnableModifiedTangentialStiffness)
             {
-                internalGradientRH_dRH_NN_H0(0,0) =     mMassExchangeRate   * ( StaticData->mCurrentSorptionCoeff(0)
-                                                                              + StaticData->mCurrentSorptionCoeff(1) * inputData.mRelativeHumidity
-                                                                              + StaticData->mCurrentSorptionCoeff(2) * inputData.mRelativeHumidity * inputData.mRelativeHumidity);
+                internalGradientRH_dRH_NN_H0(0,0) = mMassExchangeRate * ( currentSorptionCoeff(0)
+                                                                        + currentSorptionCoeff(1) * inputData.mRelativeHumidity
+                                                                        + currentSorptionCoeff(2) * inputData.mRelativeHumidity * inputData.mRelativeHumidity);
             }
             else
             {
-                internalGradientRH_dRH_NN_H0(0,0) =     mMassExchangeRate   * ( StaticData->mCurrentSorptionCoeff(0)
-                                                                              + StaticData->mCurrentSorptionCoeff(1) * inputData.mRelativeHumidity * 2.0
-                                                                              + StaticData->mCurrentSorptionCoeff(2) * inputData.mRelativeHumidity * inputData.mRelativeHumidity * 3.0)
-                                                      - mDensitySaturatedWaterVapor * inputData.mRelativeHumidity_dt1;
+                internalGradientRH_dRH_NN_H0(0,0) = mMassExchangeRate * ( currentSorptionCoeff(0)
+                                                                        + currentSorptionCoeff(1) * inputData.mRelativeHumidity * 2.0
+                                                                        + currentSorptionCoeff(2) * inputData.mRelativeHumidity * inputData.mRelativeHumidity * 3.0)
+                                                    - mDensitySaturatedWaterVapor * inputData.mRelativeHumidity_dt1;
             }
         }
             break;
-
-
-
 
 
         case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_WV_BN_H0:
@@ -240,9 +210,6 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
             break;
 
 
-
-
-
         case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_WV_NN_H0:
         {
             //Asserts
@@ -263,10 +230,6 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
         }
             break;
 
-
-
-
-
         case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_RH_NN_H0:
         {
             //Asserts
@@ -274,27 +237,24 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
             assert(inputData.mRelativeHumidity          !=  std::numeric_limits<double>::min());
 
             //Calculation
-            CalculateSorptionCurveCoefficients(StaticData, inputData.mRelativeHumidity);    //VHIRTHAMTODO ---> find better place to calculate, maybe in inputData
+            CalculateSorptionCurveCoefficients(staticData, inputData.mRelativeHumidity);    //VHIRTHAMTODO ---> find better place to calculate, maybe in inputData
             Eigen::Matrix<double, 1, 1>& internalGradientWV_dRH_NN_H0 = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
+            auto currentSorptionCoeff = staticData.GetCurrentSorptionCoeff();
             if(mEnableModifiedTangentialStiffness)
             {
-                internalGradientWV_dRH_NN_H0(0,0) =   - mMassExchangeRate   * ( StaticData->mCurrentSorptionCoeff(0)
-                                                                              + StaticData->mCurrentSorptionCoeff(1) * inputData.mRelativeHumidity
-                                                                              + StaticData->mCurrentSorptionCoeff(2) * inputData.mRelativeHumidity * inputData.mRelativeHumidity);
+                internalGradientWV_dRH_NN_H0(0,0) = - mMassExchangeRate * (currentSorptionCoeff(0)
+                                                                         + currentSorptionCoeff(1) * inputData.mRelativeHumidity
+                                                                         + currentSorptionCoeff(2) * inputData.mRelativeHumidity * inputData.mRelativeHumidity);
             }
             else
             {
-                internalGradientWV_dRH_NN_H0(0,0) =   - mMassExchangeRate   * ( StaticData->mCurrentSorptionCoeff(0)
-                                                                              + StaticData->mCurrentSorptionCoeff(1) * inputData.mRelativeHumidity * 2.0
-                                                                              + StaticData->mCurrentSorptionCoeff(2) * inputData.mRelativeHumidity * inputData.mRelativeHumidity * 3.0);
+                internalGradientWV_dRH_NN_H0(0,0) = - mMassExchangeRate * (currentSorptionCoeff(0)
+                                                                         + currentSorptionCoeff(1) * inputData.mRelativeHumidity * 2.0
+                                                                         + currentSorptionCoeff(2) * inputData.mRelativeHumidity * inputData.mRelativeHumidity * 3.0);
             }
 
         }
             break;
-
-
-
-
 
         case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_WV_BB_H0:
         {
@@ -308,9 +268,6 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
                                                   * pow(inputData.mWaterVolumeFraction / mPoreVolumeFraction, mDiffusionExponentWV);
         }
             break;
-
-
-
 
 
         case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_WV_BN_H0:
@@ -336,8 +293,6 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
 
 
 
-
-
         case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_WV_NN_H0:
         {
             //Asserts
@@ -348,15 +303,9 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
             internalGradientWV_dWV_NN_H0(0,0) =     mMassExchangeRate;
         }
             break;
-
-
-
-
-
         // ----------------------------------------------------------------------------------------
         // Hessian 1 (Damping)
         //-----------------------------------------------------------------------------------------
-
 
         case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_RH_NN_H1:
         {
@@ -369,9 +318,6 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
             internalGradientRH_dRH_NN_H1(0,0) =     mDensitySaturatedWaterVapor     * (mPoreVolumeFraction  - inputData.mWaterVolumeFraction);
         }
             break;
-
-
-
 
 
         case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_WV_NN_H1:
@@ -387,9 +333,6 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
             break;
 
 
-
-
-
         case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_WV_NN_H1:
         {
             //Asserts
@@ -401,11 +344,9 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
         }
             break;
 
-
         // ----------------------------------------------------------------------------------------
         // Boundary - Internal Gradient
         //-----------------------------------------------------------------------------------------
-
         //VHIRTHAMTODO --- Check everything again --- asserts missing etc.
 
         case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N:
@@ -416,15 +357,10 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
             //Calculation
             Eigen::Matrix<double, 1, 1>& internalGradientRH_Boundary_N = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
 
-            double relativeHumidityBoundary = rElement->GetBoundaryControlNode()->Get(Node::eDof::RELATIVEHUMIDITY).at(0,0);
+            double relativeHumidityBoundary = (*rConstitutiveInput.at(Constitutive::eInput::RELATIVE_HUMIDITY_BOUNDARY))[0]; //mControlNode->Get(Node::eDof::RELATIVEHUMIDITY).at(0,0);
             internalGradientRH_Boundary_N(0,0) =    mBoundaryDiffusionCoefficientRH * (inputData.mRelativeHumidity - relativeHumidityBoundary);
         }
             break;
-
-
-
-
-
         case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N:
         {
             //Asserts
@@ -433,14 +369,12 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
             //Calculation
             Eigen::Matrix<double, 1, 1>& internalGradientWV_Boundary_N = (*static_cast<ConstitutiveScalar*>(itOutput.second.get())).AsScalar();
 
-            double waterVolumeFractionBoundary = GetEquilibriumWaterVolumeFraction(rElement->GetBoundaryControlNode()->Get(Node::eDof::RELATIVEHUMIDITY).at(0,0),
-                                                                                   StaticData->GetCurrentSorptionCoeff());
+            double waterVolumeFractionBoundary = GetEquilibriumWaterVolumeFraction(
+                    (*rConstitutiveInput.at(Constitutive::eInput::RELATIVE_HUMIDITY_BOUNDARY))[0], staticData.GetCurrentSorptionCoeff());
+
             internalGradientWV_Boundary_N(0,0) =    mBoundaryDiffusionCoefficientWV * (inputData.mWaterVolumeFraction - waterVolumeFractionBoundary);
         }
             break;
-
-
-
         // ----------------------------------------------------------------------------------------
         // Boundary - Hessian 0 (Stiffness)
         //-----------------------------------------------------------------------------------------
@@ -458,9 +392,6 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
             break;
 
 
-
-
-
         case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0:
         {
             //Asserts
@@ -473,33 +404,28 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
         }
             break;
 
-
-
-
         // ----------------------------------------------------------------------------------------
         // Static data
         //-----------------------------------------------------------------------------------------
 
 
-
         case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
         {
 
-            if (StaticData->mLastRelHumValue > inputData.mRelativeHumidity)
+            if (staticData.GetLastRelHumValue() > inputData.mRelativeHumidity)
             {
-                StaticData->mSorptionHistoryDesorption = true;
+                staticData.SetDesorption(true);
             }
-            if (StaticData->mLastRelHumValue < inputData.mRelativeHumidity)
+            if (staticData.GetLastRelHumValue() < inputData.mRelativeHumidity)
             {
-                StaticData->mSorptionHistoryDesorption = false;
+                staticData.SetDesorption(false);
             }
-            StaticData->mLastRelHumValue = inputData.mRelativeHumidity;
-            StaticData->mLastSorptionCoeff = StaticData->mCurrentSorptionCoeff;
-            StaticData->mLastJunctionPoint = StaticData->mCurrentJunctionPoint;
+            staticData.SetLastRelHumValue(inputData.mRelativeHumidity);
+            staticData.SetLastSorptionCoeff(staticData.GetCurrentSorptionCoeff());
+            staticData.SetLastJunctionPoint(staticData.GetCurrentJunctionPoint());
 
             continue;
         }
-
 
         default:
             continue;
@@ -514,237 +440,218 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport( NuTo::ElementBa
 
 
 
+NuTo::Constitutive::StaticData::Component* NuTo::MoistureTransport::AllocateStaticData1D(const NuTo::ElementBase *rElement) const
+{
+    return Constitutive::StaticData::Leaf<Constitutive::StaticData::DataMoistureTransport>::Create(Constitutive::StaticData::DataMoistureTransport());
+}
 
+NuTo::Constitutive::StaticData::Component* NuTo::MoistureTransport::AllocateStaticData2D(const NuTo::ElementBase *rElement) const
+{
+    return Constitutive::StaticData::Leaf<Constitutive::StaticData::DataMoistureTransport>::Create(Constitutive::StaticData::DataMoistureTransport());
+}
 
-
+NuTo::Constitutive::StaticData::Component* NuTo::MoistureTransport::AllocateStaticData3D(const NuTo::ElementBase *rElement) const
+{
+    return Constitutive::StaticData::Leaf<Constitutive::StaticData::DataMoistureTransport>::Create(Constitutive::StaticData::DataMoistureTransport());
+}
 
 //! @brief ... calculates the sorption Curve coefficients when the sorption direction has changed
-NuTo::ConstitutiveStaticDataBase *NuTo::MoistureTransport::AllocateStaticData1D(const NuTo::ElementBase *rElement) const
-{
-    return new ConstitutiveStaticDataMoistureTransport();
-}
-
-NuTo::ConstitutiveStaticDataBase *NuTo::MoistureTransport::AllocateStaticData2D(const NuTo::ElementBase *rElement) const
-{
-    return new ConstitutiveStaticDataMoistureTransport();
-}
-
-NuTo::ConstitutiveStaticDataBase *NuTo::MoistureTransport::AllocateStaticData3D(const NuTo::ElementBase *rElement) const
-{
-    return new ConstitutiveStaticDataMoistureTransport();
-}
-
-void                                        NuTo::MoistureTransport::CalculateSorptionCurveCoefficients                         (ConstitutiveStaticDataMoistureTransport* rStaticData,
-                                                                                                                                 double rRelativeHumidity)
+void NuTo::MoistureTransport::CalculateSorptionCurveCoefficients(
+          Constitutive::StaticData::DataMoistureTransport& staticData, double relativeHumidity)
 {
     if(mEnableSorptionHysteresis)
     {
-        double                                  LastRelHum          = rStaticData->mLastRelHumValue;
-        NuTo::FullVector<double,Eigen::Dynamic> LastSorptionCoeff   = rStaticData->mLastSorptionCoeff;
+        double lastRelHum = staticData.GetLastRelHumValue();
+        auto lastSorptionCoeff = staticData.GetLastSorptionCoeff();
 
-        NuTo::FullVector<double,4>              ITDofs;
-        NuTo::FullVector<double,4>              ITConstants;
-        NuTo::FullVector<double,4>              ITRhs;
-        NuTo::FullVector<double,4>              ITDelta;
-        NuTo::FullMatrix<double,4,4>            Jacobi;
+        NuTo::FullVector<double,4> ITDofs;
+        NuTo::FullVector<double,4> ITConstants;
+        NuTo::FullVector<double,4> ITRhs;
+        NuTo::FullVector<double,4> ITDelta;
+        NuTo::FullMatrix<double,4,4> Jacobi;
 
         // Initial Coeffs = Previous Coeffs
-        rStaticData->mCurrentSorptionCoeff(0)     = rStaticData-> mLastSorptionCoeff(0);
-        rStaticData->mCurrentSorptionCoeff(1)     = rStaticData-> mLastSorptionCoeff(1);
-        rStaticData->mCurrentSorptionCoeff(2)     = rStaticData-> mLastSorptionCoeff(2);
-        rStaticData->mCurrentJunctionPoint        = rStaticData-> mLastJunctionPoint;
-
+        staticData.SetCurrentSorptionCoeff(staticData.GetLastSorptionCoeff());
+        staticData.SetCurrentJunctionPoint(staticData.GetLastJunctionPoint());
 
         // Getting to the junction point
         // #############################
 
         // adsorption
-        if (rStaticData->mSorptionHistoryDesorption == false && rRelativeHumidity > rStaticData->mLastJunctionPoint)
+        if (!staticData.IsDesorption() and relativeHumidity > staticData.GetLastJunctionPoint())
         {
-            rStaticData->mCurrentSorptionCoeff(0)     = mAdsorptionCoeff(0);
-            rStaticData->mCurrentSorptionCoeff(1)     = mAdsorptionCoeff(1);
-            rStaticData->mCurrentSorptionCoeff(2)     = mAdsorptionCoeff(2);
-
-            rStaticData->mCurrentJunctionPoint        = 1;
+            staticData.SetCurrentSorptionCoeff(mAdsorptionCoeff);
+            staticData.SetCurrentJunctionPoint(1.0);
         }
-
 
         // desorption
-        if (rStaticData->mSorptionHistoryDesorption == true && rRelativeHumidity < rStaticData->mLastJunctionPoint)
+        if (staticData.IsDesorption() and relativeHumidity < staticData.GetLastJunctionPoint())
         {
-            rStaticData->mCurrentSorptionCoeff(0)     = mDesorptionCoeff(0);
-            rStaticData->mCurrentSorptionCoeff(1)     = mDesorptionCoeff(1);
-            rStaticData->mCurrentSorptionCoeff(2)     = mDesorptionCoeff(2);
-
-            rStaticData->mCurrentJunctionPoint        = 0;
+            staticData.SetCurrentSorptionCoeff(mDesorptionCoeff);
+            staticData.SetCurrentJunctionPoint(0.0);
         }
 
-
         // desorption to adsorption
-        if (LastRelHum < rRelativeHumidity && rStaticData->mSorptionHistoryDesorption == true)
+        if (lastRelHum < relativeHumidity and staticData.IsDesorption())
         {
             // setting initial values
-            ITDofs(0)  = (rStaticData->mLastSorptionCoeff(2) + mAdsorptionCoeff(2)) / 2.0;
-            ITDofs(1)  = (rStaticData->mLastSorptionCoeff(1) + mAdsorptionCoeff(1)) / 2.0;
-            ITDofs(2)  = (rStaticData->mLastSorptionCoeff(0) + mAdsorptionCoeff(0)) / 2.0;
-            ITDofs(3)  = LastRelHum + (1.0 - LastRelHum) / 2.0;
+            ITDofs(0) = (lastSorptionCoeff(2) + mAdsorptionCoeff(2)) / 2.0;
+            ITDofs(1) = (lastSorptionCoeff(1) + mAdsorptionCoeff(1)) / 2.0;
+            ITDofs(2) = (lastSorptionCoeff(0) + mAdsorptionCoeff(0)) / 2.0;
+            ITDofs(3) = lastRelHum + (1.0 - lastRelHum) / 2.0;
 
             // calculating the constant terms
-            ITConstants(0)  = mGradientCorrDesorptionAdsorption * (3 * LastSorptionCoeff(2) * LastRelHum * LastRelHum +
-                                                                   2 * LastSorptionCoeff(1) * LastRelHum              +
-                                                                       LastSorptionCoeff(0));
+            ITConstants(0) = mGradientCorrDesorptionAdsorption * (3 * lastSorptionCoeff(2) * lastRelHum * lastRelHum +
+                                                                  2 * lastSorptionCoeff(1) * lastRelHum              +
+                                                                      lastSorptionCoeff(0));
 
-            ITConstants(1)  =                                          LastSorptionCoeff(2) * LastRelHum * LastRelHum +
-                                                                       LastSorptionCoeff(1) * LastRelHum              +
-                                                                       LastSorptionCoeff(0);
+            ITConstants(1) = lastSorptionCoeff(2) * lastRelHum * lastRelHum +
+                             lastSorptionCoeff(1) * lastRelHum              +
+                             lastSorptionCoeff(0);
 
-            ITConstants(2)  = mAdsorptionCoeff(0);
+            ITConstants(2) = mAdsorptionCoeff(0);
 
-            ITConstants(3)  = mAdsorptionCoeff(0);
+            ITConstants(3) = mAdsorptionCoeff(0);
 
             // Newton-Raphson-Method
+            const int maxIteration = 250;
+            const double tolerance = 1e-8;
 
-            int         maxIteration    = 250;
-            double      Tolerance       = 1e-8;
+            int iteration = 0;
+            double residual = 1;
 
-            int         Iteration       = 0;
-            double      Residual        = 1;
-
-            while (Iteration < maxIteration && Residual > Tolerance)
+            while (iteration < maxIteration && residual > tolerance)
             {
-                Jacobi(0,0)             = 3 * LastRelHum * LastRelHum;
-                Jacobi(0,1)             = 2 * LastRelHum;
-                Jacobi(0,2)             = 1;
-                Jacobi(0,3)             = 0;
+                Jacobi(0,0) = 3.0 * lastRelHum * lastRelHum;
+                Jacobi(0,1) = 2.0 * lastRelHum;
+                Jacobi(0,2) = 1.0;
+                Jacobi(0,3) = 0.0;
 
-                Jacobi(1,0)             =     LastRelHum * LastRelHum;
-                Jacobi(1,1)             =     LastRelHum;
-                Jacobi(1,2)             = 1;
-                Jacobi(1,3)             = 0;
+                Jacobi(1,0) = lastRelHum * lastRelHum;
+                Jacobi(1,1) = lastRelHum;
+                Jacobi(1,2) = 1.0;
+                Jacobi(1,3) = 0.0;
 
-                Jacobi(2,0)             = 3 * ITDofs(3)  * ITDofs(3);
-                Jacobi(2,1)             = 2 * ITDofs(3);
-                Jacobi(2,2)             = 1;
-                Jacobi(2,3)             = 6 * ITDofs(3) * (ITDofs(0) - mAdsorptionCoeff(2)) + 2 * (ITDofs(1) - mAdsorptionCoeff(1));
+                Jacobi(2,0) = 3.0 * ITDofs(3)  * ITDofs(3);
+                Jacobi(2,1) = 2.0 * ITDofs(3);
+                Jacobi(2,2) = 1.0;
+                Jacobi(2,3) = 6.0 * ITDofs(3) * (ITDofs(0) - mAdsorptionCoeff(2)) + 2.0 * (ITDofs(1) - mAdsorptionCoeff(1));
 
-                Jacobi(3,0)             =     ITDofs(3)  * ITDofs(3);
-                Jacobi(3,1)             =     ITDofs(3);
-                Jacobi(3,2)             = 1;
-                Jacobi(3,3)             = 2 * ITDofs(3) * (ITDofs(0) - mAdsorptionCoeff(2)) +     (ITDofs(1) - mAdsorptionCoeff(1));
+                Jacobi(3,0) = ITDofs(3)  * ITDofs(3);
+                Jacobi(3,1) = ITDofs(3);
+                Jacobi(3,2) = 1.0;
+                Jacobi(3,3) = 2.0 * ITDofs(3) * (ITDofs(0) - mAdsorptionCoeff(2)) + (ITDofs(1) - mAdsorptionCoeff(1));
 
 
-                ITRhs(0)                = 3 * ITDofs(0) * LastRelHum * LastRelHum +
-                                          2 * ITDofs(1) * LastRelHum +
-                                              ITDofs(2) - ITConstants(0);
+                ITRhs(0) = 3.0 * ITDofs(0) * lastRelHum * lastRelHum +
+                           2.0 * ITDofs(1) * lastRelHum +
+                                 ITDofs(2) - ITConstants(0);
 
-                ITRhs(1)                =     ITDofs(0) * LastRelHum * LastRelHum +
-                                              ITDofs(1) * LastRelHum +
-                                              ITDofs(2) - ITConstants(1);
+                ITRhs(1) = ITDofs(0) * lastRelHum * lastRelHum +
+                           ITDofs(1) * lastRelHum +
+                           ITDofs(2) - ITConstants(1);
 
-                ITRhs(2)                = 3 * (ITDofs(0) - mAdsorptionCoeff(2)) * ITDofs(3)  * ITDofs(3) +
-                                          2 * (ITDofs(1) - mAdsorptionCoeff(1)) * ITDofs(3) +
-                                               ITDofs(2) - ITConstants(2);
+                ITRhs(2) = 3.0 * (ITDofs(0) - mAdsorptionCoeff(2)) * ITDofs(3)  * ITDofs(3) +
+                           2.0 * (ITDofs(1) - mAdsorptionCoeff(1)) * ITDofs(3) +
+                                  ITDofs(2) - ITConstants(2);
 
-                ITRhs(3)                =     (ITDofs(0) - mAdsorptionCoeff(2)) * ITDofs(3)  * ITDofs(3) +
-                                              (ITDofs(1) - mAdsorptionCoeff(1)) * ITDofs(3) +
-                                               ITDofs(2) - ITConstants(3);
+                ITRhs(3) = (ITDofs(0) - mAdsorptionCoeff(2)) * ITDofs(3)  * ITDofs(3) +
+                           (ITDofs(1) - mAdsorptionCoeff(1)) * ITDofs(3) +
+                            ITDofs(2) - ITConstants(3);
 
                 ITDelta = -Jacobi.Inverse() * ITRhs;
                 ITDofs  += ITDelta;
-                Residual = ITRhs.Abs().ColumnwiseMaxCoeff()(0,0);
-                Iteration++;
+                residual = ITRhs.Abs().ColumnwiseMaxCoeff()(0,0);
+                iteration++;
             }
 
-            rStaticData->mCurrentSorptionCoeff(0)    = ITDofs(2);
-            rStaticData->mCurrentSorptionCoeff(1)    = ITDofs(1);
-            rStaticData->mCurrentSorptionCoeff(2)    = ITDofs(0);
-            rStaticData->mCurrentJunctionPoint       = ITDofs(3);
+            NuTo::FullVector<double, Eigen::Dynamic> newSorptionCoeff {{ITDofs(2), ITDofs(1), ITDofs(0)}};
+            staticData.SetCurrentSorptionCoeff(newSorptionCoeff);
+            staticData.SetCurrentJunctionPoint(ITDofs(3));
+
         }
 
         // adsorption to desorption
-        if (rStaticData->mLastRelHumValue > rRelativeHumidity && rStaticData->mSorptionHistoryDesorption == false)
+        if (staticData.GetLastRelHumValue() > relativeHumidity and !staticData.IsDesorption())
         {
-
             // setting initial values
-            ITDofs(0)  = (rStaticData->mLastSorptionCoeff(2) + mDesorptionCoeff(2)) / 2.0;
-            ITDofs(1)  = (rStaticData->mLastSorptionCoeff(1) + mDesorptionCoeff(1)) / 2.0;
-            ITDofs(2)  = (rStaticData->mLastSorptionCoeff(0) + mDesorptionCoeff(0)) / 2.0;
-            ITDofs(3)  = LastRelHum + (1.0 - LastRelHum) / 2.0;
+            ITDofs(0) = (lastSorptionCoeff(2) + mDesorptionCoeff(2)) / 2.0;
+            ITDofs(1) = (lastSorptionCoeff(1) + mDesorptionCoeff(1)) / 2.0;
+            ITDofs(2) = (lastSorptionCoeff(0) + mDesorptionCoeff(0)) / 2.0;
+            ITDofs(3) = lastRelHum + (1.0 - lastRelHum) / 2.0;
 
             // calculating the constant terms
-            ITConstants(0)  = mGradientCorrAdsorptionDesorption * (3 * LastSorptionCoeff(2) * LastRelHum * LastRelHum +
-                                                                   2 * LastSorptionCoeff(1) * LastRelHum              +
-                                                                       LastSorptionCoeff(0));
+            ITConstants(0) = mGradientCorrAdsorptionDesorption * (3 * lastSorptionCoeff(2) * lastRelHum * lastRelHum +
+                                                                  2 * lastSorptionCoeff(1) * lastRelHum              +
+                                                                      lastSorptionCoeff(0));
 
-            ITConstants(1)  =                                          LastSorptionCoeff(2) * LastRelHum * LastRelHum +
-                                                                       LastSorptionCoeff(1) * LastRelHum              +
-                                                                       LastSorptionCoeff(0);
+            ITConstants(1) = lastSorptionCoeff(2) * lastRelHum * lastRelHum +
+                             lastSorptionCoeff(1) * lastRelHum              +
+                             lastSorptionCoeff(0);
 
-            ITConstants(2)  = mDesorptionCoeff(0);
+            ITConstants(2) = mDesorptionCoeff(0);
 
-            ITConstants(3)  = mDesorptionCoeff(0);
+            ITConstants(3) = mDesorptionCoeff(0);
 
             // Newton-Raphson-Method
+            const int maxIteration = 250;
+            const double tolerance = 1e-8;
 
-            int         maxIteration    = 250;
-            double      Tolerance       = 1e-8;
+            int iteration = 0;
+            double residual = 1;
 
-            int         Iteration       = 0;
-            double      Residual        = 1;
-
-            while (Iteration < maxIteration && Residual > Tolerance)
+            while (iteration < maxIteration && residual > tolerance)
             {
-                Jacobi(0,0)             = 3 * LastRelHum * LastRelHum;
-                Jacobi(0,1)             = 2 * LastRelHum;
-                Jacobi(0,2)             = 1;
-                Jacobi(0,3)             = 0;
+                Jacobi(0,0) = 3.0 * lastRelHum * lastRelHum;
+                Jacobi(0,1) = 2.0 * lastRelHum;
+                Jacobi(0,2) = 1.0;
+                Jacobi(0,3) = 0.0;
 
-                Jacobi(1,0)             =     LastRelHum * LastRelHum;
-                Jacobi(1,1)             =     LastRelHum;
-                Jacobi(1,2)             = 1;
-                Jacobi(1,3)             = 0;
+                Jacobi(1,0) = lastRelHum * lastRelHum;
+                Jacobi(1,1) = lastRelHum;
+                Jacobi(1,2) = 1.0;
+                Jacobi(1,3) = 0.0;
 
-                Jacobi(2,0)             = 3 * ITDofs(3)  * ITDofs(3);
-                Jacobi(2,1)             = 2 * ITDofs(3);
-                Jacobi(2,2)             = 1;
-                Jacobi(2,3)             = 6 * ITDofs(3) * (ITDofs(0) - mDesorptionCoeff(2)) + 2 * (ITDofs(1) - mDesorptionCoeff(1));
+                Jacobi(2,0) = 3.0 * ITDofs(3)  * ITDofs(3);
+                Jacobi(2,1) = 2.0 * ITDofs(3);
+                Jacobi(2,2) = 1.0;
+                Jacobi(2,3) = 6.0 * ITDofs(3) * (ITDofs(0) - mDesorptionCoeff(2)) + 2.0 * (ITDofs(1) - mDesorptionCoeff(1));
 
-                Jacobi(3,0)             =     ITDofs(3)  * ITDofs(3);
-                Jacobi(3,1)             =     ITDofs(3);
-                Jacobi(3,2)             = 1;
-                Jacobi(3,3)             = 2 * ITDofs(3) * (ITDofs(0) - mDesorptionCoeff(2)) +     (ITDofs(1) - mDesorptionCoeff(1));
+                Jacobi(3,0) = ITDofs(3)  * ITDofs(3);
+                Jacobi(3,1) = ITDofs(3);
+                Jacobi(3,2) = 1.0;
+                Jacobi(3,3) = 2.0 * ITDofs(3) * (ITDofs(0) - mDesorptionCoeff(2)) + (ITDofs(1) - mDesorptionCoeff(1));
 
 
-                ITRhs(0)                = 3 * ITDofs(0) * LastRelHum * LastRelHum +
-                                          2 * ITDofs(1) * LastRelHum +
-                                              ITDofs(2) - ITConstants(0);
+                ITRhs(0) = 3.0 * ITDofs(0) * lastRelHum * lastRelHum +
+                           2.0 * ITDofs(1) * lastRelHum +
+                                 ITDofs(2) - ITConstants(0);
 
-                ITRhs(1)                =     ITDofs(0) * LastRelHum * LastRelHum +
-                                              ITDofs(1) * LastRelHum +
-                                              ITDofs(2) - ITConstants(1);
+                ITRhs(1) = ITDofs(0) * lastRelHum * lastRelHum +
+                           ITDofs(1) * lastRelHum +
+                           ITDofs(2) - ITConstants(1);
 
-                ITRhs(2)                = 3 * (ITDofs(0) - mDesorptionCoeff(2)) * ITDofs(3)  * ITDofs(3) +
-                                          2 * (ITDofs(1) - mDesorptionCoeff(1)) * ITDofs(3) +
-                                               ITDofs(2) - ITConstants(2);
+                ITRhs(2) = 3.0 * (ITDofs(0) - mDesorptionCoeff(2)) * ITDofs(3) * ITDofs(3) +
+                           2.0 * (ITDofs(1) - mDesorptionCoeff(1)) * ITDofs(3) +
+                                  ITDofs(2) - ITConstants(2);
 
-                ITRhs(3)                =     (ITDofs(0) - mDesorptionCoeff(2)) * ITDofs(3)  * ITDofs(3) +
-                                              (ITDofs(1) - mDesorptionCoeff(1)) * ITDofs(3) +
-                                               ITDofs(2) - ITConstants(3);
+                ITRhs(3) = (ITDofs(0) - mDesorptionCoeff(2)) * ITDofs(3) * ITDofs(3) +
+                           (ITDofs(1) - mDesorptionCoeff(1)) * ITDofs(3) +
+                            ITDofs(2) - ITConstants(3);
 
                 ITDelta = -Jacobi.Inverse() * ITRhs;
                 ITDofs  += ITDelta;
-                Residual = ITRhs.Abs().ColumnwiseMaxCoeff()(0,0);
-                Iteration++;
+                residual = ITRhs.Abs().ColumnwiseMaxCoeff()(0,0);
+                iteration++;
             }
+            
+            NuTo::FullVector<double, Eigen::Dynamic> newSorptionCoeff {{ITDofs(2), ITDofs(1), ITDofs(0)}};
+            staticData.SetCurrentSorptionCoeff(newSorptionCoeff);
+            staticData.SetCurrentJunctionPoint(ITDofs(3));
 
-            rStaticData->mCurrentSorptionCoeff(0)    = ITDofs(2);
-            rStaticData->mCurrentSorptionCoeff(1)    = ITDofs(1);
-            rStaticData->mCurrentSorptionCoeff(2)    = ITDofs(0);
-            rStaticData->mCurrentJunctionPoint       = ITDofs(3);
-
-            if (rStaticData->mCurrentJunctionPoint < 0)
+            if (staticData.GetCurrentJunctionPoint() < 0)
             {
-                throw NuTo::MechanicsException("[NuTo::MoistureTransport::CalculateSorptionCurveCoefficients] - Error calculating sorption curve - junction point < 0");
+                throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error calculating sorption curve - junction point < 0");
             }
         }
     }
@@ -822,41 +729,6 @@ bool                                        NuTo::MoistureTransport::CheckElemen
         return false;
     }
 }
-
-
-////! @brief ... checks if the constitutive law has a specific parameter
-////! @param rIdentifier ... Enum to identify the requested parameter
-////! @return ... true/false
-//bool NuTo::MoistureTransport::CheckHaveParameter(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
-//{
-//    switch(rIdentifier)
-//    {
-//        case Constitutive::eConstitutiveParameter::BOUNDARY_DIFFUSION_COEFFICIENT_RH:
-//        case Constitutive::eConstitutiveParameter::BOUNDARY_TRANSPORT_CONSTANT_WATER_PHASE:
-//        case Constitutive::eConstitutiveParameter::DENSITY_WATER:
-//        case Constitutive::eConstitutiveParameter::DIFFUSION_COEFFICIENT_RH:
-//        case Constitutive::eConstitutiveParameter::DIFFUSION_COEFFICIENT_WV:
-//        case Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_RH:
-//        case Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_WV:
-//        case Constitutive::eConstitutiveParameter::ENABLE_MODIFIED_TANGENTIAL_STIFFNESS:
-//        case Constitutive::eConstitutiveParameter::ENABLE_SORPTION_HYSTERESIS:
-//        case Constitutive::eConstitutiveParameter::GRADIENT_CORRECTION_ADSORPTION_DESORPTION:
-//        case Constitutive::eConstitutiveParameter::GRADIENT_CORRECTION_DESORPTION_ADSORPTION:
-//        case Constitutive::eConstitutiveParameter::MASS_EXCHANGE_RATE:
-//        case Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_ADSORPTION:
-//        case Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION:
-//        case Constitutive::eConstitutiveParameter::PORE_VOLUME_FRACTION:
-//        case Constitutive::eConstitutiveParameter::DENSITY_SATURATED_WATER_VAPOR:
-//        {
-//            return true;
-//        }
-//        default:
-//        {
-//            return false;
-//        }
-//    }
-//}
-
 
 
 //! @brief ... check parameters of the constitutive relationship
@@ -977,10 +849,12 @@ NuTo::ConstitutiveInputMap NuTo::MoistureTransport::GetConstitutiveInputs(  cons
 
         case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N:
             constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY] = nullptr;
+            constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY_BOUNDARY] = nullptr;
             break;
 
         case NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N:
             constitutiveInputMap[Constitutive::eInput::WATER_VOLUME_FRACTION] = nullptr;
+            constitutiveInputMap[Constitutive::eInput::RELATIVE_HUMIDITY_BOUNDARY] = nullptr;
             break;
 
         case NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0:
@@ -1008,47 +882,6 @@ NuTo::Constitutive::eConstitutiveType NuTo::MoistureTransport::GetType() const
 {
     return NuTo::Constitutive::eConstitutiveType::MOISTURE_TRANSPORT;
 }
-
-
-////! @brief ... checks if a constitutive law has an specific output
-////! @return ... true/false
-//bool NuTo::MoistureTransport::CheckOutputTypeCompatibility(NuTo::Constitutive::eOutput rOutputEnum) const
-//{
-//    switch (rOutputEnum)
-//    {
-//    case Constitutive::eOutput::BOUNDARY_SURFACE_RELATIVE_HUMIDIY_TRANSPORT_COEFFICIENT:
-//    case Constitutive::eOutput::BOUNDARY_SURFACE_VAPOR_PHASE_RESIDUAL:
-//    case Constitutive::eOutput::BOUNDARY_SURFACE_WATER_PHASE_RESIDUAL:
-//    case Constitutive::eOutput::BOUNDARY_SURFACE_WATER_VOLUME_FRACTION_TRANSPORT_COEFFICIENT:
-//    case Constitutive::eOutput::D_RESIDUAL_RH_D_RH_H0_BB:
-//    case Constitutive::eOutput::D_RESIDUAL_RH_D_RH_H0_NN:
-//    case Constitutive::eOutput::D_RESIDUAL_RH_D_RH_H1_NN:
-//    case Constitutive::eOutput::D_RESIDUAL_RH_D_WV_H0_BN:
-//    case Constitutive::eOutput::D_RESIDUAL_RH_D_WV_H0_NN:
-//    case Constitutive::eOutput::D_RESIDUAL_RH_D_WV_H1_NN:
-//    case Constitutive::eOutput::D_RESIDUAL_WV_D_RH_H0_NN:
-//    case Constitutive::eOutput::D_RESIDUAL_WV_D_WV_H0_BB:
-//    case Constitutive::eOutput::D_RESIDUAL_WV_D_WV_H0_BN:
-//    case Constitutive::eOutput::D_RESIDUAL_WV_D_WV_H0_NN:
-//    case Constitutive::eOutput::D_RESIDUAL_WV_D_WV_H1_NN:
-//    case Constitutive::eOutput::RESIDUAL_NORM_FACTOR_RELATIVE_HUMIDITY:
-//    case Constitutive::eOutput::RESIDUAL_NORM_FACTOR_WATER_VOLUME_FRACTION:
-//    case Constitutive::eOutput::RESIDUAL_VAPOR_PHASE_B:
-//    case Constitutive::eOutput::RESIDUAL_VAPOR_PHASE_N:
-//    case Constitutive::eOutput::RESIDUAL_WATER_PHASE_B:
-//    case Constitutive::eOutput::RESIDUAL_WATER_PHASE_N:
-//    case Constitutive::eOutput::UPDATE_STATIC_DATA:
-//    {
-//        return true;
-//    }
-//    default:
-//    {
-//        return false;
-//    }
-//    }
-//}
-
-
 
 //! @brief ... gets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter
@@ -1327,28 +1160,3 @@ double                                      NuTo::MoistureTransport::GetEquilibr
                rCoeffs(3) * rRelativeHumidity * rRelativeHumidity * rRelativeHumidity;
     }
 }
-
-
-
-////! @brief ... print information about the object
-////! @param rVerboseLevel ... verbosity of the information
-//void                                        NuTo::MoistureTransport::Info                                                       (unsigned short rVerboseLevel, Logger& rLogger) const
-//{
-//    this->ConstitutiveBase::Info(rVerboseLevel, rLogger);
-//    rLogger << "    Mass exchange rate                  : " << this->GetParameterDouble(Constitutive::eConstitutiveParameter::MASS_EXCHANGE_RATE)              << "\n";
-//    rLogger << "    PORE_VOLUME_FRACTION                            : " << this->GetParameterDouble(Constitutive::eConstitutiveParameter::PORE_VOLUME_FRACTION)                        << "\n";
-//    rLogger << "    Gas phase diffusion constant        : " << this->GetParameterDouble(Constitutive::eConstitutiveParameter::DIFFUSION_COEFFICIENT_RH)    << "\n";
-//    rLogger << "    Gas phase diffusion exponent        : " << this->GetParameterDouble(Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_RH)    << "\n";
-//    rLogger << "    Gas phase saturation density        : " << this->GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY_SATURATED_WATER_VAPOR)    << "\n";
-//    rLogger << "    Water phase density                 : " << this->GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY_WATER)             << "\n";
-//    rLogger << "    Water phase diffusion constant      : " << this->GetParameterDouble(Constitutive::eConstitutiveParameter::DIFFUSION_COEFFICIENT_WV)  << "\n";
-//    rLogger << "    Water phase diffusion exponent      : " << this->GetParameterDouble(Constitutive::eConstitutiveParameter::DIFFUSION_EXPONENT_WV)  << "\n";
-//}
-
-
-
-
-
-
-
-

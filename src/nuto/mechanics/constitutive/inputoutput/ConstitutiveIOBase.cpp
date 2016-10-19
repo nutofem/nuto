@@ -5,6 +5,7 @@
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveMatrixXd.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
 #ifdef ENABLE_SERIALIZATION
@@ -117,6 +118,7 @@ std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitu
         case eInput::CRACK_PHASE_FIELD:
         case eInput::NONLOCAL_EQ_STRAIN:
         case eInput::RELATIVE_HUMIDITY:
+        case eInput::RELATIVE_HUMIDITY_BOUNDARY:
         case eInput::RELATIVE_HUMIDITY_DT1:
         case eInput::WATER_VOLUME_FRACTION:
         case eInput::WATER_VOLUME_FRACTION_DT1:
@@ -136,6 +138,8 @@ std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitu
             return std::make_unique<ConstitutiveMatrixXd>();
         case eInput::CALCULATE_STATIC_DATA:
             return std::make_unique<ConstitutiveCalculateStaticData>(NuTo::eCalculateStaticData::EULER_BACKWARD);
+        case eInput::PLANE_STATE:
+            return std::make_unique<ConstitutivePlaneState>(NuTo::ePlaneState::PLANE_STRESS);
         default:
             throw MechanicsException(__PRETTY_FUNCTION__,
                     "Don't know how to create Constitutive input for this input type");

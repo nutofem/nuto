@@ -86,7 +86,7 @@ struct TimeControl
 
 
 
-template <int TDim>
+template<int TDim>
 int AddConstraint(NuTo::Structure& rS,
                   NuTo::NewmarkDirect& rTI,
                   std::function<bool(NuTo::NodeBase*)> rGetNodeFunction,
@@ -348,9 +348,6 @@ inline void SetupVisualize(NuTo::Structure& rS)
 #endif // ENABLE_VISUALIZE
 }
 
-
-
-
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //  Tests
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -384,9 +381,8 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
     NuTo::ConstitutiveBase* CL_LD_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LD_ID);
     NuTo::ConstitutiveBase* CL_LE_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LE_ID);
 
-    CL_AO_Ptr->AddConstitutiveLaw(CL_LE_Ptr);
-    CL_AO_Ptr->AddConstitutiveLaw(CL_LD_Ptr);
-
+    dynamic_cast<NuTo::AdditiveOutput*>(CL_AO_Ptr)->AddConstitutiveLaw(*CL_LE_Ptr);
+    dynamic_cast<NuTo::AdditiveOutput*>(CL_AO_Ptr)->AddConstitutiveLaw(*CL_LD_Ptr);
 
     TimeControl tCtrl;
     tCtrl.t_final = 365.0 * 24.0 * 60.0 * 60.0;
@@ -414,7 +410,6 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
 
 
     // Add constraint on the leftern side
-
     auto lambdaGetNodesLeftSurface = [](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)
@@ -439,7 +434,6 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
 
 
     // Add force on the rightern side
-
     auto lambdaGetNodesRightSurface = [rL](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)

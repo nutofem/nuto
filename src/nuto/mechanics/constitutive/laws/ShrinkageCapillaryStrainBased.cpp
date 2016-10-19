@@ -118,10 +118,10 @@ void NuTo::ShrinkageCapillaryStrainBased::SetParameterDouble(NuTo::Constitutive:
 }
 
 template <int TDim>
-NuTo::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapillary(NuTo::ElementBase *rElement,
-                                                                                    int rIp,
-                                                                                    const NuTo::ConstitutiveInputMap &rConstitutiveInput,
-                                                                                    const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
+NuTo::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapillary(
+        const NuTo::ConstitutiveInputMap &rConstitutiveInput, 
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
+        Constitutive::StaticData::Component* staticData)
 {
     double relativeHumidity     = std::numeric_limits<double>::min();
     double waterVolumeFraction  = std::numeric_limits<double>::min();

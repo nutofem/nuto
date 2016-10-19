@@ -6,7 +6,7 @@ namespace NuTo
 //! @author Jörg F. Unger, ISM
 //! @date September 2009
 //! @brief ... class for all exceptions thrown in mechanics module of NuTo
-class MechanicsException : public NuTo::Exception
+class MechanicsException : public Exception
 {
 public:
     //! @brief ...constructor

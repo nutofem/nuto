@@ -6,6 +6,7 @@
 #include "nuto/mechanics/sections/SectionTruss.h"
 
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/constitutive/staticData/Leaf.h"
 #include "nuto/mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
@@ -17,8 +18,6 @@
 #include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include "nuto/mechanics/timeIntegration/ImplEx.h"
-
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataGradientDamage.h"
 
 #include "nuto/mechanics/elements/ContinuumBoundaryElement.h"
 #include "nuto/math/SparseMatrixCSRVector2General.h"
@@ -571,17 +570,17 @@ void Check1D2D3D()
     {
         NuTo::ElementBase* element = s1D.ElementGetElementPtr(weakElementId);
         for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
-            element->GetStaticData(i)->AsGradientDamage()->SetKappa(kappa);
+            dynamic_cast<NuTo::Constitutive::StaticData::Leaf<double>*>(element->GetConstitutiveStaticData(i))->SetData(kappa);
     }
     {
         NuTo::ElementBase* element = s2D.ElementGetElementPtr(weakElementId);
         for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
-            element->GetStaticData(i)->AsGradientDamage()->SetKappa(kappa);
+            dynamic_cast<NuTo::Constitutive::StaticData::Leaf<double>*>(element->GetConstitutiveStaticData(i))->SetData(kappa);
     }
     {
         NuTo::ElementBase* element = s3D.ElementGetElementPtr(weakElementId);
         for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
-            element->GetStaticData(i)->AsGradientDamage()->SetKappa(kappa);
+            dynamic_cast<NuTo::Constitutive::StaticData::Leaf<double>*>(element->GetConstitutiveStaticData(i))->SetData(kappa);
     }
 
 
@@ -698,7 +697,7 @@ int main()
 
         NuToTest::GradientDamage::CheckDamageLaws();
 
-        bool useRobinBoundaryElements = true;
+        bool useRobinBoundaryElements = false;
 
         NuToTest::GradientDamage::TestStructure1D(useRobinBoundaryElements);
         NuToTest::GradientDamage::TestStructure2D(NuTo::Interpolation::eShapeType::QUAD2D, NuTo::eSectionType::PLANE_STRESS, useRobinBoundaryElements);

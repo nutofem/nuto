@@ -119,7 +119,6 @@ NuTo::StructureOutputBlockVector& NuTo::StructureOutputBlockVector::operator /=(
 
 namespace NuTo
 {
-//! @brief stream operator for outputs with cout or files
 std::ostream& operator<<(std::ostream &rOut, const NuTo::StructureOutputBlockVector& rStructureOutputBlockVector)
 {
     rOut << "Active Dofs" << std::endl;

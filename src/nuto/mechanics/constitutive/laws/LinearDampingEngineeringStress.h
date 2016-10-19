@@ -1,34 +1,13 @@
 #pragma once
 
-
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
-
-
-
 
 namespace NuTo
 {
-
-
 class LinearDampingEngineeringStress : public ConstitutiveBase
 {
-
 public:
     LinearDampingEngineeringStress();
-
-
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData1D(const ElementBase* rElement) const override {return nullptr;}
-
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData2D(const ElementBase* rElement) const override  {return nullptr;}
-
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const override  {return nullptr;}
-
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs
@@ -59,30 +38,27 @@ public:
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::eError Evaluate1D(ElementBase* rElement,
-                                    int rIp,
-                                    const ConstitutiveInputMap& rConstitutiveInput,
-                                    const ConstitutiveOutputMap& rConstitutiveOutput) override;
+    virtual NuTo::eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
+                                    const ConstitutiveOutputMap& rConstitutiveOutput,
+                                    Constitutive::StaticData::Component* staticData) override;
 
     //! @brief ... evaluate the constitutive relation in 2D
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::eError Evaluate2D(ElementBase* rElement,
-                                    int rIp,
-                                    const ConstitutiveInputMap& rConstitutiveInput,
-                                    const ConstitutiveOutputMap& rConstitutiveOutput) override;
+    virtual NuTo::eError Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
+                                    const ConstitutiveOutputMap& rConstitutiveOutput,
+                                    Constitutive::StaticData::Component* staticData) override;
 
     //! @brief ... evaluate the constitutive relation in 3D
     //! @param rElement ... element
     //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::eError Evaluate3D(ElementBase* rElement,
-                                    int rIp,
-                                    const ConstitutiveInputMap& rConstitutiveInput,
-                                    const ConstitutiveOutputMap& rConstitutiveOutput) override;
+    virtual NuTo::eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
+                                    const ConstitutiveOutputMap& rConstitutiveOutput,
+                                    Constitutive::StaticData::Component* staticData) override;
 
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship
@@ -120,10 +96,9 @@ private:
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
     template <int TDim>
-    NuTo::eError EvaluateLinearDampingEngineeringStress(ElementBase* rElement,
-                                                        int rIp,
-                                                        const ConstitutiveInputMap& rConstitutiveInput,
-                                                        const ConstitutiveOutputMap& rConstitutiveOutput);
+    NuTo::eError EvaluateLinearDampingEngineeringStress(const ConstitutiveInputMap& rConstitutiveInput,
+                                                        const ConstitutiveOutputMap& rConstitutiveOutput,
+                                                        Constitutive::StaticData::Component* staticData);
 
 };
 

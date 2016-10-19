@@ -17,7 +17,6 @@
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "nuto/mechanics/constitutive/laws/PhaseField.h"
 #include "nuto/mechanics/constitutive/laws/EngineeringStressHelper.h"
-#include "nuto/mechanics/constitutive/staticData/ConstitutiveStaticDataHistoryVariableScalar.h"
 
 #include "nuto/base/ErrorEnum.h"
 #include "nuto/base/Logger.h"
@@ -71,7 +70,8 @@ NuTo::ConstitutiveInputMap NuTo::PhaseField::GetConstitutiveInputs(const Constit
     return constitutiveInputMap;
 }
 
-NuTo::eError NuTo::PhaseField::Evaluate1D(ElementBase* rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
+NuTo::eError NuTo::PhaseField::Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
+        const ConstitutiveOutputMap& rConstitutiveOutput, Constitutive::StaticData::Component*)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }
@@ -209,16 +209,17 @@ void NuTo::PhaseField::CalculateSpectralDecompositionDStressDStrain(Constitutive
 }
 
 
-double NuTo::PhaseField::Evaluate2DIsotropic(const ConstitutiveStaticDataHistoryVariableScalar& rOldStaticData, const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
+double NuTo::PhaseField::Evaluate2DIsotropic(const double oldEnergyDensity,
+        const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
 {
 
-    const auto& engineeringStrain   = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
-    const auto& damage              = *rConstitutiveInput.at(Constitutive::eInput::CRACK_PHASE_FIELD);
+    const auto& engineeringStrain =
+        rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
+    const auto& damage = *rConstitutiveInput.at(Constitutive::eInput::CRACK_PHASE_FIELD);
 
     // calculate coefficients
     double C11, C12, C33;
     std::tie(C11, C12, C33) = EngineeringStressHelper::CalculateCoefficients3D(mYoungsModulus, mPoissonsRatio);
-
 
     // calculate the effective stress
     Eigen::Vector3d effectiveStress;
@@ -229,8 +230,7 @@ double NuTo::PhaseField::Evaluate2DIsotropic(const ConstitutiveStaticDataHistory
     // calculate the elastic energy density
     const double elasticEnergyDensity = 0.5*effectiveStress.dot(engineeringStrain);
 
-    ConstitutiveStaticDataHistoryVariableScalar currentStaticData;
-    currentStaticData.SetHistoryVariable(std::max(elasticEnergyDensity, rOldStaticData.GetHistoryVariable()));
+    double currentEnergyDensity = std::max(elasticEnergyDensity, oldEnergyDensity);
 
     bool performUpdateAtEnd = false;
     constexpr double residualEnergyDensity = 1.e-8;
@@ -294,7 +294,7 @@ double NuTo::PhaseField::Evaluate2DIsotropic(const ConstitutiveStaticDataHistory
 
         case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
         {
-            itOutput.second->AsEngineeringStrain3D() = engineeringStrain.As3D(mPoissonsRatio, eSectionType::PLANE_STRAIN);
+            itOutput.second->AsEngineeringStrain3D() = engineeringStrain.As3D(mPoissonsRatio, ePlaneState::PLANE_STRAIN);
             break;
         }
 
@@ -303,7 +303,7 @@ double NuTo::PhaseField::Evaluate2DIsotropic(const ConstitutiveStaticDataHistory
 
             ConstitutiveIOBase& elasticEnergyLoadTerm = *itOutput.second;
 
-            elasticEnergyLoadTerm[0] = currentStaticData.GetHistoryVariable();
+            elasticEnergyLoadTerm[0] = currentEnergyDensity;
 
             break;
         }
@@ -333,7 +333,7 @@ double NuTo::PhaseField::Evaluate2DIsotropic(const ConstitutiveStaticDataHistory
             tangent.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
 
 
-            if (elasticEnergyDensity == currentStaticData.GetHistoryVariable())
+            if (elasticEnergyDensity == currentEnergyDensity)
             {
                 // loading
                 tangent[0] = effectiveStress[0];
@@ -372,19 +372,17 @@ double NuTo::PhaseField::Evaluate2DIsotropic(const ConstitutiveStaticDataHistory
     // return old/new history variables
     if (performUpdateAtEnd)
     {
-        return currentStaticData.GetHistoryVariable();
+        return currentEnergyDensity;
     }
     else
     {
-        return rOldStaticData.GetHistoryVariable();
+        return oldEnergyDensity;
     }
-
-
-
 }
 
 
-double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const ConstitutiveStaticDataHistoryVariableScalar& rOldStaticData, const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
+double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const double oldEnergyDensity,
+        const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
 {
     using std::max;
     using std::min;
@@ -395,10 +393,9 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const Consti
 
     constexpr double residualEnergyDensity = 1.e-8;
 
-    const auto& engineeringStrain   = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
-    const auto& damage              = *rConstitutiveInput.at(Constitutive::eInput::CRACK_PHASE_FIELD);
-
-
+    const auto& engineeringStrain =
+        rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
+    const auto& damage = *rConstitutiveInput.at(Constitutive::eInput::CRACK_PHASE_FIELD);
 
     bool performUpdateAtEnd = false;
 
@@ -428,10 +425,10 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const Consti
 
     Matrix2d stressMinus  =    mLameLambda * min(traceStrain,0.0) * Matrix2d::Identity() + 2 * mLameMu * strainMinus;
 
-    const double elasticEnergyPlus = 0.5 * mLameLambda * pow(max(traceStrain, 0.),2) + mLameMu * (strainPlus * strainPlus).diagonal().sum();
+    const double elasticEnergyPlus =
+        0.5 * mLameLambda * pow(max(traceStrain, 0.),2) + mLameMu * (strainPlus * strainPlus).diagonal().sum();
 
-    ConstitutiveStaticDataHistoryVariableScalar currentStaticData;
-    currentStaticData.SetHistoryVariable(max(elasticEnergyPlus, rOldStaticData.GetHistoryVariable()));
+    double currentEnergyDensity = max(elasticEnergyPlus, oldEnergyDensity);
 
     for (auto& itOutput : rConstitutiveOutput)
     {
@@ -469,21 +466,23 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const Consti
             ConstitutiveIOBase& engineeringStress3D = *itOutput.second;
             engineeringStress3D.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
 
-            throw MechanicsException(__PRETTY_FUNCTION__,"Visualization of stress not implemented for the anisotropic phase-field model!");
+            throw MechanicsException(__PRETTY_FUNCTION__,
+                    "Visualization of stress not implemented for the anisotropic phase-field model!");
 
             break;
         }
 
         case NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE:
         {
-            throw MechanicsException(__PRETTY_FUNCTION__,"Visualization of strain not implemented for the anisotropic phase-field model!");
+            throw MechanicsException(__PRETTY_FUNCTION__,
+                    "Visualization of strain not implemented for the anisotropic phase-field model!");
             break;
         }
 
         case NuTo::Constitutive::eOutput::ELASTIC_ENERGY_DAMAGED_PART:
         {
             ConstitutiveIOBase& elasticEnergyLoadTerm = *itOutput.second;
-            elasticEnergyLoadTerm[0] =  currentStaticData.GetHistoryVariable();
+            elasticEnergyLoadTerm[0] = currentEnergyDensity;
 
             break;
         }
@@ -509,7 +508,7 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const Consti
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
 
-            if (elasticEnergyPlus == currentStaticData.GetHistoryVariable())
+            if (elasticEnergyPlus == currentEnergyDensity)
             {
                 tangent[0] = stressPlus(0,0);
                 tangent[1] = stressPlus(1,1);
@@ -546,42 +545,46 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const Consti
     // return old/new history variables
     if (performUpdateAtEnd)
     {
-        return currentStaticData.GetHistoryVariable();
+        return currentEnergyDensity;
     }
     else
     {
-        return rOldStaticData.GetHistoryVariable();
+        return oldEnergyDensity;
     }
 }
 
 
-NuTo::eError NuTo::PhaseField::Evaluate2D(ElementBase* rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
+NuTo::eError NuTo::PhaseField::Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
+        const ConstitutiveOutputMap& rConstitutiveOutput, Constitutive::StaticData::Component* staticData)
 {
-
-    if (rElement->GetSection()->GetType() != eSectionType::PLANE_STRAIN)
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "[ Invalid type of 2D section behavior found!!!");
+    const auto& planeState =
+        *dynamic_cast<ConstitutivePlaneState*>(rConstitutiveInput.at(Constitutive::eInput::PLANE_STATE).get());
+    if (planeState.GetPlaneState() != ePlaneState::PLANE_STRAIN)
+        throw MechanicsException(__PRETTY_FUNCTION__, "Invalid type of 2D section behavior found.");
 
     auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
     if (itCalculateStaticData == rConstitutiveInput.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "You need to specify the way the static data should be calculated (input list).");
+        throw MechanicsException(__PRETTY_FUNCTION__,
+                "You need to specify the way the static data should be calculated (input list).");
 
     const auto& calculateStaticData = dynamic_cast<const ConstitutiveCalculateStaticData&>(*itCalculateStaticData->second);
     int index = calculateStaticData.GetIndexOfPreviousStaticData();
 
-    const ConstitutiveStaticDataHistoryVariableScalar& oldStaticData = *(rElement->GetStaticDataBase(rIp).GetStaticData(index)->AsHistoryVariableScalar());
+    auto& energyStaticData = *dynamic_cast<Constitutive::StaticData::Leaf<double>*>(staticData);
+    double oldEnergyDensity = energyStaticData.GetData(index);
 
-    double staticData = 0.0;
+    double energyDensity = 0.0;
 
     switch (mEnergyDecomposition)
     {
     case Constitutive::ePhaseFieldEnergyDecomposition::ISOTROPIC:
     {
-        staticData =  Evaluate2DIsotropic(oldStaticData, rConstitutiveInput, rConstitutiveOutput);
+        energyDensity = Evaluate2DIsotropic(oldEnergyDensity, rConstitutiveInput, rConstitutiveOutput);
         break;
     }
     case Constitutive::ePhaseFieldEnergyDecomposition::ANISOTROPIC_SPECTRAL_DECOMPOSITION:
     {
-        staticData =  Evaluate2DAnisotropicSpectralDecomposition(oldStaticData, rConstitutiveInput, rConstitutiveOutput);
+        energyDensity = Evaluate2DAnisotropicSpectralDecomposition(oldEnergyDensity, rConstitutiveInput, rConstitutiveOutput);
         break;
     }
     default:
@@ -590,11 +593,14 @@ NuTo::eError NuTo::PhaseField::Evaluate2D(ElementBase* rElement, int rIp, const 
     }
 
     // update history variables
-    rElement->GetStaticData(rIp)->AsHistoryVariableScalar()->SetHistoryVariable(staticData);
+    energyStaticData.SetData(energyDensity);
     return eError::SUCCESSFUL;
 }
 
-NuTo::eError NuTo::PhaseField::Evaluate3D(ElementBase* rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
+NuTo::eError NuTo::PhaseField::Evaluate3D(
+        const ConstitutiveInputMap& rConstitutiveInput,
+        const ConstitutiveOutputMap& rConstitutiveOutput,
+        Constitutive::StaticData::Component*)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }
@@ -605,17 +611,17 @@ double NuTo::PhaseField::CalculateStaticDataExtrapolationError(ElementBase& rEle
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }
 
-NuTo::ConstitutiveStaticDataBase* NuTo::PhaseField::AllocateStaticData1D(const ElementBase* rElement) const
+NuTo::Constitutive::StaticData::Leaf<double>* NuTo::PhaseField::AllocateStaticData1D(const ElementBase* rElement) const
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }
 
-NuTo::ConstitutiveStaticDataBase* NuTo::PhaseField::AllocateStaticData2D(const ElementBase* rElement) const
+NuTo::Constitutive::StaticData::Leaf<double>* NuTo::PhaseField::AllocateStaticData2D(const ElementBase* rElement) const
 {
-    return new ConstitutiveStaticDataHistoryVariableScalar;
+    return Constitutive::StaticData::Leaf<double>::Create(0.);
 }
 
-NuTo::ConstitutiveStaticDataBase* NuTo::PhaseField::AllocateStaticData3D(const ElementBase* rElement) const
+NuTo::Constitutive::StaticData::Leaf<double>* NuTo::PhaseField::AllocateStaticData3D(const ElementBase* rElement) const
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }

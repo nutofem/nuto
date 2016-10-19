@@ -421,9 +421,9 @@ NuTo::SparseMatrixCSRVector2General<double> NuTo::BlockSparseMatrix::Get(std::st
         return ref.AsSparseMatrixCSRVector2General();
 }
 
+
 namespace NuTo
 {
-//! @brief output stream operator for outputs with cout or files
 std::ostream& operator<<(std::ostream &rOut, const NuTo::BlockSparseMatrix &rBlockSparseMatrix)
 {
     Eigen::IOFormat cleanFormat(Eigen::StreamPrecision, 0, " ", "\n", "|", " |");
@@ -437,8 +437,7 @@ std::ostream& operator<<(std::ostream &rOut, const NuTo::BlockSparseMatrix &rBlo
     }
     return rOut;
 }
-}  // namespace NuTo
-
+}
 #ifdef ENABLE_SERIALIZATION
 
 

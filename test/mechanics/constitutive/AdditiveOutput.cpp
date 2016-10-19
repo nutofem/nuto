@@ -43,12 +43,14 @@ BOOST_AUTO_TEST_CASE(additive_stresses)
     linElasticTwo.SetParameterDouble(Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 1.0);
     linElasticTwo.SetParameterDouble(Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.0);
 
-    additiveLaw.AddConstitutiveLaw(&linElasticOne);
-    additiveLaw.AddConstitutiveLaw(&linElasticTwo);
+    additiveLaw.AddConstitutiveLaw(linElasticOne);
+    additiveLaw.AddConstitutiveLaw(linElasticTwo);
 
     // Create input data
     ConstitutiveInputMap inputMap;
+
     inputMap[Constitutive::eInput::ENGINEERING_STRAIN] = ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::eInput::ENGINEERING_STRAIN);
+    inputMap[Constitutive::eInput::PLANE_STATE] = ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::eInput::PLANE_STATE);
     (*static_cast<EngineeringStrain<2>*>(inputMap.at(Constitutive::eInput::ENGINEERING_STRAIN).get()))[0] = 1.0;
     (*static_cast<EngineeringStrain<2>*>(inputMap.at(Constitutive::eInput::ENGINEERING_STRAIN).get()))[1] = 1.0;
     (*static_cast<EngineeringStrain<2>*>(inputMap.at(Constitutive::eInput::ENGINEERING_STRAIN).get()))[2] = 0.0;
@@ -58,17 +60,9 @@ BOOST_AUTO_TEST_CASE(additive_stresses)
     outputMap[Constitutive::eOutput::ENGINEERING_STRESS] =
         ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::eOutput::ENGINEERING_STRESS);
 
-    // mock up an element; ideally, this would not be necessary
-    std::vector<NuTo::NodeBase*> mockNodes;
-    InterpolationType interpolationType(Interpolation::eShapeType::TRIANGLE2D, 2);
-    IntegrationType2D3NGauss1Ip integrationType;
-    interpolationType.UpdateIntegrationType(integrationType);
-    auto element = ContinuumElement<2>(nullptr, mockNodes, ElementData::eElementDataType::CONSTITUTIVELAWIP, IpData::eIpDataType::NOIPDATA, &interpolationType);
-    auto section = SectionPlane(eSectionType::PLANE_STRESS);
-    element.SetSection(&section);
-
     // evaluate the additive input law
-    additiveLaw.Evaluate2D(&element, 0, inputMap, outputMap);
+    auto staticData = additiveLaw.AllocateStaticData<2>(nullptr);
+    additiveLaw.Evaluate2D(inputMap, outputMap, staticData);
 
     // compare to expected results
     const auto& stress = *static_cast<EngineeringStress<2>*>(outputMap.at(Constitutive::eOutput::ENGINEERING_STRESS).get());

@@ -10,6 +10,9 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include "nuto/mechanics/tools/MeshGenerator.h"
+#include "nuto/mechanics/constitutive/staticData/Leaf.h"
+#include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
+
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeEnum.h"
 #include "nuto/mechanics/groups/GroupEnum.h"
@@ -169,15 +172,18 @@ public:
 
     void SetupStaticData()
     {
+        using namespace NuTo::Constitutive::StaticData;
         for (int i=0; i<mS.GetNumElements(); i++)
         {
             for (int theIP=0; theIP< mS.ElementGetElementPtr(i)->GetNumIntegrationPoints(); theIP++)
             {
-                NuTo::ConstitutiveStaticDataMoistureTransport *StaticData = mS.ElementGetElementPtr(i)->GetStaticData(theIP)->AsMoistureTransport();
-                StaticData->SetLastSorptionCoeff(mS.ConstitutiveLawGetParameterFullVectorDouble(ConstitutiveLawID,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
-                StaticData->SetCurrentSorptionCoeff(mS.ConstitutiveLawGetParameterFullVectorDouble(ConstitutiveLawID,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
-                StaticData->SetLastRelHumValue(InitialRelativeHumidity);
-                StaticData->SetSorptionHistoryDesorption(SorptionHistoryDesorption);
+                auto& staticData =
+                    *dynamic_cast<Leaf<DataMoistureTransport>*>(mS.ElementGetElementPtr(i)->GetConstitutiveStaticData(theIP));
+                auto& moistureData = staticData.GetData();
+                moistureData.SetLastSorptionCoeff(mS.ConstitutiveLawGetParameterFullVectorDouble(ConstitutiveLawID,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
+                moistureData.SetCurrentSorptionCoeff(mS.ConstitutiveLawGetParameterFullVectorDouble(ConstitutiveLawID,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
+                moistureData.SetLastRelHumValue(InitialRelativeHumidity);
+                moistureData.SetDesorption(SorptionHistoryDesorption);
             }
         }
     }

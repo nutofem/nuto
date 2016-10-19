@@ -159,16 +159,6 @@ double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double rRelativ
 }
 
 
-void NuTo::ConstitutiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw, Constitutive::eInput rModiesInput)
-{
-    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"The constitutive relationship does not have this functionality.");
-}
-
-void NuTo::ConstitutiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase *rConstitutiveLaw)
-{
-    throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"The constitutive relationship does not have this functionality.");
-}
-
 
 //! @brief ... checks if a constitutive law has an specific output
 //! @return ... true/false
@@ -176,9 +166,6 @@ bool NuTo::ConstitutiveBase::CheckOutputTypeCompatibility(Constitutive::eOutput 
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::CheckOutputTypeCompatibility] Function not implemented for this constitutive law.");
 }
-
-
-
 
 // modify parameter validity flag
 void NuTo::ConstitutiveBase::SetParametersValid()
@@ -205,30 +192,6 @@ void NuTo::ConstitutiveBase::Info(unsigned short rVerboseLevel, Logger& rLogger)
 {
     std::cout << "    parameter validity flag: " << this->mParametersValid << std::endl;
 }
-
-//! @brief ... allocate the correct static data
-//! @return ... see brief explanation
-NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveBase::AllocateStaticData1D(const ElementBase* rElement)const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AllocateStaticData1D] Allocate routine for 1D EngineeringStressStrain not implemented.");
-}
-
-//! @brief ... allocate the correct static data
-//! @return ... see brief explanation
-NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveBase::AllocateStaticData2D(const ElementBase* rElement)const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AllocateStaticData2D] Allocate routine for 2D EngineeringStressStrain not implemented.");
-}
-
-//! @brief ... allocate the correct static data
-//! @return ... see brief explanation
-NuTo::ConstitutiveStaticDataBase* NuTo::ConstitutiveBase::AllocateStaticData3D(const ElementBase* rElement)const
-{
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AllocateStaticData3D] Allocate routine for 3D EngineeringStressStrain not implemented.");
-}
-
-
-
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class

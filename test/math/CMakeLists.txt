@@ -31,18 +31,12 @@ IF(ENABLE_ARPACK)
  ADD_EXECUTABLE(Arpack Arpack.cpp)
  TARGET_LINK_LIBRARIES(Arpack NuToMath NuToBase ${Boost_LIBRARIES} ${OpenBLAS_LIBRARIES} )
  TARGET_LINK_LIBRARIES(Arpack ${ARPACK_LIBRARIES})
- IF(MINGW)
-   SET_TARGET_PROPERTIES(Arpack PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
- ENDIF(MINGW)#
  ADD_TEST(c::math::Arpack ${CMAKE_CURRENT_BUILD_DIR}/Arpack)
 ENDIF(ENABLE_ARPACK) 
 
 ##### SparseMatrixTests #####
 ADD_EXECUTABLE(SparseMatrixTests SparseMatrixTests.cpp)
 TARGET_LINK_LIBRARIES(SparseMatrixTests NuToMath NuToBase ${Boost_LIBRARIES})
-IF(MINGW)
-  SET_TARGET_PROPERTIES(SparseMatrixTests PROPERTIES LINK_FLAGS -Wl,--enable-auto-import)
-ENDIF(MINGW)#
 ADD_TEST(c::math::SparseMatrixTests ${CMAKE_CURRENT_BUILD_DIR}/SparseMatrixTests)
 
 ENDIF(ENABLE_C++_TESTS)
@@ -51,4 +45,8 @@ if(ENABLE_UNIT_TESTS)
     add_executable(Interpolation Interpolation.cpp)
     target_link_libraries(Interpolation NuToMath NuToBase)
     add_test(c::unit::Interpolation ${CMAKE_CURRENT_BUILD_DIR}/Interpolation)
+
+    add_executable(SerializeData SerializeData.cpp)
+    target_link_libraries(SerializeData NuToMath NuToBase)
+    add_test(c::unit::SerializeData ${CMAKE_CURRENT_BUILD_DIR}/SerializeData)
 endif()
