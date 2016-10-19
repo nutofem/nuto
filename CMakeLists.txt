@@ -5,12 +5,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 # Get information during make
 SET(CMAKE_VERBOSE_MAKEFILE OFF)
 
-
-# Check for Mingw64
-if(MINGW AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
-  set(MINGW64 TRUE)
-endif()
-
 # options
 OPTION(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
 OPTION(ENABLE_ARPACK "enables ARPACK libraries (for the solution of eigenvalue problems)" FALSE)
@@ -127,9 +121,6 @@ IF(ENABLE_OPENMP)
   IF(OPENMP_FOUND)
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    IF(NOT MINGW)
-      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xlinker -export-dynamic")
-    ENDIF(NOT MINGW)
     IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
       SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
     ENDIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
@@ -143,7 +134,7 @@ ELSE(ENABLE_OPENMP)
 ENDIF(ENABLE_OPENMP)
 
 # use newer c++ standard, enable additional warnings, support for sse4
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -msse4")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -msse4 -pedantic")
 # prevent warnings from boost and eigen
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --system-header-prefix=boost/ --system-header-prefix=eigen3/ -Wno-inconsistent-missing-override -Wno-missing-braces")
@@ -153,13 +144,6 @@ if(ENABLE_COVERAGE)
     include(Coverage)
 endif()
 
-# there is an error in the numpy headers, which produces a warning that is
-# fatal when using pedantic-errors
-if(ENABLE_NUMPY)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic")
-else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic-errors")
-endif()
 # gcc specific options
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
   if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.7.0")
@@ -198,14 +182,6 @@ EXECUTE_PROCESS(COMMAND ${PYTHON_EXECUTABLE} -c "import sys;print(sys.version[:3
 message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
 message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
 message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
-## Extra flags to work around build issues with Python on Mingw64
-if(MINGW64)
-  # Python.h #defines 'hypot' to '_hypot'; this breaks the C++ header <cmath>.
-  # Workaround: #define _hypot to hypot
-  SET(PYTHON_C_FLAGS "-D_hypot=hypot")
-  # Preprocessor definition needed by Python.h to use proper 64-bit definition
-  SET(PYTHON_C_FLAGS "${PYTHON_C_FLAGS} -DMS_WIN64")
-endif()
 
 # set relative paths for install
 SET(LIB_SUFFIX "" CACHE STRING "Define suffix of directory name (32/64)" )
