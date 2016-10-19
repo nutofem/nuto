@@ -358,6 +358,9 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian1(Constitutiv
 
             switch (Node::CombineDofs(dofRow, dofCol))
             {
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1];
+                break;
 
             case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY,Node::eDof::RELATIVEHUMIDITY):
                 rConstitutiveOutput[NuTo::Constitutive::eOutput::D_INTERNAL_GRADIENT_RH_D_RH_NN_H1];
@@ -517,6 +520,12 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(ConstitutiveInput
         {
             auto& strain = *static_cast<ConstitutiveVector<VoigtDim>*>(it.second.get());
             strain.AsVector() = rData.mB.at(Node::eDof::DISPLACEMENTS) * rData.mNodalValues.at(Node::eDof::DISPLACEMENTS);
+            break;
+        }
+        case Constitutive::eInput::ENGINEERING_STRAIN_DT1:
+        {
+            auto& strain = *static_cast<ConstitutiveVector<VoigtDim>*>(it.second.get());
+            strain.AsVector() = rData.mB.at(Node::eDof::DISPLACEMENTS) * rData.mNodalValues_dt1.at(Node::eDof::DISPLACEMENTS);
             break;
         }
         case Constitutive::eInput::NONLOCAL_EQ_STRAIN:
@@ -991,6 +1000,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatri
         EvaluateDataContinuum<TDim> &rData, int rTheIP,
         const ConstitutiveOutputMap& constitutiveOutput) const
 {
+    constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
         for (auto dofCol : mInterpolationType->GetActiveDofs())
@@ -1001,7 +1011,11 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatri
             switch (Node::CombineDofs(dofRow, dofCol))
             {
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
+            {
+                const auto& tangentStressStrainRate = *static_cast<ConstitutiveMatrix<VoigtDim, VoigtDim>*>(constitutiveOutput.at(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1).get());
+                hessian1 += rData.mDetJxWeightIPxSection *  rData.mB.at(dofRow).transpose() * tangentStressStrainRate * rData.mB.at(dofRow);
                 break;
+            }
 
             case Node::CombineDofs(Node::eDof::TEMPERATURE, Node::eDof::TEMPERATURE):
             {

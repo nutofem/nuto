@@ -16,6 +16,20 @@ class LinearDampingEngineeringStress : public ConstitutiveBase
 public:
     LinearDampingEngineeringStress();
 
+
+    //! @brief ... create new static data object for an integration point
+    //! @return ... pointer to static data object
+    ConstitutiveStaticDataBase* AllocateStaticData1D(const ElementBase* rElement) const override {return nullptr;}
+
+    //! @brief ... create new static data object for an integration point
+    //! @return ... pointer to static data object
+    ConstitutiveStaticDataBase* AllocateStaticData2D(const ElementBase* rElement) const override  {return nullptr;}
+
+    //! @brief ... create new static data object for an integration point
+    //! @return ... pointer to static data object
+    ConstitutiveStaticDataBase* AllocateStaticData3D(const ElementBase* rElement) const override  {return nullptr;}
+
+
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs
     //! @param rInterpolationType ... interpolation type to determine additional inputs

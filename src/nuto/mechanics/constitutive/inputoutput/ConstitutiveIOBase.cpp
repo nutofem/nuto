@@ -82,6 +82,7 @@ std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitu
         case eOutput::ENGINEERING_STRAIN:
             return std::make_unique<EngineeringStrain<TDim>>();
         case eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+        case eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1:
             return std::make_unique<ConstitutiveMatrix<VoigtDim, VoigtDim>>();
         case eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT:
             return std::make_unique<ConstitutiveMatrix<TDim, TDim>>();
@@ -129,6 +130,7 @@ std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitu
             return std::make_unique<ConstitutiveVector<TDim>>();
         // other
         case eInput::ENGINEERING_STRAIN:
+        case eInput::ENGINEERING_STRAIN_DT1:
             return std::make_unique<EngineeringStrain<TDim>>();
         case eInput::INTERFACE_SLIP:
             return std::make_unique<ConstitutiveMatrixXd>();

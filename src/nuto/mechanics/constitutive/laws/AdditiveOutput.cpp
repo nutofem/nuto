@@ -126,6 +126,7 @@ NuTo::eError NuTo::AdditiveOutput::Evaluate(NuTo::ElementBase* rElement, int rIp
                         rConstitutiveOutput.at(output.first)->SetIsCalculated(true);
                         break;
                     case eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN:
+                    case eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1:
                         *static_cast<ConstitutiveMatrix<VoigtDim, VoigtDim>*>(rConstitutiveOutput.at(output.first).get()) +=
                             *static_cast<ConstitutiveMatrix<VoigtDim, VoigtDim>*>(singleOutput.at(output.first).get());
                         rConstitutiveOutput.at(output.first)->SetIsCalculated(true);

@@ -6,6 +6,8 @@
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/timeIntegration/TimeIntegrationBase.h"
+#include "nuto/mechanics/timeIntegration/NewmarkBase.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include "nuto/mechanics/tools/MeshGenerator.h"
 #include "nuto/visualize/VisualizeEnum.h"
@@ -23,11 +25,15 @@
 \*---------------------------------------------*/
 
 
+// --- Test Parameters
+// -------------------
+
+#define SURFACELOAD 60.0e6
 
 // --- Material Parameters
 // -----------------------
 
-#define LD_DAMPINGCOEFFICIENT 30.0e9
+#define LD_DAMPINGCOEFFICIENT 120.0e15
 #define LE_YOUNGSMODULUS 30.0e9
 #define LE_POISSONRATIO 0.2
 
@@ -48,7 +54,7 @@
 
 // --- Time integration scheme
 // ---------------------------
-#define RES_TOLERANCE_MECHANICS 1e-8
+#define RES_TOLERANCE_MECHANICS 1e-6
 #define MAX_ITERATION 20
 
 
@@ -62,10 +68,9 @@
 
 struct TimeControl
 {
-    double          delta_t                         = 1.0/1.0  *     1.0 * 24.0 * 60.0 * 60.0;
-    double          t_write                         = 1.0/1.0  *     1.0 * 24.0 * 60.0 * 60.0;
-    double          t_final                         = 20.0/1.0 *     1.0 * 24.0 * 60.0 * 60.0;
-    double          BC_TransitionTime               =                      24.0 * 60.0 * 60.0;
+    double          delta_t                         = 60.0;
+    double          t_write                         = 60.0;
+    double          t_final                         = 20.0 * 60.0;
 };
 
 
@@ -81,7 +86,7 @@ struct TimeControl
 
 
 
-template<int TDim>
+template <int TDim>
 int AddConstraint(NuTo::Structure& rS,
                   NuTo::NewmarkDirect& rTI,
                   std::function<bool(NuTo::NodeBase*)> rGetNodeFunction,
@@ -99,6 +104,31 @@ int AddConstraint(NuTo::Structure& rS,
 
 
 }
+
+
+
+
+/*---------------------------------------------*\
+|*                   force                     *|
+\*---------------------------------------------*/
+
+template <int TDim>
+void AddSurfaceLoad(NuTo::Structure& rS,
+                    std::function<bool(NuTo::NodeBase*)> rGetNodeFunction)
+{
+    int GRPNodesSurfaceLoad = rS.GroupCreate("Nodes");
+    rS.GroupAddNodeFunction(GRPNodesSurfaceLoad,rGetNodeFunction);
+
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> direction(TDim,1);
+    direction.SetValue(0, 0, 1.0);
+
+    rS.LoadCreateNodeGroupForce(0,
+                                GRPNodesSurfaceLoad,
+                                direction,
+                                SURFACELOAD);
+}
+
+
 
 /*---------------------------------------------*\
 |*             interpolation type              *|
@@ -318,6 +348,9 @@ inline void SetupVisualize(NuTo::Structure& rS)
 #endif // ENABLE_VISUALIZE
 }
 
+
+
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //  Tests
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -352,7 +385,7 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
     NuTo::ConstitutiveBase* CL_LE_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LE_ID);
 
     CL_AO_Ptr->AddConstitutiveLaw(CL_LE_Ptr);
-
+    CL_AO_Ptr->AddConstitutiveLaw(CL_LD_Ptr);
 
 
     TimeControl tCtrl;
@@ -380,8 +413,9 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
     S.NodeBuildGlobalDofs();
 
 
+    // Add constraint on the leftern side
 
-    auto lambdaGetNodesLeft = [rL](NuTo::NodeBase* rNodePtr) -> bool
+    auto lambdaGetNodesLeftSurface = [](NuTo::NodeBase* rNodePtr) -> bool
                                 {
                                     if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)
                                         return false;
@@ -400,8 +434,42 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
 
     AddConstraint<TDim>(S,
                         TI,
-                        lambdaGetNodesLeft,
+                        lambdaGetNodesLeftSurface,
                         0);
+
+
+    // Add force on the rightern side
+
+    auto lambdaGetNodesRightSurface = [rL](NuTo::NodeBase* rNodePtr) -> bool
+                                {
+                                    if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)
+                                        return false;
+                                    double Tol = 1.e-6;
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
+                                    {
+                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+                                        if (x >= rL[0]   - Tol   && x <= rL[0]   + Tol)
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                };  // lambdaGetNodeLeftBottom
+
+
+    AddSurfaceLoad<TDim>(S,
+                         lambdaGetNodesRightSurface);
+
+
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> TimeDependentLoadFactor(3,2);
+    TimeDependentLoadFactor(0,0) = 0.;
+    TimeDependentLoadFactor(1,0) = 1.;
+    TimeDependentLoadFactor(2,0) = 2.;
+    TimeDependentLoadFactor(0,1) = 0.;
+    TimeDependentLoadFactor(1,1) = 1.;
+    TimeDependentLoadFactor(2,1) = 1.;
+
+    TI.SetTimeDependentLoadCase(0,TimeDependentLoadFactor);
 
     SetupMultiProcessor(S);
     SetupVisualize(S);

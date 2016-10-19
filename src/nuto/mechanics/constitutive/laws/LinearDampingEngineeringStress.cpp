@@ -31,7 +31,7 @@ NuTo::ConstitutiveInputMap NuTo::LinearDampingEngineeringStress::GetConstitutive
         {
         case NuTo::Constitutive::eOutput::ENGINEERING_STRESS:
         case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
-            constitutiveInputMap[Constitutive::eInput::ENGINEERING_STRAIN];
+            constitutiveInputMap[Constitutive::eInput::ENGINEERING_STRAIN_DT1];
             break;
 
         // no inputs needed for:
@@ -57,8 +57,7 @@ bool NuTo::LinearDampingEngineeringStress::CheckDofCombinationComputable(Node::e
     assert(rTimeDerivative == 0 or rTimeDerivative == 1 or rTimeDerivative == 2);
     switch (rTimeDerivative)
     {
-    case 0:
-    case 2:
+    case 1:
     {
         switch (Node::CombineDofs(rDofRow, rDofCol))
         {
@@ -200,6 +199,7 @@ NuTo::eError NuTo::LinearDampingEngineeringStress::EvaluateLinearDampingEngineer
         {
         case NuTo::Constitutive::eOutput::ENGINEERING_STRESS:
         {
+            assert(rConstitutiveInput.find(Constitutive::eInput::ENGINEERING_STRAIN_DT1) != rConstitutiveInput.end());
             const auto& engineeringStrainDT1 = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN_DT1)->AsEngineeringStrain<TDim>();
 
             ConstitutiveIOBase& engineeringStress = *itOutput.second;
@@ -208,6 +208,20 @@ NuTo::eError NuTo::LinearDampingEngineeringStress::EvaluateLinearDampingEngineer
             {
                 engineeringStress[i] = mDampingCoefficient * engineeringStrainDT1[i];
             }
+            break;
+        }
+        case NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1:
+        {
+            if(TDim == 1)
+            {
+                ConstitutiveIOBase& tangent = *itOutput.second;
+                tangent.AssertIsMatrix<1,1>(itOutput.first, __PRETTY_FUNCTION__);
+
+                tangent(0,0) = mDampingCoefficient;
+            }
+            else
+                throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Not implemented for dimension 2 and 3");
+
             break;
         }
 
