@@ -2,7 +2,8 @@
 
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
-
+#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLaw.h"
+#include "nuto/mechanics/constitutive/staticData/DataEmpty.h"
 
 
 namespace NuTo
@@ -75,7 +76,28 @@ class LinearElasticEngineeringStress: public ConstitutiveBase
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
+
+    typedef Constitutive::StaticData::DataEmpty StaticDataType;
+    using StaticData = Constitutive::StaticData::DataContainer<LinearElasticEngineeringStress>;
+
+
     LinearElasticEngineeringStress();
+
+    Constitutive::IPConstitutiveLawBase* CreateIPLaw()
+    {
+        return new Constitutive::IPConstitutiveLaw<LinearElasticEngineeringStress>(*this);
+    }
+
+
+    //! @brief ... evaluate the constitutive relation in 1D
+    //! @param rElement ... element
+    //! @param rIp ... integration point
+    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
+    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    NuTo::eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
+                            const ConstitutiveOutputMap& rConstitutiveOutput,
+                            Constitutive::StaticData::Component* staticData) override;
+
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs
@@ -90,7 +112,7 @@ public:
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
     NuTo::eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
+            StaticData& staticData) {}
 
     //! @brief ... evaluate the constitutive relation in 2D
     //! @param rElement ... element
