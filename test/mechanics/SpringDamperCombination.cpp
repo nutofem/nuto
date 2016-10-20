@@ -12,8 +12,10 @@
 #include "nuto/mechanics/tools/MeshGenerator.h"
 #include "nuto/visualize/VisualizeEnum.h"
 
-#include <iostream>
+#include <boost/foreach.hpp>
 
+#include <iostream>
+#include <math.h>
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -29,11 +31,15 @@
 // -------------------
 
 #define SURFACELOAD 60.0e6
+#define DELTAT 60.0
+#define TWRITE 60.0
+#define TEND 20 * DELTAT
+
 
 // --- Material Parameters
 // -----------------------
 
-#define LD_DAMPINGCOEFFICIENT 120.0e15
+#define LD_DAMPINGCOEFFICIENT 30.0e12
 #define LE_YOUNGSMODULUS 30.0e9
 #define LE_POISSONRATIO 0.2
 
@@ -58,6 +64,14 @@
 #define MAX_ITERATION 20
 
 
+
+/*---------------------------------------------*\
+|*                  TYPEDEFS                   *|
+\*---------------------------------------------*/
+
+typedef boost::ptr_map<int, NuTo::NodeBase> NodeMap;
+
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //  Setup structs
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -68,9 +82,9 @@
 
 struct TimeControl
 {
-    double          delta_t                         = 60.0;
-    double          t_write                         = 60.0;
-    double          t_final                         = 20.0 * 60.0;
+    double          delta_t                         = DELTAT;
+    double          t_write                         = TWRITE;
+    double          t_final                         = TEND;
 };
 
 
@@ -317,7 +331,8 @@ void SetupStructure(NuTo::Structure& rS, std::string rTestName)
 
 inline void SetupTimeIntegration(NuTo::NewmarkDirect& rTI,
                                  const TimeControl& rTC,
-                                 const std::string& rResultDir)
+                                 const std::string& rResultDir,
+                                 const int IDNodeRight)
 {
     rTI.SetPerformLineSearch(false);
     rTI.SetVerboseLevel(0);
@@ -328,6 +343,8 @@ inline void SetupTimeIntegration(NuTo::NewmarkDirect& rTI,
     rTI.SetMinTimeStepPlot(rTC.t_write);
 
     rTI.SetResultDirectory(rResultDir,true);
+
+    rTI.AddResultNodeDisplacements("Displacements",IDNodeRight);
 }
 
 
@@ -348,6 +365,46 @@ inline void SetupVisualize(NuTo::Structure& rS)
 #endif // ENABLE_VISUALIZE
 }
 
+
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//  Check Results
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+template<int TDim>
+void CheckResults(NuTo::Structure& rS,
+                  std::array<double,TDim> rL)
+{
+
+    const NodeMap& nodePtrMap = rS.NodeGetNodeMap();
+    BOOST_FOREACH(NodeMap::const_iterator::value_type it, nodePtrMap)
+    {
+        const NuTo::NodeBase* nodePtr = it.second;
+        if(nodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)<1)
+        {
+            continue;   // Nodes without Displacements cant be checked
+        }
+        for(int i=0; i<TDim; ++i)
+        {
+            double coord   = nodePtr->Get(NuTo::Node::eDof::COORDINATES)[i];
+            if(coord <= 0.)
+                continue;
+            double strain_numerical  = nodePtr->Get(NuTo::Node::eDof::DISPLACEMENTS)[i] / coord;
+            double strain_theoretical = SURFACELOAD / LE_YOUNGSMODULUS * (1 - std::exp(-LE_YOUNGSMODULUS/LD_DAMPINGCOEFFICIENT * TEND));
+            double ErrorPercentage = std::abs(1-strain_numerical/strain_theoretical);
+            const double tolerance = 2e-2;
+            if(ErrorPercentage>tolerance)
+                throw NuTo::Exception(__PRETTY_FUNCTION__,"Difference to theoretical solution is bigger than 2%!");
+
+        }
+    }
+        std::cout << "Displacements correct!" << std::endl;
+}
+
+
+
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //  Tests
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -360,6 +417,8 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
                                  std::array<double,TDim> rL,
                                  std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> rDofIPTMap)
 {
+    if(TDim>1)
+        throw NuTo::Exception(__PRETTY_FUNCTION__,"2D and 3D are currently not supported!");
 
     std::string testName = std::string("SpringDamperCombination") + std::to_string(TDim) +"D";
 
@@ -385,10 +444,6 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
     dynamic_cast<NuTo::AdditiveOutput*>(CL_AO_Ptr)->AddConstitutiveLaw(*CL_LD_Ptr);
 
     TimeControl tCtrl;
-    tCtrl.t_final = 365.0 * 24.0 * 60.0 * 60.0;
-    tCtrl.delta_t = tCtrl.t_final / 10.;
-    tCtrl.t_write = tCtrl.delta_t;
-
 
     CL_LD_Ptr->SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMPING_COEFFICIENT, LD_DAMPINGCOEFFICIENT);
     CL_LE_Ptr->SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, LE_POISSONRATIO);
@@ -455,6 +510,8 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
                          lambdaGetNodesRightSurface);
 
 
+
+
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> TimeDependentLoadFactor(3,2);
     TimeDependentLoadFactor(0,0) = 0.;
     TimeDependentLoadFactor(1,0) = 1.;
@@ -468,11 +525,31 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
     SetupMultiProcessor(S);
     SetupVisualize(S);
 
+
+
+    int IDNodeRight = -1;
+    const auto& nodePtrMap = S.NodeGetNodeMap();
+    BOOST_FOREACH(NodeMap::const_iterator::value_type it, nodePtrMap)
+    {
+        const NuTo::NodeBase* nodePtr = it.second;
+        double coord   = nodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+        double tolerance = 1e-6;
+        if(std::abs(coord-rL[0]) < tolerance)
+        {
+            IDNodeRight = S.NodeGetId(nodePtr);
+            break;
+        }
+    }
+
     SetupTimeIntegration(TI,
                          tCtrl,
-                         testName);
+                         testName,
+                         IDNodeRight);
 
     TI.Solve(tCtrl.t_final);
+
+    CheckResults<TDim>(S,
+                       rL);
 
     std::cout << "Test - PASSED!" << std::endl << std::endl;
 }
@@ -490,7 +567,7 @@ int main()
         {NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1}};
 
 
-    TestSpringDamperCombination<1>( {3},
+    TestSpringDamperCombination<1>( {10},
                                     {0.01},
                                     dofIPTMap);
 
