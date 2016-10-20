@@ -1,326 +1,328 @@
-SET(NuToMechanicsConstitutive_SOURCES
-constitutive/ConstitutiveBase.cpp
-constitutive/ConstitutiveEnum.cpp
-constitutive/inputoutput/ConstitutiveIOBase.cpp
-constitutive/inputoutput/ConstitutiveIOMap.cpp
-constitutive/inputoutput/EngineeringStrain.cpp
-constitutive/inputoutput/EngineeringStress.cpp
-constitutive/inputoutput/EquivalentStrain.cpp
-constitutive/laws/AdditiveBase.cpp
-constitutive/laws/AdditiveInputExplicit.cpp
-constitutive/laws/AdditiveInputImplicit.cpp
-constitutive/laws/AdditiveOutput.cpp
-constitutive/laws/EngineeringStressHelper.cpp
-constitutive/laws/FibreMatrixBondStressSlip.cpp
-constitutive/laws/GradientDamageEngineeringStress.cpp
-constitutive/laws/PhaseField.cpp
-constitutive/laws/HeatConduction.cpp
-constitutive/laws/LinearDampingEngineeringStress.cpp
-constitutive/laws/LinearElasticEngineeringStress.cpp
-constitutive/laws/LocalDamageModel.cpp
-constitutive/laws/MisesPlasticityEngineeringStress.cpp
-constitutive/laws/MoistureTransport.cpp
-constitutive/laws/ShrinkageCapillaryStrainBased.cpp
-constitutive/laws/ShrinkageCapillaryStressBased.cpp
-constitutive/laws/ThermalStrains.cpp
-constitutive/staticData/Composite.cpp
-constitutive/staticData/DataMisesPlasticity.cpp
-constitutive/staticData/DataMoistureTransport.cpp
-)
+set(NuToMechanicsConstitutive_SOURCES
+    constitutive/ConstitutiveBase.cpp
+    constitutive/ConstitutiveEnum.cpp
+    constitutive/inputoutput/ConstitutiveIOBase.cpp
+    constitutive/inputoutput/ConstitutiveIOMap.cpp
+    constitutive/inputoutput/EngineeringStrain.cpp
+    constitutive/inputoutput/EngineeringStress.cpp
+    constitutive/inputoutput/EquivalentStrain.cpp
+    constitutive/laws/AdditiveBase.cpp
+    constitutive/laws/AdditiveInputExplicit.cpp
+    constitutive/laws/AdditiveInputImplicit.cpp
+    constitutive/laws/AdditiveOutput.cpp
+    constitutive/laws/EngineeringStressHelper.cpp
+    constitutive/laws/FibreMatrixBondStressSlip.cpp
+    constitutive/laws/GradientDamageEngineeringStress.cpp
+    constitutive/laws/PhaseField.cpp
+    constitutive/laws/HeatConduction.cpp
+    constitutive/laws/LinearDampingEngineeringStress.cpp
+    constitutive/laws/LinearElasticEngineeringStress.cpp
+    constitutive/laws/LocalDamageModel.cpp
+    constitutive/laws/MisesPlasticityEngineeringStress.cpp
+    constitutive/laws/MoistureTransport.cpp
+    constitutive/laws/ShrinkageCapillaryStrainBased.cpp
+    constitutive/laws/ShrinkageCapillaryStressBased.cpp
+    constitutive/laws/ThermalStrains.cpp
+    constitutive/staticData/Composite.cpp
+    constitutive/staticData/DataMisesPlasticity.cpp
+    constitutive/staticData/DataMoistureTransport.cpp
+    )
 
-SET(NuToMechanicsConstraint_SOURCES
-constraints/ConstraintBase.cpp
-constraints/ConstraintEquationTerm.cpp
-constraints/ConstraintLinear.cpp
-constraints/ConstraintLinearDerivativeNonlocalTotalStrain1D.cpp
-constraints/ConstraintLinearDisplacementsPeriodic2D.cpp
-constraints/ConstraintLinearEquation.cpp
-constraints/ConstraintLinearNodeDisplacements1D.cpp
-constraints/ConstraintLinearNodeDisplacements2D.cpp
-constraints/ConstraintLinearNodeDisplacements3D.cpp
-constraints/ConstraintLinearNodeGroupDisplacements1D.cpp
-constraints/ConstraintLinearNodeGroupDisplacements2D.cpp
-constraints/ConstraintLinearNodeGroupDisplacements3D.cpp
-constraints/ConstraintLinearNodeGroupRotations2D.cpp
-constraints/ConstraintLinearNodeGroupTemperature.cpp
-constraints/ConstraintLinearNodeRelativeHumidity.cpp
-constraints/ConstraintLinearNodeRotations2D.cpp
-constraints/ConstraintLinearNodeTemperature.cpp
-constraints/ConstraintLinearNodeWaterVolumeFraction.cpp
-constraints/ConstraintNode.cpp
-constraints/ConstraintNodeGroup.cpp
-constraints/ConstraintNonlinear.cpp
-)
+set(NuToMechanicsConstraint_SOURCES
+    constraints/ConstraintBase.cpp
+    constraints/ConstraintEquationTerm.cpp
+    constraints/ConstraintLinear.cpp
+    constraints/ConstraintLinearDerivativeNonlocalTotalStrain1D.cpp
+    constraints/ConstraintLinearDisplacementsPeriodic2D.cpp
+    constraints/ConstraintLinearEquation.cpp
+    constraints/ConstraintLinearNodeDisplacements1D.cpp
+    constraints/ConstraintLinearNodeDisplacements2D.cpp
+    constraints/ConstraintLinearNodeDisplacements3D.cpp
+    constraints/ConstraintLinearNodeGroupDisplacements1D.cpp
+    constraints/ConstraintLinearNodeGroupDisplacements2D.cpp
+    constraints/ConstraintLinearNodeGroupDisplacements3D.cpp
+    constraints/ConstraintLinearNodeGroupRotations2D.cpp
+    constraints/ConstraintLinearNodeGroupTemperature.cpp
+    constraints/ConstraintLinearNodeRelativeHumidity.cpp
+    constraints/ConstraintLinearNodeRotations2D.cpp
+    constraints/ConstraintLinearNodeTemperature.cpp
+    constraints/ConstraintLinearNodeWaterVolumeFraction.cpp
+    constraints/ConstraintNode.cpp
+    constraints/ConstraintNodeGroup.cpp
+    constraints/ConstraintNonlinear.cpp
+    )
 
-SET(NuToMechanicsDofSubMatrixStorage_SOURCES
-dofSubMatrixStorage/DofStatus.cpp
-dofSubMatrixStorage/BlockStorageBase.cpp
-dofSubMatrixStorage/BlockSparseMatrix.cpp
-dofSubMatrixStorage/BlockScalar.cpp
-dofSubMatrixStorage/BlockFullVector.cpp
-dofSubMatrixStorage/BlockFullMatrix.cpp
-)
+set(NuToMechanicsDofSubMatrixStorage_SOURCES
+    dofSubMatrixStorage/DofStatus.cpp
+    dofSubMatrixStorage/BlockStorageBase.cpp
+    dofSubMatrixStorage/BlockSparseMatrix.cpp
+    dofSubMatrixStorage/BlockScalar.cpp
+    dofSubMatrixStorage/BlockFullVector.cpp
+    dofSubMatrixStorage/BlockFullMatrix.cpp
+    )
 
-SET(NuToMechanicsElements_SOURCES
-elements/ContinuumElement.cpp	
-elements/ContinuumBoundaryElement.cpp
-elements/ContinuumBoundaryElementConstrainedControlNode.cpp
-elements/ContinuumContactElement.cpp
-elements/ElementBase.cpp
-elements/ElementDataBase.cpp
-elements/ElementDataConstitutiveBase.cpp
-elements/Element1DInXD.cpp
-elements/Element2DInterface.cpp
-elements/ContinuumElementIGA.cpp
-elements/ElementDataConstitutiveIp.cpp
-elements/ElementDataConstitutiveIpNonlocal.cpp
-elements/ElementDataEnum.cpp
-elements/ElementDataIpBase.cpp
-elements/ElementDataNonlocalBase.cpp
-elements/ElementDataVariableConstitutiveBase.cpp
-elements/ElementDataVariableConstitutiveIp.cpp
-elements/ElementEnum.cpp
-elements/ElementOutputBase.cpp
-elements/ElementShapeFunctions.cpp
-elements/IpDataBase.cpp
-elements/IpDataEmpty.cpp
-elements/IpDataEnum.cpp
-elements/IpDataNonlocalBase.cpp
-elements/IpDataStaticData.cpp
-elements/IpDataStaticDataBase.cpp
-elements/IpDataStaticDataNonlocal.cpp
-)
+set(NuToMechanicsElements_SOURCES
+    elements/ContinuumElement.cpp
+    elements/ContinuumBoundaryElement.cpp
+    elements/ContinuumBoundaryElementConstrainedControlNode.cpp
+    elements/ContinuumContactElement.cpp
+    elements/ElementBase.cpp
+    elements/ElementDataBase.cpp
+    elements/ElementDataConstitutiveBase.cpp
+    elements/Element1DInXD.cpp
+    elements/Element2DInterface.cpp
+    elements/ContinuumElementIGA.cpp
+    elements/ElementDataConstitutiveIp.cpp
+    elements/ElementDataConstitutiveIpNonlocal.cpp
+    elements/ElementDataEnum.cpp
+    elements/ElementDataIpBase.cpp
+    elements/ElementDataNonlocalBase.cpp
+    elements/ElementDataVariableConstitutiveBase.cpp
+    elements/ElementDataVariableConstitutiveIp.cpp
+    elements/ElementEnum.cpp
+    elements/ElementOutputBase.cpp
+    elements/ElementShapeFunctions.cpp
+    elements/IpDataBase.cpp
+    elements/IpDataEmpty.cpp
+    elements/IpDataEnum.cpp
+    elements/IpDataNonlocalBase.cpp
+    elements/IpDataStaticData.cpp
+    elements/IpDataStaticDataBase.cpp
+    elements/IpDataStaticDataNonlocal.cpp
+    )
 
-SET(NuToMechanicsGroups_SOURCES
-groups/Group.cpp
-groups/GroupBase.cpp
-)
+set(NuToMechanicsGroups_SOURCES
+    groups/Group.cpp
+    groups/GroupBase.cpp
+    )
 
-SET(NuToMechanicsIntegrationtypes_SOURCES
-integrationtypes/IntegrationPointBase.cpp
-integrationtypes/IntegrationType1D.cpp
-integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp
-integrationtypes/IntegrationType0DBoundary.cpp
-integrationtypes/IntegrationType1D2NConstVariableIp.cpp
-integrationtypes/IntegrationType1D2NGauss1Ip.cpp
-integrationtypes/IntegrationType1D2NGauss2Ip.cpp
-integrationtypes/IntegrationType1D2NGauss3Ip.cpp
-integrationtypes/IntegrationType1D2NGauss4Ip.cpp
-integrationtypes/IntegrationType1D2NGauss5Ip.cpp
-integrationtypes/IntegrationType1D2NLobatto3Ip.cpp
-integrationtypes/IntegrationType1D2NLobatto4Ip.cpp
-integrationtypes/IntegrationType1D2NLobatto5Ip.cpp
-integrationtypes/IntegrationType1D2NLobatto6Ip.cpp
-integrationtypes/IntegrationType2D.cpp
-integrationtypes/IntegrationType2D3NGauss13Ip.cpp
-integrationtypes/IntegrationType2D3NGauss16Ip.cpp
-integrationtypes/IntegrationType2D3NGauss1Ip.cpp
-integrationtypes/IntegrationType2D3NGauss3Ip.cpp
-integrationtypes/IntegrationType2D3NGauss4Ip.cpp
-integrationtypes/IntegrationType2D3NGauss6Ip.cpp
-integrationtypes/IntegrationType2D3NGauss12Ip.cpp
-integrationtypes/IntegrationType2D3NGauss12IpDetail.cpp
-integrationtypes/IntegrationType2D4NConstVariableIp.cpp
-integrationtypes/IntegrationType2D4NGauss1Ip.cpp
-integrationtypes/IntegrationType2D4NGauss4Ip.cpp
-integrationtypes/IntegrationType2D4NGauss9Ip.cpp
-integrationtypes/IntegrationType2D4NLobatto9Ip.cpp
-integrationtypes/IntegrationType2D4NLobatto16Ip.cpp
-integrationtypes/IntegrationType2D4NLobatto25Ip.cpp
-integrationtypes/IntegrationType2D4NModTriangle.cpp
-integrationtypes/IntegrationType2D4NModVariableIp.cpp
-integrationtypes/IntegrationType2DMod.cpp
-integrationtypes/IntegrationType3D.cpp
-integrationtypes/IntegrationType3D4NGauss1Ip.cpp
-integrationtypes/IntegrationType3D4NGauss4Ip.cpp
-integrationtypes/IntegrationType3D8NGauss1Ip.cpp
-integrationtypes/IntegrationType3D8NGauss2x2x2Ip.cpp
-integrationtypes/IntegrationTypeBase.cpp
-)
+set(NuToMechanicsIntegrationtypes_SOURCES
+    integrationtypes/IntegrationPointBase.cpp
+    integrationtypes/IntegrationType1D.cpp
+    integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp
+    integrationtypes/IntegrationType0DBoundary.cpp
+    integrationtypes/IntegrationType1D2NConstVariableIp.cpp
+    integrationtypes/IntegrationType1D2NGauss1Ip.cpp
+    integrationtypes/IntegrationType1D2NGauss2Ip.cpp
+    integrationtypes/IntegrationType1D2NGauss3Ip.cpp
+    integrationtypes/IntegrationType1D2NGauss4Ip.cpp
+    integrationtypes/IntegrationType1D2NGauss5Ip.cpp
+    integrationtypes/IntegrationType1D2NLobatto3Ip.cpp
+    integrationtypes/IntegrationType1D2NLobatto4Ip.cpp
+    integrationtypes/IntegrationType1D2NLobatto5Ip.cpp
+    integrationtypes/IntegrationType1D2NLobatto6Ip.cpp
+    integrationtypes/IntegrationType2D.cpp
+    integrationtypes/IntegrationType2D3NGauss13Ip.cpp
+    integrationtypes/IntegrationType2D3NGauss16Ip.cpp
+    integrationtypes/IntegrationType2D3NGauss1Ip.cpp
+    integrationtypes/IntegrationType2D3NGauss3Ip.cpp
+    integrationtypes/IntegrationType2D3NGauss4Ip.cpp
+    integrationtypes/IntegrationType2D3NGauss6Ip.cpp
+    integrationtypes/IntegrationType2D3NGauss12Ip.cpp
+    integrationtypes/IntegrationType2D3NGauss12IpDetail.cpp
+    integrationtypes/IntegrationType2D4NConstVariableIp.cpp
+    integrationtypes/IntegrationType2D4NGauss1Ip.cpp
+    integrationtypes/IntegrationType2D4NGauss4Ip.cpp
+    integrationtypes/IntegrationType2D4NGauss9Ip.cpp
+    integrationtypes/IntegrationType2D4NLobatto9Ip.cpp
+    integrationtypes/IntegrationType2D4NLobatto16Ip.cpp
+    integrationtypes/IntegrationType2D4NLobatto25Ip.cpp
+    integrationtypes/IntegrationType2D4NModTriangle.cpp
+    integrationtypes/IntegrationType2D4NModVariableIp.cpp
+    integrationtypes/IntegrationType2DMod.cpp
+    integrationtypes/IntegrationType3D.cpp
+    integrationtypes/IntegrationType3D4NGauss1Ip.cpp
+    integrationtypes/IntegrationType3D4NGauss4Ip.cpp
+    integrationtypes/IntegrationType3D8NGauss1Ip.cpp
+    integrationtypes/IntegrationType3D8NGauss2x2x2Ip.cpp
+    integrationtypes/IntegrationTypeBase.cpp
+    )
 
-SET(NuToMechanicsInterpolationtypes_SOURCE
-interpolationtypes/InterpolationBase.cpp
-interpolationtypes/InterpolationBaseFEM.cpp
-interpolationtypes/InterpolationBaseIGA.cpp
-interpolationtypes/InterpolationType.cpp
-interpolationtypes/InterpolationTypeEnum.cpp
-interpolationtypes/Interpolation1D.cpp
-interpolationtypes/Interpolation1DTruss.cpp
-interpolationtypes/Interpolation1DInterface.cpp
-interpolationtypes/Interpolation2D.cpp
-interpolationtypes/Interpolation2DTriangle.cpp
-interpolationtypes/Interpolation2DQuad.cpp
-interpolationtypes/Interpolation3D.cpp
-interpolationtypes/Interpolation3DTetrahedron.cpp
-interpolationtypes/Interpolation3DBrick.cpp
-interpolationtypes/Interpolation1DIGA.cpp
-interpolationtypes/Interpolation2DIGA.cpp
-)
+set(NuToMechanicsInterpolationtypes_SOURCE
+    interpolationtypes/InterpolationBase.cpp
+    interpolationtypes/InterpolationBaseFEM.cpp
+    interpolationtypes/InterpolationBaseIGA.cpp
+    interpolationtypes/InterpolationType.cpp
+    interpolationtypes/InterpolationTypeEnum.cpp
+    interpolationtypes/Interpolation1D.cpp
+    interpolationtypes/Interpolation1DTruss.cpp
+    interpolationtypes/Interpolation1DInterface.cpp
+    interpolationtypes/Interpolation2D.cpp
+    interpolationtypes/Interpolation2DTriangle.cpp
+    interpolationtypes/Interpolation2DQuad.cpp
+    interpolationtypes/Interpolation3D.cpp
+    interpolationtypes/Interpolation3DTetrahedron.cpp
+    interpolationtypes/Interpolation3DBrick.cpp
+    interpolationtypes/Interpolation1DIGA.cpp
+    interpolationtypes/Interpolation2DIGA.cpp
+    )
 
-SET(NuToMechanicsIGA_SOURCE
-IGA/BSplineCurve.cpp
-IGA/BSplineSurface.cpp
-)
+set(NuToMechanicsIGA_SOURCE
+    IGA/BSplineCurve.cpp
+    IGA/BSplineSurface.cpp
+    )
 
-SET(NuToMechanicsLoads_SOURCES
-loads/LoadBase.cpp
-loads/LoadNode.cpp
-loads/LoadNodeGroup.cpp
-loads/LoadNodeForces1D.cpp
-loads/LoadNodeForces2D.cpp
-loads/LoadNodeForces3D.cpp
-loads/LoadNodeGroupForces1D.cpp
-loads/LoadNodeGroupForces2D.cpp
-loads/LoadNodeGroupForces3D.cpp
-loads/LoadNodeHeatFlux1D.cpp
-loads/LoadSurfaceBase2D.cpp
-loads/LoadSurfaceBase3D.cpp
-loads/LoadSurfaceConstDirection2D.cpp
-loads/LoadSurfaceConstDirection3D.cpp
-loads/LoadSurfacePressure2D.cpp
-loads/LoadSurfacePressure3D.cpp
-loads/LoadSurfacePressureFunction2D.cpp
-)
+set(NuToMechanicsLoads_SOURCES
+    loads/LoadBase.cpp
+    loads/LoadNode.cpp
+    loads/LoadNodeGroup.cpp
+    loads/LoadNodeForces1D.cpp
+    loads/LoadNodeForces2D.cpp
+    loads/LoadNodeForces3D.cpp
+    loads/LoadNodeGroupForces1D.cpp
+    loads/LoadNodeGroupForces2D.cpp
+    loads/LoadNodeGroupForces3D.cpp
+    loads/LoadNodeHeatFlux1D.cpp
+    loads/LoadSurfaceBase2D.cpp
+    loads/LoadSurfaceBase3D.cpp
+    loads/LoadSurfaceConstDirection2D.cpp
+    loads/LoadSurfaceConstDirection3D.cpp
+    loads/LoadSurfacePressure2D.cpp
+    loads/LoadSurfacePressure3D.cpp
+    loads/LoadSurfacePressureFunction2D.cpp
+    )
 
-SET(NuToMechanicsNodes_SOURCES
-nodes/NodeBase.cpp
-nodes/NodeDof.cpp
-nodes/NodeEnum.cpp
-)
+set(NuToMechanicsNodes_SOURCES
+    nodes/NodeBase.cpp
+    nodes/NodeDof.cpp
+    nodes/NodeEnum.cpp
+    )
 
-SET(NuToMechanicsSection_SOURCES
-sections/SectionBase.cpp
-sections/SectionTruss.cpp
-sections/SectionPlane.cpp
-sections/SectionVolume.cpp
-sections/SectionSpring.cpp
-sections/SectionFibreMatrixBond.cpp
-)
+set(NuToMechanicsSection_SOURCES
+    sections/SectionBase.cpp
+    sections/SectionTruss.cpp
+    sections/SectionPlane.cpp
+    sections/SectionVolume.cpp
+    sections/SectionSpring.cpp
+    sections/SectionFibreMatrixBond.cpp
+    )
 
-SET(NuToMechanicsStructures_SOURCES
-structures/StructureBase.cpp
-structures/StructureBaseConstitutiveLaw.cpp
-structures/StructureBaseConstraints.cpp
-structures/StructureBaseElement.cpp
-structures/StructureBaseEnum.cpp
-structures/StructureBaseGroup.cpp
-structures/StructureBaseIntegrationTypes.cpp
-structures/StructureBaseLoad.cpp
-structures/StructureBaseLogger.cpp
-structures/StructureBaseNode.cpp
-structures/StructureBaseSection.cpp
-structures/StructureOutputBase.cpp
-structures/StructureOutputBlockMatrix.cpp
-structures/StructureOutputBlockVector.cpp
-structures/unstructured/Structure.cpp
-structures/unstructured/StructureElement.cpp
-structures/unstructured/StructureGroup.cpp
-structures/unstructured/StructureInterpolationType.cpp
-structures/unstructured/StructureMesh.cpp
-structures/unstructured/StructureNode.cpp
-)
+set(NuToMechanicsStructures_SOURCES
+    structures/StructureBase.cpp
+    structures/StructureBaseConstitutiveLaw.cpp
+    structures/StructureBaseConstraints.cpp
+    structures/StructureBaseElement.cpp
+    structures/StructureBaseEnum.cpp
+    structures/StructureBaseGroup.cpp
+    structures/StructureBaseIntegrationTypes.cpp
+    structures/StructureBaseLoad.cpp
+    structures/StructureBaseLogger.cpp
+    structures/StructureBaseNode.cpp
+    structures/StructureBaseSection.cpp
+    structures/StructureOutputBase.cpp
+    structures/StructureOutputBlockMatrix.cpp
+    structures/StructureOutputBlockVector.cpp
+    structures/unstructured/Structure.cpp
+    structures/unstructured/StructureElement.cpp
+    structures/unstructured/StructureGroup.cpp
+    structures/unstructured/StructureInterpolationType.cpp
+    structures/unstructured/StructureMesh.cpp
+    structures/unstructured/StructureNode.cpp
+    )
 
-SET(NuToMechanicsTimeIntegration_SOURCES
-timeIntegration/NewmarkBase.cpp
-timeIntegration/NewmarkDirect.cpp
-#timeIntegration/JumpDirect.cpp
-timeIntegration/NystroemBase.cpp
-timeIntegration/NystroemQinZhu.cpp
-timeIntegration/ResultBase.cpp
-timeIntegration/ResultElementIpData.cpp
-timeIntegration/ResultGroupNodeForce.cpp
-timeIntegration/ResultGroupNodeDof.cpp
-timeIntegration/ResultNodeAcceleration.cpp
-timeIntegration/ResultNodeDisp.cpp
-timeIntegration/ResultNodeDof.cpp
-timeIntegration/ResultTime.cpp
-timeIntegration/RungeKutta2.cpp
-timeIntegration/RungeKutta3.cpp
-timeIntegration/RungeKutta38.cpp
-timeIntegration/RungeKutta4.cpp
-timeIntegration/RungeKuttaCashKarp.cpp
-timeIntegration/RungeKuttaDormandPrince.cpp
-timeIntegration/RungeKuttaBase.cpp
-timeIntegration/TimeDependencyBase.cpp
-timeIntegration/TimeIntegrationBase.cpp
-timeIntegration/ImplicitExplicitBase.cpp
-timeIntegration/ImplEx.cpp
-timeIntegration/VelocityVerlet.cpp
-)
+set(NuToMechanicsTimeIntegration_SOURCES
+    timeIntegration/NewmarkBase.cpp
+    timeIntegration/NewmarkDirect.cpp
+    #timeIntegration/JumpDirect.cpp
+    timeIntegration/NystroemBase.cpp
+    timeIntegration/NystroemQinZhu.cpp
+    timeIntegration/ResultBase.cpp
+    timeIntegration/ResultElementIpData.cpp
+    timeIntegration/ResultGroupNodeForce.cpp
+    timeIntegration/ResultGroupNodeDof.cpp
+    timeIntegration/ResultNodeAcceleration.cpp
+    timeIntegration/ResultNodeDisp.cpp
+    timeIntegration/ResultNodeDof.cpp
+    timeIntegration/ResultTime.cpp
+    timeIntegration/RungeKutta2.cpp
+    timeIntegration/RungeKutta3.cpp
+    timeIntegration/RungeKutta38.cpp
+    timeIntegration/RungeKutta4.cpp
+    timeIntegration/RungeKuttaCashKarp.cpp
+    timeIntegration/RungeKuttaDormandPrince.cpp
+    timeIntegration/RungeKuttaBase.cpp
+    timeIntegration/TimeDependencyBase.cpp
+    timeIntegration/TimeIntegrationBase.cpp
+    timeIntegration/ImplicitExplicitBase.cpp
+    timeIntegration/ImplEx.cpp
+    timeIntegration/VelocityVerlet.cpp
+    )
 
-SET(NuToMechanicsTools_SOURCES
-tools/MeshGenerator.cpp
-)
+set(NuToMechanicsTools_SOURCES
+    tools/MeshGenerator.cpp
+    )
 
-SET(NuToMechanics_SOURCES
-${NuToMechanicsConstitutive_SOURCES} 
-${NuToMechanicsConstraint_SOURCES}
-${NuToMechanicsCrack_SOURCES} 
-${NuToMechanicsDofSubMatrixStorage_SOURCES}
-${NuToMechanicsElements_SOURCES} 
-${NuToMechanicsGroups_SOURCES}
-${NuToMechanicsIntegrationtypes_SOURCES} 
-${NuToMechanicsInterpolationtypes_SOURCE} 
-${NuToMechanicsIGA_SOURCE}
-${NuToMechanicsLoads_SOURCES}
-${NuToMechanicsNodes_SOURCES} 
-${NuToMechanicsSection_SOURCES} 
-${NuToMechanicsStructures_SOURCES}
-${NuToMechanicsTimeIntegration_SOURCES}
-${NuToMechanicsTools_SOURCES}
-)
+set(NuToMechanics_SOURCES
+    ${NuToMechanicsConstitutive_SOURCES}
+    ${NuToMechanicsConstraint_SOURCES}
+    ${NuToMechanicsCrack_SOURCES}
+    ${NuToMechanicsDofSubMatrixStorage_SOURCES}
+    ${NuToMechanicsElements_SOURCES}
+    ${NuToMechanicsGroups_SOURCES}
+    ${NuToMechanicsIntegrationtypes_SOURCES}
+    ${NuToMechanicsInterpolationtypes_SOURCE}
+    ${NuToMechanicsIGA_SOURCE}
+    ${NuToMechanicsLoads_SOURCES}
+    ${NuToMechanicsNodes_SOURCES}
+    ${NuToMechanicsSection_SOURCES}
+    ${NuToMechanicsStructures_SOURCES}
+    ${NuToMechanicsTimeIntegration_SOURCES}
+    ${NuToMechanicsTools_SOURCES}
+    )
 
-SET(NuToMechanics_SWIG_MODULES
-  ModulMechanics
-)
+set(NuToMechanics_SWIG_MODULES
+    ModulMechanics
+    )
 
-SET(SWIG_MODULE_ModulMechanics_EXTRA_DEPS 
-  structures/StructureBase.h
-  structures/unstructured/Structure.h
-  elements/ElementEnum.h
-  dofSubMatrixStorage/BlockStorageBase.h
+set(SWIG_MODULE_ModulMechanics_EXTRA_DEPS
+    structures/StructureBase.h
+    structures/unstructured/Structure.h
+    elements/ElementEnum.h
+    dofSubMatrixStorage/BlockStorageBase.h
 
-  dofSubMatrixStorage/DofStatus.h
-  dofSubMatrixStorage/BlockScalar.h
-  dofSubMatrixStorage/BlockFullMatrix.h
-  dofSubMatrixStorage/BlockFullVector.h
-  dofSubMatrixStorage/BlockSparseMatrix.h
-  
-  timeIntegration/TimeIntegrationBase.h
-  timeIntegration/NewmarkBase.h
-  timeIntegration/NewmarkDirect.h
+    dofSubMatrixStorage/DofStatus.h
+    dofSubMatrixStorage/BlockScalar.h
+    dofSubMatrixStorage/BlockFullMatrix.h
+    dofSubMatrixStorage/BlockFullVector.h
+    dofSubMatrixStorage/BlockSparseMatrix.h
 
-  structures/StructureOutputBase.h
-  structures/StructureOutputBlockMatrix.h
-  structures/StructureOutputBlockVector.h
-)
+    timeIntegration/TimeIntegrationBase.h
+    timeIntegration/NewmarkBase.h
+    timeIntegration/NewmarkDirect.h
+
+    structures/StructureOutputBase.h
+    structures/StructureOutputBlockMatrix.h
+    structures/StructureOutputBlockVector.h
+    )
 
 # build static library
-ADD_LIBRARY(NuToMechanics ${NuToMechanics_SOURCES})
+add_library(NuToMechanics ${NuToMechanics_SOURCES})
 target_link_libraries(NuToMechanics ${ANN_LIBRARIES})
-IF (ENABLE_SHOW_TIME)
-#add library for clock_gettime routines
-  TARGET_LINK_LIBRARIES(NuToMechanics rt)
-ENDIF (ENABLE_SHOW_TIME)
-IF (ENABLE_CGAL)
-#add library for clock_gettime routines
-  TARGET_LINK_LIBRARIES(NuToMechanics ${CGAL_LIBRARIES})
-ENDIF (ENABLE_CGAL)
-IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
-  SET_TARGET_PROPERTIES(NuToMechanics PROPERTIES COMPILE_FLAGS "-fPIC")
-ENDIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
+
+if(ENABLE_SHOW_TIME)
+    #add library for clock_gettime routines
+    target_link_libraries(NuToMechanics rt)
+endif()
+
+if(ENABLE_CGAL)
+    target_link_libraries(NuToMechanics ${CGAL_LIBRARIES})
+endif()
+
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+    set_target_properties(NuToMechanics PROPERTIES COMPILE_FLAGS "-fPIC")
+endif()
+
 # install library
-INSTALL(TARGETS NuToMechanics
-	ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
-	LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH})
+install(TARGETS NuToMechanics
+    ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
+    LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
+    )
 
 # build python modules
-CONFIGURE_FILE(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
-NUTO_INSTALL_PYTHON_FILE(__init__.py ${NUTO_PYTHON_MODULES_INSTALL_PATH}/nuto/mechanics)
-FOREACH(NuToMechanics_SWIG_MODULE ${NuToMechanics_SWIG_MODULES})
-    if(ENABLE_VISUALIZE)
-        NUTO_SWIG_MODULE(${NuToMechanics_SWIG_MODULE} ${NuToMechanics_SWIG_MODULE}.i nuto/mechanics NuToMechanics NuToBase NuToMath NuToVisualize)
-    else()
-        NUTO_SWIG_MODULE(${NuToMechanics_SWIG_MODULE} ${NuToMechanics_SWIG_MODULE}.i nuto/mechanics NuToMechanics NuToBase NuToMath)
-    endif()
-ENDFOREACH(NuToMechanics_SWIG_MODULE)
+configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
+nuto_install_python_file(__init__.py ${NUTO_PYTHON_MODULES_INSTALL_PATH}/nuto/mechanics)
+if(ENABLE_VISUALIZE)
+    nuto_swig_module(ModulMechanics ModulMechanics.i nuto/mechanics NuToMechanics NuToBase NuToMath NuToVisualize)
+else()
+    nuto_swig_module(ModulMechanics ModulMechanics.i nuto/mechanics NuToMechanics NuToBase NuToMath)
+endif()

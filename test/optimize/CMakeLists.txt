@@ -1,9 +1,6 @@
-#test files for math module
-IF(ENABLE_PYTHON_TESTS)
-  SET( CMAKE_VERBOSE_MAKEFILE on )
-
-  ADD_TEST(p::optimize::ConjugateGradientNonLinear ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/ConjugateGradientNonLinear.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  SET_PROPERTY(TEST p::optimize::ConjugateGradientNonLinear PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
-
-ENDIF(ENABLE_PYTHON_TESTS)
-
+if(ENABLE_PYTHON_TESTS)
+    add_test(p::optimize::ConjugateGradientNonLinear ${PYTHON_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/ConjugateGradientNonLinear.py
+        ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+    set_property(TEST p::optimize::ConjugateGradientNonLinear PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
+endif()

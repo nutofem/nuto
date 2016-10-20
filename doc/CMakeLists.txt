@@ -1,8 +1,6 @@
-# $Id$
-
 add_custom_target(doc)
 
-MESSAGE(STATUS "Checking for doxygen ...")
+message(STATUS "Checking for doxygen ...")
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
     # configure Doxyfile
@@ -13,9 +11,9 @@ if(DOXYGEN_FOUND)
     if(DOXYGEN_DOT_FOUND)
         set(DOXYGEN_HAVE_DOT YES)
     endif()
-    #message(STATUS "NuTo_DOXYGEN_PREDEFINED = ${NuTo_DOXYGEN_PREDEFINED}")
-    STRING(REPLACE ";" " " DOXYGEN_PREDEFINED "${NuTo_DOXYGEN_PREDEFINED}")
-    #message(STATUS "DOXYGEN_PREDEFINED = ${DOXYGEN_PREDEFINED}")
+
+    string(REPLACE ";" " " DOXYGEN_PREDEFINED "${NuTo_DOXYGEN_PREDEFINED}")
+
     configure_file(Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
     configure_file(header.html ${CMAKE_CURRENT_BINARY_DIR}/header.html COPYONLY)
     configure_file(footer.html ${CMAKE_CURRENT_BINARY_DIR}/footer.html COPYONLY)

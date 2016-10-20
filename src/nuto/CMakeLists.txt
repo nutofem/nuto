@@ -1,53 +1,48 @@
-# $Id$
-SET(NuTo_sources
-) 
+configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
+nuto_install_python_file(__init__.py ${NUTO_PYTHON_MODULES_INSTALL_PATH}/nuto)
 
-CONFIGURE_FILE(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
-NUTO_INSTALL_PYTHON_FILE(__init__.py ${NUTO_PYTHON_MODULES_INSTALL_PATH}/nuto)
+add_subdirectory(base)
+add_subdirectory(math)
+if(ENABLE_VISUALIZE)
+    add_subdirectory(visualize)
+endif()
 
-ADD_SUBDIRECTORY(base)
-ADD_SUBDIRECTORY(math)
-IF(ENABLE_VISUALIZE)
-  ADD_SUBDIRECTORY(visualize)
-ENDIF(ENABLE_VISUALIZE)
-IF(ENABLE_MECHANICS)
-  ADD_SUBDIRECTORY(mechanics)
-ELSE(ENABLE_MECHANICS)
-  SET (SEARCH_REGEX "from nuto.mechanics.ModulMechanics")
-  FILE(READ ${CMAKE_CURRENT_BINARY_DIR}/__init__.py FILE_CONTENT)
-  STRING(REGEX REPLACE "${SEARCH_REGEX}" "#from nuto.mechanics.ModulMechanics"
+if(ENABLE_MECHANICS)
+    add_subdirectory(mechanics)
+else()
+    set(SEARCH_REGEX "from nuto.mechanics.ModulMechanics")
+    file(READ ${CMAKE_CURRENT_BINARY_DIR}/__init__.py FILE_CONTENT)
+    string(REGEX REPLACE "${SEARCH_REGEX}" "#from nuto.mechanics.ModulMechanics"
         MODIFIED_FILE_CONTENT "${FILE_CONTENT}")
- FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "${MODIFIED_FILE_CONTENT}")
-ENDIF(ENABLE_MECHANICS)
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "${MODIFIED_FILE_CONTENT}")
+endif()
 
-IF(ENABLE_GEOMETRYCONCRETE)
-  ADD_SUBDIRECTORY(geometryConcrete)
-ELSE(ENABLE_GEOMETRYCONCRETE)
- SET (SEARCH_REGEX "from nuto.geometryConcrete.ModulGeometryConcrete")
- FILE(READ ${CMAKE_CURRENT_BINARY_DIR}/__init__.py FILE_CONTENT)
- STRING(REGEX REPLACE "${SEARCH_REGEX}" "#from nuto.geometryConcrete.ModulGeometryConcrete"
+if(ENABLE_GEOMETRYCONCRETE)
+    add_subdirectory(geometryConcrete)
+else()
+    set(SEARCH_REGEX "from nuto.geometryConcrete.ModulGeometryConcrete")
+    file(READ ${CMAKE_CURRENT_BINARY_DIR}/__init__.py FILE_CONTENT)
+    string(REGEX REPLACE "${SEARCH_REGEX}" "#from nuto.geometryConcrete.ModulGeometryConcrete"
         MODIFIED_FILE_CONTENT "${FILE_CONTENT}")
- FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "${MODIFIED_FILE_CONTENT}")
-ENDIF(ENABLE_GEOMETRYCONCRETE)
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "${MODIFIED_FILE_CONTENT}")
+endif()
 
-IF(ENABLE_METAMODEL)
-  ADD_SUBDIRECTORY(metamodel)
-ELSE(ENABLE_METAMODEL)
- SET (SEARCH_REGEX "from nuto.metamodel.ModulMetaModel")
- FILE(READ ${CMAKE_CURRENT_BINARY_DIR}/__init__.py FILE_CONTENT)
- STRING(REGEX REPLACE "${SEARCH_REGEX}" "#from nuto.metamodel.ModulMetaModel"
+if(ENABLE_METAMODEL)
+    add_subdirectory(metamodel)
+else()
+    set(SEARCH_REGEX "from nuto.metamodel.ModulMetaModel")
+    file(READ ${CMAKE_CURRENT_BINARY_DIR}/__init__.py FILE_CONTENT)
+    string(REGEX REPLACE "${SEARCH_REGEX}" "#from nuto.metamodel.ModulMetaModel"
         MODIFIED_FILE_CONTENT "${FILE_CONTENT}")
- FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "${MODIFIED_FILE_CONTENT}")
-ENDIF(ENABLE_METAMODEL)
-  
-IF(ENABLE_OPTIMIZE)
-  ADD_SUBDIRECTORY(optimize)
-ELSE(ENABLE_OPTIMIZE)
-  SET (SEARCH_REGEX "from nuto.optimize.ModulOptimizer")
-  FILE(READ ${CMAKE_CURRENT_BINARY_DIR}/__init__.py FILE_CONTENT)
-  STRING(REGEX REPLACE "${SEARCH_REGEX}" "#from nuto.optimize.ModulOptimizer"
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "${MODIFIED_FILE_CONTENT}")
+endif()
+
+if(ENABLE_OPTIMIZE)
+    add_subdirectory(optimize)
+else()
+    set(SEARCH_REGEX "from nuto.optimize.ModulOptimizer")
+    file(READ ${CMAKE_CURRENT_BINARY_DIR}/__init__.py FILE_CONTENT)
+    string(REGEX REPLACE "${SEARCH_REGEX}" "#from nuto.optimize.ModulOptimizer"
         MODIFIED_FILE_CONTENT "${FILE_CONTENT}")
- FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "${MODIFIED_FILE_CONTENT}")
-
-ENDIF(ENABLE_OPTIMIZE)
-
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "${MODIFIED_FILE_CONTENT}")
+endif()

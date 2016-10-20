@@ -1,33 +1,29 @@
-SET(NuToMetamodel_SOURCES
-  Metamodel.cpp
-  MultipleLinearRegression.cpp
-  NeuralNetwork.cpp
-  TransferFunction.cpp
-  Transformation.cpp
-  MinMaxTransformation.cpp
-  ZeroMeanUnitVarianceTransformation.cpp
-  SupportPoints.cpp
-  PolynomialLeastSquaresFitting.cpp
-)
-
-SET(NuToMetamodel_SWIG_MODULES
-  ModulMetaModel
-)
+set(NuToMetamodel_SOURCES
+    Metamodel.cpp
+    MultipleLinearRegression.cpp
+    NeuralNetwork.cpp
+    TransferFunction.cpp
+    Transformation.cpp
+    MinMaxTransformation.cpp
+    ZeroMeanUnitVarianceTransformation.cpp
+    SupportPoints.cpp
+    PolynomialLeastSquaresFitting.cpp
+    )
 
 # build static library
-ADD_LIBRARY(NuToMetamodel ${NuToMetamodel_SOURCES})
-TARGET_LINK_LIBRARIES(NuToMetamodel NuToOptimize NuToMath NuToBase)
-IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
-  SET_TARGET_PROPERTIES(NuToMetamodel PROPERTIES COMPILE_FLAGS "-fPIC")
-ENDIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
+add_library(NuToMetamodel ${NuToMetamodel_SOURCES})
+target_link_libraries(NuToMetamodel NuToOptimize NuToMath NuToBase)
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+    set_target_properties(NuToMetamodel PROPERTIES COMPILE_FLAGS "-fPIC")
+endif()
+
 # install library
-INSTALL(TARGETS NuToMetamodel
-	ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
-	LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH})
+install(TARGETS NuToMetamodel
+    ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
+    LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
+    )
 
 # build python modules
-CONFIGURE_FILE(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
-NUTO_INSTALL_PYTHON_FILE(__init__.py ${NUTO_PYTHON_MODULES_INSTALL_PATH}/nuto/metamodel)
-FOREACH(NuToMetamodel_SWIG_MODULE ${NuToMetamodel_SWIG_MODULES})
-  NUTO_SWIG_MODULE(${NuToMetamodel_SWIG_MODULE} ${NuToMetamodel_SWIG_MODULE}.i nuto/metamodel NuToMetamodel)
-ENDFOREACH(NuToMetamodel_SWIG_MODULE)
+configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
+nuto_install_python_file(__init__.py ${NUTO_PYTHON_MODULES_INSTALL_PATH}/nuto/metamodel)
+nuto_swig_module(ModulMetaModel ModulMetaModel.i nuto/metamodel NuToMetamodel)

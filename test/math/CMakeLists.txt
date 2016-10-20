@@ -1,45 +1,32 @@
-#test files for math module
-IF(ENABLE_PYTHON_TESTS)
-  SET( CMAKE_VERBOSE_MAKEFILE on )
+if(ENABLE_PYTHON_TESTS)
+    add_test(p::importNuto ${PYTHON_EXECUTABLE} -c "import nuto")
+    set_property(TEST p::importNuto PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
 
-  ADD_TEST(p::importNuto ${PYTHON_EXECUTABLE} -c "import nuto")
-  SET_PROPERTY(TEST p::importNuto PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
+    add_test(p::math::Matrix ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Matrix.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+    set_property(TEST p::math::Matrix PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
 
-  ADD_TEST(p::math::Matrix ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Matrix.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  SET_PROPERTY(TEST p::math::Matrix PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
+    if(ENABLE_NUMPY)
+        add_test(p::math::NumpyFullMatrix ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/NumpyFullMatrix.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+        set_property(TEST p::math::NumpyFullMatrix PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
+    endif()
 
+    add_test(p::math::SparseMatrixCSR ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/SparseMatrixCSR.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+    set_property(TEST p::math::SparseMatrixCSR PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
+endif()
 
-#####parts added
-IF(ENABLE_NUMPY)
- ADD_TEST(p::math::NumpyFullMatrix ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/NumpyFullMatrix.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  SET_PROPERTY(TEST p::math::NumpyFullMatrix PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
-ENDIF(ENABLE_NUMPY)
+if(ENABLE_C++_TESTS)
 
-  ADD_TEST(p::math::SparseMatrixCSR ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/SparseMatrixCSR.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-  SET_PROPERTY(TEST p::math::SparseMatrixCSR PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
+    if(ENABLE_ARPACK)
+        add_executable(Arpack Arpack.cpp)
+        target_link_libraries(Arpack NuToMath NuToBase ${Boost_LIBRARIES} ${OpenBLAS_LIBRARIES})
+        target_link_libraries(Arpack ${ARPACK_LIBRARIES})
+        add_test(c::math::Arpack ${CMAKE_CURRENT_BUILD_DIR}/Arpack)
+    endif()
 
-ENDIF(ENABLE_PYTHON_TESTS)
-
-
-####################
-######## C++ #######
-####################
-IF(ENABLE_C++_TESTS)
-
-##### ARPACK #####
-IF(ENABLE_ARPACK)
- ADD_EXECUTABLE(Arpack Arpack.cpp)
- TARGET_LINK_LIBRARIES(Arpack NuToMath NuToBase ${Boost_LIBRARIES} ${OpenBLAS_LIBRARIES} )
- TARGET_LINK_LIBRARIES(Arpack ${ARPACK_LIBRARIES})
- ADD_TEST(c::math::Arpack ${CMAKE_CURRENT_BUILD_DIR}/Arpack)
-ENDIF(ENABLE_ARPACK) 
-
-##### SparseMatrixTests #####
-ADD_EXECUTABLE(SparseMatrixTests SparseMatrixTests.cpp)
-TARGET_LINK_LIBRARIES(SparseMatrixTests NuToMath NuToBase ${Boost_LIBRARIES})
-ADD_TEST(c::math::SparseMatrixTests ${CMAKE_CURRENT_BUILD_DIR}/SparseMatrixTests)
-
-ENDIF(ENABLE_C++_TESTS)
+    add_executable(SparseMatrixTests SparseMatrixTests.cpp)
+    target_link_libraries(SparseMatrixTests NuToMath NuToBase ${Boost_LIBRARIES})
+    add_test(c::math::SparseMatrixTests ${CMAKE_CURRENT_BUILD_DIR}/SparseMatrixTests)
+endif()
 
 if(ENABLE_UNIT_TESTS)
     add_executable(Interpolation Interpolation.cpp)

@@ -1,3 +1,2 @@
-# $Id#
-ADD_SUBDIRECTORY(c++)
-ADD_SUBDIRECTORY(python)
+add_subdirectory(c++)
+add_subdirectory(python)

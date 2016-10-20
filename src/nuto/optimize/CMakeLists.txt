@@ -1,44 +1,41 @@
-SET(NuToOptimize_SOURCES
-  ConjugateGradientGrid.cpp  
-  ConjugateGradientNonLinear.cpp
-  CallbackHandler.cpp
-  CallbackHandlerPython.cpp
-  CallbackHandlerGrid.cpp
-  Jacobi.cpp
-  MisesWielandt.cpp
-  NonlinearSolverBase.cpp
-  NewtonRaphson.cpp
-)
-
-SET(NuToOptimize_SWIG_MODULES
-  ModulOptimizer
-)
+set(NuToOptimize_SOURCES
+    ConjugateGradientGrid.cpp
+    ConjugateGradientNonLinear.cpp
+    CallbackHandler.cpp
+    CallbackHandlerPython.cpp
+    CallbackHandlerGrid.cpp
+    Jacobi.cpp
+    MisesWielandt.cpp
+    NonlinearSolverBase.cpp
+    NewtonRaphson.cpp
+    )
 
 # build shared library
-ADD_LIBRARY(NuToOptimize ${NuToOptimize_SOURCES})
-TARGET_LINK_LIBRARIES(NuToOptimize NuToMath NuToBase ${PYTHON_LIBRARY})
-IF (ENABLE_VISUALIZE)
-  TARGET_LINK_LIBRARIES(NuToOptimize NuToVisualize)
-ENDIF (ENABLE_VISUALIZE)
-IF (ENABLE_SHOW_TIME)
-#add library for clock_gettime routines
-  TARGET_LINK_LIBRARIES(NuToOptimize rt)
-ENDIF (ENABLE_SHOW_TIME)
+add_library(NuToOptimize ${NuToOptimize_SOURCES})
+target_link_libraries(NuToOptimize NuToMath NuToBase ${PYTHON_LIBRARY})
+
+if(ENABLE_VISUALIZE)
+    target_link_libraries(NuToOptimize NuToVisualize)
+endif()
+
+if(ENABLE_SHOW_TIME)
+    #add library for clock_gettime routines
+    target_link_libraries(NuToOptimize rt)
+endif()
 
 set(NuToOptimize_COMPILE_FLAGS "${PYTHON_C_FLAGS}")
-IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
-  set(NuToOptimize_COMPILE_FLAGS "${NuToOptimize_COMPILE_FLAGS} -fPIC")
-ENDIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
-SET_TARGET_PROPERTIES(NuToOptimize PROPERTIES COMPILE_FLAGS "${NuToOptimize_COMPILE_FLAGS}")
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+    set(NuToOptimize_COMPILE_FLAGS "${NuToOptimize_COMPILE_FLAGS} -fPIC")
+endif()
+set_target_properties(NuToOptimize PROPERTIES COMPILE_FLAGS "${NuToOptimize_COMPILE_FLAGS}")
 
 # install library
-INSTALL(TARGETS NuToOptimize
-	ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
-	LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH})
+install(TARGETS NuToOptimize
+    ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
+    LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
+    )
 
 # build python modules
-CONFIGURE_FILE(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
-NUTO_INSTALL_PYTHON_FILE(__init__.py ${NUTO_PYTHON_MODULES_INSTALL_PATH}/nuto/optimize)
-FOREACH(NuToOptimize_SWIG_MODULE ${NuToOptimize_SWIG_MODULES})
-  NUTO_SWIG_MODULE(${NuToOptimize_SWIG_MODULE} ${NuToOptimize_SWIG_MODULE}.i nuto/optimize NuToOptimize)
-ENDFOREACH(NuToOptimize_SWIG_MODULE)
+configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
+nuto_install_python_file(__init__.py ${NUTO_PYTHON_MODULES_INSTALL_PATH}/nuto/optimize)
+nuto_swig_module(ModulOptimizer ModulOptimizer.i nuto/optimize NuToOptimize)
