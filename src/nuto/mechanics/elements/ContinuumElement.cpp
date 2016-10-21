@@ -524,7 +524,7 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(ConstitutiveInput
     {
         switch (it.first)
         {
-        case Constitutive::eInput::ENGINEERING_STRAIN:        
+        case Constitutive::eInput::ENGINEERING_STRAIN:
         {
             auto& strain = *static_cast<ConstitutiveVector<VoigtDim>*>(it.second.get());
             strain.AsVector() = rData.mB.at(Node::eDof::DISPLACEMENTS) * rData.mNodalValues.at(Node::eDof::DISPLACEMENTS);
@@ -574,7 +574,7 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(ConstitutiveInput
         }
         case Constitutive::eInput::TEMPERATURE_GRADIENT:
         {
-            auto& tempGradient = *static_cast<ConstitutiveVector<TDim>*>(it.second.get());   
+            auto& tempGradient = *static_cast<ConstitutiveVector<TDim>*>(it.second.get());
             tempGradient.AsVector() = rData.mB.at(Node::eDof::TEMPERATURE) * rData.mNodalValues.at(Node::eDof::TEMPERATURE);
             break;
         }
@@ -841,6 +841,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(
             const auto& B       = rData.mB.at(Node::eDof::CRACKPHASEFIELD);
             const auto& d       = rData.mNodalValues.at(Node::eDof::CRACKPHASEFIELD);
             const auto& d_dt    = rData.mNodalValues_dt1.at(Node::eDof::CRACKPHASEFIELD);
+
             const auto& kappa   = (*static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::ELASTIC_ENERGY_DAMAGED_PART).get()))[0];
             const auto  visco   = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::ARTIFICIAL_VISCOSITY);
 
@@ -849,7 +850,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(
                                                                           +      G * l *B.transpose() * B
                                                                               )* d
                                                                           -      2. * N.transpose() * kappa
-                                                                          +      N.transpose() * N * d_dt*visco
+//                                                                          +      N.transpose() * N * d_dt*visco
                                                                          );
             break;
         }

@@ -295,4 +295,4 @@ std::ostream& operator<<(std::ostream &rOut, const NuTo::StructureOutputBlockMat
     rOut << rStructureOutputBlockMatrix.KK << std::endl;
     return rOut;
 }
-}  // namespace NuTo
+}

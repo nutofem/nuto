@@ -150,7 +150,7 @@ public:
     //! @return    class name
     virtual std::string GetTypeId()const;
 
-private:
+protected:
     StructureOutputBlockVector CalculateDof1(
             const StructureOutputBlockVector& rDeltaDof_dt0,
             const StructureOutputBlockVector& rDof_dt1,

@@ -170,7 +170,7 @@ private:
     Constitutive::eDamageLawType mDamageLawType;
 
     //! @brief Maximum damage
-    static constexpr double mMaxDamage = 0.95;
+    static constexpr double mMaxDamage = 0.90;
 
     //! @brief Parameter for the exponential damage function
     static constexpr double mAlpha = 0.99;

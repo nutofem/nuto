@@ -213,6 +213,7 @@ set(NuToMechanicsStructures_SOURCES
     structures/StructureOutputBlockMatrix.cpp
     structures/StructureOutputBlockVector.cpp
     structures/unstructured/Structure.cpp
+    structures/unstructured/StructureFETI.cpp
     structures/unstructured/StructureElement.cpp
     structures/unstructured/StructureGroup.cpp
     structures/unstructured/StructureInterpolationType.cpp
@@ -223,6 +224,7 @@ set(NuToMechanicsStructures_SOURCES
 set(NuToMechanicsTimeIntegration_SOURCES
     timeIntegration/NewmarkBase.cpp
     timeIntegration/NewmarkDirect.cpp
+    timeIntegration/NewmarkFeti.cpp
     #timeIntegration/JumpDirect.cpp
     timeIntegration/NystroemBase.cpp
     timeIntegration/NystroemQinZhu.cpp
@@ -298,6 +300,7 @@ set(SWIG_MODULE_ModulMechanics_EXTRA_DEPS
 # build static library
 add_library(NuToMechanics ${NuToMechanics_SOURCES})
 target_link_libraries(NuToMechanics ${ANN_LIBRARIES})
+<<<<<<< HEAD
 
 if(ENABLE_SHOW_TIME)
     #add library for clock_gettime routines
@@ -312,6 +315,25 @@ if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
     set_target_properties(NuToMechanics PROPERTIES COMPILE_FLAGS "-fPIC")
 endif()
 
+=======
+target_link_libraries(NuToMechanics jsoncpp)
+
+if(ENABLE_MPI)
+    target_link_libraries(NuToMechanics ${MPI_LIBRARIES})
+endif(ENABLE_MPI)
+
+IF (ENABLE_SHOW_TIME)
+#add library for clock_gettime routines
+  TARGET_LINK_LIBRARIES(NuToMechanics rt)
+ENDIF (ENABLE_SHOW_TIME)
+IF (ENABLE_CGAL)
+#add library for clock_gettime routines
+  TARGET_LINK_LIBRARIES(NuToMechanics ${CGAL_LIBRARIES})
+ENDIF (ENABLE_CGAL)
+IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
+  SET_TARGET_PROPERTIES(NuToMechanics PROPERTIES COMPILE_FLAGS "-fPIC")
+ENDIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
+>>>>>>> feti_solver
 # install library
 install(TARGETS NuToMechanics
     ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
