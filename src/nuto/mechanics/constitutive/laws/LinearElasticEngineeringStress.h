@@ -80,12 +80,11 @@ public:
     typedef Constitutive::StaticData::DataEmpty StaticDataType;
     using StaticData = Constitutive::StaticData::DataContainer<LinearElasticEngineeringStress>;
 
-
     LinearElasticEngineeringStress();
 
     Constitutive::IPConstitutiveLawBase* CreateIPLaw()
     {
-        return new Constitutive::IPConstitutiveLaw<LinearElasticEngineeringStress>(*this);
+        return new Constitutive::IPConstitutiveLaw<LinearElasticEngineeringStress>(*this, Constitutive::StaticData::DataEmpty());
     }
 
 

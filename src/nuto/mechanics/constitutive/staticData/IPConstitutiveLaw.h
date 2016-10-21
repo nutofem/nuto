@@ -19,10 +19,12 @@ class IPConstitutiveLaw: public IPConstitutiveLawBase
 {
 public:
 
+    using Type = typename StaticData::DataContainer<TLaw>::Type;
+
     //! @brief constructor
     //! @param rLaw underlying constitutive law
-    IPConstitutiveLaw(TLaw& rLaw)
-    : mLaw(rLaw) {}
+    IPConstitutiveLaw(TLaw& rLaw, const Type& rData)
+    : mLaw(rLaw), mData(rData) {}
 
     //! @brief default copy constructor
     IPConstitutiveLaw(const IPConstitutiveLaw& ) = default;
@@ -94,8 +96,8 @@ protected:
 
 private:
 
-    StaticData::DataContainer<TLaw> mData;
     TLaw& mLaw;
+    StaticData::DataContainer<TLaw> mData;
 };
 
 

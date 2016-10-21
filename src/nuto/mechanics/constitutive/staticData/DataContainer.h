@@ -4,6 +4,8 @@
 #pragma once
 #include <vector>
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/base/serializeStream/SerializeStreamOut.h"
+#include "nuto/base/serializeStream/SerializeStreamIn.h"
 
 namespace NuTo
 {
@@ -20,14 +22,16 @@ public:
 
     typedef typename TLaw::StaticDataType Type;
 
+    DataContainer(const Type& rData)
+    {
+        mData.push_back(rData);
+    }
+
     //! @brief Set a new value for the current static data.
     //! @param rNewData New value for current static data.
     void SetData(const Type& rNewData)
     {
-        if (mData.empty())
-            mData.push_back(rNewData);
-        else
-            mData.at(0) = rNewData;
+        mData.at(0) = rNewData; // entry [0] always exists after construction.
     }
 
     //! @brief Get the data at `timestep`.
@@ -84,14 +88,14 @@ public:
     void NuToSerializeSave(SerializeStreamOut& rStream)
     {
         SerializeDataContainer(rStream);
-    };
+    }
 
     //! @brief defines the serialization of this class
     //! @param rStream serialize input stream
     void NuToSerializeLoad(SerializeStreamIn& rStream)
     {
         SerializeDataContainer(rStream);
-    };
+    }
 
 private:
     //! @brief defines the serialization of this class

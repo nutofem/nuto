@@ -1,13 +1,21 @@
 #pragma once
 
 #include "nuto/base/serializeStream/SerializeStreamOut_Def.h"
+#include <typeinfo>
 #include <eigen3/Eigen/Core>
 
-
 template <typename T>
-void NuTo::SerializeStreamOut::Serialize(T& rData)
+void NuTo::SerializeStreamOut::SerializePrimitiveType(T rData)
 {
-    rData.NuToSerializeSave(*this);
+    if (mIsBinary)
+    {
+        mFileStream.write(reinterpret_cast<const char*>(&rData), sizeof(T));
+    }
+    else
+    {
+        mFileStream << typeid(rData).name() << std::endl; // one line of debug info
+        mFileStream << static_cast<double>(rData) << std::endl;
+    }
 }
 
 template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>

@@ -47,6 +47,20 @@ BOOST_AUTO_TEST_CASE(SerializeDouble)
     BOOST_CHECK_CLOSE(d, WriteReadNumber("DoubleBinary.dat", true, d, 0.), 1.e-10);
 }
 
+BOOST_AUTO_TEST_CASE(SerializeInt)
+{
+    int i = 6174;
+    BOOST_CHECK_EQUAL(i, WriteReadNumber("IntText.dat", false, i, 0));
+    BOOST_CHECK_EQUAL(i, WriteReadNumber("IntBinary.dat", true, i, 0));
+}
+
+BOOST_AUTO_TEST_CASE(SerializeBool)
+{
+    bool b = true;
+    BOOST_CHECK_EQUAL(b, WriteReadNumber("BoolText.dat", false, b, false));
+    BOOST_CHECK_EQUAL(b, WriteReadNumber("BoolBinary.dat", true, b, false));
+}
+
 template <typename T>
 T WriteReadMatrix(const std::string &rFile, bool rIsBinary, T &rValue)
 {

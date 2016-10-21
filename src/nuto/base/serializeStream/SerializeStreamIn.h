@@ -5,11 +5,20 @@
 
 
 template <typename T>
-void NuTo::SerializeStreamIn::Serialize(T& rData)
+void NuTo::SerializeStreamIn::SerializePrimitiveType(T& rData)
 {
-    rData.NuToSerializeLoad(*this);
+    if (mIsBinary)
+    {
+        mFileStream.read(reinterpret_cast<char*>(&rData), sizeof(T));
+    }
+    else
+    {
+        std::string line;
+        std::getline(mFileStream, line); // ignore one line of debug info
+        std::getline(mFileStream, line); // extract value
+        rData = static_cast<T>(std::stod(line));
+    }
 }
-
 
 template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
 void NuTo::SerializeStreamIn::Serialize(Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix)

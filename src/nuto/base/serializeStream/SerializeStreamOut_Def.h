@@ -28,11 +28,10 @@ public:
     }
 
     template <typename T>
-    void Serialize(T& rData);
-
-    void Serialize(double rData);
-
-    void Serialize(bool rData);
+    void Serialize(T& rData)        {rData.NuToSerializeSave(*this);}
+    void Serialize(double& rData)   {SerializePrimitiveType(rData);}
+    void Serialize(int& rData)      {SerializePrimitiveType(rData);}
+    void Serialize(bool& rData)     {SerializePrimitiveType(rData);}
 
     template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
     void Serialize(Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix);
@@ -40,5 +39,8 @@ public:
     template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
     void SaveMatrix(const Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix);
 
+private:
+    template <typename T>
+    void SerializePrimitiveType(T rData);
 };
 } // namespace NuTo
