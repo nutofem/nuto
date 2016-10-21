@@ -368,10 +368,6 @@ public:
     //! @brief delete the nonlocal elements
     void DeleteNonlocalElements();
 
-    //! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)
-    //! @return Area
-    virtual double CalculateArea() const;
-
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @return rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
     virtual const Eigen::VectorXd GetIntegrationPointVolume() const=0;
@@ -392,28 +388,6 @@ public:
     //! @return boundary control node
     virtual NodeBase* GetBoundaryControlNode() const;
 
-    //VHIRTHAMTODO remove???
-//    //! @brief sets the water volume fraction at the boundary surface
-//    //! @return water volume fraction at the boundary surface
-//    virtual double GetBoundaryWaterVolumeFraction() const;
-
-//    //! @brief sets the water volume fraction at the boundary surface
-//    //! @param water volume fraction at the boundary surface
-//    virtual void SetBoundaryWaterVolumeFraction(double rBoundaryWaterVolumeFraction);
-
-//    //! @brief sets the relative humidity at the boundary surface
-//    //! @param relative humidity at the boundary surface
-//    virtual double GetBoundaryRelativeHumidity() const;
-
-//    //! @brief sets the relative humidity at the boundary surface
-//    //! @param relative humidity at the boundary surface
-//    virtual void SetBoundaryRelativeHumidity(double rBoundaryRelativeHumidity);
-
-    //! @brief checks if a node is inside of an element
-    //! implemented with an exception for all elements, reimplementation required for those elements
-    //! @param rGlobCoords (input) ... pointer to the array of coordinates
-    //! @return True if coordinates are within the element, False otherwise
-    virtual bool CheckPointInside(const double* rGlobCoords) const;
 
     void Info() const;
 

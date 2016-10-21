@@ -272,12 +272,6 @@ Eigen::Vector3d NuTo::ElementBase::InterpolateDof3D(int rTimeDerivative, const E
     return interpolation3D;
 }
 
-//! @brief calculates the area of a plane element via the nodes (probably faster than sum over integration points)
-//! @return Area
-double NuTo::ElementBase::CalculateArea() const
-{
-    throw MechanicsException("[NuTo::ElementBase::CalculateArea] The area can only be calculated for 2D elements.");
-}
 
 //! @brief sets the integration type of an element
 //! implemented with an exception for all elements, reimplementation required for those elements
@@ -447,43 +441,6 @@ NuTo::NodeBase *NuTo::ElementBase::GetBoundaryControlNode() const
     throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"Not implemented for this element type.");
 }
 
-//VHIRTHAMTODO Remove???
-////! @brief sets the water volume fraction at the boundary surface
-////! @return water volume fraction at the boundary surface
-//double NuTo::ElementBase::GetBoundaryWaterVolumeFraction() const
-//{
-//    throw NuTo::MechanicsException("[NuTo::ElementBase::GetBoundaryWaterVolumeFraction] not implemented for this element type.");
-//}
-
-////! @brief sets the water volume fraction at the boundary surface
-////! @param water volume fraction at the boundary surface
-//void NuTo::ElementBase::SetBoundaryWaterVolumeFraction(double rBoundaryWaterVolumeFraction)
-//{
-//    throw NuTo::MechanicsException("[NuTo::ElementBase::SetBoundaryWaterVolumeFraction] not implemented for this element type.");
-//}
-
-////! @brief sets the relative humidity at the boundary surface
-////! @param relative humidity at the boundary surface
-//double NuTo::ElementBase::GetBoundaryRelativeHumidity() const
-//{
-//    throw NuTo::MechanicsException("[NuTo::ElementBase::GetBoundaryRelativeHumidity] not implemented for this element type.");
-//}
-
-////! @brief sets the relative humidity at the boundary surface
-////! @param relative humidity at the boundary surface
-//void NuTo::ElementBase::SetBoundaryRelativeHumidity(double rBoundaryRelativeHumidity)
-//{
-//    throw NuTo::MechanicsException("[NuTo::ElementBase::SetBoundaryRelativeHumidity] not implemented for this element type.");
-//}
-
-//! @brief checks if a node is inside of an element
-//! implemented with an exception for all elements, reimplementation required for those elements
-//! @param rGlobCoords (input) ... pointer to the array of coordinates
-//! @return True if coordinates are within the element, False otherwise
-bool NuTo::ElementBase::CheckPointInside(const double* rGlobCoords) const
-{
-    throw NuTo::MechanicsException("[NuTo::ElementBase::CheckPointInside] not implemented for this element type.");
-}
 
 #ifdef ENABLE_VISUALIZE
 void NuTo::ElementBase::GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType, std::vector<unsigned int>& VisualizationCellsIncidence,
