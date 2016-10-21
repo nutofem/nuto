@@ -13,8 +13,8 @@ void NuTo::SerializeStreamOut::SerializePrimitiveType(T rData)
     }
     else
     {
-        mFileStream << typeid(rData).name() << std::endl; // one line of debug info
-        mFileStream << static_cast<double>(rData) << std::endl;
+        mFileStream << typeid(rData).name() << '\n'; // one line of debug info
+        mFileStream << static_cast<double>(rData) << '\n';
     }
 }
 
@@ -38,8 +38,8 @@ void NuTo::SerializeStreamOut::SaveMatrix(const Eigen::Matrix<T, TRows, TCols, T
     else
     {
         // one line of debug info:
-        mFileStream << "Matrix ( " << rows << " x " << cols << " ): " << std::endl;
+        mFileStream << "Matrix ( " << rows << " x " << cols << " ): " << '\n';
         for (int i = 0; i < rows*cols; ++i)
-            mFileStream << data[i] << std::endl;
+            mFileStream << data[i] << '\n';
     }
 }

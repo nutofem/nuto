@@ -2,13 +2,14 @@
 // Created by Thomas Titscher on 10/20/16.
 //
 #pragma once
+
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
-#include "nuto/base/ErrorEnum.h"
 
 namespace NuTo
 {
 class SerializeStreamIn;
 class SerializeStreamOut;
+enum class eError;
 
 namespace Constitutive
 {
@@ -19,7 +20,16 @@ class IPConstitutiveLawBase
 public:
 
     //! @brief virtual destructor
+    //! @remark since we don't want to give up move semantics --> rule of 5
     virtual ~IPConstitutiveLawBase() = default;
+
+
+    IPConstitutiveLawBase() = default;
+    IPConstitutiveLawBase(const IPConstitutiveLawBase& ) = default;
+    IPConstitutiveLawBase(      IPConstitutiveLawBase&&) = default;
+    IPConstitutiveLawBase& operator=(const IPConstitutiveLawBase&)  = default;
+    IPConstitutiveLawBase& operator=(      IPConstitutiveLawBase&&) = default;
+
 
     template <int TDim>
     NuTo::eError Evaluate(

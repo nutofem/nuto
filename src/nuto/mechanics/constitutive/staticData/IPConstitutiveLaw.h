@@ -26,15 +26,6 @@ public:
     IPConstitutiveLaw(TLaw& rLaw, const Type& rData)
     : mLaw(rLaw), mData(rData) {}
 
-    //! @brief default copy constructor
-    IPConstitutiveLaw(const IPConstitutiveLaw& ) = default;
-
-    //! @brief default move constructor
-    IPConstitutiveLaw(      IPConstitutiveLaw&&) = default;
-
-    //! @brief default destuctor
-    ~IPConstitutiveLaw() = default;
-
     TLaw& GetConstitutiveLaw() const
     {
         return mLaw;

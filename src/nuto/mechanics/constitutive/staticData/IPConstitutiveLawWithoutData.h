@@ -16,15 +16,6 @@ public:
     //! @param rLaw underlying constitutive law
     IPConstitutiveLawWithoutData(TLaw& rLaw) : mLaw(rLaw) {}
 
-    //! @brief default copy constructor
-    IPConstitutiveLawWithoutData(const IPConstitutiveLawWithoutData&) = default;
-
-    //! @brief default move constructor
-    IPConstitutiveLawWithoutData(      IPConstitutiveLawWithoutData&&) = default;
-
-    //! @brief default destuctor
-    ~IPConstitutiveLawWithoutData() = default;
-
     TLaw& GetConstitutiveLaw() const
     {
         return mLaw;

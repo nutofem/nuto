@@ -207,7 +207,7 @@ void CheckCompoundData(const std::string& rFile, bool rIsBinary)
 void CheckVectorCompoundData(const std::string& rFile, bool rIsBinary)
 {
     NuTo::Timer timer(__PRETTY_FUNCTION__);
-    size_t num = 3;
+    size_t num = 42;
     std::vector<std::unique_ptr<CompoundDataBase>> values(num);
     std::vector<std::unique_ptr<CompoundDataBase>> valuesFromFile(num);
     for (auto& value : values)
