@@ -300,7 +300,6 @@ set(SWIG_MODULE_ModulMechanics_EXTRA_DEPS
 # build static library
 add_library(NuToMechanics ${NuToMechanics_SOURCES})
 target_link_libraries(NuToMechanics ${ANN_LIBRARIES})
-<<<<<<< HEAD
 
 if(ENABLE_SHOW_TIME)
     #add library for clock_gettime routines
@@ -315,12 +314,10 @@ if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
     set_target_properties(NuToMechanics PROPERTIES COMPILE_FLAGS "-fPIC")
 endif()
 
-=======
 target_link_libraries(NuToMechanics jsoncpp)
 
-if(ENABLE_MPI)
-    target_link_libraries(NuToMechanics ${MPI_LIBRARIES})
-endif(ENABLE_MPI)
+target_link_libraries(NuToMechanics ${MPI_LIBRARIES})
+
 
 IF (ENABLE_SHOW_TIME)
 #add library for clock_gettime routines
@@ -333,7 +330,7 @@ ENDIF (ENABLE_CGAL)
 IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
   SET_TARGET_PROPERTIES(NuToMechanics PROPERTIES COMPILE_FLAGS "-fPIC")
 ENDIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
->>>>>>> feti_solver
+
 # install library
 install(TARGETS NuToMechanics
     ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
