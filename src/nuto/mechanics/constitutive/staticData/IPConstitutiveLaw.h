@@ -73,7 +73,7 @@ protected:
     eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
                       const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
-        return mLaw.Evaluate<1>(rConstitutiveInput, rConstitutiveOutput, mData);
+        return mLaw.template Evaluate<1>(rConstitutiveInput, rConstitutiveOutput, mData);
     }
 
     //! @brief Evaluate the constitutive relation in 1D
@@ -82,7 +82,7 @@ protected:
     eError Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
                       const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
-        return mLaw.Evaluate<2>(rConstitutiveInput, rConstitutiveOutput, mData);
+        return mLaw.template Evaluate<2>(rConstitutiveInput, rConstitutiveOutput, mData);
     }
 
     //! @brief Evaluate the constitutive relation in 1D
@@ -91,7 +91,7 @@ protected:
     eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
                       const ConstitutiveOutputMap& rConstitutiveOutput) override
     {
-        return mLaw.Evaluate<3>(rConstitutiveInput, rConstitutiveOutput, mData);
+        return mLaw.template Evaluate<3>(rConstitutiveInput, rConstitutiveOutput, mData);
     }
 
 private:
