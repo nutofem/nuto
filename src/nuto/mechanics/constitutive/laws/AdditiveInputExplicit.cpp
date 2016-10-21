@@ -192,7 +192,8 @@ NuTo::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit(
         ApplySublawOutputs<TDim>(mainLawInputMap, rConstitutiveOutput, sublawOutputMapVec[i]);
     }
 
-    error = mMainLaw->Evaluate<TDim>(mainLawInputMap, rConstitutiveOutput, &localStaticData.GetComponent(0));
+    int n = localStaticData.GetNumComponents();
+    error = mMainLaw->Evaluate<TDim>(mainLawInputMap, rConstitutiveOutput, &localStaticData.GetComponent(n-1));
 
     // calculate derivatives that depend on outputs from the main law and the sublaws
     CalculateDerivatives<TDim>(rConstitutiveOutput, sublawOutputMapVec);
@@ -310,3 +311,4 @@ template NuTo::eError NuTo::AdditiveInputExplicit::EvaluateAdditiveInputExplicit
 template NuTo::ConstitutiveOutputMap NuTo::AdditiveInputExplicit::GetSublawOutputMap<1>(const NuTo::ConstitutiveInputMap& rMainLawInputMap, const NuTo::ConstitutiveOutputMap& rMainLawOutputMap, unsigned int rSublawIndex) const;
 template NuTo::ConstitutiveOutputMap NuTo::AdditiveInputExplicit::GetSublawOutputMap<2>(const NuTo::ConstitutiveInputMap& rMainLawInputMap, const NuTo::ConstitutiveOutputMap& rMainLawOutputMap, unsigned int rSublawIndex) const;
 template NuTo::ConstitutiveOutputMap NuTo::AdditiveInputExplicit::GetSublawOutputMap<3>(const NuTo::ConstitutiveInputMap& rMainLawInputMap, const NuTo::ConstitutiveOutputMap& rMainLawOutputMap, unsigned int rSublawIndex) const;
+
