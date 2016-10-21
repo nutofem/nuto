@@ -223,6 +223,7 @@ structures/unstructured/StructureNode.cpp
 SET(NuToMechanicsTimeIntegration_SOURCES
 timeIntegration/NewmarkBase.cpp
 timeIntegration/NewmarkDirect.cpp
+timeIntegration/NewmarkFeti.cpp
 #timeIntegration/JumpDirect.cpp
 timeIntegration/NystroemBase.cpp
 timeIntegration/NystroemQinZhu.cpp

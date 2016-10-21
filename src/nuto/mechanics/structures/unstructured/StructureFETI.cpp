@@ -151,6 +151,38 @@ void NuTo::StructureFETI::FindKeywordInFile(std::ifstream &file, std::string key
         throw MechanicsException(__PRETTY_FUNCTION__, "Keyword in mesh file not found");
 }
 
+void NuTo::StructureFETI::AssembleBoundaryDofIds()
+{
+
+    const auto& dofTypes = GetDofStatus().GetDofTypes();
+
+    int numActiveDofs = 0;
+
+    for (const auto& dofType : dofTypes)
+        numActiveDofs           += GetNumActiveDofs(dofType);
+
+    mBoundaryDofIds.setZero(numActiveDofs);
+
+    int offset = 0;
+    for (const auto& dofType : dofTypes)
+    {
+        for (const auto& nodeId : mSubdomainBoundaryNodeIds)
+        {
+            const std::vector<int> dofIds = NodeGetDofIds(nodeId, dofType);
+
+            for (const auto& dofId : dofIds)
+            {
+                if(dofId < GetNumActiveDofs(dofType))
+                    mBoundaryDofIds.diagonal()(dofId + offset) = 1;
+            }
+
+        }
+        offset += GetNumActiveDofs(dofType);
+    }
+
+
+
+}
 
 void NuTo::StructureFETI::AssembleConnectivityMatrix()
 {
@@ -161,7 +193,7 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
     int numLagrangeMultipliers  = 0;
 
     // this should be read from the mesh file
-//    const int numInterfaceNodesTotal    = 42;
+    //    const int numInterfaceNodesTotal    = 42;
 
     for (const auto& dofType : dofTypes)
     {
@@ -194,67 +226,11 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
 
     if (mRank == 0)
     {
-//        std::cout << mConnectivityMatrix << std::endl;
+        //        std::cout << mConnectivityMatrix << std::endl;
         std::cout << mConnectivityMatrix.rows() << std::endl;
         std::cout << mConnectivityMatrix.cols() << std::endl;
     }
 }
-
-//void NuTo::StructureFETI::AssembleRigidBodyModes()
-//{
-
-//    const int numDofs  = GetNumDofs(NuTo::Node::eDof::DISPLACEMENTS);
-
-//    mRigidBodyModes.resize(numDofs,3);
-//    for (const auto& node : NodeGetNodeMap())
-//    {
-//        NuTo::FullVector<int, Eigen::Dynamic> displacementDofs;
-//        NodeGetDisplacementDofs(node.first, displacementDofs);
-//        const Eigen::Matrix<double, 2, 1> coordinates = node.second->Get(NuTo::Node::eDof::COORDINATES);
-
-//        mRigidBodyModes.block(displacementDofs[0], 0, 1, 3) << 1., 0., -coordinates.at(1, 0);
-
-//        mRigidBodyModes.block(displacementDofs[1], 0, 1, 3) << 0., 1.,  coordinates.at(0, 0);
-//    }
-
-//    mInterfaceRigidBodyModes = mConnectivityMatrix * mRigidBodyModes;
-
-
-
-//}
-
-
-
-
-//Eigen::SparseMatrix<double>& NuTo::StructureFETI::AssembleStiffnessMatrix()
-//{
-//    // assemble stiffness matrix
-//    NuTo::StructureOutputBlockMatrix stiffnessMatrix = BuildGlobalHessian0();
-//    NuTo::SparseMatrixCSRGeneral<double> stiffnessMatrixCSR(stiffnessMatrix.JJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS));
-
-//    std::cout << "stiffnessMatrixCSR.GetNumEntries()" << stiffnessMatrixCSR.GetNumEntries() << std::endl;
-//    std::cout << "stiffnessMatrixCSR.GetNumColumns()" << stiffnessMatrixCSR.GetColumns().size() << std::endl;
-//    std::cout << "stiffnessMatrixCSR.GetNumRows()" << stiffnessMatrixCSR.GetRowIndex().size() << std::endl;
-
-//    std::vector<Eigen::Triplet<double>> tripletList;
-
-//    std::vector<double> val = stiffnessMatrixCSR.GetValues();
-//    std::vector<int> colInd = stiffnessMatrixCSR.GetColumns();
-//    std::vector<int> rowInd = stiffnessMatrixCSR.GetRowIndex();
-
-//    for (unsigned i = 0; i < rowInd.size() - 1; ++i)
-//    {
-//        for (int k = rowInd[i]; k < rowInd[i + 1]; ++k)
-//            tripletList.push_back(Eigen::Triplet<double>(i, colInd[k], val[k]));
-//    }
-
-
-//    Eigen::SparseMatrix<double> stiffnessMatrixSparse;
-//    stiffnessMatrixSparse.setFromTriplets(tripletList.begin(), tripletList.end());
-//    stiffnessMatrixSparse.makeCompressed();
-//    return stiffnessMatrixSparse;
-
-//}
 
 void NuTo::StructureFETI::ImportMesh(std::string rFileName, const int interpolationTypeId)
 {
@@ -314,21 +290,34 @@ void NuTo::StructureFETI::ImportMeshJson(std::string rFileName, const int interp
 
 
 
+
     // only supports elements.size() == 1
     for (auto const& elements : root["Elements"])
     {
         mElements.resize(elements["NodalConnectivity"].size());
+        const int elementType = elements["Type"].asInt();
+
 
         for (unsigned i = 0; i < mElements.size(); ++i)
         {
-            // restricted to linear quads
-            mElements[i].mNodeIds.resize(4);
+            if (elementType == 1)
+            {
+                mSubdomainBoundaryNodeIds.insert(elements["NodalConnectivity"][i][0].asInt());
+                mSubdomainBoundaryNodeIds.insert(elements["NodalConnectivity"][i][1].asInt());
 
-            mElements[i].mNodeIds[0] = elements["NodalConnectivity"][i][0].asInt();
-            mElements[i].mNodeIds[1] = elements["NodalConnectivity"][i][1].asInt();
-            mElements[i].mNodeIds[2] = elements["NodalConnectivity"][i][2].asInt();
-            mElements[i].mNodeIds[3] = elements["NodalConnectivity"][i][3].asInt();
-            mElements[i].mId            = elements["Indices"][i].asInt();
+            }
+            else if (elementType == 3)
+            {
+
+                // restricted to linear quads
+                mElements[i].mNodeIds.resize(4);
+
+                mElements[i].mNodeIds[0] = elements["NodalConnectivity"][i][0].asInt();
+                mElements[i].mNodeIds[1] = elements["NodalConnectivity"][i][1].asInt();
+                mElements[i].mNodeIds[2] = elements["NodalConnectivity"][i][2].asInt();
+                mElements[i].mNodeIds[3] = elements["NodalConnectivity"][i][3].asInt();
+                mElements[i].mId         = elements["Indices"][i].asInt();
+            }
         }
     }
 
@@ -344,12 +333,13 @@ void NuTo::StructureFETI::ImportMeshJson(std::string rFileName, const int interp
         for (unsigned k = 0; k < root["Interface"][i]["NodeIds"][0].size(); ++k)
         {
             mInterfaces[i].mNodeIdsMap.emplace(globalId, root["Interface"][i]["NodeIds"][0][k].asInt());
-
+            mSubdomainBoundaryNodeIds.insert(root["Interface"][i]["NodeIds"][0][k].asInt());
             globalId++;
         }
 
 
     }
+
 
     mNumInterfaceNodesTotal = root["NumInterfaceNodes"][0].asInt();
 

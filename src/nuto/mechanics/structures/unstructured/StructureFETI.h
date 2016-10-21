@@ -8,6 +8,7 @@
 #include <eigen3/Eigen/Sparse>
 #include <cstring>
 #include <fstream>
+#include <set>
 
 
 namespace NuTo
@@ -69,6 +70,11 @@ public:
     const int mRank;
     const int mNumProcesses;
 
+    ///
+    /// \brief FindKeywordInFile
+    /// \param file
+    /// \param keyword
+    ///
     void FindKeywordInFile(std::ifstream &file, std::string keyword);
 
 
@@ -78,12 +84,28 @@ public:
 
 //    Eigen::SparseMatrix<double> &AssembleStiffnessMatrix();
 //    void AssembleRigidBodyModes();
+
+    ///
+    /// \brief AssembleConnectivityMatrix
+    ///
     void AssembleConnectivityMatrix();
 
+    ///
+    /// \brief AssembleBoundaryDofIds
+    ///
+    void AssembleBoundaryDofIds();
 
     Matrix                      mRigidBodyModes;
     Matrix                      mInterfaceRigidBodyModes;
     SparseMatrix                mConnectivityMatrix;
+
+    ///
+    /// \brief mBoundaryRowDofIds
+    ///
+    Eigen::DiagonalMatrix<double, Eigen::Dynamic>                mBoundaryDofIds;
+
+
+
 
     Matrix                     mProjectionMatrix;
     NodeList                   mNodes;
@@ -92,8 +114,12 @@ public:
     InterfaceList              mInterfaces;
     int                        mNumRigidBodyModes;
     int                        mNumInterfaceNodesTotal = 42;
+    std::set<int>              mSubdomainBoundaryNodeIds;
+
+
     void ImportMeshJson(std::string rFileName, const int interpolationTypeId);
     void ImportMesh(std::string rFileName, const int interpolationTypeId);
+
 protected:
 
 
