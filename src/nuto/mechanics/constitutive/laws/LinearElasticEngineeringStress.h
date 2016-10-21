@@ -2,8 +2,7 @@
 
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
-#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLaw.h"
-#include "nuto/mechanics/constitutive/staticData/DataEmpty.h"
+#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
 
 
 namespace NuTo
@@ -77,14 +76,11 @@ class LinearElasticEngineeringStress: public ConstitutiveBase
 #endif // ENABLE_SERIALIZATION
 public:
 
-    typedef Constitutive::StaticData::DataEmpty StaticDataType;
-    using StaticData = Constitutive::StaticData::DataContainer<LinearElasticEngineeringStress>;
-
     LinearElasticEngineeringStress();
 
     Constitutive::IPConstitutiveLawBase* CreateIPLaw()
     {
-        return new Constitutive::IPConstitutiveLaw<LinearElasticEngineeringStress>(*this, Constitutive::StaticData::DataEmpty());
+        return new Constitutive::IPConstitutiveLawWithoutData<LinearElasticEngineeringStress>(*this);
     }
 
 
@@ -111,8 +107,7 @@ public:
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
     template <int TDim>
     NuTo::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            StaticData& staticData) {}
+            const ConstitutiveOutputMap& rConstitutiveOutput) {}
 
     //! @brief ... evaluate the constitutive relation in 2D
     //! @param rElement ... element

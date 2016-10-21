@@ -3,6 +3,8 @@
 #include <map>
 #include <memory>
 
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
+
 namespace NuTo
 {
 

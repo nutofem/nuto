@@ -14,6 +14,7 @@ namespace Constitutive
     {
         class Component;
         template <typename T> class Leaf;
+        template<typename T> class DataContainer;
     }
 }// namespace Constitutive
 
@@ -27,6 +28,9 @@ class GradientDamageEngineeringStress : public ConstitutiveBase
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
+    typedef double StaticDataType;
+    using KappaVec = Constitutive::StaticData::DataContainer<GradientDamageEngineeringStress>;
+
     GradientDamageEngineeringStress();
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
@@ -62,6 +66,10 @@ public:
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
             Constitutive::StaticData::Component* staticData) override;
+
+    template<int TDim>
+    eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput,
+            KappaVec kappa);
 
     //! @brief Calculates the current static data based on the given CALCULATE_STATIC_DATA input.
     //! @param staticData History data.
