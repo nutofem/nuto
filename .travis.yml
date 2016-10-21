@@ -2,7 +2,6 @@ language: cpp
 sudo: required
 dist: trusty
 compiler:
-    - clang
     - gcc
 before_install:
     - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
@@ -10,14 +9,17 @@ before_install:
     - bash miniconda.sh -b -p $HOME/miniconda
     - export PATH=/home/travis/miniconda/bin:$PATH
     - conda install --yes numpy
+    - pip install --user cpp-coveralls
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     - sudo apt-get -qq update
-    - sudo apt-get install -y g++-6 libgfortran-6-dev libgcc-6-dev libiomp-dev swig3.0 doxygen python-dev python-instant libboost-all-dev libeigen3-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev gfortran
+    - sudo apt-get install -y lcov curl g++-6 libgfortran-6-dev libgcc-6-dev libiomp-dev swig3.0 doxygen python-dev python-instant libboost-all-dev libeigen3-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev gfortran
 before_script:
     - mkdir build
     - cd build
-    - if [[ "$CXX" == "g++" ]]; then CXX=g++-6; fi
-    - cmake ..
+    - if [[ "$CXX" == "g++" ]]; then CXX=g++-6 cmake -DENABLE_COVERAGE=TRUE ..; else cmake ..; fi
 script:
     - make -j2
     - ctest
+after_success:
+    - cd ..
+    - coveralls -E '.*PYTHON.*' --gcov-options '\-lp'
