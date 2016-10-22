@@ -7,6 +7,7 @@
 
 namespace NuTo
 {
+class ConstitutiveBase;
 class SerializeStreamIn;
 class SerializeStreamOut;
 enum class eError;
@@ -30,6 +31,8 @@ public:
     IPConstitutiveLawBase& operator=(const IPConstitutiveLawBase&)  = default;
     IPConstitutiveLawBase& operator=(      IPConstitutiveLawBase&&) = default;
 
+
+    virtual ConstitutiveBase& GetConstitutiveLaw() const = 0;
 
     template <int TDim>
     NuTo::eError Evaluate(

@@ -221,16 +221,12 @@ public:
     bool HasConstitutiveLawAssigned(int rIp) const;
 
     //! @brief sets the section of an element
-    //! implemented with an exception for all elements, reimplementation required for those elements
-    //! which actually need a section
     //! @param rSection pointer to section
-    virtual void SetSection(const SectionBase* rSection)=0;
+    void SetSection(const SectionBase* rSection);
 
     //! @brief returns a pointer to the section of an element
-    //! implemented with an exception for all elements, reimplementation required for those elements
-    //! which actually need a section
     //! @return pointer to section
-    virtual const SectionBase* GetSection() const=0;
+    const SectionBase* GetSection() const;
 
     //! @brief sets the integration type of an element
     //! implemented with an exception for all elements, reimplementation required for those elements
@@ -556,6 +552,8 @@ protected:
     //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
     virtual void CheckElement() = 0;
 
+    void AddPlaneStateToInput(ConstitutiveInputMap& input) const;
+
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
     //! @param rGlobalRowDofs ... vector of global row dofs
     //virtual void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) const = 0;
@@ -572,7 +570,9 @@ protected:
 
     const InterpolationType* mInterpolationType;
 
-    void AddPlaneStateToInput(ConstitutiveInputMap& input) const;
+    // the base class of the sections
+    const SectionBase *mSection;
+
 };
 }    //namespace NuTo
 

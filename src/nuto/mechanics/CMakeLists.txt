@@ -89,7 +89,7 @@ set(NuToMechanicsElements_SOURCES
     elements/IpDataStaticData.cpp
     elements/IpDataStaticDataBase.cpp
     elements/IpDataStaticDataNonlocal.cpp
-    )
+    elements/IPData.cpp)
 
 set(NuToMechanicsGroups_SOURCES
     groups/Group.cpp

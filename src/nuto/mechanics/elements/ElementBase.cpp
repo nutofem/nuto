@@ -54,7 +54,7 @@
 #endif
 
 NuTo::ElementBase::ElementBase(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, const InterpolationType* rInterpolationType) :
-        mStructure(rStructure), mInterpolationType(rInterpolationType)
+        mStructure(rStructure), mInterpolationType(rInterpolationType), mSection(nullptr)
 {
 
     const IntegrationTypeBase* integrationType = mInterpolationType->GetCurrentIntegrationType();
@@ -83,7 +83,7 @@ NuTo::ElementBase::ElementBase(const StructureBase* rStructure, ElementData::eEl
 }
 
 NuTo::ElementBase::ElementBase(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType, int rNumIp, IpData::eIpDataType rIpDataType, const InterpolationType* rInterpolationType) :
-        mStructure(rStructure), mInterpolationType(rInterpolationType)
+        mStructure(rStructure), mInterpolationType(rInterpolationType), mSection(nullptr)
 {
 
     //allocate element data
@@ -219,6 +219,17 @@ bool NuTo::ElementBase::HasConstitutiveLawAssigned(int rIp) const
 {
     return mElementData->HasConstitutiveLawAssigned(rIp);
 }
+
+void NuTo::ElementBase::SetSection(const SectionBase* rSection)
+{
+    mSection = rSection;
+}
+
+const NuTo::SectionBase* NuTo::ElementBase::GetSection() const
+{
+    return mSection;
+}
+
 
 int NuTo::ElementBase::GetNumNodes() const
 {

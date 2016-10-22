@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/staticData/IPConstitutiveLawBase.h"
+#include <type_traits>
 
 namespace NuTo
 {
@@ -12,13 +13,15 @@ class IPConstitutiveLawWithoutData : public IPConstitutiveLawBase
 {
 public:
 
+    static_assert(std::is_base_of<ConstitutiveBase, TLaw>::value,"TLaw must be derived from NuTo::ConstitutiveBase");
+
     //! @brief constructor
     //! @param rLaw underlying constitutive law
     IPConstitutiveLawWithoutData(TLaw& rLaw) : mLaw(rLaw) {}
 
-    TLaw& GetConstitutiveLaw() const
+    ConstitutiveBase& GetConstitutiveLaw() const
     {
-        return mLaw;
+        return static_cast<ConstitutiveBase&>(mLaw);
     }
 
 protected:

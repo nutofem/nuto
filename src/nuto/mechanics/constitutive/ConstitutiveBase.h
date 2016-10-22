@@ -12,13 +12,16 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <memory>
+#include <nuto/base/ErrorEnum.h>
 
 #include "nuto/mechanics/constitutive/staticData/EmptyLeaf.h"
-
+#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLawBase.h"
 namespace NuTo
 {
     namespace Constitutive
     {
+//        class IPConstitutiveLawBase;
         namespace StaticData
         {
             class Component;
@@ -65,8 +68,10 @@ public:
     ConstitutiveBase(): mParametersValid(false){};
 
     //! @brief ... constructor
-    virtual ~ConstitutiveBase()
-    {}
+    virtual ~ConstitutiveBase() = default;
+
+    virtual std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() {return nullptr;}
+
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs
     //! @param rInterpolationType ... interpolation type to determine additional inputs
@@ -107,7 +112,7 @@ public:
     virtual NuTo::eError Evaluate1D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) = 0;
+            Constitutive::StaticData::Component* staticData) {return NuTo::eError::NOT_IMPLEMENTED;}
 
     //! @brief Evaluate the constitutive relation in 2D
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
@@ -116,7 +121,7 @@ public:
     virtual NuTo::eError Evaluate2D(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) = 0;
+            Constitutive::StaticData::Component* staticData) {return NuTo::eError::NOT_IMPLEMENTED;}
 
     //! @brief Evaluate the constitutive relation in 3D
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
@@ -125,7 +130,7 @@ public:
     virtual NuTo::eError Evaluate3D(
     		const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) = 0;
+            Constitutive::StaticData::Component* staticData) {return NuTo::eError::NOT_IMPLEMENTED;}
 
     // parameters /////////////////////////////////////////////////////////////
 

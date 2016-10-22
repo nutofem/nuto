@@ -40,8 +40,7 @@
 
 NuTo::Element2DInterface::Element2DInterface(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType) :
         NuTo::ElementBase::ElementBase(rStructure, rElementDataType, rIpDataType, rInterpolationType),
-        mNodes(rNodes),
-        mSection(nullptr)
+        mNodes(rNodes)
 {
     mTransformationMatrix = CalculateTransformationMatrix(GetStructure()->GetDimension(), mNodes.size());
 }

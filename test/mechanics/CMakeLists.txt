@@ -70,6 +70,7 @@ if(ENABLE_C++_TESTS)
         ElementUniaxialTetrahedron3D
         ThermoMechanics2D
         LobattoIntegration
+        IPData
         IGA
         InterpolationTypes
         TrussIn2D
@@ -110,6 +111,7 @@ endif()
 
 
 if(ENABLE_UNIT_TESTS)
+    # TESTS WITH NuToMechancis
     foreach(test ContinuumElement PhaseField)# LocalDamageModel)
         add_executable(${test} ${test}.cpp)
         target_link_libraries(${test} NuToMechanics NuToMath NuToBase)
@@ -118,4 +120,5 @@ if(ENABLE_UNIT_TESTS)
         endif()
         add_test(c::unit::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
     endforeach()
+
 endif()

@@ -765,11 +765,6 @@ const NodeBase *ContinuumBoundaryElement<TDim>::GetNode(int rLocalNodeNumber, No
     return mBaseElement->GetNode(nodeId);
 }
 
-template <int TDim>
-const SectionBase *ContinuumBoundaryElement<TDim>::GetSection() const
-{
-    return mBaseElement->GetSection();
-}
 
 template <int TDim>
 Eigen::VectorXd ContinuumBoundaryElement<TDim>::ExtractNodeValues(int rTimeDerivative, Node::eDof rDof) const

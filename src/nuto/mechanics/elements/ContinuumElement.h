@@ -7,7 +7,6 @@ namespace NuTo
 {
 
 class NodeBase;
-class SectionBase;
 class ElementOutputBase;
 class ElementOutputIpData;
 
@@ -99,24 +98,6 @@ public:
 
     virtual Eigen::VectorXd ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const override;
 
-    //! @brief sets the section of an element
-    //! implemented with an exception for all elements, reimplementation required for those elements
-    //! which actually need a section
-    //! @param rSection pointer to section
-    void SetSection(const SectionBase* rSection) override
-    {
-        mSection = rSection;
-    }
-
-    //! @brief returns a pointer to the section of an element
-    //! implemented with an exception for all elements, reimplementation required for those elements
-    //! which actually need a section
-    //! @return pointer to section
-    const SectionBase* GetSection() const override
-    {
-        return mSection;
-    }
-
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @return rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
     const Eigen::VectorXd GetIntegrationPointVolume() const override;
@@ -162,10 +143,7 @@ public:
 
 protected:
 
-    //! @todo boost ptr container?
     std::vector<NodeBase*> mNodes;
-    const SectionBase *mSection;
-
 
     //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
     void CheckElement() override;

@@ -31,7 +31,8 @@ if(ENABLE_UNIT_TESTS)
     add_test(c::unit::NuToSerializeStaticData ${CMAKE_CURRENT_BUILD_DIR}/NuToSerializeStaticData)
 
     add_executable(IPConstitutiveLaw IPConstitutiveLaw.cpp
-        ${CMAKE_SOURCE_DIR}/src/nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.cpp)
+            ${CMAKE_SOURCE_DIR}/src/nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.cpp)
+
     target_link_libraries(IPConstitutiveLaw ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} NuToBase NuToMath)
     add_test(c::unit::IPConstitutiveLaw ${CMAKE_CURRENT_BUILD_DIR}/IPConstitutiveLaw)
 

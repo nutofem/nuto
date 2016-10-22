@@ -78,9 +78,9 @@ public:
 
     LinearElasticEngineeringStress();
 
-    Constitutive::IPConstitutiveLawBase* CreateIPLaw()
+    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw()
     {
-        return new Constitutive::IPConstitutiveLawWithoutData<LinearElasticEngineeringStress>(*this);
+        return std::make_unique<Constitutive::IPConstitutiveLawWithoutData<LinearElasticEngineeringStress>>(*this);
     }
 
 

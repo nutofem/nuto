@@ -114,19 +114,6 @@ public:
         throw MechanicsException(__PRETTY_FUNCTION__,"Probably not needed.");
     }
 
-    //! @brief sets the section of an element
-    //! implemented with an exception for all elements, reimplementation required for those elements
-    //! which actually need a section
-    //! @param rSection pointer to section
-    virtual void SetSection(const SectionBase* rSection) override
-    {
-        return;
-    }
-
-    //! @brief returns a pointer to the section of an element
-    //! @return pointer to section
-    virtual const SectionBase* GetSection() const override;
-
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @return rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
     virtual const Eigen::VectorXd GetIntegrationPointVolume() const override

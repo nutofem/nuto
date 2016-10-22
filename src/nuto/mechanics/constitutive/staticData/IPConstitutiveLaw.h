@@ -7,7 +7,7 @@
 #include "nuto/mechanics/constitutive/staticData/DataContainer.h"
 #include "nuto/base/serializeStream/SerializeStreamIn.h"
 #include "nuto/base/serializeStream/SerializeStreamOut.h"
-
+#include <type_traits>
 
 namespace NuTo
 {
@@ -19,16 +19,19 @@ class IPConstitutiveLaw: public IPConstitutiveLawBase
 {
 public:
 
+    static_assert(std::is_base_of<ConstitutiveBase, TLaw>::value,"TLaw must be derived from NuTo::ConstitutiveBase");
+
     using Type = typename StaticData::DataContainer<TLaw>::Type;
+    typedef typename StaticData::DataContainer<TLaw> Data;
 
     //! @brief constructor
     //! @param rLaw underlying constitutive law
     IPConstitutiveLaw(TLaw& rLaw, const Type& rData)
     : mLaw(rLaw), mData(rData) {}
 
-    TLaw& GetConstitutiveLaw() const
+    ConstitutiveBase& GetConstitutiveLaw() const
     {
-        return mLaw;
+        return static_cast<ConstitutiveBase&>(mLaw);
     }
 
     const StaticData::DataContainer<TLaw>& GetStaticData() const

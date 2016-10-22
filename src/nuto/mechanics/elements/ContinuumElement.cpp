@@ -41,8 +41,7 @@ NuTo::ContinuumElement<TDim>::ContinuumElement(const NuTo::StructureBase* rStruc
         const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType,
         IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType) :
         NuTo::ElementBase::ElementBase(rStructure, rElementDataType, rIpDataType, rInterpolationType),
-        mNodes(rNodes),
-        mSection(nullptr)
+        mNodes(rNodes)
 {}
 
 template<int TDim>
