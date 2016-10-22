@@ -15,18 +15,9 @@
 #include <memory>
 #include <nuto/base/ErrorEnum.h>
 
-#include "nuto/mechanics/constitutive/staticData/EmptyLeaf.h"
 #include "nuto/mechanics/constitutive/staticData/IPConstitutiveLawBase.h"
 namespace NuTo
 {
-    namespace Constitutive
-    {
-//        class IPConstitutiveLawBase;
-        namespace StaticData
-        {
-            class Component;
-        }
-    }
 class InterpolationType;
 class ElementBase;
 class InterpolationType;
@@ -67,10 +58,16 @@ public:
     //! @brief ... constructor
     ConstitutiveBase(): mParametersValid(false){};
 
+    ConstitutiveBase(const ConstitutiveBase& ) = default;
+    ConstitutiveBase(      ConstitutiveBase&&) = default;
+
+    ConstitutiveBase& operator =(const ConstitutiveBase& ) = default;
+    ConstitutiveBase& operator =(      ConstitutiveBase&&) = default;
+
     //! @brief ... constructor
     virtual ~ConstitutiveBase() = default;
 
-    virtual std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() {return nullptr;}
+    virtual std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() = 0;
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs
@@ -85,52 +82,6 @@ public:
     //! @param rTimeDerivative Time derivative.
     virtual bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol,
             int rTimeDerivative) const = 0;
-
-    //! @brief Evaluate the constitutive relation
-    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
-    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
-    //! @param staticData Pointer to the history data.
-    template <int TDim>
-    NuTo::eError Evaluate(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData)
-    {
-        static_assert (TDim == 1 || TDim == 2 || TDim == 3 , "Dimensions 1D, 2D & 3D supported.");
-
-        if (this->mParametersValid == false) CheckParameters();
-
-        if (TDim == 1) return Evaluate1D(rConstitutiveInput, rConstitutiveOutput, staticData);
-        if (TDim == 2) return Evaluate2D(rConstitutiveInput, rConstitutiveOutput, staticData);
-        if (TDim == 3) return Evaluate3D(rConstitutiveInput, rConstitutiveOutput, staticData);
-    }
-
-    //! @brief Evaluate the constitutive relation in 1D
-    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
-    //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
-    //! @param staticData Pointer to the history data.
-    virtual NuTo::eError Evaluate1D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) {return NuTo::eError::NOT_IMPLEMENTED;}
-
-    //! @brief Evaluate the constitutive relation in 2D
-    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
-    //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
-    //! @param staticData Pointer to the history data.
-    virtual NuTo::eError Evaluate2D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) {return NuTo::eError::NOT_IMPLEMENTED;}
-
-    //! @brief Evaluate the constitutive relation in 3D
-    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
-    //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
-    //! @param staticData Pointer to the history data.
-    virtual NuTo::eError Evaluate3D(
-    		const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) {return NuTo::eError::NOT_IMPLEMENTED;}
 
     // parameters /////////////////////////////////////////////////////////////
 
@@ -234,19 +185,6 @@ public:
     //! @brief ... returns true, if a material model has tmp static data (which has to be updated before stress or stiffness are calculated)
     //! @return ... see brief explanation
     virtual bool HaveTmpStaticData() const=0;
-
-    //! @brief ... allocate the correct static data
-    //! @return ... see brief explanation
-    //! @todo Element pointer is not used in any of the currently implemented laws; remove!
-    virtual Constitutive::StaticData::Component* AllocateStaticData1D(const ElementBase*) const { return Constitutive::StaticData::EmptyLeaf::Create(); }
-
-    //! @brief ... allocate the correct static data
-    //! @return ... see brief explanation
-    virtual Constitutive::StaticData::Component* AllocateStaticData2D(const ElementBase*) const { return Constitutive::StaticData::EmptyLeaf::Create(); }
-
-    //! @brief ... allocate the correct static data
-    //! @return ... see brief explanation
-    virtual Constitutive::StaticData::Component* AllocateStaticData3D(const ElementBase*) const { return Constitutive::StaticData::EmptyLeaf::Create(); }
 
     //! @brief ... check parameters of the constitutive relationship
     //! if one check fails, an exception is thrown

@@ -8,7 +8,6 @@
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
 #include "nuto/mechanics/sections/SectionFibreMatrixBond.h"
-#include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/ElementOutputBase.h"
 #include "nuto/mechanics/elements/ElementOutputIpData.h"
@@ -38,8 +37,8 @@
 #endif // ENABLE_VISUALIZE
 
 
-NuTo::Element2DInterface::Element2DInterface(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType) :
-        NuTo::ElementBase::ElementBase(rStructure, rElementDataType, rIpDataType, rInterpolationType),
+NuTo::Element2DInterface::Element2DInterface(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, const InterpolationType& rInterpolationType) :
+        NuTo::ElementBase::ElementBase(rStructure, rInterpolationType),
         mNodes(rNodes)
 {
     mTransformationMatrix = CalculateTransformationMatrix(GetStructure()->GetDimension(), mNodes.size());
@@ -97,7 +96,7 @@ NuTo::ConstitutiveOutputMap NuTo::Element2DInterface::GetConstitutiveOutputMap(s
 
 NuTo::ConstitutiveInputMap NuTo::Element2DInterface::GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
-    ConstitutiveInputMap constitutiveInputMap = GetConstitutiveLaw(0)->GetConstitutiveInputs(rConstitutiveOutput, *GetInterpolationType());
+    ConstitutiveInputMap constitutiveInputMap = GetConstitutiveLaw(0).GetConstitutiveInputs(rConstitutiveOutput, GetInterpolationType());
     for (auto& itInput : constitutiveInputMap)
     {
         itInput.second = ConstitutiveIOBase::makeConstitutiveIO<2>(itInput.first);
@@ -165,10 +164,7 @@ NuTo::eError NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInp
 
         try
         {
-            auto staticData = GetConstitutiveStaticData(theIP);
-            ConstitutiveBase* constitutivePtr = GetConstitutiveLaw(theIP);
-
-            eError error = constitutivePtr->Evaluate<2>(constitutiveInput, constitutiveOutput, staticData);
+            eError error = EvaluateConstitutiveLaw<2>(constitutiveInput, constitutiveOutput, theIP);
             if (error != eError::SUCCESSFUL)
                 return error;
         } catch (NuTo::MechanicsException& e)
@@ -187,11 +183,6 @@ NuTo::Element::eElementType NuTo::Element2DInterface::GetEnumType() const
     return Element::eElementType::ELEMENT2DINTERFACE;
 }
 
-
-NuTo::Constitutive::StaticData::Component* NuTo::Element2DInterface::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
-{
-    return rConstitutiveLaw->AllocateStaticData1D(this);
-}
 
 NuTo::NodeBase* NuTo::Element2DInterface::GetNode(int rLocalNodeNumber)
 {
@@ -380,7 +371,7 @@ Eigen::MatrixXd NuTo::Element2DInterface::CalculateTransformationMatrix(unsigned
 
 void NuTo::Element2DInterface::CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase> >& rElementOutput, EvaluateData& rData, int rTheIP, const ConstitutiveOutputMap& constitutiveOutputMap) const
 {
-    rData.mDetJxWeightIPxSection = rData.mDetJacobian * mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP) * mSection->GetCircumference();
+    rData.mDetJxWeightIPxSection = rData.mDetJacobian * GetIntegrationPointWeight(rTheIP) * mSection->GetCircumference();
 
         for (auto it : rElementOutput)
         {
@@ -459,7 +450,7 @@ void NuTo::Element2DInterface::CalculateElementOutputIpData(ElementOutputIpData&
 
 Eigen::VectorXd NuTo::Element2DInterface::ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const
 {
-    const InterpolationBase& interpolationTypeDof = GetInterpolationType()->Get(rDofType);
+    const InterpolationBase& interpolationTypeDof = GetInterpolationType().Get(rDofType);
 
     const unsigned globalDimension = GetStructure()->GetDimension();
     int numNodes = interpolationTypeDof.GetNumNodes();

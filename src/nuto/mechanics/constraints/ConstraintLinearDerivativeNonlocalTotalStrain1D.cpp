@@ -58,7 +58,7 @@ void NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D::AddToConstraintMatri
         Eigen::VectorXd localIpCoordinate(1);
         localIpCoordinate(0) = mLocalIpCoordinate;
 
-        const auto& interpolationTypeNonlocalTotalStrain = mParentElement->GetInterpolationType()->Get(Node::eDof::NONLOCALTOTALSTRAIN);
+        const auto& interpolationTypeNonlocalTotalStrain = mParentElement->GetInterpolationType().Get(Node::eDof::NONLOCALTOTALSTRAIN);
 		//derivative in natural coordinate system
 		auto derivativeShapeFunctionsNaturalNonlocalTotalStrain = interpolationTypeNonlocalTotalStrain.CalculateDerivativeShapeFunctionsNatural(localIpCoordinate);
 

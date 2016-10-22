@@ -4,10 +4,16 @@
 
 namespace NuTo
 {
+namespace Constitutive
+{
+class IPConstitutiveLawBase;
+} // namespace Constitutive
 class LinearDampingEngineeringStress : public ConstitutiveBase
 {
 public:
     LinearDampingEngineeringStress();
+
+    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override;
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs
@@ -34,31 +40,11 @@ public:
     virtual void CheckParameters() const override;
 
     //! @brief ... evaluate the constitutive relation in 1D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
-                                    const ConstitutiveOutputMap& rConstitutiveOutput,
-                                    Constitutive::StaticData::Component* staticData) override;
-
-    //! @brief ... evaluate the constitutive relation in 2D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::eError Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
-                                    const ConstitutiveOutputMap& rConstitutiveOutput,
-                                    Constitutive::StaticData::Component* staticData) override;
-
-    //! @brief ... evaluate the constitutive relation in 3D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
-                                    const ConstitutiveOutputMap& rConstitutiveOutput,
-                                    Constitutive::StaticData::Component* staticData) override;
+    template <int TDim>
+    NuTo::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
+                          const ConstitutiveOutputMap& rConstitutiveOutput);
 
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship
@@ -88,18 +74,6 @@ public:
 private:
 
     double mDampingCoefficient;
-
-
-    //! @brief ... evaluate the constitutive relation in the selected dimension
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    template <int TDim>
-    NuTo::eError EvaluateLinearDampingEngineeringStress(const ConstitutiveInputMap& rConstitutiveInput,
-                                                        const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                        Constitutive::StaticData::Component* staticData);
-
 };
 
 } // namespace NuTo

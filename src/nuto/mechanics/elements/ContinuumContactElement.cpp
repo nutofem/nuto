@@ -4,12 +4,10 @@
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "nuto/mechanics/elements/ContinuumContactElement.h"
 #include "nuto/mechanics/elements/ContinuumElement.h"
-#include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/ElementOutputBase.h"
 #include "nuto/mechanics/elements/ElementOutputIpData.h"
 #include "nuto/mechanics/elements/EvaluateDataContinuumBoundary.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationType.h"
@@ -60,13 +58,13 @@ NuTo::ContinuumContactElement<TDim>::ContinuumContactElement(const ContinuumElem
             ElementBase* base = itElement.second;
             //check if plane element
             ContinuumElement<TDim>* elementPtr = dynamic_cast<ContinuumElement<TDim>*>(base);
-            const InterpolationType* interpolationType = elementPtr->GetInterpolationType();
+            const InterpolationType& interpolationType = elementPtr->GetInterpolationType();
 
             //loop over all surfaces
-            for (int iSurface = 0; iSurface < interpolationType->GetNumSurfaces(); iSurface++)
+            for (int iSurface = 0; iSurface < interpolationType.GetNumSurfaces(); iSurface++)
             {
                 bool addSurface = true;
-                surfaceNodeIndices = interpolationType->GetSurfaceNodeIndices(iSurface);
+                surfaceNodeIndices = interpolationType.GetSurfaceNodeIndices(iSurface);
                 int numSurfaceNodes = surfaceNodeIndices.rows();
                 surfaceNodes.resize(numSurfaceNodes);
 
@@ -193,7 +191,7 @@ void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(
         // ===> Get the position on the master curve/surface
         // ===> Compare and set to minimum if though
 
-        const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType()->Get(Node::eDof::COORDINATES);
+        const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES);
         Eigen::VectorXd referenceCoordinates(1);
         referenceCoordinates(0);
         Eigen::VectorXd parameter = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(referenceCoordinates, surfaceId, elementPtr->GetKnots());

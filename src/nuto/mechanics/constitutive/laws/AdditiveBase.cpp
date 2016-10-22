@@ -10,7 +10,34 @@ NuTo::AdditiveBase::AdditiveBase()
     mComputableDofCombinations.resize(3);
 }
 
+NuTo::AdditiveBase::AdditiveBase(const AdditiveBase& rOther)
+{
+    *this = rOther;
+}
 
+NuTo::AdditiveBase::AdditiveBase(AdditiveBase&& rOther)
+{
+    *this = std::move(rOther);
+}
+
+NuTo::AdditiveBase& NuTo::AdditiveBase::operator =(const AdditiveBase& rOther)
+{
+    mComputableDofCombinations = rOther.mComputableDofCombinations;
+    mStaticDataAllocated = rOther.mStaticDataAllocated;
+    mSublaws.reserve(rOther.mSublaws.size());
+    for (auto& ipLaw : rOther.mSublaws)
+        mSublaws.push_back(ipLaw->GetConstitutiveLaw().CreateIPLaw());
+    return *this;
+}
+NuTo::AdditiveBase& NuTo::AdditiveBase::operator =(AdditiveBase&& rOther)
+{
+    mComputableDofCombinations = std::move(rOther.mComputableDofCombinations);
+    mStaticDataAllocated = rOther.mStaticDataAllocated; // just a bool
+    mSublaws.reserve(rOther.mSublaws.size());
+    for (auto& ipLaw : rOther.mSublaws)
+        mSublaws.push_back(std::move(ipLaw));
+    return *this;
+}
 
 
 void NuTo::AdditiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiveLaw,
@@ -27,7 +54,7 @@ void NuTo::AdditiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiv
         throw MechanicsException(__PRETTY_FUNCTION__,
                 "All constitutive laws have to be attached before static data is allocated!");
 
-    mSublaws.push_back(&rConstitutiveLaw);
+    mSublaws.push_back(rConstitutiveLaw.CreateIPLaw());
     AddCalculableDofCombinations(rConstitutiveLaw);
 }
 
@@ -47,9 +74,9 @@ void NuTo::AdditiveBase::AddCalculableDofCombinations(NuTo::ConstitutiveBase& rC
 
 bool NuTo::AdditiveBase::CheckElementCompatibility(Element::eElementType rElementType) const
 {
-    for (auto sublaw : mSublaws)
+    for (auto& sublaw : mSublaws)
     {
-        if(!sublaw->CheckElementCompatibility(rElementType))
+        if(!sublaw->GetConstitutiveLaw().CheckElementCompatibility(rElementType))
             return false;
     }
     return true;
@@ -58,18 +85,18 @@ bool NuTo::AdditiveBase::CheckElementCompatibility(Element::eElementType rElemen
 
 void NuTo::AdditiveBase::CheckParameters() const
 {
-    for (auto sublaw : mSublaws)
+    for (auto& sublaw : mSublaws)
     {
-        sublaw->CheckParameters();
+        sublaw->GetConstitutiveLaw().CheckParameters();
     }
 }
 
 
 bool NuTo::AdditiveBase::HaveTmpStaticData() const 
 {
-    for (auto sublaw : mSublaws)
+    for (auto& sublaw : mSublaws)
     {
-        if(sublaw->HaveTmpStaticData())
+        if(sublaw->GetConstitutiveLaw().HaveTmpStaticData())
             return true;
     }
     return false;
@@ -78,11 +105,8 @@ bool NuTo::AdditiveBase::HaveTmpStaticData() const
 bool NuTo::AdditiveBase::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, 
         int rTimeDerivative) const
 {
-    if (mComputableDofCombinations[rTimeDerivative].find(std::pair<Node::eDof,Node::eDof>(rDofRow,rDofCol))
-            != mComputableDofCombinations[rTimeDerivative].end())
-        return true;
-    else
-        return false;
+    return mComputableDofCombinations[rTimeDerivative].find(std::pair<Node::eDof, Node::eDof>(rDofRow, rDofCol))
+        != mComputableDofCombinations[rTimeDerivative].end();
 }
 
 
@@ -91,14 +115,10 @@ NuTo::ConstitutiveInputMap NuTo::AdditiveBase::GetConstitutiveInputs(
 {
     ConstitutiveInputMap constitutiveInputMap;
 
-    for (auto sublaw : mSublaws)
+    for (auto& sublaw : mSublaws)
     {
-        ConstitutiveInputMap singleLawInputMap = sublaw->GetConstitutiveInputs(rConstitutiveOutput, rInterpolationType);
+        ConstitutiveInputMap singleLawInputMap = sublaw->GetConstitutiveLaw().GetConstitutiveInputs(rConstitutiveOutput, rInterpolationType);
         constitutiveInputMap.Merge(singleLawInputMap);
     }
     return constitutiveInputMap;
 }
-
-template NuTo::Constitutive::StaticData::Component* NuTo::AdditiveBase::AllocateStaticData<1>(const NuTo::ElementBase *rElement) const;
-template NuTo::Constitutive::StaticData::Component* NuTo::AdditiveBase::AllocateStaticData<2>(const NuTo::ElementBase *rElement) const;
-template NuTo::Constitutive::StaticData::Component* NuTo::AdditiveBase::AllocateStaticData<3>(const NuTo::ElementBase *rElement) const;

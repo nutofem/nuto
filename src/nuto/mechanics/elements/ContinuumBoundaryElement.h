@@ -40,11 +40,6 @@ public:
     //! @return enum
     virtual NuTo::Element::eElementType GetEnumType() const override;
 
-    //! @brief Allocates static data for an integration point of an element
-    //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
-    virtual Constitutive::StaticData::Component* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const;
-
-
     //! @brief returns the local dimension of the element
     //! this is required to check, if an element can be used in a 1d, 2D or 3D Structure
     //! @return local dimension
@@ -165,10 +160,9 @@ public:
 
 protected:
 
-    //! @brief ... just for serialization
-    ContinuumBoundaryElement()
-    {}
-
+#ifdef ENABLE_SERIALIZATION
+    ContinuumBoundaryElement() {}
+#endif // ENABLE_SERIALIZATION
 
     void ExtractAllNecessaryDofValues(EvaluateDataContinuumBoundary<TDim> &rData);
 

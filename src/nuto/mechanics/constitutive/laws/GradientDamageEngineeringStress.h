@@ -3,6 +3,7 @@
 
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLaw.h"
 
 
 namespace NuTo
@@ -10,12 +11,7 @@ namespace NuTo
 namespace Constitutive
 {
     enum class eDamageLawType;
-    namespace StaticData
-    {
-        class Component;
-        template <typename T> class Leaf;
-        template<typename T> class DataContainer;
-    }
+
 }// namespace Constitutive
 
 class Logger;
@@ -29,9 +25,14 @@ class GradientDamageEngineeringStress : public ConstitutiveBase
 #endif // ENABLE_SERIALIZATION
 public:
     typedef double StaticDataType;
-    using KappaVec = Constitutive::StaticData::DataContainer<GradientDamageEngineeringStress>;
+    using Data = typename Constitutive::IPConstitutiveLaw<GradientDamageEngineeringStress>::Data;
 
     GradientDamageEngineeringStress();
+
+    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override
+    {
+        return std::make_unique<Constitutive::IPConstitutiveLaw<GradientDamageEngineeringStress>>(*this, 0.);
+    }
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs
@@ -40,63 +41,25 @@ public:
     ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
             const InterpolationType& rInterpolationType) const override;
 
-    //! @brief Evaluate the constitutive relation in 1D
-    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
-    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
-    //! @param staticData Pointer to the history data.
-    virtual NuTo::eError Evaluate1D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
-
     //! @brief Evaluate the constitutive relation in 2D
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
-    //! @param staticData Pointer to the history data.
-    virtual NuTo::eError Evaluate2D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
-
-    //! @brief Evaluate the constitutive relation in 3D
-    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
-    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
-    //! @param staticData Pointer to the history data.
-    virtual NuTo::eError Evaluate3D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
-
+    //! @param rStaticData Pointer to the history data.
     template<int TDim>
     eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput,
-            KappaVec kappa);
+            Data& rStaticData);
 
     //! @brief Calculates the current static data based on the given CALCULATE_STATIC_DATA input.
-    //! @param staticData History data.
+    //! @param rStaticData History data.
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @return Kappa value calculated from history data.
-    double GetCurrentStaticData(Constitutive::StaticData::Leaf<double>& staticData,
-            const ConstitutiveInputMap& rConstitutiveInput) const;
+    double GetCurrentStaticData(Data& rStaticData, const ConstitutiveInputMap& rConstitutiveInput) const;
 
     //! @brief Calculates the error of the extrapolation.
-    //! @param staticData History data.
+    //! @param rStaticData History data.
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @return Error of the extrapolation.
-    double CalculateStaticDataExtrapolationError(Constitutive::StaticData::Leaf<double>& staticData,
-            const ConstitutiveInputMap& rConstitutiveInput) const;
-
-
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    Constitutive::StaticData::Component* AllocateStaticData1D(const ElementBase* rElement) const override;
-
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    Constitutive::StaticData::Component* AllocateStaticData2D(const ElementBase* rElement) const override;
-
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    Constitutive::StaticData::Component* AllocateStaticData3D(const ElementBase* rElement) const override;
+    double CalculateStaticDataExtrapolationError(Data& rStaticData, const ConstitutiveInputMap& rConstitutiveInput) const;
 
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow ... row dof

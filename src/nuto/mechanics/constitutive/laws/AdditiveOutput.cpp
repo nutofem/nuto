@@ -1,5 +1,4 @@
 #include "nuto/mechanics/constitutive/laws/AdditiveOutput.h"
-#include "nuto/mechanics/constitutive/staticData/Composite.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
@@ -10,14 +9,14 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 
 template <int TDim>
-NuTo::eError NuTo::AdditiveOutput::Evaluate(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
-        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, Constitutive::StaticData::Component* staticData)
+NuTo::eError NuTo::AdditiveOutput::Evaluate(
+    const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+    const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
 {
     using namespace Constitutive;
     eError error = eError::SUCCESSFUL;
     constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
 
-    auto& localStaticData = *dynamic_cast<Constitutive::StaticData::Composite*>(staticData);
     for (auto& output : rConstitutiveOutput)
     {
         if (output.second != nullptr) output.second->SetZero();
@@ -33,7 +32,7 @@ NuTo::eError NuTo::AdditiveOutput::Evaluate(const NuTo::ConstitutiveInputMap &rC
                 singleOutput[output.first] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(output.first);
             }
 
-            error = mSublaws[i]->Evaluate<TDim>(rConstitutiveInput, singleOutput, &localStaticData.GetComponent(i));
+            error = mSublaws[i]->Evaluate<TDim>(rConstitutiveInput, singleOutput);
 
             for (const auto& output : singleOutput)
             {
@@ -133,8 +132,8 @@ NuTo::Constitutive::eConstitutiveType NuTo::AdditiveOutput::GetType() const
 }
 
 template NuTo::eError NuTo::AdditiveOutput::Evaluate<1>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
-        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, Constitutive::StaticData::Component* staticData);
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);
 template NuTo::eError NuTo::AdditiveOutput::Evaluate<2>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
-        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, Constitutive::StaticData::Component* staticData);
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);
 template NuTo::eError NuTo::AdditiveOutput::Evaluate<3>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
-        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput, Constitutive::StaticData::Component* staticData);
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);

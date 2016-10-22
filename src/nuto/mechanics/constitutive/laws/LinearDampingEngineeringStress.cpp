@@ -7,8 +7,15 @@
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
+
 
 NuTo::LinearDampingEngineeringStress::LinearDampingEngineeringStress() : ConstitutiveBase() {}
+
+std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::LinearDampingEngineeringStress::CreateIPLaw()
+{
+    return std::make_unique<Constitutive::IPConstitutiveLawWithoutData<LinearDampingEngineeringStress>>(*this);
+}
 
 
 NuTo::ConstitutiveInputMap NuTo::LinearDampingEngineeringStress::GetConstitutiveInputs(
@@ -81,30 +88,6 @@ bool NuTo::LinearDampingEngineeringStress::CheckElementCompatibility(NuTo::Eleme
 void NuTo::LinearDampingEngineeringStress::CheckParameters() const {}
 
 
-NuTo::eError NuTo::LinearDampingEngineeringStress::Evaluate1D(const ConstitutiveInputMap &rConstitutiveInput,
-                                                              const ConstitutiveOutputMap &rConstitutiveOutput,
-                                                              Constitutive::StaticData::Component* staticData)
-{
-    return EvaluateLinearDampingEngineeringStress<1>(rConstitutiveInput, rConstitutiveOutput, staticData);
-}
-
-
-NuTo::eError NuTo::LinearDampingEngineeringStress::Evaluate2D(const ConstitutiveInputMap &rConstitutiveInput,
-                                                              const ConstitutiveOutputMap &rConstitutiveOutput,
-                                                              Constitutive::StaticData::Component* staticData)
-{
-    return EvaluateLinearDampingEngineeringStress<2>(rConstitutiveInput, rConstitutiveOutput, staticData);
-}
-
-
-NuTo::eError NuTo::LinearDampingEngineeringStress::Evaluate3D(const ConstitutiveInputMap &rConstitutiveInput,
-                                                              const ConstitutiveOutputMap &rConstitutiveOutput,
-                                                              Constitutive::StaticData::Component* staticData)
-{
-    return EvaluateLinearDampingEngineeringStress<3>(rConstitutiveInput, rConstitutiveOutput, staticData);
-}
-
-
 NuTo::Constitutive::eConstitutiveType NuTo::LinearDampingEngineeringStress::GetType() const
 {
     return Constitutive::eConstitutiveType::LINEAR_DAMPING_ENGINEERING_STRESS;
@@ -151,10 +134,9 @@ void NuTo::LinearDampingEngineeringStress::SetParameterDouble(Constitutive::eCon
 
 
 template <int TDim>
-NuTo::eError NuTo::LinearDampingEngineeringStress::EvaluateLinearDampingEngineeringStress(
+NuTo::eError NuTo::LinearDampingEngineeringStress::Evaluate(
         const ConstitutiveInputMap &rConstitutiveInput,
-        const ConstitutiveOutputMap &rConstitutiveOutput,
-        Constitutive::StaticData::Component*)
+        const ConstitutiveOutputMap &rConstitutiveOutput)
 {
     for (auto& itOutput : rConstitutiveOutput)
     {
@@ -201,3 +183,10 @@ NuTo::eError NuTo::LinearDampingEngineeringStress::EvaluateLinearDampingEngineer
 
     return eError::SUCCESSFUL;
 }
+
+template NuTo::eError NuTo::LinearDampingEngineeringStress::Evaluate<1>(const ConstitutiveInputMap &rConstitutiveInput,
+                                                                        const ConstitutiveOutputMap &rConstitutiveOutput);
+template NuTo::eError NuTo::LinearDampingEngineeringStress::Evaluate<2>(const ConstitutiveInputMap &rConstitutiveInput,
+                                                                        const ConstitutiveOutputMap &rConstitutiveOutput);
+template NuTo::eError NuTo::LinearDampingEngineeringStress::Evaluate<3>(const ConstitutiveInputMap &rConstitutiveInput,
+                                                                        const ConstitutiveOutputMap &rConstitutiveOutput);

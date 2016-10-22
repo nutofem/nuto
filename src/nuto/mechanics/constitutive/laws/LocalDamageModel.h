@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLaw.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 
 namespace NuTo
@@ -15,11 +16,6 @@ namespace NuTo
 namespace Constitutive
 {
     enum class eDamageLawType;
-    namespace StaticData
-    {
-        class Component;
-        template <typename T> class Leaf;
-    }
 }// namespace Constitutive
 class ConstitutivePlaneState;
 
@@ -41,6 +37,13 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
+    typedef double StaticDataType;
+    using Data = typename Constitutive::IPConstitutiveLaw<LocalDamageModel>::Data;
+
+    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override
+    {
+        return std::make_unique<Constitutive::IPConstitutiveLaw<LocalDamageModel>>(*this, 0.);
+    }
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs
@@ -52,40 +55,20 @@ public:
     //! @brief Evaluate the constitutive relation in 1D
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
-    //! @param staticData Pointer to the history data.
-    virtual NuTo::eError Evaluate1D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
+    //! @param rStaticData static data.
+    template <int TDim>
+    NuTo::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
+                          const ConstitutiveOutputMap& rConstitutiveOutput,
+                          Data& rStaticData);
 
     double Evaluate2D(NuTo::ConstitutivePlaneState planeState, double oldKappa,
             const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
 
-    //! @brief Evaluate the constitutive relation in 2D
-    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
-    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
-    //! @param staticData Pointer to the history data.
-    virtual NuTo::eError Evaluate2D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
-
-    //! @brief Evaluate the constitutive relation in 3D
-    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
-    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
-    //! @param staticData Pointer to the history data.
-    virtual NuTo::eError Evaluate3D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
-
-
     //! @brief Calculates the current static data based on the given CALCULATE_STATIC_DATA input.
-    //! @param staticData History data.
+    //! @param rStaticData History data.
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @return Kappa value calculated from history data.
-    double GetCurrentStaticData(Constitutive::StaticData::Leaf<double>& staticData,
-            const ConstitutiveInputMap& rConstitutiveInput) const;
+    double GetCurrentStaticData(Data& rStaticData, const ConstitutiveInputMap& rConstitutiveInput) const;
 
     //! @brief ... gets a variable of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested variable
@@ -110,17 +93,6 @@ public:
     //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
     bool CheckElementCompatibility(Element::eElementType rElementType) const override;
 
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    Constitutive::StaticData::Component* AllocateStaticData1D(const ElementBase* rElement) const override;
-
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    Constitutive::StaticData::Component* AllocateStaticData2D(const ElementBase* rElement) const override;
-
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    Constitutive::StaticData::Component* AllocateStaticData3D(const ElementBase* rElement) const override;
 
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow ... row dof

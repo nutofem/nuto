@@ -31,9 +31,7 @@ public:
     ContinuumElement(
             const NuTo::StructureBase* rStructure,
             const std::vector<NuTo::NodeBase* >& rNodes,
-            ElementData::eElementDataType rElementDataType,
-            IpData::eIpDataType rIpDataType,
-            InterpolationType* rInterpolationType);
+            const InterpolationType& rInterpolationType);
 
     ContinuumElement(const ContinuumElement& ) = default;
     ContinuumElement(      ContinuumElement&&) = default;
@@ -56,10 +54,6 @@ public:
     {
         return TDim;
     }
-
-    //! @brief Allocates static data for an integration point of an element
-    //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
-    Constitutive::StaticData::Component* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const override;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number

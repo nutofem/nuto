@@ -35,15 +35,7 @@ class Element2DInterface: public ElementBase
 #endif  // ENABLE_SERIALIZATION
 
 public:
-    Element2DInterface(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType);
-
-
-    Element2DInterface(const Element2DInterface& ) = default;
-    Element2DInterface(      Element2DInterface&&) = default;
-    virtual ~Element2DInterface() = default;
-
-
-
+    Element2DInterface(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, const InterpolationType& rInterpolationType);
 
     //! @brief calculates output data for the element
     //! @param rInput ... constitutive input map for the constitutive law
@@ -62,11 +54,6 @@ public:
     {
         return 1;
     }
-
-
-    //! @brief Allocates static data for an integration point of an element
-    //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
-    Constitutive::StaticData::Component* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const override;
 
     //! @brief returns a pointer to the i-th node of the element
     //! @param local node number

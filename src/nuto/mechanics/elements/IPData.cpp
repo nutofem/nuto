@@ -85,3 +85,11 @@ const NuTo::Constitutive::IPConstitutiveLawBase& NuTo::IPData::GetIPConstitutive
         throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law set yet.");
     return *law;
 }
+bool NuTo::IPData::HasConstitutiveLawAssigned(unsigned int rIP) const
+{
+    if (rIP >= mLaws.size())
+        return false;
+
+    auto law = mLaws[rIP].get();
+    return law != nullptr;
+}

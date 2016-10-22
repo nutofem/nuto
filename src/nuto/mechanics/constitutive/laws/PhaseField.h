@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
-#include "nuto/mechanics/constitutive/staticData/Leaf.h"
+#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLaw.h"
 
 #include "eigen3/Eigen/Eigenvalues"
 #include <functional>
@@ -27,7 +27,7 @@ namespace Constitutive
 //! \class  PhaseField
 //! \author Philip Huschke
 //! \date   June 14, 2016
-//! \brief  A phase-field model for brittle fracture
+//! @brief  A phase-field model for brittle fracture
 
 //! Recommended literature:
 //!
@@ -42,13 +42,13 @@ class PhaseField : public ConstitutiveBase
     friend class boost::serialization::access;
 #endif // ENABLE_SERIALIZATION
 public:
-    //! \brief      Constructor
-    //! \param[in]  rYoungsModulus Young's Modulus
-    //! \param[in]  rPoissonsRatio Poisson's Ratio
-    //! \param[in]  rLengthScaleParameter Parameter that corresponds to the band-width of the diffusive crack
-    //! \param[in]  rFractureEnergy Fracture energy/critical energy release rate
-    //! \param[in]  rArtificialViscosity Parameter to improve robustness of the model (non-physical)
-    //! \param[in]  rEnergyDecomposition Decomposition of the elastic energy density \f$\psi_0 = \psi_0^+ + \psi_0^-\f$
+    //! @brief      Constructor
+    //! @param[in]  rYoungsModulus Young's Modulus
+    //! @param[in]  rPoissonsRatio Poisson's Ratio
+    //! @param[in]  rLengthScaleParameter Parameter that corresponds to the band-width of the diffusive crack
+    //! @param[in]  rFractureEnergy Fracture energy/critical energy release rate
+    //! @param[in]  rArtificialViscosity Parameter to improve robustness of the model (non-physical)
+    //! @param[in]  rEnergyDecomposition Decomposition of the elastic energy density \f$\psi_0 = \psi_0^+ + \psi_0^-\f$
     PhaseField(             const double rYoungsModulus,
                             const double rPoissonsRatio,
                             const double rLengthScaleParameter,
@@ -56,40 +56,26 @@ public:
                             const double rArtificialViscosity,
                             const Constitutive::ePhaseFieldEnergyDecomposition rEnergyDecomposition);
 
-    //! \brief     Determines the constitutive inputs needed to evaluate the constitutive outputs
-    //! \param[in] rConstitutiveOutput Desired constitutive outputs
-    //! \param[in] rInterpolationType Interpolation type to determine additional inputs
+    typedef double StaticDataType;
+    using Data = typename Constitutive::IPConstitutiveLaw<PhaseField>::Data;
+
+    //! @brief creates corresponding IPConstitutiveLaw
+    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override;
+
+    //! @brief     Determines the constitutive inputs needed to evaluate the constitutive outputs
+    //! @param[in] rConstitutiveOutput Desired constitutive outputs
+    //! @param[in] rInterpolationType Interpolation type to determine additional inputs
     //! \return    Constitutive inputs needed for the evaluation
     ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType& rInterpolationType) const override;
 
-    //! \brief Evaluate the constitutive law in 1D
-    //! \param[in] rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.)
-    //! \param[out] rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.)
-    //! \param staticData Pointer to history data
-    NuTo::eError Evaluate1D(
+    //! @brief Evaluate the constitutive law in 1D
+    //! @param[in] rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.)
+    //! @param[out] rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.)
+    //! @param[in] rStaticData static data
+    template <int TDim>
+    NuTo::eError Evaluate(
             const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
-
-
-    //! \brief Evaluate the constitutive law in 2D
-    //! \param[in] rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.)
-    //! \param[out] rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.)
-    //! \param staticData Pointer to history data
-    NuTo::eError Evaluate2D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
-
-
-    //! \brief Evaluate the constitutive law in 3D
-    //! \param[in] rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.)
-    //! \param[out] rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.)
-    //! \param staticData Pointer to history data
-    NuTo::eError Evaluate3D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
+            const ConstitutiveOutputMap& rConstitutiveOutput, Data& rStaticData);
 
     double Evaluate2DAnisotropicSpectralDecomposition(const double oldEnergyDensity,
             const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
@@ -103,19 +89,6 @@ public:
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @return ... error of the extrapolation
     double CalculateStaticDataExtrapolationError(ElementBase& rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput) const;
-
-
-    //! @brief Create new static data object for an integration point
-    //! @return Pointer to static data object
-    Constitutive::StaticData::Leaf<double>* AllocateStaticData1D(const ElementBase* rElement) const override;
-
-    //! @brief Create new static data object for an integration point
-    //! @return Pointer to static data object
-    Constitutive::StaticData::Leaf<double>* AllocateStaticData2D(const ElementBase* rElement) const override;
-
-    //! @brief Create new static data object for an integration point
-    //! @return Pointer to static data object
-    Constitutive::StaticData::Leaf<double>* AllocateStaticData3D(const ElementBase* rElement) const override;
 
     //! @brief Determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow row dof

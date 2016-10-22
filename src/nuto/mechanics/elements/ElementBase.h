@@ -12,21 +12,15 @@
 #include <map>
 #include <eigen3/Eigen/Core>
 #include "nuto/mechanics/MechanicsException.h"
+#include "nuto/mechanics/elements/IPData.h"
 #include <memory>
 
 
 namespace NuTo
 {
 
-namespace Constitutive {
-    namespace StaticData {
-        class Component;
-    }
-}
-
 class BoundaryGradientDamage1D;
 class ConstitutiveBase;
-class ConstitutiveStaticDataBase;
 class ElementDataBase;
 class IntegrationTypeBase;
 class InterpolationType;
@@ -37,12 +31,9 @@ template<class T>
 class SparseMatrix;
 class Structure;
 class StructureBase;
-class Truss;
 class VisualizeComponentBase;
 class VisualizeComponent;
-class IpDataBase;
 class ElementOutputBase;
-class IpDataStaticDataBase;
 enum class eError;
 template<typename IOEnum> class ConstitutiveIOMap;
 template <int TDim> class ContinuumElement;
@@ -74,16 +65,6 @@ namespace Element
     enum class eOutput;
 }// namespace Element
 
-namespace ElementData
-{
-    enum class eElementDataType;
-}// namespace ElementData
-
-namespace IpData
-{
-    enum class eIpDataType;
-}// namespace IpData
-
 namespace Node
 {
     enum class eDof : unsigned char;
@@ -102,31 +83,21 @@ class ElementBase
 public:
     //! @brief constructor
     //! @param rStructure ... structure to which the element belongs
-    //! @param rElementDataType ... element data type
-    //! @param rIntegrationType ... integration type (local coordinates are stored as a type, e.g. Gauss 2x2
-    //! @param rIpDataType ... data type to decide what is stored at the integration point level
     //! @param rInterpolationType ... interpolation type
-    ElementBase(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, const InterpolationType* rInterpolationType);
+    ElementBase(const StructureBase* rStructure, const InterpolationType& rInterpolationType);
 
-    //! @brief constructor
-    //! @param rStructure ... structure to which the element belongs
-    //! @param rElementDataType ... element data type
-    //! @param rNumIp ... number of integration points (here local coordinates should be stored at the ip (e.g. XFEM)
-    //! @param rIpDataType ... data type to decide what is stored at the integration point level
-    //! @param rInterpolationType ... interpolation type
-    ElementBase(const StructureBase* rStructure, ElementData::eElementDataType rElementDataType, int rNumIp, IpData::eIpDataType rIpDataType, const InterpolationType* rInterpolationType);
+    ElementBase(const ElementBase& ) = default;
+    ElementBase(      ElementBase&&) = default;
 
-    ElementBase(const ElementBase&) = default;
+    ElementBase& operator=(const ElementBase& ) = default;
+    ElementBase& operator=(      ElementBase&&) = default;
 
-    virtual ~ElementBase();
+    virtual ~ElementBase() = default;
 
     //! @brief returns the enum (type of the element)
     //! @return enum
     virtual NuTo::Element::eElementType GetEnumType() const=0;
 
-    //! @brief returns the enum of element data type
-    //! @return enum of ElementDataType
-    const NuTo::ElementData::eElementDataType GetElementDataType() const;
 
     //! @brief returns the id number of the element
     //! @return id
@@ -199,69 +170,55 @@ public:
     virtual void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr)=0;
 
     //! @brief sets the constitutive law for an element
-    //! @param rConstitutiveLaw Pointer to constitutive law entry
-    virtual void SetConstitutiveLaw(ConstitutiveBase* rConstitutiveLaw);
-
-    //! @brief sets the constitutive law for an element
-    //! @param rIp id of integration point
-    //! @param rConstitutiveLaw Pointer to constitutive law entry
-    virtual void SetConstitutiveLaw(int rIp, ConstitutiveBase* rConstitutiveLaw);
+    //! @param rConstitutiveLaw reference to constitutive law entry
+    void SetConstitutiveLaw(ConstitutiveBase& rConstitutiveLaw);
 
     //! @brief returns a pointer to the constitutive law for an integration point
-    //! @param integration point number (counting from zero)
-    //! @return pointer to constitutive law
-    const ConstitutiveBase* GetConstitutiveLaw(int rIp) const;
+    //! @param rIP integration point number (counting from zero)
+    //! @return reference to constitutive law
+    const ConstitutiveBase& GetConstitutiveLaw(unsigned int rIP) const;
 
     //! @brief returns a pointer to the constitutive law for an integration point
-    //! @param integration point number (counting from zero)
-    //! @return pointer to constitutive law
-    ConstitutiveBase* GetConstitutiveLaw(int rIp);
+    //! @param rIP integration point number (counting from zero)
+    //! @return reference to constitutive law
+    ConstitutiveBase& GetConstitutiveLaw(unsigned int rIP);
 
     //! @brief returns true, if the constitutive law has been assigned
-    bool HasConstitutiveLawAssigned(int rIp) const;
+    //! @param rIP integration point number (counting from zero)
+    bool HasConstitutiveLawAssigned(unsigned int rIP) const;
 
     //! @brief sets the section of an element
-    //! @param rSection pointer to section
-    void SetSection(const SectionBase* rSection);
+    //! @param rSection reference to section
+    void SetSection(const SectionBase& rSection);
 
-    //! @brief returns a pointer to the section of an element
+    //! @brief returns a reference to the section of an element
     //! @return pointer to section
-    const SectionBase* GetSection() const;
+    const SectionBase& GetSection() const;
 
     //! @brief sets the integration type of an element
-    //! implemented with an exception for all elements, reimplementation required for those elements
-    //! which actually need an integration type
-    //! @param rIntegrationType pointer to integration type
-    virtual void SetIntegrationType(const IntegrationTypeBase* rIntegrationType, NuTo::IpData::eIpDataType rIpDataType);
+    //! @param rIntegrationType reference to integration type
+    void SetIntegrationType(const IntegrationTypeBase& rIntegrationType);
 
     //! @brief returns a pointer to the integration type of an element
-    //! implemented with an exception for all elements, reimplementation required for those elements
-    //! which actually need an integration type
-    //! @return pointer to integration type
-    virtual const IntegrationTypeBase* GetIntegrationType() const;
+    //! @return reference to integration type
+    const IntegrationTypeBase& GetIntegrationType() const;
 
     //! @brief sets the interpolation type of an element
     //! @param rInterpolationType interpolation type
-    virtual void SetInterpolationType(const InterpolationType* rInterpolationType);
+    void SetInterpolationType(const InterpolationType& rInterpolationType);
 
     //! @brief returns a pointer to the interpolation type of an element
-    //! @return pointer to interpolation type
-    virtual const InterpolationType* GetInterpolationType() const;
-
-    //! @brief returns ip data type of the element
-    //! implemented with an exception for all elements, reimplementation required for those elements
-    //! which actually need an integration type
-    //! @return pointer to integration type
-    NuTo::IpData::eIpDataType GetIpDataType(int rIp) const;
+    //! @return reference to interpolation type
+    const InterpolationType& GetInterpolationType() const;
 
     //! @brief returns the number of integration points
     //! @return number of integration points
     int GetNumIntegrationPoints() const;
 
     //! @brief returns the weight of an integration point
-    //! @param rIpNum integration point
+    //! @param rIP integration point
     //! @return weight
-    double GetIntegrationPointWeight(int rIpNum) const;
+    double GetIntegrationPointWeight(unsigned int rIP) const;
 
     //! @brief calculates output data for the element
     //! @param rInput ... constitutive input map for the constitutive law
@@ -271,13 +228,11 @@ public:
     //! @brief Evaluate the constitutive law attached to an integration point.
     //! @param rConstitutiveInput Input map of the constitutive law.
     //! @param rConstitutiveOuput Output map of the constitutive law.
-    //! @param staticData Pointer to potential static data.
     //! @param IP The current integration point.
     template<int TDim>
     eError EvaluateConstitutiveLaw(
             const ConstitutiveInputMap& rConstitutiveInput,
-            ConstitutiveOutputMap& rConstitutiveOutput,
-            NuTo::Constitutive::StaticData::Component* staticData, int IP);
+            ConstitutiveOutputMap& rConstitutiveOutput, unsigned int IP);
 
 
     //! @brief calculates output data for the element with a standard input (EULER_BACKWARD static data)
@@ -291,30 +246,6 @@ public:
     //! @brief integrates the strain over the element
     //! @param rStrain integrated strain
     void GetIntegratedStrain(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rStress);
-
-    //! @brief Allocates static data for an integration point of an element
-    //! @param rConstitutiveLaw constitutive law, which is called to allocate the static data object
-    virtual Constitutive::StaticData::Component* AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const=0;
-
-    //! @brief Returns the constitutive static data for an integration point of an element.
-    //! @param rIp Integration point.
-    //! @return Pointer to the static data.
-    Constitutive::StaticData::Component* GetConstitutiveStaticData(int rIp);
-
-    //! @brief Returns the constitutive static data for an integration point of an element.
-    //! @param rIp Integration point.
-    //! @return Pointer to the static data.
-    const Constitutive::StaticData::Component* GetConstitutiveStaticData(int rIp) const;
-
-    //! @brief Sets the constitutive static data for an integration point of an element.
-    //! @param rIp Integration point.
-    //! @param rStaticData Pointer to the static data.
-    void SetConstitutiveStaticData(int rIp, Constitutive::StaticData::Component* rStaticData);
-
-    IpDataStaticDataBase& GetIpData(int rIp);
-
-    const IpDataStaticDataBase& GetIpData(int rIp) const;
-
 
     //! @brief Update the static data of an element
     //virtual eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)=0;
@@ -338,31 +269,6 @@ public:
     //! @param rNaturalCoordinates ... coordinates of the point in natural element coordinates
     //! @param rDofType ... dof type
     Eigen::Vector3d InterpolateDof3D(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const;
-
-    //! @brief adds the nonlocal weight to an integration point
-    //! @param rLocalIpNumber local Ip
-    //! @param rNonlocalElement element of the nonlocal ip
-    //! @param rNonlocalIp local ip number of the nonlocal ip
-    //! @param rWeight weight
-    void SetNonlocalWeight(int rLocalIpNumber, const ElementBase* rNonlocalElement, int rNonlocalIp, double rWeight);
-
-    //! @brief returns a vector of weights for an ip
-    //! @param rIp local Ip
-    //! @param rNonlocalElement nonlocal element (must be in the range of the nonlocal element size stored at the element data level)
-    //! @retrun weights for each integration point of the nonlocal element
-    const std::vector<double>& GetNonlocalWeights(int rIp, int rNonlocalElement) const;
-
-    //! @brief returns a vector of the nonlocal elements
-    //! @retrun nonlocal elements
-    const std::vector<const NuTo::ElementBase*>& GetNonlocalElements() const;
-
-    //! @brief returns the number of nonlocal elements
-    //! @param rConstitutive constitutive model for the nonlocale elements
-    //! @rerun number of nonlocal elements
-    int GetNumNonlocalElements() const;
-
-    //! @brief delete the nonlocal elements
-    void DeleteNonlocalElements();
 
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @return rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
@@ -528,23 +434,12 @@ public:
         return mStructure;
     }
 
-private:
-    //! @brief returns the Element Data Vector
-    //! this was necessary due to recursive problems for serialization (nonlocal data)
-    //! this method should only be called from the serialization routine of the structure
-    NuTo::ElementDataBase* GetDataPtr() const;
-
-    //! @brief sets the Element Data Vector
-    //! this was necessary due to recursive problems for serialization (nonlocal data)
-    //! this method should only be called from the serialization routine of the structure
-    void SetDataPtr(NuTo::ElementDataBase* rElementData);
 
 protected:
-    //! @brief ... just for serialization
-    ElementBase()
-    {
-        mElementData = 0;
-    }
+
+#ifdef ENABLE_SERIALIZATION
+    ElementBase() {};
+#endif // ENABLE_SERIALIZATION
 
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
     virtual void ReorderNodes();
@@ -564,13 +459,12 @@ protected:
     //the base class of the elements must not contain any data apart from a const pointer to the structure and a data pointer
     const StructureBase* mStructure;
 
-    //the base class of the elements data
-    ElementDataBase *mElementData;
-
     const InterpolationType* mInterpolationType;
 
     // the base class of the sections
     const SectionBase *mSection;
+
+    IPData mIPData;
 
 };
 }    //namespace NuTo

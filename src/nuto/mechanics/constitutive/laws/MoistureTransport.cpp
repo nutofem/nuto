@@ -8,21 +8,18 @@
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
-#include "nuto/mechanics/constitutive/staticData/Leaf.h"
 #include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
 #include "nuto/math/Math.h"
 
 #include <limits>
 
 template <int TDim>
-NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport(
+NuTo::eError NuTo::MoistureTransport::Evaluate(
         const NuTo::ConstitutiveInputMap &rConstitutiveInput,
         const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
-        Constitutive::StaticData::Component* staticDataIn)
+        Data& rStaticData)
 {
-    auto& leaf = *static_cast<Constitutive::StaticData::Leaf<Constitutive::StaticData::DataMoistureTransport>*>(staticDataIn);
-    auto& staticData = leaf.GetData();
-
+    auto& staticData = rStaticData.GetData();
     // Copy input data to input struct
     InputData<TDim> inputData;
     for (auto& itInput : rConstitutiveInput)
@@ -83,7 +80,7 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport(
 
             //Calculation
             Eigen::Matrix<double, TDim, 1>&  internalGradientRH_B = (*static_cast<ConstitutiveVector<TDim>*>(itOutput.second.get())).AsVector();
-            internalGradientRH_B = mDiffusionCoefficientRH* pow(1 - (inputData.mWaterVolumeFraction / mPoreVolumeFraction), mDiffusionExponentRH) * inputData.mRelativeHumidity_Gradient;
+            internalGradientRH_B = mDiffusionCoefficientRH* std::pow(1 - (inputData.mWaterVolumeFraction / mPoreVolumeFraction), mDiffusionExponentRH) * inputData.mRelativeHumidity_Gradient;
         }
             break;
 
@@ -286,7 +283,7 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport(
             else
             {
                 internalGradientWV_dWV_BN_H0  =     inputData.mWaterVolumeFraction_Gradient     * mDiffusionCoefficientWV   * mDiffusionExponentWV  / mPoreVolumeFraction
-                                                  * pow(inputData.mWaterVolumeFraction / mPoreVolumeFraction, mDiffusionExponentWV - 1.0);
+                                                  * std::pow(inputData.mWaterVolumeFraction / mPoreVolumeFraction, mDiffusionExponentWV - 1.0);
             }
         }
             break;
@@ -436,24 +433,6 @@ NuTo::eError NuTo::MoistureTransport::EvaluateMoistureTransport(
 }
 
 
-
-
-
-
-NuTo::Constitutive::StaticData::Component* NuTo::MoistureTransport::AllocateStaticData1D(const NuTo::ElementBase *rElement) const
-{
-    return Constitutive::StaticData::Leaf<Constitutive::StaticData::DataMoistureTransport>::Create(Constitutive::StaticData::DataMoistureTransport());
-}
-
-NuTo::Constitutive::StaticData::Component* NuTo::MoistureTransport::AllocateStaticData2D(const NuTo::ElementBase *rElement) const
-{
-    return Constitutive::StaticData::Leaf<Constitutive::StaticData::DataMoistureTransport>::Create(Constitutive::StaticData::DataMoistureTransport());
-}
-
-NuTo::Constitutive::StaticData::Component* NuTo::MoistureTransport::AllocateStaticData3D(const NuTo::ElementBase *rElement) const
-{
-    return Constitutive::StaticData::Leaf<Constitutive::StaticData::DataMoistureTransport>::Create(Constitutive::StaticData::DataMoistureTransport());
-}
 
 //! @brief ... calculates the sorption Curve coefficients when the sorption direction has changed
 void NuTo::MoistureTransport::CalculateSorptionCurveCoefficients(

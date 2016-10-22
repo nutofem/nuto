@@ -23,9 +23,7 @@ public:
                         const std::vector<NuTo::NodeBase*> &rNodes,
                         const Eigen::MatrixXd              &rKnots,
                         const Eigen::VectorXi              &rKnotIDs,
-                        ElementData::eElementDataType       rElementDataType,
-                        IpData::eIpDataType                 rIpDataType,
-                        InterpolationType                  *rInterpolationType);
+                        const InterpolationType            &rInterpolationType);
 
     ContinuumElementIGA(const ContinuumElementIGA& ) = default;
     ContinuumElementIGA(      ContinuumElementIGA&&) = default;

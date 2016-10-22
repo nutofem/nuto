@@ -2,11 +2,14 @@
 
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
-#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
 
 
 namespace NuTo
 {
+namespace Constitutive
+{
+class IPConstitutiveLawBase;
+} // namespace Constitutive
 class InterpolationType;
 
 //! @brief ... linear elastic material model
@@ -78,20 +81,15 @@ public:
 
     LinearElasticEngineeringStress();
 
-    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw()
-    {
-        return std::make_unique<Constitutive::IPConstitutiveLawWithoutData<LinearElasticEngineeringStress>>(*this);
-    }
+    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw();
 
 
     //! @brief ... evaluate the constitutive relation in 1D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
-                            const ConstitutiveOutputMap& rConstitutiveOutput,
-                            Constitutive::StaticData::Component* staticData) override;
+    template <int TDim>
+    NuTo::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
+                          const ConstitutiveOutputMap& rConstitutiveOutput);
 
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
@@ -99,33 +97,6 @@ public:
     //! @param rInterpolationType ... interpolation type to determine additional inputs
     //! @return constitutive inputs needed for the evaluation
     ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType& rInterpolationType) const override;
-
-    //! @brief ... evaluate the constitutive relation in 1D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    template <int TDim>
-    NuTo::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput) {}
-
-    //! @brief ... evaluate the constitutive relation in 2D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::eError Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
-
-    //! @brief ... evaluate the constitutive relation in 3D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    NuTo::eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
 
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow ... row dof

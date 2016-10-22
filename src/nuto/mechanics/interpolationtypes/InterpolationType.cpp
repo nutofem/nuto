@@ -262,9 +262,11 @@ void NuTo::InterpolationType::UpdateIntegrationType(const IntegrationTypeBase& r
 }
 
 //! @brief returns the pointer to the integration type that is currently used
-const NuTo::IntegrationTypeBase* NuTo::InterpolationType::GetCurrentIntegrationType() const
+const NuTo::IntegrationTypeBase& NuTo::InterpolationType::GetCurrentIntegrationType() const
 {
-    return mIntegrationType;
+    if (mIntegrationType == nullptr)
+        throw MechanicsException(__PRETTY_FUNCTION__, "CurrentIntegrationType not set.");
+    return *mIntegrationType;
 }
 
 const NuTo::Interpolation::eShapeType NuTo::InterpolationType::GetShapeType() const

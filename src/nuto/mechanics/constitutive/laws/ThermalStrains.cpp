@@ -5,16 +5,22 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
+#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
 using namespace NuTo;
 
+std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::ThermalStrains::CreateIPLaw()
+{
+    return std::make_unique<Constitutive::IPConstitutiveLawWithoutData<ThermalStrains>>(*this);
+}
+
+
 template <int TDim>
 NuTo::eError ThermalStrains::Evaluate(
         const ConstitutiveInputMap &rConstitutiveInput,
-        const ConstitutiveOutputMap &rConstitutiveOutput,
-        Constitutive::StaticData::Component*)
+        const ConstitutiveOutputMap &rConstitutiveOutput)
 {
     
     auto eye = Eigen::MatrixXd::Identity(TDim, TDim);
@@ -149,3 +155,10 @@ void NuTo::ThermalStrains::SetParameterFunction(std::function<std::array<double,
 {
     NonlinearExpansionCoeff = ExpansionFunction;
 }
+
+template NuTo::eError ThermalStrains::Evaluate<1>(const ConstitutiveInputMap &rConstitutiveInput,
+                                                  const ConstitutiveOutputMap &rConstitutiveOutput);
+template NuTo::eError ThermalStrains::Evaluate<2>(const ConstitutiveInputMap &rConstitutiveInput,
+                                                  const ConstitutiveOutputMap &rConstitutiveOutput);
+template NuTo::eError ThermalStrains::Evaluate<3>(const ConstitutiveInputMap &rConstitutiveInput,
+                                                  const ConstitutiveOutputMap &rConstitutiveOutput);

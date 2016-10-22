@@ -22,14 +22,10 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
-#include "nuto/mechanics/elements/IpDataStaticDataBase.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "nuto/mechanics/constitutive/inputoutput/EquivalentStrain.h"
-
-#include "nuto/mechanics/constitutive/staticData/Leaf.h"
-#include "nuto/mechanics/constitutive/staticData/Component.h"
 
 
 using NuTo::Constitutive::eDamageLawType;
@@ -148,37 +144,6 @@ void NuTo::LocalDamageModel::Info(unsigned short rVerboseLevel, Logger& rLogger)
 void NuTo::LocalDamageModel::CheckParameters() const {}
 
 
-NuTo::eError NuTo::LocalDamageModel::Evaluate1D(
-        const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput,
-        Constitutive::StaticData::Component* rStaticData)
-{
-    throw MechanicsException(__PRETTY_FUNCTION__, "IMPLEMENT ME!!!");
-    return eError::SUCCESSFUL;
-}
-
-NuTo::eError NuTo::LocalDamageModel::Evaluate2D(
-        const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput,
-        Constitutive::StaticData::Component* rStaticData)
-{
-    auto itCalculateStaticData = rConstitutiveInput.find(eInput::CALCULATE_STATIC_DATA);
-    const auto& calculateStaticData = dynamic_cast<const ConstitutiveCalculateStaticData&>(*itCalculateStaticData->second);
-    int index = calculateStaticData.GetIndexOfPreviousStaticData();
-
-    auto& gradientStaticData = *dynamic_cast<Constitutive::StaticData::Leaf<double>*>(rStaticData);
-    double oldKappa = gradientStaticData.GetData(index);
-
-    const auto& planeState =
-        *dynamic_cast<ConstitutivePlaneState*>(rConstitutiveInput.at(Constitutive::eInput::PLANE_STATE).get());
-    double newKappa = Evaluate2D(planeState, oldKappa, rConstitutiveInput, rConstitutiveOutput);
-
-    // update history variables
-    gradientStaticData.GetData() = newKappa;
-    return eError::SUCCESSFUL;
-}
-
-
 double NuTo::LocalDamageModel::Evaluate2D(NuTo::ConstitutivePlaneState planeState, double oldKappa,
         const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput)
 {
@@ -293,31 +258,29 @@ double NuTo::LocalDamageModel::Evaluate2D(NuTo::ConstitutivePlaneState planeStat
     }
 }
 
-NuTo::eError NuTo::LocalDamageModel::Evaluate3D(
-        const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput,
-        Constitutive::StaticData::Component* staticData)
+template <int TDim>
+NuTo::eError NuTo::LocalDamageModel::Evaluate(
+    const ConstitutiveInputMap& rConstitutiveInput,
+    const ConstitutiveOutputMap& rConstitutiveOutput,
+    Data& rStaticData)
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "IMPLEMENT ME!!!");
+    if (TDim != 2)
+        throw MechanicsException(__PRETTY_FUNCTION__, "IMPLEMENT ME!!!");
+
+    auto itCalculateStaticData = rConstitutiveInput.find(eInput::CALCULATE_STATIC_DATA);
+    const auto
+        & calculateStaticData = dynamic_cast<const ConstitutiveCalculateStaticData&>(*itCalculateStaticData->second);
+    int index = calculateStaticData.GetIndexOfPreviousStaticData();
+
+    double oldKappa = rStaticData.GetData(index);
+
+    const auto& planeState =
+        *dynamic_cast<ConstitutivePlaneState*>(rConstitutiveInput.at(Constitutive::eInput::PLANE_STATE).get());
+    double newKappa = Evaluate2D(planeState, oldKappa, rConstitutiveInput, rConstitutiveOutput);
+
+    // update history variables
+    rStaticData.GetData() = newKappa;
     return eError::SUCCESSFUL;
-}
-
-NuTo::Constitutive::StaticData::Component* NuTo::LocalDamageModel::AllocateStaticData1D(
-        const ElementBase* rElement) const
-{
-    return Constitutive::StaticData::Leaf<double>::Create(0.0);
-}
-
-NuTo::Constitutive::StaticData::Component* NuTo::LocalDamageModel::AllocateStaticData2D(
-        const ElementBase* rElement) const
-{
-    return Constitutive::StaticData::Leaf<double>::Create(0.0);
-}
-
-NuTo::Constitutive::StaticData::Component* NuTo::LocalDamageModel::AllocateStaticData3D(
-        const ElementBase* rElement) const
-{
-    return Constitutive::StaticData::Leaf<double>::Create(0.0);
 }
 
 NuTo::ConstitutiveInputMap NuTo::LocalDamageModel::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType& rInterpolationType) const
@@ -330,7 +293,7 @@ NuTo::ConstitutiveInputMap NuTo::LocalDamageModel::GetConstitutiveInputs(const C
 }
 
 
-double NuTo::LocalDamageModel::GetCurrentStaticData(Constitutive::StaticData::Leaf<double>& damage,
+double NuTo::LocalDamageModel::GetCurrentStaticData(Data& rStaticData,
         const ConstitutiveInputMap& rConstitutiveInput) const
 {
     auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
@@ -346,13 +309,13 @@ double NuTo::LocalDamageModel::GetCurrentStaticData(Constitutive::StaticData::Le
         case eCalculateStaticData::USE_PREVIOUS:
         {
             int index = calculateStaticData.GetIndexOfPreviousStaticData();
-            return damage.GetData(index);
+            return rStaticData.GetData(index);
         }
         case eCalculateStaticData::EULER_BACKWARD:
         {
 
             int index = calculateStaticData.GetIndexOfPreviousStaticData();
-            double oldKappa = damage.GetData(index);
+            double oldKappa = rStaticData.GetData(index);
             const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN);
             return std::max(nonlocalEqStrain[0], oldKappa);
         }
@@ -364,10 +327,10 @@ double NuTo::LocalDamageModel::GetCurrentStaticData(Constitutive::StaticData::Le
                 throw MechanicsException(__PRETTY_FUNCTION__, "TimeStep input needed for EULER_FORWARD.");
             const auto& timeStep = *(itTimeStep->second);
 
-            assert(damage.GetNumData() >= 2);
+            assert(rStaticData.GetNumData() >= 2);
 
             return ConstitutiveCalculateStaticData::EulerForward(
-                    damage.GetData(1), damage.GetData(2), timeStep);
+                    rStaticData.GetData(1), rStaticData.GetData(2), timeStep);
         }
 
         default:
@@ -389,7 +352,7 @@ double NuTo::LocalDamageModel::CalculateDamage(double rKappa) const
     {
         if (rKappa > e_0)
         {
-            omega = 1 - (1-mMaxDamage) - mMaxDamage*e_0 / rKappa * (1 - mAlpha + mAlpha * exp((e_0 - rKappa) / e_f));
+            omega = 1 - (1-mMaxDamage) - mMaxDamage*e_0 / rKappa * (1 - mAlpha + mAlpha * std::exp((e_0 - rKappa) / e_f));
         }
         break;
     }
@@ -413,7 +376,7 @@ double NuTo::LocalDamageModel::CalculateDerivativeDamage(double rKappa) const
     {
         if (rKappa > e_0)
         {
-            DomegaDkappa = mMaxDamage*e_0 / rKappa * ((1 / rKappa + 1 / e_f) * mAlpha * exp((e_0 - rKappa) / e_f) + (1 - mAlpha) / rKappa);
+            DomegaDkappa = mMaxDamage*e_0 / rKappa * ((1 / rKappa + 1 / e_f) * mAlpha * std::exp((e_0 - rKappa) / e_f) + (1 - mAlpha) / rKappa);
         }
         break;
     }
@@ -458,11 +421,14 @@ BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::LocalDamageModel)
 
 bool NuTo::LocalDamageModel::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
 {
-    if(rTimeDerivative<1 &&
-            rDofRow == Node::eDof::DISPLACEMENTS &&
-            rDofCol ==Node::eDof::DISPLACEMENTS)
-    {
-        return true;
-    }
-    return false;
+    return rTimeDerivative<1 &&
+        rDofRow == Node::eDof::DISPLACEMENTS &&
+        rDofCol ==Node::eDof::DISPLACEMENTS;
 }
+
+template NuTo::eError NuTo::LocalDamageModel::Evaluate<1>(
+    const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput, Data& rStaticData);
+template NuTo::eError NuTo::LocalDamageModel::Evaluate<2>(
+    const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput, Data& rStaticData);
+template NuTo::eError NuTo::LocalDamageModel::Evaluate<3>(
+    const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput, Data& rStaticData);

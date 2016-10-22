@@ -28,7 +28,7 @@
 #include "nuto/mechanics/sections/SectionBase.h"
 #include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
-#include "nuto/mechanics/elements/IpDataStaticDataBase.h"
+
 #include "nuto/mechanics/nodes/NodeEnum.h"
 
 #include "eigen3/Eigen/Eigenvalues"
@@ -59,6 +59,10 @@ NuTo::PhaseField::PhaseField(const double rYoungsModulus,
     assert( mPoissonsRatio          >=  0.0 and mPoissonsRatio < 0.5 );
 }
 
+std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::PhaseField::CreateIPLaw()
+{
+    return std::make_unique<Constitutive::IPConstitutiveLaw<PhaseField>>(*this, 0.);
+}
 
 NuTo::ConstitutiveInputMap NuTo::PhaseField::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType& rInterpolationType) const
 {
@@ -68,12 +72,6 @@ NuTo::ConstitutiveInputMap NuTo::PhaseField::GetConstitutiveInputs(const Constit
     constitutiveInputMap[Constitutive::eInput::CRACK_PHASE_FIELD];
 
     return constitutiveInputMap;
-}
-
-NuTo::eError NuTo::PhaseField::Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput, Constitutive::StaticData::Component*)
-{
-    throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }
 
 
@@ -553,9 +551,19 @@ double NuTo::PhaseField::Evaluate2DAnisotropicSpectralDecomposition(const double
     }
 }
 
+namespace NuTo
+{
 
-NuTo::eError NuTo::PhaseField::Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput, Constitutive::StaticData::Component* staticData)
+template<>
+NuTo::eError NuTo::PhaseField::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
+                                           const ConstitutiveOutputMap& rConstitutiveOutput, Data& rStaticData)
+{
+    throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
+}
+
+template<>
+NuTo::eError NuTo::PhaseField::Evaluate<2>(const ConstitutiveInputMap& rConstitutiveInput,
+                                           const ConstitutiveOutputMap& rConstitutiveOutput, Data& rStaticData)
 {
     const auto& planeState =
         *dynamic_cast<ConstitutivePlaneState*>(rConstitutiveInput.at(Constitutive::eInput::PLANE_STATE).get());
@@ -565,63 +573,49 @@ NuTo::eError NuTo::PhaseField::Evaluate2D(const ConstitutiveInputMap& rConstitut
     auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
     if (itCalculateStaticData == rConstitutiveInput.end())
         throw MechanicsException(__PRETTY_FUNCTION__,
-                "You need to specify the way the static data should be calculated (input list).");
+                                 "You need to specify the way the static data should be calculated (input list).");
 
-    const auto& calculateStaticData = dynamic_cast<const ConstitutiveCalculateStaticData&>(*itCalculateStaticData->second);
+    const auto
+        & calculateStaticData = dynamic_cast<const ConstitutiveCalculateStaticData&>(*itCalculateStaticData->second);
     int index = calculateStaticData.GetIndexOfPreviousStaticData();
 
-    auto& energyStaticData = *dynamic_cast<Constitutive::StaticData::Leaf<double>*>(staticData);
-    double oldEnergyDensity = energyStaticData.GetData(index);
+    double oldEnergyDensity = rStaticData.GetData(index);
 
     double energyDensity = 0.0;
 
     switch (mEnergyDecomposition)
     {
-    case Constitutive::ePhaseFieldEnergyDecomposition::ISOTROPIC:
-    {
-        energyDensity = Evaluate2DIsotropic(oldEnergyDensity, rConstitutiveInput, rConstitutiveOutput);
-        break;
-    }
-    case Constitutive::ePhaseFieldEnergyDecomposition::ANISOTROPIC_SPECTRAL_DECOMPOSITION:
-    {
-        energyDensity = Evaluate2DAnisotropicSpectralDecomposition(oldEnergyDensity, rConstitutiveInput, rConstitutiveOutput);
-        break;
-    }
-    default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Degradation function type not implemented.");
+        case Constitutive::ePhaseFieldEnergyDecomposition::ISOTROPIC:
+        {
+            energyDensity = Evaluate2DIsotropic(oldEnergyDensity, rConstitutiveInput, rConstitutiveOutput);
+            break;
+        }
+        case Constitutive::ePhaseFieldEnergyDecomposition::ANISOTROPIC_SPECTRAL_DECOMPOSITION:
+        {
+            energyDensity =
+                Evaluate2DAnisotropicSpectralDecomposition(oldEnergyDensity, rConstitutiveInput, rConstitutiveOutput);
+            break;
+        }
+        default:
+            throw MechanicsException(__PRETTY_FUNCTION__, "Degradation function type not implemented.");
 
     }
 
     // update history variables
-    energyStaticData.SetData(energyDensity);
+    rStaticData.SetData(energyDensity);
     return eError::SUCCESSFUL;
 }
 
-NuTo::eError NuTo::PhaseField::Evaluate3D(
-        const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput,
-        Constitutive::StaticData::Component*)
+template<>
+NuTo::eError NuTo::PhaseField::Evaluate<3>(const ConstitutiveInputMap& rConstitutiveInput,
+                                           const ConstitutiveOutputMap& rConstitutiveOutput, Data& rStaticData)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }
 
+} // namespace NuTo
 
 double NuTo::PhaseField::CalculateStaticDataExtrapolationError(ElementBase& rElement, int rIp, const ConstitutiveInputMap& rConstitutiveInput) const
-{
-    throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
-}
-
-NuTo::Constitutive::StaticData::Leaf<double>* NuTo::PhaseField::AllocateStaticData1D(const ElementBase* rElement) const
-{
-    throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
-}
-
-NuTo::Constitutive::StaticData::Leaf<double>* NuTo::PhaseField::AllocateStaticData2D(const ElementBase* rElement) const
-{
-    return Constitutive::StaticData::Leaf<double>::Create(0.);
-}
-
-NuTo::Constitutive::StaticData::Leaf<double>* NuTo::PhaseField::AllocateStaticData3D(const ElementBase* rElement) const
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented.");
 }

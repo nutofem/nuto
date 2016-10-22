@@ -13,15 +13,14 @@
 
 #include "nuto/mechanics/elements/ElementOutputBase.h"
 #include "nuto/mechanics/elements/ElementOutputIpData.h"
-#include "nuto/mechanics/elements/ElementDataBase.h"
 
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationType.h"
 
+#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/EvaluateDataContinuum.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
 
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
@@ -38,9 +37,8 @@
 
 template<int TDim>
 NuTo::ContinuumElement<TDim>::ContinuumElement(const NuTo::StructureBase* rStructure,
-        const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType,
-        IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType) :
-        NuTo::ElementBase::ElementBase(rStructure, rElementDataType, rIpDataType, rInterpolationType),
+        const std::vector<NuTo::NodeBase*>& rNodes, const InterpolationType& rInterpolationType) :
+        NuTo::ElementBase::ElementBase(rStructure, rInterpolationType),
         mNodes(rNodes)
 {}
 
@@ -64,9 +62,8 @@ NuTo::eError NuTo::ContinuumElement<TDim>::Evaluate(const ConstitutiveInputMap& 
     {
         CalculateNMatrixBMatrixDetJacobian(data, theIP);
         CalculateConstitutiveInputs(constitutiveInput, data);
-        auto* staticData = GetConstitutiveStaticData(theIP);
 
-        eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, staticData, theIP);
+        eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, theIP);
         if (error != eError::SUCCESSFUL)
             return error;
         CalculateElementOutputs(rElementOutput, data, theIP, constitutiveInput, constitutiveOutput);
@@ -102,7 +99,7 @@ void NuTo::ContinuumElement<TDim>::ExtractAllNecessaryDofValues(EvaluateDataCont
 template<int TDim>
 Eigen::VectorXd NuTo::ContinuumElement<TDim>::ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const
 {
-    const InterpolationBase& interpolationTypeDof = GetInterpolationType()->Get(rDofType);
+    const InterpolationBase& interpolationTypeDof = GetInterpolationType().Get(rDofType);
 
     int numNodes = interpolationTypeDof.GetNumNodes();
     int numDofsPerNode = interpolationTypeDof.GetNumDofsPerNode();
@@ -125,7 +122,7 @@ NuTo::ConstitutiveInputMap NuTo::ContinuumElement<TDim>::GetConstitutiveInputMap
         const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
     // create maps with only the keys
-    ConstitutiveInputMap constitutiveInput = GetConstitutiveLaw(0)->GetConstitutiveInputs(rConstitutiveOutput, *GetInterpolationType());
+    ConstitutiveInputMap constitutiveInput = GetConstitutiveLaw(0).GetConstitutiveInputs(rConstitutiveOutput, GetInterpolationType());
 
     // attach corresponding scalar/vector/matrix object to each key
     for (auto& itInput : constitutiveInput)
@@ -269,7 +266,7 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian0(Constitutiv
 
             rHessian0(dofRow, dofCol).setZero(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
 
-            if (not GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow, dofCol, 0))
+            if (not GetConstitutiveLaw(0).CheckDofCombinationComputable(dofRow, dofCol, 0))
                 continue;
 
             switch (Node::CombineDofs(dofRow, dofCol))
@@ -360,7 +357,7 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian1(Constitutiv
 
             rHessian1(dofRow, dofCol).setZero(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
 
-            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow,dofCol,1))
+            if(!GetConstitutiveLaw(0).CheckDofCombinationComputable(dofRow,dofCol,1))
                 continue;
 
             switch (Node::CombineDofs(dofRow, dofCol))
@@ -412,7 +409,7 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian2(Constitutiv
 
             rHessian2(dofRow, dofCol).setZero(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
 
-            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow,dofCol,2))
+            if(!GetConstitutiveLaw(0).CheckDofCombinationComputable(dofRow,dofCol,2))
                 continue;
 
             switch (Node::CombineDofs(dofRow, dofCol))
@@ -508,10 +505,7 @@ void NuTo::ContinuumElement<TDim>::CalculateGlobalRowDofs(BlockFullVector<int> &
 template<int TDim>
 void NuTo::ContinuumElement<TDim>::CalculateGlobalColumnDofs(BlockFullVector<int> &rGlobalDofMapping) const
 {
-    if (GetNumNonlocalElements() == 0)
-        CalculateGlobalRowDofs(rGlobalDofMapping);
-    else
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for nonlocal elements.");
+    CalculateGlobalRowDofs(rGlobalDofMapping);
 }
 
 template<int TDim>
@@ -734,7 +728,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(
                     // don't forget to include determinant of the Jacobian and area
                     // detJ * area * density * HtH, :
                     FullVector<double, Eigen::Dynamic>& result = it.second->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS];
-                    double rho = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY);
+                    double rho = GetConstitutiveLaw(rTheIP).GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY);
                     rData.mTotalMass += rData.mDetJxWeightIPxSection * rho;
                     const Eigen::VectorXd& shapeFunctions = mInterpolationType->Get(Node::eDof::DISPLACEMENTS).GetShapeFunctions(rTheIP);
 
@@ -834,14 +828,14 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(
         }
         case Node::eDof::CRACKPHASEFIELD:
         {
-            const auto  G       = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::FRACTURE_ENERGY);
-            const auto  l       = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::LENGTH_SCALE_PARAMETER);
+            const auto  G       = GetConstitutiveLaw(rTheIP).GetParameterDouble(Constitutive::eConstitutiveParameter::FRACTURE_ENERGY);
+            const auto  l       = GetConstitutiveLaw(rTheIP).GetParameterDouble(Constitutive::eConstitutiveParameter::LENGTH_SCALE_PARAMETER);
             const auto& N       = *(rData.GetNMatrix(Node::eDof::CRACKPHASEFIELD));
             const auto& B       = rData.mB.at(Node::eDof::CRACKPHASEFIELD);
             const auto& d       = rData.mNodalValues.at(Node::eDof::CRACKPHASEFIELD);
             const auto& d_dt    = rData.mNodalValues_dt1.at(Node::eDof::CRACKPHASEFIELD);
             const auto& kappa   = (*static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::ELASTIC_ENERGY_DAMAGED_PART).get()))[0];
-            const auto  visco   = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::ARTIFICIAL_VISCOSITY);
+            const auto  visco   = GetConstitutiveLaw(rTheIP).GetParameterDouble(Constitutive::eConstitutiveParameter::ARTIFICIAL_VISCOSITY);
 
             //TODO: replace sigma * eps with static data kappa
             rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection * (     ( (G/l + 2.*kappa) * N.transpose() * N
@@ -867,7 +861,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
     {
         for (auto dofCol : mInterpolationType->GetActiveDofs())
         {
-            if(!GetConstitutiveLaw(rTheIP)->CheckDofCombinationComputable(dofRow,dofCol,0))
+            if(!GetConstitutiveLaw(rTheIP).CheckDofCombinationComputable(dofRow,dofCol,0))
                 continue;
             auto& hessian0 = rHessian0(dofRow, dofCol);
             switch (Node::CombineDofs(dofRow, dofCol))
@@ -978,8 +972,8 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
 
             case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::CRACKPHASEFIELD):
             {
-                const auto  G = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::FRACTURE_ENERGY);
-                const auto  l = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::LENGTH_SCALE_PARAMETER);
+                const auto  G = GetConstitutiveLaw(rTheIP).GetParameterDouble(Constitutive::eConstitutiveParameter::FRACTURE_ENERGY);
+                const auto  l = GetConstitutiveLaw(rTheIP).GetParameterDouble(Constitutive::eConstitutiveParameter::LENGTH_SCALE_PARAMETER);
 
                 const auto& N = *(rData.GetNMatrix(Node::eDof::CRACKPHASEFIELD));
                 const auto& B = rData.mB.at(Node::eDof::CRACKPHASEFIELD);
@@ -1013,7 +1007,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatri
     {
         for (auto dofCol : mInterpolationType->GetActiveDofs())
         {
-            if(!GetConstitutiveLaw(rTheIP)->CheckDofCombinationComputable(dofRow,dofCol,1))
+            if(!GetConstitutiveLaw(rTheIP).CheckDofCombinationComputable(dofRow,dofCol,1))
                 continue;
             auto& hessian1 = rHessian1(dofRow, dofCol);
             switch (Node::CombineDofs(dofRow, dofCol))
@@ -1056,7 +1050,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian1(BlockFullMatri
             case Node::CombineDofs(Node::eDof::CRACKPHASEFIELD, Node::eDof::CRACKPHASEFIELD):
             {
                 const auto& N = *(rData.GetNMatrix(Node::eDof::CRACKPHASEFIELD));
-                const auto  visco   = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::ARTIFICIAL_VISCOSITY);
+                const auto  visco   = GetConstitutiveLaw(rTheIP).GetParameterDouble(Constitutive::eConstitutiveParameter::ARTIFICIAL_VISCOSITY);
                 hessian1 += visco * rData.mDetJxWeightIPxSection * N.transpose() * N;
             }
                 break;
@@ -1085,7 +1079,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian2(BlockFullMatri
     {
         for (auto dofCol : mInterpolationType->GetActiveDofs())
         {
-            if(!GetConstitutiveLaw(rTheIP)->CheckDofCombinationComputable(dofRow,dofCol,2))
+            if(!GetConstitutiveLaw(rTheIP).CheckDofCombinationComputable(dofRow,dofCol,2))
                 continue;
             auto& hessian2 = rHessian2(dofRow, dofCol);
             switch (Node::CombineDofs(dofRow, dofCol))
@@ -1093,7 +1087,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian2(BlockFullMatri
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
             {
                 const auto& N = *(rData.GetNMatrix(dofRow));
-                double rho = GetConstitutiveLaw(rTheIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY);
+                double rho = GetConstitutiveLaw(rTheIP).GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY);
                 hessian2 += rho * N.transpose() * N * rData.mDetJxWeightIPxSection;
 
                 break;
@@ -1222,7 +1216,7 @@ const Eigen::VectorXd NuTo::ContinuumElement<TDim>::GetIntegrationPointVolume() 
     {
         Eigen::MatrixXd derivativeShapeFunctionsNatural = mInterpolationType->Get(Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(theIP);
         double detJacobian = CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates).determinant();
-        volume[theIP] = detJacobian * mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP);
+        volume[theIP] = detJacobian * GetIntegrationType().GetIntegrationPointWeight(theIP);
     }
     return volume;
 }
@@ -1391,38 +1385,19 @@ double NuTo::ContinuumElement<1>::CalculateDetJxWeightIPxSection(double rDetJaco
     Eigen::MatrixXd matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).GetMatrixN(rTheIP);
     Eigen::VectorXd globalIPCoordinate = matrixN * ExtractNodeValues(0, Node::eDof::COORDINATES);
 
-    return rDetJacobian * mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP) * mSection->GetArea() * mSection->AsSectionTruss()->GetAreaFactor(globalIPCoordinate(0, 0));
+    return rDetJacobian * GetIntegrationType().GetIntegrationPointWeight(rTheIP) * mSection->GetArea() * mSection->AsSectionTruss()->GetAreaFactor(globalIPCoordinate(0, 0));
 }
 
 template<>
 double NuTo::ContinuumElement<2>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
 {
-    return rDetJacobian * mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP) * mSection->GetThickness();
+    return rDetJacobian * GetIntegrationType().GetIntegrationPointWeight(rTheIP) * mSection->GetThickness();
 }
 
 template<>
 double NuTo::ContinuumElement<3>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
 {
-    return rDetJacobian * mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP);
-}
-
-template<>
-NuTo::Constitutive::StaticData::Component* ContinuumElement<1>::AllocateStaticData(
-        const ConstitutiveBase* rConstitutiveLaw) const
-{
-    return rConstitutiveLaw->AllocateStaticData1D(this);
-}
-template<>
-NuTo::Constitutive::StaticData::Component* ContinuumElement<2>::AllocateStaticData(
-        const ConstitutiveBase* rConstitutiveLaw) const
-{
-    return rConstitutiveLaw->AllocateStaticData2D(this);
-}
-template<>
-NuTo::Constitutive::StaticData::Component* ContinuumElement<3>::AllocateStaticData(
-        const ConstitutiveBase* rConstitutiveLaw) const
-{
-    return rConstitutiveLaw->AllocateStaticData3D(this);
+    return rDetJacobian * GetIntegrationType().GetIntegrationPointWeight(rTheIP);
 }
 
 template<>

@@ -10,7 +10,6 @@
 #include "nuto/mechanics/sections/SectionPlane.h"
 #include "nuto/mechanics/elements/ElementOutputBase.h"
 #include "nuto/mechanics/elements/ElementOutputIpData.h"
-#include "nuto/mechanics/elements/ElementDataBase.h"
 
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
@@ -38,11 +37,9 @@ NuTo::ContinuumElementIGA<TDim>::ContinuumElementIGA(const NuTo::StructureBase* 
                                                      const std::vector<NuTo::NodeBase*> &rNodes,
                                                      const Eigen::MatrixXd              &rKnots,
                                                      const Eigen::VectorXi              &rKnotIDs,
-                                                     ElementData::eElementDataType       rElementDataType,
-                                                     IpData::eIpDataType                 rIpDataType,
-                                                     InterpolationType                  *rInterpolationType)
+                                                     const InterpolationType            &rInterpolationType)
     :
-        ContinuumElement<TDim>(rStructure, rNodes, rElementDataType, rIpDataType, rInterpolationType),
+        ContinuumElement<TDim>(rStructure, rNodes, rInterpolationType),
         mKnots(rKnots),
         mKnotIDs(rKnotIDs)
 {}
@@ -73,7 +70,7 @@ const Eigen::VectorXd NuTo::ContinuumElementIGA<TDim>::GetIntegrationPointVolume
     {
         Eigen::MatrixXd derivativeShapeFunctionsNatural = this->mInterpolationType->Get(Node::eDof::COORDINATES).CalculateDerivativeShapeFunctionsNatural(theIP, mKnotIDs);
         double detJacobian = this->CalculateJacobian(derivativeShapeFunctionsNatural, nodeCoordinates).determinant();
-        volume[theIP] = detJacobian * this->mElementData->GetIntegrationType()->GetIntegrationPointWeight(theIP);
+        volume[theIP] = detJacobian * this->GetIntegrationPointWeight(theIP);
     }
     return volume;
 }
@@ -212,13 +209,13 @@ double NuTo::ContinuumElementIGA<1>::CalculateDetJxWeightIPxSection(double rDetJ
     Eigen::MatrixXd matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).CalculateMatrixN(rTheIP, mKnotIDs);
     Eigen::VectorXd globalIPCoordinate = matrixN * this->ExtractNodeValues(0, Node::eDof::COORDINATES);
 
-    return rDetJacobian * mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP) * mSection->GetArea() * mSection->AsSectionTruss()->GetAreaFactor(globalIPCoordinate(0, 0));
+    return rDetJacobian * GetIntegrationPointWeight(rTheIP) * mSection->GetArea() * mSection->AsSectionTruss()->GetAreaFactor(globalIPCoordinate(0, 0));
 }
 
 template<>
 double NuTo::ContinuumElementIGA<2>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
 {
-    return rDetJacobian * mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP) * mSection->GetThickness();
+    return rDetJacobian * GetIntegrationPointWeight(rTheIP) * mSection->GetThickness();
 }
 
 }  // namespace NuTo

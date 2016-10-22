@@ -1,7 +1,6 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/laws/AdditiveBase.h"
-#include "nuto/mechanics/constitutive/staticData/Composite.h"
 
 namespace NuTo
 {
@@ -17,40 +16,17 @@ public:
         mComputableDofCombinations.resize(2);
     }
 
+    // has no ip static data itself
+    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw()
+    {
+        return std::make_unique<Constitutive::IPConstitutiveLawWithoutData<AdditiveOutput>>(*this);
+    }
+
+
     template <int TDim>
     NuTo::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData);
+                          const ConstitutiveOutputMap& rConstitutiveOutput);
 
-    //! @brief Evaluate the constitutive relation.
-    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
-    //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
-    virtual NuTo::eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
-                                           const ConstitutiveOutputMap& rConstitutiveOutput,
-                                           Constitutive::StaticData::Component* staticData) override
-    {
-        return Evaluate<1>(rConstitutiveInput, rConstitutiveOutput, staticData);
-    }
-
-    //! @brief Evaluate the constitutive relation.
-    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
-    //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
-    virtual NuTo::eError Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
-                                           const ConstitutiveOutputMap& rConstitutiveOutput,
-                                           Constitutive::StaticData::Component* staticData) override
-    {
-        return Evaluate<2>(rConstitutiveInput, rConstitutiveOutput, staticData);
-    }
-
-    //! @brief Evaluate the constitutive relation.
-    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
-    //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
-    virtual NuTo::eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
-                                           const ConstitutiveOutputMap& rConstitutiveOutput,
-                                           Constitutive::StaticData::Component* staticData) override
-    {
-        return Evaluate<3>(rConstitutiveInput, rConstitutiveOutput, staticData);
-    }
 
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship

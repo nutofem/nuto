@@ -40,12 +40,7 @@ class Element1DInXD: public ContinuumElement<1>
 #endif  // ENABLE_SERIALIZATION
 
 public:
-    Element1DInXD(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType);
-
-    virtual ~Element1DInXD()
-    {
-    }
-    ;
+    Element1DInXD(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, const InterpolationType& rInterpolationType);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -64,21 +59,6 @@ public:
 
     Eigen::VectorXd InterpolateDofGlobal(const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const override;
     Eigen::VectorXd InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const override;
-
-//    //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
-//    void CalculateGlobalRowDofs(BlockFullVector<int>& rGlobalRowDofs) const;
-
-    //! @brief cast the base pointer to an Element1D, otherwise throws an exception
-    const NuTo::Element1DInXD* AsElement1DInXD() const
-    {
-        return this;
-    }
-
-    //! @brief cast the base pointer to an Element1D, otherwise throws an exception
-    NuTo::Element1DInXD* AsElement1DInXD()
-    {
-        return this;
-    }
 
 protected:
 

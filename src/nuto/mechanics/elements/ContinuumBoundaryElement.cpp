@@ -10,7 +10,6 @@
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "nuto/mechanics/elements/ContinuumBoundaryElement.h"
 #include "nuto/mechanics/elements/ContinuumElement.h"
-#include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/elements/ElementOutputBase.h"
 #include "nuto/mechanics/elements/ElementOutputIpData.h"
@@ -33,7 +32,7 @@
 
 template <int TDim>
 NuTo::ContinuumBoundaryElement<TDim>::ContinuumBoundaryElement(const ContinuumElement<TDim> *rBaseElement, int rSurfaceId)
-: ElementBase::ElementBase(rBaseElement->GetStructure(), rBaseElement->GetElementDataType(), rBaseElement->GetIpDataType(0), rBaseElement->GetInterpolationType()),
+: ElementBase::ElementBase(rBaseElement->GetStructure(), rBaseElement->GetInterpolationType()),
   mBaseElement(rBaseElement),
   mSurfaceId(rSurfaceId),
   mAlphaUserDefined(-1)
@@ -55,9 +54,8 @@ NuTo::eError NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const ConstitutiveIn
     {
         CalculateNMatrixBMatrixDetJacobian(data, theIP);
         CalculateConstitutiveInputs(constitutiveInput, data);
-        auto staticData = GetConstitutiveStaticData(theIP);
 
-        eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, staticData, theIP);
+        eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, theIP);
         if (error != eError::SUCCESSFUL)
             return error;
         CalculateElementOutputs(rElementOutput, data, theIP, constitutiveInput, constitutiveOutput);
@@ -148,7 +146,7 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiv
 template<int TDim>
 NuTo::ConstitutiveInputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
-    ConstitutiveInputMap constitutiveInput =  GetConstitutiveLaw(0)->GetConstitutiveInputs(rConstitutiveOutput, *GetInterpolationType());
+    ConstitutiveInputMap constitutiveInput =  GetConstitutiveLaw(0).GetConstitutiveInputs(rConstitutiveOutput, GetInterpolationType());
 
     for (auto& itInput : constitutiveInput)
     {
@@ -356,7 +354,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputHessian0(BlockF
     {
         for (auto dofCol : mInterpolationType->GetActiveDofs())
         {
-            if(!GetConstitutiveLaw(rTheIP)->CheckDofCombinationComputable(dofRow,dofCol,0))
+            if(!GetConstitutiveLaw(rTheIP).CheckDofCombinationComputable(dofRow,dofCol,0))
                 continue;
             auto& hessian0 = rHessian0(dofRow, dofCol);            
             switch (Node::CombineDofs(dofRow, dofCol))
@@ -483,7 +481,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(Con
             NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian0(dofRow, dofCol);
             dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
             dofSubMatrix.setZero();
-            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow,dofCol,0))
+            if(!GetConstitutiveLaw(0).CheckDofCombinationComputable(dofRow,dofCol,0))
                 continue;
 
             switch (Node::CombineDofs(dofRow, dofCol))
@@ -538,7 +536,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(Con
             NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian0(dofRow, dofCol);
             dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
             dofSubMatrix.setZero();
-            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow,dofCol,1))
+            if(!GetConstitutiveLaw(0).CheckDofCombinationComputable(dofRow,dofCol,1))
                 continue;
 
             switch (Node::CombineDofs(dofRow, dofCol))
@@ -639,7 +637,7 @@ const Eigen::Vector3d NuTo::ContinuumBoundaryElement<TDim>::GetGlobalIntegration
         case 1:
         {
             double ipCoordinate;
-            GetIntegrationType()->GetLocalIntegrationPointCoordinates1D(rIpNum, ipCoordinate);
+            GetIntegrationType().GetLocalIntegrationPointCoordinates1D(rIpNum, ipCoordinate);
             naturalSurfaceIpCoordinates.resize(1);
             naturalSurfaceIpCoordinates(0) = ipCoordinate;
             break;
@@ -647,7 +645,7 @@ const Eigen::Vector3d NuTo::ContinuumBoundaryElement<TDim>::GetGlobalIntegration
         case 2:
         {
             double ipCoordinates[2];
-            GetIntegrationType()->GetLocalIntegrationPointCoordinates2D(rIpNum, ipCoordinates);
+            GetIntegrationType().GetLocalIntegrationPointCoordinates2D(rIpNum, ipCoordinates);
             naturalSurfaceIpCoordinates.resize(2);
             naturalSurfaceIpCoordinates(0) = ipCoordinates[0];
             naturalSurfaceIpCoordinates(1) = ipCoordinates[1];
@@ -656,7 +654,7 @@ const Eigen::Vector3d NuTo::ContinuumBoundaryElement<TDim>::GetGlobalIntegration
         case 3:
         {
             double ipCoordinates[3];
-            GetIntegrationType()->GetLocalIntegrationPointCoordinates3D(rIpNum, ipCoordinates);
+            GetIntegrationType().GetLocalIntegrationPointCoordinates3D(rIpNum, ipCoordinates);
             naturalSurfaceIpCoordinates.resize(3);
             naturalSurfaceIpCoordinates(0) = ipCoordinates[0];
             naturalSurfaceIpCoordinates(1) = ipCoordinates[1];
@@ -691,21 +689,6 @@ void NuTo::ContinuumBoundaryElement<TDim>::Visualize(VisualizeUnstructuredGrid& 
 
 namespace NuTo
 {
-template<>
-NuTo::Constitutive::StaticData::Component* ContinuumBoundaryElement<1>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
-{
-    return rConstitutiveLaw->AllocateStaticData1D(this);
-}
-template<>
-NuTo::Constitutive::StaticData::Component* ContinuumBoundaryElement<2>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
-{
-    return rConstitutiveLaw->AllocateStaticData2D(this);
-}
-template<>
-NuTo::Constitutive::StaticData::Component* ContinuumBoundaryElement<3>::AllocateStaticData(const ConstitutiveBase* rConstitutiveLaw) const
-{
-    return rConstitutiveLaw->AllocateStaticData3D(this);
-}
 
 template <int TDim>
 int ContinuumBoundaryElement<TDim>::GetLocalDimension() const
@@ -775,12 +758,12 @@ Eigen::VectorXd ContinuumBoundaryElement<TDim>::ExtractNodeValues(int rTimeDeriv
 template <int TDim>
 double ContinuumBoundaryElement<TDim>::CalculateAlpha()
 {
-    int theIP = 0; // This is a bit of a hack... I am sorry.
+    unsigned int theIP = 0; // This is a bit of a hack... I am sorry.
 
-    if (GetConstitutiveLaw(theIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER) != 0)
+    if (GetConstitutiveLaw(theIP).GetParameterDouble(Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER) != 0)
         throw MechanicsException(__PRETTY_FUNCTION__, "The case c != const is currently not supported. Set eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER to 0.");
 
-    double c = GetConstitutiveLaw(theIP)->GetParameterDouble(Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS);
+    double c = GetConstitutiveLaw(theIP).GetParameterDouble(Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS);
     return std::sqrt(c);
 }
 
@@ -796,7 +779,7 @@ template<>
 Eigen::Matrix<double,1,1>  ContinuumBoundaryElement<2>::CalculateIPCoordinatesSurface(int rTheIP) const
 {
     double tmp;
-    GetIntegrationType()->GetLocalIntegrationPointCoordinates1D(rTheIP, tmp);
+    GetIntegrationType().GetLocalIntegrationPointCoordinates1D(rTheIP, tmp);
     Eigen::Matrix<double,1,1> ipCoordinatesSurface;
     ipCoordinatesSurface(0) = tmp;
     return ipCoordinatesSurface;
@@ -806,7 +789,7 @@ template<>
 Eigen::Matrix<double,2,1>  ContinuumBoundaryElement<3>::CalculateIPCoordinatesSurface(int rTheIP) const
 {
     double tmp[2];
-    GetIntegrationType()->GetLocalIntegrationPointCoordinates2D(rTheIP, tmp);
+    GetIntegrationType().GetLocalIntegrationPointCoordinates2D(rTheIP, tmp);
     Eigen::Matrix<double,2,1> ipCoordinatesSurface;
     ipCoordinatesSurface(0) = tmp[0];
     ipCoordinatesSurface(1) = tmp[1];
@@ -826,7 +809,7 @@ template<>
 double NuTo::ContinuumBoundaryElement<2>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
 {
     return  rDetJacobian *
-            mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP) *
+            GetIntegrationType().GetIntegrationPointWeight(rTheIP) *
             mBaseElement->mSection->GetThickness();
 
 }
@@ -834,8 +817,7 @@ double NuTo::ContinuumBoundaryElement<2>::CalculateDetJxWeightIPxSection(double 
 template<>
 double NuTo::ContinuumBoundaryElement<3>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
 {
-    return  rDetJacobian *
-            mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP);
+    return  rDetJacobian * GetIntegrationType().GetIntegrationPointWeight(rTheIP);
 }
 
 

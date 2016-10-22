@@ -11,29 +11,6 @@ namespace NuTo
 class AdditiveInputExplicit : public AdditiveBase
 {
 public:
-    //! @brief Create a new static data object for an integration point.
-    //! @return Pointer to the new object.
-    Constitutive::StaticData::Component* AllocateStaticData1D(const ElementBase* rElement) const override
-    {
-        return AllocateStaticData<1>(rElement);
-    }
-
-    //! @brief Create a new static data object for an integration point.
-    //! @return Pointer to the new object.
-    Constitutive::StaticData::Component* AllocateStaticData2D(const ElementBase* rElement) const override
-    {
-        return AllocateStaticData<2>(rElement);
-    }
-
-    //! @brief Create a new static data object for an integration point.
-    //! @return Pointer to the new object.
-    Constitutive::StaticData::Component* AllocateStaticData3D(const ElementBase* rElement) const override
-    {
-        return AllocateStaticData<3>(rElement);
-    }
-
-    template <int TDim>
-    Constitutive::StaticData::Component* AllocateStaticData(const NuTo::ElementBase *rElement) const;
 
     //! @brief constructor
     AdditiveInputExplicit() : AdditiveBase()
@@ -41,6 +18,13 @@ public:
         //VHIRTHAMTODO ---> Get number time derivatives during construction (as parameter)
         mComputableDofCombinations.resize(2); 
     }
+
+    // has no ip static data itself
+    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw()
+    {
+        return std::make_unique<Constitutive::IPConstitutiveLawWithoutData<AdditiveInputExplicit>>(*this);
+    }
+
 
     //! @brief ... adds a constitutive law to a model that combines multiple constitutive laws (additive, parallel)
     //! @param rConstitutiveLaw ... additional constitutive law
@@ -51,33 +35,9 @@ public:
     //! @brief Evaluate the constitutive relation.
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
-    virtual NuTo::eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
-                                           const ConstitutiveOutputMap& rConstitutiveOutput,
-                                           Constitutive::StaticData::Component* staticData) override
-    {
-        return EvaluateAdditiveInputExplicit<1>(rConstitutiveInput, rConstitutiveOutput, staticData);
-    }
-
-
-    //! @brief Evaluate the constitutive relation.
-    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
-    //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
-    virtual NuTo::eError Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
-                                           const ConstitutiveOutputMap& rConstitutiveOutput,
-                                           Constitutive::StaticData::Component* staticData) override
-    {
-        return EvaluateAdditiveInputExplicit<2>(rConstitutiveInput, rConstitutiveOutput, staticData);
-    }
-
-    //! @brief Evaluate the constitutive relation.
-    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
-    //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
-    virtual NuTo::eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
-                                           const ConstitutiveOutputMap& rConstitutiveOutput,
-                                           Constitutive::StaticData::Component* staticData) override
-    {
-        return EvaluateAdditiveInputExplicit<3>(rConstitutiveInput, rConstitutiveOutput, staticData);
-    }
+    template <int TDim>
+    NuTo::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
+                          const ConstitutiveOutputMap& rConstitutiveOutput);
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs
@@ -108,14 +68,6 @@ private:
     void CalculateDerivatives(const ConstitutiveOutputMap &rConstitutiveOutput,
                               std::vector<ConstitutiveOutputMap> &rSublawOutputVec);
 
-    //! @brief Evaluate the constitutive relation.
-    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
-    //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
-    //! @param staticData Pointer to the static data.
-    template <int TDim>
-    eError EvaluateAdditiveInputExplicit(const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput, Constitutive::StaticData::Component* staticData);
-
     //! @brief Gets the enum of the sublaw output that is needed to calculate the specified derivative
     //! @param rParameter: Enum of the parameter whose derivative is needed
     //! @param rMainDerivative: The requested global derivative
@@ -132,7 +84,7 @@ private:
                                              unsigned int rSublawIndex) const;
 
     //! @brief ... pointer to constitutive law that delivers the output
-    NuTo::ConstitutiveBase* mMainLaw = nullptr;
+    std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> mMainLaw = nullptr;
 
     //! @brief Vector storing which input they modify.
     //! @note Only for @ref AdditiveInputExplicit and @ref AdditiveInputImplicit

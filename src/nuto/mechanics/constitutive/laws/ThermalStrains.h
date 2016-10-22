@@ -4,10 +4,17 @@
 
 namespace NuTo
 {
+namespace Constitutive
+{
+class IPConstitutiveLawBase;
+} // namespace Constitutive
 class ThermalStrains : public ConstitutiveBase
 {
 public:
     ThermalStrains() : ConstitutiveBase() {}
+
+    //! @brief creates corresponding IPConstitutiveLaw
+    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override;
 
     bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol, int rTimeDerivative) const override;
 
@@ -15,32 +22,13 @@ public:
 
     ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
                                                const InterpolationType& rInterpolationType) const override;
+
+    //! @brief Evaluate the constitutive relation.
+    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
+    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     template<int TDim>
     NuTo::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
-                          const ConstitutiveOutputMap& rConstitutiveOutput,
-                                 Constitutive::StaticData::Component* staticData);
-
-    NuTo::eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
-                            const ConstitutiveOutputMap& rConstitutiveOutput,
-                            Constitutive::StaticData::Component* staticData) override
-    {
-        return Evaluate<1>(rConstitutiveInput, rConstitutiveOutput, staticData);
-    }
-
-    NuTo::eError Evaluate2D(const ConstitutiveInputMap& rConstitutiveInput,
-                                   const ConstitutiveOutputMap& rConstitutiveOutput,
-                                   Constitutive::StaticData::Component* staticData) override
-    {
-        return Evaluate<2>(rConstitutiveInput, rConstitutiveOutput, staticData);
-    }
-
-
-    NuTo::eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
-                                   const ConstitutiveOutputMap& rConstitutiveOutput,
-                                   Constitutive::StaticData::Component* staticData) override
-    {
-        return Evaluate<3>(rConstitutiveInput, rConstitutiveOutput, staticData);
-    }
+                          const ConstitutiveOutputMap& rConstitutiveOutput);
 
     //! @brief Get type of constitutive relationship
     Constitutive::eConstitutiveType GetType() const override;

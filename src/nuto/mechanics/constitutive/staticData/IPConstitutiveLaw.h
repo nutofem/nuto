@@ -19,7 +19,7 @@ class IPConstitutiveLaw: public IPConstitutiveLawBase
 {
 public:
 
-    static_assert(std::is_base_of<ConstitutiveBase, TLaw>::value,"TLaw must be derived from NuTo::ConstitutiveBase");
+//    static_assert(std::is_base_of<ConstitutiveBase, TLaw>::value,"TLaw must be derived from NuTo::ConstitutiveBase");
 
     using Type = typename StaticData::DataContainer<TLaw>::Type;
     typedef typename StaticData::DataContainer<TLaw> Data;

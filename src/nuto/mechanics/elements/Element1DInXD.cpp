@@ -1,6 +1,5 @@
 #include "nuto/mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "nuto/mechanics/elements/Element1DInXD.h"
-#include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/ElementOutputFullMatrixInt.h"
 #include "nuto/mechanics/elements/ElementOutputFullMatrixDouble.h"
 #include "nuto/mechanics/elements/ElementOutputVectorInt.h"
@@ -25,8 +24,8 @@
 #endif
 
 
-NuTo::Element1DInXD::Element1DInXD(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType, InterpolationType* rInterpolationType) :
-        NuTo::ContinuumElement<1>(rStructure, rNodes, rElementDataType, rIpDataType, rInterpolationType)
+NuTo::Element1DInXD::Element1DInXD(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, const InterpolationType& rInterpolationType) :
+        NuTo::ContinuumElement<1>(rStructure, rNodes, rInterpolationType)
 {
     mRotationMatrix = CalculateRotationMatrix();
 }
@@ -101,7 +100,7 @@ Eigen::VectorXd NuTo::Element1DInXD::ExtractNodeValues(int rTimeDerivative, Node
 {
     Eigen::VectorXd globalNodeValues = ExtractGlobalNodeValues(rTimeDerivative, rDofType);
     const unsigned int structureDim = GetStructure()->GetDimension();
-    const unsigned int numNodes     = GetInterpolationType()->Get(rDofType).GetNumNodes();
+    const unsigned int numNodes     = GetInterpolationType().Get(rDofType).GetNumNodes();
 
     Eigen::VectorXd nodeValues(numNodes);
 
@@ -117,7 +116,7 @@ Eigen::VectorXd NuTo::Element1DInXD::ExtractNodeValues(int rTimeDerivative, Node
 const Eigen::VectorXd NuTo::Element1DInXD::ExtractGlobalNodeValues(int rTimeDerivative, Node::eDof rDofType) const
 {
 
-    const InterpolationBase& interpolationTypeDof = GetInterpolationType()->Get(rDofType);
+    const InterpolationBase& interpolationTypeDof = GetInterpolationType().Get(rDofType);
     int numNodes = interpolationTypeDof.GetNumNodes();
     int numDofsPerNode = GetNumDofsPerNode(rDofType);
     const unsigned int structureDim = GetStructure()->GetDimension();

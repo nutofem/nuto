@@ -63,8 +63,8 @@ public:
     //! @param rIntegrationType ... integration type
     void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType);
 
-    //! @brief returns the pointer to the integration type that is currently used
-    const IntegrationTypeBase* GetCurrentIntegrationType() const;
+    //! @brief returns a reference to the integration type that is currently used
+    const IntegrationTypeBase& GetCurrentIntegrationType() const;
 
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type

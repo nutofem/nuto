@@ -2,8 +2,8 @@
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
 
-#include "nuto/mechanics/constitutive/staticData/Composite.h"
 #include "nuto/mechanics/MechanicsException.h"
 
 namespace NuTo
@@ -14,56 +14,13 @@ public:
     //! @brief ctor
     AdditiveBase();
 
+    virtual ~AdditiveBase() = default;
+    AdditiveBase(const AdditiveBase&  rOther);
+    AdditiveBase(      AdditiveBase&& rOther);
 
-    //! @brief Create a new static data object for an integration point.
-    //! @return Pointer to the new object.
-    Constitutive::StaticData::Component* AllocateStaticData1D(const ElementBase* rElement) const override
-    {
-        return AllocateStaticData<1>(rElement);
-    }
+    AdditiveBase& operator =(const AdditiveBase&  rOther);
+    AdditiveBase& operator =(      AdditiveBase&& rOther);
 
-    //! @brief Create a new static data object for an integration point.
-    //! @return Pointer to the new object.
-    Constitutive::StaticData::Component* AllocateStaticData2D(const ElementBase* rElement) const override
-    {
-        return AllocateStaticData<2>(rElement);
-    }
-
-    //! @brief Create a new static data object for an integration point.
-    //! @return Pointer to the new object.
-    Constitutive::StaticData::Component* AllocateStaticData3D(const ElementBase* rElement) const override
-    {
-        return AllocateStaticData<3>(rElement);
-    }
-
-    template <int TDim>
-    Constitutive::StaticData::Component* AllocateStaticData(const NuTo::ElementBase *rElement) const
-    {
-        mStaticDataAllocated = true;    // <--- muteable member, so don't care about constness of this function
-
-        auto composite = Constitutive::StaticData::Composite::Create();
-        Constitutive::StaticData::Component* subComponent;
-
-        for (auto sublaw : mSublaws)
-        {
-            switch (TDim)
-            {
-            case 1:
-                subComponent = sublaw->AllocateStaticData1D(rElement);
-                break;
-            case 2:
-                subComponent = sublaw->AllocateStaticData2D(rElement);
-                break;
-            case 3:
-                subComponent = sublaw->AllocateStaticData3D(rElement);
-                break;
-            default:
-                throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Invalid dimension.");
-            }
-            composite->AddComponent(subComponent);
-        }
-        return composite;
-    }
 
     //! @brief Adds a constitutive law to a model that combines multiple constitutive laws (additive, parallel)
     //! @param rConstitutiveLaw Constitutive law to be added.
@@ -94,17 +51,18 @@ public:
             int rTimeDerivative) const;
 
 protected:
+    //! @brief Adds all calculable DOF combinations of an attached constitutive law to an internal storage.
+    //! @param rConstitutiveLaw Constitutive law whose DOF combinations are added to additive law.
+    void AddCalculableDofCombinations(NuTo::ConstitutiveBase& rConstitutiveLaw);
+
     //! @brief Debug variable to avoid that a constitutive law can be attached after allocation of static data.
     mutable bool mStaticDataAllocated = false;
 
-    //! @brief Vector storing the pointers to the sublaws.
-    std::vector<NuTo::ConstitutiveBase*> mSublaws;
+    //! @brief Vector storing the IPConstitutiveBase sublaws.
+    std::vector<std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase>> mSublaws;
 
     //! @brief Vector of all the computable DOF combinations.
     std::vector<std::set<std::pair<Node::eDof,Node::eDof>>> mComputableDofCombinations;
 
-    //! @brief Adds all calculable DOF combinations of an attached constitutive law to an internal storage.
-    //! @param rConstitutiveLaw Constitutive law whose DOF combinations are added to additive law.
-    void AddCalculableDofCombinations(NuTo::ConstitutiveBase& rConstitutiveLaw);
 };
 }

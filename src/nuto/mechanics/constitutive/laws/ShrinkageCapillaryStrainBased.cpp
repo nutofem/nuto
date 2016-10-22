@@ -1,4 +1,4 @@
-#include "ShrinkageCapillaryStrainBased.h"
+#include "nuto/mechanics/constitutive/laws/ShrinkageCapillaryStrainBased.h"
 
 
 #include "nuto/base/ErrorEnum.h"
@@ -6,6 +6,7 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
+#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/physics/PhysicalConstantsSI.h"
@@ -13,6 +14,10 @@
 
 
 
+std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> NuTo::ShrinkageCapillaryStrainBased::CreateIPLaw()
+{
+    return std::make_unique<Constitutive::IPConstitutiveLawWithoutData<ShrinkageCapillaryStrainBased>>(*this);
+}
 
 
 bool NuTo::ShrinkageCapillaryStrainBased::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
@@ -118,10 +123,9 @@ void NuTo::ShrinkageCapillaryStrainBased::SetParameterDouble(NuTo::Constitutive:
 }
 
 template <int TDim>
-NuTo::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapillary(
+NuTo::eError NuTo::ShrinkageCapillaryStrainBased::Evaluate(
         const NuTo::ConstitutiveInputMap &rConstitutiveInput, 
-        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
-        Constitutive::StaticData::Component* staticData)
+        const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
 {
     double relativeHumidity     = std::numeric_limits<double>::min();
     double waterVolumeFraction  = std::numeric_limits<double>::min();
@@ -187,7 +191,7 @@ NuTo::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapillary(
             double capillaryStrain    = (//mAtmosphericPressure
                                          - waterVolumeFraction
                                          * NuTo::SI::DensityLiquidWater(mTemperature) * NuTo::SI::IdealGasConstant * mTemperature / NuTo::SI::MolarMassWater
-                                         * log(relativeHumidity)) * bulkFactor;
+                                         * std::log(relativeHumidity)) * bulkFactor;
 
             // The following loop does the same as multiplying the capillary stress with the kronecker delta in tensor form and adding the result to the engeneering stress
             for(unsigned int i=0; i<TDim; ++i) //VHIRTHAMTODO Check if not 3
@@ -223,7 +227,7 @@ NuTo::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapillary(
             Eigen::Matrix<double, ConstitutiveIOBase::GetVoigtDim(TDim), 1>&  engineeringStrain_dWV = static_cast<ConstitutiveVector<ConstitutiveIOBase::GetVoigtDim(TDim)>*>(itOutput.second.get())->AsVector();
             double capillaryStrain_dWV = - NuTo::SI::DensityLiquidWater(mTemperature) * NuTo::SI::IdealGasConstant * mTemperature
                                          / (NuTo::SI::MolarMassWater)
-                                         * log(relativeHumidity) * bulkFactor;
+                                         * std::log(relativeHumidity) * bulkFactor;
             // The following loop does the same as multiplying the capillary stress with the kronecker delta in tensor form and adding the result to the engeneering stress
             for(unsigned int i=0; i<TDim; ++i)
             {
@@ -238,3 +242,10 @@ NuTo::eError NuTo::ShrinkageCapillaryStrainBased::EvaluateShrinkageCapillary(
     }
     return eError::SUCCESSFUL;
 }
+
+template NuTo::eError NuTo::ShrinkageCapillaryStrainBased::Evaluate<1>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+                                                                       const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);
+template NuTo::eError NuTo::ShrinkageCapillaryStrainBased::Evaluate<2>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+                                                                       const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);
+template NuTo::eError NuTo::ShrinkageCapillaryStrainBased::Evaluate<3>(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+                                                                       const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);

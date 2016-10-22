@@ -1,6 +1,8 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
+#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
+
 
 namespace NuTo
 {
@@ -22,6 +24,12 @@ class HeatConduction: public ConstitutiveBase
 public:
     HeatConduction();
 
+    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override
+    {
+        return std::make_unique<Constitutive::IPConstitutiveLawWithoutData<HeatConduction>>(*this);
+    }
+
+
     //! @brief Determines the constitutive inputs needed to evaluate the constitutive outputs.
     //! @param rConstitutiveOutput Desired constitutive outputs
     //! @param rInterpolationType Interpolation type to determine additional inputs
@@ -36,32 +44,7 @@ public:
     template<int TDim>
     NuTo::eError Evaluate(
             const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData);
-
-    NuTo::eError Evaluate1D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override
-    {
-        return Evaluate<1>(rConstitutiveInput, rConstitutiveOutput, staticData);
-    }
-
-    NuTo::eError Evaluate2D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override
-    {
-        return Evaluate<2>(rConstitutiveInput, rConstitutiveOutput, staticData);
-    }
-
-    NuTo::eError Evaluate3D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override
-    {
-        return Evaluate<3>(rConstitutiveInput, rConstitutiveOutput, staticData);
-    }
+            const ConstitutiveOutputMap& rConstitutiveOutput);
 
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow ... row dof

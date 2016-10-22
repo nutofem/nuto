@@ -37,19 +37,21 @@ BOOST_AUTO_TEST_CASE(IPData_Setup_Test)
 
     NuTo::IPData data(integrationType1);
     BOOST_CHECK_THROW(data.GetIPConstitutiveLaw(0), NuTo::MechanicsException);
+    BOOST_CHECK(not data.HasConstitutiveLawAssigned(0));
 
     data.SetConstitutiveLaw(law);
     BOOST_CHECK_EQUAL(&law, AsLinearElastic(data.GetIPConstitutiveLaw(0)));
-    BOOST_CHECK_THROW(data.GetIPConstitutiveLaw(1), NuTo::MechanicsException);
+    BOOST_CHECK(not data.HasConstitutiveLawAssigned(0));
+    BOOST_CHECK(not data.HasConstitutiveLawAssigned(1));
 
     data.SetIntegrationType(integrationType2);
     BOOST_CHECK_EQUAL(&law, AsLinearElastic(data.GetIPConstitutiveLaw(0)));
     BOOST_CHECK_EQUAL(&law, AsLinearElastic(data.GetIPConstitutiveLaw(1)));
-    BOOST_CHECK_THROW(data.GetIPConstitutiveLaw(2), NuTo::MechanicsException);
+    BOOST_CHECK(not data.HasConstitutiveLawAssigned(2));
 
     data.SetIntegrationType(integrationType1);
     BOOST_CHECK_EQUAL(&law, AsLinearElastic(data.GetIPConstitutiveLaw(0)));
-    BOOST_CHECK_THROW(data.GetIPConstitutiveLaw(1), NuTo::MechanicsException);
+    BOOST_CHECK(not data.HasConstitutiveLawAssigned(1));
 }
 
 BOOST_AUTO_TEST_CASE(IPData_Copy_Move)

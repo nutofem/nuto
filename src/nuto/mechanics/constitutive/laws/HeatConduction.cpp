@@ -89,20 +89,13 @@ NuTo::ConstitutiveInputMap NuTo::HeatConduction::GetConstitutiveInputs(
 bool NuTo::HeatConduction::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
 {
     assert(rTimeDerivative>-1);
-    if (rTimeDerivative<=2 &&
-        rDofRow == Node::eDof::TEMPERATURE &&
-        rDofCol == Node::eDof::TEMPERATURE)
-    {
-        return true;
-    }
-    return false;
+    return rTimeDerivative<=2 && rDofRow == Node::eDof::TEMPERATURE && rDofCol == Node::eDof::TEMPERATURE;
 }
 
 template<int TDim>
 NuTo::eError NuTo::HeatConduction::Evaluate(
 		const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput,
-		Constitutive::StaticData::Component*)
+        const ConstitutiveOutputMap& rConstitutiveOutput)
 {
     auto eye = Eigen::MatrixXd::Identity(TDim, TDim);
 
@@ -262,3 +255,10 @@ void NuTo::HeatConduction::CheckParameters() const
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::HEAT_CAPACITY, mCt);
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::HEAT_CAPACITY, mRho);
 }
+
+template NuTo::eError NuTo::HeatConduction::Evaluate<1>(const ConstitutiveInputMap& rConstitutiveInput,
+                                                        const ConstitutiveOutputMap& rConstitutiveOutput);
+template NuTo::eError NuTo::HeatConduction::Evaluate<2>(const ConstitutiveInputMap& rConstitutiveInput,
+                                                        const ConstitutiveOutputMap& rConstitutiveOutput);
+template NuTo::eError NuTo::HeatConduction::Evaluate<3>(const ConstitutiveInputMap& rConstitutiveInput,
+                                                        const ConstitutiveOutputMap& rConstitutiveOutput);

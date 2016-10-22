@@ -1,8 +1,8 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
-#include "nuto/mechanics/constitutive/staticData/Leaf.h"
 #include "nuto/mechanics/constitutive/staticData/DataMisesPlasticity.h"
+#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLaw.h"
 
 namespace NuTo
 {
@@ -18,6 +18,15 @@ class MisesPlasticityEngineeringStress: public ConstitutiveBase
 public:
     MisesPlasticityEngineeringStress();
 
+    typedef Constitutive::StaticData::DataMisesPlasticity<3> StaticDataType;
+    using Data = typename Constitutive::IPConstitutiveLaw<MisesPlasticityEngineeringStress>::Data;
+
+    //! @brief creates corresponding IPConstitutiveLaw
+    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override
+    {
+        return std::make_unique<Constitutive::IPConstitutiveLaw<MisesPlasticityEngineeringStress>>(*this, StaticDataType());
+    }
+
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs
     //! @param rInterpolationType ... interpolation type to determine additional inputs
@@ -28,52 +37,19 @@ public:
     //! @brief Evaluate the constitutive relation in 1D
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
-    //! @param staticData Pointer to the history data.
-    virtual NuTo::eError Evaluate1D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
-
-    //! @brief Evaluate the constitutive relation in 2D
-    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
-    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
-    //! @param staticData Pointer to the history data.
-    virtual NuTo::eError Evaluate2D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
-
-    //! @brief Evaluate the constitutive relation in 3D
-    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
-    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
-    //! @param staticData Pointer to the history data.
-    virtual NuTo::eError Evaluate3D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override;
-
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    Constitutive::StaticData::Component* AllocateStaticData1D(
-            const ElementBase* rElement) const override;
-
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    Constitutive::StaticData::Component* AllocateStaticData2D(
-            const ElementBase* rElement) const override;
-
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    Constitutive::StaticData::Component* AllocateStaticData3D(
-            const ElementBase* rElement) const override;
+    //! @param rStaticData Pointer to the history data.
+    template <int TDim>
+    NuTo::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
+                          const ConstitutiveOutputMap& rConstitutiveOutput,
+                          Data& rStaticData);
 
     //! @brief ... determines which submatrices of a multi-doftype problem can be solved by the constitutive law
     //! @param rDofRow ... row dof
     //! @param rDofCol ... column dof
     //! @param rTimeDerivative ... time derivative
     virtual bool CheckDofCombinationComputable(Node::eDof rDofRow,
-                                                Node::eDof rDofCol,
-                                                int rTimeDerivative) const override;
+                                               Node::eDof rDofCol,
+                                               int rTimeDerivative) const override;
 
 
     //! @brief Performs the return mapping procedure in 2D.

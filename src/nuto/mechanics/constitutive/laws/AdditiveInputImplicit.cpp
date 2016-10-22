@@ -13,9 +13,8 @@
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 
 template <int TDim>
-NuTo::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(
-        const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
-        Constitutive::StaticData::Component* staticData)
+NuTo::eError NuTo::AdditiveInputImplicit::Evaluate(
+        const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
 {
     static_assert (TDim == 1 || TDim == 2 || TDim == 3 , "Dimensions 1D, 2D & 3D supported.");
 
@@ -79,11 +78,9 @@ NuTo::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit(
 
     }
 
-    auto& compositeStaticData = *dynamic_cast<Constitutive::StaticData::Composite*>(staticData);
     for (unsigned int i = 0; i < mSublaws.size(); ++i)
     {
-        eError error = mSublaws[i]->Evaluate<TDim>(localInputMapVec[i], localOutputMapVec[i],
-                &compositeStaticData.GetComponent(i));
+        eError error = mSublaws[i]->Evaluate<TDim>(localInputMapVec[i], localOutputMapVec[i]);
         if(error!=eError::SUCCESSFUL)
             throw Exception(__PRETTY_FUNCTION__,
                             "One or more attached constitutive laws return error codes. Can't handle this");
@@ -251,14 +248,11 @@ NuTo::ConstitutiveInputMap NuTo::AdditiveInputImplicit::GetConstitutiveInputs(
 }
 
 
-template NuTo::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit<1>(
-    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
-    Constitutive::StaticData::Component* staticData);
+template NuTo::eError NuTo::AdditiveInputImplicit::Evaluate<1>(
+    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);
 
-template NuTo::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit<2>(
-    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
-    Constitutive::StaticData::Component* staticData);
+template NuTo::eError NuTo::AdditiveInputImplicit::Evaluate<2>(
+    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);
 
-template NuTo::eError NuTo::AdditiveInputImplicit::EvaluateAdditiveInputImplicit<3>(
-    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
-    Constitutive::StaticData::Component* staticData);
+template NuTo::eError NuTo::AdditiveInputImplicit::Evaluate<3>(
+    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);

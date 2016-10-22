@@ -17,11 +17,9 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/constitutive/staticData/Leaf.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveMatrixXd.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
-#include "nuto/mechanics/elements/IpDataStaticDataBase.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
@@ -149,25 +147,28 @@ void NuTo::FibreMatrixBondStressSlip::CheckParameters() const
     assert(mSlipAtResidualBondStress > 0.0 and "Slip at residual bond stress is <= 0 or not initialized properly");
 }
 
-NuTo::eError NuTo::FibreMatrixBondStressSlip::Evaluate1D(
-		const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput,
-        Constitutive::StaticData::Component* staticData)
+namespace NuTo // template specialization in same namespace as definition
+{
+template<>
+NuTo::eError NuTo::FibreMatrixBondStressSlip::Evaluate<1>(
+    const ConstitutiveInputMap& rConstitutiveInput,
+    const ConstitutiveOutputMap& rConstitutiveOutput,
+    Data& staticData)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "IMPLEMENT ME!!!");
     return eError::SUCCESSFUL;
 }
 
-NuTo::eError NuTo::FibreMatrixBondStressSlip::Evaluate2D(
-		const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput,
-		Constitutive::StaticData::Component* staticData)
+template<>
+NuTo::eError NuTo::FibreMatrixBondStressSlip::Evaluate<2>(
+    const ConstitutiveInputMap& rConstitutiveInput,
+    const ConstitutiveOutputMap& rConstitutiveOutput,
+    Data& rStaticData)
 {
     const auto& slip = *rConstitutiveInput.at(Constitutive::eInput::INTERFACE_SLIP);
-    auto& slipStaticData = *dynamic_cast<Constitutive::StaticData::Leaf<double>*>(staticData);
-    const double slipLastConverged = GetCurrentStaticData(slipStaticData, rConstitutiveInput);
+    const double slipLastConverged = GetCurrentStaticData(rStaticData, rConstitutiveInput);
 
-    const double slipMaxHistory = std::max(slipLastConverged, slip(0,0));
+    const double slipMaxHistory = std::max(slipLastConverged, slip(0, 0));
 
     bool performUpdateAtEnd = false;
 
@@ -179,184 +180,236 @@ NuTo::eError NuTo::FibreMatrixBondStressSlip::Evaluate2D(
     {
         switch (itOutput.first)
         {
-        case NuTo::Constitutive::eOutput::INTERFACE_CONSTITUTIVE_MATRIX:
-        {
-            ConstitutiveMatrixXd& constitutiveMatrix = dynamic_cast<ConstitutiveMatrixXd&>(*itOutput.second);
-            constitutiveMatrix.setZero(mGlobalDimension,mGlobalDimension);
-
-            // the first component of the constitutive matrix is the derivative of the interface stress with respect to the interface slip
-            if (std::abs(slip(0,0)) <= mSlipAtMaxBondStress)
+            case NuTo::Constitutive::eOutput::INTERFACE_CONSTITUTIVE_MATRIX:
             {
-                constitutiveMatrix(0, 0) = mAlpha * mMaxBondStress * std::pow(slip(0,0) / mSlipAtMaxBondStress, mAlpha - 1) / mSlipAtMaxBondStress;
+                ConstitutiveMatrixXd& constitutiveMatrix = dynamic_cast<ConstitutiveMatrixXd&>(*itOutput.second);
+                constitutiveMatrix.setZero(mGlobalDimension, mGlobalDimension);
 
-            } else if (std::abs(slip(0,0)) > mSlipAtMaxBondStress and std::abs(slip(0,0)) <= mSlipAtResidualBondStress)
-            {
-                constitutiveMatrix(0, 0) = (mMaxBondStress - mResidualBondStress) / (mSlipAtMaxBondStress - mSlipAtResidualBondStress);
-
-            } else
-            {
-                constitutiveMatrix(0, 0) = 0.0;
-            }
-
-            // the bond stress-slip relationship needs to be adjusted if unloading occurs
-            if (std::abs(slip(0,0)) < slipMaxHistory)
-            {
-                // first the bond stress-slipMaxHistory relationship is adjusted
-                double newMaxBondStress = 0.0;
-                if (std::abs(slipMaxHistory) <= mSlipAtMaxBondStress)
+                // the first component of the constitutive matrix is the derivative of the interface stress with respect to the interface slip
+                if (std::abs(slip(0, 0)) <= mSlipAtMaxBondStress)
                 {
-                    newMaxBondStress = mMaxBondStress * std::pow(slipMaxHistory / mSlipAtMaxBondStress, mAlpha);
+                    constitutiveMatrix(0, 0) =
+                        mAlpha * mMaxBondStress * std::pow(slip(0, 0) / mSlipAtMaxBondStress, mAlpha - 1)
+                            / mSlipAtMaxBondStress;
 
-                } else if (slipMaxHistory > mSlipAtMaxBondStress and slipMaxHistory <= mSlipAtResidualBondStress)
-                {
-                    newMaxBondStress = mMaxBondStress - (mMaxBondStress - mResidualBondStress) * (slipMaxHistory - mSlipAtMaxBondStress) / (mSlipAtResidualBondStress - mSlipAtMaxBondStress);
-
-                } else if (slipMaxHistory < -mSlipAtMaxBondStress and slipMaxHistory >= -mSlipAtResidualBondStress)
-                {
-                    newMaxBondStress = -mMaxBondStress - (-mMaxBondStress + mResidualBondStress) * (slipMaxHistory + mSlipAtMaxBondStress) / (-mSlipAtResidualBondStress + mSlipAtMaxBondStress);
-
-                } else if (slipMaxHistory > mSlipAtResidualBondStress)
-                {
-                    newMaxBondStress = mResidualBondStress;
-
-                } else if (slipMaxHistory < -mSlipAtResidualBondStress)
-                {
-                    newMaxBondStress = mResidualBondStress;
-                } else
-                {
-                    throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Check if clause. This branch should never be executed!");
                 }
-
-                // second the adjusted bond stress-slip relationship is evaluated
-                if (slip(0,0) >= -slipMaxHistory and slip(0,0) <= slipMaxHistory)
+                else if (std::abs(slip(0, 0)) > mSlipAtMaxBondStress
+                    and std::abs(slip(0, 0)) <= mSlipAtResidualBondStress)
                 {
-                    constitutiveMatrix(0, 0) = mAlpha * newMaxBondStress * std::pow(slip(0,0) / slipMaxHistory, mAlpha - 1) / slipMaxHistory;
+                    constitutiveMatrix(0, 0) =
+                        (mMaxBondStress - mResidualBondStress) / (mSlipAtMaxBondStress - mSlipAtResidualBondStress);
 
-                } else if (slip(0,0) > slipMaxHistory and slip(0,0) <= mSlipAtResidualBondStress)
-                {
-                    constitutiveMatrix(0, 0) = (newMaxBondStress - mResidualBondStress) / (slipMaxHistory - mSlipAtResidualBondStress);
-
-                } else if (slip(0,0) < -slipMaxHistory and slip(0,0) >= -mSlipAtResidualBondStress)
-                {
-                    constitutiveMatrix(0, 0) = (newMaxBondStress - mResidualBondStress) / (slipMaxHistory - mSlipAtResidualBondStress);
-
-                } else
+                }
+                else
                 {
                     constitutiveMatrix(0, 0) = 0.0;
                 }
-            }
 
-            // the normal component of the interface slip is equal to the penalty stiffness to avoid penetration
-            for (unsigned int iDim = 1; iDim < mGlobalDimension; ++iDim)
-                constitutiveMatrix(iDim, iDim) = mNormalStiffness;
-
-            break;
-        }
-
-        case NuTo::Constitutive::eOutput::BOND_STRESS:
-        {
-
-            ConstitutiveMatrixXd& bondStress = dynamic_cast<ConstitutiveMatrixXd&>(*itOutput.second);
-            bondStress.setZero(mGlobalDimension,1);
-
-            // the interface stresses correspond to a modified Bertero-EligeHausen-Popov bond stress-slip model
-            if (std::abs(slip(0,0)) <= mSlipAtMaxBondStress)
-            {
-                bondStress(0, 0) = mMaxBondStress * std::pow(slip(0,0) / mSlipAtMaxBondStress, mAlpha);
-
-            } else if (slip(0,0) > mSlipAtMaxBondStress and slip(0,0) <= mSlipAtResidualBondStress)
-            {
-                bondStress(0, 0) = mMaxBondStress - (mMaxBondStress - mResidualBondStress) * (slip(0,0) - mSlipAtMaxBondStress) / (mSlipAtResidualBondStress - mSlipAtMaxBondStress);
-
-            } else if (slip(0,0) < -mSlipAtMaxBondStress and slip(0,0) >= -mSlipAtResidualBondStress)
-            {
-                bondStress(0, 0) = -mMaxBondStress - (-mMaxBondStress + mResidualBondStress) * (slip(0,0) + mSlipAtMaxBondStress) / (-mSlipAtResidualBondStress + mSlipAtMaxBondStress);
-
-            } else if (slip(0,0) > mSlipAtResidualBondStress)
-            {
-                bondStress(0, 0) = mResidualBondStress;
-
-            } else if (slip(0,0) < -mSlipAtResidualBondStress)
-            {
-                bondStress(0, 0) = -mResidualBondStress;
-
-            } else
-            {
-                throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Check if clause. This branch should never be executed!");
-            }
-
-            // the bond stress-slip relationship needs to be adjusted if unloading occurs
-            if (std::abs(slip(0,0)) < slipMaxHistory)
-            {
-                double newMaxBondStress = 0.0;
-                // first the bond stress-slip relationship is adjusted
-                if (slipMaxHistory >= -mSlipAtMaxBondStress and slipMaxHistory <= mSlipAtMaxBondStress)
+                // the bond stress-slip relationship needs to be adjusted if unloading occurs
+                if (std::abs(slip(0, 0)) < slipMaxHistory)
                 {
-                    newMaxBondStress = mMaxBondStress * std::pow(slipMaxHistory / mSlipAtMaxBondStress, mAlpha);
+                    // first the bond stress-slipMaxHistory relationship is adjusted
+                    double newMaxBondStress = 0.0;
+                    if (std::abs(slipMaxHistory) <= mSlipAtMaxBondStress)
+                    {
+                        newMaxBondStress = mMaxBondStress * std::pow(slipMaxHistory / mSlipAtMaxBondStress, mAlpha);
 
-                } else if (slipMaxHistory > mSlipAtMaxBondStress and slipMaxHistory <= mSlipAtResidualBondStress)
-                {
-                    newMaxBondStress = mMaxBondStress - (mMaxBondStress - mResidualBondStress) * (slipMaxHistory - mSlipAtMaxBondStress) / (mSlipAtResidualBondStress - mSlipAtMaxBondStress);
+                    }
+                    else if (slipMaxHistory > mSlipAtMaxBondStress and slipMaxHistory <= mSlipAtResidualBondStress)
+                    {
+                        newMaxBondStress = mMaxBondStress
+                            - (mMaxBondStress - mResidualBondStress) * (slipMaxHistory - mSlipAtMaxBondStress)
+                                / (mSlipAtResidualBondStress - mSlipAtMaxBondStress);
 
-                } else if (slipMaxHistory < -mSlipAtMaxBondStress and slipMaxHistory >= -mSlipAtResidualBondStress)
-                {
-                    newMaxBondStress = -mMaxBondStress - (-mMaxBondStress + mResidualBondStress) * (slipMaxHistory + mSlipAtMaxBondStress) / (-mSlipAtResidualBondStress + mSlipAtMaxBondStress);
+                    }
+                    else if (slipMaxHistory < -mSlipAtMaxBondStress and slipMaxHistory >= -mSlipAtResidualBondStress)
+                    {
+                        newMaxBondStress = -mMaxBondStress
+                            - (-mMaxBondStress + mResidualBondStress) * (slipMaxHistory + mSlipAtMaxBondStress)
+                                / (-mSlipAtResidualBondStress + mSlipAtMaxBondStress);
 
-                } else if (slipMaxHistory > mSlipAtResidualBondStress)
-                {
-                    newMaxBondStress = mResidualBondStress;
+                    }
+                    else if (slipMaxHistory > mSlipAtResidualBondStress)
+                    {
+                        newMaxBondStress = mResidualBondStress;
 
-                } else if (slipMaxHistory < -mSlipAtResidualBondStress)
-                {
-                    newMaxBondStress = -mResidualBondStress;
-                } else
-                {
-                    throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Check if clause. This branch should never be executed!");
+                    }
+                    else if (slipMaxHistory < -mSlipAtResidualBondStress)
+                    {
+                        newMaxBondStress = mResidualBondStress;
+                    }
+                    else
+                    {
+                        throw MechanicsException(std::string(__PRETTY_FUNCTION__)
+                                                     + ":\t Check if clause. This branch should never be executed!");
+                    }
+
+                    // second the adjusted bond stress-slip relationship is evaluated
+                    if (slip(0, 0) >= -slipMaxHistory and slip(0, 0) <= slipMaxHistory)
+                    {
+                        constitutiveMatrix(0, 0) =
+                            mAlpha * newMaxBondStress * std::pow(slip(0, 0) / slipMaxHistory, mAlpha - 1)
+                                / slipMaxHistory;
+
+                    }
+                    else if (slip(0, 0) > slipMaxHistory and slip(0, 0) <= mSlipAtResidualBondStress)
+                    {
+                        constitutiveMatrix(0, 0) =
+                            (newMaxBondStress - mResidualBondStress) / (slipMaxHistory - mSlipAtResidualBondStress);
+
+                    }
+                    else if (slip(0, 0) < -slipMaxHistory and slip(0, 0) >= -mSlipAtResidualBondStress)
+                    {
+                        constitutiveMatrix(0, 0) =
+                            (newMaxBondStress - mResidualBondStress) / (slipMaxHistory - mSlipAtResidualBondStress);
+
+                    }
+                    else
+                    {
+                        constitutiveMatrix(0, 0) = 0.0;
+                    }
                 }
 
-                // second the adjusted bond stress-slip relationship is evaluated
-                if (slip(0,0)>= -slipMaxHistory and slip(0,0) <= slipMaxHistory)
-                {
-                    bondStress(0, 0) = newMaxBondStress * std::pow(slip(0,0) / slipMaxHistory, mAlpha);
+                // the normal component of the interface slip is equal to the penalty stiffness to avoid penetration
+                for (unsigned int iDim = 1; iDim < mGlobalDimension; ++iDim)
+                    constitutiveMatrix(iDim, iDim) = mNormalStiffness;
 
-                } else if (slip(0,0) > slipMaxHistory and slip(0,0) <= mSlipAtResidualBondStress)
-                {
-                    bondStress(0, 0) = newMaxBondStress - (newMaxBondStress - mResidualBondStress) * (slip(0,0) - slipMaxHistory) / (mSlipAtResidualBondStress - slipMaxHistory);
+                break;
+            }
 
-                } else if (slip(0,0) < -slipMaxHistory and slip(0,0) >= -mSlipAtResidualBondStress)
-                {
-                    bondStress(0, 0) = -newMaxBondStress - (-newMaxBondStress + mResidualBondStress) * (slip(0,0) + slipMaxHistory) / (-mSlipAtResidualBondStress + slipMaxHistory);
+            case NuTo::Constitutive::eOutput::BOND_STRESS:
+            {
 
-                } else if (slip(0,0) > mSlipAtResidualBondStress)
+                ConstitutiveMatrixXd& bondStress = dynamic_cast<ConstitutiveMatrixXd&>(*itOutput.second);
+                bondStress.setZero(mGlobalDimension, 1);
+
+                // the interface stresses correspond to a modified Bertero-EligeHausen-Popov bond stress-slip model
+                if (std::abs(slip(0, 0)) <= mSlipAtMaxBondStress)
+                {
+                    bondStress(0, 0) = mMaxBondStress * std::pow(slip(0, 0) / mSlipAtMaxBondStress, mAlpha);
+
+                }
+                else if (slip(0, 0) > mSlipAtMaxBondStress and slip(0, 0) <= mSlipAtResidualBondStress)
+                {
+                    bondStress(0, 0) = mMaxBondStress
+                        - (mMaxBondStress - mResidualBondStress) * (slip(0, 0) - mSlipAtMaxBondStress)
+                            / (mSlipAtResidualBondStress - mSlipAtMaxBondStress);
+
+                }
+                else if (slip(0, 0) < -mSlipAtMaxBondStress and slip(0, 0) >= -mSlipAtResidualBondStress)
+                {
+                    bondStress(0, 0) = -mMaxBondStress
+                        - (-mMaxBondStress + mResidualBondStress) * (slip(0, 0) + mSlipAtMaxBondStress)
+                            / (-mSlipAtResidualBondStress + mSlipAtMaxBondStress);
+
+                }
+                else if (slip(0, 0) > mSlipAtResidualBondStress)
                 {
                     bondStress(0, 0) = mResidualBondStress;
 
-                } else if (slip(0,0) < -mSlipAtResidualBondStress)
+                }
+                else if (slip(0, 0) < -mSlipAtResidualBondStress)
                 {
                     bondStress(0, 0) = -mResidualBondStress;
-                } else
+
+                }
+                else
                 {
-                    throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Check if clause. This branch should never be executed!");
+                    throw MechanicsException(std::string(__PRETTY_FUNCTION__)
+                                                 + ":\t Check if clause. This branch should never be executed!");
                 }
 
+                // the bond stress-slip relationship needs to be adjusted if unloading occurs
+                if (std::abs(slip(0, 0)) < slipMaxHistory)
+                {
+                    double newMaxBondStress = 0.0;
+                    // first the bond stress-slip relationship is adjusted
+                    if (slipMaxHistory >= -mSlipAtMaxBondStress and slipMaxHistory <= mSlipAtMaxBondStress)
+                    {
+                        newMaxBondStress = mMaxBondStress * std::pow(slipMaxHistory / mSlipAtMaxBondStress, mAlpha);
+
+                    }
+                    else if (slipMaxHistory > mSlipAtMaxBondStress and slipMaxHistory <= mSlipAtResidualBondStress)
+                    {
+                        newMaxBondStress = mMaxBondStress
+                            - (mMaxBondStress - mResidualBondStress) * (slipMaxHistory - mSlipAtMaxBondStress)
+                                / (mSlipAtResidualBondStress - mSlipAtMaxBondStress);
+
+                    }
+                    else if (slipMaxHistory < -mSlipAtMaxBondStress and slipMaxHistory >= -mSlipAtResidualBondStress)
+                    {
+                        newMaxBondStress = -mMaxBondStress
+                            - (-mMaxBondStress + mResidualBondStress) * (slipMaxHistory + mSlipAtMaxBondStress)
+                                / (-mSlipAtResidualBondStress + mSlipAtMaxBondStress);
+
+                    }
+                    else if (slipMaxHistory > mSlipAtResidualBondStress)
+                    {
+                        newMaxBondStress = mResidualBondStress;
+
+                    }
+                    else if (slipMaxHistory < -mSlipAtResidualBondStress)
+                    {
+                        newMaxBondStress = -mResidualBondStress;
+                    }
+                    else
+                    {
+                        throw MechanicsException(std::string(__PRETTY_FUNCTION__)
+                                                     + ":\t Check if clause. This branch should never be executed!");
+                    }
+
+                    // second the adjusted bond stress-slip relationship is evaluated
+                    if (slip(0, 0) >= -slipMaxHistory and slip(0, 0) <= slipMaxHistory)
+                    {
+                        bondStress(0, 0) = newMaxBondStress * std::pow(slip(0, 0) / slipMaxHistory, mAlpha);
+
+                    }
+                    else if (slip(0, 0) > slipMaxHistory and slip(0, 0) <= mSlipAtResidualBondStress)
+                    {
+                        bondStress(0, 0) = newMaxBondStress
+                            - (newMaxBondStress - mResidualBondStress) * (slip(0, 0) - slipMaxHistory)
+                                / (mSlipAtResidualBondStress - slipMaxHistory);
+
+                    }
+                    else if (slip(0, 0) < -slipMaxHistory and slip(0, 0) >= -mSlipAtResidualBondStress)
+                    {
+                        bondStress(0, 0) = -newMaxBondStress
+                            - (-newMaxBondStress + mResidualBondStress) * (slip(0, 0) + slipMaxHistory)
+                                / (-mSlipAtResidualBondStress + slipMaxHistory);
+
+                    }
+                    else if (slip(0, 0) > mSlipAtResidualBondStress)
+                    {
+                        bondStress(0, 0) = mResidualBondStress;
+
+                    }
+                    else if (slip(0, 0) < -mSlipAtResidualBondStress)
+                    {
+                        bondStress(0, 0) = -mResidualBondStress;
+                    }
+                    else
+                    {
+                        throw MechanicsException(std::string(__PRETTY_FUNCTION__)
+                                                     + ":\t Check if clause. This branch should never be executed!");
+                    }
+
+                }
+
+                // the normal component of the interface slip is equal to the penalty stiffness to avoid penetration
+                for (unsigned int iDim = 1; iDim < mGlobalDimension; ++iDim)
+                    bondStress(iDim, 0) = mNormalStiffness * slip(iDim, 0);
+
             }
-
-            // the normal component of the interface slip is equal to the penalty stiffness to avoid penetration
-            for (unsigned int iDim = 1; iDim < mGlobalDimension; ++iDim)
-                bondStress(iDim, 0) = mNormalStiffness * slip(iDim,0);
-
-
-        }
-            break;
-        case NuTo::Constitutive::eOutput::SLIP:
-            break;
-        case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
-        {
-            performUpdateAtEnd = true;
-        }
-            break;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Output object "
+                break;
+            case NuTo::Constitutive::eOutput::SLIP:
+                break;
+            case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
+            {
+                performUpdateAtEnd = true;
+            }
+                break;
+            default:
+                throw MechanicsException(__PRETTY_FUNCTION__, "Output object "
                     + NuTo::Constitutive::OutputToString(itOutput.first) + " could not be calculated, check the "
                     "allocated material law and the section behavior.");
         }
@@ -364,33 +417,20 @@ NuTo::eError NuTo::FibreMatrixBondStressSlip::Evaluate2D(
 
     //update history variables
     if (performUpdateAtEnd)
-        slipStaticData.SetData(slipLastConverged);
+        rStaticData.SetData(slipLastConverged);
 
     return eError::SUCCESSFUL;
 }
 
-NuTo::eError NuTo::FibreMatrixBondStressSlip::Evaluate3D(
-		const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput,
-		Constitutive::StaticData::Component* staticData)
+template<>
+NuTo::eError NuTo::FibreMatrixBondStressSlip::Evaluate<3>(
+    const ConstitutiveInputMap& rConstitutiveInput,
+    const ConstitutiveOutputMap& rConstitutiveOutput,
+    Data& staticData)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "IMPLEMENT ME!!!");
-    return eError::SUCCESSFUL;
 }
 
-NuTo::Constitutive::StaticData::Component* NuTo::FibreMatrixBondStressSlip::AllocateStaticData1D(const ElementBase*) const
-{
-    return Constitutive::StaticData::Leaf<double>::Create(0.);
-}
-
-NuTo::Constitutive::StaticData::Component* NuTo::FibreMatrixBondStressSlip::AllocateStaticData2D(const ElementBase*) const
-{
-    return Constitutive::StaticData::Leaf<double>::Create(0.);
-}
-
-NuTo::Constitutive::StaticData::Component* NuTo::FibreMatrixBondStressSlip::AllocateStaticData3D(const ElementBase*) const
-{
-    return Constitutive::StaticData::Leaf<double>::Create(0.);
 }
 
 NuTo::ConstitutiveInputMap NuTo::FibreMatrixBondStressSlip::GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput, const InterpolationType& rInterpolationType) const
@@ -400,7 +440,7 @@ NuTo::ConstitutiveInputMap NuTo::FibreMatrixBondStressSlip::GetConstitutiveInput
     return constitutiveInputMap;
 }
 
-double NuTo::FibreMatrixBondStressSlip::GetCurrentStaticData(Constitutive::StaticData::Leaf<double>& slipStaticData,
+double NuTo::FibreMatrixBondStressSlip::GetCurrentStaticData(Data& rStaticData,
         const ConstitutiveInputMap& rConstitutiveInput) const
 {
     auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
@@ -413,7 +453,7 @@ double NuTo::FibreMatrixBondStressSlip::GetCurrentStaticData(Constitutive::Stati
     {
         case eCalculateStaticData::USE_PREVIOUS:
         {
-            return slipStaticData.GetData();
+            return rStaticData.GetData();
         }
 
         case eCalculateStaticData::EULER_BACKWARD:
@@ -421,7 +461,7 @@ double NuTo::FibreMatrixBondStressSlip::GetCurrentStaticData(Constitutive::Stati
             const auto& slip = *rConstitutiveInput.at(Constitutive::eInput::INTERFACE_SLIP);
 
             int index = calculateStaticData.GetIndexOfPreviousStaticData();
-            double oldSlip = slipStaticData.GetData(index);
+            double oldSlip = rStaticData.GetData(index);
             
             return std::max(slip(0,0), oldSlip);
         }
@@ -434,10 +474,10 @@ double NuTo::FibreMatrixBondStressSlip::GetCurrentStaticData(Constitutive::Stati
                 throw MechanicsException(__PRETTY_FUNCTION__, "TimeStep input needed for EULER_FORWARD.");
             const auto& timeStep = *itTimeStep->second;
 
-            assert(slipStaticData.GetNumData() >= 2);
+            assert(rStaticData.GetNumData() >= 2);
 
             return ConstitutiveCalculateStaticData::EulerForward(
-                    slipStaticData.GetData(1), slipStaticData.GetData(2), timeStep);
+                    rStaticData.GetData(1), rStaticData.GetData(2), timeStep);
         }
 
         default:
@@ -478,12 +518,6 @@ BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::FibreMatrixBondStressSlip)
 
 bool NuTo::FibreMatrixBondStressSlip::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, int rTimeDerivative) const
 {
-    assert(rTimeDerivative>-1);
-    if(rTimeDerivative<1 &&
-       rDofRow == Node::eDof::DISPLACEMENTS &&
-       rDofCol ==Node::eDof::DISPLACEMENTS)
-    {
-        return true;
-    }
-    return false;
+    assert(rTimeDerivative >= 0);
+    return rTimeDerivative<1 && rDofRow == Node::eDof::DISPLACEMENTS && rDofCol ==Node::eDof::DISPLACEMENTS;
 }

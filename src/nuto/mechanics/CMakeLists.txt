@@ -23,7 +23,6 @@ set(NuToMechanicsConstitutive_SOURCES
     constitutive/laws/ShrinkageCapillaryStrainBased.cpp
     constitutive/laws/ShrinkageCapillaryStressBased.cpp
     constitutive/laws/ThermalStrains.cpp
-    constitutive/staticData/Composite.cpp
     constitutive/staticData/DataMisesPlasticity.cpp
     constitutive/staticData/DataMoistureTransport.cpp
     )
@@ -67,28 +66,13 @@ set(NuToMechanicsElements_SOURCES
     elements/ContinuumBoundaryElementConstrainedControlNode.cpp
     elements/ContinuumContactElement.cpp
     elements/ElementBase.cpp
-    elements/ElementDataBase.cpp
-    elements/ElementDataConstitutiveBase.cpp
     elements/Element1DInXD.cpp
     elements/Element2DInterface.cpp
     elements/ContinuumElementIGA.cpp
-    elements/ElementDataConstitutiveIp.cpp
-    elements/ElementDataConstitutiveIpNonlocal.cpp
-    elements/ElementDataEnum.cpp
-    elements/ElementDataIpBase.cpp
-    elements/ElementDataNonlocalBase.cpp
-    elements/ElementDataVariableConstitutiveBase.cpp
-    elements/ElementDataVariableConstitutiveIp.cpp
     elements/ElementEnum.cpp
     elements/ElementOutputBase.cpp
     elements/ElementShapeFunctions.cpp
-    elements/IpDataBase.cpp
-    elements/IpDataEmpty.cpp
     elements/IpDataEnum.cpp
-    elements/IpDataNonlocalBase.cpp
-    elements/IpDataStaticData.cpp
-    elements/IpDataStaticDataBase.cpp
-    elements/IpDataStaticDataNonlocal.cpp
     elements/IPData.cpp)
 
 set(NuToMechanicsGroups_SOURCES

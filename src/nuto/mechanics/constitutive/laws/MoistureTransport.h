@@ -4,7 +4,8 @@
 #include "nuto/math/FullVector.h"
 
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
-
+#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLaw.h"
+#include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
 
 // VHIRTHAMTODO Check deactivated routines, if they are still needed
 // VHIRTHAMTODO Rebuild CheckXYZ routines ---> CheckParameterDouble of base class
@@ -14,7 +15,6 @@ namespace NuTo
 namespace Constitutive {
 namespace StaticData {
 class Component;
-class DataMoistureTransport;
 }}
 
 enum class eDof;
@@ -27,10 +27,18 @@ class MoistureTransport : public ConstitutiveBase
 {
 public:
 
+    typedef Constitutive::StaticData::DataMoistureTransport StaticDataType;
+    using Data = typename Constitutive::IPConstitutiveLaw<MoistureTransport>::Data;
+
     //! @brief constructor
     MoistureTransport() : ConstitutiveBase()
     {}
 
+    //! @brief creates corresponding IPConstitutiveLaw
+    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override
+    {
+        return std::make_unique<Constitutive::IPConstitutiveLaw<MoistureTransport>>(*this, StaticDataType());
+    }
 
 private:
 
@@ -57,30 +65,20 @@ private:
         }
     };
 
+public:
+
+
     //! @brief ... evaluate the constitutive relation
-    //! @param rElement ... element
-    //! @param rIp ... integration point
     //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
     //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
+    //! @param rStaticData ... static data
     template <int TDim>
-    NuTo::eError EvaluateMoistureTransport(
+    NuTo::eError Evaluate(
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData);
+            Data& rStaticData);
 
 
-public:
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    Constitutive::StaticData::Component* AllocateStaticData1D(const ElementBase* rElement) const override;
-
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    Constitutive::StaticData::Component* AllocateStaticData2D(const ElementBase* rElement) const override;
-
-    //! @brief ... create new static data object for an integration point
-    //! @return ... pointer to static data object
-    Constitutive::StaticData::Component* AllocateStaticData3D(const ElementBase* rElement) const override;
 
     //! @brief ... calculates the sorption Curve coefficients when the sorption direction has changed
     void CalculateSorptionCurveCoefficients(Constitutive::StaticData::DataMoistureTransport& rStaticData,
@@ -232,47 +230,6 @@ public:
     {
         CheckValuePositive(__PRETTY_FUNCTION__,rDensityWater);
     }
-
-
-    //! @brief ... evaluate the constitutive relation in 1D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::eError Evaluate1D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override
-    {
-        return EvaluateMoistureTransport<1>(rConstitutiveInput, rConstitutiveOutput, staticData);
-    }
-
-    //! @brief ... evaluate the constitutive relation in 2D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::eError Evaluate2D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override
-    {
-        return EvaluateMoistureTransport<2>(rConstitutiveInput, rConstitutiveOutput, staticData);
-    }
-
-    //! @brief ... evaluate the constitutive relation in 3D
-    //! @param rElement ... element
-    //! @param rIp ... integration point
-    //! @param rConstitutiveInput ... input to the constitutive law (strain, temp gradient etc.)
-    //! @param rConstitutiveOutput ... output to the constitutive law (stress, stiffness, heat flux etc.)
-    virtual NuTo::eError Evaluate3D(
-            const ConstitutiveInputMap& rConstitutiveInput,
-            const ConstitutiveOutputMap& rConstitutiveOutput,
-            Constitutive::StaticData::Component* staticData) override
-    {
-        return EvaluateMoistureTransport<3>(rConstitutiveInput, rConstitutiveOutput, staticData);
-    }
-
 
     //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter

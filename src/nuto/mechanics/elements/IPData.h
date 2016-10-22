@@ -27,6 +27,10 @@ public:
     //! @param rLaw new constitutive law
     void SetConstitutiveLaw(NuTo::ConstitutiveBase& rLaw);
 
+    //! @brief returns true, if the constitutive law has been assigned
+    //! @param rIP integration point index
+    bool HasConstitutiveLawAssigned(unsigned int rIP) const;
+
     //! @brief returns the IPConstitutiveLaw at the given (if allocated)
     //! @param rIP integration point index
     //! @return ip constitutive law base reference
@@ -50,6 +54,9 @@ public:
     }
 
 private:
+#ifdef ENABLE_SERIALIZATION
+    IPData() {};
+#endif // ENABLE_SERIALIZATION
 
     //! @brief integration type pointer
     //! @remark this is only set via references. So no checks for nullptr, please. It is no reference because of slicing
