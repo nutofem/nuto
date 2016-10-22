@@ -225,7 +225,7 @@ void NuTo::ElementBase::SetSection(const SectionBase* rSection)
     mSection = rSection;
 }
 
-const NuTo::SectionBase* NuTo::ElementBase::GetSection() const
+const SectionBase*NuTo::ElementBase::GetSection() const
 {
     return mSection;
 }

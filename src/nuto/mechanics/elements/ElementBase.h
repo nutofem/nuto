@@ -553,7 +553,6 @@ protected:
     virtual void CheckElement() = 0;
 
     void AddPlaneStateToInput(ConstitutiveInputMap& input) const;
-
     //! @brief ... extract global dofs from nodes (mapping of local row ordering of the element matrices to the global dof ordering)
     //! @param rGlobalRowDofs ... vector of global row dofs
     //virtual void CalculateGlobalRowDofs(std::vector<int>& rGlobalRowDofs) const = 0;
