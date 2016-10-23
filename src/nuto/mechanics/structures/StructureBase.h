@@ -173,12 +173,6 @@ public:
     //! @param rVisualizeComponent: visualization component, i.e. displacements, stresses...
     void AddVisualizationComponent(int rElementGroup, const std::string& rVisualizeComponent);
 
-    //! @brief Add nonlocal weights to an element group for the visualization
-    //! @param rElementGroup: element group
-    //! @param rElementId: element id
-    //! @param rIp: integration point
-    void AddVisualizationComponentNonlocalWeights(int rElementGroup, int rElementId, int rIp);
-
 #ifndef SWIG
     //! @brief Add rVisualizeComponent to an element group for the visualization
     //! @param rElementGroup: element group
@@ -297,8 +291,8 @@ public:
     virtual int NodeGetId(const NodeBase* rNode)const=0;
 #endif //SWIG
     //! @brief ... returns the (first) node that has the specified coordinates within the range
-    //! @param ... rCoordinates
-    //! @param ... rRange
+    //! @param rCoordinates
+    //! @param rRange
     //! @return ... node id
     int NodeGetIdAtCoordinate(FullVector<double, Eigen::Dynamic> rCoordinates, double rRange);
 
@@ -986,12 +980,12 @@ public:
     void ConstraintLinearEquationAddTerm(int rConstraint, int rNode, const std::string& rDof, double rCoefficient);
 
     //! @brief ... set periodic boundary conditions according to a prescibed angle of a localization zone
-    //! @param  rAngle... angle in deg
-    //! @param  rStrain... average strain to be applied (epsilon_xx, epsilon_yy, gamma_xy)
-    //! @param  rNodeGroupUpper... all nodes on the upper boundary
-    //! @param  rNodeGrouplower... all nodes on the lower boundary
-    //! @param  rNodeGroupLeft... all nodes on the left boundary
-    //! @param  rNodeGroupRight...  all nodes on the right boundary
+    //! @param rAngle... angle in deg
+    //! @param rStrain... average strain to be applied (epsilon_xx, epsilon_yy, gamma_xy)
+    //! @param rNodeGroupUpper... all nodes on the upper boundary
+    //! @param rNodeGrouplower... all nodes on the lower boundary
+    //! @param rNodeGroupLeft... all nodes on the left boundary
+    //! @param rNodeGroupRight...  all nodes on the right boundary
     int ConstraintLinearDisplacementsSetPeriodic2D(double angle, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rStrain,
             NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rCrackOpening, double rRadiusToCrackWithoutConstraints,
             int rNodeGroupUpper, int rNodeGrouplower, int rNodeGroupLeft, int rNodeGroupRight);
@@ -1409,7 +1403,7 @@ public:
     //**  defined in structures/StructureBaseGroup.cpp **
     //*************************************************
     //! @brief ... Info routine that prints general information about the groups
-    //! @param ... rVerboseLevel describes how detailed the information is
+    //! @param rVerboseLevel describes how detailed the information is
     void GroupInfo(int rVerboseLevel)const;
 
 #ifndef SWIG
@@ -1429,118 +1423,118 @@ public:
     const GroupBase* GroupGetGroupPtr(int rIdent) const;
 
     //! @brief ... Creates a group for the structure
-    //! @param ... rType  type of the group, e.g. "NODES" or "ELEMENTS"
+    //! @param rType  type of the group, e.g. "NODES" or "ELEMENTS"
     //! @return ... rIdent identifier for the group
     int GroupCreate(NuTo::eGroupId rEnumType);
 
     //! @brief ... Creates a group for the structure
-    //! @param ... rIdent identifier for the group
-    //! @param ... rType  type of the group
+    //! @param rIdent identifier for the group
+    //! @param rType  type of the group
     void GroupCreate(int id, NuTo::eGroupId rEnumType);
 #endif
 
     //! @brief ... Creates a group for the structure
-    //! @param ... rIdent identifier for the group
-    //! @param ... rType  type of the group, e.g. "NODES" or "ELEMENTS"
+    //! @param rIdent identifier for the group
+    //! @param rType  type of the group, e.g. "NODES" or "ELEMENTS"
     int GroupCreate(const std::string& rType);
 
 
     //! @brief ... Deletes a group from the structure
-    //! @param ... rIdent identifier for the group
+    //! @param rIdent identifier for the group
     void GroupDelete(int rIdent);
 
     //! @brief ... Unites two groups and stores the result in a new group
-    //! @param ... rIdentGroup1 identifier for the first group
-    //! @param ... rIdentGroup2 identifier for the second group
+    //! @param rIdentGroup1 identifier for the first group
+    //! @param rIdentGroup2 identifier for the second group
     //! @result ... rIdentGroupResult identifier for the created result group
     int GroupUnion(int rIdentGroup1, int rIdentGroup2);
     //! @brief ... Difference between two groups and stores the result in a new group
-    //! @param ... rIdentGroup1 identifier for the first group
-    //! @param ... rIdentGroup2 identifier for the second group
+    //! @param rIdentGroup1 identifier for the first group
+    //! @param rIdentGroup2 identifier for the second group
     //! @result ... rIdentGroupResult identifier for the created result group
     int GroupDifference(int rIdentGroup1, int rIdentGroup2);
 
     //! @brief ... Calculates the intersection between two groups and stores the result in a new group
-    //! @param ... rIdentGroup1 identifier for the first group
-    //! @param ... rIdentGroup2 identifier for the second group
+    //! @param rIdentGroup1 identifier for the first group
+    //! @param rIdentGroup2 identifier for the second group
     //! @result ... rIdentGroupResult identifier for the created result group
     int GroupIntersection(int rIdentGroup1, int rIdentGroup2);
 
     //! @brief ... Calculates the symmetric difference between two groups and stores the result in a new group
-    //! @param ... rIdentGroup1 identifier for the first group
-    //! @param ... rIdentGroup2 identifier for the second group
+    //! @param rIdentGroup1 identifier for the first group
+    //! @param rIdentGroup2 identifier for the second group
     //! @result ... rIdentGroupResult identifier for the created result group
     int GroupSymmetricDifference(int rIdentGroup1, int rIdentGroup2);
 
     //! @brief ... Adds a node to a node group
-    //! @param ... rIdentGroup identifier for the group
-    //! @param ... rIdentNode  identifier for the node
+    //! @param rIdentGroup identifier for the group
+    //! @param rIdentNode  identifier for the node
     void GroupAddNode(int rIdentGroup, int rIdNode);
 
     //! @brief ... Adds all nodes to a group whose coordinates are in the specified range
-    //! @param ... rIdentGroup identifier for the group
-    //! @param ... rDirection either 0,1,2 for x,y, or z
-    //! @param ... rMin ... minimum value
-    //! @param ... rMax ... maximum value
+    //! @param rIdentGroup identifier for the group
+    //! @param rDirection either 0,1,2 for x,y, or z
+    //! @param rMin ... minimum value
+    //! @param rMax ... maximum value
     virtual void GroupAddNodeCoordinateRange(int rIdentGroup, int rDirection, double rMin, double rMax);
 #ifndef SWIG
     //! @brief ... Adds all nodes which fulfill the conditions specified in a std::function
-    //! @param ... rIdentGroup identifier for the group
-    //! @param ... rFunction std::function
+    //! @param rIdentGroup identifier for the group
+    //! @param rFunction std::function
     void GroupAddNodeFunction(int rIdentGroup, std::function<bool (NodeBase*)> rFunction);
 
     //! @brief ... Adds all nodes which fulfill the conditions specified in a std::function
-    //! @param ... rIdentNewGroup identifier for the group where to add the nodes
-    //! @param ... rIdentOldGroup identifier for the group where the ids are searched
-    //! @param ... rFunction std::function
+    //! @param rIdentNewGroup identifier for the group where to add the nodes
+    //! @param rIdentOldGroup identifier for the group where the ids are searched
+    //! @param rFunction std::function
     void GroupAddNodeFunction(int rIdentNewGroup, int rIdentOldGroup,  std::function<bool(NuTo::NodeBase *)> rFunction);
 #endif
 
     //! @brief ... Adds an element to an element group
-    //! @param ... rIdentGroup identifier for the group
-    //! @param ... rIdentNode  identifier for the element
+    //! @param rIdentGroup identifier for the group
+    //! @param rIdentNode  identifier for the element
     void GroupAddElement(int rIdentGroup, int rIdElement);
 
     //! @brief ... Adds all elements to a group whose nodes are in the given node group
-    //! @param ... rElementGroupId identifier for the element group
-    //! @param ... rNodeGroupId identifier for the node group
-    //! @param ... rHaveAllNodes if set to true, the element is only selected when all element nodes are in the node group, if set
+    //! @param rElementGroupId identifier for the element group
+    //! @param rNodeGroupId identifier for the node group
+    //! @param rHaveAllNodes if set to true, the element is only selected when all element nodes are in the node group, if set
     //! to false, the element is select if at least one node is in the node group
     void GroupAddElementsFromNodes(int rElementGroupId, int rNodeGroupId, bool rHaveAllNodes);
 
     //! @brief ... Adds all the nodes from the group-rElementGroupId to the group rNodeGroupId
-    //! @param ... rNodeGroupId id for the node group
-    //! @param ... rElementGroupId id for the element group
+    //! @param rNodeGroupId id for the node group
+    //! @param rElementGroupId id for the element group
     void GroupAddNodesFromElements(int rNodeGroupId, int rElementGroupId);
 
     //! @brief ... Adds all nodes to a group whose coordinates are in the specified range
-    //! @param ... rIdentGroup identifier for the group
-    //! @param ... rCenter center of the selection circle
-    //! @param ... rMin ... minimum radius
-    //! @param ... rMax ... maximum radius
+    //! @param rIdentGroup identifier for the group
+    //! @param rCenter center of the selection circle
+    //! @param rMin ... minimum radius
+    //! @param rMax ... maximum radius
     void GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullVector<double,Eigen::Dynamic> rCenter, double rMin, double rMax);
 
     //! @brief ... Adds all nodes to a group whose coordinates are on a cylinder with the radius in the in the specified range
-    //! @param ... rIdentGroup identifier for the group
-    //! @param ... rCenter center of the cylinder
-    //! @param ... rAxis axis of the cylinder
-    //! @param ... rMin ... minimum radius
-    //! @param ... rMax ... maximum radius
+    //! @param rIdentGroup identifier for the group
+    //! @param rCenter center of the cylinder
+    //! @param rAxis axis of the cylinder
+    //! @param rMin ... minimum radius
+    //! @param rMax ... maximum radius
     void GroupAddNodeCylinderRadiusRange(int rIdentGroup, NuTo::FullVector<double,Eigen::Dynamic> rCenter,
     		 NuTo::FullVector<double,Eigen::Dynamic> rDirection, double rMin, double rMax);
 
     //! @brief ... Returns the number of members in a group
-    //! @param ... rIdentGroup identifier for the group
+    //! @param rIdentGroup identifier for the group
     //! @return ... number of members
     int GroupGetNumMembers(int rIdentGroup)const;
 
     //! @brief ... Returns a vector with the members of a group
-    //! @param ... rIdentGroup identifier for the group
+    //! @param rIdentGroup identifier for the group
     //! @return ... vector of members
     NuTo::FullVector<int, Eigen::Dynamic> GroupGetMemberIds(int rIdentGroup)const;
 
     //! @brief ... checks for a member in a group
-    //! @param ... rIdentGroup identifier for the group
+    //! @param rIdentGroup identifier for the group
     //! @return ... rMember id (element id, node id etc.)
     bool GroupContainsMember(int rIdentGroup, int rMember)const;
 
@@ -1550,7 +1544,7 @@ public:
     //*************************************************************
     //! @brief ... Info routine that prints general information about the allocated integration types
     //! an integration type is only allocated if required (from created elements)
-    //! @param ... rVerboseLevel describes how detailed the information is
+    //! @param rVerboseLevel describes how detailed the information is
     void IntegrationTypeInfo(int rVerboseLevel)const;
 
 #ifndef SWIG

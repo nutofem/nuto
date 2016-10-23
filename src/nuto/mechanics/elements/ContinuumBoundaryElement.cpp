@@ -36,7 +36,9 @@ NuTo::ContinuumBoundaryElement<TDim>::ContinuumBoundaryElement(const ContinuumEl
   mBaseElement(rBaseElement),
   mSurfaceId(rSurfaceId),
   mAlphaUserDefined(-1)
-{}
+{
+    mSection = &rBaseElement->GetSection();
+}
 
 template <int TDim>
 NuTo::eError NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)

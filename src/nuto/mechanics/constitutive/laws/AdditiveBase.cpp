@@ -122,3 +122,15 @@ NuTo::ConstitutiveInputMap NuTo::AdditiveBase::GetConstitutiveInputs(
     }
     return constitutiveInputMap;
 }
+NuTo::Constitutive::IPConstitutiveLawBase& NuTo::AdditiveBase::GetSublaw(int rIndex)
+{
+    try
+    {
+        return (*mSublaws[rIndex]);
+    }
+    catch (...)
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "Error accessing sublaw");
+    }
+
+}

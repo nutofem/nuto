@@ -41,14 +41,7 @@ int NuTo::StructureBase::SectionCreate(const std::string& rType)
 // create a new section
 int NuTo::StructureBase::SectionCreate(eSectionType rType)
 {
-    //find unused integer id
-    int id(0);
-    boost::ptr_map<int, SectionBase>::iterator it = mSectionMap.find(id);
-    while (it != mSectionMap.end())
-    {
-        id++;
-        it = mSectionMap.find(id);
-    }
+    int id = GetUnusedId(mSectionMap);
 
     // create new section
     SectionBase* SectionPtr;

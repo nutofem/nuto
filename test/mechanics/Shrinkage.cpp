@@ -237,12 +237,12 @@ public:
         {
             for (int theIP=0; theIP< mS.ElementGetElementPtr(i)->GetNumIntegrationPoints(); theIP++)
             {
-                // this can't work! there are two different static data trees this is trying to handle,
-                // one for stress based and one for strain based
-                auto& moistureData = mS.ElementGetElementPtr(i)->GetIPData()
-                                                                .GetIPConstitutiveLaw(theIP)
-                                                                .GetData<NuTo::MoistureTransport>()
-                                                                .GetData();
+#warning: TT: this is horrible and super error prone. can we think of a better interface to the static data of AddititveBase?
+                auto& lawbase = mS.ElementGetElementPtr(i)->GetIPData().GetIPConstitutiveLaw(theIP).GetConstitutiveLaw();
+                auto& lawAdditiveBase = dynamic_cast<NuTo::AdditiveBase&>(lawbase);
+                auto& ipLawMoisture = lawAdditiveBase.GetSublaw(0);
+                auto& moistureData = ipLawMoisture.GetData<NuTo::MoistureTransport>().GetData();
+
                 moistureData.SetLastSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
                 moistureData.SetCurrentSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
                 moistureData.SetLastRelHumValue(InitialRelativeHumidity);

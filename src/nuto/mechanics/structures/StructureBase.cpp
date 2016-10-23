@@ -86,7 +86,6 @@
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
 #include "nuto/visualize/VisualizeComponent.h"
-#include "nuto/visualize/VisualizeComponentNonlocalWeight.h"
 #endif // ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeEnum.h"
 
@@ -460,53 +459,6 @@ void NuTo::StructureBase::AddVisualizationComponent(int rElementGroup, const std
 
 
 }
-void NuTo::StructureBase::AddVisualizationComponentNonlocalWeights(int rElementGroup, int rElementId, int rIp)
-{
-#ifdef ENABLE_VISUALIZE
-    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-
-    // check if the element group exists
-    if (mGroupMap.find(rElementGroup) == mGroupMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Element group does not exist.");
-
-    const ElementBase *elementBase = ElementGetElementPtr(rElementId);
-    int numIp = elementBase->GetNumIntegrationPoints();
-
-    if (rIp < 0 or rIp >= numIp)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Integration point number is out of range.");
-
-    try
-    {
-        // create a new visualization list for an element group or add components to an already existing list
-        if (mGroupVisualizeComponentsMap.find(rElementGroup) == mGroupVisualizeComponentsMap.end())
-        {
-            std::list<std::shared_ptr<VisualizeComponent>> visualizationPtrList;
-            visualizationPtrList.push_back(std::make_shared<VisualizeComponentNonlocalWeight>(VisualizeComponentNonlocalWeight(rElementId, rIp)));
-
-            mGroupVisualizeComponentsMap.insert(std::pair<int,std::list<std::shared_ptr<VisualizeComponent>>>(rElementGroup, visualizationPtrList));
-            // mGroupVisualizeComponentsMap.emplace(rElementGroup, visualizationPtrList);       //<- use this for gcc version 4.9 or higher!
-
-            mGroupVisualizationType.insert(std::pair<int, eVisualizationType>(rElementGroup, eVisualizationType::VORONOI_CELL));
-            // mGroupVisualizationType.emplace(rElementGroup, eVisualizeWhat::VORONOI_CELL);     //<- use this for gcc version 4.9 or higher!
-
-
-        } else
-        {
-            mGroupVisualizeComponentsMap.at(rElementGroup).push_back(std::make_shared<VisualizeComponentNonlocalWeight>(VisualizeComponentNonlocalWeight(rElementId, rIp)));
-        }
-
-    }
-    catch (NuTo::MechanicsException &e)
-     {
-        e.AddMessage(__PRETTY_FUNCTION__, "error setting element and local ip number.");
-        throw e;
-     }
-    catch(...)
-     {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "error setting element and local ip number.");
-     }
-#endif // ENABLE_VISUALIZE
-}
 
 
 void NuTo::StructureBase::SetVisualizationType(const int rElementGroup, const eVisualizationType rVisualizationType)
@@ -609,7 +561,6 @@ void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& 
         case NuTo::eVisualizeWhat::SECTION:
         case NuTo::eVisualizeWhat::CONSTITUTIVE:
         case NuTo::eVisualizeWhat::TOTAL_INELASTIC_EQ_STRAIN:
-        case NuTo::eVisualizeWhat::NONLOCAL_WEIGHT:
         case NuTo::eVisualizeWhat::LOCAL_EQ_STRAIN:
         case NuTo::eVisualizeWhat::ELEMENT:
         case NuTo::eVisualizeWhat::DAMAGE:

@@ -11,7 +11,6 @@ set(NuToVisualize_SOURCES
     VisualizeBase.cpp
     VisualizeComponent.cpp
     VisualizeComponentBase.cpp
-    VisualizeComponentNonlocalWeight.cpp
     VisualizeDataBase.cpp
     VisualizeDataField.cpp
     VisualizeDataScalar.cpp

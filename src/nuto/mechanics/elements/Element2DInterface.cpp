@@ -125,7 +125,7 @@ NuTo::eError NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInp
     auto constitutiveInput = GetConstitutiveInputMap(constitutiveOutput);
     constitutiveInput.Merge(rInput);
 
-    for (int theIP = 0; theIP < GetNumIntegrationPoints(); theIP++)
+    for (int theIP = 0; theIP < GetNumIntegrationPoints(); ++theIP)
     {
 
         const Eigen::VectorXd nodeCoords = data.mNodalValues[Node::eDof::COORDINATES];
@@ -539,9 +539,9 @@ void NuTo::Element2DInterface::GetVisualizationCells(unsigned int& NumVisualizat
         std::vector<unsigned int>& VisualizationCellsIncidence, std::vector<unsigned int>& VisualizationCellsIP) const
 {
 
-    const IntegrationTypeBase* integrationType = this->mElementData->GetIntegrationType();
+    const IntegrationTypeBase& integrationType = GetIntegrationType();
     const unsigned int globalDimension = GetStructure()->GetDimension();
-    switch (integrationType->GetNumIntegrationPoints())
+    switch (integrationType.GetNumIntegrationPoints())
     {
     case 2:
 
@@ -687,7 +687,7 @@ void NuTo::Element2DInterface::GetVisualizationCells(unsigned int& NumVisualizat
         VisualizationCellsIP.push_back(1);
         break;
     default:
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t Integration type not valid for this element.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Integration type not valid for this element.");
     }
 
 }
@@ -749,7 +749,7 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
         }
             break;
         default:
-            throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t unsupported visualization cell type");
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "unsupported visualization cell type");
         }
     }
 
@@ -806,7 +806,7 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
                 unsigned int CellId = CellIdVec[CellCount];
-                int constitutiveId = mStructure->ConstitutiveLawGetId(GetConstitutiveLaw(theIp));
+                int constitutiveId = mStructure->ConstitutiveLawGetId(&GetConstitutiveLaw(theIp));
 
                 rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), constitutiveId);
             }
@@ -814,7 +814,7 @@ void NuTo::Element2DInterface::Visualize(VisualizeUnstructuredGrid& rVisualize, 
             break;
         case NuTo::eVisualizeWhat::SECTION:
         {
-            int sectionId = mStructure->SectionGetId(GetSection());
+            int sectionId = mStructure->SectionGetId(&GetSection());
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int CellId = CellIdVec[CellCount];

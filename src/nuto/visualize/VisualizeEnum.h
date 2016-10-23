@@ -30,7 +30,6 @@ enum class eVisualizeWhat
     ENGINEERING_STRAIN,             //!< visualize engineering strain tensor
     SHRINKAGE_STRAIN,               //!< visualize shrinkage strain tensor
     THERMAL_STRAIN,                 //!< visualize thermal strain tensor
-    NONLOCAL_WEIGHT,                //!< visualize nonlocal weights
     NONLOCAL_EQ_STRAIN,             //!< visualize nonlocal equivalent strains
     LOCAL_EQ_STRAIN,                //!< visualize local equivalent strains
     TOTAL_INELASTIC_EQ_STRAIN,		//!< visualize inelastic equivalent strain

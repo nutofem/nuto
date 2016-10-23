@@ -40,6 +40,12 @@ public:
     //! stiffness are calculated.
     virtual bool HaveTmpStaticData() const override;
 
+    //! @brief returns the sublaw with index rInted
+    //! @param rIndex ... index
+    //! @return reference to ip law
+    Constitutive::IPConstitutiveLawBase& GetSublaw(int rIndex);
+
+
     //! @brief Determines the constitutive inputs needed to evaluate the constitutive outputs.
     //! @param rConstitutiveOutput Desired constitutive outputs.
     //! @param rInterpolationType Interpolation type to determine additional inputs.

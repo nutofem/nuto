@@ -275,8 +275,8 @@ private:
             catch (...){}
             elementID++;
         }
-        std::string fileName = NuTo::Interpolation::ShapeTypeToString(element->GetInterpolationType()->GetShapeType());
-        fileName += NuTo::Interpolation::TypeOrderToString(element->GetInterpolationType()->Get(NuTo::Node::eDof::DISPLACEMENTS).GetTypeOrder());
+        std::string fileName = NuTo::Interpolation::ShapeTypeToString(element->GetInterpolationType().GetShapeType());
+        fileName += NuTo::Interpolation::TypeOrderToString(element->GetInterpolationType().Get(NuTo::Node::eDof::DISPLACEMENTS).GetTypeOrder());
         fileName += ".vtu";
         directory /= fileName;
 

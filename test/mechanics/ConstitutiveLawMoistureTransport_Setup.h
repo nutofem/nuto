@@ -1,5 +1,6 @@
 #pragma once
 
+#include <nuto/mechanics/sections/SectionEnum.h>
 #include "nuto/math/FullVector.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/elements/ElementBase.h"
@@ -429,7 +430,7 @@ inline int SetupSection(NuTo::Structure& rS, double rAreaThickness = 1.0)
     {
     case 1:
     {
-        int Sec = rS.SectionCreate("TRUSS");
+        int Sec = rS.SectionCreate(NuTo::eSectionType::TRUSS);
         rS.SectionSetArea(Sec,rAreaThickness);
         rS.ElementTotalSetSection(Sec);
         return Sec;
@@ -437,7 +438,7 @@ inline int SetupSection(NuTo::Structure& rS, double rAreaThickness = 1.0)
 
     case 2:
     {
-        int Sec = rS.SectionCreate("PLANE_STRESS");
+        int Sec = rS.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
         rS.SectionSetThickness(Sec,rAreaThickness);
         rS.ElementTotalSetSection(Sec);
         return Sec;
@@ -445,7 +446,7 @@ inline int SetupSection(NuTo::Structure& rS, double rAreaThickness = 1.0)
 
     case 3:
     {
-        int Sec = rS.SectionCreate("VOLUME");
+        int Sec = rS.SectionCreate(NuTo::eSectionType::VOLUME);
         rS.ElementTotalSetSection(Sec);
         return Sec;
     }

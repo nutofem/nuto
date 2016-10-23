@@ -93,12 +93,12 @@ for zCount in range (0, NumElementsZ):
             elementIncidence.SetValue(7,0, node1 + (NumElementsX + 1) * (NumElementsY + 1) + NumElementsX + 1)
             #print "element: " + str(element) + " incidence: "
             #elementIncidence.Info()
-            myStructure.ElementCreate(element, interpolationType, elementIncidence,"CONSTITUTIVELAWIP","NOIPDATA")
+            myStructure.ElementCreate(element, interpolationType, elementIncidence)
             myStructure.ElementSetConstitutiveLaw(element,myMatLin)
             myStructure.ElementSetSection(element,mySection)
             myStructure.GroupAddElement(ElementGroup1,element)
             element += 1
-            
+
 ElementGroup2 = myStructure.GroupCreate("Elements")
 myStructure.GroupAddElement(ElementGroup2,1)
 myStructure.GroupAddElement(ElementGroup2,2)

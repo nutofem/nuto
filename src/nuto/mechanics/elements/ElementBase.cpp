@@ -136,9 +136,12 @@ void NuTo::ElementBase::SetSection(const SectionBase& rSection)
 
 const NuTo::SectionBase& NuTo::ElementBase::GetSection() const
 {
-    if (mSection == nullptr)
-        throw MechanicsException(__PRETTY_FUNCTION__, "This element has no section assigned yet.");
-    return *mSection;
+    if (mSection != nullptr)
+        return *mSection;
+
+
+    Info();
+    throw MechanicsException(__PRETTY_FUNCTION__, "This element has no section assigned yet.");
 }
 
 
@@ -297,12 +300,7 @@ NuTo::NodeBase *NuTo::ElementBase::GetBoundaryControlNode() const
 void NuTo::ElementBase::GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType, std::vector<unsigned int>& VisualizationCellsIncidence,
         std::vector<unsigned int>& VisualizationCellsIP) const
 {
-    const IntegrationTypeBase* integrationType = this->mElementData->GetIntegrationType();
-    if (integrationType == 0 || integrationType->GetNumIntegrationPoints() == 0)
-        throw MechanicsException("[NuTo::ElementBase::GetVisualizationCells] integration type for this element is not set.");
-
-    //get integration cells from the integration type
-    integrationType->GetVisualizationCells(NumVisualizationPoints, VisualizationPointLocalCoordinates, NumVisualizationCells, VisualizationCellType, VisualizationCellsIncidence, VisualizationCellsIP);
+    GetIntegrationType().GetVisualizationCells(NumVisualizationPoints, VisualizationPointLocalCoordinates, NumVisualizationCells, VisualizationCellType, VisualizationCellsIncidence, VisualizationCellsIP);
 }
 
 void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)
@@ -475,7 +473,6 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
         case NuTo::eVisualizeWhat::CONSTITUTIVE:
         case NuTo::eVisualizeWhat::DISPLACEMENTS:
         case NuTo::eVisualizeWhat::ELEMENT:
-        case NuTo::eVisualizeWhat::NONLOCAL_WEIGHT:
         case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
         case NuTo::eVisualizeWhat::PARTICLE_RADIUS:
         case NuTo::eVisualizeWhat::RELATIVE_HUMIDITY:
@@ -734,61 +731,6 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
             }
         }
             break;
-        case NuTo::eVisualizeWhat::NONLOCAL_WEIGHT:
-        {
-            // get constitutive model and nonlocal element
-            const ElementBase* visualizeElement = mStructure->ElementGetElementPtr(it.get()->GetElementId());
-
-            // get local number within nonlocal elements for current element
-            try
-            {
-                const std::vector<const NuTo::ElementBase*>& nonlocalElements(visualizeElement->GetNonlocalElements());
-                int countNonlocalElement;
-                for (countNonlocalElement = 0; countNonlocalElement < (int) nonlocalElements.size(); countNonlocalElement++)
-                {
-                    if (this == nonlocalElements[countNonlocalElement])
-                    {
-                        //visualize the weights
-                        break;
-                    }
-                }
-                if (countNonlocalElement < (int) nonlocalElements.size())
-                {
-                    // get the weights
-                    for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
-                    {
-                        unsigned int theIp = VisualizationCellsIP[CellCount];
-                        unsigned int CellId = CellIdVec[CellCount];
-                        double weight(visualizeElement->GetNonlocalWeights(it.get()->GetIp(), countNonlocalElement)[theIp]);
-                        rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), weight);
-                    }
-                } else
-                {
-                    // otherwise they just remain zero
-                    for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
-                    {
-                        unsigned int CellId = CellIdVec[CellCount];
-                        rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), 0);
-                    }
-                }
-            } catch (NuTo::MechanicsException &e)
-            {
-                e.AddMessage("[NuTo::ElementBase::Visualize] error getting visualization data for nonlocal weights.");
-                throw e;
-            }
-#ifdef ENABLE_VISUALIZE
-            catch (NuTo::VisualizeException &e)
-            {
-                e.AddMessage("[NuTo::ElementBase::Visualize] error getting visualization data for nonlocal weights.");
-                throw e;
-            }
-#endif
-            catch (...)
-            {
-                throw NuTo::MechanicsException("[NuTo::ElementBase::Visualize] error getting visualization data for nonlocal weights.");
-            }
-        }
-            break;
         case NuTo::eVisualizeWhat::NONLOCAL_EQ_STRAIN:
             for (unsigned int PointCount = 0; PointCount < NumVisualizationPoints; PointCount++)
             {
@@ -810,7 +752,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
             {
                 unsigned int theIp = VisualizationCellsIP[CellCount];
                 unsigned int CellId = CellIdVec[CellCount];
-                int constitutiveId = mStructure->ConstitutiveLawGetId(GetConstitutiveLaw(theIp));
+                int constitutiveId = mStructure->ConstitutiveLawGetId(&GetConstitutiveLaw(theIp));
 
                 rVisualize.SetCellDataScalar(CellId, it.get()->GetComponentName(), constitutiveId);
             }
@@ -818,7 +760,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
             break;
         case NuTo::eVisualizeWhat::SECTION:
         {
-            int sectionId = mStructure->SectionGetId(GetSection());
+            int sectionId = mStructure->SectionGetId(&GetSection());
             for (unsigned int CellCount = 0; CellCount < NumVisualizationCells; CellCount++)
             {
                 unsigned int CellId = CellIdVec[CellCount];
@@ -1113,7 +1055,7 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(VisualizeUnstructuredGrid&
     //
 
     // get visualization cells from integration type
-    unsigned int NumVisualizationPoints = GetInterpolationType()->GetCurrentIntegrationType()->GetNumIntegrationPoints();
+    unsigned int NumVisualizationPoints = GetInterpolationType().GetCurrentIntegrationType().GetNumIntegrationPoints();
     unsigned int NumVisualizationCells = NumVisualizationPoints;
     std::vector<NuTo::eCellTypes> VisualizationCellType;
 
@@ -1129,7 +1071,7 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(VisualizeUnstructuredGrid&
     for (unsigned int iIp = 0; iIp < NumVisualizationPoints; ++iIp)
     {
         double naturalIpCoords[2];
-        GetInterpolationType()->GetCurrentIntegrationType()->GetLocalIntegrationPointCoordinates2D(iIp, naturalIpCoords);
+        GetInterpolationType().GetCurrentIntegrationType().GetLocalIntegrationPointCoordinates2D(iIp, naturalIpCoords);
 
         for (int iDim = 0; iDim < dimension; ++iDim)
         {
@@ -1305,6 +1247,7 @@ void NuTo::ElementBase::Info() const
 {
     mStructure->GetLogger() << "[" << __PRETTY_FUNCTION__ << "] \n";
     mStructure->GetLogger() << "InterpolationTypeInfo:\n" << GetInterpolationType().Info() << "\n";
+    mStructure->GetLogger() << Element::ElementTypeToString(GetEnumType()) << "\n";
 
     for (int iNode = 0; iNode < GetNumNodes(); ++iNode)
     {

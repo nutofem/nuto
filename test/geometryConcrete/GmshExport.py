@@ -7,7 +7,7 @@ import os
 import subprocess
 
 # Get path to work dir as cmake_current_binary_dir
-pathToWorkDir = sys.argv[1] 
+pathToWorkDir = sys.argv[1]
 
 # Split the current filename (basename) from its extension ...
 testName = fileExt = os.path.splitext(os.path.basename(sys.argv[0]))[0]
@@ -15,13 +15,13 @@ testName = fileExt = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 # ... and join it with the path to work dir
 workDir = os.path.join(pathToWorkDir, testName)
 
-# create the work dir 
+# create the work dir
 if not os.path.exists(workDir):
     os.makedirs(workDir)
 
 gmsh = sys.argv[3]
-    
-    
+
+
 print "   |--->  Gmsh found at"
 print "   |---> ",gmsh
 print "   |--->  Print result files to"
@@ -66,22 +66,22 @@ if (os.stat(errFile2D).st_size >0):
 	print "Errors or warnings occured while meshing 2D. See error file for details:"
 	print errFile2D
 	sys.exit(-1)
-	
+
 if (os.stat(errFile3D).st_size >0):
 	print "Errors or warnings occured while meshing 3D. See error file for details:"
 	print errFile3D
 	sys.exit(-1)
-	
+
 # check the mesh proper import of the mesh
 
 structure = nuto.Structure(2)
-structure.ImportFromGmsh(mshFile2D, "ConstitutiveLawIpNonlocal", "StaticDataNonlocal");
+structure.ImportFromGmsh(mshFile2D);
 if structure.GetNumElements() == 0:
 	print "Empty Structure"
 	sys.exit(-1)
 
 structure = nuto.Structure(3)
-structure.ImportFromGmsh(mshFile3D, "ConstitutiveLawIpNonlocal", "StaticDataNonlocal");
+structure.ImportFromGmsh(mshFile3D);
 if structure.GetNumElements() == 0:
 	print "Empty Structure"
 	sys.exit(-1)
