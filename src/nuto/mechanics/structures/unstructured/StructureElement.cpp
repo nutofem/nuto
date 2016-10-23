@@ -841,11 +841,11 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId,
                         {
                             if(rControlNode == nullptr)
                             {
-                                boundaryElement = new ContinuumBoundaryElement<1>(&elementPtr->AsContinuumElement1D(), surfaceId);
+                                boundaryElement = new ContinuumBoundaryElement<1>(elementPtr->AsContinuumElement1D(), surfaceId);
                             }
                             else
                             {
-                                boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<1>(&elementPtr->AsContinuumElement1D(), surfaceId,rControlNode);
+                                boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<1>(elementPtr->AsContinuumElement1D(), surfaceId,rControlNode);
                             }
                             integrationType = eIntegrationType::IntegrationType0DBoundary;
                             break;
@@ -854,11 +854,11 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId,
                         {
                             if(rControlNode == nullptr)
                             {
-                                boundaryElement = new ContinuumBoundaryElement<2>(&elementPtr->AsContinuumElement2D(), surfaceId);
+                                boundaryElement = new ContinuumBoundaryElement<2>(elementPtr->AsContinuumElement2D(), surfaceId);
                             }
                             else
                             {
-                                boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<2>(&elementPtr->AsContinuumElement2D(), surfaceId,rControlNode);
+                                boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<2>(elementPtr->AsContinuumElement2D(), surfaceId,rControlNode);
                             }
                             // check for 2D types
                             auto it = std::find(mMappingIntEnum2String.begin(), mMappingIntEnum2String.end(), interpolationType.GetCurrentIntegrationType().GetStrIdentifier());
@@ -905,11 +905,11 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId,
                         {
                             if(rControlNode == nullptr)
                             {
-                                boundaryElement = new ContinuumBoundaryElement<3>(&elementPtr->AsContinuumElement3D(), surfaceId);
+                                boundaryElement = new ContinuumBoundaryElement<3>(elementPtr->AsContinuumElement3D(), surfaceId);
                             }
                             else
                             {
-                                boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<3>(&elementPtr->AsContinuumElement3D(), surfaceId,rControlNode);
+                                boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<3>(elementPtr->AsContinuumElement3D(), surfaceId,rControlNode);
                             }
 
                             // check for 3D types

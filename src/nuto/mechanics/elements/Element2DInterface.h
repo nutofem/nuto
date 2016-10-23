@@ -90,6 +90,15 @@ public:
     //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
     void ExchangeNodePtr(NodeBase* rOldPtr, NodeBase* rNewPtr) override;
 
+    //! @brief sets the section of an element
+    //! @param rSection reference to section
+    void SetSection(const SectionBase& rSection) override;
+
+    //! @brief returns a reference to the section of an element
+    //! @return pointer to section
+    const SectionBase& GetSection() const override;
+
+
     virtual Eigen::VectorXd ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const override;
 
     //! @brief calculates the volume of an integration point (weight * detJac)
@@ -102,6 +111,9 @@ public:
 protected:
 
     std::vector<NodeBase*> mNodes;
+
+    // the base class of the sections
+    const SectionBase *mSection;
 
     Eigen::MatrixXd mTransformationMatrix;
 

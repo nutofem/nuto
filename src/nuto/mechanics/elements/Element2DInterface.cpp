@@ -879,6 +879,18 @@ void NuTo::Element2DInterface::FillConstitutiveOutputMapIpData(ConstitutiveOutpu
     }
 
 }
+void NuTo::Element2DInterface::SetSection(const NuTo::SectionBase& rSection)
+{
+    mSection = &rSection;
+}
+const NuTo::SectionBase& NuTo::Element2DInterface::GetSection() const
+{
+    if (mSection != nullptr)
+        return *mSection;
+
+    Info();
+    throw MechanicsException(__PRETTY_FUNCTION__, "This element has no section assigned yet.");
+}
 
 
 

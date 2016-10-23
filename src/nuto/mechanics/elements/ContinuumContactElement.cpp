@@ -25,7 +25,7 @@
 #include "nuto/mechanics/nodes/NodeBase.h"
 
 template <int TDim>
-NuTo::ContinuumContactElement<TDim>::ContinuumContactElement(const ContinuumElement<TDim> *rSlaveElement,
+NuTo::ContinuumContactElement<TDim>::ContinuumContactElement(const ContinuumElement<TDim>& rSlaveElement,
                                                              int rSurfaceId,
                                                              int rElementGroupId,
                                                              int rNodeGroupId,

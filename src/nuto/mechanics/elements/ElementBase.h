@@ -193,11 +193,11 @@ public:
 
     //! @brief sets the section of an element
     //! @param rSection reference to section
-    void SetSection(const SectionBase& rSection);
+    virtual void SetSection(const SectionBase& rSection);
 
     //! @brief returns a reference to the section of an element
     //! @return pointer to section
-    const SectionBase& GetSection() const;
+    virtual const SectionBase& GetSection() const;
 
     //! @brief sets the integration type of an element
     //! @param rIntegrationType reference to integration type
@@ -464,9 +464,6 @@ protected:
     const StructureBase* mStructure;
 
     const InterpolationType* mInterpolationType;
-
-    // the base class of the sections
-    const SectionBase *mSection;
 
     IPData mIPData;
 

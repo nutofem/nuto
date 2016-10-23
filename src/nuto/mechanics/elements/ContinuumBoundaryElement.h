@@ -25,7 +25,7 @@ template<int TDim>
 class ContinuumBoundaryElement: public ElementBase
 {
 public:
-    ContinuumBoundaryElement(const ContinuumElement<TDim>* rBaseElement, int rSurfaceId);
+    ContinuumBoundaryElement(const ContinuumElement<TDim>& rBaseElement, int rSurfaceId);
 
     virtual ~ContinuumBoundaryElement() = default;
 
@@ -108,6 +108,10 @@ public:
     {
         throw MechanicsException(__PRETTY_FUNCTION__,"Probably not needed.");
     }
+
+    //! @brief returns a reference to the section of an element
+    //! @return pointer to section
+    const SectionBase& GetSection() const override;
 
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @return rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
@@ -221,13 +225,13 @@ protected:
     }
 
     //The real boundary element that is attached to the virtual boundary element
-    const ContinuumElement<TDim>* mBaseElement;
+    const ContinuumElement<TDim>& mBaseElement;
 
     // surface id
     int mSurfaceId;
 
     // alpha parameter for the gradient damage boundary condition
-    int mAlphaUserDefined;
+    double mAlphaUserDefined;
 }
 ;
 

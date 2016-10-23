@@ -11,7 +11,7 @@ class ContinuumBoundaryElementConstrainedControlNode : public ContinuumBoundaryE
 {
 
 public:
-    ContinuumBoundaryElementConstrainedControlNode(const ContinuumElement<TDim> *rBaseElement, int rSurfaceId, NodeBase* rControlNode);
+    ContinuumBoundaryElementConstrainedControlNode(const ContinuumElement<TDim>& rBaseElement, int rSurfaceId, NodeBase* rControlNode);
 
     //! @brief returns the enum (type of the element)
     //! @return enum

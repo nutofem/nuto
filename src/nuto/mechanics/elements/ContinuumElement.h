@@ -92,6 +92,15 @@ public:
 
     virtual Eigen::VectorXd ExtractNodeValues(int rTimeDerivative, Node::eDof rDofType) const override;
 
+    //! @brief sets the section of an element
+    //! @param rSection reference to section
+    void SetSection(const SectionBase& rSection) override;
+
+    //! @brief returns a reference to the section of an element
+    //! @return pointer to section
+    const SectionBase& GetSection() const override;
+
+
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @return rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
     const Eigen::VectorXd GetIntegrationPointVolume() const override;
@@ -138,6 +147,9 @@ public:
 protected:
 
     std::vector<NodeBase*> mNodes;
+
+    // the base class of the sections
+    const SectionBase *mSection;
 
     //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
     void CheckElement() override;

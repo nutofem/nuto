@@ -1206,6 +1206,22 @@ void NuTo::ContinuumElement<TDim>::ResizeNodes(int rNewNumNodes)
     }
 }
 
+template <int TDim>
+void NuTo::ContinuumElement<TDim>::SetSection(const SectionBase& rSection)
+{
+    mSection = &rSection;
+}
+
+template <int TDim>
+const NuTo::SectionBase& NuTo::ContinuumElement<TDim>::GetSection() const
+{
+    if (mSection != nullptr)
+        return *mSection;
+
+    Info();
+    throw MechanicsException(__PRETTY_FUNCTION__, "This element has no section assigned yet.");
+}
+
 template<int TDim>
 const Eigen::VectorXd NuTo::ContinuumElement<TDim>::GetIntegrationPointVolume() const
 {
@@ -1387,6 +1403,7 @@ double NuTo::ContinuumElement<1>::CalculateDetJxWeightIPxSection(double rDetJaco
 
     return rDetJacobian * GetIntegrationType().GetIntegrationPointWeight(rTheIP) * mSection->GetArea() * mSection->AsSectionTruss()->GetAreaFactor(globalIPCoordinate(0, 0));
 }
+
 
 template<>
 double NuTo::ContinuumElement<2>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const

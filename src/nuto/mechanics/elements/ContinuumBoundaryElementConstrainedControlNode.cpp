@@ -1,4 +1,4 @@
-#include "ContinuumBoundaryElementConstrainedControlNode.h"
+#include "nuto/mechanics/elements/ContinuumBoundaryElementConstrainedControlNode.h"
 
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
@@ -6,7 +6,7 @@
 
 
 template <int TDim>
-NuTo::ContinuumBoundaryElementConstrainedControlNode<TDim>::ContinuumBoundaryElementConstrainedControlNode(const ContinuumElement<TDim>* rBaseElement,
+NuTo::ContinuumBoundaryElementConstrainedControlNode<TDim>::ContinuumBoundaryElementConstrainedControlNode(const ContinuumElement<TDim>& rBaseElement,
                                                                                                            int rSurfaceId,
                                                                                                            NodeBase* rControlNode)
     : ContinuumBoundaryElement<TDim>::ContinuumBoundaryElement(rBaseElement,rSurfaceId),

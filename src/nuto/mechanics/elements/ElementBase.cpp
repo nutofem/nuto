@@ -50,7 +50,7 @@
 NuTo::ElementBase::ElementBase(const StructureBase* rStructure, const InterpolationType& rInterpolationType) :
         mStructure(rStructure),
         mInterpolationType(&rInterpolationType),
-        mSection(nullptr), mIPData(rInterpolationType.GetCurrentIntegrationType())
+        mIPData(rInterpolationType.GetCurrentIntegrationType())
 {}
 
 
@@ -131,17 +131,12 @@ bool NuTo::ElementBase::HasConstitutiveLawAssigned(unsigned int rIP) const
 
 void NuTo::ElementBase::SetSection(const SectionBase& rSection)
 {
-    mSection = &rSection;
+    throw MechanicsException(__PRETTY_FUNCTION__, "This element type has so section.");
 }
 
 const NuTo::SectionBase& NuTo::ElementBase::GetSection() const
 {
-    if (mSection != nullptr)
-        return *mSection;
-
-
-    Info();
-    throw MechanicsException(__PRETTY_FUNCTION__, "This element has no section assigned yet.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "This element type has so section.");
 }
 
 

@@ -31,14 +31,12 @@
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
 
 template <int TDim>
-NuTo::ContinuumBoundaryElement<TDim>::ContinuumBoundaryElement(const ContinuumElement<TDim> *rBaseElement, int rSurfaceId)
-: ElementBase::ElementBase(rBaseElement->GetStructure(), rBaseElement->GetInterpolationType()),
+NuTo::ContinuumBoundaryElement<TDim>::ContinuumBoundaryElement(const ContinuumElement<TDim>& rBaseElement, int rSurfaceId)
+: ElementBase::ElementBase(rBaseElement.GetStructure(), rBaseElement.GetInterpolationType()),
   mBaseElement(rBaseElement),
   mSurfaceId(rSurfaceId),
   mAlphaUserDefined(-1)
-{
-    mSection = &rBaseElement->GetSection();
-}
+{}
 
 template <int TDim>
 NuTo::eError NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
@@ -80,14 +78,14 @@ void NuTo::ContinuumBoundaryElement<TDim>::ExtractAllNecessaryDofValues(Evaluate
     const std::set<Node::eDof>& dofs = mInterpolationType->GetDofs();
     for (auto dof : dofs)
         if (mInterpolationType->IsConstitutiveInput(dof))
-            rData.mNodalValues[dof] = mBaseElement->ExtractNodeValues(0, dof);
+            rData.mNodalValues[dof] = mBaseElement.ExtractNodeValues(0, dof);
 
-    rData.mNodalValues[Node::eDof::COORDINATES] = mBaseElement->ExtractNodeValues(0, Node::eDof::COORDINATES);
+    rData.mNodalValues[Node::eDof::COORDINATES] = mBaseElement.ExtractNodeValues(0, Node::eDof::COORDINATES);
 
     if (mStructure->GetNumTimeDerivatives() >= 1)
         for (auto dof : dofs)
             if (mInterpolationType->IsConstitutiveInput(dof))
-                rData.mNodalValues_dt1[dof] = mBaseElement->ExtractNodeValues(1, dof);
+                rData.mNodalValues_dt1[dof] = mBaseElement.ExtractNodeValues(1, dof);
 }
 
 
@@ -130,11 +128,11 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiv
             break;
 
         case Element::eOutput::GLOBAL_ROW_DOF:
-            mBaseElement->CalculateGlobalRowDofs(it.second->GetBlockFullVectorInt());
+            mBaseElement.CalculateGlobalRowDofs(it.second->GetBlockFullVectorInt());
             break;
 
         case Element::eOutput::GLOBAL_COLUMN_DOF:
-            mBaseElement->CalculateGlobalColumnDofs(it.second->GetBlockFullVectorInt());
+            mBaseElement.CalculateGlobalColumnDofs(it.second->GetBlockFullVectorInt());
             break;
 
         default:
@@ -175,7 +173,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateNMatrixBMatrixDetJacobian(Ev
     // ## = || [dX / dXi] * [dXi / dAlpha] ||
     // #######################################
     Eigen::MatrixXd derivativeShapeFunctionsNatural     = interpolationTypeCoords.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural);
-    const Eigen::Matrix<double,TDim,TDim> jacobian      = mBaseElement->CalculateJacobian(derivativeShapeFunctionsNatural, rData.mNodalValues[Node::eDof::COORDINATES]);// = [dX / dXi]
+    const Eigen::Matrix<double,TDim,TDim> jacobian      = mBaseElement.CalculateJacobian(derivativeShapeFunctionsNatural, rData.mNodalValues[Node::eDof::COORDINATES]);// = [dX / dXi]
 
     const Eigen::MatrixXd derivativeNaturalSurfaceCoordinates   = interpolationTypeCoords.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, mSurfaceId); // = [dXi / dAlpha]
     rData.mDetJacobian = (jacobian * derivativeNaturalSurfaceCoordinates).norm();
@@ -195,7 +193,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateNMatrixBMatrixDetJacobian(Ev
         const InterpolationBase& interpolationType = mInterpolationType->Get(dof);
         rData.mN[dof] = interpolationType.CalculateMatrixN(ipCoordsNatural);
 
-        rData.mB[dof] = mBaseElement->CalculateMatrixB(dof, interpolationType.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural), invJacobian);
+        rData.mB[dof] = mBaseElement.CalculateMatrixB(dof, interpolationType.CalculateDerivativeShapeFunctionsNatural(ipCoordsNatural), invJacobian);
     }
 }
 
@@ -695,7 +693,7 @@ namespace NuTo
 template <int TDim>
 int ContinuumBoundaryElement<TDim>::GetLocalDimension() const
 {
-    return mBaseElement->GetLocalDimension();
+    return mBaseElement.GetLocalDimension();
 }
 
 template <int TDim>
@@ -708,26 +706,26 @@ template <int TDim>
 NodeBase *ContinuumBoundaryElement<TDim>::GetNode(int rLocalNodeNumber)
 {
     int nodeId = mInterpolationType->GetSurfaceNodeIndex(mSurfaceId, rLocalNodeNumber);
-    return const_cast<NodeBase*>(mBaseElement->GetNode(nodeId));
+    return const_cast<NodeBase*>(mBaseElement.GetNode(nodeId));
 }
 
 template <int TDim>
 const NodeBase *ContinuumBoundaryElement<TDim>::GetNode(int rLocalNodeNumber) const
 {
     int nodeId = mInterpolationType->GetSurfaceNodeIndex(mSurfaceId, rLocalNodeNumber);
-    return mBaseElement->GetNode(nodeId);
+    return mBaseElement.GetNode(nodeId);
 }
 
 template <int TDim>
 int ContinuumBoundaryElement<TDim>::GetNumInfluenceNodes() const
 {
-    return mBaseElement->GetNumNodes();
+    return mBaseElement.GetNumNodes();
 }
 
 template <int TDim>
 const NodeBase *ContinuumBoundaryElement<TDim>::GetInfluenceNode(int rLocalNodeNumber) const
 {
-    return mBaseElement->GetNode(rLocalNodeNumber);
+    return mBaseElement.GetNode(rLocalNodeNumber);
 }
 
 template <int TDim>
@@ -740,21 +738,26 @@ template <int TDim>
 NodeBase *ContinuumBoundaryElement<TDim>::GetNode(int rLocalNodeNumber, Node::eDof rDofType)
 {
     int nodeId = mInterpolationType->Get(rDofType).GetSurfaceNodeIndex(mSurfaceId, rLocalNodeNumber);
-    return const_cast<NodeBase*>(mBaseElement->GetNode(nodeId));
+    return const_cast<NodeBase*>(mBaseElement.GetNode(nodeId));
 }
 
 template <int TDim>
 const NodeBase *ContinuumBoundaryElement<TDim>::GetNode(int rLocalNodeNumber, Node::eDof rDofType) const
 {
     int nodeId = mInterpolationType->Get(rDofType).GetSurfaceNodeIndex(mSurfaceId, rLocalNodeNumber);
-    return mBaseElement->GetNode(nodeId);
+    return mBaseElement.GetNode(nodeId);
 }
 
+template <int TDim>
+const NuTo::SectionBase& NuTo::ContinuumBoundaryElement<TDim>::GetSection() const
+{
+    return mBaseElement.GetSection();
+}
 
 template <int TDim>
 Eigen::VectorXd ContinuumBoundaryElement<TDim>::ExtractNodeValues(int rTimeDerivative, Node::eDof rDof) const
 {
-    return mBaseElement->ExtractNodeValues(rTimeDerivative, rDof);
+    return mBaseElement.ExtractNodeValues(rTimeDerivative, rDof);
 }
 
 template <int TDim>
@@ -804,7 +807,7 @@ template<>
 double NuTo::ContinuumBoundaryElement<1>::CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const
 {
 
-    return  mBaseElement->mSection->GetArea();
+    return mBaseElement.mSection->GetArea();
 }
 
 template<>
@@ -812,7 +815,7 @@ double NuTo::ContinuumBoundaryElement<2>::CalculateDetJxWeightIPxSection(double 
 {
     return  rDetJacobian *
             GetIntegrationType().GetIntegrationPointWeight(rTheIP) *
-            mBaseElement->mSection->GetThickness();
+            mBaseElement.mSection->GetThickness();
 
 }
 
