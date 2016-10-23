@@ -45,6 +45,16 @@ public:
         if (TDim == 3) return Evaluate3D(rConstitutiveInput, rConstitutiveOutput);
     }
 
+    //! @brief allocates rNum additional static data
+    //! @param rNum number of addtional static data
+    virtual void AllocateAdditional(unsigned int rNum) = 0;
+
+    //! @brief Puts current static data to previous static data, previous to pre-previous, etc.
+    virtual void ShiftToPast() = 0;
+
+    //! @brief Puts previous static data to current static data, pre-previous to previous, etc.
+    virtual void ShiftToFuture() = 0;
+
     //! @brief defines the serialization of this class
     //! @param rStream serialize output stream
     virtual void NuToSerializeSave(SerializeStreamOut& rStream) {/* no members to serialize */};

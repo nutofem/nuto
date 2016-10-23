@@ -5,6 +5,7 @@
  *      Author: ttitsche
  */
 
+#include <nuto/mechanics/groups/GroupEnum.h>
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/math/FullMatrix.h"
@@ -34,9 +35,6 @@ int NuTo::Structure::InterpolationTypeCreate(const std::string& rShape)
     return interpolationTypeNumber;
 }
 
-//! @brief creates a new interpolation type, calls the enum method
-//! @param rShape ... element shape "TRUSS", "TRIANGLE", "QUAD", "TET", "BRICK", etc.
-//! @return ... interpolation type id
 int NuTo::Structure::InterpolationTypeCreate(NuTo::Interpolation::eShapeType rShape)
 {
 
@@ -54,27 +52,17 @@ int NuTo::Structure::InterpolationTypeCreate(NuTo::Interpolation::eShapeType rSh
 }
 
 
-//! @brief sets the integration type for a specific interpolation type
-//! @param rInterpolationTypeId ... interpolation type id
-//! @param rIntegrationType ... integration type string
-void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationTypeId, const std::string& rIntegrationType, const std::string& rIpDataType)
+void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationTypeId, const std::string& rIntegrationType)
 {
-    InterpolationTypeSetIntegrationType(rInterpolationTypeId, GetPtrIntegrationType(rIntegrationType), IpData::IpDataTypeToEnum(rIpDataType));
+    InterpolationTypeSetIntegrationType(rInterpolationTypeId, GetPtrIntegrationType(rIntegrationType));
 }
 
-//! @brief sets the integration type for a specific interpolation type
-//! @param rInterpolationTypeId ... interpolation type id
-//! @param rIntegrationType ... integration type enum
-void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationTypeId, eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType)
+void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationTypeId, eIntegrationType rIntegrationType)
 {
-    InterpolationTypeSetIntegrationType(rInterpolationTypeId, GetPtrIntegrationType(rIntegrationType), rIpDataType);
+    InterpolationTypeSetIntegrationType(rInterpolationTypeId, GetPtrIntegrationType(rIntegrationType));
 }
 
-//! @brief sets the integration type for a specific interpolation type
-//! @param rInterpolationTypeId ... interpolation type id
-//! @param rIntegrationType ... integration type pointer
-//! @param rIpDataType ... ip data type enum
-void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationTypeId, IntegrationTypeBase* rIntegrationType, IpData::eIpDataType rIpDataType)
+void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationTypeId, IntegrationTypeBase* rIntegrationType)
 {
     auto iterator = mInterpolationTypeMap.find(rInterpolationTypeId);
     if (iterator == mInterpolationTypeMap.end())
@@ -97,7 +85,7 @@ void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationType
     for (int iElement = 0; iElement < elementIds.GetNumRows(); ++iElement)
     {
         ElementBase* element = ElementGetElementPtr(elementIds.GetValue(iElement));
-        element->SetIntegrationType(rIntegrationType, rIpDataType);
+        element->SetIntegrationType(*rIntegrationType);
     }
 
     GroupDelete(elementGroupId);
@@ -162,11 +150,11 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId,
     interpolationType->AddDofInterpolation(rDofType, rTypeOrder, rDegree, rKnots, rWeights);
 
     eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
-    const IntegrationTypeBase* integrationType = this->GetPtrIntegrationType(integrationTypeEnum);
+    const IntegrationTypeBase& integrationType = *this->GetPtrIntegrationType(integrationTypeEnum);
 
-    interpolationType->UpdateIntegrationType(*integrationType);
+    interpolationType->UpdateIntegrationType(integrationType);
     if (mVerboseLevel > 2)
-        mLogger << "[NuTo::Structure::InterpolationTypeAdd] Updated IntegrationType to " << integrationType->GetStrIdentifier() << ".\n";
+        mLogger << "[NuTo::Structure::InterpolationTypeAdd] Updated IntegrationType to " << integrationType.GetStrIdentifier() << ".\n";
 
     // update all elements
     // disable show time
@@ -181,7 +169,7 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId,
     for (int iElement = 0; iElement < elementIds.GetNumRows(); ++iElement)
     {
         ElementBase* element = ElementGetElementPtr(elementIds.GetValue(iElement));
-        element->SetIntegrationType(integrationType, element->GetIpDataType(0));
+        element->SetIntegrationType(integrationType);
     }
 
     GroupDelete(elementGroupId);
@@ -204,11 +192,11 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node:
     interpolationType->AddDofInterpolation(rDofType, rTypeOrder);
 
     eIntegrationType integrationTypeEnum = interpolationType->GetStandardIntegrationType();
-    const IntegrationTypeBase* integrationType = this->GetPtrIntegrationType(integrationTypeEnum);
+    const IntegrationTypeBase& integrationType = *this->GetPtrIntegrationType(integrationTypeEnum);
 
-    interpolationType->UpdateIntegrationType(*integrationType);
+    interpolationType->UpdateIntegrationType(integrationType);
     if (mVerboseLevel > 2)
-        mLogger << "[NuTo::Structure::InterpolationTypeAdd] Updated IntegrationType to " << integrationType->GetStrIdentifier() << ".\n";
+        mLogger << "[NuTo::Structure::InterpolationTypeAdd] Updated IntegrationType to " << integrationType.GetStrIdentifier() << ".\n";
 
     // update all elements
     // disable show time
@@ -216,14 +204,14 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node:
     bool showTime = GetShowTime();
     SetShowTime(false);
 
-    int elementGroupId = GroupCreate("Elements");
+    int elementGroupId = GroupCreate(eGroupId::Elements);
     GroupAddElementFromType(elementGroupId, rInterpolationTypeId);
 
     NuTo::FullVector<int, Eigen::Dynamic> elementIds = GroupGetMemberIds(elementGroupId);
     for (int iElement = 0; iElement < elementIds.GetNumRows(); ++iElement)
     {
         ElementBase* element = ElementGetElementPtr(elementIds.GetValue(iElement));
-        element->SetIntegrationType(integrationType, element->GetIpDataType(0));
+        element->SetIntegrationType(integrationType);
     }
 
     GroupDelete(elementGroupId);

@@ -247,6 +247,16 @@ public:
     //! @param rStrain integrated strain
     void GetIntegratedStrain(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rStress);
 
+    //! @brief allocates rNum additional static data
+    //! @param rNum number of addtional static data
+    void StaticDataAllocateAdditional(unsigned int rNum);
+
+    //! @brief Puts current static data to previous static data, previous to pre-previous, etc.
+    void StaticDataShiftToPast();
+
+    //! @brief Puts previous static data to current static data, pre-previous to previous, etc.
+    void StaticDataShiftToFuture();
+
     //! @brief Update the static data of an element
     //virtual eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)=0;
 

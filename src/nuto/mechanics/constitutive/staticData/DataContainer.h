@@ -37,7 +37,7 @@ public:
     //! @brief Get the data at `timestep`.
     //! @param rTimeStep Timestep at which to retrieve the data. The timestep is optional and defaults to 0, that is,
     //!                 the current time step.
-    Type& GetData(int rTimeStep = 0)
+    Type& GetData(unsigned int rTimeStep = 0)
     {
         if (rTimeStep > GetNumData() - 1)
             throw MechanicsException(__PRETTY_FUNCTION__, "You requested time step " + std::to_string(rTimeStep) + ". Number of allocated time steps: " + std::to_string(GetNumData()));
@@ -45,12 +45,12 @@ public:
     }
 
     //! @brief Copies the "current" ([0]) static data `rNumAdditionalData` times.
-    void AllocateAdditionalData(int rNumAdditionalData)
+    void AllocateAdditionalData(unsigned int rNumAdditionalData)
     {
         if (mData.empty())
             throw MechanicsException(__PRETTY_FUNCTION__, "No static data allocated yet.");
 
-        for (int i = 0; i < rNumAdditionalData; ++i)
+        for (unsigned int i = 0; i < rNumAdditionalData; ++i)
         {
             mData.push_back(mData[0]);
         }
@@ -78,7 +78,7 @@ public:
     }
 
     //! @brief Returns the total number of static data sets.
-    int GetNumData() const
+    unsigned int GetNumData() const
     {
         return mData.size();
     }

@@ -25,14 +25,11 @@
 #include "nuto/base/Timer.h"
 
 #include "nuto/math/SparseMatrixCSRVector2General.h"
-#include "nuto/mechanics/constitutive/staticData/Component.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
 #include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/elements/ElementDataBase.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
-#include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/ElementOutputDummy.h"
 #include "nuto/mechanics/elements/ElementOutputBlockMatrixDouble.h"
 #include "nuto/mechanics/elements/ElementOutputBlockVectorDouble.h"
@@ -700,7 +697,8 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
 void NuTo::Structure::BuildNonlocalData(int rConstitutiveId)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-
+    throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented");
+    /*
     boost::ptr_map<int, ConstitutiveBase>::iterator itConstitutive = mConstitutiveLawMap.find(rConstitutiveId);
     if (itConstitutive == mConstitutiveLawMap.end())
         throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law with the given identifier does not exist.");
@@ -716,12 +714,15 @@ void NuTo::Structure::BuildNonlocalData(int rConstitutiveId)
     {
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error calculating nonlocal data.");
     }
+     */
 }
 
 //! @brief Builds the nonlocal data for integral type nonlocal constitutive models
 //! @param rConstitutiveId constitutive model for which the data is build
 void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
 {
+    throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented");
+    /*
     double R(rConstitutive->GetParameterDouble(Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS));
     double R2(R * R);
     std::vector<ElementBase*> indexElement;
@@ -744,7 +745,7 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
         for (int theIp = 0; theIp < elementPtr->GetNumIntegrationPoints(); theIp++)
         {
             //theWeight = elementIter->second->GetGlobalIntegrationPointWeight(theIp);
-            if (elementPtr->GetConstitutiveLaw(theIp) == rConstitutive)
+            if (&elementPtr->GetConstitutiveLaw(theIp) == rConstitutive)
             {
                 elementPtr->DeleteNonlocalElements();
                 indexElement.push_back(elementPtr);
@@ -869,7 +870,6 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
     delete[] dists;
 
     annClose();
-    /*
      if(EXIT_SUCCESS != 0)
      {
      INTERPRET_INTERN error_mess("ELEMENT_BUILD_NL_ELEMENTS_ANN: Error using ANN library.");
@@ -878,12 +878,7 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
      */
 }
 
-//! @brief import from gmsh, creates groups according to gmsh's physical entities and creates an interpolation types for each group
-//! @param rFileName .. file name
-//! @param rElementData .. element data for the elements to be created
-//! @param rIPData .. ip data for the integration points to be created
-//! @return .. Matrix [NumGroups x 2] with [: x 0] group ids and [ : x 1] corresponding interpolation type ids
-NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFromGmsh(const std::string& rFileName, ElementData::eElementDataType rElementData, IpData::eIpDataType rIPData)
+NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFromGmsh(const std::string& rFileName)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
@@ -891,30 +886,7 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
 
     try
     {
-        ids = ImportFromGmshAux(rFileName, rElementData, rIPData);
-    } catch (NuTo::MechanicsException &e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "Error importing from Gmsh.");
-        throw e;
-    } catch (...)
-    {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error importing from Gmsh.");
-    }
-    return ids;
-}
-
-NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFromGmsh(const std::string& rFileName, const std::string& rElementData, const std::string& rIPData)
-{
-    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ids;
-
-    try
-    {
-        ElementData::eElementDataType elementDataType = ElementData::ElementDataTypeToEnum(rElementData);
-        IpData::eIpDataType ipDataType = NuTo::IpData::IpDataTypeToEnum(rIPData);
-
-        ids = ImportFromGmshAux(rFileName, elementDataType, ipDataType);
+        ids = ImportFromGmshAux(rFileName);
     } catch (NuTo::MechanicsException &e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "Error importing from Gmsh.");
@@ -966,7 +938,7 @@ public:
 #include <iostream>
 #include <string>
 
-NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFromGmshAux(const std::string& rFileName, ElementData::eElementDataType rElementData, IpData::eIpDataType rIPData)
+NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFromGmshAux(const std::string& rFileName)
 {
     const unsigned int num_elm_nodes[24] =
     { 0, 2, 3, 4, 4, 8, 6, 5, 3, 6, 9, 10, 27, 18, 14, 1, 8, 20, 15, 13, 0, 10, 0, 15 };
@@ -1505,7 +1477,7 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
 
         } // now, a valid group id and a valid interpolation type exists
 
-        int elementId = ElementCreate(interpolationTypeId, nodeNumbers, rElementData, rIPData);
+        int elementId = ElementCreate(interpolationTypeId, nodeNumbers);
         mGroupMap.find(groupId)->second->AddMember(elementId, ElementGetElementPtr(elementId));
     }
 
@@ -1560,11 +1532,6 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>&
     }
 }
 
-//! @brief copy and move the structure
-//! most of the data is kept, but e.g. nonlocal data and
-//! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
-//! @param rOld2NewNodePointer ptrMap showing the new and old node pointers
-//! @param rOld2NewElementPointer ptrMap showing the new and old element pointers
 void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>& rOffset, std::map<NodeBase*, NodeBase*>& rOld2NewNodePointer, std::map<ElementBase*, ElementBase*>& rOld2NewElementPointer)
 {
     if (rOffset.GetNumRows() != mDimension)
@@ -1603,8 +1570,6 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>&
     for (unsigned int countElement = 0; countElement < elements.size(); countElement++)
     {
         ElementBase* oldElementPtr = elements[countElement];
-        ElementData::eElementDataType elementDataType = oldElementPtr->GetElementDataType();
-        IpData::eIpDataType ipDataType = oldElementPtr->GetIpDataType(0);
         int numNodes = oldElementPtr->GetNumNodes();
         std::vector<NodeBase*> nodeVector(numNodes);
         for (int countNode = 0; countNode < numNodes; countNode++)
@@ -1613,39 +1578,29 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>&
         }
         // find interpolation type
         int interpolationTypeId = 0;
-        const InterpolationType* interpolationTypeOld = oldElementPtr->GetInterpolationType();
+        const InterpolationType& interpolationTypeOld = oldElementPtr->GetInterpolationType();
         for (auto it = mInterpolationTypeMap.begin(); it != mInterpolationTypeMap.end(); it++)
-            if ((it->second) == interpolationTypeOld)
+            if ((it->second) == &interpolationTypeOld)
             {
                 interpolationTypeId = it->first;
                 break;
             }
 
-        int newElementId = ElementCreate(interpolationTypeId, nodeVector, elementDataType, ipDataType);
+        int newElementId = ElementCreate(interpolationTypeId, nodeVector);
         ElementBase* newElementPtr = ElementGetElementPtr(newElementId);
         rOld2NewElementPointer[oldElementPtr] = newElementPtr;
 
         //set integration type
-        const IntegrationTypeBase* integrationType = oldElementPtr->GetIntegrationType();
-        newElementPtr->SetIntegrationType(integrationType, ipDataType);
+        const IntegrationTypeBase& integrationType = oldElementPtr->GetIntegrationType();
+        newElementPtr->SetIntegrationType(integrationType);
 
         //set section
-        const SectionBase* section = oldElementPtr->GetSection();
+        const SectionBase& section = oldElementPtr->GetSection();
         newElementPtr->SetSection(section);
 
         //set constitutive model
-        ConstitutiveBase* constitutive = oldElementPtr->GetConstitutiveLaw(0);
+        ConstitutiveBase& constitutive = oldElementPtr->GetConstitutiveLaw(0);
         newElementPtr->SetConstitutiveLaw(constitutive);
-
-        if (oldElementPtr->GetNumNonlocalElements() != 0)
-            constitutiveWithNonlocalData.insert(constitutive);
-
-        //set static data
-        for (int countIp = 0; countIp < integrationType->GetNumIntegrationPoints(); countIp++)
-        {
-            auto clonedStaticData = oldElementPtr->GetConstitutiveStaticData(countIp)->Clone();
-            newElementPtr->SetConstitutiveStaticData(countIp, clonedStaticData);
-        }
     }
 
 #ifdef _OPENMP
@@ -1654,8 +1609,8 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>&
 #endif
     {
         //rebuild nonlocal data
-        for (auto it = constitutiveWithNonlocalData.begin(); it != constitutiveWithNonlocalData.end(); it++)
-            BuildNonlocalData(*it);
+//        for (auto it = constitutiveWithNonlocalData.begin(); it != constitutiveWithNonlocalData.end(); it++)
+//            BuildNonlocalData(*it);
     }
 }
 

@@ -520,45 +520,45 @@ public:
     //! @param rElement ... element
     //! @param rDelta ... step of the central differences
     //! @return BlockFullMatrix containing the hessian0_cdf
-    BlockFullMatrix<double> ElementBuildHessian0_CDF(ElementBase* rElement, double rDelta);
+    BlockFullMatrix<double> ElementBuildHessian0_CDF(ElementBase& rElement, double rDelta);
 
     //! @brief builds the element internal gradient
     //! @param rElement ... element
     //! @return BlockFullVector containing the internal gradient
-    BlockFullVector<double> ElementBuildInternalGradient(ElementBase* rElement);
+    BlockFullVector<double> ElementBuildInternalGradient(ElementBase& rElement);
 
     //! @brief builds the element hessian
     //! @param rHessianType ... hessian0 hessian1 hessian2
     //! @param rElement ... element
     //! @return BlockFullMatrix containing the hessian
-    BlockFullMatrix<double> ElementBuildHessian(Element::eOutput rHessianType, ElementBase* rElement);
+    BlockFullMatrix<double> ElementBuildHessian(Element::eOutput rHessianType, ElementBase& rElement);
 
     //! @brief builds the element hessian0
     //! @param rElement ... element
     //! @return BlockFullMatrix containing the hessian
-    BlockFullMatrix<double> ElementBuildHessian0(ElementBase* rElement);
+    BlockFullMatrix<double> ElementBuildHessian0(ElementBase& rElement);
 
     //! @brief builds the element hessian1
     //! @param rElement ... element
     //! @return BlockFullMatrix containing the hessian
-    BlockFullMatrix<double> ElementBuildHessian1(ElementBase* rElement);
+    BlockFullMatrix<double> ElementBuildHessian1(ElementBase& rElement);
 
     //! @brief builds the element hessian2
     //! @param rElement ... element
     //! @return BlockFullMatrix containing the hessian
-    BlockFullMatrix<double> ElementBuildHessian2(ElementBase* rElement);
+    BlockFullMatrix<double> ElementBuildHessian2(ElementBase& rElement);
 
     //! @brief builds the element vector of global row dofs
     //! @param rElement ... element
     //! @return BlockFullVector containing the global row dofs
-    BlockFullVector<int> ElementBuildGlobalDofsRow(ElementBase* rElement);
+    BlockFullVector<int> ElementBuildGlobalDofsRow(ElementBase& rElement);
 
     //! @brief builds the element vector of global column dofs
     //! @param rElement ... element
     //! @return BlockFullVector containing the global column dofs
-    BlockFullVector<int> ElementBuildGlobalDofsColumn(ElementBase* rElement);
+    BlockFullVector<int> ElementBuildGlobalDofsColumn(ElementBase& rElement);
 
-    bool ElementCheckHessian0(ElementBase* rElement, double rDelta, double rRelativeTolerance, bool rPrintWrongMatrices = true);
+    bool ElementCheckHessian0(ElementBase& rElement, double rDelta, double rRelativeTolerance, bool rPrintWrongMatrices = true);
 
 #endif // SWIG
 
@@ -566,13 +566,13 @@ public:
     NuTo::BlockFullMatrix<double> ElementBuildHessian1        (int rElementId);
     NuTo::BlockFullMatrix<double> ElementBuildHessian2        (int rElementId);
 
-    NuTo::BlockFullVector<double> ElementBuildInternalGradient(int rElementId) { return ElementBuildInternalGradient(ElementGetElementPtr(rElementId)); }
-    NuTo::BlockFullVector<int>    ElementBuildGlobalDofsRow   (int rElementId) { return ElementBuildGlobalDofsRow   (ElementGetElementPtr(rElementId)); }
-    NuTo::BlockFullVector<int>    ElementBuildGlobalDofsColumn(int rElementId) { return ElementBuildGlobalDofsColumn(ElementGetElementPtr(rElementId)); }
+    NuTo::BlockFullVector<double> ElementBuildInternalGradient(int rElementId) { return ElementBuildInternalGradient(*ElementGetElementPtr(rElementId)); }
+    NuTo::BlockFullVector<int>    ElementBuildGlobalDofsRow   (int rElementId) { return ElementBuildGlobalDofsRow   (*ElementGetElementPtr(rElementId)); }
+    NuTo::BlockFullVector<int>    ElementBuildGlobalDofsColumn(int rElementId) { return ElementBuildGlobalDofsColumn(*ElementGetElementPtr(rElementId)); }
 
     bool ElementCheckHessian0(int rElementId, double rDelta, double rRelativeTolerance, bool rPrintWrongMatrices = true)
     {
-        return ElementCheckHessian0(ElementGetElementPtr(rElementId), rDelta, rRelativeTolerance, rPrintWrongMatrices);
+        return ElementCheckHessian0(*ElementGetElementPtr(rElementId), rDelta, rRelativeTolerance, rPrintWrongMatrices);
     }
 
     bool ElementCheckHessian0(double rDelta, double rRelativeTolerance, bool rPrintWrongMatrices = true);
@@ -581,12 +581,6 @@ public:
     //! @param rElementIdent identifier for the element
     //! @param rConstitutiveLawIdent identifier for the material
     void ElementSetConstitutiveLaw(int rElementId, int rConstitutiveLawIdent);
-
-    //! @brief sets the constitutive law of a single element
-    //! @param rElementIdent identifier for the element
-    //! @param rIp  id of integration point
-    //! @param rConstitutiveLawIdent identifier for the material
-    void ElementSetConstitutiveLaw(int rElementId,int rIp, int rConstitutiveLawIdent);
 
     //! @brief modifies the constitutive law of a group of elements
     //! @param rGroupIdent identifier for the group of elements
@@ -603,11 +597,6 @@ public:
     //! @param rConstitutive material pointer
     void ElementSetConstitutiveLaw(ElementBase* rElement, ConstitutiveBase* rConstitutive);
 
-    //! @brief sets the constitutive law of a single ip at an element
-    //! @param rElement element pointer
-    //! @param rIp number of integration point
-    //! @param rConstitutive material pointer
-    void ElementSetConstitutiveLaw(ElementBase* rElement,int rIp, ConstitutiveBase* rConstitutive);
 #endif //SWIG
 
      //! @brief modifies the section of a single element
@@ -625,11 +614,6 @@ public:
     void ElementTotalSetSection(int rSectionId);
 
 #ifndef SWIG
-    //! @brief returns the enum of string identifier for an integration type
-    //! @param rIpDataTypeStr string
-    //! @return enum
-    NuTo::IpData::eIpDataType ElementGetEnumIntegrationType(const std::string& rIpDataTypeStr);
-
     //! @brief modifies the section of a single element
     //! @param rElement element pointer
     //! @param rSection section
@@ -757,18 +741,6 @@ public:
     //! @param rGroupId  group number
     //! @return volume of the structure in 3D /area in 2D/ length in 1D
     double ElementGroupGetVolume(int rGroupId);
-
-    //! @brief calculates the internal energy of the system
-    //! @return total energy
-    virtual double ElementTotalGetInternalEnergy();
-
-    //! @brief calculates the total energy of the system
-    //! @return total energy
-    virtual double ElementGroupGetTotalEnergy(int rGroupId);
-
-    //! @brief calculates the elastic energy of the system
-    //! @return elastic energy
-    double ElementTotalGetElasticEnergy();
 
     //! @brief calculate the largest element eigenvalue for all elements solving the generalized eigenvalue problem Ku=lambda Mu
     //! this is used for the estimation of the critical time step
@@ -1801,6 +1773,26 @@ public:
 	bool InterpolationTypeIsConstitutiveInput(NuTo::Node::eDof rDofType);
 
 protected:
+
+    //! @brief finds an unused ID in rMap
+    //! @param rMap hopefully any kind of map, boost, std, ...
+    //! @return unused ID
+    template <typename T>
+    int GetUnusedId(const T& rMap)
+    {
+        int unused = rMap.size();
+        auto it = rMap.find(unused);
+        while (it != rMap.end())
+        {
+            unused++;
+            it = rMap.find(unused);
+        }
+        return unused;
+    }
+
+
+
+
     //! @brief ... number of time derivatives (0 : static, 1: velocities, 2: accelerations)
 	int mNumTimeDerivatives;
 

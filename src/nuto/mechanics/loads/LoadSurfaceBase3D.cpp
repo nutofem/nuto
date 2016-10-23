@@ -40,13 +40,13 @@ NuTo::LoadSurfaceBase3D::LoadSurfaceBase3D(int rLoadCase, StructureBase* rStruct
         {
             //check if solid element
             ContinuumElement<3>& elementPtr = itElement.second->AsContinuumElement3D();
-            const InterpolationType* InterpolationType = elementPtr.GetInterpolationType();
+            const InterpolationType& interpolationType = elementPtr.GetInterpolationType();
 
             //loop over all surfaces
-            for (int iSurface = 0; iSurface < InterpolationType->GetNumSurfaces(); iSurface++)
+            for (int iSurface = 0; iSurface < interpolationType.GetNumSurfaces(); iSurface++)
             {
                 bool addSurface = true;
-                surfaceNodeIndices = InterpolationType->GetSurfaceNodeIndices(iSurface);
+                surfaceNodeIndices = interpolationType.GetSurfaceNodeIndices(iSurface);
 
                 int numSurfaceNodes = surfaceNodeIndices.rows();
                 surfaceNodes.resize(numSurfaceNodes);
@@ -125,11 +125,11 @@ void NuTo::LoadSurfaceBase3D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
 
 //        std::cout << "Surface: " << surface << std::endl;
 
-        const InterpolationBase& interpolationTypeDisps = elementPtr->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS);
-        const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType()->Get(Node::eDof::COORDINATES);
+        const InterpolationBase& interpolationTypeDisps = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS);
+        const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES);
 
         IntegrationTypeBase* integrationType(0);
-        switch (elementPtr->GetInterpolationType()->GetShapeType())
+        switch (elementPtr->GetInterpolationType().GetShapeType())
         {
         case Interpolation::eShapeType::TETRAHEDRON3D:
         {

@@ -24,6 +24,19 @@ public:
         return static_cast<ConstitutiveBase&>(mLaw);
     }
 
+
+    //! @brief allocates rNum additional static data
+    //! @param rNum number of addtional static data
+    void AllocateAdditional(unsigned int rNum) override {}
+
+    //! @brief Puts current static data to previous static data, previous to pre-previous, etc.
+    void ShiftToPast() override {}
+
+    //! @brief Puts previous static data to current static data, pre-previous to previous, etc.
+    void ShiftToFuture() override {}
+
+
+
 protected:
     //! @brief Evaluate the constitutive relation in 1D
     //! @param rConstitutiveInput Input to the constitutive law

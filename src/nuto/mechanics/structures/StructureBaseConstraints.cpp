@@ -869,8 +869,8 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
 
 
     // Coordinate interpolation must be linear so the shape function derivatives are constant!
-    assert(elementPtr->GetInterpolationType()->Get(Node::eDof::COORDINATES).GetTypeOrder() == Interpolation::eTypeOrder::EQUIDISTANT1);
-    const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = elementPtr->GetInterpolationType()->Get(Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(0);
+    assert(elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES).GetTypeOrder() == Interpolation::eTypeOrder::EQUIDISTANT1);
+    const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES).GetDerivativeShapeFunctionsNatural(0);
 
     // real coordinates of every node in rElement
     Eigen::VectorXd elementNodeCoords = elementPtr->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
@@ -897,7 +897,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
     }
 
 
-    auto shapeFunctions = elementPtr->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS).CalculateShapeFunctions(elementNaturalNodeCoords);
+    auto shapeFunctions = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS).CalculateShapeFunctions(elementNaturalNodeCoords);
 
     //find unused integer id
     std::vector<int> unusedId(dim);
@@ -918,7 +918,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
 
     for (int iNode = 0; iNode < shapeFunctions.rows(); ++iNode)
     {
-        int localNodeId = elementPtr->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS).GetNodeIndex(iNode);
+        int localNodeId = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS).GetNodeIndex(iNode);
         int globalNodeId = NodeGetId(elementPtr->GetNode(localNodeId, Node::eDof::DISPLACEMENTS));
 //        std::cout << "globalNodeId \t" << globalNodeId << std::endl;
         double coefficient = -shapeFunctions(iNode, 0);

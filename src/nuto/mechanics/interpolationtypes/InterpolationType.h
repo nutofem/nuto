@@ -63,6 +63,10 @@ public:
     //! @param rIntegrationType ... integration type
     void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType);
 
+    //! @brief checks for a valid integration type
+    //! @return true, if the integration type is assigned
+    bool HasIntegrationType() const;
+
     //! @brief returns a reference to the integration type that is currently used
     const IntegrationTypeBase& GetCurrentIntegrationType() const;
 

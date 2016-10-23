@@ -44,6 +44,26 @@ public:
         return mData;
     }
 
+    //! @brief allocates rNum additional static data
+    //! @param rNum number of addtional static data
+    void AllocateAdditional(unsigned int rNum) override
+    {
+        mData.AllocateAdditionalData(rNum);
+    }
+
+    //! @brief Puts current static data to previous static data, previous to pre-previous, etc.
+    void ShiftToPast() override
+    {
+        mData.ShiftToPast();
+    }
+
+    //! @brief Puts previous static data to current static data, pre-previous to previous, etc.
+    void ShiftToFuture() override
+    {
+        mData.ShiftToPast();
+    }
+
+
     //! @brief defines the serialization of this class
     //! @param rStream serialize output stream
     virtual void NuToSerializeSave(SerializeStreamOut& rStream) override

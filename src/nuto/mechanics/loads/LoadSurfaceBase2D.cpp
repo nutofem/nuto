@@ -45,13 +45,13 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
         {
             //check if plane element
             ContinuumElement<2>& elementPtr = itElement.second->AsContinuumElement2D();
-            const InterpolationType* InterpolationType = elementPtr.GetInterpolationType();
+            const InterpolationType& interpolationType = elementPtr.GetInterpolationType();
 
             //loop over all surfaces
-            for (int iSurface = 0; iSurface < InterpolationType->GetNumSurfaces(); iSurface++)
+            for (int iSurface = 0; iSurface < interpolationType.GetNumSurfaces(); iSurface++)
             {
                 bool addSurface = true;
-                surfaceNodeIndices = InterpolationType->GetSurfaceNodeIndices(iSurface);
+                surfaceNodeIndices = interpolationType.GetSurfaceNodeIndices(iSurface);
                 int numSurfaceNodes = surfaceNodeIndices.rows();
                 surfaceNodes.resize(numSurfaceNodes);
 
@@ -118,8 +118,8 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
         const auto* elementPtr = it.first;
         int surface = it.second;
 
-        const InterpolationBase& interpolationTypeDisps = elementPtr->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS);
-        const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType()->Get(Node::eDof::COORDINATES);
+        const InterpolationBase& interpolationTypeDisps = elementPtr->GetInterpolationType().Get(Node::eDof::DISPLACEMENTS);
+        const InterpolationBase& interpolationTypeCoords = elementPtr->GetInterpolationType().Get(Node::eDof::COORDINATES);
 
         IntegrationTypeBase* integrationType(0);
         switch (interpolationTypeDisps.GetTypeOrder())
@@ -236,7 +236,7 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             shapeFunctions = interpolationTypeDisps.CalculateShapeFunctions(ipCoordsNatural);
 
             //calculate weighting factor
-            double thickness = elementPtr->GetSection()->GetThickness();
+            double thickness = elementPtr->GetSection().GetThickness();
             double factor = thickness * (integrationType->GetIntegrationPointWeight(theIp)) * detJacobian;
 
             //calculate surface load

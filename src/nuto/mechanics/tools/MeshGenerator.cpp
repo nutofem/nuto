@@ -38,7 +38,7 @@ void NuTo::MeshGenerator::GenerateMesh1D(NuTo::Structure &rStructure,
         Nodes(0) = NodeIDs[x_count    ];
         Nodes(1) = NodeIDs[x_count + 1];
 
-        int elementNumber = rStructure.ElementCreate(rInterpolationType, Nodes, "CONSTITUTIVELAWIP","STATICDATA");
+        int elementNumber = rStructure.ElementCreate(rInterpolationType, Nodes);
 
         // set element section
         rStructure.ElementSetSection(elementNumber,rSection);
@@ -170,7 +170,7 @@ void NuTo::MeshGenerator::GenerateMesh2D(NuTo::Structure &rStructure,
             Nodes(2) = NodeIDs[x_count + 1   + (y_count + 1)  * NumNodesX];
             Nodes(3) = NodeIDs[x_count       + (y_count + 1)  * NumNodesX];
 
-            int elementNumber = rStructure.ElementCreate(rInterpolationType, Nodes, "CONSTITUTIVELAWIP","STATICDATA");
+            int elementNumber = rStructure.ElementCreate(rInterpolationType, Nodes);
 
             // set element section
             rStructure.ElementSetSection(elementNumber,rSection);
@@ -313,7 +313,7 @@ void NuTo::MeshGenerator::GenerateMesh3D(NuTo::Structure &rStructure,
                 Nodes(6) = NodeIDs[x_count + 1   + (y_count + 1)  * NumNodesX   + (z_count + 1)  * NumNodesX * NumNodesY];
                 Nodes(7) = NodeIDs[x_count       + (y_count + 1)  * NumNodesX   + (z_count + 1)  * NumNodesX * NumNodesY];
 
-                int elementNumber = rStructure.ElementCreate(rInterpolationType, Nodes, "CONSTITUTIVELAWIP","STATICDATA");
+                int elementNumber = rStructure.ElementCreate(rInterpolationType, Nodes);
 
                 // set element section
                 rStructure.ElementSetSection(elementNumber,rSection);

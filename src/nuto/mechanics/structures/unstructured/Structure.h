@@ -321,84 +321,62 @@ public:
     //! @param rNodeNumbers ... node indices
     //! @param rKnots ... knots defining the element
     //! @param rKnotIDs ... starting knot ids of the element in each element direction
+    //! @return element id
     int ElementCreate(int rInterpolationTypeId,
                       const Eigen::VectorXi &rNodeNumbers,
                       const Eigen::MatrixXd &rKnots,
                       const Eigen::VectorXi &rKnotIDs);
 
-    //! @brief Creates an element
-    //! @param rInterpolationTypeId interpolation type id
-    //! @param rNodeNumbers node indices
-    int ElementCreate(int rInterpolationTypeId, const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers);
-
-    //---------------------------------------------------------------------------------------------------------------------------
-    //! @brief Creates an IGA element, where the knot indices, beside the nodes (control points), are part of the data structures
-    //! @param rInterpolationTypeId ... interpolation type id
-    //! @param rNodeNumbers  ... node indices
-    //! @param rKnots ... knots defining the element
-    //! @param rKnotIDs ... starting knot ids of the element in each element direction
-    //! @param rElementDataType  ... Element data for the elements
-    //! @param rIpDataType  ... Integration point data for the elements
-    int ElementCreate(int   rInterpolationTypeId,
-                      const Eigen::VectorXi &rNodeNumbers,
-                      const Eigen::MatrixXd &rKnots,
-                      const Eigen::VectorXi &rKnotIDs,
-                      const std::string     &rElementDataType,
-                      const std::string     &rIpDataType);
-
-    //! @brief Creates an element
-    //! @param rInterpolationTypeId interpolation type id
-    //! @param rNodeNumbers node indices
-    //! @param rElementDataType Element data for the elements
-    //! @param rIpDataType Integration point data for the elements
-    int ElementCreate(int rInterpolationTypeId,
-                      const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers,
-                      const std::string& rElementDataType,
-                      const std::string& rIpDataType);
-
-    //---------------------------------------------------------------------------------------------------------------------------
     //! @brief Creates an IGA element, where the knot indices, beside the nodes (control points), are part of the data structures
     //! @param rElementNumber ... element number
     //! @param rInterpolationTypeId ... interpolation type id
     //! @param rNodeNumbers  ... node indices
     //! @param rKnots ... knots defining the element
     //! @param rKnotIDs ... starting knot ids of the element in each element direction
-    //! @param rElementDataType  ... Element data for the elements
-    //! @param rIpDataType  ... Integration point data for the elements
     void ElementCreate(int rElementNumber,
                        int rInterpolationTypeId,
                        const Eigen::VectorXi &rNodeNumbers,
                        const Eigen::MatrixXd &rKnots,
-                       const Eigen::VectorXi &rKnotIDs,
-                       const std::string     &rElementDataType,
-                       const std::string     &rIpDataType);
+                       const Eigen::VectorXi &rKnotIDs);
+    //---------------------------------------------------------------------------------------------------------------------------
+
+    //! @brief Creates an element
+    //! @param rInterpolationTypeId interpolation type id
+    //! @param rNodeNumbers node indices
+    //! @return element id
+    int ElementCreate(int rInterpolationTypeId,
+                      const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers);
+
+    //! @brief Creates an element
+    //! @param rInterpolationTypeId interpolation type id
+    //! @param rNodes node vector
+    int ElementCreate(int rInterpolationTypeId,
+                      std::vector<NodeBase*> rNodes);
+
+    //! @brief Creates an element
+    //! @param rElementNumber ... element number
+    //! @param rInterpolationTypeId interpolation type id
+    //! @param rNodes node vector
+    void ElementCreate(int rElementNumber,
+                       int rInterpolationTypeId,
+                       std::vector<NodeBase*> rNodes);
+
 
     //! @brief Creates an element
     //! @param rElementNumber ... element number
     //! @param rInterpolationTypeId ... interpolation type id
     //! @param rNodeNumbers  ... node indices
-    //! @param rElementDataType  ... Element data for the elements
-    //! @param rIpDataType  ... Integration point data for the elements
     void ElementCreate(int rElementNumber,
                        int rInterpolationTypeId,
-                       const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers,
-                       const std::string& rElementDataType,
-                       const std::string& rIpDataType);
-
+                       const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers);
+    //---------------------------------------------------------------------------------------------------------------------------
 
     //! @brief creates multiple elements and adds them to an element group
     //! @param rInterpolationTypeId interpolation type id
     //! @param rNodeIdents Identifier for the corresponding nodes (Incidences have to be stored column-wise)
     //! @return index to the new element group
-    int ElementsCreate(int rInterpolationTypeId, NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rNodeNumbers);
-
-    //! @brief creates multiple elements and adds them to an element group
-    //! @param rInterpolationTypeId interpolation type id
-    //! @param rNodeIdents Identifier for the corresponding nodes (Incidences have to be stored column-wise)
-    //! @param rElementDataType Element data for the elements
-    //! @param rIpDataType Integration point data for the elements
-    //! @return index to the new element group
-    int ElementsCreate(int rInterpolationTypeId, NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rNodeNumbers, const std::string& rElementDataType, const std::string& rIpDataType);
+    int ElementsCreate(int rInterpolationTypeId,
+                       NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rNodeNumbers);
 
     //! @brief changes the node structure to match the interpolation type for all elements
     //! the node merge distance and the box size are calculated from the element sizes
@@ -544,23 +522,10 @@ public:
     //! @return returns a pair with the group ids of the new fiber and interface elements
     std::pair<int,int> InterfaceElementsCreate(int rElementGroupId, int rInterfaceInterpolationType, int rFibreInterpolationType);
 
-#ifndef SWIG
     //! @brief import from gmsh, creates groups according to gmsh's physical entities and creates an interpolation types for each group
     //! @param rFileName .. file name
-    //! @param rElementData .. element data for the elements to be created
-    //! @param rIPData .. ip data for the integration points to be created
     //! @return .. Matrix [NumGroups x 2] with [: x 0] group ids and [ : x 1] corresponding interpolation type ids
-    FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ImportFromGmsh(const std::string& rFileName, ElementData::eElementDataType rElementData, IpData::eIpDataType rIPData);
-
-
-#endif //SWIG
-
-    //! @brief import from gmsh, creates groups according to gmsh's physical entities and creates an interpolation types for each group
-    //! @param rFileName .. file name
-    //! @param rElementData .. element data for the elements to be created
-    //! @param rIPData .. ip data for the integration points to be created
-    //! @return .. Matrix [NumGroups x 2] with [: x 0] group ids and [ : x 1] corresponding interpolation type ids
-    FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ImportFromGmsh(const std::string& rFileName, const std::string& rElementData, const std::string& rIPData);
+    FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ImportFromGmsh(const std::string& rFileName);
 
     //*************************************************
     //**      InterpolationType routines             **
@@ -581,8 +546,7 @@ public:
     //! @brief sets the integration type for a specific interpolation type
     //! @param rInterpolationTypeId ... interpolation type id
     //! @param rIntegrationType ... integration type string
-    //! @param rIpDataType ... ip data type string
-    void InterpolationTypeSetIntegrationType(int rInterpolationTypeId, const std::string& rIntegrationType, const std::string& rIpDataType);
+    void InterpolationTypeSetIntegrationType(int rInterpolationTypeId, const std::string& rIntegrationType);
 
     //! @brief prints the info to the interpolation type
     //! @param rInterpolationTypeId ... interpolation type id
@@ -605,19 +569,12 @@ public:
     //! @param rInterpolationTypeId ... interpolation type id
     //! @param rIntegrationType ... integration type enum
     //! @param rIpDataType ... ip data type enum
-    void InterpolationTypeSetIntegrationType(int rInterpolationTypeId, eIntegrationType rIntegrationType, IpData::eIpDataType rIpDataType);
+    void InterpolationTypeSetIntegrationType(int rInterpolationTypeId, eIntegrationType rIntegrationType);
 
     //! @brief sets the integration type for a specific interpolation type
     //! @param rInterpolationTypeId ... interpolation type id
     //! @param rIntegrationType ... integration type pointer
-    //! @param rIpDataType ... ip data type enum
-    void InterpolationTypeSetIntegrationType(int rInterpolationTypeId, IntegrationTypeBase* rIntegrationType, IpData::eIpDataType rIpDataType);
-
-    //! @brief adds a dof to a IGA interpolation type
-    //! @param rInterpolationTypeId ... interpolation type id
-    //! @param rDofType ... dof type
-    //! @param rTypeOrder ... type and order of interpolation
-//    void InterpolationTypeAdd(int rInterpolationTypeId, int rDegree, const Eigen::VectorXd &rKnots);
+    void InterpolationTypeSetIntegrationType(int rInterpolationTypeId, IntegrationTypeBase* rIntegrationType);
 
     //! @brief adds a dof to a interpolation type
     //! @param rInterpolationTypeId ... interpolation type id
@@ -757,10 +714,8 @@ protected:
 #ifndef SWIG
     //! @brief import from gmsh, creates groups according to gmsh's physical entities and creates an interpolation types for each group
     //! @param rFileName .. file name
-    //! @param rElementData .. element data for the elements to be created
-    //! @param rIPData .. ip data for the integration points to be created
     //! @return .. Matrix [NumGroups x 2] with [: x 0] group ids and [ : x 1] corresponding interpolation type ids
-    FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ImportFromGmshAux(const std::string& rFileName, ElementData::eElementDataType rElementData, IpData::eIpDataType rIPData);
+    FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ImportFromGmshAux(const std::string& rFileName);
 #endif //SWIG
 
     boost::ptr_map<int, NodeBase> mNodeMap;

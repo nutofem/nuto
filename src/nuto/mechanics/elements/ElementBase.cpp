@@ -1348,3 +1348,21 @@ void NuTo::ElementBase::AddPlaneStateToInput(ConstitutiveInputMap& constitutiveI
         value.SetPlaneState(NuTo::ePlaneState::PLANE_STRAIN);
     }
 }
+void NuTo::ElementBase::StaticDataAllocateAdditional(unsigned int rNum)
+{
+    int num = mIPData.GetIntegrationType().GetNumIntegrationPoints();
+    for (int i = 0; i < num; ++i)
+        mIPData.GetIPConstitutiveLaw(i).AllocateAdditional(rNum);
+}
+void NuTo::ElementBase::StaticDataShiftToPast()
+{
+    int num = mIPData.GetIntegrationType().GetNumIntegrationPoints();
+    for (int i = 0; i < num; ++i)
+        mIPData.GetIPConstitutiveLaw(i).ShiftToPast();
+}
+void NuTo::ElementBase::StaticDataShiftToFuture()
+{
+    int num = mIPData.GetIntegrationType().GetNumIntegrationPoints();
+    for (int i = 0; i < num; ++i)
+        mIPData.GetIPConstitutiveLaw(i).ShiftToFuture();
+}
