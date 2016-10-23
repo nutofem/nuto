@@ -30,7 +30,7 @@ void CheckTriangle(NuTo::eIntegrationType rIntegrationType)
     int interpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRIANGLE2D);
     myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT4);
-    myStructure.InterpolationTypeSetIntegrationType(interpolationType, rIntegrationType, NuTo::IpData::eIpDataType::NOIPDATA);
+    myStructure.InterpolationTypeSetIntegrationType(interpolationType, rIntegrationType);
 
 
     //create element

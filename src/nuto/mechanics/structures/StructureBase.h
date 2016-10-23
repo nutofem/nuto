@@ -87,7 +87,6 @@ namespace Element
 
 namespace IpData
 {
-    enum class eIpDataType;
     enum class eIpStaticDataType;
 }// namespace IpData
 

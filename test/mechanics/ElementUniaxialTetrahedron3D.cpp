@@ -9,40 +9,6 @@
 
 std::string directory = "";
 
-void RunGmsh(NuTo::Interpolation::eTypeOrder rTypeOrder)
-{
-    NuToTest::ElementUniaxialTest test;
-
-#ifdef ENABLE_VISUALIZE
-    test.visualizationDirectory = directory;
-#endif
-
-    std::string file="/home/ttitsche/devgit/nuto_buildgit/test/mechanics/test.msh";
-
-    NuTo::Structure myStructure(3);
-    myStructure.SetShowTime(false);
-
-    int myInterpolationType = myStructure.InterpolationTypeCreate("Tetrahedron3D");
-    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, rTypeOrder);
-
-    myStructure.ImportFromGmsh(file, "ConstitutiveLawIP", "NoIPData");
-
-    myStructure.SetVerboseLevel(10);
-    myStructure.ElementTotalConvertToInterpolationType();
-
-    int allElements = myStructure.GroupCreate("Elements");
-    myStructure.GroupAddElementFromType(allElements, myInterpolationType);
-    double volume = myStructure.ElementGroupGetVolume(allElements);
-    std::cout << "######### VOLUME: " << volume << std::endl;
-
-    int mySection = myStructure.SectionCreate("VOLUME");
-    myStructure.ElementTotalSetSection(mySection);
-
-
-    test.Run(myStructure);
-}
-
 void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
 {
     NuToTest::ElementUniaxialTest test;
@@ -82,7 +48,7 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
                 nodeNum++;
             }
 
-    int myInterpolationType = myStructure.InterpolationTypeCreate("Tetrahedron3D");
+    int myInterpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TETRAHEDRON3D);
     myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, rTypeOrder);
 
@@ -124,7 +90,7 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
 
             }
 
-    int allElements = myStructure.GroupCreate("Elements");
+    int allElements = myStructure.GroupCreate(NuTo::eGroupId::Elements);
     myStructure.GroupAddElementFromType(allElements, myInterpolationType);
     double volume = myStructure.ElementGroupGetVolume(allElements);
     std::cout << "######### VOLUME: " << volume << std::endl;
@@ -132,7 +98,7 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
     myStructure.SetVerboseLevel(10);
     myStructure.ElementTotalConvertToInterpolationType(1.e-6, 3);
 
-    int mySection = myStructure.SectionCreate("VOLUME");
+    int mySection = myStructure.SectionCreate(NuTo::eSectionType::VOLUME);
     myStructure.ElementTotalSetSection(mySection);
 
 

@@ -8,15 +8,6 @@ namespace NuTo
 {
 namespace IpData
 {
-enum class eIpDataType
-{
-    NOIPDATA,                //!< no additional ip data
-    STATICDATA,              //!< static data
-    STATICDATANONLOCAL,      //!< nonlocal and static data
-    MULTISCALE               //!< multiscale - a full structure on the fine scale whose average values are used
-};
-
-const std::map<eIpDataType, std::string> GetIpDataTypeMap();
 
 //! @brief covers all ip data (not only static data) that is dependent on the current iteration state
 //! @brief this is mainly used in Get routines for visualization purposes
@@ -44,13 +35,8 @@ enum class eIpStaticDataType
 
 
 const std::map<eIpStaticDataType, std::string> GetIpStaticDataTypeMap();
-std::string IpDataTypeToString(const eIpDataType& rIpDataType);
 std::string IpStaticDataTypeToString(const eIpStaticDataType& rIpStaticDataType);
-eIpDataType IpDataTypeToEnum(const std::string& rIpDataType);
 eIpStaticDataType IpStaticDataTypeToEnum(const std::string& rIpStaticDataType);
-
-
-
 
 
 }

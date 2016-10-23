@@ -19,8 +19,6 @@
 
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "nuto/mechanics/elements/ElementDataEnum.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
 
 #include "nuto/mechanics/IGA/BSplineCurve.h"
 #include "nuto/mechanics/IGA/BSplineSurface.h"
@@ -511,7 +509,7 @@ void solve(NuTo::Structure *myStructure, double solution, const std::string &res
 
     if(exc)
     {
-        if (fabs(nodeDisp - solution)/fabs(solution) > tol)
+        if (std::fabs(nodeDisp - solution)/std::fabs(solution) > tol)
         {
             throw NuTo::Exception("[IGA] : displacement is not correct");
         }
@@ -524,7 +522,7 @@ void solve(NuTo::Structure *myStructure, double solution, const std::string &res
 void Neumann(const std::string &resultDir, const std::string &path, const std::string &fileName, int BC)
 {
     NuTo::Structure myStructure(2);
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndices = myStructure.ImportFromGmsh(path + fileName, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::NOIPDATA);
+    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndices = myStructure.ImportFromGmsh(path + fileName);
 
     int interpolationType = groupIndices.GetValue(0, 1);
     myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS,  NuTo::Interpolation::eTypeOrder::LOBATTO3);
@@ -681,7 +679,7 @@ void Neumann(const std::string &resultDir, const std::string &path, const std::s
 void Dirichlet(const std::string &resultDir, const std::string &path, const std::string &fileName)
 {
     NuTo::Structure myStructure(2);
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndices = myStructure.ImportFromGmsh(path + fileName, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::NOIPDATA);
+    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndices = myStructure.ImportFromGmsh(path + fileName);
 
     int interpolationType = groupIndices.GetValue(0, 1);
     myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::LOBATTO3);

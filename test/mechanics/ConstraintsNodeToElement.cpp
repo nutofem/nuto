@@ -12,8 +12,6 @@
 #include "nuto/math/FullVector.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/elements/ElementDataEnum.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/groups/GroupEnum.h"
@@ -142,12 +140,12 @@ void run2d()
         std::cout << "**      Import Matrix Mesh       **" << std::endl;
         std::cout << "***********************************" << std::endl;
 
-        NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> createdGroupIdMatrix = myStructure.ImportFromGmsh(meshFilePathMatrix.string(), NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+        NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> createdGroupIdMatrix = myStructure.ImportFromGmsh(meshFilePathMatrix.string());
         int groupIdMatrix = createdGroupIdMatrix.GetValue(0, 0);
 
 
         myStructure.ElementGroupSetInterpolationType(groupIdMatrix, matrixInterpolationType);
-        myStructure.InterpolationTypeSetIntegrationType(matrixInterpolationType, NuTo::eIntegrationType::IntegrationType2D3NGauss3Ip, NuTo::IpData::eIpDataType::STATICDATA);
+        myStructure.InterpolationTypeSetIntegrationType(matrixInterpolationType, NuTo::eIntegrationType::IntegrationType2D3NGauss3Ip);
         myStructure.ElementTotalConvertToInterpolationType();
         myStructure.ElementGroupSetSection(groupIdMatrix, matrixSection);
         myStructure.ElementGroupSetConstitutiveLaw(groupIdMatrix, matrixMaterial);
@@ -156,11 +154,11 @@ void run2d()
         std::cout << "**      Import Fiber Mesh        **" << std::endl;
         std::cout << "***********************************" << std::endl;
 
-        NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> createdGroupIdFiber = myStructure.ImportFromGmsh(meshFilePathFiber.string(), NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+        NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> createdGroupIdFiber = myStructure.ImportFromGmsh(meshFilePathFiber.string());
         int groupIdFiber = createdGroupIdFiber.GetValue(0, 0);
 
         myStructure.ElementGroupSetInterpolationType(groupIdFiber, fibreInterpolationType);
-        myStructure.InterpolationTypeSetIntegrationType(fibreInterpolationType, NuTo::eIntegrationType::IntegrationType1D2NGauss3Ip, NuTo::IpData::eIpDataType::STATICDATA);
+        myStructure.InterpolationTypeSetIntegrationType(fibreInterpolationType, NuTo::eIntegrationType::IntegrationType1D2NGauss3Ip);
         myStructure.ElementConvertToInterpolationType(groupIdFiber);
         myStructure.ElementGroupSetSection(groupIdFiber, fibreSection);
         myStructure.ElementGroupSetConstitutiveLaw(groupIdFiber, fibreMaterial);
@@ -376,11 +374,11 @@ void run3d()
     std::cout << "**      Import Matrix Mesh       **" << std::endl;
     std::cout << "***********************************" << std::endl;
 
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> createdGroupIdMatrix = myStructure.ImportFromGmsh(meshFilePathMatrix.string(), NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> createdGroupIdMatrix = myStructure.ImportFromGmsh(meshFilePathMatrix.string());
     int groupIdMatrix = createdGroupIdMatrix.GetValue(0, 0);
 
     myStructure.ElementGroupSetInterpolationType(groupIdMatrix, matrixInterpolationType);
-    myStructure.InterpolationTypeSetIntegrationType(matrixInterpolationType, NuTo::eIntegrationType::IntegrationType3D4NGauss4Ip, NuTo::IpData::eIpDataType::STATICDATA);
+    myStructure.InterpolationTypeSetIntegrationType(matrixInterpolationType, NuTo::eIntegrationType::IntegrationType3D4NGauss4Ip);
     myStructure.ElementConvertToInterpolationType(groupIdMatrix);
     myStructure.ElementGroupSetSection(groupIdMatrix, matrixSection);
     myStructure.ElementGroupSetConstitutiveLaw(groupIdMatrix, matrixMaterial);
@@ -389,7 +387,7 @@ void run3d()
     std::cout << "**      Import Fiber Mesh        **" << std::endl;
     std::cout << "***********************************" << std::endl;
 
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> createdGroupIdFiber = myStructure.ImportFromGmsh(meshFilePathFiber.string(), NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> createdGroupIdFiber = myStructure.ImportFromGmsh(meshFilePathFiber.string());
     int groupIdFiber = createdGroupIdFiber.GetValue(0, 0);
 
     myStructure.ElementGroupSetInterpolationType(groupIdFiber, fibreInterpolationType);

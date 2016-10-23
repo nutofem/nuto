@@ -11,8 +11,6 @@
 
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/elements/ElementDataEnum.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/groups/GroupEnum.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
@@ -153,7 +151,7 @@ int main(int argc, char* argv[])
         std::cout << "**      Import Mesh File         **" << std::endl;
         std::cout << "***********************************" << std::endl;
 
-        auto createdGroupIdMatrix = myStructure.ImportFromGmsh(meshFile.string(), NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+        auto createdGroupIdMatrix = myStructure.ImportFromGmsh(meshFile.string());
 
         int groupIdFibre = createdGroupIdMatrix.GetValue(0, 0);
         int groupIdMatrix = createdGroupIdMatrix.GetValue(1, 0);

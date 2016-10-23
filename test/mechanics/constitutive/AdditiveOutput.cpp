@@ -11,8 +11,6 @@
 #include "nuto/mechanics/sections/SectionPlane.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationType.h"
-#include "nuto/mechanics/elements/ElementDataEnum.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/sections/SectionEnum.h"
 
@@ -61,8 +59,7 @@ BOOST_AUTO_TEST_CASE(additive_stresses)
         ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::eOutput::ENGINEERING_STRESS);
 
     // evaluate the additive input law
-    auto staticData = additiveLaw.AllocateStaticData<2>(nullptr);
-    additiveLaw.Evaluate2D(inputMap, outputMap, staticData);
+    additiveLaw.Evaluate<2>(inputMap, outputMap);
 
     // compare to expected results
     const auto& stress = *static_cast<EngineeringStress<2>*>(outputMap.at(Constitutive::eOutput::ENGINEERING_STRESS).get());

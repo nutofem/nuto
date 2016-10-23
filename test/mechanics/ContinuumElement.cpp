@@ -1,7 +1,5 @@
 #include "nuto/mechanics/elements/ContinuumElement.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
-#include "nuto/mechanics/elements/ElementDataEnum.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
 #include "nuto/mechanics/sections/SectionTruss.h"
@@ -60,9 +58,6 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     nodes.push_back(&node1);
     nodes.push_back(&node2);
 
-    auto elementDataType = ElementData::eElementDataType::CONSTITUTIVELAWIP;
-    auto ipDataType = IpData::eIpDataType::NOIPDATA;
-
     auto truss = Interpolation::eShapeType::TRUSS1D;
     InterpolationType interpolationType(truss, 1);
     interpolationType.AddDofInterpolation(Node::eDof::COORDINATES, Interpolation::eTypeOrder::EQUIDISTANT1);
@@ -70,8 +65,7 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
     IntegrationType1D2NGauss2Ip integrationType;
     interpolationType.UpdateIntegrationType(integrationType);
 
-    ContinuumElement<1> element = ContinuumElement<1>(&structure,
-            nodes, elementDataType, ipDataType, &interpolationType);
+    ContinuumElement<1> element = ContinuumElement<1>(&structure, nodes, interpolationType);
 
     ConstitutiveInputMap inputMap;
     std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> outputMap;
@@ -86,13 +80,13 @@ BOOST_AUTO_TEST_CASE(check_heat_conduction1D)
 
     SectionTruss area;
     area.SetArea(1.0);
-    element.SetSection(&area);
+    element.SetSection(area);
 
     HeatConduction law;
     law.SetParameterDouble(Constitutive::eConstitutiveParameter::THERMAL_CONDUCTIVITY, 1.0);
     law.SetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY, 1.0);
     law.SetParameterDouble(Constitutive::eConstitutiveParameter::HEAT_CAPACITY, 1.0);
-    element.SetConstitutiveLaw(&law);
+    element.SetConstitutiveLaw(law);
 
     auto interp2 = structure.InterpolationTypeCreate("Truss1D");
     structure.InterpolationTypeAdd(interp2, Node::eDof::TEMPERATURE, Interpolation::eTypeOrder::EQUIDISTANT1);

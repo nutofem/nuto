@@ -12,6 +12,7 @@
 #include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/groups/GroupEnum.h"
+#include "nuto/mechanics/sections/SectionEnum.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationBase.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationType.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -104,7 +105,7 @@ private:
         // fix rotation
             NuTo::FullVector<double, Eigen::Dynamic> originRot(3);
             originRot << 0, 0, lZ;
-            int nodeGroupOriginRot = rStructure.GroupCreate("Nodes");
+            int nodeGroupOriginRot = rStructure.GroupCreate(NuTo::eGroupId::Nodes);
             rStructure.GroupAddNodeRadiusRange(nodeGroupOriginRot, originRot, 0, 1.e-5);
 
             int nodeOriginRot = rStructure.GroupGetMemberIds(nodeGroupOriginRot)(0);
@@ -112,12 +113,12 @@ private:
         }
 
         // fix x = 0 plane
-        int nodesX0 = rStructure.GroupCreate("Nodes");
+        int nodesX0 = rStructure.GroupCreate(NuTo::eGroupId::Nodes);
         rStructure.GroupAddNodeCoordinateRange(nodesX0, 0, -1.e-6, 1.e-6);
         rStructure.ConstraintLinearSetDisplacementNodeGroup(nodesX0, directions.GetColumn(0), 0.);
 
         // apply displacement on x = lX plane
-        int nodesXlX = rStructure.GroupCreate("Nodes");
+        int nodesXlX = rStructure.GroupCreate(NuTo::eGroupId::Nodes);
         rStructure.GroupAddNodeCoordinateRange(nodesXlX, 0, lX-1.e-6, lX+1.e-6);
         rStructure.ConstraintLinearSetDisplacementNodeGroup(nodesXlX, directions.GetColumn(0), deltaL);
 
@@ -146,7 +147,7 @@ private:
         if (internalGradient.J.CalculateNormL2()[NuTo::Node::eDof::DISPLACEMENTS] > 1e-8)
         {
             internalGradient.J[NuTo::Node::eDof::DISPLACEMENTS].Info();
-            throw NuTo::MechanicsException("[NuToTest::ElementUniaxialTest::Solve] residual force vector is not zero.");
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "residual force vector is not zero.");
         }
     }
 
@@ -165,8 +166,8 @@ private:
         std::cout << rStructure.ElementGetEngineeringStrain(0) << std::endl;
 
         // get element stresses
-        int allElements = rStructure.GroupCreate("Elements");
-        int allNodes    = rStructure.GroupCreate("Nodes");
+        int allElements = rStructure.GroupCreate(NuTo::eGroupId::Elements);
+        int allNodes    = rStructure.GroupCreate(NuTo::eGroupId::Nodes);
         rStructure.GroupAddNodeCoordinateRange(allNodes, 0, -0.1, lX+0.1);
         rStructure.GroupAddElementsFromNodes(allElements, allNodes, true);
         NuTo::FullVector<int, Eigen::Dynamic> elementIds = rStructure.GroupGetMemberIds(allElements);
@@ -183,7 +184,7 @@ private:
                 {
                     std::cout << "sigma_xx analytical : " << analyticStressX << std::endl;
                     std::cout << "sigma_xx numerical  : " << numericStress << std::endl;
-                    throw NuTo::MechanicsException("[NuToTest::ElementUniaxialTest::CheckSolution] wrong stress calculation.");
+                    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "wrong stress calculation.");
                 }
             }
         }
@@ -191,7 +192,7 @@ private:
 
         // sum up reaction forces in x direction of all nodes on x = 0
         double numericForce = 0;
-        int nodesX0 = rStructure.GroupCreate("Nodes");
+        int nodesX0 = rStructure.GroupCreate(NuTo::eGroupId::Nodes);
         rStructure.GroupAddNodeCoordinateRange(nodesX0, 0, lX-1.e-6, lX+1.e-6);
         NuTo::FullVector<int, Eigen::Dynamic> nodeX0Indices = rStructure.GroupGetMemberIds(nodesX0);
         for (int iNodeX0 = 0; iNodeX0 < nodeX0Indices.GetNumRows(); ++iNodeX0)
@@ -206,7 +207,7 @@ private:
         {
             std::cout << "force_x analytical : " << analyticForce << std::endl;
             std::cout << "force_x numerical  : " << numericForce << std::endl;
-            throw NuTo::MechanicsException("[NuToTest::ElementUniaxialTest::CheckSolution] wrong reaction force calculation.");
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "wrong reaction force calculation.");
         }
 
     }
@@ -229,7 +230,7 @@ private:
         {
             std::cout << "mass analytical : " << std::setprecision(10) << analyticMass << std::endl;
             std::cout << "mass numerical  : " << std::setprecision(10) << numericMass << std::endl;
-            throw NuTo::MechanicsException("[NuToTest::ElementUniaxialTest::CheckMass] wrong mass calculation.");
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "wrong mass calculation.");
         }
 
 
@@ -247,7 +248,7 @@ private:
         {
             std::cout << "mass analytical : " << std::setprecision(10) << analyticMass << std::endl;
             std::cout << "mass numerical  : " << std::setprecision(10) << numericMass << std::endl;
-            throw NuTo::MechanicsException("[NuToTest::ElementUniaxialTest::CheckMass] wrong lumped mass calculation.");
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "wrong lumped mass calculation.");
         }
 
     }

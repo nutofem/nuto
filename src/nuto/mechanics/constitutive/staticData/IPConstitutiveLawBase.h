@@ -14,7 +14,11 @@ enum class eError;
 
 namespace Constitutive
 {
-
+template <typename TLaw> class IPConstitutiveLaw;
+namespace StaticData
+{
+template <typename TLaw> class DataContainer;
+}
 //! @brief base class for a combined ConstitutiveLaw - ConstitutiveStaticData structure
 class IPConstitutiveLawBase
 {
@@ -55,6 +59,24 @@ public:
     //! @brief Puts previous static data to current static data, pre-previous to previous, etc.
     virtual void ShiftToFuture() = 0;
 
+    //! @brief casts *this to a IPConstitutiveLaw and returns its data
+    //! @return static data container of TLaw
+    template <typename TLaw>
+    StaticData::DataContainer<TLaw>& GetData()
+    {
+        //! when TLaw::StaticData does not exist, you see at least the struct's name in the error msg.
+        //! maybe better: "Member Detector" - but that is somehow not intuitive for typedefs and requires a lot more code.
+        THE_REQUESTED_LAW_HAS_NO_DATA<typename TLaw::StaticDataType>();
+        try
+        {
+            return dynamic_cast<IPConstitutiveLaw<TLaw>&>(*this).GetStaticData();
+        }
+        catch (std::bad_cast& e)
+        {
+            throw MechanicsException(__PRETTY_FUNCTION__, "Wrong ConstitutiveLawType requested.");
+        }
+    }
+
     //! @brief defines the serialization of this class
     //! @param rStream serialize output stream
     virtual void NuToSerializeSave(SerializeStreamOut& rStream) {/* no members to serialize */};
@@ -72,6 +94,10 @@ protected:
                                     const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
 
 
+private:
+    //! @brief compile time check if the requested law has data... poormans street style!
+    //! when TLaw::StaticData does not exist, you at least see the struct's name in the error msg.
+    template <typename T> struct THE_REQUESTED_LAW_HAS_NO_DATA{ void operator()(){} };
 
 };
 } // namespace Constitutive

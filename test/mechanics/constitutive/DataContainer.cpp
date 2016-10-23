@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(DataContainerSerialze)
     NuTo::SerializeStreamIn s("DataContainerSerializeText.dat", false);
     s >> dataFromFile;
 
-    for (int i = 0; i < data.GetNumData(); ++i)
+    for (unsigned int i = 0; i < data.GetNumData(); ++i)
         BOOST_CHECK_EQUAL(dataFromFile.GetData(i),data.GetData(i));
 }
 

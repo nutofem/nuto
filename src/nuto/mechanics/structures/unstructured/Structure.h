@@ -11,10 +11,6 @@
 
 namespace NuTo
 {
-namespace ElementData
-{
-    enum class eElementDataType;
-}// namespace ElementData
 
 namespace Interpolation
 {
@@ -348,21 +344,6 @@ public:
                       const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers);
 
     //! @brief Creates an element
-    //! @param rInterpolationTypeId interpolation type id
-    //! @param rNodes node vector
-    int ElementCreate(int rInterpolationTypeId,
-                      std::vector<NodeBase*> rNodes);
-
-    //! @brief Creates an element
-    //! @param rElementNumber ... element number
-    //! @param rInterpolationTypeId interpolation type id
-    //! @param rNodes node vector
-    void ElementCreate(int rElementNumber,
-                       int rInterpolationTypeId,
-                       std::vector<NodeBase*> rNodes);
-
-
-    //! @brief Creates an element
     //! @param rElementNumber ... element number
     //! @param rInterpolationTypeId ... interpolation type id
     //! @param rNodeNumbers  ... node indices
@@ -412,99 +393,20 @@ public:
     //! @param rItElement iterator of the map
     void ElementDeleteInternal(int rElementId);
 
-    //---------------------------------------------------------------------------------------------------------------------------
-    //! @brief Creates an IGA element, where the knot indices, beside the nodes (control points), are part of the data structures
-    //! @param rInterpolationTypeId ... interpolation type id
-    //! @param rNodeNumbers ... pointers to the corresponding nodes
-    //! @param rKnots ... knots defining the element
-    //! @param rKnotIDs ... starting knot ids of the element in each element direction
-    //! @param rElementDataType ... Element data for the elements
-    //! @param rIpDataType ... Integration point data for the elements
-    //! @return int rElementNumber
-    int ElementCreate(int rInterpolationTypeId,
-                      const std::vector<NodeBase*> &rNodeNumbers,
-                      const Eigen::MatrixXd &rKnots,
-                      const Eigen::VectorXi &rKnotIDs,
-                      ElementData::eElementDataType rElementDataType,
-                      IpData::eIpDataType rIpDataType);
-
     //! @brief Creates an element
     //! @param rInterpolationTypeId interpolation type id
-    //! @param rNodeVector pointers to the corresponding nodes
-    //! @param rElementDataType Element data for the elements
-    //! @param rIpDataType Integration point data for the elements
-    //! @return int rElementNumber
+    //! @param rNodes node vector
     int ElementCreate(int rInterpolationTypeId,
-                      const std::vector<NodeBase*>& rNodeVector,
-                      ElementData::eElementDataType rElementDataType,
-                      IpData::eIpDataType rIpDataType);
-
-    //---------------------------------------------------------------------------------------------------------------------------
-    //! @brief Creates an IGA element, where the knot indices, beside the nodes (control points), are part of the data structures
-    //! @param rInterpolationTypeId ... interpolation type id
-    //! @param rNodeNumbers ... node ids to the corresponding nodes
-    //! @param rKnots ... knots defining the element
-    //! @param rKnotIDs ... starting knot ids of the element in each element direction
-    //! @param rElementDataType ... Element data for the elements
-    //! @param rIpDataType ... Integration point data for the elements
-    //! @return int rElementNumber
-    int ElementCreate(int rInterpolationTypeId,
-                      const Eigen::VectorXi &rNodeNumbers,
-                      const Eigen::MatrixXd &rKnots,
-                      const Eigen::VectorXi &rKnotIDs,
-                      ElementData::eElementDataType rElementDataType,
-                      IpData::eIpDataType rIpDataType);
-
-    //! @brief Creates an element
-    //! @param rInterpolationTypeId ... interpolation type id
-    //! @param rNodeNumbers...  node indices
-    //! @param rElementDataType ... Element data for the elements
-    //! @param rIpDataType ... Integration point data for the elements
-    //! @return int rElementNumber
-    int ElementCreate(int rInterpolationTypeId,
-                      const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers,
-                      ElementData::eElementDataType rElementDataType,
-                      IpData::eIpDataType rIpDataType);
-
-    //---------------------------------------------------------------------------------------------------------------------------
-    //! @brief Creates an IGA element, where the knot indices, beside the nodes (control points), are part of the data structures
-    //! @param rElementNumber ... element number
-    //! @param rInterpolationTypeId ... interpolation type id
-    //! @param rNodeVector ... pointers to the corresponding nodes
-    //! @param rKnots ... knots defining the element
-    //! @param rKnotIDs ... starting knot ids of the element in each element direction
-    //! @param rElementType ... element type
-    //! @param rIpDataType ... Integration point data for the elements
-    void ElementCreate(int rElementNumber,
-                       int rInterpolationTypeId,
-                       const std::vector<NodeBase*> &rNodeVector,
-                       const Eigen::MatrixXd &rKnots,
-                       const Eigen::VectorXi &rKnotIDs,
-                       ElementData::eElementDataType rElementDataType,
-                       IpData::eIpDataType rIpDataType);
-
+                      std::vector<NodeBase*> rNodes);
 
     //! @brief Creates an element
     //! @param rElementNumber ... element number
-    //! @param rInterpolationTypeId ... interpolation type id
-    //! @param rNodeVector ... pointers to the corresponding nodes
-    //! @param rElementType ...  element type
-    //! @param rIpDataType ...  Integration point data for the elements
+    //! @param rInterpolationTypeId interpolation type id
+    //! @param rNodes node vector
     void ElementCreate(int rElementNumber,
                        int rInterpolationTypeId,
-                       const std::vector<NodeBase*>& rNodeVector,
-                       ElementData::eElementDataType rElementDataType,
-                       IpData::eIpDataType rIpDataType);
+                       std::vector<NodeBase*> rNodes);
 
-
-    void ElementCreate(int rElementNumber, int rInterpolationTypeId, const std::vector<int>& rNodeIds, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
-
-
-
-    //! @brief Returns the internal enum (number) for the element types
-    //! @param Element name in Nuto
-    //! @return enum
-//    NuTo::Element::eElementType ElementTypeGetEnum(const std::string& rElementType);
 #endif //SWIG
 
     //! @brief creates boundary elements and add them to an element group
@@ -601,17 +503,17 @@ public:
     //**  defined in structures/unstructured/StructureMesh.cpp **
     //***********************************************************
     //! @brief creates a lattice mesh from the positions of the circles
-    //! @parameters rTypeOfSpecimen 0 box, 1 dogbone
-    //! @parameters rBoundingBox box for the spheres (3*2 matrix)
-    //! @parameters rCircles (coordinates x,y and radius)
-    //! @parameters rTriangles (triangles connecting the circle centers)
+    //! @param rTypeOfSpecimen 0 box, 1 dogbone
+    //! @param rBoundingBox box for the spheres (3*2 matrix)
+    //! @param rCircles (coordinates x,y and radius)
+    //! @param rTriangles (triangles connecting the circle centers)
     void MeshCreateLattice2D(int rTypeOfSpecimen, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCircles, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rTriangles);
 
     //! @brief creates a lattice mesh from the positions of the spheres and the bounding box
-    //! @parameters rTypeOfSpecimen 0 box, 1 dogbone
-    //! @parameters rBoundingBox box for the spheres (3*2 matrix)
-    //! @parameters rBoundingBox (min and max for x and y)
-    //! @parameters rSpheres (coordinates x,y,z and radius)
+    //! @param rTypeOfSpecimen 0 box, 1 dogbone
+    //! @param rBoundingBox box for the spheres (3*2 matrix)
+    //! @param rBoundingBox (min and max for x and y)
+    //! @param rSpheres (coordinates x,y,z and radius)
     void MeshCreateLattice3D(int rTypeOfSpecimen, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheres, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rTetraeders);
 
 
@@ -630,25 +532,25 @@ public:
     void CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>& rOffset);
 
     //! @brief ... Adds an element to an element group
-    //! @param ... rIdentGroup identifier for the group
-    //! @param ... rIdentElement  identifier for the element
+    //! @param rIdentGroup identifier for the group
+    //! @param rIdentElement  identifier for the element
     void GroupAddElement(int rIdentGroup, int rIdElement);
 
     //! @brief ... Adds all elements to an element group
-    //! @param ... rIdentGroup identifier for the group
+    //! @param rIdentGroup identifier for the group
     void GroupAddElementsTotal(int rIdentGroup);
 
     //! @brief ... Adds all elements to a group based on the type
-    //! @param ... rIdentGroup identifier for the group
-    //! @param ... rInterpolationType  identifier for the interpolation type
+    //! @param rIdentGroup identifier for the group
+    //! @param rInterpolationType  identifier for the interpolation type
     void GroupAddElementFromType(int rIdentGroup, int rInterpolationType);
 
     //! @brief ... Adds all nodes in rSearchIdenGroup to rIdentGroup whose coordinates are in the specified range
-    //! @param ... rIdentNodeGroup identifier for the group
-    //! @param ... rSearchIdentElementGroup identifier for the group
-    //! @param ... rDirection either 0,1,2 for x,y, or z
-    //! @param ... rMin ... minimum value
-    //! @param ... rMax ... maximum value
+    //! @param rIdentNodeGroup identifier for the group
+    //! @param rSearchIdentElementGroup identifier for the group
+    //! @param rDirection either 0,1,2 for x,y, or z
+    //! @param rMin ... minimum value
+    //! @param rMax ... maximum value
     void GroupAddNodeFromElementGroupCoordinateRange(int rIdentNodeGroup, int rSearchIdentElementGroup, int rDirection, double rMin, double rMax);
 
     //! @brief adds all elements to an element group and returns its id

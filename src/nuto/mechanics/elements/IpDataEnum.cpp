@@ -3,16 +3,6 @@
 #include <boost/algorithm/string.hpp>
 #include "nuto/mechanics/MechanicsException.h"
 
-const std::map<NuTo::IpData::eIpDataType, std::string> NuTo::IpData::GetIpDataTypeMap()
-{
-    const std::map<eIpDataType, std::string> shapeTypeMap =
-       {{eIpDataType::NOIPDATA,             "NOIPDATA"},
-        {eIpDataType::STATICDATA,           "STATICDATA"},
-        {eIpDataType::STATICDATANONLOCAL,   "STATICDATANONLOCAL"},
-        {eIpDataType::MULTISCALE,           "MULTISCALE"}};
-
-    return shapeTypeMap;
-}
 
 const std::map<NuTo::IpData::eIpStaticDataType, std::string> NuTo::IpData::GetIpStaticDataTypeMap()
 {
@@ -34,17 +24,6 @@ const std::map<NuTo::IpData::eIpStaticDataType, std::string> NuTo::IpData::GetIp
     return shapeTypeMap;
 }
 
-std::string NuTo::IpData::IpDataTypeToString(const NuTo::IpData::eIpDataType &rIpDataType)
-{
-    try
-    {
-        return GetIpDataTypeMap().find(rIpDataType)->second;
-    }
-    catch (const std::out_of_range& e)
-    {
-        throw NuTo::MechanicsException("[NuTo::IpData::IpDataTypeToString] Enum undefined or not implemented.");
-    }
-}
 
 std::string NuTo::IpData::IpStaticDataTypeToString(const NuTo::IpData::eIpStaticDataType &rIpStaticDataType)
 {
@@ -56,17 +35,6 @@ std::string NuTo::IpData::IpStaticDataTypeToString(const NuTo::IpData::eIpStatic
     {
         throw NuTo::MechanicsException("[NuTo::IpData::IpStaticDataTypeToString] Enum undefined or not implemented.");
     }
-}
-
-NuTo::IpData::eIpDataType NuTo::IpData::IpDataTypeToEnum(const std::string &rIpDataType)
-{
-    std::string uppercase = boost::to_upper_copy(rIpDataType);
-
-    for(auto entry : GetIpDataTypeMap())
-        if (entry.second == uppercase)
-            return entry.first;
-
-    throw NuTo::MechanicsException("[NuTo::Interpolation::IpDataTypeToEnum] IpDataType " + rIpDataType + " has no enum equivalent or is not implemented.");
 }
 
 NuTo::IpData::eIpStaticDataType NuTo::IpData::IpStaticDataTypeToEnum(const std::string &rIpStaticDataType)

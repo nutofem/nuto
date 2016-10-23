@@ -298,7 +298,6 @@ void ConstitutiveOutputTests(std::map<NuTo::Node::eDof,NuTo::Interpolation::eTyp
     S.NodeBuildGlobalDofs();
 
     NuTo::ElementBase& element = *S.ElementGetElementPtr(0);
-    NuTo::ConstitutiveBase& constLaw = *element.GetConstitutiveLaw(0);
 
     // %%%%%%%%%%%%%%%%%%%%%%%%
     // Constitutive law outputs
@@ -307,9 +306,9 @@ void ConstitutiveOutputTests(std::map<NuTo::Node::eDof,NuTo::Interpolation::eTyp
 
     NuTo::ConstitutiveInputMap  constitutiveInputMap   = ConstitutiveOutputTest_CreateConstitutiveInputMap<TDim>();
     NuTo::ConstitutiveOutputMap  constitutiveOutputMap  = ConstitutiveOutputTest_CreateConstitutiveOutputMap<TDim>();
-    auto staticData = element.GetConstitutiveStaticData(0);
 
-    constLaw.Evaluate<TDim>(constitutiveInputMap,constitutiveOutputMap, staticData);
+    NuTo::Constitutive::IPConstitutiveLawBase& ipLaw = element.GetIPData().GetIPConstitutiveLaw(0);
+    ipLaw.Evaluate<TDim>(constitutiveInputMap,constitutiveOutputMap);
 
     ConstitutiveOutputTest_CheckAndPrintResults<TDim>(constitutiveOutputMap);
 
@@ -369,17 +368,14 @@ void ConstitutiveOutputTests(std::map<NuTo::Node::eDof,NuTo::Interpolation::eTyp
     S.BoundaryElementsCreate(eGrpBE,nGrpBE,BEPtr);
 
     NuTo::ElementBase& boundaryElement = *S.ElementGetElementPtr(1);
-    NuTo::ConstitutiveBase& boundaryConstLaw = *element.GetConstitutiveLaw(0);
-
 
     NuTo::ConstitutiveInputMap constitutiveInputMapBoundary = ConstitutiveOutputTest_CreateConstitutiveInputMapBoundary<TDim>();
     NuTo::ConstitutiveOutputMap constitutiveOutputMapBoundary = ConstitutiveOutputTest_CreateConstitutiveOutputMapBoundary<TDim>();
 
     MT.SetupStaticData(); //VHIRTHAMTODO Check static data Coeffs in contitutive law or somewhere else --- maybe assert!!!
 
-    staticData = boundaryElement.GetConstitutiveStaticData(0);
-    boundaryConstLaw.Evaluate<TDim>(constitutiveInputMapBoundary, constitutiveOutputMapBoundary, staticData);
-
+    NuTo::Constitutive::IPConstitutiveLawBase& ipLawBoundary = element.GetIPData().GetIPConstitutiveLaw(0);
+    ipLawBoundary.Evaluate<TDim>(constitutiveInputMapBoundary,constitutiveOutputMapBoundary);
 
     ConstitutiveOutputTest_CheckAndPrintResultsBoundary<TDim>(constitutiveOutputMapBoundary);
 

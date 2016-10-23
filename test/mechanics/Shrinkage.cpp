@@ -15,7 +15,6 @@
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/laws/MoistureTransport.h"
 #include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
-#include "nuto/mechanics/constitutive/staticData/Leaf.h"
 #include "nuto/mechanics/constitutive/laws/AdditiveOutput.h"
 #include "nuto/mechanics/constitutive/laws/AdditiveInputExplicit.h"
 
@@ -234,16 +233,16 @@ public:
 
     void SetupStaticData()
     {
-        using namespace NuTo::Constitutive::StaticData;
         for (int i=0; i<mS.GetNumElements(); i++)
         {
             for (int theIP=0; theIP< mS.ElementGetElementPtr(i)->GetNumIntegrationPoints(); theIP++)
             {
                 // this can't work! there are two different static data trees this is trying to handle,
                 // one for stress based and one for strain based
-                auto& multipleStaticData = *dynamic_cast<Composite*>(mS.ElementGetElementPtr(i)->GetConstitutiveStaticData(theIP));
-                auto& singleStaticData = dynamic_cast<Leaf<DataMoistureTransport>&>(multipleStaticData.GetComponent(0));
-                auto& moistureData = singleStaticData.GetData();
+                auto& moistureData = mS.ElementGetElementPtr(i)->GetIPData()
+                                                                .GetIPConstitutiveLaw(theIP)
+                                                                .GetData<NuTo::MoistureTransport>()
+                                                                .GetData();
                 moistureData.SetLastSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
                 moistureData.SetCurrentSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
                 moistureData.SetLastRelHumValue(InitialRelativeHumidity);
@@ -329,13 +328,13 @@ void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
         switch(TDim)
         {
         case 1:
-            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType0DBoundary), elementPtr->GetIpDataType(0));
+            elementPtr->SetIntegrationType(*rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType0DBoundary));
             break;
         case 2:
-            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip), elementPtr->GetIpDataType(0));
+            elementPtr->SetIntegrationType(*rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip));
             break;
         case 3:
-            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip), elementPtr->GetIpDataType(0));
+            elementPtr->SetIntegrationType(*rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip));
             break;
         default:
             throw NuTo::Exception(__PRETTY_FUNCTION__,"Invalid dimension");
@@ -358,13 +357,13 @@ void SetupIntegrationType(NuTo::Structure& rS, int rIPT)
     switch(TDim)
     {
     case 1:
-        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip,NuTo::IpData::eIpDataType::STATICDATA);
+        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip);
         break;
     case 2:
-        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip,NuTo::IpData::eIpDataType::STATICDATA);
+        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
         break;
     case 3:
-        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip,NuTo::IpData::eIpDataType::STATICDATA);
+        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip);
         break;
     default:
         throw NuTo::Exception(__PRETTY_FUNCTION__,"Invalid dimension");

@@ -13,8 +13,6 @@
 
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/elements/ElementDataEnum.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
@@ -105,7 +103,7 @@ void Run3d(NuTo::FullVector<double, -1> rNodeCoords0, NuTo::FullVector<double, -
     int fibreInterpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::TRUSSXD);
     myStructure.InterpolationTypeAdd(fibreInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
     myStructure.InterpolationTypeAdd(fibreInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    myStructure.InterpolationTypeSetIntegrationType(fibreInterpolationType, NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip, NuTo::IpData::eIpDataType::STATICDATA);
+    myStructure.InterpolationTypeSetIntegrationType(fibreInterpolationType, NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip);
 
     //**********************************************
     //          Geometry
@@ -120,7 +118,7 @@ void Run3d(NuTo::FullVector<double, -1> rNodeCoords0, NuTo::FullVector<double, -
     nodeIndices[0] = node0;
     nodeIndices[1] = node1;
     nodeIndices[2] = node2;
-    myStructure.ElementCreate(fibreInterpolationType, nodeIndices, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::NOIPDATA);
+    myStructure.ElementCreate(fibreInterpolationType, nodeIndices);
 
     myStructure.ElementTotalConvertToInterpolationType(1e-6, 10);
     myStructure.ElementTotalSetSection(fibreSection);

@@ -10,8 +10,8 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 #include "nuto/mechanics/tools/MeshGenerator.h"
-#include "nuto/mechanics/constitutive/staticData/Leaf.h"
 #include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
+#include "nuto/mechanics/constitutive/laws/MoistureTransport.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeEnum.h"
@@ -177,9 +177,10 @@ public:
         {
             for (int theIP=0; theIP< mS.ElementGetElementPtr(i)->GetNumIntegrationPoints(); theIP++)
             {
-                auto& staticData =
-                    *dynamic_cast<Leaf<DataMoistureTransport>*>(mS.ElementGetElementPtr(i)->GetConstitutiveStaticData(theIP));
-                auto& moistureData = staticData.GetData();
+                auto& moistureData = mS.ElementGetElementPtr(i)->GetIPData()
+                    .GetIPConstitutiveLaw(theIP)
+                    .GetData<NuTo::MoistureTransport>()
+                    .GetData();
                 moistureData.SetLastSorptionCoeff(mS.ConstitutiveLawGetParameterFullVectorDouble(ConstitutiveLawID,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
                 moistureData.SetCurrentSorptionCoeff(mS.ConstitutiveLawGetParameterFullVectorDouble(ConstitutiveLawID,NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
                 moistureData.SetLastRelHumValue(InitialRelativeHumidity);
@@ -244,13 +245,13 @@ void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
         switch(TDim)
         {
         case 1:
-            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType0DBoundary), elementPtr->GetIpDataType(0));
+            elementPtr->SetIntegrationType(*rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType0DBoundary));
             break;
         case 2:
-            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip), elementPtr->GetIpDataType(0));
+            elementPtr->SetIntegrationType(*rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip));
             break;
         case 3:
-            elementPtr->SetIntegrationType(rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip), elementPtr->GetIpDataType(0));
+            elementPtr->SetIntegrationType(*rS.GetPtrIntegrationType(NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip));
             break;
         default:
             throw NuTo::Exception(__PRETTY_FUNCTION__,"Invalid dimension");
@@ -275,13 +276,13 @@ void SetupIntegrationType(NuTo::Structure& rS, int rIPT)
     switch(TDim)
     {
     case 1:
-        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip,NuTo::IpData::eIpDataType::STATICDATA);
+        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip);
         break;
     case 2:
-        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip,NuTo::IpData::eIpDataType::STATICDATA);
+        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
         break;
     case 3:
-        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip,NuTo::IpData::eIpDataType::STATICDATA);
+        rS.InterpolationTypeSetIntegrationType(rIPT,NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip);
         break;
     default:
         throw NuTo::Exception(__PRETTY_FUNCTION__,"Invalid dimension");

@@ -106,6 +106,11 @@ NuTo::ConstitutiveBase& NuTo::ElementBase::GetConstitutiveLaw(unsigned int rIP)
     return mIPData.GetIPConstitutiveLaw(rIP).GetConstitutiveLaw();
 }
 
+NuTo::IPData& NuTo::ElementBase::GetIPData()
+{
+    return mIPData;
+}
+
 void NuTo::ElementBase::SetConstitutiveLaw(ConstitutiveBase& rConstitutiveLaw)
 {
     //check compatibility between element type and constitutive law
@@ -1347,22 +1352,4 @@ void NuTo::ElementBase::AddPlaneStateToInput(ConstitutiveInputMap& constitutiveI
         auto& value = *static_cast<ConstitutivePlaneState*>(constitutiveInput[planeState].get());
         value.SetPlaneState(NuTo::ePlaneState::PLANE_STRAIN);
     }
-}
-void NuTo::ElementBase::StaticDataAllocateAdditional(unsigned int rNum)
-{
-    int num = mIPData.GetIntegrationType().GetNumIntegrationPoints();
-    for (int i = 0; i < num; ++i)
-        mIPData.GetIPConstitutiveLaw(i).AllocateAdditional(rNum);
-}
-void NuTo::ElementBase::StaticDataShiftToPast()
-{
-    int num = mIPData.GetIntegrationType().GetNumIntegrationPoints();
-    for (int i = 0; i < num; ++i)
-        mIPData.GetIPConstitutiveLaw(i).ShiftToPast();
-}
-void NuTo::ElementBase::StaticDataShiftToFuture()
-{
-    int num = mIPData.GetIntegrationType().GetNumIntegrationPoints();
-    for (int i = 0; i < num; ++i)
-        mIPData.GetIPConstitutiveLaw(i).ShiftToFuture();
 }

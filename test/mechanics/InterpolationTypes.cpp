@@ -9,8 +9,6 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/elements/ElementDataEnum.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 #include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
 #include "nuto/mechanics/structures/StructureOutputBlockVector.h"
@@ -307,9 +305,9 @@ void CheckAPI()
 
     myStructure.InterpolationTypeAdd(myInterpolationTypeIndex, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(myInterpolationTypeIndex, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-    myStructure.InterpolationTypeSetIntegrationType(myInterpolationTypeIndex, NuTo::eIntegrationType::IntegrationType2D3NGauss13Ip, NuTo::IpData::eIpDataType::STATICDATA);
+    myStructure.InterpolationTypeSetIntegrationType(myInterpolationTypeIndex, NuTo::eIntegrationType::IntegrationType2D3NGauss13Ip);
 
-    int elementIndex = myStructure.ElementCreate(myInterpolationTypeIndex, nodeIndices, "ConstitutiveLawIp", "StaticData");
+    int elementIndex = myStructure.ElementCreate(myInterpolationTypeIndex, nodeIndices);
     myStructure.ElementSetConstitutiveLaw(elementIndex, myMatLin);
 
     int elementGroup = myStructure.GroupCreate("ELEMENTS");
@@ -339,7 +337,7 @@ void CheckAPI()
 void ImportFromGmsh(std::string rMeshFile)
 {
     NuTo::Structure myStructure(2);
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndices = myStructure.ImportFromGmsh(rMeshFile, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::NOIPDATA);
+    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndices = myStructure.ImportFromGmsh(rMeshFile);
 
     std::cout << groupIndices.size() << std::endl;
 
@@ -349,7 +347,7 @@ void ImportFromGmsh(std::string rMeshFile)
     myStructure.SetVerboseLevel(10);
     myStructure.ElementConvertToInterpolationType(groupIndices.GetValue(0, 0));
 
-    myStructure.InterpolationTypeSetIntegrationType(interpolationType, NuTo::eIntegrationType::IntegrationType2D3NGauss3Ip, NuTo::IpData::eIpDataType::NOIPDATA);
+    myStructure.InterpolationTypeSetIntegrationType(interpolationType, NuTo::eIntegrationType::IntegrationType2D3NGauss3Ip);
 
     myStructure.InterpolationTypeInfo(0);
 

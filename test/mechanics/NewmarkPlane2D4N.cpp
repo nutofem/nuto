@@ -62,8 +62,8 @@ try
     myStructure.SetNumTimeDerivatives(2);
 
 	//create nodes
-    int numNodesX = (int)(floor(mL/elementLength))+1;
-    int numNodesY = (int)(floor(mH/elementHeight))+1;
+    int numNodesX = (int) (std::floor(mL/elementLength)+1);
+    int numNodesY = (int) (std::floor(mH/elementHeight)+1);
     double deltaX = mL/(numNodesX-1);
     double deltaY = mH/(numNodesY-1);
 
@@ -96,7 +96,7 @@ try
         	nodes(1) = countX+1+  countY   *numNodesX;
         	nodes(2) = countX+1+ (countY+1)*numNodesX;
         	nodes(3) = countX  + (countY+1)*numNodesX;
-        	myStructure.ElementCreate(myInterpolationType, nodes, std::string("ConstitutiveLawIp"), std::string("StaticData"));
+        	myStructure.ElementCreate(myInterpolationType, nodes);
         }
     }
 

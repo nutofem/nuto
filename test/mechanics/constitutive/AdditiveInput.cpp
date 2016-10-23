@@ -12,8 +12,6 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationType.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "nuto/mechanics/elements/ElementDataEnum.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/sections/SectionEnum.h"
 
 #define BOOST_TEST_MODULE AdditiveInputTest
@@ -62,9 +60,8 @@ BOOST_AUTO_TEST_CASE(additive_strains)
     outputMap[Constitutive::eOutput::THERMAL_STRAIN] =
         ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::eOutput::THERMAL_STRAIN);
 
-    auto staticData = additiveLaw.AllocateStaticData<2>(nullptr);
     // evaluate the additive input law
-    additiveLaw.Evaluate2D(inputMap, outputMap, staticData);
+    additiveLaw.Evaluate<2>(inputMap, outputMap);
 
     // compare to expected results
     const auto& stress = *static_cast<EngineeringStress<2>*>(outputMap.at(Constitutive::eOutput::ENGINEERING_STRESS).get());

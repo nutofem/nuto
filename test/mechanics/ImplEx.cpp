@@ -10,8 +10,6 @@
 #include "nuto/mechanics/timeIntegration/ImplEx.h"
 
 #include "nuto/mechanics/elements/ContinuumBoundaryElement.h"
-#include "nuto/mechanics/elements/ElementDataEnum.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/groups/GroupEnum.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
@@ -21,10 +19,6 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 
-#include "nuto/mechanics/constitutive/staticData/Leaf.h"
-
-
-#include "nuto/mechanics/elements/IpDataStaticData.h"
 #include "nuto/visualize/VisualizeEnum.h"
 
 namespace NuToTest {
@@ -141,7 +135,7 @@ void ImplEx()
     {
         nodes(0) = iElement;
         nodes(1) = iElement + 1;
-        s.ElementCreate(interpolationType, nodes, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+        s.ElementCreate(interpolationType, nodes);
     }
 
     // create sections
@@ -157,7 +151,7 @@ void ImplEx()
     double kappa_star =  kappa_i * 3;
     auto eWeak = s.ElementGetElementPtr(numElements/2.);
     for (int i = 0; i < eWeak->GetNumIntegrationPoints(); ++i)
-        dynamic_cast<NuTo::Constitutive::StaticData::Leaf<double>*>(eWeak->GetConstitutiveStaticData(i))->SetData(kappa_star);
+        eWeak->GetIPData().GetIPConstitutiveLaw(i).GetData<NuTo::GradientDamageEngineeringStress>().SetData(kappa_star);
 
 //
 //    int mySection2 = s.SectionCreate("Truss");

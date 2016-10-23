@@ -37,8 +37,6 @@
 
 #include "nuto/visualize/VisualizeEnum.h"
 
-
-
 NuTo::BlockFullVector<double> NuTo::StructureBase::ElementBuildInternalGradient(ElementBase& rElement)
 {
     std::map<Element::eOutput,std::shared_ptr<ElementOutputBase>> elementOutputMap;
@@ -288,9 +286,6 @@ bool NuTo::StructureBase::ElementCheckHessian0(double rDelta, double rRelativeTo
     return areAllElementsCorrect;
 }
 
-//! @brief sets the constitutive law of a single element
-//! @param rElementIdent identifier for the element
-//! @param rConstitutiveLawIdent identifier for the material
 void NuTo::StructureBase::ElementSetConstitutiveLaw(int rElementId, int rConstitutiveLawIdent)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -304,9 +299,6 @@ void NuTo::StructureBase::ElementSetConstitutiveLaw(int rElementId, int rConstit
     ElementSetConstitutiveLaw(elementPtr,itConstitutive->second);
 }
 
-//! @brief sets the constitutive law of a group of elements
-//! @param rGroupIdent identifier for the group of elements
-//! @param rConstitutiveLawIdent identifier for the material
 void NuTo::StructureBase::ElementGroupSetConstitutiveLaw(int rGroupIdent, int rConstitutiveLawIdent)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -329,8 +321,6 @@ void NuTo::StructureBase::ElementGroupSetConstitutiveLaw(int rGroupIdent, int rC
     }
 }
 
-//! @brief sets the constitutive law of a all elements
-//! @param rConstitutiveLawIdent identifier for the material
 void NuTo::StructureBase::ElementTotalSetConstitutiveLaw(int rConstitutiveLawIdent)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -346,10 +336,6 @@ void NuTo::StructureBase::ElementTotalSetConstitutiveLaw(int rConstitutiveLawIde
         ElementSetConstitutiveLaw(elementVector[countElement],itConstitutive->second);
     }
 }
-
-//! @brief sets the constitutive law of a single element
-//! @param rElement element pointer
-//! @param rConstitutive material pointer
 void NuTo::StructureBase::ElementSetConstitutiveLaw(ElementBase* rElement, ConstitutiveBase* rConstitutive)
 {
     try
@@ -368,9 +354,6 @@ void NuTo::StructureBase::ElementSetConstitutiveLaw(ElementBase* rElement, Const
 }
 
 
-//! @brief sets the section of a single element
-//! @param rElementIdent identifier for the element
-//! @param rConstitutiveLawIdent identifier for the section
 void NuTo::StructureBase::ElementSetSection(int rElementId, int rSectionId)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -384,9 +367,6 @@ void NuTo::StructureBase::ElementSetSection(int rElementId, int rSectionId)
     ElementSetSection(elementPtr,itSection->second);
 }
 
-//! @brief sets the section of a group of elements
-//! @param rGroupIdent identifier for the group of elements
-//! @param rConstitutiveLawIdent identifier for the material
 void NuTo::StructureBase::ElementGroupSetSection(int rGroupIdent, int rSectionId)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -409,8 +389,6 @@ void NuTo::StructureBase::ElementGroupSetSection(int rGroupIdent, int rSectionId
     }
 }
 
-//! @brief sets the section for all elements
-//! @param rConstitutiveLawIdent identifier for the material
 void NuTo::StructureBase::ElementTotalSetSection(int rSectionId)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -427,9 +405,6 @@ void NuTo::StructureBase::ElementTotalSetSection(int rSectionId)
     }
 }
 
-//! @brief modifies the material of a single element
-//! @param rElement element pointer
-//! @param rConstitutive material pointer
 void NuTo::StructureBase::ElementSetSection(ElementBase* rElement, SectionBase* rSection)
 {
     try
@@ -448,9 +423,6 @@ void NuTo::StructureBase::ElementSetSection(ElementBase* rElement, SectionBase* 
     }
 }
 
-//! @brief modifies the interpolation type of a single element
-//! @param rElementId ... element number
-//! @param rInterpolationTypeId ... interpolation type id
 void NuTo::StructureBase::ElementSetInterpolationType(int rElementId, int rInterpolationTypeId)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -464,9 +436,6 @@ void NuTo::StructureBase::ElementSetInterpolationType(int rElementId, int rInter
     ElementSetInterpolationType(elementPtr, itInterpolationType->second);
 }
 
-//! @brief modifies the interpolation type of a group of elements
-//! @param rGroupId ... identifier for the group of elements
-//! @param rInterpolationTypeId ... interpolation type id
 void NuTo::StructureBase::ElementGroupSetInterpolationType(int rGroupId, int rInterpolationTypeId)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -489,9 +458,6 @@ void NuTo::StructureBase::ElementGroupSetInterpolationType(int rGroupId, int rIn
     }
 }
 
-//! @brief modifies the interpolation type of a single element
-//! @param rElement element pointer
-//! @param rInterpolationType interpolation type
 void NuTo::StructureBase::ElementSetInterpolationType(ElementBase* rElement, InterpolationType* rInterpolationType)
 {
     try
@@ -536,10 +502,6 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::El
     return ElementGetStaticIPData(rElementId, IpData::eIpStaticDataType::DAMAGE);
 }
 
-//! @brief calculates static ip data
-//! @param rElemIdent  element number
-//! @param rType static ip data type
-//! @param rIPData matrix with (... x numIP), x varies depending on IPData type
 NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::ElementGetStaticIPData(int rElementId, IpData::eIpStaticDataType rType)
 {
     Timer timer(std::string(__FUNCTION__) + ":" + IpData::IpStaticDataTypeToString(rType), GetShowTime(), GetLogger());
@@ -568,9 +530,6 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::El
 }
 
 
-//! @brief calculates the global integration point coordinates
-//! @param rElemIdent  identifier for the element
-//! @param rCoordinates integration point coordinates (return value, always 3xnumIp matrix)
 NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::ElementGetIntegrationPointCoordinates(int rElementId)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -606,9 +565,6 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Elem
     }
 }
 
-//! @brief calculates the maximum damage in all elements
-//! @param rElemIdent  identifier for the element
-//! @return max damage value
 double NuTo::StructureBase::ElementTotalGetMaxDamage()
 {
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
@@ -686,9 +642,6 @@ double NuTo::StructureBase::ElementTotalGetStaticDataExtrapolationError()
 }
 
 
-//! @brief allocates additional static data for an element group
-//! @param rElementGroupId ... element group id
-//! @param rNumAdditionalStaticData ... number of addidional static data objects
 void NuTo::StructureBase::ElementGroupAllocateAdditionalStaticData(int rElementGroupId, int rNumAdditionalStaticData)
 {
     if (GroupGetGroupPtr(rElementGroupId)->GetType() != eGroupId::Elements)
@@ -698,12 +651,13 @@ void NuTo::StructureBase::ElementGroupAllocateAdditionalStaticData(int rElementG
     for (int iElement = 0; iElement < elementIds.GetNumRows(); ++iElement)
     {
         ElementBase* element = ElementGetElementPtr(elementIds[iElement]);
-        element->StaticDataAllocateAdditional(rNumAdditionalStaticData);
+        IPData& ipdata = element->GetIPData();
+        for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
+            ipdata.GetIPConstitutiveLaw(i).AllocateAdditional(rNumAdditionalStaticData);
     }
 
 }
 
-//! @brief updates the history data of a all elements
 NuTo::eError NuTo::StructureBase::ElementTotalUpdateStaticData()
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -767,7 +721,6 @@ NuTo::eError NuTo::StructureBase::ElementTotalUpdateStaticData()
     return errorGlobal;
 }
 
-//! @brief updates the history data of a all elements
 NuTo::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
 {
     eError errorGlobal (eError::SUCCESSFUL);
@@ -831,7 +784,6 @@ NuTo::eError NuTo::StructureBase::ElementTotalUpdateTmpStaticData()
     return errorGlobal;
 }
 
-//! @brief saves static data of all elements
 void NuTo::StructureBase::ElementTotalShiftStaticDataToPast()
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -852,7 +804,9 @@ void NuTo::StructureBase::ElementTotalShiftStaticDataToPast()
         try
         {
             ElementBase* element = elementVector[iElement];
-            element->StaticDataShiftToPast();
+            IPData& ipdata = element->GetIPData();
+            for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
+                ipdata.GetIPConstitutiveLaw(i).ShiftToPast();
         } catch (NuTo::Exception& e)
         {
             exception = e;
@@ -887,7 +841,9 @@ void NuTo::StructureBase::ElementTotalShiftStaticDataToFuture()
         try
         {
             ElementBase* element = elementVector[iElement];
-            element->StaticDataShiftToFuture();
+            IPData& ipdata = element->GetIPData();
+            for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
+                ipdata.GetIPConstitutiveLaw(i).ShiftToFuture();
         } catch (NuTo::Exception& e)
         {
             exception = e;
@@ -901,7 +857,6 @@ void NuTo::StructureBase::ElementTotalShiftStaticDataToFuture()
         throw exception;
 }
 
-//! @brief saves static data of a all elements
 void NuTo::StructureBase::ElementTotalExtrapolateStaticData()
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -944,10 +899,6 @@ void NuTo::StructureBase::ElementTotalExtrapolateStaticData()
 }
 
 
-//! @brief calculates the average stress
-//! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
-//! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
-//! @param rEngineeringStress  average stress (return value)
 void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStress)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -983,11 +934,6 @@ void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, NuTo::Ful
 
 }
 
-//! @brief calculates the average stress
-//! @param rGroupId  group number
-//! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
-//! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
-//! @param rEngineeringStress  average stress (return value)
 void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStress)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -1032,10 +978,6 @@ void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVol
 }
 
 
-//! @brief calculates the average strain
-//! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
-//! this is a parameter of the model, since holes have to be considered (zero strain, but still nonzero area)
-//! @param rEngineeringStraiu  average strain (return value)
 void NuTo::StructureBase::ElementTotalGetAverageStrain(double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStrain)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -1070,11 +1012,6 @@ void NuTo::StructureBase::ElementTotalGetAverageStrain(double rVolume, NuTo::Ful
     rEngineeringStrain*=1./rVolume;
 }
 
-//! @brief calculates the average strain
-//! @param rGroupId  group number
-//! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
-//! this is a parameter of the model, since holes have to be considered (zero strain, but still nonzero area)
-//! @param rEngineeringStrain  average strain (return value)
 void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStrain)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -1140,8 +1077,6 @@ void NuTo::StructureBase::ElementGroupGetMembers(int rGroupId, NuTo::FullVector<
 }
 
 
-//! @brief calculate the largest element eigenvalue for a group of elements solving the generalized eigenvalue problem Ku=lambda Mu
-//! this is used for the estimation of the critical time step
 double NuTo::StructureBase::ElementGroupCalculateLargestElementEigenvalue(int rGroupId)
 {
     std::vector< NuTo::ElementBase*> elementVector;
@@ -1152,7 +1087,6 @@ double NuTo::StructureBase::ElementGroupCalculateLargestElementEigenvalue(int rG
     return this->ElementCalculateLargestElementEigenvalue(elementVector);
 }
 
-//! @brief calculate the critical time step for all elements solving the generalized eigenvalue problem Ku=lambda Mu
 double NuTo::StructureBase::ElementTotalCalculateLargestElementEigenvalue()
 {
     std::vector< ElementBase*> elementVector;
@@ -1161,7 +1095,6 @@ double NuTo::StructureBase::ElementTotalCalculateLargestElementEigenvalue()
 }
 
 
-//! @brief calculate the critical time step for a vector of elements solving the generalized eigenvalue problem Ku=lambda Mu
 double NuTo::StructureBase::ElementCalculateLargestElementEigenvalue(const std::vector< ElementBase*>& rElementVector)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -1266,9 +1199,6 @@ double NuTo::StructureBase::ElementCalculateLargestElementEigenvalue(const std::
 
 }
 
-//! @brief calculates the volume of the elements
-//! @param rGroupId  group number
-//! @return volume of the structure in 3D /area in 2D/ length in 1D
 double NuTo::StructureBase::ElementGroupGetVolume(int rGroupId)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());

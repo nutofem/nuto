@@ -10,7 +10,6 @@
 #include <string>
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
 #include "nuto/mechanics/groups/GroupEnum.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -77,7 +76,7 @@ void Mises2D(const std::string& rDir)
     myStructure.InterpolationTypeAdd(interpol, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
 
-    myStructure.ElementCreate(interpol, nodeIds, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+    myStructure.ElementCreate(interpol, nodeIds);
     myStructure.ElementTotalConvertToInterpolationType();
 
     SetConstitutiveLaw(myStructure);
@@ -194,12 +193,12 @@ void Mises3D(const std::string& rDir)
     myStructure.InterpolationTypeAdd(interpol, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
 
-    myStructure.ElementCreate(interpol, nodesTet0, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
-    myStructure.ElementCreate(interpol, nodesTet1, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
-    myStructure.ElementCreate(interpol, nodesTet2, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
-    myStructure.ElementCreate(interpol, nodesTet3, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
-    myStructure.ElementCreate(interpol, nodesTet4, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
-    myStructure.ElementCreate(interpol, nodesTet5, NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP, NuTo::IpData::eIpDataType::STATICDATA);
+    myStructure.ElementCreate(interpol, nodesTet0);
+    myStructure.ElementCreate(interpol, nodesTet1);
+    myStructure.ElementCreate(interpol, nodesTet2);
+    myStructure.ElementCreate(interpol, nodesTet3);
+    myStructure.ElementCreate(interpol, nodesTet4);
+    myStructure.ElementCreate(interpol, nodesTet5);
 
 
 

@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(tangent_matrix)
             ConstitutiveIOBase::makeConstitutiveIO<3>(Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT);
 
     // evaluate tangent
-    heat_conduction.Evaluate<3>(input_map, output_map, nullptr);
+    heat_conduction.Evaluate<3>(input_map, output_map);
 
     // compare to expected output
     Eigen::Matrix<double, 3, 3> expected_conductivity;

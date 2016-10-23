@@ -173,15 +173,19 @@ public:
     //! @param rConstitutiveLaw reference to constitutive law entry
     void SetConstitutiveLaw(ConstitutiveBase& rConstitutiveLaw);
 
-    //! @brief returns a pointer to the constitutive law for an integration point
+    //! @brief returns a reference to the constitutive law for an integration point
     //! @param rIP integration point number (counting from zero)
     //! @return reference to constitutive law
     const ConstitutiveBase& GetConstitutiveLaw(unsigned int rIP) const;
 
-    //! @brief returns a pointer to the constitutive law for an integration point
+    //! @brief returns a reference to the constitutive law for an integration point
     //! @param rIP integration point number (counting from zero)
     //! @return reference to constitutive law
     ConstitutiveBase& GetConstitutiveLaw(unsigned int rIP);
+
+    //! @brief returns a reference to the IPData object
+    //! @return reference to the IPData object
+    IPData& GetIPData();
 
     //! @brief returns true, if the constitutive law has been assigned
     //! @param rIP integration point number (counting from zero)
@@ -246,16 +250,6 @@ public:
     //! @brief integrates the strain over the element
     //! @param rStrain integrated strain
     void GetIntegratedStrain(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rStress);
-
-    //! @brief allocates rNum additional static data
-    //! @param rNum number of addtional static data
-    void StaticDataAllocateAdditional(unsigned int rNum);
-
-    //! @brief Puts current static data to previous static data, previous to pre-previous, etc.
-    void StaticDataShiftToPast();
-
-    //! @brief Puts previous static data to current static data, pre-previous to previous, etc.
-    void StaticDataShiftToFuture();
 
     //! @brief Update the static data of an element
     //virtual eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)=0;

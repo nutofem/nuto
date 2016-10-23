@@ -41,7 +41,6 @@ public:
     //! @return ip constitutive law base reference
     const Constitutive::IPConstitutiveLawBase& GetIPConstitutiveLaw(unsigned int rIP) const;
 
-
     //! @brief sets a new integration type and performs an update of mLaws
     //! @param rIntegrationType new integration type
     void SetIntegrationType(const IntegrationTypeBase& rIntegrationType);
