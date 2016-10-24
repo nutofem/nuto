@@ -164,6 +164,7 @@ private:
     {
         rStream.Serialize(mVector);
         rStream.Serialize(mMatrix);
+        rStream.Separator();
     }
 
 };

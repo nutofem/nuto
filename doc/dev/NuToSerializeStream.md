@@ -74,3 +74,7 @@ private:
     Eigen::Matrix3d mData;
 };
 ~~~
+
+### Separator
+
+The stream continuously reads and writes numbers. If there are more numbers in the stream than the object needs, this will not be noticed. Therefore, you can write a separator of type char at certain points in the serialization, e.g. after serializing the data of one element. An NuTo::Exception is thrown, if the expected separator is not at the right position in the stream.

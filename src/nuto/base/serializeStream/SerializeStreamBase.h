@@ -16,5 +16,6 @@ public:
 protected:
     const bool mIsBinary;
     std::fstream mFileStream;
+    static constexpr const char* SEPARATOR = "#";
 };
 }

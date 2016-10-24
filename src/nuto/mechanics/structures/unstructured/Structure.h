@@ -559,6 +559,16 @@ public:
     //! @brief adds all ndoes to an element group and returns its id
     int GroupGetNodesTotal();
 
+
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize output stream
+    virtual void NuToSerializeSave(SerializeStreamOut& rStream) override;
+
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize input stream
+    virtual void NuToSerializeLoad(SerializeStreamIn& rStream) override;
+
+
     //*************************************************
     //************ Info routine         ***************
     //**  defined in structures/Structure.cpp *********
@@ -575,6 +585,13 @@ protected:
 #endif  // ENABLE_SERIALIZATION
 
 #ifndef SWIG
+
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize input/output stream
+    template <typename TStream>
+    void SerializeStructure(TStream &rStream);
+
+
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
     void GetElementsTotal(std::vector<const ElementBase*>& rElements) const;

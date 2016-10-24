@@ -39,6 +39,9 @@ public:
     template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
     void SaveMatrix(const Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix);
 
+    //! @brief adds a separator sequence to the stream;
+    void Separator();
+
 private:
     template <typename T>
     void SerializePrimitiveType(T rData);

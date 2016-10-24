@@ -46,6 +46,8 @@ class LoadBase;
 class NewtonRaphsonAuxRoutinesBase;
 class NodeBase;
 class SectionBase;
+class SerializeStreamOut;
+class SerializeStreamIn;
 class StructureOutputBase;
 class StructureOutputBlockMatrix;
 class StructureOutputBlockVector;
@@ -1737,6 +1739,14 @@ public:
     //! @brief returns the a reference to the constraint matrix
     const NuTo::BlockSparseMatrix& GetConstraintMatrix() const;
 
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize output stream
+    virtual void NuToSerializeSave(SerializeStreamOut& rStream) {/* currently no members to serialize */};
+
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize input stream
+    virtual void NuToSerializeLoad(SerializeStreamIn& rStream) {/* currently no members to serialize */};
+
     //! @brief this routine is only relevant for the multiscale model, since an update on the fine scale should only be performed
     //for an update on the coarse scale
     //as a consequence, in an iterative solution with updates in between the initial state has to be restored after leaving the routine
@@ -1755,7 +1765,7 @@ public:
     void SetUpdateTmpStaticDataRequired()
     {
     	mUpdateTmpStaticDataRequired = true;
-    }
+}
 
     //! @brief calculate the critical time step for a vector of elements solving the generalized eigenvalue problem Ku=lambda Mu
     double ElementCalculateLargestElementEigenvalue(const std::vector< ElementBase*>& rElementVector);

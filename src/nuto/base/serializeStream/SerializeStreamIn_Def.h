@@ -44,6 +44,9 @@ public:
     template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
     void LoadMatrix(Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix);
 
+    //! @brief reads a sequence from the stream
+    void Separator();
+
 private:
     template <typename T>
     void SerializePrimitiveType(T& rData);

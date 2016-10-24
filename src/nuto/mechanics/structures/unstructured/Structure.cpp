@@ -23,6 +23,8 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/base/ErrorEnum.h"
 #include "nuto/base/Timer.h"
+#include "nuto/base/serializeStream/SerializeStreamIn.h"
+#include "nuto/base/serializeStream/SerializeStreamOut.h"
 
 #include "nuto/math/SparseMatrixCSRVector2General.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
@@ -1613,6 +1615,27 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>&
 //            BuildNonlocalData(*it);
     }
 }
+
+void NuTo::Structure::NuToSerializeSave(SerializeStreamOut& rStream)
+{
+    SerializeStructure(rStream);
+}
+
+void NuTo::Structure::NuToSerializeLoad(SerializeStreamIn& rStream)
+{
+    SerializeStructure(rStream);
+}
+
+//! @brief defines the serialization of this class
+//! @param rStream serialize input/output stream
+template void NuTo::Structure::SerializeStructure(SerializeStreamIn&);
+template void NuTo::Structure::SerializeStructure(SerializeStreamOut&);
+template <typename TStream>
+void NuTo::Structure::SerializeStructure(TStream &rStream)
+{
+
+}
+
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG

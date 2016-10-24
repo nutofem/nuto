@@ -14,3 +14,15 @@ NuTo::SerializeStreamOut::SerializeStreamOut(const std::string& rFile, bool rIsB
         mFileStream.precision(doublePrecision);
     }
 }
+
+void NuTo::SerializeStreamOut::Separator()
+{
+    if (mIsBinary)
+    {
+        mFileStream.write(SEPARATOR, sizeof(SEPARATOR));
+    }
+    else
+    {
+        mFileStream << SEPARATOR << '\n';
+    }
+}
