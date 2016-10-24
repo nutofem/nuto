@@ -1,3 +1,5 @@
+#include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
+#include "nuto/mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "nuto/mechanics/constitutive/laws/GradientDamageFatigueEngineeringStress.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
@@ -52,10 +54,43 @@ void NuTo::GradientDamageFatigueEngineeringStress::SetParameterDouble(NuTo::Cons
     SetParametersValid();
 }
 
-double NuTo::GradientDamageFatigueEngineeringStress::GetCurrentStaticData(NuTo::GradientDamageFatigueEngineeringStress::Data& rStaticData,
-                                                                          const NuTo::ConstitutiveInputMap& rConstitutiveInput) const
+
+template std::pair<double, double> NuTo::GradientDamageFatigueEngineeringStress::GetCurrentStaticData<1>(
+    NuTo::GradientDamageFatigueEngineeringStress::Data& rStaticData, const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+    const ConstitutiveOutputMap& rConstitutiveOutput) const;
+template std::pair<double, double> NuTo::GradientDamageFatigueEngineeringStress::GetCurrentStaticData<2>(
+    NuTo::GradientDamageFatigueEngineeringStress::Data& rStaticData, const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+    const ConstitutiveOutputMap& rConstitutiveOutput) const;
+template std::pair<double, double> NuTo::GradientDamageFatigueEngineeringStress::GetCurrentStaticData<3>(
+    NuTo::GradientDamageFatigueEngineeringStress::Data& rStaticData, const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+    const ConstitutiveOutputMap& rConstitutiveOutput) const;
+
+
+template <int TDim>
+std::pair<double, double> NuTo::GradientDamageFatigueEngineeringStress::GetCurrentStaticData(
+    NuTo::GradientDamageFatigueEngineeringStress::Data& rStaticData,
+    const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+    const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
-    return 0;
+    NuTo::ConstitutivePlaneState planeState(ePlaneState::PLANE_STRESS);
+    if (TDim == 2)
+        planeState = *dynamic_cast<ConstitutivePlaneState*>(rConstitutiveInput.at(Constitutive::eInput::PLANE_STATE).get());
+
+    auto& strain = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN);
+    EngineeringStress<TDim> engineeringStress = EngineeringStressHelper::GetStress(strain->AsEngineeringStrain<TDim>(), mE, mNu, planeState.GetPlaneState());
+    double kappa_old = rStaticData.GetData()[0];
+    engineeringStress *= (1 - CalculateDamage(kappa_old));
+    double sigmaEq = engineeringStress.GetVonMisesStress(planeState.GetPlaneState());
+
+    // This is explicit euler.
+    double nonlocalEqStrain = rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN)->operator[](0);
+    double kappa = k(nonlocalEqStrain, sigmaEq, rStaticData.GetData());
+    double dKappa_dNonlocalEqStrain = dk_de(nonlocalEqStrain, sigmaEq, rStaticData.GetData());
+
+    if (rConstitutiveOutput.Contains(Constitutive::eOutput::UPDATE_STATIC_DATA))
+        rStaticData.SetData(Eigen::Vector2d({kappa, nonlocalEqStrain}));
+
+    return std::make_pair(kappa, dKappa_dNonlocalEqStrain);
 }
 
 NuTo::Constitutive::eConstitutiveType NuTo::GradientDamageFatigueEngineeringStress::GetType() const

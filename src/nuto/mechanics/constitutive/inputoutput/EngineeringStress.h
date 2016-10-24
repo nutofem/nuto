@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 
 
 namespace NuTo
@@ -32,7 +33,9 @@ class EngineeringStress: public ConstitutiveVector<ConstitutiveIOBase::GetVoigtD
 {
 public:
 
-    double GetVonMisesStress() const;
+    EngineeringStress<3> As3D(ePlaneState rPlaneState = ePlaneState::PLANE_STRESS) const;
+
+    double GetVonMisesStress(ePlaneState rPlaneState = ePlaneState::PLANE_STRESS) const;
 
 };
 

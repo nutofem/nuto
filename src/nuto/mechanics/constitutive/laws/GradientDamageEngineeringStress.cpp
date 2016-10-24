@@ -142,7 +142,7 @@ template<>
 NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<1>(
     const ConstitutiveInputMap& rConstitutiveInput,
     const ConstitutiveOutputMap& rConstitutiveOutput,
-    StaticDataType rKappa)
+    StaticDataType rKappa, double rKappaTangent)
 {
     // get constitutive inputs
     const auto
@@ -189,17 +189,12 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<1>(
             {
                 ConstitutiveIOBase& tangent = *itOutput.second;
                 tangent.AssertIsVector<1>(itOutput.first, __PRETTY_FUNCTION__);
-                if (nonlocalEqStrain[0] == rKappa)
+                if (rKappaTangent == 0.)
                 {
-                    // loading
-                    tangent(0, 0) = -CalculateDerivativeDamage(nonlocalEqStrain[0]) * mE * engineeringStrain[0];
-
+                    tangent.SetZero();
+                    break;
                 }
-                else
-                {
-                    // unloading
-                    tangent(0, 0) = 0.;
-                }
+                tangent(0, 0) = -rKappaTangent * CalculateDerivativeDamage(nonlocalEqStrain[0]) * mE * engineeringStrain[0];
                 break;
             }
 
@@ -270,7 +265,7 @@ template<>
 NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<2>(
     const ConstitutiveInputMap& rConstitutiveInput,
     const ConstitutiveOutputMap& rConstitutiveOutput,
-    StaticDataType rKappa)
+    StaticDataType rKappa, double rKappaTangent)
 {
     // get constitutive inputs
     const auto
@@ -346,19 +341,15 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<2>(
             {
                 ConstitutiveIOBase& tangent = *itOutput.second;
                 tangent.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
-                if (nonlocalEqStrain[0] == rKappa)
+                if (rKappaTangent == 0.)
                 {
-                    // loading
-                    double damageDerivative = CalculateDerivativeDamage(nonlocalEqStrain[0]);
-                    tangent[0] = -damageDerivative * (C11 * engineeringStrain[0] + C12 * engineeringStrain[1]);
-                    tangent[1] = -damageDerivative * (C11 * engineeringStrain[1] + C12 * engineeringStrain[0]);
-                    tangent[2] = -damageDerivative * (C33 * engineeringStrain[2]);
-                }
-                else
-                {
-                    // unloading
                     tangent.SetZero();
+                    break;
                 }
+                double damageDerivative = rKappaTangent * CalculateDerivativeDamage(nonlocalEqStrain[0]);
+                tangent[0] = -damageDerivative * (C11 * engineeringStrain[0] + C12 * engineeringStrain[1]);
+                tangent[1] = -damageDerivative * (C11 * engineeringStrain[1] + C12 * engineeringStrain[0]);
+                tangent[2] = -damageDerivative * (C33 * engineeringStrain[2]);
                 break;
             }
 
@@ -448,7 +439,7 @@ template<>
 NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<3>(
     const ConstitutiveInputMap& rConstitutiveInput,
     const ConstitutiveOutputMap& rConstitutiveOutput,
-    StaticDataType rKappa)
+    StaticDataType rKappa, double rKappaTangent)
 {
     // get constitutive inputs
     const auto
@@ -529,28 +520,22 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<3>(
             {
                 ConstitutiveIOBase& tangent = *itOutput.second;
                 tangent.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
-
-                if (nonlocalEqStrain[0] == rKappa)
+                if (rKappaTangent == 0.)
                 {
-                    // loading
-                    double damageDerivative = CalculateDerivativeDamage(nonlocalEqStrain[0]);
-                    tangent[0] = -damageDerivative
-                        * (C11 * engineeringStrain[0] + C12 * engineeringStrain[1] + C12 * engineeringStrain[2]);
-                    tangent[1] = -damageDerivative
-                        * (C11 * engineeringStrain[1] + C12 * engineeringStrain[0] + C12 * engineeringStrain[2]);
-                    tangent[2] = -damageDerivative
-                        * (C11 * engineeringStrain[2] + C12 * engineeringStrain[0] + C12 * engineeringStrain[1]);
-
-                    tangent[3] = -damageDerivative * (C44 * engineeringStrain[3]);
-                    tangent[4] = -damageDerivative * (C44 * engineeringStrain[4]);
-                    tangent[5] = -damageDerivative * (C44 * engineeringStrain[5]);
-
-                }
-                else
-                {
-                    // unloading
                     tangent.SetZero();
+                    break;
                 }
+                double damageDerivative = rKappaTangent * CalculateDerivativeDamage(nonlocalEqStrain[0]);
+                tangent[0] = -damageDerivative
+                    * (C11 * engineeringStrain[0] + C12 * engineeringStrain[1] + C12 * engineeringStrain[2]);
+                tangent[1] = -damageDerivative
+                    * (C11 * engineeringStrain[1] + C12 * engineeringStrain[0] + C12 * engineeringStrain[2]);
+                tangent[2] = -damageDerivative
+                    * (C11 * engineeringStrain[2] + C12 * engineeringStrain[0] + C12 * engineeringStrain[1]);
+
+                tangent[3] = -damageDerivative * (C44 * engineeringStrain[3]);
+                tangent[4] = -damageDerivative * (C44 * engineeringStrain[4]);
+                tangent[5] = -damageDerivative * (C44 * engineeringStrain[5]);
                 break;
             }
 
@@ -985,4 +970,26 @@ double NuTo::GradientDamageEngineeringStress::CalculateXi(double rLocalEqStrain)
         }
     }
     return xi;
+}
+
+template NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate<1>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+                                                                         const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
+                                                                         NuTo::GradientDamageEngineeringStress::Data& rStaticData);
+template NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate<2>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+                                                                         const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
+                                                                         NuTo::GradientDamageEngineeringStress::Data& rStaticData);
+template NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate<3>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+                                                                         const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
+                                                                         NuTo::GradientDamageEngineeringStress::Data& rStaticData);
+
+template<int TDim>
+NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
+                                                             const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
+                                                             NuTo::GradientDamageEngineeringStress::Data& rStaticData)
+{
+    // this split allows reusing the EvaluteWithKappa from other classes
+    double kappa = EvaluateStaticData<TDim>(rConstitutiveInput, rConstitutiveOutput, rStaticData);
+    double nonlocalEqStrain = rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN)->operator[](0);
+    double kappaTangent = (kappa == nonlocalEqStrain); // = 1 true, 0 false. perfect tangent.
+    return EvaluateWithKappa<TDim>(rConstitutiveInput, rConstitutiveOutput, kappa, kappaTangent);
 }

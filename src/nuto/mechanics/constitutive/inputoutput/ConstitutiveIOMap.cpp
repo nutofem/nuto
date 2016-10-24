@@ -46,5 +46,12 @@ NuTo::ConstitutiveIOMap<IOEnum>& NuTo::ConstitutiveIOMap<IOEnum>::Merge(const Co
     return *this;
 }
 
+template<typename IOEnum>
+bool NuTo::ConstitutiveIOMap<IOEnum>::Contains(IOEnum rEnum) const
+{
+    return this->find(rEnum) != this->end();
+}
+
+
 template class NuTo::ConstitutiveIOMap<NuTo::Constitutive::eInput>;
 template class NuTo::ConstitutiveIOMap<NuTo::Constitutive::eOutput>;

@@ -25,6 +25,7 @@ public:
     ConstitutiveIOMap() = default;
     ConstitutiveIOMap(const ConstitutiveIOMap& other);
     NuTo::ConstitutiveIOMap<IOEnum>& Merge(const ConstitutiveIOMap& other);
+    bool Contains(IOEnum rEnum) const;
 };
 
 using ConstitutiveInputMap = ConstitutiveIOMap<Constitutive::eInput>;

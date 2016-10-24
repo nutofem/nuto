@@ -48,12 +48,7 @@ public:
     template<int TDim>
     eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
                     const ConstitutiveOutputMap& rConstitutiveOutput,
-                    Data& rStaticData)
-    {
-        // this split allows reusing the EvaluteWithKappa from other classes
-        double kappa = EvaluateStaticData<TDim>(rConstitutiveInput, rConstitutiveOutput, rStaticData);
-        return EvaluateWithKappa<TDim>(rConstitutiveInput, rConstitutiveOutput, kappa);
-    }
+                    Data& rStaticData);
 
     //! @brief Calculates the current static data based on the given CALCULATE_STATIC_DATA input.
     //! @param rStaticData History data.
@@ -139,10 +134,11 @@ protected:
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     //! @param rKappa new static data
+    //! @param rKappaTangent new dKappa_dNonlocalEqStrain
     template<int TDim>
     eError EvaluateWithKappa(const ConstitutiveInputMap& rConstitutiveInput,
                              const ConstitutiveOutputMap& rConstitutiveOutput,
-                             StaticDataType rKappa);
+                             StaticDataType rKappa, double rKappaTangent);
 
     //! @brief Evaluate the static data part of the law
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).

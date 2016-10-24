@@ -27,15 +27,21 @@ public:
                     const ConstitutiveOutputMap& rConstitutiveOutput,
                     Data& rStaticData)
     {
-        double kappa = GetCurrentStaticData(rStaticData, rConstitutiveInput);
-        return GradientDamageEngineeringStress::EvaluateWithKappa<TDim>(rConstitutiveInput, rConstitutiveOutput, kappa);
+        auto kappaAndTangent = GetCurrentStaticData<TDim>(rStaticData, rConstitutiveInput, rConstitutiveOutput);
+        return GradientDamageEngineeringStress::EvaluateWithKappa<TDim>(
+            rConstitutiveInput, rConstitutiveOutput,
+            kappaAndTangent.first, kappaAndTangent.second);
     }
 
     //! @brief Calculates the current static data based on the given CALCULATE_STATIC_DATA input.
     //! @param rStaticData History data.
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
-    //! @return Kappa value calculated from history data.
-    double GetCurrentStaticData(Data& rStaticData, const ConstitutiveInputMap& rConstitutiveInput) const;
+    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
+    //! @return Kappa value calculated from history data and dKappa_dNonlocalEqStrain
+    template <int TDim>
+    std::pair<double, double> GetCurrentStaticData(Data& rStaticData,
+                                                   const ConstitutiveInputMap& rConstitutiveInput,
+                                                   const ConstitutiveOutputMap& rConstitutiveOutput) const;
 
     // parameters /////////////////////////////////////////////////////////////
 
@@ -56,7 +62,67 @@ public:
 
 
 private:
-    
+
+    double F(double s) const
+    {
+        s -= mEnduranceStress;
+        if (s >= 0)
+            return mFatigueParameter * s / mTensileStrength;
+        else
+            return 0;
+    }
+
+    double dF_ds(double s) const
+    {
+        s -= mEnduranceStress;
+        if (s >= 0)
+            return mFatigueParameter / mTensileStrength;
+        else
+            return 0;
+    }
+
+    double k(double e, double s, const StaticDataType& rData) const
+    {
+        if (e > rData[0])
+            return e;
+        double delta_e = e - rData[1];
+        return rData[0] + std::abs(delta_e) * F(s);
+    }
+
+    double dk_de(double e, double s, const StaticDataType& rData) const
+    {
+        if (e > rData[0])
+            return 1;
+        double delta_e = e - rData[1];
+        if (delta_e < 0)
+            return -F(s);
+        else
+            return F(s);
+    }
+
+    double dk_ds(double e, double s, const StaticDataType& rData) const
+    {
+        if (e > rData[0])
+            return 0;
+        double delta_e = e - rData[1];
+        return std::abs(delta_e) * dF_ds(s);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     double mEnduranceStress = 0.;
     double mFatigueParameter = 0.;
 };
