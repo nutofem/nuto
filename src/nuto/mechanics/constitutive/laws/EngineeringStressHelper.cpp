@@ -39,15 +39,16 @@ EngineeringStress<2> EngineeringStressHelper::GetStress<2>(const EngineeringStra
                                                            double rE,
                                                            double rNu, ePlaneState rPlaneState)
 {
-    EngineeringStress<2> stress;
+    double C11 = 0., C12 = 0., C33 = 0.;
     if (rPlaneState == ePlaneState::PLANE_STRESS)
-    {
-
-    }
+        std::tie(C11, C12, C33) = CalculateCoefficients3D(rE, rNu);
     else
-    {
+        std::tie(C11, C12, C33) = CalculateCoefficients2DPlaneStress(rE, rNu);
 
-    }
+    EngineeringStress<2> stress;
+    stress[0] = C11 * rElasticStrain[0] + C12 * rElasticStrain[1];
+    stress[1] = C11 * rElasticStrain[1] + C12 * rElasticStrain[0];
+    stress[2] = C33 * rElasticStrain[2];
     return stress;
 }
 
@@ -56,7 +57,16 @@ EngineeringStress<3> EngineeringStressHelper::GetStress<3>(const EngineeringStra
                                                            double rE,
                                                            double rNu, ePlaneState rPlaneState)
 {
+    double C11 = 0.0, C12 = 0.0, C44 = 0.0;
+    std::tie(C11, C12, C44) = EngineeringStressHelper::CalculateCoefficients3D(rE, rNu);
+
     EngineeringStress<3> stress;
+    stress[0] = C11 * rElasticStrain[0] + C12 * (rElasticStrain[1] + rElasticStrain[2]);
+    stress[1] = C11 * rElasticStrain[1] + C12 * (rElasticStrain[0] + rElasticStrain[2]);
+    stress[2] = C11 * rElasticStrain[2] + C12 * (rElasticStrain[0] + rElasticStrain[1]);
+    stress[3] = C44 * rElasticStrain[3];
+    stress[4] = C44 * rElasticStrain[4];
+    stress[5] = C44 * rElasticStrain[5];
     return stress;
 }
 

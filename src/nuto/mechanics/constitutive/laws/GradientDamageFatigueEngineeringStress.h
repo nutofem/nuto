@@ -56,6 +56,7 @@ public:
 
 
 private:
+    
     double mEnduranceStress = 0.;
     double mFatigueParameter = 0.;
 };
