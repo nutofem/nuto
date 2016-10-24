@@ -22,10 +22,18 @@ public:
 
     typedef typename TLaw::StaticDataType Type;
 
+    //! @brief ctor, initialized with a single Type
+    //! @param rData data
+    //! @return DataContainer
     DataContainer(const Type& rData)
     {
         mData.push_back(rData);
     }
+
+    //! @brief ctor, initialized with a vector of Types
+    //! @param rData std::vector of rData
+    //! @return DataContainer
+    DataContainer(const std::vector<Type>& rData) : mData(rData) {}
 
     //! @brief Set a new value for the current static data.
     //! @param rNewData New value for current static data.

@@ -1,12 +1,11 @@
 //
 // Created by Thomas Titscher on 10/21/16.
 //
-#include "nuto/mechanics/constitutive/staticData/DataContainer.h"
-
 #define BOOST_TEST_MODULE DataContainerTest
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
-
+#include "nuto/mechanics/constitutive/staticData/DataContainer.h"
+#include <type_traits>
 // necessary to build with clang when boost has been compiled by gcc
 std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string name)
 {
@@ -25,11 +24,43 @@ public:
     typedef int StaticDataType;
 };
 
-BOOST_AUTO_TEST_CASE(DataContainerAccess)
+
+BOOST_AUTO_TEST_CASE(DataContainer_Copy_Move)
+{
+    BOOST_CHECK(std::is_copy_constructible<DataContainer<TestLaw>>::value);
+    BOOST_CHECK(std::is_move_constructible<DataContainer<TestLaw>>::value);
+
+    BOOST_CHECK(std::is_copy_assignable<DataContainer<TestLaw>>::value);
+    BOOST_CHECK(std::is_move_assignable<DataContainer<TestLaw>>::value);
+}
+
+BOOST_AUTO_TEST_CASE(DataContainerConstruction)
+{
+    {
+        DataContainer<TestLaw> data(6174);
+        BOOST_CHECK_EQUAL(data.GetNumData(), 1);
+        BOOST_CHECK_EQUAL(data.GetData(), 6174);
+    }
+    {
+        std::vector<typename TestLaw::StaticDataType> dataVector({0,1,2});
+        DataContainer<TestLaw> data(dataVector);
+        BOOST_CHECK_EQUAL(data.GetNumData(), 3);
+        BOOST_CHECK_EQUAL(data.GetData(0), 0);
+        BOOST_CHECK_EQUAL(data.GetData(1), 1);
+        BOOST_CHECK_EQUAL(data.GetData(2), 2);
+    }
+    {
+        DataContainer<TestLaw> data({0,1,2});
+        BOOST_CHECK_EQUAL(data.GetNumData(), 3);
+        BOOST_CHECK_EQUAL(data.GetData(0), 0);
+        BOOST_CHECK_EQUAL(data.GetData(1), 1);
+        BOOST_CHECK_EQUAL(data.GetData(2), 2);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(DataContainerShits)
 {
     DataContainer<TestLaw> data(6174);
-    BOOST_CHECK_EQUAL(data.GetNumData(), 1);
-    BOOST_CHECK_EQUAL(data.GetData(), 6174);
 
     // shifts not possible with only one set of static data
     BOOST_CHECK_THROW(data.ShiftToPast(), NuTo::MechanicsException);
