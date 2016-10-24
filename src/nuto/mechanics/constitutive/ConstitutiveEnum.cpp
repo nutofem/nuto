@@ -13,6 +13,7 @@ const std::map<NuTo::Constitutive::eConstitutiveType, std::string> NuTo::Constit
         {eConstitutiveType::DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS,   "DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS"},
         {eConstitutiveType::FIBRE_MATRIX_BOND_STRESS_SLIP,                          "FIBRE_MATRIX_BOND_STRESS_SLIP"},
         {eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS,                     "GRADIENT_DAMAGE_ENGINEERING_STRESS"},
+        {eConstitutiveType::GRADIENT_DAMAGE_FATIGUE_ENGINEERING_STRESS,             "GRADIENT_DAMAGE_FATIGUE_ENGINEERING_STRESS"},
         {eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE,             "GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE"},
         {eConstitutiveType::GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS,          "GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS"},
         {eConstitutiveType::HEAT_CONDUCTION,                                        "HEAT_CONDUCTION"},
@@ -132,6 +133,8 @@ const std::map<NuTo::Constitutive::eConstitutiveParameter, std::string> NuTo::Co
         {eConstitutiveParameter::VISCOPLASTIC_YIELD_SURFACE_OFFSET,         "VISCOPLASTIC_YIELD_SURFACE_OFFSET"},
         {eConstitutiveParameter::VISCOSITY,                                 "VISCOSITY"},
         {eConstitutiveParameter::VISCOSITY_EXPONENT,                        "VISCOSITY_EXPONENT"},
+        {eConstitutiveParameter::ENDURANCE_STRESS,                          "ENDURANCE_STRESS"},
+        {eConstitutiveParameter::FATIGUE_PARAMETER,                         "FATIGUE_PARAMETER"},
         {eConstitutiveParameter::YOUNGS_MODULUS,                            "YOUNGS_MODULUS"}};
 
     return map;

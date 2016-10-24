@@ -17,6 +17,7 @@ enum class eConstitutiveType
     DAMAGE_VISCO_PLASTICITY_HARDENING_ENGINEERING_STRESS,   //!< viscoplastic damage model with hardening
     FIBRE_MATRIX_BOND_STRESS_SLIP,                          //!< material model for the matrix-fibre interface
     GRADIENT_DAMAGE_ENGINEERING_STRESS,                     //!< gradient damage model
+    GRADIENT_DAMAGE_FATIGUE_ENGINEERING_STRESS,             //!< gradient damage model
     GRADIENT_DAMAGE_ENGINEERING_STRESS_FATIGUE,             //!< gradient damage model for fatigued
     GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS,          //!< gradient damage plasticity model
     HEAT_CONDUCTION,                                        //!< Heat conduction
@@ -141,7 +142,9 @@ enum class eConstitutiveParameter
     VISCOPLASTIC_YIELD_SURFACE_OFFSET,          //!<
     VISCOSITY,                                  //!<
     VISCOSITY_EXPONENT,                         //!<
-    YOUNGS_MODULUS                              //!<
+    YOUNGS_MODULUS,                             //!<
+	ENDURANCE_STRESS,                           //!<
+    FATIGUE_PARAMETER                           //!<
 
 };
 

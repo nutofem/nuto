@@ -13,6 +13,7 @@ set(NuToMechanicsConstitutive_SOURCES
     constitutive/laws/EngineeringStressHelper.cpp
     constitutive/laws/FibreMatrixBondStressSlip.cpp
     constitutive/laws/GradientDamageEngineeringStress.cpp
+    constitutive/laws/GradientDamageFatigueEngineeringStress.cpp
     constitutive/laws/PhaseField.cpp
     constitutive/laws/HeatConduction.cpp
     constitutive/laws/LinearDampingEngineeringStress.cpp

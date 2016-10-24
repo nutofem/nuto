@@ -46,8 +46,14 @@ public:
     //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
     //! @param rStaticData Pointer to the history data.
     template<int TDim>
-    eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput,
-            Data& rStaticData);
+    eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
+                    const ConstitutiveOutputMap& rConstitutiveOutput,
+                    Data& rStaticData)
+    {
+        // this split allows reusing the EvaluteWithKappa from other classes
+        double kappa = EvaluateStaticData<TDim>(rConstitutiveInput, rConstitutiveOutput, rStaticData);
+        return EvaluateWithKappa<TDim>(rConstitutiveInput, rConstitutiveOutput, kappa);
+    }
 
     //! @brief Calculates the current static data based on the given CALCULATE_STATIC_DATA input.
     //! @param rStaticData History data.
@@ -128,6 +134,27 @@ public:
 
 
 protected:
+
+    //! @brief Evaluate the constitutive relation without handling the static data
+    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
+    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
+    //! @param rKappa new static data
+    template<int TDim>
+    eError EvaluateWithKappa(const ConstitutiveInputMap& rConstitutiveInput,
+                             const ConstitutiveOutputMap& rConstitutiveOutput,
+                             StaticDataType rKappa);
+
+    //! @brief Evaluate the static data part of the law
+    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
+    //! @param rConstitutiveOutput Output to the constitutive law (stress, stiffness, heat flux etc.).
+    //! @param rStaticData Pointer to the history data.
+    //! @return new static data kappa
+    template<int TDim>
+    double EvaluateStaticData(const ConstitutiveInputMap& rConstitutiveInput,
+                              const ConstitutiveOutputMap& rConstitutiveOutput,
+                              Data& rStaticData);
+
+
     //! @brief ... density
     double mRho;
 

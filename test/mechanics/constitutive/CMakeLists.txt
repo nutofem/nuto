@@ -1,5 +1,5 @@
 if(ENABLE_UNIT_TESTS)
-    foreach(test HeatConduction ConstitutiveIO AdditiveInput AdditiveOutput)
+    foreach(test HeatConduction ConstitutiveIO AdditiveInput AdditiveOutput GradientDamageFatigue)
         add_executable(${test} ${test}.cpp)
         target_link_libraries(${test} NuToMechanics NuToMath NuToBase)
         if(ENABLE_VISUALIZE)
