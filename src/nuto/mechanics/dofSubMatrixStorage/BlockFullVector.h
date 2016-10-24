@@ -4,7 +4,6 @@
 #include "nuto/mechanics/dofSubMatrixStorage/BlockStorageBase.h"
 #include "nuto/mechanics/nodes/DofHash.h"
 #include "eigen3/Eigen/Core"
-
 #include <ostream>
 #include <unordered_map>
 #include <map>
@@ -12,7 +11,8 @@
 namespace NuTo
 {
 class BlockScalar;
-
+class SerializeStreamOut;
+class SerializeStreamIn;
 
 template <class T, int rows> class FullVector;
 //! @author Thomas Titscher, BAM
@@ -108,6 +108,21 @@ public:
 
     template <typename T2>
     friend std::ostream& operator<< (std::ostream &rOut, const NuTo::BlockFullVector<T2>& rBlockVector);
+
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize output stream
+    void NuToSerializeSave(SerializeStreamOut& rStream)
+    {
+        SerializeBlockFullVector(rStream);
+    }
+
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize input stream
+    void NuToSerializeLoad(SerializeStreamIn& rStream)
+    {
+        SerializeBlockFullVector(rStream);
+    }
+
 #endif
 
     //! @brief comparision, checks equality of all sub vectors
@@ -156,6 +171,11 @@ public:
     NuTo::FullVector<T, Eigen::Dynamic> Get(std::string rDofRow) const;
 
 private:
+
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize input/output stream
+    template <typename TStream>
+    void SerializeBlockFullVector(TStream &rStream);
 
     std::unordered_map<Node::eDof, NuTo::FullVector<T, Eigen::Dynamic>, Node::eDofHash> mData;
 

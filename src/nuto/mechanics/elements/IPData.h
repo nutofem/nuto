@@ -9,6 +9,8 @@ namespace NuTo
 {
 class IntegrationTypeBase;
 class ConstitutiveBase;
+class SerializeStreamOut;
+class SerializeStreamIn;
 
 //! @brief class for handling the IPConstitutiveLaw and the IntegrationType.
 class IPData
@@ -51,6 +53,14 @@ public:
     {
         return *mIntegrationType;
     }
+
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize output stream
+    void NuToSerializeSave(SerializeStreamOut& rStream);
+
+    //! @brief defines the serialization of this class
+    //! @param rStream serialize input stream
+    void NuToSerializeLoad(SerializeStreamIn& rStream);
 
 private:
 #ifdef ENABLE_SERIALIZATION

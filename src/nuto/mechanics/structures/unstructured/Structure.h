@@ -586,12 +586,6 @@ protected:
 
 #ifndef SWIG
 
-    //! @brief defines the serialization of this class
-    //! @param rStream serialize input/output stream
-    template <typename TStream>
-    void SerializeStructure(TStream &rStream);
-
-
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
     void GetElementsTotal(std::vector<const ElementBase*>& rElements) const;

@@ -1618,23 +1618,51 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>&
 
 void NuTo::Structure::NuToSerializeSave(SerializeStreamOut& rStream)
 {
-    SerializeStructure(rStream);
+    // be super carefull to symmetrically implement the same stuff to NuToSerializeLoad(...)
+
+    // serialize nodes
+    for (int i = 0; i < GetNumTimeDerivatives(); ++i)
+    {
+        auto nodalValues = NodeExtractDofValues(i);
+        rStream << nodalValues.J;
+        rStream.Separator();
+        rStream << nodalValues.K;
+        rStream.Separator();
+    }
+
+    // serialize element static data
+    std::vector<ElementBase*> elements;
+    GetElementsTotal(elements);
+    for (ElementBase* element : elements)
+    {
+        rStream << element->GetIPData();
+        rStream.Separator();
+    }
 }
 
 void NuTo::Structure::NuToSerializeLoad(SerializeStreamIn& rStream)
 {
-    SerializeStructure(rStream);
+    // serialize nodes
+    for (int i = 0; i < GetNumTimeDerivatives(); ++i)
+    {
+        auto nodalValues = NodeExtractDofValues(i);
+        rStream >> nodalValues.J;
+        rStream.Separator();
+        rStream >> nodalValues.K;
+        rStream.Separator();
+        NodeMergeDofValues(i, nodalValues.J, nodalValues.K);
+    }
+
+    // serialize element static data
+    std::vector<ElementBase*> elements;
+    GetElementsTotal(elements);
+    for (ElementBase* element : elements)
+    {
+        rStream >> element->GetIPData();
+        rStream.Separator();
+    }
 }
 
-//! @brief defines the serialization of this class
-//! @param rStream serialize input/output stream
-template void NuTo::Structure::SerializeStructure(SerializeStreamIn&);
-template void NuTo::Structure::SerializeStructure(SerializeStreamOut&);
-template <typename TStream>
-void NuTo::Structure::SerializeStructure(TStream &rStream)
-{
-
-}
 
 
 #ifdef ENABLE_SERIALIZATION

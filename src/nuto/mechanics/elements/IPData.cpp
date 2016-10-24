@@ -5,6 +5,8 @@
 #include "nuto/mechanics/elements/IPData.h"
 #include "nuto/mechanics/constitutive/ConstitutiveBase.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
+#include "nuto/base/serializeStream/SerializeStreamIn.h"
+#include "nuto/base/serializeStream/SerializeStreamOut.h"
 
 NuTo::IPData::IPData(const IntegrationTypeBase& rIntegrationType)
 : mIntegrationType(&rIntegrationType)
@@ -92,4 +94,16 @@ bool NuTo::IPData::HasConstitutiveLawAssigned(unsigned int rIP) const
 
     auto law = mLaws[rIP].get();
     return law != nullptr;
+}
+
+void NuTo::IPData::NuToSerializeSave(NuTo::SerializeStreamOut& rStream)
+{
+    for (auto& ipLaw : mLaws)
+        rStream.Serialize(*ipLaw);
+}
+
+void NuTo::IPData::NuToSerializeLoad(NuTo::SerializeStreamIn& rStream)
+{
+    for (auto& ipLaw : mLaws)
+        rStream.Serialize(*ipLaw);
 }

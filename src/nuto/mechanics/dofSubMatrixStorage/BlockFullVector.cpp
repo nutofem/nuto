@@ -5,6 +5,8 @@
 #include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "nuto/mechanics/dofSubMatrixStorage/DofStatus.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/base/serializeStream/SerializeStreamIn.h"
+#include "nuto/base/serializeStream/SerializeStreamOut.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -244,6 +246,15 @@ NuTo::BlockScalar NuTo::BlockFullVector<T>::CalculateInfNorm()
     return dofWiseNorm;
 }
 
+template<typename T>
+template<typename TStream>
+void NuTo::BlockFullVector<T>::SerializeBlockFullVector(TStream& rStream)
+{
+    for (auto& data : mData)
+    {
+        rStream.Serialize(data.second);
+    }
+}
 
 namespace NuTo
 {
@@ -266,6 +277,10 @@ template std::ostream& NuTo::operator<< (std::ostream &rOut, const NuTo::BlockFu
 template class NuTo::BlockFullVector<double>;
 template class NuTo::BlockFullVector<int>;
 
+template void NuTo::BlockFullVector<int>::SerializeBlockFullVector(NuTo::SerializeStreamIn&);
+template void NuTo::BlockFullVector<int>::SerializeBlockFullVector(NuTo::SerializeStreamOut&);
+template void NuTo::BlockFullVector<double>::SerializeBlockFullVector(NuTo::SerializeStreamIn&);
+template void NuTo::BlockFullVector<double>::SerializeBlockFullVector(NuTo::SerializeStreamOut&);
 
 #ifdef ENABLE_SERIALIZATION
 
