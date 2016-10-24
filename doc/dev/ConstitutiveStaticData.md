@@ -1,6 +1,5 @@
-@page ConstitutiveStaticData. Some design choices
+@page ConstitutiveStaticData ConstitutiveStaticData: Some design choices
 
-# ConstitutiveStaticData
 
 
 ### Setup
@@ -29,7 +28,7 @@ typedef double StaticDataType
 
 Benefits:
 - the IPConstitutiveLawBase automatically allocates, deallocates and provides the correct static data, if the constitutive law needs them.
-    
+
 ### Evaluate()
 The element calls IPConstitutiveLawBase::Evaluate(inout, output). This calls is forwarded to the constitutive law providing an additional vector of _StaticDataType_, if needed.
  

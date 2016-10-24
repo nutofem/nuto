@@ -24,8 +24,8 @@
 #endif
 
 
-NuTo::Element1DInXD::Element1DInXD(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, const InterpolationType& rInterpolationType) :
-        NuTo::ContinuumElement<1>(rStructure, rNodes, rInterpolationType)
+NuTo::Element1DInXD::Element1DInXD(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes,
+        const InterpolationType& rInterpolationType) : NuTo::ContinuumElement<1>(rStructure, rNodes, rInterpolationType)
 {
     mRotationMatrix = CalculateRotationMatrix();
 }

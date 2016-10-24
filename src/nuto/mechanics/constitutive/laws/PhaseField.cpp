@@ -575,8 +575,8 @@ NuTo::eError NuTo::PhaseField::Evaluate<2>(const ConstitutiveInputMap& rConstitu
         throw MechanicsException(__PRETTY_FUNCTION__,
                                  "You need to specify the way the static data should be calculated (input list).");
 
-    const auto
-        & calculateStaticData = dynamic_cast<const ConstitutiveCalculateStaticData&>(*itCalculateStaticData->second);
+    const auto& calculateStaticData =
+        dynamic_cast<const ConstitutiveCalculateStaticData&>(*itCalculateStaticData->second);
     int index = calculateStaticData.GetIndexOfPreviousStaticData();
 
     double oldEnergyDensity = rStaticData.GetData(index);

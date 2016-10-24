@@ -92,7 +92,7 @@ std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitu
         case eOutput::INTERFACE_CONSTITUTIVE_MATRIX:
             return std::make_unique<ConstitutiveMatrixXd>();
         case eOutput::UPDATE_STATIC_DATA:
-            return 0;
+            return nullptr;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__,
                     "Don't know how to create constitutive output for "

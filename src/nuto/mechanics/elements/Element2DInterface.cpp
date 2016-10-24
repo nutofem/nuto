@@ -37,9 +37,9 @@
 #endif // ENABLE_VISUALIZE
 
 
-NuTo::Element2DInterface::Element2DInterface(const NuTo::StructureBase* rStructure, const std::vector<NuTo::NodeBase*>& rNodes, const InterpolationType& rInterpolationType) :
-        NuTo::ElementBase::ElementBase(rStructure, rInterpolationType),
-        mNodes(rNodes)
+NuTo::Element2DInterface::Element2DInterface(const NuTo::StructureBase* rStructure,
+        const std::vector<NuTo::NodeBase*>& rNodes, const InterpolationType& rInterpolationType) :
+        NuTo::ElementBase::ElementBase(rStructure, rInterpolationType), mNodes(rNodes)
 {
     mTransformationMatrix = CalculateTransformationMatrix(GetStructure()->GetDimension(), mNodes.size());
 }

@@ -127,8 +127,8 @@ NuTo::eError NuTo::MisesPlasticityEngineeringStress::Evaluate<2>(
     if (planeState.GetPlaneState() != ePlaneState::PLANE_STRAIN)
         throw MechanicsException(__PRETTY_FUNCTION__, "Only implemented for PLANE_STRAIN");
 
-    const auto
-        & engineeringStrain = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
+    const auto& engineeringStrain =
+        rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
 
     StaticData::DataMisesPlasticity<3> newStaticData;
     StaticData::DataMisesPlasticity<3>* newStaticDataPtr = nullptr;

@@ -139,6 +139,12 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiv
             throw MechanicsException(__PRETTY_FUNCTION__, "element  output not implemented.");
         }
     }
+
+    // allocate the objects for the output data
+    for (auto& outputs : constitutiveOutput)
+    {
+        outputs.second = ConstitutiveIOBase::makeConstitutiveIO<TDim>(outputs.first);
+    }
     return constitutiveOutput;
 }
 
