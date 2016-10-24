@@ -31,9 +31,7 @@ NuTo::IPData& NuTo::IPData::operator=(const NuTo::IPData& rOther)
     mLaws.clear();
     mLaws.reserve(rOther.mLaws.size());
     for (auto& law : rOther.mLaws)
-    {
-        mLaws.push_back(law->GetConstitutiveLaw().CreateIPLaw());
-    }
+        mLaws.push_back(law->Clone());
     return *this;
 }
 
@@ -43,9 +41,7 @@ NuTo::IPData& NuTo::IPData::operator=(NuTo::IPData&& rOther)
     mLaws.clear();
     mLaws.reserve(rOther.mLaws.size());
     for (auto& law : rOther.mLaws)
-    {
         mLaws.push_back(std::move(law));
-    }
     return *this;
 }
 

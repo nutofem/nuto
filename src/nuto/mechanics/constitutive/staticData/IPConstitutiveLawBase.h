@@ -35,6 +35,7 @@ public:
     IPConstitutiveLawBase& operator=(const IPConstitutiveLawBase&)  = default;
     IPConstitutiveLawBase& operator=(      IPConstitutiveLawBase&&) = default;
 
+    virtual std::unique_ptr<IPConstitutiveLawBase> Clone() = 0;
 
     virtual ConstitutiveBase& GetConstitutiveLaw() const = 0;
 
