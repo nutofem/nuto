@@ -49,3 +49,13 @@ unsigned ipIndex = 2;
 e->GetIPData().GetIPConstitutiveLaw(ipIndex).GetData<NuTo::PhaseField>.SetData(42.);
 ~~~
 
+### Serialization
+
+see @ref NuToSerializeStream
+
+Make sure that your _StaticDataType_ is
+ - serializable by default, that is
+    - Eigen::Matrix/Vector
+    - NuTo::FullMatrix/FullVector
+    - double, bool, int
+ - provides a NuToSerializeSave(...) and NuToSerializeLoad(...)
