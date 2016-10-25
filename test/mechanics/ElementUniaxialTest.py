@@ -22,16 +22,16 @@ errorMsg = ""
 
 def Run(rStructure, rType, rOrder):
 	global error, errorMsg
-	
+
 	resultFile = os.path.join(pathToResultFiles, rType+rOrder+"_py.vtu")
-	
+
 	print "#########################################"
 	print "##   Running " + rType+":"+rOrder
 	print "#########################################"
 	print "##        writing vtu files to "
 	print "## " + resultFile
 	print "#########################################"
-	
+
 
 	# **********************
 	# set constitutive law
@@ -40,7 +40,7 @@ def Run(rStructure, rType, rOrder):
         rStructure.ConstitutiveLawSetParameterDouble(lawId,"Youngs_Modulus", E)
         rStructure.ConstitutiveLawSetParameterDouble(lawId,"Poissons_Ratio",nu)
         rStructure.ConstitutiveLawSetParameterDouble(lawId,"Density",rho)
-	
+
 	rStructure.ElementTotalSetConstitutiveLaw(lawId)
 
 	# **********************
@@ -49,7 +49,7 @@ def Run(rStructure, rType, rOrder):
 	dimension = rStructure.GetDimension()
 	directionX = nuto.DoubleFullMatrix(dimension,1)
 	directionX.SetValue(0,0,1.)
-		
+
 	origin = nuto.DoubleFullVector(dimension)
 	nodeGroupOrigin = rStructure.GroupCreate("Nodes");
 	rStructure.GroupAddNodeRadiusRange(nodeGroupOrigin, origin, 0, 1.e-5);
@@ -57,7 +57,7 @@ def Run(rStructure, rType, rOrder):
 		errorMsg += "[SetBoundaryConditions:" +rType+":"+rOrder+"] Node at origin (0,0,0) does not exist. \n";
 		error = True
 		return
-            
+
 	#fix origin
 	nodeOrigin = rStructure.GroupGetMemberIds(nodeGroupOrigin).GetValue(0);
 	for dim in range(1, dimension):
@@ -69,12 +69,12 @@ def Run(rStructure, rType, rOrder):
 	nodesX0 = rStructure.GroupCreate("Nodes");
 	rStructure.GroupAddNodeCoordinateRange(nodesX0, 0, -1.e-6, 1.e-6);
 	rStructure.ConstraintLinearSetDisplacementNodeGroup(nodesX0, directionX, 0.);
-	
+
 	# apply displacement on x = lX plane
 	nodesXlX = rStructure.GroupCreate("Nodes");
 	rStructure.GroupAddNodeCoordinateRange(nodesXlX, 0, lX-1.e-6, lX+1.e-6);
 	rStructure.ConstraintLinearSetDisplacementNodeGroup(nodesXlX, directionX, deltaL);
-	
+
 	# **********************
 	#  SOLVE
 	# **********************
@@ -109,7 +109,7 @@ def Run(rStructure, rType, rOrder):
 				errorMsg += "[CheckSolution:" +rType+":"+rOrder+"] wrong stress calculation. \n"
 				error = True
 				return
-			
+
 	#check reaction forces
 	analyticForce = analyticStressX * lY * lZ
 	numericForce = 0.
@@ -119,20 +119,20 @@ def Run(rStructure, rType, rOrder):
 		force = nuto.DoubleFullVector()
 		rStructure.NodeInternalForce(nodeId, force);
 		numericForce += force.GetValue(0);
-	
+
 	if (abs(numericForce-numericForce) > 1.e-8):
 		errorMsg += "[CheckSolution:" +rType+":"+rOrder+"] wrong reaction force calculation. \n"
 		error = True
 		return
-	
+
 	## **********************
 	##  Check Total Mass via Mass matrix
 	## **********************
-	
+
 	analyticMass = lX*lY*lZ*rho
 
 	hessian2 = rStructure.BuildGlobalHessian2()
-	
+
 	numericMass = 0.
 	numericMass += hessian2.JJ.ExportToFullMatrix().Sum()
 	numericMass += hessian2.JK.ExportToFullMatrix().Sum()
@@ -147,9 +147,9 @@ def Run(rStructure, rType, rOrder):
 		errorMsg += "[CheckSolution:" +rType+":"+rOrder+"] wrong mass calculation. \n"
 		error = True
 		return
-	
+
 	hessian2 = rStructure.BuildGlobalHessian2Lumped()
-	
+
 	numericMass = 0.
 	numericMass += hessian2.JJ.ExportToFullMatrix().Sum()
 	numericMass += hessian2.JK.ExportToFullMatrix().Sum()
@@ -164,11 +164,11 @@ def Run(rStructure, rType, rOrder):
 		errorMsg += "[CheckSolution:" +rType+":"+rOrder+"] wrong lumped mass calculation. \n"
 		error = True
 		return
-	
+
 	# **********************
 	#  Visualize
 	# **********************
-	
+
 	visualizationGroup = rStructure.GroupCreate("Elements");
 	rStructure.GroupAddElementsTotal(visualizationGroup)
 
@@ -177,8 +177,8 @@ def Run(rStructure, rType, rOrder):
 	rStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStress");
 
 	rStructure.ExportVtkDataFileElements(resultFile,True);
-	
-	
+
+
 # ******************************************************************************************************
 # ******************************************************************************************************
 # ******************************************************************************************************
@@ -197,11 +197,11 @@ def Run3D(r3DShape, rTypeOrder):
 	numNodesX = numElementsX+1
 	numNodesY = numElementsY+1
 	numNodesZ = numElementsZ+1
-		
+
 	deltaX = lX/numElementsX
 	deltaY = lY/numElementsY
 	deltaZ = lZ/numElementsZ
-	
+
 	nodeNum = 0
 	for countZ in range(0, numNodesZ):
 		for countY in range(0, numNodesY):
@@ -239,15 +239,15 @@ def Run3D(r3DShape, rTypeOrder):
 					error = True
 					errorMsg += "Element shape " + r3DShape +" is invalid. \n"
 					return
-				
+
 
 	myStructure.ElementTotalConvertToInterpolationType();
 
 	mySection = myStructure.SectionCreate("Volume");
 	myStructure.ElementTotalSetSection(mySection);
-	
+
 	Run(myStructure, r3DShape , rTypeOrder);
-	
+
 
 # ******************************************************************************************************
 # ******************************************************************************************************
@@ -293,7 +293,7 @@ def Run2D(r2DShape, rTypeOrder):
 				nodes.SetValue(1, countX+1+  countY   *numNodesX)
 				nodes.SetValue(2, countX+1+ (countY+1)*numNodesX)
 				myStructure.ElementCreate(myInterpolationType, nodes);
-				
+
 				nodes = nuto.IntFullVector(3)
 				nodes.SetValue(0, countX  +  countY   *numNodesX)
 				nodes.SetValue(1, countX+1+ (countY+1)*numNodesX)
@@ -303,16 +303,16 @@ def Run2D(r2DShape, rTypeOrder):
 				error = True
 				errorMsg += "Element shape " + r2DShape +" is invalid. \n"
 				return
-				
+
 
 	myStructure.ElementTotalConvertToInterpolationType();
 
 	mySection = myStructure.SectionCreate("Plane_Stress");
 	myStructure.SectionSetThickness(mySection, lZ);
 	myStructure.ElementTotalSetSection(mySection);
-	
+
 	Run(myStructure, r2DShape , rTypeOrder);
-	
+
 
 # ******************************************************************************************************
 # ******************************************************************************************************
@@ -321,7 +321,7 @@ def Run2D(r2DShape, rTypeOrder):
 
 def Run1D(r1DShape, rTypeOrder):
 	global error, errorMsg
-	
+
 	myStructure = nuto.Structure(1)
 	myStructure.SetShowTime(False)
 
@@ -374,7 +374,7 @@ def Run1D(r1DShape, rTypeOrder):
 printResult = False
 
 #path in the original source directory and current filename at the end
-pathToResultFiles = os.path.join(sys.argv[3],"Results"+os.path.basename(sys.argv[0]))
+pathToResultFiles = os.path.join(sys.argv[4],"Results"+os.path.basename(sys.argv[0]))
 
 #remove the extension
 fileExt = os.path.splitext(sys.argv[0])[1]
@@ -414,7 +414,7 @@ Run1D("Truss1D", "Lobatto2")
 Run1D("Truss1D", "Lobatto3")
 Run1D("Truss1D", "Lobatto4")
 
-        
+
 if (error):
 	print "### \n \n  FAILED \n \n ### "
 	print errorMsg

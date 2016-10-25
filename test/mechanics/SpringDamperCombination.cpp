@@ -31,9 +31,9 @@
 // -------------------
 
 #define SURFACELOAD 60.0e6
-#define DELTAT 60.0
+#define DELTAT 30.0
 #define TWRITE 60.0
-#define TEND 20 * DELTAT
+#define TEND 40 * DELTAT
 
 
 // --- Material Parameters
@@ -392,11 +392,12 @@ void CheckResults(NuTo::Structure& rS,
             if(coord <= 0.)
                 continue;
             double strain_numerical  = nodePtr->Get(NuTo::Node::eDof::DISPLACEMENTS)[i] / coord;
-            double strain_theoretical = SURFACELOAD / LE_YOUNGSMODULUS * (1 - std::exp(-LE_YOUNGSMODULUS/LD_DAMPINGCOEFFICIENT * TEND));
+            double strain_theoretical = SURFACELOAD / LE_YOUNGSMODULUS * (1 - std::exp(-LE_YOUNGSMODULUS/LD_DAMPINGCOEFFICIENT * (TEND - DELTAT/2.0))); // -delta_t/2.0:Because the first timestep produces an offset
+                                                                                                                                                        // between theoretical solution and numerical solution which is delta_t/2
             double ErrorPercentage = std::abs(1-strain_numerical/strain_theoretical);
-            const double tolerance = 2e-2;
+            const double tolerance = 5e-5;
             if(ErrorPercentage>tolerance)
-                throw NuTo::Exception(__PRETTY_FUNCTION__,"Difference to theoretical solution is bigger than 2%!");
+                throw NuTo::Exception(__PRETTY_FUNCTION__,"Difference to theoretical solution is bigger than 0.005%!");
 
         }
     }

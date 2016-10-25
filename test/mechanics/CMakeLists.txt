@@ -29,7 +29,10 @@ if(ENABLE_PYTHON_TESTS)
 
         add_test(p::mechanics::${test} ${PYTHON_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/${test}.py
-            ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+            ${CMAKE_SYSTEM_NAME} 
+	    ${CMAKE_SYSTEM_PROCESSOR} 
+	    ${CMAKE_CURRENT_SOURCE_DIR} 
+	    ${CMAKE_CURRENT_BINARY_DIR})
         set_property(TEST p::mechanics::${test} PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
     endforeach()
 endif()
