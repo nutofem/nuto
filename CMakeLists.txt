@@ -28,6 +28,7 @@ option(ENABLE_SERIALIZATION "enables serialization" FALSE)
 option(ENABLE_UNIT_TESTS "use Boost Test library for unit tests" TRUE)
 option(ENABLE_VERBOSELEVEL "enables status messages during the execution by setting the verboselevel" FALSE)
 option(ENABLE_VISUALIZE "enables the visualization package" FALSE)
+option(ENABLE_MPI "enables message passing interface" FALSE)
 
 # set module path for custom cmake scripts
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts ${CMAKE_MODULE_PATH})
@@ -36,14 +37,14 @@ include(NuToMacros)
 add_subdirectory(external)
 include_directories(external/jsoncpp/dist/)
 
-
-find_package(MPI REQUIRED)
-include_directories(${MPI_INCLUDE_PATH})
-message("MPI_INCLUDE_PATH:  " ${MPI_INCLUDE_PATH})
-message("MPI_COMPILE_FLAGS: " ${MPI_COMPILE_FLAGS})
-message("MPI_LINK_FLAGS:    " ${MPI_LINK_FLAGS})
-message("MPI_LIBRARIES:     " ${MPI_LIBRARIES})
-
+if(ENABLE_MPI)
+    find_package(MPI REQUIRED)
+    include_directories(${MPI_INCLUDE_PATH})
+    message("MPI_INCLUDE_PATH:  " ${MPI_INCLUDE_PATH})
+    message("MPI_COMPILE_FLAGS: " ${MPI_COMPILE_FLAGS})
+    message("MPI_LINK_FLAGS:    " ${MPI_LINK_FLAGS})
+    message("MPI_LIBRARIES:     " ${MPI_LIBRARIES})
+endif()
 
 if(ENABLE_METAMODEL)
     set(ENABLE_OPTIMIZE TRUE)
@@ -260,8 +261,12 @@ if(NOT BOOST_ROOT AND NOT DEFINED $ENV{BOOST_ROOT})
 endif()
 
 # collect the required boost components and versions
-set(NuToBoostComponents system filesystem mpi)
+set(NuToBoostComponents system filesystem)
 set(NuToBoostRequiredVersion 1.44.0)
+
+if(ENABLE_MPI)
+    set(NuToBoostComponents ${NuToBoostComponents} mpi)
+endif()
 
 if(ENABLE_SERIALIZATION)
     set(NuToBoostRequiredVersion 1.58.0)

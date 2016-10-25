@@ -212,8 +212,7 @@ set(NuToMechanicsStructures_SOURCES
     structures/StructureOutputBase.cpp
     structures/StructureOutputBlockMatrix.cpp
     structures/StructureOutputBlockVector.cpp
-    structures/unstructured/Structure.cpp
-    structures/unstructured/StructureFETI.cpp
+    structures/unstructured/Structure.cpp    
     structures/unstructured/StructureElement.cpp
     structures/unstructured/StructureGroup.cpp
     structures/unstructured/StructureInterpolationType.cpp
@@ -221,10 +220,13 @@ set(NuToMechanicsStructures_SOURCES
     structures/unstructured/StructureNode.cpp
     )
 
+if(ENABLE_MPI)
+    set(NuToMechanicsStructures_SOURCES ${NuToMechanicsStructures_SOURCES} structures/unstructured/StructureFETI.cpp)
+endif()
+
 set(NuToMechanicsTimeIntegration_SOURCES
     timeIntegration/NewmarkBase.cpp
-    timeIntegration/NewmarkDirect.cpp
-    timeIntegration/NewmarkFeti.cpp
+    timeIntegration/NewmarkDirect.cpp    
     #timeIntegration/JumpDirect.cpp
     timeIntegration/NystroemBase.cpp
     timeIntegration/NystroemQinZhu.cpp
@@ -249,6 +251,11 @@ set(NuToMechanicsTimeIntegration_SOURCES
     timeIntegration/ImplEx.cpp
     timeIntegration/VelocityVerlet.cpp
     )
+
+if(ENABLE_MPI)
+    set(NuToMechanicsTimeIntegration_SOURCES ${NuToMechanicsTimeIntegration_SOURCES} timeIntegration/NewmarkFeti.cpp)
+endif()
+
 
 set(NuToMechanicsTools_SOURCES
     tools/MeshGenerator.cpp
@@ -316,8 +323,9 @@ endif()
 
 target_link_libraries(NuToMechanics jsoncpp)
 
-target_link_libraries(NuToMechanics ${MPI_LIBRARIES})
-
+if(ENABLE_MPI)
+    target_link_libraries(NuToMechanics ${MPI_LIBRARIES})
+endif()
 
 IF (ENABLE_SHOW_TIME)
 #add library for clock_gettime routines
