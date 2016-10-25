@@ -1,5 +1,6 @@
 #include <mpi.h>
-#include <jsoncpp/json/json.h>
+#include <json/json.h>
+
 #include "nuto/mechanics/structures/unstructured/StructureFETI.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 
