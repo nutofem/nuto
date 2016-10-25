@@ -5,12 +5,14 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/base/Timer.h"
 
+
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/structures/unstructured/StructureFETI.h"
 #include "nuto/mechanics/structures/StructureBaseEnum.h"
 #include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
 #include "nuto/mechanics/structures/StructureOutputDummy.h"
 #include <mpi.h>
+#include <boost/mpi.hpp>
 
 #include "nuto/base/CallbackInterface.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
@@ -34,6 +36,7 @@ Eigen::MatrixXd NuTo::NewmarkFeti::GatherInterfaceRigidBodyModes(const Eigen::Ma
 
     const int numInterfaceEqs               = interfaceRigidBodyModes.rows();
     MatrixXd interfaceRigidBodyModesGlobal   = MatrixXd::Zero(numInterfaceEqs,numRigidBodyModesGlobal);
+
     MPI_Allgatherv(interfaceRigidBodyModes.data(),
                    interfaceRigidBodyModes.size(),
                    MPI_DOUBLE,
@@ -128,6 +131,10 @@ NuTo::BlockScalar NuTo::NewmarkFeti::CalculateNormResidual(BlockFullVector<doubl
 
     for (const auto& dof : activeDofSet)
         MPI_Allreduce(MPI_IN_PLACE,  &normResidual[dof], 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+
+
+
 
     return normResidual;
 

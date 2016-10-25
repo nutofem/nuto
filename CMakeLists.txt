@@ -260,7 +260,7 @@ if(NOT BOOST_ROOT AND NOT DEFINED $ENV{BOOST_ROOT})
 endif()
 
 # collect the required boost components and versions
-set(NuToBoostComponents system filesystem)
+set(NuToBoostComponents system filesystem mpi)
 set(NuToBoostRequiredVersion 1.44.0)
 
 if(ENABLE_SERIALIZATION)
