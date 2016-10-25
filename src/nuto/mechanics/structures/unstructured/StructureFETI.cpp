@@ -1,4 +1,5 @@
 #include <mpi.h>
+#include <boost/mpi.hpp>
 #include <json/json.h>
 
 #include "nuto/mechanics/structures/unstructured/StructureFETI.h"
@@ -39,8 +40,8 @@ using NuTo::eVisualizeWhat;
 
 NuTo::StructureFETI::StructureFETI(int rDimension):
     Structure(rDimension),
-    mRank(MPI::COMM_WORLD.Get_rank()),
-    mNumProcesses(MPI::COMM_WORLD.Get_size())
+    mRank(boost::mpi::communicator().rank()),
+    mNumProcesses(boost::mpi::communicator().size())
 {
 
 }

@@ -28,6 +28,7 @@ namespace NuTo
 class NewmarkFeti : public NewmarkDirect
 {
 public:
+
     using VectorXd      = Eigen::VectorXd;
     using MatrixXd      = Eigen::MatrixXd;
     using SparseMatrix  = Eigen::SparseMatrix<double>;

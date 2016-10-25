@@ -88,14 +88,7 @@ void NuTo::NewmarkFeti::MpiGatherRecvCountAndDispls(std::vector<int> &recvCount,
     recvCount.clear();
     recvCount.resize(numProcesses, 0);
 
-
-    MPI_Allgather(  &numValues,
-                    1,
-                    MPI_INT,
-                    recvCount.data(),
-                    1,
-                    MPI_INT,
-                    MPI_COMM_WORLD );
+    boost::mpi::all_gather<int>(boost::mpi::communicator(),numValues,recvCount);
 
     // displs:
     // Entry i specifies the displacement (relative to recvbuf) at which to place the incoming data from process i.
@@ -220,6 +213,7 @@ int NuTo::NewmarkFeti::BiCgStab(const NuTo::NewmarkFeti::MatrixXd &projection, N
             Ax.noalias() = B * mSolver.solve(Btrans*x);
             MPI_Allreduce(MPI_IN_PLACE, Ax.data(), Ax.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
+
             rProj  = projection*(rhs - Ax);
             rProj0 = rProj;
             rho = rProj0_sqnorm = rProj.squaredNorm();
@@ -283,15 +277,15 @@ int NuTo::NewmarkFeti::BiCgStab(const NuTo::NewmarkFeti::MatrixXd &projection, N
 
 int NuTo::NewmarkFeti::CPG(const Eigen::MatrixXd &projection, Eigen::VectorXd &x, const Eigen::VectorXd &rhs)
 {
-
+    boost::mpi::communicator world;
     VectorXd        Ap;
 
     StructureFETI* structure = static_cast<StructureFETI*>(mStructure);
     const SparseMatrix B      = structure->GetConnectivityMatrix();
     const SparseMatrix Btrans = B.transpose();
 
-    VectorXd Ax = B * mSolver.solve(Btrans*x);
-    MPI_Allreduce(MPI_IN_PLACE, Ax.data(), Ax.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    VectorXd Ax = B * mSolver.solve(Btrans*x);    
+    boost::mpi::all_reduce(world,boost::mpi::inplace(Ax.data()), Ax.size(),std::plus<double>());
 
     //initial residual
     VectorXd r = rhs - Ax;
@@ -303,7 +297,7 @@ int NuTo::NewmarkFeti::CPG(const Eigen::MatrixXd &projection, Eigen::VectorXd &x
 
     // precondition
     p =  projection * mLocalPreconditioner * w;
-    MPI_Allreduce(MPI_IN_PLACE, p.data(), p.size(), MPI_DOUBLE, MPI_SUM,MPI_COMM_WORLD);
+    boost::mpi::all_reduce(world,boost::mpi::inplace(p.data()), p.size(),std::plus<double>());
 //    p = w;
 
     const double rhs_sqnorm = rhs.squaredNorm();
@@ -315,7 +309,7 @@ int NuTo::NewmarkFeti::CPG(const Eigen::MatrixXd &projection, Eigen::VectorXd &x
     {
         // at every iteration i the r has to be recomputd which is quite expensive
         Ap.noalias() = B * mSolver.solve(Btrans*p);
-        MPI_Allreduce(MPI_IN_PLACE, Ap.data(), Ap.size(), MPI_DOUBLE, MPI_SUM,MPI_COMM_WORLD);
+        boost::mpi::all_reduce(world,boost::mpi::inplace(Ap.data()), Ap.size(),std::plus<double>());
 
         // step size
         double alpha = absNew / p.dot(Ap);
@@ -328,7 +322,7 @@ int NuTo::NewmarkFeti::CPG(const Eigen::MatrixXd &projection, Eigen::VectorXd &x
 
         // precondition
         z =  projection * mLocalPreconditioner * w;
-        MPI_Allreduce(MPI_IN_PLACE, z.data(), z.size(), MPI_DOUBLE, MPI_SUM,MPI_COMM_WORLD);
+        boost::mpi::all_reduce(world,boost::mpi::inplace(z.data()), z.size(),std::plus<double>());
 //        z = w;
 
         // project the r to guarantee the constraints
@@ -363,6 +357,8 @@ int NuTo::NewmarkFeti::CPG(const Eigen::MatrixXd &projection, Eigen::VectorXd &x
 NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(BlockFullVector<double> residual_mod, const std::set<Node::eDof> &activeDofSet, VectorXd &deltaLambda)
 {
 
+    boost::mpi::communicator world;
+
     StructureFETI* structure = static_cast<StructureFETI*>(mStructure);
 
     const SparseMatrix& B                    = structure->GetConnectivityMatrix();
@@ -371,22 +367,15 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(BlockFullVector<do
 
     structure->mNumRigidBodyModes           = mSolver.cols() -  mSolver.rank();
     const int& numRigidBodyModesLocal       = structure->mNumRigidBodyModes;
-    int numRigidBodyModesGlobal             = 0;
 
-    MPI_Allreduce(&numRigidBodyModesLocal,
-                  &numRigidBodyModesGlobal,
-                  1,
-                  MPI_INT,
-                  MPI_SUM,
-                  MPI_COMM_WORLD);
+    const int numRigidBodyModesGlobal = boost::mpi::all_reduce(world,numRigidBodyModesLocal, std::plus<int>());
 
-
-    MPI_Barrier(MPI_COMM_WORLD);
+    world.barrier();
 
     structure->mInterfaceRigidBodyModes.resize(numLagrangeMultipliers, numRigidBodyModesLocal);
 
     std::cout << "Rank: " << structure->mRank << " => number of rigid body modes " << numRigidBodyModesLocal << std::endl;
-    MPI_Barrier(MPI_COMM_WORLD);
+    world.barrier();
 
     if (structure->mNumRigidBodyModes > 0)
     {
@@ -406,7 +395,7 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(BlockFullVector<do
     const auto& rigidBodyModes              = structure->GetRigidBodyModes();
     const auto& interfaceRigidBodyModes     = structure->GetInterfaceRigidBodyModes();
 
-    MPI_Barrier(MPI_COMM_WORLD);
+    world.barrier();
 
 
     // G.size() = (number of Lagrange multipliers) x (total number of rigid body modes)
@@ -424,15 +413,11 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(BlockFullVector<do
 
     VectorXd rigidBodyForceVectorGlobal = GatherRigidBodyForceVector(rigidBodyForceVectorLocal, numRigidBodyModesGlobal);
 
-    MPI_Barrier(MPI_COMM_WORLD);
+    world.barrier();
 
     VectorXd displacementGap    = B * mSolver.solve(residual_mod.Export());
-    MPI_Allreduce(MPI_IN_PLACE,
-                  displacementGap.data(),
-                  displacementGap.size(),
-                  MPI_DOUBLE,
-                  MPI_SUM,
-                  MPI_COMM_WORLD);
+
+    boost::mpi::all_reduce(world,boost::mpi::inplace(displacementGap.data()), displacementGap.size(),std::plus<double>());
 
     deltaLambda = G * GtransGinv * rigidBodyForceVectorGlobal;
 
@@ -455,7 +440,7 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(BlockFullVector<do
     }
 
 
-    MPI_Barrier(MPI_COMM_WORLD);
+    world.barrier();
 
     int iteration = CPG(projection,x,rhs);
     //int iteration = BiCgStab(projection,x,rhs);
@@ -472,15 +457,15 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(BlockFullVector<do
 
 
 
-    MPI_Barrier(MPI_COMM_WORLD);
+    world.barrier();
     deltaLambda = x;
 
     VectorXd tmp = B * mSolver.solve(Btrans*x);
-    MPI_Allreduce(MPI_IN_PLACE, tmp.data(), tmp.size(), MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    boost::mpi::all_reduce(world,boost::mpi::inplace(tmp.data()), tmp.size(),std::plus<double>());
 
     alphaGlobal = GtransGinv * G.transpose() * (displacementGap - tmp);
 
-    MPI_Barrier(MPI_COMM_WORLD);
+    world.barrier();
 
     std::vector<int> recvCount;
     std::vector<int> displs;
@@ -516,6 +501,7 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
 
     try
     {
+        boost::mpi::communicator world;
         StructureFETI* structure = static_cast<StructureFETI*>(mStructure);
         structure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
@@ -666,7 +652,7 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
 
                 normResidual = residual.J.CalculateInfNorm();
                 for (const auto& dof : activeDofSet)
-                    MPI_Allreduce(MPI_IN_PLACE,  &normResidual[dof], 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+                    boost::mpi::all_reduce(world,boost::mpi::inplace(normResidual[dof]),std::plus<double>());
 
 
                 if (structure->mRank == 0)
@@ -704,7 +690,7 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
 
                     normResidual = residual.J.CalculateInfNorm();
                     for (const auto& dof : activeDofSet)
-                        MPI_Allreduce(MPI_IN_PLACE,  &normResidual[dof], 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+                        boost::mpi::all_reduce(world,boost::mpi::inplace(normResidual[dof]),std::plus<double>());
 
 
                     PrintInfoIteration(normResidual,iteration);
