@@ -12,7 +12,7 @@ before_install:
     - conda install --yes numpy
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
     - sudo apt-get -qq update
-    - sudo apt-get install -y g++-6 libgfortran-6-dev libgcc-6-dev libiomp-dev swig3.0 doxygen python-dev python-instant libboost-all-dev libeigen3-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev gfortran
+    - sudo apt-get install -y g++-6 libgfortran-6-dev libgcc-6-dev libiomp-dev swig3.0 doxygen python-dev python-instant libboost-all-dev libeigen3-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev gfortran libjsoncpp-dev
 before_script:
     - mkdir build
     - cd build
