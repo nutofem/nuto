@@ -1,5 +1,5 @@
 project(NuTo CXX C Fortran) # C and Fortran are required to find LAPACK
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.0)
 
 option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
 option(ENABLE_ARPACK "enables ARPACK libraries (for the solution of eigenvalue problems)" FALSE)
@@ -126,8 +126,8 @@ else()
 endif()
 
 # use newer c++ standard, enable additional warnings, support for sse4
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -msse4 -pedantic")
+# set(CMAKE_CXX_STANDARD 14) # use this if cmake_minimum_required(VERSION 3.1)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -msse4 -pedantic -std=c++14")
 # prevent warnings from boost and eigen
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --system-header-prefix=boost/ --system-header-prefix=eigen3/ -Wno-inconsistent-missing-override -Wno-missing-braces")
