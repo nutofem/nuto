@@ -19,7 +19,7 @@ public:
     MisesPlasticityEngineeringStress();
 
     typedef Constitutive::StaticData::DataMisesPlasticity<3> StaticDataType;
-    using Data = typename Constitutive::IPConstitutiveLaw<MisesPlasticityEngineeringStress>::Data;
+    using Data = typename Constitutive::StaticData::DataContainer<StaticDataType>;
 
     //! @brief creates corresponding IPConstitutiveLaw
     std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override

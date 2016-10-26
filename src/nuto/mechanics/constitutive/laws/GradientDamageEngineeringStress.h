@@ -25,13 +25,13 @@ class GradientDamageEngineeringStress : public ConstitutiveBase
 #endif // ENABLE_SERIALIZATION
 public:
     typedef double StaticDataType;
-    using Data = typename Constitutive::IPConstitutiveLaw<GradientDamageEngineeringStress>::Data;
+    using Data = typename Constitutive::StaticData::DataContainer<double>;
 
     GradientDamageEngineeringStress();
 
     std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override
     {
-        return std::make_unique<Constitutive::IPConstitutiveLaw<GradientDamageEngineeringStress>>(*this, 0.);
+        return std::make_unique<Constitutive::IPConstitutiveLaw<GradientDamageEngineeringStress>>(*this, 0.0);
     }
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs

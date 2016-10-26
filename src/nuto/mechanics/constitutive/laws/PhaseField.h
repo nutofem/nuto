@@ -57,7 +57,7 @@ public:
                             const Constitutive::ePhaseFieldEnergyDecomposition rEnergyDecomposition);
 
     typedef double StaticDataType;
-    using Data = typename Constitutive::IPConstitutiveLaw<PhaseField>::Data;
+    using Data = typename Constitutive::StaticData::DataContainer<double>;
 
     //! @brief creates corresponding IPConstitutiveLaw
     std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override;

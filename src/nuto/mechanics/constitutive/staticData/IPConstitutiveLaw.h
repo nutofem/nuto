@@ -19,10 +19,10 @@ class IPConstitutiveLaw: public IPConstitutiveLawBase
 {
 public:
 
-//    static_assert(std::is_base_of<ConstitutiveBase, TLaw>::value,"TLaw must be derived from NuTo::ConstitutiveBase");
+    static_assert(std::is_base_of<ConstitutiveBase, TLaw>::value,"TLaw must be derived from NuTo::ConstitutiveBase");
 
-    using Type = typename StaticData::DataContainer<TLaw>::Type;
-    typedef typename StaticData::DataContainer<TLaw> Data;
+    using Type = typename TLaw::StaticDataType;
+    typedef typename StaticData::DataContainer<Type> Data;
 
     //! @brief constructor
     //! @param rLaw underlying constitutive law
@@ -40,12 +40,12 @@ public:
         return mLaw;
     }
 
-    const StaticData::DataContainer<TLaw>& GetStaticData() const
+    const StaticData::DataContainer<Type>& GetStaticData() const
     {
         return mData;
     }
 
-    StaticData::DataContainer<TLaw>& GetStaticData()
+    StaticData::DataContainer<Type>& GetStaticData()
     {
         return mData;
     }
@@ -117,7 +117,7 @@ protected:
 private:
 
     TLaw& mLaw;
-    StaticData::DataContainer<TLaw> mData;
+    StaticData::DataContainer<Type> mData;
 };
 
 

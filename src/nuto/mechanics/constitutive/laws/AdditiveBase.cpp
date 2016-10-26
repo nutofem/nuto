@@ -26,7 +26,7 @@ NuTo::AdditiveBase& NuTo::AdditiveBase::operator =(const AdditiveBase& rOther)
     mStaticDataAllocated = rOther.mStaticDataAllocated;
     mSublaws.reserve(rOther.mSublaws.size());
     for (auto& ipLaw : rOther.mSublaws)
-        mSublaws.push_back(ipLaw->GetConstitutiveLaw().CreateIPLaw());
+        mSublaws.push_back(ipLaw->Clone());
     return *this;
 }
 NuTo::AdditiveBase& NuTo::AdditiveBase::operator =(AdditiveBase&& rOther)

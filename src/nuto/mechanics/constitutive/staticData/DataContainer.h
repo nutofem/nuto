@@ -15,12 +15,10 @@ namespace StaticData
 {
 
 //! @brief Wrapper for a StaticDataType container
-template <typename TLaw>
+template <typename Type>
 class DataContainer
 {
 public:
-
-    typedef typename TLaw::StaticDataType Type;
 
     //! @brief ctor, initialized with a single Type
     //! @param rData data

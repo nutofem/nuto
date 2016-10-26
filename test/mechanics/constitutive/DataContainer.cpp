@@ -17,40 +17,32 @@ namespace DataContainerTest
 {
 using namespace NuTo::Constitutive::StaticData;
 
-//! @brief Test class that only needs to provide its StaticDataType
-class TestLaw
-{
-public:
-    typedef int StaticDataType;
-};
-
-
 BOOST_AUTO_TEST_CASE(DataContainer_Copy_Move)
 {
-    BOOST_CHECK(std::is_copy_constructible<DataContainer<TestLaw>>::value);
-    BOOST_CHECK(std::is_move_constructible<DataContainer<TestLaw>>::value);
+    BOOST_CHECK(std::is_copy_constructible<DataContainer<int>>::value);
+    BOOST_CHECK(std::is_move_constructible<DataContainer<int>>::value);
 
-    BOOST_CHECK(std::is_copy_assignable<DataContainer<TestLaw>>::value);
-    BOOST_CHECK(std::is_move_assignable<DataContainer<TestLaw>>::value);
+    BOOST_CHECK(std::is_copy_assignable<DataContainer<int>>::value);
+    BOOST_CHECK(std::is_move_assignable<DataContainer<int>>::value);
 }
 
 BOOST_AUTO_TEST_CASE(DataContainerConstruction)
 {
     {
-        DataContainer<TestLaw> data(6174);
+        DataContainer<int> data(6174);
         BOOST_CHECK_EQUAL(data.GetNumData(), 1);
         BOOST_CHECK_EQUAL(data.GetData(), 6174);
     }
     {
-        std::vector<typename TestLaw::StaticDataType> dataVector({0,1,2});
-        DataContainer<TestLaw> data(dataVector);
+        std::vector<int> dataVector({0,1,2});
+        DataContainer<int> data(dataVector);
         BOOST_CHECK_EQUAL(data.GetNumData(), 3);
         BOOST_CHECK_EQUAL(data.GetData(0), 0);
         BOOST_CHECK_EQUAL(data.GetData(1), 1);
         BOOST_CHECK_EQUAL(data.GetData(2), 2);
     }
     {
-        DataContainer<TestLaw> data({0,1,2});
+        DataContainer<int> data({0,1,2});
         BOOST_CHECK_EQUAL(data.GetNumData(), 3);
         BOOST_CHECK_EQUAL(data.GetData(0), 0);
         BOOST_CHECK_EQUAL(data.GetData(1), 1);
@@ -60,7 +52,7 @@ BOOST_AUTO_TEST_CASE(DataContainerConstruction)
 
 BOOST_AUTO_TEST_CASE(DataContainerShits)
 {
-    DataContainer<TestLaw> data(6174);
+    DataContainer<int> data(6174);
 
     // shifts not possible with only one set of static data
     BOOST_CHECK_THROW(data.ShiftToPast(), NuTo::MechanicsException);
@@ -84,14 +76,14 @@ BOOST_AUTO_TEST_CASE(DataContainerShits)
 
 BOOST_AUTO_TEST_CASE(DataContainerSerialze)
 {
-    DataContainer<TestLaw> data(3);
+    DataContainer<int> data(3);
     data.AllocateAdditionalData(2);
     data.ShiftToFuture();
     data.SetData(2);
     data.ShiftToFuture();
     data.SetData(1);
 
-    DataContainer<TestLaw> dataFromFile(0);
+    DataContainer<int> dataFromFile(0);
     dataFromFile.AllocateAdditionalData(2);
 
     {   // write

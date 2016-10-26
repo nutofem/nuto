@@ -28,7 +28,7 @@ class MoistureTransport : public ConstitutiveBase
 public:
 
     typedef Constitutive::StaticData::DataMoistureTransport StaticDataType;
-    using Data = typename Constitutive::IPConstitutiveLaw<MoistureTransport>::Data;
+    using Data = typename Constitutive::StaticData::DataContainer<StaticDataType>;
 
     //! @brief constructor
     MoistureTransport() : ConstitutiveBase()

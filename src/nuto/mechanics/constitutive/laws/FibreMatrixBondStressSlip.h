@@ -26,9 +26,13 @@ class FibreMatrixBondStressSlip: public ConstitutiveBase
 #endif // ENABLE_SERIALIZATION
 
 public:
-
     typedef double StaticDataType;
-    using Data = typename Constitutive::IPConstitutiveLaw<FibreMatrixBondStressSlip>::Data;
+    using Data = typename Constitutive::StaticData::DataContainer<double>;
+
+    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override
+    {
+        return std::make_unique<Constitutive::IPConstitutiveLaw<FibreMatrixBondStressSlip>>(*this, 0.);
+    }
 
     //! @brief Create constitutive law for fibre-matrix interface.
     //! @param dimension Global dimension of the structure the fibres are embedded in.
@@ -41,11 +45,6 @@ public:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
-
-    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override
-    {
-        return std::make_unique<Constitutive::IPConstitutiveLaw<FibreMatrixBondStressSlip>>(*this, 0.);
-    }
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs

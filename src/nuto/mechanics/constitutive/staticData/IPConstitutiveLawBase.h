@@ -19,6 +19,31 @@ namespace StaticData
 {
 template <typename TLaw> class DataContainer;
 }
+
+template<class TLaw>
+class HasStaticData
+{
+private:
+    using Yes = char[2];
+    using  No = char[1];
+
+    // declare struct with a type StaticDataType
+    struct Fallback { typedef void StaticDataType; };
+    // if TLaw also has StaticDataType, than Derived has it twice
+    struct Derived : TLaw, Fallback { };
+
+    // this can only be instantiated, if U::StaticDataType can be used unambiguosly,
+    // i.e. only one StaticDataType in U (will be instantiated with Derived later)
+    template<class U>
+    static No& test(typename U::StaticDataType*);
+    // in case the substitution fails, this test will be instantiated
+    template<class U>
+    static Yes& test(U*);
+public:
+    // if test has returntype Yes, we do have staticData
+    static constexpr bool value = sizeof(test<Derived>(nullptr)) == sizeof(Yes);
+};
+
 //! @brief base class for a combined ConstitutiveLaw - ConstitutiveStaticData structure
 class IPConstitutiveLawBase
 {
@@ -27,7 +52,6 @@ public:
     //! @brief virtual destructor
     //! @remark since we don't want to give up move semantics --> rule of 5
     virtual ~IPConstitutiveLawBase() = default;
-
 
     IPConstitutiveLawBase() = default;
     IPConstitutiveLawBase(const IPConstitutiveLawBase& ) = default;
@@ -62,12 +86,9 @@ public:
 
     //! @brief casts *this to a IPConstitutiveLaw and returns its data
     //! @return static data container of TLaw
-    template <typename TLaw>
-    StaticData::DataContainer<TLaw>& GetData()
+    template<class TLaw, typename = std::enable_if_t<HasStaticData<TLaw>::value>>
+    StaticData::DataContainer<typename TLaw::StaticDataType>& GetData()
     {
-        //! when TLaw::StaticData does not exist, you see at least the struct's name in the error msg.
-        //! maybe better: "Member Detector" - but that is somehow not intuitive for typedefs and requires a lot more code.
-        THE_REQUESTED_LAW_HAS_NO_DATA<typename TLaw::StaticDataType>();
         try
         {
             return dynamic_cast<IPConstitutiveLaw<TLaw>&>(*this).GetStaticData();
@@ -80,11 +101,11 @@ public:
 
     //! @brief defines the serialization of this class
     //! @param rStream serialize output stream
-    virtual void NuToSerializeSave(SerializeStreamOut& rStream) {/* no members to serialize */};
+    virtual void NuToSerializeSave(SerializeStreamOut&) {/* no members to serialize */};
 
     //! @brief defines the serialization of this class
     //! @param rStream serialize input stream
-    virtual void NuToSerializeLoad(SerializeStreamIn& rStream) {/* no members to serialize */};
+    virtual void NuToSerializeLoad(SerializeStreamIn&) {/* no members to serialize */};
 
 protected:
     virtual NuTo::eError Evaluate1D(const ConstitutiveInputMap& rConstitutiveInput,
@@ -93,13 +114,6 @@ protected:
                                     const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
     virtual NuTo::eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
                                     const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
-
-
-private:
-    //! @brief compile time check if the requested law has data... poormans street style!
-    //! when TLaw::StaticData does not exist, you at least see the struct's name in the error msg.
-    template <typename T> struct THE_REQUESTED_LAW_HAS_NO_DATA{ void operator()(){} };
-
 };
 } // namespace Constitutive
 } // namespace NuTo

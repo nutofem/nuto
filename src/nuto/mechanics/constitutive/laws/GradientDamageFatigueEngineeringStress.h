@@ -11,11 +11,12 @@ class GradientDamageFatigueEngineeringStress : public GradientDamageEngineeringS
 public:
 
     typedef Eigen::Vector2d StaticDataType;
-    using Data = typename Constitutive::IPConstitutiveLaw<GradientDamageFatigueEngineeringStress>::Data;
+    using Data = typename Constitutive::StaticData::DataContainer<Eigen::Vector2d>;
 
     std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override
     {
-        return std::make_unique<Constitutive::IPConstitutiveLaw<GradientDamageFatigueEngineeringStress>>(*this, Eigen::Vector2d(0.,0.));
+        return std::make_unique<Constitutive::IPConstitutiveLaw<GradientDamageFatigueEngineeringStress>>(*this,
+                Eigen::Vector2d(0.0,0.0));
     }
 
     //! @brief Evaluate the constitutive relation in 2D
