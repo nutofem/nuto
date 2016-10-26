@@ -6,11 +6,12 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include "nuto/mechanics/constitutive/laws/GradientDamageFatigueEngineeringStress.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+#include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveMatrix.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
 #include "../../tools/TypeTraits.h"
+#include "ConstitutiveTangentTester.h"
 
 // necessary to build with clang when boost has been compiled by gcc
 std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string name)
@@ -28,13 +29,14 @@ BOOST_AUTO_TEST_CASE(CopyMove)
 }
 
 
+using namespace NuTo;
 using namespace NuTo::Constitutive;
 
 BOOST_AUTO_TEST_CASE(AccessParameters)
 {
-    NuTo::GradientDamageFatigueEngineeringStress law;
+    GradientDamageFatigueEngineeringStress law;
 
-    NuTo::ConstitutiveBase& lawBase = law;
+    ConstitutiveBase& lawBase = law;
 
     // some parameters from GradientDamage
     lawBase.SetParameterDouble(eConstitutiveParameter::YOUNGS_MODULUS, 30000);
@@ -59,37 +61,68 @@ BOOST_AUTO_TEST_CASE(AccessParameters)
 NuTo::GradientDamageFatigueEngineeringStress GetLaw()
 {
     NuTo::GradientDamageFatigueEngineeringStress law;
-    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DENSITY, 1.0);
-    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 30000);
-    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.0);
-    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS, 1);
-    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER, 0.);
-    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH, 4.);
-    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
-    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY, 0.021);
-    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::ENDURANCE_STRESS, 0.0);
-    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::FATIGUE_PARAMETER, 1.);
-    law.SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMAGE_LAW,
-                           static_cast<double>(NuTo::Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING));
+    law.SetParameterDouble(eConstitutiveParameter::DENSITY, 1.0);
+    law.SetParameterDouble(eConstitutiveParameter::YOUNGS_MODULUS, 30000);
+    law.SetParameterDouble(eConstitutiveParameter::POISSONS_RATIO, 0.0);
+    law.SetParameterDouble(eConstitutiveParameter::NONLOCAL_RADIUS, 1);
+    law.SetParameterDouble(eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER, 0.);
+    law.SetParameterDouble(eConstitutiveParameter::TENSILE_STRENGTH, 4.);
+    law.SetParameterDouble(eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
+    law.SetParameterDouble(eConstitutiveParameter::FRACTURE_ENERGY, 0.021);
+    law.SetParameterDouble(eConstitutiveParameter::ENDURANCE_STRESS, 0.0);
+    law.SetParameterDouble(eConstitutiveParameter::FATIGUE_PARAMETER, 1.);
+    law.SetParameterDouble(eConstitutiveParameter::DAMAGE_LAW,
+                           static_cast<double>(eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING));
     return law;
 }
 
-double GetK0(const NuTo::ConstitutiveBase& rLaw)
+double GetK0(const ConstitutiveBase& rLaw)
 {
-    return rLaw.GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH)
-         / rLaw.GetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS);
+    return rLaw.GetParameterDouble(eConstitutiveParameter::TENSILE_STRENGTH)
+         / rLaw.GetParameterDouble(eConstitutiveParameter::YOUNGS_MODULUS);
 
+}
+
+template <int TDim>
+ConstitutiveInputMap GetInputMap(EngineeringStrain<TDim> rStrain, double rEeq)
+{
+    ConstitutiveInputMap input;
+    input.Add<TDim>(eInput::NONLOCAL_EQ_STRAIN);
+    input.at(eInput::NONLOCAL_EQ_STRAIN)->operator[](0) = rEeq;
+
+    input.Add<TDim>(eInput::ENGINEERING_STRAIN);
+    input.at(eInput::ENGINEERING_STRAIN)->AsEngineeringStrain<TDim>() = rStrain;
+
+    input.Add<TDim>(eInput::PLANE_STATE);
+    return input;
 }
 
 //! @brief this tests checks the case kappa = nonlocaleqstrain
 BOOST_AUTO_TEST_CASE(StaticLoading)
 {
     auto law = GetLaw();
-    auto iplaw = law.CreateIPLaw();
-    double k0 = GetK0(iplaw->GetConstitutiveLaw());
+    IPConstitutiveLaw<GradientDamageFatigueEngineeringStress> iplaw(law, Eigen::Vector2d(0.,0.));
+    auto& staticData = iplaw.GetStaticData();
 
+    double k0 = GetK0(law);
 
-    
+    auto input = GetInputMap<2>({0.5*k0, 0, 0}, 0.5*k0);
+    NuTo::Test::ConstitutiveTangentTester<2> tester(iplaw, 1.e-8, 1.e-6);
+
+    BOOST_CHECK(tester.CheckTangent(input,
+                                    eInput::ENGINEERING_STRAIN,
+                                    eOutput::ENGINEERING_STRESS,
+                                    eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN));
+
+    BOOST_CHECK(tester.CheckTangent(input,
+                                    eInput::NONLOCAL_EQ_STRAIN,
+                                    eOutput::ENGINEERING_STRESS,
+                                    eOutput::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN));
+
+    BOOST_CHECK(tester.CheckTangent(input,
+                                    eInput::ENGINEERING_STRAIN,
+                                    eOutput::LOCAL_EQ_STRAIN,
+                                    eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN));
 
 }
 

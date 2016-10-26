@@ -167,6 +167,18 @@ NuTo::ConstitutiveIOBase& NuTo::ConstitutiveIOBase::operator=(const Constitutive
     return *this;
 }
 
+Eigen::MatrixXd NuTo::ConstitutiveIOBase::CopyToEigenMatrix() const
+{
+    int rows = GetNumRows();
+    int cols = GetNumColumns();
+    Eigen::MatrixXd m(rows, cols);
+    for (int i = 0; i < rows; ++i)
+        for (int j = 0; j < cols; ++j)
+            m(i,j) = this->operator()(i,j);
+    return m;
+}
+
+
 double& NuTo::ConstitutiveIOBase::operator ()(int rRow, int rCol)
 {
     throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] not supported.");
@@ -195,7 +207,7 @@ void NuTo::ConstitutiveIOBase::AssertIsScalar(Constitutive::eOutput rOutputEnum,
 #ifdef DEBUG
     bool isNotScalar = dynamic_cast<const ConstitutiveScalar*>(this) == nullptr;
     if (isNotScalar)
-        throw MechanicsException(std::string("[") + rMethodName + "] \n + Constitutive output " +
+        throw MechanicsException(rMethodName, "Constitutive output " +
                 Constitutive::OutputToString(rOutputEnum) + " is not a ConstitutiveScalar.");
 #endif
 }

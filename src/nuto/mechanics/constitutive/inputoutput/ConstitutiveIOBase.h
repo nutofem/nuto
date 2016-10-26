@@ -8,6 +8,7 @@
 
 #include "nuto/mechanics/MechanicsException.h"
 #include <memory>
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
@@ -82,6 +83,10 @@ public:
         throw MechanicsException(__PRETTY_FUNCTION__, "not implemented for this constitutive input type");
     }
 
+    //! @brief copies itsself to an Eigen::MatrixXd
+    //! @return matrix
+    Eigen::MatrixXd CopyToEigenMatrix() const;
+
     /**************************************************************************
      *
      *  some "pretty asserts" to ensure type safety
@@ -98,7 +103,7 @@ public:
         AssertDimension<TRows, 1>(rOutputEnum, rMethodName);
         bool isNotVector = dynamic_cast<const ConstitutiveVector<TRows>*>(this) == nullptr;
         if (isNotVector)
-            throw MechanicsException(std::string("[") + rMethodName + "] \n + Constitutive output " +
+            throw MechanicsException(rMethodName, "Constitutive output " +
                     Constitutive::OutputToString(rOutputEnum) + " is not a ConstitutiveVector<>.");
     #endif
     }
@@ -110,7 +115,7 @@ public:
         AssertDimension<TRows, TCols>(rOutputEnum, rMethodName);
         bool isNotMatrix = dynamic_cast<const ConstitutiveMatrix<TRows, TCols>*>(this) == nullptr;
         if (isNotMatrix)
-            throw MechanicsException(std::string("[") + rMethodName + "] \n + Constitutive output " +
+            throw MechanicsException(rMethodName, "Constitutive output " +
                     Constitutive::OutputToString(rOutputEnum) + " is not a ConstitutiveMatrix<>.");
     #endif
     }
