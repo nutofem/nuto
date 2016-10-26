@@ -99,9 +99,29 @@ void CheckLocalEqStrainDerivativesMises(NuTo::ePlaneState planeState = NuTo::ePl
 }
 
 
+void TestListConstructor()
+{
+    NuTo::EngineeringStrain<1> a({1.});
+    NuTo::EngineeringStrain<2> b({1., 2., 3.});
+    NuTo::EngineeringStrain<3> c({1., 2., 3., 4., 5., 6.});
+
+    std::string exception = "ctor with std::initializer_list did not set the correct values.";
+    if (a[0] != 1.) throw NuTo::MechanicsException(exception);
+
+    if (b[0] != 1.) throw NuTo::MechanicsException(exception);
+    if (b[1] != 2.) throw NuTo::MechanicsException(exception);
+    if (b[2] != 3.) throw NuTo::MechanicsException(exception);
+
+    if (c[0] != 1.) throw NuTo::MechanicsException(exception);
+    if (c[1] != 2.) throw NuTo::MechanicsException(exception);
+    if (c[2] != 3.) throw NuTo::MechanicsException(exception);
+    if (c[3] != 4.) throw NuTo::MechanicsException(exception);
+    if (c[4] != 5.) throw NuTo::MechanicsException(exception);
+    if (c[5] != 6.) throw NuTo::MechanicsException(exception);
+}
+
 int main()
 {
-
 
 
     try
@@ -138,6 +158,10 @@ int main()
 
         timer.Reset("CheckLocalEqStrainDerivativesMises<3>");
         CheckLocalEqStrainDerivativesMises<3>();
+
+
+        timer.Reset("CheckListConstructor");
+        TestListConstructor();
 
         timer.Reset("Finishing.");
 

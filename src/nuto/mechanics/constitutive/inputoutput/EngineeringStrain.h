@@ -38,6 +38,7 @@ class EngineeringStrain : public ConstitutiveVector<ConstitutiveIOBase::GetVoigt
 {
 public:
     EngineeringStrain()                                       = default;
+    EngineeringStrain(std::initializer_list<double> rList);
     EngineeringStrain(const EngineeringStrain& )              = default;
     EngineeringStrain(      EngineeringStrain&&)              = default;
 

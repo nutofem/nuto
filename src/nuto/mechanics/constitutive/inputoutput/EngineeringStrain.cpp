@@ -1,6 +1,18 @@
 #include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
 #include "nuto/mechanics/sections/SectionEnum.h"
 
+template <int TDim>
+NuTo::EngineeringStrain<TDim>::EngineeringStrain(std::initializer_list<double> rList)
+{
+    assert(rList.size() == ConstitutiveIOBase::GetVoigtDim(TDim));
+    for (auto iterator = rList.begin(); iterator != rList.end(); ++iterator)
+    {
+        int position = std::distance(rList.begin(), iterator);
+        (*this)[position] = *iterator;
+    }
+}
+
+
 template<int TDim>
 std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::EngineeringStrain<TDim>::clone()
 {
