@@ -72,21 +72,65 @@ std::pair<double, double> NuTo::GradientDamageFatigueEngineeringStress::GetCurre
     const NuTo::ConstitutiveInputMap& rConstitutiveInput,
     const ConstitutiveOutputMap& rConstitutiveOutput) const
 {
-    NuTo::ConstitutivePlaneState planeState(ePlaneState::PLANE_STRESS);
-    if (TDim == 2)
-        planeState = *dynamic_cast<ConstitutivePlaneState*>(rConstitutiveInput.at(Constitutive::eInput::PLANE_STATE).get());
+////     1D completely explicit euler
+//    double kappa_old = rStaticData.GetData()[0];
+//
+//    double nonlocalEqStrain = rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN)->operator[](0);
+//    double strain = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->operator[](0);
+//    double sigmaEq = (1 - CalculateDamage(kappa_old))*mE*strain_old;
+//    double kappa = k(nonlocalEqStrain, sigmaEq, rStaticData.GetData());
+//
+//    if (rConstitutiveOutput.Contains(Constitutive::eOutput::UPDATE_STATIC_DATA))
+//        rStaticData.SetData(Eigen::Vector3d({kappa, nonlocalEqStrain, strain}));
+//
+//    double dKappa_dNonlocalEqStrain = dk_de(nonlocalEqStrain, sigmaEq, rStaticData.GetData());
+//
+//    return std::make_pair(kappa, dKappa_dNonlocalEqStrain);
 
-    auto& strain = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN);
-    EngineeringStress<TDim> engineeringStress = EngineeringStressHelper::GetStress(strain->AsEngineeringStrain<TDim>(), mE, mNu, planeState.GetPlaneState());
-    double kappa_old = rStaticData.GetData()[0];
-    engineeringStress *= (1 - CalculateDamage(kappa_old));
-    double sigmaEq = engineeringStress.GetVonMisesStress(planeState.GetPlaneState());
 
-    // This is explicit euler.
+//    NuTo::ConstitutivePlaneState planeState(ePlaneState::PLANE_STRESS);
+//    if (TDim == 2)
+//        planeState = *dynamic_cast<ConstitutivePlaneState*>(rConstitutiveInput.at(Constitutive::eInput::PLANE_STATE).get());
+
+    double strain = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->operator[](0);
     double nonlocalEqStrain = rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN)->operator[](0);
-    double kappa = k(nonlocalEqStrain, sigmaEq, rStaticData.GetData());
-    double dKappa_dNonlocalEqStrain = dk_de(nonlocalEqStrain, sigmaEq, rStaticData.GetData());
+//    EngineeringStress<TDim> elasticStress = EngineeringStressHelper::GetStress(strain->AsEngineeringStrain<TDim>(), mE, mNu, planeState.GetPlaneState());
 
+    double kappa = 0;
+    double dKappa_dNonlocalEqStrain = 0;
+
+    double kappa_old = rStaticData.GetData()[0];
+    if (nonlocalEqStrain > kappa_old)
+    {
+        // static loading
+        kappa = nonlocalEqStrain;
+        dKappa_dNonlocalEqStrain = 1;
+    }
+    else
+    {
+        // other stuff
+        kappa = -1; // damn.. just to enter the while
+        double sigmaEq = 0;
+        int iterations = 0;
+        while (iterations < 1000 and std::abs(kappa_old-kappa) > 1.e-12)
+        {
+            ++iterations;
+            kappa_old = kappa;
+            sigmaEq = (1. - CalculateDamage(kappa)) * mE * strain;
+            kappa = k(nonlocalEqStrain, sigmaEq, rStaticData.GetData());
+        }
+        if (iterations>900)
+        {
+            std::cout << "Damn." << std::endl;
+            throw;
+        }
+
+        double delta_e = nonlocalEqStrain - rStaticData.GetData()[1];
+        if (delta_e < 0)
+            dKappa_dNonlocalEqStrain = -F(sigmaEq);
+        else
+            dKappa_dNonlocalEqStrain = F(sigmaEq);
+    }
     if (rConstitutiveOutput.Contains(Constitutive::eOutput::UPDATE_STATIC_DATA))
         rStaticData.SetData(Eigen::Vector2d({kappa, nonlocalEqStrain}));
 

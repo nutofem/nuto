@@ -37,7 +37,7 @@ public:
 
     ConstitutiveBase& GetConstitutiveLaw() const
     {
-        return static_cast<ConstitutiveBase&>(mLaw);
+        return mLaw;
     }
 
     const StaticData::DataContainer<TLaw>& GetStaticData() const
