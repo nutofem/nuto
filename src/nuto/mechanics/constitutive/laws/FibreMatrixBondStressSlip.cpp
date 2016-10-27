@@ -413,7 +413,6 @@ NuTo::eError NuTo::FibreMatrixBondStressSlip::Evaluate<2>(
                     + NuTo::Constitutive::OutputToString(itOutput.first) + " could not be calculated, check the "
                     "allocated material law and the section behavior.");
         }
-#warning check nullptr because of static data
         if(itOutput.second!=nullptr)
             itOutput.second->SetIsCalculated(true);
     }

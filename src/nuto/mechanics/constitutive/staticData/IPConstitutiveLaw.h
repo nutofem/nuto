@@ -29,7 +29,7 @@ public:
     IPConstitutiveLaw(TLaw& rLaw, const Type& rData)
     : mLaw(rLaw), mData(rData) {}
 
-    virtual std::unique_ptr<IPConstitutiveLawBase> Clone()
+    std::unique_ptr<IPConstitutiveLawBase> Clone() const override
     {
         return std::make_unique<IPConstitutiveLaw<TLaw>>(*this);
     }

@@ -103,6 +103,7 @@ BOOST_AUTO_TEST_CASE(StaticLoading)
     auto law = GetLaw();
     IPConstitutiveLaw<GradientDamageFatigueEngineeringStress> iplaw(law, Eigen::Vector2d(0.,0.));
     auto& staticData = iplaw.GetStaticData();
+    staticData.SetData(Eigen::Vector2d(0.,0.));
 
     double k0 = GetK0(law);
 

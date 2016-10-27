@@ -19,7 +19,7 @@ public:
     //! @param rLaw underlying constitutive law
     IPConstitutiveLawWithoutData(TLaw& rLaw) : mLaw(rLaw) {}
 
-    virtual std::unique_ptr<IPConstitutiveLawBase> Clone()
+    std::unique_ptr<IPConstitutiveLawBase> Clone() const override
     {
         return std::make_unique<IPConstitutiveLawWithoutData<TLaw>>(*this);
     }

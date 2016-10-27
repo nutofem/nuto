@@ -10,96 +10,51 @@
 
 NuTo::IPData::IPData(const IntegrationTypeBase& rIntegrationType)
 : mIntegrationType(&rIntegrationType)
-{
-    mLaws.resize(mIntegrationType->GetNumIntegrationPoints());
-}
-
-
-NuTo::IPData::IPData(const NuTo::IPData& rOther)
-{
-    *this = rOther;
-}
-
-NuTo::IPData::IPData(NuTo::IPData&& rOther)
-{
-    *this = std::move(rOther);
-}
-
-NuTo::IPData& NuTo::IPData::operator=(const NuTo::IPData& rOther)
-{
-    mIntegrationType = rOther.mIntegrationType;
-    mLaws.clear();
-    mLaws.reserve(rOther.mLaws.size());
-    for (auto& law : rOther.mLaws)
-        mLaws.push_back(law->Clone());
-    return *this;
-}
-
-NuTo::IPData& NuTo::IPData::operator=(NuTo::IPData&& rOther)
-{
-    mIntegrationType = rOther.mIntegrationType;
-    mLaws.clear();
-    mLaws.reserve(rOther.mLaws.size());
-    for (auto& law : rOther.mLaws)
-        mLaws.push_back(std::move(law));
-    return *this;
-}
+{}
 
 void NuTo::IPData::SetConstitutiveLaw(NuTo::ConstitutiveBase& rLaw)
 {
-    for (auto& ipLaw : mLaws)
-        ipLaw = rLaw.CreateIPLaw();
+    mLaws.clear();
+    for (int i = 0; i < mIntegrationType->GetNumIntegrationPoints(); ++i)
+        mLaws.push_back(rLaw.CreateIPLaw().release());
 }
 void NuTo::IPData::SetIntegrationType(const NuTo::IntegrationTypeBase& rIntegrationType)
 {
     mIntegrationType = &rIntegrationType;
-    if (static_cast<unsigned int>(mIntegrationType->GetNumIntegrationPoints()) == mLaws.size())
-        return; // no change required.
 
-    Constitutive::IPConstitutiveLawBase* law = mLaws[0].get();
-    mLaws.resize(mIntegrationType->GetNumIntegrationPoints());
-    if (law != nullptr)
-        SetConstitutiveLaw(law->GetConstitutiveLaw());
+    if (HasConstitutiveLawAssigned(0))
+        SetConstitutiveLaw(mLaws[0].GetConstitutiveLaw());
 }
 
 NuTo::Constitutive::IPConstitutiveLawBase& NuTo::IPData::GetIPConstitutiveLaw(unsigned int rIP)
 {
-    if (rIP >= mLaws.size())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Out of bounds.");
-
-    auto law = mLaws[rIP].get();
-    if (law == nullptr)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law set yet.");
-    return *law;
+    if (HasConstitutiveLawAssigned(rIP))
+        return mLaws[rIP];
+    throw MechanicsException(__PRETTY_FUNCTION__, "There is no constitutive law at IP " + std::to_string(rIP) + " assigned.");
 }
 
 const NuTo::Constitutive::IPConstitutiveLawBase& NuTo::IPData::GetIPConstitutiveLaw(unsigned int rIP) const
 {
-    if (rIP >= mLaws.size())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Out of bounds.");
-
-    auto law = mLaws[rIP].get();
-    if (law == nullptr)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law set yet.");
-    return *law;
+    if (HasConstitutiveLawAssigned(rIP))
+        return mLaws[rIP];
+    throw MechanicsException(__PRETTY_FUNCTION__, "There is no constitutive law at IP " + std::to_string(rIP) + " assigned.");
 }
 bool NuTo::IPData::HasConstitutiveLawAssigned(unsigned int rIP) const
 {
     if (rIP >= mLaws.size())
         return false;
 
-    auto law = mLaws[rIP].get();
-    return law != nullptr;
+    return &mLaws[rIP] != nullptr;
 }
 
 void NuTo::IPData::NuToSerializeSave(NuTo::SerializeStreamOut& rStream)
 {
     for (auto& ipLaw : mLaws)
-        rStream.Serialize(*ipLaw);
+        rStream.Serialize(ipLaw);
 }
 
 void NuTo::IPData::NuToSerializeLoad(NuTo::SerializeStreamIn& rStream)
 {
     for (auto& ipLaw : mLaws)
-        rStream.Serialize(*ipLaw);
+        rStream.Serialize(ipLaw);
 }

@@ -2,7 +2,7 @@
 // Created by Thomas Titscher on 10/22/16.
 //
 #pragma once
-#include <vector>
+#include <boost/ptr_container/ptr_vector.hpp>
 #include "nuto/mechanics/constitutive/staticData/IPConstitutiveLawBase.h"
 
 namespace NuTo
@@ -19,18 +19,13 @@ public:
 
     IPData(const IntegrationTypeBase& rIntegrationType);
 
-    IPData(const IPData&  rOther);
-    IPData(      IPData&& rOther);
-
-    IPData& operator = (const IPData&  rOther);
-    IPData& operator = (      IPData&& rOther);
-
     //! @brief allocates a new IPConstitiveLaw according to rLaw for each integration point
     //! @param rLaw new constitutive law
     void SetConstitutiveLaw(NuTo::ConstitutiveBase& rLaw);
 
     //! @brief returns true, if the constitutive law has been assigned
     //! @param rIP integration point index
+    //! @return false if a) rIP is out of bounds, b) constitutive law at rIP is not set yed
     bool HasConstitutiveLawAssigned(unsigned int rIP) const;
 
     //! @brief returns the IPConstitutiveLaw at the given (if allocated)
@@ -71,8 +66,8 @@ private:
     //! @remark this is only set via references. So no checks for nullptr, please. It is no reference because of slicing
     const IntegrationTypeBase* mIntegrationType;
 
-    //! @brief owning container of IPConstitutiveLawBase - requires special copy/move semantics implemented here.
-    std::vector<std::unique_ptr<Constitutive::IPConstitutiveLawBase>> mLaws;
+    //! @brief owning container of IPConstitutiveLawBase. requires new_clone(IPContitutiveLawBase*)
+    boost::ptr_vector<Constitutive::IPConstitutiveLawBase> mLaws;
 };
 
 } // namespace NuTo

@@ -20,30 +20,6 @@ namespace StaticData
 template <typename TLaw> class DataContainer;
 }
 
-template<class TLaw>
-class HasStaticData
-{
-private:
-    using Yes = char[2];
-    using  No = char[1];
-
-    // declare struct with a type StaticDataType
-    struct Fallback { typedef void StaticDataType; };
-    // if TLaw also has StaticDataType, than Derived has it twice
-    struct Derived : TLaw, Fallback { };
-
-    // this can only be instantiated, if U::StaticDataType can be used unambiguosly,
-    // i.e. only one StaticDataType in U (will be instantiated with Derived later)
-    template<class U>
-    static No& test(typename U::StaticDataType*);
-    // in case the substitution fails, this test will be instantiated
-    template<class U>
-    static Yes& test(U*);
-public:
-    // if test has returntype Yes, we do have staticData
-    static constexpr bool value = sizeof(test<Derived>(nullptr)) == sizeof(Yes);
-};
-
 //! @brief base class for a combined ConstitutiveLaw - ConstitutiveStaticData structure
 class IPConstitutiveLawBase
 {
@@ -59,7 +35,7 @@ public:
     IPConstitutiveLawBase& operator=(const IPConstitutiveLawBase&)  = default;
     IPConstitutiveLawBase& operator=(      IPConstitutiveLawBase&&) = default;
 
-    virtual std::unique_ptr<IPConstitutiveLawBase> Clone() = 0;
+    virtual std::unique_ptr<IPConstitutiveLawBase> Clone() const = 0;
 
     virtual ConstitutiveBase& GetConstitutiveLaw() const = 0;
 
@@ -86,7 +62,7 @@ public:
 
     //! @brief casts *this to a IPConstitutiveLaw and returns its data
     //! @return static data container of TLaw
-    template<class TLaw, typename = std::enable_if_t<HasStaticData<TLaw>::value>>
+    template <typename TLaw>
     StaticData::DataContainer<typename TLaw::StaticDataType>& GetData()
     {
         try
@@ -115,5 +91,16 @@ protected:
     virtual NuTo::eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
                                     const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
 };
+
+//! @brief clone methods that enables a boost::ptr_container<this> to copy itself
+//! @param rLaw reference to the IPConstitutiveLawBase
+//! @return cloned owning raw pointer of rLaw
+inline NuTo::Constitutive::IPConstitutiveLawBase* new_clone( const NuTo::Constitutive::IPConstitutiveLawBase& rLaw)
+{
+    return rLaw.Clone().release();
+}
+
+
 } // namespace Constitutive
 } // namespace NuTo
+

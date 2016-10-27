@@ -226,11 +226,17 @@ public:
         {
             for (int theIP=0; theIP< mS.ElementGetElementPtr(i)->GetNumIntegrationPoints(); theIP++)
             {
-#warning: TT: this is horrible and super error prone. can we think of a better interface to the static data of AddititveBase?
-                auto& lawbase = mS.ElementGetElementPtr(i)->GetIPData().GetIPConstitutiveLaw(theIP).GetConstitutiveLaw();
-                auto& lawAdditiveBase = dynamic_cast<NuTo::AdditiveBase&>(lawbase);
-                auto& ipLawMoisture = lawAdditiveBase.GetSublaw(1);
-                auto& moistureData = ipLawMoisture.GetData<NuTo::MoistureTransport>().GetData();
+                NuTo::ConstitutiveBase& lawbase
+                    = mS.ElementGetElementPtr(i)->GetIPData().GetIPConstitutiveLaw(theIP).GetConstitutiveLaw();
+
+                NuTo::AdditiveBase& lawAdditiveBase
+                    = dynamic_cast<NuTo::AdditiveBase&>(lawbase);
+
+                NuTo::Constitutive::IPConstitutiveLawBase& ipLawMoisture
+                    = lawAdditiveBase.GetSublaw(1);
+
+                NuTo::Constitutive::StaticData::DataMoistureTransport& moistureData
+                    = ipLawMoisture.GetData<NuTo::MoistureTransport>().GetData();
 
                 moistureData.SetLastSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
                 moistureData.SetCurrentSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
