@@ -11,12 +11,15 @@ before_install:
     - export PATH=/home/travis/miniconda/bin:$PATH
     - conda install --yes numpy
     - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+    - echo "yes" | sudo add-apt-repository 'deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.9 main' 
+    - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
     - sudo apt-get -qq update
-    - sudo apt-get install -y g++-6 libgfortran-6-dev libgcc-6-dev libiomp-dev swig3.0 doxygen python-dev python-instant libboost-all-dev libeigen3-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev gfortran
+    - sudo apt-get install -y g++-6 clang-3.9 libgfortran-6-dev libgcc-6-dev libiomp-dev swig3.0 doxygen python-dev python-instant libboost-all-dev libeigen3-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev gfortran
 before_script:
     - mkdir build
     - cd build
     - if [[ "$CXX" == "g++" ]]; then CXX=g++-6; fi
+    - if [[ "$CXX" == "clang++" ]]; then CXX=clang++-3.9; fi
     - cmake ..
 script:
     - make -j2
