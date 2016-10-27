@@ -22,8 +22,6 @@ NuTo::eError ThermalStrains::Evaluate(
         const ConstitutiveInputMap &rConstitutiveInput,
         const ConstitutiveOutputMap &rConstitutiveOutput)
 {
-    
-    auto eye = Eigen::MatrixXd::Identity(TDim, TDim);
     const int voigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
 
     double temperature = 0.0;
@@ -54,9 +52,10 @@ NuTo::eError ThermalStrains::Evaluate(
         }
         case NuTo::Constitutive::eOutput::THERMAL_STRAIN:
         {
-            Eigen::Matrix<double, TDim, TDim>& engineeringStrain =
-                static_cast<ConstitutiveMatrix<TDim, TDim>*>(itOutput.second.get())->AsMatrix();
-            engineeringStrain = strain[0] * eye;
+            ConstitutiveVector<voigtDim>& engineeringStrain =
+                *static_cast<ConstitutiveVector<voigtDim>*>(itOutput.second.get());
+            for(unsigned int i = 0; i < TDim; ++i)
+                engineeringStrain[i] = strain[0];
             itOutput.second->SetIsCalculated(true);
             break;
         }

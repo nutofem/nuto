@@ -89,22 +89,22 @@ public:
     //! @brief ... get yield strength for multilinear response
     //! @return ... first column: equivalent plastic strain
     //! @return ... second column: corresponding yield strength
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> GetYieldStrength() const override;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> GetYieldStrength() const;
 
     //! @brief ... add yield strength
     //! @param rEpsilon ...  equivalent plastic strain
     //! @param rSigma ...  yield strength
-    void AddYieldStrength(double rEpsilon, double rSigma) override;
+    void AddYieldStrength(double rEpsilon, double rSigma);
 
     //! @brief ... get hardening modulus for multilinear response
     //! @return ... first column: equivalent plastic strain
     //! @return ... second column: corresponding hardening modulus
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> GetHardeningModulus() const  override;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> GetHardeningModulus() const;
 
     //! @brief ... add hardening modulus
     //! @param rEpsilon ...  equivalent plastic strain
     //! @param rSigma ...  hardening modulus
-    void AddHardeningModulus(double rEpsilon, double rSigma) override;
+    void AddHardeningModulus(double rEpsilon, double rSigma);
 
     //! @brief ... get dimension of the constitutive relationship
     //! @return ... dimension of the constitutive relationship (1, 2 or 3)

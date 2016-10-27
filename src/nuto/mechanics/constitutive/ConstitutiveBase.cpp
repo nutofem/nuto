@@ -117,38 +117,6 @@ void NuTo::ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutivePar
     }
 }
 
-//! @brief ... get yield strength for multilinear response
-//! @return ... first column: equivalent plastic strain
-//! @return ... second column: corresponding yield strength
-NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::ConstitutiveBase::GetYieldStrength() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetYieldStrength] The constitutive relationship does not have a parameter yield strength.");
-}
-
-//! @brief ... add yield strength
-//! @param rEpsilon ...  equivalent plastic strain
-//! @param rSigma ...  yield strength
-void NuTo::ConstitutiveBase::AddYieldStrength(double rEpsilon, double rSigma)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AddYieldStrength] The constitutive relationship does not have a parameter yield strength.");
-}
-
-//! @brief ... get hardening modulus for multilinear response
-//! @return ... first column: equivalent plastic strain
-//! @return ... second column: corresponding hardening modulus
-NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::ConstitutiveBase::GetHardeningModulus() const
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetYieldStrength] The constitutive relationship does not have a parameter yield strength.");
-}
-
-//! @brief ... add hardening modulus
-//! @param rEpsilon ...  equivalent plastic strain
-//! @param rSigma ...  hardening modulus
-void NuTo::ConstitutiveBase::AddHardeningModulus(double rEpsilon, double rH)
-{
-	throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::AddYieldStrength] The constitutive relationship does not have a parameter yield strength.");
-}
-
 
 //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
 //! @param rRelativeHumidity ... relative humidity

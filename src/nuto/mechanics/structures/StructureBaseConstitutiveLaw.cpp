@@ -306,58 +306,6 @@ void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(int rIdent
     }
 }
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGetYieldStrength(int rIdent) const
-{
-    try
-    {
-        const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        return constitutiveLawPtr->GetYieldStrength();
-    } catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "error getting yield strength.");
-        throw e;
-    }
-}
-
-void NuTo::StructureBase::ConstitutiveLawAddYieldStrength(int rIdent, double rEpsilon, double rSigma)
-{
-    try
-    {
-        ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        constitutiveLawPtr->AddYieldStrength(rEpsilon, rSigma);
-    } catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "error adding yield strength.");
-        throw e;
-    }
-}
-
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGetHardeningModulus(int rIdent) const
-{
-    try
-    {
-        const ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        return constitutiveLawPtr->GetHardeningModulus();
-    } catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "error getting hardening moduli.");
-        throw e;
-    }
-}
-
-void NuTo::StructureBase::ConstitutiveLawAddHardeningModulus(int rIdent, double rEpsilon, double rH)
-{
-    try
-    {
-        ConstitutiveBase* constitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
-        constitutiveLawPtr->AddHardeningModulus(rEpsilon, rH);
-    } catch (NuTo::MechanicsException& e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "error adding hardening modulus.");
-        throw e;
-    }
-}
-
 
 void NuTo::StructureBase::ConstitutiveLawSetDamageLaw(int rIdent, Constitutive::eDamageLawType rDamageLaw)
 {

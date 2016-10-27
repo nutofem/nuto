@@ -1237,31 +1237,7 @@ public:
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
     void ConstitutiveLawSetParameterFullVectorDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double, Eigen::Dynamic>  rValue);
-#endif // SWIG
 
-
-    //! @brief ... get yield strength for multilinear response
-    //! @return ... first column: equivalent plastic strain
-    //! @return ... second column: corresponding yield strength
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ConstitutiveLawGetYieldStrength(int rIdent) const;
-
-    //! @brief ... add yield strength
-    //! @param rEpsilon ...  equivalent plastic strain
-    //! @param rSigma ...  yield strength
-    void ConstitutiveLawAddYieldStrength(int rIdent, double rEpsilon, double rSigma);
-
-    //! @brief ... get hardening modulus for multilinear response
-    //! @return ... first column: equivalent plastic strain
-    //! @return ... second column: corresponding hardening modulus
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ConstitutiveLawGetHardeningModulus(int rIdent) const;
-
-    //! @brief ... add hardening modulus
-    //! @param rEpsilon ...  equivalent plastic strain
-    //! @param rSigma ...  hardening modulus
-    void ConstitutiveLawAddHardeningModulus(int rIdent, double rEpsilon, double rH);
-
-
-#ifndef SWIG
     //! @brief ... set damage law
     //! @param rDamageLaw ... damage law
     void ConstitutiveLawSetDamageLaw(int rIdent, Constitutive::eDamageLawType rDamageLaw);

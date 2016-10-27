@@ -126,26 +126,6 @@ public:
     //! @brief checks parameters, throws if the check failed
     static void CheckParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue);
 
-     //! @brief ... get yield strength for multilinear response
-    //! @return ... first column: equivalent plastic strain
-    //! @return ... second column: corresponding yield strength
-    virtual NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetYieldStrength() const;
-
-    //! @brief ... add yield strength
-    //! @param rEpsilon ...  equivalent plastic strain
-    //! @param rSigma ...  yield strength
-    virtual void AddYieldStrength(double rEpsilon, double rSigma);
-
-    //! @brief ... get hardening modulus for multilinear response
-    //! @return ... first column: equivalent plastic strain
-    //! @return ... second column: corresponding hardening modulus
-    virtual NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetHardeningModulus() const;
-
-    //! @brief ... add hardening modulus
-    //! @param rEpsilon ...  equivalent plastic strain
-    //! @param rSigma ...  hardening modulus
-    virtual void AddHardeningModulus(double rEpsilon, double rH);
-
     //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
     //! @param rRelativeHumidity ... relative humidity
     //! @return ... equilibrium water volume fraction
