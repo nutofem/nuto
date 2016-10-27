@@ -378,10 +378,18 @@ public:
     //! @param rDisplacements matrix (one column) with the displacements
     void NodeGetDisplacements(int rNode, int rTimeDerivative, FullVector<double,Eigen::Dynamic>& rDisplacements)const;
 
+#ifndef SWIG
+    //! @brief gets the dof     identifiers of a node
+    //! @param rNodeId node     identifier
+    //! @param rDof             degree of freedom
+    //! @return A vector of ids that correspond to rDof of rNodeId
+    std::vector<int> NodeGetDofIds(const int rNodeId, Node::eDof rDof)const;
+#endif
+
     //! @brief gets the displacement dofs of a node
     //! @param rIdent node identifier
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeGetDisplacementDofs(int rNode, FullVector<int,Eigen::Dynamic>& rDisplacementDofs)const;
+    void NodeGetDisplacementDofs(int rNode, FullVector<int,Eigen::Dynamic>& rDisplacementDofs)const;    
 
     //! @brief gets the rotations of a node
     //! @param rNode node identifier
@@ -432,12 +440,12 @@ public:
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
     //! @param rDofValues ... StructureBlockVector containing the dofs (J and K)
-    void NodeMergeDofValues(int rTimeDerivative, const NuTo::StructureOutputBlockVector& rDofValues);
+    virtual void NodeMergeDofValues(int rTimeDerivative, const NuTo::StructureOutputBlockVector& rDofValues);
 
     //! @brief write dof values (e.g. displacements, temperatures to the nodes)
     //! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
     //! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
-    inline void NodeMergeDofValues(NuTo::StructureOutputBlockVector& rDofValues)
+    virtual void NodeMergeDofValues(NuTo::StructureOutputBlockVector& rDofValues)
     {
         NodeMergeDofValues(0,rDofValues);
     }

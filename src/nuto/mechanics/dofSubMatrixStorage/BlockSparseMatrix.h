@@ -6,6 +6,7 @@
 #include "nuto/mechanics/nodes/DofHash.h"
 
 #include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Sparse>
 #include <ostream>
 #include <unordered_map>
 #include <map>
@@ -134,6 +135,7 @@ public:
     NuTo::SparseMatrixCSRVector2General<double>               ExportToCSRVector2General() const;
     NuTo::SparseMatrixCSRGeneral<double>                      ExportToCSRGeneral() const;
     NuTo::SparseMatrixCSRVector2Symmetric<double>             ExportToCSRSymmetric() const;
+    Eigen::SparseMatrix<double>                               ExportToEigenSparseMatrix() const;
 
     NuTo::SparseMatrixCSRVector2General<double> Get(std::string rDofRow, std::string rDofCol) const;
 

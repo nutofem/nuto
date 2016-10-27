@@ -424,12 +424,12 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                         timeStep *= 0.5;
                         if (timeStep < mMinTimeStep) {
                             mStructure->GetLogger() << "The minimal time step achieved, the actual time step is " << timeStep << "\n";
-                            throw MechanicsException("[NuTo::NewmarkDirect::Solve] no convergence, the current time step is too short.");
+                            throw MechanicsException(__PRETTY_FUNCTION__, "No convergence, the current time step is too short.");
                         }
                     }
                     else
                     {
-                        throw MechanicsException("[NuTo::NewmarkDirect::Solve] no convergence with the current maximum number of iterations, either use automatic time stepping, reduce the time step or the minimal line search cut back factor.");
+                        throw MechanicsException(__PRETTY_FUNCTION__, "No convergence with the current maximum number of iterations, either use automatic time stepping, reduce the time step or the minimal line search cut back factor.");
                     }
                 }
             }

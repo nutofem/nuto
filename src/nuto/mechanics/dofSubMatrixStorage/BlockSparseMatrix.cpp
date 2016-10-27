@@ -16,6 +16,8 @@
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/math/SparseMatrix.h"
 
+#include "eigen3/Eigen/Sparse"
+
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/utility.hpp> // for std::pair
 #include "nuto/math/CustomBoostSerializationExtensions.h"
@@ -336,6 +338,30 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockSparseMatrix
     return result;
 }
 
+Eigen::SparseMatrix<double> NuTo::BlockSparseMatrix::ExportToEigenSparseMatrix() const
+{
+
+    SparseMatrixCSRGeneral<double> sparseMatrixCSRGeneral(ExportToCSRVector2General());
+
+    std::vector<Eigen::Triplet<double>> tripletList;
+    std::vector<double> val     = sparseMatrixCSRGeneral.GetValues();
+    std::vector<int> colInd     = sparseMatrixCSRGeneral.GetColumns();
+    std::vector<int> rowInd     = sparseMatrixCSRGeneral.GetRowIndex();
+
+    for (unsigned i = 0; i < rowInd.size() - 1; ++i)
+    {
+        for (int k = rowInd[i]; k < rowInd[i + 1]; ++k)
+            tripletList.push_back(Eigen::Triplet<double>(i, colInd[k], val[k]));
+    }
+
+    Eigen::SparseMatrix<double> eigenSparseMatrix(GetNumActiveRows(), GetNumActiveColumns());
+    eigenSparseMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
+    eigenSparseMatrix.makeCompressed();
+
+    return eigenSparseMatrix;
+}
+
+
 NuTo::SparseMatrixCSRVector2General<double> NuTo::BlockSparseMatrix::ExportToCSRVector2General() const
 {
     SparseMatrixCSRVector2General<double> result;
@@ -424,6 +450,7 @@ NuTo::SparseMatrixCSRVector2General<double> NuTo::BlockSparseMatrix::Get(std::st
 
 namespace NuTo
 {
+//! @brief output stream operator for outputs with cout or files
 std::ostream& operator<<(std::ostream &rOut, const NuTo::BlockSparseMatrix &rBlockSparseMatrix)
 {
     Eigen::IOFormat cleanFormat(Eigen::StreamPrecision, 0, " ", "\n", "|", " |");

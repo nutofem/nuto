@@ -14,7 +14,6 @@ option(ENABLE_GUI "enable building the GUI application" FALSE)
 option(ENABLE_MECHANICS "enables the mechanics package" TRUE)
 option(ENABLE_METAMODEL "enables the metamodel package" FALSE)
 option(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
-option(ENABLE_MPI "enables the message passing interface MPI (for distributed memory systems)" FALSE)
 option(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
 option(ENABLE_MY_EXAMPLES "enable building private examples in a separate directory (nuto/myNutoExamples)" FALSE)
 option(ENABLE_NUMPY "enables numpy" TRUE)
@@ -29,13 +28,22 @@ option(ENABLE_SERIALIZATION "enables serialization" FALSE)
 option(ENABLE_UNIT_TESTS "use Boost Test library for unit tests" TRUE)
 option(ENABLE_VERBOSELEVEL "enables status messages during the execution by setting the verboselevel" FALSE)
 option(ENABLE_VISUALIZE "enables the visualization package" FALSE)
+option(ENABLE_MPI "enables message passing interface" FALSE)
 
 # set module path for custom cmake scripts
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts ${CMAKE_MODULE_PATH})
 include(NuToMacros)
 
+add_subdirectory(external)
+include_directories(external/jsoncpp/dist/)
+
 if(ENABLE_MPI)
     find_package(MPI REQUIRED)
+    include_directories(${MPI_INCLUDE_PATH})
+    message("MPI_INCLUDE_PATH:  " ${MPI_INCLUDE_PATH})
+    message("MPI_COMPILE_FLAGS: " ${MPI_COMPILE_FLAGS})
+    message("MPI_LINK_FLAGS:    " ${MPI_LINK_FLAGS})
+    message("MPI_LIBRARIES:     " ${MPI_LIBRARIES})
 endif()
 
 if(ENABLE_METAMODEL)
@@ -76,6 +84,45 @@ if(ENABLE_SHOW_TIME)
     add_definitions("-DSHOW_TIME")
     set(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DSHOW_TIME")
 endif()
+
+IF(ENABLE_METAMODEL)
+    SET(ENABLE_OPTIMIZE TRUE)
+ENDIF(ENABLE_METAMODEL)
+
+IF(ENABLE_MECHANICS)
+    ADD_DEFINITIONS("-DENABLE_MECHANICS")
+    SET(NuTo_DOXYGEN_PREDEFINED "ENABLE_MECHANICS" ${NuTo_DOXYGEN_PREDEFINED})
+    SET(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_MECHANICS")
+ENDIF(ENABLE_MECHANICS)
+
+IF(ENABLE_OPTIMIZE)
+    ADD_DEFINITIONS("-DENABLE_OPTIMIZE")
+    SET(NuTo_DOXYGEN_PREDEFINED "ENABLE_OPTIMIZE" ${NuTo_DOXYGEN_PREDEFINED})
+    SET(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_OPTIMIZE")
+ENDIF(ENABLE_OPTIMIZE)
+
+IF(ENABLE_VISUALIZE)
+    ADD_DEFINITIONS("-DENABLE_VISUALIZE")
+    SET(NuTo_DOXYGEN_PREDEFINED "ENABLE_VISUALIZE" ${NuTo_DOXYGEN_PREDEFINED})
+    SET(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_VISUALIZE")
+ENDIF(ENABLE_VISUALIZE)
+
+IF (ENABLE_SERIALIZATION)
+    ADD_DEFINITIONS("-DENABLE_SERIALIZATION")
+    SET(NuTo_DOXYGEN_PREDEFINED "ENABLE_SERIALIZATION" ${NuTo_DOXYGEN_PREDEFINED})
+    SET(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_SERIALIZATION")
+ENDIF(ENABLE_SERIALIZATION)
+
+IF (ENABLE_VERBOSELEVEL)
+    ADD_DEFINITIONS("-DENABLE_VERBOSELEVEL")
+    SET(NuTo_DOXYGEN_PREDEFINED "ENABLE_VERBOSELEVEL" ${NuTo_DOXYGEN_PREDEFINED})
+    SET(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_VERBOSELEVEL")
+ENDIF(ENABLE_VERBOSELEVEL)
+
+IF(ENABLE_SHOW_TIME)
+    ADD_DEFINITIONS("-DSHOW_TIME")
+    SET(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DSHOW_TIME")
+ENDIF(ENABLE_SHOW_TIME)
 
 # search path for external libraries
 # check if NUTO_EXTERNAL_LIBRARIES_ROOT is set
@@ -216,6 +263,10 @@ endif()
 # collect the required boost components and versions
 set(NuToBoostComponents system filesystem)
 set(NuToBoostRequiredVersion 1.44.0)
+
+if(ENABLE_MPI)
+    set(NuToBoostComponents ${NuToBoostComponents} mpi)
+endif()
 
 if(ENABLE_SERIALIZATION)
     set(NuToBoostRequiredVersion 1.58.0)

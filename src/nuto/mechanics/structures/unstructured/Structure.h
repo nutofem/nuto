@@ -634,7 +634,7 @@ protected:
     boost::ptr_map<int, NodeBase> mNodeMap;
     boost::ptr_map<int, ElementBase> mElementMap;
 
-private:
+protected:
 
     //! @brief creates a node
     //! @param rDOFs

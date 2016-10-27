@@ -11,7 +11,11 @@ class ConstitutiveMatrix : public ConstitutiveIOBase, public Eigen::Matrix<doubl
 {
 public:
 
-    ConstitutiveMatrix()                                        = default;
+    ConstitutiveMatrix()
+    {
+        this->setZero();
+    }
+
     ConstitutiveMatrix(const ConstitutiveMatrix& )              = default;
     ConstitutiveMatrix(      ConstitutiveMatrix&&)              = default;
 

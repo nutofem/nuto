@@ -313,6 +313,36 @@ void NuTo::StructureBase::NodeGetDisplacementDofs(int rNode, FullVector<int,Eige
     }
 }
 
+std::vector<int> NuTo::StructureBase::NodeGetDofIds(const int rNodeId, NuTo::Node::eDof rDof)const
+{
+    NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());
+
+    const NodeBase* nodePtr = NodeGetNodePtr(rNodeId);
+
+    try
+    {
+        int numDofIds = nodePtr->GetNum(rDof);
+
+        if (numDofIds == 0)
+            throw MechanicsException(__PRETTY_FUNCTION__, "Node does not have the requested dof.");
+
+        std::vector<int> dofIds(numDofIds);
+        for (int i = 0; i < numDofIds; ++i)
+            dofIds[i] = nodePtr->GetDof(rDof, i);
+
+        return dofIds;
+
+    }
+    catch(NuTo::MechanicsException & b)
+    {
+        b.AddMessage(__PRETTY_FUNCTION__, "Error getting the requested dof identifiers.");
+        throw b;
+    }
+    catch(...)
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__, "Error getting the requested dof identifiers.");
+    }
+}
 
 //! @brief gets the rotations of a node
 //! @param rIdent node identifier
