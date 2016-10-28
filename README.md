@@ -17,7 +17,7 @@ First, you need some external dependencies
 
 Then, you need to check out the source code
 
-    git clone git://git.code.sf.net/p/nuto/codegit nuto
+    git clone https://github.com/nutofem/nuto.git
 
 Create a build directory and switch to it
 
@@ -53,4 +53,4 @@ Examples
 Can I see some code?
 ====================
 
-Sure, take a look at [our documentation](https://nutofem.github.io/nuto/)
+Sure, take a look at [our documentation](https://nutofem.github.io/nuto/).
