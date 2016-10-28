@@ -1,6 +1,7 @@
 ![alt text](doc/images/NuTo_logo.png "NuTo logo")
 
 [![Build Status](https://travis-ci.org/nutofem/nuto.svg?branch=master)](https://travis-ci.org/nutofem/nuto)
+[![Coverage Status](https://coveralls.io/repos/github/nutofem/nuto/badge.svg)](https://coveralls.io/github/nutofem/nuto)
 
 What is it?
 ===========
