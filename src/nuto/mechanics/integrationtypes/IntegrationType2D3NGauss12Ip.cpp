@@ -1,3 +1,5 @@
+// $Id$
+
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -14,9 +16,14 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss12Ip.h"
 #include <assert.h>
 
-NuTo::IntegrationType2D3NGauss12Ip::IntegrationType2D3NGauss12Ip() {}
+//! @brief constructor
+NuTo::IntegrationType2D3NGauss12Ip::IntegrationType2D3NGauss12Ip()
+{
+}
 
-
+//! @brief returns the local coordinates of an integration point
+//! @param rIpNum integration point (counting from zero)
+//! @param rCoordinates (result)
 void NuTo::IntegrationType2D3NGauss12Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2]) const
 {
     assert(rIpNum >= 0 && rIpNum < 12);
@@ -77,17 +84,20 @@ void NuTo::IntegrationType2D3NGauss12Ip::GetLocalIntegrationPointCoordinates2D(i
         rCoordinates[1] = 1 - c - d;
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+        throw MechanicsException("[NuTo::IntegrationType2D3NGauss12Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
     }
 }
 
-
-unsigned int NuTo::IntegrationType2D3NGauss12Ip::GetNumIntegrationPoints() const
+//! @brief returns the total number of integration points for this integration type
+//! @return number of integration points
+int NuTo::IntegrationType2D3NGauss12Ip::GetNumIntegrationPoints() const
 {
     return 12;
 }
 
-
+//! @brief returns the weight of an integration point
+//! @param rIpNum integration point (counting from zero)
+//! @return weight of integration points
 double NuTo::IntegrationType2D3NGauss12Ip::GetIntegrationPointWeight(int rIpNum) const
 {
     assert(rIpNum >= 0 && rIpNum < 12);
@@ -133,17 +143,19 @@ double NuTo::IntegrationType2D3NGauss12Ip::GetIntegrationPointWeight(int rIpNum)
         return g;
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+        throw MechanicsException("[NuTo::IntegrationType2D3NGauss12Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
     }
 }
 
-
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
 std::string NuTo::IntegrationType2D3NGauss12Ip::GetStrIdentifier() const
 {
     return GetStrIdentifierStatic();
 }
 
-
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
 std::string NuTo::IntegrationType2D3NGauss12Ip::GetStrIdentifierStatic()
 {
     return std::string("2D3NGAUSS12IP");

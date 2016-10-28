@@ -1,41 +1,60 @@
+
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType0DBoundary.h"
 #include <assert.h>
 
 
-NuTo::IntegrationType0DBoundary::IntegrationType0DBoundary() {}
-
-
-void NuTo::IntegrationType0DBoundary::GetLocalIntegrationPointCoordinates1D(int, double&) const
+// constructor
+NuTo::IntegrationType0DBoundary::IntegrationType0DBoundary()
 {
-    throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+}
+
+//! @brief returns the local coordinates of an integration point
+//! @param rIpNum integration point (counting from zero)
+//! @param rCoordinates (result)
+void NuTo::IntegrationType0DBoundary::GetLocalIntegrationPointCoordinates1D(int rIpNum, double& rCoordinates)const
+{
+//    switch (rIpNum)
+//    {
+//    case 0 :
+//        rCoordinates = -1; // this is the one located on the boundary of the real boundary element
+//        break;
+//    default:
+        throw MechanicsException("[NuTo::IntegrationType0DBoundary::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+//    }
 }
 
 
-unsigned int NuTo::IntegrationType0DBoundary::GetNumIntegrationPoints() const
+//! @brief returns the total number of integration points for this integration type
+//! @return number of integration points
+int NuTo::IntegrationType0DBoundary::GetNumIntegrationPoints()const
 {
     return 1;
 }
 
-
-double NuTo::IntegrationType0DBoundary::GetIntegrationPointWeight(int rIpNum) const
+//! @brief returns the weight of an integration point
+//! @param rIpNum integration point (counting from zero)
+//! @return weight of integration points
+double NuTo::IntegrationType0DBoundary::GetIntegrationPointWeight(int rIpNum)const
 {
     switch (rIpNum)
     {
     case 0 :
         return 1;
     default:
-        throw MechanicsException("Ip number out of range.");
+        throw MechanicsException("[NuTo::IntegrationType0DBoundary::GetIntegrationPointWeight] Ip number out of range.");
     }
 }
 
-
-std::string NuTo::IntegrationType0DBoundary::GetStrIdentifier() const
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
+std::string NuTo::IntegrationType0DBoundary::GetStrIdentifier()const
 {
     return GetStrIdentifierStatic();
 }
 
-
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
 std::string NuTo::IntegrationType0DBoundary::GetStrIdentifierStatic()
 {
     return std::string("0DBOUNDARY");
@@ -52,7 +71,23 @@ void NuTo::IntegrationType0DBoundary::GetVisualizationCells(
 {
     // no visualisation since its a 0D element
     NumVisualizationPoints = 0;
+//    VisualizationPointLocalCoordinates.push_back(-1);
+//    VisualizationPointLocalCoordinates.push_back(-0.3873);
+//    VisualizationPointLocalCoordinates.push_back(0.3873);
+//    VisualizationPointLocalCoordinates.push_back(1);
     NumVisualizationCells = 0;
+//    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
+//    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
+//    VisualizationCellType.push_back(NuTo::eCellTypes::LINE);
+//    VisualizationCellsIncidence.push_back(0);
+//    VisualizationCellsIncidence.push_back(1);
+//    VisualizationCellsIncidence.push_back(1);
+//    VisualizationCellsIncidence.push_back(2);
+//    VisualizationCellsIncidence.push_back(2);
+//    VisualizationCellsIncidence.push_back(3);
+//    VisualizationCellsIP.push_back(1);
+//    VisualizationCellsIP.push_back(2);
+//    VisualizationCellsIP.push_back(3);
 }
 
 #endif // ENABLE_VISUALIZE
@@ -85,4 +120,5 @@ bool NuTo::IntegrationType0DBoundary::CheckElementCompatibility(
 #endif
     }
 #endif // ENABLE_SERIALIZATION
+
 

@@ -1,3 +1,5 @@
+// $Id$
+
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
 #include <assert.h>
 
@@ -5,10 +7,15 @@
 #include "nuto/visualize/VisualizeEnum.h"
 #endif // ENABLE_VISUALIZE
 
-NuTo::IntegrationType1D2NGauss2Ip::IntegrationType1D2NGauss2Ip() {}
+//! @brief constructor
+NuTo::IntegrationType1D2NGauss2Ip::IntegrationType1D2NGauss2Ip()
+{
+}
 
-
-void NuTo::IntegrationType1D2NGauss2Ip::GetLocalIntegrationPointCoordinates1D(int rIpNum, double& rCoordinates) const
+//! @brief returns the local coordinates of an integration point
+//! @param rIpNum integration point (counting from zero)
+//! @param rCoordinates (result)
+void NuTo::IntegrationType1D2NGauss2Ip::GetLocalIntegrationPointCoordinates1D(int rIpNum, double& rCoordinates)const
 {
     assert(rIpNum==0 || rIpNum==1);
     switch (rIpNum)
@@ -20,29 +27,35 @@ void NuTo::IntegrationType1D2NGauss2Ip::GetLocalIntegrationPointCoordinates1D(in
         rCoordinates =  0.577350269189626;
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+        throw MechanicsException("[NuTo::IntegrationType1D2NGauss2Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
     }
 }
 
 
-unsigned int NuTo::IntegrationType1D2NGauss2Ip::GetNumIntegrationPoints() const
+//! @brief returns the total number of integration points for this integration type
+//! @return number of integration points
+int NuTo::IntegrationType1D2NGauss2Ip::GetNumIntegrationPoints()const
 {
     return 2;
 }
 
-
-double NuTo::IntegrationType1D2NGauss2Ip::GetIntegrationPointWeight(int) const
+//! @brief returns the weight of an integration point
+//! @param rIpNum integration point (counting from zero)
+//! @return weight of integration points
+double NuTo::IntegrationType1D2NGauss2Ip::GetIntegrationPointWeight(int rIpNum)const
 {
-    return 1.0;
+    return 1;
 }
 
-
-std::string NuTo::IntegrationType1D2NGauss2Ip::GetStrIdentifier() const
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
+std::string NuTo::IntegrationType1D2NGauss2Ip::GetStrIdentifier()const
 {
     return GetStrIdentifierStatic();
 }
 
-
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
 std::string NuTo::IntegrationType1D2NGauss2Ip::GetStrIdentifierStatic()
 {
     return std::string("1D2NGAUSS2IP");

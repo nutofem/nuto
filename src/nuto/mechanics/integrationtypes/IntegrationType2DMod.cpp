@@ -1,3 +1,5 @@
+// $Id$
+
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeEnum.h"
 #endif // ENABLE_VISUALIZE
@@ -5,7 +7,9 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType2DMod.h"
 
 #include <assert.h>
-#include <string>
+
+#include <sstream>
+#include <iostream>
 #include <vector>
 
 #include <boost/foreach.hpp>
@@ -14,54 +18,80 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/integrationtypes/IntegrationPointBase.h"
 
+//! @brief constructor
 NuTo::IntegrationType2DMod::IntegrationType2DMod()
 {
     mName='\0';
 }
 
-
-NuTo::IntegrationType2DMod::IntegrationType2DMod(std::string rName): mName(rName)
+//! @brief constructor
+NuTo::IntegrationType2DMod::IntegrationType2DMod(std::string rName):
+	mName(rName)
 {
 }
 
-
+//! @brief destructor
 NuTo::IntegrationType2DMod::~IntegrationType2DMod()
 {
 }
 
-
+//! @brief returns the local coordinates of an integration point
+//! @param rIpNum integration point (counting from zero)
+//! @param rCoordinates (result)
 void NuTo::IntegrationType2DMod::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2]) const
 {
-	assert(rIpNum >= 0 && rIpNum <(int)mIpMap.size());
-    boost::ptr_map<int, IntegrationPointBase>::const_iterator thisIP = boost::next(mIpMap.begin(),rIpNum);
-    if (thisIP == mIpMap.end())
-    	throw MechanicsException(__PRETTY_FUNCTION__, "IP " + std::to_string(rIpNum) + " does exist.");
+	assert(rIpNum>=0 && rIpNum<(int)mIpMap.size());
+    boost::ptr_map< int, IntegrationPointBase >::const_iterator thisIP = boost::next(mIpMap.begin(),rIpNum);
+    if (thisIP==mIpMap.end())
+    {
+    	std::stringstream message;
+    	message << "[NuTo::IntegrationType2DMod::GetLocalIntegrationPointCoordinates2D] IP " << rIpNum << " does not exist." << std::endl;
+    	throw MechanicsException(message.str());
+    }
 
     const std::vector<double> thisCoords(thisIP->second->GetLocalCoords());
+//	assert(rIpNum>=0 && rIpNum<mNumIp);
+//    boost::ptr_map< int, IntegrationPointBase >::const_iterator thisIP = mIpMap.find(rIpNum);
+//    if (thisIP==mIpMap.end())
+//    {
+//    	std::stringstream message;
+//    	message << "[NuTo::IntegrationType2DMod::GetLocalIntegrationPointCoordinates2D] IP " << rIpNum << " does not exist." << std::endl;
+//    	throw MechanicsException(message.str());
+//    }
+//
+//    const std::vector<double> thisCoords(thisIP->second->GetLocalCoords());
     rCoordinates[0] = thisCoords[0];
     rCoordinates[1] = thisCoords[1];
 
 }
 
-
-unsigned int NuTo::IntegrationType2DMod::GetNumIntegrationPoints() const
+//! @brief returns the total number of integration points for this integration type
+//! @return number of integration points
+int NuTo::IntegrationType2DMod::GetNumIntegrationPoints()const
 {
    return mIpMap.size();
 }
 
-
-double NuTo::IntegrationType2DMod::GetIntegrationPointWeight(int rIpNum) const
+//! @brief returns the weight of an integration point
+//! @param rIpNum integration point (counting from zero)
+//! @return weight of integration points
+double NuTo::IntegrationType2DMod::GetIntegrationPointWeight(int rIpNum)const
 {
-	assert(rIpNum >= 0 && rIpNum < (int)mIpMap.size());
-    boost::ptr_map<int, IntegrationPointBase>::const_iterator thisIP = boost::next(mIpMap.begin(), rIpNum);
-    if (thisIP == mIpMap.end())
-    	throw MechanicsException(__PRETTY_FUNCTION__, "IP " + std::to_string(rIpNum) + " does not exist.");
+	assert(rIpNum>=0 && rIpNum<(int)mIpMap.size());
+    boost::ptr_map< int, IntegrationPointBase >::const_iterator thisIP = boost::next(mIpMap.begin(),rIpNum);
+    if (thisIP==mIpMap.end())
+    {
+    	std::stringstream message;
+    	message << "[NuTo::IntegrationType2DMod::GetIntegrationPointWeight] IP " << rIpNum << " does not exist." << std::endl;
+    	throw MechanicsException(message.str());
+    }
 
     return thisIP->second->GetWeight();
 }
 
-
-std::string NuTo::IntegrationType2DMod::GetStrIdentifier() const
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
+std::string NuTo::IntegrationType2DMod::GetStrIdentifier()const
 {
     return mName;
 }
@@ -91,10 +121,8 @@ void NuTo::IntegrationType2DMod::GetVisualizationCells(
 	unsigned int inc=0; //< the base of the incidence for this cell
 	size_t newIp=0;
 	typedef boost::ptr_map< int, IntegrationPointBase > IpMap_t;
-	BOOST_FOREACH( IpMap_t::const_iterator::reference it,  mIpMap)
-    {
-		it.second->GetVisualizationCell(numVisualizationPoints, visualizationCellType,
-                visualizationPointLocalCoordinates, visualizationCellsIncidence);
+	BOOST_FOREACH( IpMap_t::const_iterator::reference it,  mIpMap){
+		it.second->GetVisualizationCell( numVisualizationPoints, visualizationCellType,visualizationPointLocalCoordinates, visualizationCellsIncidence );
 
 		//! NumVisualizationPoints
 		rNumVisualizationPoints+=numVisualizationPoints;
@@ -120,9 +148,9 @@ void NuTo::IntegrationType2DMod::GetVisualizationCells(
 }
 #endif // ENABLE_VISUALIZE
 
-
-void NuTo::IntegrationType2DMod::AddIntegrationPoint(const IntegrationPointBase &rIp)
-{
+    //! @brief adds a new integration point
+    //! @param rIp (Input) integration point
+void NuTo::IntegrationType2DMod::AddIntegrationPoint(const IntegrationPointBase &rIp){
 	//! with this informations we build up the new IP
 	IntegrationPointBase* ptrIP(0);
 	ptrIP = new IntegrationPointBase(rIp);
@@ -131,7 +159,8 @@ void NuTo::IntegrationType2DMod::AddIntegrationPoint(const IntegrationPointBase 
 	this->mIpMap.insert(id,ptrIP);
 }
 
-
+//! @brief deletes an integration point
+//! @param rIpNum (Input) integration point (counting from zero)
 void NuTo::IntegrationType2DMod::DeleteIntegrationPoint(const int rIpNum)
 {
 	// find IP
@@ -139,12 +168,13 @@ void NuTo::IntegrationType2DMod::DeleteIntegrationPoint(const int rIpNum)
 	IpMap_t::iterator itIP = mIpMap.find(rIpNum);
     if (itIP == this->mIpMap.end())
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Integrationpoint does not exist.");
+        throw MechanicsException("[NuTo::IntegrationType2DMod::DeleteIntegrationPoint] Integrationpoint does not exist.");
     }
     else
     {
 		// delete IP from map
 		this->mIpMap.erase(rIpNum);
     }
+
 }
 

@@ -14,41 +14,50 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto6Ip.h"
 #include <assert.h>
 
+// constructor
 NuTo::IntegrationType1D2NLobatto6Ip::IntegrationType1D2NLobatto6Ip():
     iPts{-1., -0.76505532392946469, -0.28523151648064509, 0.28523151648064509, +0.76505532392946469, +1.},
     weights{0.066666666666666666, 0.554858377035486353, 0.378474956297846980, 0.378474956297846980, 0.554858377035486353, 0.066666666666666666}
 {
 }
 
-
-void NuTo::IntegrationType1D2NLobatto6Ip::GetLocalIntegrationPointCoordinates1D(int rIpNum, double& rCoordinates) const
+//! @brief returns the local coordinates of an integration point
+//! @param rIpNum integration point (counting from zero)
+//! @param rCoordinates (result)
+void NuTo::IntegrationType1D2NLobatto6Ip::GetLocalIntegrationPointCoordinates1D(int rIpNum, double& rCoordinates)const
 {
     if(rIpNum >= 0 && rIpNum < 6)
         rCoordinates = iPts[rIpNum];
     else
-        throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+        throw MechanicsException("[NuTo::IntegrationType1D2NLobatto6Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
 }
 
 
-unsigned int NuTo::IntegrationType1D2NLobatto6Ip::GetNumIntegrationPoints() const
+//! @brief returns the total number of integration points for this integration type
+//! @return number of integration points
+int NuTo::IntegrationType1D2NLobatto6Ip::GetNumIntegrationPoints()const
 {
     return 6;
 }
 
-
-double NuTo::IntegrationType1D2NLobatto6Ip::GetIntegrationPointWeight(int rIpNum) const
+//! @brief returns the weight of an integration point
+//! @param rIpNum integration point (counting from zero)
+//! @return weight of integration points
+double NuTo::IntegrationType1D2NLobatto6Ip::GetIntegrationPointWeight(int rIpNum)const
 {
     if(rIpNum >= 0 && rIpNum < 6) return weights[rIpNum];
-    throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+    throw MechanicsException("[NuTo::IntegrationType1D2NLobatto6Ip::GetIntegrationPointWeight] Ip number out of range.");
 }
 
-
-std::string NuTo::IntegrationType1D2NLobatto6Ip::GetStrIdentifier() const
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
+std::string NuTo::IntegrationType1D2NLobatto6Ip::GetStrIdentifier()const
 {
     return GetStrIdentifierStatic();
 }
 
-
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
 std::string NuTo::IntegrationType1D2NLobatto6Ip::GetStrIdentifierStatic()
 {
     return std::string("1D2NLOBATTO6IP");

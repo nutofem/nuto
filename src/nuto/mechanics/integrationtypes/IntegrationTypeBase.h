@@ -88,8 +88,9 @@ public:
         throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented in base class.");
     }
 
-    //! @brief Returns the total number of integration points for this integration type.
-    virtual unsigned int GetNumIntegrationPoints() const = 0;
+    //! @brief returns the total number of integration points for this integration type
+    //! @return number of integration points
+    virtual int GetNumIntegrationPoints()const=0;
 
     //! @brief returns the weight of an integration point
     //! @param rIpNum integration point (counting from zero)

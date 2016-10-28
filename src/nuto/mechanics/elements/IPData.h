@@ -26,17 +26,17 @@ public:
     //! @brief returns true, if the constitutive law has been assigned
     //! @param rIP integration point index
     //! @return false if a) rIP is out of bounds, b) constitutive law at rIP is not set yed
-    bool HasConstitutiveLawAssigned(unsigned int rIP) const;
+    bool HasConstitutiveLawAssigned(int rIP) const;
 
     //! @brief returns the IPConstitutiveLaw at the given (if allocated)
     //! @param rIP integration point index
     //! @return ip constitutive law base reference
-    Constitutive::IPConstitutiveLawBase& GetIPConstitutiveLaw(unsigned int rIP);
+    Constitutive::IPConstitutiveLawBase& GetIPConstitutiveLaw(int rIP);
 
     //! @brief returns the IPConstitutiveLaw at the given (if allocated)
     //! @param rIP integration point index
     //! @return ip constitutive law base reference
-    const Constitutive::IPConstitutiveLawBase& GetIPConstitutiveLaw(unsigned int rIP) const;
+    const Constitutive::IPConstitutiveLawBase& GetIPConstitutiveLaw(int rIP) const;
 
     //! @brief sets a new integration type and performs an update of mLaws
     //! @param rIntegrationType new integration type

@@ -44,7 +44,7 @@ public:
 
     //! @brief returns the total number of integration points for this integration type
     //! @return number of integration points
-    unsigned int GetNumIntegrationPoints() const;
+    int GetNumIntegrationPoints()const;
 
     //! @brief returns the weight of an integration point
     //! @param rIpNum integration point (counting from zero)
@@ -79,3 +79,4 @@ protected:
 
 };
 }
+

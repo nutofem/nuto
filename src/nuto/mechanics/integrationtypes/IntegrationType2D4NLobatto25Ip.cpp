@@ -1,3 +1,5 @@
+// $Id: IntegrationType2D4NLobatto25Ip.cpp 331 2010-10-06 09:32:11Z arnold2 $
+
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -15,6 +17,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
 #include <assert.h>
 
+//! @brief constructor
 NuTo::IntegrationType2D4NLobatto25Ip::IntegrationType2D4NLobatto25Ip()
 {
     NuTo::IntegrationType1D2NLobatto5Ip Lobatto1D2N5Ip;
@@ -41,37 +44,46 @@ NuTo::IntegrationType2D4NLobatto25Ip::IntegrationType2D4NLobatto25Ip()
 }
 
 
-void NuTo::IntegrationType2D4NLobatto25Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2]) const
+//! @brief returns the local coordinates of an integration point
+//! @param rIpNum integration point (counting from zero)
+//! @param rCoordinates (result)
+void NuTo::IntegrationType2D4NLobatto25Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const
 {
-    if (rIpNum >= 0 && rIpNum < 25)
+    if (rIpNum>=0 && rIpNum<25)
     {
         rCoordinates[0] = iPts[rIpNum][0];
         rCoordinates[1] = iPts[rIpNum][1];
     }
     else
-        throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+        throw MechanicsException("[NuTo::IntegrationType2D4NLobatto25Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
 }
 
 
-unsigned int NuTo::IntegrationType2D4NLobatto25Ip::GetNumIntegrationPoints() const
+//! @brief returns the total number of integration points for this integration type
+//! @return number of integration points
+int NuTo::IntegrationType2D4NLobatto25Ip::GetNumIntegrationPoints()const
 {
     return 25;
 }
 
-
-double NuTo::IntegrationType2D4NLobatto25Ip::GetIntegrationPointWeight(int rIpNum) const
+//! @brief returns the weight of an integration point
+//! @param rIpNum integration point (counting from zero)
+//! @return weight of integration points
+double NuTo::IntegrationType2D4NLobatto25Ip::GetIntegrationPointWeight(int rIpNum)const
 {
-    if (rIpNum >= 0 && rIpNum < 25) return weights[rIpNum];
-    throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
+    if (rIpNum>=0 && rIpNum<25) return weights[rIpNum];
+    throw MechanicsException("[NuTo::IntegrationType2D4NLobatto25Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
 }
 
-
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
 std::string NuTo::IntegrationType2D4NLobatto25Ip::GetStrIdentifier()const
 {
     return GetStrIdentifierStatic();
 }
 
-
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
 std::string NuTo::IntegrationType2D4NLobatto25Ip::GetStrIdentifierStatic()
 {
     return std::string("2D4NLOBATTO25IP");

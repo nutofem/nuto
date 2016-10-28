@@ -1,3 +1,6 @@
+// $Id$ 
+// IntegrationType2D.cpp
+// created Apr 30, 2010 by Joerg F. Unger
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -10,6 +13,9 @@
 #include "nuto/mechanics/elements/ElementEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D.h"
 
+//! @brief ... check compatibility between element type and type of constitutive relationship
+//! @param rElementType ... element type
+//! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
 bool NuTo::IntegrationType2D::CheckElementCompatibility(NuTo::Element::eElementType rElementType) const
 {
     switch (rElementType)
