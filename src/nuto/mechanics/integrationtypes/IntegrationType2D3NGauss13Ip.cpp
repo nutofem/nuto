@@ -1,5 +1,3 @@
-// $Id: IntegrationType2D3NGauss13Ip.cpp 309 2010-09-22 22:21:24Z unger3 $
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -16,16 +14,10 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
 #include <assert.h>
 
+NuTo::IntegrationType2D3NGauss13Ip::IntegrationType2D3NGauss13Ip() {}
 
-//! @brief constructor
-NuTo::IntegrationType2D3NGauss13Ip::IntegrationType2D3NGauss13Ip()
-{
-}
 
-//! @brief returns the local coordinates of an integration point
-//! @param rIpNum integration point (counting from zero)
-//! @param rCoordinates (result)
-void NuTo::IntegrationType2D3NGauss13Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const
+void NuTo::IntegrationType2D3NGauss13Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2]) const
 {
     assert(rIpNum>=0 && rIpNum<13);
     switch (rIpNum)
@@ -83,24 +75,20 @@ void NuTo::IntegrationType2D3NGauss13Ip::GetLocalIntegrationPointCoordinates2D(i
         rCoordinates[1]=  0.865307354083 ;
         break;
     default:
-        throw MechanicsException("[NuTo::IntegrationType2D3NGauss13Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
     }
 }
 
 
-//! @brief returns the total number of integration points for this integration type
-//! @return number of integration points
-int NuTo::IntegrationType2D3NGauss13Ip::GetNumIntegrationPoints()const
+unsigned int NuTo::IntegrationType2D3NGauss13Ip::GetNumIntegrationPoints() const
 {
     return 13;
 }
 
-//! @brief returns the weight of an integration point
-//! @param rIpNum integration point (counting from zero)
-//! @return weight of integration points
-double NuTo::IntegrationType2D3NGauss13Ip::GetIntegrationPointWeight(int rIpNum)const
+
+double NuTo::IntegrationType2D3NGauss13Ip::GetIntegrationPointWeight(int rIpNum) const
 {
-    assert(rIpNum>=0 && rIpNum<13);
+    assert(rIpNum >= 0 && rIpNum < 13);
     switch (rIpNum)
     {
     case  0  :
@@ -143,19 +131,17 @@ double NuTo::IntegrationType2D3NGauss13Ip::GetIntegrationPointWeight(int rIpNum)
         return  0.0136815117611 ;
         break;
     default:
-        throw MechanicsException("[NuTo::IntegrationType2D3NGauss13Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
     }
 }
 
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
-std::string NuTo::IntegrationType2D3NGauss13Ip::GetStrIdentifier()const
+
+std::string NuTo::IntegrationType2D3NGauss13Ip::GetStrIdentifier() const
 {
     return GetStrIdentifierStatic();
 }
 
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
+
 std::string NuTo::IntegrationType2D3NGauss13Ip::GetStrIdentifierStatic()
 {
     return std::string("2D3NGAUSS13IP");

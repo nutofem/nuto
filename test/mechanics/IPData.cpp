@@ -43,16 +43,13 @@ BOOST_AUTO_TEST_CASE(IPData_Setup_Test)
     data.SetConstitutiveLaw(law);
     BOOST_CHECK_EQUAL(&law, AsLaw(data.GetIPConstitutiveLaw(0)));
     BOOST_CHECK(data.HasConstitutiveLawAssigned(0));
-    BOOST_CHECK(not data.HasConstitutiveLawAssigned(1));
 
     data.SetIntegrationType(integrationType2);
     BOOST_CHECK_EQUAL(&law, AsLaw(data.GetIPConstitutiveLaw(0)));
     BOOST_CHECK_EQUAL(&law, AsLaw(data.GetIPConstitutiveLaw(1)));
-    BOOST_CHECK(not data.HasConstitutiveLawAssigned(2));
 
     data.SetIntegrationType(integrationType1);
     BOOST_CHECK_EQUAL(&law, AsLaw(data.GetIPConstitutiveLaw(0)));
-    BOOST_CHECK(not data.HasConstitutiveLawAssigned(1));
 }
 
 BOOST_AUTO_TEST_CASE(IPData_Copy_Move)

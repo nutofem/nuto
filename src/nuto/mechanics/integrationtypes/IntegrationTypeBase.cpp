@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -12,19 +10,16 @@
 
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/integrationtypes/IntegrationPointBase.h"
-//! @brief constructor
-NuTo::IntegrationTypeBase::IntegrationTypeBase()
-{}
 
-//! @brief info about the integration type
-//! @param rVerboseLevel determines how detailed the information is
-void NuTo::IntegrationTypeBase::Info(int rVerboseLevel)const
+NuTo::IntegrationTypeBase::IntegrationTypeBase() {}
+
+void NuTo::IntegrationTypeBase::Info(int rVerboseLevel) const
 {
     std::cout << GetStrIdentifier() << std::endl;
     if (rVerboseLevel>2)
     {
         double localCoord[3];
-        for (int count=0; count<GetNumIntegrationPoints(); count++)
+        for (unsigned int count = 0; count<GetNumIntegrationPoints(); count++)
         {
             std::cout << "    IP " << count << " weight " << GetIntegrationPointWeight(count) << std::endl;
             std::cout << "        coordinates " ;
@@ -43,56 +38,49 @@ void NuTo::IntegrationTypeBase::Info(int rVerboseLevel)const
                 std::cout << "[ " << localCoord[0] << " ; " << localCoord[1] << " ; " << localCoord[2] << " ]" << std::endl;
                 break;
             default:
-                throw MechanicsException("[NuTo::IntegrationTypeBase::Info] Invalid dimension of integration point coordinates.");
+                throw MechanicsException(__PRETTY_FUNCTION__, "Invalid dimension of integration point coordinates.");
             }
         }
     }
 }
 
-//! @brief returns the local coordinates of an integration point
-//! @param rIpNum integration point (counting from zero)
-//! @param rCoordinates (result)
-void NuTo::IntegrationTypeBase::GetLocalIntegrationPointCoordinates1D(int rIpNum, double& rCoordinates)const
+
+void NuTo::IntegrationTypeBase::GetLocalIntegrationPointCoordinates1D(int, double&) const
 {
-    throw MechanicsException(std::string("[NuTo::IntegrationTypeBase::GetLocalIntegrationPointCoordinates1D] integration type ") + GetStrIdentifier() + std::string(" does not support 1D coordinates."));
+    throw MechanicsException(__PRETTY_FUNCTION__, 
+            "Integration type " + GetStrIdentifier() + " does not support 1D coordinates.");
 }
 
-//! @brief returns the local coordinates of an integration point
-//! @param rIpNum integration point (counting from zero)
-//! @param rCoordinates (result)
-void NuTo::IntegrationTypeBase::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const
+
+void NuTo::IntegrationTypeBase::GetLocalIntegrationPointCoordinates2D(int, double*) const
 {
-    throw MechanicsException(std::string("[NuTo::IntegrationTypeBase::GetLocalIntegrationPointCoordinates2D] integration type ") + GetStrIdentifier() + std::string(" does not support 1D coordinates."));
+    throw MechanicsException(__PRETTY_FUNCTION__,
+            "Integration type " + GetStrIdentifier() + " does not support 1D coordinates.");
 }
 
-//! @brief returns the local coordinates of an integration point
-//! @param rIpNum integration point (counting from zero)
-//! @param rCoordinates (result)
-void NuTo::IntegrationTypeBase::GetLocalIntegrationPointCoordinates3D(int rIpNum, double rCoordinates[3])const
+
+void NuTo::IntegrationTypeBase::GetLocalIntegrationPointCoordinates3D(int, double*) const
 {
-    throw MechanicsException(std::string("[NuTo::IntegrationTypeBase::GetLocalIntegrationPointCoordinates3D] integration type ") + GetStrIdentifier() + std::string(" does not support 1D coordinates."));
+    throw MechanicsException(__PRETTY_FUNCTION__,
+            "Integration type " + GetStrIdentifier() + " does not support 1D coordinates.");
 }
 
-//! @brief creates new integration-cells/order/area
-//! @param rArea (Input) polygonal surface of integration area
-//! @param rOrder (Input) integration order (or number of integration points)
-void NuTo::IntegrationTypeBase::AddIntegrationPoints(std::vector< std::vector<double> > & rArea, const unsigned short rOrder)
+
+void NuTo::IntegrationTypeBase::AddIntegrationPoints(std::vector<std::vector<double>>&, const unsigned short)
 {
-    throw MechanicsException(std::string("[NuTo::IntegrationTypeBase::AddIntegrationPoints] Cannot add an IP to integration type ") + GetStrIdentifier() + std::string("."));
+    throw MechanicsException(__PRETTY_FUNCTION__, "Cannot add an IP to integration type " + GetStrIdentifier() + ".");
 }
 
-//! @brief adds a new integration point
-//! @param rIp (Input) integration point
-void NuTo::IntegrationTypeBase::AddIntegrationPoint(const IntegrationPointBase & rIp)
+
+void NuTo::IntegrationTypeBase::AddIntegrationPoint(const IntegrationPointBase&)
 {
-    throw MechanicsException(std::string("[NuTo::IntegrationTypeBase::AddIntegrationPoint] Cannot add an IP to integration type ") + GetStrIdentifier() + std::string("."));
+    throw MechanicsException(__PRETTY_FUNCTION__, "Cannot add an IP to integration type " + GetStrIdentifier() + ".");
 }
 
-//! @brief deletes an integration point
-//! @param rIpNum (Input) integration point (counting from zero)
-void NuTo::IntegrationTypeBase::DeleteIntegrationPoint(const int rIpNum)
+
+void NuTo::IntegrationTypeBase::DeleteIntegrationPoint(const int)
 {
-    throw MechanicsException(std::string("[NuTo::IntegrationTypeBase::DeleteIntegrationPoint] Cannot delete an IP to integration type ") + GetStrIdentifier() + std::string("."));
+    throw MechanicsException(__PRETTY_FUNCTION__, "Cannot delete an IP to integration type " + GetStrIdentifier() + ".");
 }
 
 #ifdef ENABLE_SERIALIZATION

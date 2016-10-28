@@ -41,10 +41,11 @@ const NuTo::Constitutive::IPConstitutiveLawBase& NuTo::IPData::GetIPConstitutive
 }
 bool NuTo::IPData::HasConstitutiveLawAssigned(unsigned int rIP) const
 {
-    if (rIP >= mLaws.size())
-        return false;
+    if (rIP >= mIntegrationType->GetNumIntegrationPoints())
+        throw MechanicsException(__PRETTY_FUNCTION__,
+                "The current integration type does not have that many integrationpoints.");
 
-    return &mLaws[rIP] != nullptr;
+    return !mLaws.empty();
 }
 
 void NuTo::IPData::NuToSerializeSave(NuTo::SerializeStreamOut& rStream)

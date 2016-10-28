@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -17,17 +15,12 @@
 #include <assert.h>
 
 
-//! @brief constructor
-NuTo::IntegrationType2D4NGauss9Ip::IntegrationType2D4NGauss9Ip()
-{
-}
+NuTo::IntegrationType2D4NGauss9Ip::IntegrationType2D4NGauss9Ip() {}
 
-//! @brief returns the local coordinates of an integration point
-//! @param rIpNum integration point (counting from zero)
-//! @param rCoordinates (result)
-void NuTo::IntegrationType2D4NGauss9Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const
+
+void NuTo::IntegrationType2D4NGauss9Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2]) const
 {
-    assert(rIpNum>=0 && rIpNum<9);
+    assert(rIpNum >= 0 && rIpNum < 9);
     switch (rIpNum)
     {
     case 0 :
@@ -67,24 +60,20 @@ void NuTo::IntegrationType2D4NGauss9Ip::GetLocalIntegrationPointCoordinates2D(in
         rCoordinates[1] =  0.0;
         break;
     default:
-        throw MechanicsException("[NuTo::IntegrationType2D4NGauss9Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
     }
 }
 
 
-//! @brief returns the total number of integration points for this integration type
-//! @return number of integration points
-int NuTo::IntegrationType2D4NGauss9Ip::GetNumIntegrationPoints()const
+unsigned int NuTo::IntegrationType2D4NGauss9Ip::GetNumIntegrationPoints() const
 {
     return 9;
 }
 
-//! @brief returns the weight of an integration point
-//! @param rIpNum integration point (counting from zero)
-//! @return weight of integration points
-double NuTo::IntegrationType2D4NGauss9Ip::GetIntegrationPointWeight(int rIpNum)const
+
+double NuTo::IntegrationType2D4NGauss9Ip::GetIntegrationPointWeight(int rIpNum) const
 {
-    assert(rIpNum>=0 && rIpNum<9);
+    assert(rIpNum >= 0 && rIpNum < 9);
     switch (rIpNum)
     {
     case 0 :
@@ -115,19 +104,17 @@ double NuTo::IntegrationType2D4NGauss9Ip::GetIntegrationPointWeight(int rIpNum)c
         return 0.790123456; // 8/9 * 8/9
         break;
     default:
-        throw MechanicsException("[NuTo::IntegrationType2D4NGauss9Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
     }
 }
 
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
+
 std::string NuTo::IntegrationType2D4NGauss9Ip::GetStrIdentifier()const
 {
     return GetStrIdentifierStatic();
 }
 
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
+
 std::string NuTo::IntegrationType2D4NGauss9Ip::GetStrIdentifierStatic()
 {
     return std::string("2D4NGAUSS9IP");

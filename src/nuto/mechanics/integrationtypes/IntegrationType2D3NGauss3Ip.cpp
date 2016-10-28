@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -17,15 +15,10 @@
 #include <assert.h>
 
 
-//! @brief constructor
-NuTo::IntegrationType2D3NGauss3Ip::IntegrationType2D3NGauss3Ip()
-{
-}
+NuTo::IntegrationType2D3NGauss3Ip::IntegrationType2D3NGauss3Ip() {}
 
-//! @brief returns the local coordinates of an integration point
-//! @param rIpNum integration point (counting from zero)
-//! @param rCoordinates (result)
-void NuTo::IntegrationType2D3NGauss3Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const
+
+void NuTo::IntegrationType2D3NGauss3Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2]) const
 {
     assert(rIpNum>=0 && rIpNum<3);
     switch (rIpNum)
@@ -43,12 +36,12 @@ void NuTo::IntegrationType2D3NGauss3Ip::GetLocalIntegrationPointCoordinates2D(in
         rCoordinates[1] = 4./6.;
         break;
     default:
-        throw MechanicsException("[NuTo::IntegrationType2D3NGauss3Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Ip number out of range.");
     }
 }
 
 
-Eigen::MatrixXd NuTo::IntegrationType2D3NGauss3Ip::GetNaturalIntegrationPointCoordinates()const
+Eigen::MatrixXd NuTo::IntegrationType2D3NGauss3Ip::GetNaturalIntegrationPointCoordinates() const
 {
     Eigen::MatrixXd naturalCoordinates(2,3);
     naturalCoordinates(0,0) = 1./6.;
@@ -63,30 +56,25 @@ Eigen::MatrixXd NuTo::IntegrationType2D3NGauss3Ip::GetNaturalIntegrationPointCoo
     return naturalCoordinates;
 }
 
-//! @brief returns the total number of integration points for this integration type
-//! @return number of integration points
-int NuTo::IntegrationType2D3NGauss3Ip::GetNumIntegrationPoints()const
+
+unsigned int NuTo::IntegrationType2D3NGauss3Ip::GetNumIntegrationPoints() const
 {
     return 3;
 }
 
-//! @brief returns the weight of an integration point
-//! @param rIpNum integration point (counting from zero)
-//! @return weight of integration points
-double NuTo::IntegrationType2D3NGauss3Ip::GetIntegrationPointWeight(int rIpNum)const
+
+double NuTo::IntegrationType2D3NGauss3Ip::GetIntegrationPointWeight(int) const
 {
     return 1/6.;
 }
 
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
+
 std::string NuTo::IntegrationType2D3NGauss3Ip::GetStrIdentifier()const
 {
     return GetStrIdentifierStatic();
 }
 
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
+
 std::string NuTo::IntegrationType2D3NGauss3Ip::GetStrIdentifierStatic()
 {
     return std::string("2D3NGAUSS3IP");

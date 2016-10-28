@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeEnum.h"
 #endif // ENABLE_VISUALIZE
@@ -7,61 +5,44 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NConstVariableIp.h"
 
 #include <assert.h>
-
+#include <string>
 #include <cmath>
-#include <sstream>
-#include <iostream>
 
 #include "nuto/mechanics/MechanicsException.h"
 
-//! @brief constructor
 NuTo::IntegrationType2D4NConstVariableIp::IntegrationType2D4NConstVariableIp(int rNumIp)
 {
     if (rNumIp<1)
-        throw MechanicsException("[NuTo::IntegrationType1D2NConstVariableIp] Number of integration points must be positive.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Number of integration points must be positive.");
 
     mNumIp = ((int)sqrt((double)rNumIp))*((int)sqrt((double)rNumIp));
 }
 
-//! @brief returns the local coordinates of an integration point
-//! @param rIpNum integration point (counting from zero)
-//! @param rCoordinates (result)
-void NuTo::IntegrationType2D4NConstVariableIp::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const
+
+void NuTo::IntegrationType2D4NConstVariableIp::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2]) const
 {
     assert(rIpNum>=0 && rIpNum<mNumIp);
-	// for(int i=0; i<numIp; ++i)
-    // {
-    // 	std::cout << "coordinates: [" 	<< (0.5+rIpNum%(int)sqrt((double)mNumIp))/(sqrt((double)mNumIp))*2-1 <<
-    // 								";" << (0.5+rIpNum/(int)sqrt((double)mNumIp))/(sqrt((double)mNumIp))*2-1 << "]" << std::endl;
-    // }
-
     rCoordinates[0] = (0.5+rIpNum%(int)sqrt((double)mNumIp))/(sqrt((double)mNumIp))*2-1;
     rCoordinates[1] = (0.5+rIpNum/(int)sqrt((double)mNumIp))/(sqrt((double)mNumIp))*2-1;
 
 }
 
-//! @brief returns the total number of integration points for this integration type
-//! @return number of integration points
-int NuTo::IntegrationType2D4NConstVariableIp::GetNumIntegrationPoints()const
+
+unsigned int NuTo::IntegrationType2D4NConstVariableIp::GetNumIntegrationPoints() const
 {
     return mNumIp;
 }
 
-//! @brief returns the weight of an integration point
-//! @param rIpNum integration point (counting from zero)
-//! @return weight of integration points
-double NuTo::IntegrationType2D4NConstVariableIp::GetIntegrationPointWeight(int rIpNum)const
+
+double NuTo::IntegrationType2D4NConstVariableIp::GetIntegrationPointWeight(int) const
 {
     return 4./mNumIp;
 }
 
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
+
 std::string NuTo::IntegrationType2D4NConstVariableIp::GetStrIdentifier()const
 {
-    std::ostringstream o;
-    o << mNumIp;
-    return std::string("2D4NConst"+ o.str() + "Ip");
+    return "2D4NConst"+ std::to_string(mNumIp) + "Ip";
 }
 
 #ifdef ENABLE_VISUALIZE

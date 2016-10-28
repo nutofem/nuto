@@ -102,10 +102,8 @@ namespace NuTo
 	}
 
 
-    //! @brief returns the total number of integration points for this integration type
-    //! @return number of integration points
     template <int T>
-    int IntegrationType3D8NLobatto<T>::GetNumIntegrationPoints()const
+    unsigned int IntegrationType3D8NLobatto<T>::GetNumIntegrationPoints() const
 	{
     	return T*T*T;
 	}

@@ -1,4 +1,3 @@
-// $Id$
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -15,16 +14,10 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss1Ip.h"
 #include <assert.h>
 
+NuTo::IntegrationType2D4NGauss1Ip::IntegrationType2D4NGauss1Ip() {}
 
-//! @brief constructor
-NuTo::IntegrationType2D4NGauss1Ip::IntegrationType2D4NGauss1Ip()
-{
-}
 
-//! @brief returns the local coordinates of an integration point
-//! @param rIpNum integration point (counting from zero)
-//! @param rCoordinates (result)
-void NuTo::IntegrationType2D4NGauss1Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const
+void NuTo::IntegrationType2D4NGauss1Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2]) const
 {
     assert(rIpNum==0);
 	rCoordinates[0] = 0.;
@@ -32,30 +25,24 @@ void NuTo::IntegrationType2D4NGauss1Ip::GetLocalIntegrationPointCoordinates2D(in
 }
 
 
-//! @brief returns the total number of integration points for this integration type
-//! @return number of integration points
-int NuTo::IntegrationType2D4NGauss1Ip::GetNumIntegrationPoints()const
+unsigned int NuTo::IntegrationType2D4NGauss1Ip::GetNumIntegrationPoints() const
 {
     return 1;
 }
 
-//! @brief returns the weight of an integration point
-//! @param rIpNum integration point (counting from zero)
-//! @return weight of integration points
-double NuTo::IntegrationType2D4NGauss1Ip::GetIntegrationPointWeight(int rIpNum)const
+
+double NuTo::IntegrationType2D4NGauss1Ip::GetIntegrationPointWeight(int) const
 {
-    return 4;
+    return 4.0;
 }
 
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
+
 std::string NuTo::IntegrationType2D4NGauss1Ip::GetStrIdentifier()const
 {
     return GetStrIdentifierStatic();
 }
 
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
+
 std::string NuTo::IntegrationType2D4NGauss1Ip::GetStrIdentifierStatic()
 {
     return std::string("2D4NGAUSS1IP");
