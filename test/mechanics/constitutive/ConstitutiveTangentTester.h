@@ -32,9 +32,9 @@ public:
         Eigen::MatrixXd diffMatrix = (tangent - tangent_cdf).cwiseAbs();
         double maxEntry = diffMatrix.maxCoeff(&row, &col);
 
+        std::cout << "Max. abs. error = " << maxEntry << " at (" << row << "," << col << ")   -  Tolerance = " << mTolerance << std::endl;
         if (maxEntry > mTolerance)
         {
-            std::cout << "Max. abs. error = " << maxEntry << " at (" << row << "," << col << ").\n\n";
 
             std::cout << "Tangent - Tangent_cdf: \n";
             std::cout << diffMatrix << "\n\n";
@@ -46,6 +46,7 @@ public:
             std::cout << tangent_cdf << "\n\n";
             return false;
         }
+
         return true;
     }
 

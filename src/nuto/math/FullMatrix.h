@@ -618,7 +618,7 @@ void FullMatrix<T,rows,cols>::ReadFromFile ( std::string fileName_, unsigned int
 
 		// check, if it could be opened
 		if ( !fileStream.is_open() )
-			throw MathException ( std::string ( "[FullMatrix::ReadFromFile]File could not be opened." ) );
+			throw MathException (__PRETTY_FUNCTION__, "File " + fileName_ + " could not be opened.");
 
 		// get total number of lines
 		fileStream.seekg (0, std::ios::beg);
@@ -739,7 +739,7 @@ void FullMatrix<T,rows,cols>::AppendToFile ( const std::string& fileName_, std::
 		std::ofstream fileStream ( fileName_.c_str(),std::ios_base::out | std::ios_base::app );
 		// check, if it could be opened
 		if ( !fileStream.is_open() )
-			throw MathException ( std::string ( "[FullMatrix::WriteToFile]File could not be opened." ) );
+			throw MathException (__PRETTY_FUNCTION__, "File " + fileName_ + " could not be opened.");
 		fileStream << stringBefore;
 		if ( stringBefore.length() >0 )
 			fileStream << "\n";
@@ -758,7 +758,7 @@ void FullMatrix<T,rows,cols>::AppendToFile ( const std::string& fileName_, std::
 	}
 	catch ( ... )
 	{
-		throw MathException ( "[Matrix::WriteToFile]Unhandled exception." );
+		throw MathException (__PRETTY_FUNCTION__, "Unhandled exception." );
 	}
 }
 
@@ -786,7 +786,7 @@ void FullMatrix<T,rows,cols>::WriteToFile ( const std::string& fileName_, std::s
 		std::ofstream fileStream ( fileName_.c_str() );
 		// check, if it could be opened
 		if ( !fileStream.is_open() )
-			throw MathException ( std::string ( "[FullMatrix::WriteToFile]File could not be opened." ) );
+			throw MathException (__PRETTY_FUNCTION__, "File " + fileName_ + " could not be opened.");
 		fileStream << stringBefore;
 		if ( stringBefore.length() >0 )
 			fileStream << "\n";
@@ -804,7 +804,7 @@ void FullMatrix<T,rows,cols>::WriteToFile ( const std::string& fileName_, std::s
 	}
 	catch ( ... )
 	{
-		throw MathException ( "[Matrix::WriteToFile]Unhandled exception." );
+		throw MathException (__PRETTY_FUNCTION__, "Unhandled exception.");
 	}
 }
 

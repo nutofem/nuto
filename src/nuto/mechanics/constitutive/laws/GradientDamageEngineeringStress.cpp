@@ -834,7 +834,7 @@ double NuTo::GradientDamageEngineeringStress::CalculateDamage(double rKappa) con
     {
         if (rKappa > e_0)
         {
-            omega = 1 - e_0 / rKappa * exp((e_0 - rKappa) / e_f);
+            omega = 1 - e_0 / rKappa * std::exp((e_0 - rKappa) / e_f);
         }
         break;
     }
@@ -842,7 +842,7 @@ double NuTo::GradientDamageEngineeringStress::CalculateDamage(double rKappa) con
     {
         if (rKappa > e_0)
         {
-            omega = 1 - e_0 / rKappa * (1 - MAX_OMEGA + MAX_OMEGA * exp((e_0 - rKappa) / e_f));
+            omega = 1 - e_0 / rKappa * (1 - MAX_OMEGA + MAX_OMEGA * std::exp((e_0 - rKappa) / e_f));
         }
         break;
     }
@@ -906,7 +906,7 @@ double NuTo::GradientDamageEngineeringStress::CalculateDerivativeDamage(double r
     {
         if (rKappa > e_0)
         {
-            DomegaDkappa = e_0 / rKappa * (1 / rKappa + 1 / e_f) * exp((e_0 - rKappa) / e_f);
+            DomegaDkappa = e_0 / rKappa * (1 / rKappa + 1 / e_f) * std::exp((e_0 - rKappa) / e_f);
         }
         break;
     }
@@ -914,7 +914,7 @@ double NuTo::GradientDamageEngineeringStress::CalculateDerivativeDamage(double r
     {
         if (rKappa > e_0)
         {
-            DomegaDkappa = e_0 / rKappa * ((1 / rKappa + 1 / e_f) * MAX_OMEGA * exp((e_0 - rKappa) / e_f) + (1 - MAX_OMEGA) / rKappa);
+            DomegaDkappa = e_0 / rKappa * ((1 / rKappa + 1 / e_f) * MAX_OMEGA * std::exp((e_0 - rKappa) / e_f) + (1 - MAX_OMEGA) / rKappa);
         }
         break;
     }

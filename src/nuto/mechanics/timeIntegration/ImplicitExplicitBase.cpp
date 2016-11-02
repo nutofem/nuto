@@ -130,8 +130,7 @@ while (mTime < rTimeDelta)
     auto deltaBRHS = UpdateAndGetConstraintRHS(mTime) - bRHS;
     auto extForce = CalculateCurrentExternalLoad(mTime);
 
-    std::cout << "TimeStep: " << mTimeStep << std::endl;
-
+    mStructure->GetLogger() << "TimeStep: " << mTimeStep << '\n';
 
 
     // extrapolate the history variables

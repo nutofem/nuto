@@ -8,7 +8,6 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/constitutive/ConstitutiveInputBase.h"
 
 namespace NuTo
 {

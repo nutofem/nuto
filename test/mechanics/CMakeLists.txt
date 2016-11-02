@@ -83,6 +83,7 @@ if(ENABLE_C++_TESTS)
         MultipleConstitutiveLaws
         Shrinkage
         SpringDamperCombination
+        CSDAInterface
         )
 
         add_executable(${test} ${test}.cpp)
@@ -112,7 +113,7 @@ endif()
 
 if(ENABLE_UNIT_TESTS)
     # TESTS WITH NuToMechancis
-    foreach(test ContinuumElement PhaseField RestartFiles)# LocalDamageModel)
+    foreach(test ContinuumElement PhaseField RestartFiles)
         add_executable(${test} ${test}.cpp)
         target_link_libraries(${test} NuToMechanics NuToMath NuToBase)
         if(ENABLE_VISUALIZE)
@@ -120,5 +121,13 @@ if(ENABLE_UNIT_TESTS)
         endif()
         add_test(c::unit::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
     endforeach()
+
+    # TESTS WITHOUT NuToMechanics
+    foreach(test GlobalFractureEnergyIntegration)
+        add_executable(${test} ${test}.cpp)
+        target_link_libraries(${test} NuToMath NuToBase)
+        add_test(c::unit::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
+    endforeach()
+
 
 endif()

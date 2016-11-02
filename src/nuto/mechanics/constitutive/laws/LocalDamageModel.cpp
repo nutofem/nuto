@@ -72,6 +72,9 @@ double NuTo::LocalDamageModel::GetParameterDouble(eConstitutiveParameter rIdenti
     case eConstitutiveParameter::COMPRESSIVE_STRENGTH:
         return mCompressiveStrength;
 
+    case Constitutive::eConstitutiveParameter::DAMAGE_LAW:
+        return static_cast<double>(mDamageLawType);
+
     default:
         throw MechanicsException(__PRETTY_FUNCTION__,"Constitutive law does not have the requested variable");
     }
@@ -103,6 +106,10 @@ void NuTo::LocalDamageModel::SetParameterDouble(eConstitutiveParameter rIdentifi
 
     case eConstitutiveParameter::TENSILE_STRENGTH:
         mTensileStrength = rValue;
+        break;
+
+    case Constitutive::eConstitutiveParameter::DAMAGE_LAW:
+        mDamageLawType = (Constitutive::eDamageLawType) rValue;
         break;
 
     default:
@@ -199,7 +206,7 @@ double NuTo::LocalDamageModel::Evaluate2D(NuTo::ConstitutivePlaneState planeStat
             ConstitutiveIOBase& tangent = *itOutput.second;
             tangent.AssertIsMatrix<3,3>(itOutput.first, __PRETTY_FUNCTION__);
 
-            double  dDamageDLocalEqStrain = CalculateDerivativeDamage(localEqStrain);
+            double  dDamageDLocalEqStrain = CalculateDerivativeDamage(kappa);
             auto    dLocalEqStrainDStrain = eeq.GetDerivative();
 
             std::vector<double> effectiveStress(3);
@@ -209,13 +216,15 @@ double NuTo::LocalDamageModel::Evaluate2D(NuTo::ConstitutivePlaneState planeStat
 
             // right coefficients are calculated above
             tangent(0, 0) = (1 - omega) * C11 - dDamageDLocalEqStrain * dLocalEqStrainDStrain[0] * effectiveStress[0];
-            tangent(1, 0) = (1 - omega) * C12 - dDamageDLocalEqStrain * dLocalEqStrainDStrain[0] * effectiveStress[1];
-            tangent(2, 0) = 0.                - dDamageDLocalEqStrain * dLocalEqStrainDStrain[0] * effectiveStress[2];
-            tangent(0, 1) = (1 - omega) * C12 - dDamageDLocalEqStrain * dLocalEqStrainDStrain[1] * effectiveStress[0];
+            tangent(1, 0) = (1 - omega) * C12 - dDamageDLocalEqStrain * dLocalEqStrainDStrain[1] * effectiveStress[0];
+            tangent(2, 0) = 0.                - dDamageDLocalEqStrain * dLocalEqStrainDStrain[2] * effectiveStress[0];
+
+            tangent(0, 1) = (1 - omega) * C12 - dDamageDLocalEqStrain * dLocalEqStrainDStrain[0] * effectiveStress[1];
             tangent(1, 1) = (1 - omega) * C11 - dDamageDLocalEqStrain * dLocalEqStrainDStrain[1] * effectiveStress[1];
-            tangent(2, 1) = 0.                - dDamageDLocalEqStrain * dLocalEqStrainDStrain[1] * effectiveStress[2];
-            tangent(0, 2) = 0.                - dDamageDLocalEqStrain * dLocalEqStrainDStrain[2] * effectiveStress[0];
-            tangent(1, 2) = 0.                - dDamageDLocalEqStrain * dLocalEqStrainDStrain[2] * effectiveStress[1];
+            tangent(2, 1) = 0.                - dDamageDLocalEqStrain * dLocalEqStrainDStrain[2] * effectiveStress[1];
+
+            tangent(0, 2) = 0.                - dDamageDLocalEqStrain * dLocalEqStrainDStrain[0] * effectiveStress[2];
+            tangent(1, 2) = 0.                - dDamageDLocalEqStrain * dLocalEqStrainDStrain[1] * effectiveStress[2];
             tangent(2, 2) = (1 - omega) *C33  - dDamageDLocalEqStrain * dLocalEqStrainDStrain[2] * effectiveStress[2];
             break;
         }
@@ -356,6 +365,15 @@ double NuTo::LocalDamageModel::CalculateDamage(double rKappa) const
         }
         break;
     }
+    case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING:
+    {
+        if (rKappa > e_0)
+        {
+            omega = 1 - e_0 / rKappa * std::exp((e_0 - rKappa) / e_f);
+        }
+        break;
+    }
+
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "The required damage law is not implemented. ");
     }
@@ -376,10 +394,20 @@ double NuTo::LocalDamageModel::CalculateDerivativeDamage(double rKappa) const
     {
         if (rKappa > e_0)
         {
-            DomegaDkappa = mMaxDamage*e_0 / rKappa * ((1 / rKappa + 1 / e_f) * mAlpha * std::exp((e_0 - rKappa) / e_f) + (1 - mAlpha) / rKappa);
+            DomegaDkappa = mMaxDamage * e_0 / rKappa
+                * ((1 / rKappa + 1 / e_f) * mAlpha * std::exp((e_0 - rKappa) / e_f) + (1 - mAlpha) / rKappa);
         }
         break;
     }
+    case Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING:
+    {
+        if (rKappa > e_0)
+        {
+            DomegaDkappa = e_0 / rKappa * (1 / rKappa + 1 / e_f) * exp((e_0 - rKappa) / e_f);
+        }
+        break;
+    }
+
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "The required damage law is not implemented. ");
     }
