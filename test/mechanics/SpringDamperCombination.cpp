@@ -270,6 +270,39 @@ inline void SetupMultiProcessor(NuTo::Structure& rS)
 }
 
 
+
+
+/*---------------------------------------------*\
+|*                nodal values                 *|
+\*---------------------------------------------*/
+
+
+template <int TDim>
+void ApplyInitialNodalValues(NuTo::Structure& rS,
+                             std::array<int,TDim> rN,
+                             std::array<double,TDim> rL)
+{
+    unsigned int NNodes = rS.GetNumNodes();
+    Eigen::VectorXd NodalStartValues(TDim);
+    NodalStartValues.setZero();
+    NodalStartValues(0) = SURFACELOAD / LD_DAMPINGCOEFFICIENT*rL[0];
+
+    for (unsigned int i=0; i<NNodes; i++)
+    {
+        if(rS.NodeGetNodePtr(i)->GetNum(NuTo::Node::eDof::DISPLACEMENTS) != 0)
+        {
+            NuTo::NodeBase* NodePtr =  rS.NodeGetNodePtr(i);
+            Eigen::VectorXd NodeCoordinates = NodePtr->Get(NuTo::Node::eDof::COORDINATES);
+            if(NodeCoordinates(0) == 0.0)
+                continue;
+            NodePtr->Set(NuTo::Node::eDof::DISPLACEMENTS,1,NodalStartValues * NodeCoordinates(0) / rL[0]);
+        }
+    }
+}
+
+
+
+
 /*---------------------------------------------*\
 |*                 section                     *|
 \*---------------------------------------------*/
@@ -392,13 +425,12 @@ void CheckResults(NuTo::Structure& rS,
             if(coord <= 0.)
                 continue;
             double strain_numerical  = nodePtr->Get(NuTo::Node::eDof::DISPLACEMENTS)[i] / coord;
-            double strain_theoretical = SURFACELOAD / LE_YOUNGSMODULUS * (1 - std::exp(-LE_YOUNGSMODULUS/LD_DAMPINGCOEFFICIENT * (TEND - DELTAT/2.0))); // -delta_t/2.0:Because the first timestep produces an offset
+            double strain_theoretical = SURFACELOAD / LE_YOUNGSMODULUS * (1 - std::exp(-LE_YOUNGSMODULUS/LD_DAMPINGCOEFFICIENT * (TEND ))); // -delta_t/2.0:Because the first timestep produces an offset
                                                                                                                                                         // between theoretical solution and numerical solution which is delta_t/2
             double ErrorPercentage = std::abs(1-strain_numerical/strain_theoretical);
             const double tolerance = 5e-5;
             if(ErrorPercentage>tolerance)
                 throw NuTo::Exception(__PRETTY_FUNCTION__,"Difference to theoretical solution is bigger than 0.005%!");
-
         }
     }
         std::cout << "Displacements correct!" << std::endl;
@@ -463,6 +495,9 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
 
     S.ElementTotalConvertToInterpolationType();
     S.NodeBuildGlobalDofs();
+    ApplyInitialNodalValues<TDim>(S,
+                                  rN,
+                                  rL);
 
 
     // Add constraint on the leftern side
@@ -517,7 +552,7 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
     TimeDependentLoadFactor(0,0) = 0.;
     TimeDependentLoadFactor(1,0) = 1.;
     TimeDependentLoadFactor(2,0) = 2.;
-    TimeDependentLoadFactor(0,1) = 0.;
+    TimeDependentLoadFactor(0,1) = 1.;
     TimeDependentLoadFactor(1,1) = 1.;
     TimeDependentLoadFactor(2,1) = 1.;
 

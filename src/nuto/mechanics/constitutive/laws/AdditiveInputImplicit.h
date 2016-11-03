@@ -1,6 +1,9 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/laws/AdditiveBase.h"
+#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLaw.h"
+
+#include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h" // TODO ----> WEG!
 
 #include <set>
 #include <vector>
@@ -12,6 +15,9 @@ class AdditiveInputImplicit : public AdditiveBase
 {
 public:
 
+    typedef Constitutive::StaticData::DataMoistureTransport StaticDataType;
+    using Data = typename Constitutive::StaticData::DataContainer<StaticDataType>;
+
     //! @brief constructor
     AdditiveInputImplicit() : AdditiveBase()
     {
@@ -19,10 +25,16 @@ public:
         mComputableDofCombinations.resize(2);
     }
 
-    // has no ip static data itself
-    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw()
+//    // has no ip static data itself
+//    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw()
+//    {
+//        return std::make_unique<Constitutive::IPConstitutiveLawWithoutData<AdditiveInputImplicit>>(*this);
+//    }
+
+    //! @brief creates corresponding IPConstitutiveLaw
+    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override
     {
-        return std::make_unique<Constitutive::IPConstitutiveLawWithoutData<AdditiveInputImplicit>>(*this);
+        return std::make_unique<Constitutive::IPConstitutiveLaw<AdditiveInputImplicit>>(*this, StaticDataType());
     }
 
     //! @brief Evaluate the constitutive relation.
@@ -32,7 +44,8 @@ public:
     template <int TDim>
     NuTo::eError Evaluate(
         const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput);
+        const ConstitutiveOutputMap& rConstitutiveOutput,
+        Data& rStaticData);
 
 
     //! @brief Determines the constitutive inputs needed to evaluate the constitutive outputs.

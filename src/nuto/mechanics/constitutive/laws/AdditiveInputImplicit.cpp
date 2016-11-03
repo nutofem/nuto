@@ -13,30 +13,34 @@
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 
 template <int TDim>
-NuTo::eError NuTo::AdditiveInputImplicit::Evaluate(
-        const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput)
+NuTo::eError NuTo::AdditiveInputImplicit::Evaluate(const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+                                                   const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,
+                                                   Data& rStaticData)
 {
     static_assert (TDim == 1 || TDim == 2 || TDim == 3 , "Dimensions 1D, 2D & 3D supported.");
+
+//    auto& staticData = rStaticData.GetData();
 
     eError error = eError::SUCCESSFUL;
     const constexpr int VoigtDim = ConstitutiveIOBase::GetVoigtDim(TDim);
 
 
     // Copy inputs for every constitutive law
-    std::vector<NuTo::ConstitutiveInputMap> localInputMapVec(mSublaws.size());
+    std::vector<NuTo::ConstitutiveInputMap> localInputMapVec;
+    localInputMapVec.reserve(mSublaws.size());
     for (unsigned int i = 0; i < mSublaws.size(); ++i)
     {
-        for (const auto& itInput : rConstitutiveInput)
-        {
-            localInputMapVec[i].emplace(itInput.first, itInput.second->clone());
-        }
+        localInputMapVec.push_back(ConstitutiveInputMap(rConstitutiveInput));
     }
 
 
     // Copy outputs for every constitutive law
     std::vector<ConstitutiveOutputMap> localOutputMapVec(mSublaws.size());
+//    std::vector<ConstitutiveOutputMap> localOutputMapVec;
+//    localInputMapVec.reserve(mSublaws.size());
     for (unsigned int i = 0; i < mSublaws.size(); ++i)
     {
+//        localOutputMapVec.push_back(ConstitutiveOutputMap(rConstitutiveOutput));
         for(const auto& itOutput: rConstitutiveOutput)
         {
             if(itOutput.first == Constitutive::eOutput::UPDATE_STATIC_DATA)
@@ -74,10 +78,9 @@ NuTo::eError NuTo::AdditiveInputImplicit::Evaluate(
                                                  std::make_unique<ConstitutiveMatrix<VoigtDim,VoigtDim>>());
             }
         }
-
-
     }
 
+    // Evaluate sublaws
     for (unsigned int i = 0; i < mSublaws.size(); ++i)
     {
         eError error = mSublaws[i]->Evaluate<TDim>(localInputMapVec[i], localOutputMapVec[i]);
@@ -86,6 +89,8 @@ NuTo::eError NuTo::AdditiveInputImplicit::Evaluate(
                             "One or more attached constitutive laws return error codes. Can't handle this");
     }
 
+
+    // Calculate Outputs
     if(rConstitutiveOutput.find(Constitutive::eOutput::ENGINEERING_STRESS) != rConstitutiveOutput.end() ||
        rConstitutiveOutput.find(Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE) != rConstitutiveOutput.end() ||
        rConstitutiveOutput.find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN) != rConstitutiveOutput.end())
@@ -249,10 +254,10 @@ NuTo::ConstitutiveInputMap NuTo::AdditiveInputImplicit::GetConstitutiveInputs(
 
 
 template NuTo::eError NuTo::AdditiveInputImplicit::Evaluate<1>(
-    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);
+    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,Data& rStaticData);
 
 template NuTo::eError NuTo::AdditiveInputImplicit::Evaluate<2>(
-    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);
+    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,Data& rStaticData);
 
 template NuTo::eError NuTo::AdditiveInputImplicit::Evaluate<3>(
-    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput);
+    const NuTo::ConstitutiveInputMap &rConstitutiveInput, const NuTo::ConstitutiveOutputMap &rConstitutiveOutput,Data& rStaticData);
