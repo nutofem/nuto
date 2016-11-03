@@ -111,6 +111,9 @@ endif()
 
 
 if(ENABLE_UNIT_TESTS)
+    if(DEFINED ENV{JENKINS_HOME})
+        message("Generate perfomance reports.")
+    endif()
     # TESTS WITH NuToMechancis
     foreach(test ContinuumElement PhaseField RestartFiles)# LocalDamageModel)
         add_executable(${test} ${test}.cpp)
@@ -118,7 +121,11 @@ if(ENABLE_UNIT_TESTS)
         if(ENABLE_VISUALIZE)
             target_link_libraries(${test} NuToVisualize)
         endif()
-        add_test(c::unit::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
+        if(DEFINED ENV{JENKINS_HOME})
+            add_test(c::unit::${test} sh -c "${CMAKE_CURRENT_BINARY_DIR}/${test} -f JUNIT > TEST-${test}.xml")
+        else()
+            add_test(c::unit::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
+        endif()
     endforeach()
 
 endif()
