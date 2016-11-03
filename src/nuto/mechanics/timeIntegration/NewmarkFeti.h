@@ -10,7 +10,7 @@
 #include "nuto/mechanics/structures/StructureBaseEnum.h"
 #include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
 #include "nuto/mechanics/structures/StructureOutputDummy.h"
-#include <mpi.h>
+#include "/usr/lib/openmpi/include/mpi.h"
 
 #include "nuto/base/CallbackInterface.h"
 #include "nuto/math/SparseMatrixCSRGeneral.h"
@@ -76,7 +76,7 @@ public:
     /// \param numRigidBodyModesGlobal
     /// \return
     ///
-    MatrixXd GatherInterfaceRigidBodyModes(const Eigen::MatrixXd& interfaceRigidBodyModes, const int numRigidBodyModesGlobal);
+    MatrixXd GatherInterfaceRigidBodyModes(Eigen::MatrixXd& interfaceRigidBodyModes, const int numRigidBodyModesGlobal);
 
     ///
     /// \brief GatherRigidBodyForceVector
@@ -84,7 +84,7 @@ public:
     /// \param numRigidBodyModesGlobal
     /// \return
     ///
-    VectorXd GatherRigidBodyForceVector(const Eigen::VectorXd& rigidBodyForceVectorLocal, const int numRigidBodyModesGlobal);
+    VectorXd GatherRigidBodyForceVector(Eigen::VectorXd& rigidBodyForceVectorLocal, const int numRigidBodyModesGlobal);
 
     ///
     /// \brief MpiGatherRecvCountAndDispls

@@ -29,9 +29,9 @@ if(ENABLE_PYTHON_TESTS)
 
         add_test(p::mechanics::${test} ${PYTHON_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/${test}.py
-            ${CMAKE_SYSTEM_NAME} 
-	    ${CMAKE_SYSTEM_PROCESSOR} 
-	    ${CMAKE_CURRENT_SOURCE_DIR} 
+            ${CMAKE_SYSTEM_NAME}
+	    ${CMAKE_SYSTEM_PROCESSOR}
+	    ${CMAKE_CURRENT_SOURCE_DIR}
 	    ${CMAKE_CURRENT_BINARY_DIR})
         set_property(TEST p::mechanics::${test} PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
     endforeach()
@@ -51,7 +51,7 @@ if(ENABLE_C++_TESTS)
         ConstraintsNodeToElementFiberMesh3d
         TwoElements
         )
-        configure_file(${mesh}.msh ${CMAKE_CURRENT_BINARY_DIR})
+        execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/${mesh}.msh" "${CMAKE_CURRENT_BINARY_DIR}/${mesh}.msh")
     endforeach()
 
     # generate tests
@@ -94,7 +94,7 @@ if(ENABLE_C++_TESTS)
         if(MUMPS_FOUND)
             target_link_libraries(${test} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
         endif()
-        add_test(c::mechanics::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
+        add_test(c::mechanics::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     endforeach()
 
     if(NOT DEFINED ENV{TRAVIS})
@@ -106,9 +106,34 @@ if(ENABLE_C++_TESTS)
         if(MUMPS_FOUND)
             target_link_libraries(MisesPlasticity ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
         endif()
-        add_test(c::mechanics::MisesPlasticity ${CMAKE_CURRENT_BUILD_DIR}/MisesPlasticity)
+        add_test(c::mechanics::MisesPlasticity ${CMAKE_CURRENT_BINARY_DIR}/MisesPlasticity)
     endif()
+
+
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+
+        # create symlinks to the necessary mesh files
+        foreach(task RANGE 0 6)
+            execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/meshFiles/feti_rectangle_tri.mesh${task}" "${CMAKE_CURRENT_BINARY_DIR}/feti_rectangle_tri.msh${task}")
+        endforeach()
+
+        set(test Feti)
+        add_executable(${test} ${test}.cpp)
+        target_link_libraries(${test} NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${MPI_LIBRARIES})
+        if(ENABLE_VISUALIZE)
+            target_link_libraries(${test} NuToVisualize)
+        endif()
+        if(MUMPS_FOUND)
+            target_link_libraries(${test} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+        endif()
+        add_test(c::mechanics::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
+    endif()
+
+
 endif()
+
+
+
 
 
 if(ENABLE_UNIT_TESTS)
@@ -119,14 +144,14 @@ if(ENABLE_UNIT_TESTS)
         if(ENABLE_VISUALIZE)
             target_link_libraries(${test} NuToVisualize)
         endif()
-        add_test(c::unit::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
+        add_test(c::unit::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     endforeach()
 
     # TESTS WITHOUT NuToMechanics
     foreach(test GlobalFractureEnergyIntegration)
         add_executable(${test} ${test}.cpp)
         target_link_libraries(${test} NuToMath NuToBase)
-        add_test(c::unit::${test} ${CMAKE_CURRENT_BUILD_DIR}/${test})
+        add_test(c::unit::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     endforeach()
 
 

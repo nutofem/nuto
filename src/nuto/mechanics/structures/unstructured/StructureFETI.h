@@ -54,17 +54,10 @@ private:
     using SparseMatrix      = Eigen::SparseMatrix<double>;
     using SparseMatrixMap   = std::map<NuTo::Node::eDof, SparseMatrix>;
 
-    NodeList        ReadNodeData        (std::ifstream& file);
-    ElementList     ReadElementData     (std::ifstream& file);
-    BoundaryList    ReadBoundaryData    (std::ifstream& file);
-    InterfaceList   ReadInterfaceData   (std::ifstream& file);
-
-
 
 public:
     //! @brief Constructor
     //! @param rDimension   Structural dimension (1,2 or 3)
-    //! @param rMeshFile    mesh file
     StructureFETI(int rDimension);
 
     const int mRank;
@@ -77,13 +70,9 @@ public:
     ///
     void FindKeywordInFile(std::ifstream &file, std::string keyword);
 
-
     Matrix&                      GetRigidBodyModes()           {return mRigidBodyModes;}
     Matrix&                      GetInterfaceRigidBodyModes()  {return mInterfaceRigidBodyModes;}
     SparseMatrix&                GetConnectivityMatrix()       {return mConnectivityMatrix;}
-
-//    Eigen::SparseMatrix<double> &AssembleStiffnessMatrix();
-//    void AssembleRigidBodyModes();
 
     ///
     /// \brief AssembleConnectivityMatrix
@@ -113,12 +102,19 @@ public:
     BoundaryList               mBoundaries;
     InterfaceList              mInterfaces;
     int                        mNumRigidBodyModes;
-    int                        mNumInterfaceNodesTotal = 42;
+    int                        mNumInterfaceNodesTotal;
     std::set<int>              mSubdomainBoundaryNodeIds;
 
 
+    ///
+    /// \brief ImportMeshJson
+    ///
+    /// Json mesh file generated with <a href="https://github.com/dbeurle/GmshReader">GmshReader</a>
+    ///
+    /// \param rFileName
+    /// \param interpolationTypeId
+    ///
     void ImportMeshJson(std::string rFileName, const int interpolationTypeId);
-    void ImportMesh(std::string rFileName, const int interpolationTypeId);
 
 protected:
 

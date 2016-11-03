@@ -11,7 +11,6 @@
 #include "nuto/mechanics/structures/StructureBaseEnum.h"
 #include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
 #include "nuto/mechanics/structures/StructureOutputDummy.h"
-#include <mpi.h>
 #include <boost/mpi.hpp>
 
 #include "nuto/base/CallbackInterface.h"
@@ -27,7 +26,7 @@
 #include <cmath>
 
 
-Eigen::MatrixXd NuTo::NewmarkFeti::GatherInterfaceRigidBodyModes(const Eigen::MatrixXd &interfaceRigidBodyModes, const int numRigidBodyModesGlobal)
+Eigen::MatrixXd NuTo::NewmarkFeti::GatherInterfaceRigidBodyModes(Eigen::MatrixXd &interfaceRigidBodyModes, const int numRigidBodyModesGlobal)
 {
 
     std::vector<int> recvCount;
@@ -54,7 +53,7 @@ Eigen::MatrixXd NuTo::NewmarkFeti::GatherInterfaceRigidBodyModes(const Eigen::Ma
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-Eigen::VectorXd NuTo::NewmarkFeti::GatherRigidBodyForceVector(const Eigen::VectorXd &rigidBodyForceVectorLocal, const int numRigidBodyModesGlobal)
+Eigen::VectorXd NuTo::NewmarkFeti::GatherRigidBodyForceVector(Eigen::VectorXd &rigidBodyForceVectorLocal, const int numRigidBodyModesGlobal)
 {
 
     const int numRigidBodyModesLocal        = rigidBodyForceVectorLocal.rows();
@@ -82,13 +81,14 @@ Eigen::VectorXd NuTo::NewmarkFeti::GatherRigidBodyForceVector(const Eigen::Vecto
 
 void NuTo::NewmarkFeti::MpiGatherRecvCountAndDispls(std::vector<int> &recvCount, std::vector<int> &displs, const int numValues)
 {
-    const int numProcesses = MPI::COMM_WORLD.Get_size();
+    boost::mpi::communicator world;
+    const int numProcesses = world.size();
     // recvCount:
     // Contais the number of elements that are received from each process.
     recvCount.clear();
     recvCount.resize(numProcesses, 0);
 
-    boost::mpi::all_gather<int>(boost::mpi::communicator(),numValues,recvCount);
+    boost::mpi::all_gather<int>(world,numValues,recvCount);
 
     // displs:
     // Entry i specifies the displacement (relative to recvbuf) at which to place the incoming data from process i.
@@ -284,7 +284,7 @@ int NuTo::NewmarkFeti::CPG(const Eigen::MatrixXd &projection, Eigen::VectorXd &x
     const SparseMatrix B      = structure->GetConnectivityMatrix();
     const SparseMatrix Btrans = B.transpose();
 
-    VectorXd Ax = B * mSolver.solve(Btrans*x);    
+    VectorXd Ax = B * mSolver.solve(Btrans*x);
     boost::mpi::all_reduce(world,boost::mpi::inplace(Ax.data()), Ax.size(),std::plus<double>());
 
     //initial residual
@@ -393,7 +393,7 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(BlockFullVector<do
 
 
     const auto& rigidBodyModes              = structure->GetRigidBodyModes();
-    const auto& interfaceRigidBodyModes     = structure->GetInterfaceRigidBodyModes();
+    auto& interfaceRigidBodyModes           = structure->GetInterfaceRigidBodyModes();
 
     world.barrier();
 
@@ -661,7 +661,8 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
 
                 }
 
-                MPI_Barrier(MPI_COMM_WORLD);
+                world.barrier();
+
 
                 int iteration = 0;
                 while( not(normResidual < mToleranceResidual) and iteration < mMaxNumIterations)
@@ -699,8 +700,7 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
                 } // end of while(normResidual<mToleranceForce && iteration<mMaxNumIterations)
 
 
-
-                MPI_Barrier(MPI_COMM_WORLD);
+                world.barrier();
 
                 if (normResidual < mToleranceResidual)
                 {

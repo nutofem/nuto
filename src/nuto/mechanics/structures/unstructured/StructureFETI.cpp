@@ -1,4 +1,4 @@
-#include <mpi.h>
+#include "/usr/lib/openmpi/include/mpi.h"
 #include <boost/mpi.hpp>
 #include <json/json.h>
 
@@ -21,7 +21,6 @@
 #include "nuto/visualize/VisualizeEnum.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/elements/IpDataEnum.h"
-#include "nuto/mechanics/elements/ElementDataEnum.h"
 #include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "nuto/base/ErrorEnum.h"
 
@@ -32,11 +31,12 @@ using NuTo::Constitutive::eConstitutiveType;
 using NuTo::Constitutive::eConstitutiveParameter;
 using NuTo::Node::eDof;
 using NuTo::Interpolation::eTypeOrder;
-using NuTo::ElementData::eElementDataType;
-using NuTo::IpData::eIpDataType;
 using NuTo::Interpolation::eShapeType;
 using NuTo::eGroupId;
 using NuTo::eVisualizeWhat;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 NuTo::StructureFETI::StructureFETI(int rDimension):
     Structure(rDimension),
@@ -46,112 +46,8 @@ NuTo::StructureFETI::StructureFETI(int rDimension):
 
 }
 
-
-NuTo::StructureFETI::NodeList NuTo::StructureFETI::ReadNodeData(std::ifstream &file)
-{
-    FindKeywordInFile(file, "Nodes");
-
-    int num_nodes = 0;
-    file >> num_nodes;
-
-    NodeList nodes(num_nodes);
-    for (auto& node : nodes)
-        file >> node.mId >> node.mCoordinates[0] >> node.mCoordinates[1] >> node.mCoordinates[2];
-
-    return nodes;
-
-}
-
-NuTo::StructureFETI::ElementList NuTo::StructureFETI::ReadElementData(std::ifstream &file)
-{
-
-    FindKeywordInFile(file, "Elements");
-
-    int num_elements = 0;
-    file >> num_elements;
-
-    ElementList elements(num_elements);
-    for (auto& element : elements)
-    {
-        file >> element.mId;
-
-        // restricted to linear quads for now
-        element.mNodeIds.resize(4);
-
-        for(auto& nodeId: element.mNodeIds)
-            file >> nodeId;
-    }
-
-    return elements;
-
-}
-
-NuTo::StructureFETI::BoundaryList NuTo::StructureFETI::ReadBoundaryData(std::ifstream &file)
-{
-
-    FindKeywordInFile(file, "Boundaries");
-
-    int num_boundaries = 0;
-    file >> num_boundaries;
-
-    BoundaryList boundaries(num_boundaries);
-    for (auto& boundary : boundaries)
-    {
-        int num_nodes = 0;
-        file >> num_nodes;
-
-        for(int i = 0; i < num_nodes; ++i)
-        {
-            int globalId  = 0;
-            int localId   = 0;
-            file >> globalId >> localId;
-            boundary.mNodeIdsMap.emplace(globalId, localId);
-        }
-
-    }
-
-    return boundaries;
-
-}
-
-NuTo::StructureFETI::InterfaceList NuTo::StructureFETI::ReadInterfaceData(std::ifstream &file)
-{
-    FindKeywordInFile(file, "Interfaces");
-
-    int num_interfaces = 0;
-    file >> num_interfaces;
-
-    InterfaceList interfaces(num_interfaces);
-    for (auto& interface : interfaces)
-    {
-        int num_nodes = 0;
-        file >> num_nodes;
-
-        for(int i = 0; i < num_nodes; ++i)
-        {
-            int globalId  = 0;
-            int localId   = 0;
-            file >> globalId >> localId;
-            interface.mNodeIdsMap.emplace(globalId, localId);
-        }
-
-        file >> interface.mValue;
-
-
-    }
-
-    return interfaces;
-
-}
-
-void NuTo::StructureFETI::FindKeywordInFile(std::ifstream &file, std::string keyword)
-{
-    std::string line = "initialization";
-    while(std::getline(file, line) and line.compare(keyword)!=0);
-
-    if (line.compare(keyword)!=0)
-        throw MechanicsException(__PRETTY_FUNCTION__, "Keyword in mesh file not found");
-}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void NuTo::StructureFETI::AssembleBoundaryDofIds()
 {
@@ -185,6 +81,9 @@ void NuTo::StructureFETI::AssembleBoundaryDofIds()
 
 
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void NuTo::StructureFETI::AssembleConnectivityMatrix()
 {
@@ -234,33 +133,8 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
     }
 }
 
-void NuTo::StructureFETI::ImportMesh(std::string rFileName, const int interpolationTypeId)
-{
-
-    std::ifstream file(rFileName.c_str(), std::ios::in);
-
-    if (not file.is_open())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Mesh file did not open. Check path.");
-
-    mNodes         = ReadNodeData              (file);
-    mElements      = ReadElementData           (file);
-    mBoundaries    = ReadBoundaryData          (file);
-    mInterfaces    = ReadInterfaceData         (file);
-
-    file.close();
-
-    for (const auto& node : mNodes)
-        NodeCreate(node.mId, node.mCoordinates.head(2));
-
-    for (const auto& element : mElements)
-        ElementCreate(element.mId,interpolationTypeId, element.mNodeIds,eElementDataType::CONSTITUTIVELAWIP,eIpDataType::STATICDATA);
-
-    ElementTotalConvertToInterpolationType();
-
-    NodeBuildGlobalDofs();
-
-}
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void NuTo::StructureFETI::ImportMeshJson(std::string rFileName, const int interpolationTypeId)
 {
@@ -272,7 +146,6 @@ void NuTo::StructureFETI::ImportMeshJson(std::string rFileName, const int interp
 
     if(not reader.parse(file,root, false))
         throw MechanicsException(__PRETTY_FUNCTION__, "Error parsing mesh file.");
-
 
 
     // only supports nodes.size() == 1
@@ -291,8 +164,6 @@ void NuTo::StructureFETI::ImportMeshJson(std::string rFileName, const int interp
     }
 
 
-
-
     // only supports elements.size() == 1
     for (auto const& elements : root["Elements"])
     {
@@ -308,10 +179,19 @@ void NuTo::StructureFETI::ImportMeshJson(std::string rFileName, const int interp
                 mSubdomainBoundaryNodeIds.insert(elements["NodalConnectivity"][i][1].asInt());
 
             }
-            else if (elementType == 3)
+            else if (elementType == 2) // 3 node tri element
+            {
+                mElements[i].mNodeIds.resize(3);
+
+                mElements[i].mNodeIds[0] = elements["NodalConnectivity"][i][0].asInt();
+                mElements[i].mNodeIds[1] = elements["NodalConnectivity"][i][1].asInt();
+                mElements[i].mNodeIds[2] = elements["NodalConnectivity"][i][2].asInt();
+                mElements[i].mId         = elements["Indices"][i].asInt();
+
+            }
+            else if (elementType == 3) // 4 node quad element
             {
 
-                // restricted to linear quads
                 mElements[i].mNodeIds.resize(4);
 
                 mElements[i].mNodeIds[0] = elements["NodalConnectivity"][i][0].asInt();
@@ -319,6 +199,10 @@ void NuTo::StructureFETI::ImportMeshJson(std::string rFileName, const int interp
                 mElements[i].mNodeIds[2] = elements["NodalConnectivity"][i][2].asInt();
                 mElements[i].mNodeIds[3] = elements["NodalConnectivity"][i][3].asInt();
                 mElements[i].mId         = elements["Indices"][i].asInt();
+            }
+            else
+            {
+                throw MechanicsException(__PRETTY_FUNCTION__, "Import of element type not implemented. Element type id = " +std::to_string(elementType));
             }
         }
     }
@@ -347,23 +231,11 @@ void NuTo::StructureFETI::ImportMeshJson(std::string rFileName, const int interp
 
     file.close();
 
-
     for (const auto& node : mNodes)
-    {
-        //        std::cout << node.mId << std::endl;
         NodeCreate(node.mId, node.mCoordinates.head(2));
-    }
-
-    //    NodeInfo(10);
-    //std::cout << "element ids"<< std::endl;
 
     for (const auto& element : mElements)
-    {
-        //        std::cout << element.mId << std::endl;
-        //        std::cout << element.mNodeIds[0] << element.mNodeIds[1] << element.mNodeIds[2] << element.mNodeIds[3] << std::endl;
-        ElementCreate(element.mId,interpolationTypeId, element.mNodeIds,eElementDataType::CONSTITUTIVELAWIP,eIpDataType::STATICDATA);
-    }
-
+        ElementCreate(element.mId,interpolationTypeId, element.mNodeIds);
 
     ElementTotalConvertToInterpolationType();
 

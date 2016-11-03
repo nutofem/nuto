@@ -243,9 +243,7 @@ message(STATUS "Requesting BOOST components ${NuToBoostComponents} - at least ve
 find_package(Boost ${NuToBoostRequiredVersion} COMPONENTS ${NuToBoostComponents} REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIR})
-message(STATUS "Boost_VERSION = ${Boost_VERSION}")
 message(STATUS "Boost version = ${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
-message(STATUS "Boost_LIBRARIES = ${Boost_LIBRARIES}")
 message(STATUS "Boost_LIBRARIES = ${Boost_LIBRARIES}")
 message(STATUS "Boost_LIBRARY_DIRS = ${Boost_LIBRARY_DIRS}")
 message(STATUS "Boost_SERIALIZATION_FOUND = ${Boost_SERIALIZATION_FOUND}")
