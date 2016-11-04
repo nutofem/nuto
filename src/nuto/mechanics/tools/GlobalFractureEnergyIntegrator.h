@@ -23,8 +23,9 @@ public:
     //! @param rDisplacements vector container displacements
     //! @return obj
     GlobalFractureEnergyIntegrator(const FullVector<double, Eigen::Dynamic>& rForces, const FullVector<double, Eigen::Dynamic>& rDisplacements)
-        : mForce(rForces), mDispl(rDisplacements)
     {
+        mForce = rForces.cwiseAbs();
+        mDispl = rDisplacements.cwiseAbs();
         CheckData();
     }
 
@@ -38,10 +39,10 @@ public:
         NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> reader;
 
         reader.ReadFromFile(rFileForces);
-        mForce = reader.GetColumn(rColumn);
+        mForce = reader.GetColumn(rColumn).cwiseAbs();
 
         reader.ReadFromFile(rFileDisplacements);
-        mDispl = reader.GetColumn(rColumn);
+        mDispl = reader.GetColumn(rColumn).cwiseAbs();
 
         CheckData();
     }
@@ -49,47 +50,36 @@ public:
 
     //! @brief calculates the global fracture energy by integrating over the load-displacement curve
     //! @param rArea "crack" area
+    //! @return global GF
+    double IntegrateSofteningCurve(double rArea)
+    {
+        return IntegrateSofteningCurveInternal(static_cast<int>(mForce.rows())) / rArea;
+    }
+
+    //! @brief calculates the global fracture energy by integrating over the load-displacement curve
+    //! @param rArea "crack" area
     //! @param rForceThreshold integration stops if the force drops below rForceThreshold
     //! @return global GF
     double IntegrateSofteningCurve(double rArea, double rForceThreshold)
     {
-        unsigned numRows = mForce.rows();
-        double integral = 0.;
-        double fLast = mForce[numRows - 1];
+        int iEnd = FindIndexJustAboveForceThreshold(rForceThreshold);
+        double integral = IntegrateSofteningCurveInternal(iEnd);
+        integral += IntegrateIndexToForceThreshold(iEnd, rForceThreshold);
+        return integral / rArea;
+    }
 
-        if (rForceThreshold < fLast)
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "The forces did not drop below the force threshold");
+private:
 
-        bool isPeakReached = false;
-        unsigned int iRow = 1;
-        while (not isPeakReached or mForce(iRow) > rForceThreshold)  // iRow < 10 (or so...) to fully include the elastic part
-        {
-            // integrate normally
-            double meanForce = (mForce(iRow) + mForce(iRow - 1)) / 2.;
-            double deltaDispl = mDispl(iRow) - mDispl(iRow - 1);
-
-            integral += meanForce * deltaDispl;
-            ++iRow;
-            if (mForce(iRow) - mForce(iRow - 1) < 0)
-                isPeakReached = true;
-
-            if (iRow - 1 == numRows)
-                throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "The forces never reach the force threshold");
-        }
-
-        // force(iRow) just dropped below rForceThreshold
-        // now integrate the missing part from the last mForce until rForceThreshold
-        double d0 = mDispl(iRow - 1);
-        double d1 = mDispl(iRow);
-        double f0 = mForce(iRow - 1);
-        double f1 = mForce(iRow);
-
-        if (f0 < rForceThreshold) // just to be 100% sure
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "f0 < force threshold");
-
-        if (f1 > rForceThreshold) // just to be 100% sure
-            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "f1 > force threshold");
-
+    //! @brief integrates F[rIndexEnd]
+    //! @param rIndexEnd
+    //! @param rForceThreshold
+    //! @return
+    double IntegrateIndexToForceThreshold(int rIndexEnd, double rForceThreshold)
+    {
+        double d0 = mDispl(rIndexEnd - 1);
+        double d1 = mDispl(rIndexEnd);
+        double f0 = mForce(rIndexEnd - 1);
+        double f1 = mForce(rIndexEnd);
 
         double dX = d0 - d1;
         double dF = f0 - f1;
@@ -99,12 +89,42 @@ public:
         double meanForceStop = (rForceThreshold + f0) / 2.;
         double deltaDisplStop = dThreshold - d0;
 
-        integral += meanForceStop * deltaDisplStop;
-
-        return integral / rArea;
+        return meanForceStop * deltaDisplStop;
     }
 
-private:
+    //! @brief finds the index where the force is just before the rForceThreshold
+    //! @param rForceThreshold force threshold
+    //! @return index of F[index] > rForceThreshold && F[index+1] < rForceThreshold
+    int FindIndexJustAboveForceThreshold(double rForceThreshold)
+    {
+        auto numRows = mForce.rows();
+        if (rForceThreshold < mForce[numRows - 1])
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "The forces did not drop below the force threshold");
+
+        for (auto i = 0; i < numRows-1; ++i)
+        {
+            if (mForce[i] > rForceThreshold && mForce[i+1] <= rForceThreshold)
+                return i;
+        }
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "The forces never reach the force threshold");
+    }
+
+    //! @brief calculates the global fracture energy by integrating over the load-displacement curve
+    //! @param rEnd integrate from index=0 to index=rEnd
+    //! @return global GF
+    double IntegrateSofteningCurveInternal(int rEnd)
+    {
+        double integral = 0.;
+        for (int iRow = 0; iRow < rEnd - 1; ++iRow)
+        {
+            // integrate normally
+            double meanForce = (mForce(iRow + 1) + mForce(iRow)) / 2.;
+            double deltaDispl = mDispl(iRow + 1) - mDispl(iRow);
+            integral += meanForce * deltaDispl;
+        }
+        return integral;
+    }
+
 
     void CheckData() const
     {
