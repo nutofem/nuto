@@ -64,6 +64,7 @@ void NuTo::BlockSparseMatrix::AllocateSubmatrices()
                 mData[std::make_pair(dofRow, dofCol)] = std::unique_ptr<SparseMatrixCSRVector2<double>>(new SparseMatrixCSRVector2Symmetric<double>(0, 0));
             else
                 mData[std::make_pair(dofRow, dofCol)] = std::unique_ptr<SparseMatrixCSRVector2<double>>(new SparseMatrixCSRVector2General<double>(0, 0));
+            mData[std::make_pair(dofRow, dofCol)]->SetPositiveDefinite();
         }
 }
 
@@ -433,10 +434,27 @@ NuTo::SparseMatrixCSRGeneral<double> NuTo::BlockSparseMatrix::ExportToCSRGeneral
     return SparseMatrixCSRGeneral<double>(ExportToCSRVector2General());
 }
 
-NuTo::SparseMatrixCSRVector2Symmetric<double> NuTo::BlockSparseMatrix::ExportToCSRSymmetric() const
+
+std::unique_ptr<NuTo::SparseMatrixCSR<double>> NuTo::BlockSparseMatrix::ExportToCSR() const
 {
-    throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] not implemented.");
+    const auto& activeDofs = mDofStatus.GetActiveDofTypes();
+    if (activeDofs.size() == 0)
+        throw MechanicsException(__PRETTY_FUNCTION__, "No active dofs defined. Nothing to export.");
+
+    auto dof = *activeDofs.begin();
+    if (activeDofs.size() == 1 && mDofStatus.IsSymmetric(dof))
+    {
+        // symmetric case
+        auto& ref = (*this)(dof,dof);
+        assert(ref.IsSymmetric());
+        return std::make_unique<SparseMatrixCSRSymmetric<double>>(ref.AsSparseMatrixCSRVector2Symmetric());
+    }
+    else
+    {
+        return std::make_unique<SparseMatrixCSRGeneral<double>>(ExportToCSRVector2General());
+    }
 }
+
 
 NuTo::SparseMatrixCSRVector2General<double> NuTo::BlockSparseMatrix::Get(std::string rDofRow, std::string rDofCol) const
 {

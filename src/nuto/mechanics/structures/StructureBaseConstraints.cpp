@@ -473,7 +473,7 @@ NuTo::BlockSparseMatrix NuTo::StructureBase::ConstraintGetConstraintMatrixBefore
         throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] build global numbering first");
     }
 
-    BlockSparseMatrix constraintMatrix(GetDofStatus());
+    BlockSparseMatrix constraintMatrix(GetDofStatus(), false);
 
     for (auto dofType : DofTypesGet())
     {

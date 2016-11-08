@@ -601,7 +601,7 @@ double NuTo::StructureBase::ElementTotalGetMaxDamage()
     return maxDamage;
 }
 
-double NuTo::StructureBase::ElementTotalGetStaticDataExtrapolationError()
+std::vector<double> NuTo::StructureBase::ElementTotalGetStaticDataExtrapolationError()
 {
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
         throw MechanicsException(__PRETTY_FUNCTION__, "First update of tmp static data required.");
@@ -612,10 +612,15 @@ double NuTo::StructureBase::ElementTotalGetStaticDataExtrapolationError()
     std::vector<ElementBase*> elementVector;
     GetElementsTotal(elementVector);
 
-    double max = 0;
+    int numIP = 0;
+    for (auto element : elementVector)
+        numIP += element->GetNumIntegrationPoints();
+
+    std::vector<double> errors(numIP);
+
 
     NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ipValues;
-
+    int iIP = 0;
     for (auto element : elementVector)
     {
         try
@@ -630,15 +635,11 @@ double NuTo::StructureBase::ElementTotalGetStaticDataExtrapolationError()
         {
             throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error getting EXTRAPOLATION_ERROR for element " +std::to_string(ElementGetId(element)) + ".");
         }
-//        if (ipValues.Max() > max)
-//        {
-//            std::cout << "local max error in element " << ElementGetId(element) << std::endl;
-//            ipValues.Info(10,5,true);
-//        }
-        max = std::max(max, ipValues.Max());
+        for (int i = 0; i < ipValues.cols(); ++i)
+            errors[iIP+i] = ipValues(0,i);
+        iIP += ipValues.cols();
     }
-
-    return max;
+    return errors;
 }
 
 

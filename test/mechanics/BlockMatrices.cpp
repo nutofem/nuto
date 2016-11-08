@@ -206,6 +206,7 @@ void BlockSparseMatrixTest()
     NuTo::DofStatus s;
     s.SetDofTypes       ({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
     s.SetActiveDofTypes ({NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE});
+    s.SetIsSymmetric    ( NuTo::Node::eDof::DISPLACEMENTS, true);
 
     NuTo::BlockSparseMatrix m(s);
 
@@ -213,7 +214,7 @@ void BlockSparseMatrixTest()
     size_t numT = 2;
     double density = 1;
 
-    m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(numD,numD,density);
+    m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2Symmetric<double>::Random(numD,numD,density);
     m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(numD,numT,density);
     m(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::DISPLACEMENTS) = NuTo::SparseMatrixCSRVector2General<double>::Random(numT,numD,density);
     m(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::TEMPERATURE ) = NuTo::SparseMatrixCSRVector2General<double>::Random(numT,numT,density);
@@ -251,6 +252,24 @@ void BlockSparseMatrixTest()
         exportCSR.Info();
         throw NuTo::MechanicsException("[BlockSparseMatrixTest] Export to CSR failed.");
     }
+
+    s.SetActiveDofTypes({NuTo::Node::eDof::DISPLACEMENTS});
+
+    auto CSR = m.ExportToCSR();
+    if (not CSR->IsSymmetric())
+        throw NuTo::MechanicsException("[BlockSparseMatrixTest] Symmetric export to CSR failed.");
+
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> exportCSRSymm = CSR->ConvertToFullMatrixDouble();
+    if ((exportCSRSymm - m.ExportToFullMatrix()).norm() > 1.e-8)
+    {
+        std::cout << "Reference \n";
+        exportReference.Info();
+        std::cout << "Export to CSRSymm \n";
+        exportCSRSymm.Info();
+        throw NuTo::MechanicsException("[BlockSparseMatrixTest] Export to CSRSymm failed.");
+    }
+
+
 }
 
 //! @brief StructureOutputBlockMatrixTest
@@ -410,9 +429,6 @@ void StructureOutputBlockMatrixTestSymmetric(int rNumDAct, int rNumDDep, double 
         NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> (diff).Info();
         throw NuTo::MechanicsException("[StructureOutputBlockMatrixTestSymmetric] ApplyCMatrix incorrect.");
     }
-
-
-
 }
 
 

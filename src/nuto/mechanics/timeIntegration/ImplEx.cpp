@@ -13,7 +13,7 @@
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 #include "nuto/mechanics/structures/StructureBaseEnum.h"
 #include "nuto/mechanics/structures/StructureOutputDummy.h"
-
+#include <algorithm>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -54,32 +54,31 @@ bool NuTo::ImplEx::CheckExtrapolationAndAdjustTimeStep()
     if (mExtrapolationErrorThreshold == -1.)
         throw MechanicsException(__PRETTY_FUNCTION__, "Define the extrapolation threshold first.");
 
-    double extrapolationError = mStructure->ElementTotalGetStaticDataExtrapolationError();
-    double increaseTimeStepThreshold = mExtrapolationErrorThreshold / 10;
+    auto errors = mStructure->ElementTotalGetStaticDataExtrapolationError();
 
-    bool extrapolationIsOK = extrapolationError < mExtrapolationErrorThreshold;
+    std::partial_sort(errors.begin(), errors.begin() + 5, errors.end(), std::greater<double>());
+    double extrapolationError = errors[4];
+    std::cout << errors[0] << '\t' << errors[1] << '\t' << errors[2] << std::endl;
 
-    std::cout << "relative Extrapolation error (>1 is bad): " << extrapolationError / mExtrapolationErrorThreshold << std::endl;
 
-    if (not extrapolationIsOK && not mForceAcceptOfNextSolution)
-    {
-        mTimeStep *= .1;
-        mStructure->GetLogger() << "[" << __FUNCTION__ << "] ### decreasing time step to " << mTimeStep << "\n";
-        mForceAcceptOfNextSolution = true;
-//        std::cin.ignore();
-        return false;
-    }
+    double newTimeStep = std::sqrt(mExtrapolationErrorThreshold / extrapolationError ) * mTimeStep;
 
-    // accept solution, either the extrapolation is OK or this solution is forced to be accepted (somehow continue the time stepping)
+    newTimeStep = std::min(newTimeStep, mTimeStep * 1.3);
+    newTimeStep = std::max(newTimeStep, mTimeStep / 1.3);
+    mTimeStep = newTimeStep;
 
-    mForceAcceptOfNextSolution = false;
 
-    if (extrapolationError < increaseTimeStepThreshold)
-    {
-        mTimeStep *= 1.3;
-        mStructure->GetLogger() << "[" << __FUNCTION__ << "] increasing time step to " << mTimeStep << "\n";
-    }
-
+//    std::cout << "relative Extrapolation error (>1 is bad): " << extrapolationError / mExtrapolationErrorThreshold << std::endl;
+//    bool extrapolationIsOK = extrapolationError < mExtrapolationErrorThreshold;
+//    if (not extrapolationIsOK && not mForceAcceptOfNextSolution)
+//    {
+//        mForceAcceptOfNextSolution = true;
+//        return false;
+//    }
+//
+//    // accept solution, either the extrapolation is OK or this solution is forced to be accepted (somehow continue the time stepping)
+//
+//    mForceAcceptOfNextSolution = false;
     return true;
 }
 

@@ -145,6 +145,9 @@ void ImplEx()
     s.ElementTotalConvertToInterpolationType();
     s.ElementTotalSetConstitutiveLaw(SetConstitutiveLaw(s));
     s.ElementTotalSetSection(mySection);
+    s.DofTypeSetIsSymmetric(NuTo::Node::eDof::DISPLACEMENTS, true);
+    s.DofTypeSetIsSymmetric(NuTo::Node::eDof::NONLOCALEQSTRAIN, true);
+
 
     // Set a pre-damaged spot in the middle element
     double kappa_i = 4./30000.;

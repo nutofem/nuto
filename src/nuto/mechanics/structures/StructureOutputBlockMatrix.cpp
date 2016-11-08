@@ -72,9 +72,15 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
                         {
                             int globalColDof = globalColDofs[iCol];
                             if (globalColDof < numActiveDofsCol)
+                            {
+                                if (activeCol.IsSymmetric() && globalRowDof > globalColDof)
+                                    continue; // entry would be in lower triangle --> not valid for symmetric matrices
                                 activeCol.AddValue(globalRowDof, globalColDof, value);
+                            }
                             else
+                            {
                                 dependentCol.AddValue(globalRowDof, globalColDof - numActiveDofsCol, value);
+                            }
                         }
                     }
                 }
@@ -94,9 +100,15 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
                             {
                                 int globalColDof = globalColDofs[iCol];
                                 if (globalColDof < numActiveDofsCol)
+                                {
                                     activeCol.AddValue(globalRowDof, globalColDof, value);
+                                }
                                 else
+                                {
+                                    if (dependentCol.IsSymmetric() && globalRowDof > globalColDof)
+                                        continue; // entry would be in lower triangle --> not valid for symmetric matrices
                                     dependentCol.AddValue(globalRowDof, globalColDof - numActiveDofsCol, value);
+                                }
                             }
                         }
                     }

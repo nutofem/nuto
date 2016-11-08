@@ -18,6 +18,7 @@ template <class T> class SparseMatrixCSRGeneral;
 template <class T> class SparseMatrixCSRSymmetric;
 template <class T> class SparseMatrixCSRVector2;
 template <class T> class SparseMatrixCSRVector2General;
+template <class T> class SparseMatrixCSR;
 template <class T> class SparseMatrixCSRVector2Symmetric;
 template <class T, int rows, int cols>class FullMatrix;
 
@@ -134,8 +135,11 @@ public:
     NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>  ExportToFullMatrix() const;
     NuTo::SparseMatrixCSRVector2General<double>               ExportToCSRVector2General() const;
     NuTo::SparseMatrixCSRGeneral<double>                      ExportToCSRGeneral() const;
-    NuTo::SparseMatrixCSRVector2Symmetric<double>             ExportToCSRSymmetric() const;
     Eigen::SparseMatrix<double>                               ExportToEigenSparseMatrix() const;
+#ifndef SWIG
+    std::unique_ptr<NuTo::SparseMatrixCSR<double>>            ExportToCSR() const;
+#endif
+
 
     NuTo::SparseMatrixCSRVector2General<double> Get(std::string rDofRow, std::string rDofCol) const;
 

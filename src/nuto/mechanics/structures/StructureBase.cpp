@@ -913,8 +913,8 @@ void NuTo::StructureBase::Contact(const std::vector<int> &rElementGroups)
 NuTo::BlockFullVector<double> NuTo::StructureBase::SolveBlockSystem(const BlockSparseMatrix& rMatrix, const BlockFullVector<double>& rVector) const
 {
     NuTo::FullVector<double, Eigen::Dynamic> resultForSolver;
-    NuTo::SparseMatrixCSRGeneral<double>     matrixForSolver = rMatrix.ExportToCSRGeneral();
-    matrixForSolver.SetOneBasedIndexing();
+    std::unique_ptr<NuTo::SparseMatrixCSR<double>> matrixForSolver = rMatrix.ExportToCSR();
+    matrixForSolver->SetOneBasedIndexing();
 
     //allocate solver
 #if defined(HAVE_PARDISO) && defined(_OPENMP)
@@ -927,7 +927,7 @@ NuTo::BlockFullVector<double> NuTo::StructureBase::SolveBlockSystem(const BlockS
     mySolver.SetShowTime(GetShowTime());
 #endif
 
-    mySolver.Solve(matrixForSolver, rVector.Export(), resultForSolver);
+    mySolver.Solve(*matrixForSolver, rVector.Export(), resultForSolver);
 
     return BlockFullVector<double>(-resultForSolver, GetDofStatus());
 }
@@ -1071,10 +1071,7 @@ void NuTo::StructureBase::UpdateDofStatus()
     mDofStatus.SetDofTypes(dofTypes);
     mDofStatus.SetActiveDofTypes(activeDofTypes);
 
-//    std::cout << "CMat entries : " << mConstraintMatrixDof.GetNumActiveEntires() << std::endl;
-    //std::cout << "CMat entries : " << mConstraintMatrixDof.GetNumActiveEntires() << std::endl;
     mDofStatus.SetHasInteractingConstraints(mConstraintMatrix.GetNumActiveEntires() != 0);
-//    mDofStatus.SetHasInteractingConstraints(true);
 }
 
 int NuTo::StructureBase::GetNumTotalDofs() const
