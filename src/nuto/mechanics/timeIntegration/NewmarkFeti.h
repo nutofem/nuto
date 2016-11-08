@@ -37,7 +37,7 @@ public:
     /// \brief NewmarkFeti
     /// \param rStructure
     ///
-    NewmarkFeti(StructureBase* rStructure) : NewmarkDirect (rStructure)
+    NewmarkFeti(StructureFETI* rStructure) : NewmarkDirect (rStructure)
     {
 
     }

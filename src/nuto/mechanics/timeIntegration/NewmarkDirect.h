@@ -140,7 +140,7 @@ public:
 
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
-    NuTo::eError Solve(double rTimeDelta);
+    virtual NuTo::eError Solve(double rTimeDelta);
 
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
     void Info()const;

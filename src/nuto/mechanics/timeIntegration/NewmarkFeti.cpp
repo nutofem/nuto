@@ -175,7 +175,7 @@ int NuTo::NewmarkFeti::BiCgStab(const NuTo::NewmarkFeti::MatrixXd &projection, N
     VectorXd s(n);
     VectorXd t(n);
 
-    const double tol    = mCpgTolerance;
+//    const double tol    = mCpgTolerance;
     //        const double tol2   = tol*tol*rhs_sqnorm;
     const double tol2   = 1.0e-8*rhs_sqnorm; // the phase-field model is worse conditioned it seems. Lower tolerance required?
 
@@ -505,8 +505,8 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
         StructureFETI* structure = static_cast<StructureFETI*>(mStructure);
         structure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
-        structure->AssembleBoundaryDofIds();
-        const Eigen::DiagonalMatrix<double, Eigen::Dynamic>& boundaryDofIds       = structure->mBoundaryDofIds;
+//        structure->AssembleBoundaryDofIds();
+//        const Eigen::DiagonalMatrix<double, Eigen::Dynamic>& boundaryDofIds       = structure->mBoundaryDofIds;
 
         structure->AssembleConnectivityMatrix();
         const SparseMatrix& B       = structure->GetConnectivityMatrix();
