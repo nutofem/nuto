@@ -156,7 +156,7 @@ int NuTo::NewmarkFeti::BiCgStab(const NuTo::NewmarkFeti::MatrixXd &projection, N
 
     const int n = rhs.rows();
     VectorXd r  = rhs - Ax;
-    VectorXd r0 = r;
+//    VectorXd r0 = r;
 
     VectorXd rProj   = projection * r;
     VectorXd rProj0  = rProj;

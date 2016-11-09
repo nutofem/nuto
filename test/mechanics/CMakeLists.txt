@@ -113,8 +113,12 @@ if(ENABLE_C++_TESTS)
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
         # create symlinks to the necessary mesh files
-        foreach(task RANGE 0 6)
-            execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/meshFiles/feti_rectangle_tri.mesh${task}" "${CMAKE_CURRENT_BINARY_DIR}/feti_rectangle_tri.msh${task}")
+        foreach(task
+                _compare
+                0
+                1
+                )
+            execute_process( COMMAND "${CMAKE_COMMAND}" "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/meshFiles/feti_rectangle_tri.msh${task}" "${CMAKE_CURRENT_BINARY_DIR}/feti_rectangle_tri.msh${task}")
         endforeach()
 
         set(test Feti)
@@ -126,7 +130,9 @@ if(ENABLE_C++_TESTS)
         if(MUMPS_FOUND)
             target_link_libraries(${test} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
         endif()
-        add_test(c::mechanics::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
+        set(MPIEXEC_NUMPROC_FLAG -np 2)
+        set(MPIEXEC mpirun)
+        add_test(NAME c::mechanics::${test} COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     endif()
 
 
