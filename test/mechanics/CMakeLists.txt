@@ -110,7 +110,7 @@ if(ENABLE_C++_TESTS)
     endif()
 
 
-    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU" AND ENABLE_MPI)
 
         # create symlinks to the necessary mesh files
         foreach(task
