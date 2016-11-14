@@ -1,0 +1,15 @@
+BasedOnStyle: LLVM
+Language: Cpp
+
+AlignAfterOpenBracket: DontAlign
+AlignTrailingComments: false
+BreakBeforeBraces: Allman
+ColumnLimit: 120
+ContinuationIndentWidth: 8
+DerivePointerAlignment: false
+IndentWidth: 4
+PointerAlignment: Left
+ReflowComments: true
+SpaceBeforeParens: ControlStatements
+SortIncludes: false
+Standard: Cpp11

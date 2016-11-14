@@ -41,7 +41,7 @@ for element in range(0, NumElements):
     print "create element: " + str(element) + " nodes: " + str(element) + "," + str(element+1)
     elementIncidence.SetValue(0, 0, element)
     elementIncidence.SetValue(1, 0, element + 1)
-    myStructure.ElementCreate(element, myInterpolationType, elementIncidence, "ConstitutiveLawIP", "NoIPData")
+    myStructure.ElementCreate(element, myInterpolationType, elementIncidence)
     myStructure.ElementSetSection(element,Section1)
     myStructure.ElementSetConstitutiveLaw(element,Material1)
 

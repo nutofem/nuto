@@ -1,224 +1,60 @@
-# Operators
-ADD_EXECUTABLE(TestOperators TestOperators.cpp)
-TARGET_LINK_LIBRARIES(TestOperators NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES})
-IF(MUMPS_FOUND)
-  TARGET_LINK_LIBRARIES(TestOperators ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-ENDIF(MUMPS_FOUND)
-ADD_TEST(EXAMPLES::Cpp::TestOperators ${CMAKE_CURRENT_BUILD_DIR}/TestOperators)
+# TODO: these examples have been commented out at some point in time, we should
+# try to resurrect some of them:
+# - ConstraintsLagrange1D
+# - NonlocalDamagePlasticity
+# - NonlocalDamagePlasticityBeam
+# - NonlocalDamagePlasticityModel
+# - ImportGmsh
+# - Truss1DMultiphase
 
-IF (ENABLE_OPENMP AND OPENMP_FOUND AND NOT ENABLE_DEBUG)
-  ADD_EXECUTABLE(OpenMP OpenMP.cpp)
-  TARGET_LINK_LIBRARIES(OpenMP NuToMath)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openMPplot.gnu  ${CMAKE_CURRENT_BINARY_DIR}/openMPplot.gnu  COPYONLY)
-ENDIF (ENABLE_OPENMP AND OPENMP_FOUND AND NOT ENABLE_DEBUG)
+# copy mesh
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/HeatedPlate.msh ${CMAKE_CURRENT_BINARY_DIR}/HeatedPlate.msh COPYONLY)
 
-IF(ENABLE_MKL AND MKLSolver_FOUND)
-  ADD_EXECUTABLE(SparseDirectSolverMKLPardiso SparseDirectSolverMKLPardiso.cpp)
-  TARGET_LINK_LIBRARIES(SparseDirectSolverMKLPardiso NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${MKLSolver_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  ADD_TEST(EXAMPLES::Cpp::SparseDirectSolverMKLPardiso ${CMAKE_CURRENT_BUILD_DIR}/SparseDirectSolverMKLPardiso)
-ENDIF(ENABLE_MKL AND MKLSolver_FOUND)
+# generate tests
+foreach(test
+    TestOperators
+    SparseDirectSolverMUMPS
+    VisualizeTruss1D2N
+    Brick8N
+    Plane2D4NFreeHangingNode
+    VisualizePlane2D4N
+    Temperature1D
+    Tetrahedron10N
+    Truss1D2NReference
+    Truss1D2N
+    MortonOrder
+    ExplicitTimeIntegration
+    HeatedPlate
+    )
 
-IF(ENABLE_MUMPS AND MUMPS_FOUND)
-   ADD_EXECUTABLE(SparseDirectSolverMUMPS SparseDirectSolverMUMPS.cpp)
-   TARGET_LINK_LIBRARIES(SparseDirectSolverMUMPS NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-   ADD_TEST(EXAMPLES::Cpp::SparseDirectSolverMUMPS ${CMAKE_CURRENT_BUILD_DIR}/SparseDirectSolverMUMPS)
-ENDIF(ENABLE_MUMPS AND MUMPS_FOUND)
+    add_executable(${test} ${test}.cpp)
+    target_link_libraries(${test} NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
+    if(ENABLE_VISUALIZE)
+        target_link_libraries(${test} NuToVisualize)
+    endif()
+    if(MUMPS_FOUND)
+        target_link_libraries(${test} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+    endif()
+    add_test(examples::cpp::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
+endforeach()
 
-IF(ENABLE_MECHANICS AND ENABLE_VISUALIZE)
-  ADD_EXECUTABLE(VisualizeTruss1D2N VisualizeTruss1D2N.cpp)
-  TARGET_LINK_LIBRARIES(VisualizeTruss1D2N NuToMechanics NuToVisualize NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  IF(MUMPS_FOUND)
-    TARGET_LINK_LIBRARIES(VisualizeTruss1D2N ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  ENDIF(MUMPS_FOUND)
-  ADD_TEST(EXAMPLES::Cpp::VisualizeTruss1D2N ${CMAKE_CURRENT_BUILD_DIR}/VisualizeTruss1D2N)
-ENDIF(ENABLE_MECHANICS AND ENABLE_VISUALIZE)
-
-# Brick8N
-IF(ENABLE_MECHANICS)
-  ADD_EXECUTABLE(Brick8N Brick8N.cpp)
-  TARGET_LINK_LIBRARIES(Brick8N NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-  IF (ENABLE_VISUALIZE)
-    TARGET_LINK_LIBRARIES(Brick8N NuToVisualize)
-  ENDIF (ENABLE_VISUALIZE)
-  IF(MUMPS_FOUND)
-    TARGET_LINK_LIBRARIES(Brick8N ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  ENDIF(MUMPS_FOUND)
-  ADD_TEST(EXAMPLES::Cpp::Brick8N ${CMAKE_CURRENT_BUILD_DIR}/Brick8N)
-ENDIF(ENABLE_MECHANICS)
-
-# Test ConstraintsLagrange1D
-#ADD_EXECUTABLE(ConstraintsLagrange1D ConstraintsLagrange1D)
-#TARGET_LINK_LIBRARIES(ConstraintsLagrange1D NuToBase NuToMechanics NuToMath ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-#IF (ENABLE_VISUALIZE)
-#  TARGET_LINK_LIBRARIES(ConstraintsLagrange1D NuToVisualize)
-#ENDIF (ENABLE_VISUALIZE)
-#IF(MUMPS_FOUND)
-#  TARGET_LINK_LIBRARIES(ConstraintsLagrange1D ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-#ENDIF(MUMPS_FOUND)
-#ADD_TEST(EXAMPLES::Cpp::ConstraintsLagrange1D ${CMAKE_CURRENT_BUILD_DIR}/ConstraintsLagrange1D)
-
-# NonlocalDamagePlasticity
-#ADD_EXECUTABLE(NonlocalDamagePlasticity NonlocalDamagePlasticity.cpp)
-#TARGET_LINK_LIBRARIES(NonlocalDamagePlasticity NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-#IF (ENABLE_VISUALIZE)
-#  TARGET_LINK_LIBRARIES(NonlocalDamagePlasticity NuToVisualize)
-#ENDIF (ENABLE_VISUALIZE)
-#IF(MUMPS_FOUND)
-#  TARGET_LINK_LIBRARIES(NonlocalDamagePlasticity ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-#ENDIF(MUMPS_FOUND)
-#ADD_TEST(EXAMPLES::Cpp::NonlocalDamagePlasticity ${CMAKE_CURRENT_BUILD_DIR}/NonlocalDamagePlasticity)
-
-# NonlocalDamagePlasticityBeam
-#ADD_EXECUTABLE(NonlocalDamagePlasticityBeam NonlocalDamagePlasticityBeam.cpp)
-#TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityBeam NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-#IF (ENABLE_VISUALIZE)
-#  TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityBeam NuToVisualize)
-#ENDIF (ENABLE_VISUALIZE)
-#IF(MUMPS_FOUND)
-#  TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityBeam ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-#ENDIF(MUMPS_FOUND)
-
-# NonlocalDamagePlasticityModel
-#ADD_EXECUTABLE(NonlocalDamagePlasticityModel NonlocalDamagePlasticityModel.cpp)
-#TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityModel NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-#IF (ENABLE_VISUALIZE)
-#  TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityModel NuToVisualize)
-#ENDIF (ENABLE_VISUALIZE)
-#IF(MUMPS_FOUND)
-#  TARGET_LINK_LIBRARIES(NonlocalDamagePlasticityModel ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-#ENDIF(MUMPS_FOUND)
-
-# Import Gmsh
-#ADD_EXECUTABLE(ImportGmsh ImportGmsh.cpp)
-#configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ImportGmsh.msh
-#    ${CMAKE_CURRENT_BINARY_DIR}/ImportGmsh.msh COPYONLY)
-#TARGET_LINK_LIBRARIES(ImportGmsh NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-#IF (ENABLE_VISUALIZE)
-#  TARGET_LINK_LIBRARIES(ImportGmsh NuToVisualize)
-#ENDIF (ENABLE_VISUALIZE)
-#IF(MUMPS_FOUND)
-#  TARGET_LINK_LIBRARIES(ImportGmsh ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-#ENDIF(MUMPS_FOUND)
-#ADD_TEST(EXAMPLES::Cpp::ImportGmsh ${CMAKE_CURRENT_BUILD_DIR}/ImportGmsh)
-
-# Plane2D4NFreeHangingNode
-IF(ENABLE_MECHANICS)
-  ADD_EXECUTABLE(Plane2D4NFreeHangingNode Plane2D4NFreeHangingNode.cpp)
-  TARGET_LINK_LIBRARIES(Plane2D4NFreeHangingNode NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-  IF (ENABLE_VISUALIZE)
-    TARGET_LINK_LIBRARIES(Plane2D4NFreeHangingNode NuToVisualize)
-  ENDIF (ENABLE_VISUALIZE)
-  ADD_TEST(EXAMPLES::Cpp::Plane2D4NFreeHangingNode ${CMAKE_CURRENT_BUILD_DIR}/Plane2D4NFreeHangingNode)
-ENDIF(ENABLE_MECHANICS)
-
-# Plane2D4N
-IF(ENABLE_MECHANICS)
-  ADD_EXECUTABLE(VisualizePlane2D4N VisualizePlane2D4N.cpp)
-  TARGET_LINK_LIBRARIES(VisualizePlane2D4N NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-  IF (ENABLE_VISUALIZE)
-    TARGET_LINK_LIBRARIES(VisualizePlane2D4N NuToVisualize)
-  ENDIF (ENABLE_VISUALIZE)
-  IF(MUMPS_FOUND)
-    TARGET_LINK_LIBRARIES(VisualizePlane2D4N ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  ENDIF(MUMPS_FOUND)
-  ADD_TEST(EXAMPLES::Cpp::VisualizePlane2D4N ${CMAKE_CURRENT_BUILD_DIR}/VisualizePlane2D4N)
-ENDIF(ENABLE_MECHANICS)
-
- # Temperature1D
-if(ENABLE_MECHANICS)
-  add_executable(Temperature1D Temperature1D.cpp)
-  target_link_libraries(Temperature1D NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-  if(ENABLE_VISUALIZE)
-    target_link_libraries(Temperature1D NuToVisualize)
-  endif()
-  if(MUMPS_FOUND)
-    target_link_libraries(Temperature1D ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  endif()
-  ADD_TEST(EXAMPLES::Cpp::Temperature1D ${CMAKE_CURRENT_BUILD_DIR}/Temperature1D)
+if(ENABLE_OPENMP AND OPENMP_FOUND AND NOT ENABLE_DEBUG)
+    add_executable(OpenMP OpenMP.cpp)
+    target_link_libraries(OpenMP NuToMath)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openMPplot.gnu ${CMAKE_CURRENT_BINARY_DIR}/openMPplot.gnu COPYONLY)
 endif()
 
-# Tetrahedron 10N
-IF(ENABLE_MECHANICS)
-  ADD_EXECUTABLE(Tetrahedron10N Tetrahedron10N.cpp)
-  TARGET_LINK_LIBRARIES(Tetrahedron10N NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-  IF (ENABLE_VISUALIZE)
-    TARGET_LINK_LIBRARIES(Tetrahedron10N NuToVisualize)
-  ENDIF (ENABLE_VISUALIZE)
-  IF(MUMPS_FOUND)
-    TARGET_LINK_LIBRARIES(Tetrahedron10N ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  ENDIF(MUMPS_FOUND)
-  ADD_TEST(EXAMPLES::Cpp::Tetrahedron10N ${CMAKE_CURRENT_BUILD_DIR}/Tetrahedron10N)
-ENDIF(ENABLE_MECHANICS)
+if(ENABLE_MKL AND MKLSolver_FOUND)
+    add_executable(SparseDirectSolverMKLPardiso SparseDirectSolverMKLPardiso.cpp)
+    target_link_libraries(SparseDirectSolverMKLPardiso NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${MKLSolver_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+    add_test(examples::cpp::SparseDirectSolverMKLPardiso ${CMAKE_CURRENT_BUILD_DIR}/SparseDirectSolverMKLPardiso)
+endif()
 
-
-# Truss1D2NReference
-IF(ENABLE_MECHANICS)
-  ADD_EXECUTABLE(Truss1D2NReference Truss1D2NReference.cpp)
-  TARGET_LINK_LIBRARIES(Truss1D2NReference NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-  IF (ENABLE_VISUALIZE)
-    TARGET_LINK_LIBRARIES(Truss1D2NReference NuToVisualize)
-  ENDIF (ENABLE_VISUALIZE)
-  IF(MUMPS_FOUND)
-    TARGET_LINK_LIBRARIES(Truss1D2NReference ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  ENDIF(MUMPS_FOUND)
-  ADD_TEST(EXAMPLES::Cpp::Truss1D2NReference ${CMAKE_CURRENT_BUILD_DIR}/Truss1D2NReference)
-ENDIF(ENABLE_MECHANICS)
-
-
-# Truss1D2N
-IF(ENABLE_MECHANICS)
-  ADD_EXECUTABLE(Truss1D2N Truss1D2N.cpp)
-  TARGET_LINK_LIBRARIES(Truss1D2N NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-  IF (ENABLE_VISUALIZE)
-    TARGET_LINK_LIBRARIES(Truss1D2N NuToVisualize)
-  ENDIF (ENABLE_VISUALIZE)
-  IF(MUMPS_FOUND)
-    TARGET_LINK_LIBRARIES(Truss1D2N ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-  ENDIF(MUMPS_FOUND)
-  ADD_TEST(EXAMPLES::Cpp::Truss1D2N ${CMAKE_CURRENT_BUILD_DIR}/Truss1D2N)
-ENDIF(ENABLE_MECHANICS)
-
-#
-# # Truss1DMultiphase
-# ADD_EXECUTABLE(Truss1DMultiphase Truss1DMultiphase.cpp)
-# TARGET_LINK_LIBRARIES(Truss1DMultiphase NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-# IF (ENABLE_VISUALIZE)
-#   TARGET_LINK_LIBRARIES(Truss1DMultiphase NuToVisualize)
-# ENDIF (ENABLE_VISUALIZE)
-# IF(MUMPS_FOUND)
-#   TARGET_LINK_LIBRARIES(Truss1DMultiphase ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
-# ENDIF(MUMPS_FOUND)
-
-
-# VirtualFunctionsVsDynamicCast
-ADD_EXECUTABLE(VirtualFunctionsVsDynamicCast VirtualFunctionsVsDynamicCastClasses.cpp VirtualFunctionsVsDynamicCast.cpp)
-ADD_TEST(EXAMPLES::Cpp::VirtualFunctionsVsDynamicCast ${CMAKE_CURRENT_BUILD_DIR}/VirtualFunctionsVsDynamicCast)
-
-IF (ENABLE_GEOMETRYCONCRETE AND ENABLE_MECHANICS)
-ADD_EXECUTABLE(GeometryConcrete2D GeometryConcrete2D.cpp)
-TARGET_LINK_LIBRARIES(GeometryConcrete2D NuToMechanics NuToMath NuToBase NuToGeometryConcrete ${Boost_LIBRARIES})
-IF (ENABLE_VISUALIZE)
-  TARGET_LINK_LIBRARIES(GeometryConcrete2D NuToVisualize)
-ENDIF (ENABLE_VISUALIZE)
-ADD_TEST(EXAMPLES::Cpp::GeometryConcrete2D ${CMAKE_CURRENT_BUILD_DIR}/GeometryConcrete2D)
-ENDIF (ENABLE_GEOMETRYCONCRETE AND ENABLE_MECHANICS)
-
-# MortonOrder
-ADD_EXECUTABLE(MortonOrder MortonOrder.cpp)
-TARGET_LINK_LIBRARIES(MortonOrder NuToMath NuToBase)
-
-ADD_EXECUTABLE(ExplicitTimeIntegration ExplicitTimeIntegration.cpp)
-TARGET_LINK_LIBRARIES(ExplicitTimeIntegration NuToMechanics NuToMath NuToBase)
-IF (ENABLE_VISUALIZE)
-  TARGET_LINK_LIBRARIES(ExplicitTimeIntegration NuToVisualize)
-ENDIF (ENABLE_VISUALIZE)
-ADD_TEST(EXAMPLES::Cpp::ExplicitTimeIntegration ${CMAKE_CURRENT_BUILD_DIR}/ExplicitTimeIntegration)
-
-if(ENABLE_MECHANICS)
-    add_executable(HeatedPlate HeatedPlate.cpp)
-    target_link_libraries(HeatedPlate NuToMechanics NuToMath NuToBase ${Boost_LIBRARIES} ${LAPACK_LIBRARIES} ${ANN_LIBRARIES})
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/HeatedPlate.geo ${CMAKE_CURRENT_BINARY_DIR}/HeatedPlate.geo COPYONLY)
+if(ENABLE_GEOMETRYCONCRETE AND ENABLE_MECHANICS)
+    add_executable(GeometryConcrete2D GeometryConcrete2D.cpp)
+    target_link_libraries(GeometryConcrete2D NuToMechanics NuToMath NuToBase NuToGeometryConcrete ${Boost_LIBRARIES})
     if(ENABLE_VISUALIZE)
-        target_link_libraries(HeatedPlate NuToVisualize)
-    endif(ENABLE_VISUALIZE)
-endif(ENABLE_MECHANICS)
+        target_link_libraries(GeometryConcrete2D NuToVisualize)
+    endif()
+    add_test(examples::cpp::GeometryConcrete2D ${CMAKE_CURRENT_BUILD_DIR}/GeometryConcrete2D)
+endif()

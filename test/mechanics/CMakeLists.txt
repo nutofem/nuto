@@ -1,5 +1,5 @@
-# TODO: these test have been commented at some point in time, we should try
-# to resurrect some of them:
+# TODO: these tests have been commented out at some point in time, we should
+# try to resurrect some of them:
 # Python:
 #   NonlocalDamagePlasticity
 #   ConstraintsLagrange1D

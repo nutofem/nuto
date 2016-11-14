@@ -4,6 +4,13 @@ dist: trusty
 compiler:
     - clang
     - gcc
+env:
+    - RELEASE=true
+    - RELEASE=false
+matrix:
+    exclude:
+        - compiler: clang
+          env: RELEASE=false
 before_install:
     - wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
     - chmod +x miniconda.sh
@@ -20,8 +27,9 @@ before_install:
 before_script:
     - mkdir build
     - cd build
-    - if [[ "$CXX" == "g++" ]]; then CXX=g++-6 cmake -DENABLE_COVERAGE=TRUE -DENABLE_MPI=TRUE ..; fi
-    - if [[ "$CXX" == "clang++" ]]; then CXX=clang++-3.9 cmake ..; fi
+    - if [[ "$CXX" == "g++" ]] && [[ "$RELEASE" == "false" ]]; then CXX=g++-6 cmake -DENABLE_COVERAGE=TRUE -DENABLE_MPI=TRUE ..; fi
+    - if [[ "$CXX" == "g++" ]] && [[ "$RELEASE" == "true" ]]; then CXX=g++-6 cmake -DENABLE_DEBUG=FALSE -DENABLE_EXAMPLES=TRUE ..; fi
+    - if [[ "$CXX" == "clang++" ]]; then CXX=clang++-3.9 cmake -DENABLE_DEBUG=FALSE -DENABLE_EXAMPLES=TRUE ..; fi
 script:
     - make -j2
     - ctest

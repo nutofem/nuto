@@ -18,6 +18,10 @@
 #include "nuto/math/SparseMatrixCSRGeneral.h"
 #include "nuto/math/SparseDirectSolverMUMPS.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
+#include "nuto/mechanics/MechanicsEnums.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
 int main()
 {
@@ -54,11 +58,11 @@ int main()
     }
 
     auto InterpolationType = myStructure.InterpolationTypeCreate("Truss1D");
-    myStructure.InterpolationTypeAdd(InterpolationType, NuTo::Node::COORDINATES,
+    myStructure.InterpolationTypeAdd(InterpolationType, NuTo::Node::eDof::COORDINATES,
         NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructure.InterpolationTypeAdd(InterpolationType, NuTo::Node::TEMPERATURE,
+    myStructure.InterpolationTypeAdd(InterpolationType, NuTo::Node::eDof::TEMPERATURE,
         NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructure.InterpolationTypeSetIntegrationType(InterpolationType, "1D2NGauss2Ip", "noipdata");
+    myStructure.InterpolationTypeSetIntegrationType(InterpolationType, "1D2NGauss2Ip");
 
     // create elements
     NuTo::FullVector<int,Eigen::Dynamic> elementIncidence(2);
@@ -86,10 +90,10 @@ int main()
     std::cout << "residual: " << residual.J.CalculateNormL2() << std::endl;
 
     // visualize results
-    int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+    int visualizationGroup = myStructure.GroupCreate(NuTo::eGroupId::Elements);
     myStructure.GroupAddElementsTotal(visualizationGroup);
 
-    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::TEMPERATURE);
+    myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::TEMPERATURE);
     myStructure.ExportVtkDataFileElements("Temperature1D.vtk");
 
     return 0;

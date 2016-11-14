@@ -1,11 +1,9 @@
-// $Id: VisualizeTruss1D2N.cpp 147 2009-12-02 17:12:54Z eckardt4 $
-
 #include "nuto/math/MathException.h"
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/structures/unstructured/Structure.h"
-
-#include "nuto/base/Debug.h"
+#include "nuto/mechanics/MechanicsEnums.h"
+#include "nuto/visualize/VisualizeEnum.h"
 
 int main()
 {
@@ -38,7 +36,6 @@ int main()
         Coordinates(0, 8) = 2;
         Coordinates(1, 8) = 2;
 
-        DBG_POSITION_INFO("Coordinates Matrix")
         Coordinates.Info();
 
         NuTo::FullVector<int, Eigen::Dynamic> Nodes = myStructure.NodesCreate(Coordinates);
@@ -67,13 +64,15 @@ int main()
         Incidences(2, 3) = Nodes(8, 0);
         Incidences(3, 3) = Nodes(7, 0);
 
-        DBG_POSITION_INFO("Incidence Matrix")
         Coordinates.Info();
 
-        int interpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::QUAD2D);
-        myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::EQUIDISTANT1);
-        myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::EQUIDISTANT1);
-        myStructure.InterpolationTypeSetIntegrationType(interpolationType, NuTo::IntegrationType::IntegrationType2D4NGauss4Ip, NuTo::IpData::NOIPDATA);
+        int interpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
+        myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES,
+                NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+        myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS,
+                NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+        myStructure.InterpolationTypeSetIntegrationType(interpolationType,
+                NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
 
         NuTo::FullVector<int, Eigen::Dynamic> Elements = myStructure.ElementsCreate(interpolationType, Incidences);
 
@@ -81,8 +80,10 @@ int main()
 
         // create constitutive law
         int myMatLin = myStructure.ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
-        myStructure.ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 10);
-        myStructure.ConstitutiveLawSetParameterDouble(myMatLin,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.1);
+        myStructure.ConstitutiveLawSetParameterDouble(myMatLin,
+                NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 10);
+        myStructure.ConstitutiveLawSetParameterDouble(myMatLin,
+                NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.1);
 
         // create section
         int mySection1 = myStructure.SectionCreate("PLANE_STRAIN");
@@ -93,20 +94,23 @@ int main()
         myStructure.ElementTotalSetSection(mySection1);
 
         // visualize element
-        int visualizationGroup = myStructure.GroupCreate(NuTo::Groups::eGroupId::Elements);
+        int visualizationGroup = myStructure.GroupCreate(NuTo::eGroupId::Elements);
         myStructure.GroupAddElementsTotal(visualizationGroup);
 
-        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::DISPLACEMENTS);
-        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRAIN);
-        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::VisualizeBase::ENGINEERING_STRESS);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+        myStructure.AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
         myStructure.ExportVtkDataFileElements("Plane2D4N.vtk");
-    } catch (NuTo::MathException& e)
+    }
+    catch (NuTo::MathException& e)
     {
         std::cout << e.ErrorMessage() << std::endl;
-    } catch (NuTo::Exception& e)
+    }
+    catch (NuTo::Exception& e)
     {
         std::cout << e.ErrorMessage() << std::endl;
-    } catch (...)
+    }
+    catch (...)
     {
         std::cout << "Unexpected" << std::endl;
     }

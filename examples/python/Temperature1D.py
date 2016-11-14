@@ -53,7 +53,7 @@ def create_structure(number_of_time_derivatives=0):
     truss_interpolation = structure.InterpolationTypeCreate("Truss1D")
     structure.InterpolationTypeAdd(truss_interpolation, "coordinates", "equidistant1")
     structure.InterpolationTypeAdd(truss_interpolation, "temperature", "equidistant1")
-    structure.InterpolationTypeSetIntegrationType(truss_interpolation, "1D2NGauss2Ip", "noipdata")
+    structure.InterpolationTypeSetIntegrationType(truss_interpolation, "1D2NGauss2Ip")
 
     # create elements
     element_incidence = nuto.IntFullVector(2)

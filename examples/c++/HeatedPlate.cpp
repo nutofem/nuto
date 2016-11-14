@@ -179,9 +179,9 @@ int main()
     auto nodesSouth = structure.GroupCreate(NuTo::eGroupId::Nodes);
     auto nodesNorth = structure.GroupCreate(NuTo::eGroupId::Nodes);
     structure.GroupAddNodeCoordinateRange(nodesWest, 0, 0.0, 0.0);
-    structure.GroupAddNodeCoordinateRange(nodesEast, 0, 100.0,100.0);
+    structure.GroupAddNodeCoordinateRange(nodesEast, 0, 32.0, 32.0);
     structure.GroupAddNodeCoordinateRange(nodesSouth, 1, 0.0, 0.0);
-    structure.GroupAddNodeCoordinateRange(nodesNorth, 1, 20.0, 20.0);
+    structure.GroupAddNodeCoordinateRange(nodesNorth, 1, 16.0, 16.0);
 
     // displacement BC
     structure.ConstraintLinearSetDisplacementNodeGroup(nodesWest, NuTo::FullVector<double,2>::UnitX(), 0.0);
