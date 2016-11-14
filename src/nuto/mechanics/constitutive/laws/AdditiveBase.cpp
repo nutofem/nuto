@@ -5,43 +5,15 @@
 
 
 
-NuTo::AdditiveBase::AdditiveBase()
+NuTo::AdditiveBase::AdditiveBase(const int& rNumTimeDerivatives)
+    : mNumTimeDerivatives(rNumTimeDerivatives)
 {
+    // Even though you get the number of time derivatives during construction, it might change later. So we set the size to 3 (disp, vel, acc) to avoid problems.
     mComputableDofCombinations.resize(3);
 }
 
-NuTo::AdditiveBase::AdditiveBase(const AdditiveBase& rOther)
-{
-    *this = rOther;
-}
 
-NuTo::AdditiveBase::AdditiveBase(AdditiveBase&& rOther)
-{
-    *this = std::move(rOther);
-}
-
-NuTo::AdditiveBase& NuTo::AdditiveBase::operator =(const AdditiveBase& rOther)
-{
-    mComputableDofCombinations = rOther.mComputableDofCombinations;
-    mStaticDataAllocated = rOther.mStaticDataAllocated;
-    mSublaws.reserve(rOther.mSublaws.size());
-    for (auto& ipLaw : rOther.mSublaws)
-        mSublaws.push_back(ipLaw->Clone());
-    return *this;
-}
-NuTo::AdditiveBase& NuTo::AdditiveBase::operator =(AdditiveBase&& rOther)
-{
-    mComputableDofCombinations = std::move(rOther.mComputableDofCombinations);
-    mStaticDataAllocated = rOther.mStaticDataAllocated; // just a bool
-    mSublaws.reserve(rOther.mSublaws.size());
-    for (auto& ipLaw : rOther.mSublaws)
-        mSublaws.push_back(std::move(ipLaw));
-    return *this;
-}
-
-
-void NuTo::AdditiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiveLaw,
-        Constitutive::eInput rModiesInput)
+void NuTo::AdditiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiveLaw, Constitutive::eInput)
 {
     if(rConstitutiveLaw.HaveTmpStaticData())
         throw MechanicsException(__PRETTY_FUNCTION__,
@@ -54,7 +26,7 @@ void NuTo::AdditiveBase::AddConstitutiveLaw(NuTo::ConstitutiveBase& rConstitutiv
         throw MechanicsException(__PRETTY_FUNCTION__,
                 "All constitutive laws have to be attached before static data is allocated!");
 
-    mSublaws.push_back(rConstitutiveLaw.CreateIPLaw());
+    mSublaws.push_back(&rConstitutiveLaw);
     AddCalculableDofCombinations(rConstitutiveLaw);
 }
 
@@ -76,7 +48,7 @@ bool NuTo::AdditiveBase::CheckElementCompatibility(Element::eElementType rElemen
 {
     for (auto& sublaw : mSublaws)
     {
-        if(!sublaw->GetConstitutiveLaw().CheckElementCompatibility(rElementType))
+        if(!sublaw->CheckElementCompatibility(rElementType))
             return false;
     }
     return true;
@@ -87,22 +59,22 @@ void NuTo::AdditiveBase::CheckParameters() const
 {
     for (auto& sublaw : mSublaws)
     {
-        sublaw->GetConstitutiveLaw().CheckParameters();
+        sublaw->CheckParameters();
     }
 }
 
 
-bool NuTo::AdditiveBase::HaveTmpStaticData() const 
+bool NuTo::AdditiveBase::HaveTmpStaticData() const
 {
     for (auto& sublaw : mSublaws)
     {
-        if(sublaw->GetConstitutiveLaw().HaveTmpStaticData())
+        if(sublaw->HaveTmpStaticData())
             return true;
     }
     return false;
 }
 
-bool NuTo::AdditiveBase::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol, 
+bool NuTo::AdditiveBase::CheckDofCombinationComputable(NuTo::Node::eDof rDofRow, NuTo::Node::eDof rDofCol,
         int rTimeDerivative) const
 {
     return mComputableDofCombinations[rTimeDerivative].find(std::pair<Node::eDof, Node::eDof>(rDofRow, rDofCol))
@@ -117,12 +89,14 @@ NuTo::ConstitutiveInputMap NuTo::AdditiveBase::GetConstitutiveInputs(
 
     for (auto& sublaw : mSublaws)
     {
-        ConstitutiveInputMap singleLawInputMap = sublaw->GetConstitutiveLaw().GetConstitutiveInputs(rConstitutiveOutput, rInterpolationType);
+        ConstitutiveInputMap singleLawInputMap = sublaw->GetConstitutiveInputs(rConstitutiveOutput, rInterpolationType);
         constitutiveInputMap.Merge(singleLawInputMap);
     }
     return constitutiveInputMap;
 }
-NuTo::Constitutive::IPConstitutiveLawBase& NuTo::AdditiveBase::GetSublaw(int rIndex)
+
+
+NuTo::ConstitutiveBase& NuTo::AdditiveBase::GetSublaw(int rIndex)
 {
     try
     {

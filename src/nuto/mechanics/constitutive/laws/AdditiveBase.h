@@ -8,18 +8,29 @@
 
 namespace NuTo
 {
+namespace Constitutive
+{
+    class IPAdditiveInputExplicit;
+    class IPAdditiveInputImplicit;
+    class IPAdditiveOutput;
+}
 class AdditiveBase : public ConstitutiveBase
 {
 public:
+
+    friend class Constitutive::IPAdditiveInputExplicit;
+    friend class Constitutive::IPAdditiveInputImplicit;
+    friend class Constitutive::IPAdditiveOutput;
+
     //! @brief ctor
-    AdditiveBase();
+    AdditiveBase(const int& rNumTimeDerivatives);
 
     virtual ~AdditiveBase() = default;
-    AdditiveBase(const AdditiveBase&  rOther);
-    AdditiveBase(      AdditiveBase&& rOther);
+    AdditiveBase(const AdditiveBase&  rOther) = default;
+    AdditiveBase(      AdditiveBase&& rOther) = default;
 
-    AdditiveBase& operator =(const AdditiveBase&  rOther);
-    AdditiveBase& operator =(      AdditiveBase&& rOther);
+    AdditiveBase& operator=(const AdditiveBase&  rOther) = default;
+    AdditiveBase& operator=(      AdditiveBase&& rOther) = default;
 
 
     //! @brief Adds a constitutive law to a model that combines multiple constitutive laws (additive, parallel)
@@ -43,7 +54,7 @@ public:
     //! @brief returns the sublaw with index rInted
     //! @param rIndex ... index
     //! @return reference to ip law
-    Constitutive::IPConstitutiveLawBase& GetSublaw(int rIndex);
+    ConstitutiveBase& GetSublaw(int rIndex);
 
 
     //! @brief Determines the constitutive inputs needed to evaluate the constitutive outputs.
@@ -64,8 +75,12 @@ protected:
     //! @brief Debug variable to avoid that a constitutive law can be attached after allocation of static data.
     mutable bool mStaticDataAllocated = false;
 
+    //! @brief Reference to the variable that stores the number of time derivatives (Original variable should be stored at the structure)
+    const int& mNumTimeDerivatives;
+
+
     //! @brief Vector storing the IPConstitutiveBase sublaws.
-    std::vector<std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase>> mSublaws;
+    std::vector<NuTo::ConstitutiveBase*> mSublaws;
 
     //! @brief Vector of all the computable DOF combinations.
     std::vector<std::set<std::pair<Node::eDof,Node::eDof>>> mComputableDofCombinations;

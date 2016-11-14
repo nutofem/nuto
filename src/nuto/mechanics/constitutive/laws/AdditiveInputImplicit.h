@@ -1,9 +1,10 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/laws/AdditiveBase.h"
-#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLaw.h"
 
-#include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h" // TODO ----> WEG!
+#include "nuto/mechanics/constitutive/staticData/IPAdditiveInputImplicit.h"
+#include "nuto/mechanics/constitutive/staticData/DataAdditiveInputImplicit.h"
+
 
 #include <set>
 #include <vector>
@@ -15,15 +16,14 @@ class AdditiveInputImplicit : public AdditiveBase
 {
 public:
 
-    typedef Constitutive::StaticData::DataMoistureTransport StaticDataType;
+
+    typedef Constitutive::StaticData::DataAdditiveInputImplicit StaticDataType;
     using Data = typename Constitutive::StaticData::DataContainer<StaticDataType>;
 
     //! @brief constructor
-    AdditiveInputImplicit() : AdditiveBase()
-    {
-        //VHIRTHAMTODO ---> Get number time derivatives during construction (as parameter)
-        mComputableDofCombinations.resize(2);
-    }
+    AdditiveInputImplicit(const int& rNumTimeDerivatives)
+        : AdditiveBase(rNumTimeDerivatives)
+    {}
 
 //    // has no ip static data itself
 //    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw()
@@ -34,7 +34,10 @@ public:
     //! @brief creates corresponding IPConstitutiveLaw
     std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override
     {
-        return std::make_unique<Constitutive::IPConstitutiveLaw<AdditiveInputImplicit>>(*this, StaticDataType());
+
+         return std::make_unique<Constitutive::IPAdditiveInputImplicit>(*this, StaticDataType());
+         mStaticDataAllocated = true;
+
     }
 
     //! @brief Evaluate the constitutive relation.
@@ -44,8 +47,11 @@ public:
     template <int TDim>
     NuTo::eError Evaluate(
         const ConstitutiveInputMap& rConstitutiveInput,
-        const ConstitutiveOutputMap& rConstitutiveOutput,
-        Data& rStaticData);
+        const ConstitutiveOutputMap& rConstitutiveOutput)
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__,"Additive Law cannot be evaluated. Their IPAdditiveInputExplicit should be evaluated instead.");
+    }
+
 
 
     //! @brief Determines the constitutive inputs needed to evaluate the constitutive outputs.
@@ -69,8 +75,6 @@ private:
 
     std::vector<std::set<std::pair<Node::eDof,Node::eDof>>> mComputableDofCombinations;
 
-    //! @brief debug variable to avoid that a constitutive law can be attached after allocation of static data.
-    mutable bool mStaticDataAllocated = false;
 };
 
 }

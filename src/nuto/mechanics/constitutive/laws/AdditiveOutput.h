@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/laws/AdditiveBase.h"
+#include "nuto/mechanics/constitutive/staticData/IPAdditiveOutput.h"
 
 namespace NuTo
 {
@@ -10,22 +11,25 @@ class AdditiveOutput : public AdditiveBase
 public:
 
     //! @brief constructor
-    AdditiveOutput() : AdditiveBase()
-    {
-        //VHIRTHAMTODO ---> Get number time derivatives during construction (as parameter)
-        mComputableDofCombinations.resize(2);
-    }
+    AdditiveOutput(const int& rNumTimeDerivatives)
+        : AdditiveBase(rNumTimeDerivatives)
+    {}
 
     // has no ip static data itself
     std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw()
     {
-        return std::make_unique<Constitutive::IPConstitutiveLawWithoutData<AdditiveOutput>>(*this);
+        return std::make_unique<Constitutive::IPAdditiveOutput>(*this);
+        mStaticDataAllocated = true;
     }
 
 
     template <int TDim>
     NuTo::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
-                          const ConstitutiveOutputMap& rConstitutiveOutput);
+                          const ConstitutiveOutputMap& rConstitutiveOutput)
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Additive Law cannot be evaluated. Its IPAdditiveOutputs should be evaluated instead.");
+    }
 
 
     //! @brief ... get type of constitutive relationship

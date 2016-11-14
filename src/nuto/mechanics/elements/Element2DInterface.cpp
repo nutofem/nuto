@@ -299,6 +299,7 @@ void NuTo::Element2DInterface::CalculateConstitutiveInputs(const ConstitutiveInp
             slip.AsMatrix() = rotationMatrix * (rData.mMatrixB[Node::eDof::DISPLACEMENTS] * rData.mNodalValues[Node::eDof::DISPLACEMENTS]);
         }
             break;
+        case Constitutive::eInput::TIME:
         case Constitutive::eInput::TIME_STEP:
         case Constitutive::eInput::CALCULATE_STATIC_DATA:
 

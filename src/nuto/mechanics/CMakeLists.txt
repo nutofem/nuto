@@ -24,8 +24,12 @@ set(NuToMechanicsConstitutive_SOURCES
     constitutive/laws/ShrinkageCapillaryStrainBased.cpp
     constitutive/laws/ShrinkageCapillaryStressBased.cpp
     constitutive/laws/ThermalStrains.cpp
+    constitutive/staticData/DataAdditiveInputImplicit.cpp
     constitutive/staticData/DataMisesPlasticity.cpp
     constitutive/staticData/DataMoistureTransport.cpp
+    constitutive/staticData/IPAdditiveInputExplicit.cpp
+    constitutive/staticData/IPAdditiveInputImplicit.cpp
+    constitutive/staticData/IPAdditiveOutput.cpp
     )
 
 set(NuToMechanicsConstraint_SOURCES

@@ -49,15 +49,15 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
         switch (rType)
         {
         case eConstitutiveType::ADDITIVE_INPUT_EXPLICIT:
-            ConstitutiveLawPtr = new NuTo::AdditiveInputExplicit();
+            ConstitutiveLawPtr = new NuTo::AdditiveInputExplicit(mNumTimeDerivatives);
             break;
 
         case eConstitutiveType::ADDITIVE_INPUT_IMPLICIT:
-            ConstitutiveLawPtr = new NuTo::AdditiveInputImplicit();
+            ConstitutiveLawPtr = new NuTo::AdditiveInputImplicit(mNumTimeDerivatives);
             break;
 
         case eConstitutiveType::ADDITIVE_OUTPUT:
-            ConstitutiveLawPtr = new NuTo::AdditiveOutput();
+            ConstitutiveLawPtr = new NuTo::AdditiveOutput(mNumTimeDerivatives);
             break;
 
         case eConstitutiveType::GRADIENT_DAMAGE_ENGINEERING_STRESS:

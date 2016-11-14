@@ -1,6 +1,7 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/laws/AdditiveOutput.h"
+#include "nuto/mechanics/constitutive/laws/AdditiveInputImplicit.h"
 #include "nuto/mechanics/groups/GroupEnum.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
@@ -60,7 +61,7 @@
 
 // --- Time integration scheme
 // ---------------------------
-#define RES_TOLERANCE_MECHANICS 1e-6
+#define RES_TOLERANCE_MECHANICS 1e-5
 #define MAX_ITERATION 20
 
 
@@ -280,12 +281,12 @@ inline void SetupMultiProcessor(NuTo::Structure& rS)
 template <int TDim>
 void ApplyInitialNodalValues(NuTo::Structure& rS,
                              std::array<int,TDim> rN,
-                             std::array<double,TDim> rL)
+                             double rInitialStrainRate)
 {
     unsigned int NNodes = rS.GetNumNodes();
     Eigen::VectorXd NodalStartValues(TDim);
     NodalStartValues.setZero();
-    NodalStartValues(0) = SURFACELOAD / LD_DAMPINGCOEFFICIENT*rL[0];
+    NodalStartValues(0) = rInitialStrainRate;
 
     for (unsigned int i=0; i<NNodes; i++)
     {
@@ -295,7 +296,7 @@ void ApplyInitialNodalValues(NuTo::Structure& rS,
             Eigen::VectorXd NodeCoordinates = NodePtr->Get(NuTo::Node::eDof::COORDINATES);
             if(NodeCoordinates(0) == 0.0)
                 continue;
-            NodePtr->Set(NuTo::Node::eDof::DISPLACEMENTS,1,NodalStartValues * NodeCoordinates(0) / rL[0]);
+            NodePtr->Set(NuTo::Node::eDof::DISPLACEMENTS,1,NodalStartValues * NodeCoordinates(0) );
         }
     }
 }
@@ -392,7 +393,7 @@ inline void SetupVisualize(NuTo::Structure& rS)
         int visGrp = rS.GroupCreate(NuTo::eGroupId::Elements);
         rS.GroupAddElementsTotal(visGrp);
         rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::DISPLACEMENTS);
-        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+//        rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
         rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
         rS.AddVisualizationComponent(visGrp, NuTo::eVisualizeWhat::PRINCIPAL_ENGINEERING_STRESS);
 #endif // ENABLE_VISUALIZE
@@ -407,8 +408,8 @@ inline void SetupVisualize(NuTo::Structure& rS)
 
 
 template<int TDim>
-void CheckResults(NuTo::Structure& rS,
-                  std::array<double,TDim> rL)
+void CheckResultsSpringDamper(NuTo::Structure& rS,
+                              std::array<double,TDim> rL)
 {
 
     const NodeMap& nodePtrMap = rS.NodeGetNodeMap();
@@ -436,6 +437,37 @@ void CheckResults(NuTo::Structure& rS,
         std::cout << "Displacements correct!" << std::endl;
 }
 
+
+template<int TDim>
+void CheckResultsSpringDamperSerial(NuTo::Structure& rS,
+                              std::array<double,TDim> rL)
+{
+
+    const NodeMap& nodePtrMap = rS.NodeGetNodeMap();
+    BOOST_FOREACH(NodeMap::const_iterator::value_type it, nodePtrMap)
+    {
+        const NuTo::NodeBase* nodePtr = it.second;
+        if(nodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)<1)
+        {
+            continue;   // Nodes without Displacements cant be checked
+        }
+        for(int i=0; i<TDim; ++i)
+        {
+            double coord   = nodePtr->Get(NuTo::Node::eDof::COORDINATES)[i];
+            if(coord <= 0.)
+                continue;
+            double strain_numerical  = nodePtr->Get(NuTo::Node::eDof::DISPLACEMENTS)[i] / coord;
+            double strain_theoretical = SURFACELOAD / LE_YOUNGSMODULUS * (1 - std::exp(-LE_YOUNGSMODULUS/LD_DAMPINGCOEFFICIENT * (TEND - DELTAT/2.0))) +
+                                        SURFACELOAD / (2* LE_YOUNGSMODULUS) * (1 - std::exp(-LE_YOUNGSMODULUS/LD_DAMPINGCOEFFICIENT * (TEND - DELTAT/2.0)));
+
+            double ErrorPercentage = std::abs(1-strain_numerical/strain_theoretical);
+            const double tolerance = 5e-3;
+            if(ErrorPercentage>tolerance)
+                throw NuTo::Exception(__PRETTY_FUNCTION__,"Difference to theoretical solution is bigger than 0.5%!");
+        }
+    }
+        std::cout << "Displacements correct!" << std::endl;
+}
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -497,7 +529,7 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
     S.NodeBuildGlobalDofs();
     ApplyInitialNodalValues<TDim>(S,
                                   rN,
-                                  rL);
+                                  SURFACELOAD / LD_DAMPINGCOEFFICIENT);
 
 
     // Add constraint on the leftern side
@@ -584,12 +616,184 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
 
     TI.Solve(tCtrl.t_final);
 
-    CheckResults<TDim>(S,
+    CheckResultsSpringDamper<TDim>(S,
                        rL);
 
     std::cout << "Test - PASSED!" << std::endl << std::endl;
 }
 
+
+
+template <int TDim>
+void TestSpringDamperSerialChain(std::array<int,TDim> rN,
+                                 std::array<double,TDim> rL,
+                                 std::map<NuTo::Node::eDof,NuTo::Interpolation::eTypeOrder> rDofIPTMap)
+{
+    if(TDim>1)
+        throw NuTo::Exception(__PRETTY_FUNCTION__,"2D and 3D are currently not supported!");
+
+    std::string testName = std::string("SpringDamperSerialChain") + std::to_string(TDim) +"D";
+
+    std::cout << std::endl << "--------------------------------------------------------------------------"
+              << std::endl << "Start test: "<< testName
+              << std::endl << "--------------------------------------------------------------------------" << std::endl;
+
+
+
+
+    // Allocate necessary resources
+    NuTo::Structure S(TDim);
+    NuTo::NewmarkDirect TI(&S);
+
+    int CL_AII_ID = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::ADDITIVE_INPUT_IMPLICIT);
+    int CL_AO1_ID = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::ADDITIVE_OUTPUT);
+    int CL_LD1_ID = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_DAMPING_ENGINEERING_STRESS);
+    int CL_LE1_ID = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
+    int CL_AO2_ID = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::ADDITIVE_OUTPUT);
+    int CL_LD2_ID = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_DAMPING_ENGINEERING_STRESS);
+    int CL_LE2_ID = S.ConstitutiveLawCreate(NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
+
+
+    NuTo::ConstitutiveBase* CL_AII_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_AII_ID);
+    NuTo::ConstitutiveBase* CL_AO1_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_AO1_ID);
+    NuTo::ConstitutiveBase* CL_LD1_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LD1_ID);
+    NuTo::ConstitutiveBase* CL_LE1_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LE1_ID);
+    NuTo::ConstitutiveBase* CL_AO2_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_AO2_ID);
+    NuTo::ConstitutiveBase* CL_LD2_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LD2_ID);
+    NuTo::ConstitutiveBase* CL_LE2_Ptr   = S.ConstitutiveLawGetConstitutiveLawPtr(CL_LE2_ID);
+
+
+    dynamic_cast<NuTo::AdditiveOutput*>(CL_AO1_Ptr)->AddConstitutiveLaw(*CL_LE1_Ptr);
+    dynamic_cast<NuTo::AdditiveOutput*>(CL_AO1_Ptr)->AddConstitutiveLaw(*CL_LD1_Ptr);
+    dynamic_cast<NuTo::AdditiveOutput*>(CL_AO2_Ptr)->AddConstitutiveLaw(*CL_LE2_Ptr);
+    dynamic_cast<NuTo::AdditiveOutput*>(CL_AO2_Ptr)->AddConstitutiveLaw(*CL_LD2_Ptr);
+
+    dynamic_cast<NuTo::AdditiveInputImplicit*>(CL_AII_Ptr)->AddConstitutiveLaw(*CL_AO1_Ptr);
+    dynamic_cast<NuTo::AdditiveInputImplicit*>(CL_AII_Ptr)->AddConstitutiveLaw(*CL_AO2_Ptr);
+
+    TimeControl tCtrl;
+
+    CL_LD1_Ptr->SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMPING_COEFFICIENT, LD_DAMPINGCOEFFICIENT);
+    CL_LE1_Ptr->SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, LE_POISSONRATIO);
+    CL_LE1_Ptr->SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, LE_YOUNGSMODULUS);
+
+    CL_LD2_Ptr->SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::DAMPING_COEFFICIENT, LD_DAMPINGCOEFFICIENT * 2);
+    CL_LE2_Ptr->SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, LE_POISSONRATIO);
+    CL_LE2_Ptr->SetParameterDouble(NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, LE_YOUNGSMODULUS * 2);
+
+
+    SetupStructure(S,testName);
+    int SEC = SetupSection<TDim>(S);
+    int IPT = SetupInterpolationType<TDim>(S,rDofIPTMap);
+
+    SetupMesh<TDim>(S,
+                    SEC,
+                    CL_AII_ID,
+                    IPT,
+                    rN,
+                    rL);
+
+    S.ElementTotalConvertToInterpolationType();
+    S.NodeBuildGlobalDofs();
+//    ApplyInitialNodalValues<TDim>(S,
+//                                  rN,
+//                                  SURFACELOAD / LD_DAMPINGCOEFFICIENT + SURFACELOAD / (2 * LD_DAMPINGCOEFFICIENT));
+
+
+    ApplyInitialNodalValues<TDim>(S,
+                                  rN,
+                                  0);
+
+
+    // Add constraint on the leftern side
+    auto lambdaGetNodesLeftSurface = [](NuTo::NodeBase* rNodePtr) -> bool
+                                {
+                                    if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)
+                                        return false;
+                                    double Tol = 1.e-6;
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
+                                    {
+                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+                                        if (x >= 0.0   - Tol   && x <= 0.0   + Tol)
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                };  // lambdaGetNodeLeftBottom
+
+
+    AddConstraint<TDim>(S,
+                        TI,
+                        lambdaGetNodesLeftSurface,
+                        0);
+
+
+    // Add force on the rightern side
+    auto lambdaGetNodesRightSurface = [rL](NuTo::NodeBase* rNodePtr) -> bool
+                                {
+                                    if(rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)==0)
+                                        return false;
+                                    double Tol = 1.e-6;
+                                    if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
+                                    {
+                                        double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+                                        if (x >= rL[0]   - Tol   && x <= rL[0]   + Tol)
+                                        {
+                                            return true;
+                                        }
+                                    }
+                                    return false;
+                                };  // lambdaGetNodeLeftBottom
+
+
+    AddSurfaceLoad<TDim>(S,
+                         lambdaGetNodesRightSurface);
+
+
+
+
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> TimeDependentLoadFactor(3,2);
+    TimeDependentLoadFactor(0,0) = 0.;
+    TimeDependentLoadFactor(1,0) = 1.;
+    TimeDependentLoadFactor(2,0) = 2.;
+    TimeDependentLoadFactor(0,1) = 0.;
+    TimeDependentLoadFactor(1,1) = 1.;
+    TimeDependentLoadFactor(2,1) = 1.;
+
+    TI.SetTimeDependentLoadCase(0,TimeDependentLoadFactor);
+
+    SetupMultiProcessor(S);
+    SetupVisualize(S);
+
+
+
+    int IDNodeRight = -1;
+    const auto& nodePtrMap = S.NodeGetNodeMap();
+    BOOST_FOREACH(NodeMap::const_iterator::value_type it, nodePtrMap)
+    {
+        const NuTo::NodeBase* nodePtr = it.second;
+        double coord   = nodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+        double tolerance = 1e-6;
+        if(std::abs(coord-rL[0]) < tolerance)
+        {
+            IDNodeRight = S.NodeGetId(nodePtr);
+            break;
+        }
+    }
+
+    SetupTimeIntegration(TI,
+                         tCtrl,
+                         testName,
+                         IDNodeRight);
+
+    TI.Solve(tCtrl.t_final);
+
+    CheckResultsSpringDamperSerial<TDim>(S,
+                       rL);
+
+    std::cout << "Test - PASSED!" << std::endl << std::endl;
+}
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -604,6 +808,11 @@ int main()
 
 
     TestSpringDamperCombination<1>( {10},
+                                    {0.01},
+                                    dofIPTMap);
+
+
+    TestSpringDamperSerialChain<1>( {10},
                                     {0.01},
                                     dofIPTMap);
 

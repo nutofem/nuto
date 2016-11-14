@@ -23,6 +23,7 @@
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "nuto/mechanics/elements/ElementBase.h"
 #include "nuto/mechanics/structures/StructureBaseEnum.h"
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
@@ -178,9 +179,16 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             CalculateMuDampingMatrix(hessian1, hessian2);
         }
 
+
+        /*---------------------------------*\
+        |    Declare and fill Input Map     |
+        \*---------------------------------*/
+
         ConstitutiveInputMap inputMap;
         inputMap[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
                 eCalculateStaticData::EULER_BACKWARD);
+        double& inputTime = (*inputMap.emplace(Constitutive::eInput::TIME,std::make_unique<ConstitutiveScalar>()).first->second)[0];
+        inputTime = mTime;
 
         ExtractDofValues(lastConverged_dof_dt0, lastConverged_dof_dt1, lastConverged_dof_dt2);
 
@@ -253,6 +261,7 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             prevExtForce = CalculateCurrentExternalLoad(curTime);
 
             curTime += timeStep;
+            inputTime = mTime + timeStep;
             SetTimeAndTimeStep(curTime, timeStep, rTimeDelta);     //check whether harmonic excitation, check whether curTime is too close to the time data
             mStructure->SetTime(curTime);
 
@@ -261,6 +270,7 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
             unsigned int staggeredStepNumber = 0;    // at the moment needed to do the postprocessing after the last step and not after every step of a staggered solution.
             for (const auto& activeDofs : mStepActiveDofs)
             {
+
                 ++staggeredStepNumber;
                 mStructure->DofTypeSetIsActive(activeDofs);
 
@@ -373,6 +383,8 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                 {
                     //converged solution
                     if(mVerboseLevel>2)  mStructure->GetLogger() << "\n *** UpdateStaticData *** from NewMarkDirect \n";
+
+                    // Update static data
                     mStructure->ElementTotalUpdateStaticData();
 
                     //store converged step
@@ -390,6 +402,7 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                     mStructure->SetPrevTime(curTime);
 
                     mTime+=timeStep;
+                    inputTime = mTime;
 
                     mStructure->GetLogger() << "Convergence after " << iteration << " iterations at time " << mTime << " (timestep " << timeStep << ").\n";
                     mStructure->GetLogger() << "Residual: \t" << normResidual << "\n";

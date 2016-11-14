@@ -1,6 +1,7 @@
 #pragma once
 
 #include "nuto/mechanics/constitutive/laws/AdditiveBase.h"
+#include "nuto/mechanics/constitutive/staticData/IPAdditiveInputExplicit.h"
 
 #include <set>
 #include <vector>
@@ -13,16 +14,15 @@ class AdditiveInputExplicit : public AdditiveBase
 public:
 
     //! @brief constructor
-    AdditiveInputExplicit() : AdditiveBase()
-    {
-        //VHIRTHAMTODO ---> Get number time derivatives during construction (as parameter)
-        mComputableDofCombinations.resize(2); 
-    }
+    AdditiveInputExplicit(const int& rNumTimeDerivatives)
+        : AdditiveBase(rNumTimeDerivatives)
+    {}
 
     // has no ip static data itself
-    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw()
+    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override
     {
-        return std::make_unique<Constitutive::IPConstitutiveLawWithoutData<AdditiveInputExplicit>>(*this);
+        return std::make_unique<Constitutive::IPAdditiveInputExplicit>(*this);
+        mStaticDataAllocated = true;
     }
 
 
@@ -36,37 +36,30 @@ public:
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @param rConstitutiveOutput Output of the constitutive law (stress, stiffness, heat flux etc.).
     template <int TDim>
-    NuTo::eError Evaluate(const ConstitutiveInputMap& rConstitutiveInput,
-                          const ConstitutiveOutputMap& rConstitutiveOutput);
+    NuTo::eError Evaluate(const ConstitutiveInputMap&, const ConstitutiveOutputMap&)
+    {
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__,
+                "Additive Law cannot be evaluated. Their IPAdditiveInputExplicit should be evaluated instead.");
+    }
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
     //! @param rConstitutiveOutput ... desired constitutive outputs
     //! @param rInterpolationType ... interpolation type to determine additional inputs
     //! @return constitutive inputs needed for the evaluation
-    virtual ConstitutiveInputMap GetConstitutiveInputs( const ConstitutiveOutputMap& rConstitutiveOutput,
-                                                        const InterpolationType& rInterpolationType) const override;
+    virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
+            const InterpolationType& rInterpolationType) const override;
 
     //! @brief ... get type of constitutive relationship
     //! @return ... type of constitutive relationship
     //! @sa eConstitutiveType
     virtual Constitutive::eConstitutiveType GetType() const override;
 
-private:
-    //! @brief Applies sublaw dependent modifications to the main laws inputs and the global outputs
-    //! @param rMainLawInput: Input map of the main law
-    //! @param rConstitutiveOutput: Global output map of this constitutive law
-    //! @param rSublawOutput: Output map of a sublaw
-    template <int TDim>
-    void ApplySublawOutputs(const ConstitutiveInputMap& rMainLawInput,
-                            const ConstitutiveOutputMap& rConstitutiveOutput,
-                            const ConstitutiveOutputMap& rSublawOutput);
+    //! @brief ... pointer to constitutive law that delivers the output
+    NuTo::ConstitutiveBase* mMainLaw = nullptr;
 
-    //! @brief Calculates the derivatives that depend on main law and sublaw outputs
-    //! @param rConstitutiveOutput: Global output map of this constitutive law
-    //! @param rSublawOutputVec: Vector with all the sublaws output maps
-    template <int TDim>
-    void CalculateDerivatives(const ConstitutiveOutputMap &rConstitutiveOutput,
-                              std::vector<ConstitutiveOutputMap> &rSublawOutputVec);
+    //! @brief Vector storing which input they modify.
+    //! @note Only for @ref AdditiveInputExplicit and @ref AdditiveInputImplicit
+    std::vector<Constitutive::eInput> mInputsToModify;
 
     //! @brief Gets the enum of the sublaw output that is needed to calculate the specified derivative
     //! @param rParameter: Enum of the parameter whose derivative is needed
@@ -75,19 +68,8 @@ private:
     Constitutive::eOutput GetDerivativeEnumSublaw(Constitutive::eOutput rParameter,
                                                           Constitutive::eOutput rMainDerivative) const;
 
-
-    //! @brief Gets a modified output map for the sublaws depending on the main laws inputs and the specified modified Input (see Member: mModifiedInputs)
-    //! @return Modified output map
     template <int TDim>
-    ConstitutiveOutputMap GetSublawOutputMap(const ConstitutiveInputMap& rMainLawInputMap,
-                                             const NuTo::ConstitutiveOutputMap& rMainLawOutputMap,
-                                             unsigned int rSublawIndex) const;
-
-    //! @brief ... pointer to constitutive law that delivers the output
-    std::unique_ptr<NuTo::Constitutive::IPConstitutiveLawBase> mMainLaw = nullptr;
-
-    //! @brief Vector storing which input they modify.
-    //! @note Only for @ref AdditiveInputExplicit and @ref AdditiveInputImplicit
-    std::vector<Constitutive::eInput> mInputsToModify;
+    ConstitutiveOutputMap GetSublawOutputMap(const NuTo::ConstitutiveInputMap& rMainLawInputMap,
+            const NuTo::ConstitutiveOutputMap& rMainLawOutputMap, int rSublawIndex) const;
 };
 }

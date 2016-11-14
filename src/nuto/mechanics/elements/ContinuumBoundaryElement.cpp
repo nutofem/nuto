@@ -248,6 +248,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateConstitutiveInputs(const Con
             waterVolumeFraction.AsScalar() = rData.mN.at(Node::eDof::WATERVOLUMEFRACTION) * rData.mNodalValues.at(Node::eDof::WATERVOLUMEFRACTION);
             break;
         }
+        case Constitutive::eInput::TIME:
         case Constitutive::eInput::TIME_STEP:
         case Constitutive::eInput::CALCULATE_STATIC_DATA:
         case Constitutive::eInput::PLANE_STATE:

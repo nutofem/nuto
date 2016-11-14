@@ -28,8 +28,9 @@ std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string n
 using namespace NuTo;
 BOOST_AUTO_TEST_CASE(additive_stresses)
 {
+    int NumTimeDerivatives = 2;
     // Create constitutive laws
-    AdditiveOutput additiveLaw;
+    AdditiveOutput additiveLaw(NumTimeDerivatives);
 
     // two "springs" in parallel; their stiffnesses add up
     // i.e. unit strain should result in stresses of two
@@ -59,7 +60,8 @@ BOOST_AUTO_TEST_CASE(additive_stresses)
         ConstitutiveIOBase::makeConstitutiveIO<2>(Constitutive::eOutput::ENGINEERING_STRESS);
 
     // evaluate the additive input law
-    additiveLaw.Evaluate<2>(inputMap, outputMap);
+    auto additiveIP = additiveLaw.CreateIPLaw();
+    additiveIP->Evaluate<2>(inputMap, outputMap);
 
     // compare to expected results
     const auto& stress = *static_cast<EngineeringStress<2>*>(outputMap.at(Constitutive::eOutput::ENGINEERING_STRESS).get());

@@ -14,6 +14,7 @@ enum class eError;
 
 namespace Constitutive
 {
+class IPAdditiveOutput;
 template <typename TLaw> class IPConstitutiveLaw;
 namespace StaticData
 {
@@ -23,6 +24,9 @@ template <typename TLaw> class DataContainer;
 //! @brief base class for a combined ConstitutiveLaw - ConstitutiveStaticData structure
 class IPConstitutiveLawBase
 {
+    friend class Constitutive::IPAdditiveOutput;
+
+
 public:
 
     //! @brief virtual destructor
@@ -52,7 +56,7 @@ public:
 
     //! @brief allocates rNum additional static data
     //! @param rNum number of addtional static data
-    virtual void AllocateAdditional(unsigned int rNum) = 0;
+    virtual void AllocateAdditional(int rNum) = 0;
 
     //! @brief Puts current static data to previous static data, previous to pre-previous, etc.
     virtual void ShiftToPast() = 0;
@@ -90,6 +94,17 @@ protected:
                                     const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
     virtual NuTo::eError Evaluate3D(const ConstitutiveInputMap& rConstitutiveInput,
                                     const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
+
+    //! @brief Searches for a specific IP constitutive law and returns it (Additive laws only)
+    //! @param rCLPtr The constitutive law of the IP constitutive law that is requested
+    //! @return Searched IP constitutive law - nullptr if law is not found
+    virtual IPConstitutiveLawBase* GetSublawIP(ConstitutiveBase* rCLPtr)
+    {
+        throw MechanicsException(__PRETTY_FUNCTION__,"This function is only used by additive laws!");
+    }
+
+
+
 };
 
 //! @brief clone methods that enables a boost::ptr_container<this> to copy itself

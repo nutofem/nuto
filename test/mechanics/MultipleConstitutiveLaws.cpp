@@ -221,22 +221,15 @@ public:
 
     void SetupStaticData()
     {
-        using namespace NuTo::Constitutive::StaticData;
         for (int i=0; i<mS.GetNumElements(); i++)
         {
             for (int theIP=0; theIP< mS.ElementGetElementPtr(i)->GetNumIntegrationPoints(); theIP++)
             {
-                NuTo::ConstitutiveBase& lawbase
-                    = mS.ElementGetElementPtr(i)->GetIPData().GetIPConstitutiveLaw(theIP).GetConstitutiveLaw();
-
-                NuTo::AdditiveBase& lawAdditiveBase
-                    = dynamic_cast<NuTo::AdditiveBase&>(lawbase);
-
-                NuTo::Constitutive::IPConstitutiveLawBase& ipLawMoisture
-                    = lawAdditiveBase.GetSublaw(1);
+                NuTo::Constitutive::IPAdditiveOutput& ipLawAO
+                    = dynamic_cast<NuTo::Constitutive::IPAdditiveOutput&>(mS.ElementGetElementPtr(i)->GetIPData().GetIPConstitutiveLaw(theIP));
 
                 NuTo::Constitutive::StaticData::DataMoistureTransport& moistureData
-                    = ipLawMoisture.GetData<NuTo::MoistureTransport>().GetData();
+                    = ipLawAO.GetSublawData<NuTo::MoistureTransport>(&mMT).GetData(); // finally the data.
 
                 moistureData.SetLastSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
                 moistureData.SetCurrentSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
@@ -598,7 +591,7 @@ inline void SetupVisualize(NuTo::Structure& rS)
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-void CheckMechanicsResults(NuTo::Structure& rS)
+void CheckMechanicsResultsAdditiveOutput(NuTo::Structure& rS)
 {
     const NodeMap& nodePtrMap = rS.NodeGetNodeMap();
     BOOST_FOREACH(NodeMap::const_iterator::value_type it, nodePtrMap)
@@ -619,6 +612,7 @@ void CheckMechanicsResults(NuTo::Structure& rS)
     }
         std::cout << "Displacements correct!" << std::endl;
 }
+
 
 template<int TDim>
 void CheckMoistureTransportResults(NuTo::Structure& rS,
@@ -908,7 +902,7 @@ void AdditiveOutputTest(std::array<int,TDim> rN,
                          rStaggered);
     TI.Solve(tCtrl.t_final);
 
-    CheckMechanicsResults(S);
+    CheckMechanicsResultsAdditiveOutput(S);
     CheckMoistureTransportResults<TDim>(S,
                                         rN,
                                         rL);
@@ -1102,36 +1096,35 @@ int main()
     dofIPTMap[NuTo::Node::eDof::RELATIVEHUMIDITY]       = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
     dofIPTMap[NuTo::Node::eDof::WATERVOLUMEFRACTION]    = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
 
-//    AdditiveOutputTest<1>({16},
-//                          {0.16},
-//                          dofIPTMap);
+    AdditiveOutputTest<1>({16},
+                          {0.16},
+                          dofIPTMap);
 
-//    AdditiveOutputTest<2>({16,2},
-//                          {0.16,0.02},
-//                          dofIPTMap);
+    AdditiveOutputTest<2>({16,2},
+                          {0.16,0.02},
+                          dofIPTMap);
 
-//    AdditiveOutputTest<3>({16,2,2},
-//                          {0.16,0.02,0.02},
-//                          dofIPTMap);
+    AdditiveOutputTest<3>({16,2,2},
+                          {0.16,0.02,0.02},
+                          dofIPTMap);
 
-//    AdditiveOutputTest<1>({16},
-//                          {0.16},
-//                          dofIPTMap,
-//                          true);
+    AdditiveOutputTest<1>({16},
+                          {0.16},
+                          dofIPTMap,
+                          true);
 
-//    AdditiveOutputTest<2>({16,2},
-//                          {0.16,0.02},
-//                          dofIPTMap,
-//                          true);
+    AdditiveOutputTest<2>({16,2},
+                          {0.16,0.02},
+                          dofIPTMap,
+                          true);
 
-//    AdditiveOutputTest<3>({16,2,2},
-//                          {0.16,0.02,0.02},
-//                          dofIPTMap,
-//                          true);
+    AdditiveOutputTest<3>({16,2,2},
+                          {0.16,0.02,0.02},
+                          dofIPTMap,
+                          true);
 
 
-// Solver (MUMPS / PARDISO aren't thread save! Find other solution in constitutive law to solve local system)
-#ifndef _OPENMP
+
     dofIPTMap.clear();
     dofIPTMap[NuTo::Node::eDof::COORDINATES]            = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
     dofIPTMap[NuTo::Node::eDof::DISPLACEMENTS]          = NuTo::Interpolation::eTypeOrder::EQUIDISTANT1;
@@ -1147,5 +1140,5 @@ int main()
     AdditiveInputImplicitTest<3>({16,2,2},
                                  {0.16,0.02,0.02},
                                  dofIPTMap);
-#endif
+
 }

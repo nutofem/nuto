@@ -17,6 +17,7 @@
 #include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
 #include "nuto/mechanics/constitutive/laws/AdditiveOutput.h"
 #include "nuto/mechanics/constitutive/laws/AdditiveInputExplicit.h"
+#include "nuto/mechanics/constitutive/staticData/IPAdditiveOutput.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/mechanics/groups/GroupEnum.h"
@@ -237,17 +238,11 @@ public:
         {
             for (int theIP=0; theIP< mS.ElementGetElementPtr(i)->GetNumIntegrationPoints(); theIP++)
             {
-                NuTo::ConstitutiveBase& lawbase
-                    = mS.ElementGetElementPtr(i)->GetIPData().GetIPConstitutiveLaw(theIP).GetConstitutiveLaw();
-
-                NuTo::AdditiveBase& lawAdditiveBase
-                    = dynamic_cast<NuTo::AdditiveBase&>(lawbase);
-
-                NuTo::Constitutive::IPConstitutiveLawBase& ipLawMoisture
-                    = lawAdditiveBase.GetSublaw(0); // IPLaw<Moisture>
+                NuTo::Constitutive::IPAdditiveOutput& ipLawAO
+                    = dynamic_cast<NuTo::Constitutive::IPAdditiveOutput&>(mS.ElementGetElementPtr(i)->GetIPData().GetIPConstitutiveLaw(theIP));
 
                 NuTo::Constitutive::StaticData::DataMoistureTransport& moistureData
-                    = ipLawMoisture.GetData<NuTo::MoistureTransport>().GetData(); // finally the data.
+                    = ipLawAO.GetSublawData<NuTo::MoistureTransport>(&mMT).GetData(); // finally the data.
 
                 moistureData.SetLastSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));
                 moistureData.SetCurrentSorptionCoeff(mMT.GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION));

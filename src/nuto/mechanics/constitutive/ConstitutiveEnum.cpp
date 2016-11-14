@@ -185,6 +185,7 @@ std::string NuTo::Constitutive::InputToString(const NuTo::Constitutive::eInput &
             (eInput::WATER_VOLUME_FRACTION_DT1,"WATER_VOLUME_FRACTION_DT1")
             (eInput::WATER_VOLUME_FRACTION_GRADIENT,"WATER_VOLUME_FRACTION_GRADIENT")
             (eInput::CALCULATE_STATIC_DATA, "CALCULATE_STATIC_DATA")
+            (eInput::TIME,"TIME")
             (eInput::TIME_STEP,"TIME_STEP");
     std::map< eInput, std::string >::const_iterator it = lut.find( e );
     if ( lut.end() != it )
