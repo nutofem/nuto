@@ -1,10 +1,13 @@
 #include "DataAdditiveInputImplicit.h"
 
 NuTo::Constitutive::StaticData::DataAdditiveInputImplicit::DataAdditiveInputImplicit()
-    : mLocalInputs(0),
-      mStress(0),
+    : mLocalInputs(),
+      mStress(),
       mTime(0)
-{}
+{
+    assert(mLocalInputs.size() == 0);
+    assert(mStress.size() == 0);
+}
 
 NuTo::Constitutive::StaticData::DataAdditiveInputImplicit::~DataAdditiveInputImplicit()
 {}
