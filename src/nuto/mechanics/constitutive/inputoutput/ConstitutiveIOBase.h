@@ -99,7 +99,7 @@ public:
     template <int TRows>
     void AssertIsVector(Constitutive::eOutput rOutputEnum, std::string rMethodName) const
     {
-    #ifdef DEBUG
+    #ifndef NDEBUG
         AssertDimension<TRows, 1>(rOutputEnum, rMethodName);
         bool isNotVector = dynamic_cast<const ConstitutiveVector<TRows>*>(this) == nullptr;
         if (isNotVector)
@@ -111,7 +111,7 @@ public:
     template <int TRows, int TCols>
     void AssertIsMatrix(Constitutive::eOutput rOutputEnum, std::string rMethodName) const
     {
-    #ifdef DEBUG
+    #ifndef NDEBUG
         AssertDimension<TRows, TCols>(rOutputEnum, rMethodName);
         bool isNotMatrix = dynamic_cast<const ConstitutiveMatrix<TRows, TCols>*>(this) == nullptr;
         if (isNotMatrix)
@@ -164,7 +164,7 @@ public:
 
 private:
 
-    #ifdef DEBUG
+    #ifndef NDEBUG
     template <int TRows, int TCols>
     void AssertDimension(Constitutive::eOutput rOutputEnum, const std::string& rMethodName) const
     {

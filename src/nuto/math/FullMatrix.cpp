@@ -316,6 +316,11 @@ template void FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>::Restore (const s
 
 #endif // ENABLE_SERIALIZATION
 
+// @TODO Workaround needed to build with Intel under Release mode
+// My guess is that in DEBUG, it gets instantiated somewhere else for libnuto, but when you do Release, the compiler
+// notices it is not needed in that compilation unit and optimizes it out. We should find who needs it and include
+// FullVector there.
+template class FullVector<int, -1>;
 } //NAMESPACE NUTO
 
 

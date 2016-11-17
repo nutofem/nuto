@@ -132,7 +132,7 @@ void IPAdditiveInputImplicit::CalculateGlobalOutputs(const NuTo::ConstitutiveInp
             {
                 unsigned int StartIndex = VoigtDim*i;
 
-#ifdef DEBUG
+#ifndef NDEBUG
                 rLocalOutputMapVec[i].find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)->second.get()->AssertIsMatrix<VoigtDim,VoigtDim>(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,
                                                                                                                                                             __PRETTY_FUNCTION__);
 #endif
@@ -154,7 +154,7 @@ void IPAdditiveInputImplicit::CalculateGlobalOutputs(const NuTo::ConstitutiveInp
 
             // Generate rhs vector
             // -------------------
-#ifdef DEBUG
+#ifndef NDEBUG
             // WATCHOUT There is no funtion which takes input enums, so I took the equivalent output enum even though the variable is an input!!!
             rConstitutiveInput.find(Constitutive::eInput::ENGINEERING_STRAIN)->second.get()->AssertIsVector<VoigtDim>(Constitutive::eOutput::ENGINEERING_STRAIN,
                                                                                                                      __PRETTY_FUNCTION__);

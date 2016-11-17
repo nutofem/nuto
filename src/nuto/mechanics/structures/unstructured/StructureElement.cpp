@@ -1,5 +1,3 @@
-// $Id$
-
 #include <assert.h>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
@@ -469,7 +467,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
                 // If the node is a coordinate node, it should already be in the elements mNodes, check that:
                 NodeBase* oldNode = singleSameNode[0].element->GetNode(singleSameNode[0].elementNodeId);
                 assert(oldNode != nullptr);
-#ifdef DEBUG
+#ifndef NDEBUG
                 for (TmpNode& singleUniqueNode : singleSameNode)
                     assert(singleUniqueNode.element->GetNode(singleUniqueNode.elementNodeId) == oldNode);
 #endif

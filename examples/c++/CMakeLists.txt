@@ -38,7 +38,7 @@ foreach(test
     add_test(examples::cpp::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
 endforeach()
 
-if(ENABLE_OPENMP AND OPENMP_FOUND AND NOT ENABLE_DEBUG)
+if(ENABLE_OPENMP AND OPENMP_FOUND)
     add_executable(OpenMP OpenMP.cpp)
     target_link_libraries(OpenMP NuToMath)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/openMPplot.gnu ${CMAKE_CURRENT_BINARY_DIR}/openMPplot.gnu COPYONLY)

@@ -352,7 +352,7 @@ Eigen::VectorXi NuTo::InterpolationType::GetSurfaceNodeIndices(int rSurface) con
             assert(std::abs(shapeFunctions.norm() - 1) < 1.e-8);
             int indexNodeCoordinate;                                        // index in the coordinate interpolation
 
-    #ifdef DEBUG
+    #ifndef NDEBUG
             double value = shapeFunctions.maxCoeff(&indexNodeCoordinate);   // find the index where the shape function is 1
             assert(std::abs(value - 1) < 1.e-8);
     #else

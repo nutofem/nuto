@@ -23,7 +23,7 @@ try
     std::string resultDir;
 	if (argc==1)
     {
-#ifdef DEBUG
+#ifndef NDEBUG
         resultDir = std::string("./ResultsNewmarkPlane2D4N");
 #else
         resultDir = boost::filesystem::initial_path().string()+std::string("/ResultsNewmarkPlane2D4N");
