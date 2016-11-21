@@ -69,12 +69,13 @@ elements/ContinuumElement.cpp
 elements/ContinuumBoundaryElement.cpp
 elements/ContinuumBoundaryElementConstrainedControlNode.cpp
 elements/ContinuumContactElement.cpp
+elements/ContinuumElementIGA.cpp
+elements/ContinuumElementIGALayer.cpp
 elements/ElementBase.cpp
 elements/ElementDataBase.cpp
 elements/ElementDataConstitutiveBase.cpp
 elements/Element1DInXD.cpp
 elements/Element2DInterface.cpp
-elements/ContinuumElementIGA.cpp
 elements/ElementDataConstitutiveIp.cpp
 elements/ElementDataConstitutiveIpNonlocal.cpp
 elements/ElementDataEnum.cpp
@@ -111,6 +112,7 @@ integrationtypes/IntegrationType1D2NGauss2Ip.cpp
 integrationtypes/IntegrationType1D2NGauss3Ip.cpp
 integrationtypes/IntegrationType1D2NGauss4Ip.cpp
 integrationtypes/IntegrationType1D2NGauss5Ip.cpp
+integrationtypes/IntegrationType1D2NGauss12Ip.cpp
 integrationtypes/IntegrationType1D2NLobatto3Ip.cpp
 integrationtypes/IntegrationType1D2NLobatto4Ip.cpp
 integrationtypes/IntegrationType1D2NLobatto5Ip.cpp

@@ -46,22 +46,22 @@ double NuTo::HEDOPRI5Original::CalculateCriticalTimeStep()const
 double NuTo::HEDOPRI5Original::GetStageTimeFactor(int rStage)const
 {
     assert(rStage<8);
-	double s;
+    double s;
 
-	switch(rStage)
-	{
-	case 0:
-		s = 0.;
-		break;
-	case 1:
+    switch(rStage)
+    {
+    case 0:
+        s = 0.;
+        break;
+    case 1:
         s = 1./5.;
-		break;
-	case 2:
+        break;
+    case 2:
         s = 3./10.;
-		break;
-	case 3:
+        break;
+    case 3:
         s = 4./5.;
-		break;
+        break;
     case 4:
         s = 8./9.;
         break;
@@ -74,10 +74,10 @@ double NuTo::HEDOPRI5Original::GetStageTimeFactor(int rStage)const
     case 7:
         s = 19./20.;
         break;
-	default:
+    default:
         throw MechanicsException ( "[NuTo::HEDOPRI5Original::GetStageTimeFactor] rStage>7 not implemented." );
-	}
-	return s;
+    }
+    return s;
 }
 
 //! @brief ... return delta time factor of intermediate stages (c in Butcher tableau, but only the delta to the previous step)
@@ -85,21 +85,21 @@ double NuTo::HEDOPRI5Original::GetStageTimeFactor(int rStage)const
 bool NuTo::HEDOPRI5Original::HasTimeChanged(int rStage)const
 {
     assert(rStage<8);
-	bool s;
-	switch(rStage)
-	{
-	case 0:
-		s = false; //same as last step from the last iteration
-		break;
-	case 1:
-		s = true;
-		break;
-	case 2:
+    bool s;
+    switch(rStage)
+    {
+    case 0:
+        s = false; //same as last step from the last iteration
+        break;
+    case 1:
         s = true;
-		break;
-	case 3:
+        break;
+    case 2:
         s = true;
-		break;
+        break;
+    case 3:
+        s = true;
+        break;
     case 4:
         s = true;
         break;
@@ -112,10 +112,10 @@ bool NuTo::HEDOPRI5Original::HasTimeChanged(int rStage)const
     case 7:
         s = true;
         break;
-	default:
+    default:
         throw MechanicsException ( "[NuTo::HEDOPRI5Original::HasTimeChanged] rStage>7 not implemented." );
-	}
-	return s;
+    }
+    return s;
 }
 
 
@@ -179,21 +179,21 @@ void NuTo::HEDOPRI5Original::GetStageDerivativeFactor(std::vector<double>& rWeig
 double NuTo::HEDOPRI5Original::GetStageWeights(int rStage)const
 {
     assert(rStage<8);
-	double s;
-	switch(rStage)
-	{
-	case 0:
+    double s;
+    switch(rStage)
+    {
+    case 0:
         s = 35./384.;
-		break;
-	case 1:
+        break;
+    case 1:
         s = 0.;
-		break;
-	case 2:
+        break;
+    case 2:
         s = 500./1113.;
-		break;
-	case 3:
+        break;
+    case 3:
         s = 125./192.;
-		break;
+        break;
     case 4:
         s = -2187./6784.;
         break;
@@ -206,10 +206,10 @@ double NuTo::HEDOPRI5Original::GetStageWeights(int rStage)const
     case 7:
         s = 0.;
         break;
-	default:
+    default:
         throw MechanicsException ( "[NuTo::HEDOPRI5Original::GetStageWeights] rStage>7 not implemented." );
-	}
-	return s;
+    }
+    return s;
 }
 #ifdef ENABLE_SERIALIZATION
 // serializes the class

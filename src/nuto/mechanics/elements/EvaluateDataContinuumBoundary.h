@@ -21,6 +21,11 @@ public:
     std::map<Node::eDof, Eigen::MatrixXd> mB;
     std::map<Node::eDof, Eigen::MatrixXd> mN;
 
+    //! Contact element
+    Eigen::MatrixXd mMortarGapMatrix;
+    Eigen::VectorXd mMortarGapVector;
+    std::unordered_map<int, int> mMappingGlobal2LocalDof;
+
     // Misc
     // --------------------------------------------------------------------------------------------
     double mDetJxWeightIPxSection;

@@ -342,6 +342,394 @@ void NuTo::SparseDirectSolverPardiso::Solve(const NuTo::SparseMatrixCSR<double>&
 #endif
 }
 
+void NuTo::SparseDirectSolverPardiso::Factorization(const NuTo::SparseMatrixCSR<double>& rMatrix)
+{
+#ifdef SHOW_TIME
+#ifdef _OPENMP
+    double startWtime = omp_get_wtime();
+    double startWtimeGlobal = omp_get_wtime();
+#else
+    std::clock_t start,end;
+    start=clock();
+#endif
+#endif
+
+    // check rMatrix
+    if (rMatrix.HasZeroBasedIndexing())
+    {
+        throw NuTo::MathException("[SparseDirectSolverPardiso::solve] one based indexing of sparse rMatrix is required for this solver.");
+    }
+    mInternalVariables.matrixDimension = rMatrix.GetNumRows();
+    if (mInternalVariables.matrixDimension != rMatrix.GetNumColumns())
+    {
+        throw NuTo::MathException("[SparseDirectSolverPardiso::solve] matrix must be square.");
+    }
+    const std::vector<int>& matrixRowIndex = rMatrix.GetRowIndex();
+    const std::vector<int>& matrixColumns = rMatrix.GetColumns();
+    const std::vector<double>& matrixValues = rMatrix.GetValues();
+    if (rMatrix.IsSymmetric())
+    {
+        if (rMatrix.IsPositiveDefinite())
+        {
+            mInternalVariables.matrixType = 2;
+        }
+        else
+        {
+            mInternalVariables.matrixType = -2;
+        }
+    }
+    else
+    {
+        mInternalVariables.matrixType = 11;
+    }
+
+    mInternalVariables.rhsNumColumns = 1;
+
+    for (unsigned int count = 0; count < 64; count++)
+    {
+        mInternalVariables.pt[count] = 0;
+    }
+    mInternalVariables.maxfct = 1;  // Maximum number of numerical factorizations.
+    mInternalVariables.mnum = 1;    // Which factorization to use.
+    mInternalVariables.msglvl = this->mVerboseLevel;  // Print statistical information in file
+    mInternalVariables.error = 0;   // Initialize error flag
+    mInternalVariables.ddum = 0; // Double dummy
+    mInternalVariables.idum = 0;    // Integer dummy
+
+#ifdef _OPENMP
+    mInternalVariables.parameters[2]  = mNumThreads;
+#else
+    mInternalVariables.parameters[2]  = 1;
+#endif
+
+    /** checks the current license in the file pardiso.lic and initializes the internal
+    timer and the address pointer pt. It sets the solver default values according to the matrix type. **/
+
+    pardisoinit (mInternalVariables.pt,  &mInternalVariables.matrixType, &mSolver, mInternalVariables.parameters, mInternalVariables.dparameters, &mInternalVariables.error);
+
+    // parallel METIS reordering
+    mInternalVariables.parameters[27] = 1;
+
+#ifdef SHOW_TIME
+#ifdef _OPENMP
+    double endWtime = omp_get_wtime();
+    if (mShowTime)
+        std::cout << "[NuTo::SparseDirectSolverPardiso::solve] License checking and and initialization: "<< endWtime - startWtime  << "sec" << std::endl;
+    startWtime = omp_get_wtime();
+#else
+    end = clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::SparseDirectSolverPardiso::solve] License checking and and initialization: "<< difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+    start = clock();
+#endif
+#endif
+
+    if (mInternalVariables.error != 0)
+    {
+        if (mInternalVariables.error == -10 )
+            throw NuTo::MathException("[SparseDirectSolverPardiso::solve] No license file found.");
+        if (mInternalVariables.error == -11 )
+            throw NuTo::MathException("[SparseDirectSolverPardiso::solve] License is expired.");
+        if (mInternalVariables.error == -12 )
+            throw NuTo::MathException("[SparseDirectSolverPardiso::solve] Wrong username or hostname.");
+    }
+
+    // Reordering and Symbolic Factorization.
+    // This step also allocates all memory that is necessary for the factorization.
+    int phase = 11;
+    //int a = omp_get_num_threads();
+    pardiso (mInternalVariables.pt,
+             &mInternalVariables.maxfct,
+             &mInternalVariables.mnum,
+             &mInternalVariables.matrixType,
+             &phase,
+             &mInternalVariables.matrixDimension,
+             const_cast<double*>(&matrixValues[0]),
+             const_cast<int*>(&matrixRowIndex[0]),
+             const_cast<int*>(&matrixColumns[0]),
+             &mInternalVariables.idum,
+             &mInternalVariables.rhsNumColumns,
+             mInternalVariables.parameters,
+             &mInternalVariables.msglvl,
+             &mInternalVariables.ddum,
+             &mInternalVariables.ddum,
+             &mInternalVariables.error,
+             mInternalVariables.dparameters);
+
+    if (mInternalVariables.error != 0)
+    {
+        throw NuTo::MathException("[SparseDirectSolverPardiso::solve] Analysis and reordering phase: " + this->GetErrorString(mInternalVariables.error) + ".");
+    }
+
+#ifdef SHOW_TIME
+#ifdef _OPENMP
+    endWtime = omp_get_wtime();
+    if (mShowTime)
+        std::cout << "[NuTo::SparseDirectSolverPardiso::solve] Time for reordering and symbolic factorization: "<<endWtime-startWtime<<"sec"<< std::endl;
+    startWtime = omp_get_wtime();
+#else
+    end = clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::SparseDirectSolverPardiso::solve] Time for reordering and symbolic factorization: "<< difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+    start = clock();
+#endif
+#endif
+
+    // Numerical factorization.
+    phase = 22;
+    pardiso (mInternalVariables.pt,
+             &mInternalVariables.maxfct,
+             &mInternalVariables.mnum,
+             &mInternalVariables.matrixType,
+             &phase,
+             &mInternalVariables.matrixDimension,
+             const_cast<double*>(&matrixValues[0]),
+             const_cast<int*>(&matrixRowIndex[0]),
+             const_cast<int*>(&matrixColumns[0]),
+             &mInternalVariables.idum,
+             &mInternalVariables.rhsNumColumns,
+             mInternalVariables.parameters,
+             &mInternalVariables.msglvl,
+             &mInternalVariables.ddum,
+             &mInternalVariables.ddum,
+             &mInternalVariables.error,
+             mInternalVariables.dparameters);
+    if (mInternalVariables.error != 0)
+    {
+        throw NuTo::MathException("[SparseDirectSolverPardiso::solve] Numerical factorization phase: " + this->GetErrorString(mInternalVariables.error) + ".");
+    }
+#ifdef SHOW_TIME
+#ifdef _OPENMP
+    endWtime = omp_get_wtime();
+    if (mShowTime)
+        std::cout << "[NuTo::SparseDirectSolverPardiso::solve] Time for numerical factorization: "<<endWtime - startWtime<<"sec"<< std::endl;
+    startWtime = omp_get_wtime();
+#else
+    end = clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::SparseDirectSolverPardiso::solve] Time for numerical factorization: "<< difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+    start = clock();
+#endif
+#endif
+
+    if (this->mVerboseLevel > 1)
+    {
+        std::cout << "[SparseDirectSolverPardiso::solve] Peak memory symbolic factorization: "
+                  << mInternalVariables.parameters[14] << " KBytes"
+                  << std::endl;
+        std::cout << "[SparseDirectSolverPardiso::solve] Permanent memory symbolic factorization: "
+                  << mInternalVariables.parameters[15] << " KBytes"
+                  << std::endl;
+        std::cout << "[SparseDirectSolverPardiso::solve] Memory numerical factorization and solution: "
+                  << mInternalVariables.parameters[16] << " KBytes"
+                  << std::endl;
+        if (this->mVerboseLevel > 2)
+        {
+            std::cout << "[SparseDirectSolverPardiso::solve] Number of floating point operations required for factorization: "
+                      << mInternalVariables.parameters[18] << " MFLOS"
+                      << std::endl;
+            if (mInternalVariables.matrixType == -2)
+            {
+                std::cout << "[SparseDirectSolverPardiso::solve] Inertia: number of positive eigenvalues: "
+                          << mInternalVariables.parameters[21]
+                          << std::endl;
+                std::cout << "[SparseDirectSolverPardiso::solve] Inertia: number of negative eigenvalues: "
+                          << mInternalVariables.parameters[22]
+                          << std::endl;
+                std::cout << "[SparseDirectSolverPardiso::solve] Inertia: number of zero eigenvalues: "
+                          << mInternalVariables.matrixDimension - mInternalVariables.parameters[21] - mInternalVariables.parameters[22]
+                          << std::endl;
+            }
+            std::cout << "[SparseDirectSolverPardiso::solve] Number of nonzeros in factors: "
+                      << mInternalVariables.parameters[17]
+                      << std::endl;
+            std::cout << "[SparseDirectSolverPardiso::solve] Number of performed iterative refinement steps: "
+                      << mInternalVariables.parameters[6]
+                      << std::endl;
+            if (mInternalVariables.matrixType != 2)
+            {
+                std::cout << "[SparseDirectSolverPardiso::solve] Number of perturbed pivots: "
+                          << mInternalVariables.parameters[13]
+                          << std::endl;
+            }
+        }
+    }
+}
+
+void NuTo::SparseDirectSolverPardiso::Solution(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double, Eigen::Dynamic> &rRhs, NuTo::FullVector<double, Eigen::Dynamic> &rSolution)
+{
+#ifdef SHOW_TIME
+#ifdef _OPENMP
+    double startWtime = omp_get_wtime();
+    double startWtimeGlobal = omp_get_wtime();
+#else
+    std::clock_t start,end;
+    start=clock();
+#endif
+#endif
+
+    const std::vector<double>& matrixValues = rMatrix.GetValues();
+    const std::vector<int>& matrixRowIndex = rMatrix.GetRowIndex();
+    const std::vector<int>& matrixColumns = rMatrix.GetColumns();
+
+    // check right hand side
+    if (mInternalVariables.matrixDimension != rRhs.GetNumRows())
+    {
+        throw NuTo::MathException("[SparseDirectSolverPardiso::solve] invalid dimension of right hand side vector.");
+    }
+    const double *rhsValues = rRhs.data();
+
+    // prepare solution matrix
+    rSolution.Resize(mInternalVariables.matrixDimension);
+    const double *solutionValues = rSolution.data();
+
+    // Back substitution and iterative refinement.
+    int phase = 33;
+    pardiso (mInternalVariables.pt,
+             &mInternalVariables.maxfct,
+             &mInternalVariables.mnum,
+             &mInternalVariables.matrixType,
+             &phase,
+             &mInternalVariables.matrixDimension,
+             const_cast<double*>(&matrixValues[0]),
+             const_cast<int*>(&matrixRowIndex[0]),
+             const_cast<int*>(&matrixColumns[0]),
+             &mInternalVariables.idum,
+             &mInternalVariables.rhsNumColumns,
+             mInternalVariables.parameters,
+             &mInternalVariables.msglvl,
+             const_cast<double*>(rhsValues),
+             const_cast<double*>(solutionValues),
+             &mInternalVariables.error,
+             mInternalVariables.dparameters);
+    if (mInternalVariables.error != 0)
+    {
+        throw NuTo::MathException("[SparseDirectSolverPardiso::solve] Back substitution and iterative refinement phase: " + this->GetErrorString(mInternalVariables.error) + ".");
+    }
+
+#ifdef SHOW_TIME
+#ifdef _OPENMP
+    endWtime = omp_get_wtime();
+    if (mShowTime)
+        std::cout << "[NuTo::SparseDirectSolverPardiso::solve] Time for back substitution and iterative refinement: "<<endWtime-startWtime<<"sec"<<std::endl;
+    startWtime = omp_get_wtime();
+#else
+    end = clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::SparseDirectSolverPardiso::solve] Time for back substitution and iterative refinement: "<< difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
+    start = clock();
+#endif
+#endif
+
+    if (this->mVerboseLevel > 1)
+    {
+        std::cout << "[SparseDirectSolverPardiso::solve] Peak memory symbolic factorization: "
+                  << mInternalVariables.parameters[14] << " KBytes"
+                  << std::endl;
+        std::cout << "[SparseDirectSolverPardiso::solve] Permanent memory symbolic factorization: "
+                  << mInternalVariables.parameters[15] << " KBytes"
+                  << std::endl;
+        std::cout << "[SparseDirectSolverPardiso::solve] Memory numerical factorization and solution: "
+                  << mInternalVariables.parameters[16] << " KBytes"
+                  << std::endl;
+        if (this->mVerboseLevel > 2)
+        {
+            std::cout << "[SparseDirectSolverPardiso::solve] Number of floating point operations required for factorization: "
+                      << mInternalVariables.parameters[18] << " MFLOS"
+                      << std::endl;
+            if (mInternalVariables.matrixType == -2)
+            {
+                std::cout << "[SparseDirectSolverPardiso::solve] Inertia: number of positive eigenvalues: "
+                          << mInternalVariables.parameters[21]
+                          << std::endl;
+                std::cout << "[SparseDirectSolverPardiso::solve] Inertia: number of negative eigenvalues: "
+                          << mInternalVariables.parameters[22]
+                          << std::endl;
+                std::cout << "[SparseDirectSolverPardiso::solve] Inertia: number of zero eigenvalues: "
+                          << mInternalVariables.matrixDimension - mInternalVariables.parameters[21] - mInternalVariables.parameters[22]
+                          << std::endl;
+            }
+            std::cout << "[SparseDirectSolverPardiso::solve] Number of nonzeros in factors: "
+                      << mInternalVariables.parameters[17]
+                      << std::endl;
+            std::cout << "[SparseDirectSolverPardiso::solve] Number of performed iterative refinement steps: "
+                      << mInternalVariables.parameters[6]
+                      << std::endl;
+            if (mInternalVariables.matrixType != 2)
+            {
+                std::cout << "[SparseDirectSolverPardiso::solve] Number of perturbed pivots: "
+                          << mInternalVariables.parameters[13]
+                          << std::endl;
+            }
+        }
+    }
+
+#ifdef SHOW_TIME
+#ifdef _OPENMP
+    double endWtimeGlobal = omp_get_wtime();
+    if (mShowTime)
+        std::cout << "[NuTo::SparseDirectSolverPardiso::solve] Overall time: "<<endWtimeGlobal-startWtimeGlobal<<"sec"<<std::endl;
+#else
+    end = clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::SparseDirectSolverPardiso::solve] Overall time: "<<difftime(end,start)/CLOCKS_PER_SEC <<"sec"<< std::endl;
+    start = clock();
+#endif
+#endif
+}
+
+void NuTo::SparseDirectSolverPardiso::CleanUp(const NuTo::SparseMatrixCSR<double>& rMatrix)
+{
+#ifdef SHOW_TIME
+#ifdef _OPENMP
+    double startWtime = omp_get_wtime();
+    double startWtimeGlobal = omp_get_wtime();
+#else
+    std::clock_t start,end;
+    start=clock();
+#endif
+#endif
+
+    const std::vector<int>& matrixRowIndex = rMatrix.GetRowIndex();
+    const std::vector<int>& matrixColumns = rMatrix.GetColumns();
+
+    // Termination and release of memory
+    int phase = -1;
+    pardiso (mInternalVariables.pt,
+             &mInternalVariables.maxfct,
+             &mInternalVariables.mnum,
+             &mInternalVariables.matrixType,
+             &phase,
+             &mInternalVariables.matrixDimension,
+             &mInternalVariables.ddum,
+             const_cast<int*>(&matrixRowIndex[0]),
+             const_cast<int*>(&matrixColumns[0]),
+             &mInternalVariables.idum,
+             &mInternalVariables.rhsNumColumns,
+             mInternalVariables.parameters,
+             &mInternalVariables.msglvl,
+             &mInternalVariables.ddum,
+             &mInternalVariables.ddum,
+             &mInternalVariables.error,
+             mInternalVariables.dparameters);
+    if (mInternalVariables.error != 0)
+    {
+        throw NuTo::MathException("[SparseDirectSolverPardiso::solve] Termination phase: " + this->GetErrorString(mInternalVariables.error) + ".");
+    }
+#ifdef SHOW_TIME
+#ifdef _OPENMP
+    double endWtimeGlobal = omp_get_wtime();
+    if (mShowTime)
+        std::cout << "[NuTo::SparseDirectSolverPardiso::solve] Overall time: "<<endWtimeGlobal-startWtimeGlobal<<"sec"<<std::endl;
+#else
+    end = clock();
+    if (mShowTime)
+        std::cout<<"[NuTo::SparseDirectSolverPardiso::solve] Overall time: "<<difftime(end,start)/CLOCKS_PER_SEC <<"sec"<< std::endl;
+    start = clock();
+#endif
+#endif
+}
+
 std::string NuTo::SparseDirectSolverPardiso::GetErrorString(int error) const
 {
     assert(error != 0);

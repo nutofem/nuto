@@ -27,6 +27,11 @@
 #include "nuto/math/FullMatrix.h"
 #include "nuto/base/Timer.h"
 
+#include "nuto/math/SparseDirectSolverPardiso.h"
+#include "nuto/math/SparseDirectSolverMUMPS.h"
+#include "nuto/math/SparseMatrixCSRSymmetric.h"
+#include "nuto/math/SparseMatrixCSRVector2General.h"
+
 //! @brief constructor
 //! @param mDimension number of nodes
 NuTo::RungeKuttaBase::RungeKuttaBase (StructureBase* rStructure)  : TimeIntegrationBase (rStructure)
@@ -76,8 +81,8 @@ NuTo::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
     {
         mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
-        if (mStructure->GetDofStatus().HasInteractingConstraints())
-            throw MechanicsException(__PRETTY_FUNCTION__, "not implemented for constrained systems including multiple dofs.");
+//        if (mStructure->GetDofStatus().HasInteractingConstraints())
+//            throw MechanicsException(__PRETTY_FUNCTION__, "not implemented for constrained systems including multiple dofs.");
 
         if (mTimeStep==0.)
         {
@@ -117,8 +122,10 @@ NuTo::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         numericMass /= mStructure->GetDimension(); // since the mass is added to nodes in every direction
         std::cout << "the total mass is " << numericMass << std::endl;
 
-        //invert the mass matrix
-        hessian2.CwiseInvert();
+        //invert the mass matrix ==> only if M is diagonal, better solve system (if diagonal, then no additional effort)
+        //hessian2.CwiseInvert();
+
+        hessian2.ApplyCMatrix(mStructure->GetConstraintMatrix());
 
         double curTime  = 0;
         auto extLoad = CalculateCurrentExternalLoad(curTime);
@@ -126,6 +133,21 @@ NuTo::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 
         std::vector<StructureOutputBlockVector> d_dof_dt0_tmp(this->GetNumStages(), mStructure->GetDofStatus());
         std::vector<StructureOutputBlockVector> d_dof_dt1_tmp(this->GetNumStages(), mStructure->GetDofStatus());
+
+        //allocate solver
+#if defined(HAVE_PARDISO) && defined(_OPENMP)
+        NuTo::SparseDirectSolverPardiso mySolver(this->mStructure->GetNumProcessors(), this->mStructure->GetVerboseLevel()); // note: not the MKL version
+        const BlockSparseMatrix& rMatrix = hessian2.JJ;
+        NuTo::SparseMatrixCSRGeneral<double> matrixForSolver = rMatrix.ExportToCSRGeneral();
+        matrixForSolver.SetOneBasedIndexing();
+        mySolver.Factorization(matrixForSolver);
+#else
+        NuTo::SparseDirectSolverMUMPS mySolver;
+        const BlockSparseMatrix& rMatrix = hessian2.JJ;
+        NuTo::SparseMatrixCSRGeneral<double> matrixForSolver = rMatrix.ExportToCSRGeneral();
+        matrixForSolver.SetOneBasedIndexing();
+        mySolver.Factorization(matrixForSolver);
+#endif
 
 		std::vector<double> stageDerivativeFactor(this->GetNumStages()-1);
         while (curTime < rTimeDelta)
@@ -142,14 +164,14 @@ NuTo::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
         		//std::cout << "\n stage weight " << GetStageWeights(countStage) << std::endl;
         		double deltaTimeStage = this->GetStageTimeFactor(countStage)*mTimeStep;
 				this->GetStageDerivativeFactor(stageDerivativeFactor, countStage);
-				auto dof_dt0_tmp = dof_dt0;
-				auto dof_dt1_tmp = dof_dt1;
+                auto dof_dt0_tmp = dof_dt0;
+                auto dof_dt1_tmp = dof_dt1;
 				for (int countStage2=0; countStage2<countStage; countStage2++)
 				{
 					if (stageDerivativeFactor[countStage2]!=0.)
 					{
-					    dof_dt0_tmp += d_dof_dt0_tmp[countStage2]*(stageDerivativeFactor[countStage2]);
-					    dof_dt1_tmp += d_dof_dt1_tmp[countStage2]*(stageDerivativeFactor[countStage2]);
+                        dof_dt0_tmp.J += d_dof_dt0_tmp[countStage2].J*(stageDerivativeFactor[countStage2]);
+                        dof_dt1_tmp.J += d_dof_dt1_tmp[countStage2].J*(stageDerivativeFactor[countStage2]);
 					}
 				}
 
@@ -172,23 +194,43 @@ NuTo::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 					extLoad = CalculateCurrentExternalLoad(curTime);
 
 				}
-				dof_dt0_tmp.K = mStructure->NodeCalculateDependentDofValues(dof_dt0_tmp.J);
+                dof_dt0_tmp.K = mStructure->NodeCalculateDependentDofValues(dof_dt0_tmp.J);
 				mStructure->NodeMergeDofValues(0,dof_dt0_tmp);
 				mStructure->ElementTotalUpdateTmpStaticData();
 
 				//calculate internal force (with update of history variables = true)
 				intForce = mStructure->BuildGlobalInternalGradient();
 
+                // ===> constraints
+                intForce.ApplyCMatrix(mStructure->GetConstraintMatrix());
+
+                //calculate contact force
+                intForce.J += mStructure->BuildGlobalContactForceVector().J;
+
 				//update derivatives (ydot or k1,k2,k3,k4) for Runge Kutta
 				d_dof_dt0_tmp[countStage] = dof_dt1_tmp*mTimeStep;
 				//std::cout << "d_disp_j_tmp " << d_disp_j_tmp[countStage](0) << std::endl;
-				d_dof_dt1_tmp[countStage]  = hessian2*(extLoad-intForce)*mTimeStep;
+
+                // ===> constraints
+                //d_dof_dt1_tmp[countStage]  = hessian2*(extLoad-intForce)*mTimeStep;
+
+#if defined(HAVE_PARDISO) && defined(_OPENMP)
+                NuTo::FullVector<double, Eigen::Dynamic> resultForSolver;
+                mySolver.Solution(matrixForSolver, ((extLoad.J - intForce.J)*mTimeStep).Export(), resultForSolver);
+                d_dof_dt1_tmp[countStage].J = BlockFullVector<double>(-resultForSolver, this->mStructure->GetDofStatus());
+#else
+                NuTo::FullVector<double, Eigen::Dynamic> resultForSolver;
+                mySolver.Solution(((extLoad.J - intForce.J)*mTimeStep).Export(), resultForSolver);
+                d_dof_dt1_tmp[countStage].J = BlockFullVector<double>(-resultForSolver, this->mStructure->GetDofStatus());
+#endif
+//                d_dof_dt1_tmp[countStage].J = mStructure->SolveBlockSystem(hessian2.JJ, (extLoad.J - intForce.J)*mTimeStep);
+
 				//std::cout << "d_vel_j_tmp " << d_vel_j_tmp[countStage](0) << std::endl;
 				//std::cout << "norm of acc " << (d_vel_j_tmp).norm() << std::endl;
 
-				dof_dt0_new += d_dof_dt0_tmp[countStage]*(GetStageWeights(countStage));
+                dof_dt0_new.J += d_dof_dt0_tmp[countStage].J*(GetStageWeights(countStage));
 				//std::cout << "disp_j_new " << disp_j_new(0) << std::endl;
-				dof_dt1_new  += d_dof_dt1_tmp[countStage]*(GetStageWeights(countStage));
+                dof_dt1_new.J  += d_dof_dt1_tmp[countStage].J*(GetStageWeights(countStage));
 				//std::cout << "vel_j_new " << vel_j_new(0) << std::endl;
             }
 
@@ -223,6 +265,9 @@ NuTo::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 			// postprocess data for plotting
             this->PostProcess(extLoad-intForce);
         }
+#if defined(HAVE_PARDISO) && defined(_OPENMP)
+                mySolver.CleanUp(matrixForSolver);
+#endif
     }
     catch (MechanicsException& e)
     {

@@ -1878,7 +1878,10 @@ namespace ShapeFunctionsIGA
 int FindSpan(double rParameter, int rDegree, const Eigen::VectorXd &rKnots)
 {
     int size = rKnots.rows();
-    assert(rParameter >= rKnots(0) && rParameter <= rKnots(size - 1));
+
+    if(rParameter < rKnots(0) || rParameter > rKnots(size - 1))
+        throw MechanicsException(__PRETTY_FUNCTION__, "The parameter is out of the range of the knot vector.");
+
     int numBasisFuns = size - rDegree - 1;
     if(rParameter == rKnots[numBasisFuns]) return numBasisFuns-1;
 
@@ -2029,14 +2032,24 @@ Eigen::VectorXd BasisFunctionsAndDerivativesRat(int der, double rParameter, int 
     // NURBS specific ...
     Eigen::VectorXd sum(der+1);
     sum.setZero(der+1);
-    for(int numDer = 0; numDer < der; numDer++)
+
+    for(int i = 0; i <= rDegree; i++)
     {
-        for(int i = 0; i <= rDegree; i++)
+        double weight = rWeights(spanIdx - rDegree + i);
+        if     (der == 0)
+            sum(0) += ders(0,i)*weight;
+        else if(der == 1)
         {
-            sum(numDer) += ders(numDer,i)*rWeights(spanIdx - rDegree + i);
+            sum(0) += ders(0,i)*weight;
+            sum(1) += ders(1,i)*weight;
+        }
+        else
+        {
+            sum(0) += ders(0,i)*weight;
+            sum(1) += ders(1,i)*weight;
+            sum(2) += ders(2,i)*weight;
         }
     }
-
 
     Eigen::VectorXd dersRat(rDegree+1);
     dersRat.setZero(rDegree+1);
@@ -2045,17 +2058,13 @@ Eigen::VectorXd BasisFunctionsAndDerivativesRat(int der, double rParameter, int 
     {
         double weight = rWeights(spanIdx - rDegree + i);
         if     (der == 0)
-        {
-            dersRat(i) = ders(der, i)*weight/sum(0);
-        }
+            dersRat(i) = ders(0, i)*weight/sum(0);
         else if(der == 1)
-        {
-            dersRat(i) = (ders(der, i)*sum(0) - ders(0,i)*sum(1))* weight/(sum(0)*sum(0));
-        }
+            dersRat(i) = (ders(1, i)*sum(0) - ders(0,i)*sum(1))* weight/(sum(0)*sum(0));
         else
         {
             double sum2 = sum(0)*sum(0);
-            dersRat(i) = weight*(ders(der, i)/sum(0) - 2*ders(1,i)*sum(1)/(sum2) - ders(0,i)*sum(2)/(sum2) + 2*ders(0,i)*sum(1)*sum(1)/(sum2*sum(0)));
+            dersRat(i) = weight*(ders(2, i)/sum(0) - 2*ders(1,i)*sum(1)/(sum2) - ders(0,i)*sum(2)/(sum2) + 2*ders(0,i)*sum(1)*sum(1)/(sum2*sum(0)));
         }
     }
 

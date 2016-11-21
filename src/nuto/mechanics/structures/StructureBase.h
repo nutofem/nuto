@@ -247,6 +247,7 @@ public:
     NuTo::StructureOutputBlockMatrix BuildGlobalHessian2Lumped();
 
     NuTo::StructureOutputBlockVector BuildGlobalInternalGradient();
+    NuTo::StructureOutputBlockVector BuildGlobalContactForceVector();
 
     //! @brief ... build global external load vector (currently for displacements only)
     //! @param rLoadCase ... load case

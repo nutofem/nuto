@@ -16,7 +16,8 @@ const std::set<NuTo::Node::eDof> NuTo::Node::GetDofSet()
      eDof::NONLOCALEQSTRAIN,
      eDof::WATERVOLUMEFRACTION,
      eDof::RELATIVEHUMIDITY,
-     eDof::CRACKPHASEFIELD};
+     eDof::CRACKPHASEFIELD,
+     eDof::LAGRANGEMULTIPLIER};
     return set;
 }
 
@@ -36,7 +37,8 @@ const std::map<NuTo::Node::eDof, std::string> NuTo::Node::GetDofMap()
         {eDof::NONLOCALEQSTRAIN,        "NONLOCALEQSTRAIN"},
         {eDof::WATERVOLUMEFRACTION,     "WATERVOLUMEFRACTION"},
         {eDof::RELATIVEHUMIDITY,        "RELATIVEHUMIDITY"},
-        {eDof::CRACKPHASEFIELD,         "CRACKPHASEFIELD"}};
+        {eDof::CRACKPHASEFIELD,         "CRACKPHASEFIELD"},
+        {eDof::LAGRANGEMULTIPLIER,      "LAGRANGEMULTIPLIER"}};
     return attributeMap;
 }
 

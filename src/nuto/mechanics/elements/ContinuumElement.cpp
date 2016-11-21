@@ -46,6 +46,9 @@ NuTo::eError NuTo::ContinuumElement<TDim>::Evaluate(const ConstitutiveInputMap& 
     if (mSection == nullptr)
         throw MechanicsException(__PRETTY_FUNCTION__, "no section allocated for element.");
 
+    if(CheckElementOutput(rElementOutput) == eError::NOT_IMPLEMENTED)
+        return eError::NOT_IMPLEMENTED;
+
     EvaluateDataContinuum<TDim> data;
     ExtractAllNecessaryDofValues(data);
 
@@ -195,6 +198,24 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumElement<TDim>::GetConstitutiveOutputM
         outputs.second = ConstitutiveIOBase::makeConstitutiveIO<TDim>(outputs.first);
     }
     return constitutiveOutput;
+}
+
+template<int TDim>
+NuTo::eError NuTo::ContinuumElement<TDim>::CheckElementOutput(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const
+{
+    // find the outputs we need
+    for (auto it : rElementOutput)
+    {
+        switch (it.first)
+        {
+        case Element::eOutput::CONTACT_FORCE:
+        case Element::eOutput::CONTACT_FORCE_DERIVATIVE:
+            return eError::NOT_IMPLEMENTED;
+        default:
+            return eError::SUCCESSFUL;
+        }
+    }
+    return eError::SUCCESSFUL;
 }
 
 template<int TDim>
@@ -675,6 +696,18 @@ Eigen::MatrixXd NuTo::ContinuumElement<TDim>::CalculateMatrixB(Node::eDof rDofTy
     }
 
     return Bmat;
+}
+
+template<int TDim>
+Eigen::VectorXd NuTo::ContinuumElement<TDim>::InterpolateDofGlobalCurrentConfiguration(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofTypeInit, Node::eDof rDofTypeCurrent) const
+{
+    const InterpolationBase& interpolationTypeInit = this->mInterpolationType->Get(rDofTypeInit);
+    Eigen::VectorXd nodalInit    = this->ExtractNodeValues(rTimeDerivative, rDofTypeInit);
+    Eigen::VectorXd nodalCurrent = this->ExtractNodeValues(rTimeDerivative, rDofTypeCurrent);
+
+    Eigen::MatrixXd matrixN = interpolationTypeInit.CalculateMatrixN(rNaturalCoordinates);
+
+    return matrixN * (nodalInit + nodalCurrent);
 }
 
 template<int TDim>
@@ -1434,6 +1467,39 @@ template<>
 ContinuumElement<3>& ContinuumElement<3>::AsContinuumElement3D()
 {
     return *this;
+}
+
+template<>
+Eigen::VectorXd ContinuumElement<1>::CalculateJacobianSurface(const Eigen::VectorXd &rParameter, const Eigen::VectorXd &rNodalCoordinates, int rSurfaceId) const
+{
+    throw MechanicsException(__PRETTY_FUNCTION__, "There is no surface in 1D case.");
+}
+
+template<>
+Eigen::VectorXd ContinuumElement<2>::CalculateJacobianSurface(const Eigen::VectorXd &rParameter, const Eigen::VectorXd &rNodalCoordinates, int rSurfaceId) const
+{
+    const InterpolationBase&  interpolationTypeCoords =  this->mInterpolationType->Get(Node::eDof::COORDINATES);
+    Eigen::MatrixXd derivativeShapeFunctionsNatural =  interpolationTypeCoords.CalculateDerivativeShapeFunctionsNatural(rParameter);
+    const Eigen::MatrixXd jacobianStd = CalculateJacobian(derivativeShapeFunctionsNatural, rNodalCoordinates);// = [dX / dXi]
+    Eigen::VectorXd ipCoordsSurface(1);
+    Eigen::MatrixXd derivativeNaturalSurfaceCoordinates =  interpolationTypeCoords.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, rSurfaceId); // = [dXi / dAlpha]
+
+    return jacobianStd * derivativeNaturalSurfaceCoordinates; // = || [dX / dXi] * [dXi / dAlpha] ||
+}
+
+template<>
+Eigen::VectorXd ContinuumElement<3>::CalculateJacobianSurface(const Eigen::VectorXd &rParameter, const Eigen::VectorXd &rNodalCoordinates, int rSurfaceId) const
+{
+    const InterpolationBase& interpolationTypeCoords = this->mInterpolationType->Get(Node::eDof::COORDINATES);
+    Eigen::MatrixXd derivativeShapeFunctionsNatural = interpolationTypeCoords.CalculateDerivativeShapeFunctionsNatural(rParameter);
+    const Eigen::Matrix3d jacobian = CalculateJacobian(derivativeShapeFunctionsNatural, rNodalCoordinates);// = [dX / dXi]
+
+    Eigen::VectorXd ipCoordsSurface(2);
+    Eigen::MatrixXd derivativeNaturalSurfaceCoordinates = interpolationTypeCoords.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, rSurfaceId); // = [dXi / dAlpha]
+    Eigen::Vector3d dXdAlpha = jacobian * derivativeNaturalSurfaceCoordinates.col(0);
+    Eigen::Vector3d dXdBeta  = jacobian * derivativeNaturalSurfaceCoordinates.col(1);
+
+    return dXdAlpha.cross(dXdBeta); // = || [dX / dXi] * [dXi / dAlpha] ||
 }
 
 }  // namespace NuTo

@@ -1,15 +1,16 @@
 #pragma once
 
 #include "nuto/mechanics/elements/ContinuumBoundaryElement.h"
+#include <eigen3/Eigen/Dense>
 
 namespace NuTo
 {
+//! @author Peter Otto, BAM
+//! @date September, 2016
+//! @brief ... class for contact discretization by mortar method
 
-class NURBSCurve;
-class NURBSSurface;
-
-template<int TDim>
-class ContinuumContactElement: public ContinuumBoundaryElement<TDim>
+template<int TDimSlave, int TDimMaster>
+class ContinuumContactElement: public ContinuumBoundaryElement<TDimSlave>
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -17,30 +18,66 @@ protected:
     ContinuumContactElement() = default;
 #endif // ENABLE_SERIALIZATION
 public:
-    ContinuumContactElement(const ContinuumElement<TDim> *rSlaveElement, int rSurfaceId, int rElementGroupId, int rNodeGroupId, const IntegrationTypeBase *rIntegrationType);
+    ContinuumContactElement(const ContinuumElement<TDimSlave> *rSlaveElement,
+                            int rSurfaceId,
+                            Eigen::Matrix<std::pair<const ContinuumElementIGA<TDimMaster> *, int>, Eigen::Dynamic, Eigen::Dynamic> &rElementsMaster,
+                            double rPenalty, int rContactAlgorithm);
 
     virtual ~ContinuumContactElement() = default;
 
-    void ProjectIntegrationPointOnMaster();
+    NuTo::eError Evaluate(const ConstitutiveInputMap& rInput, std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) override;
 
-    void CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
-                                 EvaluateDataContinuumBoundary<TDim> &rData,
-                                 int rTheIP,
-                                 const ConstitutiveInputMap& constitutiveInput,
-                                 const ConstitutiveOutputMap& constitutiveOutput) const;
+    NuTo::ConstitutiveOutputMap GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const override;
 
-    void CalculateElementOutputGapMatrixMortar(BlockFullMatrix<double>& rGapMatrix,
-                                               EvaluateDataContinuumBoundary<TDim> &rData,
-                                               const ConstitutiveOutputMap& constitutiveOutput,
-                                               int rTheIP) const;
+    NuTo::eError CheckElementOutput(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const;
+
+    NuTo::Element::eElementType GetEnumType() const;
+
+    void CalculateGlobalRowDofs(BlockFullVector<int> &rGlobalRowDofs) const;
+
+    void CalculateGlobalColumnDofs(BlockFullVector<int> &rGlobalDofMapping) const;
+
+    void AddGlobalRowDofsElementMaster(int row, int col) const;
+
+    void GapMatrixMortar(EvaluateDataContinuumBoundary<TDimSlave> &rData, int rTheIP);
+
+    void CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> &rElementOutput,
+                                 EvaluateDataContinuumBoundary<TDimSlave>                       &rData,
+                                 const ConstitutiveInputMap                                     &constitutiveInput,
+                                 const ConstitutiveOutputMap                                    &constitutiveOutput) const;
+
+
+    void CalculateElementOutputContactForce(BlockFullVector<double>& rInternalGradient,
+                                            EvaluateDataContinuumBoundary<TDimSlave> &rData,
+                                            const ConstitutiveInputMap& constitutiveInput,
+                                            const ConstitutiveOutputMap& constitutiveOutput) const;
+
+    void CalculateElementOutputContactForceDerivative(BlockFullVector<double> &rInternalGradient,
+                                                      EvaluateDataContinuumBoundary<TDimSlave> &rData,
+                                                      const ConstitutiveInputMap &constitutiveInput,
+                                                      const ConstitutiveOutputMap &constitutiveOutput) const;
+
+    void GetGlobalIntegrationPointCoordinatesAndParameters(int rIpNum, Eigen::VectorXd &rCoordinatesIPSlave, Eigen::VectorXd &rParamsIPSlave) const;
+
 
 protected:
 
-//    std::vector<std::pair<const ContinuumElement<TDim>*, int> > mElementsMaster;
+    //! @brief ... Master elements in the right ordering. For pure IGA structure and contact only 2D elements possible, with the surface id of the contacting surface
+    //! in the case of IGA layer ontop of the FEM mesh, there is no need for the surface id => -1
+    Eigen::Matrix<std::pair<const ContinuumElementIGA<TDimMaster>*, int>, Eigen::Dynamic, Eigen::Dynamic> mElementsMaster;
 
+    //! @brief ... Matrix containing the knots of all elements, ascending order
+    std::vector<Eigen::VectorXd> mKnots;
 
-    const IntegrationTypeBase *mIntegrationType;
+    std::unordered_map<int, int> mMappingGlobal2LocalDof;
 
+    int mNumDofs;
+
+    double penaltyP;
+
+    int mContactType;
+
+    void FillMappingGlobalLocal();
 };
 } /* namespace NuTo */
 

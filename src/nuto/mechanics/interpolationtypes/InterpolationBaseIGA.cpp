@@ -22,6 +22,20 @@ void NuTo::InterpolationBaseIGA::Initialize()
     mNumDofs = mNumNodes*GetNumDofsPerNode();
 }
 
+Eigen::MatrixXd  NuTo::InterpolationBaseIGA::ConstructMatrixN(Eigen::VectorXd rShapeFunctions) const
+{
+    int numNodes = GetNumNodes();
+    int dimBlock = GetNumDofsPerNode();
+
+    Eigen::MatrixXd matrixN(dimBlock, numNodes * dimBlock);
+    for (int iNode = 0, iBlock = 0; iNode < numNodes; ++iNode, iBlock += dimBlock)
+    {
+        matrixN.block(0, iBlock, dimBlock, dimBlock) = Eigen::MatrixXd::Identity(dimBlock, dimBlock) * rShapeFunctions(iNode);
+    }
+
+    return matrixN;
+}
+
 #ifdef ENABLE_SERIALIZATION
 NuTo::InterpolationBaseIGA::InterpolationBaseIGA():
 {

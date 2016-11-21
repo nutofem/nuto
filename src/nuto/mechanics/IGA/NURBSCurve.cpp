@@ -1,5 +1,7 @@
 #include "nuto/mechanics/IGA/NURBSCurve.h"
 #include "nuto/mechanics/elements/ElementShapeFunctions.h"
+#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 
 NuTo::NURBSCurve::NURBSCurve(const Eigen::MatrixXd &rKnots,
                                  const Eigen::MatrixXd &rControlPoints,
@@ -22,14 +24,14 @@ NuTo::NURBSCurve::NURBSCurve(const Eigen::MatrixXd &rKnots,
     mWeights = rWeights;
 }
 
-NuTo::NURBSCurve::NURBSCurve(int rDegree,
-                                 const Eigen::MatrixXd& rPoints,
-                                 Eigen::MatrixXd& AInv)
+NuTo::NURBSCurve::NURBSCurve(int                    rDegree,
+                             const Eigen::MatrixXd &rPoints,
+                             Eigen::MatrixXd       &A)
 {
-    assert(rDegree > 0);
+    assert(rDegree > 0);    
     mDegree = rDegree;
     int numPoints = rPoints.rows();
-    assert(numPoints);
+    assert(numPoints >= mDegree);
 
     int dim = rPoints.cols();
 
@@ -38,11 +40,12 @@ NuTo::NURBSCurve::NURBSCurve(int rDegree,
     Eigen::VectorXd rParameters = ParametrizationChordLengthMethod(rPoints);
     ParametrizationKnotVector(rParameters);
 
-    mWeights.resize(mControlPoints.rows(), mControlPoints.cols());
-    mWeights.setOnes(mControlPoints.rows(), mControlPoints.cols());
+    mWeights.resize(numPoints, 1);
+    mWeights.setOnes(numPoints, 1);
 
     // the coefficient matrix
-    Eigen::MatrixXd A(numPoints, numPoints);
+    A.resize(numPoints, numPoints);
+    A.setZero(numPoints, numPoints);
 
     for (int i = 0; i < numPoints; i++)
     {
@@ -51,10 +54,7 @@ NuTo::NURBSCurve::NURBSCurve(int rDegree,
         A.block(i, spanIdx-mDegree, 1, basisFunctions.rows()) = basisFunctions.transpose();
     }
 
-
-    AInv = A.inverse();
-
-    mControlPoints = AInv*rPoints;
+    mControlPoints = A.fullPivLu().solve(rPoints);
 }
 
 int NuTo::NURBSCurve::GetNumIGAElements() const
@@ -128,6 +128,23 @@ Eigen::VectorXi NuTo::NURBSCurve::GetElementControlPointIDs(int rElementID) cons
     Eigen::VectorXi ids(mDegree+1);
 
     for(int i = 0; i < mDegree + 1; i++) ids(i) = knotID - mDegree + i;
+
+    return ids;
+}
+
+
+Eigen::VectorXi NuTo::NURBSCurve::GetElementControlPointIDsGlobal(int rElementID, const Eigen::MatrixXi &rNodeIDs) const
+{
+    assert((rElementID >= 0) && (rElementID < GetNumIGAElements()));
+
+    int knotID = GetElementFirstKnotID(rElementID);
+
+    Eigen::VectorXi ids(mDegree+1);
+
+    for(int i = 0; i < mDegree + 1; i++)
+    {
+        ids(i) = rNodeIDs(knotID - mDegree + i);
+    }
 
     return ids;
 }
@@ -207,6 +224,7 @@ Eigen::VectorXd NuTo::NURBSCurve::ParametrizationChordLengthMethod(const Eigen::
 
     Eigen::VectorXd rParameters;
     rParameters.resize(numPoints);
+    rParameters.setZero();
 
     rParameters[0] = 0.;
     rParameters[numPoints - 1] = 1.;
@@ -322,10 +340,10 @@ void NuTo::NURBSCurve::BezierElementControlPoints()
     }
 }
 
-Eigen::VectorXd NuTo::NURBSCurve::CurvePoint(double rParameter) const
+Eigen::VectorXd NuTo::NURBSCurve::CurvePoint(double rParameter, int rDerivative) const
 {
     int spanIdx = ShapeFunctionsIGA::FindSpan(rParameter, mDegree, mKnots);
-    Eigen::VectorXd basisFunctions = ShapeFunctionsIGA::BasisFunctionsRat(rParameter, spanIdx, mDegree, mKnots, mWeights);
+    Eigen::VectorXd basisFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameter, spanIdx, mDegree, mKnots, mWeights);
 
     Eigen::VectorXd coordinates(GetDimension());
     coordinates.setZero(GetDimension());
@@ -338,13 +356,13 @@ Eigen::VectorXd NuTo::NURBSCurve::CurvePoint(double rParameter) const
 }
 
 
-Eigen::MatrixXd NuTo::NURBSCurve::CurvePoints(const Eigen::VectorXd &rParameter) const
+Eigen::MatrixXd NuTo::NURBSCurve::CurvePoints(const Eigen::VectorXd &rParameter, int rDerivative) const
 {
     int numParameters = rParameter.rows();
     Eigen::MatrixXd result(numParameters, GetDimension());
     for(int i = 0; i < numParameters; i++)
     {
-        result.row(i) = CurvePoint(rParameter[i]).transpose();
+        result.row(i) = CurvePoint(rParameter[i], rDerivative).transpose();
     }
 
     return result;
@@ -461,4 +479,70 @@ void NuTo::NURBSCurve::DuplicateKnots()
         knotsToInsert(i) = (mKnots(beginID + 1) + mKnots(beginID))/2.;
     }
     RefineKnots(knotsToInsert);
+}
+
+void NuTo::NURBSCurve::findMinimalDistance(const Eigen::VectorXd &rCoordinatesSlave, double &rParameterStartMaster)
+{
+    double tol = 1.e-10;
+    double error = 1.;
+    int maxNumIter = 100;
+    int numIter = 0;
+    while(error > tol && numIter < maxNumIter)
+    {
+        // ==> function (dprime)
+        Eigen::VectorXd coordinatesMaster = CurvePoint(rParameterStartMaster, 0);
+        Eigen::VectorXd r = rCoordinatesSlave - coordinatesMaster;
+        double b = 0.;
+        Eigen::VectorXd fistDer   = CurvePoint(rParameterStartMaster, 1);
+        Eigen::VectorXd secondDer = CurvePoint(rParameterStartMaster, 2);
+
+        b = r.dot(fistDer);
+
+        // ==> derivative
+        double A = r.dot(secondDer) - fistDer.dot(fistDer);
+
+        // ==> iteration step
+        double incr = -b/A;
+        rParameterStartMaster += incr;
+
+        error = std::fabs(b);
+        numIter++;
+    }
+    std::cout << "Number of iterations: " << numIter << std::endl;
+}
+
+Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> NuTo::NURBSCurve::buildIGAStructure(NuTo::Structure &rStructure, const std::set<NuTo::Node::eDof> &rSetOfDOFS, int rGroupElements, int rGroupNodes, const std::string &rInterpolation) const
+{
+    Eigen::VectorXi nodeIDs(GetNumControlPoints());
+
+    // create dofs
+    for(int i = 0; i < GetNumControlPoints(); i++)
+    {
+        int id = rStructure.NodeCreateDOFs(rSetOfDOFS, GetControlPoint(i));
+        nodeIDs(i) = id;
+        rStructure.GroupAddNode(rGroupNodes, id);
+        std::cout << "Node (id, coord): " <<  id << ", " << GetControlPoint(i).transpose() << std::endl;
+    }
+
+
+    Eigen::VectorXi degree(1);
+    degree << mDegree;
+
+    int rNewInterpolation = rStructure.InterpolationTypeCreate(rInterpolation);
+    std::vector<Eigen::VectorXd> vecKnots;
+    vecKnots.push_back(GetKnotVector());
+    for(auto &it : rSetOfDOFS) rStructure.InterpolationTypeAdd(rNewInterpolation, it, NuTo::Interpolation::eTypeOrder::SPLINE, degree, vecKnots, mWeights);
+
+    Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> elements(1, GetNumIGAElements());
+    Eigen::VectorXi elementIncidence(mDegree + 1);
+    for(int element = 0; element < GetNumIGAElements(); element++)
+    {
+        elementIncidence = GetElementControlPointIDsGlobal(element, nodeIDs);
+        std::cout << "elementIncidence: " <<  elementIncidence.transpose() << std::endl;
+        int id = rStructure.ElementCreate(rNewInterpolation, elementIncidence, GetElementKnots(element), GetElementKnotIDs(element));
+        rStructure.GroupAddElement(rGroupElements, id);
+        elements(0, element) = std::pair<int, int>(id, -1);
+    }
+
+    return elements;
 }

@@ -21,9 +21,9 @@ NuTo::NURBSSurface::NURBSSurface(const Eigen::Vector2i &rDegree,
 // TODO
 }
 
-void NuTo::NURBSSurface::ParametrizationChordLengthMethod(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rPoints,
-                                                            FullVector<double, Eigen::Dynamic>& rParametersX,
-                                                            FullVector<double, Eigen::Dynamic>& rParametersY)
+void NuTo::NURBSSurface::ParametrizationChordLengthMethod(const Eigen::MatrixXd &rPoints,
+                                                          Eigen::VectorXd &rParametersX,
+                                                          Eigen::VectorXd &rParametersY)
 {
 // TODO
 }

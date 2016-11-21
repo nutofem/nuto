@@ -27,7 +27,9 @@ enum class eShapeType
     BRICK3D,
     INTERFACE,
     IGA1D,
-    IGA2D
+    IGA2D,
+    IGA1DLAYER,
+    IGA2DLAYER
 };
 
 const std::map<eShapeType, std::string> GetShapeTypeMap();

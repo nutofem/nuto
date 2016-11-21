@@ -154,6 +154,8 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixN(const Eigen::VectorXd
 {
     auto shapeFunctions = CalculateShapeFunctions(rCoordinates);
 
+    assert (shapeFunctions.rows() == (mDegree(0)+1)*(mDegree(1)+1));
+
     return ConstructMatrixN(shapeFunctions);
 }
 
@@ -168,7 +170,10 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixN(const Eigen::VectorXd
     parameter(0) = transformation(rCoordinates(0), mKnotsX(rKnotIDs(0)), mKnotsX(rKnotIDs(0) + 1));
     parameter(1) = transformation(rCoordinates(1), mKnotsY(rKnotIDs(1)), mKnotsY(rKnotIDs(1) + 1));
 
-    return ConstructMatrixN(ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(0, parameter, rKnotIDs, mDegree, mKnotsX, mKnotsY, mWeights));
+    auto shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivatives2DRat(0, parameter, rKnotIDs, mDegree, mKnotsX, mKnotsY, mWeights);
+    assert (shapeFunctions.rows() == (mDegree(0)+1)*(mDegree(1)+1));
+
+    return ConstructMatrixN(shapeFunctions);
 }
 
 Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixN(int rIP, const Eigen::VectorXi &rKnotIDs) const
@@ -182,7 +187,7 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixN(int rIP, const Eigen:
     return CalculateMatrixN(IPcoordinates, rKnotIDs);
 }
 
-Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters,
+Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters,
                                                                      const Eigen::VectorXi& rKnotIDs,
                                                                      int rDerivative,
                                                                      int rDirection) const
@@ -231,23 +236,9 @@ Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateMatrixNDerivative(const Eigen
         break;
     }
 
+    assert (shapeFunctions.rows() == (mDegree(0)+1)*(mDegree(1)+1));
+
     return ConstructMatrixN(shapeFunctions);
-}
-
-Eigen::MatrixXd  NuTo::Interpolation2DIGA::ConstructMatrixN(Eigen::VectorXd rShapeFunctions) const
-{
-    int numNodes = GetNumNodes();
-    int dimBlock = GetNumDofsPerNode();
-
-    assert (rShapeFunctions.rows() == (mDegree(0)+1)*(mDegree(1)+1));
-
-    Eigen::MatrixXd matrixN(dimBlock, numNodes * dimBlock);
-    for (int iNode = 0, iBlock = 0; iNode < numNodes; ++iNode, iBlock += dimBlock)
-    {
-        matrixN.block(0, iBlock, dimBlock, dimBlock) = Eigen::MatrixXd::Identity(dimBlock, dimBlock) * rShapeFunctions(iNode);
-    }
-
-    return matrixN;
 }
 
 Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const
@@ -256,16 +247,18 @@ Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateNaturalSurfaceCoordinates(con
 
     switch (rSurface)
     {
-    case 0:
+    case -1:
+        return Eigen::Vector2d(transformation(rNaturalSurfaceCoordinates(0), rKnots(0,0), rKnots(0,1)), transformation(rNaturalSurfaceCoordinates(1), rKnots(1,0), rKnots(1,1)));
+    case  0:
         return Eigen::Vector2d(transformation(rNaturalSurfaceCoordinates(0), rKnots(0,0), rKnots(0,1)), rKnots(1,0));
-    case 1:
+    case  1:
         return Eigen::Vector2d(rKnots(0,1), transformation(rNaturalSurfaceCoordinates(0), rKnots(1,0), rKnots(1,1)));
-    case 2:
+    case  2:
         return Eigen::Vector2d(transformation(rNaturalSurfaceCoordinates(0), rKnots(0,1), rKnots(0,0)), rKnots(1,1));
-    case 3:
+    case  3:
         return Eigen::Vector2d(rKnots(0,0), transformation(rNaturalSurfaceCoordinates(0), rKnots(1,1), rKnots(1,0)));
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
+        throw MechanicsException(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, rSurface = 0,1,2,3, and its whole 2D domain (rSurface = -1). You tried to access " + std::to_string(rSurface) + ".");
     }
 }
 

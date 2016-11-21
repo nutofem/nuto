@@ -12,6 +12,8 @@
 
 #include "nuto/mechanics/elements/ContinuumElement.h"
 #include "nuto/mechanics/elements/ContinuumElementIGA.h"
+#include "nuto/mechanics/elements/ContinuumElementIGALayer.h"
+#include "nuto/mechanics/elements/ContinuumContactElement.h"
 #include "nuto/mechanics/elements/ContinuumBoundaryElement.h"
 #include "nuto/mechanics/elements/ContinuumBoundaryElementConstrainedControlNode.h"
 #include "nuto/mechanics/elements/ElementEnum.h"
@@ -817,6 +819,14 @@ void NuTo::Structure::ElementCreate(int rElementNumber,
             ptrElement = new ContinuumElementIGA<2>(this, rNodeVector, rKnots, rKnotIDs, rElementDataType, rIpDataType, interpolationType);
             ptrElement->CheckElement();
             break;
+        case NuTo::Interpolation::eShapeType::IGA1DLAYER:
+            ptrElement = new ContinuumElementIGALayer<1>(this, rNodeVector, rKnots, rKnotIDs, rElementDataType, rIpDataType, interpolationType);
+            ptrElement->CheckElement();
+            break;
+        case NuTo::Interpolation::eShapeType::IGA2DLAYER:
+            ptrElement = new ContinuumElementIGALayer<2>(this, rNodeVector, rKnots, rKnotIDs, rElementDataType, rIpDataType, interpolationType);
+            ptrElement->CheckElement();
+            break;
         default:
             throw MechanicsException("[NuTo::Structure::ElementCreate] invalid dimension.");
         }
@@ -902,6 +912,9 @@ void NuTo::Structure::ElementCreate(int rElementNumber, int rInterpolationTypeId
         case NuTo::Interpolation::eShapeType::IGA1D:
             throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] Please use the ElementCreate function for IGA elements, where the knot parameters are provided.");
             break;
+        case NuTo::Interpolation::eShapeType::IGA2D:
+            throw NuTo::MechanicsException("[NuTo::Structure::ElementCreate] Please use the ElementCreate function for IGA elements, where the knot parameters are provided.");
+            break;
         default:
             throw MechanicsException("[NuTo::Structure::ElementCreate] invalid dimension.");
         }
@@ -964,6 +977,209 @@ int NuTo::Structure::ElementsCreate(int rInterpolationTypeId, NuTo::FullMatrix<i
     return newElementGroup;
 }
 
+namespace NuTo
+{
+
+template<>
+Eigen::Matrix<std::pair<const ContinuumElementIGA<1>*, int>, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ContactElementsCreateMaster<1>(const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID)
+{
+    Eigen::Matrix<std::pair<const ContinuumElementIGA<1>*, int>, Eigen::Dynamic, Eigen::Dynamic> masterElements(rMasterElementsID.rows(), rMasterElementsID.cols());
+
+    for(int i = 0 ; i < rMasterElementsID.rows(); i++)
+    {
+        for(int j = 0 ; j < rMasterElementsID.cols(); j++)
+        {
+            const NuTo::ElementBase* elementPtrSlave = ElementGetElementPtr(rMasterElementsID(i,j).first);
+
+            if(elementPtrSlave->GetEnumType() == Element::eElementType::CONTINUUMELEMENTIGA)
+            {
+                if(elementPtrSlave->GetLocalDimension() == 1)
+                {
+                    masterElements(i,j) = std::make_pair(&elementPtrSlave->AsContinuumElementIGA1D(), rMasterElementsID(i,j).second);
+                }
+                else
+                    throw MechanicsException(__PRETTY_FUNCTION__,"Wrong element dimension.");
+            }
+            else
+                throw MechanicsException(__PRETTY_FUNCTION__,"Only ContinuumElementIGA available as master elements.");
+        }
+    }
+    return masterElements;
+}
+
+template<>
+Eigen::Matrix<std::pair<const ContinuumElementIGA<2>*, int>, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ContactElementsCreateMaster<2>(const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID)
+{
+    Eigen::Matrix<std::pair<const ContinuumElementIGA<2>*, int>, Eigen::Dynamic, Eigen::Dynamic> masterElements(rMasterElementsID.rows(), rMasterElementsID.cols());
+
+    for(int i = 0 ; i < rMasterElementsID.rows(); i++)
+    {
+        for(int j = 0 ; j < rMasterElementsID.cols(); j++)
+        {
+            const NuTo::ElementBase* elementPtrSlave = ElementGetElementPtr(rMasterElementsID(i,j).first);
+
+            if(elementPtrSlave->GetEnumType() == Element::eElementType::CONTINUUMELEMENTIGA)
+            {
+                if(elementPtrSlave->GetLocalDimension() == 2)
+                {
+                    masterElements(i,j) = std::make_pair(&elementPtrSlave->AsContinuumElementIGA2D(), rMasterElementsID(i,j).second);
+                }
+                else
+                    throw MechanicsException(__PRETTY_FUNCTION__,"Wrong element dimension.");
+            }
+            else
+                throw MechanicsException(__PRETTY_FUNCTION__,"Only ContinuumElementIGA available as master elements.");
+        }
+    }
+    return masterElements;
+}
+}
+template<int TDimSlave, int TDimMaster>
+void NuTo::Structure::ContactElementsCreate(int rElementsGroupIDSlave,
+                                            int rNodeGroupSlaveId,
+                                            const Eigen::Matrix<std::pair<int, int>,
+                                            Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID,
+                                            eIntegrationType rIntegrationType,
+                                            double rPenalty,
+                                            int rContactAlgorithm)
+{
+    Eigen::Matrix<std::pair<const ContinuumElementIGA<TDimMaster>*, int>, Eigen::Dynamic, Eigen::Dynamic> masterElements = ContactElementsCreateMaster<TDimMaster>(rMasterElementsID);
+
+    //find groups
+    boost::ptr_map<int, GroupBase>::iterator itGroupElementsSlave = mGroupMap.find(rElementsGroupIDSlave);
+    if (itGroupElementsSlave == mGroupMap.end())
+        throw MechanicsException(__PRETTY_FUNCTION__, "Group with the given identifier does not exist.");
+    if (itGroupElementsSlave->second->GetType() != NuTo::eGroupId::Elements)
+        throw MechanicsException(__PRETTY_FUNCTION__,"Group is not an element group.");
+
+    Group<ElementBase>& elementGroupSlave = *(itGroupElementsSlave->second->AsGroupElement());
+
+
+    boost::ptr_map<int, GroupBase>::iterator itGroupBoundaryNodes = mGroupMap.find(rNodeGroupSlaveId);
+    if (itGroupBoundaryNodes == mGroupMap.end())
+        throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group with the given identifier does not exist.");
+    if (itGroupBoundaryNodes->second->GetType() != NuTo::eGroupId::Nodes)
+        throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group is not a node group.");
+
+    Group<NodeBase>&    nodeGroup       = *(itGroupBoundaryNodes->second->AsGroupNode());
+
+    // since the search is done via the id's, the surface nodes are ptr, so make another set with the node ptrs
+    std::set<const NodeBase*> nodePtrSet;
+    for (auto itNode : nodeGroup)
+    {
+        nodePtrSet.insert(itNode.second);
+    }
+
+    std::vector<int> newBoundaryElementIds;
+
+    //loop over all elements
+    for (auto itElementSlave : elementGroupSlave)
+    {
+        ElementBase* elementPtrSlave = itElementSlave.second;
+         const InterpolationType* interpolationType = elementPtrSlave->GetInterpolationType();
+        //loop over all surfaces
+        for (int iSurface = 0; iSurface < interpolationType->GetNumSurfaces(); ++iSurface)
+        {
+            bool elementSurfaceNodesMatchBoundaryNodes = true;
+            Eigen::VectorXi surfaceNodeIndices = interpolationType->GetSurfaceNodeIndices(iSurface);
+
+            int numSurfaceNodes = surfaceNodeIndices.rows();
+            std::vector<const NodeBase*> surfaceNodes(numSurfaceNodes);
+
+            for (int iSurfaceNode = 0; iSurfaceNode < numSurfaceNodes; ++iSurfaceNode)
+            {
+                surfaceNodes[iSurfaceNode] = elementPtrSlave->GetNode(surfaceNodeIndices(iSurfaceNode, 0));
+            }
+
+            //check, if all surface nodes are in the node group
+            for (unsigned int countNode = 0; countNode < surfaceNodes.size(); countNode++)
+            {
+                if (nodePtrSet.find(surfaceNodes[countNode]) == nodePtrSet.end())
+                {
+                    //this surface has at least one node that is not in the list, continue
+                    elementSurfaceNodesMatchBoundaryNodes = false;
+                    break;
+                }
+            }
+
+            if (elementSurfaceNodesMatchBoundaryNodes)
+            {
+                int surfaceId = iSurface;
+
+                IpData::eIpDataType ipDataType = elementPtrSlave->GetIpDataType(0);
+                ConstitutiveBase* constitutiveLaw = elementPtrSlave->GetConstitutiveLaw(0);
+
+                ElementBase* boundaryElement = nullptr;
+
+                int localDimension = elementPtrSlave->GetLocalDimension();
+
+                switch (elementPtrSlave->GetEnumType())
+                {
+                case Element::eElementType::CONTINUUMELEMENT:
+                    switch (localDimension)
+                    {
+                    case 2:
+                    {
+                        boundaryElement = new ContinuumContactElement<2, TDimMaster>(&elementPtrSlave->AsContinuumElement2D(), surfaceId, masterElements, rPenalty, rContactAlgorithm);
+                        break;
+                    }
+                    default:
+                        throw MechanicsException(__PRETTY_FUNCTION__,"Contact element for Continuum element with dimension " +
+                                                 std::to_string(elementPtrSlave->GetLocalDimension()) + "not implemented");
+                    }
+                    break;
+                case Element::eElementType::CONTINUUMELEMENTIGA:
+                    switch (localDimension)
+                    {
+                    case 1:
+                    {
+                        boundaryElement = new ContinuumContactElement<1, TDimMaster>(&elementPtrSlave->AsContinuumElementIGA1D(), surfaceId, masterElements, rPenalty, rContactAlgorithm);
+                        break;
+                    }
+                    case 2:
+                    {
+                        boundaryElement = new ContinuumContactElement<2, TDimMaster>(&elementPtrSlave->AsContinuumElementIGA2D(), surfaceId, masterElements, rPenalty, rContactAlgorithm);
+                        break;
+                    }
+                    default:
+                        throw MechanicsException(__PRETTY_FUNCTION__,"Contact element for Continuum element with dimension " +
+                                                 std::to_string(elementPtrSlave->GetLocalDimension()) + "not implemented");
+                    }
+                    break;
+                default:
+                    throw MechanicsException(__PRETTY_FUNCTION__,"Only ContinuumElement and ContinuumElementIGA available as master elements.");
+                }
+
+                //find unused integer id
+                int elementId = mElementMap.size();
+                boost::ptr_map<int, ElementBase>::iterator it = mElementMap.find(elementId);
+                while (it != mElementMap.end())
+                {
+                    elementId++;
+                    it = mElementMap.find(elementId);
+                }
+
+                mElementMap.insert(elementId, boundaryElement);
+                newBoundaryElementIds.push_back(elementId);
+
+                if (rIntegrationType == eIntegrationType::NotSet)
+                    throw MechanicsException(__PRETTY_FUNCTION__, "Could not automatically determine integration type of the boundary element.");
+
+                boundaryElement->SetIntegrationType(GetPtrIntegrationType(rIntegrationType), ipDataType);
+                boundaryElement->SetConstitutiveLaw(constitutiveLaw);
+            }
+        }
+    }
+
+}
+
+template void NuTo::Structure::ContactElementsCreate<3,2>(int rElementsGroupIDSlave,  int rNodeGroupSlaveId, const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID, eIntegrationType rIntegrationType, double rPenalty,int rContactAlgorithm);
+template void NuTo::Structure::ContactElementsCreate<2,2>(int rElementsGroupIDSlave,  int rNodeGroupSlaveId, const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID, eIntegrationType rIntegrationType, double rPenalty,int rContactAlgorithm);
+template void NuTo::Structure::ContactElementsCreate<2,1>(int rElementsGroupIDSlave,  int rNodeGroupSlaveId, const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID, eIntegrationType rIntegrationType, double rPenalty,int rContactAlgorithm);
+template void NuTo::Structure::ContactElementsCreate<1,2>(int rElementsGroupIDSlave,  int rNodeGroupSlaveId, const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID, eIntegrationType rIntegrationType, double rPenalty,int rContactAlgorithm);
+template void NuTo::Structure::ContactElementsCreate<1,1>(int rElementsGroupIDSlave,  int rNodeGroupSlaveId, const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID, eIntegrationType rIntegrationType, double rPenalty,int rContactAlgorithm);
+
+
 //! @brief creates boundary elements and add them to an element group
 //! @param rElementGroupId ... group id including the base elements
 //! @param rNodeGroupId ... node group id that includes the surface nodes
@@ -1006,7 +1222,6 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId, int rNodeGroupI
     {
         ElementBase* elementPtr = itElement.second;
         const InterpolationType* interpolationType = elementPtr->GetInterpolationType();
-
         try
         {
 

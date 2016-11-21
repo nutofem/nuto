@@ -116,7 +116,7 @@ public:
     //! @param rKnotIDs ... knot span
     //! @param rDerivative ... the order of derivative (only 0,1,2 possible)
     //! @param rDirection ... for 1D only 0 (in 2D 0(x) and 1(y))
-    virtual Eigen::VectorXd CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const override
+    virtual Eigen::MatrixXd CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "So far implemeneted only for IGA!");
     }

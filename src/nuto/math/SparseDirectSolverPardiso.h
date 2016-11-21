@@ -33,6 +33,10 @@ public:
     //! @param rSolution ... matrix storing the corresponding solution vectors (output)
     void Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double, Eigen::Dynamic> &rRhs, NuTo::FullVector<double, Eigen::Dynamic> &rSolution);
 
+    void Factorization(const NuTo::SparseMatrixCSR<double>& rMatrix);
+    void Solution(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double, Eigen::Dynamic> &rRhs, NuTo::FullVector<double, Eigen::Dynamic> &rSolution);
+    void CleanUp(const NuTo::SparseMatrixCSR<double>& rMatrix);
+
     //! @brief ... use the nested dissection alogrithm from the METIS-package for for the fill-in reducing odering of the coefficient matrix
     //! @sa mOrderingType
     inline void SetOrderingMETIS()
@@ -103,6 +107,25 @@ protected:
     //! @param error ... error code
     //! @return error message as std::string
     std::string GetErrorString(int error) const;
+
+    struct mInternalVariablesStruct
+    {
+    public:
+        void* pt[64];
+        int maxfct;
+        int mnum;
+        int matrixType;
+        int matrixDimension;
+        int idum;
+        int rhsNumColumns;
+        int parameters[64];
+        double dparameters[64];
+        int msglvl;
+        double ddum;
+        int error;
+    };
+
+    mInternalVariablesStruct mInternalVariables;
 
     //! @brief ... type of fill-in reducing odering of the coefficient matrix
     //! \sa setOrderingMETIS, setOrderingMinimumDegree

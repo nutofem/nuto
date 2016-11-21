@@ -141,7 +141,6 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiv
     return constitutiveOutput;
 }
 
-
 template<int TDim>
 NuTo::ConstitutiveInputMap NuTo::ContinuumBoundaryElement<TDim>::GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const
 {

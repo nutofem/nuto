@@ -1544,6 +1544,10 @@ double NuTo::StructureBase::ElementCalculateLargestElementEigenvalue(const std::
 			try
 			{
 				eError error = rElementVector[countElement]->Evaluate(elementOutput);
+                if( error == eError::NOT_IMPLEMENTED)
+                {
+                    continue;
+                }
                 if (error!=eError::SUCCESSFUL)
 #ifdef _OPENMP
 #pragma omp critical

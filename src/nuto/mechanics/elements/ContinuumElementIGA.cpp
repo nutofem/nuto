@@ -128,7 +128,7 @@ void NuTo::ContinuumElementIGA<TDim>::CalculateNMatrixBMatrixDetJacobian(Evaluat
     // calculate Jacobian
     const Eigen::MatrixXd& derivativeShapeFunctionsGeometryNatural = this->mInterpolationType->Get(Node::eDof::COORDINATES).CalculateDerivativeShapeFunctionsNatural(rTheIP, mKnotIDs);
 
-    Eigen::Matrix<double, TDim, TDim> jacobian = this->CalculateJacobian(derivativeShapeFunctionsGeometryNatural, rData.mNodalValues[Node::eDof::COORDINATES]);
+    Eigen::MatrixXd jacobian = this->CalculateJacobian(derivativeShapeFunctionsGeometryNatural, rData.mNodalValues[Node::eDof::COORDINATES]);
 
     // there are two mappings in IGA: 1) reference element <=> parametric space (knots) 2) parametric space <=> physical space
     // the B-matrix only the invJac of mapping 2) is needed
@@ -190,6 +190,18 @@ Eigen::VectorXd NuTo::ContinuumElementIGA<TDim>::InterpolateDofGlobal(int rTimeD
 }
 
 template<int TDim>
+Eigen::VectorXd NuTo::ContinuumElementIGA<TDim>::InterpolateDofGlobalCurrentConfiguration(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofTypeInit, Node::eDof rDofTypeCurrent) const
+{
+    const InterpolationBase& interpolationTypeInit = this->mInterpolationType->Get(rDofTypeInit);
+    Eigen::VectorXd nodalInit    = this->ExtractNodeValues(rTimeDerivative, rDofTypeInit);
+    Eigen::VectorXd nodalCurrent = this->ExtractNodeValues(rTimeDerivative, rDofTypeCurrent);
+
+    Eigen::MatrixXd matrixN = interpolationTypeInit.CalculateMatrixN(rNaturalCoordinates, mKnotIDs);
+
+    return matrixN * (nodalInit + nodalCurrent);
+}
+
+template<int TDim>
 Eigen::VectorXd NuTo::ContinuumElementIGA<TDim>::InterpolateDofGlobalSurfaceDerivative(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative, int rDirection) const
 {
     Eigen::VectorXd nodalInitial       = this->ExtractNodeValues(rTimeDerivative, Node::eDof::COORDINATES);
@@ -231,6 +243,7 @@ Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> NuTo::ContinuumEl
 template<>
 Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> NuTo::ContinuumElementIGA<2>::InterpolateDofGlobalSurfaceDerivativeTotal(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative) const
 {
+    // think of it somehow as of a tensor ....
     Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> derivative;
     switch (rDerivative)
     {
@@ -264,6 +277,72 @@ Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> NuTo::ContinuumEl
     return derivative;
 }
 
+template<>
+Eigen::VectorXd NuTo::ContinuumElementIGA<1>::InterpolateDofGlobalSurfaceNormal(const Eigen::VectorXd& rParameter) const
+{
+    Eigen::VectorXd tangent = InterpolateDofGlobalSurfaceDerivative(0, rParameter, 1, 0);
+
+    if(tangent.rows() != 2)
+        throw MechanicsException(__PRETTY_FUNCTION__, "The normal only available for 2D domains.");
+
+    return Eigen::Vector2d(tangent(1), -tangent(0));
+}
+
+template<>
+Eigen::VectorXd NuTo::ContinuumElementIGA<2>::InterpolateDofGlobalSurfaceNormal(const Eigen::VectorXd& rParameter) const
+{
+    Eigen::VectorXd tangentX = InterpolateDofGlobalSurfaceDerivative(0, rParameter, 1, 0);
+    Eigen::VectorXd tangentY = InterpolateDofGlobalSurfaceDerivative(0, rParameter, 1, 1);
+
+    if(tangentX.rows() != 3 && tangentY.rows() != 3)
+        throw MechanicsException(__PRETTY_FUNCTION__, "The normal only available for 3D domains.");
+
+    return Eigen::Vector3d(tangentX).cross(Eigen::Vector3d(tangentX));
+}
+
+template<>
+Eigen::VectorXd NuTo::ContinuumElementIGA<1>::CalculateJacobianSurface(const Eigen::VectorXd &rParameter, const Eigen::VectorXd &rNodalCoordinates, int rSurfaceId) const
+{
+    throw MechanicsException(__PRETTY_FUNCTION__, "There is no surface in 1D case.");
+}
+
+template<>
+Eigen::VectorXd NuTo::ContinuumElementIGA<2>::CalculateJacobianSurface(const Eigen::VectorXd &rParameter, const Eigen::VectorXd &rNodalCoordinates, int rSurfaceId) const
+{
+    const InterpolationBase&  interpolationTypeCoords =  this->mInterpolationType->Get(Node::eDof::COORDINATES);
+    Eigen::MatrixXd derivativeShapeFunctionsNaturalSlave =  interpolationTypeCoords.CalculateDerivativeShapeFunctionsNatural(rParameter);
+    const Eigen::MatrixXd jacobianStd = CalculateJacobian(derivativeShapeFunctionsNaturalSlave, rNodalCoordinates);// = [dX / dXi]
+    // in case of non IGA - just an identity matrix
+    const Eigen::MatrixXd jacobianIGA = CalculateJacobianParametricSpaceIGA();// = [dXi / d\tilde{Xi}]
+    Eigen::VectorXd ipCoordsSurface(1);
+    Eigen::MatrixXd derivativeNaturalSurfaceCoordinates =  interpolationTypeCoords.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, rSurfaceId); // = [dXi / dAlpha]
+
+    return jacobianStd * jacobianIGA * derivativeNaturalSurfaceCoordinates; // = || [dX / dXi] * [dXi / dAlpha] ||
+}
+
+template<>
+const ContinuumElementIGA<1>& ContinuumElementIGA<1>::AsContinuumElementIGA1D() const
+{
+    return *this;
+}
+
+template<>
+const ContinuumElementIGA<2>& ContinuumElementIGA<2>::AsContinuumElementIGA2D() const
+{
+    return *this;
+}
+
+template<>
+ContinuumElementIGA<1>& ContinuumElementIGA<1>::AsContinuumElementIGA1D()
+{
+    return *this;
+}
+
+template<>
+ContinuumElementIGA<2>& ContinuumElementIGA<2>::AsContinuumElementIGA2D()
+{
+    return *this;
+}
 
 }  // namespace NuTo
 

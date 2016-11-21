@@ -86,9 +86,11 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
         throw NuTo::MechanicsException("[NuTo::InterpolationTypeBase::AddDofInterpolation] This method is for IG interpolation, please use the 'AddDofInterpolation(Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder)'.");
         break;
     case Interpolation::eShapeType::IGA1D:
+    case Interpolation::eShapeType::IGA1DLAYER:
         newType = new Interpolation1DIGA(rDofType, rTypeOrder, mDimension, rDegree(0), rKnots[0], rWeights);
         break;
     case Interpolation::eShapeType::IGA2D:
+    case Interpolation::eShapeType::IGA2DLAYER:
         newType = new Interpolation2DIGA(rDofType, rTypeOrder, mDimension, rDegree, rKnots[0], rKnots[1], rWeights);
         break;
     default:

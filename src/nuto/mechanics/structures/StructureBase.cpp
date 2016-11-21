@@ -41,6 +41,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss5Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss12Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
@@ -117,6 +118,8 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
         NuTo::IntegrationType1D2NGauss4Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss5Ip)]=
         NuTo::IntegrationType1D2NGauss5Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip)]=
+        NuTo::IntegrationType1D2NGauss12Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto3Ip)]=
         NuTo::IntegrationType1D2NLobatto3Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto4Ip)]=
@@ -767,6 +770,25 @@ NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalInternalGradien
     Evaluate(input, evaluateMap);
 
     return internalGradient;
+}
+
+NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalContactForceVector()
+{
+    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
+    if (mNodeNumberingRequired) NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+
+    StructureOutputBlockVector contactForce(mDofStatus, true);
+
+    std::map<eStructureOutput, StructureOutputBase *> evaluateMap;
+    evaluateMap[eStructureOutput::CONTACT_FORCE] = &contactForce;
+
+    ConstitutiveInputMap input;
+    input[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
+            eCalculateStaticData::EULER_BACKWARD);
+
+    Evaluate(input, evaluateMap);
+
+    return contactForce;
 }
 
 NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian0_CDF(double rDelta)

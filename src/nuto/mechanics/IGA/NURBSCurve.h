@@ -1,6 +1,8 @@
 #pragma once
 
 #include "nuto/math/FullMatrix.h"
+#include "nuto/mechanics/nodes/NodeEnum.h"
+#include <set>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/export.hpp>
@@ -18,6 +20,9 @@ namespace NuTo
 //! @date July, 2016
 //! @brief ... class for B spline/NURBS curves, with IGA specific functions
 //! @brief ... B spline/NURBS specific algorithms taken from Piegl, Tiller 'The NURBS book' 1996
+
+class Structure;
+
 class NURBSCurve
 {
 public:
@@ -31,16 +36,16 @@ public:
     //! @param rKnots ... knot vector
     //! @param rControlPoints ... control points
     NURBSCurve(const Eigen::MatrixXd &rKnots,
-                 const Eigen::MatrixXd &rControlPoints,
-                 const Eigen::VectorXd &rWeights,
-                 int rDegree);
+               const Eigen::MatrixXd &rControlPoints,
+               const Eigen::VectorXd &rWeights,
+               int rDegree);
 
     //! @brief ... constructor (interpolation of a point sequence)
     //! @param rDegree ... degree of the polynomial
     //! @param rPoints ... points to interpolate
     NURBSCurve(int rDegree,
-                 const Eigen::MatrixXd& rPoints,
-                 Eigen::MatrixXd &AInv);
+               const Eigen::MatrixXd &rPoints,
+               Eigen::MatrixXd       &A);
 
     /** Getter **/
 
@@ -116,6 +121,10 @@ public:
     //! @return ... vector of control point ids
     Eigen::VectorXi GetElementControlPointIDs(int rElementID) const;
 
+    //! @brief ... get the global control point ids belonging to an element
+    //! @return ... vector of control point ids
+    Eigen::VectorXi GetElementControlPointIDsGlobal(int rElementID, const Eigen::MatrixXi &rNodeIDs) const;
+
     //! @brief ... get the multiplicity of a knot
     //! @return ... multiplicity
     int GetMultiplicityOfKnot(double rKnot);
@@ -169,16 +178,21 @@ public:
 
     //! @brief ... returns the coordinate of a curve according to a given parameter
     //! @param rParameter ... the parameter
-    Eigen::VectorXd CurvePoint(double rParameter) const;
+    Eigen::VectorXd CurvePoint(double rParameter, int rDerivative) const;
 
     //! @brief ... returns the coordinates of a curve according to a given parameters
     //! @param rParameter ... the parameters
-    Eigen::MatrixXd CurvePoints(const Eigen::VectorXd &rParameter) const;
+    Eigen::MatrixXd CurvePoints(const Eigen::VectorXd &rParameter, int rDerivative) const;
 
     /** Knot insertion **/
     void InsertKnot(double rKnotToInsert, int rMultiplicity);
     void RefineKnots(const Eigen::VectorXd &rKnotsToInsert);
     void DuplicateKnots();
+
+    void  findMinimalDistance(const Eigen::VectorXd &rCoordinatesSlave, double &rParameterStartMaster);
+
+    /** Build NuTo structure **/
+    Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> buildIGAStructure(NuTo::Structure &rStructure, const std::set<NuTo::Node::eDof> &rSetOfDOFS, int rGroupElements, int rGroupNodes, const std::string &rInterpolation) const;
 
 
     /** Degree elevation **/

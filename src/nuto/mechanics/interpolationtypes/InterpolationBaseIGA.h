@@ -180,6 +180,7 @@ public:
 
     int GetSurfaceDegree(int rSurface) const = 0;
 
+    Eigen::MatrixXd  ConstructMatrixN(Eigen::VectorXd rShapeFunctions) const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class, this is the load routine

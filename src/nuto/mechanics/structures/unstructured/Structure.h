@@ -12,6 +12,8 @@
 
 namespace NuTo
 {
+template <int TDim> class ContinuumElementIGA;
+
 namespace ElementData
 {
     enum class eElementDataType;
@@ -522,7 +524,18 @@ public:
 
     void ElementCreate(int rElementNumber, int rInterpolationTypeId, const std::vector<int>& rNodeIds, ElementData::eElementDataType rElementDataType, IpData::eIpDataType rIpDataType);
 
+    template<int TDimMaster>
+    Eigen::Matrix<std::pair<const ContinuumElementIGA<TDimMaster>*, int>, Eigen::Dynamic, Eigen::Dynamic> ContactElementsCreateMaster(const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID);
 
+    template<int TDimSlave, int TDimMaster>
+    void ContactElementsCreate(int rElementsGroupIDSlave,
+                               int rNodeGroupSlaveId,
+                               const Eigen::Matrix<std::pair<int, int>,
+                               Eigen::Dynamic,
+                               Eigen::Dynamic> &rMasterElementsID,
+                               eIntegrationType rIntegrationType,
+                               double rPenalty,
+                               int rContactAlgorithm);
 
     //! @brief Returns the internal enum (number) for the element types
     //! @param Element name in Nuto

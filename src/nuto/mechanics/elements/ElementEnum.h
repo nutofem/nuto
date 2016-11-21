@@ -13,6 +13,7 @@ enum class eElementType
     BOUNDARYGRADIENTDAMAGE1D=0,                     //!< boundary element for gradient models
     BOUNDARYMOISTURETRANSPORT1D,                    //!< boundary element for moisture transport
     CONTINUUMBOUNDARYELEMENT,                       //!< boundary of continuum element
+    CONTINUUMCONTACTELEMENT,                        //!< boundary of continuum element
     CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE, //!< boundary of 2D element --> 1D surface with additional node as dependency
     CONTINUUMELEMENT,                               //!< continuum element, dimension should not matter
     CONTINUUMELEMENTIGA,                            //!< continuum element iga, dimension should not matter
@@ -42,8 +43,9 @@ enum class eUpdateType
 
 enum class eOutput
 {
-    GAP_MATRIX_MORTAR,               //!< gap matrix according to mortar discretization
 	INTERNAL_GRADIENT,               //!<
+    CONTACT_FORCE,                   //!<
+    CONTACT_FORCE_DERIVATIVE,        //!<
 	INTERNAL_GRADIENT_ELASTIC,       //!< calculates internal gradient for the case that the state variables remain unchanged
 	EXTERNAL_GRADIENT,               //!< TODO: calculate external forces in element
 	HESSIAN_0_TIME_DERIVATIVE,       //!<

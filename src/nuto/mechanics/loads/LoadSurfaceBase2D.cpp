@@ -200,8 +200,6 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             else
                 ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface);
 
-            Eigen::MatrixXd N = interpolationTypeCoords.CalculateMatrixN(ipCoordsNatural);
-
             ipCoordsGlobal = interpolationTypeCoords.CalculateMatrixN(ipCoordsNatural) * nodeCoordinates;
 
             // ########################### ############
@@ -215,7 +213,6 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
 
             // in case of non IGA - just an identity matrix
             const Eigen::Matrix2d jacobianIGA = elementPtr->CalculateJacobianParametricSpaceIGA();// = [dXi / d\tilde{Xi}]
-
 
             derivativeNaturalSurfaceCoordinates = interpolationTypeCoords.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, surface); // = [dXi / dAlpha]
 

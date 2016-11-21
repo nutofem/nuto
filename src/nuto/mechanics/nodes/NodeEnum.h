@@ -30,7 +30,8 @@ enum class eDof : unsigned char {COORDINATES,
                                  NONLOCALEQSTRAIN,
                                  WATERVOLUMEFRACTION,
                                  RELATIVEHUMIDITY,
-                                 CRACKPHASEFIELD};
+                                 CRACKPHASEFIELD,
+                                 LAGRANGEMULTIPLIER};
 
 //! @brief Gets a set of all Dofs
 const std::set<eDof> GetDofSet();

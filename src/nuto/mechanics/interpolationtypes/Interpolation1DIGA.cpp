@@ -76,7 +76,6 @@ int NuTo::Interpolation1DIGA::GetNumDofsPerNode() const
     }
 }
 
-
 // --- shape functions --- //
 
 Eigen::VectorXd NuTo::Interpolation1DIGA::CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const
@@ -135,14 +134,30 @@ Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateDerivativeShapeFunctionsNatur
 Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const
 {
     auto shapeFunctions = CalculateShapeFunctions(rCoordinates);
-    return shapeFunctions.transpose();
+
+    assert (shapeFunctions.rows() == mDegree+1);
+
+    return ConstructMatrixN(shapeFunctions);
+
+//    return shapeFunctions.transpose();
 }
 
 
 Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateMatrixN(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const
 {
-    auto shapeFunctions = CalculateShapeFunctions(rCoordinates, rKnotIDs(0));
-    return shapeFunctions.transpose();
+    assert(rKnotIDs.rows() == 1 );
+    assert(rKnotIDs.cols() == 1 );
+    assert(rKnotIDs(0) < mKnots.rows());
+
+    Eigen::VectorXd parameter(1);
+    parameter(0) = transformation(rCoordinates(0), mKnots(rKnotIDs(0)), mKnots(rKnotIDs(0) + 1));
+    auto shapeFunctions = CalculateShapeFunctions(parameter, rKnotIDs(0));
+
+    assert (shapeFunctions.rows() == mDegree+1);
+
+    return ConstructMatrixN(shapeFunctions);
+
+//    return shapeFunctions.transpose();
 }
 
 
@@ -154,60 +169,24 @@ Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateMatrixN(int rIP,  const Eigen
 
     Eigen::VectorXd IPcoordinates(1);
 
-    IPcoordinates(0) = transformation(mIPCoordinates(rIP), mKnots(rKnotIDs(0)), mKnots(rKnotIDs(0) + 1));
-
     return CalculateMatrixN(IPcoordinates, rKnotIDs);
 }
 
 
-Eigen::VectorXd NuTo::Interpolation1DIGA::CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const
+Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const
 {
     assert(rDerivative >= 0 && rDerivative <= 2);
     assert(!mUpdateRequired);
     assert(rKnotIDs.rows() == 1 );
-    assert(rDirection == 0);
 
-    Eigen::VectorXd shapeFunctions;
+    (void)rDirection;
 
-    switch (rDerivative)
-    {
-    case 0:
-        shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
-        break;
-    case 1:
-    {
-        if     (rDirection == 0) // d/dx
-        {
-            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
-        }
-        else if(rDirection == 1) // d/dy
-        {
-            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
-        }
-        break;
-    }
-    case 2:
-    {
-        if     (rDirection == 0) // d²/d²xx
-        {
-            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
-        }
-        else if(rDirection == 1) // d²/d²yy
-        {
-            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
-        }
-        else if(rDirection == 2) // d²/d²xy = d²/d²yx
-        {
-            shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
-        }
-        break;
-    }
-    default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Maximum derivative is of order 2!");
-        break;
-    }
+    Eigen::VectorXd shapeFunctions = ShapeFunctionsIGA::BasisFunctionsAndDerivativesRat(rDerivative, rParameters(0), rKnotIDs(0), mDegree, mKnots, mWeights);
 
-    return shapeFunctions.transpose();
+    assert (shapeFunctions.rows() == mDegree+1);
+
+    return ConstructMatrixN(shapeFunctions);
+//    return shapeFunctions.transpose();
 }
 
 int NuTo::Interpolation1DIGA::CalculateNumNodes() const

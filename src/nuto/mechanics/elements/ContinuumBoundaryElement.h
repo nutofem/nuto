@@ -185,7 +185,7 @@ protected:
 
     void ExtractAllNecessaryDofValues(EvaluateDataContinuumBoundary<TDim> &rData);
 
-    ConstitutiveOutputMap GetConstitutiveOutputMap(std::map<Element::eOutput,
+    virtual ConstitutiveOutputMap GetConstitutiveOutputMap(std::map<Element::eOutput,
             std::shared_ptr<ElementOutputBase>>& rElementOutput) const;
 
     void FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput, 
@@ -200,22 +200,25 @@ protected:
     ConstitutiveInputMap GetConstitutiveInputMap(const ConstitutiveOutputMap& rConstitutiveOutput) const;
 
     void CalculateConstitutiveInputs(const ConstitutiveInputMap& rConstitutiveInput,
-            EvaluateDataContinuumBoundary<TDim> &rData);
+                                     EvaluateDataContinuumBoundary<TDim> &rData);
 
     void CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput,
-            EvaluateDataContinuumBoundary<TDim> &rData, int rTheIP,
-            const ConstitutiveInputMap& constitutiveInput, 
-            const ConstitutiveOutputMap& constitutiveOutput) const;
+                                 EvaluateDataContinuumBoundary<TDim> &rData, int rTheIP,
+                                 const ConstitutiveInputMap& constitutiveInput,
+                                 const ConstitutiveOutputMap& constitutiveOutput) const;
 
     void CalculateElementOutputInternalGradient(BlockFullVector<double>& rInternalGradient,
-            EvaluateDataContinuumBoundary<TDim> &rData,
-            const ConstitutiveInputMap& constitutiveInput,
-            const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
+                                                EvaluateDataContinuumBoundary<TDim> &rData,
+                                                const ConstitutiveInputMap& constitutiveInput,
+                                                const ConstitutiveOutputMap& constitutiveOutput,
+                                                int rTheIP) const;
+
     void CalculateElementOutputHessian0(BlockFullMatrix<double>& rHessian0,
-            EvaluateDataContinuumBoundary<TDim>& rData,
-            const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
+                                        EvaluateDataContinuumBoundary<TDim>& rData,
+                                        const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
+
     void CalculateElementOutputIpData(ElementOutputIpData& rIpData,
-            const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
+                                      const ConstitutiveOutputMap& constitutiveOutput, int rTheIP) const;
 
     void CalculateNMatrixBMatrixDetJacobian(EvaluateDataContinuumBoundary<TDim>& rData, int rTheIP) const;
 

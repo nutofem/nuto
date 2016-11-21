@@ -41,7 +41,7 @@ template<typename IOEnum> class ConstitutiveIOMap;
 template <int TDim> class ContinuumElement;
 template <int TDim> class ContinuumElementIGA;
 template <int TDim> class ContinuumBoundaryElement;
-template <int TDim> class ContinuumContactElement;
+template <int TDimSlave, int TDimMaster> class ContinuumContactElement;
 template <class T, int rows, int cols> class FullMatrix;
 template <class T, int rows> class FullVector;
 
@@ -410,10 +410,16 @@ public:
     virtual const Eigen::VectorXi& GetKnotIDs() const
     {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Only implemented in ContinuumElementIGA.");}
 
+    virtual Eigen::VectorXd InterpolateDofGlobalCurrentConfiguration(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofTypeInit, Node::eDof rDofTypeCurrent) const
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElement<TDim> or ContinuumElementIGA<TDim>.");}
+
     virtual Eigen::VectorXd InterpolateDofGlobalSurfaceDerivative(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative, int rDirection) const
     {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Only implemented in ContinuumElementIGA.");}
 
     virtual Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> InterpolateDofGlobalSurfaceDerivativeTotal(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative) const
+    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Only implemented in ContinuumElementIGA.");}
+
+    virtual Eigen::VectorXd InterpolateDofGlobalSurfaceNormal(const Eigen::VectorXd& rParameter) const
     {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Only implemented in ContinuumElementIGA.");}
 
     virtual const ContinuumElement<1>& AsContinuumElement1D() const

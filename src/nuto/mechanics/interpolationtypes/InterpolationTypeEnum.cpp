@@ -15,7 +15,9 @@ const std::map<NuTo::Interpolation::eShapeType, std::string> NuTo::Interpolation
         {eShapeType::BRICK3D,       "BRICK3D"},
         {eShapeType::INTERFACE,     "INTERFACE"},
         {eShapeType::IGA1D,         "IGA1D"},
-        {eShapeType::IGA2D,         "IGA2D"}};
+        {eShapeType::IGA2D,         "IGA2D"},
+        {eShapeType::IGA1DLAYER,    "IGA1DLAYER"},
+        {eShapeType::IGA2DLAYER,    "IGA2DLAYER"}};
     return shapeTypeMap;
 }
 

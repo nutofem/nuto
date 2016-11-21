@@ -1,7 +1,7 @@
 #pragma once
 
-#include "nuto/mechanics/IGA/NURBSCurve.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
+#include "eigen3/Eigen/Dense"
 #include <set>
 
 #ifdef ENABLE_SERIALIZATION
@@ -36,17 +36,17 @@ public:
     //! @param rKnots ... knot vector
     //! @param rControlPoints ... control points
     NURBSSurface(const Eigen::Vector2i &rDegree,
-                   const Eigen::VectorXd &rKnotsX,
-                   const Eigen::VectorXd &rKnotsY,
-                   const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> &rControlPoints,
-                   const Eigen::MatrixXd &rWeights);
+                 const Eigen::VectorXd &rKnotsX,
+                 const Eigen::VectorXd &rKnotsY,
+                 const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> &rControlPoints,
+                 const Eigen::MatrixXd &rWeights);
 
     //! @brief ... constructor (interpolation of a point cloud)
     //! @param rDegree ... degree of the polynomial
     //! @param rPoints ... points to interpolate
     NURBSSurface(const Eigen::Vector2i &rDegree,
-                   const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> &rPoints,
-                   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> &AInv);
+                 const Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> &rPoints,
+                 Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> &AInv);
 
     /** Getter **/
 
@@ -105,9 +105,9 @@ public:
     //! @brief ... parametrization for given points to interpolate (chord length method)
     //! @param rPoints ... points to interpolate
     //! @return rParameters ... parameters to the given points
-    void ParametrizationChordLengthMethod(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rPoints,
-                                          FullVector<double, Eigen::Dynamic>& rParametersX,
-                                          FullVector<double, Eigen::Dynamic>& rParametersY);
+    void ParametrizationChordLengthMethod(const Eigen::MatrixXd& rPoints,
+                                          Eigen::VectorXd& rParametersX,
+                                          Eigen::VectorXd& rParametersY);
 
     /** Knot refinement **/
     void DuplicateKnots(int dir);
@@ -134,7 +134,7 @@ Eigen::Vector2i mDegree;
 //! @brief weights for nurbs
 Eigen::MatrixXd mWeights;
 
-//! @brief Control points of the BSpline curve
+//! @brief Control points of the NURBS surface
 Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> mControlPoints;
 
 };

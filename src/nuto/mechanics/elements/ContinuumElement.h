@@ -121,15 +121,14 @@ public:
     //! @return rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
     const Eigen::VectorXd GetIntegrationPointVolume() const override;
 
-
     //! @brief Calculates the the inverse of the Jacobian and its determinant
     //! @param rDerivativeShapeFunctions Derivatives of the shape functions (dN0dx & dN0dy \\ dN1dx & dN1dy \\ ..
     //! @param rNodeCoordinates Node coordinates (X1 \\ Y1 \\ X2 \\Y2 \\ ...
     //! @param rDetJac determinant of the Jacobian (return value)
     //! @return inverse Jacobian matrix
-    Eigen::Matrix<double, TDim, TDim> CalculateJacobian(
-            const Eigen::MatrixXd& rDerivativeShapeFunctions,
-            const Eigen::VectorXd& rNodeCoordinates)const;
+    Eigen::Matrix<double, TDim, TDim> CalculateJacobian(const Eigen::MatrixXd& rDerivativeShapeFunctions, const Eigen::VectorXd& rNodeCoordinates) const;
+
+    virtual Eigen::VectorXd CalculateJacobianSurface(const Eigen::VectorXd &rParameter, const Eigen::VectorXd &rNodalCoordinates, int rSurfaceId) const;
 
     //! @brief Calculates the the jacobian of the mapping between the refernce element and parametric space (knots)
     //! @param rKnots ... knots of the element
@@ -140,6 +139,8 @@ public:
             Node::eDof rDofType,
             const Eigen::MatrixXd& rDerivativeShapeFunctions,
             const Eigen::Matrix<double, TDim, TDim> rInvJacobian) const;
+
+    Eigen::VectorXd InterpolateDofGlobalCurrentConfiguration(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofTypeInit, Node::eDof rDofTypeCurrent) const override;
 
     const ContinuumElement<1>& AsContinuumElement1D() const override
     {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElement<1>.");}
@@ -173,6 +174,8 @@ protected:
     void ExtractAllNecessaryDofValues(EvaluateDataContinuum<TDim> &data);
 
     ConstitutiveOutputMap GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const;
+
+    NuTo::eError CheckElementOutput(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const;
 
     virtual void FillConstitutiveOutputMapInternalGradient(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullVector<double>& rInternalGradient) const;
     virtual void FillConstitutiveOutputMapHessian0(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian0) const;

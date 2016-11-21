@@ -102,7 +102,7 @@ public:
     //! @param rKnotIDs ... knot span
     //! @param rDerivative ... the order of derivative (only 0,1,2 possible)
     //! @param rDirection ... for 1D only 0 (in 2D 0(x) and 1(y))
-    Eigen::VectorXd CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const override;
+    Eigen::MatrixXd CalculateMatrixNDerivative(const Eigen::VectorXd& rParameters, const Eigen::VectorXi& rKnotIDs, int rDerivative, int rDirection) const override;
 
     //********************************************
     //       SURFACE PARAMETRIZATION
@@ -110,7 +110,7 @@ public:
 
     Eigen::VectorXi GetSurfaceNodeIndices(int rSurface) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "No needed in 1D!");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Not needed in 1D!");
     }
 
     //! @brief returns the natural coordinates of the nodes that span the surface
@@ -127,7 +127,18 @@ public:
     //! @return ... natural coordinates of the elements surface
     Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "For 1D no functionality!");
+        assert(rNaturalSurfaceCoordinates.rows() == 1);
+        assert(rKnots.rows() == 1 && rKnots.cols() == 2);
+        if(rSurface == -1)
+        {
+             Eigen::VectorXd parameter(1);
+             parameter(0) = transformation(rNaturalSurfaceCoordinates(0), rKnots(0,0), rKnots(0,1));
+             return parameter;
+        }
+        else
+        {
+            throw MechanicsException(__PRETTY_FUNCTION__, "For 1D no functionality!");
+        }
     }
 
     //! @brief returns the derivative of the surface parametrization
