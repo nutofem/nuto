@@ -32,7 +32,7 @@ public:
     //! @param rFullMatrix ... input matrix (full storage)
     //! @param rAbsoluteTolerance ... absolute tolerance
     //! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
-    SparseMatrixCSRVector2Symmetric(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance = 0, double rRelativeTolerance = 1e-14);
+    SparseMatrixCSRVector2Symmetric(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance = 0, double rRelativeTolerance = 1e-14);
 
     //! @brief ... create sparse matrix with vector of vector from standard CSR format
     //! @param rCSRMatrix ... input matrix (full storage)

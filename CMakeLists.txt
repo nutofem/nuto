@@ -374,7 +374,6 @@ if(ENABLE_ARPACK)
     find_package(Arpack REQUIRED)
     if(ARPACK_FOUND)
         add_definitions("-DHAVE_ARPACK")
-        include_directories(${ARPACK_INCLUDE_DIR})
     endif()
 endif()
 

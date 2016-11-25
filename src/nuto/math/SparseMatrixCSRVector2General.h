@@ -27,7 +27,7 @@ NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(int rNumRo
 //! @param rAbsoluteTolerance ... absolute tolerance
 //! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
 template<class T>
-NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance):
+NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance):
                              NuTo::SparseMatrixCSRVector2<T>(rFullMatrix.GetNumRows())
 {
 	this->mNumColumns = rFullMatrix.GetNumColumns();

@@ -48,7 +48,7 @@ set(SWIG_MODULE_ModulSparseMatrix_EXTRA_DEPS
 
 # build static library
 add_library(NuToMath ${NuToMath_SOURCES})
-target_link_libraries(NuToMath NuToBase ${LAPACK_LIBRARIES} ${MUMPS_LIBRARIES} ${PARDISO_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${MKLSolver_LIBRARIES})
+target_link_libraries(NuToMath NuToBase ${LAPACK_LIBRARIES} ${MUMPS_LIBRARIES} ${PARDISO_LIBRARIES} ${ARPACK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${MKLSolver_LIBRARIES})
 if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
     set_target_properties(NuToMath PROPERTIES COMPILE_FLAGS "-fPIC")
 endif()

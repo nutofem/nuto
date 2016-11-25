@@ -30,7 +30,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(int rN
 //! @param rAbsoluteTolerance ... absolute tolerance
 //! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
 template<class T>
-NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance):
+NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance):
                              NuTo::SparseMatrixCSRVector2<T>(rFullMatrix.GetNumRows())
 {
 	if (rFullMatrix.GetNumColumns()!=rFullMatrix.GetNumRows())

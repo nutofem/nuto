@@ -44,7 +44,7 @@ int NuTo::MisesWielandt::Optimize()
 
 	for(size_t i=0;i<mNumParameters;++i)
 		norm+=u[i]*u[i];
-	norm=sqrt(norm);
+	norm=std::sqrt(norm);
 	for(size_t i=0;i<mNumParameters;++i)
 		u[i]*=1./norm;
 
@@ -95,7 +95,7 @@ int NuTo::MisesWielandt::Optimize()
 			lambda+=r[i]*u[i];
 			norm+=(r[i]*r[i]); //norm
 		}
-		norm=sqrt(norm);
+		norm=std::sqrt(norm);
 		for(size_t i=0;i<mNumParameters;++i)
 			u[i]=r[i]/norm;
 
@@ -126,12 +126,15 @@ int NuTo::MisesWielandt::Optimize()
 #ifdef SHOW_TIME
     endOpt=clock();
     if (mShowTime)
-        std::cout<<"[NuTo::MisesWielandt::Optimize] " << difftime(endOpt,startOpt)/CLOCKS_PER_SEC << "sec" << std::endl;
-	std::cout <<"[MisesWielandt] lambda - norm "<<lambda<<" "<<norm<<" " <<"\n";
-	std::cout <<"[MisesWielandt] "<<mObjectiveType<<" "<<objective <<"\n";
-    outputTime.open(filename,std::fstream::out|std::fstream::app);
- 	outputTime<<(difftime(endOpt,startOpt)/CLOCKS_PER_SEC)<<"   "<<curIteration<<"\n";
-	outputTime.close();
+	{
+		std::cout << "[NuTo::MisesWielandt::Optimize] " << difftime(endOpt, startOpt) / CLOCKS_PER_SEC << "sec"
+				  << std::endl;
+		std::cout << "[MisesWielandt] lambda - norm " << lambda << " " << norm << " " << "\n";
+		std::cout << "[MisesWielandt] " << mObjectiveType << " " << objective << "\n";
+		outputTime.open(filename, std::fstream::out | std::fstream::app);
+		outputTime << (difftime(endOpt, startOpt) / CLOCKS_PER_SEC) << "   " << curIteration << "\n";
+		outputTime.close();
+	}
 
 #endif
 	if (mVerboseLevel>0)

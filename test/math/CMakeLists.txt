@@ -15,14 +15,6 @@ if(ENABLE_PYTHON_TESTS)
 endif()
 
 if(ENABLE_C++_TESTS)
-
-    if(ENABLE_ARPACK)
-        add_executable(Arpack Arpack.cpp)
-        target_link_libraries(Arpack NuToMath NuToBase ${Boost_LIBRARIES} ${OpenBLAS_LIBRARIES})
-        target_link_libraries(Arpack ${ARPACK_LIBRARIES})
-        add_test(c::math::Arpack ${CMAKE_CURRENT_BUILD_DIR}/Arpack)
-    endif()
-
     add_executable(SparseMatrixTests SparseMatrixTests.cpp)
     target_link_libraries(SparseMatrixTests NuToMath NuToBase ${Boost_LIBRARIES})
     add_test(c::math::SparseMatrixTests ${CMAKE_CURRENT_BUILD_DIR}/SparseMatrixTests)
@@ -36,4 +28,11 @@ if(ENABLE_UNIT_TESTS)
     add_executable(SerializeData SerializeData.cpp)
     target_link_libraries(SerializeData NuToMath NuToBase)
     add_test(c::unit::SerializeData ${CMAKE_CURRENT_BUILD_DIR}/SerializeData)
+
+    if(ENABLE_ARPACK)
+        add_executable(Arpack Arpack.cpp)
+        target_link_libraries(Arpack NuToMath NuToBase)
+        add_test(c::math::Arpack ${CMAKE_CURRENT_BUILD_DIR}/Arpack)
+    endif()
+
 endif()
