@@ -32,7 +32,7 @@ before_script:
     - if [[ "$CXX" == "clang++" ]]; then CXX=clang++-3.9 cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_EXAMPLES=TRUE ..; fi
 script:
     - make -j2
-    - ctest
+    - ctest --output-on-failure
 after_success:
     - cd ..
     - if [[ "$CXX" =~ ^g.* ]]; then coveralls -E '.*PYTHON.*' --gcov-options '\-lp'; fi
