@@ -186,7 +186,8 @@ std::string NuTo::Constitutive::InputToString(const NuTo::Constitutive::eInput &
             (eInput::WATER_VOLUME_FRACTION_GRADIENT,"WATER_VOLUME_FRACTION_GRADIENT")
             (eInput::CALCULATE_STATIC_DATA, "CALCULATE_STATIC_DATA")
             (eInput::TIME,"TIME")
-            (eInput::TIME_STEP,"TIME_STEP");
+            (eInput::TIME_STEP,"TIME_STEP")
+            (eInput::CALCULATE_INITIALIZE_VALUE_RATES,"CALCULATE_INITIALIZE_VALUE_RATES");
     std::map< eInput, std::string >::const_iterator it = lut.find( e );
     if ( lut.end() != it )
         return it->second;

@@ -6,7 +6,7 @@
 #include <boost/serialization/access.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
+
 #include "nuto/mechanics/timeIntegration/NewmarkBase.h"
 
 
@@ -60,10 +60,7 @@ public:
         mVerboseLevel = rVerboseLevel;
     }
 
-    //! @brief Sets the residual tolerance for a specific DOF
-    //! param rDof: degree of freedom
-    //! param rTolerance: tolerance
-    void SetToleranceResidual(Node::eDof rDof, double rTolerance);
+
 
     //! @brief returns true, if the method is only conditionally stable (for unconditional stable, this is false)
     bool HasCriticalTimeStep()const
@@ -210,10 +207,7 @@ protected:
     void PrintInfoIteration(const BlockScalar &rNormResidual, int rIteration) const;
 
 protected:
-#ifdef ENABLE_SERIALIZATION
-    //empty private construct required for serialization
-    NewmarkDirect() : mToleranceResidual(DofStatus()) {};
-#endif // ENABLE_SERIALIZATION
+
     double mMinLineSearchStep;
 
     bool mPerformLineSearch;
@@ -223,7 +217,7 @@ protected:
     //! @brief Controls the output verbosity (0 = silent)
     int mVerboseLevel = 1;
 
-    BlockScalar mToleranceResidual;
+
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

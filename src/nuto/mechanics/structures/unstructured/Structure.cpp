@@ -48,6 +48,7 @@
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/nodes/NodeBase.h"
 #include "nuto/mechanics/nodes/NodeEnum.h"
+#include "nuto/mechanics/timeIntegration/TimeIntegrationBase.h"
 
 #include "nuto/mechanics/structures/StructureBaseEnum.h"
 #include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
@@ -878,6 +879,77 @@ void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
      return -1;
      }
      */
+}
+
+void NuTo::Structure::CalculateInitialValueRates(NuTo::TimeIntegrationBase& rTimeIntegrationScheme)
+{
+    assert(mNumTimeDerivatives==1 && "Using this function for 0 time derivatives seems to make no sense. More than one time derivative is not implemented so far!");
+
+
+    constexpr const unsigned int maxIterations = 20;
+
+
+    NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+    rTimeIntegrationScheme.CalculateStaticAndTimeDependentExternalLoad();
+
+
+
+
+
+    // declare necessary variables
+    StructureOutputBlockMatrix Hessian_1(mDofStatus,true);
+
+    StructureOutputBlockVector delta_dof_dt1 (mDofStatus,true);
+
+    StructureOutputBlockVector dof_dt1(mDofStatus,true);
+    StructureOutputBlockVector residual(mDofStatus, true);
+    StructureOutputBlockVector trialResidual(mDofStatus, true);
+    StructureOutputBlockVector intForce(mDofStatus, true);
+    StructureOutputBlockVector extForce(mDofStatus, true);
+
+
+    // declare and fill output map for structure
+    std::map<eStructureOutput, StructureOutputBase*> StructureOutputsTrial;
+    StructureOutputsTrial[eStructureOutput::INTERNAL_GRADIENT] = &intForce;
+    StructureOutputsTrial[eStructureOutput::HESSIAN1] = &Hessian_1;
+
+
+    dof_dt1 = NodeExtractDofValues(1);
+
+    ConstitutiveInputMap StructureInputs;
+    StructureInputs[Constitutive::eInput::CALCULATE_INITIALIZE_VALUE_RATES] = nullptr;
+
+    Evaluate(StructureInputs,StructureOutputsTrial);
+
+    extForce = rTimeIntegrationScheme.CalculateCurrentExternalLoad(0);
+
+    residual = intForce - extForce;
+
+
+    unsigned int iteration = 0;
+
+
+    while(residual.J.CalculateInfNorm()>rTimeIntegrationScheme.GetToleranceResidual())
+    {
+        ++iteration;
+        if(iteration > maxIterations)
+            throw MechanicsException(__PRETTY_FUNCTION__,"No convergence while solving for initial value rates!");
+        trialResidual = intForce - extForce;
+
+
+        trialResidual.J -= Hessian_1.JJ * delta_dof_dt1.J;
+
+        delta_dof_dt1.J = SolveBlockSystem(Hessian_1.JJ,residual.J);
+
+        dof_dt1.J += delta_dof_dt1.J;
+
+        NodeMergeDofValues(1,dof_dt1.J,dof_dt1.K);
+
+        Evaluate(StructureInputs,StructureOutputsTrial);
+
+        residual = intForce -extForce;
+
+    }
 }
 
 NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFromGmsh(const std::string& rFileName)

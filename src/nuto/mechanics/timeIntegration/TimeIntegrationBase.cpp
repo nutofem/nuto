@@ -38,10 +38,11 @@
 
 
 NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) :
-NuTo::NuToObject::NuToObject(),
-mStructure(rStructure),
-mLoadVectorStatic(rStructure->GetDofStatus()),
-mLoadVectorTimeDependent(rStructure->GetDofStatus())
+    NuTo::NuToObject::NuToObject(),
+    mStructure(rStructure),
+    mLoadVectorStatic(rStructure->GetDofStatus()),
+    mLoadVectorTimeDependent(rStructure->GetDofStatus()),
+    mToleranceResidual(rStructure->GetDofStatus())
 {
     mTime = 0.;
     mLoadStep = 1;
@@ -106,6 +107,11 @@ void NuTo::TimeIntegrationBase::AddTimeDependentConstraintFunction(int rTimeDepe
     mMapTimeDependentConstraint.insert(std::pair<int,std::shared_ptr<TimeDependencyBase>> (rTimeDependentConstraint, std::make_shared<TimeDependencyFunction>(rTimeDependentConstraintFunction)));
 }
 
+const NuTo::BlockScalar& NuTo::TimeIntegrationBase::GetToleranceResidual() const
+{
+    return mToleranceResidual;
+}
+
 //! @brief Updates the Rhs for all constraints
 //! @param rCurrentTime ... current time
 //! @remark remove the second argument rDof
@@ -161,6 +167,19 @@ double NuTo::TimeIntegrationBase::CalculateTimeDependentConstraintFactor(double 
     }
     return 0;
 }
+
+
+
+
+//! @brief Sets the residual tolerance for a specific DOF
+//! param rDof: degree of freedom
+//! param rTolerance: tolerance
+void NuTo::TimeIntegrationBase::SetToleranceResidual(NuTo::Node::eDof rDof, double rTolerance)
+{
+    mToleranceResidual[rDof] = rTolerance;
+}
+
+
 
 
 

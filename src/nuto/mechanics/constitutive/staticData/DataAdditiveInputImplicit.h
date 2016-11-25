@@ -32,12 +32,15 @@ const Eigen::VectorXd& GetStress() const;
 Eigen::VectorXd& GetLocalInputs();
 const Eigen::VectorXd& GetLocalInputs() const;
 
+Eigen::VectorXd& GetLocalInputRates();
+const Eigen::VectorXd& GetLocalInputRates() const;
 
 double& GetTime();
 double GetTime() const;
 
 private:
     Eigen::VectorXd mLocalInputs;
+    Eigen::VectorXd mLocalInputRates;
     Eigen::VectorXd mStress;
     double mTime;
 };

@@ -601,6 +601,7 @@ void NuTo::ContinuumElement<TDim>::CalculateConstitutiveInputs(ConstitutiveInput
         case Constitutive::eInput::TIME:
         case Constitutive::eInput::TIME_STEP:
         case Constitutive::eInput::CALCULATE_STATIC_DATA:
+        case Constitutive::eInput::CALCULATE_INITIALIZE_VALUE_RATES:
         case Constitutive::eInput::PLANE_STATE:
             break;
         default:

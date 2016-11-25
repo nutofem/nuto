@@ -182,7 +182,8 @@ enum class eInput
     CALCULATE_STATIC_DATA,
     PLANE_STATE,                        //!< for telling the law whether there is plane stress or plane strain
     TIME,
-    TIME_STEP
+    TIME_STEP,
+    CALCULATE_INITIALIZE_VALUE_RATES   //!
 };
 
 

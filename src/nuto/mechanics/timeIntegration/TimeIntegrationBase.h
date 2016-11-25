@@ -16,6 +16,7 @@
 // member
 #include "nuto/math/FullMatrix_Def.h"
 #include "nuto/math/FullVector_Def.h"
+#include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "nuto/mechanics/structures/StructureOutputBlockVector.h"
 
 namespace NuTo
@@ -65,6 +66,16 @@ public:
     //! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
     //! @param rTimeDependentConstraintFunction ... function that calculates the time dependent constraint factor for the current time step
     void AddTimeDependentConstraintFunction(int rTimeDependentConstraint, const std::function<double (double rTime)>& rTimeDependentConstraintFunction);
+
+
+    //! @brief Gets the Blockscalar with the set residual tolerances
+    //! @return Blockscalar with the set residual tolerances
+    const BlockScalar& GetToleranceResidual() const;
+
+    //! @brief Sets the residual tolerance for a specific DOF
+    //! param rDof: degree of freedom
+    //! param rTolerance: tolerance
+    void SetToleranceResidual(Node::eDof rDof, double rTolerance);
 
     //! @brief Updates the Rhs for all constraints
     //! @param rCurrentTime ... current time
@@ -272,8 +283,10 @@ protected:
 
 #ifdef ENABLE_SERIALIZATION
     TimeIntegrationBase() : mLoadVectorStatic(DofStatus()), mLoadVectorTimeDependent(DofStatus()) {};
-#endif  // ENABLE_SERIALIZATION
 
+    //empty private construct required for serialization
+    NewmarkDirect() : mToleranceResidual(DofStatus()) {};
+#endif // ENABLE_SERIALIZATION
     void ExportVisualizationFiles(const std::string& rResultDir, double rTime, int timeStep);
 
     const BlockFullVector<double>& UpdateAndGetConstraintRHS(double rCurrentTime);
@@ -327,6 +340,7 @@ protected:
     //! @brief If set to true, exports a data file for the nodes
     bool mExportDataFileNodes = true;
 
+    BlockScalar mToleranceResidual;
 	//************************
 	//* PostProcessing Stuff *
 	//************************

@@ -9,8 +9,10 @@
 #include <boost/ptr_container/ptr_map.hpp>
 #include <set>
 
+
 namespace NuTo
 {
+
 
 namespace Interpolation
 {
@@ -112,6 +114,9 @@ public:
 #endif //SWIG
 
 #ifndef SWIG
+
+    //! @brief Calculates the initial value rates (velocities) of the system to meet equilibrium
+    virtual void CalculateInitialValueRates(TimeIntegrationBase &rTimeIntegrationScheme) override;
 
     //! @brief ... evaluates the structure
     virtual void Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<eStructureOutput, StructureOutputBase*> &rStructureOutput) override;

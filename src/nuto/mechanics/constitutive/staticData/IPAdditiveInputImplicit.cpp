@@ -107,6 +107,8 @@ void IPAdditiveInputImplicit::CalculateGlobalOutputs(const NuTo::ConstitutiveInp
         currTime = (*itTime->second)[0];
     double delta_t = currTime - mData.GetData(1).GetTime();
 
+
+
     // Get global outputs from local outputs
     for(const auto& itOutput : rConstitutiveOutput)
     {
@@ -114,115 +116,261 @@ void IPAdditiveInputImplicit::CalculateGlobalOutputs(const NuTo::ConstitutiveInp
         {
         case Constitutive::eOutput::ENGINEERING_STRESS:
         {
-
             const unsigned int numLocalUnknownsPerTimeDer = VoigtDim*mSublawIPs.size();
             unsigned int numLocalUnknowns = numLocalUnknownsPerTimeDer;
-            if (NumTimeDerivatives == 1 && delta_t >0.0)
-                numLocalUnknowns+=numLocalUnknownsPerTimeDer;
-            const unsigned int numTotalUnknowns = numLocalUnknowns + VoigtDim;
 
-
-            // Generate lhs matrix
-            // -------------------
-            Eigen::MatrixXd lhsMat = Eigen::ArrayXXd::Zero(numTotalUnknowns, numTotalUnknowns);
-
-
-
-            for (unsigned int i = 0; i < mSublawIPs.size(); ++i)
+            if(rConstitutiveInput.find(eInput::CALCULATE_INITIALIZE_VALUE_RATES)!=rConstitutiveInput.end())
             {
-                unsigned int StartIndex = VoigtDim*i;
+                const unsigned int numTotalUnknowns = numLocalUnknowns + VoigtDim;
 
-#ifndef NDEBUG
-                rLocalOutputMapVec[i].find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)->second.get()->AssertIsMatrix<VoigtDim,VoigtDim>(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,
-                                                                                                                                                            __PRETTY_FUNCTION__);
-#endif
-                lhsMat.block(StartIndex,StartIndex,VoigtDim,VoigtDim) = (*static_cast<ConstitutiveMatrix<VoigtDim,VoigtDim>*>(rLocalOutputMapVec[i].find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)->second.get()));
-                lhsMat.block(numLocalUnknowns,StartIndex,VoigtDim,VoigtDim) = Eigen::MatrixXd::Identity(VoigtDim,VoigtDim);
-                lhsMat.block(StartIndex,numLocalUnknowns,VoigtDim,VoigtDim) = Eigen::MatrixXd::Identity(VoigtDim,VoigtDim) * -1.0;
-                if(SublawsHaveDamping && delta_t >0)
-                {
-                    unsigned int StartIndexFirstTimeDer = StartIndex+numLocalUnknownsPerTimeDer;
-                    lhsMat.block(StartIndex,StartIndexFirstTimeDer,VoigtDim,VoigtDim) = (*static_cast<ConstitutiveMatrix<VoigtDim,VoigtDim>*>(rLocalOutputMapVec[i].find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1)->second.get()));
-                }
-            }
-            if(SublawsHaveDamping && delta_t>0)
-            {
-                lhsMat.block(numLocalUnknownsPerTimeDer,0,numLocalUnknownsPerTimeDer,numLocalUnknownsPerTimeDer) = Eigen::MatrixXd::Identity(numLocalUnknownsPerTimeDer,numLocalUnknownsPerTimeDer);
-                lhsMat.block(numLocalUnknownsPerTimeDer,numLocalUnknownsPerTimeDer,numLocalUnknownsPerTimeDer,numLocalUnknownsPerTimeDer) = Eigen::MatrixXd::Identity(numLocalUnknownsPerTimeDer,numLocalUnknownsPerTimeDer) * (-delta_t);
-            }
-
-
-            // Generate rhs vector
-            // -------------------
-#ifndef NDEBUG
-            // WATCHOUT There is no funtion which takes input enums, so I took the equivalent output enum even though the variable is an input!!!
-            rConstitutiveInput.find(Constitutive::eInput::ENGINEERING_STRAIN)->second.get()->AssertIsVector<VoigtDim>(Constitutive::eOutput::ENGINEERING_STRAIN,
-                                                                                                                     __PRETTY_FUNCTION__);
-#endif
-            const ConstitutiveVector<VoigtDim>& globalStrain = *static_cast<ConstitutiveVector<VoigtDim>*>(rConstitutiveInput.find(Constitutive::eInput::ENGINEERING_STRAIN)->second.get());
-            FullVector<double,Eigen::Dynamic> rhsVec(numTotalUnknowns);
-            rhsVec.setZero();
-
-            for(unsigned int i=0; i<VoigtDim; ++i)
-            {
-                rhsVec[numLocalUnknowns+i] = globalStrain[i];
-            }
-            if(SublawsHaveDamping && delta_t > 0)
-            {
                 // If static data vectors for local inputs have the wrong size the only reason should be, that they are not initialized!!
                 // The problem is, that I have not found a way so far, to initialize them correctly before the first evaluate call.
                 Eigen::VectorXd& SDCurrentStrain = mData.GetData(0).GetLocalInputs();
                 Eigen::VectorXd& SDPreviousStrain = mData.GetData(1).GetLocalInputs();
+                Eigen::VectorXd& SDCurrentStrainRate = mData.GetData(0).GetLocalInputRates();
+                Eigen::VectorXd& SDPreviousStrainRate = mData.GetData(1).GetLocalInputRates();
                 if(SDCurrentStrain.size()!=numLocalUnknownsPerTimeDer &&
-                   SDPreviousStrain.size()!=numLocalUnknownsPerTimeDer)   // So far I have no idea, how to resize the vector before the first call of evaluate --- data during construction is missing
+                        SDPreviousStrain.size()!=numLocalUnknownsPerTimeDer)   // So far I have no idea, how to resize the vector before the first call of evaluate --- data during construction is missing
                 {
                     SDCurrentStrain.resize(numLocalUnknownsPerTimeDer);
                     SDCurrentStrain.setZero();
                     SDPreviousStrain.resize(numLocalUnknownsPerTimeDer);
                     SDPreviousStrain.setZero();
+                    SDCurrentStrainRate.resize(numLocalUnknownsPerTimeDer);
+                    SDCurrentStrainRate.setZero();
+                    SDPreviousStrainRate.resize(numLocalUnknownsPerTimeDer);
+                    SDPreviousStrainRate.setZero();
                 }
+
+
+                // Generate lhs matrix
+                // -------------------
+                Eigen::MatrixXd lhsMat = Eigen::ArrayXXd::Zero(numTotalUnknowns, numTotalUnknowns);
+
+                for (unsigned int i = 0; i < mSublawIPs.size(); ++i)
+                {
+                    unsigned int StartIndex = VoigtDim*i;
+
+
+#ifndef NDEBUG
+                    rLocalOutputMapVec[i].find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1)->second.get()->AssertIsMatrix<VoigtDim,VoigtDim>(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1,
+                                                                                                                                                                      __PRETTY_FUNCTION__);
+#endif
+
+                    lhsMat.block(StartIndex,StartIndex,VoigtDim,VoigtDim) = (*static_cast<ConstitutiveMatrix<VoigtDim,VoigtDim>*>(rLocalOutputMapVec[i].find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1)->second.get()));
+                    lhsMat.block(numLocalUnknowns,StartIndex,VoigtDim,VoigtDim) = Eigen::MatrixXd::Identity(VoigtDim,VoigtDim);
+                    lhsMat.block(StartIndex,numLocalUnknowns,VoigtDim,VoigtDim) = Eigen::MatrixXd::Identity(VoigtDim,VoigtDim) * -1.0;
+                }
+
+
+
+
+                // Generate rhs vector
+                // -------------------
+#ifndef NDEBUG
+                // WATCHOUT There is no funtion which takes input enums, so I took the equivalent output enum even though the variable is an input!!!
+                rConstitutiveInput.find(Constitutive::eInput::ENGINEERING_STRAIN_DT1)->second.get()->AssertIsVector<VoigtDim>(Constitutive::eOutput::ENGINEERING_STRAIN,
+                                                                                                                              __PRETTY_FUNCTION__);
+#endif
+                const ConstitutiveVector<VoigtDim>& globalStrainRate = *static_cast<ConstitutiveVector<VoigtDim>*>(rConstitutiveInput.find(Constitutive::eInput::ENGINEERING_STRAIN_DT1)->second.get());
+                FullVector<double,Eigen::Dynamic> rhsVec(numTotalUnknowns);
+                rhsVec.setZero();
+
+
+                for(unsigned int i=0; i<VoigtDim; ++i)
+                {
+                    rhsVec[numLocalUnknowns+i] = globalStrainRate[i];
+                }
+
+                for (unsigned int i = 0; i < mSublawIPs.size(); ++i)
+                {
+#ifndef NDEBUG
+                    rLocalOutputMapVec[i].find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)->second.get()->AssertIsMatrix<VoigtDim,VoigtDim>(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,
+                                                                                                                                                                  __PRETTY_FUNCTION__);
+#endif
+
+                    Eigen::VectorXd localStrains(VoigtDim);
+                    for(unsigned int j=0; j<VoigtDim; ++j)
+                    {
+                        localStrains[j] = SDCurrentStrain[i*VoigtDim +j];
+                    }
+
+                    auto localRHS = (*static_cast<ConstitutiveMatrix<VoigtDim,VoigtDim>*>(rLocalOutputMapVec[i].find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1)->second.get())) *
+                            localStrains;
+
+                    for(unsigned int j=0; j<VoigtDim; ++j)
+                    {
+                        rhsVec[i*VoigtDim + j] = localRHS[j];
+                    }
+                }
+
+                for(unsigned int i=0; i<VoigtDim; ++i)
+                {
+                    rhsVec[numLocalUnknowns+i] = globalStrainRate[i];
+                }
+
+
+
+                // Solve local system
+                // ------------------
+                Eigen::PartialPivLU<Eigen::MatrixXd> Solver(lhsMat);
+                Eigen::VectorXd resultVec =  Solver.solve(rhsVec);
+
+                //            std::cout << lhsMat << std::endl <<"------------"<< std::endl
+                //                      << rhsVec << std::endl <<"------------"<< std::endl
+                //                      << resultVec << std::endl << std::endl << std::endl;
+
+                Eigen::VectorXd& SDCurrentStresses = mData.GetData().GetStress();
+                if(SDCurrentStresses.size()!=VoigtDim)
+                    SDCurrentStresses.resize(VoigtDim);
+
                 for (unsigned int i = 0; i < numLocalUnknownsPerTimeDer; ++i)
                 {
-                    rhsVec[i+numLocalUnknownsPerTimeDer] = SDPreviousStrain[i];
+                    mData.GetData(0).GetLocalInputRates()[i] = resultVec[i];
+                    mData.GetData(1).GetLocalInputRates()[i] = resultVec[i];
                 }
-            }
 
-            // Solve local system
-            // ------------------
-
-//            // (MUMPS / PARDISO aren't thread save! Find other solution in constitutive law to solve local system)
-//            NuTo::SparseDirectSolverMUMPS mySolver;
-//            mySolver.SetVerboseLevel(0);
-//            mySolver.SetShowTime(false);
-//            FullVector<double,Eigen::Dynamic> resultVec;
-//            NuTo::SparseMatrixCSRGeneral<double> matForSolver(lhsMat);
-//            matForSolver.SetOneBasedIndexing();
-//            mySolver.Solve(matForSolver,rhsVec,resultVec);
-
-
-//            Eigen::VectorXd resultVec = lhsMat.inverse() * rhsVec;
-
-            Eigen::PartialPivLU<Eigen::MatrixXd> Solver(lhsMat);
-            Eigen::VectorXd resultVec =  Solver.solve(rhsVec);
-
-//            std::cout << lhsMat << std::endl <<"------------"<< std::endl
-//                      << rhsVec << std::endl <<"------------"<< std::endl
-//                      << resultVec << std::endl << std::endl << std::endl;
-
-            Eigen::VectorXd& SDCurrentStresses = mData.GetData().GetStress();
-            if(SDCurrentStresses.size()!=VoigtDim)
-                SDCurrentStresses.resize(VoigtDim);
-            if(SublawsHaveDamping && delta_t > 0)
-            {
-                for (unsigned int i = 0; i < numLocalUnknownsPerTimeDer; ++i)
+                for(unsigned int i=0; i<VoigtDim; ++i)
                 {
-                    mData.GetData(0).GetLocalInputs()[i] = resultVec[i];
+                    (*itOutput.second)[i] = resultVec[i+numLocalUnknowns];
+                    SDCurrentStresses[i] = resultVec[i+numLocalUnknowns];
                 }
             }
-            for(unsigned int i=0; i<VoigtDim; ++i)
+            else
             {
-                (*itOutput.second)[i] = resultVec[i+numLocalUnknowns];
-                SDCurrentStresses[i] = resultVec[i+numLocalUnknowns];
+                if (NumTimeDerivatives == 1 && delta_t >0.0)
+                    numLocalUnknowns+=numLocalUnknownsPerTimeDer;
+                const unsigned int numTotalUnknowns = numLocalUnknowns + VoigtDim;
+
+
+                // Generate lhs matrix
+                // -------------------
+                Eigen::MatrixXd lhsMat = Eigen::ArrayXXd::Zero(numTotalUnknowns, numTotalUnknowns);
+
+
+
+                for (unsigned int i = 0; i < mSublawIPs.size(); ++i)
+                {
+                    unsigned int StartIndex = VoigtDim*i;
+
+#ifndef NDEBUG
+                    rLocalOutputMapVec[i].find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)->second.get()->AssertIsMatrix<VoigtDim,VoigtDim>(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN,
+                                                                                                                                                                  __PRETTY_FUNCTION__);
+#endif
+                    lhsMat.block(StartIndex,StartIndex,VoigtDim,VoigtDim) = (*static_cast<ConstitutiveMatrix<VoigtDim,VoigtDim>*>(rLocalOutputMapVec[i].find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN)->second.get()));
+                    lhsMat.block(numLocalUnknowns,StartIndex,VoigtDim,VoigtDim) = Eigen::MatrixXd::Identity(VoigtDim,VoigtDim);
+                    lhsMat.block(StartIndex,numLocalUnknowns,VoigtDim,VoigtDim) = Eigen::MatrixXd::Identity(VoigtDim,VoigtDim) * -1.0;
+                    if(SublawsHaveDamping && delta_t >0)
+                    {
+                        unsigned int StartIndexFirstTimeDer = StartIndex+numLocalUnknownsPerTimeDer;
+                        lhsMat.block(StartIndex,StartIndexFirstTimeDer,VoigtDim,VoigtDim) = (*static_cast<ConstitutiveMatrix<VoigtDim,VoigtDim>*>(rLocalOutputMapVec[i].find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1)->second.get()));
+                    }
+                }
+                if(SublawsHaveDamping && delta_t>0)
+                {
+                    lhsMat.block(numLocalUnknownsPerTimeDer,0,numLocalUnknownsPerTimeDer,numLocalUnknownsPerTimeDer) = Eigen::MatrixXd::Identity(numLocalUnknownsPerTimeDer,numLocalUnknownsPerTimeDer);
+                    lhsMat.block(numLocalUnknownsPerTimeDer,numLocalUnknownsPerTimeDer,numLocalUnknownsPerTimeDer,numLocalUnknownsPerTimeDer) = Eigen::MatrixXd::Identity(numLocalUnknownsPerTimeDer,numLocalUnknownsPerTimeDer) * (-delta_t);
+                }
+
+
+                // Generate rhs vector
+                // -------------------
+#ifndef NDEBUG
+                // WATCHOUT There is no funtion which takes input enums, so I took the equivalent output enum even though the variable is an input!!!
+                rConstitutiveInput.find(Constitutive::eInput::ENGINEERING_STRAIN)->second.get()->AssertIsVector<VoigtDim>(Constitutive::eOutput::ENGINEERING_STRAIN,
+                                                                                                                          __PRETTY_FUNCTION__);
+#endif
+                const ConstitutiveVector<VoigtDim>& globalStrain = *static_cast<ConstitutiveVector<VoigtDim>*>(rConstitutiveInput.find(Constitutive::eInput::ENGINEERING_STRAIN)->second.get());
+                FullVector<double,Eigen::Dynamic> rhsVec(numTotalUnknowns);
+                rhsVec.setZero();
+
+                for(unsigned int i=0; i<VoigtDim; ++i)
+                {
+                    rhsVec[numLocalUnknowns+i] = globalStrain[i];
+                }
+                if(SublawsHaveDamping)
+                {
+                    // If static data vectors for local inputs have the wrong size the only reason should be, that they are not initialized!!
+                    // The problem is, that I have not found a way so far, to initialize them correctly before the first evaluate call.
+                    Eigen::VectorXd& SDCurrentStrain = mData.GetData(0).GetLocalInputs();
+                    Eigen::VectorXd& SDPreviousStrain = mData.GetData(1).GetLocalInputs();
+                    Eigen::VectorXd& SDCurrentStrainRate = mData.GetData(0).GetLocalInputRates();
+                    Eigen::VectorXd& SDPreviousStrainRate = mData.GetData(1).GetLocalInputRates();
+                    if(SDCurrentStrain.size()!=numLocalUnknownsPerTimeDer &&
+                            SDPreviousStrain.size()!=numLocalUnknownsPerTimeDer)   // So far I have no idea, how to resize the vector before the first call of evaluate --- data during construction is missing
+                    {
+                        SDCurrentStrain.resize(numLocalUnknownsPerTimeDer);
+                        SDCurrentStrain.setZero();
+                        SDPreviousStrain.resize(numLocalUnknownsPerTimeDer);
+                        SDPreviousStrain.setZero();
+                        SDCurrentStrainRate.resize(numLocalUnknownsPerTimeDer);
+                        SDCurrentStrainRate.setZero();
+                        SDPreviousStrainRate.resize(numLocalUnknownsPerTimeDer);
+                        SDPreviousStrainRate.setZero();
+                    }
+                    if(delta_t > 0)
+                    {
+                        for (unsigned int i = 0; i < numLocalUnknownsPerTimeDer; ++i)
+                        {
+                            rhsVec[i+numLocalUnknownsPerTimeDer] = SDPreviousStrain[i];
+                        }
+                    }
+                    else
+                    {
+                        for (unsigned int i = 0; i < mSublawIPs.size(); ++i)
+                        {
+#ifndef NDEBUG
+                            rLocalOutputMapVec[i].find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1)->second.get()->AssertIsMatrix<VoigtDim,VoigtDim>(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1,
+                                                                                                                                                                          __PRETTY_FUNCTION__);
+#endif
+
+                            SDCurrentStrainRate = SDPreviousStrainRate;
+
+                            Eigen::VectorXd localStrainRates(VoigtDim);
+                            for(unsigned int j=0; j<VoigtDim; ++j)
+                            {
+                                localStrainRates[j] = SDCurrentStrainRate[i*VoigtDim +j];
+                            }
+
+                            auto localRHS = (*static_cast<ConstitutiveMatrix<VoigtDim,VoigtDim>*>(rLocalOutputMapVec[i].find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1)->second.get())) *
+                                             localStrainRates *-1.0;
+
+                            for(unsigned int j=0; j<VoigtDim; ++j)
+                            {
+                                rhsVec[i*VoigtDim + j] = localRHS[j];
+                            }
+                        }
+                    }
+                }
+
+                // Solve local system
+                // ------------------
+
+                //            Eigen::VectorXd resultVec = lhsMat.inverse() * rhsVec;
+
+                Eigen::PartialPivLU<Eigen::MatrixXd> Solver(lhsMat);
+                Eigen::VectorXd resultVec =  Solver.solve(rhsVec);
+
+//                            std::cout << lhsMat << std::endl <<"------------"<< std::endl
+//                                      << rhsVec << std::endl <<"------------"<< std::endl
+//                                      << resultVec << std::endl << std::endl << std::endl;
+
+                Eigen::VectorXd& SDCurrentStresses = mData.GetData().GetStress();
+                if(SDCurrentStresses.size()!=VoigtDim)
+                    SDCurrentStresses.resize(VoigtDim);
+                if(SublawsHaveDamping && delta_t > 0)
+                {
+                    for (unsigned int i = 0; i < numLocalUnknownsPerTimeDer; ++i)
+                    {
+                        mData.GetData(0).GetLocalInputs()[i] = resultVec[i];
+                        mData.GetData(0).GetLocalInputRates()[i] = resultVec[i +numLocalUnknownsPerTimeDer];
+                    }
+                }
+                for(unsigned int i=0; i<VoigtDim; ++i)
+                {
+                    (*itOutput.second)[i] = resultVec[i+numLocalUnknowns];
+                    SDCurrentStresses[i] = resultVec[i+numLocalUnknowns];
+                }
             }
             itOutput.second->SetIsCalculated(true);
             break;
@@ -297,7 +445,21 @@ void IPAdditiveInputImplicit::CalculateGlobalOutputs(const NuTo::ConstitutiveInp
         {
             itOutput.second->AssertIsMatrix<VoigtDim,VoigtDim>(itOutput.first,__PRETTY_FUNCTION__);
             Eigen::Matrix<double,VoigtDim,VoigtDim>& outputMat = (*static_cast<ConstitutiveMatrix<VoigtDim,VoigtDim>*>(itOutput.second.get())).AsMatrix();
+            if(rConstitutiveInput.find(eInput::CALCULATE_INITIALIZE_VALUE_RATES)!=rConstitutiveInput.end())
+            {
+                Eigen::Matrix<double,VoigtDim,VoigtDim> globalCompliance(VoigtDim,VoigtDim);
+                globalCompliance.setZero();
+                for(const auto& localOutputs : rLocalOutputMapVec)
+                {
 
+                    Eigen::Matrix<double,VoigtDim,VoigtDim>& localDamping = (*static_cast<ConstitutiveMatrix<VoigtDim,VoigtDim>*>(localOutputs.find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1)->second.get())).AsMatrix();
+
+                    globalCompliance += localDamping.inverse();
+                }
+                outputMat = globalCompliance.inverse();
+                itOutput.second->SetIsCalculated(true);
+                break;
+            }
             outputMat.setZero();
             itOutput.second->SetIsCalculated(true);
             break;
@@ -336,7 +498,10 @@ void IPAdditiveInputImplicit::CreateLocalInAndOutputMaps(const NuTo::Constitutiv
     {
         for (const auto& itInput : rConstitutiveInput)
         {
-            rLocalInputMapVec[i].emplace(itInput.first, itInput.second->clone());
+            if(itInput.first == Constitutive::eInput::CALCULATE_INITIALIZE_VALUE_RATES)
+                rLocalInputMapVec[i].emplace(itInput.first, nullptr);
+            else
+                rLocalInputMapVec[i].emplace(itInput.first, itInput.second->clone());
         }
     }
 

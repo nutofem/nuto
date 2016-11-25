@@ -527,9 +527,10 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
 
     S.ElementTotalConvertToInterpolationType();
     S.NodeBuildGlobalDofs();
-    ApplyInitialNodalValues<TDim>(S,
-                                  rN,
-                                  SURFACELOAD / LD_DAMPINGCOEFFICIENT);
+
+//    ApplyInitialNodalValues<TDim>(S,
+//                                  rN,
+//                                  SURFACELOAD / LD_DAMPINGCOEFFICIENT);
 
 
     // Add constraint on the leftern side
@@ -580,15 +581,15 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
 
 
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> TimeDependentLoadFactor(3,2);
-    TimeDependentLoadFactor(0,0) = 0.;
-    TimeDependentLoadFactor(1,0) = 1.;
-    TimeDependentLoadFactor(2,0) = 2.;
-    TimeDependentLoadFactor(0,1) = 1.;
-    TimeDependentLoadFactor(1,1) = 1.;
-    TimeDependentLoadFactor(2,1) = 1.;
+//    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> TimeDependentLoadFactor(3,2);
+//    TimeDependentLoadFactor(0,0) = 0.;
+//    TimeDependentLoadFactor(1,0) = 1.;
+//    TimeDependentLoadFactor(2,0) = 2.;
+//    TimeDependentLoadFactor(0,1) = 1.;
+//    TimeDependentLoadFactor(1,1) = 1.;
+//    TimeDependentLoadFactor(2,1) = 1.;
 
-    TI.SetTimeDependentLoadCase(0,TimeDependentLoadFactor);
+//    TI.SetTimeDependentLoadCase(0,TimeDependentLoadFactor);
 
     SetupMultiProcessor(S);
     SetupVisualize(S);
@@ -614,6 +615,7 @@ void TestSpringDamperCombination(std::array<int,TDim> rN,
                          testName,
                          IDNodeRight);
 
+    S.CalculateInitialValueRates(TI);
     TI.Solve(tCtrl.t_final);
 
     CheckResultsSpringDamper<TDim>(S,
@@ -698,11 +700,9 @@ void TestSpringDamperSerialChain(std::array<int,TDim> rN,
 //    ApplyInitialNodalValues<TDim>(S,
 //                                  rN,
 //                                  SURFACELOAD / LD_DAMPINGCOEFFICIENT + SURFACELOAD / (2 * LD_DAMPINGCOEFFICIENT));
-
-
-    ApplyInitialNodalValues<TDim>(S,
-                                  rN,
-                                  0);
+//    ApplyInitialNodalValues<TDim>(S,
+//                                  rN,
+//                                  0);
 
 
     // Add constraint on the leftern side
@@ -753,15 +753,15 @@ void TestSpringDamperSerialChain(std::array<int,TDim> rN,
 
 
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> TimeDependentLoadFactor(3,2);
-    TimeDependentLoadFactor(0,0) = 0.;
-    TimeDependentLoadFactor(1,0) = 1.;
-    TimeDependentLoadFactor(2,0) = 2.;
-    TimeDependentLoadFactor(0,1) = 0.;
-    TimeDependentLoadFactor(1,1) = 1.;
-    TimeDependentLoadFactor(2,1) = 1.;
+//    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> TimeDependentLoadFactor(3,2);
+//    TimeDependentLoadFactor(0,0) = 0.;
+//    TimeDependentLoadFactor(1,0) = 1.;
+//    TimeDependentLoadFactor(2,0) = 2.;
+//    TimeDependentLoadFactor(0,1) = 1.;
+//    TimeDependentLoadFactor(1,1) = 1.;
+//    TimeDependentLoadFactor(2,1) = 1.;
 
-    TI.SetTimeDependentLoadCase(0,TimeDependentLoadFactor);
+//    TI.SetTimeDependentLoadCase(0,TimeDependentLoadFactor);
 
     SetupMultiProcessor(S);
     SetupVisualize(S);
@@ -787,6 +787,8 @@ void TestSpringDamperSerialChain(std::array<int,TDim> rN,
                          testName,
                          IDNodeRight);
 
+
+    S.CalculateInitialValueRates(TI);
     TI.Solve(tCtrl.t_final);
 
     CheckResultsSpringDamperSerial<TDim>(S,

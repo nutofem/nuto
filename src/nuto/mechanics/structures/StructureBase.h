@@ -51,6 +51,7 @@ class SerializeStreamIn;
 class StructureOutputBase;
 class StructureOutputBlockMatrix;
 class StructureOutputBlockVector;
+class TimeIntegrationBase;
 class VisualizeComponent;
 class VisualizeUnstructuredGrid;
 template<typename T> class BlockFullMatrix;
@@ -210,6 +211,9 @@ public:
 
 
 #ifndef SWIG
+
+    //! @brief Calculates the initial value rates (velocities) of the system to meet equilibrium
+    virtual void CalculateInitialValueRates(TimeIntegrationBase &rTimeIntegrationScheme);
 
     //! @brief ... evaluates the structure
     virtual void Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::map<eStructureOutput, StructureOutputBase*> &rStructureOutput);

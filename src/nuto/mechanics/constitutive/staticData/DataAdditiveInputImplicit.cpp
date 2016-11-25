@@ -5,6 +5,7 @@ NuTo::Constitutive::StaticData::DataAdditiveInputImplicit::DataAdditiveInputImpl
       mStress(),
       mTime(0)
 {
+    // https://forum.kde.org/viewtopic.php?f=74&t=118922  --- possible solutions to ambiguous call problems when using constructor like this: VectorXd(0)
     assert(mLocalInputs.size() == 0);
     assert(mStress.size() == 0);
 }
@@ -30,6 +31,16 @@ Eigen::VectorXd &NuTo::Constitutive::StaticData::DataAdditiveInputImplicit::GetL
 const Eigen::VectorXd &NuTo::Constitutive::StaticData::DataAdditiveInputImplicit::GetLocalInputs() const
 {
     return mLocalInputs;
+}
+
+Eigen::VectorXd &NuTo::Constitutive::StaticData::DataAdditiveInputImplicit::GetLocalInputRates()
+{
+    return mLocalInputRates;
+}
+
+const Eigen::VectorXd &NuTo::Constitutive::StaticData::DataAdditiveInputImplicit::GetLocalInputRates() const
+{
+    return mLocalInputRates;
 }
 
 double &NuTo::Constitutive::StaticData::DataAdditiveInputImplicit::GetTime()

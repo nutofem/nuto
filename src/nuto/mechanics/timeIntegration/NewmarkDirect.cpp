@@ -31,21 +31,13 @@
 //! @brief constructor
 //! @param mDimension number of nodes
 NuTo::NewmarkDirect::NewmarkDirect (StructureBase* rStructure)
-    : NewmarkBase (rStructure),
-      mToleranceResidual(rStructure->GetDofStatus())
+    : NewmarkBase (rStructure)
 {
     mMinLineSearchStep = 0.01;
     mVisualizeResidualTimeStep = 0;
     mPerformLineSearch = true;
 }
 
-//! @brief Sets the residual tolerance for a specific DOF
-//! param rDof: degree of freedom
-//! param rTolerance: tolerance
-void NuTo::NewmarkDirect::SetToleranceResidual(NuTo::Node::eDof rDof, double rTolerance)
-{
-    mToleranceResidual[rDof] = rTolerance;
-}
 
 
 //! @brief ... Info routine that prints general information about the object (detail according to verbose level)

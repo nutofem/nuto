@@ -549,6 +549,11 @@ std::map<int, std::list<std::shared_ptr<NuTo::VisualizeComponent>>>& NuTo::Struc
     return mGroupVisualizeComponentsMap;
 }
 
+void NuTo::StructureBase::CalculateInitialValueRates(TimeIntegrationBase &rTimeIntegrationScheme)
+{
+    throw MechanicsException(__PRETTY_FUNCTION__,"Not implemented.");
+}
+
 void NuTo::StructureBase::DefineVisualizeElementData(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList)const
 {
 #ifdef ENABLE_VISUALIZE
@@ -654,7 +659,7 @@ void NuTo::StructureBase::DefineVisualizeNodeData(VisualizeUnstructuredGrid& rVi
 //! @brief ... evaluates the structure
 void NuTo::StructureBase::Evaluate(const ConstitutiveInputMap& rInput, std::map<eStructureOutput, StructureOutputBase *> &rStructureOutput)
 {
-    throw MechanicsException("[NuTo::StructureBase::Evaluate] Not implemented.");
+    throw MechanicsException(__PRETTY_FUNCTION__,"Not implemented.");
 }
 
 NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian(eStructureOutput rOutput)
