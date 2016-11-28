@@ -64,8 +64,7 @@ public:
     virtual ConstitutiveInputMap GetConstitutiveInputs(const ConstitutiveOutputMap& rConstitutiveOutput,
                                                        const InterpolationType& rInterpolationType) const override;
 
-    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol,
-            int rTimeDerivative) const;
+    virtual bool CheckDofCombinationComputable(Node::eDof rDofRow, Node::eDof rDofCol, int rTimeDerivative) const override;
 
 protected:
     //! @brief Adds all calculable DOF combinations of an attached constitutive law to an internal storage.

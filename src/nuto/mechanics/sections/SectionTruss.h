@@ -1,5 +1,3 @@
-// $Id$
-
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -30,7 +28,7 @@ public:
 
     //! @brief ... get the cross-section area of the section
     //! @return ... section cross-section area
-    virtual double GetArea() const;
+    virtual double GetArea() const override;
 
     //! @brief ... calculates a x-dependent area factor based on the mAreaParameters data
     //! @param rXCoordinate ... x coordinate
@@ -39,7 +37,7 @@ public:
 
     //! @brief ... set the cross-section area of the section
     //! @param rArea ... cross-section area
-    virtual void SetArea(double rArea);
+    virtual void SetArea(double rArea) override;
 
     //! @brief ... set the area parameters
     //! @param rAreaParameter ... area parameters [0]-xWeakSpot [1]-lWeakSpot [2]-alpha [3]-exponent
@@ -47,11 +45,11 @@ public:
 
     //! @brief ... get the section type
     //! @return ... section type
-    virtual eSectionType GetType() const;
+    virtual eSectionType GetType() const override;
 
     //! @brief ... print information about the section
     //! @param rVerboseLevel ... verbosity of the information
-    virtual void Info(unsigned short rVerboseLevel) const;
+    virtual void Info(unsigned short rVerboseLevel) const override;
 
     //! @brief ... cast the base pointer to an SectionTruss, otherwise throws an exception
     SectionTruss* AsSectionTruss() override;

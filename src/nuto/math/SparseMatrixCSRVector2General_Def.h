@@ -46,37 +46,37 @@ public:
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
     //! @return    class name
-    std::string GetTypeId()const;
+    std::string GetTypeId() const override;
 
     //! @brief ... resize matrix
     //! @param rNumRows_ ... number of rows
     //! @param rNumColumns ... number of columns
-    void Resize(int rNumRows, int rNumColumns);
+    void Resize(int rNumRows, int rNumColumns) override;
 
     //! @brief ... returns whether the matrix is symmetric or unsymmetric
     //! @return true if the matrix is symmetric and false if the matrix is unsymmetric
-    bool IsSymmetric() const;
+    bool IsSymmetric() const override;
 
     //! @brief ... returns the number of columns
     //! @return number of columns
-    int GetNumColumns() const;
+    int GetNumColumns() const override;
 
     //! @brief ... add nonzero entry to matrix
     //! @param rRow ... row of the nonzero entry (zero based indexing!!!)
     //! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
     //! @param rValue ... value of the nonzero entry
-    void AddValue(int rRow, int rColumn, const T& rValue);
+    void AddValue(int rRow, int rColumn, const T& rValue) override;
 
     //! @brief ... import matrix from slang object stored in  a text file
     //! @param rFileName ... file name
-    void ImportFromSLangText(const char* rFileName);
+    void ImportFromSLangText(const char* rFileName) override;
 
     //! @brief ... return the matrix type
-    NuTo::eSparseMatrixType GetSparseMatrixType()const;
+    NuTo::eSparseMatrixType GetSparseMatrixType()const override;
 
     //! @brief ... write nonzero matrix entries into a matrix
     //! @param rMatrix ... the matrix
-    void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const;
+    void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const override;
 
     //! @brief ... returns the symmetric part of the matrix 0.5*(A+A^T)
     //! @return symmetric part
@@ -137,7 +137,7 @@ public:
     //! @brief ... add two matrices
     //! @param rOther ... symmetric sparse matrix stored in the CSRVector2 format
     //! @return reference to this matrix
-    SparseMatrixCSRVector2General<T>& operator+=  ( const SparseMatrixCSRVector2Symmetric<T> &rOther );
+    SparseMatrixCSRVector2General<T>& operator+=  ( const SparseMatrixCSRVector2Symmetric<T> &rOther ) override;
 
     //! @brief ... matrix - matrix multiplication
     //! @param rOther ... general sparse matrix stored in the CSR format
@@ -158,7 +158,7 @@ public:
     //! @brief ... multiply sparse matrix with a full matrix
     //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
     //! @return ... full matrix
-    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const;
+    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const override;
 
     NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const override;
 
@@ -236,7 +236,7 @@ public:
     void ConcatenateRows(const SparseMatrixCSRVector2General<T>& rOther);
 
     //! @brief ... print info about the object
-    void Info() const;
+    void Info() const override;
 
     //! @brief ... returns a random matrix
     //! @param rNumRows ... number of rows

@@ -93,7 +93,7 @@ public:
     //! @brief ... resize matrix
     //! @param rNumRows_ ... number of rows
     //! @param rNumColumns_ ... number of columns
-    virtual void Resize(int rRow, int rCol)
+    virtual void Resize(int rRow, int rCol) override
     {
         throw NuTo::MathException("[NuTo::SparseSparseMatrixCSR::Resize] Not implemented for two input values!");
     }
@@ -129,18 +129,18 @@ public:
 
     //! @brief ... returns the number of non-zero matrix entries
     //! @return number of non-zero matrix entries
-    int GetNumEntries() const
+    int GetNumEntries() const override
     {
         return this->mValues.size();
     }
 
     //! @brief ... returns the number of columns
     //! @return number of columns
-    virtual int GetNumColumns() const = 0;
+    virtual int GetNumColumns() const override = 0;
 
     //! @brief ... returns the number of rows
     //! @return number of rows
-    int GetNumRows() const
+    int GetNumRows() const override
     {
         return this->mRowIndex.size() - 1;
     }
@@ -149,10 +149,10 @@ public:
     //! @param rRow ... row of the nonzero entry (zero based indexing!!!)
     //! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
     //! @param rValue ... value of the nonzero entry
-    virtual void AddValue(int rRow, int rColumn, const T& rValue) = 0;
+    virtual void AddValue(int rRow, int rColumn, const T& rValue) override = 0;
 
     //! @brief ... print info about the object
-    void Info() const
+    void Info() const override
     {
         std::cout << "number of rows: " << this->mRowIndex.size() - 1  << std::endl;
         std::cout << "number of nonzero entries: " << this->mValues.size() << "(" << this->mColumns.size() << ")" << std::endl;
@@ -178,7 +178,7 @@ public:
     }
 
     //! @brief ... switch to one based indexing (only internal indexing, interface still uses zero based indexing)
-    void SetOneBasedIndexing()
+    void SetOneBasedIndexing() override
     {
         if (! this->mOneBasedIndexing)
         {
@@ -195,7 +195,7 @@ public:
     }
 
     //! @brief ... switch to zero based indexing (only internal indexing, interface still uses zero based indexing)
-    void SetZeroBasedIndexing()
+    void SetZeroBasedIndexing() override
     {
         if (this->mOneBasedIndexing)
         {
@@ -213,7 +213,7 @@ public:
 
     //! @brief ... write non-zero matrix entries into a matrix
     //! @param rFullMatrix ... the matrix
-    virtual void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const = 0;
+    virtual void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const override = 0;
 
     //! @brief ... import matrix from slang object stored in  a text file
     //! @param rFileName ... file name
@@ -222,7 +222,7 @@ public:
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
     //! @return    class name
-    virtual std::string GetTypeId() const;
+    virtual std::string GetTypeId() const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -246,7 +246,7 @@ public:
 
     //! @brief performs a monadic operator on all matrix entries
     //! @param rMOperator        Monadic Operator
-    void Map(const NuTo::MonadicOperator<T>* rMOperator)
+    void Map(const NuTo::MonadicOperator<T>* rMOperator) override
     {
         for (unsigned int count=0; count<mValues.size(); count++)
             mValues[count] = rMOperator->Evaluate(mValues[count]);
@@ -255,7 +255,7 @@ public:
     //! @brief performs a dyadic operator on all matrix entries with another given value
     //! @param rDOperator        Dyadic Operator
     //! @param rValue ... value
-    void Map(const NuTo::DyadicOperator<T>* rDOperator, const T& rValue)
+    void Map(const NuTo::DyadicOperator<T>* rDOperator, const T& rValue) override
     {
         for (unsigned int count=0; count<mValues.size(); count++)
             mValues[count] = rDOperator->Evaluate(mValues[count],rValue);
@@ -328,11 +328,11 @@ public:
     //! @brief ... remove zero entries from matrix (all entries with an absolute value which is smaller than a prescribed tolerance)
     //! @param rAbsoluteTolerance ... absolute tolerance
     //! @param rRelativeTolerance ... relative tolerance (this value is multiplied with the largest matrix entry (absolute values))
-    int RemoveZeroEntries(double rAbsoluteTolerance = 0, double rRelativeTolerance = 0);
+    int RemoveZeroEntries(double rAbsoluteTolerance = 0, double rRelativeTolerance = 0) override;
 
 
     //! @brief ... sets all the values to zero while keeping the structure of the matrix constant, this is interesting for stiffness matrices to use the same matrix structure
-    void SetZeroEntries()
+    void SetZeroEntries() override
     {
     	for (unsigned int count=0; count<mValues.size(); count++)
     	{

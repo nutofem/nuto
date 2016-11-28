@@ -38,11 +38,11 @@ public:
 
     virtual ~InterpolationBaseIGA() {}
 
-    virtual int GetSplineDegree(int dir) const = 0;
+    virtual int GetSplineDegree(int dir) const override = 0;
 
     //! @brief determines the standard integration type depending on shape, type and order
     //! @return standard integration type
-    virtual eIntegrationType GetStandardIntegrationType() const = 0;
+    virtual eIntegrationType GetStandardIntegrationType() const override = 0;
 
     //********************************************
     //             NODE METHODS
@@ -165,20 +165,20 @@ public:
     //! @param rNaturalSurfaceCoordinates ... natural surface coordinates
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... derivative of the surface parametrization
-    virtual Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const = 0;
+    virtual Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const override = 0;
 
     //! @brief returns the number of surfaces
-    virtual int GetNumSurfaces() const = 0;
+    virtual int GetNumSurfaces() const override = 0;
 
     //! @brief return the number of dofs per node depending on dimension
-    virtual int GetNumDofsPerNode() const = 0;
+    virtual int GetNumDofsPerNode() const override = 0;
 
     //! @brief return the local dimension of the interpolation
-    virtual int GetLocalDimension() const = 0;
+    virtual int GetLocalDimension() const override = 0;
 
     virtual Eigen::VectorXi GetSurfaceNodeIndices(int rSurface) const override = 0;
 
-    int GetSurfaceDegree(int rSurface) const = 0;
+    int GetSurfaceDegree(int rSurface) const override = 0;
 
 
 #ifdef ENABLE_SERIALIZATION
@@ -206,7 +206,7 @@ protected:
     //! @brief returns the natural coordinates of the nodes that span the surface
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... natural surface edge coordinates
-    virtual std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const = 0;
+    virtual std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const override = 0;
 
 
     //! @brief returns true if a node is on the surface
@@ -221,7 +221,7 @@ protected:
     void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType) override = 0;
 
     //! @brief return the number node depending the shape and the order
-    virtual int CalculateNumNodes() const = 0;
+    virtual int CalculateNumNodes() const override = 0;
 
     //! @brief this method sets the mNumDofs, mNumNodes and mNodeIndices members
     //! @remark it should be called from the ctor InterpolationTypeBase()

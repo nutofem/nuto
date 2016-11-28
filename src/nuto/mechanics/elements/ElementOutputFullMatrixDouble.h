@@ -29,7 +29,7 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
-    ElementOutputFullMatrixDouble* Clone() const
+    ElementOutputFullMatrixDouble* Clone() const override
     {
     	return new ElementOutputFullMatrixDouble(*this);
     }
@@ -38,22 +38,22 @@ public:
 	{
         return mMatrix;
 	}
-    void SetSymmetry(bool rSymmetric)
+    void SetSymmetry(bool rSymmetric) override
 	{
         mSymmetric = rSymmetric;
 	}
 
-    bool GetSymmetry()const
+    bool GetSymmetry()const override
 	{
         return mSymmetric;
 	}
 
-    void SetConstant(bool rConstant)
+    void SetConstant(bool rConstant) override
 	{
     	mConstant = rConstant;
 	}
 
-    bool GetConstant()const
+    bool GetConstant()const override
 	{
         return mConstant;
 	}

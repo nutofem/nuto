@@ -96,7 +96,7 @@ public:
 
     //! @brief resizes the node vector
     //! @param rNewNumNodes new number of nodes
-    void ResizeNodes(int rNewNumNodes)
+    void ResizeNodes(int rNewNumNodes) override
     {
         throw MechanicsException(__PRETTY_FUNCTION__,"Probably not needed.");
     }

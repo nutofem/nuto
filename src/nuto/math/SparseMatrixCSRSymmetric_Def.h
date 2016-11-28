@@ -33,31 +33,31 @@ public:
 
     //! @brief ... returns whether the matrix is symmetric or unsymmetric
     //! @return true if the matrix is symmetric and false if the matrix is unsymmetric
-    bool IsSymmetric() const;
+    bool IsSymmetric() const override;
 
     //! @brief ... returns the number of columns
     //! @return number of columns
-    int GetNumColumns() const;
+    int GetNumColumns() const override;
 
     //! @brief ... add nonzero entry to matrix
     //! @param rRow ... row of the nonzero entry (zero based indexing!!!)
     //! @param rColumn ... column of the nonzero entry (zero based indexing!!!)
     //! @param rValue ... value of the nonzero entry
-    void AddValue(int rRow, int rColumn, const T& rValue);
+    void AddValue(int rRow, int rColumn, const T& rValue) override;
 
     //! @brief ... return the matrix type
-    NuTo::eSparseMatrixType GetSparseMatrixType()const;
+    NuTo::eSparseMatrixType GetSparseMatrixType()const override;
 
     //! @brief ... print info about the object
-    void Info() const;
+    void Info() const override;
 
     //! @brief ... import matrix from slang object stored in  a text file
     //! @param rFileName ... file name
-    void ImportFromSLangText(const char* rFileName);
+    void ImportFromSLangText(const char* rFileName) override;
 
     //! @brief ... write nonzero matrix entries into a matrix
     //! @param rFullMatrix ... the full matrix
-    void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const;
+    void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const override;
 
     //! @brief ... adds \f$(\boldsymbol{A}^T\,\boldsymbol{B}\,\boldsymbol{A})\f$ to the matrix
     //! @param rMatrixA ... matrix A (general sparse matrix in csr storage)
@@ -72,7 +72,7 @@ public:
     //! @brief ... multiply sparse matrix with full matrix
     //! @param rMatrix ... full matrix
     //! @return ... result matrix (full storage)
-    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const;
+    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const override;
     
     //! @brief ... multiplies the matrix with an scalar value
     //! @param rOther ... scalar value
@@ -93,7 +93,7 @@ public:
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
     //! @return    class name
-    std::string GetTypeId()const;
+    std::string GetTypeId()const override;
 
     //! @brief ... resize the matrix and initialize everything to zero
     //! @param  rRow ... number of rows

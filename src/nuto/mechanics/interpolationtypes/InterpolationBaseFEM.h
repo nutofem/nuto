@@ -52,13 +52,13 @@ public:
 
     //! @brief returns the natural coordinates of the dof node
     //! @param rNodeIndex ... node index
-    const Eigen::VectorXd& GetNaturalNodeCoordinates(int rNodeIndex) const;
+    const Eigen::VectorXd& GetNaturalNodeCoordinates(int rNodeIndex) const override;
 
     //! @brief returns the natural coordinates of the dof node
     //! @param rNodeIndex ... node index
-    virtual Eigen::VectorXd CalculateNaturalNodeCoordinates(int rNodeIndex) const = 0;
+    virtual Eigen::VectorXd CalculateNaturalNodeCoordinates(int rNodeIndex) const override = 0;
 
-    void CalculateSurfaceNodeIds();
+    void CalculateSurfaceNodeIds() override;
 
     //********************************************
     //       SHAPE FUNCTIONS
@@ -67,21 +67,21 @@ public:
     //! @brief returns specific shape functions via the IP index
     //! @param rIP ... integration point index
     //! @return ... specific shape functions
-    const Eigen::VectorXd& GetShapeFunctions(int rIP) const;
+    const Eigen::VectorXd& GetShapeFunctions(int rIP) const override;
 
     //! @brief returns specific N-matrix via the IP index
     //! @param rIP ... integration point index
     //! @return ... specific N-matrix
-    const Eigen::MatrixXd& GetMatrixN(int rIP) const;
+    const Eigen::MatrixXd& GetMatrixN(int rIP) const override;
 
     //! @brief calculates the shape functions for a specific dof
     //! @param rCoordinates ... integration point coordinates
     //! @param rDofType ... dof type
     //! @return ... shape functions for the specific dof type
-    virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const = 0;
+    virtual Eigen::VectorXd CalculateShapeFunctions(const Eigen::VectorXd& rCoordinates) const override = 0;
 
     //! @brief calculates the N-Matrix, blows up the shape functions to the correct format (e.g. 3D: N & 0 & 0 \\ 0 & N & 0 \\ 0 & 0 & N ...)
-    Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const;
+    Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates) const override;
 
 
     // --- IGA interpolation--- //
@@ -106,7 +106,7 @@ public:
     //! @brief returns the N matrix for IGA elements at a parameter, which fits to the knot vector (e.g. 3D: N & 0 & 0 \\ 0 & N & 0 \\ 0 & 0 & N ...)
     //! @param rCoordinates ... parameter
     //! @param rKnotIDs ... knot ids specifying the knot interval the rCoordinates are lying in (no need to search)
-    virtual Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const
+    virtual Eigen::MatrixXd CalculateMatrixN(const Eigen::VectorXd& rCoordinates, const Eigen::VectorXi &rKnotIDs) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
     }
@@ -160,9 +160,9 @@ public:
     //! @param rNaturalSurfaceCoordinates ... natural surface coordinates
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... natural coordinates of the elements surface
-    virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const = 0;
+    virtual Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const override = 0;
 
-    Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const
+    Eigen::VectorXd CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
     }
@@ -171,23 +171,23 @@ public:
     //! @param rNaturalSurfaceCoordinates ... natural surface coordinates
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... derivative of the surface parametrization
-    virtual Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const = 0;
+    virtual Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const override = 0;
 
     //! @brief returns the number of surfaces
-    virtual int GetNumSurfaces() const = 0;
+    virtual int GetNumSurfaces() const override = 0;
 
     //! @brief return the number of dofs per node depending on dimension
-    virtual int GetNumDofsPerNode() const = 0;
+    virtual int GetNumDofsPerNode() const override = 0;
 
     //! @brief return the local dimension of the interpolation
-    virtual int GetLocalDimension() const = 0;
+    virtual int GetLocalDimension() const override = 0;
 
     Eigen::VectorXi GetSurfaceNodeIndices(int rSurface) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
     }
 
-    int GetSurfaceDegree(int rSurface) const
+    int GetSurfaceDegree(int rSurface) const override
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "IGA specific function!");
     }
@@ -218,19 +218,19 @@ protected:
     //! @brief returns the natural coordinates of the nodes that span the surface
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType
     //! @return ... natural surface edge coordinates
-    virtual std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const = 0;
+    virtual std::vector<Eigen::VectorXd> GetSurfaceEdgesCoordinates(int rSurface) const override = 0;
 
     //! @brief returns true if a node is on the surface
     //! @param rSurface ... surface id
     //! @param rNaturalNodeCoordinate ... natural coordinate of the node to test
-    bool NodeIsOnSurface(int rSurface, const Eigen::VectorXd& rNaturalNodeCoordinate) const;
+    bool NodeIsOnSurface(int rSurface, const Eigen::VectorXd& rNaturalNodeCoordinate) const override;
 
     //! @brief calculate and store the shape functions and their derivatives
     //! @param rIntegrationType ... integration type
     void UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType) override;
 
     //! @brief return the number node depending the shape and the order
-    virtual int CalculateNumNodes() const = 0;
+    virtual int CalculateNumNodes() const override = 0;
 
     //! @brief this method sets the mNumDofs, mNumNodes and mNodeIndices members
     //! @remark it should be called from the ctor InterpolationTypeBase()

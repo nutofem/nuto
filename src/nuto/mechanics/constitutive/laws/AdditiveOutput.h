@@ -16,7 +16,7 @@ public:
     {}
 
     // has no ip static data itself
-    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw()
+    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override
     {
         return std::make_unique<Constitutive::IPAdditiveOutput>(*this);
         mStaticDataAllocated = true;

@@ -98,7 +98,7 @@ public:
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
     //! @return    class name
-    std::string GetTypeId() const
+    std::string GetTypeId() const override
     {
         return std::string("Structure");
     }
@@ -130,18 +130,18 @@ public:
 //*************************************************
     //! @brief returns the number of nodes
     //! @return number of nodes
-    int GetNumNodes() const;
+    int GetNumNodes() const override;
 
 #ifndef SWIG
     //! @brief returns a reference to a node
     //! @param identifier
     //! @return reference to a node
-    NodeBase* NodeGetNodePtr(int rIdent);
+    NodeBase* NodeGetNodePtr(int rIdent) override;
 
     //! @brief returns a reference to a node
     //! @param identifier
     //! @return reference to a node
-    const NodeBase* NodeGetNodePtr(int rIdent) const;
+    const NodeBase* NodeGetNodePtr(int rIdent) const override;
 
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNode (Input) 		... node pointer
@@ -151,7 +151,7 @@ public:
     //! @brief gives the identifier of a node
     //! @param pointer to a node
     //! @return id
-    int NodeGetId(const NodeBase* rNode) const;
+    int NodeGetId(const NodeBase* rNode) const override;
 
     //! @brief returns const reference to mNodeMap
     //! @return mNodeMap
@@ -228,10 +228,10 @@ public:
 
     //! @brief deletes a node
     //! @param rNodeNumber ... node number
-    void NodeDelete(const int rNodeNumber);
+    void NodeDelete(const int rNodeNumber) override;
 
     //! @brief info about the nodes in the Structure
-    void NodeInfo(int mVerboseLevel) const;
+    void NodeInfo(int mVerboseLevel) const override;
 
     //! @brief numbers the dofs in the structure
     //! @param rCallerName ... if the method throws it is nice to know by whom it was called.
@@ -280,28 +280,28 @@ public:
 //*************************************************
     //! @brief returns the number of nodes
     //! @return number of nodes
-    int GetNumElements() const;
+    int GetNumElements() const override;
 
 #ifndef SWIG
     //! @brief returns a reference to an element
     //! @param identifier
     //! @return reference to an element
-    ElementBase* ElementGetElementPtr(int rIdent);
+    ElementBase* ElementGetElementPtr(int rIdent) override;
 
     //! @brief returns a reference to an element
     //! @param identifier
     //! @return reference to an element
-    const ElementBase* ElementGetElementPtr(int rIdent) const;
+    const ElementBase* ElementGetElementPtr(int rIdent) const override;
 
     //! @brief gives the identifier of an element
     //! @param pointer to an element
     //! @return identifier
-    int ElementGetId(const ElementBase* rElement) const;
+    int ElementGetId(const ElementBase* rElement) const override;
 
     //! @brief info about one single element
     //! @param rElement (Input) ... pointer to the element
     //! @param rVerboseLevel (Input) ... level of verbosity
-    void ElementInfo(const ElementBase* rElement, int rVerboseLevel) const;
+    void ElementInfo(const ElementBase* rElement, int rVerboseLevel) const override;
 #endif //SWIG
 
     //! @brief returns a vector with the node ids of an element
@@ -310,7 +310,7 @@ public:
     NuTo::FullVector<int, Eigen::Dynamic> ElementGetNodes(int rId);
 
     //! @brief info about the elements in the Structure
-    void ElementInfo(int rVerboseLevel) const;
+    void ElementInfo(int rVerboseLevel) const override;
 
 //***************************************************//
 //************ ElementCreate routines ***************//
@@ -387,7 +387,7 @@ public:
 
     //! @brief Deletes an element
     //! @param rElementNumber element number
-    void ElementDelete(int rElementNumber);
+    void ElementDelete(int rElementNumber) override;
 
     //! @brief Deletes a group of elements element
     //! @param rGroupNumber group number
@@ -579,7 +579,7 @@ public:
     //**  defined in structures/Structure.cpp *********
     //*************************************************
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-    void Info() const;
+    void Info() const override;
 
 protected:
 #ifdef ENABLE_SERIALIZATION
@@ -593,35 +593,35 @@ protected:
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
-    void GetElementsTotal(std::vector<const ElementBase*>& rElements) const;
+    void GetElementsTotal(std::vector<const ElementBase*>& rElements) const override;
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
-    void GetElementsTotal(std::vector<std::pair<int, const ElementBase*> >& rElements) const;
+    void GetElementsTotal(std::vector<std::pair<int, const ElementBase*> >& rElements) const override;
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
-    void GetElementsTotal(std::vector<ElementBase*>& rElements);
+    void GetElementsTotal(std::vector<ElementBase*>& rElements) override;
 
     //! @brief ... store all elements of a structure in a vector
     //! @param rElements ... vector of element pointer
-    void GetElementsTotal(std::vector<std::pair<int, ElementBase*> >& rElements);
+    void GetElementsTotal(std::vector<std::pair<int, ElementBase*> >& rElements) override;
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
-    void GetNodesTotal(std::vector<const NodeBase*>& rNodess) const;
+    void GetNodesTotal(std::vector<const NodeBase*>& rNodess) const override;
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
-    void GetNodesTotal(std::vector<std::pair<int, const NodeBase*> >& rNodes) const;
+    void GetNodesTotal(std::vector<std::pair<int, const NodeBase*> >& rNodes) const override;
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
-    void GetNodesTotal(std::vector<NodeBase*>& rNodes);
+    void GetNodesTotal(std::vector<NodeBase*>& rNodes) override;
 
     //! @brief ... store all nodes of a structure in a vector
     //! @param rNodes ... vector of element pointer
-    void GetNodesTotal(std::vector<std::pair<int, NodeBase*> >& rNodes);
+    void GetNodesTotal(std::vector<std::pair<int, NodeBase*> >& rNodes) override;
 #endif
 
     //! @brief deletes a node

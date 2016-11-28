@@ -165,7 +165,7 @@ public:
     //! @param i ... row
     //! @param j ... column
     //! @param value ... value which is added to the (i,j)-th matrix entry
-    void AddValue (int i, int j, const T& value );
+    void AddValue (int i, int j, const T& value ) override;
 
     //! @brief ... subtract a value from the (i,j)-th matrix entry
     //! @param i ... row
@@ -175,11 +175,11 @@ public:
 
     //! @brief ... get number of rows
     //! @return number of rows
-    int GetNumRows() const;
+    int GetNumRows() const override;
 
     //! @brief ... get number of columns
     //! @return number of columns
-    int GetNumColumns() const;
+    int GetNumColumns() const override;
 
 #ifdef ENABLE_SERIALIZATION
     void Save ( const std::string &filename, std::string rType)const;
@@ -204,7 +204,7 @@ public:
 #endif //ENABLE_SERIALIZATION
 
     //! @brief ... print info about the object
-    void Info() const;
+    void Info() const override;
 
     //! @brief ... print info about the object
     //! @param width ... total width of each entry in the matrix when printed
@@ -260,7 +260,7 @@ public:
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
     //! @return    class name
-    std::string GetTypeId()const;
+    std::string GetTypeId() const override;
 
     //! @brief ... converts any FullMatrix to a DoubleFullMatrix
     //! @return    converted matrix
@@ -310,12 +310,12 @@ public:
 
     //! @brief performs a monadic operator on all matrix entries
     //! @param rMOperator ... Monadic Operator
-    void Map ( const NuTo::MonadicOperator<T>* rMOperator );
+    void Map ( const NuTo::MonadicOperator<T>* rMOperator ) override;
 
     //! @brief performs a dyadic operator on all matrix entries with another given value
     //! @param rDOperator ... Dyadic Operator
     //! @param rValue ... value
-    void Map ( const NuTo::DyadicOperator<T>* rDOperator, const T& rValue );
+    void Map ( const NuTo::DyadicOperator<T>* rDOperator, const T& rValue ) override;
 
 #ifndef SWIG
     //! @brief returns the maximum value of the matrix (if several entries have the same maximum value, only the first one is recovered)

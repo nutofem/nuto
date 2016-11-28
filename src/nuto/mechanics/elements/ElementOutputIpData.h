@@ -1,4 +1,3 @@
-// $Id $
 #pragma once
 
 #include "nuto/math/FullMatrix_Def.h"
@@ -37,7 +36,7 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
-    ElementOutputIpData* Clone() const
+    ElementOutputIpData* Clone() const override
     {
         return new ElementOutputIpData(*this);
     }

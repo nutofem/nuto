@@ -37,7 +37,7 @@ public:
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
-    int GetNumLinearConstraints()const;
+    int GetNumLinearConstraints()const override;
 
     //!@brief sets/modifies angle of the boundary condition
     //!@param rAngle angle in deg
@@ -45,11 +45,11 @@ public:
 
     //!@brief sets/modifies the average strain applied to the boundary
     //!@param rAngle angle in deg
-    void SetStrain(const EngineeringStrain<2>& rStrain);
+    void SetStrain(const EngineeringStrain<2>& rStrain) override;
 
     //!@brief sets/modifies the average strain applied to the boundary
     //!@param rAngle angle in deg
-    void SetCrackOpening(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCrackOpening);
+    void SetCrackOpening(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCrackOpening) override;
 
     //!@brief calculate the border vectors in counterclockwise direction
     void SetBoundaryVectors();
@@ -60,20 +60,19 @@ public:
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-    void AddToConstraintMatrix(int& curConstraintEquation,
-                               NuTo::SparseMatrix<double>& rConstraintMatrix)const;
+    void AddToConstraintMatrix(int& curConstraintEquation, NuTo::SparseMatrix<double>& rConstraintMatrix)const override;
 
     //!@brief writes for the current constraint equation(s) the rhs into the vector
     // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-    void GetRHS(int& curConstraintEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const;
+    void GetRHS(int& curConstraintEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const override;
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
-    void Info(unsigned short rVerboseLevel) const
+    void Info(unsigned short) const override
     {
-        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::Info] to be implemented.");
+        throw MechanicsException(__PRETTY_FUNCTION__, " to be implemented.");
     }
 
     //! @brief determines the dof type affected by the constraint

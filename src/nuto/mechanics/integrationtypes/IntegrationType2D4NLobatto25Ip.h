@@ -34,16 +34,16 @@ public:
 
     //! @brief returns the total number of integration points for this integration type
     //! @return number of integration points
-    int GetNumIntegrationPoints()const;
+    int GetNumIntegrationPoints()const override;
 
     //! @brief returns the weight of an integration point
     //! @param rIpNum integration point (counting from zero)
     //! @return weight of integration points
-    double GetIntegrationPointWeight(int rIpNum)const;
+    double GetIntegrationPointWeight(int rIpNum)const override;
 
     //! @brief returns a string with the identifier of the integration type
     //! @return identifier
-    std::string GetStrIdentifier()const;
+    std::string GetStrIdentifier()const override;
 
     //! @brief returns a string with the identifier of the integration type
     //! @return identifier

@@ -93,7 +93,7 @@ public:
 
     //! @brief ... returns the number of non-zero matrix entries
     //! @return number of non-zero matrix entries
-    int GetNumEntries() const
+    int GetNumEntries() const override
     {
         unsigned int counter(0);
         for (unsigned int count=0; count<this->mValues.size(); count++)
@@ -105,13 +105,13 @@ public:
 
     //! @brief ... returns the number of rows
     //! @return number of rows
-    int GetNumRows() const
+    int GetNumRows() const override
     {
         return this->mValues.size();
     }
 
     //! @brief ... switch to one based indexing (only internal indexing, interface still uses zero based indexing)
-    void SetOneBasedIndexing()
+    void SetOneBasedIndexing() override
     {
         if (! this->mOneBasedIndexing)
         {
@@ -127,7 +127,7 @@ public:
     }
 
     //! @brief ... switch to zero based indexing (only internal indexing, interface still uses zero based indexing)
-    void SetZeroBasedIndexing()
+    void SetZeroBasedIndexing() override
     {
         if (this->mOneBasedIndexing)
         {
@@ -145,7 +145,7 @@ public:
 
     //! @brief ... write non-zero matrix entries into a matrix
     //! @param rFullMatrix ... the full matrix
-    virtual void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const = 0;
+    virtual void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const override = 0;
 
     //! @brief ... import matrix from slang object stored in  a text file
     //! @param rFileName ... file name
@@ -154,7 +154,7 @@ public:
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
     //! @return    class name
-    virtual std::string GetTypeId() const;
+    virtual std::string GetTypeId() const override;
 
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
@@ -179,7 +179,7 @@ public:
 
     //! @brief performs a monadic operator on all matrix entries
     //! @param rMOperator        Monadic Operator
-    void Map(const NuTo::MonadicOperator<T>* rMOperator)
+    void Map(const NuTo::MonadicOperator<T>* rMOperator) override
     {
         for (unsigned int row_count = 0; row_count < this->mColumns.size(); row_count++)
         {
@@ -193,7 +193,7 @@ public:
     //! @brief performs a dyadic operator on all matrix entries with another given value
     //! @param rDOperator        Dyadic Operator
     //! @param rValue ... value
-    void Map(const NuTo::DyadicOperator<T>* rDOperator, const T& rValue)
+    void Map(const NuTo::DyadicOperator<T>* rDOperator, const T& rValue) override
     {
         for (unsigned int row_count = 0; row_count < this->mColumns.size(); row_count++)
         {
@@ -272,7 +272,7 @@ public:
     }
 
     //! @brief ... sets all the values to zero while keeping the structure of the matrix constant, this is interesting for stiffness matrices to use the same matrix structure
-    void SetZeroEntries()
+    void SetZeroEntries() override
     {
         for (unsigned int row_count = 0; row_count < this->mColumns.size(); row_count++)
         {
@@ -286,7 +286,7 @@ public:
     //! @brief ... remove zero entries from matrix (all entries with an absolute value which is smaller than a prescribed tolerance)
     //! @param rAbsoluteTolerance ... absolute tolerance
     //! @param rRelativeTolerance ... relative tolerance (this value is multiplied with the largest matrix entry (absolute values))
-    int RemoveZeroEntries(double rAbsoluteTolerance = 0, double rRelativeTolerance = 0)
+    int RemoveZeroEntries(double rAbsoluteTolerance = 0, double rRelativeTolerance = 0) override
     {
         double tolerance =  rAbsoluteTolerance;
          if (rRelativeTolerance > 0)
@@ -357,7 +357,7 @@ public:
     //! @brief ... returns true if the matrix allows parallel assembly using openmp with maximum independent sets
     //! this is essentially true, if adding a value to a specific row does not change the storage position of values in other rows
     //! until now, this is only true for SparseMatrixCSRVector2
-    bool AllowParallelAssemblyUsingMaximumIndependentSets()const
+    bool AllowParallelAssemblyUsingMaximumIndependentSets() const override
     {
     	return true;
     }
@@ -400,7 +400,7 @@ public:
             const SparseMatrixCSRVector2& rD, T rScalar) = 0;
 
     //! @brief ... calculates this.Transpose
-    virtual NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
+    virtual NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>&) const
     {
         throw NuTo::MathException(std::string("[") + __PRETTY_FUNCTION__ + "] not implemented.");
     }
@@ -426,14 +426,14 @@ public:
 
     //! @brief ... reorder columns of the matrix
     //! @param rMappingInitialToNewOrdering ... mapping fron initial to new ordering
-    virtual void ReorderColumns(const std::vector<int>& rMappingInitialToNewOrdering)
+    virtual void ReorderColumns(const std::vector<int>&)
     {
         throw NuTo::MathException(std::string("[") + __PRETTY_FUNCTION__ + "] not implemented.");
     }
 
     //! @brief ... remove columns from the end of the matrix
     //! @param rNumColumn ... number of colums to be removed
-    virtual void RemoveLastColumns(unsigned int rNumColumns)
+    virtual void RemoveLastColumns(unsigned int)
     {
         throw NuTo::MathException(std::string("[") + __PRETTY_FUNCTION__ + "] not implemented.");
     }

@@ -66,7 +66,7 @@ public:
     //! @return reference on the matrix containing the knots
     const Eigen::VectorXi& GetKnotIDs() const override  {return mKnotIDs;}
 
-    Eigen::VectorXd InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const;
+    Eigen::VectorXd InterpolateDofGlobal(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofType) const override;
 
     Eigen::VectorXd InterpolateDofGlobalSurfaceDerivative(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative, int rDirection) const override;
 
@@ -100,9 +100,9 @@ protected:
     //! @brief ... check if the element is properly defined (check node dofs, nodes are reordered if the element length/area/volum is negative)
     void CheckElement() override;
 
-    virtual void CalculateNMatrixBMatrixDetJacobian(EvaluateDataContinuum<TDim> &data, int rTheIP) const;
+    virtual void CalculateNMatrixBMatrixDetJacobian(EvaluateDataContinuum<TDim> &data, int rTheIP) const override;
 
-    virtual double CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const;
+    virtual double CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const override;
 
 
 #ifdef ENABLE_SERIALIZATION

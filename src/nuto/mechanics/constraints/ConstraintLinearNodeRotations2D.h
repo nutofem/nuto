@@ -24,23 +24,22 @@ public:
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
-    int GetNumLinearConstraints()const;
+    int GetNumLinearConstraints() const override;
 
     //!@brief sets/modifies the right hand side of the constraint equation
     //!@param rRHS new right hand side
-    void SetRHS(double rRHS);
+    void SetRHS(double rRHS) override;
 
     //! @brief adds the constraint equations to the matrix
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-    void AddToConstraintMatrix(int& curConstraintEquation,
-                               NuTo::SparseMatrix<double>& rConstraintMatrix)const;
+    void AddToConstraintMatrix(int& curConstraintEquation, NuTo::SparseMatrix<double>& rConstraintMatrix) const override;
 
     //!@brief writes for the current constraint equation(s) the rhs into the vector
     // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-    void GetRHS(int& curConstraintEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const;
+    void GetRHS(int& curConstraintEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS) const override;
 
     //! @brief returns the node ptr in the full data set (elements, groups, loads, constraints etc.)
     //! this routine is used, if e.g. for the deserialization the pointers needs to be updated, since this pointer are not serialized
@@ -52,7 +51,7 @@ public:
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
-    void Info(unsigned short rVerboseLevel) const
+    void Info(unsigned short) const override
     {
         throw MechanicsException("[NuTo::ConstraintLinearNodeRotations2D::Info] to be implemented.");
     }

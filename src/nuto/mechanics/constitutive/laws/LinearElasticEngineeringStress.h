@@ -81,7 +81,7 @@ public:
 
     LinearElasticEngineeringStress();
 
-    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw();
+    std::unique_ptr<Constitutive::IPConstitutiveLawBase> CreateIPLaw() override;
 
 
     //! @brief ... evaluate the constitutive relation in 1D

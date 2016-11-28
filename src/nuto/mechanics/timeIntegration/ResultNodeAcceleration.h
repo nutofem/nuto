@@ -31,9 +31,9 @@ public:
     void CalculateValues(const StructureBase& rStructure, NuTo::FullMatrix<double, 1, Eigen::Dynamic>& rValues)const override;
 
     //! @brief number of data points per time step (e.g. number of Accelerationlacement components of a node
-    int GetNumData(const StructureBase& rStructure)const;
+    int GetNumData(const StructureBase& rStructure)const override;
 
-    NuTo::eTimeIntegrationResultType GetResultType()const;
+    NuTo::eTimeIntegrationResultType GetResultType()const override;
 
     std::string GetTypeId() const
     {

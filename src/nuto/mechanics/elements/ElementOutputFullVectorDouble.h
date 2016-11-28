@@ -27,7 +27,7 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
-    ElementOutputFullVectorDouble* Clone() const
+    ElementOutputFullVectorDouble* Clone() const override
     {
     	return new ElementOutputFullVectorDouble(*this);
     }

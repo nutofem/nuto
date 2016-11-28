@@ -35,7 +35,7 @@ public:
     }
 
 
-    ConstitutiveBase& GetConstitutiveLaw() const
+    ConstitutiveBase& GetConstitutiveLaw() const override
     {
         return mLaw;
     }
