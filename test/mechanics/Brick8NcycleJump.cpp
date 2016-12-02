@@ -35,7 +35,7 @@ std::pair<double,double> Loading(double rTime, double rMeanValue, double rAmplFr
 
 	} catch (NuTo::Exception& e) {
         e.AddMessage("[NuTo::myNutoExamples::Brick8NcycleJump] something wrong in the Loading() function.");
-        throw e;
+        throw;
 	}
 
 }

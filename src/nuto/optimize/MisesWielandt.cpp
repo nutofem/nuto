@@ -234,7 +234,7 @@ void NuTo::MisesWielandt::Save ( const std::string &filename, std::string rType)
 	}
 	catch ( MathException &e )
 	{
-		throw e;
+        throw;
 	}
 	catch ( std::exception &e )
 	{
@@ -316,7 +316,7 @@ void NuTo::MisesWielandt::Restore ( const std::string &filename,  std::string rT
     }
     catch ( MathException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {

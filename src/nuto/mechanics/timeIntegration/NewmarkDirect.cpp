@@ -443,7 +443,7 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
     catch (MechanicsException& e)
     {
         e.AddMessage("[NuTo::NewmarkDirect::Solve] performing Newton-Raphson iteration.");
-        throw e;
+        throw;
     }
     return NuTo::eError::SUCCESSFUL;
 

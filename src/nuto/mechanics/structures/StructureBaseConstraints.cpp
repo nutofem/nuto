@@ -113,7 +113,7 @@ int  NuTo::StructureBase::ConstraintLinearSetDisplacementNode(int rIdent, const 
     catch (NuTo::MechanicsException &e)
     {
         e.AddMessage(__PRETTY_FUNCTION__,"Node with the given identifier could not be found.");
-        throw e;
+        throw;
     }
     catch (...)
     {
@@ -137,7 +137,7 @@ int  NuTo::StructureBase::ConstraintLinearSetRotationNode(int rIdent, double rVa
     catch (NuTo::MechanicsException &e)
     {
         e.AddMessage(__PRETTY_FUNCTION__,"Node with the given identifier could not be found.");
-        throw e;
+        throw;
     }
     catch (...)
     {
@@ -191,7 +191,7 @@ int NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode(int rIdent, dou
     catch (NuTo::MechanicsException &e)
     {
         e.AddMessage(__PRETTY_FUNCTION__,"Node with the given identifier could not be found.");
-        throw e;
+        throw;
     }
     catch (...)
     {
@@ -238,7 +238,7 @@ int NuTo::StructureBase::ConstraintLinearSetTemperatureNode(int rIdent, double r
     catch (NuTo::MechanicsException &e)
     {
         e.AddMessage(__PRETTY_FUNCTION__,"Node with the given identifier could not be found.");
-        throw e;
+        throw;
     }
     catch (...)
     {
@@ -297,7 +297,7 @@ int NuTo::StructureBase::ConstraintLinearSetWaterVolumeFractionNode(int rIdent, 
     catch (NuTo::MechanicsException &e)
     {
         e.AddMessage("[NuTo::StructureBase::ConstraintLinearSetWaterVolumeFractionNode] Node with the given identifier could not be found.");
-        throw e;
+        throw;
     }
     catch (...)
     {
@@ -494,7 +494,7 @@ NuTo::BlockSparseMatrix NuTo::StructureBase::ConstraintGetConstraintMatrixBefore
                 catch (MechanicsException& e)
                 {
                     e.AddMessage(std::string("[") + __PRETTY_FUNCTION__ + "] mechanics exception while building constraint matrix for constraint with nonzero number of linear components.");
-                    throw e;
+                    throw;
                 }
                 catch (...)
                 {
@@ -557,7 +557,7 @@ NuTo::BlockFullVector<double> NuTo::StructureBase::ConstraintGetRHSBeforeGaussEl
                 catch (MechanicsException& e)
                 {
                     e.AddMessage(std::string("[") + __PRETTY_FUNCTION__ + "] mechanics exception while building rhs vector after gauss elimination.");
-                    throw e;
+                    throw;
                 }
                 catch (...)
                 {
@@ -663,7 +663,7 @@ void NuTo::StructureBase::ConstraintLinearEquationCreate(int rConstraint, int rN
     catch(NuTo::MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureBase::ConstraintEquationCreate] error creating constraint equation");
-        throw e;
+        throw;
     }
 }
 
@@ -691,7 +691,7 @@ void NuTo::StructureBase::ConstraintLinearEquationCreate(int rConstraint, int rN
     catch(NuTo::MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureBase::ConstraintEquationCreate] error creating constraint equation");
-        throw e;
+        throw;
     }
 }
 
@@ -947,7 +947,7 @@ void NuTo::StructureBase::ConstraintLinearEquationAddTerm(int rConstraint, int r
     catch(NuTo::MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureBase::ConstraintEquationAddTerm] error adding term to constraint equation");
-        throw e;
+        throw;
     }
 }
 
@@ -973,7 +973,7 @@ void NuTo::StructureBase::ConstraintLinearEquationAddTerm(int rConstraint, int r
     catch(NuTo::MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureBase::ConstraintEquationAddTerm] error adding term to constraint equation");
-        throw e;
+        throw;
     }
 }
 
@@ -1132,7 +1132,7 @@ int NuTo::StructureBase::ConstraintLinearDisplacementsSetPeriodic2D(double rAngl
     catch(NuTo::MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureBase::ConstraintSetPeriodicBoundaryConditions2D] error creating periodic boundary conditions in 2D");
-        throw e;
+        throw;
     }
 #ifdef SHOW_TIME
     end=clock();

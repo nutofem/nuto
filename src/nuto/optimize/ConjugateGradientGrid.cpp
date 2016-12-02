@@ -403,7 +403,7 @@ void NuTo::ConjugateGradientGrid::Save ( const std::string &filename, std::strin
 	}
 	catch ( MathException &e )
 	{
-		throw e;
+        throw;
 	}
 	catch ( std::exception &e )
 	{
@@ -485,7 +485,7 @@ void NuTo::ConjugateGradientGrid::Restore ( const std::string &filename,  std::s
     }
     catch ( MathException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {

@@ -37,7 +37,7 @@ void NuTo::Structure::GroupAddElementFromType(int rIdentGroup, int rInterpolatio
     catch(NuTo::MechanicsException &e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "Error adding element.");
-        throw e;
+        throw;
     }
     catch(...)
     {

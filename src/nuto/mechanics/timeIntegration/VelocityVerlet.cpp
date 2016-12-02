@@ -206,7 +206,7 @@ NuTo::eError NuTo::VelocityVerlet::Solve(double rTimeDelta)
     catch (MechanicsException& e)
     {
         e.AddMessage("[NuTo::VelocityVerlet::Solve] performing Newton-Raphson iteration.");
-        throw e;
+        throw;
     }
 #ifdef SHOW_TIME
     end=clock();
@@ -276,7 +276,7 @@ void NuTo::VelocityVerlet::Restore (const std::string &filename, std::string rTy
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {
@@ -331,7 +331,7 @@ void NuTo::VelocityVerlet::Save (const std::string &filename, std::string rType 
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {

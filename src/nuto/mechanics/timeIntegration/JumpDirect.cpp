@@ -736,7 +736,7 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
     catch (MechanicsException& e)
     {
         e.AddMessage("[NuTo::JumpDirect::Solve] performing Newton-Raphson iteration.");
-        throw e;
+        throw;
     }
 #ifdef SHOW_TIME
     end=clock();
@@ -1826,7 +1826,7 @@ void NuTo::JumpDirect::Restore (const std::string &filename, std::string rType )
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {
@@ -1881,7 +1881,7 @@ void NuTo::JumpDirect::Save (const std::string &filename, std::string rType )con
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {

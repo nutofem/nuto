@@ -1859,7 +1859,7 @@ void NuTo::MultipleLinearRegression::Restore (const std::string &filename, std::
     }
     catch (NuTo::MetamodelException &e)
     {
-        throw e;
+        throw;
     }
     catch (std::exception &e)
     {
@@ -1921,7 +1921,7 @@ void NuTo::MultipleLinearRegression::Save (const std::string &filename, std::str
     }
     catch ( MathException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {

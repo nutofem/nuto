@@ -1716,7 +1716,7 @@ NuTo::Error::eError NuTo::NonlocalDamagePlasticityEngineeringStress::ReturnMappi
         catch (NuTo::MechanicsException& e)
         {
             e.AddMessage("[NuTo::NonlocalDamagePlasticityEngineeringStress::ReturnMapping2D] Error performing return mapping procedure.");
-            throw e;
+            throw;
         }
         catch (...)
         {

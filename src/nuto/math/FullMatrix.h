@@ -414,21 +414,21 @@ void FullMatrix<T,rows,cols>::Save ( const std::string &filename, std::string rT
     }
     catch ( boost::archive::archive_exception e )
     {
-	std::string s ( std::string ( "[NuTo::FullMatrix::Save]File save exception in boost - " ) +std::string ( e.what() ) );
-	std::cout << s << "\n";
-	throw MathException ( s );
+        std::string s ( std::string ( "[NuTo::FullMatrix::Save]File save exception in boost - " ) +std::string ( e.what() ) );
+        std::cout << s << "\n";
+        throw MathException ( s );
     }
     catch ( MathException &e )
     {
-	throw e;
+        throw;
     }
     catch ( std::exception &e )
     {
-	throw MathException ( e.what() );
+        throw MathException ( e.what() );
     }
     catch ( ... )
     {
-	throw MathException ( "[NuTo::FullMatrix::Save] Unhandled exception." );
+        throw MathException ( "[NuTo::FullMatrix::Save] Unhandled exception." );
     }
 }
 
@@ -487,17 +487,17 @@ void FullMatrix<T,rows,cols>::Restore ( const std::string &filename,  std::strin
 	// close file
 	ifs.close();
     }
-    catch ( MathException &e )
+    catch (MathException& e)
     {
-	throw e;
+        throw;
     }
-    catch ( std::exception &e )
+    catch (std::exception& e)
     {
-	throw MathException ( e.what() );
+        throw MathException(e.what());
     }
-    catch ( ... )
+    catch (...)
     {
-	throw MathException ( "[NuTo::FullMatrix::Restore] Unhandled exception." );
+        throw MathException(__PRETTY_FUNCTION__, "Unhandled exception.");
     }
 }
 
@@ -696,7 +696,7 @@ void FullMatrix<T,rows,cols>::ReadFromFile ( std::string fileName_, unsigned int
 	}
 	catch ( MathException &e )
 	{
-		throw e;
+        throw;
 	}
 	catch ( std::exception &e )
 	{
@@ -750,7 +750,7 @@ void FullMatrix<T,rows,cols>::AppendToFile ( const std::string& fileName_, std::
 	}
 	catch ( MathException &e )
 	{
-		throw e;
+        throw;
 	}
 	catch ( std::exception &e )
 	{
@@ -796,7 +796,7 @@ void FullMatrix<T,rows,cols>::WriteToFile ( const std::string& fileName_, std::s
 	}
 	catch ( MathException &e )
 	{
-		throw e;
+        throw;
 	}
 	catch ( std::exception &e )
 	{
@@ -1625,4 +1625,3 @@ void FullMatrix<T,rows,cols>::NuToSerializeLoad(SerializeStreamIn& rStream)
 }
 
 } //NAMESPACE NUTO
-

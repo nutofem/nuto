@@ -207,7 +207,7 @@ void NuTo::RungeKutta3::Restore (const std::string &filename, std::string rType 
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {
@@ -262,7 +262,7 @@ void NuTo::RungeKutta3::Save (const std::string &filename, std::string rType )co
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {

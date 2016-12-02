@@ -50,7 +50,7 @@ NuTo::BlockFullVector<double> NuTo::StructureBase::ElementBuildInternalGradient(
     } catch (MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "MechanicsError in element " + std::to_string(ElementGetId(&rElement)));
-        throw e;
+        throw;
     } catch (...)
     {
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Non-mechanics error in element " + std::to_string(ElementGetId(&rElement)));
@@ -76,7 +76,7 @@ NuTo::BlockFullMatrix<double> NuTo::StructureBase::ElementBuildHessian(Element::
     } catch (MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__ , "MechanicsError in element " + std::to_string(ElementGetId(&rElement)));
-        throw e;
+        throw;
     } catch (...)
     {
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Non-mechanics error in element " + std::to_string(ElementGetId(&rElement)));
@@ -127,7 +127,7 @@ NuTo::BlockFullVector<int> NuTo::StructureBase::ElementBuildGlobalDofsRow(Elemen
     } catch (MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "MechanicsError in element " + std::to_string(ElementGetId(&rElement)));
-        throw e;
+        throw;
     } catch (...)
     {
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Non-mechanics error in element " + std::to_string(ElementGetId(&rElement)));
@@ -148,7 +148,7 @@ NuTo::BlockFullVector<int> NuTo::StructureBase::ElementBuildGlobalDofsColumn(Ele
     } catch (MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "MechanicsError in element " + std::to_string(ElementGetId(&rElement)));
-        throw e;
+        throw;
     } catch (...)
     {
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Non-mechanics error in element " + std::to_string(ElementGetId(&rElement)));
@@ -345,7 +345,7 @@ void NuTo::StructureBase::ElementSetConstitutiveLaw(ElementBase* rElement, Const
     catch(MechanicsException &e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "Error setting constitutive law  for element " + std::to_string(ElementGetId(rElement)) + ".");
-        throw e;
+        throw;
     }
     catch(...)
     {
@@ -414,7 +414,7 @@ void NuTo::StructureBase::ElementSetSection(ElementBase* rElement, SectionBase* 
     catch(NuTo::MechanicsException &e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "Error setting section for element " + std::to_string(ElementGetId(rElement)) + ".");
-        throw e;
+        throw;
     }
     catch(...)
     {
@@ -483,7 +483,7 @@ void NuTo::StructureBase::ElementSetInterpolationType(ElementBase* rElement, Int
     catch(NuTo::MechanicsException &e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "Error setting interpolation type for element " + std::to_string(ElementGetId(rElement)) + ".");
-        throw e;
+        throw;
     }
     catch(...)
     {
@@ -538,7 +538,7 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::El
     } catch (NuTo::MechanicsException &e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "Error getting " + IpData::IpStaticDataTypeToString(rType) + " for element " + std::to_string(rElementId) + ".");
-        throw e;
+        throw;
     } catch (...)
     {
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error getting " + IpData::IpStaticDataTypeToString(rType) + " for element "  + std::to_string(rElementId)  + ".");
@@ -572,7 +572,7 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Elem
     catch(NuTo::MechanicsException &e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "Error getting integration point coordinates for for element " + std::to_string(rElementId)  + ".");
-        throw e;
+        throw;
     }
     catch(...)
     {
@@ -605,7 +605,7 @@ double NuTo::StructureBase::ElementTotalGetMaxDamage()
         } catch (NuTo::MechanicsException &e)
         {
             e.AddMessage(__PRETTY_FUNCTION__, "Error getting damage for element " + std::to_string(ElementGetId(element)) + ".");
-            throw e;
+            throw;
         } catch (...)
         {
             throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error getting damage for element " +std::to_string(ElementGetId(element)) + ".");
@@ -646,7 +646,7 @@ std::vector<double> NuTo::StructureBase::ElementTotalGetStaticDataExtrapolationE
         } catch (NuTo::MechanicsException &e)
         {
             e.AddMessage(__PRETTY_FUNCTION__, "Error getting EXTRAPOLATION_ERROR for element " + std::to_string(ElementGetId(element)) + ".");
-            throw e;
+            throw;
         } catch (...)
         {
             throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error getting EXTRAPOLATION_ERROR for element " +std::to_string(ElementGetId(element)) + ".");
@@ -937,7 +937,7 @@ void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, NuTo::Ful
             std::stringstream ss;
             ss << ElementGetId(elementVector[elementCount]);
             e.AddMessage("[NuTo::StructureBase::ElementTotalGetAverageStress] Error calculating integrated stress  for element "  + ss.str() + ".");
-            throw e;
+            throw;
         }
         catch(...)
         {
@@ -979,7 +979,7 @@ void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVol
             assert(ElementGetId(itElement->second)==itElement->first);
             ss << itElement->first;
             e.AddMessage(__PRETTY_FUNCTION__, "Error calculating integrated stress  for element "  + ss.str() + ".");
-            throw e;
+            throw;
         }
         catch(...)
         {
@@ -1016,7 +1016,7 @@ void NuTo::StructureBase::ElementTotalGetAverageStrain(double rVolume, NuTo::Ful
             std::stringstream ss;
             ss << ElementGetId(elementVector[elementCount]);
             e.AddMessage(__PRETTY_FUNCTION__, "Error calculating integrated strain  for element "  + ss.str() + ".");
-            throw e;
+            throw;
         }
         catch(...)
         {
@@ -1057,7 +1057,7 @@ void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVol
             assert(ElementGetId(itElement->second)==itElement->first);
             ss << itElement->first;
             e.AddMessage(__PRETTY_FUNCTION__, "Error calculating integrated strain  for element "  + ss.str() + ".");
-            throw e;
+            throw;
         }
         catch(...)
         {
@@ -1242,7 +1242,7 @@ double NuTo::StructureBase::ElementGroupGetVolume(int rGroupId)
             assert(ElementGetId(itElement->second)==itElement->first);
             ss << itElement->first;
             e.AddMessage(__PRETTY_FUNCTION__, "Error calculating volume for element "  + ss.str() + ".");
-            throw e;
+            throw;
         }
         catch(...)
         {

@@ -192,7 +192,7 @@ void NuTo::Structure::Save (const std::string &filename, std::string rType ) con
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {
@@ -246,7 +246,7 @@ void NuTo::Structure::SaveUpdate (const std::string &filename, std::string rType
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {
@@ -438,7 +438,7 @@ void NuTo::Structure::Restore (const std::string &filename, std::string rType )
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {
@@ -489,7 +489,7 @@ void NuTo::Structure::RestoreUpdate (const std::string &filename, std::string rT
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {
@@ -690,7 +690,7 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
     } catch (MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "Error evaluating the structure.");
-        throw e;
+        throw;
     }
 
 }
@@ -712,7 +712,7 @@ void NuTo::Structure::BuildNonlocalData(int rConstitutiveId)
     } catch (NuTo::MechanicsException &e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "Error calculating nonlocal data.");
-        throw e;
+        throw;
     } catch (...)
     {
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error calculating nonlocal data.");
@@ -964,7 +964,7 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
     } catch (NuTo::MechanicsException &e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "Error importing from Gmsh.");
-        throw e;
+        throw;
     } catch (...)
     {
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error importing from Gmsh.");
@@ -1599,7 +1599,7 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>&
     } catch (NuTo::MechanicsException &e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "Error translating and copying structure.");
-        throw e;
+        throw;
     } catch (...)
     {
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error translating and copying structure.");

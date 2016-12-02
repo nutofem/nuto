@@ -608,7 +608,7 @@ void NuTo::ConjugateGradientNonLinear::Save ( const std::string &filename, std::
 	}
 	catch ( MathException &e )
 	{
-		throw e;
+        throw;
 	}
 	catch ( std::exception &e )
 	{
@@ -690,7 +690,7 @@ void NuTo::ConjugateGradientNonLinear::Restore ( const std::string &filename,  s
     }
     catch ( MathException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {

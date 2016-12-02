@@ -273,7 +273,7 @@ NuTo::eError NuTo::NystroemBase::Solve(double rTimeDelta)
     catch (MechanicsException& e)
     {
         e.AddMessage("[NuTo::NystroemBase::Solve] performing Nystroem iteration.");
-        throw e;
+        throw;
     }
 #ifdef SHOW_TIME
     end=clock();

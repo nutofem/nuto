@@ -234,7 +234,7 @@ void NuTo::NystroemQinZhu::Restore (const std::string &filename, std::string rTy
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {
@@ -289,7 +289,7 @@ void NuTo::NystroemQinZhu::Save (const std::string &filename, std::string rType 
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {

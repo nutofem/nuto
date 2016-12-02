@@ -1267,7 +1267,7 @@ void NuTo::StructureBase::CalculateMaximumIndependentSets()
     catch (MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureBase::CalculateMaximumIndependentSets] error calculating maximum independent sets.");
-        throw e;
+        throw;
     }
 #ifdef SHOW_TIME
     end=clock();

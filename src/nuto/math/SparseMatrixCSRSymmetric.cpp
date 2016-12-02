@@ -487,16 +487,16 @@ void SparseMatrixCSRSymmetric<T>::Save ( const std::string &filename, std::strin
     }
     catch ( boost::archive::archive_exception e )
     {
-	std::string s ( std::string ( "[NuTo::SparseMatrixCSRSymmetric::Save]File save exception in boost - " ) + std::string ( e.what() ) );
-	throw MathException ( s );
+        std::string s (__PRETTY_FUNCTION__ + "File save exception in boost - " e.what());
+        throw MathException ( s );
     }
     catch ( MathException &e )
     {
-	throw e;
+        throw;
     }
     catch ( std::exception &e )
     {
-	throw MathException ( e.what() );
+        throw MathException ( e.what() );
     }
 }
 
@@ -555,16 +555,16 @@ void SparseMatrixCSRSymmetric<T>::Restore ( const std::string &filename,  std::s
     }
     catch ( boost::archive::archive_exception e )
     {
-	std::string s ( std::string ( "[NuTo::SparseMatrixCSRSymmetric::Restore] File save exception in boost - " ) + std::string ( e.what() ) );
-	throw MathException ( s );
+        std::string s (__PRETTY_FUNCTION__ + "File save exception in boost - "  + e.what());
+        throw MathException ( s );
     }
     catch ( MathException &e )
     {
-	throw e;
+        throw;
     }
     catch ( std::exception &e )
     {
-	throw MathException ( e.what() );
+        throw MathException ( e.what() );
     }
 }
 

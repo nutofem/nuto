@@ -94,7 +94,7 @@ NuTo::ContinuumContactElement<TDim>::ContinuumContactElement(const ContinuumElem
             assert(this->mStructure->ElementGetId(itElement.second) == itElement.first);
             ss << itElement.first;
             e.AddMessage("[NuTo::ContinuumContactElement] Error calculating surfaces for surface loads in element " + ss.str() + "(Maybe not a solid element?).");
-            throw e;
+            throw;
         } catch (...)
         {
             std::stringstream ss;

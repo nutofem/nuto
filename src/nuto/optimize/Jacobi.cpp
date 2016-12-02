@@ -204,7 +204,7 @@ void NuTo::Jacobi::Save ( const std::string &filename, std::string rType)const
 	}
 	catch ( MathException &e )
 	{
-		throw e;
+        throw;
 	}
 	catch ( std::exception &e )
 	{
@@ -286,7 +286,7 @@ void NuTo::Jacobi::Restore ( const std::string &filename,  std::string rType)
     }
     catch ( MathException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {

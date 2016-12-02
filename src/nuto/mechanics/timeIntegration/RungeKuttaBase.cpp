@@ -227,7 +227,7 @@ NuTo::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
     catch (MechanicsException& e)
     {
         e.AddMessage("[NuTo::RungeKuttaBase::Solve] performing Newton-Raphson iteration.");
-        throw e;
+        throw;
     }
 
     return NuTo::eError::SUCCESSFUL;

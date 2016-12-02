@@ -64,7 +64,7 @@ void NuTo::Logger::Save (const std::string &filename, std::string rType )const
     }
     catch (Exception &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {
@@ -144,7 +144,7 @@ void NuTo::Logger::Restore (const std::string &filename, std::string rType )
     }
     catch ( Exception &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {

@@ -29,60 +29,60 @@ std::string SparseMatrixCSRVector2Symmetric<int>::GetTypeId()const
 template<class T>
 void SparseMatrixCSRVector2Symmetric<T>::Save ( const std::string &filename, std::string rType)const
 {
-	try
-	 {
-		 //transform to uppercase
-		 std::transform(rType.begin(), rType.end(), rType.begin(), (int(*)(int))toupper);
+    try
+    {
+        // transform to uppercase
+        std::transform(rType.begin(), rType.end(), rType.begin(), (int (*)(int))toupper);
 
-		 // open file
-		 std::ofstream ofs ( filename.c_str(), std::ios_base::binary );
-		 if(! ofs.is_open())
-		 {
-			 throw MathException("[NuTo::SparseMatrixCSRVector2Symmetric::Save] Error opening file.");
-		 }
+        // open file
+        std::ofstream ofs(filename.c_str(), std::ios_base::binary);
+        if (!ofs.is_open())
+        {
+            throw MathException(__PRETTY_FUNCTION__, "Error opening file.");
+        }
 
-		 // write data to file
-		 std::string typeIdString(this->GetTypeId());
-		 if (rType=="BINARY")
-		 {
-			 boost::archive::binary_oarchive oba ( ofs, std::ios::binary );
-			 oba & boost::serialization::make_nvp ("Object_type", typeIdString );
-			 oba & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-		 }
-		 else if (rType=="XML")
-		 {
-			 boost::archive::xml_oarchive oxa ( ofs, std::ios::binary );
-			 std::string tmpString(this->GetTypeId());
-			 oxa & boost::serialization::make_nvp ("Object_type", typeIdString );
-			 oxa & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-		 }
-		 else if (rType=="TEXT")
-		 {
-			 boost::archive::text_oarchive ota ( ofs, std::ios::binary );
-			 ota & boost::serialization::make_nvp("Object_type", typeIdString );
-			 ota & boost::serialization::make_nvp(typeIdString.c_str(), *this);
-		 }
-		 else
-		 {
-			 throw MathException ( "[NuTo::SparseMatrixCSRVector2Symmetric::Save] File type not implemented." );
-		 }
+        // write data to file
+        std::string typeIdString(this->GetTypeId());
+        if (rType == "BINARY")
+        {
+            boost::archive::binary_oarchive oba(ofs, std::ios::binary);
+            oba& boost::serialization::make_nvp("Object_type", typeIdString);
+            oba& boost::serialization::make_nvp(typeIdString.c_str(), *this);
+        }
+        else if (rType == "XML")
+        {
+            boost::archive::xml_oarchive oxa(ofs, std::ios::binary);
+            std::string tmpString(this->GetTypeId());
+            oxa& boost::serialization::make_nvp("Object_type", typeIdString);
+            oxa& boost::serialization::make_nvp(typeIdString.c_str(), *this);
+        }
+        else if (rType == "TEXT")
+        {
+            boost::archive::text_oarchive ota(ofs, std::ios::binary);
+            ota& boost::serialization::make_nvp("Object_type", typeIdString);
+            ota& boost::serialization::make_nvp(typeIdString.c_str(), *this);
+        }
+        else
+        {
+            throw MathException(__PRETTY_FUNCTION__, "File type not implemented.");
+        }
 
-		 // close file
-		 ofs.close();
-	 }
-	 catch ( boost::archive::archive_exception e )
-	 {
-		 std::string s ( std::string ( "[NuTo::SparseMatrixCSRVector2Symmetric::Save]File save exception in boost - " ) + std::string ( e.what() ) );
-		 throw MathException ( s );
-	 }
-	 catch ( MathException &e )
-	 {
-		 throw e;
-	 }
-	 catch ( std::exception &e )
-	 {
-		 throw MathException ( e.what() );
-	 }
+        // close file
+        ofs.close();
+    }
+    catch (boost::archive::archive_exception e)
+    {
+        std::string s(__PRETTY_FUNCTION__ + "File save exception in boost - " + e.what());
+        throw MathException(s);
+    }
+    catch (MathException& e)
+    {
+        throw;
+    }
+    catch (std::exception& e)
+    {
+        throw MathException(e.what());
+    }
 }
 
 template<class T>
@@ -145,7 +145,7 @@ void SparseMatrixCSRVector2Symmetric<T>::Restore ( const std::string &filename, 
 	}
 	catch ( MathException &e )
 	{
-		throw e;
+        throw;
 	}
 	catch ( std::exception &e )
 	{

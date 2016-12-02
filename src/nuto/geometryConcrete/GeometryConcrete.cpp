@@ -59,7 +59,7 @@ void NuTo::GeometryConcrete::MaximizeParticleDistance(double rParticleDistance)
         }
         else
         {
-            throw e;
+            throw;
         }
     }
 
@@ -104,7 +104,7 @@ void NuTo::GeometryConcrete::MaximizeParticleVolumeFraction(double rShrinkage)
         }
         else
         {
-            throw e;
+            throw;
         }
     }
 

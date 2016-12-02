@@ -380,7 +380,7 @@ void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::string rDOFs, NuTo::F
         catch (NuTo::MechanicsException& e)
         {
             e.AddMessage("[NuTo::Structure::NodeCreate] invalid dof type: " + *beg + ".");
-            throw e;
+            throw;
         }
     }
 
@@ -663,7 +663,7 @@ void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
         if (not rCallerName.empty())
             e.AddMessage(std::string(" -- was called by [") + rCallerName + "]");
 
-        throw e;
+        throw;
     }
     catch (MechanicsException& e)
     {
@@ -671,7 +671,7 @@ void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
         if (not rCallerName.empty())
             e.AddMessage(std::string(" -- was called by [") + rCallerName + "]");
 
-        throw e;
+        throw;
     }
 }
 

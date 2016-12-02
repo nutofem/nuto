@@ -363,7 +363,7 @@ void NuTo::RungeKuttaCashKarp::Restore (const std::string &filename, std::string
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {
@@ -418,7 +418,7 @@ void NuTo::RungeKuttaCashKarp::Save (const std::string &filename, std::string rT
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {

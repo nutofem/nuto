@@ -1874,7 +1874,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
         catch (NuTo::MechanicsException& e)
         {
             e.AddMessage("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping1D] Error performing return mapping procedure.");
-            throw e;
+            throw;
         }
         catch (...)
         {
@@ -2666,7 +2666,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
         catch (NuTo::MechanicsException& e)
         {
             e.AddMessage("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping2D] Error performing return mapping procedure.");
-            throw e;
+            throw;
         }
         catch (...)
         {
@@ -3555,7 +3555,7 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
         catch (NuTo::MechanicsException& e)
         {
             e.AddMessage("[NuTo::GradientDamagePlasticityEngineeringStress::ReturnMapping2D] Error performing return mapping procedure.");
-            throw e;
+            throw;
         }
         catch (...)
         {

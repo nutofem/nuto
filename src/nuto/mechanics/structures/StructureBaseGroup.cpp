@@ -550,7 +550,7 @@ void NuTo::StructureBase::GroupAddElementsFromNodes(int rElementGroupId, int rNo
             assert(ElementGetId(elementVector[countElement].second) == elementVector[countElement].first);
             ss << elementVector[countElement].first;
             e.AddMessage("[NuTo::StructureBase::GroupAddElementsFromNodes] Error for element " + ss.str() + ".");
-            throw e;
+            throw;
         } catch (...)
         {
             std::stringstream ss;
@@ -609,7 +609,7 @@ void NuTo::StructureBase::GroupAddNodesFromElements(int rNodeGroupId, int rEleme
         catch (NuTo::MechanicsException &e)
         {
             e.AddMessage("[NuTo::StructureBase::GroupAddNodesFromElements] Error for element " + std::to_string(ElementGetId(itElement->second)) + ".");
-            throw e;
+            throw;
         }
     }
 

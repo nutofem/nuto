@@ -162,7 +162,7 @@ public:
 	    }
 	    catch ( Exception &e )
 	    {
-	        throw e;
+            throw;
 	    }
 	    catch ( std::exception &e )
 	    {
@@ -216,7 +216,7 @@ public:
         }
         catch ( Exception &e )
         {
-            throw e;
+            throw;
         }
         catch ( std::exception &e )
         {

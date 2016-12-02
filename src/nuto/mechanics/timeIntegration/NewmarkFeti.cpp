@@ -775,7 +775,7 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
     catch (MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, " ERROR performing FETI.");
-        throw e;
+        throw;
     }
 
 

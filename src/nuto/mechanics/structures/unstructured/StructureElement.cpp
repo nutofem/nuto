@@ -620,7 +620,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber,
     } catch (NuTo::MechanicsException &e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "Error creating element " + std::to_string(rElementNumber)+ ".");
-        throw e;
+        throw;
     } catch (...)
     {
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error creating element " + std::to_string(rElementNumber)+ ".");
@@ -710,7 +710,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber,
     } catch (NuTo::MechanicsException &e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "Error creating element " + std::to_string(rElementNumber)+ ".");
-        throw e;
+        throw;
     } catch (...)
     {
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error creating element " + std::to_string(rElementNumber)+ ".");
@@ -980,7 +980,7 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId,
             assert(ElementGetId(itElement.second) == itElement.first);
             ss << itElement.first;
             e.AddMessage("[NuTo::Structure::BoundaryElementsCreate] Error creating boundary element for element " + ss.str() + ".");
-            throw e;
+            throw;
         } catch (...)
         {
             std::stringstream ss;
@@ -1125,7 +1125,7 @@ void NuTo::Structure::ElementGroupDelete(int rGroupNumber, bool deleteNodes)
             assert(ElementGetId(itElement->second) == itElement->first);
             ss << itElement->first;
             e.AddMessage("[NuTo::StructureBase::ElementGroupDelete] Error deleting element " + ss.str() + ".");
-            throw e;
+            throw;
         } catch (...)
         {
             std::stringstream ss;

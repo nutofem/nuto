@@ -565,7 +565,7 @@ void Save (const T& rObject, const std::string &filename, std::string rType )
     }
     catch ( NuTo::Exception &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {
@@ -623,7 +623,7 @@ void Restore (T& rObject,const std::string &filename, std::string rType )
     }
     catch ( NuTo::Exception &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {

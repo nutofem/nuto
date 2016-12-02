@@ -45,7 +45,7 @@ void NuTo::ConstraintLinearEquation::AddTerm(const NodeBase* rNode, Node::eDof r
     catch (MechanicsException& e)
     {
         e.AddMessage("[NuTo::ConstraintLinearEquation::AddTerm] error creating a new constraint term");
-        throw e;
+        throw;
     }
 }
 

@@ -149,7 +149,7 @@ void NuTo::StructureBase::SectionSetArea(int rId, double rArea)
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureBase::SectionSetArea] error setting section cross-section area.");
-        throw e;
+        throw;
     }
 }
 
@@ -164,7 +164,7 @@ double NuTo::StructureBase::SectionGetArea(int rId) const
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureBase::SectionGetArea] error getting section cross-section area.");
-        throw e;
+        throw;
     }
     return area;
 }
@@ -179,7 +179,7 @@ void NuTo::StructureBase::SectionSetThickness(int rId, double rThickness)
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureBase::SectionSetThickness] error setting section thickness.");
-        throw e;
+        throw;
     }
 }
 
@@ -194,7 +194,7 @@ double NuTo::StructureBase::SectionGetThickness(int rId) const
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureBase::SectionGetThickness] error getting section thickness.");
-        throw e;
+        throw;
     }
     return thickness;
 }
@@ -208,7 +208,7 @@ void NuTo::StructureBase::SectionSetCircumference(int rId, double rCircumference
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage(std::string(__PRETTY_FUNCTION__) + ":\t error setting section circumference.");
-        throw e;
+        throw;
     }
 }
 
@@ -222,7 +222,7 @@ double NuTo::StructureBase::SectionGetCircumference(int rId) const
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage(std::string(__PRETTY_FUNCTION__) + ":\t error getting section circumference.");
-        throw e;
+        throw;
     }
     return circumference;
 }

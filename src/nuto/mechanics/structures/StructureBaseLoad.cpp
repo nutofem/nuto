@@ -29,7 +29,7 @@ int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, int rNodeIdent, cons
     catch (NuTo::MechanicsException &e)
     {
         e.AddMessage("[NuTo::StructureBase::LoadCreateNodeForce] Node with the given identifier could not be found.");
-        throw e;
+        throw;
     }
     catch (...)
     {
@@ -85,7 +85,7 @@ int NuTo::StructureBase::LoadCreateNodeHeatFlux(int rLoadCase, int rNodeIdent,
     catch (NuTo::MechanicsException &e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "Node with the given identifier could not be found.");
-        throw e;
+        throw;
     }
     catch (...)
     {

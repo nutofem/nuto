@@ -170,7 +170,7 @@ NuTo::eError NuTo::Element2DInterface::Evaluate(const ConstitutiveInputMap& rInp
         } catch (NuTo::MechanicsException& e)
         {
             e.AddMessage(__PRETTY_FUNCTION__, "error evaluating the constitutive model.");
-            throw e;
+            throw;
         }
         CalculateElementOutputs(rElementOutput, data, theIP, constitutiveOutput);
     }

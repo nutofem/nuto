@@ -1212,7 +1212,7 @@ void NuTo::NeuralNetwork::Restore (const std::string &filename, std::string rTyp
 	}
 	catch ( MathException &e )
 	{
-		throw e;
+        throw;
 	}
 	catch ( std::exception &e )
 	{
@@ -1267,7 +1267,7 @@ void NuTo::NeuralNetwork::Save (const std::string &filename, std::string rType )
 	}
 	catch ( MathException &e )
 	{
-		throw e;
+        throw;
 	}
 	catch ( std::exception &e )
 	{

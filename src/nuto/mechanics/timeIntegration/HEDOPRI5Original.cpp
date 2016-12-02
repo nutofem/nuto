@@ -533,7 +533,7 @@ NuTo::Error::eError NuTo::HEDOPRI5Original::Solve(double rTimeDelta)
     catch (MechanicsException& e)
     {
         e.AddMessage("[NuTo::RungeKuttaBase::Solve] performing Newton-Raphson iteration.");
-        throw e;
+        throw;
     }
 #ifdef SHOW_TIME
     end=clock();
@@ -595,7 +595,7 @@ void NuTo::HEDOPRI5Original::Restore (const std::string &filename, std::string r
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {
@@ -650,7 +650,7 @@ void NuTo::RungeKutta4::Save (const std::string &filename, std::string rType )co
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {

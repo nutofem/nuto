@@ -254,7 +254,7 @@ NuTo::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
     catch (MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, " ERROR performing IMPL-EX.");
-        throw e;
+        throw;
     }
     return NuTo::eError::SUCCESSFUL;
 }

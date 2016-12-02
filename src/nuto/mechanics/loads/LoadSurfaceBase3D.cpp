@@ -86,7 +86,7 @@ NuTo::LoadSurfaceBase3D::LoadSurfaceBase3D(int rLoadCase, StructureBase* rStruct
             assert(rStructure->ElementGetId(itElement.second) == itElement.first);
             ss << itElement.first;
             e.AddMessage("[NuTo::LoadSurfaceBase3D::LoadSurfaceBase3D] Error calculating surfaces for surface loads in element " + ss.str() + "(Maybe not a solid element?).");
-            throw e;
+            throw;
         } catch (...)
         {
             std::stringstream ss;

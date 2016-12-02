@@ -237,7 +237,7 @@ bool NuTo::StructureBase::ConstitutiveLawGetParameterBool(int rIdent, NuTo::Cons
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "error getting requested value.");
-        throw e;
+        throw;
     }
 }
 
@@ -250,7 +250,7 @@ void NuTo::StructureBase::ConstitutiveLawSetParameterBool(int rIdent, NuTo::Cons
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "error setting requested value.");
-        throw e;
+        throw;
     }
 }
 
@@ -264,7 +264,7 @@ double NuTo::StructureBase::ConstitutiveLawGetParameterDouble(int rIdent, NuTo::
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "error getting requested value.");
-        throw e;
+        throw;
     }
 }
 
@@ -277,7 +277,7 @@ void NuTo::StructureBase::ConstitutiveLawSetParameterDouble(int rIdent, NuTo::Co
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "error setting requested value.");
-        throw e;
+        throw;
     }
 }
 
@@ -290,7 +290,7 @@ NuTo::FullVector<double, Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGet
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "error getting requested value.");
-        throw e;
+        throw;
     }
 }
 void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
@@ -302,7 +302,7 @@ void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(int rIdent
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "error setting requested value.");
-        throw e;
+        throw;
     }
 }
 
@@ -316,7 +316,7 @@ void NuTo::StructureBase::ConstitutiveLawSetDamageLaw(int rIdent, Constitutive::
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "error setting damage law.");
-        throw e;
+        throw;
     }
 }
 
@@ -339,7 +339,7 @@ double NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction(int
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__, "error getting the equilibrium water volume fraction.");
-        throw e;
+        throw;
     }
     return EquilibriumWaterVolumeFraction;
 }

@@ -271,7 +271,7 @@ void NuTo::RungeKuttaDormandPrince::Restore (const std::string &filename, std::s
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {
@@ -326,7 +326,7 @@ void NuTo::RungeKuttaDormandPrince::Save (const std::string &filename, std::stri
     }
     catch ( MechanicsException &e )
     {
-        throw e;
+        throw;
     }
     catch ( std::exception &e )
     {
