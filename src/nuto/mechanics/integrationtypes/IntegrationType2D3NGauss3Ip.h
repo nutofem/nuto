@@ -63,7 +63,7 @@ public:
         unsigned int& NumVisualizationCells,
         std::vector<NuTo::eCellTypes>& VisualizationCellType,
         std::vector<unsigned int>& VisualizationCellsIncidence,
-        std::vector<unsigned int>& VisualizationCellsIP) const;
+        std::vector<unsigned int>& VisualizationCellsIP) const override;
 #endif // ENABLE_VISUALIZE
 
 protected:

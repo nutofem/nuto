@@ -45,7 +45,7 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, const FullVector<doubl
     catch(NuTo::MechanicsException & b)
     {
         b.AddMessage("[NuTo::StructureBase::NodeSetDisplacements] Error setting displacements.");
-        throw b;
+        throw;
     }
     catch(...)
     {
@@ -89,7 +89,7 @@ void NuTo::StructureBase::NodeSetDisplacements(int rNode, int rTimeDerivative, c
     catch(NuTo::MechanicsException & b)
     {
         b.AddMessage("[NuTo::StructureBase::NodeSetDisplacements] Error setting displacements.");
-        throw b;
+        throw;
     }
     catch(...)
     {
@@ -118,7 +118,7 @@ void NuTo::StructureBase::NodeSetRotations(int rNode, const FullVector<double,Ei
     catch(NuTo::MechanicsException & b)
     {
         b.AddMessage("[NuTo::StructureBase::NodeSetRotations] Error setting rotations.");
-        throw b;
+        throw;
     }
     catch(...)
     {
@@ -156,7 +156,7 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, const FullV
         catch(NuTo::MechanicsException & b)
         {
             b.AddMessage("[NuTo::StructureBase::NodeGroupSetDisplacements] Error setting displacements.");
-            throw b;
+            throw;
         }
         catch(...)
         {
@@ -199,7 +199,7 @@ void NuTo::StructureBase::NodeGroupSetDisplacements(int rGroupIdent, int rTimeDe
         catch(NuTo::MechanicsException & b)
         {
             b.AddMessage("[NuTo::StructureBase::NodeGroupSetDisplacements] Error setting displacements.");
-            throw b;
+            throw;
         }
         catch(...)
         {
@@ -274,7 +274,7 @@ void NuTo::StructureBase::NodeGetDisplacements(int rNode, int rTimeDerivative, F
     catch(NuTo::MechanicsException & b)
     {
         b.AddMessage("[NuTo::StructureBase::NodeGetDisplacements] Error getting displacements.");
-        throw b;
+        throw;
     }
     catch(...)
     {
@@ -305,7 +305,7 @@ void NuTo::StructureBase::NodeGetDisplacementDofs(int rNode, FullVector<int,Eige
     catch(NuTo::MechanicsException & b)
     {
         b.AddMessage(__PRETTY_FUNCTION__, "Error getting displacement dofs.");
-        throw b;
+        throw;
     }
     catch(...)
     {
@@ -336,7 +336,7 @@ std::vector<int> NuTo::StructureBase::NodeGetDofIds(const int rNodeId, NuTo::Nod
     catch(NuTo::MechanicsException & b)
     {
         b.AddMessage(__PRETTY_FUNCTION__, "Error getting the requested dof identifiers.");
-        throw b;
+        throw;
     }
     catch(...)
     {
@@ -363,7 +363,7 @@ void NuTo::StructureBase::NodeGetRotations(int rNode, FullVector<double,Eigen::D
     catch(NuTo::MechanicsException & b)
     {
         b.AddMessage("[NuTo::StructureBase::NodeGetRotations] Error getting rotations.");
-        throw b;
+        throw;
     }
     catch(...)
     {
@@ -407,7 +407,7 @@ void NuTo::StructureBase::NodeGroupGetDisplacements(int rGroupIdent, FullMatrix<
         catch(NuTo::MechanicsException & b)
         {
             b.AddMessage("[NuTo::StructureBase::NodeGroupGetDisplacements] Error getting displacements.");
-            throw b;
+            throw;
         }
         catch(...)
         {
@@ -449,7 +449,7 @@ void NuTo::StructureBase::NodeGetCoordinates(int rNode, NuTo::FullVector<double,
     catch(NuTo::MechanicsException & b)
     {
         b.AddMessage("[NuTo::StructureBase::NodeGetCoordinates] Error getting coordinates.");
-        throw b;
+        throw;
     }
     catch(...)
     {
@@ -493,7 +493,7 @@ void NuTo::StructureBase::NodeGroupGetCoordinates(int rGroupIdent, FullMatrix<do
         catch(NuTo::MechanicsException & b)
         {
             b.AddMessage("[NuTo::StructureBase::NodeGroupGetCoordinates] Error getting coordinates.");
-            throw b;
+            throw;
         }
         catch(...)
         {
@@ -521,7 +521,7 @@ void NuTo::StructureBase::NodeGetNonlocalEqPlasticStrain(int rNode, NuTo::FullVe
     catch(NuTo::MechanicsException & b)
     {
         b.AddMessage("[NuTo::StructureBase::NodeGetNonlocalEqPlasticStrain] Error getting global damage.");
-        throw b;
+        throw;
     }
     catch(...)
     {
@@ -550,7 +550,7 @@ void NuTo::StructureBase::NodeGetNonlocalTotalStrain(int rNode, NuTo::FullVector
     catch(NuTo::MechanicsException & b)
     {
         b.AddMessage("[NuTo::StructureBase::NodeGetNonlocalTotalStrain] Error getting nonlocal total strain.");
-        throw b;
+        throw;
     }
     catch(...)
     {
@@ -574,7 +574,7 @@ void NuTo::StructureBase::NodeInternalForce(int rId, NuTo::FullVector<double,Eig
     catch(NuTo::MechanicsException & b)
     {
         b.AddMessage("[NuTo::StructureBase::NodeGradientInternalPotential] Error getting gradient of internal potential.");
-        throw b;
+        throw;
     }
     catch(...)
     {
@@ -615,7 +615,7 @@ void NuTo::StructureBase::NodeGroupInternalForce(int rGroupIdent, NuTo::FullVect
         catch(NuTo::MechanicsException & b)
         {
             b.AddMessage("[NuTo::StructureBase::NodeGroupInternalForce] Error getting gradient of internal potential.");
-            throw b;
+            throw;
         }
         catch(...)
         {
@@ -665,7 +665,7 @@ void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, NuTo::Full
     }    catch(NuTo::MechanicsException & b)
     {
         b.AddMessage(std::string("[") + __PRETTY_FUNCTION__ + "] Error getting gradient of internal potential.");
-        throw b;
+        throw;
     }
     catch(...)
     {

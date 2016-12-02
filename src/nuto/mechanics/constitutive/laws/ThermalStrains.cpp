@@ -83,10 +83,12 @@ NuTo::eError ThermalStrains::Evaluate(
     return NuTo::eError::SUCCESSFUL;
 }
 
-bool ThermalStrains::CheckDofCombinationComputable(Node::eDof rDofRow,
-            Node::eDof rDofCol, int) const
+bool ThermalStrains::CheckDofCombinationComputable(Node::eDof dofRow, Node::eDof dofCol, int timeDerivative) const
 {
-    if(Node::CombineDofs(rDofRow, rDofCol) == Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::TEMPERATURE))
+    if (timeDerivative > 1)
+        return false;
+
+    if (Node::CombineDofs(dofRow, dofCol) == Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::TEMPERATURE))
         return true;
 
     return false;
