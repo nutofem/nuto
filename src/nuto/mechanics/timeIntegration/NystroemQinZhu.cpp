@@ -281,7 +281,7 @@ void NuTo::NystroemQinZhu::Save (const std::string &filename, std::string rType 
             throw MechanicsException ( "[NystroemQinZhu::Save]File type not implemented." );
         }
     }
-    catch ( boost::archive::archive_exception e )
+    catch ( boost::archive::archive_exception& e )
     {
         std::string s ( std::string ( "[NystroemQinZhu::Save]File save exception in boost - " ) +std::string ( e.what() ) );
         std::cout << s << "\n";

@@ -990,6 +990,6 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate(const NuTo::Constit
     // this split allows reusing the EvaluteWithKappa from other classes
     double kappa = EvaluateStaticData<TDim>(rConstitutiveInput, rConstitutiveOutput, rStaticData);
     double nonlocalEqStrain = rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN)->operator[](0);
-    double kappaTangent = (kappa == nonlocalEqStrain); // = 1 true, 0 false. perfect tangent.
+    double kappaTangent = kappa == nonlocalEqStrain ? 1.0 : 0.0; // = 1 true, 0 false. perfect tangent.
     return EvaluateWithKappa<TDim>(rConstitutiveInput, rConstitutiveOutput, kappa, kappaTangent);
 }

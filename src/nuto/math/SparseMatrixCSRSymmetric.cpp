@@ -485,7 +485,7 @@ void SparseMatrixCSRSymmetric<T>::Save ( const std::string &filename, std::strin
 	// close file
 	ofs.close();
     }
-    catch ( boost::archive::archive_exception e )
+    catch ( boost::archive::archive_exception& e )
     {
         std::string s (__PRETTY_FUNCTION__ + "File save exception in boost - " e.what());
         throw MathException ( s );
@@ -553,7 +553,7 @@ void SparseMatrixCSRSymmetric<T>::Restore ( const std::string &filename,  std::s
 	// close file
 	ifs.close();
     }
-    catch ( boost::archive::archive_exception e )
+    catch ( boost::archive::archive_exception& e )
     {
         std::string s (__PRETTY_FUNCTION__ + "File save exception in boost - "  + e.what());
         throw MathException ( s );

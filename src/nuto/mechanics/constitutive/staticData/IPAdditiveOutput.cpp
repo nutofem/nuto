@@ -221,7 +221,7 @@ NuTo::eError IPAdditiveOutput::AdditiveOutputEvaluate(
             } // for each output
         } // for each sublaw
     } //try
-    catch(Exception e)
+    catch(Exception& e)
     {
         e.AddMessage(__PRETTY_FUNCTION__,"Exception while evaluating constitutive law attached to an additive output.");
         throw;

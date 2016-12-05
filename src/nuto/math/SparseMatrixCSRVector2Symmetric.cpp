@@ -70,7 +70,7 @@ void SparseMatrixCSRVector2Symmetric<T>::Save ( const std::string &filename, std
         // close file
         ofs.close();
     }
-    catch (boost::archive::archive_exception e)
+    catch (boost::archive::archive_exception& e)
     {
         std::string s(__PRETTY_FUNCTION__ + "File save exception in boost - " + e.what());
         throw MathException(s);
@@ -138,7 +138,7 @@ void SparseMatrixCSRVector2Symmetric<T>::Restore ( const std::string &filename, 
 		// close file
 		ifs.close();
 	}
-	catch ( boost::archive::archive_exception e )
+	catch ( boost::archive::archive_exception& e )
 	{
 		std::string s ( std::string ( "[NuTo::SparseMatrixCSRVector2Symmetric::Restore] File save exception in boost - " ) + std::string ( e.what() ) );
 		throw MathException ( s );

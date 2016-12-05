@@ -270,7 +270,7 @@ void NuTo::RungeKutta4::Save (const std::string &filename, std::string rType )co
             throw MechanicsException ( "[RungeKutta4::Save]File type not implemented." );
         }
     }
-    catch ( boost::archive::archive_exception e )
+    catch ( boost::archive::archive_exception& e )
     {
         std::string s ( std::string ( "[RungeKutta4::Save]File save exception in boost - " ) +std::string ( e.what() ) );
         std::cout << s << "\n";

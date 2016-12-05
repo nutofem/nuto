@@ -1914,7 +1914,7 @@ void NuTo::MultipleLinearRegression::Save (const std::string &filename, std::str
         // close file
         ofs.close();
     }
-    catch ( boost::archive::archive_exception e )
+    catch ( boost::archive::archive_exception& e )
     {
         std::string s ( std::string ( "[NuTo::MultipleLinearRegression::Save]File save exception in boost - " ) +std::string ( e.what() ) );
         throw NuTo::MetamodelException(s);
