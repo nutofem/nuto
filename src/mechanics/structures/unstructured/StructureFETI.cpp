@@ -2,6 +2,7 @@
 #include <boost/mpi.hpp>
 #include <json/json.h>
 
+
 #include "mechanics/structures/unstructured/StructureFETI.h"
 #include "mechanics/nodes/NodeBase.h"
 
@@ -23,6 +24,7 @@
 #include "mechanics/elements/IpDataEnum.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "base/ErrorEnum.h"
+
 
 using std::cout;
 using std::endl;
@@ -240,5 +242,38 @@ void NuTo::StructureFETI::ImportMeshJson(std::string rFileName, const int interp
     ElementTotalConvertToInterpolationType();
 
     NodeBuildGlobalDofs();
+
+}
+
+void NuTo::StructureFETI::CalculateRigidBodyModes()
+{
+
+    switch (GetDimension())
+    {
+    case 2:
+    {
+        mNumRigidBodyModes = 3;
+
+        const int numTotalDofs = GetNumTotalDofs();
+
+        mRigidBodyModes.setZero(numTotalDofs,mNumRigidBodyModes);
+
+        for (const auto& nodePair : mNodeMap)
+        {
+            const std::vector<int> dofIds = NodeGetDofIds(nodePair.first, NuTo::Node::eDof::DISPLACEMENTS);
+
+            const Eigen::Matrix<double, 2, 1> coordinates = nodePair.second->Get(NuTo::Node::eDof::COORDINATES);
+
+            mRigidBodyModes.row(dofIds[0]) << 1.,   0., -coordinates[1];
+            mRigidBodyModes.row(dofIds[1]) << 0.,   1.,  coordinates[0];
+        }
+
+
+    }
+        break;
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__,"Structural dimension not supported yet.");
+    }
+
 
 }

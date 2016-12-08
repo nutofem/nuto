@@ -296,9 +296,9 @@ int NuTo::NewmarkFeti::CPG(const Eigen::MatrixXd &projection, Eigen::VectorXd &x
     VectorXd p = w;
 
     // precondition
-    p =  projection * mLocalPreconditioner * w;
-    boost::mpi::all_reduce(world,boost::mpi::inplace(p.data()), p.size(),std::plus<double>());
-//    p = w;
+//    p =  projection * mLocalPreconditioner * w;
+//    boost::mpi::all_reduce(world,boost::mpi::inplace(p.data()), p.size(),std::plus<double>());
+    p = w;
 
     const double rhs_sqnorm = rhs.squaredNorm();
     const double threshold = mCpgTolerance * mCpgTolerance * rhs_sqnorm;
@@ -321,12 +321,9 @@ int NuTo::NewmarkFeti::CPG(const Eigen::MatrixXd &projection, Eigen::VectorXd &x
         w -= alpha * projection * Ap;
 
         // precondition
-        z =  projection * mLocalPreconditioner * w;
-        boost::mpi::all_reduce(world,boost::mpi::inplace(z.data()), z.size(),std::plus<double>());
-//        z = w;
-
-        // project the r to guarantee the constraints
-//        w = projection * r;
+//        z =  projection * mLocalPreconditioner * w;
+//        boost::mpi::all_reduce(world,boost::mpi::inplace(z.data()), z.size(),std::plus<double>());
+        z = w;
 
         if (w.squaredNorm() < threshold)
             break;
@@ -365,7 +362,33 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(BlockFullVector<do
     const SparseMatrix& Btrans               = B.transpose();
     const int& numLagrangeMultipliers        = B.rows();
 
-    structure->mNumRigidBodyModes           = mSolver.cols() -  mSolver.rank();
+//    std::cout << "before calculating RBMs \n";
+//    world.barrier();
+
+    // this only needs to be calculated once. Move this function to Solve(...)
+//    if (structure->IsFloating())
+//        structure->CalculateRigidBodyModes();
+
+
+//    structure->mNumRigidBodyModes           = mSolver.cols() -  mSolver.rank();
+
+
+
+
+//    if (structure->IsFloating())
+//    {
+////        std::cout << "Rank: " << structure->mRank << "\n" << "RBM => " << structure->mRigidBodyModes << std::endl;
+//        std::cout << "Rank: " << structure->mRank << " => K*R.maxCoeff() " << mSolver.solve(structure->mRigidBodyModes).maxCoeff() << std::endl;
+
+//    }
+
+//    world.barrier();
+
+//    world.barrier();
+//    std::cout << "After calculating RBMs \n";
+//world.barrier();
+
+
     const int& numRigidBodyModesLocal       = structure->mNumRigidBodyModes;
 
     const int numRigidBodyModesGlobal = boost::mpi::all_reduce(world,numRigidBodyModesLocal, std::plus<int>());
@@ -376,6 +399,8 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(BlockFullVector<do
 
     std::cout << "Rank: " << structure->mRank << " => number of rigid body modes " << numRigidBodyModesLocal << std::endl;
     world.barrier();
+
+
 
     if (structure->mNumRigidBodyModes > 0)
     {
@@ -438,7 +463,6 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(BlockFullVector<do
         structure->GetLogger() << "       Start Interface Problem           ";
         structure->GetLogger() << "\n*************************************\n\n";
     }
-
 
     world.barrier();
 
@@ -602,6 +626,7 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
 
         PostProcess(residual);
 
+        std::cout << "after first post process \n";
         while (curTime < rTimeDelta)
         {
 
@@ -631,7 +656,10 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
 
                 SparseMatrix tangentStiffnessMatrix = hessian0.JJ.ExportToEigenSparseMatrix();
 
+                std::cout << "Before factorization \n";
                 mSolver.compute(tangentStiffnessMatrix);
+                std::cout << "After factorization \n";
+
                 mLocalPreconditioner = B * tangentStiffnessMatrix * Btrans;
 
                 delta_dof_dt0   = FetiSolve(residual.J, activeDofSet, deltaLambda);

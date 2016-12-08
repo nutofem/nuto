@@ -101,7 +101,7 @@ public:
     ElementList                mElements;
     BoundaryList               mBoundaries;
     InterfaceList              mInterfaces;
-    int                        mNumRigidBodyModes;
+    int                        mNumRigidBodyModes = 0;
     int                        mNumInterfaceNodesTotal;
     std::set<int>              mSubdomainBoundaryNodeIds;
 
@@ -116,8 +116,28 @@ public:
     ///
     void ImportMeshJson(std::string rFileName, const int interpolationTypeId);
 
+
+    ///
+    /// \brief IsFloating
+    /// \return
+    ///
+    bool IsFloating() { return mIsFloating;}
+
+    ///
+    /// \brief SetIsFloating
+    /// \param isFloating
+    ///
+    void SetIsFloating(const bool isFloating) {mIsFloating = isFloating;}
+
+    ///
+    /// \brief CalculateRigidBodyModes
+    ///
+    void CalculateRigidBodyModes();
+
 protected:
 
+
+    bool mIsFloating = true;
 
 
 

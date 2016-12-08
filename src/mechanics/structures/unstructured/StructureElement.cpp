@@ -139,8 +139,19 @@ void NuTo::Structure::ElementInfo(int rVerboseLevel) const
     }
 }
 
-//! @brief changes the node structure to match the interpolation type
-//! the node merge distance and the box size are calculated from the element sizes
+
+void NuTo::Structure::ElementTotalSetInterpolationType(const int rInterpolationTypeId)
+{
+    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
+
+    boost::ptr_map<int,InterpolationType>::iterator itInterpolationType = mInterpolationTypeMap.find(rInterpolationTypeId);
+    if (itInterpolationType==mInterpolationTypeMap.end())
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation type with the given identifier does not exist.");
+
+    for (const auto& elementPair : mElementMap)
+        ElementSetInterpolationType(elementPair.first, rInterpolationTypeId);
+}
+
 void NuTo::Structure::ElementTotalConvertToInterpolationType()
 {
     // create a group with all elements
@@ -515,8 +526,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
     }
 }
 
-//! @brief Deletes an element
-//! @param rElementIdent identifier for the element
+
 void NuTo::Structure::ElementDelete(int rElementNumber)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());

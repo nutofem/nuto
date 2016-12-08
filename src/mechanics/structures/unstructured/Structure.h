@@ -302,6 +302,10 @@ public:
     //! @param rElement (Input) ... pointer to the element
     //! @param rVerboseLevel (Input) ... level of verbosity
     void ElementInfo(const ElementBase* rElement, int rVerboseLevel) const override;
+
+    /// \brief Set an interpolation type for all elements
+    /// \param rInterpolationTypeId
+    void ElementTotalSetInterpolationType(const int rInterpolationTypeId);
 #endif //SWIG
 
     //! @brief returns a vector with the node ids of an element
@@ -655,4 +659,3 @@ protected:
 BOOST_CLASS_EXPORT_KEY(NuTo::Structure)
 #endif // SWIG
 #endif // ENABLE_SERIALIZATION
-

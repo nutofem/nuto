@@ -84,6 +84,7 @@ if(ENABLE_C++_TESTS)
         Shrinkage
         CSDAInterface
         SpringDamperCombination
+        FetiPseudoInverse
         )
 
         add_executable(${test} ${test}.cpp)

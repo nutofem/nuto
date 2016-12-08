@@ -129,6 +129,7 @@ public:
 
 private:
     Eigen::SparseQR<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>> mSolver;
+//    Eigen::SparseLU<Eigen::SparseMatrix<double>> mSolver;
     SparseMatrix mLocalPreconditioner;
     SparseMatrix mTangentStiffnessMatrix;
     const double    mCpgTolerance     = 1.0e-6;

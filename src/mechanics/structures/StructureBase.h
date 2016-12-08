@@ -637,10 +637,6 @@ public:
     //! @param rInterpolationTypeId ... interpolation type id
     void ElementGroupSetInterpolationType(int rGroupId, int rInterpolationTypeId);
 
-    //! @brief modifies the interpolation type for all elements
-    //! @param rInterpolationTypeId     interpolation type id
-    void ElementTotalSetInterpolationType(const int rInterpolationTypeId);
-
 #ifndef SWIG
     //! @brief modifies the interpolation type of a single element
     //! @param rElement element pointer
