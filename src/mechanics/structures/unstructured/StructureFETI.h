@@ -86,6 +86,7 @@ public:
 
     Matrix                      mRigidBodyModes;
     Matrix                      mInterfaceRigidBodyModes;
+
     SparseMatrix                mConnectivityMatrix;
 
     ///
@@ -96,6 +97,7 @@ public:
 
 
 
+    Matrix                     mG;
     Matrix                     mProjectionMatrix;
     NodeList                   mNodes;
     ElementList                mElements;

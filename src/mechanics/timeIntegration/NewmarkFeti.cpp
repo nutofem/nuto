@@ -139,7 +139,7 @@ NuTo::BlockScalar NuTo::NewmarkFeti::CalculateNormResidual(BlockFullVector<doubl
 
 
 
-int NuTo::NewmarkFeti::BiCgStab(const NuTo::NewmarkFeti::MatrixXd &projection, NuTo::NewmarkFeti::VectorXd &x, const NuTo::NewmarkFeti::VectorXd &rhs)
+int NuTo::NewmarkFeti::BiCgStab(const MatrixXd &projection, VectorXd &x, const VectorXd &rhs)
 {
 
     StructureFETI* structure = static_cast<StructureFETI*>(mStructure);
@@ -277,16 +277,35 @@ int NuTo::NewmarkFeti::BiCgStab(const NuTo::NewmarkFeti::MatrixXd &projection, N
 
 int NuTo::NewmarkFeti::CPG(const Eigen::MatrixXd &projection, Eigen::VectorXd &x, const Eigen::VectorXd &rhs)
 {
+
     boost::mpi::communicator world;
     VectorXd        Ap;
 
     StructureFETI* structure = static_cast<StructureFETI*>(mStructure);
+
     const SparseMatrix B      = structure->GetConnectivityMatrix();
     const SparseMatrix Btrans = B.transpose();
 
-    VectorXd Ax = B * mSolver.solve(Btrans*x);
+
+    std::cout << "Rank: " << structure->mRank << " => mSolver " << mSolver.rows() << "\t B.rows() \t" << B.rows() << "\t B.cols() \t" << B.cols() << std::endl;
+    world.barrier();
+
+    const int numActiveDofs     = mStructure->GetNumActiveDofs(Node::eDof::DISPLACEMENTS);
+    const int numRigidBodyModes = structure->mNumRigidBodyModes;
+
+    VectorXd tmp;
+    tmp.setZero(numActiveDofs + numRigidBodyModes);
+    tmp.head(numActiveDofs) = mSolver.solve( (Btrans*x).head(numActiveDofs));
+    VectorXd Ax = B * tmp;
+
+
+//    std::cout << "Rank: " << structure->mRank << " tmp " << tmp << std::endl;
+    world.barrier();
+
+
     boost::mpi::all_reduce(world,boost::mpi::inplace(Ax.data()), Ax.size(),std::plus<double>());
 
+    world.barrier();
     //initial residual
     VectorXd r = rhs - Ax;
     VectorXd z;
@@ -308,7 +327,12 @@ int NuTo::NewmarkFeti::CPG(const Eigen::MatrixXd &projection, Eigen::VectorXd &x
     while(iteration < mCpgMaxIterations)
     {
         // at every iteration i the r has to be recomputd which is quite expensive
-        Ap.noalias() = B * mSolver.solve(Btrans*p);
+        world.barrier();
+
+        tmp.head(numActiveDofs) = mSolver.solve( (Btrans*p).head(numActiveDofs));
+        Ap.noalias() = B * tmp;
+
+        world.barrier();
         boost::mpi::all_reduce(world,boost::mpi::inplace(Ap.data()), Ap.size(),std::plus<double>());
 
         // step size
@@ -350,8 +374,7 @@ int NuTo::NewmarkFeti::CPG(const Eigen::MatrixXd &projection, Eigen::VectorXd &x
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(BlockFullVector<double> residual_mod, const std::set<Node::eDof> &activeDofSet, VectorXd &deltaLambda)
+NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(VectorXd residual_mod, const std::set<Node::eDof> &activeDofSet, VectorXd &deltaLambda)
 {
 
     boost::mpi::communicator world;
@@ -360,101 +383,57 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(BlockFullVector<do
 
     const SparseMatrix& B                    = structure->GetConnectivityMatrix();
     const SparseMatrix& Btrans               = B.transpose();
-    const int& numLagrangeMultipliers        = B.rows();
-
-//    std::cout << "before calculating RBMs \n";
-//    world.barrier();
-
-    // this only needs to be calculated once. Move this function to Solve(...)
-//    if (structure->IsFloating())
-//        structure->CalculateRigidBodyModes();
-
-
-//    structure->mNumRigidBodyModes           = mSolver.cols() -  mSolver.rank();
-
-
-
-
-//    if (structure->IsFloating())
-//    {
-////        std::cout << "Rank: " << structure->mRank << "\n" << "RBM => " << structure->mRigidBodyModes << std::endl;
-//        std::cout << "Rank: " << structure->mRank << " => K*R.maxCoeff() " << mSolver.solve(structure->mRigidBodyModes).maxCoeff() << std::endl;
-
-//    }
-
-//    world.barrier();
-
-//    world.barrier();
-//    std::cout << "After calculating RBMs \n";
-//world.barrier();
-
 
     const int& numRigidBodyModesLocal       = structure->mNumRigidBodyModes;
 
     const int numRigidBodyModesGlobal = boost::mpi::all_reduce(world,numRigidBodyModesLocal, std::plus<int>());
 
+    const auto& rigidBodyModes              = structure->GetRigidBodyModes();
+
     world.barrier();
 
-    structure->mInterfaceRigidBodyModes.resize(numLagrangeMultipliers, numRigidBodyModesLocal);
+    // G.size() = (number of Lagrange multipliers) x (total number of rigid body modes)
+    const MatrixXd& G          =   structure->mG;
 
-    std::cout << "Rank: " << structure->mRank << " => number of rigid body modes " << numRigidBodyModesLocal << std::endl;
-    world.barrier();
+    // GtransGinv.size() = (total number of rigid body modes) x (total number of rigid body modes)
+    const MatrixXd GtransGinv =   (G.transpose() * G).inverse();
 
-
+    VectorXd rigidBodyForceVectorLocal(numRigidBodyModesLocal);
 
     if (structure->mNumRigidBodyModes > 0)
     {
-        // extract the last columns of the Q matrix which represents the null space of K
-        Eigen::MatrixXd rbHelper;
-        rbHelper.setZero(mSolver.rows(), numRigidBodyModesLocal);
-        rbHelper.bottomLeftCorner(numRigidBodyModesLocal,numRigidBodyModesLocal) = Eigen::MatrixXd::Identity(numRigidBodyModesLocal, numRigidBodyModesLocal);
-        structure->mRigidBodyModes = mSolver.matrixQ() * rbHelper;
-        std::cout << "Rank: " << structure->mRank << " => K*R.maxCoeff() " << mSolver.solve(structure->mRigidBodyModes).maxCoeff() << std::endl;
-
-        structure->mInterfaceRigidBodyModes = B * structure->mRigidBodyModes;
-
+        rigidBodyForceVectorLocal = rigidBodyModes.transpose() * residual_mod;
     }
 
-
-
-    const auto& rigidBodyModes              = structure->GetRigidBodyModes();
-    auto& interfaceRigidBodyModes           = structure->GetInterfaceRigidBodyModes();
-
-    world.barrier();
-
-
-    // G.size() = (number of Lagrange multipliers) x (total number of rigid body modes)
-    MatrixXd G          =   GatherInterfaceRigidBodyModes(interfaceRigidBodyModes, numRigidBodyModesGlobal);
-
-    // GtransGinv.size() = (total number of rigid body modes) x (total number of rigid body modes)
-    MatrixXd GtransGinv =   (G.transpose() * G).inverse();
-
-    // The projection matrix guarantees that the solution for lambda satisfies the constraint at every iteration
-    MatrixXd projection =   MatrixXd::Identity(G.rows(), G.rows()) - G * GtransGinv * G.transpose();
-
-    VectorXd rigidBodyForceVectorLocal(numRigidBodyModesLocal);
-    if (structure->mNumRigidBodyModes > 0)
-        rigidBodyForceVectorLocal = rigidBodyModes.transpose() * residual_mod.Export();
-
     VectorXd rigidBodyForceVectorGlobal = GatherRigidBodyForceVector(rigidBodyForceVectorLocal, numRigidBodyModesGlobal);
-
-    world.barrier();
-
-    VectorXd displacementGap    = B * mSolver.solve(residual_mod.Export());
-
-    boost::mpi::all_reduce(world,boost::mpi::inplace(displacementGap.data()), displacementGap.size(),std::plus<double>());
-
     deltaLambda = G * GtransGinv * rigidBodyForceVectorGlobal;
 
+    world.barrier();
 
-
-
+    //*****************************************
+    //
+    //       | K_11^-1 * r |
+    // d = B |  0          |
+    //
+    //*****************************************
+    VectorXd tempVec;
+    tempVec.setZero(structure->GetNumActiveDofs(Node::eDof::DISPLACEMENTS) + structure->mNumRigidBodyModes);
+    tempVec.head(structure->GetNumActiveDofs(Node::eDof::DISPLACEMENTS)) = mSolver.solve(residual_mod.head(structure->GetNumActiveDofs(Node::eDof::DISPLACEMENTS)));
+    VectorXd displacementGap    = B * tempVec;
+    boost::mpi::all_reduce(world,boost::mpi::inplace(displacementGap.data()), displacementGap.size(),std::plus<double>());
 
 
     VectorXd rhs    = displacementGap;
     VectorXd x      = deltaLambda;
 
     VectorXd alphaGlobal =VectorXd::Zero(numRigidBodyModesGlobal);
+
+
+    if (structure->mRank == 0)
+        std::cout << "rhs: " << rhs << std::endl;
+
+    if (structure->mRank == 0)
+        std::cout << "x: " << x << std::endl;
 
 
     if (structure->mRank == 0)
@@ -466,7 +445,7 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(BlockFullVector<do
 
     world.barrier();
 
-    int iteration = CPG(projection,x,rhs);
+    int iteration = CPG(structure->mProjectionMatrix,x,rhs);
     //int iteration = BiCgStab(projection,x,rhs);
 
     if (iteration >= mCpgMaxIterations)
@@ -484,10 +463,21 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(BlockFullVector<do
     world.barrier();
     deltaLambda = x;
 
-    VectorXd tmp = B * mSolver.solve(Btrans*x);
+
+
+    //*****************************************
+    //
+    //         | K_11^-1 * lambda |
+    // tmp = B |  0               |
+    //
+    //*****************************************
+    tempVec.head(structure->GetNumActiveDofs(Node::eDof::DISPLACEMENTS)) = mSolver.solve((Btrans*x).head(structure->GetNumActiveDofs(Node::eDof::DISPLACEMENTS)));
+
+    VectorXd tmp = B * tempVec;
     boost::mpi::all_reduce(world,boost::mpi::inplace(tmp.data()), tmp.size(),std::plus<double>());
 
     alphaGlobal = GtransGinv * G.transpose() * (displacementGap - tmp);
+
 
     world.barrier();
 
@@ -496,20 +486,35 @@ NuTo::StructureOutputBlockVector NuTo::NewmarkFeti::FetiSolve(BlockFullVector<do
     MpiGatherRecvCountAndDispls(recvCount, displs, numRigidBodyModesLocal);
     VectorXd alphaLocal = alphaGlobal.segment(displs[structure->mRank], numRigidBodyModesLocal);
 
-    StructureOutputBlockVector  delta_dof_dt0(structure->GetDofStatus());
-    VectorXd delta_dof_active = mSolver.solve(residual_mod.Export() - Btrans * deltaLambda);
 
+    VectorXd delta_dof_active;
+    delta_dof_active.setZero(structure->GetNumActiveDofs(Node::eDof::DISPLACEMENTS) + structure->mNumRigidBodyModes);
+    delta_dof_active = mSolver.solve( (residual_mod - Btrans * deltaLambda).head(structure->GetNumActiveDofs(Node::eDof::DISPLACEMENTS)));
+
+        std::cout << "rank \t" << structure->mRank <<  " \t delta_dof_active.rows() \n" << delta_dof_active.rows() << std::endl;
+    world.barrier();
+    std::cin.get();
+
+    std::cout << "rank \t" << structure->mRank <<  " \t After allreduce \n" << std::endl;
+    world.barrier();
 
     if (structure->mNumRigidBodyModes > 0)
         delta_dof_active -= rigidBodyModes * alphaLocal;
 
-int offset = 0;
-for (const auto& dof : activeDofSet)
-{
-    int numActiveDofs = structure->GetNumActiveDofs(dof);
-    delta_dof_dt0.J[dof] = delta_dof_active.segment(offset, structure->GetNumActiveDofs(dof));
-    offset += numActiveDofs;
-}
+
+    std::cout << "rank \t" << structure->mRank <<  " \t delta_dof_active.rows() \n" << delta_dof_active.rows() << std::endl;
+    std::cout << "rank \t" << structure->mRank <<  " \t 349 =  \n" << structure->GetNumActiveDofs(Node::eDof::DISPLACEMENTS) + numRigidBodyModesLocal << std::endl;
+    world.barrier();
+
+
+    StructureOutputBlockVector  delta_dof_dt0(structure->GetDofStatus());
+    int offset = 0;
+    for (const auto& dof : activeDofSet)
+    {
+        int numActiveDofs = structure->GetNumActiveDofs(dof);
+        delta_dof_dt0.J[dof] = delta_dof_active.segment(offset, structure->GetNumActiveDofs(dof)+numRigidBodyModesLocal);
+        offset += numActiveDofs;
+    }
     return delta_dof_dt0;
 
 
@@ -528,9 +533,6 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
         boost::mpi::communicator world;
         StructureFETI* structure = static_cast<StructureFETI*>(mStructure);
         structure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
-
-//        structure->AssembleBoundaryDofIds();
-//        const Eigen::DiagonalMatrix<double, Eigen::Dynamic>& boundaryDofIds       = structure->mBoundaryDofIds;
 
         structure->AssembleConnectivityMatrix();
         const SparseMatrix& B       = structure->GetConnectivityMatrix();
@@ -568,9 +570,9 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
         }
 
 
-        /*---------------------------------*\
-            |        Allocate Variables         |
-            \*---------------------------------*/
+        //********************************************
+        //        Allocate Variables
+        //********************************************
 
         StructureOutputBlockMatrix  hessian0(dofStatus, true);
 
@@ -595,9 +597,9 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
 
         BlockScalar normResidual(dofStatus);
 
-        /*---------------------------------*\
-            |    Declare and fill Output Maps   |
-            \*---------------------------------*/
+        //********************************************
+        //        Declare and fill Output maps
+        //********************************************
 
         // Declare output maps
 
@@ -612,9 +614,9 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
 
         evalHessian0                        [eStructureOutput::HESSIAN0]            = &hessian0;
 
-        /*---------------------------------*\
-            |    Declare and fill Input map     |
-            \*---------------------------------*/
+        //********************************************
+        //        Declare and fill Input map
+        //********************************************
 
         ConstitutiveInputMap inputMap;
         inputMap[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
@@ -626,7 +628,63 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
 
         PostProcess(residual);
 
-        std::cout << "after first post process \n";
+        std::cout << "after first post process" << std::endl;
+
+        //********************************************
+        //        Calculate rigid body modes
+        //********************************************
+
+        const int numActiveDofs     = mStructure->GetNumActiveDofs(Node::eDof::DISPLACEMENTS);
+        const int numRigidBodyModes = structure->mNumRigidBodyModes;
+
+        mStructure->Evaluate(inputMap, evalHessian0);
+
+        SparseMatrix hessian0_JJ = hessian0.JJ.ExportToEigenSparseMatrix();
+        SparseMatrix hessian0_JK = hessian0.JK.ExportToEigenSparseMatrix();
+
+        mSolver.compute(hessian0_JJ);
+
+        // The dimension of the rigid body modes depends on the number of types
+        structure->mRigidBodyModes.setZero(numActiveDofs + numRigidBodyModes, numRigidBodyModes);
+
+        if (structure->IsFloating())
+        {
+            structure->mRigidBodyModes.topRows(numActiveDofs) = mSolver.solve(hessian0_JK);
+            structure->mRigidBodyModes *= -1; // this is stupid please fix asap
+        }
+
+        structure->mRigidBodyModes.bottomRows(numRigidBodyModes) = Eigen::MatrixXd::Identity(numRigidBodyModes,numRigidBodyModes);
+
+        //********************************************
+        //        Calculate interface rigid body modes
+        //********************************************
+
+        const int& numLagrangeMultipliers        = B.rows();
+
+        structure->mInterfaceRigidBodyModes.resize(numLagrangeMultipliers, numRigidBodyModes);
+
+
+        world.barrier();
+
+
+        if (structure->mNumRigidBodyModes > 0)
+        {
+            structure->mInterfaceRigidBodyModes = B * structure->mRigidBodyModes;
+        }
+
+        //********************************************
+        //        Calculate projection
+        //********************************************
+
+        const int numRigidBodyModesGlobal = boost::mpi::all_reduce(world,numRigidBodyModes, std::plus<int>());
+        const MatrixXd G       =   GatherInterfaceRigidBodyModes(structure->mInterfaceRigidBodyModes, numRigidBodyModesGlobal);
+
+        structure->mProjectionMatrix = MatrixXd::Identity(G.rows(), G.rows()) - G * (G.transpose() * G).inverse() * G.transpose();
+        structure->mG = G;
+
+        //********************************************
+        //        Start time stepping
+        //********************************************
         while (curTime < rTimeDelta)
         {
 
@@ -652,42 +710,103 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
 
                 residual    = extForce - intForce;
                 residual.J -= hessian0.JK * deltaBRHS;
-                residual.J  = BlockFullVector<double>(residual.J.Export() - Btrans * lambda, dofStatus);
 
-                SparseMatrix tangentStiffnessMatrix = hessian0.JJ.ExportToEigenSparseMatrix();
+                VectorXd rhs;
+                rhs.setZero(numActiveDofs + numRigidBodyModes);
 
-                std::cout << "Before factorization \n";
-                mSolver.compute(tangentStiffnessMatrix);
-                std::cout << "After factorization \n";
+                rhs.head(numActiveDofs)     = residual.J.Export();
 
-                mLocalPreconditioner = B * tangentStiffnessMatrix * Btrans;
+                if (structure->IsFloating())
+                    rhs.tail(numRigidBodyModes) = residual.K.Export();
 
-                delta_dof_dt0   = FetiSolve(residual.J, activeDofSet, deltaLambda);
+                rhs -= Btrans * lambda;
+
+                hessian0_JJ = hessian0.JJ.ExportToEigenSparseMatrix();
+                mSolver.compute(hessian0_JJ);
+
+                std::cout << "Rank: \t" << structure->mRank << std::endl << "Active dofs: \t" << structure->GetNumActiveDofs(Node::eDof::DISPLACEMENTS) << std::endl << "Total dofs: \t" << structure->GetNumTotalDofs() << std::endl;
+
+                world.barrier();
+
+//                SparseMatrix temp(numActiveDofs + numRigidBodyModes, numActiveDofs + numRigidBodyModes);
+//                temp = hessian0_JJ * Btrans.topRows(numActiveDofs);
+//                mLocalPreconditioner = B * temp;
+
+                world.barrier();
+
+                std::cout << "Rank: \t" << structure->mRank << " Before FetiSolve" << std::endl;
+
+                delta_dof_dt0   = FetiSolve(rhs, activeDofSet, deltaLambda);
+
+                std::cout << "Rank: \t" << structure->mRank << " After FetiSolve" << std::endl;
+                world.barrier();
+
+
                 delta_dof_dt0.K = deltaBRHS;
 
+
+                if (structure->IsFloating())
+                {
+
+                    StructureOutputBlockVector temporary(delta_dof_dt0);
+
+                    delta_dof_dt0.J[Node::eDof::DISPLACEMENTS].resize(numActiveDofs);
+                    delta_dof_dt0.J[Node::eDof::DISPLACEMENTS] = temporary.J.Export().head(numActiveDofs);
+                    delta_dof_dt0.K[Node::eDof::DISPLACEMENTS] = temporary.J.Export().tail(numRigidBodyModes);
+                }
+
+                std::cout << "Rank: \t" << structure->mRank << std::endl << "Before node merge" << std::endl;
+                world.barrier();
+
+
+                if (structure->mRank == 1)
+                {
+                    std::cout << "lastConverged_dof_dt0.J.Export().rows()" << lastConverged_dof_dt0.J.Export().rows() << std::endl;
+                    std::cout << "delta_dof_dt0.J.Export().rows()" << delta_dof_dt0.J.Export().rows() << std::endl;
+                    std::cout << "dof_dt0.J.Export().rows()" << dof_dt0.J.Export().rows() << std::endl;
+                }
                 dof_dt0 = lastConverged_dof_dt0 + delta_dof_dt0;
+
+                std::cout << "Rank: \t" << structure->mRank << std::endl << "After node merge" << std::endl;
+                world.barrier();
+
                 lambda  = lastConverged_lambda + deltaLambda;
+
 
                 mStructure->NodeMergeDofValues(dof_dt0);
 
                 // ******************************************************
                 mStructure->Evaluate(inputMap, evalInternalGradient);
                 // ******************************************************
+                mTime+=timeStep;
+                PostProcess(prevResidual);
 
+                std::cout << "Rank: \t" << structure->mRank << std::endl << "After postprocess" << std::endl;
+                std::cin.get();
 
                 residual    = extForce - intForce;
-                residual.J  = BlockFullVector<double>(residual.J.Export() - Btrans * lambda, dofStatus);
+//                residual.J  = BlockFullVector<double>(residual.J.Export() - Btrans * lambda, dofStatus);
+
+                rhs.head(numActiveDofs)     = residual.J.Export();
+
+                if (structure->IsFloating())
+                    rhs.tail(numRigidBodyModes) = residual.K.Export();
+
+                rhs -= Btrans * lambda;
+                rhs.norm();
+
+                std::cout << "Rank: \t" << structure->mRank << " norm "  << rhs.norm() << std::endl;
 
                 normResidual = residual.J.CalculateInfNorm();
+
+                mStructure->GetLogger() << "Rank " << structure->mRank <<" normResidual= \t" << normResidual << "\n" <<"tolerance= \t" << mToleranceResidual <<  "\n";
+
+
                 for (const auto& dof : activeDofSet)
                     boost::mpi::all_reduce(world,boost::mpi::inplace(normResidual[dof]),std::plus<double>());
 
-
                 if (structure->mRank == 0)
-                {
-                    mStructure->GetLogger() << "normResidual= \t" << normResidual << "\n" <<"tolerance= \t" << mToleranceResidual <<  "\n";
-
-                }
+                    std::cout << "Rank: \t" << structure->mRank << "\n normResidual "  << normResidual << std::endl;
 
                 world.barrier();
 
@@ -702,7 +821,7 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
 
                     mSolver.compute(hessian0.JJ.ExportToEigenSparseMatrix());
 
-                    delta_dof_dt0 = FetiSolve(residual.J, activeDofSet, deltaLambda);
+                    delta_dof_dt0 = FetiSolve(residual.J.Export(), activeDofSet, deltaLambda);
                     delta_dof_dt0.K = cmat*delta_dof_dt0.J*(-1.);
 
 

@@ -101,6 +101,11 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
     for (const auto& dofType : dofTypes)
     {
         numActiveDofs           += GetNumActiveDofs(dofType);
+
+        // Add the dofs that have been constrained to remove rigid body modes
+        if (dofType == NuTo::Node::eDof::DISPLACEMENTS)
+            numActiveDofs += mNumRigidBodyModes;
+
         numLagrangeMultipliers  += GetDofDimension(dofType) * mNumInterfaceNodesTotal;
     }
 
@@ -118,14 +123,19 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
                 const int globalIndex               = nodePair.first * dofVector.size();
 
                 for (unsigned i = 0; i < dofVector.size(); ++i)
-                    if (dofVector[i] < GetNumActiveDofs(dofType))
+                {
+                    // remove the mNumRigidBodyModes because it is only associated with displacements
+                    if (dofVector[i] < GetNumActiveDofs(dofType) + mNumRigidBodyModes)
                         mConnectivityMatrix.insert(globalIndex + i + offsetRows , dofVector[i] + offsetCols) = interface.mValue;
-
+                }
             }
 
         offsetRows += GetDofDimension(dofType) * mNumInterfaceNodesTotal;
-        offsetCols += GetNumActiveDofs(dofType);
+        // remove the mNumRigidBodyModes because it is only associated with displacements
+        offsetCols += GetNumActiveDofs(dofType) + mNumRigidBodyModes;
     }
+
+
 
     if (mRank == 0)
     {

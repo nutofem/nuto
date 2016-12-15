@@ -155,7 +155,7 @@ endif()
 
 # boost
 message(STATUS "Checking for Boost...")
-set(Boost_ADDITIONAL_VERSIONS "1.61;1.60;1.59;1.57;1.56;1.55;1.41.0;1.41;1.42;1.43;1.44;1.45;1.46;1.46.1;1.47;1.50;1.51;1.54")
+set(Boost_ADDITIONAL_VERSIONS "1.62;1.61;1.60;1.59;1.57;1.56;1.55;1.41.0;1.41;1.42;1.43;1.44;1.45;1.46;1.46.1;1.47;1.50;1.51;1.54")
 if(ENABLE_STATIC_EXTERNALS)
     set(Boost_USE_STATIC_LIBS TRUE)
 endif()

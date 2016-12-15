@@ -20,7 +20,9 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
+#include <eigen3/Eigen/Dense>
 
+#include <eigen3/Eigen/Sparse>
 #include <cmath>
 
 namespace NuTo
@@ -121,7 +123,7 @@ public:
     //! Solves for the Lagrange multipliers at the subdomain interfaces.
     //! Calculates the increment of the free degrees of freedom
     //!
-    StructureOutputBlockVector FetiSolve(BlockFullVector<double> residual_mod, const std::set<Node::eDof>& activeDofSet, VectorXd& deltaLambda);
+    StructureOutputBlockVector FetiSolve(VectorXd residual_mod, const std::set<Node::eDof>& activeDofSet, VectorXd& deltaLambda);
 
     //! @brief perform the time integration
     //! @param rTimeDelta ... length of the simulation
@@ -129,7 +131,9 @@ public:
 
 private:
     Eigen::SparseQR<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>> mSolver;
-//    Eigen::SparseLU<Eigen::SparseMatrix<double>> mSolver;
+//    Eigen::SimplicialLDLT<Eigen::SparseMatrix<double>> mSolver;
+//    Eigen::PardisoLU<Eigen::SparseMatrix<double>> mSolver;
+//    Eigen::SparseLU<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>> mSolver;
     SparseMatrix mLocalPreconditioner;
     SparseMatrix mTangentStiffnessMatrix;
     const double    mCpgTolerance     = 1.0e-6;
