@@ -332,7 +332,7 @@ void IPAdditiveInputImplicit::CalculateGlobalOutputs(const NuTo::ConstitutiveInp
                                 localStrainRates[j] = SDCurrentStrainRate[i*VoigtDim +j];
                             }
 
-                            auto localRHS = (*static_cast<ConstitutiveMatrix<VoigtDim,VoigtDim>*>(rLocalOutputMapVec[i].find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1)->second.get())) *
+                            Eigen::VectorXd localRHS = (*static_cast<ConstitutiveMatrix<VoigtDim,VoigtDim>*>(rLocalOutputMapVec[i].find(Constitutive::eOutput::D_ENGINEERING_STRESS_D_ENGINEERING_STRAIN_DT1)->second.get())) *
                                              localStrainRates *-1.0;
 
                             for(unsigned int j=0; j<VoigtDim; ++j)

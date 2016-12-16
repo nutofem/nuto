@@ -83,6 +83,7 @@ if(ENABLE_C++_TESTS)
         MultipleConstitutiveLaws
         Shrinkage
         CSDAInterface
+        SpringDamperCombination
         )
 
         add_executable(${test} ${test}.cpp)
@@ -98,7 +99,6 @@ if(ENABLE_C++_TESTS)
 
     if(NOT DEFINED ENV{TRAVIS})
         foreach(test
-            SpringDamperCombination # this actually only fails on GCC in release mode under Travis
             MisesPlasticity
             )
 
