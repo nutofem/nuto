@@ -28,14 +28,14 @@ myStructure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistan
 myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant1")
 
 # create elements
-elementIncidence = nuto.IntFullVector(2)
-elementIncidence.SetValue(0,0,1)
-elementIncidence.SetValue(1,0,2)
+elementIncidence = nuto.IntVector(2)
+elementIncidence[0] = 1
+elementIncidence[1] = 2
 e1 = myStructure.ElementCreate(myInterpolationType, elementIncidence)
 myStructure.ElementSetSection(e1,Section1)
 myStructure.ElementSetConstitutiveLaw(e1,Material1)
-elementIncidence.SetValue(0,0,3)
-elementIncidence.SetValue(1,0,4)
+elementIncidence[0] = 3
+elementIncidence[1] = 4
 e2 = myStructure.ElementCreate(myInterpolationType, elementIncidence)
 myStructure.ElementSetSection(e2,Section1)
 myStructure.ElementSetConstitutiveLaw(e2,Material1)

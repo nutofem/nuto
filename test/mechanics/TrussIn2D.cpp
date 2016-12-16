@@ -107,10 +107,7 @@ void Run2d(NuTo::FullVector<double, -1> rNodeCoords0, NuTo::FullVector<double, -
     int node1 = myStructure.NodeCreate(rNodeCoords1);
     int node2 = myStructure.NodeCreate(rNodeCoords2);
 
-    NuTo::FullVector<int, -1> nodeIndices(3);
-    nodeIndices[0] = node0;
-    nodeIndices[1] = node1;
-    nodeIndices[2] = node2;
+    std::vector<int> nodeIndices({node0, node1, node2});
     myStructure.ElementCreate(fibreInterpolationType, nodeIndices);
 
     myStructure.ElementTotalConvertToInterpolationType(1e-6, 10);

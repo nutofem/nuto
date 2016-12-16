@@ -51,19 +51,19 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
     myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, rTypeOrder);
 
+    std::vector<int> nodes(8);
     for (int iZ=0; iZ<numElementsZ; iZ++)
         for (int iY=0; iY<numElementsY; iY++)
             for (int iX=0; iX<numElementsX; iX++)
             {
-                NuTo::FullVector<int,Eigen::Dynamic> nodes(8);
-                nodes(0) = iX   +  iY    * numNodesX +  iZ    * numNodesX * numNodesY;
-                nodes(1) = iX+1 +  iY    * numNodesX +  iZ    * numNodesX * numNodesY;
-                nodes(2) = iX+1 + (iY+1) * numNodesX +  iZ    * numNodesX * numNodesY;
-                nodes(3) = iX   + (iY+1) * numNodesX +  iZ    * numNodesX * numNodesY;
-                nodes(4) = iX   +  iY    * numNodesX + (iZ+1) * numNodesX * numNodesY;
-                nodes(5) = iX+1 +  iY    * numNodesX + (iZ+1) * numNodesX * numNodesY;
-                nodes(6) = iX+1 + (iY+1) * numNodesX + (iZ+1) * numNodesX * numNodesY;
-                nodes(7) = iX   + (iY+1) * numNodesX + (iZ+1) * numNodesX * numNodesY;
+                nodes[0] = iX   +  iY    * numNodesX +  iZ    * numNodesX * numNodesY;
+                nodes[1] = iX+1 +  iY    * numNodesX +  iZ    * numNodesX * numNodesY;
+                nodes[2] = iX+1 + (iY+1) * numNodesX +  iZ    * numNodesX * numNodesY;
+                nodes[3] = iX   + (iY+1) * numNodesX +  iZ    * numNodesX * numNodesY;
+                nodes[4] = iX   +  iY    * numNodesX + (iZ+1) * numNodesX * numNodesY;
+                nodes[5] = iX+1 +  iY    * numNodesX + (iZ+1) * numNodesX * numNodesY;
+                nodes[6] = iX+1 + (iY+1) * numNodesX + (iZ+1) * numNodesX * numNodesY;
+                nodes[7] = iX   + (iY+1) * numNodesX + (iZ+1) * numNodesX * numNodesY;
 
                 myStructure.ElementCreate(myInterpolationType, nodes);
 

@@ -48,12 +48,12 @@ int main()
             NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
     // create elements
-    NuTo::FullVector<int, Eigen::Dynamic> elementIncidence(2);
+    std::vector<int> elementIncidence(2);
     for (int element = 0; element < NumElements; element++)
     {
         std::cout << "create element: " << element << " nodes: " << element << "," << element + 1 << std::endl;
-        elementIncidence(0) = element;
-        elementIncidence(1) = element + 1;
+        elementIncidence[0] = element;
+        elementIncidence[1] = element + 1;
         structure.ElementCreate(InterpolationType, elementIncidence);
         structure.ElementSetSection(element, Section1);
         structure.ElementSetConstitutiveLaw(element, Material1);

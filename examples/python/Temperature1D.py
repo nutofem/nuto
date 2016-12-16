@@ -56,10 +56,10 @@ def create_structure(number_of_time_derivatives=0):
     structure.InterpolationTypeSetIntegrationType(truss_interpolation, "1D2NGauss2Ip")
 
     # create elements
-    element_incidence = nuto.IntFullVector(2)
+    element_incidence = nuto.IntVector(2)
     for element in range(0, number_of_elements):
-        element_incidence.SetValue(0, 0, element)
-        element_incidence.SetValue(1, 0, element + 1)
+        element_incidence[0] = element
+        element_incidence[1] = element + 1
         structure.ElementCreate(truss_interpolation, element_incidence)
         structure.ElementSetSection(element, section)
         structure.ElementSetConstitutiveLaw(element, material)

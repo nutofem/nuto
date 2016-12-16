@@ -24,19 +24,13 @@ void NuTo::MeshGenerator::GenerateMesh1D(NuTo::Structure &rStructure,
                                                                                   rNumElements,
                                                                                   rMappingFunction);
 
-    NuTo::FullVector<int,Eigen::Dynamic> Nodes(2);
-
-
     std::cout << std::endl << "Creating Elements of Mesh" << std::endl << std::endl;
 
-//    boost::progress_display show_progress( rNumElements[0] * rNumElements[1]);
-
-
-
+    std::vector<int> Nodes(2);
     for(int x_count = 0; x_count < rNumElements[0]; x_count++)
     {
-        Nodes(0) = NodeIDs[x_count    ];
-        Nodes(1) = NodeIDs[x_count + 1];
+        Nodes[0] = NodeIDs[x_count    ];
+        Nodes[1] = NodeIDs[x_count + 1];
 
         int elementNumber = rStructure.ElementCreate(rInterpolationType, Nodes);
 
@@ -44,7 +38,6 @@ void NuTo::MeshGenerator::GenerateMesh1D(NuTo::Structure &rStructure,
         rStructure.ElementSetSection(elementNumber,rSection);
 
         rStructure.ElementSetConstitutiveLaw(elementNumber,rConstitutiveLaw);
-//        ++show_progress;
     }
 
 }
@@ -150,25 +143,18 @@ void NuTo::MeshGenerator::GenerateMesh2D(NuTo::Structure &rStructure,
     std::vector<int> NodeIDs = MeshGenerator::GetNodeCoordinatesSquarePlaneMapped(rStructure,
                                                                                   rNumElements,
                                                                                   rMappingFunction);
-
-    NuTo::FullVector<int,Eigen::Dynamic> Nodes(4);
-
-    int NumNodesX = rNumElements[0]+1;
-
-
     std::cout << std::endl << "Creating Elements of Mesh" << std::endl << std::endl;
 
-//    boost::progress_display show_progress( rNumElements[0] * rNumElements[1]);
-
-
+    int NumNodesX = rNumElements[0]+1;
+    std::vector<int> Nodes(4);
     for(int y_count = 0; y_count < rNumElements[1]; y_count++)
     {
         for(int x_count = 0; x_count < rNumElements[0]; x_count++)
         {
-            Nodes(0) = NodeIDs[x_count       +  y_count       * NumNodesX];
-            Nodes(1) = NodeIDs[x_count + 1   +  y_count       * NumNodesX];
-            Nodes(2) = NodeIDs[x_count + 1   + (y_count + 1)  * NumNodesX];
-            Nodes(3) = NodeIDs[x_count       + (y_count + 1)  * NumNodesX];
+            Nodes[0] = NodeIDs[x_count       +  y_count       * NumNodesX];
+            Nodes[1] = NodeIDs[x_count + 1   +  y_count       * NumNodesX];
+            Nodes[2] = NodeIDs[x_count + 1   + (y_count + 1)  * NumNodesX];
+            Nodes[3] = NodeIDs[x_count       + (y_count + 1)  * NumNodesX];
 
             int elementNumber = rStructure.ElementCreate(rInterpolationType, Nodes);
 
@@ -176,7 +162,6 @@ void NuTo::MeshGenerator::GenerateMesh2D(NuTo::Structure &rStructure,
             rStructure.ElementSetSection(elementNumber,rSection);
 
             rStructure.ElementSetConstitutiveLaw(elementNumber,rConstitutiveLaw);
-//            ++show_progress;
         }
     }
 }
@@ -285,33 +270,25 @@ void NuTo::MeshGenerator::GenerateMesh3D(NuTo::Structure &rStructure,
     std::vector<int> NodeIDs = MeshGenerator::GetNodeCoordinatesCuboidMapped(rStructure,
                                                                              rNumElements,
                                                                              rMappingFunction);
-
-
-    NuTo::FullVector<int,Eigen::Dynamic> Nodes(8);
+    std::cout << std::endl << "Creating Elements of Mesh" << std::endl << std::endl;
 
     int NumNodesX = rNumElements[0]+1;
     int NumNodesY = rNumElements[1]+1;
-
-
-    std::cout << std::endl << "Creating Elements of Mesh" << std::endl << std::endl;
-
-//    boost::progress_display show_progress( rNumElements[0] * rNumElements[1] * rNumElements[2] );
-
-
+    std::vector<int> Nodes(8);
     for(int z_count = 0; z_count < rNumElements[2]; z_count++)
     {
         for(int y_count = 0; y_count < rNumElements[1]; y_count++)
         {
             for(int x_count = 0; x_count < rNumElements[0]; x_count++)
             {
-                Nodes(0) = NodeIDs[x_count       +  y_count       * NumNodesX   +  z_count       * NumNodesX * NumNodesY];
-                Nodes(1) = NodeIDs[x_count + 1   +  y_count       * NumNodesX   +  z_count       * NumNodesX * NumNodesY];
-                Nodes(2) = NodeIDs[x_count + 1   + (y_count + 1)  * NumNodesX   +  z_count       * NumNodesX * NumNodesY];
-                Nodes(3) = NodeIDs[x_count       + (y_count + 1)  * NumNodesX   +  z_count       * NumNodesX * NumNodesY];
-                Nodes(4) = NodeIDs[x_count       + y_count        * NumNodesX   + (z_count + 1)  * NumNodesX * NumNodesY];
-                Nodes(5) = NodeIDs[x_count + 1   + y_count        * NumNodesX   + (z_count + 1)  * NumNodesX * NumNodesY];
-                Nodes(6) = NodeIDs[x_count + 1   + (y_count + 1)  * NumNodesX   + (z_count + 1)  * NumNodesX * NumNodesY];
-                Nodes(7) = NodeIDs[x_count       + (y_count + 1)  * NumNodesX   + (z_count + 1)  * NumNodesX * NumNodesY];
+                Nodes[0] = NodeIDs[x_count       +  y_count       * NumNodesX   +  z_count       * NumNodesX * NumNodesY];
+                Nodes[1] = NodeIDs[x_count + 1   +  y_count       * NumNodesX   +  z_count       * NumNodesX * NumNodesY];
+                Nodes[2] = NodeIDs[x_count + 1   + (y_count + 1)  * NumNodesX   +  z_count       * NumNodesX * NumNodesY];
+                Nodes[3] = NodeIDs[x_count       + (y_count + 1)  * NumNodesX   +  z_count       * NumNodesX * NumNodesY];
+                Nodes[4] = NodeIDs[x_count       + y_count        * NumNodesX   + (z_count + 1)  * NumNodesX * NumNodesY];
+                Nodes[5] = NodeIDs[x_count + 1   + y_count        * NumNodesX   + (z_count + 1)  * NumNodesX * NumNodesY];
+                Nodes[6] = NodeIDs[x_count + 1   + (y_count + 1)  * NumNodesX   + (z_count + 1)  * NumNodesX * NumNodesY];
+                Nodes[7] = NodeIDs[x_count       + (y_count + 1)  * NumNodesX   + (z_count + 1)  * NumNodesX * NumNodesY];
 
                 int elementNumber = rStructure.ElementCreate(rInterpolationType, Nodes);
 
@@ -319,7 +296,6 @@ void NuTo::MeshGenerator::GenerateMesh3D(NuTo::Structure &rStructure,
                 rStructure.ElementSetSection(elementNumber,rSection);
 
                 rStructure.ElementSetConstitutiveLaw(elementNumber,rConstitutiveLaw);
-//                ++show_progress;
             }
         }
     }

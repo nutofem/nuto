@@ -214,27 +214,27 @@ def Run3D(r3DShape, rTypeOrder):
 	myStructure.InterpolationTypeAdd(myInterpolationType, "Displacements", rTypeOrder);
 
 	#create elements
+        nodes = nuto.IntVector(8)
 	for countZ in range(0, numElementsZ):
 		for countY in range(0, numElementsY):
 			for countX in range(0, numElementsX):
-				nodes = nuto.IntFullVector(8)
-				nodes.SetValue(0, countX  +  countY   *numNodesX +  countZ    * numNodesX * numNodesY)
-				nodes.SetValue(1, countX+1+  countY   *numNodesX +  countZ    * numNodesX * numNodesY)
-				nodes.SetValue(2, countX+1+ (countY+1)*numNodesX +  countZ    * numNodesX * numNodesY)
-				nodes.SetValue(3, countX  + (countY+1)*numNodesX +  countZ    * numNodesX * numNodesY)
-				nodes.SetValue(4, countX  +  countY   *numNodesX + (countZ+1) * numNodesX * numNodesY)
-				nodes.SetValue(5, countX+1+  countY   *numNodesX + (countZ+1) * numNodesX * numNodesY)
-				nodes.SetValue(6, countX+1+ (countY+1)*numNodesX + (countZ+1) * numNodesX * numNodesY)
-				nodes.SetValue(7, countX  + (countY+1)*numNodesX + (countZ+1) * numNodesX * numNodesY)
+				nodes[0] = countX  +  countY   *numNodesX +  countZ    * numNodesX * numNodesY
+				nodes[1] = countX+1+  countY   *numNodesX +  countZ    * numNodesX * numNodesY
+				nodes[2] = countX+1+ (countY+1)*numNodesX +  countZ    * numNodesX * numNodesY
+				nodes[3] = countX  + (countY+1)*numNodesX +  countZ    * numNodesX * numNodesY
+				nodes[4] = countX  +  countY   *numNodesX + (countZ+1) * numNodesX * numNodesY
+				nodes[5] = countX+1+  countY   *numNodesX + (countZ+1) * numNodesX * numNodesY
+				nodes[6] = countX+1+ (countY+1)*numNodesX + (countZ+1) * numNodesX * numNodesY
+				nodes[7] = countX  + (countY+1)*numNodesX + (countZ+1) * numNodesX * numNodesY
 				if (r3DShape == "Brick3D"):
 					myStructure.ElementCreate(myInterpolationType, nodes);
 				elif (r3DShape == "Tetrahedron3D"):
-					myStructure.ElementCreate(myInterpolationType, nuto.IntFullVector((nodes.GetValue(0),nodes.GetValue(1),nodes.GetValue(3),nodes.GetValue(7))));
-					myStructure.ElementCreate(myInterpolationType, nuto.IntFullVector((nodes.GetValue(0),nodes.GetValue(1),nodes.GetValue(7),nodes.GetValue(4))));
-					myStructure.ElementCreate(myInterpolationType, nuto.IntFullVector((nodes.GetValue(5),nodes.GetValue(4),nodes.GetValue(7),nodes.GetValue(1))));
-					myStructure.ElementCreate(myInterpolationType, nuto.IntFullVector((nodes.GetValue(6),nodes.GetValue(5),nodes.GetValue(7),nodes.GetValue(1))));
-					myStructure.ElementCreate(myInterpolationType, nuto.IntFullVector((nodes.GetValue(2),nodes.GetValue(7),nodes.GetValue(1),nodes.GetValue(6))));
-					myStructure.ElementCreate(myInterpolationType, nuto.IntFullVector((nodes.GetValue(2),nodes.GetValue(3),nodes.GetValue(1),nodes.GetValue(7))));
+					myStructure.ElementCreate(myInterpolationType, nuto.IntVector([nodes[0],nodes[1],nodes[3],nodes[7]]));
+					myStructure.ElementCreate(myInterpolationType, nuto.IntVector([nodes[0],nodes[1],nodes[7],nodes[4]]));
+					myStructure.ElementCreate(myInterpolationType, nuto.IntVector([nodes[5],nodes[4],nodes[7],nodes[1]]));
+					myStructure.ElementCreate(myInterpolationType, nuto.IntVector([nodes[6],nodes[5],nodes[7],nodes[1]]));
+					myStructure.ElementCreate(myInterpolationType, nuto.IntVector([nodes[2],nodes[7],nodes[1],nodes[6]]));
+					myStructure.ElementCreate(myInterpolationType, nuto.IntVector([nodes[2],nodes[3],nodes[1],nodes[7]]));
 				else:
 					error = True
 					errorMsg += "Element shape " + r3DShape +" is invalid. \n"
@@ -278,26 +278,27 @@ def Run2D(r2DShape, rTypeOrder):
 	myStructure.InterpolationTypeAdd(myInterpolationType, "Displacements", rTypeOrder);
 
 	#create elements
+        nodes = nuto.IntVector()
 	for countY in range(0, numElementsY):
 		for countX in range(0, numElementsX):
 			if (r2DShape == "Quad2D"):
-				nodes = nuto.IntFullVector(4)
-				nodes.SetValue(0, countX  +  countY   *numNodesX)
-				nodes.SetValue(1, countX+1+  countY   *numNodesX)
-				nodes.SetValue(2, countX+1+ (countY+1)*numNodesX)
-				nodes.SetValue(3, countX  + (countY+1)*numNodesX)
+				nodes.resize(4)
+				nodes[0] = countX  +  countY   *numNodesX
+				nodes[1] = countX+1+  countY   *numNodesX
+				nodes[2] = countX+1+ (countY+1)*numNodesX
+				nodes[3] = countX  + (countY+1)*numNodesX
 				myStructure.ElementCreate(myInterpolationType, nodes);
 			elif (r2DShape == "Triangle2D"):
-				nodes = nuto.IntFullVector(3)
-				nodes.SetValue(0, countX  +  countY   *numNodesX)
-				nodes.SetValue(1, countX+1+  countY   *numNodesX)
-				nodes.SetValue(2, countX+1+ (countY+1)*numNodesX)
+				nodes.resize(3)
+				nodes[0] = countX  +  countY   *numNodesX
+				nodes[1] = countX+1+  countY   *numNodesX
+				nodes[2] = countX+1+ (countY+1)*numNodesX
 				myStructure.ElementCreate(myInterpolationType, nodes);
 
-				nodes = nuto.IntFullVector(3)
-				nodes.SetValue(0, countX  +  countY   *numNodesX)
-				nodes.SetValue(1, countX+1+ (countY+1)*numNodesX)
-				nodes.SetValue(2, countX  + (countY+1)*numNodesX)
+				nodes.resize(3)
+				nodes[0] = countX  +  countY   *numNodesX
+				nodes[1] = countX+1+ (countY+1)*numNodesX
+				nodes[2] = countX  + (countY+1)*numNodesX
 				myStructure.ElementCreate(myInterpolationType, nodes);
 			else:
 				error = True
@@ -342,11 +343,11 @@ def Run1D(r1DShape, rTypeOrder):
 	myStructure.InterpolationTypeAdd(myInterpolationType, "Displacements", rTypeOrder);
 
 	#create elements
+        nodes = nuto.IntVector(2)
 	for countX in range(0, numElementsX):
 		if (r1DShape == "Truss1D"):
-			nodes = nuto.IntFullVector(2)
-			nodes.SetValue(0, countX  )
-			nodes.SetValue(1, countX+1)
+			nodes[0] = countX  
+			nodes[1] = countX+1
 			myStructure.ElementCreate(myInterpolationType, nodes);
 		else:
 			error = True

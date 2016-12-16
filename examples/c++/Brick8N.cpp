@@ -64,7 +64,7 @@ int main()
 
 
     // create elements
-    NuTo::FullVector<int,Eigen::Dynamic> elementIncidence(8);
+    std::vector<int> elementIncidence(8);
     int element = 0;
     for(int zCount = 0; zCount < NumElementsZ; zCount++)
     {
@@ -73,14 +73,14 @@ int main()
             for(int xCount = 0; xCount < NumElementsX; xCount++)
             {
                 int node1 = zCount * (NumElementsX + 1) * (NumElementsY + 1) + yCount * (NumElementsX + 1) + xCount;
-                elementIncidence(0) = node1;
-                elementIncidence(1) = node1 + 1;
-                elementIncidence(2) = node1 + NumElementsX + 2;
-                elementIncidence(3) = node1 + NumElementsX + 1;
-                elementIncidence(4) = node1 + (NumElementsX + 1) * (NumElementsY + 1);
-                elementIncidence(5) = node1 + (NumElementsX + 1) * (NumElementsY + 1) + 1;
-                elementIncidence(6) = node1 + (NumElementsX + 1) * (NumElementsY + 1) + NumElementsX + 2;
-                elementIncidence(7) = node1 + (NumElementsX + 1) * (NumElementsY + 1) + NumElementsX + 1;
+                elementIncidence[0] = node1;
+                elementIncidence[1] = node1 + 1;
+                elementIncidence[2] = node1 + NumElementsX + 2;
+                elementIncidence[3] = node1 + NumElementsX + 1;
+                elementIncidence[4] = node1 + (NumElementsX + 1) * (NumElementsY + 1);
+                elementIncidence[5] = node1 + (NumElementsX + 1) * (NumElementsY + 1) + 1;
+                elementIncidence[6] = node1 + (NumElementsX + 1) * (NumElementsY + 1) + NumElementsX + 2;
+                elementIncidence[7] = node1 + (NumElementsX + 1) * (NumElementsY + 1) + NumElementsX + 1;
 
                 myStructure.ElementCreate(InterpolationType, elementIncidence);
                 myStructure.ElementSetConstitutiveLaw(element,Material1);

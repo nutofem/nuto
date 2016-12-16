@@ -28,14 +28,14 @@ int main()
             interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
     // create element
-    NuTo::FullVector<int, Eigen::Dynamic> Incidences(2);
+    std::vector<int> Incidences(2);
 
-    Incidences(0) = 0;
-    Incidences(1) = 1;
+    Incidences[0] = 0;
+    Incidences[1] = 1;
     int myElement1 = myStructure.ElementCreate(interpolationType, Incidences);
 
-    Incidences(0) = 1;
-    Incidences(1) = 2;
+    Incidences[0] = 1;
+    Incidences[1] = 2;
     int myElement2 = myStructure.ElementCreate(interpolationType, Incidences);
 
     myStructure.ElementTotalConvertToInterpolationType(1e-6, 3);

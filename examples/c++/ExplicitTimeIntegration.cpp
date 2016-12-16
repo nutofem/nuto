@@ -93,12 +93,11 @@ int Run(NuTo::Structure& myStructure, int timeIntegrationScheme)
     }
 
     // create elements
+    std::vector<int> nodes(2);
     for (int countX = 0; countX < numElements; countX++)
     {
-        NuTo::FullVector<int, Eigen::Dynamic> nodes(2);
-        nodes(0) = countX;
-        ;
-        nodes(1) = (countX + 1);
+        nodes[0] = countX;
+        nodes[1] = (countX + 1);
         myStructure.ElementCreate(myInterpolationType, nodes);
     }
 

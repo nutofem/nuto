@@ -42,12 +42,13 @@ myNode7 = myStructure.NodeCreate(nuto.DoubleFullVector((+1.,+1.,+1.)))
 myNode8 = myStructure.NodeCreate(nuto.DoubleFullVector((-1.,+1.,+1.)))
 
 #create interpolation type
-myInterpolationType = myStructure.InterpolationTypeCreate("Brick3D");
-myStructure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistant1");
-myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant1");
+myInterpolationType = myStructure.InterpolationTypeCreate("Brick3D")
+myStructure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistant1")
+myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant1")
 
 #create element
-myElement1 = myStructure.ElementCreate(myInterpolationType,nuto.IntFullVector((myNode1,myNode2,myNode3,myNode4,myNode5,myNode6,myNode7,myNode8)))
+nodeIds = nuto.IntVector([myNode1,myNode2,myNode3,myNode4,myNode5,myNode6,myNode7,myNode8])
+myElement1 = myStructure.ElementCreate(myInterpolationType, nodeIds)
 myStructure.ElementTotalConvertToInterpolationType();
 
 #create constitutive law

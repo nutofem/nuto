@@ -82,12 +82,12 @@ int main()
     else
         std::cout << __LINE__ << " Truss1D2NReference] error output file.\n";
     // create elements
-    NuTo::FullVector<int, Eigen::Dynamic> elementIncidence(2);
+    std::vector<int> elementIncidence(2);
     for (int element = 0; element < NumElements; element++)
     {
         std::cout << "create element: " << element << " nodes: " << element << "," << element + 1 << std::endl;
-        elementIncidence(0) = element;
-        elementIncidence(1) = element + 1;
+        elementIncidence[0] = element;
+        elementIncidence[1] = element + 1;
         structure.ElementCreate(interpolationType, elementIncidence);
         structure.ElementSetSection(element, Section1);
         //			structure.ElementSetConstitutiveLaw(element,Material1);

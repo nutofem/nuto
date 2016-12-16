@@ -40,11 +40,11 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
     myStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, rTypeOrder);
 
     //create elements
+    std::vector<int> nodes(2);
     for (int countX=0; countX<numElementsX; countX++)
     {
-        NuTo::FullVector<int,Eigen::Dynamic> nodes(2);
-        nodes(0) = countX;
-        nodes(1) = countX+1;
+        nodes[0] = countX;
+        nodes[1] = countX+1;
         myStructure.ElementCreate(myInterpolationType, nodes);
     }
 

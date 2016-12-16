@@ -130,11 +130,11 @@ void ImplEx()
 //    s.InterpolationTypeSetIntegrationType(interpolationType, NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip, NuTo::IpData::STATICDATA);
 
     // create elements
-    NuTo::FullVector<int, Eigen::Dynamic> nodes(2);
+    std::vector<int> nodes(2);
     for (int iElement = 0; iElement < numElements; iElement++)
     {
-        nodes(0) = iElement;
-        nodes(1) = iElement + 1;
+        nodes[0] = iElement;
+        nodes[1] = iElement + 1;
         s.ElementCreate(interpolationType, nodes);
     }
 

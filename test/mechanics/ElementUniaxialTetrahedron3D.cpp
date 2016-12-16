@@ -66,20 +66,12 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
                 nodes(6) = iX+1 + (iY+1) * numNodesX + (iZ+1) * numNodesX * numNodesY;
                 nodes(7) = iX   + (iY+1) * numNodesX + (iZ+1) * numNodesX * numNodesY;
 
-                NuTo::FullVector<int,Eigen::Dynamic> nodesTet0(4);
-                NuTo::FullVector<int,Eigen::Dynamic> nodesTet1(4);
-                NuTo::FullVector<int,Eigen::Dynamic> nodesTet2(4);
-                NuTo::FullVector<int,Eigen::Dynamic> nodesTet3(4);
-                NuTo::FullVector<int,Eigen::Dynamic> nodesTet4(4);
-                NuTo::FullVector<int,Eigen::Dynamic> nodesTet5(4);
-
-                nodesTet0 << nodes(0), nodes(1), nodes(3), nodes(7);
-                nodesTet1 << nodes(0), nodes(1), nodes(7), nodes(4);
-                nodesTet2 << nodes(5), nodes(4), nodes(7), nodes(1);
-                nodesTet3 << nodes(6), nodes(5), nodes(7), nodes(1);
-                nodesTet4 << nodes(2), nodes(7), nodes(1), nodes(6);
-                nodesTet5 << nodes(2), nodes(3), nodes(1), nodes(7);
-
+                std::vector<int> nodesTet0({nodes(0), nodes(1), nodes(3), nodes(7)});
+                std::vector<int> nodesTet1({nodes(0), nodes(1), nodes(7), nodes(4)});
+                std::vector<int> nodesTet2({nodes(5), nodes(4), nodes(7), nodes(1)});
+                std::vector<int> nodesTet3({nodes(6), nodes(5), nodes(7), nodes(1)});
+                std::vector<int> nodesTet4({nodes(2), nodes(7), nodes(1), nodes(6)});
+                std::vector<int> nodesTet5({nodes(2), nodes(3), nodes(1), nodes(7)});
 
                 myStructure.ElementCreate(myInterpolationType, nodesTet0);
                 myStructure.ElementCreate(myInterpolationType, nodesTet1);

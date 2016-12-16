@@ -74,8 +74,7 @@ void CheckFractureEnergy2D(int rAngleDegree, double rInterfaceThickness)
     s.InterpolationTypeAdd(it, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
 
 
-    Eigen::VectorXi ids(4);
-    ids << 0, 1, 2, 3;
+    std::vector<int> ids({0, 1, 2, 3});
     s.ElementCreate(0, it, ids);
 
     s.ElementTotalConvertToInterpolationType();

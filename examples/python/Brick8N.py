@@ -48,20 +48,20 @@ myStructure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistan
 myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant1")
 
 # create elements
-elementIncidence = nuto.IntFullVector(8)
+elementIncidence = nuto.IntVector(8)
 
 for zCount in range (0, NumElementsZ):
     for yCount in range(0, NumElementsY):
         for xCount in range(0, NumElementsX):
             node1 = zCount * (NumElementsX + 1) * (NumElementsY + 1) + yCount * (NumElementsX + 1) + xCount
-            elementIncidence.SetValue(0,0, node1)
-            elementIncidence.SetValue(1,0, node1 + 1)
-            elementIncidence.SetValue(2,0, node1 + NumElementsX + 2)
-            elementIncidence.SetValue(3,0, node1 + NumElementsX + 1)
-            elementIncidence.SetValue(4,0, node1 + (NumElementsX + 1) * (NumElementsY + 1))
-            elementIncidence.SetValue(5,0, node1 + (NumElementsX + 1) * (NumElementsY + 1) + 1)
-            elementIncidence.SetValue(6,0, node1 + (NumElementsX + 1) * (NumElementsY + 1) + NumElementsX + 2)
-            elementIncidence.SetValue(7,0, node1 + (NumElementsX + 1) * (NumElementsY + 1) + NumElementsX + 1)
+            elementIncidence[0] = node1
+            elementIncidence[1] = node1 + 1
+            elementIncidence[2] = node1 + NumElementsX + 2
+            elementIncidence[3] = node1 + NumElementsX + 1
+            elementIncidence[4] = node1 + (NumElementsX + 1) * (NumElementsY + 1)
+            elementIncidence[5] = node1 + (NumElementsX + 1) * (NumElementsY + 1) + 1
+            elementIncidence[6] = node1 + (NumElementsX + 1) * (NumElementsY + 1) + NumElementsX + 2
+            elementIncidence[7] = node1 + (NumElementsX + 1) * (NumElementsY + 1) + NumElementsX + 1
             #print "element: " + str(element) + " incidence: "
             #elementIncidence.Info()
             myStructure.ElementCreate(myInterpolationType, elementIncidence)

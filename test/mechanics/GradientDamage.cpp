@@ -222,11 +222,11 @@ void TestStructure1D(bool rUseRobinBoundaryElements)
     int interpolationType = AddInterpolationType(s, NuTo::Interpolation::eShapeType::TRUSS1D);
 
     // create elements
-    NuTo::FullVector<int, Eigen::Dynamic> nodes(2);
+    std::vector<int> nodes(2);
     for (int iElement = 0; iElement < numElements; iElement++)
     {
-        nodes(0) = iElement;
-        nodes(1) = iElement + 1;
+        nodes[0] = iElement;
+        nodes[1] = iElement + 1;
         s.ElementCreate(interpolationType, nodes);
     }
 
@@ -300,30 +300,31 @@ void TestStructure2D(NuTo::Interpolation::eShapeType rShape, NuTo::eSectionType 
     int myInterpolationType = AddInterpolationType(s, rShape);
 
     //create elements
+    std::vector<int> nodes;
     for (int countY = 0; countY < numElementsY; countY++)
     {
         for (int countX = 0; countX < numElementsX; countX++)
         {
             if (rShape == NuTo::Interpolation::eShapeType::QUAD2D)
             {
-                NuTo::FullVector<int, Eigen::Dynamic> nodes(4);
-                nodes(0) = countX + countY * numNodesX;
-                nodes(1) = countX + 1 + countY * numNodesX;
-                nodes(2) = countX + 1 + (countY + 1) * numNodesX;
-                nodes(3) = countX + (countY + 1) * numNodesX;
+                nodes.resize(4);
+                nodes[0] = countX + countY * numNodesX;
+                nodes[1] = countX + 1 + countY * numNodesX;
+                nodes[2] = countX + 1 + (countY + 1) * numNodesX;
+                nodes[3] = countX + (countY + 1) * numNodesX;
                 s.ElementCreate(myInterpolationType, nodes);
             }
             if (rShape == NuTo::Interpolation::eShapeType::TRIANGLE2D)
             {
-                NuTo::FullVector<int, Eigen::Dynamic> nodes(3);
-                nodes(0) = countX + countY * numNodesX;
-                nodes(1) = countX + 1 + countY * numNodesX;
-                nodes(2) = countX + 1 + (countY + 1) * numNodesX;
+                nodes.resize(3);
+                nodes[0] = countX + countY * numNodesX;
+                nodes[1] = countX + 1 + countY * numNodesX;
+                nodes[2] = countX + 1 + (countY + 1) * numNodesX;
                 s.ElementCreate(myInterpolationType, nodes);
 
-                nodes(0) = countX + countY * numNodesX;
-                nodes(1) = countX + 1 + (countY + 1) * numNodesX;
-                nodes(2) = countX + (countY + 1) * numNodesX;
+                nodes[0] = countX + countY * numNodesX;
+                nodes[1] = countX + 1 + (countY + 1) * numNodesX;
+                nodes[2] = countX + (countY + 1) * numNodesX;
                 s.ElementCreate(myInterpolationType, nodes);
             }
         }
@@ -355,7 +356,7 @@ void TestStructure3D(NuTo::Interpolation::eShapeType rShape, bool rUseRobinBound
     s.SetVerboseLevel(0);
 
     double lX = 3, lY = 4, lZ = 5;
-    NuTo::FullVector<int, Eigen::Dynamic> nodeIds(8);
+    std::vector<int> nodeIds(8);
     nodeIds[0] = s.NodeCreate(NuTo::FullVector<double, 3> ({ 0, 0, 0}));
     nodeIds[1] = s.NodeCreate(NuTo::FullVector<double, 3> ({lX, 0, 0}));
     nodeIds[2] = s.NodeCreate(NuTo::FullVector<double, 3> ({lX,lY, 0}));
@@ -371,19 +372,12 @@ void TestStructure3D(NuTo::Interpolation::eShapeType rShape, bool rUseRobinBound
         s.ElementCreate(myInterpolationType, nodeIds);
     if (rShape == NuTo::Interpolation::eShapeType::TETRAHEDRON3D)
     {
-        NuTo::FullVector<int,Eigen::Dynamic> nodesTet0(4);
-        NuTo::FullVector<int,Eigen::Dynamic> nodesTet1(4);
-        NuTo::FullVector<int,Eigen::Dynamic> nodesTet2(4);
-        NuTo::FullVector<int,Eigen::Dynamic> nodesTet3(4);
-        NuTo::FullVector<int,Eigen::Dynamic> nodesTet4(4);
-        NuTo::FullVector<int,Eigen::Dynamic> nodesTet5(4);
-
-        nodesTet0 << nodeIds(0), nodeIds(1), nodeIds(3), nodeIds(7);
-        nodesTet1 << nodeIds(0), nodeIds(1), nodeIds(7), nodeIds(4);
-        nodesTet2 << nodeIds(5), nodeIds(4), nodeIds(7), nodeIds(1);
-        nodesTet3 << nodeIds(6), nodeIds(5), nodeIds(7), nodeIds(1);
-        nodesTet4 << nodeIds(2), nodeIds(7), nodeIds(1), nodeIds(6);
-        nodesTet5 << nodeIds(2), nodeIds(3), nodeIds(1), nodeIds(7);
+        std::vector<int> nodesTet0({nodeIds[0], nodeIds[1], nodeIds[3], nodeIds[7]});
+        std::vector<int> nodesTet1({nodeIds[0], nodeIds[1], nodeIds[7], nodeIds[4]});
+        std::vector<int> nodesTet2({nodeIds[5], nodeIds[4], nodeIds[7], nodeIds[1]});
+        std::vector<int> nodesTet3({nodeIds[6], nodeIds[5], nodeIds[7], nodeIds[1]});
+        std::vector<int> nodesTet4({nodeIds[2], nodeIds[7], nodeIds[1], nodeIds[6]});
+        std::vector<int> nodesTet5({nodeIds[2], nodeIds[3], nodeIds[1], nodeIds[7]});
 
         s.ElementCreate(myInterpolationType, nodesTet0);
         s.ElementCreate(myInterpolationType, nodesTet1);
@@ -487,11 +481,11 @@ void Check1D2D3D()
         nodeCoordinates(0) = iNode * lengthElementX; // two nodes per element
         s1D.NodeCreate(iNode, nodeCoordinates);
     }
-    NuTo::FullVector<int, Eigen::Dynamic> elementIncidence(2);
+    std::vector<int> elementIncidence(2);
     for (int iElement = 0; iElement < numElements; iElement++)
     {
-        elementIncidence(0) = iElement;
-        elementIncidence(1) = iElement + 1;
+        elementIncidence[0] = iElement;
+        elementIncidence[1] = iElement + 1;
         s1D.ElementCreate(interpolationType1D, elementIncidence);
     }
 
@@ -507,13 +501,13 @@ void Check1D2D3D()
         }
 
     //create elements
+    std::vector<int> nodes(4);
     for (int countX = 0; countX < numElements; countX++)
     {
-        NuTo::FullVector<int, Eigen::Dynamic> nodes(4);
-        nodes(0) = countX;
-        nodes(1) = countX + 1;
-        nodes(2) = countX + 1 + numNodesX;
-        nodes(3) = countX + numNodesX;
+        nodes[0] = countX;
+        nodes[1] = countX + 1;
+        nodes[2] = countX + 1 + numNodesX;
+        nodes[3] = countX + numNodesX;
         s2D.ElementCreate(interpolationType2D, nodes);
     }
 
@@ -530,17 +524,17 @@ void Check1D2D3D()
                 nodeNum++;
             }
 
+    nodes.resize(8);
     for (int iX=0; iX<numElements; iX++)
     {
-        NuTo::FullVector<int,Eigen::Dynamic> nodes(8);
-        nodes(0) = iX;
-        nodes(1) = iX+1;
-        nodes(2) = iX+1 +  2 * numNodesX;
-        nodes(3) = iX   +  2 * numNodesX;
-        nodes(4) = iX                    + numNodesX;
-        nodes(5) = iX+1                  + numNodesX;
-        nodes(6) = iX+1 +  2 * numNodesX + numNodesX;
-        nodes(7) = iX   +  2 * numNodesX + numNodesX;
+        nodes[0] = iX;
+        nodes[1] = iX+1;
+        nodes[2] = iX+1 +  2 * numNodesX;
+        nodes[3] = iX   +  2 * numNodesX;
+        nodes[4] = iX                    + numNodesX;
+        nodes[5] = iX+1                  + numNodesX;
+        nodes[6] = iX+1 +  2 * numNodesX + numNodesX;
+        nodes[7] = iX   +  2 * numNodesX + numNodesX;
 
         s3D.ElementCreate(interpolationType3D, nodes);
     }

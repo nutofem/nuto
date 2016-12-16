@@ -52,42 +52,42 @@ int main()
     NuTo::FullVector<int, Eigen::Dynamic> Nodes = myStructure.NodesCreate(Coordinates);
 
     // create elements
-    NuTo::FullVector<int, Eigen::Dynamic> Incidences(4);
+    std::vector<int> Incidences(4);
     NuTo::FullVector<int, Eigen::Dynamic> Elements(5);
 
     // element1
-    Incidences(0) = Nodes(0);
-    Incidences(1) = Nodes(1);
-    Incidences(2) = Nodes(4);
-    Incidences(3) = Nodes(3);
+    Incidences[0] = Nodes(0);
+    Incidences[1] = Nodes(1);
+    Incidences[2] = Nodes(4);
+    Incidences[3] = Nodes(3);
     Elements[0] = myStructure.ElementCreate(myInterpolationType, Incidences);
 
     // element2
-    Incidences(0) = Nodes(1);
-    Incidences(1) = Nodes(2);
-    Incidences(2) = Nodes(5);
-    Incidences(3) = Nodes(4);
+    Incidences[0] = Nodes(1);
+    Incidences[1] = Nodes(2);
+    Incidences[2] = Nodes(5);
+    Incidences[3] = Nodes(4);
     Elements[1] = myStructure.ElementCreate(myInterpolationType, Incidences);
 
     // element3
-    Incidences(0) = Nodes(3);
-    Incidences(1) = Nodes(4);
-    Incidences(2) = Nodes(7);
-    Incidences(3) = Nodes(6);
+    Incidences[0] = Nodes(3);
+    Incidences[1] = Nodes(4);
+    Incidences[2] = Nodes(7);
+    Incidences[3] = Nodes(6);
     Elements[2] = myStructure.ElementCreate(myInterpolationType, Incidences);
 
     // element4
-    Incidences(0) = Nodes(4);
-    Incidences(1) = Nodes(5);
-    Incidences(2) = Nodes(8);
-    Incidences(3) = Nodes(7);
+    Incidences[0] = Nodes(4);
+    Incidences[1] = Nodes(5);
+    Incidences[2] = Nodes(8);
+    Incidences[3] = Nodes(7);
     Elements[3] = myStructure.ElementCreate(myInterpolationType, Incidences);
 
     // element5
-    Incidences(0) = Nodes(2, 0);
-    Incidences(1) = Nodes(9, 0);
-    Incidences(2) = Nodes(10, 0);
-    Incidences(3) = Nodes(8, 0);
+    Incidences[0] = Nodes(2, 0);
+    Incidences[1] = Nodes(9, 0);
+    Incidences[2] = Nodes(10, 0);
+    Incidences[3] = Nodes(8, 0);
     Elements[4] = myStructure.ElementCreate(myInterpolationType, Incidences);
 
     Coordinates.Info();

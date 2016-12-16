@@ -98,17 +98,22 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
     int numNodes = node;
 
     /** create elements **/
-    NuTo::FullVector<int,Eigen::Dynamic> elementIncidence(rNumNodesPerElement);
+    std::vector<int> elementIncidence(rNumNodesPerElement);
     for(int element = 0, node = 0; element < NumElements; element++)
     {
         for (int i = 0; i < rNumNodesPerElement; i++)
         {
-            elementIncidence(i) = node;
+            elementIncidence[i] = node;
             node++;
         }
         node--;
 
-        if(PRINTRESULT) std::cout <<  "create element: " << element << " nodes: " << elementIncidence << std::endl;
+        if(PRINTRESULT)
+        {
+            std::cout <<  "create element: " << element << " nodes: ";
+            for(auto id : elementIncidence) std::cout << id << " ";
+            std::cout << std::endl;
+        }
 
         myStructure->ElementCreate(interpolationType, elementIncidence);
     }
@@ -224,7 +229,7 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
     myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, rElementTypeIdent);
 
     /** Elements **/
-    NuTo::FullVector<int,Eigen::Dynamic> elementIncidence(rNumNodesPerElementInOneDir*rNumNodesPerElementInOneDir);
+    std::vector<int> elementIncidence(rNumNodesPerElementInOneDir*rNumNodesPerElementInOneDir);
     int numNodesInRow = NumElementsX*(rNumNodesPerElementInOneDir-1) + 1;
     for(int j = 0; j < NumElementsY; j++)
     {
@@ -233,10 +238,15 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
             // one element
             for (int k = 0; k < rNumNodesPerElementInOneDir; k++)
                 for(int l = 0; l < rNumNodesPerElementInOneDir; l++)
-                    elementIncidence(k + l*rNumNodesPerElementInOneDir) = i*(rNumNodesPerElementInOneDir - 1) + k + l*numNodesInRow + j*(rNumNodesPerElementInOneDir-1)*numNodesInRow;
+                    elementIncidence[k + l*rNumNodesPerElementInOneDir] = i*(rNumNodesPerElementInOneDir - 1) + k + l*numNodesInRow + j*(rNumNodesPerElementInOneDir-1)*numNodesInRow;
 
             int myElement = myStructure->ElementCreate(interpolationType, elementIncidence);
-            if (PRINTRESULT) std::cout <<  "create element: " << myElement << " nodes: \n" << elementIncidence << std::endl;
+            if(PRINTRESULT)
+            {
+                std::cout <<  "create element: " << myElement << " nodes: \n";
+                for(auto id : elementIncidence) std::cout << id << " ";
+                std::cout << std::endl;
+            }
         }
     }
 

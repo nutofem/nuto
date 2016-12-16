@@ -534,8 +534,7 @@ int NuTo::Structure::ElementCreate(int   rInterpolationTypeId,
     return elementNumber;
 }
 
-int NuTo::Structure::ElementCreate(int   rInterpolationTypeId,
-                                   const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers)
+int NuTo::Structure::ElementCreate(int rInterpolationTypeId, const std::vector<int>& rNodeNumbers)
 {
     int elementNumber = GetUnusedId(mElementMap);
     this->ElementCreate(elementNumber, rInterpolationTypeId, rNodeNumbers);
@@ -628,16 +627,14 @@ void NuTo::Structure::ElementCreate(int rElementNumber,
 
 }
 
-void NuTo::Structure::ElementCreate(int rElementNumber,
-                                    int rInterpolationTypeId,
-                                    const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers)
+void NuTo::Structure::ElementCreate(int elementNumber, int interpolationTypeId, const std::vector<int>& rNodeNumbers)
 {
     // convert node numbers to pointer
     std::vector<NodeBase*> nodeVector;
-    for (int iNode = 0; iNode < rNodeNumbers.GetNumRows(); iNode++)
-        nodeVector.push_back(NodeGetNodePtr(rNodeNumbers.GetValue(iNode)));
+    for (auto nodeNumber : rNodeNumbers)
+        nodeVector.push_back(NodeGetNodePtr(nodeNumber));
 
-    ElementCreate(rElementNumber, rInterpolationTypeId, nodeVector);
+    ElementCreate(elementNumber, interpolationTypeId, nodeVector);
 }
 
 void NuTo::Structure::ElementCreate(int rElementNumber,
@@ -723,10 +720,11 @@ int NuTo::Structure::ElementsCreate(int rInterpolationTypeId,
                                     NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rNodeNumbers)
 {
     std::vector<int> newElementIds;
-    /// go through the elements
+    // go through the elements
     for (int iNode = 0; iNode < rNodeNumbers.GetNumColumns(); ++iNode)
     {
-        const NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> incidence(rNodeNumbers.GetColumn(iNode));
+        auto column = rNodeNumbers.GetColumn(iNode);
+        std::vector<int> incidence(column.data(), column.data() + column.size());
         int newElementId = ElementCreate(rInterpolationTypeId, incidence);
         newElementIds.push_back(newElementId);
     }
@@ -1022,8 +1020,8 @@ std::pair<int,int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId,
 
         assert( (nodeIds.size() == 2 or nodeIds.size() == 3) and "Only implemented for the 4 node and 6 node interface element");
 
-        NuTo::FullVector<int, Eigen::Dynamic> nodeIdsFibre(nodeIds.size());
-        NuTo::FullVector<int, Eigen::Dynamic> nodeIdsMatrix(nodeIds.size());
+        std::vector<int> nodeIdsFibre(nodeIds.size());
+        std::vector<int> nodeIdsMatrix(nodeIds.size());
 
         // loop over nodes of element
         for (int k = 0; k < nodeIds.size(); ++k)
@@ -1064,7 +1062,7 @@ std::pair<int,int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId,
         }
 
         // create interface element
-        NuTo::FullVector<int, Eigen::Dynamic> nodeIndicesInterface(2 * nodeIds.size());
+        std::vector<int> nodeIndicesInterface(2 * nodeIds.size());
         for (int iIndex = 0; iIndex < nodeIds.size(); ++iIndex)
         {
             nodeIndicesInterface[iIndex] = nodeIdsMatrix[iIndex];

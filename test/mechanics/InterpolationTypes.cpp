@@ -297,8 +297,7 @@ void CheckAPI()
     nodeCoordinates << 0, ly;
     int nodeIndex2 = myStructure.NodeCreate(nodeCoordinates);
 
-    NuTo::FullVector<int, Eigen::Dynamic> nodeIndices(3);
-    nodeIndices << nodeIndex0, nodeIndex1, nodeIndex2;
+    std::vector<int> nodeIndices({nodeIndex0, nodeIndex1, nodeIndex2});
 
     // create interpolation type
     int myInterpolationTypeIndex = myStructure.InterpolationTypeCreate("TRIANGLE2D");
@@ -407,14 +406,14 @@ void NodeReordering()
         nodes << 0, 1;
 
         nodeIds = myStructureTruss.NodesCreate(nodes);
-        NuTo::FullVector<int, Eigen::Dynamic> ids(2);
+        std::vector<int> ids(2);
 
         // right numbering
-        ids << nodeIds(0), nodeIds(1);
+        ids = {nodeIds(0), nodeIds(1)};
         myStructureTruss.ElementCreate(itTruss, ids);
 
         // "wrong" numbering
-        ids << nodeIds(1), nodeIds(0);
+        ids = {nodeIds(1), nodeIds(0)};
         myStructureTruss.ElementCreate(itTruss, ids);
     }
     catch (NuTo::MechanicsException& e)
@@ -435,14 +434,14 @@ void NodeReordering()
                  0, 0, 3;
 
         nodeIds = myStructureTriangle.NodesCreate(nodes);
-        NuTo::FullVector<int, Eigen::Dynamic> ids(3);
+        std::vector<int> ids(3);
 
         // right numbering
-        ids << nodeIds(0), nodeIds(1), nodeIds(2);
+        ids = {nodeIds(0), nodeIds(1), nodeIds(2)};
         myStructureTriangle.ElementCreate(itTriangle, ids);
 
         // "wrong" numbering
-        ids << nodeIds(2), nodeIds(1), nodeIds(0);
+        ids = {nodeIds(2), nodeIds(1), nodeIds(0)};
         myStructureTriangle.ElementCreate(itTriangle, ids);
 
     }
@@ -463,14 +462,14 @@ void NodeReordering()
                  0, 0, 3, 2;
 
         nodeIds = myStructureQuad.NodesCreate(nodes);
-        NuTo::FullVector<int, Eigen::Dynamic> ids(4);
+        std::vector<int> ids(4);
 
         // right numbering
-        ids << nodeIds(0), nodeIds(1), nodeIds(2), nodeIds(3);
+        ids = {nodeIds(0), nodeIds(1), nodeIds(2), nodeIds(3)};
         myStructureQuad.ElementCreate(itQuad, ids);
 
         // "wrong" numbering
-        ids << nodeIds(3), nodeIds(2), nodeIds(1), nodeIds(0);
+        ids = {nodeIds(3), nodeIds(2), nodeIds(1), nodeIds(0)};
         myStructureQuad.ElementCreate(itQuad, ids);
     }
     catch (NuTo::MechanicsException& e)
@@ -492,14 +491,14 @@ void NodeReordering()
 
 
         nodeIds = myStructureTetrahedron.NodesCreate(nodes);
-        NuTo::FullVector<int, Eigen::Dynamic> ids(4);
+        std::vector<int> ids(4);
 
         // right numbering
-        ids << nodeIds(0), nodeIds(1), nodeIds(2), nodeIds(3);
+        ids = {nodeIds(0), nodeIds(1), nodeIds(2), nodeIds(3)};
         myStructureTetrahedron.ElementCreate(itTetrahedron, ids);
 
         // "wrong" numbering
-        ids << nodeIds(0), nodeIds(3), nodeIds(2), nodeIds(1);
+        ids = {nodeIds(0), nodeIds(3), nodeIds(2), nodeIds(1)};
         myStructureTetrahedron.ElementCreate(itTetrahedron, ids);
     }
     catch (NuTo::MechanicsException& e)
@@ -521,14 +520,14 @@ void NodeReordering()
 
 
         nodeIds = myStructureBrick.NodesCreate(nodes);
-        NuTo::FullVector<int, Eigen::Dynamic> ids(8);
+        std::vector<int> ids(8);
 
         // right numbering
-        ids << nodeIds(0), nodeIds(1), nodeIds(2), nodeIds(3), nodeIds(4), nodeIds(5), nodeIds(6), nodeIds(7);
+        ids = {nodeIds(0), nodeIds(1), nodeIds(2), nodeIds(3), nodeIds(4), nodeIds(5), nodeIds(6), nodeIds(7)};
         myStructureBrick.ElementCreate(itBricks, ids);
 
         // "wrong" numbering
-        ids << nodeIds(4), nodeIds(5), nodeIds(6), nodeIds(7), nodeIds(0), nodeIds(1), nodeIds(2), nodeIds(3);
+        ids = {nodeIds(4), nodeIds(5), nodeIds(6), nodeIds(7), nodeIds(0), nodeIds(1), nodeIds(2), nodeIds(3)};
         myStructureBrick.ElementCreate(itBricks, ids);
     }
     catch (NuTo::MechanicsException& e)

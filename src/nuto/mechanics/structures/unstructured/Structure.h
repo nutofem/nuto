@@ -342,25 +342,22 @@ public:
     //---------------------------------------------------------------------------------------------------------------------------
 
     //! @brief Creates an element
-    //! @param rInterpolationTypeId interpolation type id
+    //! @param interpolationTypeId ID of the interpolation type
     //! @param rNodeNumbers node indices
-    //! @return element id
-    int ElementCreate(int rInterpolationTypeId,
-                      const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers);
+    //! @return ID of the newly created element
+    int ElementCreate(int interpolationTypeId, const std::vector<int>& rNodeNumbers);
 
     //! @brief Creates an element
-    //! @param rElementNumber ... element number
-    //! @param rInterpolationTypeId ... interpolation type id
-    //! @param rNodeNumbers  ... node indices
-    void ElementCreate(int rElementNumber,
-                       int rInterpolationTypeId,
-                       const NuTo::FullVector<int, Eigen::Dynamic>& rNodeNumbers);
+    //! @param elementNumber Number of the element
+    //! @param interpolationTypeId Id of the interpolation type
+    //! @param rNodeNumbers  Vector of node numbers
+    void ElementCreate(int elementNumber, int interpolationTypeId, const std::vector<int>& rNodeNumbers);
     //---------------------------------------------------------------------------------------------------------------------------
 
     //! @brief creates multiple elements and adds them to an element group
     //! @param rInterpolationTypeId interpolation type id
     //! @param rNodeIdents Identifier for the corresponding nodes (Incidences have to be stored column-wise)
-    //! @return index to the new element group
+    //! @return index to the new element group<<
     int ElementsCreate(int rInterpolationTypeId,
                        NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rNodeNumbers);
 

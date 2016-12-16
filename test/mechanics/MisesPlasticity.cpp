@@ -65,7 +65,7 @@ void Mises2D(const std::string& rDir)
     NuTo::Structure myStructure(2);
     myStructure.SetVerboseLevel(10);
 
-    NuTo::FullVector<int, Eigen::Dynamic> nodeIds(4);
+    std::vector<int> nodeIds(4);
     nodeIds[0] = myStructure.NodeCreate(NuTo::FullVector<double, 2>({1,1}));
     nodeIds[1] = myStructure.NodeCreate(NuTo::FullVector<double, 2>({0,1}));
     nodeIds[2] = myStructure.NodeCreate(NuTo::FullVector<double, 2>({0,0}));
@@ -171,19 +171,12 @@ void Mises3D(const std::string& rDir)
     nodeIds[7] = myStructure.NodeCreate(NuTo::FullVector<double, 3>({1,0,0}));
 
 
-    NuTo::FullVector<int,Eigen::Dynamic> nodesTet0(4);
-    NuTo::FullVector<int,Eigen::Dynamic> nodesTet1(4);
-    NuTo::FullVector<int,Eigen::Dynamic> nodesTet2(4);
-    NuTo::FullVector<int,Eigen::Dynamic> nodesTet3(4);
-    NuTo::FullVector<int,Eigen::Dynamic> nodesTet4(4);
-    NuTo::FullVector<int,Eigen::Dynamic> nodesTet5(4);
-
-    nodesTet0 << nodeIds(0), nodeIds(1), nodeIds(3), nodeIds(7);
-    nodesTet1 << nodeIds(0), nodeIds(1), nodeIds(7), nodeIds(4);
-    nodesTet2 << nodeIds(5), nodeIds(4), nodeIds(7), nodeIds(1);
-    nodesTet3 << nodeIds(6), nodeIds(5), nodeIds(7), nodeIds(1);
-    nodesTet4 << nodeIds(2), nodeIds(7), nodeIds(1), nodeIds(6);
-    nodesTet5 << nodeIds(2), nodeIds(3), nodeIds(1), nodeIds(7);
+    std::vector<int> nodesTet0 = {nodeIds[0], nodeIds[1], nodeIds[3], nodeIds[7]};
+    std::vector<int> nodesTet1 = {nodeIds[0], nodeIds[1], nodeIds[7], nodeIds[4]};
+    std::vector<int> nodesTet2 = {nodeIds[5], nodeIds[4], nodeIds[7], nodeIds[1]};
+    std::vector<int> nodesTet3 = {nodeIds[6], nodeIds[5], nodeIds[7], nodeIds[1]};
+    std::vector<int> nodesTet4 = {nodeIds[2], nodeIds[7], nodeIds[1], nodeIds[6]};
+    std::vector<int> nodesTet5 = {nodeIds[2], nodeIds[3], nodeIds[1], nodeIds[7]};
 
 
 

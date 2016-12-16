@@ -64,33 +64,33 @@ structure3D.InterpolationTypeAdd(brick_iptype, "coordinates", "equidistant1")
 structure3D.InterpolationTypeAdd(brick_iptype, "temperature", "equidistant1")
 
 # create one truss element
-element_incidence = nuto.IntFullVector(2)
-element_incidence.SetValue(0, 0)
-element_incidence.SetValue(1, 1)
+element_incidence = nuto.IntVector(2)
+element_incidence[0] = 0
+element_incidence[1] = 1
 structure1D.ElementCreate(truss_iptype, element_incidence)
 structure1D.ElementSetSection(0, section1D)
 structure1D.ElementSetConstitutiveLaw(0, material1D)
 
 # create one quad element
-element_incidence = nuto.IntFullVector(4)
-element_incidence.SetValue(0, 0)
-element_incidence.SetValue(1, 1)
-element_incidence.SetValue(2, 3)
-element_incidence.SetValue(3, 2)
+element_incidence = nuto.IntVector(4)
+element_incidence[0] = 0
+element_incidence[1] = 1
+element_incidence[2] = 3
+element_incidence[3] = 2
 structure2D.ElementCreate(quad_iptype, element_incidence)
 structure2D.ElementSetSection(0, section2D)
 structure2D.ElementSetConstitutiveLaw(0, material2D)
 
 # create one brick element
-element_incidence = nuto.IntFullVector(8)
-element_incidence.SetValue(0, 0)
-element_incidence.SetValue(1, 1)
-element_incidence.SetValue(2, 3)
-element_incidence.SetValue(3, 2)
-element_incidence.SetValue(4, 4)
-element_incidence.SetValue(5, 5)
-element_incidence.SetValue(6, 7)
-element_incidence.SetValue(7, 6)
+element_incidence = nuto.IntVector(8)
+element_incidence[0] = 0
+element_incidence[1] = 1
+element_incidence[2] = 3
+element_incidence[3] = 2
+element_incidence[4] = 4
+element_incidence[5] = 5
+element_incidence[6] = 7
+element_incidence[7] = 6
 structure3D.ElementCreate(brick_iptype, element_incidence)
 structure3D.ElementSetSection(0, section3D)
 structure3D.ElementSetConstitutiveLaw(0, material3D)

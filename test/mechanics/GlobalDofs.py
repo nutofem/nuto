@@ -45,7 +45,7 @@ myInterpolationType = myStructure.InterpolationTypeCreate("Truss1D");
 myStructure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistant2");
 myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant2");
 
-myElement1 =  myStructure.ElementCreate(myInterpolationType,nuto.IntFullVector((myNode1,myNode2,myNode3)))
+myElement1 =  myStructure.ElementCreate(myInterpolationType,nuto.IntVector([myNode1,myNode2,myNode3]))
 myStructure.ElementTotalConvertToInterpolationType();
 
 #create group of nodes
