@@ -1,4 +1,4 @@
-#include "/usr/lib/openmpi/include/mpi.h"
+#include <mpi.h>
 #include <boost/mpi.hpp>
 #include <json/json.h>
 
@@ -51,38 +51,38 @@ NuTo::StructureFETI::StructureFETI(int rDimension):
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void NuTo::StructureFETI::AssembleBoundaryDofIds()
-{
+//void NuTo::StructureFETI::AssembleBoundaryDofIds()
+//{
 
-    const auto& dofTypes = GetDofStatus().GetDofTypes();
+//    const auto& dofTypes = GetDofStatus().GetDofTypes();
 
-    int numActiveDofs = 0;
+//    int numActiveDofs = 0;
 
-    for (const auto& dofType : dofTypes)
-        numActiveDofs           += GetNumActiveDofs(dofType);
+//    for (const auto& dofType : dofTypes)
+//        numActiveDofs           += GetNumActiveDofs(dofType);
 
-    mBoundaryDofIds.setZero(numActiveDofs);
+//    mBoundaryDofIds.setZero(numActiveDofs);
 
-    int offset = 0;
-    for (const auto& dofType : dofTypes)
-    {
-        for (const auto& nodeId : mSubdomainBoundaryNodeIds)
-        {
-            const std::vector<int> dofIds = NodeGetDofIds(nodeId, dofType);
+//    int offset = 0;
+//    for (const auto& dofType : dofTypes)
+//    {
+//        for (const auto& nodeId : mSubdomainBoundaryNodeIds)
+//        {
+//            const std::vector<int> dofIds = NodeGetDofIds(nodeId, dofType);
 
-            for (const auto& dofId : dofIds)
-            {
-                if(dofId < GetNumActiveDofs(dofType))
-                    mBoundaryDofIds.diagonal()(dofId + offset) = 1;
-            }
+//            for (const auto& dofId : dofIds)
+//            {
+//                if(dofId < GetNumActiveDofs(dofType))
+//                    mBoundaryDofIds.diagonal()(dofId + offset) = 1;
+//            }
 
-        }
-        offset += GetNumActiveDofs(dofType);
-    }
+//        }
+//        offset += GetNumActiveDofs(dofType);
+//    }
 
 
 
-}
+//}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -90,26 +90,21 @@ void NuTo::StructureFETI::AssembleBoundaryDofIds()
 void NuTo::StructureFETI::AssembleConnectivityMatrix()
 {
 
-    const auto& dofTypes = GetDofStatus().GetDofTypes();
+    const auto& dofTypes    = GetDofStatus().GetDofTypes();
+    const int numTotalDofs  = GetNumTotalDofs();
 
-    int numActiveDofs           = 0;
     int numLagrangeMultipliers  = 0;
-
-    // this should be read from the mesh file
-    //    const int numInterfaceNodesTotal    = 42;
 
     for (const auto& dofType : dofTypes)
     {
-        numActiveDofs           += GetNumActiveDofs(dofType);
-
-        // Add the dofs that have been constrained to remove rigid body modes
-        if (dofType == NuTo::Node::eDof::DISPLACEMENTS)
-            numActiveDofs += mNumRigidBodyModes;
-
         numLagrangeMultipliers  += GetDofDimension(dofType) * mNumInterfaceNodesTotal;
     }
 
-    mConnectivityMatrix.resize(numLagrangeMultipliers, numActiveDofs);
+    std::cout << "mRank \t" << mRank << "\t mNumInterfaceNodesTotal \n" << mNumInterfaceNodesTotal << std::endl;
+    std::cout << "mRank \t" << mRank << "\t mNumTotalBoundaryDofIds \n" << mNumTotalBoundaryDofIds << std::endl;
+    std::cout << "mRank \t" << mRank << "\t numLagrangeMultipliers \n" << numLagrangeMultipliers << std::endl;
+    numLagrangeMultipliers  += mNumTotalBoundaryDofIds;
+    mConnectivityMatrix.resize(numLagrangeMultipliers, numTotalDofs);
 
     int offsetRows = 0;
     int offsetCols = 0;
@@ -136,13 +131,35 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
     }
 
 
+    int globalIndex = numLagrangeMultipliers - mNumTotalBoundaryDofIds + mGlobalStartIndexBoundaryDofIds;
+    for (const int& id :  mBoundaryDofIds)
+    {
+        mConnectivityMatrix.insert(globalIndex,id) = 1;
+        ++globalIndex;
+    }
+
+
+    Eigen::VectorXd vec(numTotalDofs);
+    for (size_t i = 0; i < numTotalDofs; ++i)
+        vec[i] = i;
+
 
     if (mRank == 0)
     {
-        //        std::cout << mConnectivityMatrix << std::endl;
-        std::cout << mConnectivityMatrix.rows() << std::endl;
-        std::cout << mConnectivityMatrix.cols() << std::endl;
+        std::cout << "mRank \t" << mRank << "\t mConnectivityMatrix.rows() \n" << mConnectivityMatrix.rows() << std::endl;
+        std::cout << "mRank \t" << mRank << "\t mConnectivityMatrix.cols() \n" << mConnectivityMatrix.cols() << std::endl;
+        std::cout << "mRank \t" << mRank << "\t mConnectivityMatrix * vec  \n" << mConnectivityMatrix * vec << std::endl;
     }
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    if (mRank == 1)
+    {
+        std::cout << "mRank \t" << mRank << "\t mConnectivityMatrix.rows() \n" << mConnectivityMatrix.rows() << std::endl;
+        std::cout << "mRank \t" << mRank << "\t mConnectivityMatrix.cols() \n" << mConnectivityMatrix.cols() << std::endl;
+        std::cout << "mRank \t" << mRank << "\t mConnectivityMatrix * vec  \n" << mConnectivityMatrix * vec << std::endl;
+    }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

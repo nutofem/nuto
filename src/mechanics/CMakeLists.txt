@@ -288,6 +288,7 @@ endif()
 target_link_libraries(NuToMechanics jsoncpp)
 
 if(ENABLE_MPI)
+    message(STATUS "MPI_LIBRARIES: ${MPI_LIBRARIES}")
     target_link_libraries(NuToMechanics ${MPI_LIBRARIES})
 endif()
 

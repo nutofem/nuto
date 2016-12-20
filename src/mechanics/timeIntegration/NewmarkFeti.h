@@ -1,3 +1,4 @@
+#include <mpi.h>
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 #include "base/ErrorEnum.h"
@@ -11,6 +12,7 @@
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/structures/StructureOutputDummy.h"
 #include "/usr/lib/openmpi/include/mpi.h"
+
 
 #include "base/CallbackInterface.h"
 #include "math/SparseMatrixCSRGeneral.h"
