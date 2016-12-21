@@ -32,4 +32,7 @@ structure.ImportMeshJson(meshFile,interpolationTypeId);
 ```    
 
 # Assembly of the connectivity matrix
-![alt text](https://github.com/nutofem/nuto/blob/master/doc/images/FETI_B_matrix_assembly.png "Connectivity matrix")
+
+![alt text][logo]
+
+[logo]: doc/images/FETI_B_matrix_assembly.png "Logo Title Text 2"
