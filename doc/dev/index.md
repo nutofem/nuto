@@ -2,7 +2,7 @@
 
 @ref BuildWithClang
 
-@ref ForwardDeclarations 
+@ref ForwardDeclarations
 
 @ref Doxygen
 
@@ -15,3 +15,5 @@
 @ref ConstitutiveStaticData
 
 @ref AvoidUnsigned
+
+@ref FETI
