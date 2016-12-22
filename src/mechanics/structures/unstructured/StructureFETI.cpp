@@ -131,6 +131,8 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
     }
 
 
+    std::cout << "mRank \t" << mRank << "\t mGlobalStartIndexBoundaryDofIds \n" << mGlobalStartIndexBoundaryDofIds << std::endl;
+
     int globalIndex = numLagrangeMultipliers - mNumTotalBoundaryDofIds + mGlobalStartIndexBoundaryDofIds;
     for (const int& id :  mBoundaryDofIds)
     {
@@ -149,6 +151,7 @@ void NuTo::StructureFETI::AssembleConnectivityMatrix()
         std::cout << "mRank \t" << mRank << "\t mConnectivityMatrix.rows() \n" << mConnectivityMatrix.rows() << std::endl;
         std::cout << "mRank \t" << mRank << "\t mConnectivityMatrix.cols() \n" << mConnectivityMatrix.cols() << std::endl;
         std::cout << "mRank \t" << mRank << "\t mConnectivityMatrix * vec  \n" << mConnectivityMatrix * vec << std::endl;
+
     }
 
     MPI_Barrier(MPI_COMM_WORLD);

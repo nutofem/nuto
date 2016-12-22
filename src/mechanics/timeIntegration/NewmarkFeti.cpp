@@ -529,7 +529,7 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
     {
         boost::mpi::communicator world;
         StructureFETI* structure = static_cast<StructureFETI*>(mStructure);
-        structure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
+        mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
         structure->AssembleConnectivityMatrix();
         const SparseMatrix& B       = structure->GetConnectivityMatrix();
@@ -544,7 +544,6 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
         mStructure->SetPrevTime(curTime);
         mStructure->SetTime(curTime);
 
-        mStructure->NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
 
         CalculateStaticAndTimeDependentExternalLoad();
 
@@ -715,6 +714,7 @@ NuTo::eError NuTo::NewmarkFeti::Solve(double rTimeDelta)
 
                 std::cout << "Rank: \t" << structure->mRank << "\n extForce \n" << extForce.J.Export().Norm() << std::endl;
                 std::cout << "Rank: \t" << structure->mRank << "\n residual \n" << residual.J.Export().Norm() << std::endl;
+                std::cin.get();
 
                 VectorXd rhs;
                 rhs.setZero(numTotalDofs);

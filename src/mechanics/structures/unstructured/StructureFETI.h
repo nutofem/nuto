@@ -182,10 +182,43 @@ public:
     int                         mNumInterfaceNodesTotal;
     std::set<int>               mSubdomainBoundaryNodeIds;
 
+
+    ///
+    /// \brief mBoundaryDofIds
+    ///
+    /// An array of ids of all the degrees of freedom that are constraint in the subdomain
+    ///
     std::vector<int>            mBoundaryDofIds;
-    std::vector<int>            mGlobalBoundaryDofIds;
-    int                         mNumTotalBoundaryDofIds;
+
+    ///
+    /// \brief mGlobalStartIndexBoundaryDofIds
+    ///
+    /// This variable is important for the assembly of the connectivity matrix. It is equal to the sum of the boundary
+    /// DOFs of all subdomains with lower rank. E.g.
+    ///
+    /// Subdomain 0:  mBoundaryDofIds.size() = 3: =>  mGlobalStartIndexBoundaryDofIds = 0:
+    /// Subdomain 1:  mBoundaryDofIds.size() = 6: =>  mGlobalStartIndexBoundaryDofIds = 3:
+    /// Subdomain 2:  mBoundaryDofIds.size() = 2: =>  mGlobalStartIndexBoundaryDofIds = 9:
+    ///
     int                         mGlobalStartIndexBoundaryDofIds;
+
+
+    ///
+    /// \brief mNumTotalBoundaryDofIds
+    ///
+    /// The total number of degrees of freedom that constraint in all subdomains
+    ///
+    /// MPI_Allreduce(  &numLocalBoundaryDofIds,
+    ///                 &structure.mNumTotalBoundaryDofIds,
+    ///                 1,
+    ///                 MPI_INT,
+    ///                 MPI_SUM,
+    ///                 MPI_COMM_WORLD);
+    ///
+    int                         mNumTotalBoundaryDofIds;
+
+
+
 
     ///
     /// \brief ImportMeshJson
