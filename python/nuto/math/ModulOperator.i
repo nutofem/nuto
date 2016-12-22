@@ -13,7 +13,7 @@
 %include "std_vector.i"
 // use exceptions, but build no interface for NUTO::Exception
 %ignore Exception;
-%include "nuto/base/ModulNuToBase.i"
+%include "base/ModulNuToBase.i"
 
 %include "nuto/math/Operator.h"
 

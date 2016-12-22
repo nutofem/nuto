@@ -20,13 +20,13 @@
 %include "std_vector.i"
 // use exceptions, but build no interface for NUTO::Exception
 %ignore Exception;
-%include "nuto/base/ModulNuToBase.i"
+%include "base/ModulNuToBase.i"
 
-%import "nuto/math/NuToMath.i"
-%import "nuto/math/ModulMatrix.i"
-%import "nuto/math/ModulFullMatrix.i"
-%import "nuto/math/ModulFullVector.i"
-%import "nuto/math/ModulSparseMatrix.i"
+%import "math/NuToMath.i"
+%import "math/ModulMatrix.i"
+%import "math/ModulFullMatrix.i"
+%import "math/ModulFullVector.i"
+%import "math/ModulSparseMatrix.i"
 
 /* solver */
 %include "nuto/math/SparseDirectSolver.h"

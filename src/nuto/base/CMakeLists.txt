@@ -18,8 +18,3 @@ install(TARGETS NuToBase
     ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
     LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
     )
-
-# build python modules
-configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
-nuto_install_python_file(__init__.py ${NUTO_PYTHON_MODULES_INSTALL_PATH}/nuto/base)
-nuto_swig_module(ModulNuToBase ModulNuToBase.i nuto/base NuToBase)

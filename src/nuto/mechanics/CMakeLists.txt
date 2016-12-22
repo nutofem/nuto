@@ -268,31 +268,6 @@ set(NuToMechanics_SOURCES
     ${NuToMechanicsTools_SOURCES}
     )
 
-set(NuToMechanics_SWIG_MODULES
-    ModulMechanics
-    )
-
-set(SWIG_MODULE_ModulMechanics_EXTRA_DEPS
-    structures/StructureBase.h
-    structures/unstructured/Structure.h
-    elements/ElementEnum.h
-    dofSubMatrixStorage/BlockStorageBase.h
-
-    dofSubMatrixStorage/DofStatus.h
-    dofSubMatrixStorage/BlockScalar.h
-    dofSubMatrixStorage/BlockFullMatrix.h
-    dofSubMatrixStorage/BlockFullVector.h
-    dofSubMatrixStorage/BlockSparseMatrix.h
-
-    timeIntegration/TimeIntegrationBase.h
-    timeIntegration/NewmarkBase.h
-    timeIntegration/NewmarkDirect.h
-
-    structures/StructureOutputBase.h
-    structures/StructureOutputBlockMatrix.h
-    structures/StructureOutputBlockVector.h
-    )
-
 # build static library
 add_library(NuToMechanics ${NuToMechanics_SOURCES})
 target_link_libraries(NuToMechanics ${ANN_LIBRARIES})
@@ -316,29 +291,8 @@ if(ENABLE_MPI)
     target_link_libraries(NuToMechanics ${MPI_LIBRARIES})
 endif()
 
-IF (ENABLE_SHOW_TIME)
-#add library for clock_gettime routines
-  TARGET_LINK_LIBRARIES(NuToMechanics rt)
-ENDIF (ENABLE_SHOW_TIME)
-IF (ENABLE_CGAL)
-#add library for clock_gettime routines
-  TARGET_LINK_LIBRARIES(NuToMechanics ${CGAL_LIBRARIES})
-ENDIF (ENABLE_CGAL)
-IF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
-  SET_TARGET_PROPERTIES(NuToMechanics PROPERTIES COMPILE_FLAGS "-fPIC")
-ENDIF(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
-
 # install library
 install(TARGETS NuToMechanics
     ARCHIVE DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
     LIBRARY DESTINATION ${NUTO_LIBRARIES_INSTALL_PATH}
     )
-
-# build python modules
-configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)
-nuto_install_python_file(__init__.py ${NUTO_PYTHON_MODULES_INSTALL_PATH}/nuto/mechanics)
-if(ENABLE_VISUALIZE)
-    nuto_swig_module(ModulMechanics ModulMechanics.i nuto/mechanics NuToMechanics NuToBase NuToMath NuToVisualize)
-else()
-    nuto_swig_module(ModulMechanics ModulMechanics.i nuto/mechanics NuToMechanics NuToBase NuToMath)
-endif()

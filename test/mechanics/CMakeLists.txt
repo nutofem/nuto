@@ -13,7 +13,7 @@
 add_subdirectory(constitutive)
 
 #test files for mechanics module
-if(ENABLE_PYTHON_TESTS)
+if(ENABLE_PYTHON)
     foreach(test
         Brick8N
         ConstitutiveLaws
@@ -33,7 +33,7 @@ if(ENABLE_PYTHON_TESTS)
 	    ${CMAKE_SYSTEM_PROCESSOR}
 	    ${CMAKE_CURRENT_SOURCE_DIR}
 	    ${CMAKE_CURRENT_BINARY_DIR})
-        set_property(TEST p::mechanics::${test} PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
+        set_property(TEST p::mechanics::${test} PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
     endforeach()
 endif()
 

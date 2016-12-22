@@ -24,7 +24,7 @@
 // convert python tuple to std::vector
 %include "std_vector.i"
 %ignore Exception;
-%include "nuto/base/ModulNuToBase.i"
+%include "base/ModulNuToBase.i"
 %include "nuto/base/CallbackInterface.h"
 
 %include "nuto/mechanics/structures/StructureBase.h"

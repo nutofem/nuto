@@ -20,7 +20,7 @@ option(ENABLE_OPENACC "enables OpenACC" FALSE)
 option(ENABLE_OPENMP "enables OpenMP" FALSE)
 option(ENABLE_OPTIMIZE "enables the optimize package" FALSE)
 option(ENABLE_PARDISO "enables support for PARDISO solver" FALSE)
-option(ENABLE_PYTHON_TESTS "create makefiles for python tests" TRUE)
+option(ENABLE_PYTHON "create python wrapper for nuto" TRUE)
 option(ENABLE_SHOW_TIME "shows for each python command the execution time" TRUE)
 option(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" FALSE)
 option(ENABLE_SERIALIZATION "enables serialization" FALSE)
@@ -133,53 +133,11 @@ if(ENABLE_COVERAGE)
     include(Coverage)
 endif()
 
-if(ENABLE_NUMPY)
-    find_package(Numpy REQUIRED)
-    if(NUMPY_FOUND)
-        add_definitions("-DENABLE_NUMPY")
-        include_directories(${NUMPY_INCLUDE_PATH})
-        set(NuTo_DOXYGEN_PREDEFINED "ENABLE_NUMPY" ${NuTo_DOXYGEN_PREDEFINED})
-        set(NuTo_SWIG_FLAGS "${NuTo_SWIG_FLAGS};-DENABLE_NUMPY")
-        message(STATUS "Numpy found")
-    else()
-        message(STATUS "Numpy not found")
-    endif()
-else()
-    message(STATUS "Numpy not activated")
-endif()
-
-# Python required for interface files c++ and python
-message(STATUS "Checking for Python...")
-find_package(PythonInterp 2 REQUIRED)
-find_package(PythonLibs 2 REQUIRED)
-include_directories(${PYTHON_INCLUDE_DIRS})
-
-# get python version
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys;print(sys.version[:3]);"
-        OUTPUT_VARIABLE PYTHON_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
-message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
-message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
-
 # set relative paths for install
 set(LIB_SUFFIX "" CACHE STRING "Define suffix of directory name (32/64)")
 set(NUTO_LIBRARIES_INSTALL_PATH "lib${LIB_SUFFIX}")
 set(NUTO_INCLUDE_INSTALL_PATH "include")
-set(NUTO_PYTHON_MODULES_INSTALL_PATH "lib${LIB_SUFFIX}/python${PYTHON_VERSION}/site-packages")
 
-# SWIG required for interface files c++ and python
-message(STATUS "Checking for SWIG...")
-find_program(SWIG_EXECUTABLE NAMES swig3.0 swig swig2.0)
-message(STATUS "MYSWIG_EXECUTABLE = ${SWIG_EXECUTABLE1}")
-find_package(SWIG REQUIRED)
-message(STATUS "SWIG found: ${SWIG_EXECUTABLE}")
-message(STATUS "SWIG_VERSION = ${SWIG_VERSION}")
-if(SWIG_VERSION VERSION_LESS "3.0")
-  message(FATAL_ERROR "Insufficient swig version (at least 3.0)")
-endif()
-include(${SWIG_USE_FILE})
-set(NuTo_SWIG_FLAGS "-Wall;-fvirtual;${NuTo_SWIG_FLAGS}")
 
 # search for MKL
 if(ENABLE_MKL)
@@ -280,6 +238,10 @@ if(ENABLE_MUMPS)
 else()
     set(MUMPS_FOUND FALSE)
     message(STATUS "MUMPS not switched on")
+endif()
+
+if(ENABLE_PYTHON)
+    add_subdirectory(python/nuto)
 endif()
 
 # find pardiso solver

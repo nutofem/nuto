@@ -1,17 +1,13 @@
-if(ENABLE_PYTHON_TESTS)
-    add_test(p::importNuto ${PYTHON_EXECUTABLE} -c "import nuto")
-    set_property(TEST p::importNuto PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
+if(ENABLE_PYTHON)
+    foreach(test
+            Matrix
+            NumpyFullMatrix
+            SparseMatrixCSR
+            )
 
-    add_test(p::math::Matrix ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Matrix.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-    set_property(TEST p::math::Matrix PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
-
-    if(ENABLE_NUMPY)
-        add_test(p::math::NumpyFullMatrix ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/NumpyFullMatrix.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-        set_property(TEST p::math::NumpyFullMatrix PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
-    endif()
-
-    add_test(p::math::SparseMatrixCSR ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/SparseMatrixCSR.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-    set_property(TEST p::math::SparseMatrixCSR PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
+        add_test(p::math::${test} ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${test}.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
+        set_property(TEST p::math::${test} PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
+    endforeach()
 endif()
 
 if(ENABLE_C++_TESTS)

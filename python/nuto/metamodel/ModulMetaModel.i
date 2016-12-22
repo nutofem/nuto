@@ -12,7 +12,7 @@
 // convert python tuple to std::vector
 %include "std_vector.i"
 %ignore Exception;
-%include "nuto/base/ModulNuToBase.i"
+%include "base/ModulNuToBase.i"
 
 %include "nuto/metamodel/Metamodel.h"
 %include "nuto/metamodel/NeuralNetwork.h"

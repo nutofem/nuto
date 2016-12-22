@@ -1,5 +1,5 @@
 if(ENABLE_GEOMETRYCONCRETE)
-if(ENABLE_PYTHON_TESTS)
+if(ENABLE_PYTHON)
     # add all examples
     add_test(p::geometryConcrete::CollisionDetection ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/CollisionDetection.py)
     add_test(p::geometryConcrete::GradingCurve3D     ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/GradingCurve3D.py)
@@ -11,7 +11,7 @@ if(ENABLE_PYTHON_TESTS)
         p::geometryConcrete::GradingCurveFileIO
         p::geometryConcrete::GradingCurve3D
     )
-    set_property(TEST ${MYTESTS} PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
+    set_property(TEST ${MYTESTS} PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
 
     unset(GMSH_PATH CACHE)
     find_program(GMSH_PATH gmsh)
@@ -23,7 +23,7 @@ if(ENABLE_PYTHON_TESTS)
         if(ENABLE_MECHANICS)
             message(STATUS "Gmsh found: ${GMSH_PATH}")
             add_test(p::geometryConcrete::GmshExport ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/GmshExport.py ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR} ${GMSH_PATH})
-            set_property(TEST p::geometryConcrete::GmshExport PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
+            set_property(TEST p::geometryConcrete::GmshExport PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
         endif()
 
         add_executable(GeometryConcreteAPI GeometryConcreteAPI.cpp)

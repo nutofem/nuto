@@ -39,11 +39,11 @@ import_array();
 
 // use exceptions, but build no interface for NUTO::Exception
 %ignore Exception;
-%include "nuto/base/ModulNuToBase.i"
+%include "base/ModulNuToBase.i"
 
-%import "nuto/math/NuToMath.i"
-%import "nuto/math/ModulMatrix.i"
-%import "nuto/math/ModulSparseMatrix.i"
+%import "math/NuToMath.i"
+%import "math/ModulMatrix.i"
+%import "math/ModulSparseMatrix.i"
 
 %include "nuto/math/FullMatrix_Def.h"
 

@@ -29,7 +29,7 @@ double NuTo::CollidableParticleSphere::PredictCollision(NuTo::CollidableWallPhys
 // convert python tuple to std::vector
 %include "std_vector.i"
 %ignore Exception;
-%include "nuto/base/ModulNuToBase.i"
+%include "base/ModulNuToBase.i"
 
 %include "nuto/geometryConcrete/Specimen.h"
 %include "nuto/geometryConcrete/collision/Event.h"

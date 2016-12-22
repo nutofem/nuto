@@ -1,7 +1,7 @@
-if(ENABLE_PYTHON_TESTS)
+if(ENABLE_PYTHON)
 if(ENABLE_METAMODEL)
     add_test(p::metamodel::NeuralNetwork ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/NeuralNetwork.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
-    set_property(TEST p::metamodel::NeuralNetwork PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/src")
+    set_property(TEST p::metamodel::NeuralNetwork PROPERTY ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/python")
 endif()
 endif()
 
