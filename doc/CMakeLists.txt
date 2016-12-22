@@ -3,10 +3,12 @@ add_custom_target(doc)
 message(STATUS "Checking for doxygen ...")
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
+
     # configure Doxyfile
     set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/nuto)
     set(DOXYGEN_INPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/src/nuto ${CMAKE_SOURCE_DIR}/examples ${CMAKE_SOURCE_DIR}/doc")
-    set(DOXYGEN_IMAGE_DIRECTORY ${CMAKE_SOURCE_DIR}/doc/images)
+    set(DOXYGEN_IMAGES_DIRECTORY "${CMAKE_SOURCE_DIR}/doc/images")
+
     set(DOXYGEN_HAVE_DOT NO)
     if(DOXYGEN_DOT_FOUND)
         set(DOXYGEN_HAVE_DOT YES)
@@ -15,11 +17,7 @@ if(DOXYGEN_FOUND)
     string(REPLACE ";" " " DOXYGEN_PREDEFINED "${NuTo_DOXYGEN_PREDEFINED}")
 
     configure_file(Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-    configure_file(header.html ${CMAKE_CURRENT_BINARY_DIR}/header.html COPYONLY)
-    configure_file(footer.html ${CMAKE_CURRENT_BINARY_DIR}/footer.html COPYONLY)
-    configure_file(customdoxygen.css ${CMAKE_CURRENT_BINARY_DIR}/customdoxygen.css COPYONLY)
-    configure_file(doxy-boot.js ${CMAKE_CURRENT_BINARY_DIR}/doxy-boot.js COPYONLY)
-    configure_file(DoxygenLayout.xml ${CMAKE_CURRENT_BINARY_DIR}/DoxygenLayout.xml COPYONLY)
+
 
     # clean doc path
     set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES "${CMAKE_CURRENT_BINARY_DIR}/nuto")

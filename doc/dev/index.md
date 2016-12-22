@@ -1,19 +1,27 @@
 @page DeveloperInfo Developer Documentation
 
-@ref BuildWithClang
+### Doxygen related documentation
 
-@ref ForwardDeclarations
+* @ref Doxygen
 
-@ref Doxygen
+### continuous integration
 
-@ref NuToSerializeStream
+* @ref Coverage
 
-@ref Coverage
+### C++ related documentation
 
-@ref BoostPtrContainer
+* @ref BoostPtrContainer
 
-@ref ConstitutiveStaticData
+* @ref AvoidUnsigned
 
-@ref AvoidUnsigned
+* @ref ForwardDeclarations
 
-@ref FETI
+* @ref BuildWithClang
+
+### NuTo related documentation
+
+* @ref ConstitutiveStaticData
+
+* @ref FETI
+
+* @ref NuToSerializeStream

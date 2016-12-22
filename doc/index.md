@@ -2,7 +2,8 @@
 
 ![](images/NuTo_logo.png)
 
-@ref UserInfo
+### Documentation
 
-@ref DeveloperInfo
+* @ref UserInfo
 
+* @ref DeveloperInfo
