@@ -11,10 +11,7 @@
 #include "math/SparseMatrixCSRVector2General.h"
 %}
 
-//// parts added
-#ifdef ENABLE_NUMPY
 %include "numpy.i"
-
 
 %init %{
 import_array();
@@ -26,7 +23,6 @@ import_array();
 
 %apply (int* IN_ARRAY2, int DIM1, int DIM2){(int * inData,int rRow, int rCol)};
 %apply (int* INPLACE_ARRAY2, int DIM1,int DIM2){(int * indata,int rRow,int rCol)};
-#endif
 
 
 //////////////////////////

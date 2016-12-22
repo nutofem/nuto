@@ -45,10 +45,8 @@ public:
     //! @param rNumColumns ... number of rows
     FullMatrix<T,rows,cols> ( int rNumRows, int rNumColumns);
 
-#ifdef ENABLE_NUMPY
     void convrtNumpyToMatrix(T * inData,int rRow,int rCol);
     void convrtMatrixToNumpy(T * indata,int rRow,int rCol);
-#endif
      
 #ifndef SWIG
     //! @brief ... constructor

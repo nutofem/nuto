@@ -1,4 +1,4 @@
-project(NuTo CXX C) # C and Fortran are required to find LAPACK
+project(NuTo CXX C Fortran) # C and Fortran are required to find LAPACK
 cmake_minimum_required(VERSION 3.0)
 
 option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
@@ -14,7 +14,6 @@ option(ENABLE_METAMODEL "enables the metamodel package" FALSE)
 option(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)
 option(ENABLE_MUMPS "enables support for MUMPS solver" TRUE)
 option(ENABLE_MY_EXAMPLES "enable building private examples in a separate directory (nuto/myNutoExamples)" FALSE)
-option(ENABLE_NUMPY "enables numpy" TRUE)
 option(ENABLE_OPENACC "enables OpenACC" FALSE)
 option(ENABLE_OPENMP "enables OpenMP" FALSE)
 option(ENABLE_OPTIMIZE "enables the optimize package" FALSE)
