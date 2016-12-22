@@ -1,27 +1,27 @@
 ﻿#include <iostream>
-#include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "mechanics/structures/StructureBase.h"
+#include "mechanics/structures/unstructured/Structure.h"
 
 #include <eigen3/Eigen/Core>
 
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/SparseMatrixCSRGeneral.h"
-#include "nuto/math/SparseMatrixCSRSymmetric.h"
-#include "nuto/math/SparseDirectSolverMUMPS.h"
-#include "nuto/math/SparseDirectSolverPardiso.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
-#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "math/FullMatrix.h"
+#include "math/SparseMatrixCSRGeneral.h"
+#include "math/SparseMatrixCSRSymmetric.h"
+#include "math/SparseDirectSolverMUMPS.h"
+#include "math/SparseDirectSolverPardiso.h"
+#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
+#include "mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
+#include "mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
+#include "mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
+#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "mechanics/nodes/NodeBase.h"
+#include "mechanics/nodes/NodeEnum.h"
 
-#include "nuto/mechanics/timeIntegration/RungeKutta4.h"
-#include "nuto/visualize/VisualizeEnum.h"
+#include "mechanics/timeIntegration/RungeKutta4.h"
+#include "visualize/VisualizeEnum.h"
 
 #include <boost/filesystem.hpp>
 

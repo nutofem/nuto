@@ -1,8 +1,8 @@
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
-#include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
+#include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #define BOOST_TEST_MODULE ConstitutiveIOTest
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>

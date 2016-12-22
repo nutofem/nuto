@@ -1,9 +1,9 @@
-#include "nuto/mechanics/constitutive/laws/HeatConduction.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveMatrix.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "mechanics/constitutive/laws/HeatConduction.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveIOBase.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveMatrix.h"
+#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/nodes/NodeEnum.h"
 
 #define BOOST_TEST_MODULE HeatConductionTest
 #define BOOST_TEST_DYN_LINK

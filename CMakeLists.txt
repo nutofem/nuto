@@ -1,4 +1,4 @@
-project(NuTo CXX C Fortran) # C and Fortran are required to find LAPACK
+project(NuTo CXX C) # C and Fortran are required to find LAPACK
 cmake_minimum_required(VERSION 3.0)
 
 option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
@@ -9,7 +9,6 @@ option(ENABLE_COVERAGE "Set compiler flag for coverage analysis" FALSE)
 option(ENABLE_DEBUG_SERIALIZATION "prints additional debug information during serialization" FALSE)
 option(ENABLE_EXAMPLES "enables examples" FALSE)
 option(ENABLE_GEOMETRYCONCRETE "geometry for concrete mesoscale modeling" FALSE)
-option(ENABLE_GUI "enable building the GUI application" FALSE)
 option(ENABLE_MECHANICS "enables the mechanics package" TRUE)
 option(ENABLE_METAMODEL "enables the metamodel package" FALSE)
 option(ENABLE_MKL "enables support for mkl blas, lapack, solvers" FALSE)

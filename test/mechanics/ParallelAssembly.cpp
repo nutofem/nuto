@@ -7,8 +7,8 @@
  *
  */
 
-#include "nuto/base/Timer.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "base/Timer.h"
+#include "mechanics/structures/unstructured/Structure.h"
 
 
 void SetupStructure(NuTo::Structure& rStructure, int rNumElementsPerDimension)

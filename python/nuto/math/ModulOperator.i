@@ -4,7 +4,7 @@
 #pragma SWIG nowarn=401
 %{
 //Put headers and other declarations here to be added in the wrapper files
-#include "nuto/math/Operator.h"
+#include "math/Operator.h"
 %}
 
 // convert python string to std::string
@@ -15,7 +15,7 @@
 %ignore Exception;
 %include "base/ModulNuToBase.i"
 
-%include "nuto/math/Operator.h"
+%include "math/Operator.h"
 
 %template(DoubleMOperator)    NuTo::MonadicOperator<double>;
 %template(IntMOperator)       NuTo::MonadicOperator<int>;

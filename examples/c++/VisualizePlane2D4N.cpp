@@ -1,9 +1,9 @@
-#include "nuto/math/MathException.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/MechanicsEnums.h"
-#include "nuto/visualize/VisualizeEnum.h"
+#include "math/MathException.h"
+#include "math/FullMatrix.h"
+#include "mechanics/MechanicsException.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/MechanicsEnums.h"
+#include "visualize/VisualizeEnum.h"
 
 int main()
 {

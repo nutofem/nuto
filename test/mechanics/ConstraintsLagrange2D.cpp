@@ -1,9 +1,9 @@
-#include "nuto/math/FullMatrix.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/MechanicsException.h"
+#include "math/FullMatrix.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/MechanicsException.h"
 
-#include "nuto/math/SparseDirectSolverMUMPS.h"
-#include "nuto/math/SparseMatrixCSRVector2General.h"
+#include "math/SparseDirectSolverMUMPS.h"
+#include "math/SparseMatrixCSRVector2General.h"
 
 #define MAXNUMNEWTONITERATIONS 20
 #define PRINTRESULT true

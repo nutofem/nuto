@@ -8,26 +8,26 @@
 #include <omp.h>
 #endif //_OPENMP
 
-#include "nuto/base/Logger.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
-#include "nuto/math/SparseMatrixCSRVector2General.h"
-#include "nuto/math/SparseMatrixCSRSymmetric.h"
-#include "nuto/math/EigenSolverArpack.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/timeIntegration/VelocityVerlet.h"
-#include "nuto/mechanics/timeIntegration/RungeKutta4.h"
-#include "nuto/mechanics/timeIntegration/RungeKutta2.h"
-#include "nuto/mechanics/timeIntegration/RungeKutta3.h"
-#include "nuto/mechanics/timeIntegration/RungeKutta38.h"
-#include "nuto/mechanics/timeIntegration/NystroemQinZhu.h"
-#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
-#include "nuto/mechanics/MechanicsEnums.h"
+#include "base/Logger.h"
+#include "math/FullMatrix.h"
+#include "math/FullVector.h"
+#include "math/SparseMatrixCSRVector2General.h"
+#include "math/SparseMatrixCSRSymmetric.h"
+#include "math/EigenSolverArpack.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/timeIntegration/VelocityVerlet.h"
+#include "mechanics/timeIntegration/RungeKutta4.h"
+#include "mechanics/timeIntegration/RungeKutta2.h"
+#include "mechanics/timeIntegration/RungeKutta3.h"
+#include "mechanics/timeIntegration/RungeKutta38.h"
+#include "mechanics/timeIntegration/NystroemQinZhu.h"
+#include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/MechanicsEnums.h"
 
-#include "nuto/base/Exception.h"
+#include "base/Exception.h"
 
-#include "nuto/math/SparseDirectSolverMUMPS.h"
-#include "nuto/math/SparseMatrixCSRVector2General.h"
+#include "math/SparseDirectSolverMUMPS.h"
+#include "math/SparseMatrixCSRVector2General.h"
 
 // Test of explicit time integration schemes (Kunge Kutta 4, Velocity Verlet and Nystroem Qin Zhu)
 // Dynamic simulation of a 1D elastic bar under shock load

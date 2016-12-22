@@ -1,13 +1,13 @@
 
-#include "nuto/mechanics/constitutive/laws/LocalDamageModel.h"
+#include "mechanics/constitutive/laws/LocalDamageModel.h"
 
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/sections/SectionEnum.h"
+#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/sections/SectionEnum.h"
 
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
-#include "nuto/mechanics/constitutive/inputoutput/EngineeringStress.h"
-#include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "mechanics/constitutive/inputoutput/EngineeringStress.h"
+#include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "ConstitutiveTangentTester.h"
 
 #include <iostream>

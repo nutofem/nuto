@@ -1,10 +1,10 @@
 #include <iostream>
 
 
-#include "nuto/math/SparseMatrixCSRVector2General.h"
-#include "nuto/math/SparseMatrixCSRVector2Symmetric.h"
+#include "math/SparseMatrixCSRVector2General.h"
+#include "math/SparseMatrixCSRVector2Symmetric.h"
 
-#include "nuto/base/Timer.h"
+#include "base/Timer.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/text_oarchive.hpp>

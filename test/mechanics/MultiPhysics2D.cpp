@@ -21,7 +21,7 @@
 #include <nuto/mechanics/nodes/NodeDof.h>
 #include <nuto/mechanics/nodes/NodeCoordinates.h>
 #include <nuto/mechanics/structures/unstructured/Structure.h>
-#include "nuto/mechanics/timeIntegration/CrankNicolsonEvaluate.h"
+#include "mechanics/timeIntegration/CrankNicolsonEvaluate.h"
 
 #include <nuto/metamodel/PolynomialLeastSquaresFitting.h>
 

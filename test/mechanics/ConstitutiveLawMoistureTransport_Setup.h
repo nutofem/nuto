@@ -1,22 +1,22 @@
 #pragma once
 
-#include <nuto/mechanics/sections/SectionEnum.h>
-#include "nuto/math/FullVector.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
-#include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
-#include "nuto/mechanics/tools/MeshGenerator.h"
-#include "nuto/mechanics/constitutive/staticData/DataMoistureTransport.h"
-#include "nuto/mechanics/constitutive/laws/MoistureTransport.h"
+#include "mechanics/sections/SectionEnum.h"
+#include "math/FullVector.h"
+#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/elements/ElementBase.h"
+#include "mechanics/elements/IpDataEnum.h"
+#include "mechanics/nodes/NodeBase.h"
+#include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/tools/MeshGenerator.h"
+#include "mechanics/constitutive/staticData/DataMoistureTransport.h"
+#include "mechanics/constitutive/laws/MoistureTransport.h"
 
 #ifdef ENABLE_VISUALIZE
-#include "nuto/visualize/VisualizeEnum.h"
-#include "nuto/mechanics/groups/GroupEnum.h"
+#include "visualize/VisualizeEnum.h"
+#include "mechanics/groups/GroupEnum.h"
 #endif
 
 

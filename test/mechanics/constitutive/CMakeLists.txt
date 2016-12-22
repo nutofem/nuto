@@ -15,7 +15,7 @@ if(ENABLE_UNIT_TESTS)
     add_test(c::unit::DataContainer ${CMAKE_CURRENT_BUILD_DIR}/DataContainer)
 
     add_executable(IPConstitutiveLaw IPConstitutiveLaw.cpp
-            ${CMAKE_SOURCE_DIR}/src/nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.cpp)
+            ${CMAKE_SOURCE_DIR}/src/mechanics/constitutive/inputoutput/ConstitutiveIOMap.cpp)
 
     target_link_libraries(IPConstitutiveLaw ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} NuToBase)
     add_test(c::unit::IPConstitutiveLaw ${CMAKE_CURRENT_BUILD_DIR}/IPConstitutiveLaw)

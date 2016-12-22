@@ -4,8 +4,8 @@
 #pragma SWIG nowarn=401
 %{
 //Put headers and other declarations here to be added in the wrapper files
-#include "nuto/math/Operator.h"
-#include "nuto/math/Matrix.h"
+#include "math/Operator.h"
+#include "math/Matrix.h"
 %}
 
 //declare inputs of the functions to be used as output on python level
@@ -30,7 +30,7 @@
 
 %import "math/NuToMath.i"
 
-%include "nuto/math/Matrix.h"
+%include "math/Matrix.h"
 %template(DoubleMatrix) NuTo::Matrix<double>;
 %template(IntMatrix) NuTo::Matrix<int>;
 %template(DoubleVector) std::vector<double>;

@@ -3,7 +3,7 @@
 #include <string>
 #include <math.h>
 
-#include "nuto/math/FullMatrix.h"
+#include "math/FullMatrix.h"
 
 #include <ctime>
 # ifdef _OPENMP

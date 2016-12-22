@@ -3,9 +3,9 @@
 %feature("autodoc","1");
 %{
 /* Put headers and other declarations here to be added in the wrapper files */
-#include "nuto/base/ErrorEnum.h"
-#include "nuto/base/Exception.h"
-#include "nuto/base/NuToObject.h"
+#include "base/ErrorEnum.h"
+#include "base/Exception.h"
+#include "base/NuToObject.h"
 #include <string>
 #include <iostream>
 %}
@@ -20,7 +20,7 @@ class exception
 {
 };
 }
-%include "nuto/base/Exception.h"
+%include "base/Exception.h"
 
 // see Examples/python/exceptproxy in your swig installation for exception handling in swig
 %exception
@@ -43,6 +43,6 @@ class exception
         SWIG_exception_fail(SWIG_UnknownError, "Unknown exception");
     }
 }
-%include "nuto/base/NuToObject.h"
-%include "nuto/base/ErrorEnum.h"
+%include "base/NuToObject.h"
+%include "base/ErrorEnum.h"
 

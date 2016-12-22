@@ -2,8 +2,8 @@
 #define BOOST_TEST_DYN_LINK
 
 #include <boost/test/unit_test.hpp>
-#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLaw.h"
-#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
+#include "mechanics/constitutive/staticData/IPConstitutiveLaw.h"
+#include "mechanics/constitutive/staticData/IPConstitutiveLawWithoutData.h"
 
 // necessary to build with clang when boost has been compiled by gcc
 std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string name)

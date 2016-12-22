@@ -4,12 +4,12 @@
 #pragma SWIG nowarn=401
 %{
 //Put headers and other declarations here to be added in the wrapper files
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
-#include "nuto/math/Operator.h"
-#include "nuto/math/SparseMatrixCSRGeneral.h"
-#include "nuto/math/SparseMatrixCSRSymmetric.h"
-#include "nuto/math/SparseMatrixCSRVector2General.h"
+#include "math/FullMatrix.h"
+#include "math/FullVector.h"
+#include "math/Operator.h"
+#include "math/SparseMatrixCSRGeneral.h"
+#include "math/SparseMatrixCSRSymmetric.h"
+#include "math/SparseMatrixCSRVector2General.h"
 %}
 
 // convert python string to std::string
@@ -24,7 +24,7 @@
 %import "math/ModulMatrix.i"
 %import "math/ModulFullMatrix.i"
 
-%include "nuto/math/FullVector_Def.h"
+%include "math/FullVector_Def.h"
 
 //this is for vectors
 // extend the python-interface with FullVectoroperators, since the c++ operators are only defined in the base class (which is not exposed to python) 

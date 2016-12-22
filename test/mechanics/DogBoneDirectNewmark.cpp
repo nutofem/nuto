@@ -2,9 +2,9 @@
 #include <sstream>
 #include "boost/filesystem.hpp"
 
-#include "nuto/math/FullMatrix.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "math/FullMatrix.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/timeIntegration/NewmarkDirect.h"
 
 void ReplaceStringInFile(std::string rFileName, std::string rStringOld, std::string rStringNew, int rNumber)
 {

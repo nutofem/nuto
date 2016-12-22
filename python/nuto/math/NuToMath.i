@@ -5,7 +5,7 @@
 #pragma SWIG nowarn=401
 %{
 //Put headers and other declarations here to be added in the wrapper files
-#include "nuto/math/NuToMath.h"
+#include "math/NuToMath.h"
 #include <cstddef> // normally not necessary  
 %}
 
@@ -18,7 +18,7 @@
 %include "base/ModulNuToBase.i"
 
 // provide the public interface
-%include "nuto/math/NuToMath.h"
+%include "math/NuToMath.h"
 
 // define some functions
 double sin(double);

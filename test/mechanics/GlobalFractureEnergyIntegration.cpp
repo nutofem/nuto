@@ -4,7 +4,7 @@
 #define BOOST_TEST_MODULE GlobalFractureEnergyIntegrator
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
-#include "nuto/mechanics/tools/GlobalFractureEnergyIntegrator.h"
+#include "mechanics/tools/GlobalFractureEnergyIntegrator.h"
 #include <iostream>
 
 BOOST_AUTO_TEST_CASE(IntegrateFunction)

@@ -6,14 +6,14 @@
 //!     \f[q|_{y=0, y = 20\mathrm{mm}} = 0\f]
 #include <iostream>
 #include <cmath>
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/SparseMatrixCSRGeneral.h"
-#include "nuto/math/SparseDirectSolverMUMPS.h"
-#include "nuto/math/LinearInterpolation.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/constitutive/laws/AdditiveInputExplicit.h"
-#include "nuto/mechanics/constitutive/laws/ThermalStrains.h"
-#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "math/FullMatrix.h"
+#include "math/SparseMatrixCSRGeneral.h"
+#include "math/SparseDirectSolverMUMPS.h"
+#include "math/LinearInterpolation.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/constitutive/laws/AdditiveInputExplicit.h"
+#include "mechanics/constitutive/laws/ThermalStrains.h"
+#include "mechanics/timeIntegration/NewmarkDirect.h"
 
 struct Properties
 {

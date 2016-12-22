@@ -2,20 +2,20 @@
 #include <sstream>
 #include "boost/filesystem.hpp"
 
-#include "nuto/math/FullMatrix.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "math/FullMatrix.h"
+#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/structures/unstructured/Structure.h"
 
-#include "nuto/mechanics/timeIntegration/RungeKutta4.h"
-#include "nuto/mechanics/timeIntegration/RungeKutta2.h"
-#include "nuto/mechanics/timeIntegration/RungeKutta3.h"
-#include "nuto/mechanics/timeIntegration/RungeKutta38.h"
-#include "nuto/mechanics/timeIntegration/RungeKuttaCashKarp.h"
-#include "nuto/mechanics/timeIntegration/RungeKuttaDormandPrince.h"
+#include "mechanics/timeIntegration/RungeKutta4.h"
+#include "mechanics/timeIntegration/RungeKutta2.h"
+#include "mechanics/timeIntegration/RungeKutta3.h"
+#include "mechanics/timeIntegration/RungeKutta38.h"
+#include "mechanics/timeIntegration/RungeKuttaCashKarp.h"
+#include "mechanics/timeIntegration/RungeKuttaDormandPrince.h"
 
-#include "nuto/mechanics/tools/MeshGenerator.h"
+#include "mechanics/tools/MeshGenerator.h"
 
 /*
  *  TT:

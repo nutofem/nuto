@@ -1,11 +1,11 @@
 #include <iostream>
 
-#include "nuto/math/MathException.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
-#include "nuto/math/SparseMatrixCSRSymmetric.h"
-#include "nuto/math/SparseMatrixCSRGeneral.h"
-#include "nuto/math/SparseDirectSolverMUMPS.h"
+#include "math/MathException.h"
+#include "math/FullMatrix.h"
+#include "math/FullVector.h"
+#include "math/SparseMatrixCSRSymmetric.h"
+#include "math/SparseMatrixCSRGeneral.h"
+#include "math/SparseDirectSolverMUMPS.h"
 int main()
 {
     try

@@ -7,16 +7,16 @@
 
 #include <cmath>
 #include <boost/filesystem/operations.hpp>
-#include "nuto/visualize/VisualizeEnum.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/groups/GroupEnum.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
-#include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/math/FullVector.h"
-#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
-#include "nuto/mechanics/tools/GlobalFractureEnergyIntegrator.h"
+#include "visualize/VisualizeEnum.h"
+#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/groups/GroupEnum.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/nodes/NodeBase.h"
+#include "math/FullVector.h"
+#include "mechanics/structures/StructureOutputBlockVector.h"
+#include "mechanics/tools/GlobalFractureEnergyIntegrator.h"
 
 /*               3   2
  *   /|          /  /           \

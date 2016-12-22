@@ -2,22 +2,22 @@
 #include <boost/mpi.hpp>
 #include <boost/filesystem.hpp>
 
-#include "nuto/mechanics/structures/unstructured/StructureFETI.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/timeIntegration/NewmarkFeti.h"
-#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/structures/unstructured/StructureFETI.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/structures/StructureBase.h"
+#include "mechanics/timeIntegration/NewmarkFeti.h"
+#include "mechanics/timeIntegration/NewmarkDirect.h"
 
-#include "nuto/mechanics/nodes/NodeEnum.h"
-#include "nuto/mechanics/groups/GroupEnum.h"
-#include "nuto/mechanics/sections/SectionEnum.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/visualize/VisualizeEnum.h"
-#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "nuto/mechanics/elements/IpDataEnum.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "nuto/base/ErrorEnum.h"
-#include "nuto/mechanics/sections/SectionEnum.h"
+#include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/groups/GroupEnum.h"
+#include "mechanics/sections/SectionEnum.h"
+#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "visualize/VisualizeEnum.h"
+#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "mechanics/elements/IpDataEnum.h"
+#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "base/ErrorEnum.h"
+#include "mechanics/sections/SectionEnum.h"
 
 
 

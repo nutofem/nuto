@@ -1,8 +1,8 @@
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "math/FullMatrix.h"
+#include "math/FullVector.h"
+#include "mechanics/structures/unstructured/Structure.h"
 
-#include "nuto/math/SparseMatrixCSRGeneral.h"
+#include "math/SparseMatrixCSRGeneral.h"
 #include <eigen3/Eigen/Core>
 
 

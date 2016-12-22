@@ -6,13 +6,13 @@
 #define BOOST_TEST_DYN_LINK
 
 #include <boost/test/unit_test.hpp>
-#include "nuto/mechanics/elements/IPData.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
-#include "nuto/base/ErrorEnum.h"
-#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLaw.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
-#include "nuto/mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
+#include "mechanics/elements/IPData.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NGauss1Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
+#include "base/ErrorEnum.h"
+#include "mechanics/constitutive/staticData/IPConstitutiveLaw.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+#include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include <type_traits>
 
 // necessary to build with clang when boost has been compiled by gcc

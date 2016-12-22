@@ -4,18 +4,18 @@
 #define BOOST_TEST_MODULE RestartFilesTest
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
-#include "nuto/mechanics/sections/SectionEnum.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
-#include "nuto/base/serializeStream/SerializeStreamIn.h"
-#include "nuto/base/serializeStream/SerializeStreamOut.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
-#include "nuto/mechanics/tools/MeshGenerator.h"
-#include "nuto/mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
-#include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/math/FullMatrix.h"
+#include "mechanics/sections/SectionEnum.h"
+#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "mechanics/nodes/NodeEnum.h"
+#include "base/serializeStream/SerializeStreamIn.h"
+#include "base/serializeStream/SerializeStreamOut.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/structures/StructureOutputBlockVector.h"
+#include "mechanics/tools/MeshGenerator.h"
+#include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
+#include "mechanics/elements/ElementBase.h"
+#include "math/FullMatrix.h"
 
 // necessary to build with clang when boost has been compiled by gcc
 std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string name)

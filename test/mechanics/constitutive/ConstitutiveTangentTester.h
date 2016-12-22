@@ -2,8 +2,8 @@
 // Created by Thomas Titscher on 10/26/16.
 //
 #pragma once
-#include "nuto/mechanics/constitutive/staticData/IPConstitutiveLaw.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
+#include "mechanics/constitutive/staticData/IPConstitutiveLaw.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 namespace NuTo
 {
 namespace Test

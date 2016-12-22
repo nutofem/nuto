@@ -2,16 +2,16 @@
 #include <sstream>
 #include "boost/filesystem.hpp"
 
-#include "nuto/math/FullMatrix.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/groups/GroupEnum.h"
-#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "math/FullMatrix.h"
+#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/groups/GroupEnum.h"
+#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/timeIntegration/NewmarkDirect.h"
 
 #ifdef ENABLE_VISUALIZE
-#include "nuto/visualize/VisualizeEnum.h"
+#include "visualize/VisualizeEnum.h"
 #endif
 
 #define createResult true

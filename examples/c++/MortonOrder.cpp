@@ -1,6 +1,6 @@
 #include <iostream>
-#include "nuto/base/NuToObject.h"
-#include "nuto/math/MortonOrder.h"
+#include "base/NuToObject.h"
+#include "math/MortonOrder.h"
 
 int main()
 {

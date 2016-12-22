@@ -4,9 +4,9 @@
  *  Created on: 4 Sep 2015
  *      Author: ttitsche
  */
-#include "nuto/geometryConcrete/GeometryConcrete.h"
+#include "geometryConcrete/GeometryConcrete.h"
 #include <boost/filesystem.hpp>
-#include "nuto/math/FullMatrix.h"
+#include "math/FullMatrix.h"
 
 
 void MaxDistanceMesh2D(std::string rGmshFile, double rLX, double rLY)

@@ -9,17 +9,17 @@
 //============================================================================
 
 
-#include "nuto/math/FullVector.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "nuto/mechanics/groups/GroupEnum.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
-#include "nuto/mechanics/sections/SectionEnum.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
-#include "nuto/visualize/VisualizeEnum.h"
+#include "math/FullVector.h"
+#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/elements/ElementBase.h"
+#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "mechanics/groups/GroupEnum.h"
+#include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/sections/SectionEnum.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "visualize/VisualizeEnum.h"
 
 #include <boost/filesystem.hpp>
 #include <iostream>

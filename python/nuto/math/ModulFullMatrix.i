@@ -4,11 +4,11 @@
 #pragma SWIG nowarn=401
 %{
 //Put headers and other declarations here to be added in the wrapper files
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/Operator.h"
-#include "nuto/math/SparseMatrixCSRGeneral.h"
-#include "nuto/math/SparseMatrixCSRSymmetric.h"
-#include "nuto/math/SparseMatrixCSRVector2General.h"
+#include "math/FullMatrix.h"
+#include "math/Operator.h"
+#include "math/SparseMatrixCSRGeneral.h"
+#include "math/SparseMatrixCSRSymmetric.h"
+#include "math/SparseMatrixCSRVector2General.h"
 %}
 
 //// parts added
@@ -45,7 +45,7 @@ import_array();
 %import "math/ModulMatrix.i"
 %import "math/ModulSparseMatrix.i"
 
-%include "nuto/math/FullMatrix_Def.h"
+%include "math/FullMatrix_Def.h"
 
 //this is for matrices
 // extend the python-interface with FullMatrixoperators, since the c++ operators are only defined in the base class (which is not exposed to pyhton) 

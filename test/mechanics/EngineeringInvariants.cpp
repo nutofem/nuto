@@ -1,8 +1,8 @@
 #include <iostream>
-#include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
-#include "nuto/mechanics/constitutive/inputoutput/EquivalentStrain.h"
-#include "nuto/mechanics/sections/SectionEnum.h"
-#include "nuto/base/Timer.h"
+#include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
+#include "mechanics/constitutive/inputoutput/EquivalentStrain.h"
+#include "mechanics/sections/SectionEnum.h"
+#include "base/Timer.h"
 #include <eigen3/Eigen/Dense>
 #include <vector>
 

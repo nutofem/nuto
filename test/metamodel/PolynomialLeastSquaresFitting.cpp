@@ -1,8 +1,8 @@
-#include "nuto/base/Exception.h"
-#include "nuto/metamodel/MetamodelException.h"
-#include "nuto/math/FullMatrix.h"
+#include "base/Exception.h"
+#include "metamodel/MetamodelException.h"
+#include "math/FullMatrix.h"
 
-#include "nuto/metamodel/PolynomialLeastSquaresFitting.h"
+#include "metamodel/PolynomialLeastSquaresFitting.h"
 
 int main()
 {

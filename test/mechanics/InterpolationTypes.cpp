@@ -6,29 +6,29 @@
  */
 
 
-#include "nuto/math/FullMatrix.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/elements/ElementBase.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
-#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
-#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/interpolationtypes/InterpolationType.h"
-#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "nuto/mechanics/interpolationtypes/Interpolation2DTriangle.h"
+#include "math/FullMatrix.h"
+#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/elements/ElementBase.h"
+#include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/structures/StructureOutputBlockMatrix.h"
+#include "mechanics/structures/StructureOutputBlockVector.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/interpolationtypes/InterpolationType.h"
+#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "mechanics/interpolationtypes/Interpolation2DTriangle.h"
 
 
-#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss3Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss4Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NGauss2Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NGauss3Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NGauss4Ip.h"
 
-#include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType3D8NGauss2x2x2Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
+#include "mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
+#include "mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
+#include "mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
+#include "mechanics/integrationtypes/IntegrationType3D8NGauss2x2x2Ip.h"
+#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 
-#include "nuto/base/Exception.h"
+#include "base/Exception.h"
 #include <boost/filesystem.hpp>
 
 #include <map>

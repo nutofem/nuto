@@ -16,8 +16,8 @@
 #include <nuto/mechanics/constitutive/moistureTransport/ConstitutiveStaticDataMoistureTransport.h>
 
 #include <nuto/metamodel/PolynomialLeastSquaresFitting.h>
-#include "nuto/mechanics/timeIntegration/CrankNicolsonEvaluate.h"
-#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/timeIntegration/CrankNicolsonEvaluate.h"
+#include "mechanics/timeIntegration/NewmarkDirect.h"
 
 
 class MeshGenerator

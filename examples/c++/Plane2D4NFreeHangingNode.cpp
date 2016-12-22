@@ -1,13 +1,13 @@
-#include "nuto/math/MathException.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/SparseDirectSolverMUMPS.h"
-#include "nuto/mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
-#include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
-#include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/structures/StructureOutputBlockVector.h"
-#include "nuto/mechanics/MechanicsEnums.h"
-#include "nuto/visualize/VisualizeEnum.h"
+#include "math/MathException.h"
+#include "math/FullMatrix.h"
+#include "math/SparseDirectSolverMUMPS.h"
+#include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
+#include "mechanics/dofSubMatrixStorage/BlockScalar.h"
+#include "mechanics/MechanicsException.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/structures/StructureOutputBlockVector.h"
+#include "mechanics/MechanicsEnums.h"
+#include "visualize/VisualizeEnum.h"
 
 int main()
 {

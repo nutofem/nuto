@@ -4,9 +4,9 @@
 #include <boost/test/floating_point_comparison.hpp>
 
 #include <array>
-#include "nuto/math/LinearInterpolation.h"
-#include "nuto/math/CubicSplineInterpolation.h"
-#include "nuto/math/MathException.h"
+#include "math/LinearInterpolation.h"
+#include "math/CubicSplineInterpolation.h"
+#include "math/MathException.h"
 
 // needed for building with clang when boost test has been built with gcc
 std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string name)

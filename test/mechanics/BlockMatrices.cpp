@@ -1,23 +1,23 @@
-#include "nuto/base/Timer.h"
+#include "base/Timer.h"
 #include <iostream>
 
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Sparse>
 
 
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/SparseMatrixCSRVector2General.h"
+#include "math/FullMatrix.h"
+#include "math/SparseMatrixCSRVector2General.h"
 
 
-#include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
-#include "nuto/mechanics/dofSubMatrixStorage/BlockFullVector.h"
-#include "nuto/mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
-#include "nuto/mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
-#include "nuto/mechanics/structures/StructureOutputBlockMatrix.h"
-#include "nuto/mechanics/elements/ElementOutputBlockMatrixDouble.h"
-#include "nuto/mechanics/dofSubMatrixStorage/DofStatus.h"
-#include "nuto/mechanics/MechanicsException.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "mechanics/dofSubMatrixStorage/BlockScalar.h"
+#include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
+#include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
+#include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
+#include "mechanics/structures/StructureOutputBlockMatrix.h"
+#include "mechanics/elements/ElementOutputBlockMatrixDouble.h"
+#include "mechanics/dofSubMatrixStorage/DofStatus.h"
+#include "mechanics/MechanicsException.h"
+#include "mechanics/nodes/NodeEnum.h"
 
 
 //! @brief converts a NuTo SparseMatrix in Vector2 format to a Eigen SparseMatrix

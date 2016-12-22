@@ -1,25 +1,25 @@
 #include <boost/filesystem.hpp>
 
-#include "nuto/base/Timer.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/sections/SectionTruss.h"
+#include "base/Timer.h"
+#include "math/FullMatrix.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/sections/SectionTruss.h"
 
-#include "nuto/mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
-#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
-#include "nuto/mechanics/timeIntegration/ImplEx.h"
+#include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
+#include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/timeIntegration/ImplEx.h"
 
-#include "nuto/mechanics/elements/ContinuumBoundaryElement.h"
-#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "nuto/mechanics/groups/GroupEnum.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "mechanics/elements/ContinuumBoundaryElement.h"
+#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "mechanics/groups/GroupEnum.h"
+#include "mechanics/nodes/NodeEnum.h"
 
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
+#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 
-#include "nuto/visualize/VisualizeEnum.h"
+#include "visualize/VisualizeEnum.h"
 
 namespace NuToTest {
 namespace ImplEx {

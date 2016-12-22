@@ -1,12 +1,12 @@
 #include <boost/filesystem.hpp>
 #include <fstream>
-#include "nuto/math/FullMatrix.h"
+#include "math/FullMatrix.h"
 
-#include "nuto/geometryConcrete/GeometryConcrete.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
-#include "nuto/mechanics/MechanicsEnums.h"
-#include "nuto/visualize/VisualizeEnum.h"
+#include "geometryConcrete/GeometryConcrete.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/MechanicsEnums.h"
+#include "visualize/VisualizeEnum.h"
 
 void CreateMesoscaleGeometryMesh(std::string rGmshFile, double rLX, double rLY)
 {

@@ -4,14 +4,14 @@
 #pragma SWIG nowarn=401
 %{
 //Put headers and other declarations here to be added in the wrapper files
-#include "nuto/math/FullVector.h"
-#include "nuto/math/SparseMatrixCSRGeneral.h"
-#include "nuto/math/SparseMatrixCSRSymmetric.h"
-#include "nuto/math/SparseMatrixCSRVector2General.h"
-#include "nuto/math/SparseDirectSolver.h"
-#include "nuto/math/SparseDirectSolverMKLDSS.h"
-#include "nuto/math/SparseDirectSolverMKLPardiso.h"
-#include "nuto/math/SparseDirectSolverMUMPS.h"
+#include "math/FullVector.h"
+#include "math/SparseMatrixCSRGeneral.h"
+#include "math/SparseMatrixCSRSymmetric.h"
+#include "math/SparseMatrixCSRVector2General.h"
+#include "math/SparseDirectSolver.h"
+#include "math/SparseDirectSolverMKLDSS.h"
+#include "math/SparseDirectSolverMKLPardiso.h"
+#include "math/SparseDirectSolverMUMPS.h"
 %}
 
 // convert python string to std::string
@@ -29,7 +29,7 @@
 %import "math/ModulSparseMatrix.i"
 
 /* solver */
-%include "nuto/math/SparseDirectSolver.h"
-%include "nuto/math/SparseDirectSolverMKLDSS.h"
-%include "nuto/math/SparseDirectSolverMKLPardiso.h"
-%include "nuto/math/SparseDirectSolverMUMPS.h"
+%include "math/SparseDirectSolver.h"
+%include "math/SparseDirectSolverMKLDSS.h"
+%include "math/SparseDirectSolverMKLPardiso.h"
+%include "math/SparseDirectSolverMUMPS.h"

@@ -1,16 +1,16 @@
 // $Id: Brick8NcycleJump.cpp 2016-02-02 11:10:59Z vkindrac $
 
 #include <iostream>
-#include "nuto/base/Exception.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
-#include "nuto/math/SparseMatrixCSRGeneral.h"
-#include "nuto/math/SparseMatrixCSRVector2General.h"
-#include "nuto/math/SparseDirectSolverMUMPS.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
-#include "nuto/mechanics/timeIntegration/JumpDirect.h"
-#include "nuto/mechanics/timeIntegration/TimeIntegrationBase.h"
+#include "base/Exception.h"
+#include "math/FullMatrix.h"
+#include "math/FullVector.h"
+#include "math/SparseMatrixCSRGeneral.h"
+#include "math/SparseMatrixCSRVector2General.h"
+#include "math/SparseDirectSolverMUMPS.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/timeIntegration/JumpDirect.h"
+#include "mechanics/timeIntegration/TimeIntegrationBase.h"
 #include <boost/filesystem.hpp>
 
 // AmplFraction = AmplValue/rMeanValue

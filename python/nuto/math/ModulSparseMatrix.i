@@ -4,15 +4,15 @@
 #pragma SWIG nowarn=401
 %{
 //Put headers and other declarations here to be added in the wrapper files
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/Operator.h"
-#include "nuto/math/SparseMatrix.h"
-#include "nuto/math/SparseMatrixCSR.h"
-#include "nuto/math/SparseMatrixCSRGeneral.h"
-#include "nuto/math/SparseMatrixCSRSymmetric.h"
-#include "nuto/math/SparseMatrixCSRVector2.h"
-#include "nuto/math/SparseMatrixCSRVector2General.h"
-#include "nuto/math/SparseMatrixCSRVector2Symmetric.h"
+#include "math/FullMatrix.h"
+#include "math/Operator.h"
+#include "math/SparseMatrix.h"
+#include "math/SparseMatrixCSR.h"
+#include "math/SparseMatrixCSRGeneral.h"
+#include "math/SparseMatrixCSRSymmetric.h"
+#include "math/SparseMatrixCSRVector2.h"
+#include "math/SparseMatrixCSRVector2General.h"
+#include "math/SparseMatrixCSRVector2Symmetric.h"
 %}
 
 // convert python string to std::string
@@ -26,13 +26,13 @@
 %import "math/NuToMath.i"
 %import "math/ModulMatrix.i"
 
-%include "nuto/math/SparseMatrix.h"
-%include "nuto/math/SparseMatrixCSR.h"
-%include "nuto/math/SparseMatrixCSRGeneral_Def.h"
-%include "nuto/math/SparseMatrixCSRSymmetric_Def.h"
-%include "nuto/math/SparseMatrixCSRVector2.h"
-%include "nuto/math/SparseMatrixCSRVector2General_Def.h"
-%include "nuto/math/SparseMatrixCSRVector2Symmetric_Def.h"
+%include "math/SparseMatrix.h"
+%include "math/SparseMatrixCSR.h"
+%include "math/SparseMatrixCSRGeneral_Def.h"
+%include "math/SparseMatrixCSRSymmetric_Def.h"
+%include "math/SparseMatrixCSRVector2.h"
+%include "math/SparseMatrixCSRVector2General_Def.h"
+%include "math/SparseMatrixCSRVector2Symmetric_Def.h"
 %template(DoubleSparseMatrix) NuTo::SparseMatrix<double>;
 %template(IntSparseMatrix) NuTo::SparseMatrix<int>;
 %template(DoubleSparseMatrixCSR) NuTo::SparseMatrixCSR<double>;

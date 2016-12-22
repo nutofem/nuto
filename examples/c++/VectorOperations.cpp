@@ -8,7 +8,7 @@
 
 
 #include <iostream>
-#include "nuto/math/FullMatrix.h"
+#include "math/FullMatrix.h"
 //#include <boost/array.hpp>
 
 int main()

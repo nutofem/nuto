@@ -1,11 +1,11 @@
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "math/FullMatrix.h"
+#include "math/FullVector.h"
+#include "mechanics/structures/unstructured/Structure.h"
 
 //just for test
-#include "nuto/mechanics/constitutive/mechanics/DeformationGradient2D.h"
-#include "nuto/mechanics/constitutive/mechanics/EngineeringStrain2D.h"
-#include "nuto/mechanics/constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.h"
+#include "mechanics/constitutive/mechanics/DeformationGradient2D.h"
+#include "mechanics/constitutive/mechanics/EngineeringStrain2D.h"
+#include "mechanics/constitutive/mechanics/NonlocalDamagePlasticityEngineeringStress.h"
 
 #include <eigen3/Eigen/Core>
 

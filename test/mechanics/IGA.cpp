@@ -1,37 +1,37 @@
 ﻿#include <iostream>
-#include "nuto/mechanics/structures/StructureBase.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
+#include "mechanics/structures/StructureBase.h"
+#include "mechanics/structures/unstructured/Structure.h"
 
 #include <eigen3/Eigen/Core>
 
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/SparseMatrixCSRGeneral.h"
-#include "nuto/math/SparseMatrixCSRSymmetric.h"
-#include "nuto/math/SparseDirectSolverMUMPS.h"
-#include "nuto/math/SparseDirectSolverPardiso.h"
+#include "math/FullMatrix.h"
+#include "math/SparseMatrixCSRGeneral.h"
+#include "math/SparseMatrixCSRSymmetric.h"
+#include "math/SparseDirectSolverMUMPS.h"
+#include "math/SparseDirectSolverPardiso.h"
 
-#include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
-#include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
+#include "mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
+#include "mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
+#include "mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
+#include "mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
 
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 
-#include "nuto/mechanics/IGA/BSplineCurve.h"
-#include "nuto/mechanics/IGA/BSplineSurface.h"
+#include "mechanics/IGA/BSplineCurve.h"
+#include "mechanics/IGA/BSplineSurface.h"
 
-#include "nuto/mechanics/nodes/NodeBase.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "mechanics/nodes/NodeBase.h"
+#include "mechanics/nodes/NodeEnum.h"
 
-#include "nuto/mechanics/groups/GroupEnum.h"
+#include "mechanics/groups/GroupEnum.h"
 
 #include <boost/filesystem.hpp>
 
 #ifdef ENABLE_VISUALIZE
-#include "nuto/visualize/VisualizeEnum.h"
+#include "visualize/VisualizeEnum.h"
 #endif
 
 #define PRINTRESULT true

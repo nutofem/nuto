@@ -2,11 +2,11 @@
 //#include <nuto/mechanics/timeIntegration/ImplicitStandard.h>
 #include <nuto/mechanics/constitutive/multiPhysics/ConstitutiveStaticDataMultiPhysics.h>
 #include <nuto/mechanics/constitutive/moistureTransport/ConstitutiveStaticDataMoistureTransport.h>
-#include "nuto/geometryConcrete/GeometryConcrete.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
-//#include "nuto/mechanics/timeIntegration/CrankNicolson.h"
-#include "nuto/mechanics/timeIntegration/CrankNicolsonEvaluate.h"
+#include "geometryConcrete/GeometryConcrete.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/timeIntegration/NewmarkDirect.h"
+//#include "mechanics/timeIntegration/CrankNicolson.h"
+#include "mechanics/timeIntegration/CrankNicolsonEvaluate.h"
 #include <nuto/metamodel/PolynomialLeastSquaresFitting.h>
 #include <nuto/mechanics/nodes/NodeBase.h>
 #include <boost/filesystem.hpp>

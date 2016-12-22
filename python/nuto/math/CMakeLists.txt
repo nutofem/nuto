@@ -9,20 +9,20 @@ set(NuToMath_SWIG_MODULES
 )
 
 set(SWIG_MODULE_ModulFullMatrix_EXTRA_DEPS
-    ${CMAKE_SOURCE_DIR}/src/nuto/math/FullMatrix_Def.h
+    ${CMAKE_SOURCE_DIR}/src/math/FullMatrix_Def.h
 )
 
 set(SWIG_MODULE_ModulFullVectorx_EXTRA_DEPS
-    ${CMAKE_SOURCE_DIR}/src/nuto/math/FullVector_Def.h
+    ${CMAKE_SOURCE_DIR}/src/math/FullVector_Def.h
 )
 
 set(SWIG_MODULE_ModulSparseMatrix_EXTRA_DEPS
-    ${CMAKE_SOURCE_DIR}/src/nuto/math/SparseMatrix.h
-    ${CMAKE_SOURCE_DIR}/src/nuto/math/SparseMatrixCSR.h
-    ${CMAKE_SOURCE_DIR}/src/nuto/math/SparseMatrixCSRGeneral_Def.h
-    ${CMAKE_SOURCE_DIR}/src/nuto/math/SparseMatrixCSRSymmetric_Def.h
-    ${CMAKE_SOURCE_DIR}/src/nuto/math/SparseMatrixCSRVector2General_Def.h
-    ${CMAKE_SOURCE_DIR}/src/nuto/math/SparseMatrixCSRVector2Symmetric_Def.h
+    ${CMAKE_SOURCE_DIR}/src/math/SparseMatrix.h
+    ${CMAKE_SOURCE_DIR}/src/math/SparseMatrixCSR.h
+    ${CMAKE_SOURCE_DIR}/src/math/SparseMatrixCSRGeneral_Def.h
+    ${CMAKE_SOURCE_DIR}/src/math/SparseMatrixCSRSymmetric_Def.h
+    ${CMAKE_SOURCE_DIR}/src/math/SparseMatrixCSRVector2General_Def.h
+    ${CMAKE_SOURCE_DIR}/src/math/SparseMatrixCSRVector2Symmetric_Def.h
 )
 
 if(ENABLE_NUMPY)

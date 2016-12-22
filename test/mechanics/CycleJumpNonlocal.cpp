@@ -1,6 +1,6 @@
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
-#include "nuto/mechanics/timeIntegration/JumpDirect.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "mechanics/timeIntegration/JumpDirect.h"
 
 
 #include <boost/filesystem.hpp>

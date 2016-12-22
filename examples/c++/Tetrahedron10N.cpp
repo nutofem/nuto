@@ -1,8 +1,8 @@
-#include "nuto/math/FullMatrix.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
-#include "nuto/mechanics/MechanicsEnums.h"
-#include "nuto/visualize/VisualizeEnum.h"
+#include "math/FullMatrix.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
+#include "mechanics/MechanicsEnums.h"
+#include "visualize/VisualizeEnum.h"
 
 int main()
 {

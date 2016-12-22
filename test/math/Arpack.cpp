@@ -5,15 +5,15 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
-#include "nuto/base/Timer.h"
-#include "nuto/math/FullMatrix.h"
-#include "nuto/math/FullVector.h"
-#include "nuto/math/SparseMatrixCSRVector2General.h"
-#include "nuto/math/EigenSolverArpack.h"
-#include "nuto/math/EigenSolverArpackEnum.h"
+#include "base/Timer.h"
+#include "math/FullMatrix.h"
+#include "math/FullVector.h"
+#include "math/SparseMatrixCSRVector2General.h"
+#include "math/EigenSolverArpack.h"
+#include "math/EigenSolverArpackEnum.h"
 
-#include "nuto/math/SparseDirectSolverMUMPS.h"
-#include "nuto/math/SparseMatrixCSRVector2Symmetric.h"
+#include "math/SparseDirectSolverMUMPS.h"
+#include "math/SparseMatrixCSRVector2Symmetric.h"
 
 
 // necessary to build with clang when boost has been compiled by gcc

@@ -1,10 +1,22 @@
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+add_subdirectory(base)
+add_subdirectory(math)
 
-# add library
-add_subdirectory(nuto)
-install(DIRECTORY nuto DESTINATION ${NUTO_INCLUDE_INSTALL_PATH} FILES_MATCHING PATTERN "*.h")
+if(ENABLE_MECHANICS)
+    add_subdirectory(mechanics)
+endif()
 
-# add GUI
-if(ENABLE_GUI)
-    add_subdirectory(gui)
+if(ENABLE_GEOMETRYCONCRETE)
+    add_subdirectory(geometryConcrete)
+endif()
+
+if(ENABLE_METAMODEL)
+    add_subdirectory(metamodel)
+endif()
+
+if(ENABLE_OPTIMIZE)
+    add_subdirectory(optimize)
+endif()
+
+if(ENABLE_VISUALIZE)
+    add_subdirectory(visualize)
 endif()

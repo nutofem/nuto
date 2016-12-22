@@ -6,12 +6,12 @@
 #include <memory>
 #include <eigen3/Eigen/Dense>
 
-#include "nuto/base/Timer.h"
+#include "base/Timer.h"
 
-#include "nuto/math/FullVector.h"
+#include "math/FullVector.h"
 
-#include "nuto/base/serializeStream/SerializeStreamOut.h"
-#include "nuto/base/serializeStream/SerializeStreamIn.h"
+#include "base/serializeStream/SerializeStreamOut.h"
+#include "base/serializeStream/SerializeStreamIn.h"
 
 
 // needed for building with clang when boost test has been built with gcc

@@ -1,9 +1,9 @@
-#include "nuto/math/FullMatrix.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
-#include "nuto/mechanics/structures/unstructured/Structure.h"
-#include "nuto/mechanics/MechanicsException.h"
+#include "math/FullMatrix.h"
+#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "mechanics/nodes/NodeEnum.h"
+#include "mechanics/structures/unstructured/Structure.h"
+#include "mechanics/MechanicsException.h"
 
 #define PRINTRESULT false
 

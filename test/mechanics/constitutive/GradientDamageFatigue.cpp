@@ -5,11 +5,11 @@
 #define BOOST_TEST_MODULE GradientDamageFatigueTest
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
-#include "nuto/mechanics/constitutive/laws/GradientDamageFatigueEngineeringStress.h"
-#include "nuto/mechanics/constitutive/inputoutput/EngineeringStrain.h"
-#include "nuto/mechanics/constitutive/inputoutput/ConstitutiveMatrix.h"
-#include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
-#include "nuto/mechanics/nodes/NodeEnum.h"
+#include "mechanics/constitutive/laws/GradientDamageFatigueEngineeringStress.h"
+#include "mechanics/constitutive/inputoutput/EngineeringStrain.h"
+#include "mechanics/constitutive/inputoutput/ConstitutiveMatrix.h"
+#include "mechanics/constitutive/ConstitutiveEnum.h"
+#include "mechanics/nodes/NodeEnum.h"
 #include "../../tools/TypeTraits.h"
 #include "ConstitutiveTangentTester.h"
 
