@@ -315,7 +315,6 @@ template void FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>::Save (const std:
 template void FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>::Restore (const std::string&, std::string);
 
 #endif // ENABLE_SERIALIZATION
-
 } //NAMESPACE NUTO
 
 

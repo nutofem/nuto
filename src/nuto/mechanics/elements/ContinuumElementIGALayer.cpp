@@ -82,6 +82,8 @@ NuTo::eError NuTo::ContinuumElementIGALayer<TDim>::Evaluate(const ConstitutiveIn
             }
         }
     }
+
+    return eError::SUCCESSFUL;
 }
 
 template<int TDim>
@@ -176,9 +178,10 @@ Eigen::VectorXd NuTo::ContinuumElementIGALayer<TDim>::InterpolateDofGlobalSurfac
     Eigen::VectorXd nodalInitial       = this->ExtractNodeValues(rTimeDerivative, Node::eDof::COORDINATES);
     Eigen::VectorXd nodalDisplacements = this->ExtractNodeValues(rTimeDerivative, Node::eDof::DISPLACEMENTS);
 
-    Eigen::MatrixXd matrixNDerivative = this->mInterpolationType->Get(Node::eDof::COORDINATES).CalculateMatrixNDerivative(rParameter, this->mKnotIDs, rDerivative, rDirection);
+    Eigen::MatrixXd matrixNDerivativeCoords = this->mInterpolationType->Get(Node::eDof::COORDINATES).CalculateMatrixNDerivative(rParameter, this->mKnotIDs, rDerivative, rDirection);
+    Eigen::MatrixXd matrixNDerivativeDisp = this->mInterpolationType->Get(Node::eDof::DISPLACEMENTS).CalculateMatrixNDerivative(rParameter, this->mKnotIDs, rDerivative, rDirection);
 
-    return matrixNDerivative * (nodalInitial + nodalDisplacements);
+    return matrixNDerivativeCoords * nodalInitial + matrixNDerivativeDisp * nodalDisplacements;
 }
 
 namespace NuTo // template specialization in *.cpp somehow requires the definition to be in the namespace...
@@ -229,29 +232,6 @@ Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> NuTo::ContinuumEl
     }
 
     return derivative;
-}
-
-template<>
-Eigen::VectorXd NuTo::ContinuumElementIGALayer<1>::InterpolateDofGlobalSurfaceNormal(const Eigen::VectorXd& rParameter) const
-{
-    Eigen::VectorXd tangent = InterpolateDofGlobalSurfaceDerivative(0, rParameter, 1, 0);
-
-    if(tangent.rows() != 2)
-        throw MechanicsException(__PRETTY_FUNCTION__, "The normal only available for 2D domains.");
-
-    return Eigen::Vector2d(-tangent(1), tangent(0));
-}
-
-template<>
-Eigen::VectorXd NuTo::ContinuumElementIGALayer<2>::InterpolateDofGlobalSurfaceNormal(const Eigen::VectorXd& rParameter) const
-{
-    Eigen::VectorXd tangentX = InterpolateDofGlobalSurfaceDerivative(0, rParameter, 1, 0);
-    Eigen::VectorXd tangentY = InterpolateDofGlobalSurfaceDerivative(0, rParameter, 1, 1);
-
-    if(tangentX.rows() != 3 && tangentY.rows() != 3)
-        throw MechanicsException(__PRETTY_FUNCTION__, "The normal only available for 3D domains.");
-
-    return Eigen::Vector3d(tangentX).cross(Eigen::Vector3d(tangentX));
 }
 }  // namespace NuTo
 

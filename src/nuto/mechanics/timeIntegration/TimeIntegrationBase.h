@@ -106,6 +106,12 @@ public:
         mTimeStep = rTimeStep;
     }
 
+    //! @brief sets the mLastTimePlot
+    void SetLastTimePlot(double rLastTimePlot)
+    {
+        mLastTimePlot = rLastTimePlot;
+    }
+
     //! @brief returns the  time step for the time integration procedure (current value)
     double GetTimeStep()const
     {
@@ -185,6 +191,14 @@ public:
     //! @param rElementId id of the element to be monitored
     //! @return id of the result, so that it could be modified afterwards
     int AddResultElementIpData(const std::string& rResultStr, int rElementId, NuTo::IpData::eIpStaticDataType rIpDataType);
+
+    //! @brief monitor the integration point values in of an element group
+    //! @param rResultId string identifying the result, this is used for the output file
+    //! @param rElementGroupId id of the element group to be monitored
+    //! @param rComponent the component e.g. x stress
+    //! @param rIP the list of integration points to be monitored
+    //! @return id of the result, so that it could be modified afterwards
+    int AddResultElementGroupIpData(const std::string& rResultStr, int rElementGroupId, int rComponent, const std::vector<int> &rIP, NuTo::IpData::eIpStaticDataType rIpDataType);
 
     //! @brief sets the result directory
     //! @param if delete is set, all the content of the directory will be removed

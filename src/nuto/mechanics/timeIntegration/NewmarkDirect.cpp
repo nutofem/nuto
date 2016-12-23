@@ -211,7 +211,7 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
         if (mToleranceResidual < residual_mod.CalculateInfNorm())
         {
             mStructure->GetLogger() << residual_mod.CalculateInfNorm();
-            throw MechanicsException(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
+//            throw MechanicsException(__PRETTY_FUNCTION__, "Initial configuration is not in (dynamic) equilibrium.");
         }
 
         CalculateResidualKForPostprocessing(residual, hessian2, lastConverged_dof_dt1, lastConverged_dof_dt2);

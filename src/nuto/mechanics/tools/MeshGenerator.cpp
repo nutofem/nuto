@@ -265,6 +265,29 @@ void NuTo::MeshGenerator::MeshRectangularPlane(NuTo::Structure &rStructure,
                    MappingFunction);
 }
 
+//void NuTo::MeshGenerator::MeshCircle(NuTo::Structure &rStructure,
+//                                            int rSection,
+//                                            int rConstitutiveLaw,
+//                                            int rInterpolationType,
+//                                            std::array<int,3> rNumElements)
+//{
+//    auto MappingFunction = [](double rX, double rY) -> NuTo::FullVector<double, Eigen::Dynamic>
+//                            {
+//                                NuTo::FullVector<double,Eigen::Dynamic> CoordVec(2);
+//                                CoordVec = {{rX * sqrt(1 - (rY * rY) / 2.0 ),
+//                                             rY * sqrt(1 - (rX * rX) / 2.0 )}};
+//                                return CoordVec;
+//                            };
+
+//    GenerateMesh2D(rStructure,
+//                   rSection,
+//                   rConstitutiveLaw,
+//                   rInterpolationType,
+//                   rNumElements,
+//                   MappingFunction);
+//}
+
+
 
 
 

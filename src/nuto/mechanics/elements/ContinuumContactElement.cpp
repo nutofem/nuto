@@ -142,9 +142,6 @@ template <int TDimSlave, int TDimMaster>
 NuTo::eError NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::Evaluate(const ConstitutiveInputMap& rInput,
                                                                             std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput)
 {
-    if(CheckElementOutput(rElementOutput) == eError::NOT_IMPLEMENTED)
-        return eError::NOT_IMPLEMENTED;
-
     EvaluateDataContinuumBoundary<TDimSlave> data;
     this->ExtractAllNecessaryDofValues(data);
 
@@ -161,20 +158,65 @@ NuTo::eError NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::Evaluate(cons
     int numAllDofsMaster = mMappingGlobal2LocalDof.size();
 
     data.mMortarGapMatrix.setZero(numDofsSlave + numAllDofsMaster, numNodesSlave);
+    data.mMortarGapMatrixPenalty.setZero(numDofsSlave + numAllDofsMaster, numNodesSlave);
     data.mMortarGapVector.setZero(numNodesSlave, 1);
+    data.mJacobianbyWeight.setZero(this->GetNumIntegrationPoints());
 
-    for (int theIP = 0; theIP < this->GetNumIntegrationPoints(); theIP++)
+//    data.mAreas.setZero(numNodesSlave);
+
+    for (auto it : rElementOutput)
     {
-//        this->CalculateNMatrixBMatrixDetJacobian(data, theIP);
-        this->CalculateConstitutiveInputs(constitutiveInput, data);
+        switch (it.first)
+        {
+        case Element::eOutput::INTERNAL_GRADIENT:
+        case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
+        {
+            for (int theIP = 0; theIP < this->GetNumIntegrationPoints(); theIP++)
+            {
+                Eigen::VectorXd coordinatesIPSlave;
+                Eigen::VectorXd ipCoordsNaturalSlave;
+                GetGlobalIntegrationPointCoordinatesAndParameters(theIP, coordinatesIPSlave, ipCoordsNaturalSlave);
 
-        eError error = this->NuTo::ElementBase::EvaluateConstitutiveLaw<TDimSlave>(constitutiveInput, constitutiveOutput, theIP);
-        if (error != eError::SUCCESSFUL)
-            return error;
+//                const InterpolationBase& interpolationTypeCoordsSlave = this->mBaseElement->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS);
+//                Eigen::VectorXd  shapeFunsSlave = interpolationTypeCoordsSlave.CalculateShapeFunctions(ipCoordsNaturalSlave);
 
-        // contacttype = 0: mortar
-        // contacttype = 1: non mortar (gaps at integration points are panalyzed)
-        GapMatrixMortar(data, theIP);
+                // TODO mind the iga jacobian matrix (in case of iga layer- iga layer contact)
+                auto jacobianSurface = this->mBaseElement->CalculateJacobianSurface(ipCoordsNaturalSlave, this->ExtractNodeValues(0, Node::eDof::COORDINATES), this->mSurfaceId);
+                data.mJacobianbyWeight(theIP) = jacobianSurface.norm() * this->GetIntegrationPointWeight(theIP);
+
+//                //*** Compute the area of the slave shape funs ***
+//                for(int i = 0; i < shapeFunsSlave.rows(); i++)
+//                {
+//                        data.mAreas(i) += shapeFunsSlave(i)*data.mJacobianbyWeight(theIP);
+//                }
+            }
+
+            for (int theIP = 0; theIP < this->GetNumIntegrationPoints(); theIP++)
+            {
+                //        this->CalculateNMatrixBMatrixDetJacobian(data, theIP);
+                this->CalculateConstitutiveInputs(constitutiveInput, data);
+
+                eError error = this->NuTo::ElementBase::EvaluateConstitutiveLaw<TDimSlave>(constitutiveInput, constitutiveOutput, theIP);
+                if (error != eError::SUCCESSFUL)
+                    return error;
+
+                // contacttype = 0: mortar
+                // contacttype = 1: non mortar (gaps at integration points are panalyzed)
+                GapMatrixMortar(data, theIP);
+            }
+        }
+            break;
+        case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE: // already set to zero in GetConstitutiveOutputMap()...
+        case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE: // already set to zero in GetConstitutiveOutputMap()...
+        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE: // already set to zero in GetConstitutiveOutputMap()...
+        case Element::eOutput::GLOBAL_ROW_DOF:
+        case Element::eOutput::GLOBAL_COLUMN_DOF:
+        case Element::eOutput::UPDATE_STATIC_DATA:
+        case Element::eOutput::UPDATE_TMP_STATIC_DATA:
+            break;
+        default:
+            throw MechanicsException(__PRETTY_FUNCTION__, "element output not implemented.");
+        }
     }
 
     CalculateElementOutputs(rElementOutput, data, constitutiveInput, constitutiveOutput);
@@ -193,12 +235,17 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumContactElement<TDimSlave, TDimMaster>
         switch (it.first)
         {
         case Element::eOutput::INTERNAL_GRADIENT:
-        case Element::eOutput::CONTACT_FORCE:
-        case Element::eOutput::CONTACT_FORCE_DERIVATIVE:
         case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
-        case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE:
-        case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE:
-        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
+            // no resize needed, since the mortar matrices are set at the end of the evaluate routine...
+            break;
+        case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE: // not needed, so set to 0
+            FillConstitutiveOutputMapHessian1(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
+            break;
+        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE: // not needed, so set to 0
+            FillConstitutiveOutputMapHessian2Lumped(constitutiveOutput, it.second->GetBlockFullVectorDouble());
+            break;
+        case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE: // not needed, so set to 0
+            FillConstitutiveOutputMapHessian2(constitutiveOutput, it.second->GetBlockFullMatrixDouble());
             break;
         case Element::eOutput::UPDATE_STATIC_DATA:
             constitutiveOutput[Constitutive::eOutput::UPDATE_STATIC_DATA] = 0;
@@ -223,26 +270,36 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumContactElement<TDimSlave, TDimMaster>
 }
 
 template <int TDimSlave, int TDimMaster>
-NuTo::eError  NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CheckElementOutput(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const
+void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::FillConstitutiveOutputMapHessian1(ConstitutiveOutputMap &rConstitutiveOutput,
+                                                                                             BlockFullMatrix<double> &rHessian1) const
 {
-    for (auto it : rElementOutput)
-    {
-        switch (it.first)
-        {
-        case Element::eOutput::INTERNAL_GRADIENT:
-        case Element::eOutput::INTERNAL_GRADIENT_ELASTIC:
-        case Element::eOutput::EXTERNAL_GRADIENT:
-        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
-        case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
-        case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE_ELASTIC:
-        case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE:
-        case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE:
-            return eError::NOT_IMPLEMENTED;
-        default:
-            return eError::SUCCESSFUL;
-        }
-    }
-    return eError::SUCCESSFUL;
+    (void) rConstitutiveOutput;
+    auto activeDofs = this->mInterpolationType->GetActiveDofs();
+    if (activeDofs.size() > 1 && activeDofs.find(Node::eDof::DISPLACEMENTS) == activeDofs.end())
+        throw MechanicsException(__PRETTY_FUNCTION__, "Contact is only implemented for displacements.");
+    rHessian1(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS).Resize(mNumDofs, mNumDofs);
+}
+
+template <int TDimSlave, int TDimMaster>
+void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::FillConstitutiveOutputMapHessian2Lumped(ConstitutiveOutputMap &rConstitutiveOutput,
+                                                                                                   BlockFullVector<double> &rHessian2Lumped) const
+{
+    (void) rConstitutiveOutput;
+    auto activeDofs = this->mInterpolationType->GetActiveDofs();
+    if (activeDofs.size() > 1 && activeDofs.find(Node::eDof::DISPLACEMENTS) == activeDofs.end())
+        throw MechanicsException(__PRETTY_FUNCTION__, "Contact is only implemented for displacements.");
+    rHessian2Lumped[Node::eDof::DISPLACEMENTS].Resize(mNumDofs);
+}
+
+template <int TDimSlave, int TDimMaster>
+void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::FillConstitutiveOutputMapHessian2(ConstitutiveOutputMap &rConstitutiveOutput,
+                                                                                                   BlockFullMatrix<double> &rHessian2) const
+{
+    (void) rConstitutiveOutput;
+    auto activeDofs = this->mInterpolationType->GetActiveDofs();
+    if (activeDofs.size() > 1 && activeDofs.find(Node::eDof::DISPLACEMENTS) == activeDofs.end())
+        throw MechanicsException(__PRETTY_FUNCTION__, "Contact is only implemented for displacements.");
+    rHessian2(Node::eDof::DISPLACEMENTS,Node::eDof::DISPLACEMENTS).Resize(mNumDofs, mNumDofs);
 }
 
 template <int TDimSlave, int TDimMaster>
@@ -284,10 +341,10 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
 
             // ===> Get the position on the master curve/surface
             // ===> Compare and set to minimum if though
-            const InterpolationBase& interpolationTypeCoordsMaster = elementPtr->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS);
+            const InterpolationBase& interpolationTypeDispMaster = elementPtr->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS);
             for(auto it : referenceCoordinates)
             {
-                Eigen::VectorXd parameter = interpolationTypeCoordsMaster.CalculateNaturalSurfaceCoordinates(it, surfaceId, elementPtr->GetKnots());
+                Eigen::VectorXd parameter = interpolationTypeDispMaster.CalculateNaturalSurfaceCoordinates(it, surfaceId, elementPtr->GetKnots());
                 Eigen::VectorXd coordinatesMaster = elementPtr->InterpolateDofGlobalSurfaceDerivative(0, parameter, 0, 0);
 
                 double distance = (coordinatesMaster - coordinatesIPSlave).norm();
@@ -305,16 +362,17 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
     const ContinuumElementIGA<TDimMaster> *masterElement = mElementsMaster(indexMasterElement(0),indexMasterElement(1)).first;
 
     // **** Newton iteration ****//
-
     double tol = 1.e-10;
     double error = 1.;
     int maxNumIter = 100;
     int numIter = 0;
+    Eigen::VectorXd r;
+    Eigen::VectorXd coordinatesMaster;
     while(error > tol && numIter < maxNumIter)
     {
         // ==> function (dprime)
-        Eigen::VectorXd coordinatesMaster = masterElement->InterpolateDofGlobalSurfaceDerivative(0, parameterMinMaster, 0, 0);
-        Eigen::VectorXd r = coordinatesIPSlave - coordinatesMaster;
+        coordinatesMaster = masterElement->InterpolateDofGlobalSurfaceDerivative(0, parameterMinMaster, 0, 0);
+        r = coordinatesIPSlave - coordinatesMaster;
         Eigen::VectorXd dprime(TDimSlave - 1, 1);
         dprime.setZero(TDimSlave - 1);
         Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> prime = masterElement->InterpolateDofGlobalSurfaceDerivativeTotal(0, parameterMinMaster, 1);
@@ -355,7 +413,8 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
         numIter++;
     }
 
-    if(numIter >= maxNumIter) std::cout << "ContinuumContactElement: Maximum number of Newton iterations exceeded!" << std::endl;
+    if(numIter >= maxNumIter) std::cout << "!!!!!!ContinuumContactElement: Maximum number of Newton iterations exceeded!" << std::endl;
+
 
     /*************************/
     //  Build the gap matrix //
@@ -363,7 +422,6 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
 
     // normal vector
     Eigen::VectorXd normal = masterElement->InterpolateDofGlobalSurfaceNormal(parameterMinMaster);
-    normal.normalize();
 
     // Assemble the element gap matrix => \int_{\Gamma_e} F(ShapeFunctionsSlave(\xi^s), ShapeFunctionsMaster(\xi^*), n^*) d\Gamma
 
@@ -373,12 +431,10 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
     const InterpolationBase& interpolationTypeCoordsMaster  = masterElement->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS);
     Eigen::VectorXd  shapeFunsMaster = interpolationTypeCoordsMaster.CalculateShapeFunctions(parameterMinMaster); // master is always iga
 
-
     int numSlaveFunsNormal  = shapeFunsSlave.rows()*normal.rows();
     int numMasterFunsNormal = shapeFunsMaster.rows()*normal.rows();
 
     Eigen::VectorXd shapeFunsSlaveNormal(numSlaveFunsNormal);
-
     count = 0;
     for(int i = 0; i < shapeFunsSlave.rows(); i++)
     {
@@ -390,46 +446,58 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
     count = 0;
     for(int i = 0; i < shapeFunsMaster.rows(); i++)
     {
-        shapeFunsMasterNormal.block(count, 0, normal.rows(), 1) = shapeFunsMaster(i)*normal;
+        shapeFunsMasterNormal.block(count, 0, normal.rows(), 1) = (-1)*shapeFunsMaster(i)*normal;
         count+=normal.rows();
     }
 
     // TODO mind the iga jacobian matrix
-    auto jacobianSurface = this->mBaseElement->CalculateJacobianSurface(ipCoordsNaturalSlave, this->ExtractNodeValues(0, Node::eDof::COORDINATES), this->mSurfaceId);
-    double factor = jacobianSurface.norm() * this->GetIntegrationPointWeight(rTheIP);
+//    auto jacobianSurface = this->mBaseElement->CalculateJacobianSurface(ipCoordsNaturalSlave, this->ExtractNodeValues(0, Node::eDof::COORDINATES), this->mSurfaceId);
+//    double factor = jacobianSurface.norm() * this->GetIntegrationPointWeight(rTheIP);
 
     // matrix containing the derivatives of the slave and master side multiplied by the normal (R^S * normal \\  R^M * normal)
     Eigen::MatrixXd NContact;
     NContact.resize(numSlaveFunsNormal + numMasterFunsNormal, shapeFunsSlave.rows());
 
     NContact.block(0, 0, numSlaveFunsNormal, shapeFunsSlave.rows())  =  shapeFunsSlaveNormal*shapeFunsSlave.transpose();
-    NContact.block(numSlaveFunsNormal, 0, numMasterFunsNormal, shapeFunsSlave.rows()) = -shapeFunsMasterNormal * shapeFunsSlave.transpose();
-    NContact *= factor;
+    NContact.block(numSlaveFunsNormal, 0, numMasterFunsNormal, shapeFunsSlave.rows()) = shapeFunsMasterNormal * shapeFunsSlave.transpose();
+    NContact *= rData.mJacobianbyWeight(rTheIP);
 
-    Eigen::VectorXd positions;
-    positions.resize(numSlaveFunsNormal + numMasterFunsNormal);
-    positions.block(0, 0, numSlaveFunsNormal, 1) = this->ExtractNodeValues(0, Node::eDof::COORDINATES) + this->ExtractNodeValues(0, Node::eDof::DISPLACEMENTS);
-    positions.block(numSlaveFunsNormal, 0, numMasterFunsNormal, 1) = masterElement->ExtractNodeValues(0, Node::eDof::COORDINATES) + masterElement->ExtractNodeValues(0, Node::eDof::DISPLACEMENTS);
+//    Eigen::VectorXd positions;
+//    positions.resize(numSlaveFunsNormal + numMasterFunsNormal);
+//    Eigen::VectorXd coordinates = this->ExtractNodeValues(0, Node::eDof::COORDINATES);
+//    Eigen::VectorXd displacements = this->ExtractNodeValues(0, Node::eDof::DISPLACEMENTS);
+//    positions.block(0, 0, numSlaveFunsNormal, 1) = coordinates + displacements;
+//    positions.block(numSlaveFunsNormal, 0, numMasterFunsNormal, 1) = masterElement->ExtractNodeValues(0, Node::eDof::COORDINATES) + masterElement->ExtractNodeValues(0, Node::eDof::DISPLACEMENTS);
 
-    rData.mMortarGapMatrix.block(0, 0, numSlaveFunsNormal, shapeFunsSlave.rows()) += NContact.block(0, 0, numSlaveFunsNormal, shapeFunsSlave.rows());
 
-    if(mContactType == 0)
+
+//    // *** mortar matrix ***
+//    Eigen::VectorXd shapeFunsTimesNormal(numSlaveFunsNormal + numMasterFunsNormal);
+//    shapeFunsTimesNormal.block(0, 0, numSlaveFunsNormal, 1) = shapeFunsSlaveNormal;
+//    shapeFunsTimesNormal.block(numSlaveFunsNormal, 0, numMasterFunsNormal, 1) = -shapeFunsMasterNormal;
+
+//    Eigen::MatrixXd matrixNMaster = interpolationTypeCoordsMaster.CalculateMatrixN(parameterMinMaster);
+//    Eigen::MatrixXd matrixNSlave  = this->mBaseElement->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS).CalculateMatrixN(ipCoordsNaturalSlave);
+
+//    std::cout << "slave:" << matrixNSlave*positions.block(0, 0, numSlaveFunsNormal, 1) << "times normal: " << (matrixNSlave*positions.block(0, 0, numSlaveFunsNormal, 1)).dot(normal) << std::endl;
+//    std::cout << "master:" << matrixNMaster*positions.block(numSlaveFunsNormal, 0, numMasterFunsNormal, 1) << "times normal: " << (matrixNMaster*positions.block(numSlaveFunsNormal, 0, numMasterFunsNormal, 1)).dot(normal) << std::endl;
+
+//    std::cout << "slave Old:" <<  positions.block(0, 0, numSlaveFunsNormal, 1).dot(shapeFunsSlaveNormal) << std::endl;
+//    std::cout << "master Old:" << positions.block(numSlaveFunsNormal, 0, numMasterFunsNormal, 1).dot(shapeFunsMasterNormal) << std::endl;
+
+//    double gapOld = positions.dot(shapeFunsTimesNormal);
+
+    double gap = r.dot(normal);
+
+//    std::cout << "GapOld - Gap: " << gapOld - gap << std::endl;
+    double force = 0.;
+    if(gap <= 0)
     {
-        rData.mMortarGapVector += NContact.transpose()*positions;
-    }
-    else if(mContactType == 1)
-    {
-        Eigen::VectorXd shapeFunsTimesNormal(numSlaveFunsNormal + numMasterFunsNormal);
-        shapeFunsTimesNormal.block(0, 0, numSlaveFunsNormal, 1) = shapeFunsSlaveNormal;
-        shapeFunsTimesNormal.block(numSlaveFunsNormal, 0, numMasterFunsNormal, 1) = -shapeFunsMasterNormal;
-        double gap = positions.dot(shapeFunsTimesNormal);
-        if(gap < 0)
-        {
-            rData.mMortarGapVector -= shapeFunsSlave*gap*penaltyP*factor;
-        }
-
+        force = penaltyP;
     }
 
+    rData.mMortarGapMatrix.block(0, 0, numSlaveFunsNormal, shapeFunsSlave.rows())        += NContact.block(0, 0, numSlaveFunsNormal, shapeFunsSlave.rows());
+    rData.mMortarGapMatrixPenalty.block(0, 0, numSlaveFunsNormal, shapeFunsSlave.rows()) += NContact.block(0, 0, numSlaveFunsNormal, shapeFunsSlave.rows())*force;
 
     const int numNodes = interpolationTypeCoordsMaster.GetNumNodes();
     unsigned int numDofsPerType = masterElement->GetNode(interpolationTypeCoordsMaster.GetNodeIndex(0))->GetNum(Node::eDof::DISPLACEMENTS);
@@ -443,7 +511,22 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
         {
             int index = mMappingGlobal2LocalDof[nodePtr->GetDof(Node::eDof::DISPLACEMENTS, iDof)];
             rData.mMortarGapMatrix.row(index) += NContact.row(count + numSlaveFunsNormal);
+            rData.mMortarGapMatrixPenalty.row(index) += (NContact.row(count + numSlaveFunsNormal)*force);
             count++;
+        }
+    }
+
+    // *** penalty vector or gap vector for the contact force ***
+    if(mContactType == 0)
+    {
+        //rData.mMortarGapVector += NContact.transpose()*positions;
+        throw MechanicsException(__PRETTY_FUNCTION__, "Implement mortar type contact.");
+    }
+    else if(mContactType == 1)
+    {
+        if(gap < 0)
+        {
+            rData.mMortarGapVector += shapeFunsSlave*gap*penaltyP*rData.mJacobianbyWeight(rTheIP);
         }
     }
 }
@@ -454,19 +537,20 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
                                                                                    const ConstitutiveInputMap                                     &constitutiveInput,
                                                                                    const ConstitutiveOutputMap                                    &constitutiveOutput) const
 {
+
     for (auto it : rElementOutput)
     {
         switch (it.first)
         {
-        case Element::eOutput::CONTACT_FORCE:
-            CalculateElementOutputContactForce(it.second->GetBlockFullVectorDouble(), rData, constitutiveInput, constitutiveOutput);
-            break;
-        case Element::eOutput::CONTACT_FORCE_DERIVATIVE:
-            CalculateElementOutputContactForce(it.second->GetBlockFullVectorDouble(), rData, constitutiveInput, constitutiveOutput);
-            break;
         case Element::eOutput::INTERNAL_GRADIENT:
-        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE:
+            CalculateElementOutputContactForce(it.second->GetBlockFullVectorDouble(), rData, constitutiveInput, constitutiveOutput);
+            break;
         case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
+            CalculateElementOutputContactForceDerivative(it.second->GetBlockFullMatrixDouble(), rData, constitutiveInput, constitutiveOutput);
+            break;
+        case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE: // already set to zero in GetConstitutiveOutputMap()...
+        case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE: // already set to zero in GetConstitutiveOutputMap()...
+        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE: // already set to zero in GetConstitutiveOutputMap()...
         case Element::eOutput::GLOBAL_ROW_DOF:
         case Element::eOutput::GLOBAL_COLUMN_DOF:
         case Element::eOutput::UPDATE_STATIC_DATA:
@@ -510,44 +594,33 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
             break;
         }
         default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Element output INTERNAL_GRADIENT for " + Node::DofToString(dofRow) + " not implemented.");
+            throw MechanicsException(__PRETTY_FUNCTION__, "Element output CONTACT_FORCE for " + Node::DofToString(dofRow) + " not implemented.");
         }
     }
 }
 
 template <int TDimSlave, int TDimMaster>
-void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutputContactForceDerivative(BlockFullVector<double> &rInternalGradient,
+void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutputContactForceDerivative(BlockFullMatrix<double> &rGapMatrix,
                                                                                                         EvaluateDataContinuumBoundary<TDimSlave> &rData,
                                                                                                         const ConstitutiveInputMap &constitutiveInput,
                                                                                                         const ConstitutiveOutputMap &constitutiveOutput) const
 {
     for (auto dofRow : this->mInterpolationType->GetActiveDofs())
     {
-        switch (dofRow)
+        for (auto dofCol : this->mInterpolationType->GetActiveDofs())
         {
-        case Node::eDof::DISPLACEMENTS:
-        {
-            if(mContactType == 0)
+            switch (Node::CombineDofs(dofRow, dofCol))
             {
-                Eigen::VectorXd penaltyForce(rData.mMortarGapVector.rows());
-                for(int i = 0; i < penaltyForce.rows(); i++)
-                {
-                    if (rData.mMortarGapVector(i) >= 0.)
-                        penaltyForce(i) = 0.;
-                    else if (rData.mMortarGapVector(i) < 0.)
-                        penaltyForce(i) = -penaltyP*rData.mMortarGapVector(i);
-                }
-
-                rInternalGradient[dofRow] = rData.mMortarGapMatrix*penaltyForce;
-            }
-            else if(mContactType == 1)
+            case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
             {
-                rInternalGradient[dofRow] = rData.mMortarGapMatrix*rData.mMortarGapVector;
+                rGapMatrix(dofRow, dofCol) = rData.mMortarGapMatrix*rData.mMortarGapMatrixPenalty.transpose();
+                if(rGapMatrix(dofRow, dofCol).norm() > 1.e-8)
+                    std::cout << "CCE: " << rGapMatrix(dofRow, dofCol).norm() << std::endl;
+                break;
             }
-            break;
-        }
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "Element output INTERNAL_GRADIENT for " + Node::DofToString(dofRow) + " not implemented.");
+            default:
+                throw MechanicsException(__PRETTY_FUNCTION__, "Element output CONTACT_FORCE_DERIVATIVE for " + Node::DofToString(dofRow) + " not implemented.");
+            }
         }
     }
 }

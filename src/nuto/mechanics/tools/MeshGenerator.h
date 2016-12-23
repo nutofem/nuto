@@ -104,6 +104,19 @@ public:
                                         std::array<int, 2> rNumElements,
                                         std::array<double,2> rLength);
 
+//    //! @brief Creates a circle
+//    //! @param rStructure ... reference to structure
+//    //! @param rSection ... section ID
+//    //! @param rInterpolationType ... interpolation type ID
+//    //! @param rNumElements ... vector with number of elements for each dimension
+//    //! @param rRadius ... radius of the cylinder
+//    //! @param rHeight ... height of the cylinder
+//    static void MeshCircle(NuTo::Structure &rStructure,
+//                             int rSection,
+//                             int rConstitutiveLaw,
+//                             int rInterpolationType,
+//                             std::array<int,3> rNumElements);
+
 
     /*---------------------------------------------*\
     |*             3D mesh generation              *|

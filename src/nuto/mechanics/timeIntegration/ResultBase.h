@@ -17,6 +17,7 @@ class ResultNodeDof;
 class ResultGroupNodeDof;
 class ResultTime;
 class ResultElementIpData;
+class ResultElementGroupIpData;
 class StructureBase;
 enum class eTimeIntegrationResultType;
 
@@ -46,6 +47,12 @@ public:
     //! @brief number of data points per time step (e.g. number of displacement components of a node)
     virtual int GetNumData(const StructureBase& rStructure)const=0;
 
+    virtual void GetNumData(const StructureBase& rStructure, int &rows, int &cols)const
+    {
+        rows = 1;
+        cols = GetNumData(rStructure);
+    }
+
     virtual NuTo::eTimeIntegrationResultType GetResultType()const = 0;
 
     virtual ResultNodeDof* AsResultNodeDof()
@@ -65,6 +72,11 @@ public:
 
 
     virtual ResultElementIpData* AsResultElementIpData()
+    {
+        throw MechanicsException(std::string(__PRETTY_FUNCTION__) +"\t: object is not of this type.");
+    }
+
+    virtual ResultElementGroupIpData* AsResultElementGroupIpData()
     {
         throw MechanicsException(std::string(__PRETTY_FUNCTION__) +"\t: object is not of this type.");
     }

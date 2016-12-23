@@ -247,7 +247,6 @@ public:
     NuTo::StructureOutputBlockMatrix BuildGlobalHessian2Lumped();
 
     NuTo::StructureOutputBlockVector BuildGlobalInternalGradient();
-    NuTo::StructureOutputBlockVector BuildGlobalContactForceVector();
 
     //! @brief ... build global external load vector (currently for displacements only)
     //! @param rLoadCase ... load case
@@ -259,7 +258,12 @@ public:
 
     void SolveGlobalSystemStaticElastic(int rLoadCase = 0);
 
-    void Contact(const std::vector<int> &rElementGroups);
+
+#ifndef SWIG
+
+    void SolveGlobalSystemStaticElasticContact(const BlockScalar &tol, BlockScalar &error, int rMaxNumIter, int rLoadCase = 0);
+
+#endif //SWIG
 
     NuTo::StructureOutputBlockMatrix BuildGlobalHessian0_CDF(double rDelta);
 
@@ -1543,6 +1547,12 @@ public:
     //! @param ... rElementGroupId id for the element group
     void GroupAddNodesFromElements(int rNodeGroupId, int rElementGroupId);
 
+    //! @brief ... Adds all the nodes from the group-rElementGroupId to the group rNodeGroupId
+    //! @param ... rNodeGroupId id for the node group
+    //! @param ... rElementGroupId id for the element group
+    //! @param ... rDof only nodes of the specified dof type are added
+    void GroupAddNodesFromElements(int rNodeGroupId, int rElementGroupId, Node::eDof rDof);
+
     //! @brief ... Adds all nodes to a group whose coordinates are in the specified range
     //! @param ... rIdentGroup identifier for the group
     //! @param ... rCenter center of the selection circle
@@ -1961,6 +1971,11 @@ protected:
     //! @param rElementGroup ... element group
     //! @param rElements ... vector of element pointer
     void GetElementsByGroup(Group<ElementBase>* rElementGroup, std::vector< ElementBase*>& rElements);
+
+    //! @brief ... get all elements of a group in a vector containing the element id and the element pointer
+    //! @param rElementGroup ... element group
+    //! @param rElements ... vector of element pointer
+    void GetElementsByGroup(Group<ElementBase>* rElementGroup, std::vector<std::pair<int, ElementBase*> >& rElements) const;
 
 };
 } //namespace NuTo

@@ -579,16 +579,6 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
                 elementOutputMap[Element::eOutput::INTERNAL_GRADIENT] = std::make_shared<ElementOutputBlockVectorDouble>(mDofStatus);
                 break;
             }
-            case NuTo::eStructureOutput::CONTACT_FORCE:
-            {
-                elementOutputMap[Element::eOutput::CONTACT_FORCE] = std::make_shared<ElementOutputBlockVectorDouble>(mDofStatus);
-                break;
-            }
-            case NuTo::eStructureOutput::CONTACT_FORCE_DERIVATIVE:
-            {
-                elementOutputMap[Element::eOutput::CONTACT_FORCE_DERIVATIVE] = std::make_shared<ElementOutputBlockMatrixDouble>(mDofStatus);
-                break;
-            }
             case NuTo::eStructureOutput::UPDATE_STATIC_DATA:
             {
                 elementOutputMap[Element::eOutput::UPDATE_STATIC_DATA] = std::make_shared<ElementOutputDummy>();
@@ -619,83 +609,72 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
             //bool symmetryFlag = false;
             eError error = elementPtr->Evaluate(rInput, elementOutputMap);
 
-            if( error != eError::NOT_IMPLEMENTED)
+            if (error != eError::SUCCESSFUL)
             {
-                if (error != eError::SUCCESSFUL)
+                if (errorGlobal == eError::SUCCESSFUL)
                 {
-                    if (errorGlobal == eError::SUCCESSFUL)
-                    {
-                        errorGlobal = error;
-                    }
-                    else if (errorGlobal != error)
-                    {
-                        throw MechanicsException(__PRETTY_FUNCTION__, "elements have returned multiple different error codes, can't handle that.");
-                    }
+                    errorGlobal = error;
+                }
+                else if (errorGlobal != error)
+                {
+                    throw MechanicsException(__PRETTY_FUNCTION__, "elements have returned multiple different error codes, can't handle that.");
+                }
+            }
+
+            const auto & elementVectorGlobalDofsRow = elementOutputMap.at(Element::eOutput::GLOBAL_ROW_DOF)->GetBlockFullVectorInt();
+            const auto & elementVectorGlobalDofsColumn = elementOutputMap.at(Element::eOutput::GLOBAL_COLUMN_DOF)->GetBlockFullVectorInt();
+
+            for (auto& iteratorOutput : rStructureOutput)
+            {
+                StructureOutputBase* structureOutput = iteratorOutput.second;
+
+                switch (iteratorOutput.first)
+                {
+                case NuTo::eStructureOutput::HESSIAN0:
+                {
+                    const auto& elementMatrix = elementOutputMap.at(Element::eOutput::HESSIAN_0_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
+                    structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(elementPtr, elementMatrix, elementVectorGlobalDofsRow, elementVectorGlobalDofsColumn, mToleranceStiffnessEntries, GetDofStatus().HasInteractingConstraints());
+                    break;
+                }
+                case NuTo::eStructureOutput::HESSIAN1:
+                {
+                    const auto& elementMatrix = elementOutputMap.at(Element::eOutput::HESSIAN_1_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
+                    structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(elementPtr, elementMatrix, elementVectorGlobalDofsRow, elementVectorGlobalDofsColumn, mToleranceStiffnessEntries, GetDofStatus().HasInteractingConstraints());
+                    break;
                 }
 
-                const auto & elementVectorGlobalDofsRow = elementOutputMap.at(Element::eOutput::GLOBAL_ROW_DOF)->GetBlockFullVectorInt();
-                const auto & elementVectorGlobalDofsColumn = elementOutputMap.at(Element::eOutput::GLOBAL_COLUMN_DOF)->GetBlockFullVectorInt();
-
-                for (auto& iteratorOutput : rStructureOutput)
+                case NuTo::eStructureOutput::HESSIAN2:
                 {
-                    StructureOutputBase* structureOutput = iteratorOutput.second;
+                    const auto& elementMatrix = elementOutputMap.at(Element::eOutput::HESSIAN_2_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
+                    structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(elementPtr, elementMatrix, elementVectorGlobalDofsRow, elementVectorGlobalDofsColumn, mToleranceStiffnessEntries, true); // always calculate the KJ and KK
+                    // since its most likely only needed once,
+                    // and causes troubles in the test files.
+                    break;
+                }
 
-                    switch (iteratorOutput.first)
-                    {
-                    case NuTo::eStructureOutput::HESSIAN0:
-                    {
-                        const auto& elementMatrix = elementOutputMap.at(Element::eOutput::HESSIAN_0_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
-                        structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(elementPtr, elementMatrix, elementVectorGlobalDofsRow, elementVectorGlobalDofsColumn, mToleranceStiffnessEntries, GetDofStatus().HasInteractingConstraints());
-                        break;
-                    }
-                    case NuTo::eStructureOutput::HESSIAN1:
-                    {
-                        const auto& elementMatrix = elementOutputMap.at(Element::eOutput::HESSIAN_1_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
-                        structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(elementPtr, elementMatrix, elementVectorGlobalDofsRow, elementVectorGlobalDofsColumn, mToleranceStiffnessEntries, GetDofStatus().HasInteractingConstraints());
-                        break;
-                    }
+                case NuTo::eStructureOutput::HESSIAN2_LUMPED:
+                {
+                    const auto& elementVector = elementOutputMap.at(Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE)->GetBlockFullVectorDouble();
 
-                    case NuTo::eStructureOutput::HESSIAN2:
-                    {
-                        const auto& elementMatrix = elementOutputMap.at(Element::eOutput::HESSIAN_2_TIME_DERIVATIVE)->GetBlockFullMatrixDouble();
-                        structureOutput->AsStructureOutputBlockMatrix().AddElementMatrix(elementPtr, elementMatrix, elementVectorGlobalDofsRow, elementVectorGlobalDofsColumn, mToleranceStiffnessEntries, true); // always calculate the KJ and KK
-                        // since its most likely only needed once,
-                        // and causes troubles in the test files.
-                        break;
-                    }
+                    structureOutput->AsStructureOutputBlockMatrix().AddElementVectorDiagonal(elementVector, elementVectorGlobalDofsRow, mToleranceStiffnessEntries);
+                    break;
+                }
 
-                    case NuTo::eStructureOutput::HESSIAN2_LUMPED:
-                    {
-                        const auto& elementVector = elementOutputMap.at(Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE)->GetBlockFullVectorDouble();
+                case NuTo::eStructureOutput::INTERNAL_GRADIENT:
+                {
+                    const auto& elementVector = elementOutputMap.at(Element::eOutput::INTERNAL_GRADIENT)->GetBlockFullVectorDouble();
 
-                        structureOutput->AsStructureOutputBlockMatrix().AddElementVectorDiagonal(elementVector, elementVectorGlobalDofsRow, mToleranceStiffnessEntries);
-                        break;
-                    }
+                    structureOutput->AsStructureOutputBlockVector().AddElementVector(elementVector, elementVectorGlobalDofsRow);
+                    break;
+                }
 
-                    case NuTo::eStructureOutput::INTERNAL_GRADIENT:
-                    {
-                        const auto& elementVector = elementOutputMap.at(Element::eOutput::INTERNAL_GRADIENT)->GetBlockFullVectorDouble();
+                case NuTo::eStructureOutput::UPDATE_STATIC_DATA:
+                    break;
 
-                        structureOutput->AsStructureOutputBlockVector().AddElementVector(elementVector, elementVectorGlobalDofsRow);
-                        break;
-                    }
-
-                    case NuTo::eStructureOutput::CONTACT_FORCE:
-                    {
-                        const auto& elementVector = elementOutputMap.at(Element::eOutput::CONTACT_FORCE)->GetBlockFullVectorDouble();
-
-                        structureOutput->AsStructureOutputBlockVector().AddElementVector(elementVector, elementVectorGlobalDofsRow);
-                        break;
-                    }
-
-                    case NuTo::eStructureOutput::UPDATE_STATIC_DATA:
-                        break;
-
-                    default:
-                    {
-                        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, StructureOutputToString(iteratorOutput.first) + " requested but not implemented.");
-                    }
-                    }
+                default:
+                {
+                    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, StructureOutputToString(iteratorOutput.first) + " requested but not implemented.");
+                }
                 }
             }
 
@@ -1373,10 +1352,24 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
             break;
 
         case 10: // 9-node second order quadrangle (4 nodes associated with the vertices, 4 with the edges and 1 with the face).
+        {
             shapeType = Interpolation::eShapeType::QUAD2D;
             typeOrder = Interpolation::eTypeOrder::LOBATTO2;
-            break;
+            //ordering is different than in gmsh, fix this first
+            NuTo::FullVector<int, Eigen::Dynamic> nodeNumbersCopy(nodeNumbers);
+            nodeNumbers(0)  = nodeNumbersCopy(0);
+            nodeNumbers(1)  = nodeNumbersCopy(4);
+            nodeNumbers(2)  = nodeNumbersCopy(1);
 
+            nodeNumbers(3)  = nodeNumbersCopy(7);
+            nodeNumbers(4)  = nodeNumbersCopy(8);
+            nodeNumbers(5)  = nodeNumbersCopy(5);
+
+            nodeNumbers(6)  = nodeNumbersCopy(3);
+            nodeNumbers(7)  = nodeNumbersCopy(6);
+            nodeNumbers(8)  = nodeNumbersCopy(2);
+            break;
+        }
         case 11: // 10-node second order tetrahedron (4 nodes associated with the vertices and 6 with the edges).
             shapeType = Interpolation::eShapeType::TETRAHEDRON3D;
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT2;

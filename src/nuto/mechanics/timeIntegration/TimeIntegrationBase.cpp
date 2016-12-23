@@ -23,6 +23,7 @@
 #include "nuto/mechanics/MechanicsException.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/timeIntegration/ResultElementIpData.h"
+#include "nuto/mechanics/timeIntegration/ResultElementGroupIpData.h"
 #include "nuto/mechanics/timeIntegration/ResultGroupNodeForce.h"
 #include "nuto/mechanics/timeIntegration/ResultNodeDisp.h"
 #include "nuto/mechanics/timeIntegration/ResultNodeAcceleration.h"
@@ -318,6 +319,26 @@ int NuTo::TimeIntegrationBase::AddResultElementIpData(const std::string& rResult
     return resultNumber;
 }
 
+int NuTo::TimeIntegrationBase::AddResultElementGroupIpData(const std::string& rResultStr,
+                                                           int rElementGroupId,
+                                                           int rComponent,
+                                                           const std::vector<int> &rIP,
+                                                           NuTo::IpData::eIpStaticDataType rIpDataType)
+{
+    //find unused integer id
+    int resultNumber(mResultMap.size());
+    boost::ptr_map<int,ResultBase>::iterator it = mResultMap.find(resultNumber);
+    while (it!=mResultMap.end())
+    {
+        resultNumber++;
+        it = mResultMap.find(resultNumber);
+    }
+
+    mResultMap.insert(resultNumber, new ResultElementGroupIpData(rResultStr, rElementGroupId, rComponent, rIP, rIpDataType));
+
+    return resultNumber;
+}
+
 
 //! @brief monitor the time
 //! @param rResultId string identifying the result, this is used for the output file
@@ -415,7 +436,19 @@ void NuTo::TimeIntegrationBase::PostProcess(const StructureOutputBlockVector& rO
             case eTimeIntegrationResultType::ELEMENT_IP_BOND_STRESS:
             case eTimeIntegrationResultType::ELEMENT_IP_SLIP:
             {
+
                 ResultElementIpData* resultPtr(itResult->second->AsResultElementIpData());
+                resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult);
+                break;
+            }
+            case eTimeIntegrationResultType::ELEMENTGROUP_IP_STRESS:
+            case eTimeIntegrationResultType::ELEMENTGROUP_IP_STRAIN:
+            case eTimeIntegrationResultType::ELEMENTGROUP_IP_DAMAGE:
+            case eTimeIntegrationResultType::ELEMENTGROUP_IP_BOND_STRESS:
+            case eTimeIntegrationResultType::ELEMENTGROUP_IP_SLIP:
+            {
+
+                ResultElementGroupIpData* resultPtr(itResult->second->AsResultElementGroupIpData());
                 resultPtr->CalculateAndAddValues(*mStructure, mTimeStepResult);
                 break;
             }

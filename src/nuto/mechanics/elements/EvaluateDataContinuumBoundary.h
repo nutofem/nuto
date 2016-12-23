@@ -23,7 +23,9 @@ public:
 
     //! Contact element
     Eigen::MatrixXd mMortarGapMatrix;
+    Eigen::MatrixXd mMortarGapMatrixPenalty;
     Eigen::VectorXd mMortarGapVector;
+    Eigen::VectorXd mJacobianbyWeight;
     std::unordered_map<int, int> mMappingGlobal2LocalDof;
 
     // Misc

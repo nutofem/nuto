@@ -44,8 +44,6 @@ enum class eUpdateType
 enum class eOutput
 {
 	INTERNAL_GRADIENT,               //!<
-    CONTACT_FORCE,                   //!<
-    CONTACT_FORCE_DERIVATIVE,        //!<
 	INTERNAL_GRADIENT_ELASTIC,       //!< calculates internal gradient for the case that the state variables remain unchanged
 	EXTERNAL_GRADIENT,               //!< TODO: calculate external forces in element
 	HESSIAN_0_TIME_DERIVATIVE,       //!<

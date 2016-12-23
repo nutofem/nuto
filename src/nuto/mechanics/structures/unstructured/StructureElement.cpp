@@ -333,7 +333,6 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
         nodeToId[it->second] = it->first;
     }
 
-
     // find the bounding box corners = max/min x,y,z coordinates, initialize with random node coordinates
     Eigen::VectorXd boundingBoxMax = elements[0]->GetNode(0)->Get(Node::eDof::COORDINATES);
     Eigen::VectorXd boundingBoxMin = elements[0]->GetNode(0)->Get(Node::eDof::COORDINATES);

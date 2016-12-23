@@ -82,7 +82,7 @@
 #include "nuto/mechanics/constraints/ConstraintBase.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
-
+#include "nuto/mechanics/dofSubMatrixStorage/BlockScalar.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "nuto/visualize/VisualizeUnstructuredGrid.h"
@@ -353,6 +353,17 @@ void NuTo::StructureBase::GetElementsByGroup(Group<ElementBase>* rElementGroup, 
     while (ElementIter != rElementGroup->end())
     {
         rElements.push_back(ElementIter->second);
+        ElementIter++;
+    }
+}
+
+// store all elements of a group in a vector
+void NuTo::StructureBase::GetElementsByGroup(Group<ElementBase>* rElementGroup, std::vector<std::pair<int, ElementBase*> >& rElements) const
+{
+    Group<ElementBase>::iterator ElementIter = rElementGroup->begin();
+    while (ElementIter != rElementGroup->end())
+    {
+        rElements.push_back(std::pair<int, ElementBase*>(ElementIter->second->ElementGetId(), ElementIter->second));
         ElementIter++;
     }
 }
@@ -772,25 +783,6 @@ NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalInternalGradien
     return internalGradient;
 }
 
-NuTo::StructureOutputBlockVector NuTo::StructureBase::BuildGlobalContactForceVector()
-{
-    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-    if (mNodeNumberingRequired) NodeBuildGlobalDofs(__PRETTY_FUNCTION__);
-
-    StructureOutputBlockVector contactForce(mDofStatus, true);
-
-    std::map<eStructureOutput, StructureOutputBase *> evaluateMap;
-    evaluateMap[eStructureOutput::CONTACT_FORCE] = &contactForce;
-
-    ConstitutiveInputMap input;
-    input[Constitutive::eInput::CALCULATE_STATIC_DATA] = std::make_unique<ConstitutiveCalculateStaticData>(
-            eCalculateStaticData::EULER_BACKWARD);
-
-    Evaluate(input, evaluateMap);
-
-    return contactForce;
-}
-
 NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian0_CDF(double rDelta)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -975,9 +967,85 @@ void NuTo::StructureBase::SolveGlobalSystemStaticElastic(int rLoadCase)
     NodeMergeDofValues(0, deltaDof_dt0);
 }
 
-void NuTo::StructureBase::Contact(const std::vector<int> &rElementGroups)
+void NuTo::StructureBase::SolveGlobalSystemStaticElasticContact(const BlockScalar &tol, BlockScalar &error, int rMaxNumIter, int rLoadCase)
 {
+    int numIter = 0;
 
+    StructureOutputBlockVector delta(GetDofStatus(), true);
+
+    StructureOutputBlockVector  u(GetDofStatus(), true); // e.g. disp
+    u = NodeExtractDofValues(0);
+    BlockFullVector<double> residual_mod(GetDofStatus());
+
+//    while(error > tol && numIter < maxNumIter)
+//    {
+//        auto rhs = BuildGlobalInternalGradient() - BuildGlobalExternalLoadVector(rLoadCase);
+//        rhs.ApplyCMatrix(residual_mod, GetConstraintMatrix());
+
+//        // solve
+//        auto hessian0 = BuildGlobalHessian0();
+//        hessian0.ApplyCMatrix(GetConstraintMatrix());
+
+//        delta.J = SolveBlockSystem(hessian0.JJ, residual_mod);
+//        delta.K = GetConstraintMatrix()*delta.J*(-1.);
+
+//        u += delta;
+
+//        NodeMergeDofValues(0, u);
+//        numIter++;
+//        error = residual_mod.CalculateNormL2();
+//        std::cout << "StructureBase::SolveGlobalSystemStaticElasticContact Error: " << error << std::endl;
+//    }
+
+    // the rhs aka. residual
+    auto rhs = BuildGlobalInternalGradient() - BuildGlobalExternalLoadVector(rLoadCase);
+    rhs.ApplyCMatrix(residual_mod, GetConstraintMatrix());
+
+    error = residual_mod.CalculateNormL2();
+
+    while(error > tol && numIter < rMaxNumIter)
+    {
+        // solve
+        auto hessian0 = BuildGlobalHessian0();
+        hessian0.ApplyCMatrix(GetConstraintMatrix());
+
+        delta.J = SolveBlockSystem(hessian0.JJ, residual_mod);
+        delta.K = NodeCalculateDependentDofValues(delta.J);
+
+        u -= delta;
+
+        NodeMergeDofValues(0, u);
+
+        // calculate the residual again to get the error
+        rhs = BuildGlobalInternalGradient() - BuildGlobalExternalLoadVector(rLoadCase);
+        rhs.ApplyCMatrix(residual_mod, GetConstraintMatrix());
+
+        numIter++;
+        error = residual_mod.CalculateNormL2();
+        std::cout << "StructureBase::SolveGlobalSystemStaticElasticContact Error: " << error << std::endl;
+    }
+
+//    while(error > tol && numIter < rMaxNumIter)
+//    {
+//        auto rhs = BuildGlobalExternalLoadVector(rLoadCase) - BuildGlobalInternalGradient();
+//        rhs.ApplyCMatrix(GetConstraintMatrix());
+
+//        // solve
+//        auto hessian0 = BuildGlobalHessian0();
+//        hessian0.ApplyCMatrix(GetConstraintMatrix());
+
+//        delta.J = SolveBlockSystem(hessian0.JJ, rhs.J);
+//        delta.K = NodeCalculateDependentDofValues(delta.J);
+
+//        u += delta;
+
+//        NodeMergeDofValues(0, u);
+//        numIter++;
+//        error = delta.J.CalculateNormL2();
+//        std::cout << "StructureBase::SolveGlobalSystemStaticElasticContact Error: " << error << std::endl;
+//    }
+
+    if(numIter >= rMaxNumIter) std::cout << "!!!!!!StructureBase::SolveGlobalSystemStaticElasticContact: Maximum number of Newton iterations exceeded!" << std::endl;
 }
 
 

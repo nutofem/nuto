@@ -79,6 +79,14 @@ public:
             const NuTo::BlockFullVector<int>& rGlobalColumnDofNumbers,
             double mAddValueTolerance, bool rAssembleKJKK);
 
+    //! @brief adds the transposed (variation w.r.t. disp) and the matrix itselfs (variation w.r.t the Lagrange multiplier)
+    void AddElementMatrixMortar(
+            const ElementBase* rElementPtr,
+            const NuTo::BlockFullMatrix<double>& rElementMatrix,
+            const NuTo::BlockFullVector<int>& rGlobalRowDofNumbers,
+            const NuTo::BlockFullVector<int>& rGlobalColumnDofNumbers,
+            double mAddValueTolerance, bool rAssembleKJKK);
+
     void AddElementVectorDiagonal(
             const NuTo::BlockFullVector<double>& rElementVector,
             const NuTo::BlockFullVector<int>& rGlobalRowDofNumber,

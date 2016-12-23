@@ -11,8 +11,6 @@ const std::map<NuTo::eStructureOutput, std::string> NuTo::GetOutputMap()
         {eStructureOutput::HESSIAN2,"HESSIAN2"},
         {eStructureOutput::HESSIAN2_LUMPED,"HESSIAN2_LUMPED"},
         {eStructureOutput::INTERNAL_GRADIENT,"INTERNAL_GRADIENT"},
-        {eStructureOutput::CONTACT_FORCE,"CONTACT_FORCE"},
-        {eStructureOutput::CONTACT_FORCE_DERIVATIVE,"CONTACT_FORCE_DERIVATIVE"},
         {eStructureOutput::UPDATE_STATIC_DATA, "UPDATE_STATIC_DATA"}};
     return map;
 }

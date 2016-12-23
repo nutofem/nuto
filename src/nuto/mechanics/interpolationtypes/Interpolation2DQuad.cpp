@@ -152,6 +152,37 @@ int NuTo::Interpolation2DQuad::CalculateNumNodes() const
     }
 }
 
+void NuTo::Interpolation2DQuad::UpdateNodeIndices(const std::vector<Eigen::VectorXd> &rNodeCoordinates, std::function<bool(const Eigen::VectorXd& rC1, const Eigen::VectorXd& rC2)> rFunction)
+{
+    switch (mTypeOrder)
+    {
+    case NuTo::Interpolation::eTypeOrder::EQUIDISTANT1:
+    case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
+    case NuTo::Interpolation::eTypeOrder::LOBATTO2:
+    case NuTo::Interpolation::eTypeOrder::LOBATTO3:
+    case NuTo::Interpolation::eTypeOrder::LOBATTO4:
+    {
+        int count = 0;
+        mNodeIndices.resize(GetNumNodes());
+        for (int iNode = 0; iNode < GetNumNodes(); ++iNode)
+        {
+            Eigen::VectorXd coordinates = GetNaturalNodeCoordinates(iNode);
+            for(unsigned int iExistingNode = 0; iExistingNode < rNodeCoordinates.size(); ++iExistingNode)
+            {
+                if(rFunction(coordinates, rNodeCoordinates[iExistingNode]))
+                {
+                    mNodeIndices[iNode] = iExistingNode;
+                    count++;
+                }
+            }
+        }
+        if(count < mNumNodes) throw MechanicsException(__PRETTY_FUNCTION__, "Not all nodes found!");
+        break;
+    }
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation for exact integration of " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
+    }
+}
 
 #ifdef ENABLE_SERIALIZATION
 template<class Archive>

@@ -207,9 +207,10 @@ Eigen::VectorXd NuTo::ContinuumElementIGA<TDim>::InterpolateDofGlobalSurfaceDeri
     Eigen::VectorXd nodalInitial       = this->ExtractNodeValues(rTimeDerivative, Node::eDof::COORDINATES);
     Eigen::VectorXd nodalDisplacements = this->ExtractNodeValues(rTimeDerivative, Node::eDof::DISPLACEMENTS);
 
-    Eigen::MatrixXd matrixNDerivative = this->mInterpolationType->Get(Node::eDof::COORDINATES).CalculateMatrixNDerivative(rParameter, mKnotIDs, rDerivative, rDirection);
+    Eigen::MatrixXd matrixNDerivativeCoordinates = this->mInterpolationType->Get(Node::eDof::COORDINATES).CalculateMatrixNDerivative(rParameter, mKnotIDs, rDerivative, rDirection);
+    Eigen::MatrixXd matrixNDerivativeDisplacements = this->mInterpolationType->Get(Node::eDof::DISPLACEMENTS).CalculateMatrixNDerivative(rParameter, mKnotIDs, rDerivative, rDirection);
 
-    return matrixNDerivative * (nodalInitial + nodalDisplacements);
+    return matrixNDerivativeCoordinates * nodalInitial + matrixNDerivativeDisplacements * nodalDisplacements;
 }
 
 namespace NuTo // template specialization in *.cpp somehow requires the definition to be in the namespace...
@@ -285,7 +286,10 @@ Eigen::VectorXd NuTo::ContinuumElementIGA<1>::InterpolateDofGlobalSurfaceNormal(
     if(tangent.rows() != 2)
         throw MechanicsException(__PRETTY_FUNCTION__, "The normal only available for 2D domains.");
 
-    return Eigen::Vector2d(tangent(1), -tangent(0));
+    Eigen::Vector2d normal(-tangent(1), tangent(0));
+    normal.normalize();
+
+    return normal;
 }
 
 template<>
@@ -297,7 +301,11 @@ Eigen::VectorXd NuTo::ContinuumElementIGA<2>::InterpolateDofGlobalSurfaceNormal(
     if(tangentX.rows() != 3 && tangentY.rows() != 3)
         throw MechanicsException(__PRETTY_FUNCTION__, "The normal only available for 3D domains.");
 
-    return Eigen::Vector3d(tangentX).cross(Eigen::Vector3d(tangentX));
+    Eigen::Vector3d normal = (Eigen::Vector3d(tangentX)).cross(Eigen::Vector3d(tangentY));
+    normal.normalize();
+
+    return normal;
+
 }
 
 template<>

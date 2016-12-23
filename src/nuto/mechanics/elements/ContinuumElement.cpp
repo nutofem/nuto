@@ -46,9 +46,6 @@ NuTo::eError NuTo::ContinuumElement<TDim>::Evaluate(const ConstitutiveInputMap& 
     if (mSection == nullptr)
         throw MechanicsException(__PRETTY_FUNCTION__, "no section allocated for element.");
 
-    if(CheckElementOutput(rElementOutput) == eError::NOT_IMPLEMENTED)
-        return eError::NOT_IMPLEMENTED;
-
     EvaluateDataContinuum<TDim> data;
     ExtractAllNecessaryDofValues(data);
 
@@ -198,24 +195,6 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumElement<TDim>::GetConstitutiveOutputM
         outputs.second = ConstitutiveIOBase::makeConstitutiveIO<TDim>(outputs.first);
     }
     return constitutiveOutput;
-}
-
-template<int TDim>
-NuTo::eError NuTo::ContinuumElement<TDim>::CheckElementOutput(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const
-{
-    // find the outputs we need
-    for (auto it : rElementOutput)
-    {
-        switch (it.first)
-        {
-        case Element::eOutput::CONTACT_FORCE:
-        case Element::eOutput::CONTACT_FORCE_DERIVATIVE:
-            return eError::NOT_IMPLEMENTED;
-        default:
-            return eError::SUCCESSFUL;
-        }
-    }
-    return eError::SUCCESSFUL;
 }
 
 template<int TDim>
@@ -702,12 +681,15 @@ template<int TDim>
 Eigen::VectorXd NuTo::ContinuumElement<TDim>::InterpolateDofGlobalCurrentConfiguration(int rTimeDerivative, const Eigen::VectorXd& rNaturalCoordinates, Node::eDof rDofTypeInit, Node::eDof rDofTypeCurrent) const
 {
     const InterpolationBase& interpolationTypeInit = this->mInterpolationType->Get(rDofTypeInit);
+    const InterpolationBase& interpolationTypeCurrent = this->mInterpolationType->Get(rDofTypeCurrent);
+
     Eigen::VectorXd nodalInit    = this->ExtractNodeValues(rTimeDerivative, rDofTypeInit);
+    Eigen::MatrixXd matrixNInit = interpolationTypeInit.CalculateMatrixN(rNaturalCoordinates);
+
     Eigen::VectorXd nodalCurrent = this->ExtractNodeValues(rTimeDerivative, rDofTypeCurrent);
+    Eigen::MatrixXd matrixNCurrent = interpolationTypeCurrent.CalculateMatrixN(rNaturalCoordinates);
 
-    Eigen::MatrixXd matrixN = interpolationTypeInit.CalculateMatrixN(rNaturalCoordinates);
-
-    return matrixN * (nodalInit + nodalCurrent);
+    return matrixNInit * nodalInit + matrixNCurrent * nodalCurrent;
 }
 
 template<int TDim>

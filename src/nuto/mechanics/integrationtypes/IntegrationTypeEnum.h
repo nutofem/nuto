@@ -21,6 +21,7 @@ enum class eIntegrationType
     IntegrationType1D2NLobatto3Ip,
     IntegrationType1D2NLobatto4Ip,
     IntegrationType1D2NLobatto5Ip,
+    IntegrationType1D2NLobatto6Ip,
     IntegrationType2D3NGauss1Ip,
     IntegrationType2D3NGauss3Ip,
     IntegrationType2D3NGauss4Ip,

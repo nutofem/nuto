@@ -213,6 +213,9 @@ public:
 
     virtual int GetSurfaceDegree(int rSurface) const = 0;
 
+    //! @brief updates the mNodeIndices member according to the order of interpolation
+    virtual void UpdateNodeIndices(const std::vector<Eigen::VectorXd> &rNodeCoordinates, std::function<bool(const Eigen::VectorXd& rC1, const Eigen::VectorXd& rC2)> rFunction) = 0;
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class, this is the load routine
     //! @param ar         archive

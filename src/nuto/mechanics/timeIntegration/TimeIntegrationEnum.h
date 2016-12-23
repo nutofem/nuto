@@ -14,14 +14,19 @@ namespace NuTo
 enum class eTimeIntegrationResultType
 {
     TIME = 0,                         //!< time
-    NODE_DISPLACEMENT,              //!< nodal diplacement
-    NODE_ACCELERATION,              //!< nodal accelerations
-    GROUP_NODE_FORCE,               //!< nodal forces
-    ELEMENT_IP_STRESS,               //!> ip (stress)
+    NODE_DISPLACEMENT,               //!< nodal diplacement
+    NODE_ACCELERATION,               //!< nodal accelerations
+    GROUP_NODE_FORCE,                //!< nodal forces
+    ELEMENT_IP_STRESS,               //!> ip (stress)    
     ELEMENT_IP_STRAIN,               //!> ip (strain)
     ELEMENT_IP_DAMAGE,               //!> ip (damage)
     ELEMENT_IP_BOND_STRESS,          //!> ip (bond stress)
-    ELEMENT_IP_SLIP,            //!> ip (slip)
+    ELEMENT_IP_SLIP,                 //!> ip (slip)
+    ELEMENTGROUP_IP_STRESS,          //!> ip (stress)
+    ELEMENTGROUP_IP_STRAIN,          //!> ip (strain)
+    ELEMENTGROUP_IP_DAMAGE,          //!> ip (damage)
+    ELEMENTGROUP_IP_BOND_STRESS,     //!> ip (bond stress)
+    ELEMENTGROUP_IP_SLIP,            //!> ip (slip)
 
 };
 

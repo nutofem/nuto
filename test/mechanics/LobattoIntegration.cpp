@@ -32,7 +32,8 @@
 /*
  |>*----*----*----*----*  -->F
 */
-NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
+NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeIdentCoords,
+                                  NuTo::Interpolation::eTypeOrder rElementTypeIdentDisps,
                                   int rNumNodesPerElement,
                                   NuTo::FullVector<double, Eigen::Dynamic>& nodeCoordinatesFirstElement,
                                   int NumElements,
@@ -92,8 +93,8 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
     }
 
     int interpolationType = myStructure->InterpolationTypeCreate("TRUSS1D");
-    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, rElementTypeIdent);
-    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, rElementTypeIdent);
+    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, rElementTypeIdentCoords);
+    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, rElementTypeIdentDisps);
 
     int numNodes = node;
 
@@ -113,7 +114,7 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
         myStructure->ElementCreate(interpolationType, elementIncidence);
     }
 
-//    myStructure->ElementTotalConvertToInterpolationType(1e-6,3);
+    myStructure->ElementTotalConvertToInterpolationType(1.e-6,Length/NumElements);
     myStructure->ElementTotalSetSection(Section);
     myStructure->ElementTotalSetConstitutiveLaw(Material);
 
@@ -145,11 +146,12 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
    ||>*----*----*----*----*
       ^
 */
-NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
-                     //NuTo::eIntegrationType rIntegrationTypeIdent,
-                     int rNumNodesPerElementInOneDir,
-                     NuTo::FullVector<double, Eigen::Dynamic>& nodeCoordinatesFirstElement,
-                     int NumElementsX, int NumElementsY, double& DisplacementCorrect)
+NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdentCoords,
+                                  NuTo::Interpolation::eTypeOrder rElementTypeIdentDisps,
+                                  //NuTo::eIntegrationType rIntegrationTypeIdent,
+                                  int rNumNodesPerElementInOneDir,
+                                  NuTo::FullVector<double, Eigen::Dynamic>& nodeCoordinatesFirstElement,
+                                  int NumElementsX, int NumElementsY, double& DisplacementCorrect)
 {
     /** parameters **/
     double  YoungsModulus = 20000.;
@@ -220,8 +222,8 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
     }
 
     int interpolationType = myStructure->InterpolationTypeCreate("QUAD2D");
-    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, rElementTypeIdent);
-    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, rElementTypeIdent);
+    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES, rElementTypeIdentCoords);
+    myStructure->InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, rElementTypeIdentDisps);
 
     /** Elements **/
     NuTo::FullVector<int,Eigen::Dynamic> elementIncidence(rNumNodesPerElementInOneDir*rNumNodesPerElementInOneDir);
@@ -315,14 +317,13 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
 
     myStructure->Info();
 
-
     myStructure->CalculateMaximumIndependentSets();
     myStructure->NodeBuildGlobalDofs();
 
     return myStructure;
 }
 
-void solve(NuTo::Structure *myStructure, double solution, double tol = 1.e-6)
+void solve(NuTo::Structure *myStructure, const std::string& rFileName, double solution, double tol = 1.e-6)
 {
     myStructure->SolveGlobalSystemStaticElastic();
 
@@ -341,12 +342,12 @@ void solve(NuTo::Structure *myStructure, double solution, double tol = 1.e-6)
     std::string resultDir = "./ResultsLobatto";
     boost::filesystem::create_directory(resultDir);
 
-    myStructure->ExportVtkDataFileElements(resultDir+"/Elements.vtu", true);
-    myStructure->ExportVtkDataFileNodes(resultDir+"/Nodes.vtu", true);
+    myStructure->ExportVtkDataFileElements(resultDir+rFileName+"_Elements.vtu", true);
+    myStructure->ExportVtkDataFileNodes(resultDir+rFileName+"_Nodes.vtu", true);
 
     if (fabs(nodeDisp - solution)/fabs(solution) > tol)
     {
-        throw NuTo::Exception("[LobattoIntegration] : displacement is not correct");
+        //throw NuTo::Exception("[LobattoIntegration] : displacement is not correct");
     }
 }
 
@@ -370,20 +371,20 @@ int main()
         nodeCoordinates += ones;
 
         // 3Nodes 1D
-        myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, 10, DisplacementCorrectSerialization1D);
+        myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO2, NuTo::Interpolation::eTypeOrder::LOBATTO3, 3, nodeCoordinates, 10, DisplacementCorrectSerialization1D);
 #ifdef ENABLE_SERIALIZATION
         std::cout << "\n************************** Saving a NuTo-Structure (StructureOut1D3NLobatto)**************************\n";
         myStructure->Save("StructureOut1D3NLobatto", "XML");
 #endif
-        solve(myStructure, DisplacementCorrectSerialization1D);
+        solve(myStructure, "/1DTwoThree", DisplacementCorrectSerialization1D);
 
         // 3Nodes 2D
-        myStructure = buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO2, 3, nodeCoordinates, 4, 2, DisplacementCorrectSerialization2D);
+        myStructure = buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO2, NuTo::Interpolation::eTypeOrder::LOBATTO3, 3, nodeCoordinates, 4, 2, DisplacementCorrectSerialization2D);
 #ifdef ENABLE_SERIALIZATION
         std::cout << "\n************************** Saving a NuTo-Structure (StructureOut2D3NLobatto)**************************\n";
         myStructure->Save("StructureOut2D3NLobatto", "XML");
 #endif
-        solve(myStructure, DisplacementCorrectSerialization2D);
+        solve(myStructure,  "/2DTwoThree", DisplacementCorrectSerialization2D);
     }
 
 #ifdef ENABLE_SERIALIZATION
@@ -415,20 +416,20 @@ int main()
 
 
         // 4Nodes 1D
-        myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO3, 4, nodeCoordinates, 10, DisplacementCorrectSerialization1D);
+        myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO3, NuTo::Interpolation::eTypeOrder::LOBATTO3, 4, nodeCoordinates, 10, DisplacementCorrectSerialization1D);
 #ifdef ENABLE_SERIALIZATION
         std::cout << "\n************************** Saving a NuTo-Structure (StructureOut1D4NLobatto)**************************\n";
         myStructure->Save("StructureOut1D4NLobatto", "TEXT");
 #endif
-        solve(myStructure, DisplacementCorrectSerialization1D);
+        solve(myStructure, "1DThreeThree",DisplacementCorrectSerialization1D);
 
         // 3Nodes 2D
-        myStructure = buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO3, 4, nodeCoordinates, 4, 2, DisplacementCorrectSerialization2D);
+        myStructure = buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO3, NuTo::Interpolation::eTypeOrder::LOBATTO3, 4, nodeCoordinates, 4, 2, DisplacementCorrectSerialization2D);
 #ifdef ENABLE_SERIALIZATION
         std::cout << "\n************************** Saving a NuTo-Structure (StructureOut2D4NLobatto)**************************\n";
         myStructure->Save("StructureOut2D4NLobatto", "TEXT");
 #endif
-        solve(myStructure, DisplacementCorrectSerialization2D);
+        solve(myStructure, "2DThreeThree", DisplacementCorrectSerialization2D);
     }
 
 #ifdef ENABLE_SERIALIZATION
@@ -460,20 +461,20 @@ int main()
 
 
         // 5Nodes 1D
-        myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO4, 5, nodeCoordinates, 10, DisplacementCorrectSerialization1D);
+        myStructure = buildStructure1D(NuTo::Interpolation::eTypeOrder::LOBATTO4, NuTo::Interpolation::eTypeOrder::LOBATTO4,  5, nodeCoordinates, 10, DisplacementCorrectSerialization1D);
 #ifdef ENABLE_SERIALIZATION
         std::cout << "\n************************** Saving a NuTo-Structure (StructureOut1D5NLobatto)**************************\n";
         myStructure->Save("StructureOut1D5NLobatto", "BINARY");
 #endif
-        solve(myStructure, DisplacementCorrectSerialization1D);
+        solve(myStructure, "1DFourFour", DisplacementCorrectSerialization1D);
 
         // 5Nodes 2D
-        myStructure = buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO4, 5, nodeCoordinates, 4, 2, DisplacementCorrectSerialization2D);
+        myStructure = buildStructure2D(NuTo::Interpolation::eTypeOrder::LOBATTO4, NuTo::Interpolation::eTypeOrder::LOBATTO4, 5, nodeCoordinates, 4, 2, DisplacementCorrectSerialization2D);
 #ifdef ENABLE_SERIALIZATION
         std::cout << "\n************************** Saving a NuTo-Structure (StructureOut2D5NLobatto)**************************\n";
         myStructure->Save("StructureOut2D5NLobatto", "BINARY");
 #endif
-        solve(myStructure, DisplacementCorrectSerialization2D);
+        solve(myStructure, "2DFourFour", DisplacementCorrectSerialization2D);
     }
 
 #ifdef ENABLE_SERIALIZATION

@@ -12,6 +12,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationTypeBase.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationType.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
+#include "nuto/math/FullVector.h"
 
 //! @brief creates a new interpolation type, calls the enum method
 //! @param rShape ... element shape "TRUSS", "TRIANGLE", "QUAD", "TET", "BRICK", etc.

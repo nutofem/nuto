@@ -204,9 +204,6 @@ NuTo::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
                 // ===> constraints
                 intForce.ApplyCMatrix(mStructure->GetConstraintMatrix());
 
-                //calculate contact force
-                intForce.J += mStructure->BuildGlobalContactForceVector().J;
-
 				//update derivatives (ydot or k1,k2,k3,k4) for Runge Kutta
 				d_dof_dt0_tmp[countStage] = dof_dt1_tmp*mTimeStep;
 				//std::cout << "d_disp_j_tmp " << d_disp_j_tmp[countStage](0) << std::endl;
@@ -221,7 +218,7 @@ NuTo::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 #else
                 NuTo::FullVector<double, Eigen::Dynamic> resultForSolver;
                 mySolver.Solution(((extLoad.J - intForce.J)*mTimeStep).Export(), resultForSolver);
-                d_dof_dt1_tmp[countStage].J = BlockFullVector<double>(-resultForSolver, this->mStructure->GetDofStatus());
+                d_dof_dt1_tmp[countStage].J = BlockFullVector<double>(-resultForSolver, this->mStructure->GetDofStatus()); // ?? true as parameter
 #endif
 //                d_dof_dt1_tmp[countStage].J = mStructure->SolveBlockSystem(hessian2.JJ, (extLoad.J - intForce.J)*mTimeStep);
 
@@ -264,6 +261,7 @@ NuTo::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 
 			// postprocess data for plotting
             this->PostProcess(extLoad-intForce);
+
         }
 #if defined(HAVE_PARDISO) && defined(_OPENMP)
                 mySolver.CleanUp(matrixForSolver);

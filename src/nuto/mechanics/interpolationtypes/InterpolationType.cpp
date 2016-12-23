@@ -222,6 +222,8 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
         }
     }
 
+//    newType->UpdateNodeIndices(mNodeCoordinates, CoordinatesAreEqual);
+
     mNumActiveDofs = 0;
     for (auto dof : mActiveDofs)
         mNumActiveDofs += Get(dof).GetNumDofs();
@@ -505,7 +507,7 @@ void NuTo::InterpolationType::PrintNodeCoordinates() const
 
 }
 
-bool NuTo::InterpolationType::CoordinatesAreEqual(const Eigen::VectorXd& rC1, const Eigen::VectorXd& rC2) const
+bool NuTo::InterpolationType::CoordinatesAreEqual(const Eigen::VectorXd& rC1, const Eigen::VectorXd& rC2)
 {
     assert(rC1.rows() == rC2.rows());
     if ((rC1 - rC2).norm() > 1.e-10)

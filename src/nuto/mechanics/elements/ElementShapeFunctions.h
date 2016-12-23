@@ -242,7 +242,7 @@ Eigen::VectorXd BasisFunctionsAndDerivativesRat(int der, double rParameter, int 
 //! @param rDegree ... degree in x and y directions
 //! @param rKnotsX ... knot vector in x direction
 //! @param rKnotsY ... knot vector in y direction
-//! @param rWeights ... weights for NURBS (if every entry == 1 => B spline)
+//! @param rWeights ... weights for NURBS (if each entry == 1 => B spline)
 //! @return ... the vector containing the derivatives
 Eigen::VectorXd BasisFunctions2DRat(const Eigen::VectorXd &rCoordinates,
                                     const Eigen::Vector2i &rSpanIdx,

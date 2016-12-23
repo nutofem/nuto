@@ -71,6 +71,9 @@ public:
     //! @return ... derivative of the surface parametrization
     Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const override;
 
+    //! @brief updates the mNodeIndices member according to the order of interpolation
+    void UpdateNodeIndices(const std::vector<Eigen::VectorXd> &rNodeCoordinates, std::function<bool(const Eigen::VectorXd& rC1, const Eigen::VectorXd& rC2)> rFunction) override;
+
     //! @brief returns the number of surfaces
     int GetNumSurfaces() const override
     {

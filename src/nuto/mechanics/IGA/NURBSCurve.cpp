@@ -521,7 +521,7 @@ Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> NuTo::NURBSCu
         int id = rStructure.NodeCreateDOFs(rSetOfDOFS, GetControlPoint(i));
         nodeIDs(i) = id;
         rStructure.GroupAddNode(rGroupNodes, id);
-        std::cout << "Node (id, coord): " <<  id << ", " << GetControlPoint(i).transpose() << std::endl;
+//        std::cout << "Node (id, coord): " <<  id << ", " << GetControlPoint(i).transpose() << std::endl;
     }
 
 
@@ -538,7 +538,7 @@ Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> NuTo::NURBSCu
     for(int element = 0; element < GetNumIGAElements(); element++)
     {
         elementIncidence = GetElementControlPointIDsGlobal(element, nodeIDs);
-        std::cout << "elementIncidence: " <<  elementIncidence.transpose() << std::endl;
+//        std::cout << "elementIncidence: " <<  elementIncidence.transpose() << std::endl;
         int id = rStructure.ElementCreate(rNewInterpolation, elementIncidence, GetElementKnots(element), GetElementKnotIDs(element));
         rStructure.GroupAddElement(rGroupElements, id);
         elements(0, element) = std::pair<int, int>(id, -1);

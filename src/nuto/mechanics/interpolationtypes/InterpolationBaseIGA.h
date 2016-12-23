@@ -182,6 +182,13 @@ public:
 
     Eigen::MatrixXd  ConstructMatrixN(Eigen::VectorXd rShapeFunctions) const;
 
+    virtual void UpdateNodeIndices(const std::vector<Eigen::VectorXd> &rNodeCoordinates, std::function<bool(const Eigen::VectorXd& rC1, const Eigen::VectorXd& rC2)> rFunction) override
+    {
+        (void)rNodeCoordinates;
+        (void)rFunction;
+        throw MechanicsException(__PRETTY_FUNCTION__, "Only relevant for 2D and 3D FE quads!");
+    }
+
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class, this is the load routine
     //! @param ar         archive

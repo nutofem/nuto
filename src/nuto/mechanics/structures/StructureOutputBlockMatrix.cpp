@@ -106,6 +106,88 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
         }
 }
 
+void NuTo::StructureOutputBlockMatrix::AddElementMatrixMortar(
+        const ElementBase* rElementPtr,
+        const NuTo::BlockFullMatrix<double>& rElementMatrix,
+        const NuTo::BlockFullVector<int>& rGlobalRowDofNumbers,
+        const NuTo::BlockFullVector<int>& rGlobalColumnDofNumbers,
+        double rAddValueTolerance, bool rAssembleKJKK)
+{
+    const auto& activeDofTypes = JJ.GetDofStatus().GetActiveDofTypes();
+    const auto& numActiveDofTypeMap = JJ.GetDofStatus().GetNumActiveDofsMap();
+
+    for (auto dofRow : activeDofTypes)
+        for (auto dofCol : activeDofTypes)
+        {
+            // TODO: Do not loop over all possible combinations of DOFs but over a list of combinations created by the constitutive law of the corresponding element. What if an element has multiple constitutive laws assigned?
+            if (not rElementPtr->GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow, dofCol, 0))
+                continue;
+
+            const auto& elementMatrix = rElementMatrix(dofRow, dofCol);
+            const auto& globalRowDofs = rGlobalRowDofNumbers[dofRow];
+            const auto& globalColDofs = rGlobalColumnDofNumbers[dofCol];
+
+            int numActiveDofsRow = numActiveDofTypeMap.at(dofRow);
+            int numActiveDofsCol = numActiveDofTypeMap.at(dofCol);
+
+//            std::cout << "elementMatrix.GetNumRows()    " << elementMatrix.GetNumRows()    << std::endl;
+//            std::cout << "globalRowDofs.GetNumRows()    " << globalRowDofs.GetNumRows()    << std::endl;
+//            std::cout << "elementMatrix.GetNumColumns() " << elementMatrix.GetNumColumns() << std::endl;
+//            std::cout << "globalColDofs.GetNumRows()    " << globalColDofs.GetNumRows()    << std::endl;
+
+
+            assert(elementMatrix.GetNumRows() == globalRowDofs.GetNumRows());
+            assert(elementMatrix.GetNumColumns() == globalColDofs.GetNumRows());
+
+            for (int iRow = 0; iRow < globalRowDofs.GetNumRows(); ++iRow)
+            {
+                int globalRowDof = globalRowDofs[iRow];
+                if (globalRowDof < numActiveDofsRow)
+                {
+                    auto& activeCol = JJ(dofRow, dofCol);
+                    auto& dependentCol = JK(dofRow, dofCol);
+
+                    for (int iCol = 0; iCol < globalColDofs.GetNumRows(); ++iCol)
+                    {
+                        double value = elementMatrix(iRow, iCol);
+                        if (std::abs(value - rAddValueTolerance) > 0. )
+                        {
+                            int globalColDof = globalColDofs[iCol];
+                            if (globalColDof < numActiveDofsCol)
+                                activeCol.AddValue(globalRowDof, globalColDof, value);
+                            else
+                                dependentCol.AddValue(globalRowDof, globalColDof - numActiveDofsCol, value);
+                        }
+                    }
+                }
+                else
+                {
+                    if (rAssembleKJKK)
+                    {
+                        auto& activeCol = KJ(dofRow, dofCol);
+                        auto& dependentCol = KK(dofRow, dofCol);
+
+                        globalRowDof -= numActiveDofsRow;
+
+                        for (int iCol = 0; iCol < globalColDofs.GetNumRows(); ++iCol)
+                        {
+                            double value = elementMatrix(iRow, iCol);
+                            if (std::abs(value - rAddValueTolerance) > 0. )
+                            {
+                                int globalColDof = globalColDofs[iCol];
+                                if (globalColDof < numActiveDofsCol)
+                                    activeCol.AddValue(globalRowDof, globalColDof, value);
+                                else
+                                    dependentCol.AddValue(globalRowDof, globalColDof - numActiveDofsCol, value);
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+}
+
 void NuTo::StructureOutputBlockMatrix::AddElementVectorDiagonal(
         const NuTo::BlockFullVector<double>& rElementVector,
         const NuTo::BlockFullVector<int>& rGlobalRowDofNumbers,

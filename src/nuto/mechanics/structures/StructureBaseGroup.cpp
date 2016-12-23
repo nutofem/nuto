@@ -620,6 +620,59 @@ void NuTo::StructureBase::GroupAddNodesFromElements(int rNodeGroupId, int rEleme
 #endif
 }
 
+//! @brief ... Adds all the nodes from the group-rElementGroupId to the group rNodeGroupId
+//! @param ... rNodeGroupId id for the node group
+//! @param ... rElementGroupId id for the element group
+void NuTo::StructureBase::GroupAddNodesFromElements(int rNodeGroupId, int rElementGroupId, Node::eDof rDof)
+{
+#ifdef SHOW_TIME
+    std::clock_t start, end;
+    start = clock();
+#endif
+    //get element group
+    Group<ElementBase> *elementGroup = this->GroupGetGroupPtr(rElementGroupId)->AsGroupElement();
+
+    //get node group
+    Group<NodeBase> *nodeGroup = this->GroupGetGroupPtr(rNodeGroupId)->AsGroupNode();
+
+
+    // create a map for fast node index search
+    std::vector<std::pair<int,const NodeBase*> > nodesAndIds;
+    GetNodesTotal(nodesAndIds);
+    std::map<const NodeBase*, int> nodeToId;
+    for (auto pair : nodesAndIds)
+    {
+        nodeToId[pair.second] = pair.first;
+    }
+
+    for (Group<ElementBase>::const_iterator itElement = elementGroup->begin(); itElement != elementGroup->end(); itElement++)
+    {
+        try
+        {
+            ElementBase* element = itElement->second;
+            for (int iNode = 0; iNode < element->GetNumNodes(); ++iNode)
+            {
+                NuTo::NodeBase* nodePtr = element->GetNode(iNode);
+                int nodeId = nodeToId[nodePtr];
+
+                if (not nodeGroup->Contain(nodeId) && nodePtr->IsDof(rDof))
+                    nodeGroup->AddMember(nodeId, nodePtr);
+            }
+        }
+        catch (NuTo::MechanicsException &e)
+        {
+            e.AddMessage("[NuTo::StructureBase::GroupAddNodesFromElements] Error for element " + std::to_string(ElementGetId(itElement->second)) + ".");
+            throw e;
+        }
+    }
+
+#ifdef SHOW_TIME
+    end = clock();
+    if (mShowTime)
+        std::cout << "[NuTo::StructureBase::GroupAddNodesFromElements] " << difftime(end, start) / CLOCKS_PER_SEC << "sec" << std::endl;
+#endif
+}
+
 //! @brief ... Unites two groups and stores the result in a new group
 //! @param ... rIdentGroup1 identifier for the first group
 //! @param ... rIdentGroup2 identifier for the second group

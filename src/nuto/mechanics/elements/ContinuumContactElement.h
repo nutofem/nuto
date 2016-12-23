@@ -29,7 +29,9 @@ public:
 
     NuTo::ConstitutiveOutputMap GetConstitutiveOutputMap(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const override;
 
-    NuTo::eError CheckElementOutput(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>>& rElementOutput) const;
+    void FillConstitutiveOutputMapHessian1(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double>& rHessian1) const;
+    void FillConstitutiveOutputMapHessian2Lumped(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullVector<double> &rHessian2Lumped) const;
+    void FillConstitutiveOutputMapHessian2(ConstitutiveOutputMap& rConstitutiveOutput, BlockFullMatrix<double> &rHessian2) const;
 
     NuTo::Element::eElementType GetEnumType() const;
 
@@ -52,7 +54,7 @@ public:
                                             const ConstitutiveInputMap& constitutiveInput,
                                             const ConstitutiveOutputMap& constitutiveOutput) const;
 
-    void CalculateElementOutputContactForceDerivative(BlockFullVector<double> &rInternalGradient,
+    void CalculateElementOutputContactForceDerivative(BlockFullMatrix<double> &rGapMatrix,
                                                       EvaluateDataContinuumBoundary<TDimSlave> &rData,
                                                       const ConstitutiveInputMap &constitutiveInput,
                                                       const ConstitutiveOutputMap &constitutiveOutput) const;
