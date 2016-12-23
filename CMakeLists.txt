@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 
 option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
 option(ENABLE_ARPACK "enables ARPACK libraries (for the solution of eigenvalue problems)" FALSE)
+option(ENABLE_BENCHMARKS "enables Benchmarks" FALSE)
 option(ENABLE_C++_TESTS "create makefiles for c++ tests" TRUE)
 option(ENABLE_CGAL "enables CGAL libraries (for cracks only)" FALSE)
 option(ENABLE_COVERAGE "Set compiler flag for coverage analysis" FALSE)
@@ -372,6 +373,10 @@ endif()
 
 if(ENABLE_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+if(ENABLE_BENCHMARKS)
+    add_subdirectory(benchmark)
 endif()
 
 # myExamples should be modified locally, but are not supposed to be added to the repository
