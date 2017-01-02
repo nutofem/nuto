@@ -353,6 +353,7 @@ add_subdirectory(doc)
 
 #test Environment
 include(CTest)
+add_custom_target(unit COMMAND ctest -R unit)
 
 add_subdirectory(test/math)
 if(ENABLE_MECHANICS)
@@ -379,12 +380,16 @@ if(ENABLE_BENCHMARKS)
     add_subdirectory(benchmark)
 endif()
 
+
+
+
 # myExamples should be modified locally, but are not supposed to be added to the repository
 # if it is empty, there is just an empty include
 # it is used for adding working examples locally, which should not be exposed to the public
 if(ENABLE_MY_EXAMPLES)
     add_subdirectory(myNutoExamples)
 endif()
+
 
 # This makes qtcreator show header-only classes...
 file(GLOB_RECURSE HeaderFiles "*.h")
