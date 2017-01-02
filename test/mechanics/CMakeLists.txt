@@ -10,7 +10,6 @@
 #   DogBoneDirectNewmark
 #   NonlocalDamagePlasticityModel
 #   StructureEvaluate
-add_subdirectory(constitutive)
 
 #test files for mechanics module
 if(ENABLE_PYTHON)
@@ -39,6 +38,7 @@ endif()
 
 
 if(ENABLE_C++_TESTS)
+    add_subdirectory(constitutive)
 
     # copy meshes
     foreach(mesh
@@ -140,15 +140,6 @@ if(ENABLE_C++_TESTS)
         add_test(NAME c::mechanics::${test} COMMAND ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     endif()
 
-
-endif()
-
-
-
-
-
-if(ENABLE_UNIT_TESTS)
-    # TESTS WITH NuToMechancis
     foreach(test ContinuumElement PhaseField RestartFiles)
         add_executable(${test} ${test}.cpp)
         target_link_libraries(${test} NuToMechanics NuToMath NuToBase)
@@ -158,12 +149,10 @@ if(ENABLE_UNIT_TESTS)
         add_test(c::unit::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     endforeach()
 
-    # TESTS WITHOUT NuToMechanics
     foreach(test GlobalFractureEnergyIntegration)
         add_executable(${test} ${test}.cpp)
         target_link_libraries(${test} NuToMath NuToBase)
         add_test(c::unit::${test} ${CMAKE_CURRENT_BINARY_DIR}/${test})
     endforeach()
-
 
 endif()

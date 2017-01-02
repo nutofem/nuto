@@ -23,7 +23,6 @@ option(ENABLE_PYTHON "create python wrapper for nuto" TRUE)
 option(ENABLE_SHOW_TIME "shows for each python command the execution time" TRUE)
 option(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" FALSE)
 option(ENABLE_SERIALIZATION "enables serialization" FALSE)
-option(ENABLE_UNIT_TESTS "use Boost Test library for unit tests" TRUE)
 option(ENABLE_VERBOSELEVEL "enables status messages during the execution by setting the verboselevel" FALSE)
 option(ENABLE_VISUALIZE "enables the visualization package" FALSE)
 option(ENABLE_MPI "enables message passing interface" FALSE)
@@ -179,9 +178,7 @@ if(ENABLE_SERIALIZATION)
     set(NuToBoostComponents ${NuToBoostComponents} serialization)
 endif()
 
-if(ENABLE_UNIT_TESTS)
-    set(NuToBoostComponents ${NuToBoostComponents} unit_test_framework)
-endif()
+set(NuToBoostComponents ${NuToBoostComponents} unit_test_framework)
 
 message(STATUS "Requesting BOOST components ${NuToBoostComponents} - at least version ${NuToBoostRequiredVersion} required.")
 
