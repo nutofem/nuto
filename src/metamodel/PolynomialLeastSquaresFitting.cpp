@@ -1,8 +1,8 @@
 
 #include "math/FullVector.h"
 #include "metamodel/PolynomialLeastSquaresFitting.h"
-#include <nuto/math/SparseDirectSolverMUMPS.h>
-#include <nuto/math/SparseMatrixCSRGeneral.h>
+#include "math/SparseDirectSolverMUMPS.h"
+#include "math/SparseMatrixCSRGeneral.h"
 
 // constructor
 NuTo::PolynomialLeastSquaresFitting::PolynomialLeastSquaresFitting()

@@ -23,8 +23,8 @@ option(ENABLE_PYTHON "create python wrapper for nuto" TRUE)
 option(ENABLE_SHOW_TIME "shows for each python command the execution time" TRUE)
 option(ENABLE_STATIC_EXTERNALS "enables linking with static external libraries" FALSE)
 option(ENABLE_SERIALIZATION "enables serialization" FALSE)
-option(ENABLE_VERBOSELEVEL "enables status messages during the execution by setting the verboselevel" FALSE)
-option(ENABLE_VISUALIZE "enables the visualization package" FALSE)
+option(ENABLE_VERBOSELEVEL "enables status messages during the execution by setting the verboselevel" TRUE)
+option(ENABLE_VISUALIZE "enables the visualization package" TRUE)
 option(ENABLE_MPI "enables message passing interface" FALSE)
 
 # set module path for custom cmake scripts
