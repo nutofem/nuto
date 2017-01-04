@@ -34,6 +34,9 @@ namespace BenchmarkInternal
 
         std::vector<double> GetSeconds() const
         {
+            if (mWallTimes.empty())
+                return {0}; // case: runner not used
+
             std::vector<double> seconds(mWallTimes.size()-1);
             for (size_t i = 0; i < seconds.size(); ++i)
                 seconds[i] = std::chrono::duration<double>(mWallTimes[i+1] - mWallTimes[i]).count();

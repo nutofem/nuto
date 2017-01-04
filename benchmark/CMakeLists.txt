@@ -4,10 +4,11 @@ add_custom_target(benchmark COMMAND ctest -V -R benchmark)
 foreach(test
     BuildGradient
     LinearElasticity
+    AssembleSparseMatrix
     )
 
     add_executable(${test} ${test}.cpp)
-    target_link_libraries(${test} NuToMechanics NuToMath NuToBase -lprofiler)
+    target_link_libraries(${test} NuToMechanics NuToMath NuToBase)
     if(MUMPS_FOUND)
         target_link_libraries(${test} ${MUMPS_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
     endif()
