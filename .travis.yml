@@ -35,4 +35,4 @@ script:
     - ctest --output-on-failure
 after_success:
     - cd ..
-    - if [[ "$CXX" =~ ^g.* ]]; then coveralls -E '.*PYTHON.*' --gcov-options '\-lp'; fi
+    - if [[ "$CXX" == "g++" ]] && [[ "$RELEASE" == "false" ]]; then coveralls -E '.*PYTHON.*' --gcov-options '\-lp' > /dev/null; fi
