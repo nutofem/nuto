@@ -47,6 +47,11 @@
 #include "nuto/mechanics/timeIntegration/NewmarkDirect.h"
 
 #include "nuto/mechanics/groups/GroupBase.h"
+#include "nuto/mechanics/elements/ElementBase.h"
+#include "nuto/mechanics/elements/ElementDataBase.h"
+
+#include "nuto/mechanics/elements/IpDataEnum.h"
+#include "nuto/mechanics/MechanicsException.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -64,13 +69,17 @@ void ContactHertzQuarterCircle(const std::string &path,
                                NuTo::Structure *myStructure,
                                double rPenalty,
                                NuTo::eIntegrationType rIntegrationType,
+                               NuTo::Interpolation::eTypeOrder rElementTypeIdentDisps,
+                               NuTo::eIntegrationType rIntegrationTypeDisps,
                                int &groupElementsIGAlayer,
                                int &slaveElementsGroupId,
                                int &masterElementsGroupId,
                                int &groupElementsSlaveUpper,
                                int &groupNodesSlaveUpper,
                                int &groupElementsSlaveLower,
-                               int &groupElementsMasterUpper)
+                               int &groupElementsMasterUpper,
+                               int &slaveContactElementsGroupId,
+                               int &masterContactElementsGroupId)
 {
 #ifdef _OPENMP
     int numThreads = 4;
@@ -91,13 +100,14 @@ void ContactHertzQuarterCircle(const std::string &path,
 
     int slaveInterpolationType = myStructure->InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
     myStructure->InterpolationTypeAdd(slaveInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::LOBATTO2);
-    myStructure->InterpolationTypeAdd(slaveInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::LOBATTO2);
+    myStructure->InterpolationTypeAdd(slaveInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, rElementTypeIdentDisps);
     slaveElementsGroupId = groupIndicesSlave.GetValue(0, 0);
     myStructure->ElementGroupSetInterpolationType(slaveElementsGroupId, slaveInterpolationType);
     myStructure->ElementConvertToInterpolationType(slaveElementsGroupId);
+    myStructure->InterpolationTypeSetIntegrationType(slaveInterpolationType,rIntegrationTypeDisps,NuTo::IpData::eIpDataType::STATICDATA);
 
     int slaveNodesGroupId = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
-    myStructure->GroupAddNodesFromElements(slaveNodesGroupId, slaveElementsGroupId);
+    myStructure->GroupAddNodesFromElements(slaveNodesGroupId, slaveElementsGroupId,  NuTo::Node::eDof::DISPLACEMENTS);
 
     // ===> build contact elements slave elements
     auto LambdaGetSlaveNodesLower = [](NuTo::NodeBase* rNodePtr) -> bool
@@ -166,13 +176,14 @@ void ContactHertzQuarterCircle(const std::string &path,
 
     int masterInterpolationType = myStructure->InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
     myStructure->InterpolationTypeAdd(masterInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::LOBATTO2);
-    myStructure->InterpolationTypeAdd(masterInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::LOBATTO2);
+    myStructure->InterpolationTypeAdd(masterInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, rElementTypeIdentDisps);
     masterElementsGroupId = groupIndicesMaster.GetValue(0, 0);
     myStructure->ElementGroupSetInterpolationType(masterElementsGroupId, masterInterpolationType);
     myStructure->ElementConvertToInterpolationType(masterElementsGroupId);
+    myStructure->InterpolationTypeSetIntegrationType(masterInterpolationType, rIntegrationTypeDisps, NuTo::IpData::eIpDataType::STATICDATA);
 
     int masterNodesGroupId = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
-    myStructure->GroupAddNodesFromElements(masterNodesGroupId, masterElementsGroupId);
+    myStructure->GroupAddNodesFromElements(masterNodesGroupId, masterElementsGroupId,  NuTo::Node::eDof::DISPLACEMENTS);
 
     auto LambdaGetMasterNodesLower = [](NuTo::NodeBase* rNodePtr) -> bool
     {
@@ -316,7 +327,7 @@ void ContactHertzQuarterCircle(const std::string &path,
     // ===> CONTACT ELEMENTS  //
     ////////////////////////////
 
-    myStructure->NuTo::Structure::ContactElementsCreate<2,1>(groupElementsSlaveLower, groupNodesSlaveLower, elementsMaster, rIntegrationType, rPenalty, rContactAlgo);
+    slaveContactElementsGroupId = myStructure->NuTo::Structure::ContactElementsCreate<2,1>(groupElementsSlaveLower, groupNodesSlaveLower, elementsMaster, rIntegrationType, rPenalty, rContactAlgo);
 
     ////////////////////////////
     // ===> Constraints       //
@@ -354,19 +365,45 @@ void ContactHertzQuarterCircle(const std::string &path,
             countDBC++;
         }
     }
+
+    // create boundary elements for visualizing the results
+    masterContactElementsGroupId = myStructure->BoundaryElementsCreate(groupElementsMasterUpper, groupNodesMasterUpper, NULL);
+    NuTo::FullVector<int,Eigen::Dynamic> rMembersMasterContactBoundaryVisualize;
+    myStructure->ElementGroupGetMembers(masterContactElementsGroupId, rMembersMasterContactBoundaryVisualize);
+    for(int i = 0; i < rMembersMasterContactBoundaryVisualize.rows(); i++)
+    {
+        NuTo::ElementBase* elementPtr = myStructure->ElementGetElementPtr(rMembersMasterContactBoundaryVisualize(i));
+        NuTo::IpData::eIpDataType ipDataType = elementPtr->GetIpDataType(0);
+        elementPtr->SetIntegrationType(myStructure->GetPtrIntegrationType(rIntegrationType), ipDataType);
+    }
 }
 
 
 void staticSolve(NuTo::Structure *myStructure,
                  const std::string &resultDir,
+                 NuTo::eIntegrationType rIntegrationType,
                  int groupElementsIGAlayer,
                  int groupElementsSlave,
                  int groupElementsMaster,
                  int groupElementsSlaveUpper,
                  int groupNodesSlaveUpper,
                  int groupElementsSlaveLower,
-                 int groupElementsMasterUpper)
+                 int groupElementsMasterUpper,
+                 int slaveContactElementsGroupId,
+                 int masterContactElementsGroupId)
 {
+    //set result directory
+    if (boost::filesystem::exists(resultDir))
+    {
+        if (boost::filesystem::is_directory(resultDir))
+        {
+            boost::filesystem::remove_all(resultDir);
+        }
+    }
+
+    // create result directory
+    boost::filesystem::create_directory(resultDir);
+
     // ===> Neumann BCs
     myStructure->SetNumLoadCases(1);
     double Stress = 10.;
@@ -390,7 +427,7 @@ void staticSolve(NuTo::Structure *myStructure,
     // ===> initial values
     disp = - 0.0005;
     int slaveNodesGroupId = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
-    myStructure->GroupAddNodesFromElements(slaveNodesGroupId, groupElementsSlave);
+    myStructure->GroupAddNodesFromElements(slaveNodesGroupId, groupElementsSlave, NuTo::Node::eDof::DISPLACEMENTS);
     NuTo::FullVector<double,Eigen::Dynamic>  dispVec(2);
     dispVec(0) =   0.;
     dispVec(1) = disp;
@@ -412,11 +449,113 @@ void staticSolve(NuTo::Structure *myStructure,
     myIntegrationScheme.SetResultDirectory(resultDir, true);
 
     // speactral elements => #ip = #nodes
-    std::vector<int> IPIds;
-    IPIds.push_back(3);
-    myIntegrationScheme.AddResultElementGroupIpData("ContactStress0",  groupElementsMasterUpper, 0, IPIds, NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
-    myIntegrationScheme.AddResultElementGroupIpData("ContactStress1",  groupElementsMasterUpper, 1, IPIds, NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
-    myIntegrationScheme.AddResultElementGroupIpData("ContactStress5",  groupElementsMasterUpper, 5, IPIds, NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
+    std::vector<int> IPIdsMaster;
+    std::vector<int> IPIdsSlave;
+
+    switch(rIntegrationType)
+    {
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss1Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss3Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss4Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(3);
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        IPIdsSlave.push_back(3);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss5Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(4);
+        IPIdsMaster.push_back(3);
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        IPIdsSlave.push_back(3);
+        IPIdsSlave.push_back(4);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip:
+    {
+        IPIdsMaster.clear();
+        IPIdsMaster.push_back(11);
+        IPIdsMaster.push_back(10);
+        IPIdsMaster.push_back(9);
+        IPIdsMaster.push_back(8);
+        IPIdsMaster.push_back(7);
+        IPIdsMaster.push_back(6);
+        IPIdsMaster.push_back(5);
+        IPIdsMaster.push_back(4);
+        IPIdsMaster.push_back(3);
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        IPIdsSlave.push_back(3);
+        IPIdsSlave.push_back(4);
+        IPIdsSlave.push_back(5);
+        IPIdsSlave.push_back(6);
+        IPIdsSlave.push_back(7);
+        IPIdsSlave.push_back(8);
+        IPIdsSlave.push_back(9);
+        IPIdsSlave.push_back(10);
+        IPIdsSlave.push_back(11);
+        break;
+    }
+    default:
+        throw NuTo::MechanicsException("[NuTo::Test::Contact] No Integration Type Defined.");
+    }
+
+    myIntegrationScheme.AddResultElementGroupIpData("ContactStressMaster1",  masterContactElementsGroupId, 1, IPIdsMaster, NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
+    myIntegrationScheme.AddResultElementGroupIpData("ContactStressSlave1",  slaveContactElementsGroupId, 1, IPIdsSlave, NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
 
     myIntegrationScheme.SetMinTimeStepPlot(1.);
     myIntegrationScheme.SetLastTimePlot(0.);
@@ -428,18 +567,6 @@ void staticSolve(NuTo::Structure *myStructure,
     myIntegrationScheme.Solve(simulationTime);
 
 #ifdef ENABLE_VISUALIZE
-//    //set result directory
-//    if (boost::filesystem::exists(resultDir))
-//    {
-//        if (boost::filesystem::is_directory(resultDir))
-//        {
-//            boost::filesystem::remove_all(resultDir);
-//        }
-//    }
-
-//    // create result directory
-//    boost::filesystem::create_directory(resultDir);
-
     myStructure->AddVisualizationComponent(groupElementsIGAlayer, NuTo::eVisualizeWhat::DISPLACEMENTS);
     myStructure->ElementGroupExportVtkDataFile(groupElementsIGAlayer, resultDir+"/ElementsLayer.vtu", true);
     // master + slave fe only
@@ -463,6 +590,54 @@ void staticSolve(NuTo::Structure *myStructure,
 #endif
 }
 
+void run(const std::string &resultDir, const std::string &path, const std::string &fileNameSlave, const std::string &fileNameMaster, double penalty, int contactAlgo, NuTo::eIntegrationType rIntegrationType,
+         NuTo::Interpolation::eTypeOrder rElementTypeIdentDisps,
+         NuTo::eIntegrationType rIntegrationTypeDisps)
+{
+    int groupElementsIGAlayer(0),
+        groupElementsSlave(0),
+        groupElementsMaster(0),
+        groupElementsSlaveUpper(0),
+        groupNodesSlaveUpper(0),
+        groupElementsSlaveLower(0),
+        groupElementsMasterUpper(0),
+        slaveContactElementsGroupId(0),
+        masterContactElementsGroupId(0);
+
+    NuTo::Structure *myStructure = new NuTo::Structure(2);
+    myStructure->SetNumTimeDerivatives(0);
+    ContactHertzQuarterCircle(path,
+                              fileNameSlave,
+                              fileNameMaster,
+                              contactAlgo,
+                              myStructure,
+                              penalty,
+                              rIntegrationType,
+                              rElementTypeIdentDisps,
+                              rIntegrationTypeDisps,
+                              groupElementsIGAlayer,
+                              groupElementsSlave,
+                              groupElementsMaster,
+                              groupElementsSlaveUpper,
+                              groupNodesSlaveUpper,
+                              groupElementsSlaveLower,
+                              groupElementsMasterUpper,
+                              slaveContactElementsGroupId,
+                              masterContactElementsGroupId);
+
+    myStructure->SetNumTimeDerivatives(0);
+    staticSolve(myStructure, resultDir, rIntegrationType,
+                groupElementsIGAlayer,
+                groupElementsSlave,
+                groupElementsMaster,
+                groupElementsSlaveUpper,
+                groupNodesSlaveUpper,
+                groupElementsSlaveLower,
+                groupElementsMasterUpper,
+                slaveContactElementsGroupId,
+                masterContactElementsGroupId);
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -480,101 +655,34 @@ int main(int argc, char* argv[])
     fileNameMaster = "masterHalfspaceCombined.msh";
 
 
-    int groupElementsIGAlayer(0), groupElementsSlave(0), groupElementsMaster(0), groupElementsSlaveUpper(0), groupNodesSlaveUpper(0), groupElementsSlaveLower(0), groupElementsMasterUpper(0);
-
-    /********************************************* 1. * 10^10 ******************************************************/
+    // ===> penalty parameter study <=== //
     resultDir = "./ResultsContactStatic_1_10";
-    NuTo::Structure *myStructure = new NuTo::Structure(2);
     penalty = 1.e10;
-    myStructure->SetNumTimeDerivatives(0);
-    ContactHertzQuarterCircle(path,
-                              fileNameSlave,
-                              fileNameMaster,
-                              contactAlgo,
-                              myStructure,
-                              penalty,
-                              NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
-                              groupElementsIGAlayer,
-                              groupElementsSlave,
-                              groupElementsMaster,
-                              groupElementsSlaveUpper,
-                              groupNodesSlaveUpper,
-                              groupElementsSlaveLower,
-                              groupElementsMasterUpper);
+    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO2, NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip);
 
-    myStructure->SetNumTimeDerivatives(0);
-    staticSolve(myStructure, resultDir,
-                groupElementsIGAlayer,
-                groupElementsSlave,
-                groupElementsMaster,
-                groupElementsSlaveUpper,
-                groupNodesSlaveUpper,
-                groupElementsSlaveLower,
-                groupElementsMasterUpper);
+    return 0;
 
-    delete myStructure;
+    resultDir = "./ResultsContactStatic_5_10";
+    penalty = 5.e10;
+    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO2, NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip);
 
-    /********************************************* 1. * 10^9 ******************************************************/
-    resultDir = "./ResultsContactStatic_1_9";
-    myStructure = new NuTo::Structure(2);
-    penalty = 1.e9;
-    myStructure->SetNumTimeDerivatives(0);
-    ContactHertzQuarterCircle(path,
-                              fileNameSlave,
-                              fileNameMaster,
-                              contactAlgo,
-                              myStructure,
-                              penalty,
-                              NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
-                              groupElementsIGAlayer,
-                              groupElementsSlave,
-                              groupElementsMaster,
-                              groupElementsSlaveUpper,
-                              groupNodesSlaveUpper,
-                              groupElementsSlaveLower,
-                              groupElementsMasterUpper);
+    resultDir = "./ResultsContactStatic_1_11";
+    penalty = 1.e11;
+    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO2, NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip);
 
-    myStructure->SetNumTimeDerivatives(0);
-    staticSolve(myStructure, resultDir,
-                groupElementsIGAlayer,
-                groupElementsSlave,
-                groupElementsMaster,
-                groupElementsSlaveUpper,
-                groupNodesSlaveUpper,
-                groupElementsSlaveLower,
-                groupElementsMasterUpper);
+    resultDir = "./ResultsContactStatic_5_11";
+    penalty = 5.e11;
+    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO2, NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip);
 
-    delete myStructure;
+    // ===> integration order <=== //
 
-    /********************************************* 1. * 10^8 ******************************************************/
-    resultDir = "./ResultsContactStatic_1_8";
-    myStructure = new NuTo::Structure(2);
-    penalty = 1.e8;
-    myStructure->SetNumTimeDerivatives(0);
-    ContactHertzQuarterCircle(path,
-                              fileNameSlave,
-                              fileNameMaster,
-                              contactAlgo,
-                              myStructure,
-                              penalty,
-                              NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
-                              groupElementsIGAlayer,
-                              groupElementsSlave,
-                              groupElementsMaster,
-                              groupElementsSlaveUpper,
-                              groupNodesSlaveUpper,
-                              groupElementsSlaveLower,
-                              groupElementsMasterUpper);
+    resultDir = "./ResultsContactStatic_1_11_Order3";
+    penalty = 1.e11;
+    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO3, NuTo::eIntegrationType::IntegrationType2D4NLobatto16Ip);
 
-    myStructure->SetNumTimeDerivatives(0);
-    staticSolve(myStructure, resultDir,
-                groupElementsIGAlayer,
-                groupElementsSlave,
-                groupElementsMaster,
-                groupElementsSlaveUpper,
-                groupNodesSlaveUpper,
-                groupElementsSlaveLower,
-                groupElementsMasterUpper);
+    resultDir = "./ResultsContactStatic_1_11_Order4";
+    penalty = 1.e11;
+    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO4, NuTo::eIntegrationType::IntegrationType2D4NLobatto25Ip);
 
     return 0;
 }

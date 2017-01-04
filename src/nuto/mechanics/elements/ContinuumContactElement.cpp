@@ -162,60 +162,37 @@ NuTo::eError NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::Evaluate(cons
     data.mMortarGapVector.setZero(numNodesSlave, 1);
     data.mJacobianbyWeight.setZero(this->GetNumIntegrationPoints());
 
-//    data.mAreas.setZero(numNodesSlave);
-
-    for (auto it : rElementOutput)
+    for (int theIP = 0; theIP < this->GetNumIntegrationPoints(); theIP++)
     {
-        switch (it.first)
+        this->CalculateNMatrixBMatrixDetJacobian(data, theIP);
+        this->CalculateConstitutiveInputs(constitutiveInput, data);
+
+        eError error = this->NuTo::ElementBase::EvaluateConstitutiveLaw<TDimSlave>(constitutiveInput, constitutiveOutput, theIP);
+        if (error != eError::SUCCESSFUL)
+            return error;
+
+        for (auto it : rElementOutput)
         {
-        case Element::eOutput::INTERNAL_GRADIENT:
-        case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
-        {
-            for (int theIP = 0; theIP < this->GetNumIntegrationPoints(); theIP++)
+            switch (it.first)
             {
-                Eigen::VectorXd coordinatesIPSlave;
-                Eigen::VectorXd ipCoordsNaturalSlave;
-                GetGlobalIntegrationPointCoordinatesAndParameters(theIP, coordinatesIPSlave, ipCoordsNaturalSlave);
-
-//                const InterpolationBase& interpolationTypeCoordsSlave = this->mBaseElement->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS);
-//                Eigen::VectorXd  shapeFunsSlave = interpolationTypeCoordsSlave.CalculateShapeFunctions(ipCoordsNaturalSlave);
-
-                // TODO mind the iga jacobian matrix (in case of iga layer- iga layer contact)
-                auto jacobianSurface = this->mBaseElement->CalculateJacobianSurface(ipCoordsNaturalSlave, this->ExtractNodeValues(0, Node::eDof::COORDINATES), this->mSurfaceId);
-                data.mJacobianbyWeight(theIP) = jacobianSurface.norm() * this->GetIntegrationPointWeight(theIP);
-
-//                //*** Compute the area of the slave shape funs ***
-//                for(int i = 0; i < shapeFunsSlave.rows(); i++)
-//                {
-//                        data.mAreas(i) += shapeFunsSlave(i)*data.mJacobianbyWeight(theIP);
-//                }
-            }
-
-            for (int theIP = 0; theIP < this->GetNumIntegrationPoints(); theIP++)
-            {
-                //        this->CalculateNMatrixBMatrixDetJacobian(data, theIP);
-                this->CalculateConstitutiveInputs(constitutiveInput, data);
-
-                eError error = this->NuTo::ElementBase::EvaluateConstitutiveLaw<TDimSlave>(constitutiveInput, constitutiveOutput, theIP);
-                if (error != eError::SUCCESSFUL)
-                    return error;
-
-                // contacttype = 0: mortar
-                // contacttype = 1: non mortar (gaps at integration points are panalyzed)
+            case Element::eOutput::INTERNAL_GRADIENT:
+            case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
                 GapMatrixMortar(data, theIP);
+                break;
+            case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE: // already set to zero in GetConstitutiveOutputMap()...
+            case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE: // already set to zero in GetConstitutiveOutputMap()...
+            case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE: // already set to zero in GetConstitutiveOutputMap()...
+            case Element::eOutput::GLOBAL_ROW_DOF:
+            case Element::eOutput::GLOBAL_COLUMN_DOF:
+            case Element::eOutput::UPDATE_STATIC_DATA:
+            case Element::eOutput::UPDATE_TMP_STATIC_DATA:
+                break;
+            case Element::eOutput::IP_DATA:
+                this->CalculateElementOutputIpData(it.second->GetIpData(), constitutiveOutput, theIP);
+                break;
+            default:
+                throw MechanicsException(__PRETTY_FUNCTION__, "element output not implemented.");
             }
-        }
-            break;
-        case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE: // already set to zero in GetConstitutiveOutputMap()...
-        case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE: // already set to zero in GetConstitutiveOutputMap()...
-        case Element::eOutput::LUMPED_HESSIAN_2_TIME_DERIVATIVE: // already set to zero in GetConstitutiveOutputMap()...
-        case Element::eOutput::GLOBAL_ROW_DOF:
-        case Element::eOutput::GLOBAL_COLUMN_DOF:
-        case Element::eOutput::UPDATE_STATIC_DATA:
-        case Element::eOutput::UPDATE_TMP_STATIC_DATA:
-            break;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "element output not implemented.");
         }
     }
 
@@ -308,6 +285,11 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
     Eigen::VectorXd coordinatesIPSlave;
     Eigen::VectorXd ipCoordsNaturalSlave;
     GetGlobalIntegrationPointCoordinatesAndParameters(rTheIP, coordinatesIPSlave, ipCoordsNaturalSlave);
+
+
+    // TODO mind the iga jacobian matrix (in case of iga layer- iga layer contact)
+    auto jacobianSurface = this->mBaseElement->CalculateJacobianSurface(ipCoordsNaturalSlave, this->ExtractNodeValues(0, Node::eDof::COORDINATES), this->mSurfaceId);
+    double jacobianbyWeight = jacobianSurface.norm() * this->GetIntegrationPointWeight(rTheIP);
 
     /*********************************************************************************/
     //  Projection of the rTheIP on the master element => \xi^s_{IP}, \xi^m_*, n^m_* //
@@ -450,17 +432,13 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
         count+=normal.rows();
     }
 
-    // TODO mind the iga jacobian matrix
-//    auto jacobianSurface = this->mBaseElement->CalculateJacobianSurface(ipCoordsNaturalSlave, this->ExtractNodeValues(0, Node::eDof::COORDINATES), this->mSurfaceId);
-//    double factor = jacobianSurface.norm() * this->GetIntegrationPointWeight(rTheIP);
-
     // matrix containing the derivatives of the slave and master side multiplied by the normal (R^S * normal \\  R^M * normal)
     Eigen::MatrixXd NContact;
     NContact.resize(numSlaveFunsNormal + numMasterFunsNormal, shapeFunsSlave.rows());
 
     NContact.block(0, 0, numSlaveFunsNormal, shapeFunsSlave.rows())  =  shapeFunsSlaveNormal*shapeFunsSlave.transpose();
     NContact.block(numSlaveFunsNormal, 0, numMasterFunsNormal, shapeFunsSlave.rows()) = shapeFunsMasterNormal * shapeFunsSlave.transpose();
-    NContact *= rData.mJacobianbyWeight(rTheIP);
+    NContact *= jacobianbyWeight;
 
 //    Eigen::VectorXd positions;
 //    positions.resize(numSlaveFunsNormal + numMasterFunsNormal);
@@ -526,7 +504,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
     {
         if(gap < 0)
         {
-            rData.mMortarGapVector += shapeFunsSlave*gap*penaltyP*rData.mJacobianbyWeight(rTheIP);
+            rData.mMortarGapVector += shapeFunsSlave*gap*penaltyP*jacobianbyWeight;
         }
     }
 }
@@ -555,6 +533,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
         case Element::eOutput::GLOBAL_COLUMN_DOF:
         case Element::eOutput::UPDATE_STATIC_DATA:
         case Element::eOutput::UPDATE_TMP_STATIC_DATA:
+        case Element::eOutput::IP_DATA:
             break;
         default:
             throw MechanicsException(__PRETTY_FUNCTION__, "element output not implemented.");
@@ -661,6 +640,44 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GetGlobalIntegrationP
         rParamsIPSlave = interpolationTypeCoordsSlave.CalculateNaturalSurfaceCoordinates(naturalSurfaceIpCoordinates, this->mSurfaceId); // FEM
 
     rCoordinatesIPSlave  = this->mBaseElement->InterpolateDofGlobalCurrentConfiguration(0, rParamsIPSlave, Node::eDof::COORDINATES, Node::eDof::DISPLACEMENTS);
+}
+
+template <int TDimSlave, int TDimMaster>
+const Eigen::Vector3d NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GetGlobalIntegrationPointCoordinates(int rIpNum) const
+{
+    Eigen::VectorXd naturalSurfaceIpCoordinates;
+    switch (TDimMaster)
+    {
+        case 1:
+        {
+            double ipCoordinate;
+            this->GetIntegrationType()->GetLocalIntegrationPointCoordinates1D(rIpNum, ipCoordinate);
+            naturalSurfaceIpCoordinates.resize(1);
+            naturalSurfaceIpCoordinates(0) = ipCoordinate;
+            break;
+        }
+        case 2:
+        {
+            double ipCoordinates[2];
+            this->GetIntegrationType()->GetLocalIntegrationPointCoordinates2D(rIpNum, ipCoordinates);
+            naturalSurfaceIpCoordinates.resize(2);
+            naturalSurfaceIpCoordinates(0) = ipCoordinates[0];
+            naturalSurfaceIpCoordinates(1) = ipCoordinates[1];
+            break;
+        }
+        default:
+            break;
+    }
+
+    Eigen::VectorXd naturalIpCoordinates = this->mInterpolationType->Get(Node::eDof::COORDINATES).CalculateNaturalSurfaceCoordinates(naturalSurfaceIpCoordinates, this->mSurfaceId);
+
+    Eigen::MatrixXd matrixN = this->mInterpolationType->Get(Node::eDof::COORDINATES).CalculateMatrixN(naturalIpCoordinates);
+    Eigen::VectorXd nodeCoordinates = this->ExtractNodeValues(0, Node::eDof::COORDINATES);
+
+    Eigen::Vector3d globalIntegrationPointCoordinates = Eigen::Vector3d::Zero();
+    globalIntegrationPointCoordinates.segment(0, this->GetLocalDimension()) = matrixN * nodeCoordinates;
+
+    return globalIntegrationPointCoordinates;
 }
 
 template <int TDimSlave, int TDimMaster>

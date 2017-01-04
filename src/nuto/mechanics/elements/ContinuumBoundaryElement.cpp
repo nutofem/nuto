@@ -405,13 +405,13 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputIpData(ElementO
         switch (it.first)
         {
         case NuTo::IpData::eIpStaticDataType::ENGINEERING_STRAIN:
-            it.second.col(rTheIP) = *static_cast<EngineeringStrain<TDim>*>(constitutiveOutput.at(Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE).get());
+            it.second.col(rTheIP) = *static_cast<EngineeringStrain<3>*>(constitutiveOutput.at(Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE).get());
             break;
         case NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS:
-            it.second.col(rTheIP) = *static_cast<EngineeringStress<TDim>*>(constitutiveOutput.at(Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE).get());
+            it.second.col(rTheIP) = *static_cast<EngineeringStress<3>*>(constitutiveOutput.at(Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE).get());
             break;
         case NuTo::IpData::eIpStaticDataType::ENGINEERING_PLASTIC_STRAIN:
-            it.second.col(rTheIP) = *static_cast<EngineeringStrain<TDim>*>(constitutiveOutput.at(Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_VISUALIZE).get());
+            it.second.col(rTheIP) = *static_cast<EngineeringStrain<3>*>(constitutiveOutput.at(Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_VISUALIZE).get());
             break;
         case NuTo::IpData::eIpStaticDataType::DAMAGE:
             it.second.col(rTheIP) = *static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::DAMAGE).get());
@@ -623,7 +623,7 @@ template <int TDim>
 const Eigen::Vector3d NuTo::ContinuumBoundaryElement<TDim>::GetGlobalIntegrationPointCoordinates(int rIpNum) const
 {
     Eigen::VectorXd naturalSurfaceIpCoordinates;
-    switch (GetStructure()->GetDimension())
+    switch (GetStructure()->GetDimension()-1)
     {
         case 1:
         {
@@ -642,23 +642,13 @@ const Eigen::Vector3d NuTo::ContinuumBoundaryElement<TDim>::GetGlobalIntegration
             naturalSurfaceIpCoordinates(1) = ipCoordinates[1];
             break;
         }
-        case 3:
-        {
-            double ipCoordinates[3];
-            GetIntegrationType()->GetLocalIntegrationPointCoordinates3D(rIpNum, ipCoordinates);
-            naturalSurfaceIpCoordinates.resize(3);
-            naturalSurfaceIpCoordinates(0) = ipCoordinates[0];
-            naturalSurfaceIpCoordinates(1) = ipCoordinates[1];
-            naturalSurfaceIpCoordinates(2) = ipCoordinates[2];
-            break;
-        }
         default:
             break;
     }
 
     Eigen::VectorXd naturalIpCoordinates = mInterpolationType->Get(Node::eDof::COORDINATES).CalculateNaturalSurfaceCoordinates(naturalSurfaceIpCoordinates, mSurfaceId);
 
-    Eigen::VectorXd matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).CalculateMatrixN(naturalIpCoordinates);
+    Eigen::MatrixXd matrixN = mInterpolationType->Get(Node::eDof::COORDINATES).CalculateMatrixN(naturalIpCoordinates);
     Eigen::VectorXd nodeCoordinates = ExtractNodeValues(0, Node::eDof::COORDINATES);
 
     Eigen::Vector3d globalIntegrationPointCoordinates = Eigen::Vector3d::Zero();

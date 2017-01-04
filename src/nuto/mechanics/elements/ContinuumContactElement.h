@@ -61,6 +61,8 @@ public:
 
     void GetGlobalIntegrationPointCoordinatesAndParameters(int rIpNum, Eigen::VectorXd &rCoordinatesIPSlave, Eigen::VectorXd &rParamsIPSlave) const;
 
+    const Eigen::Vector3d GetGlobalIntegrationPointCoordinates(int rIpNum) const override;
+
 
 protected:
 
