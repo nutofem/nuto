@@ -146,7 +146,7 @@ NuTo::FullVector<T, Eigen::Dynamic> NuTo::BlockFullVector<T>::Export() const
 }
 
 template<typename T>
-NuTo::FullVector<T, Eigen::Dynamic> NuTo::BlockFullVector<T>::Get(std::string rDofRow) const
+Eigen::Matrix<T, Eigen::Dynamic, 1> NuTo::BlockFullVector<T>::Get(std::string rDofRow) const
 {
     return (*this)[Node::DofToEnum(rDofRow)];
 }

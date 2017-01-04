@@ -168,7 +168,7 @@ public:
     //! @brief Exports the active dof type values to a FullVector
     NuTo::FullVector<T, Eigen::Dynamic> Export() const;
 
-    NuTo::FullVector<T, Eigen::Dynamic> Get(std::string rDofRow) const;
+    Eigen::Matrix<T, Eigen::Dynamic, 1> Get(std::string rDofRow) const;
 
 private:
 

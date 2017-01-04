@@ -33,6 +33,7 @@ include(NuToMacros)
 
 add_subdirectory(external)
 include_directories(external/jsoncpp/dist/)
+include_directories(external/)
 
 if(ENABLE_MPI)
     find_package(MPI REQUIRED)
