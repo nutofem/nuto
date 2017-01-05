@@ -48,7 +48,7 @@ myStructure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistan
 myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant1")
 
 # create elements
-elementIncidence = nuto.IntVector(8)
+elementIncidence = list(range(8))
 
 for zCount in range (0, NumElementsZ):
     for yCount in range(0, NumElementsY):

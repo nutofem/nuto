@@ -37,6 +37,11 @@
 %include "std_string.i"
 // convert python tuple to std::vector
 %include "std_vector.i"
+namespace std {
+   %template(IntVector) vector<int>;
+   %template(DoubleVector) vector<double>;
+}
+
 %ignore Exception;
 %include "base/ModulNuToBase.i"
 %include "base/CallbackInterface.h"

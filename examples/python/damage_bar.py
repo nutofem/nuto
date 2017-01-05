@@ -25,7 +25,7 @@ structure.SectionSetArea(totalSection, area)
 weakenedSection = structure.SectionCreate("Truss")
 structure.SectionSetArea(weakenedSection, (1.0 - alpha)*area)
 
-nodeIDs = nuto.IntVector(2)
+nodeIDs = list(range(2))
 nodeIDs[0] = structure.NodeCreate(coordinates)
 for i in range(n_elements):
     coordinates[0] = (i+1)*delta_l

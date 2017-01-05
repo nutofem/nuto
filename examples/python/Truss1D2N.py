@@ -37,14 +37,14 @@ myStructure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistan
 myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant1")
 
 # create elements
-elementIncidence = nuto.IntVector(2)
+elementIncidence = list(range(2))
 for element in range(0, NumElements):
     print "create element: " + str(element) + " nodes: " + str(element) + "," + str(element+1)
     elementIncidence[0] = element
     elementIncidence[1] = element + 1
     myStructure.ElementCreate(element, myInterpolationType, elementIncidence)
-    myStructure.ElementSetSection(element,Section1)
-    myStructure.ElementSetConstitutiveLaw(element,Material1)
+    myStructure.ElementSetSection(element, Section1)
+    myStructure.ElementSetConstitutiveLaw(element, Material1)
 
 # set boundary conditions and loads
 direction = nuto.DoubleFullMatrix(1,1,(1,))
@@ -57,10 +57,9 @@ else:
     print "Load control"
     myStructure.LoadCreateNodeForce(0,NumElements, direction, Force)
 
-#build maximum independent sets
+# build maximum independent sets
 myStructure.CalculateMaximumIndependentSets()
 
-# start analysis
 # start analysis
 myStructure.SolveGlobalSystemStaticElastic(0)
 intGradient = myStructure.BuildGlobalInternalGradient()
@@ -70,11 +69,11 @@ residual = intGradient.J.Get("Displacements") - extGradient.J.Get("Displacements
 
 print "residual: " + str(np.linalg.norm(residual))
 
-## visualize results
+# visualize results
 visualizationGroup = myStructure.GroupCreate("Elements")
 myStructure.GroupAddElementsTotal(visualizationGroup)
 
 myStructure.AddVisualizationComponent(visualizationGroup, "Displacements")
 myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStrain")
 myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStress")
-#myStructure.ExportVtkDataFileElements("Truss1D2N.vtk")
+myStructure.ExportVtkDataFileElements("Truss1D2N.vtk")

@@ -20,8 +20,8 @@ try:
     myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant1")
 
     # create element
-    myElement1 = myStructure.ElementCreate(myInterpolationType, nuto.IntVector([myNode1, myNode2]))
-    myElement2 = myStructure.ElementCreate(myInterpolationType, nuto.IntVector([myNode2, myNode3]))
+    myElement1 = myStructure.ElementCreate(myInterpolationType, [myNode1, myNode2])
+    myElement2 = myStructure.ElementCreate(myInterpolationType, [myNode2, myNode3])
 
     # create constitutive law
     myMatLin = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress")
