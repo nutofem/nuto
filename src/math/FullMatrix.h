@@ -38,8 +38,8 @@
 #include "math/MathException.h"
 #include "math/fortran_routines.h"
 #include "math/SparseMatrix.h"
-#include "base/serializeStream/SerializeStreamIn_Def.h"
-#include "base/serializeStream/SerializeStreamOut_Def.h"
+#include "base/serializeStream/SerializeStreamIn.h"
+#include "base/serializeStream/SerializeStreamOut.h"
 
 
 

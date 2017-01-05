@@ -1,45 +1,81 @@
 #pragma once
-
-#include "base/serializeStream/SerializeStreamOut_Def.h"
+#include "base/serializeStream/SerializeStreamBase.h"
 #include <typeinfo>
 #include <eigen3/Eigen/Core>
 
-template <typename T>
-void NuTo::SerializeStreamOut::SerializePrimitiveType(T rData)
+namespace Eigen
 {
-    if (mIsBinary)
-    {
-        mFileStream.write(reinterpret_cast<const char*>(&rData), sizeof(T));
-    }
-    else
-    {
-        mFileStream << typeid(rData).name() << '\n'; // one line of debug info
-        mFileStream << static_cast<double>(rData) << '\n';
-    }
+template <typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols> class Matrix;
 }
 
-template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
-void NuTo::SerializeStreamOut::Serialize(Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix)
+namespace NuTo
 {
-    SaveMatrix(rMatrix);
-}
-
-
-template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
-void NuTo::SerializeStreamOut::SaveMatrix(const Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix)
+//! @brief Serialize output stream
+class SerializeStreamOut : public SerializeStreamBase
 {
-    const auto& rows = rMatrix.rows();
-    const auto& cols = rMatrix.cols();
-    const auto& data = rMatrix.data();
-    if (mIsBinary)
+public:
+
+    //! @brief ctor
+    //! @param rFile file name
+    //! @param rIsBinary flag to enable/disable binary file read
+    SerializeStreamOut(const std::string& rFile, bool rIsBinary);
+    virtual ~SerializeStreamOut()                     = default;
+
+    template <typename T>
+    inline friend SerializeStreamOut& operator << (SerializeStreamOut& rStream, T& rData)
     {
-        mFileStream.write(reinterpret_cast<const char*>(data), rows*cols*sizeof(T));
+        rStream.Serialize(rData);
+        return rStream;
     }
-    else
+
+    template <typename T>
+    void Serialize(T& rData)        {rData.NuToSerializeSave(*this);}
+    void Serialize(double& rData)   {SerializePrimitiveType(rData);}
+    void Serialize(int& rData)      {SerializePrimitiveType(rData);}
+    void Serialize(bool& rData)     {SerializePrimitiveType(rData);}
+
+    template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
+    void Serialize(Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix)
     {
-        // one line of debug info:
-        mFileStream << "Matrix ( " << rows << " x " << cols << " ): " << '\n';
-        for (int i = 0; i < rows*cols; ++i)
-            mFileStream << data[i] << '\n';
+        SaveMatrix(rMatrix);
     }
-}
+
+    template<typename T, int TRows, int TCols, int TOptions, int TMaxRows, int TMaxCols>
+    void SaveMatrix(const Eigen::Matrix<T, TRows, TCols, TOptions, TMaxRows, TMaxCols>& rMatrix)
+    {
+        const auto& rows = rMatrix.rows();
+        const auto& cols = rMatrix.cols();
+        const auto& data = rMatrix.data();
+        if (mIsBinary)
+        {
+            mFileStream.write(reinterpret_cast<const char*>(data), rows*cols*sizeof(T));
+        }
+        else
+        {
+            // one line of debug info:
+            mFileStream << "Matrix ( " << rows << " x " << cols << " ): " << '\n';
+            for (int i = 0; i < rows*cols; ++i)
+                mFileStream << data[i] << '\n';
+        }
+    }
+
+    //! @brief adds a separator sequence to the stream;
+    void Separator();
+
+private:
+    template <typename T>
+    void SerializePrimitiveType(T rData)
+    {
+        if (mIsBinary)
+        {
+            mFileStream.write(reinterpret_cast<const char*>(&rData), sizeof(T));
+        }
+        else
+        {
+            mFileStream << typeid(rData).name() << '\n'; // one line of debug info
+            mFileStream << static_cast<double>(rData) << '\n';
+        }
+    }
+
+};
+} // namespace NuTo
