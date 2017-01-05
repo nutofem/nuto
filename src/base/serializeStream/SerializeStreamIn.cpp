@@ -8,6 +8,9 @@ NuTo::SerializeStreamIn::SerializeStreamIn(const std::string& rFile, bool rIsBin
         mFileStream.open(rFile, std::ios_base::in | std::ios_base::binary);
     else
         mFileStream.open(rFile, std::ios_base::in);
+
+    if (not mFileStream.is_open())
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Unable to read file " + rFile + ".");
 }
 
 void NuTo::SerializeStreamIn::Separator()

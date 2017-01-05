@@ -1,4 +1,5 @@
 #include "base/serializeStream/SerializeStreamOut.h"
+#include "base/Exception.h"
 
 NuTo::SerializeStreamOut::SerializeStreamOut(const std::string& rFile, bool rIsBinary)
     : SerializeStreamBase(rIsBinary)
@@ -13,6 +14,8 @@ NuTo::SerializeStreamOut::SerializeStreamOut(const std::string& rFile, bool rIsB
         mFileStream.open(rFile, std::ios_base::out);
         mFileStream.precision(doublePrecision);
     }
+    if (not mFileStream.is_open())
+        throw NuTo::Exception(__PRETTY_FUNCTION__, "Unable to create file " + rFile + ".");
 }
 
 void NuTo::SerializeStreamOut::Separator()

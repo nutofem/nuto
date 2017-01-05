@@ -19,10 +19,6 @@ std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string n
 {
     return (name[0] == '&' ? std::string(name.begin()+1, name.size()-1) : std::string(name.begin(), name.size()));
 }
-
-namespace SerializeDataTest
-{
-
 //! @remark provide rZero for proper initialization of the primitive types
 template <typename T>
 T WriteReadNumber(const std::string &rFile, bool rIsBinary, T &rValue, T rZero)
@@ -254,4 +250,13 @@ BOOST_AUTO_TEST_CASE(SerializeCompoundDataBinary)       { CheckCompoundData     
 BOOST_AUTO_TEST_CASE(SerializeVectorCompoundDataText)   { CheckVectorCompoundData("VectorCompoundDataText.dat"       , false);}
 BOOST_AUTO_TEST_CASE(SerializeVectorCompoundDataBinary) { CheckVectorCompoundData("VectorCompoundDataBinary.dat"     , true );}
 
+
+BOOST_AUTO_TEST_CASE(SerializeInvalidWrite)
+{
+    BOOST_CHECK_THROW(NuTo::SerializeStreamOut("/home/ME_WANTS_TO_WRITE_HERE.dat", true), NuTo::Exception);
+}
+
+BOOST_AUTO_TEST_CASE(SerializeInvalidRead)
+{
+    BOOST_CHECK_THROW(NuTo::SerializeStreamIn("/home/ME_WANTS_TO_READ_HERE.dat", true), NuTo::Exception);
 }
