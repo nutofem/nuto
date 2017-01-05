@@ -109,7 +109,7 @@ inline void NuTo::BlockFullMatrix<T>::Info() const
         const std::string& additionalBlanks = std::string(numAdditionalBlanks, ' ');
         const auto& matrix = pair.second;
 
-        std::cout << dofTypes << additionalBlanks << "(" << matrix.GetNumRows() << "x" << matrix.GetNumColumns() << ")" << std::endl;
+        std::cout << dofTypes << additionalBlanks << "(" << matrix.rows() << "x" << matrix.cols() << ")" << std::endl;
     }
 }
 
@@ -122,10 +122,10 @@ void NuTo::BlockFullMatrix<T>::CheckDimensions() const
      */
     for (auto dofRow : dofTypes)
     {
-        auto numRowsReference = (*this)(dofRow, dofRow).GetNumRows();
+        auto numRowsReference = (*this)(dofRow, dofRow).rows();
         for (auto dofCol : dofTypes)
         {
-            int numRows = (*this)(dofRow, dofCol).GetNumRows();
+            int numRows = (*this)(dofRow, dofCol).rows();
             if (numRows != numRowsReference)
             {
                 std::stringstream s;
@@ -142,10 +142,10 @@ void NuTo::BlockFullMatrix<T>::CheckDimensions() const
      */
     for (auto dofCol : dofTypes)
     {
-        auto numColsReference = (*this)(dofCol, dofCol).GetNumColumns();
+        auto numColsReference = (*this)(dofCol, dofCol).cols();
         for (auto dofRow : dofTypes)
         {
-            int numCols = (*this)(dofRow, dofCol).GetNumColumns();
+            int numCols = (*this)(dofRow, dofCol).cols();
             if (numCols != numColsReference)
             {
                 std::stringstream s;
@@ -164,7 +164,7 @@ int NuTo::BlockFullMatrix<T>::GetNumColumnsDof(const std::set<Node::eDof>& rDofT
     int numCols = 0;
     for (auto dof : rDofTypes)
     {
-        numCols += (*this)(dof, dof).GetNumColumns();
+        numCols += (*this)(dof, dof).cols();
     }
     return numCols;
 }
@@ -177,7 +177,7 @@ int NuTo::BlockFullMatrix<T>::GetNumRowsDof(const std::set<Node::eDof>& rDofType
     int numRows = 0;
     for (auto dof : rDofTypes)
     {
-        numRows += (*this)(dof, dof).GetNumRows();
+        numRows += (*this)(dof, dof).rows();
     }
     return numRows;
 }
@@ -198,11 +198,11 @@ Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockFullMatrix<T>::Expor
             const auto& subMatrix = (*this)(dofRow, dofCol);
             result.SetBlock(blockStartRow, blockStartCol, subMatrix);
 
-            blockStartCol += subMatrix.GetNumColumns();
+            blockStartCol += subMatrix.cols();
         }
         // every submatrix in the row dofRow has the same number of rows (CheckDimension)
         // --> one is picked and added to blockStartRow
-        blockStartRow += (*this)(dofRow, dofRow).GetNumRows();
+        blockStartRow += (*this)(dofRow, dofRow).rows();
     }
     return result;
 }

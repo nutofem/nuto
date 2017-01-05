@@ -48,16 +48,16 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
             int numActiveDofsRow = numActiveDofTypeMap.at(dofRow);
             int numActiveDofsCol = numActiveDofTypeMap.at(dofCol);
 
-//            std::cout << "elementMatrix.GetNumRows()    " << elementMatrix.GetNumRows()    << std::endl;
-//            std::cout << "globalRowDofs.GetNumRows()    " << globalRowDofs.GetNumRows()    << std::endl;
-//            std::cout << "elementMatrix.GetNumColumns() " << elementMatrix.GetNumColumns() << std::endl;
-//            std::cout << "globalColDofs.GetNumRows()    " << globalColDofs.GetNumRows()    << std::endl;
+//            std::cout << "elementMatrix.rows()    " << elementMatrix.rows()    << std::endl;
+//            std::cout << "globalRowDofs.rows()    " << globalRowDofs.rows()    << std::endl;
+//            std::cout << "elementMatrix.cols() " << elementMatrix.cols() << std::endl;
+//            std::cout << "globalColDofs.rows()    " << globalColDofs.rows()    << std::endl;
 
 
-            assert(elementMatrix.GetNumRows() == globalRowDofs.GetNumRows());
-            assert(elementMatrix.GetNumColumns() == globalColDofs.GetNumRows());
+            assert(elementMatrix.rows() == globalRowDofs.rows());
+            assert(elementMatrix.cols() == globalColDofs.rows());
 
-            for (int iRow = 0; iRow < globalRowDofs.GetNumRows(); ++iRow)
+            for (int iRow = 0; iRow < globalRowDofs.rows(); ++iRow)
             {
                 int globalRowDof = globalRowDofs[iRow];
                 if (globalRowDof < numActiveDofsRow)
@@ -65,7 +65,7 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
                     auto& activeCol = JJ(dofRow, dofCol);
                     auto& dependentCol = JK(dofRow, dofCol);
 
-                    for (int iCol = 0; iCol < globalColDofs.GetNumRows(); ++iCol)
+                    for (int iCol = 0; iCol < globalColDofs.rows(); ++iCol)
                     {
                         double value = elementMatrix(iRow, iCol);
                         if (std::abs(value - rAddValueTolerance) > 0. )
@@ -93,7 +93,7 @@ void NuTo::StructureOutputBlockMatrix::AddElementMatrix(
 
                         globalRowDof -= numActiveDofsRow;
 
-                        for (int iCol = 0; iCol < globalColDofs.GetNumRows(); ++iCol)
+                        for (int iCol = 0; iCol < globalColDofs.rows(); ++iCol)
                         {
                             double value = elementMatrix(iRow, iCol);
                             if (std::abs(value - rAddValueTolerance) > 0. )
@@ -132,12 +132,12 @@ void NuTo::StructureOutputBlockMatrix::AddElementVectorDiagonal(
 
         int numActiveDofsRow = numActiveDofTypeMap.at(dofRow);
 
-        assert(elementVector.GetNumRows() == globalRowDofs.GetNumRows());
+        assert(elementVector.rows() == globalRowDofs.rows());
 
         auto& activeRow = JJ(dofRow, dofRow);
         auto& dependentRow = KK(dofRow, dofRow);
 
-        for (int iRow = 0; iRow < globalRowDofs.GetNumRows(); ++iRow)
+        for (int iRow = 0; iRow < globalRowDofs.rows(); ++iRow)
         {
             double value = elementVector[iRow];
             if (std::abs(value - rAddValueTolerance) > 0. )

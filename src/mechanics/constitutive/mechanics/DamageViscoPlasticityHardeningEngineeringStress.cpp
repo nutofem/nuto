@@ -490,10 +490,10 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
 		std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
 // THIS IS TEST NEWTON
-//	NuTo::FullVector<double,Eigen::Dynamic> x(3);
+//	Eigen::VectorXd x(3);
 //	bool check;
 //	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> (DamageViscoPlasticityHardeningEngineeringStress::*fdjacAn)
-//			(NuTo::FullVector<double,Eigen::Dynamic>) const;
+//			(Eigen::VectorXd) const;
 //	fdjacAn = &DamageViscoPlasticityHardeningEngineeringStress::DResidualAn;
 //	x[0] = -1., x[1] = 2., x[2] = 3.;
 //	std::cout << x.transpose() << std::endl;
@@ -870,7 +870,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
     if (TrialStress.YieldSurfaceDruckerPrager3D(Beta, HVPhardening) > -toleranceYieldSurface && DeltaTime > mTOLF) {
 
     	// compound the vector of unknowns
-    	NuTo::FullVector<double,Eigen::Dynamic> Unknown(14);
+    	Eigen::VectorXd Unknown(14);
 
     	// initialize start values
     	Unknown.segment<6>(0) = ElasticStiffness*(rEngineeringStrain - prevStrain); 	// stress increment = Unknown(0:5)
@@ -885,7 +885,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
 
 
     	// compose vector of known Parameter, which are necessary for ResidualAn
-    	NuTo::FullVector<double,Eigen::Dynamic> Parameter(20);
+    	Eigen::VectorXd Parameter(20);
 
     	for (int i = 0; i < 6; i++) {
     		Parameter[i] = rEngineeringStrain[i] - prevStrain[i]; 	// Parameter(0:5) increment of mechanical strain
@@ -902,12 +902,12 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
     															   // equivalent inelastic strain at the beginning of the time increment
     	Parameter[19] = OldStaticData->mPrevHardening;			   // Parameter(19) hardening at the beginning of the time increment
 
-    	const NuTo::FullVector<double,Eigen::Dynamic> ParameterList(Parameter);
+    	const Eigen::VectorXd ParameterList(Parameter);
 
         // prepare starting Newton solver with respect to the "Unknown"
         bool check;
         NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> (DamageViscoPlasticityHardeningEngineeringStress::*fdjacAn)
-        	(const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>) const;
+        	(const Eigen::VectorXd&,Eigen::VectorXd) const;
 
         // set Jacobi to analytical Jacobi
         fdjacAn = &DamageViscoPlasticityHardeningEngineeringStress::DResidualAn;

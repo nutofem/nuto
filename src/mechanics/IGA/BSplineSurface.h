@@ -106,8 +106,8 @@ public:
     //! @param rPoints ... points to interpolate
     //! @return rParameters ... parameters to the given points
     void ParametrizationChordLengthMethod(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rPoints,
-                                          FullVector<double, Eigen::Dynamic>& rParametersX,
-                                          FullVector<double, Eigen::Dynamic>& rParametersY);
+                                          Eigen::VectorXd& rParametersX,
+                                          Eigen::VectorXd& rParametersY);
 
     /** Knot refinement **/
     void DuplicateKnots(int dir);

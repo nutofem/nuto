@@ -42,7 +42,7 @@ public:
 
     virtual FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixInt();
 
-    virtual FullVector<double,Eigen::Dynamic>& GetFullVectorDouble();
+    virtual Eigen::VectorXd& GetFullVectorDouble();
 
     virtual BlockFullVector<double>& GetBlockFullVectorDouble();
 

@@ -33,8 +33,8 @@ public:
     NuTo::eTimeIntegrationResultType GetResultType()const;
 
     void CalculateValues(const StructureBase& rStructure,
-    		const FullVector<double,Eigen::Dynamic>& rResidual_j,
-    		const FullVector<double,Eigen::Dynamic>& rResidual_k,
+    		const Eigen::VectorXd& rResidual_j,
+    		const Eigen::VectorXd& rResidual_k,
     		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const;
 
     std::string GetTypeId() const

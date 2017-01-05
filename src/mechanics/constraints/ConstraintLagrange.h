@@ -41,7 +41,7 @@ public:
 
     //! @brief returns the Lagrange Multiplier
     //! first col Lagrange
-    virtual void GetLagrangeMultiplier(FullVector<double,Eigen::Dynamic>& rLagrangeMultiplier)const=0;
+    virtual void GetLagrangeMultiplier(Eigen::VectorXd& rLagrangeMultiplier)const=0;
 
     //! @brief returns the Lagrange Multiplier dofs
     //! first col Lagrangedofs
@@ -58,12 +58,12 @@ public:
     //! @brief write dof values to constraints (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void SetGlobalDofValues(const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues) = 0;
+    virtual void SetGlobalDofValues(const Eigen::VectorXd& rActiveDofValues, const Eigen::VectorXd& rDependentDofValues) = 0;
 
     //! @brief extract dof values from the constraints (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void GetGlobalDofValues(FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const = 0;
+    virtual void GetGlobalDofValues(Eigen::VectorXd& rActiveDofValues, Eigen::VectorXd& rDependentDofValues) const = 0;
 
     //! @brief renumber the global dofs according to predefined ordering
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
@@ -78,7 +78,7 @@ public:
 
     //! @brief calculates the gradient of the internal potential
     //! for a mechanical problem, this corresponds to the internal force vector
-    virtual void CalculateGradientInternalPotential(NuTo::FullVector<double,Eigen::Dynamic>& rResult,
+    virtual void CalculateGradientInternalPotential(Eigen::VectorXd& rResult,
             std::vector<int>& rGlobalDofs)const=0;
 
     //! @brief calculates the internal potential

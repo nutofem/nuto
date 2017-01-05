@@ -335,7 +335,7 @@ void NuTo::StructureBase::GroupAddNodeFunction(int rIdentGroup, std::function<bo
 //! @param ... rCenter center of the selection circle
 //! @param ... rMin ... minimum radius
 //! @param ... rMax ... maximum radius
-void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullVector<double, Eigen::Dynamic> rCenter, double rMin, double rMax)
+void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, Eigen::VectorXd rCenter, double rMin, double rMax)
 {
 #ifdef SHOW_TIME
     std::clock_t start, end;
@@ -347,7 +347,7 @@ void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullVec
     if (itGroup->second->GetType() != eGroupId::Nodes)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeRadiusRange] A node can be added only to a node group.");
 
-    if (rCenter.GetNumRows() != mDimension || rCenter.GetNumColumns() != 1)
+    if (rCenter.rows() != mDimension || rCenter.cols() != 1)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeRadiusRange] The center point must have the same number of coordinates as the dimension of the structure.");
 
     if (rMin > rMax)
@@ -382,7 +382,7 @@ void NuTo::StructureBase::GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullVec
 //! @param ... rAxis axis of the cylinder
 //! @param ... rMin ... minimum radius
 //! @param ... rMax ... maximum radius
-void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, NuTo::FullVector<double, Eigen::Dynamic> rCenter, NuTo::FullVector<double, Eigen::Dynamic> rDirection, double rMin, double rMax)
+void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, Eigen::VectorXd rCenter, Eigen::VectorXd rDirection, double rMin, double rMax)
 {
 #ifdef SHOW_TIME
     std::clock_t start, end;
@@ -394,10 +394,10 @@ void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, NuTo:
     if (itGroup->second->GetType() != eGroupId::Nodes)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCylinderRadiusRange] A node can be added only to a node group.");
 
-    if (rCenter.GetNumRows() != mDimension || rCenter.GetNumColumns() != 1)
+    if (rCenter.rows() != mDimension || rCenter.cols() != 1)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCylinderRadiusRange] The center point must have the same number of coordinates as the dimension of the structure.");
 
-    if (rDirection.GetNumRows() != mDimension || rDirection.GetNumColumns() != 1)
+    if (rDirection.rows() != mDimension || rDirection.cols() != 1)
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCylinderRadiusRange] The direction point must have the same number of coordinates as the dimension of the structure.");
 
     if (rMin > rMax)
@@ -444,7 +444,7 @@ void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, NuTo:
         double rMax2 = rMax * rMax;
 
         //normalize Diretion Vector
-        rDirection *= 1. / rDirection.Norm();
+        rDirection *= 1. / rDirection.norm();
 
         for (unsigned int countNode = 0; countNode < nodeVector.size(); countNode++)
         {

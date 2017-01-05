@@ -37,12 +37,12 @@ public:
     }
 
     virtual void CalculateValues(const StructureBase& rStructure,
-    		   const FullVector<double,Eigen::Dynamic>& rResidual_j, const FullVector<double,Eigen::Dynamic>& rResidual_k,
+    		   const Eigen::VectorXd& rResidual_j, const Eigen::VectorXd& rResidual_k,
     		   FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const=0;
 
     void CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot,
-    		const FullVector<double,Eigen::Dynamic>& rResidual_j,
-    		const FullVector<double,Eigen::Dynamic>& rResidual_k);
+    		const Eigen::VectorXd& rResidual_j,
+    		const Eigen::VectorXd& rResidual_k);
 
     const NuTo::Group<NodeBase>* GetGroupNodePtr(const StructureBase& rStructure)const;
 

@@ -59,7 +59,7 @@ void NuTo::ConstraintLinearNodeDisplacements1D::AddToConstraintMatrix(int& curCo
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void NuTo::ConstraintLinearNodeDisplacements1D::GetRHS(int& curConstraintEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const
+void NuTo::ConstraintLinearNodeDisplacements1D::GetRHS(int& curConstraintEquation,Eigen::VectorXd& rRHS)const
 {
     // add constraint to constrain matrix
     if (mNode->GetNum(Node::eDof::DISPLACEMENTS)!=1)

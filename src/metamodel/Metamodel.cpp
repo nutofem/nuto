@@ -118,13 +118,13 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::Metamodel::GetTra
 
 void NuTo::Metamodel::SetSupportPoints(int rDimInput, int rDimOutput, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rInputCoordinates, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rOutputCoordinates)
 {
-    if (rDimInput!=rInputCoordinates.GetNumRows())
+    if (rDimInput!=rInputCoordinates.rows())
 	    throw MetamodelException("Metamodel::SetSupportPoints - dimension of input  must be equal to number of rows in the input matrix.");
 
-    if (rDimOutput!=rOutputCoordinates.GetNumRows())
+    if (rDimOutput!=rOutputCoordinates.rows())
 	    throw MetamodelException("Metamodel::SetSupportPoints - dimension of output  must be equal to number of rows in the output matrix.");
 
-    if (rOutputCoordinates.GetNumColumns()!=rInputCoordinates.GetNumColumns())
+    if (rOutputCoordinates.cols()!=rInputCoordinates.cols())
 	    throw MetamodelException("Metamodel::SetSupportPoints - number of samples (number of columns) in input and output matrix must be identical .");
 		
 	mSupportPoints.SetSupportPoints(rInputCoordinates,rOutputCoordinates);

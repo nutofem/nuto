@@ -307,25 +307,25 @@ NuTo::Error::eError NuTo::HEDOPRI5Original::Solve(double rTimeDelta)
         mStructure->ConstraintGetConstraintMatrixAfterGaussElimination(CmatTmp);
         NuTo::SparseMatrixCSRVector2General<double> Cmat(CmatTmp);
         SparseMatrixCSRVector2General<double> CmatT (Cmat.Transpose());
-        FullVector<double,Eigen::Dynamic> bRHS, bRHSdot, bRHSddot;
+        Eigen::VectorXd bRHS, bRHSdot, bRHSddot;
         if (CmatT.GetNumEntries() > 0)
         {
             throw MechanicsException("[NuTo::RungeKuttaBase::Solve] not implemented for constrained systems including multiple dofs.");
         }
 
         //calculate individual inverse mass matrix, use only lumped mass matrices - stored as fullvectors and then use asDiagonal()
-        NuTo::FullVector<double,Eigen::Dynamic> invMassMatrix_j(mStructure->GetNumActiveDofs());
-        NuTo::FullVector<double,Eigen::Dynamic> massMatrix_k;
+        Eigen::VectorXd invMassMatrix_j(mStructure->GetNumActiveDofs());
+        Eigen::VectorXd massMatrix_k;
 
         //extract displacements, velocities and accelerations
-        NuTo::FullVector<double,Eigen::Dynamic> disp_j, vel_j, tmp_k,
+        Eigen::VectorXd disp_j, vel_j, tmp_k,
                                                 disp_j_tmp, vel_j_tmp, //intermediate values of the displacements and velocities
                                                 disp_j_new, vel_j_new; //new d and v at end of time step
-        std::vector<NuTo::FullVector<double,Eigen::Dynamic> > d_disp_j_tmp, d_vel_j_tmp; //intermediate values of the time derivatives of d and v
+        std::vector<Eigen::VectorXd > d_disp_j_tmp, d_vel_j_tmp; //intermediate values of the time derivatives of d and v
 
-        NuTo::FullVector<double,Eigen::Dynamic> extForce_j, extForce_k;
-        NuTo::FullVector<double,Eigen::Dynamic> outOfBalance_j(mStructure->GetNumActiveDofs()), outOfBalance_k;
-        NuTo::FullVector<double,Eigen::Dynamic> intForce_j(mStructure->GetNumActiveDofs()),
+        Eigen::VectorXd extForce_j, extForce_k;
+        Eigen::VectorXd outOfBalance_j(mStructure->GetNumActiveDofs()), outOfBalance_k;
+        Eigen::VectorXd intForce_j(mStructure->GetNumActiveDofs()),
                                                 intForce_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
 
         //store last converged displacements, velocities and accelerations
@@ -337,8 +337,8 @@ NuTo::Error::eError NuTo::HEDOPRI5Original::Solve(double rTimeDelta)
         mStructure->BuildGlobalLumpedHession2(intForce_j,massMatrix_k);
 
         int contactAreas = mConstraintContact.size();
-        NuTo::FullVector<double,Eigen::Dynamic> tempVelAll(mStructure->GetNumActiveDofs());
-        NuTo::FullVector<double,Eigen::Dynamic> tempDispAll(mStructure->GetNumActiveDofs());
+        Eigen::VectorXd tempVelAll(mStructure->GetNumActiveDofs());
+        Eigen::VectorXd tempDispAll(mStructure->GetNumActiveDofs());
         if (contactAreas > 0)
         {
             for (int contact = 0; contact < contactAreas; contact++)
@@ -427,14 +427,14 @@ NuTo::Error::eError NuTo::HEDOPRI5Original::Solve(double rTimeDelta)
                                 }
                             }
 
-                            NuTo::FullVector<double, Eigen::Dynamic> contactContributionVectorDisp(mStructure->GetNumActiveDofs());
-                            NuTo::FullVector<double, Eigen::Dynamic> contactContributionVectorVel(mStructure->GetNumActiveDofs());
+                            Eigen::VectorXd contactContributionVectorDisp(mStructure->GetNumActiveDofs());
+                            Eigen::VectorXd contactContributionVectorVel(mStructure->GetNumActiveDofs());
 
                             mStructure->SetConstraintContactVector(mConstraintContact[contact], contactContributionVectorDisp, 0);
                             mStructure->SetConstraintContactVector(mConstraintContact[contact], contactContributionVectorVel, 1);
 
-                            NuTo::FullVector<double, Eigen::Dynamic> tempVel = invMassMatrix_j.asDiagonal()*contactContributionVectorVel;
-                            NuTo::FullVector<double, Eigen::Dynamic> tempDisp = contactContributionVectorDisp;
+                            Eigen::VectorXd tempVel = invMassMatrix_j.asDiagonal()*contactContributionVectorVel;
+                            Eigen::VectorXd tempDisp = contactContributionVectorDisp;
 
 
                             // update the rhs due to contact forces (the rhs is always multiplied by the time step)
@@ -474,7 +474,7 @@ NuTo::Error::eError NuTo::HEDOPRI5Original::Solve(double rTimeDelta)
                     {
                         if (mStructure->IsPenalty(contact))
                         {
-                            NuTo::FullVector<double,Eigen::Dynamic> contactContributionVectorVel(mStructure->GetNumActiveDofs());
+                            Eigen::VectorXd contactContributionVectorVel(mStructure->GetNumActiveDofs());
                             mStructure->SetConstraintContactVector(mConstraintContact[contact], contactContributionVectorVel, 1);
 
                             d_vel_j_tmp[countStage] += mTimeStep*(invMassMatrix_j.asDiagonal())*contactContributionVectorVel;
@@ -513,7 +513,7 @@ NuTo::Error::eError NuTo::HEDOPRI5Original::Solve(double rTimeDelta)
             else
             {
                 //outOfBalance_j is automatically zero
-                //outOfBalance_j.Resize(intForce_j.GetNumRows());
+                //outOfBalance_j.Resize(intForce_j.rows());
                 //the acceleration of the dofs k is given by the acceleration of the rhs of the constraint equation
                 //this is calculated using finite differencs
                 //make sure to recalculate the internal force and external force (if time factor is not 1)

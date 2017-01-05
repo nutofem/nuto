@@ -45,15 +45,15 @@ public:
 
     //! @brief perform solving
     //! @param rUnknown ... unknown vector
-    virtual NuTo::eError Solve(NuTo::FullVector<double,Eigen::Dynamic> &rUnknown)=0;
+    virtual NuTo::eError Solve(Eigen::VectorXd &rUnknown)=0;
 
     //! @brief sets the pointer to the residual function
     //! @param rParam ... parameters necessary to evaluate the residual
     //! @param rUnknown ... unknown vector
 //    void SetResidualFunction(
-//    		NuTo::FullVector<double,Eigen::Dynamic> (*rResidualFunction)(
-//    		const NuTo::FullVector<double,Eigen::Dynamic>&,
-//    		NuTo::FullVector<double,Eigen::Dynamic>))
+//    		Eigen::VectorXd (*rResidualFunction)(
+//    		const Eigen::VectorXd&,
+//    		Eigen::VectorXd))
 //    {
 //    	mResidualFunction = rResidualFunction;
 //    }
@@ -62,8 +62,8 @@ public:
     //! @param rParam ... parameters necessary to evaluate the residual
     //! @param rUnknown ... unknown vector
     void SetResidualFunction(
-    		boost::function<NuTo::FullVector<double,Eigen::Dynamic>
-    (const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>)> rResidualFunction)
+    		boost::function<Eigen::VectorXd
+    (const Eigen::VectorXd&,Eigen::VectorXd)> rResidualFunction)
     {
     	mResidualFunctionBoost = rResidualFunction;
     	mAssignResidual = true;
@@ -106,7 +106,7 @@ public:
     }
 
     //! @brief sets the list of parameters mParameter necessary to evaluate mResidualFunction
-    void SetParameters(NuTo::FullVector<double,Eigen::Dynamic> &rParameter)
+    void SetParameters(Eigen::VectorXd &rParameter)
     {
     	mParameter = rParameter;
     }
@@ -114,11 +114,11 @@ public:
     //! @brief ... numerical differentiation of the residual function mResidualFunction (numerical Jacobi matrix)
     //! @param rUnknown ... position at which the derivative is taken
     //! @param rFvec ... residual vector at the position rUnknown, rFvec = mResidualFunction(rParameter,rUnknown)
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualNum(NuTo::FullVector<double,Eigen::Dynamic> rUnknown,
-    		NuTo::FullVector<double,Eigen::Dynamic> &rFvec) const;
+    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualNum(Eigen::VectorXd rUnknown,
+    		Eigen::VectorXd &rFvec) const;
 
     //! @brief ... calculates 0.5*rFvec^2 and updates rFvec = mResidualFunction(mParameter,rUnknown)
-    double Fmin(NuTo::FullVector<double,Eigen::Dynamic> rUnknown, NuTo::FullVector<double,Eigen::Dynamic> &rFvec) const;
+    double Fmin(Eigen::VectorXd rUnknown, Eigen::VectorXd &rFvec) const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -133,10 +133,10 @@ public:
 
 protected:
     //pointer to the residual function
-    NuTo::FullVector<double,Eigen::Dynamic> (*mResidualFunction)
-	(const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>);
+    Eigen::VectorXd (*mResidualFunction)
+	(const Eigen::VectorXd&,Eigen::VectorXd);
 
-    boost::function<NuTo::FullVector<double,Eigen::Dynamic> (const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>)> mResidualFunctionBoost;
+    boost::function<Eigen::VectorXd (const Eigen::VectorXd&,Eigen::VectorXd)> mResidualFunctionBoost;
 
     //tolerance for the residual vector
     double mTolResidual;
@@ -151,7 +151,7 @@ protected:
     bool mAssignResidual;
 
     //list of parameters necessary for evaluation of the resuduum
-    NuTo::FullVector<double,Eigen::Dynamic> mParameter;
+    Eigen::VectorXd mParameter;
 
 };
 } //namespace NuTo

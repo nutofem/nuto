@@ -13,8 +13,8 @@
 #include "visualize/VisualizeUnstructuredGrid.h"
 
 NuTo::CollidableWallBase::CollidableWallBase(
-		FullVector<double, Eigen::Dynamic> rPosition,
-		FullVector<double, Eigen::Dynamic> rDirection,
+		Eigen::VectorXd rPosition,
+		Eigen::VectorXd rDirection,
 		const int rIndex)
 		: NuTo::CollidableBase::CollidableBase(rIndex),
 		  mPosition(rPosition),
@@ -143,12 +143,12 @@ bool NuTo::CollidableWallBase::IsInside(const CollidableParticleSphere& rSphere)
 
 }
 
-const NuTo::FullVector<double, Eigen::Dynamic> NuTo::CollidableWallBase::GetDirection() const
+const Eigen::VectorXd NuTo::CollidableWallBase::GetDirection() const
 {
 	return mDirection;
 }
 
-const NuTo::FullVector<double, Eigen::Dynamic> NuTo::CollidableWallBase::GetPosition() const
+const Eigen::VectorXd NuTo::CollidableWallBase::GetPosition() const
 {
 	return mPosition;
 }

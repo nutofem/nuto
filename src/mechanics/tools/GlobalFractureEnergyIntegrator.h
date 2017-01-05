@@ -22,7 +22,7 @@ public:
     //! @param rForces vector containing forces
     //! @param rDisplacements vector container displacements
     //! @return obj
-    GlobalFractureEnergyIntegrator(const FullVector<double, Eigen::Dynamic>& rForces, const FullVector<double, Eigen::Dynamic>& rDisplacements)
+    GlobalFractureEnergyIntegrator(const Eigen::VectorXd& rForces, const Eigen::VectorXd& rDisplacements)
     {
         mForce = rForces.cwiseAbs();
         mDispl = rDisplacements.cwiseAbs();
@@ -139,8 +139,8 @@ private:
 
     }
 
-    FullVector<double, Eigen::Dynamic> mForce;
-    FullVector<double, Eigen::Dynamic> mDispl;
+    Eigen::VectorXd mForce;
+    Eigen::VectorXd mDispl;
 };
 
 }   // namespace Tools

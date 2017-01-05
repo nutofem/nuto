@@ -103,7 +103,7 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
     mPrevTime = 0.;
     mTime = 0.;
     mNodeNumberingRequired = true;
-    mNumExtrapolatedCycles = 0;
+    mNumExtrapolatedCycles.setZero();
 
     mMappingIntEnum2String.resize(static_cast<unsigned int>(NuTo::eIntegrationType::NumIntegrationTypes));
     mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss1Ip)]=
@@ -304,7 +304,7 @@ double NuTo::StructureBase::GetTime() const
 //! @brief ... rNumber[1] is the weighting coefficient of the implicit term
 //! @brief ... rNumber[2] is the weighting coefficient of the explicit term
 //! @brief ... rNumber[3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
-void NuTo::StructureBase::SetNumExtrapolatedCycles(NuTo::FullVector<double,Eigen::Dynamic> rNumber)
+void NuTo::StructureBase::SetNumExtrapolatedCycles(Eigen::VectorXd rNumber)
 {
 	if (rNumber.size()<3)
 	        throw NuTo::MechanicsException("[NuTo::StructureBase::SetNumExtrapolatedCycles] at least number of extrapolation cycles and weighting coefficient for explicit and implicit terms are required.");
@@ -326,7 +326,7 @@ void NuTo::StructureBase::SetNumExtrapolatedCycles(NuTo::FullVector<double,Eigen
 //! @brief ... [1] is the weighting coefficient of the implicit term
 //! @brief ... [2] is the weighting coefficient of the explicit term
 //! @brief ... [3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
-NuTo::FullVector<double,Eigen::Dynamic> NuTo::StructureBase::GetNumExtrapolatedCycles() const
+Eigen::VectorXd NuTo::StructureBase::GetNumExtrapolatedCycles() const
 {
 	return mNumExtrapolatedCycles;
 }
@@ -917,7 +917,7 @@ void NuTo::StructureBase::Contact(const std::vector<int> &rElementGroups)
 
 NuTo::BlockFullVector<double> NuTo::StructureBase::SolveBlockSystem(const BlockSparseMatrix& rMatrix, const BlockFullVector<double>& rVector) const
 {
-    NuTo::FullVector<double, Eigen::Dynamic> resultForSolver;
+    Eigen::VectorXd resultForSolver;
     std::unique_ptr<NuTo::SparseMatrixCSR<double>> matrixForSolver = rMatrix.ExportToCSR();
     matrixForSolver->SetOneBasedIndexing();
 

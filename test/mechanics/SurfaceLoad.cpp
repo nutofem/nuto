@@ -20,7 +20,7 @@ void CheckHydrostaticPressure(NuTo::Structure& rStructure)
 
     int dimension = rStructure.GetDimension();
     int numNodes = rStructure.GetNumNodes();
-    if (extLoadVector.GetNumRows() != numNodes*dimension)
+    if (extLoadVector.rows() != numNodes*dimension)
         throw NuTo::MechanicsException("[SurfaceLoad::CheckHydrostaticPressure] F_ext.GetNumRows() != dimension * numNodes. Maybe you (mistakenly) applied constraints.");
 
     NuTo::FullVector<double, Eigen::Dynamic> resForce(dimension);
@@ -29,17 +29,17 @@ void CheckHydrostaticPressure(NuTo::Structure& rStructure)
     for (int iNode = 0; iNode < numNodes; ++iNode)
         resForce += extLoadVector.block(dimension*iNode,0, dimension,1);
 
-    if (extLoadVector.Abs().Max() < 1.e-6)
+    if (extLoadVector.cwiseAbs().maxCoeff() < 1.e-6)
         throw NuTo::MechanicsException("[SurfaceLoad::CheckHydrostaticPressure] No external load at all!");
 
-    double relativeError = resForce.Abs().Max() / extLoadVector.Abs().Max();
+    double relativeError = resForce.Abs().Max() / extLoadVector.cwiseAbs().maxCoeff();
     std::cout << "Relative error: " << std::setw(10) << relativeError << "\t";
     if (relativeError > 1.e-8)
     {
         std::cout << "Result Load != 0:" << std::endl;
-        resForce.Info(20,10,false);
+        std::cout << resForce << std::endl;
         std::cout << "Total external load vector:" << std::endl;
-        extLoadVector.Info(20,10,false);
+        std::cout << extLoadVector << std::endl;
         throw NuTo::MechanicsException("[SurfaceLoad::CheckHydrostaticPressure] The resulting forces should cancel out. But they don't.");
     }
 }
@@ -287,7 +287,7 @@ void CheckSurfaceLoad(NuTo::Structure& rStructure, const NuTo::FullVector<double
 
     int dimension = rStructure.GetDimension();
     int numNodes = rStructure.GetNumNodes();
-    if (extLoadVector.GetNumRows() != numNodes*dimension)
+    if (extLoadVector.rows() != numNodes*dimension)
         throw NuTo::MechanicsException("[SurfaceLoad::CheckSurfaceLoad] F_ext.GetNumRows() != dimension * numNodes. Maybe you (mistakenly) applied constraints.");
 
     NuTo::FullVector<double, Eigen::Dynamic> resForce(dimension);
@@ -299,16 +299,16 @@ void CheckSurfaceLoad(NuTo::Structure& rStructure, const NuTo::FullVector<double
 
     NuTo::FullVector<double, Eigen::Dynamic> resForceCorrect = rLoad * rSurfaceArea;
 
-    double relativeError = (resForce - resForceCorrect).cwiseAbs().maxCoeff() / extLoadVector.Abs().Max();
+    double relativeError = (resForce - resForceCorrect).cwiseAbs().maxCoeff() / extLoadVector.cwiseAbs().maxCoeff();
     std::cout << "Relative error: " << std::setw(10) << relativeError << "\t";
     if (relativeError > 1.e-6)
     {
         std::cout << "Result Load:" << std::endl;
-        resForce.Info(20,10,true);
+        std::cout << resForce << std::endl;
         std::cout << "Result Load correct:" << std::endl;
-        resForceCorrect.Info(20,10,true);
+        std::cout << resForceCorrect << std::endl;
         std::cout << "Total external load vector:" << std::endl;
-        extLoadVector.Info(20,10,true);
+        std::cout << extLoadVector << std::endl;
         throw NuTo::MechanicsException("[SurfaceLoad::CheckSurfaceLoad] Wrong external load calculation!");
     }
 }

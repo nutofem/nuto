@@ -19,10 +19,18 @@
 #include "geometryConcrete/InputReader.h"
 %}
 
+
+// typemaps.i is a built-in swig interface that lets us map c++ types to other
+// types python. We'll use it to map Eigen matrices to Numpy arrays.
+%include "typemaps.i"
+%include "eigen.i"
+%eigen_typemaps(Eigen::VectorXd)
+%eigen_typemaps(Eigen::Matrix<double, Eigen::Dynamic, 1>)
+
+
 %apply int& OUTPUT { int& rType };
 double NuTo::CollidableParticleSphere::PredictCollision(NuTo::CollidableParticleSphere& rSphere, int& rType);
 double NuTo::CollidableParticleSphere::PredictCollision(NuTo::CollidableWallPhysical& rWall, int& rType);
-
 
 // convert python string to std::string
 %include "std_string.i"

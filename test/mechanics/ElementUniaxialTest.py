@@ -41,7 +41,7 @@ def Run(rStructure, rType, rOrder):
     directionX = nuto.DoubleFullMatrix(dimension, 1)
     directionX.SetValue(0, 0, 1.)
 
-    origin = nuto.DoubleFullVector(dimension)
+    origin = np.zeros((dimension, 1))
     nodeGroupOrigin = rStructure.GroupCreate("Nodes")
     rStructure.GroupAddNodeRadiusRange(nodeGroupOrigin, origin, 0, 1.e-5)
     if (rStructure.GroupGetNumMembers(nodeGroupOrigin) != 1):
@@ -101,9 +101,9 @@ def Run(rStructure, rType, rOrder):
     nodeX0Indices = rStructure.GroupGetMemberIds(nodesX0)
     for iNode in range(0, nodeX0Indices.GetNumRows()):
         nodeId = nodeX0Indices.GetValue(iNode)
-        force = nuto.DoubleFullVector()
+        force = np.zeros((dimension, 1))
         rStructure.NodeInternalForce(nodeId, force)
-        numericForce += force.GetValue(0)
+        numericForce += force[0]
 
     if (abs(numericForce-numericForce) > 1.e-8):
         errorMsg += "[CheckSolution:" + rType + ":" + rOrder + "] wrong reaction force calculation. \n"
@@ -182,7 +182,7 @@ def Run3D(r3DShape, rTypeOrder):
     for countZ in range(0, numNodesZ):
         for countY in range(0, numNodesY):
             for countX in range(0, numNodesX):
-                myStructure.NodeCreate(nodeNum, nuto.DoubleFullVector((countX*deltaX, countY*deltaY, countZ*deltaZ)))
+                myStructure.NodeCreate(nodeNum, np.array([countX*deltaX, countY*deltaY, countZ*deltaZ]))
                 nodeNum += 1
 
     myInterpolationType = myStructure.InterpolationTypeCreate(r3DShape);
@@ -242,7 +242,7 @@ def Run2D(r2DShape, rTypeOrder):
     nodeNum = 0
     for countY in range(0, numNodesY):
         for countX in range(0, numNodesX):
-            myStructure.NodeCreate(nodeNum, nuto.DoubleFullVector((countX*deltaX,countY*deltaY)))
+            myStructure.NodeCreate(nodeNum, np.array([countX*deltaX,countY*deltaY]))
             nodeNum += 1
 
     myInterpolationType = myStructure.InterpolationTypeCreate(r2DShape)
@@ -299,9 +299,7 @@ def Run1D(r1DShape, rTypeOrder):
     deltaX = lX/numElementsX
 
     for countX in range(0, numNodesX):
-        coord = nuto.DoubleFullVector(1)
-        coord.SetValue(0, countX*deltaX)
-        myStructure.NodeCreate(countX, coord)
+        myStructure.NodeCreate(countX, np.array([countX*deltaX]))
 
     myInterpolationType = myStructure.InterpolationTypeCreate(r1DShape)
     myStructure.InterpolationTypeAdd(myInterpolationType, "Coordinates", "EQUIDISTANT1")

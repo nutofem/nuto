@@ -16,7 +16,7 @@ void NuTo::Structure::MeshCreateLattice2D(int rTypeOfSpecimen, FullMatrix<double
 
     //create nodes
     std::string dofs("COORDINATES DISPLACEMENTS VELOCITIES ACCELERATIONS ROTATIONS ANGULAR_VELOCITIES ANGULAR_ACCELERATIONS RADIUS");
-	for (int count=0; count<rCircles.GetNumRows(); count++)
+	for (int count=0; count<rCircles.rows(); count++)
 	{
 		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> coordinates(2,1);
 		coordinates(0,0) = rCircles(count,0);
@@ -34,7 +34,7 @@ void NuTo::Structure::MeshCreateLattice2D(int rTypeOfSpecimen, FullMatrix<double
 	double Y(0.5*(rBoundingBox(1,0) + rBoundingBox(1,1)));
 	double R2(0.725*D*0.725*D);
 	std::vector<NodeBase*> nodeVector(3);
-	for (int count=0; count<rTriangles.GetNumRows(); count++)
+	for (int count=0; count<rTriangles.rows(); count++)
 	{
 		nodeVector[0] = NodeGetNodePtr(rTriangles(count,0));
 		nodeVector[1] = NodeGetNodePtr(rTriangles(count,1));
@@ -64,7 +64,7 @@ void NuTo::Structure::MeshCreateLattice3D(int rTypeOfSpecimen, FullMatrix<double
 	if (mDimension!=3)
     	throw MechanicsException("[NuTo::Structure::MeshCreateLattice3D] structure is not 3D.");
 	std::string dofs("COORDINATES DISPLACEMENTS RADIUS");
-	for (int count=0; count<rSpheres.GetNumRows(); count++)
+	for (int count=0; count<rSpheres.rows(); count++)
 	{
 		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> coordinates(3,1);
 		coordinates(0,0) = rSpheres(count,0);

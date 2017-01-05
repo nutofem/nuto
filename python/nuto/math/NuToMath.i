@@ -13,6 +13,7 @@
 %include "std_string.i"
 // convert python tuple to std::vector
 %include "std_vector.i"
+
 // use exceptions, but build no interface for NUTO::Exception
 %ignore Exception;
 %include "base/ModulNuToBase.i"

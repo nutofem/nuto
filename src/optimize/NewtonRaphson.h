@@ -29,7 +29,7 @@ public:
 //    //! @param rUnknown ... unknown vector
 //    void SetResidualDerivativeFunction(
 //    		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(*rResidualDerivativeFunction)
-//			(const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>))
+//			(const Eigen::VectorXd&,Eigen::VectorXd))
 //    {
 //    	mResidualDerivativeFunction = rResidualDerivativeFunction;
 //    }
@@ -39,7 +39,7 @@ public:
     //! @param rUnknown ... unknown vector
     void SetResidualDerivativeFunction(
     		boost::function<NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>
-    		    	(const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>)> rResidualDerivativeFunction)
+    		    	(const Eigen::VectorXd&,Eigen::VectorXd)> rResidualDerivativeFunction)
     {
     	mResidualDerivativeFunctionBoost = rResidualDerivativeFunction;
     	mAssignResidualResidualDerivative = true;
@@ -80,14 +80,14 @@ public:
 
     //! @brief perform iteration
     //! @param rUnknown ... unknown vector
-    NuTo::eError Solve(NuTo::FullVector<double,Eigen::Dynamic> &rUnknown);
+    NuTo::eError Solve(Eigen::VectorXd &rUnknown);
 
     //! @brief ... the routine performs line search correction of the Newton step
-    void LineSearch(NuTo::FullVector<double,Eigen::Dynamic> &rXold, const double rFold, NuTo::FullVector<double,Eigen::Dynamic> &rG, NuTo::FullVector<double,Eigen::Dynamic> &rP,
-    		NuTo::FullVector<double,Eigen::Dynamic> &rX, double &rF, const double rStpmax, bool &rCheck, NuTo::FullVector<double,Eigen::Dynamic> &rFvec) const;
+    void LineSearch(Eigen::VectorXd &rXold, const double rFold, Eigen::VectorXd &rG, Eigen::VectorXd &rP,
+    		Eigen::VectorXd &rX, double &rF, const double rStpmax, bool &rCheck, Eigen::VectorXd &rFvec) const;
 
     //! @brief ... the routine performs Newton-Raphson integration
-    NuTo::eError NewtonRaphsonIterator(NuTo::FullVector<double,Eigen::Dynamic> &x, bool &check) const;
+    NuTo::eError NewtonRaphsonIterator(Eigen::VectorXd &x, bool &check) const;
 
     //! @brief ... Return the name of the class, this is important for the serialize routines
     //! @return    class name
@@ -96,10 +96,10 @@ public:
 protected:
     //pointer to the analytical derivative of the residual function (analytic Jacobi matrix)
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> (*mResidualDerivativeFunction)
-    	(const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>);
+    	(const Eigen::VectorXd&,Eigen::VectorXd);
 
     boost::function<NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>
-    	(const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>)> mResidualDerivativeFunctionBoost;
+    	(const Eigen::VectorXd&,Eigen::VectorXd)> mResidualDerivativeFunctionBoost;
 
     //a boolean variable which gets true if a jacobi function is assigned
     bool mAssignResidualResidualDerivative;

@@ -39,9 +39,9 @@ NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& NuTo::ElementOutputBase::Ge
     throw MechanicsException("[ElementOutputBase::GetFullMatrixInt] element output matrix is not of type FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>");
 }
 
-NuTo::FullVector<double,Eigen::Dynamic>& NuTo::ElementOutputBase::GetFullVectorDouble()
+Eigen::VectorXd& NuTo::ElementOutputBase::GetFullVectorDouble()
 {
-    throw MechanicsException("[ElementOutputBase::GetFullVectorDouble] element output matrix is not of type FullVector<double,Eigen::Dynamic>");
+    throw MechanicsException("[ElementOutputBase::GetFullVectorDouble] element output matrix is not of type Eigen::VectorXd");
 }
 
 NuTo::BlockFullVector<double> &NuTo::ElementOutputBase::GetBlockFullVectorDouble()
@@ -56,7 +56,7 @@ NuTo::BlockFullVector<int>& NuTo::ElementOutputBase::GetBlockFullVectorInt()
 
 NuTo::FullVector<int,Eigen::Dynamic>& NuTo::ElementOutputBase::GetFullVectorInt()
 {
-	throw MechanicsException("[ElementOutputBase::GetFullVectorInt] element output matrix is not of type FullVector<double,Eigen::Dynamic>");
+	throw MechanicsException("[ElementOutputBase::GetFullVectorInt] element output matrix is not of type Eigen::VectorXd");
 }
 
 std::vector<int>& NuTo::ElementOutputBase::GetVectorInt()

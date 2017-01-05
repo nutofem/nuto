@@ -68,7 +68,7 @@ void NuTo::ConstraintLinearEquation::AddToConstraintMatrix(int& rConstraintLinea
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void NuTo::ConstraintLinearEquation::GetRHS(int& rConstraintLinearEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const
+void NuTo::ConstraintLinearEquation::GetRHS(int& rConstraintLinearEquation, Eigen::VectorXd& rRHS)const
 {
     // set right hand side value
     rRHS(rConstraintLinearEquation) = this->mRhsValue;

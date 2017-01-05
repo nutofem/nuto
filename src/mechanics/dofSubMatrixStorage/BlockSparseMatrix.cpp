@@ -77,7 +77,7 @@ void NuTo::BlockSparseMatrix::FixOffDiagonalDimensions()
             if (dofRow == dofCol)
                 continue;
             if ((*this)(dofRow, dofCol).GetNumEntries() != 0)
-                throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] You're about to resize a matrix with values inside. This should be wrong.");
+                throw MechanicsException(__PRETTY_FUNCTION__, "You're about to resize a matrix with values inside. This should be wrong.");
 
             int numRows = (*this)(dofRow, dofRow).GetNumRows();
             int numCols = (*this)(dofCol, dofCol).GetNumColumns();
@@ -132,7 +132,8 @@ NuTo::BlockFullVector<double> NuTo::BlockSparseMatrix::operator *(const BlockFul
 
     for (auto dofRow : activeDofTypes)
     {
-        result[dofRow].Resize((*this)(dofRow, dofRow).GetNumRows()); // automatically sets to zero
+        result[dofRow].resize((*this)(dofRow, dofRow).GetNumRows());
+        result[dofRow].setZero();
         for (auto dofSum : activeDofTypes)
         {
             result[dofRow] += (*this)(dofRow, dofSum).operator*(rRhs[dofSum]);

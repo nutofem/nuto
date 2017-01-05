@@ -1213,8 +1213,8 @@ void NuTo::ElementBase::GetIntegratedStress(FullMatrix<double, Eigen::Dynamic, E
     const auto& ipStress = elementOutput.at(Element::eOutput::IP_DATA)->GetIpData().GetIpDataMap()[IpData::eIpStaticDataType::ENGINEERING_STRESS];
     Eigen::VectorXd ipVolume = this->GetIntegrationPointVolume();
 
-    rStress.Resize(ipStress.GetNumRows(), 1);
-    for (int countIP = 0; countIP < ipStress.GetNumColumns(); countIP++)
+    rStress.Resize(ipStress.rows(), 1);
+    for (int countIP = 0; countIP < ipStress.cols(); countIP++)
     {
         rStress += (ipStress.col(countIP) * (ipVolume[countIP]));
     }
@@ -1230,8 +1230,8 @@ void NuTo::ElementBase::GetIntegratedStrain(FullMatrix<double, Eigen::Dynamic, E
     const auto& ipStress = elementOutput.at(Element::eOutput::IP_DATA)->GetIpData().GetIpDataMap()[IpData::eIpStaticDataType::ENGINEERING_STRAIN];
     Eigen::VectorXd ipVolume = this->GetIntegrationPointVolume();
 
-    rStrain.Resize(ipStress.GetNumRows(), 1);
-    for (int countIP = 0; countIP < ipStress.GetNumColumns(); countIP++)
+    rStrain.Resize(ipStress.rows(), 1);
+    for (int countIP = 0; countIP < ipStress.cols(); countIP++)
     {
         rStrain += (ipStress.col(countIP) * (ipVolume[countIP]));
     }

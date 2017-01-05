@@ -1,9 +1,9 @@
 // $Id$
 
+#include <eigen3/Eigen/Core>
 #include "base/Timer.h"
 #include "math/MathException.h"
 #include "math/FullMatrix.h"
-#include "math/FullVector.h"
 #include "math/SparseMatrixCSR.h"
 #include "math/SparseDirectSolver.h"
 #include "math/SparseDirectSolverMUMPS.h"
@@ -18,7 +18,7 @@ NuTo::SparseDirectSolverMUMPS::SparseDirectSolverMUMPS() : SparseDirectSolver()
 #endif // HAVE_MUMPS
 }
 
-void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double,Eigen::Dynamic>& rRhs, NuTo::FullVector<double,Eigen::Dynamic>& rSolution)
+void NuTo::SparseDirectSolverMUMPS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const Eigen::VectorXd& rRhs, Eigen::VectorXd& rSolution)
 {
 #ifdef HAVE_MUMPS
     Timer timer(std::string("MUMPS ") + __FUNCTION__, GetShowTime());
@@ -148,18 +148,18 @@ void NuTo::SparseDirectSolverMUMPS::Factorization(const NuTo::SparseMatrixCSR<do
 //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)
 //! @param rRhs ... matrix storing the right-hand-side vectors (input)
 //! @param rSolution ... matrix storing the corresponding solution vectors (output)
-void NuTo::SparseDirectSolverMUMPS::Solution(const NuTo::FullVector<double,Eigen::Dynamic>& rRhs, NuTo::FullVector<double,Eigen::Dynamic>& rSolution)
+void NuTo::SparseDirectSolverMUMPS::Solution(const Eigen::VectorXd& rRhs, Eigen::VectorXd& rSolution)
 {
 #ifdef HAVE_MUMPS
     Timer timer(std::string("MUMPS ") + __FUNCTION__, GetShowTime());
 
 	// check right hand side
-	if (mSolver.n != rRhs.GetNumRows())
+	if (mSolver.n != rRhs.rows())
 	{
-		std::cout << "n " << mSolver.n <<  "dim rhs " << rRhs.GetNumRows() << std::endl;
+		std::cout << "n " << mSolver.n <<  "dim rhs " << rRhs.rows() << std::endl;
 		throw NuTo::MathException(__PRETTY_FUNCTION__, "invalid dimension of right hand side vector.");
 	}
-	int rhsNumColumns = rRhs.GetNumColumns();
+	int rhsNumColumns = rRhs.cols();
 
 	// prepare rSolution rMatrix (copy rMatrix of right hand side vectors)
 	rSolution = rRhs;
@@ -199,7 +199,7 @@ void NuTo::SparseDirectSolverMUMPS::CleanUp()
 #endif // HAVE_MUMPS
 }
 
-void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, NuTo::FullVector<int, Eigen::Dynamic> rSchurIndices, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement)
+void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, Eigen::VectorXi rSchurIndices, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement)
 {
 #ifdef HAVE_MUMPS
     Timer timer(std::string("MUMPS ") + __FUNCTION__ + " reordering and symbolic factorization", GetShowTime());
@@ -231,13 +231,13 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     const std::vector<double>& matrixValues = rMatrix.GetValues();
 
     // check Schur Indices
-    if (matrixDimension < rSchurIndices.GetNumRows() || rSchurIndices.GetNumColumns()!=1)
+    if (matrixDimension < rSchurIndices.rows())
     {
         throw NuTo::MathException(__PRETTY_FUNCTION__, "invalid dimension of schur indices vector.");
     }
 
     // add indices by one, since the external interface always counts from zero and mumps requires one based indexing
-    rSchurIndices+=1;
+    rSchurIndices += Eigen::VectorXi::Ones(rSchurIndices.rows());
 
     // initialize solver data
     // set MPI communicator (also required in sequential version)
@@ -265,7 +265,7 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     dmumps_c(&mSolver);
 
     //resize result matrix
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSchurComplementTranspose(rSchurIndices.GetNumRows(),rSchurIndices.GetNumRows());
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSchurComplementTranspose(rSchurIndices.cols(),rSchurIndices.rows());
 
     // define the problem
     mSolver.n   = matrixDimension;                       // dimension
@@ -274,7 +274,7 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     mSolver.jcn = const_cast<int*>(&matrixColumns[0]);   // columns
     mSolver.a   = const_cast<double*>(&matrixValues[0]); // values
     mSolver.rhs = 0;
-    mSolver.size_schur = rSchurIndices.GetNumRows();
+    mSolver.size_schur = rSchurIndices.rows();
     mSolver.listvar_schur = const_cast<int*>(rSchurIndices.data()); //variables of the schur matrix (the 1..size_schur)
     mSolver.schur = rSchurComplementTranspose.data();
 

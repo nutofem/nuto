@@ -154,7 +154,7 @@ NuTo::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 
                     mStructure->Evaluate(input, evalInternalGradient);  // internal gradient only
 
-                    NuTo::FullVector<double,Eigen::Dynamic> solution;
+                    Eigen::VectorXd solution;
                     preFactorizedHessians[activeDof].Solution(intForce.J[activeDof], solution);
 
                     dof_dt0.J[activeDof] -= solution;

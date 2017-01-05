@@ -12,7 +12,7 @@
 NuTo::LoadNodeGroupForces3D::LoadNodeGroupForces3D(int rLoadCase, const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue) :
         LoadNodeGroup(rLoadCase,rGroup)
 {
-    if (rDirection.GetNumColumns()!=1 || rDirection.GetNumRows()!=3)
+    if (rDirection.cols()!=1 || rDirection.rows()!=3)
         throw MechanicsException("[NuTo::LoadNodeGroupForces3D::LoadNodeGroupForces3D] Dimension of the direction matrix must be equal to the dimension of the structure.");
 
     memcpy(mDirection,rDirection.data(),3*sizeof(double));
@@ -30,12 +30,12 @@ NuTo::LoadNodeGroupForces3D::LoadNodeGroupForces3D(int rLoadCase, const Group<No
 }
 
 // adds the load to global sub-vectors
-void NuTo::LoadNodeGroupForces3D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const
+void NuTo::LoadNodeGroupForces3D::AddLoadToGlobalSubVectors(int rLoadCase, Eigen::VectorXd& rActiceDofsLoadVector, Eigen::VectorXd& rDependentDofsLoadVector)const
 {
     if (rLoadCase!=mLoadCase)
     	return;
-    assert(rActiceDofsLoadVector.GetNumColumns()==1);
-    assert(rDependentDofsLoadVector.GetNumColumns()==1);
+    assert(rActiceDofsLoadVector.cols()==1);
+    assert(rDependentDofsLoadVector.cols()==1);
     for (Group<NodeBase>::const_iterator itNode=this->mGroup->begin(); itNode!=this->mGroup->end(); itNode++)
     {
         try
@@ -44,14 +44,14 @@ void NuTo::LoadNodeGroupForces3D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo:
             {
                 int dof = itNode->second->GetDof(Node::eDof::DISPLACEMENTS, dofCount);
                 assert(dof >= 0);
-                if (dof < rActiceDofsLoadVector.GetNumRows())
+                if (dof < rActiceDofsLoadVector.rows())
                 {
                     rActiceDofsLoadVector(dof,0) += this->mValue*mDirection[dofCount];
                 }
                 else
                 {
-                    dof -= rActiceDofsLoadVector.GetNumRows();
-                    assert(dof < rDependentDofsLoadVector.GetNumRows());
+                    dof -= rActiceDofsLoadVector.rows();
+                    assert(dof < rDependentDofsLoadVector.rows());
                     rDependentDofsLoadVector(dof,0) += this->mValue*mDirection[dofCount];
                 }
             }

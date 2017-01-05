@@ -129,11 +129,11 @@ private:
 	//! @brief ... returns a random vector with each component in a certain range
 	//! @param rStart ... start of value range
 	//! @param rEnd ... end of value range
-	NuTo::FullVector<double,Eigen::Dynamic> GetRandomVector(const double rStart, const double rEnd);
+	Eigen::VectorXd GetRandomVector(const double rStart, const double rEnd);
 
 	//! @brief ... returns a random vector with each component in a certain range
 	//! @param rBounds ... rBounds(:,0) start of value range, rBounds(:,1) end of value range
-	NuTo::FullVector<double,Eigen::Dynamic> GetRandomVector(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBounds);
+	Eigen::VectorXd GetRandomVector(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBounds);
 
     void CreateParticlesFromMatrix(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSpheres, const double rVelocityRange, const double rRelativeGrowthRate, const double rAbsoluteGrowthRate);
 

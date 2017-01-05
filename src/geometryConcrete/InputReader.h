@@ -89,7 +89,7 @@ public:
 	void OpenFile(std::string rFileName);
 	void SkipToNextData();
 	double ReadNumber();
-	NuTo::FullVector<double, Eigen::Dynamic> ReadVector();
+	Eigen::VectorXd ReadVector();
 	bool ReadBool();
 	std::string ReadString();
 

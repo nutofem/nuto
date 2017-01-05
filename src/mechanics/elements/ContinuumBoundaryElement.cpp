@@ -451,7 +451,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapInternalGrad
     using namespace NuTo::Constitutive;
     for (auto dofRow : mInterpolationType->GetActiveDofs())
     {
-        rInternalGradient[dofRow].Resize(mInterpolationType->Get(dofRow).GetNumDofs());
+        rInternalGradient[dofRow].resize(mInterpolationType->Get(dofRow).GetNumDofs());
+        rInternalGradient[dofRow].setZero();
         switch (dofRow)
         {
         case Node::eDof::DISPLACEMENTS:

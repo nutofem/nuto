@@ -31,16 +31,16 @@ error = False
 myStructure = nuto.Structure(3)
 
 # create nodes
-myNode1 = myStructure.NodeCreate(nuto.DoubleFullVector((0, 0, 0)))
-myNode2 = myStructure.NodeCreate(nuto.DoubleFullVector((1, 0, 0)))
-myNode3 = myStructure.NodeCreate(nuto.DoubleFullVector((0, 1, 0)))
-myNode4 = myStructure.NodeCreate(nuto.DoubleFullVector((0, 0, 1)))
-myNode5 = myStructure.NodeCreate(nuto.DoubleFullVector((0.5, 0, 0)))
-myNode6 = myStructure.NodeCreate(nuto.DoubleFullVector((0.5, 0.5, 0)))
-myNode7 = myStructure.NodeCreate(nuto.DoubleFullVector((0.0, 0.5, 0)))
-myNode8 = myStructure.NodeCreate(nuto.DoubleFullVector((0.0, 0, 0.5)))
-myNode9 = myStructure.NodeCreate(nuto.DoubleFullVector((0, 0.5, 0.5)))
-myNode10 = myStructure.NodeCreate(nuto.DoubleFullVector((0.5, 0.0, 0.5)))
+myNode1  = myStructure.NodeCreate(np.array([0.0, 0.0, 0.0]))
+myNode2  = myStructure.NodeCreate(np.array([1.0, 0.0, 0.0]))
+myNode3  = myStructure.NodeCreate(np.array([0.0, 1.0, 0.0]))
+myNode4  = myStructure.NodeCreate(np.array([0.0, 0.0, 1.0]))
+myNode5  = myStructure.NodeCreate(np.array([0.5, 0.0, 0.0]))
+myNode6  = myStructure.NodeCreate(np.array([0.5, 0.5, 0.0]))
+myNode7  = myStructure.NodeCreate(np.array([0.0, 0.5, 0.0]))
+myNode8  = myStructure.NodeCreate(np.array([0.0, 0.0, 0.5]))
+myNode9  = myStructure.NodeCreate(np.array([0.0, 0.5, 0.5]))
+myNode10 = myStructure.NodeCreate(np.array([0.5, 0.0, 0.5]))
 
 # create section
 mySection = myStructure.SectionCreate("Volume")
@@ -78,13 +78,13 @@ myStructure.GroupAddElementsFromNodes(groupBoundaryElements, groupBoundaryNodes,
 
 # create surface loads (0 - pressure on X, 1-const-direction Y)
 myStructure.LoadSurfacePressureCreate3D(0, groupBoundaryElements, groupBoundaryNodes, 2.)
-myStructure.LoadSurfaceConstDirectionCreate3D(1, groupBoundaryElements, groupBoundaryNodes, nuto.DoubleFullVector((0., 5., 0.)))
+myStructure.LoadSurfaceConstDirectionCreate3D(1, groupBoundaryElements, groupBoundaryNodes, np.array([0., 5., 0.]))
 
 # set displacements of right node
-myStructure.NodeSetDisplacements(myNode2, nuto.DoubleFullVector((0.2, 0.2, 0.2)))
-myStructure.NodeSetDisplacements(myNode3, nuto.DoubleFullVector((0.2, 0.2, 0.2)))
-myStructure.NodeSetDisplacements(myNode6, nuto.DoubleFullVector((0.2, 0.2, 0.2)))
-myStructure.NodeSetDisplacements(myNode7, nuto.DoubleFullVector((0.2, 0.2, 0.2)))
+myStructure.NodeSetDisplacements(myNode2, np.array([0.2, 0.2, 0.2]))
+myStructure.NodeSetDisplacements(myNode3, np.array([0.2, 0.2, 0.2]))
+myStructure.NodeSetDisplacements(myNode6, np.array([0.2, 0.2, 0.2]))
+myStructure.NodeSetDisplacements(myNode7, np.array([0.2, 0.2, 0.2]))
 
 # calculate element stiffness matrix
 Ke = myStructure.ElementBuildHessian0(myElement1).Export()
@@ -124,7 +124,7 @@ else:
 
 
 # check stiffness with internal force vector
-prevDisp = nuto.DoubleFullVector(0)
+prevDisp = np.zeros((3,1))
 
 delta = 1e-4
 rows, cols = Ke.shape
@@ -133,11 +133,11 @@ curColumn = 0
 for theNode in range(0, cols/myStructure.GetDimension()):
     for theDof in range(0, myStructure.GetDimension()):
         myStructure.NodeGetDisplacements(theNode, prevDisp)
-        prevDisp.AddValue(theDof, 0, delta)
+        prevDisp[theDof] += delta
         myStructure.NodeSetDisplacements(theNode, prevDisp)
         Fi_new = myStructure.ElementBuildInternalGradient(myElement1).Export()
         Fi_new = Fi_new.squeeze()
-        prevDisp.AddValue(theDof, 0, -delta)
+        prevDisp[theDof] -= delta
         myStructure.NodeSetDisplacements(theNode, prevDisp)
         KeApprox[:, curColumn] = (Fi_new-Fi)*(1./delta)
         curColumn += 1

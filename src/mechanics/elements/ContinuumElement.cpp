@@ -164,7 +164,8 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumElement<TDim>::GetConstitutiveOutputM
             if (activeDofs.size() > 1 && activeDofs.find(Node::eDof::DISPLACEMENTS) == activeDofs.end())
                 throw MechanicsException(__PRETTY_FUNCTION__, "Lumped Hessian2 is only implemented for displacements.");
             int numDofs = mInterpolationType->Get(Node::eDof::DISPLACEMENTS).GetNumDofs();
-            it.second->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS].Resize(numDofs);
+            it.second->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS].resize(numDofs);
+            it.second->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS].setZero();
             break;
         }
 
@@ -211,7 +212,8 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapInternalGradient(
 
         if (not (mInterpolationType->IsDof(dofRow)))
         {
-            rInternalGradient[dofRow].Resize(0);
+            rInternalGradient[dofRow].resize(0);
+            rInternalGradient[dofRow].setZero();
             continue;
         }
 
@@ -477,14 +479,14 @@ void NuTo::ContinuumElement<TDim>::CalculateGlobalRowDofs(BlockFullVector<int> &
 
         if (not (mInterpolationType->IsDof(dof)))
         {
-            rGlobalRowDofs[dof].Resize(0);
+            rGlobalRowDofs[dof].resize(0);
             continue;
         }
 
         const InterpolationBase& interpolationType = mInterpolationType->Get(dof);
         const int numNodes = interpolationType.GetNumNodes();
 
-        FullVector<int, Eigen::Dynamic>& dofWiseGlobalRowDofs = rGlobalRowDofs[dof];
+        Eigen::Matrix<int, Eigen::Dynamic, 1>& dofWiseGlobalRowDofs = rGlobalRowDofs[dof];
         dofWiseGlobalRowDofs.setZero(interpolationType.GetNumDofs());
 
 
@@ -660,6 +662,7 @@ Eigen::MatrixXd NuTo::ContinuumElement<TDim>::CalculateMatrixB(Node::eDof rDofTy
         assert (tmp.rows() == numRows);
 
         Bmat.resize(TDim, numRows*TDim);
+        Bmat.setZero();
         /*
          * transform to:
          *  N0,x   0    0    N1,x   0    0  ...
@@ -729,7 +732,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(
                     // calculate local mass matrix (the nonlocal terms are zero)
                     // don't forget to include determinant of the Jacobian and area
                     // detJ * area * density * HtH, :
-                    FullVector<double, Eigen::Dynamic>& result = it.second->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS];
+                    Eigen::Matrix<double, Eigen::Dynamic, 1>& result = it.second->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS];
                     double rho = GetConstitutiveLaw(rTheIP).GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY);
                     rData.mTotalMass += rData.mDetJxWeightIPxSection * rho;
                     const Eigen::VectorXd& shapeFunctions = mInterpolationType->Get(Node::eDof::DISPLACEMENTS).GetShapeFunctions(rTheIP);
@@ -741,7 +744,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(
                     if (rTheIP + 1 == GetNumIntegrationPoints())
                     {
                         //calculate sum of diagonal entries (is identical for all directions, that's why only x direction is calculated
-                        double sumDiagonal = result.Sum();
+                        double sumDiagonal = result.sum();
 
                         //scale so that the sum of the diagonals represents the full mass
                         double scaleFactor = rData.mTotalMass / sumDiagonal;

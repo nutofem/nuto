@@ -34,7 +34,7 @@ public:
 
     //! @brief ... Gets the calculated polynomial coefficients
     //! @return ... polynomial coefficients
-    NuTo::FullVector<double, Eigen::Dynamic> GetPolynomialCoefficients() const;
+    Eigen::VectorXd GetPolynomialCoefficients() const;
 
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
@@ -51,7 +51,7 @@ public:
     void SolveTransformed(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputCoordinates, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinates)const;
 
 protected:
-    FullVector<double,Eigen::Dynamic>       mPolynomialCoeffs;
+    Eigen::VectorXd       mPolynomialCoeffs;
     std::vector<std::pair<double,double>>   mBoundaryConditions;
     int                                     mDegree             = -1;
 };

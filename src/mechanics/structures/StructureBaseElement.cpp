@@ -182,8 +182,8 @@ NuTo::BlockFullMatrix<double> NuTo::StructureBase::ElementBuildHessian0_CDF(Elem
             auto& hessian0_CDF_dof      = hessian0_CDF(dofRow, dofCol);
             auto& globalColumnDofsCol   = globalColumnDofs[dofCol];
 
-            int numCols = globalColumnDofsCol.GetNumRows();
-            int numRows = internalGradient0[dofRow].GetNumRows();
+            int numCols = globalColumnDofsCol.rows();
+            int numRows = internalGradient0[dofRow].rows();
 
             hessian0_CDF_dof.resize(numRows,numCols);
             hessian0_CDF_dof.setZero();
@@ -665,7 +665,7 @@ void NuTo::StructureBase::ElementGroupAllocateAdditionalStaticData(int rElementG
         throw MechanicsException(__PRETTY_FUNCTION__, "Element group required.");
 
     auto elementIds = GroupGetMemberIds(rElementGroupId);
-    for (int iElement = 0; iElement < elementIds.GetNumRows(); ++iElement)
+    for (int iElement = 0; iElement < elementIds.rows(); ++iElement)
     {
         ElementBase* element = ElementGetElementPtr(elementIds[iElement]);
         IPData& ipdata = element->GetIPData();

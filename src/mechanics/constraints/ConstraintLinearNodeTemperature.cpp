@@ -42,7 +42,7 @@ void NuTo::ConstraintLinearNodeTemperature::SetRHS(double rRHS)
 }
 
 void NuTo::ConstraintLinearNodeTemperature::GetRHS(int& rCurConstraintEquation,
-        NuTo::FullVector<double,Eigen::Dynamic>& rRHS) const
+        Eigen::VectorXd& rRHS) const
 {
     // add constraint to constrain matrix
     if (mNode->GetNum(Node::eDof::TEMPERATURE) != 1)

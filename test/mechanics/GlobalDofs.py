@@ -30,14 +30,10 @@ error = False
 # create structure
 myStructure = nuto.Structure(1)
 
-c = nuto.DoubleFullVector(1)
 # create nodes
-c.SetValue(0, 0)
-myNode1 = myStructure.NodeCreate(c)
-c.SetValue(0, 5)
-myNode2 = myStructure.NodeCreate(c)
-c.SetValue(0, 10)
-myNode3 = myStructure.NodeCreate(c)
+myNode1 = myStructure.NodeCreate(np.array([0.]))
+myNode2 = myStructure.NodeCreate(np.array([5.]))
+myNode3 = myStructure.NodeCreate(np.array([10.]))
 
 myInterpolationType = myStructure.InterpolationTypeCreate("Truss1D")
 myStructure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistant2")

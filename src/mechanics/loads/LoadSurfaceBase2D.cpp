@@ -109,7 +109,7 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
 //! @brief adds the load to global sub-vectors
 //! @param rActiveDofsLoadVector ... global load vector which correspond to the active dofs
 //! @param rDependentDofsLoadVector ... global load vector which correspond to the dependent dofs
-void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double, Eigen::Dynamic>& rActiveDofsLoadVector, NuTo::FullVector<double, Eigen::Dynamic>& rDependentDofsLoadVector) const
+void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, Eigen::VectorXd& rActiveDofsLoadVector, Eigen::VectorXd& rDependentDofsLoadVector) const
 {
     if (rLoadCase != mLoadCase)
         return;
@@ -253,13 +253,13 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
                 {
                     int theDof = node->GetDof(Node::eDof::DISPLACEMENTS, iDispDof);
                     double theLoad = shapeFunctions[iNode] * loadVector(iDispDof);
-                    if (theDof < rActiveDofsLoadVector.GetNumRows())
+                    if (theDof < rActiveDofsLoadVector.rows())
                     {
                         rActiveDofsLoadVector(theDof) += theLoad;
                     }
                     else
                     {
-                        rDependentDofsLoadVector(theDof - rActiveDofsLoadVector.GetNumRows()) += theLoad;
+                        rDependentDofsLoadVector(theDof - rActiveDofsLoadVector.rows()) += theLoad;
                     }
                 }
             }

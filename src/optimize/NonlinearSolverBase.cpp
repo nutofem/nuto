@@ -34,13 +34,13 @@ NuTo::NonlinearSolverBase::NonlinearSolverBase() : NuTo::NuToObject::NuToObject(
 //! @param rParam ... parameters necessary to evaluate the residual
 //! @param rUnknown ... position at which the derivative is taken
 //! @param rFvec ... residual vector at the position rUnknown, rFvec = mResidualFunction(rParameter,rUnknown)
-NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::NonlinearSolverBase::DResidualNum(NuTo::FullVector<double,Eigen::Dynamic> rUnknown,
-		NuTo::FullVector<double,Eigen::Dynamic> &rFvec) const
+NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::NonlinearSolverBase::DResidualNum(Eigen::VectorXd rUnknown,
+		Eigen::VectorXd &rFvec) const
 {
 	const double EPS = 1.0e-8;
-	int n=rUnknown.GetNumRows();
+	int n=rUnknown.rows();
 	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(n,n);
-	NuTo::FullVector<double,Eigen::Dynamic> xh=rUnknown;
+	Eigen::VectorXd xh=rUnknown;
 
 	if (mResidualFunction==0 && mAssignResidual==false) {
 		throw OptimizeException("[NuTo::NonLinearSolverBase::DResidualNum] the pointer to the residual function is required.");
@@ -52,8 +52,8 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::NonlinearSolverBase
 	   	if (h == 0.0) h=EPS;
 	   		xh[j]=temp+h;
 	   		h=xh[j]-temp;
-//  	   		NuTo::FullVector<double,Eigen::Dynamic> f=(*mResidualFunction)(this->mParameter,xh);
-  	   		NuTo::FullVector<double,Eigen::Dynamic> f=(mResidualFunctionBoost)(this->mParameter,xh);
+//  	   		Eigen::VectorXd f=(*mResidualFunction)(this->mParameter,xh);
+  	   		Eigen::VectorXd f=(mResidualFunctionBoost)(this->mParameter,xh);
   	   		xh[j]=temp;
   	   		for (int i=0;i<n;i++)
  	   			deriv(i,j)=(f[i]-rFvec[i])/h;
@@ -62,7 +62,7 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::NonlinearSolverBase
 }
 
 //! @brief ... calculates 0.5*rFvec^2 and updates rFvec = mResidualFunction(rParameter,rUnknown)
-double NuTo::NonlinearSolverBase::Fmin(NuTo::FullVector<double,Eigen::Dynamic> rUnknown, NuTo::FullVector<double,Eigen::Dynamic> &rFvec) const
+double NuTo::NonlinearSolverBase::Fmin(Eigen::VectorXd rUnknown, Eigen::VectorXd &rFvec) const
 {
 	if (mResidualFunction==0 && mAssignResidual==false) {
 		throw OptimizeException("[NuTo::NonLinearSolverBase::DResidualNum] the pointer to the residual function is required.");

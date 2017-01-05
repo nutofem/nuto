@@ -20,18 +20,18 @@ void NuTo::ResultGroupNodeDof::Info() const
 }
 
 void NuTo::ResultGroupNodeDof::CalculateAndAddValues(const NuTo::StructureBase& rStructure, int rTimeStepPlot,
-		const FullVector<double,Eigen::Dynamic>& rResidual_j,
-		const FullVector<double,Eigen::Dynamic>& rResidual_k)
+		const Eigen::VectorXd& rResidual_j,
+		const Eigen::VectorXd& rResidual_k)
 {
 	assert(rTimeStepPlot>=0);
-	if (rTimeStepPlot>=mData.GetNumRows())
+	if (rTimeStepPlot>=mData.rows())
 	{
 		this->Resize(rStructure, 2*(rTimeStepPlot+1),false);
 	}
 	FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> values(1,this->GetNumData(rStructure));
 	CalculateValues(rStructure,rResidual_j,rResidual_k, values);
 
-	if (values.GetNumColumns()!=mData.GetNumColumns())
+	if (values.cols()!=mData.cols())
 		throw MechanicsException("[NuTo::ResultGroupNodeDof::CalculateAndAddValues] the allocated number of columns is wrong.");
 
 	mData.SetRow(rTimeStepPlot,values);

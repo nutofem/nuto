@@ -80,14 +80,14 @@ void NuTo::TimeIntegrationBase::ResetForNextLoad()
 //! @param rTimeDependentConstraintFactor ... first row time, rhs of the constraint (linear interpolation in between afterwards linear extrapolation)
 void NuTo::TimeIntegrationBase::AddTimeDependentConstraint(int rTimeDependentConstraint, const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> &rTimeDependentConstraintFactor)
 {
-    if (rTimeDependentConstraintFactor.GetNumColumns()!=2)
+    if (rTimeDependentConstraintFactor.cols()!=2)
         throw MechanicsException(__PRETTY_FUNCTION__, "number of columns must be 2, first column contains the time, second column contains the corresponding rhs.");
-    if (rTimeDependentConstraintFactor.GetNumRows()<2)
+    if (rTimeDependentConstraintFactor.rows()<2)
         throw MechanicsException(__PRETTY_FUNCTION__, "number of rows must be at least 2.");
     if (rTimeDependentConstraintFactor(0,0)!=0)
         throw MechanicsException(__PRETTY_FUNCTION__, "the first time should always be zero.");
     //check, if the time is monotonically increasing
-    for (int count=0; count<rTimeDependentConstraintFactor.GetNumRows()-1; count++)
+    for (int count=0; count<rTimeDependentConstraintFactor.rows()-1; count++)
     {
         if (rTimeDependentConstraintFactor(count,0)>=rTimeDependentConstraintFactor(count+1,0))
             throw MechanicsException(__PRETTY_FUNCTION__, "time has to increase monotonically.");
@@ -124,15 +124,15 @@ void NuTo::TimeIntegrationBase::UpdateConstraints(double rCurrentTime)
 //! @param rTimeDependentLoadFactor ... first row time, second row scalar factor to calculate the external load (linear interpolation in between, afterwards constant)
 void NuTo::TimeIntegrationBase::SetTimeDependentLoadCase(int rTimeDependentLoadCase, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rTimeDependentLoadFactor)
 {
-    if (rTimeDependentLoadFactor.GetNumColumns()!=2)
+    if (rTimeDependentLoadFactor.cols()!=2)
         throw MechanicsException(__PRETTY_FUNCTION__, "number of columns must be 2, first column contains the time, second column contains the corresponding value.");
-    if (rTimeDependentLoadFactor.GetNumRows()<2)
+    if (rTimeDependentLoadFactor.rows()<2)
         throw MechanicsException(__PRETTY_FUNCTION__, "number of rows must be at least 2.");
     if (rTimeDependentLoadFactor(0,0)!=0)
         throw MechanicsException(__PRETTY_FUNCTION__, "the first time should always be zero.");
 
     //check, if the time is monotonically increasing
-    for (int count=0; count<rTimeDependentLoadFactor.GetNumRows()-1; count++)
+    for (int count=0; count<rTimeDependentLoadFactor.rows()-1; count++)
     {
         if (rTimeDependentLoadFactor(count,0)>=rTimeDependentLoadFactor(count+1,0))
             throw MechanicsException(__PRETTY_FUNCTION__, "time has to increase monotonically.");
@@ -146,10 +146,10 @@ void NuTo::TimeIntegrationBase::SetTimeDependentLoadCase(int rTimeDependentLoadC
 double NuTo::TimeIntegrationBase::CalculateTimeDependentConstraintFactor(double curTime)
 {
     //calculate the two corresponding time steps between which a linear interpolation is performed
-    if (mTimeDependentConstraintFactor.GetNumRows()!=0)
+    if (mTimeDependentConstraintFactor.rows()!=0)
     {
         int curStep(0);
-        while (mTimeDependentConstraintFactor(curStep,0)<curTime && curStep<mTimeDependentConstraintFactor.GetNumRows()-1)
+        while (mTimeDependentConstraintFactor(curStep,0)<curTime && curStep<mTimeDependentConstraintFactor.rows()-1)
             curStep++;
 
         if (curStep==0)
@@ -213,12 +213,12 @@ NuTo::StructureOutputBlockVector NuTo::TimeIntegrationBase::CalculateCurrentExte
 {
     if (mTimeDependentLoadCase!=-1)
     {
-        if (mTimeDependentLoadFactor.GetNumRows()==0)
+        if (mTimeDependentLoadFactor.rows()==0)
         {
             throw MechanicsException(__PRETTY_FUNCTION__, "TimeDependentLoadFactor not set.");
         }
         int curStep(0);
-        while (mTimeDependentLoadFactor(curStep,0)<curTime && curStep<mTimeDependentLoadFactor.GetNumRows()-1)
+        while (mTimeDependentLoadFactor(curStep,0)<curTime && curStep<mTimeDependentLoadFactor.rows()-1)
             curStep++;
         if (curStep==0)
             curStep++;
@@ -379,7 +379,7 @@ double NuTo::TimeIntegrationBase::CalculateNorm(const BlockFullVector<double>& r
 {
     double norm = 0;
     for (auto rDofType : rResidual.GetDofStatus().GetActiveDofTypes())
-        norm += rResidual[rDofType].Norm();
+        norm += rResidual[rDofType].norm();
 
     return norm;
 }
@@ -558,7 +558,7 @@ void NuTo::TimeIntegrationBase::SetResultDirectory(std::string rResultDir, bool 
 //! @brief sets the minimum time step for the time integration procedure
 void NuTo::TimeIntegrationBase::SetPlotElementGroups(NuTo::FullVector<int,Eigen::Dynamic> rPlotElementGroups)
 {
-    if (rPlotElementGroups.GetNumRows()<1)
+    if (rPlotElementGroups.rows()<1)
         throw MechanicsException(__PRETTY_FUNCTION__, "vector must have at least a single row.");
     mPlotElementGroups = rPlotElementGroups;
 }

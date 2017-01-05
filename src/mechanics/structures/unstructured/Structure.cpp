@@ -1316,14 +1316,14 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
     }
 ///////////////end binary
     //create the nodes
-    NuTo::FullVector<double, Eigen::Dynamic> coordinates;
+    Eigen::VectorXd coordinates;
     switch (mDimension)
     {
     case 2:
-        coordinates.Resize(2);
+        coordinates.resize(2);
         break;
     case 3:
-        coordinates.Resize(3);
+        coordinates.resize(3);
         break;
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Only implemented for 2D and 3D.");
@@ -1586,7 +1586,7 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
 //! @brief copy and move the structure
 //! most of the data is kept, but e.g. nonlocal data and
 //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
-void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>& rOffset)
+void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
@@ -1605,11 +1605,11 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>&
     }
 }
 
-void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>& rOffset, std::map<NodeBase*, NodeBase*>& rOld2NewNodePointer, std::map<ElementBase*, ElementBase*>& rOld2NewElementPointer)
+void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBase*, NodeBase*>& rOld2NewNodePointer, std::map<ElementBase*, ElementBase*>& rOld2NewElementPointer)
 {
-    if (rOffset.GetNumRows() != mDimension)
+    if (rOffset.rows() != mDimension)
         throw MechanicsException(__PRETTY_FUNCTION__, "offset has to have the same dimension as the structure.");
-    if (rOffset.GetNumColumns() != 1)
+    if (rOffset.cols() != 1)
         throw MechanicsException(__PRETTY_FUNCTION__, "offset has to have a single column.");
 
     std::vector<NodeBase*> nodeVector;

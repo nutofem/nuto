@@ -9,15 +9,15 @@
 #include "geometryConcrete/collision/collidables/CollidableParticleBase.h"
 
 NuTo::CollidableParticleBase::CollidableParticleBase(
-		FullVector<double, Eigen::Dynamic> rPosition,
-		FullVector<double, Eigen::Dynamic> rVelocity,
+		Eigen::VectorXd rPosition,
+		Eigen::VectorXd rVelocity,
 		const int rIndex)
 		: CollidableBase(rIndex), mPosition(rPosition), mVelocity(rVelocity)
 {
 
-	if (mPosition.GetNumRows() != 3)
+	if (mPosition.rows() != 3)
 		throw NuTo::Exception("[NuTo::CollidableParticleBase::CollidableParticleBase] position vector must have exactly 3 rows");
 
-	if (mVelocity.GetNumRows() != 3)
+	if (mVelocity.rows() != 3)
 		throw NuTo::Exception("[NuTo::CollidableParticleBase::CollidableParticleBase] velocity vector must have exactly 3 rows");
 }

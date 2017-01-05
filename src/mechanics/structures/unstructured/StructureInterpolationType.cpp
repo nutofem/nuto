@@ -82,7 +82,7 @@ void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationType
     GroupAddElementFromType(elementGroupId, rInterpolationTypeId);
 
     NuTo::FullVector<int, Eigen::Dynamic> elementIds = GroupGetMemberIds(elementGroupId);
-    for (int iElement = 0; iElement < elementIds.GetNumRows(); ++iElement)
+    for (int iElement = 0; iElement < elementIds.rows(); ++iElement)
     {
         ElementBase* element = ElementGetElementPtr(elementIds.GetValue(iElement));
         element->SetIntegrationType(*rIntegrationType);
@@ -166,7 +166,7 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId,
     GroupAddElementFromType(elementGroupId, rInterpolationTypeId);
 
     NuTo::FullVector<int, Eigen::Dynamic> elementIds = GroupGetMemberIds(elementGroupId);
-    for (int iElement = 0; iElement < elementIds.GetNumRows(); ++iElement)
+    for (int iElement = 0; iElement < elementIds.rows(); ++iElement)
     {
         ElementBase* element = ElementGetElementPtr(elementIds.GetValue(iElement));
         element->SetIntegrationType(integrationType);
@@ -208,7 +208,7 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node:
     GroupAddElementFromType(elementGroupId, rInterpolationTypeId);
 
     NuTo::FullVector<int, Eigen::Dynamic> elementIds = GroupGetMemberIds(elementGroupId);
-    for (int iElement = 0; iElement < elementIds.GetNumRows(); ++iElement)
+    for (int iElement = 0; iElement < elementIds.rows(); ++iElement)
     {
         ElementBase* element = ElementGetElementPtr(elementIds.GetValue(iElement));
         element->SetIntegrationType(integrationType);

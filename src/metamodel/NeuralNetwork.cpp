@@ -37,11 +37,11 @@ NuTo::NeuralNetwork::NeuralNetwork (const FullMatrix<int,Eigen::Dynamic,Eigen::D
 	mShowSteps(100),
 	mMaxBayesianIterations(INT_MAX)
 {
-    if (rvNumNeurons.GetNumColumns()!=1 && rvNumNeurons.GetNumRows()!=0)
+    if (rvNumNeurons.cols()!=1 && rvNumNeurons.rows()!=0)
     {
         throw MetamodelException("NuTo::NeuralNetwork::NeuralNetwork - The matrix for the number of neurons per hidden layer should have only a single column.");
     }
-    mvNumNeurons.resize(rvNumNeurons.GetNumRows());
+    mvNumNeurons.resize(rvNumNeurons.rows());
     memcpy(&(mvNumNeurons[0]),rvNumNeurons.data(),mvNumNeurons.size()*sizeof(int));
 	mNumLayers = mvNumNeurons.size()+1;
 	mvNumNeurons.resize(mNumLayers);  //output layer is included
@@ -863,12 +863,12 @@ void NuTo::NeuralNetwork::SetTransferFunction(int rLayer, eTransferFunctions rTr
 
 void NuTo::NeuralNetwork::SetParameters(const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& Parameters)
 {
-    if (Parameters.GetNumRows()!=mNumWeights+mNumBiases)
+    if (Parameters.rows()!=mNumWeights+mNumBiases)
     {
         throw MetamodelException("Metamodel::SetParameters - Weights and Biases not allocated - build first.");
     }
 
-    if (Parameters.GetNumColumns()!=1)
+    if (Parameters.cols()!=1)
     {
         throw MetamodelException("Metamodel::SetParameters - Number of Columns is not equal to one.");
     }
@@ -919,14 +919,14 @@ void NuTo::NeuralNetwork::SolveTransformed(const FullMatrix<double,Eigen::Dynami
     std::vector<double> pA(numNeurons);  //store the current value of each neuron before the transfer function
     std::vector<double> pO(numNeurons);  //store the current value of each neuron after the transfer function
 
-    if (rInputCoordinates.GetNumRows()!=dimInput)
+    if (rInputCoordinates.rows()!=dimInput)
     {
         throw MetamodelException("Metamodel::SolveTransformed - Dimension of input (number of rows) is not identical with metamodel.");
     }
 
-    rOutputCoordinates.Resize(dimOutput, rInputCoordinates.GetNumColumns());
+    rOutputCoordinates.Resize(dimOutput, rInputCoordinates.cols());
 
-    for (int cntSample=0; cntSample<rInputCoordinates.GetNumColumns(); cntSample++)
+    for (int cntSample=0; cntSample<rInputCoordinates.cols(); cntSample++)
     {
         // set input of input layer
         memcpy(&pO[0],&(rInputCoordinates.data()[cntSample*dimInput]),dimInput*sizeof(double));
@@ -961,20 +961,20 @@ void NuTo::NeuralNetwork::SolveConfidenceIntervalTransformed(const FullMatrix<do
     Eigen::MatrixXd tmpCovariance(dimOutput,dimOutput); //store the derivative of the output with respect to A of the current Neuron
     Eigen::MatrixXd mvCovariance;
 
-    if (rInputCoordinates.GetNumRows()!=dimInput)
+    if (rInputCoordinates.rows()!=dimInput)
     {
         throw MetamodelException("Metamodel::SolveTransformed - Dimension of input (number of rows) is not identical with metamodel.");
     }
 
     mvCovariance = mvCovarianceInv.inverse();
 
-    rOutputCoordinates.Resize(dimOutput, rInputCoordinates.GetNumColumns());
-    rOutputCoordinatesMin.Resize(dimOutput, rInputCoordinates.GetNumColumns());
-    rOutputCoordinatesMax.Resize(dimOutput, rInputCoordinates.GetNumColumns());
+    rOutputCoordinates.Resize(dimOutput, rInputCoordinates.cols());
+    rOutputCoordinatesMin.Resize(dimOutput, rInputCoordinates.cols());
+    rOutputCoordinatesMax.Resize(dimOutput, rInputCoordinates.cols());
 
     Eigen::MatrixXd jacobian(numParameters,mSupportPoints.GetDimOutput());
 
-    for (int cntSample=0; cntSample<rInputCoordinates.GetNumColumns(); cntSample++)
+    for (int cntSample=0; cntSample<rInputCoordinates.cols(); cntSample++)
     {
         // set input of input layer
         memcpy(&pO[0],&(rInputCoordinates.data()[cntSample*dimInput]),dimInput*sizeof(double));

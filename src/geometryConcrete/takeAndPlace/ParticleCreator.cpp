@@ -46,7 +46,7 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 
 	std::cout << std::endl << "[Take-And-Place] Took " << WallTime::Get() - tStart << "s." << std::endl;
 
-	return particles.GetBlock(rSpheresBoundary.GetNumRows(), 0, particles.GetNumRows() - rSpheresBoundary.GetNumRows(), 4);
+	return particles.GetBlock(rSpheresBoundary.rows(), 0, particles.rows() - rSpheresBoundary.rows(), 4);
 }
 
 NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::PerformTakePhase(
@@ -55,7 +55,7 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 		const double rRelParticleVolume) const
 		{
 	// volume of particles per class
-	int numGradingClasses = rGradingCurve.GetNumRows();
+	int numGradingClasses = rGradingCurve.rows();
 
 	std::vector<double> Vsoll(numGradingClasses);
 	std::vector<double> Vist(numGradingClasses);
@@ -64,7 +64,7 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 	// calculating mass of the aggregates */
 	double volumeSumParticles = mVolume * rRelParticleVolume;
 
-	int numParticles = rSpheresBoundary.GetNumRows();
+	int numParticles = rSpheresBoundary.rows();
 	FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> particles(0, 4);
 	particles = rSpheresBoundary;
 
@@ -89,9 +89,9 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 		while (!finished)
 		{
 			// check size of table
-			if (numParticles == particles.GetNumRows())
+			if (numParticles == particles.rows())
 			{
-				particles.ConservativeResizeRows(particles.GetNumRows() + 1000);
+				particles.ConservativeResizeRows(particles.rows() + 1000);
 			}
 
 			// calculate radius and volume of the particle
@@ -128,20 +128,20 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleCreator::
 	particles.ConservativeResizeRows(numParticles);
 
 	//sort
-	std::sort(((double*) &particles.data()[3 * particles.GetNumRows()]),
-			((double*) &particles.data()[3 * particles.GetNumRows() + numParticles]), std::greater<double>());
+	std::sort(((double*) &particles.data()[3 * particles.rows()]),
+			((double*) &particles.data()[3 * particles.rows() + numParticles]), std::greater<double>());
 
     double volume = 0.;
     double volumeShrinkage = 0.;
 
-    for (int i = 0; i < particles.GetNumRows(); ++i)
+    for (int i = 0; i < particles.rows(); ++i)
     {
         volume += GetVolume(particles.GetValue(i, 3));
         particles(i, 3) = particles(i, 3) * (1 - mShrinkage);
         volumeShrinkage += GetVolume(particles.GetValue(i, 3));
     }
 
-    std::cout << "[Take-Phase: ] Created " << particles.GetNumRows() << " particles. ";
+    std::cout << "[Take-Phase: ] Created " << particles.rows() << " particles. ";
     std::cout << "[Take-Phase: ] Phi = " << volume / mVolume << ", phi_shrinkage = " << volumeShrinkage / mVolume << std::endl;
 
 	return particles;
@@ -154,7 +154,7 @@ void NuTo::ParticleCreator::PerformPlacePhase(
 		const double rAbsoluteDistance) const
 		{
 
-	int numParticles = rParticles.GetNumRows();
+	int numParticles = rParticles.rows();
 
 	std::vector<double> sizeClasses = GetSizeClasses(rParticles);
 
@@ -175,7 +175,7 @@ void NuTo::ParticleCreator::PerformPlacePhase(
 		{
 			// rescale to original sizes
 			double subBoxLength = sizeClasses[sizeClass] / (1. - mShrinkage);
-			nSubBox[count] = std::floor(mSpecimen.GetLength().GetValue(count) / subBoxLength);
+			nSubBox[count] = std::floor(mSpecimen.GetLength()[count] / subBoxLength);
 			lSubBox[count] = mSpecimen.GetLength()[count] / nSubBox[count];
 		}
 
@@ -273,7 +273,7 @@ void NuTo::ParticleCreator::PerformPlacePhase(
 void NuTo::ParticleCreator::CheckGradingCurve(
 		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradingCurve) const
 		{
-	int numGradingClasses = rGradingCurve.GetNumRows();
+	int numGradingClasses = rGradingCurve.rows();
 
 	if (numGradingClasses < 1)
 		throw Exception(
@@ -348,7 +348,7 @@ const std::vector<double> NuTo::ParticleCreator::GetSizeClasses(
 		{
 
 	const double sizeScaleFactor = 2;
-	double startDiameter = 2. * rParticles(rParticles.GetNumRows() - 1, 3);
+	double startDiameter = 2. * rParticles(rParticles.rows() - 1, 3);
 	double endDiameter = 2. * rParticles(0, 3);
 	double diameter = startDiameter;
 
@@ -377,7 +377,7 @@ const std::vector<double> NuTo::ParticleCreator::GetNumParticlesPerSizeClass(
 		const std::vector<double>& rSizes) const
 		{
 
-	unsigned int numParticles = rParticles.GetNumRows();
+	unsigned int numParticles = rParticles.rows();
 
 	std::vector<double> numParticlesPerSize(rSizes.size());
 

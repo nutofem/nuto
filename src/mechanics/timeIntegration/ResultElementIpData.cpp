@@ -21,11 +21,11 @@ void NuTo::ResultElementIpData::CalculateAndAddValues(const StructureBase& rStru
     assert(rTimeStepPlot>=0);
     FullMatrix<double,1,Eigen::Dynamic> ipValues(1,this->GetNumData(rStructure));
     this->CalculateValues(rStructure,ipValues);
-    if (rTimeStepPlot>=mData.GetNumRows())
+    if (rTimeStepPlot>=mData.rows())
     {
         this->Resize(rStructure, 2*(rTimeStepPlot+1),false);
     }
-    if (ipValues.GetNumColumns()!=mData.GetNumColumns())
+    if (ipValues.cols()!=mData.cols())
         throw MechanicsException(std::string(__PRETTY_FUNCTION__) +"\t: The allocated number of columns is wrong.");
     mData.SetRow(rTimeStepPlot,ipValues);
 }
@@ -42,9 +42,9 @@ void NuTo::ResultElementIpData::CalculateValues(const StructureBase& rStructure,
     const auto& ipDataResult = elementOutput.at(Element::eOutput::IP_DATA)->GetIpData().GetIpDataMap()[mIpDataType];
 
     // iterate over all ips
-    assert(ipDataResult.GetNumColumns() == element->GetNumIntegrationPoints());
-    unsigned int numComponents = ipDataResult.GetNumRows();
-    for (int iCol = 0; iCol < ipDataResult.GetNumColumns(); ++iCol)
+    assert(ipDataResult.cols() == element->GetNumIntegrationPoints());
+    unsigned int numComponents = ipDataResult.rows();
+    for (int iCol = 0; iCol < ipDataResult.cols(); ++iCol)
     {
         rValues.SetBlock(0, iCol * numComponents, ipDataResult.GetColumn(iCol).Trans());
     }

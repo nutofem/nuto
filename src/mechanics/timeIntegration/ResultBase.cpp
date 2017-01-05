@@ -33,7 +33,7 @@ void NuTo::ResultBase::WriteToFile(const std::string& rResultDir, int rTimeStepP
 {
 	boost::filesystem::path resultFileName(rResultDir);
 	resultFileName /= mIdent+".dat";
-	mData.GetBlock(0,0,rTimeStepPlot+1,mData.GetNumColumns()).WriteToFile(resultFileName.string(), "  ");
+	mData.GetBlock(0,0,rTimeStepPlot+1,mData.cols()).WriteToFile(resultFileName.string(), "  ");
 }
 
 void NuTo::ResultBase::Resize(const StructureBase& rStructure, int rNumTimeSteps, bool rInitValues)

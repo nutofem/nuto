@@ -41,20 +41,20 @@ NuTo::MinMaxTransformation::MinMaxTransformation(const MinMaxTransformation &rOt
 
 void NuTo::MinMaxTransformation::Build(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)
 {
-    if ( rCoordinates.GetNumColumns() == 0)
+    if ( rCoordinates.cols() == 0)
 	{
 	    throw MetamodelException("MinMaxTransformation::build - numberOfPoints must be greater than zero");
 	}
-    if ( rCoordinates.GetNumRows() <= mCoordinate)
+    if ( rCoordinates.rows() <= mCoordinate)
     {
         throw MetamodelException("MinMaxTransformation::build - coordinate to be transformed is out of range - check the dimension of your Matrix.");
     }
     const double *theptr = &rCoordinates.data()[mCoordinate];
 	mMin = *theptr;
 	mMax = *theptr;
-    for (int count=1; count<rCoordinates.GetNumColumns(); count++)
+    for (int count=1; count<rCoordinates.cols(); count++)
 	{
-        theptr+=rCoordinates.GetNumRows();
+        theptr+=rCoordinates.rows();
 		if (*theptr<mMin)
 			mMin = *theptr;
 		else
@@ -67,11 +67,11 @@ void NuTo::MinMaxTransformation::Build(const FullMatrix<double, Eigen::Dynamic, 
 
 void NuTo::MinMaxTransformation::TransformForward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const
 {
-    if ( rCoordinates.GetNumColumns() == 0)
+    if ( rCoordinates.cols() == 0)
     {
         throw MetamodelException("MinMaxTransformation::TransformForward - numberOfPoints must be greater than zero");
     }
-    if ( rCoordinates.GetNumRows() <= mCoordinate)
+    if ( rCoordinates.rows() <= mCoordinate)
     {
         throw MetamodelException("MinMaxTransformation::TransformForward - coordinate to be transformed is out of range - check the dimension of your Matrix.");
     }
@@ -89,7 +89,7 @@ void NuTo::MinMaxTransformation::TransformForward(FullMatrix<double, Eigen::Dyna
         throw MetamodelException("MinMaxTransformation::TransformForward - interval between min and max value of given points has size zero");
 	}
 
-    for (int count=0; count<rCoordinates.GetNumColumns(); count++,theptr+=rCoordinates.GetNumRows())
+    for (int count=0; count<rCoordinates.cols(); count++,theptr+=rCoordinates.rows())
 	{
 	    *theptr = mLb + (*theptr-mMin)/deltaValue*deltaBound;
 	}
@@ -97,11 +97,11 @@ void NuTo::MinMaxTransformation::TransformForward(FullMatrix<double, Eigen::Dyna
 
 void NuTo::MinMaxTransformation::TransformBackward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)  const
 {
-    if ( rCoordinates.GetNumColumns() == 0)
+    if ( rCoordinates.cols() == 0)
     {
         throw MetamodelException("MinMaxTransformation::TransformBackward - numberOfPoints must be greater than zero");
     }
-    if ( rCoordinates.GetNumRows() <= mCoordinate)
+    if ( rCoordinates.rows() <= mCoordinate)
     {
         throw MetamodelException("MinMaxTransformation::TransformBackward - coordinate to be transformed is out of range - check the dimension of your Matrix.");
     }
@@ -119,7 +119,7 @@ void NuTo::MinMaxTransformation::TransformBackward(FullMatrix<double, Eigen::Dyn
         throw MetamodelException("MinMaxTransformation::TransformBackward - interval between min and max value of given points has size zero");
 	}
 
-    for (int count=0; count<rCoordinates.GetNumColumns(); count++,theptr+=rCoordinates.GetNumRows())
+    for (int count=0; count<rCoordinates.cols(); count++,theptr+=rCoordinates.rows())
 	{
 	    *theptr = mMin + (*theptr-mLb)/deltaBound*deltaValue;
 	}

@@ -22,25 +22,25 @@ NuTo::LoadNodeHeatFlux1D::LoadNodeHeatFlux1D(int rLoadCase, const NodeBase* rNod
 
 // adds the load to global sub-vectors
 void NuTo::LoadNodeHeatFlux1D::AddLoadToGlobalSubVectors(int rLoadCase,
-        NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector,
-        NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const
+        Eigen::VectorXd& rActiceDofsLoadVector,
+        Eigen::VectorXd& rDependentDofsLoadVector)const
 {
     if (rLoadCase!=mLoadCase)
     	return;
-    assert(rActiceDofsLoadVector.GetNumColumns()==1);
-    assert(rDependentDofsLoadVector.GetNumColumns()==1);
+    assert(rActiceDofsLoadVector.cols()==1);
+    assert(rDependentDofsLoadVector.cols()==1);
     try
     {
         int dof = mNode->GetDof(Node::eDof::TEMPERATURE);
         assert(dof >= 0);
-        if (dof < rActiceDofsLoadVector.GetNumRows())
+        if (dof < rActiceDofsLoadVector.rows())
         {
             rActiceDofsLoadVector(dof,0) += this->mDirection * this->mValue;
         }
         else
         {
-            dof -= rActiceDofsLoadVector.GetNumRows();
-            assert(dof < rDependentDofsLoadVector.GetNumRows());
+            dof -= rActiceDofsLoadVector.rows();
+            assert(dof < rDependentDofsLoadVector.rows());
             rDependentDofsLoadVector(dof,0) += this->mDirection * this->mValue;
         }
     }

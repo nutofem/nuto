@@ -5,7 +5,7 @@
  *      Author: ttitsche
  */
 
-#include "math/FullVector.h"
+#include <eigen3/Eigen/Core>
 #include "geometryConcrete/InputReader.h"
 #include "base/Exception.h"
 #include <sstream>
@@ -19,7 +19,7 @@ void NuTo::InputReader::OpenFile(std::string rFileName)
 {
 	mFile.open(rFileName.c_str(), std::ios::in);
 	if (!mFile.is_open())
-		throw Exception("[NuTo::InputReader::OpenFile] File " "" + rFileName + "" " not found.");
+		throw Exception(__PRETTY_FUNCTION__, "File " "" + rFileName + "" " not found.");
 }
 
 void NuTo::InputReader::ReadFile()
@@ -52,11 +52,11 @@ void NuTo::InputReader::ReadSimulationParameters()
 void NuTo::InputReader::ReadBoundingBox()
 {
 	mTypeOfSpecimen = ReadNumber();
-	FullVector<double, Eigen::Dynamic> boxVector = ReadVector();
-	if (boxVector.GetNumRows() != 6)
+	Eigen::VectorXd boxVector = ReadVector();
+	if (boxVector.rows() != 6)
 	{
 		std::stringstream exceptionStream;
-		exceptionStream << "[NuTo::InputReader::ReadFile] boundingBox - " << boxVector.GetNumRows() << " components in input file, expected 6.";
+		exceptionStream << "[NuTo::InputReader::ReadFile] boundingBox - " << boxVector.rows() << " components in input file, expected 6.";
 		throw Exception(exceptionStream.str());
 	}
 	mBoundingBox = FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>(3, 2);
@@ -71,11 +71,11 @@ void NuTo::InputReader::ReadGradingCurve()
 	mGradingCurve = FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>(nSieves, 3);
 	for (int i = 0; i < nSieves; ++i)
 	{
-		FullVector<double, Eigen::Dynamic> gradingCurveVector = ReadVector();
-		if (gradingCurveVector.GetNumRows() != 3)
+		Eigen::VectorXd gradingCurveVector = ReadVector();
+		if (gradingCurveVector.rows() != 3)
 		{
 			std::stringstream exceptionStream;
-			exceptionStream << "[NuTo::InputReader::ReadVector] gradingCurve - " << gradingCurveVector.GetNumRows() << " components in input file, expected 3.";
+			exceptionStream << "[NuTo::InputReader::ReadVector] gradingCurve - " << gradingCurveVector.rows() << " components in input file, expected 3.";
 			throw Exception(exceptionStream.str());
 		}
 		mGradingCurve.SetRow(i, gradingCurveVector.transpose());
@@ -117,7 +117,7 @@ double NuTo::InputReader::ReadNumber()
 	return number;
 }
 
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::InputReader::ReadVector()
+Eigen::VectorXd NuTo::InputReader::ReadVector()
 {
 	SkipToNextData();
 
@@ -133,7 +133,7 @@ NuTo::FullVector<double, Eigen::Dynamic> NuTo::InputReader::ReadVector()
 		mFile.get(skipComma);
 	}
 
-	return readVector;
+	return Eigen::VectorXd::Map(readVector.data(), readVector.size());
 }
 
 std::string NuTo::InputReader::ReadString()

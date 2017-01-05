@@ -18,8 +18,8 @@
 #include "visualize/VisualizeUnstructuredGrid.h"
 
 NuTo::CollidableParticleSphere::CollidableParticleSphere(
-		FullVector<double, Eigen::Dynamic> rPosition,
-		FullVector<double, Eigen::Dynamic> rVelocity,
+		Eigen::VectorXd rPosition,
+		Eigen::VectorXd rVelocity,
 		double rRadius,
 		double rGrowthRate,
 		const int rIndex)
@@ -210,7 +210,7 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::CollidableParticl
 	return data;
 }
 
-const NuTo::FullVector<double, Eigen::Dynamic> NuTo::CollidableParticleSphere::GetPosition() const
+const Eigen::VectorXd NuTo::CollidableParticleSphere::GetPosition() const
 {
 	return mPosition;
 }

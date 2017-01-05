@@ -21,10 +21,10 @@ public:
     virtual double GetTimeDependentFactor(double rTime) override
     {
         //calculate the two corresponding time steps between which a linear interpolation is performed
-        if (mTimeDependencyMatrix.GetNumRows()!=0)
+        if (mTimeDependencyMatrix.rows()!=0)
         {
             int curStep(0);
-            while (mTimeDependencyMatrix(curStep,0)<rTime && curStep<mTimeDependencyMatrix.GetNumRows()-1)
+            while (mTimeDependencyMatrix(curStep,0)<rTime && curStep<mTimeDependencyMatrix.rows()-1)
                 curStep++;
             if (curStep==0)
                 curStep++;

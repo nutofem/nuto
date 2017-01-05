@@ -176,12 +176,12 @@ public:
     //! @brief creates a node with coordinates only
     //! @param rCoordinates coordinates of the node
     //! @return node number
-    int NodeCreate(NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+    int NodeCreate(Eigen::VectorXd rCoordinates);
 
     //! @brief creates a node with coordinates only
     //! @param rNodeNumber ... node number
     //! @param rCoordinates ...  node coordinates
-    void NodeCreate(int rNodeNumber, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+    void NodeCreate(int rNodeNumber, Eigen::VectorXd rCoordinates);
 
     //! @brief creates multiple nodes with coordinates only
     //! @param rCoordinates ...  nodal coordinates (column-wise storage of each nodal coordinate)
@@ -198,13 +198,13 @@ public:
     //! @param rDOFs ... space separated string containing the node dofs (e.g. displacements, rotations, temperatures)
     //! @param rCoordinates ...  node coordinates
     //! @return node number
-    int NodeCreateDOFs(std::string rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+    int NodeCreateDOFs(std::string rDOFs, Eigen::VectorXd rCoordinates);
 
     //! @brief creates a node with specific dofs
     //! @param node number
     //! @param rDOFs ... space separated string containing the node dofs (e.g. displacements, rotations, temperatures)
     //! @param rCoordinates ...  node coordinates
-    void NodeCreateDOFs(int rNodeNumber, std::string rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+    void NodeCreateDOFs(int rNodeNumber, std::string rDOFs, Eigen::VectorXd rCoordinates);
 
 #ifndef SWIG
     //! @brief creates a node with specific dofs at coordinate's origin
@@ -217,13 +217,13 @@ public:
     //! @param rDOFs ... set containing the node dof enums (e.g. displacements, rotations, temperatures)
     //! @param rCoordinates ...  node coordinates
     //! @return node number
-    int NodeCreateDOFs(std::set<Node::eDof> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+    int NodeCreateDOFs(std::set<Node::eDof> rDOFs, Eigen::VectorXd rCoordinates);
 
     //! @brief creates a node with specific dofs
     //! @param node number
     //! @param rDOFs ... set containing the node dof enums (e.g. displacements, rotations, temperatures)
     //! @param rCoordinates ...  node coordinates
-    void NodeCreateDOFs(int rNodeNumber, std::set<Node::eDof>rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+    void NodeCreateDOFs(int rNodeNumber, std::set<Node::eDof>rDOFs, Eigen::VectorXd rCoordinates);
 #endif //SWIG
 
     //! @brief deletes a node
@@ -265,7 +265,7 @@ public:
     //! @param rCoordinates coordinates of the node
     //! @param rDofs degrees of freedom of the node
     //! @return node number
-    int NodeCreate(NuTo::FullVector<double,Eigen::Dynamic> rCoordinates, std::set<Node::eDof> rDofs);
+    int NodeCreate(Eigen::VectorXd rCoordinates, std::set<Node::eDof> rDofs);
 
 
     //! @brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
@@ -530,13 +530,13 @@ public:
     //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
     //! @param rOld2NewNodePointer ptrMap showing the new and old node pointers
     //! @param rOld2NewElementPointer ptrMap showing the new and old element pointers
-    void CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>& rOffset, std::map<NodeBase*, NodeBase*>& rOld2NewNodePointer, std::map<ElementBase*, ElementBase*>& rOld2NewElementPointer);
+    void CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBase*, NodeBase*>& rOld2NewNodePointer, std::map<ElementBase*, ElementBase*>& rOld2NewElementPointer);
 #endif //SWIG
 
     //! @brief copy and move the structure
     //! most of the data is kept, but e.g. nonlocal data and
     //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
-    void CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>& rOffset);
+    void CopyAndTranslate(Eigen::VectorXd& rOffset);
 
     //! @brief ... Adds an element to an element group
     //! @param rIdentGroup identifier for the group
@@ -647,7 +647,7 @@ protected:
     //! @param rDOFs
     //! @param rCoordinates coordinates of the node
     //! @return node pointer
-    NodeBase* NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+    NodeBase* NodePtrCreate(std::set<Node::eDof> rDOFs, Eigen::VectorXd rCoordinates);
 
     //! @brief determines the dimensionality of a dof type
     //! @param rDof ... specific dof type

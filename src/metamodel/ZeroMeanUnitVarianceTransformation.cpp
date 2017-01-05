@@ -34,11 +34,11 @@ NuTo::ZeroMeanUnitVarianceTransformation::ZeroMeanUnitVarianceTransformation(con
 void NuTo::ZeroMeanUnitVarianceTransformation::Build(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)
 {
     // check input
-    if (rCoordinates.GetNumColumns() < 2)
+    if (rCoordinates.cols() < 2)
 	{
 	    throw MetamodelException("[NuTo::ZeroMeanUnitVarianceTransformation::Build] number of points must be greater than one - check the number of columns of your matrix.");
 	}
-    if (rCoordinates.GetNumRows() <= this->mCoordinate)
+    if (rCoordinates.rows() <= this->mCoordinate)
     {
         throw MetamodelException("[NuTo::ZeroMeanUnitVarianceTransformation::Build] coordinate to be transformed is out of range - check the number of rows of your Matrix.");
     }
@@ -46,23 +46,23 @@ void NuTo::ZeroMeanUnitVarianceTransformation::Build(const FullMatrix<double, Ei
     // calculate mean
     this->mMean = 0.0;
     const double *dataPtr = &rCoordinates.data()[mCoordinate];
-    for (int count=0; count<rCoordinates.GetNumColumns(); count++)
+    for (int count=0; count<rCoordinates.cols(); count++)
 	{
         this->mMean += *dataPtr;
-        dataPtr+=rCoordinates.GetNumRows();
+        dataPtr+=rCoordinates.rows();
 	}
-    this->mMean /= rCoordinates.GetNumColumns();
+    this->mMean /= rCoordinates.cols();
     
     // calculate variance
     double variance = 0.0;
     dataPtr = &rCoordinates.data()[mCoordinate];
-    for (int count=0; count<rCoordinates.GetNumColumns(); count++)
+    for (int count=0; count<rCoordinates.cols(); count++)
 	{
         double delta = *dataPtr - this->mMean;
         variance += delta * delta;
-        dataPtr+=rCoordinates.GetNumRows();
+        dataPtr+=rCoordinates.rows();
     }
-    variance /= rCoordinates.GetNumColumns() - 1;
+    variance /= rCoordinates.cols() - 1;
     this->mStandardDeviation = sqrt(variance);
     if(this->mStandardDeviation < 1e-12)
     {
@@ -74,21 +74,21 @@ void NuTo::ZeroMeanUnitVarianceTransformation::Build(const FullMatrix<double, Ei
 void NuTo::ZeroMeanUnitVarianceTransformation::TransformForward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const
 {
     // check input
-    if (rCoordinates.GetNumColumns() == 0)
+    if (rCoordinates.cols() == 0)
 	{
 	    throw MetamodelException("[NuTo::ZeroMeanUnitVarianceTransformation::TransformForward] number of points must be greater than zero - check the number of columns of your matrix.");
 	}
-    if (rCoordinates.GetNumRows() <= this->mCoordinate)
+    if (rCoordinates.rows() <= this->mCoordinate)
     {
         throw MetamodelException("[NuTo::ZeroMeanUnitVarianceTransformation::TransformForward] coordinate to be transformed is out of range - check the number of rows of your Matrix.");
     }
 
     // transform coordinates
     double *dataPtr =  &rCoordinates.data()[mCoordinate];
-    for (int count=0; count<rCoordinates.GetNumColumns(); count++)
+    for (int count=0; count<rCoordinates.cols(); count++)
 	{
 	    *dataPtr = (*dataPtr - this->mMean)/this->mStandardDeviation;
-        dataPtr+=rCoordinates.GetNumRows();
+        dataPtr+=rCoordinates.rows();
 	}
 }
 
@@ -96,21 +96,21 @@ void NuTo::ZeroMeanUnitVarianceTransformation::TransformForward(FullMatrix<doubl
 void NuTo::ZeroMeanUnitVarianceTransformation::TransformBackward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)  const
 {
     // check input
-    if (rCoordinates.GetNumColumns() == 0)
+    if (rCoordinates.cols() == 0)
 	{
 	    throw MetamodelException("[NuTo::ZeroMeanUnitVarianceTransformation::TransformBackward] number of points must be greater than zero - check the number of columns of your matrix.");
 	}
-    if (rCoordinates.GetNumRows() <= this->mCoordinate)
+    if (rCoordinates.rows() <= this->mCoordinate)
     {
         throw MetamodelException("[NuTo::ZeroMeanUnitVarianceTransformation::TransformBackward] coordinate to be transformed is out of range - check the number of rows of your Matrix.");
     }
 
     // transform coordinates
     double *dataPtr =  &rCoordinates.data()[mCoordinate];
-    for (int count=0; count<rCoordinates.GetNumColumns(); count++)
+    for (int count=0; count<rCoordinates.cols(); count++)
 	{
 	    *dataPtr = *dataPtr * this->mStandardDeviation + this->mMean;
-        dataPtr+=rCoordinates.GetNumRows();
+        dataPtr+=rCoordinates.rows();
 	}
 }
 

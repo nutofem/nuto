@@ -29,7 +29,7 @@ NuTo::Specimen::Specimen(const Specimen& rOther)
 const double NuTo::Specimen::GetVolume() const
 {
     if (mTypeOfSpecimen != 0 && mTypeOfSpecimen != 2)
-		throw Exception("[NuTo::ParticleCreator::GetSpecimenVolume] specimen type not implemented.");
+		throw Exception(__PRETTY_FUNCTION__, "specimen type not implemented.");
 
 	double Vspecimen;
 
@@ -45,8 +45,7 @@ const double NuTo::Specimen::GetVolume() const
 		double D = mLength[0];
 		if (std::abs(
 				static_cast<double>(mLength[1] - 1.5 * D)) > 1e-10)
-			throw Exception("[NuTo::ParticleCreator::GetSpecimenVolume] "
-					+ std::string("for the dog bone specimen, the y dimension should be 1.5 times the x dimension."));
+			throw Exception(__PRETTY_FUNCTION__, "for the dog bone specimen, the y dimension should be 1.5 times the x dimension.");
 		//subtract the circles
 		double radius = 0.725 * D;
 		double deltaAngle = 2. * 0.2 / 0.525;
@@ -56,37 +55,35 @@ const double NuTo::Specimen::GetVolume() const
 	case 2:
 		{
 		if (std::abs(static_cast<double>(mLength[0] - mLength[1])) > 1e-10)
-			throw Exception("[NuTo::ParticleCreator::GetSpecimenVolume] "
-					+ std::string("for the cylindern, the x and y dimension should be identical (Diameter)."));
+			throw Exception(__PRETTY_FUNCTION__, "for the cylindern, the x and y dimension should be identical (Diameter).");
 		double D = mLength[0];
 		if (D < 1e-10)
-			throw Exception("[NuTo::ParticleCreator::GetSpecimenVolume] "
-					+ std::string("for the cylindern, the x,y dimension should be positive (Diameter)."));
+			throw Exception(__PRETTY_FUNCTION__, "for the cylindern, the x,y dimension should be positive (Diameter).");
 
         Vspecimen = M_PI * 0.25 * D * D * mLength[2];
 	}
 		break;
 	default:
-		throw Exception("[NuTo::ParticleCreator::GetSpecimenVolume] specimen type not implemented.");
+		throw Exception(__PRETTY_FUNCTION__, "specimen type not implemented.");
 	}
 	if (Vspecimen < 1.0e-14)
 	{
-		throw Exception("[NuTo::StructureBase::CreateSpheresInBox] negative volume of the box.");
+		throw Exception(__PRETTY_FUNCTION__, "negative volume of the box.");
 	}
 	return Vspecimen;
 }
 
 void NuTo::Specimen::CalculateLength()
 {
-	mLength = FullVector<double, Eigen::Dynamic>(3);
+	mLength = Eigen::VectorXd(3);
 
 	int dimensionsToCheck = 3;
 
 	for (int i = 0; i < dimensionsToCheck; i++)
 	{
-		mLength.SetValue(i, mBoundingBox.GetValue(i, 1) - mBoundingBox.GetValue(i, 0));
+		mLength[i] = mBoundingBox.GetValue(i, 1) - mBoundingBox.GetValue(i, 0);
 		if (mLength[i] <= 0)
-			throw Exception("[NuTo::ParticleCreator::GetLBox] box dimensions should be not negative.");
+			throw Exception(__PRETTY_FUNCTION__, "box dimensions should be not negative.");
 	}
 }
 
@@ -95,7 +92,7 @@ const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& NuTo::Specimen::
 	return mBoundingBox;
 }
 
-const NuTo::FullVector<double, Eigen::Dynamic>& NuTo::Specimen::GetLength() const
+const Eigen::VectorXd& NuTo::Specimen::GetLength() const
 {
 	return mLength;
 }
@@ -117,8 +114,8 @@ const double NuTo::Specimen::GetLength(const int rIndex) const
 
 void NuTo::Specimen::CheckBoundingBox()
 {
-	if (mBoundingBox.GetNumRows() != 3 && mBoundingBox.GetNumColumns() != 2)
-		throw Exception("[NuTo::ParticleCreator::CheckBoundingBox] bounding box has to have the dimension [3,2]");
+	if (mBoundingBox.rows() != 3 && mBoundingBox.cols() != 2)
+		throw Exception(__PRETTY_FUNCTION__, "bounding box has to have the dimension [3,2]");
 
 	//	if (rBoundingBox.GetValue(0, 0) != 0. || rBoundingBox.GetValue(1, 0) != 0. || rBoundingBox.GetValue(2, 0) != 0.)
 	//		throw Exception("[NuTo::ParticleCreator::CheckBoundingBox] bounding box has to start at (0.,0.,0.)");

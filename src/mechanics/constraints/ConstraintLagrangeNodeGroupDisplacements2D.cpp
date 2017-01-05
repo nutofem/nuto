@@ -21,7 +21,7 @@
 NuTo::ConstraintLagrangeNodeGroupDisplacements2D::ConstraintLagrangeNodeGroupDisplacements2D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, NuTo::Constraint::eEquationSign rEquationSign, double rRHS) :
         ConstraintNodeGroup(rGroup), ConstraintLagrange(rEquationSign)
 {
-    if (rDirection.GetNumColumns()!=1 || rDirection.GetNumRows()!=2)
+    if (rDirection.cols()!=1 || rDirection.rows()!=2)
         throw MechanicsException("[NuTo::ConstraintLagrangeNodeGroupDisplacements2D::ConstraintLagrangeNodeGroupDisplacements2D] Dimension of the direction matrix must be equal to the dimension of the structure.");
 
     memcpy(mDirection,rDirection.data(),2*sizeof(double));
@@ -49,7 +49,7 @@ int NuTo::ConstraintLagrangeNodeGroupDisplacements2D::GetNumLagrangeMultipliers(
 
 //! @brief returns the Lagrange Multiplier
 //! first col Lagrange, second column slack variables
-void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::GetLagrangeMultiplier(FullVector<double,Eigen::Dynamic>& rLagrangeMultiplier)const
+void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::GetLagrangeMultiplier(Eigen::VectorXd& rLagrangeMultiplier)const
 {
     rLagrangeMultiplier.Resize(mGroup->GetNumMembers());
     for (unsigned int count=0; count<mLagrangeValue.size(); count++)
@@ -87,19 +87,19 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::SetGlobalDofs(int& rDOF)
 //! @brief write dof values to constraints (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::SetGlobalDofValues(const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues)
+void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::SetGlobalDofValues(const Eigen::VectorXd& rActiveDofValues, const Eigen::VectorXd& rDependentDofValues)
 {
-    assert(rActiveDofValues.GetNumColumns() == 1);
-    assert(rDependentDofValues.GetNumColumns() == 1);
+    assert(rActiveDofValues.cols() == 1);
+    assert(rDependentDofValues.cols() == 1);
 
     for (unsigned int count=0; count<mLagrangeDOF.size(); count++)
     {
         int dof = this->mLagrangeDOF[count];
         double value;
-        if (dof >= rActiveDofValues.GetNumRows())
+        if (dof >= rActiveDofValues.rows())
         {
-            dof -= rActiveDofValues.GetNumRows();
-            assert(dof < rDependentDofValues.GetNumRows());
+            dof -= rActiveDofValues.rows();
+            assert(dof < rDependentDofValues.rows());
             value = rDependentDofValues(dof,0);
         }
         else
@@ -113,19 +113,19 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::SetGlobalDofValues(const 
 //! @brief extract dof values from the constraints (based on global dof number)
 //! @param rActiveDofValues ... active dof values
 //! @param rDependentDofValues ... dependent dof values
-void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::GetGlobalDofValues(FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const
+void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::GetGlobalDofValues(Eigen::VectorXd& rActiveDofValues, Eigen::VectorXd& rDependentDofValues) const
 {
-    assert(rActiveDofValues.GetNumColumns() == 1);
-    assert(rDependentDofValues.GetNumColumns() == 1);
+    assert(rActiveDofValues.cols() == 1);
+    assert(rDependentDofValues.cols() == 1);
 
     for (unsigned int count=0; count<mLagrangeDOF.size(); count++)
     {
         int dof = this->mLagrangeDOF[count];
         double value = this->mLagrangeValue[count];
-        if (dof >= rActiveDofValues.GetNumRows())
+        if (dof >= rActiveDofValues.rows())
         {
-            dof -= rActiveDofValues.GetNumRows();
-            assert(dof < rDependentDofValues.GetNumRows());
+            dof -= rActiveDofValues.rows();
+            assert(dof < rDependentDofValues.rows());
             rDependentDofValues(dof,0) = value;
         }
         else
@@ -242,7 +242,7 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::CalculateCoefficientMatri
 
 //! @brief calculates the gradient of the internal potential
 //! for a mechanical problem, this corresponds to the internal force vector
-void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::CalculateGradientInternalPotential(NuTo::FullVector<double,Eigen::Dynamic>& rResult,
+void NuTo::ConstraintLagrangeNodeGroupDisplacements2D::CalculateGradientInternalPotential(Eigen::VectorXd& rResult,
         std::vector<int>& rGlobalDofs)const
 {
     int dof(3*mLagrangeDOF.size());

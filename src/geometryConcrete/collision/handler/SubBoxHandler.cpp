@@ -27,7 +27,7 @@ NuTo::SubBoxHandler::SubBoxHandler(
 				mDivisions(rDivisions)
 
 {
-	if (rDivisions.GetNumRows() != 3)
+	if (rDivisions.rows() != 3)
 		throw Exception("[NuTo::SubBoxHandler::SubBoxHandler] FullVector<int, 3> rDivisions!");
 
 	mSpheres = &rSpheres;
@@ -99,7 +99,7 @@ void NuTo::SubBoxHandler::BuildBox()
 	AddSpheresToBoxes();
 }
 
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::SubBoxHandler::GetSubBoxLength()
+Eigen::VectorXd NuTo::SubBoxHandler::GetSubBoxLength()
 {
 	FullVector<double, 3> subBoxLength = mSpecimen.GetLength();
 	subBoxLength[0] /= mDivisions[0];
@@ -180,7 +180,7 @@ std::vector<NuTo::CollidableWallBase*> NuTo::SubBoxHandler::GetXYWalls(unsigned 
 	return xyWalls;
 }
 
-std::vector<NuTo::FullVector<double, Eigen::Dynamic> > NuTo::SubBoxHandler::GetXYCorners(
+std::vector<Eigen::VectorXd > NuTo::SubBoxHandler::GetXYCorners(
 		std::vector<CollidableWallBase*> rWalls)
 {
 	double xMin = +INFINITY;
@@ -197,7 +197,7 @@ std::vector<NuTo::FullVector<double, Eigen::Dynamic> > NuTo::SubBoxHandler::GetX
 		yMax = std::max(yMax, static_cast<double>(wall->GetPosition()(1)));
 	}
 
-	std::vector<NuTo::FullVector<double, Eigen::Dynamic> > corners(4);
+	std::vector<Eigen::VectorXd > corners(4);
 
 	corners[0] = FullVector<double, 3>( { xMin, yMin, z });
 	corners[1] = FullVector<double, 3>( { xMin, yMax, z });
@@ -224,7 +224,7 @@ std::vector<int> NuTo::SubBoxHandler::GetNInside(CollidableWallCylinder* rWallCy
 	for (unsigned int i = 0; i < mSubBoxes.size(); ++i)
 	{
 		std::vector<CollidableWallBase*> xyWalls = GetXYWalls(i);
-		std::vector<NuTo::FullVector<double, Eigen::Dynamic> > xyCorners = GetXYCorners(xyWalls);
+		std::vector<Eigen::VectorXd > xyCorners = GetXYCorners(xyWalls);
 		nInside[i] = 0;
 		for (int c = 0; c < 4; ++c)
 		{

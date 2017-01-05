@@ -11,8 +11,8 @@
 #include "geometryConcrete/collision/collidables/CollidableParticleSphere.h"
 
 NuTo::CollidableWallPhysical::CollidableWallPhysical(
-		FullVector<double, Eigen::Dynamic> rPosition,
-		FullVector<double, Eigen::Dynamic> rDirection,
+		Eigen::VectorXd rPosition,
+		Eigen::VectorXd rDirection,
 		const int rIndex)
 		: NuTo::CollidableWallBase(rPosition, rDirection, rIndex)
 {

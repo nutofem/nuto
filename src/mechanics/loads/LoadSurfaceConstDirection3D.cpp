@@ -5,7 +5,7 @@
 
 //! @brief constructor
 NuTo::LoadSurfaceConstDirection3D::LoadSurfaceConstDirection3D(int rLoadCase, StructureBase* rStructure,int rElementGroupId,int rNodeGroupId,
-		const NuTo::FullVector<double,Eigen::Dynamic>& rLoadVector) :
+		const Eigen::VectorXd& rLoadVector) :
 		LoadSurfaceBase3D(rLoadCase,rStructure,rElementGroupId,rNodeGroupId)
 {
 	mLoadVector = rLoadVector;

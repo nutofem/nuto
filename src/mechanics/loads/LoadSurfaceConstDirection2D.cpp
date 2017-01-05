@@ -5,7 +5,7 @@
 
 //! @brief constructor
 NuTo::LoadSurfaceConstDirection2D::LoadSurfaceConstDirection2D(int rLoadCase, StructureBase* rStructure,int rElementGroupId,int rNodeGroupId,
-		const NuTo::FullVector<double,Eigen::Dynamic>& rLoadVector) :
+		const Eigen::VectorXd& rLoadVector) :
 		LoadSurfaceBase2D(rLoadCase,rStructure,rElementGroupId,rNodeGroupId)
 {
 	mLoadVector = rLoadVector;

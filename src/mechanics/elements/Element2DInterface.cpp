@@ -263,9 +263,9 @@ void NuTo::Element2DInterface::CalculateGlobalRowDofs(BlockFullVector<int>& rGlo
      {
          const InterpolationBase& interpolationType = mInterpolationType->Get(dof);
          const int numNodes = interpolationType.GetNumNodes();
-         FullVector<int, Eigen::Dynamic>& dofWiseGlobalRowDofs = rGlobalRowDofs[dof];
+         Eigen::Matrix<int, Eigen::Dynamic, 1>& dofWiseGlobalRowDofs = rGlobalRowDofs[dof];
 
-         dofWiseGlobalRowDofs.Resize(interpolationType.GetNumDofs());
+         dofWiseGlobalRowDofs.resize(interpolationType.GetNumDofs());
          dofWiseGlobalRowDofs.setZero();
          switch (dof)
          {

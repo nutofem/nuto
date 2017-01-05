@@ -189,7 +189,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
     assert(elementGroup != 0);
 
     NuTo::FullVector<int, Eigen::Dynamic> elementIndices = elementGroup->GetMemberIds();
-    int numElements = elementIndices.GetNumRows();
+    int numElements = elementIndices.rows();
 
     // calculate and store the 'size' of each element
     // = volume in 3D
@@ -294,7 +294,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
     assert(elementGroup != 0);
 
     NuTo::FullVector<int, Eigen::Dynamic> elementIndices = elementGroup->GetMemberIds();
-    int numElements = elementIndices.GetNumRows();
+    int numElements = elementIndices.rows();
 
 //    const InterpolationType* interpolationType = this->ElementGetElementPtr(elementIndices.at(0,0))->GetInterpolationType();
 
@@ -459,7 +459,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
                     nodeDofs.insert(dof);
             }
 
-            NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(tmpNode.coords);
+            Eigen::VectorXd nodeCoordinates(tmpNode.coords);
 
             if (nodeDofs.find(Node::eDof::COORDINATES) != nodeDofs.end())
             {
@@ -721,7 +721,7 @@ int NuTo::Structure::ElementsCreate(int rInterpolationTypeId,
 {
     std::vector<int> newElementIds;
     // go through the elements
-    for (int iNode = 0; iNode < rNodeNumbers.GetNumColumns(); ++iNode)
+    for (int iNode = 0; iNode < rNodeNumbers.cols(); ++iNode)
     {
         auto column = rNodeNumbers.GetColumn(iNode);
         std::vector<int> incidence(column.data(), column.data() + column.size());
@@ -1026,7 +1026,7 @@ std::pair<int,int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId,
         // loop over nodes of element
         for (int k = 0; k < nodeIds.size(); ++k)
         {
-            FullVector<double, Eigen::Dynamic> nodeCoordinates;
+            Eigen::VectorXd nodeCoordinates;
             NodeGetCoordinates(nodeIds(k,0), nodeCoordinates);
 
             int groupNodes = GroupCreate(NuTo::eGroupId::Nodes);

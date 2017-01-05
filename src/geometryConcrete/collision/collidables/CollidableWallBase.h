@@ -25,8 +25,8 @@ public:
 	//! @param rDirection ... normal vector pointing inside the domain, gets normalized.
 	//! @param rIndex ... name
 	CollidableWallBase(
-			NuTo::FullVector<double, Eigen::Dynamic> rPosition,
-			NuTo::FullVector<double, Eigen::Dynamic> rDirection,
+			Eigen::VectorXd rPosition,
+			Eigen::VectorXd rDirection,
 			const int rIndex);
 
 	//! @brief ... destructor, do nothing
@@ -87,10 +87,10 @@ public:
 	virtual bool IsInside(const CollidableParticleSphere& rSphere) const;
 
 	//! @brief getter for the wall direction
-	const NuTo::FullVector<double, Eigen::Dynamic> GetDirection() const;
+	const Eigen::VectorXd GetDirection() const;
 
 	//! @brief getter fot the wall position
-	const NuTo::FullVector<double, Eigen::Dynamic> GetPosition() const;
+	const Eigen::VectorXd GetPosition() const;
 
 protected:
 

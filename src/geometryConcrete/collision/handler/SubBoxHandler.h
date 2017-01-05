@@ -80,14 +80,14 @@ private:
 	void BuildSubBoxes();
 
 	//! @brief ...
-	std::vector<NuTo::FullVector<double,Eigen::Dynamic> > GetXYCorners(
+	std::vector<Eigen::VectorXd > GetXYCorners(
 			std::vector<CollidableWallBase*> rWalls);
 
 	//! @brief ...
 	unsigned int GetBoxIndex(int rX, int rY, int rZ);
 
 	//! @brief ...
-	NuTo::FullVector<double, Eigen::Dynamic> GetSubBoxLength();
+	Eigen::VectorXd GetSubBoxLength();
 
 	//! @brief ...
 	std::vector<int> GetNInside(CollidableWallCylinder* rWallCylinder);

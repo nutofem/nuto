@@ -147,7 +147,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetAngle(double rAngle)
 //!@param rAngle angle in deg
 void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetCrackOpening(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCrackOpening)
 {
-    if (rCrackOpening.GetNumRows()!=2 || rCrackOpening.GetNumColumns()!=1)
+    if (rCrackOpening.rows()!=2 || rCrackOpening.cols()!=1)
         throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::SetCrackOpening] crack opening should be a (2,1) matrix.");
     mCrackOpening[0] = rCrackOpening(0,0);
     mCrackOpening[1] = rCrackOpening(1,0);
@@ -685,7 +685,7 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::AddToConstraintMatrix(int& c
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const
+void NuTo::ConstraintLinearDisplacementsPeriodic2D::GetRHS(int& curConstraintEquation,Eigen::VectorXd& rRHS)const
 {
     Eigen::Matrix<double, 2, 1> LeftUpperCoordinates = mLeftUpperCorner->Get(Node::eDof::COORDINATES);
     Eigen::Matrix<double, 2, 1> LeftLowerCoordinates = mLeftLowerCorner->Get(Node::eDof::COORDINATES);

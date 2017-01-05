@@ -34,7 +34,7 @@ NuTo::eTimeIntegrationResultType NuTo::ResultGroupNodeForce::GetResultType() con
 }
 
 
-void NuTo::ResultGroupNodeForce::CalculateValues(const StructureBase& rStructure, const FullVector<double, Eigen::Dynamic>& rResidual_j, const FullVector<double, Eigen::Dynamic>& rResidual_k, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rResult) const
+void NuTo::ResultGroupNodeForce::CalculateValues(const StructureBase& rStructure, const Eigen::VectorXd& rResidual_j, const Eigen::VectorXd& rResidual_k, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rResult) const
 {
     const Group<NodeBase>& nodeGroup = *rStructure.GroupGetGroupPtr(mGroupNodeId)->AsGroupNode();
 

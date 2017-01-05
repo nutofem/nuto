@@ -28,7 +28,7 @@ class LoadSurfaceConstDirection2D : public LoadSurfaceBase2D
 public:
     //! @brief constructor
     LoadSurfaceConstDirection2D(int rLoadCase, StructureBase* rStructure, int rElementGroupId, int rNodeGroupId,
-    		const NuTo::FullVector<double,Eigen::Dynamic>& rLoadVector);
+    		const Eigen::VectorXd& rLoadVector);
 
     //! @brief calculates the surface load as a function of the coordinates and the normal (for pressure)
     //! @param rCoordinates ... global coordinates
@@ -50,6 +50,6 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
-    NuTo::FullVector<double,Eigen::Dynamic> mLoadVector;
+    Eigen::VectorXd mLoadVector;
 };
 }//namespace NuTo

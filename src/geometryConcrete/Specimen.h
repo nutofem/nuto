@@ -7,7 +7,8 @@
 
 #pragma once
 
-#include "math/FullVector_Def.h"
+#include <eigen3/Eigen/Core>
+#include "math/FullMatrix.h"
 
 namespace NuTo
 {
@@ -40,7 +41,7 @@ public:
 	const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& GetBoundingBox() const;
 
 	//! @brief ... getter for mLength
-	const NuTo::FullVector<double, Eigen::Dynamic>& GetLength() const;
+	const Eigen::VectorXd& GetLength() const;
 
 	//! @brief ... getter for specific element mLength[rIndex]
 	const double GetLength(const int rIndex) const;
@@ -53,7 +54,7 @@ public:
 
 private:
 	NuTo::FullMatrix<double,Eigen::Dynamic, Eigen::Dynamic> mBoundingBox;
-	NuTo::FullVector<double,Eigen::Dynamic> mLength;
+	Eigen::VectorXd mLength;
 	const eSpecimenType mTypeOfSpecimen;
 
 	//! @brief ... calculates the length of the bounding box

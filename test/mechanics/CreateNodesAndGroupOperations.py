@@ -1,6 +1,7 @@
 import nuto
 import sys
 import os
+import numpy as np
 
 #call of the test file, e.g.
 #/usr/local/bin/python ~/develop/nuto/test/math/Matrix.py Linux x86_64 ~/develop/nuto/test/math
@@ -30,10 +31,10 @@ error = False
 
 myStructure = nuto.Structure(2)
 #coordinates = nuto.FullMatrixDouble(2,1,(1,1))
-node1 = myStructure.NodeCreate(nuto.DoubleFullVector((1,1)))
-node2 = myStructure.NodeCreate(nuto.DoubleFullVector((1,0)))
-node3 = myStructure.NodeCreate(nuto.DoubleFullVector((0,0)))
-node4 = myStructure.NodeCreate(nuto.DoubleFullVector((0,1)))
+node1 = myStructure.NodeCreate(np.array([1.,1.]))
+node2 = myStructure.NodeCreate(np.array([1.,0.]))
+node3 = myStructure.NodeCreate(np.array([0.,0.]))
+node4 = myStructure.NodeCreate(np.array([0.,1.]))
 
 NodeGroup1 = myStructure.GroupCreate("Nodes")
 NodeGroup2 = myStructure.GroupCreate("Nodes")

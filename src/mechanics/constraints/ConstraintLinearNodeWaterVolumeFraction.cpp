@@ -47,7 +47,7 @@ double NuTo::ConstraintLinearNodeWaterVolumeFraction::GetRHS() const
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param rCurConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void NuTo::ConstraintLinearNodeWaterVolumeFraction::GetRHS(int& rCurConstraintEquation, NuTo::FullVector<double,Eigen::Dynamic>& rRHS) const
+void NuTo::ConstraintLinearNodeWaterVolumeFraction::GetRHS(int& rCurConstraintEquation, Eigen::VectorXd& rRHS) const
 {
     // add constraint to constrain matrix
     if (mNode->GetNum(Node::eDof::WATERVOLUMEFRACTION)!=1)

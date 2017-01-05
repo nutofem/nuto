@@ -51,8 +51,8 @@ void NuTo::NodeDof::SetGlobalDofsNumbers(std::map<Node::eDof, int>& rDofNumbers)
 void NuTo::NodeDof::SetGlobalDofValues(
         int rTimeDerivative,
         Node::eDof rDofType,
-        const FullVector<double, Eigen::Dynamic>& rActiveDofValues,
-        const FullVector<double, Eigen::Dynamic>& rDependentDofValues)
+        const Eigen::VectorXd& rActiveDofValues,
+        const Eigen::VectorXd& rDependentDofValues)
 {
     auto it = mDofValues.find(rDofType);
 
@@ -73,8 +73,8 @@ void NuTo::NodeDof::SetGlobalDofValues(
 void NuTo::NodeDof::GetGlobalDofValues(
         int rTimeDerivative,
         Node::eDof rDofType,
-        FullVector<double, Eigen::Dynamic>& rActiveDofValues,
-        FullVector<double, Eigen::Dynamic>& rDependentDofValues) const
+        Eigen::VectorXd& rActiveDofValues,
+        Eigen::VectorXd& rDependentDofValues) const
 {
     const auto& it = mDofValues.find(rDofType);
 
@@ -199,17 +199,17 @@ NuTo::NodeBase* NuTo::NodeDof::Clone() const
 
 double NuTo::NodeDof::GetDofValueFromVector(
         int rDofNumber,
-        const FullVector<double, Eigen::Dynamic>& rActiveDofValues,
-        const FullVector<double, Eigen::Dynamic>& rDependentDofValues) const
+        const Eigen::VectorXd& rActiveDofValues,
+        const Eigen::VectorXd& rDependentDofValues) const
 {
-    if (rDofNumber < rActiveDofValues.GetNumRows())
+    if (rDofNumber < rActiveDofValues.rows())
     {
         return rActiveDofValues(rDofNumber);
     }
     else
     {
-        rDofNumber -= rActiveDofValues.GetNumRows();
-        assert(rDofNumber < rDependentDofValues.GetNumRows());
+        rDofNumber -= rActiveDofValues.rows();
+        assert(rDofNumber < rDependentDofValues.rows());
         return rDependentDofValues(rDofNumber);
     }
 }
@@ -217,17 +217,17 @@ double NuTo::NodeDof::GetDofValueFromVector(
 void NuTo::NodeDof::WriteNodeValueToVector(
         int rDofNumber,
         double rDofValue,
-        FullVector<double, Eigen::Dynamic>& rActiveDofValues,
-        FullVector<double, Eigen::Dynamic>& rDependentDofValues) const
+        Eigen::VectorXd& rActiveDofValues,
+        Eigen::VectorXd& rDependentDofValues) const
 {
-    if (rDofNumber < rActiveDofValues.GetNumRows())
+    if (rDofNumber < rActiveDofValues.rows())
     {
         rActiveDofValues(rDofNumber) = rDofValue;
     }
     else
     {
-        rDofNumber -= rActiveDofValues.GetNumRows();
-        assert(rDofNumber < rDependentDofValues.GetNumRows());
+        rDofNumber -= rActiveDofValues.rows();
+        assert(rDofNumber < rDependentDofValues.rows());
         rDependentDofValues(rDofNumber) = rDofValue;
     }
 }

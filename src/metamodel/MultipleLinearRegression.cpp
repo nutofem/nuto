@@ -87,7 +87,7 @@ void NuTo::MultipleLinearRegression::GetRegressionCoefficientsConfidenceInterval
 	rRegressionCoefficients = this->mCoefficients;
 
 	// get number of degrees of freedom
-	int numDOF = this->mSupportPoints.GetNumSupportPoints() - this->mCoefficients.GetNumRows();
+	int numDOF = this->mSupportPoints.GetNumSupportPoints() - this->mCoefficients.rows();
 	if(numDOF < 1)
 	{
 		throw MetamodelException("[NuTo::MultipleLinearRegression::GetRegressionCoefficientsConfidenceIntervalsTransformed] number of support points must be larger than the number of regression coefficients.");
@@ -104,9 +104,9 @@ void NuTo::MultipleLinearRegression::GetRegressionCoefficientsConfidenceInterval
 		this->GetRegressionCoefficientsCovarianceMatrixTransformed(covarianceMatrix);
 
 		// calculate confidence intervals
-		rRegressionCoefficientsMin.Resize(this->mCoefficients.GetNumRows(),1);
-		rRegressionCoefficientsMax.Resize(this->mCoefficients.GetNumRows(),1);
-		for(int coefficient = 0; coefficient < this->mCoefficients.GetNumRows(); coefficient++)
+		rRegressionCoefficientsMin.Resize(this->mCoefficients.rows(),1);
+		rRegressionCoefficientsMax.Resize(this->mCoefficients.rows(),1);
+		for(int coefficient = 0; coefficient < this->mCoefficients.rows(); coefficient++)
 		{
 			double value = tValue * sqrt(covarianceMatrix.GetValue(coefficient, coefficient));
 			rRegressionCoefficientsMin.SetValue(coefficient, 0, this->mCoefficients.GetValue(coefficient, 0) - value);
@@ -170,7 +170,7 @@ void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsMeanResponse(const 
 void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsMeanResponseTransformed(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInput, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMean, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMin, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMax, double rAlpha) const
 {
 	// get number of degrees of freedom
-	int numDOF = this->mSupportPoints.GetNumSupportPoints() - this->mCoefficients.GetNumRows();
+	int numDOF = this->mSupportPoints.GetNumSupportPoints() - this->mCoefficients.rows();
 	if(numDOF < 1)
 	{
 		throw MetamodelException("[NuTo::MultipleLinearRegression::GetSupportPointsConfidenceIntervalsTransformed] number of support points must be larger than the number of regression coefficients.");
@@ -195,11 +195,11 @@ void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsMeanResponseTransfo
 
 		// calculate interval
 		const double* curInputData = rInput.data();
-		for(int sample = 0; sample < rInput.GetNumColumns(); sample++)
+		for(int sample = 0; sample < rInput.cols(); sample++)
 		{
 			const double* curCovarianceData = covarianceMatrix.data();
 			double sampleInterval = 0.0;
-			for(int col = 0; col < covarianceMatrix.GetNumColumns(); col++)
+			for(int col = 0; col < covarianceMatrix.cols(); col++)
 			{
 				double tmpValue = curCovarianceData[0];
 				for(int row = 0; row < this->mSupportPoints.GetDimInput(); row++)
@@ -214,7 +214,7 @@ void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsMeanResponseTransfo
 				{
 					sampleInterval += tmpValue * curInputData[col - 1];
 				}
-				curCovarianceData += covarianceMatrix.GetNumRows();
+				curCovarianceData += covarianceMatrix.rows();
 			}
 			sampleInterval = tValue * sqrt(sampleInterval);
 			rOutputMin(0,sample) -= sampleInterval;
@@ -281,7 +281,7 @@ void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsPrediction(const Fu
 void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsPredictionTransformed(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInput, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMean, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMin, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputMax, double rAlpha) const
 {
 	// get number of degrees of freedom
-	int numDOF = this->mSupportPoints.GetNumSupportPoints() - this->mCoefficients.GetNumRows();
+	int numDOF = this->mSupportPoints.GetNumSupportPoints() - this->mCoefficients.rows();
 	if(numDOF < 1)
 	{
 		throw MetamodelException("[NuTo::MultipleLinearRegression::GetSupportPointsConfidenceIntervalsTransformed] number of support points must be larger than the number of regression coefficients.");
@@ -309,11 +309,11 @@ void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsPredictionTransform
 
 		// calculate interval
 		const double* curInputData = rInput.data();
-		for(int sample = 0; sample < rInput.GetNumColumns(); sample++)
+		for(int sample = 0; sample < rInput.cols(); sample++)
 		{
 			const double* curCovarianceData = covarianceMatrix.data();
 			double sampleInterval = 0.0;
-			for(int col = 0; col < covarianceMatrix.GetNumColumns(); col++)
+			for(int col = 0; col < covarianceMatrix.cols(); col++)
 			{
 				double tmpValue = curCovarianceData[0];
 				for(int row = 0; row < this->mSupportPoints.GetDimInput(); row++)
@@ -328,7 +328,7 @@ void NuTo::MultipleLinearRegression::SolveConfidenceIntervalsPredictionTransform
 				{
 					sampleInterval += tmpValue * curInputData[col - 1];
 				}
-				curCovarianceData += covarianceMatrix.GetNumRows();
+				curCovarianceData += covarianceMatrix.rows();
 			}
 			sampleInterval = tValue * sqrt(mse + sampleInterval);
 			rOutputMin(0,sample) -= sampleInterval;
@@ -399,11 +399,11 @@ void NuTo::MultipleLinearRegression::BuildDerived()
 void NuTo::MultipleLinearRegression::SolveTransformed(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputCoordinates, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinates)const
 {
     int dimInput = this->mSupportPoints.GetDimInput();
-	if(rInputCoordinates.GetNumRows() != dimInput)
+	if(rInputCoordinates.rows() != dimInput)
 	{
         throw MetamodelException("[NuTo::MultipleLinearRegression::SolveTransformed] Dimension of input (number of rows) is not identical with metamodel.");
 	}
-	int numCoefficients = this->mCoefficients.GetNumRows();
+	int numCoefficients = this->mCoefficients.rows();
 	if(numCoefficients != dimInput + 1)
 	{
         throw MetamodelException("[NuTo::MultipleLinearRegression::SolveTransformed] invalid number of regression coefficients. Build model first.");
@@ -412,7 +412,7 @@ void NuTo::MultipleLinearRegression::SolveTransformed(const FullMatrix<double, E
 	try
 	{
 		// prepare output
-		int numSamples = rInputCoordinates.GetNumColumns();
+		int numSamples = rInputCoordinates.cols();
 		rOutputCoordinates.Resize(1, numSamples);
 
 		// calculate output
@@ -520,7 +520,7 @@ void NuTo::MultipleLinearRegression::GetSupportPointsResidualTransformed(NuTo::F
 double NuTo::MultipleLinearRegression::GetMeanSquareErrorTransformed() const
 {
 	// check data
-	if(this->mSupportPoints.GetNumSupportPoints() <= this->mCoefficients.GetNumRows())
+	if(this->mSupportPoints.GetNumSupportPoints() <= this->mCoefficients.rows())
 	{
 		throw MetamodelException("[NuTo::MultipleLinearRegression::GetMeanSquareErrorTransformed] number of support points must be larger than the number of regression coefficients.");
 	}
@@ -528,7 +528,7 @@ double NuTo::MultipleLinearRegression::GetMeanSquareErrorTransformed() const
 	try
 	{
 		// calculate mean square error
-		return this->GetErrorSumOfSquaresTransformed()/static_cast<double>(this->mSupportPoints.GetNumSupportPoints() - this->mCoefficients.GetNumRows());
+		return this->GetErrorSumOfSquaresTransformed()/static_cast<double>(this->mSupportPoints.GetNumSupportPoints() - this->mCoefficients.rows());
 	}
 	catch(NuTo::Exception& e)
 	{
@@ -551,7 +551,7 @@ double NuTo::MultipleLinearRegression::GetMeanSquareErrorTransformed() const
 double NuTo::MultipleLinearRegression::GetMeanSquareError() const
 {
 	// check data
-	if(this->mSupportPoints.GetNumSupportPoints() <= this->mCoefficients.GetNumRows())
+	if(this->mSupportPoints.GetNumSupportPoints() <= this->mCoefficients.rows())
 	{
 		throw MetamodelException("[NuTo::MultipleLinearRegression::GetMeanSquareError] number of support points must be larger than the number of regression coefficients.");
 	}
@@ -559,7 +559,7 @@ double NuTo::MultipleLinearRegression::GetMeanSquareError() const
 	try
 	{
 		// calculate mean square error
-		return this->GetErrorSumOfSquares()/static_cast<double>(this->mSupportPoints.GetNumSupportPoints() - this->mCoefficients.GetNumRows());
+		return this->GetErrorSumOfSquares()/static_cast<double>(this->mSupportPoints.GetNumSupportPoints() - this->mCoefficients.rows());
 	}
 	catch(NuTo::Exception& e)
 	{
@@ -626,7 +626,7 @@ double NuTo::MultipleLinearRegression::GetAdjustedCoefficientOfDetermination() c
 {
 	// check variables
 	double numSamples = this->mSupportPoints.GetNumSupportPoints();
-	double numUnknowns = this->mCoefficients.GetNumRows();
+	double numUnknowns = this->mCoefficients.rows();
 	if(numSamples - numUnknowns < 1)
 	{
 		throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::GetAdjustedCoefficientOfDetermination] number of support points must be larger than the number of regression coefficients.");
@@ -658,7 +658,7 @@ double NuTo::MultipleLinearRegression::GetAdjustedCoefficientOfDeterminationTran
 {
 	// check variables
 	double numSamples = this->mSupportPoints.GetNumSupportPoints();
-	double numUnknowns = this->mCoefficients.GetNumRows();
+	double numUnknowns = this->mCoefficients.rows();
 	if(numSamples - numUnknowns < 1)
 	{
 		throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::GetAdjustedCoefficientOfDeterminationTransformed] number of support points must be larger than the number of regression coefficients.");
@@ -962,7 +962,7 @@ double NuTo::MultipleLinearRegression::GetTotalSumOfSquares() const
 	{
 		throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::GetTotalSumOfSquares] dimension of output must be 1.");
 	}
-	if(this->mSupportPoints.GetDimInput() + 1 != this->mCoefficients.GetNumRows())
+	if(this->mSupportPoints.GetDimInput() + 1 != this->mCoefficients.rows())
 	{
 		throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::GetTotalSumOfSquares] invalid number of regression coefficients (build model first).");
 	}
@@ -1007,7 +1007,7 @@ double NuTo::MultipleLinearRegression::GetTotalSumOfSquaresTransformed() const
 	{
 		throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::GetTotalSumOfSquaresTransformed] dimension of output must be 1.");
 	}
-	if(this->mSupportPoints.GetDimInput() + 1 != this->mCoefficients.GetNumRows())
+	if(this->mSupportPoints.GetDimInput() + 1 != this->mCoefficients.rows())
 	{
 		throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::GetTotalSumOfSquaresTransformed] invalid number of regression coefficients (build model first).");
 	}
@@ -1053,7 +1053,7 @@ double NuTo::MultipleLinearRegression::GetErrorSumOfSquares() const
 	{
 		throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::GetErrorSumOfSquares] dimension of output must be 1.");
 	}
-	if(this->mSupportPoints.GetDimInput() + 1 != this->mCoefficients.GetNumRows())
+	if(this->mSupportPoints.GetDimInput() + 1 != this->mCoefficients.rows())
 	{
 		throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::GetErrorSumOfSquares] invalid number of regression coefficients (build model first).");
 	}
@@ -1097,7 +1097,7 @@ double NuTo::MultipleLinearRegression::GetErrorSumOfSquaresTransformed() const
 	{
 		throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::GetErrorSumOfSquaresTransformed] dimension of output must be 1.");
 	}
-	if(this->mSupportPoints.GetDimInput() + 1 != this->mCoefficients.GetNumRows())
+	if(this->mSupportPoints.GetDimInput() + 1 != this->mCoefficients.rows())
 	{
 		throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::GetErrorSumOfSquaresTransformed] invalid number of regression coefficients (build model first).");
 	}
@@ -1140,7 +1140,7 @@ double NuTo::MultipleLinearRegression::GetRegressionSumOfSquaresTransformed() co
 	{
 		throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::GetRegressionSumOfSquaresTransformed] dimension of output must be 1.");
 	}
-	if(this->mSupportPoints.GetDimInput() + 1 != this->mCoefficients.GetNumRows())
+	if(this->mSupportPoints.GetDimInput() + 1 != this->mCoefficients.rows())
 	{
 		throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::GetRegressionSumOfSquaresTransformed] invalid number of regression coefficients (build model first).");
 	}
@@ -1195,7 +1195,7 @@ double NuTo::MultipleLinearRegression::GetRegressionSumOfSquares() const
 	{
 		throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::GetRegressionSumOfSquares] dimension of output must be 1.");
 	}
-	if(this->mSupportPoints.GetDimInput() + 1 != this->mCoefficients.GetNumRows())
+	if(this->mSupportPoints.GetDimInput() + 1 != this->mCoefficients.rows())
 	{
 		throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::GetRegressionSumOfSquares] invalid number of regression coefficients (build model first).");
 	}
@@ -1343,8 +1343,8 @@ void NuTo::MultipleLinearRegression::TestRegressionCoefficientsSignificanceTrans
 			std::cout << "  alternative hypothesis H1: beta_i != 0.0" << std::endl;
 		}
 		// perform tests
-		rTestResult.resize(this->mCoefficients.GetNumRows());
-		for(int coefficient = 0; coefficient < this->mCoefficients.GetNumRows(); coefficient++)
+		rTestResult.resize(this->mCoefficients.rows());
+		for(int coefficient = 0; coefficient < this->mCoefficients.rows(); coefficient++)
 		{
 			double abs_t0 = std::abs(this->mCoefficients(coefficient,0)/sqrt(covarianceMatrix(coefficient,coefficient)));
 			if(abs_t0 > t)
@@ -1579,7 +1579,7 @@ bool NuTo::MultipleLinearRegression::TestGeneralRegressionSignificanceTransforme
 bool NuTo::MultipleLinearRegression::PerformGeneralRegressionSignificanceTest(const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rTestCoefficients, double rAlpha, bool rTransformedFlag) const
 {
 	// test input data
-	if(rTestCoefficients.GetNumColumns() != 1)
+	if(rTestCoefficients.cols() != 1)
 	{
 		throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::PerformGeneralRegressionSignificanceTest] number of columns in test coefficient matrix must be 1.");
 	}
@@ -1592,11 +1592,11 @@ bool NuTo::MultipleLinearRegression::PerformGeneralRegressionSignificanceTest(co
 	{
 		throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::PerformGeneralRegressionSignificanceTest] the number of output coordinates of the support points must be equal to one.");
 	}
-	if(this->mSupportPoints.GetDimInput() + 1 != this->mCoefficients.GetNumRows())
+	if(this->mSupportPoints.GetDimInput() + 1 != this->mCoefficients.rows())
 	{
 		throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::PerformGeneralRegressionSignificanceTest] invalid number of input coordinates of the support points. Build  model first.");
 	}
-	int numCoefficients = this->mCoefficients.GetNumRows();
+	int numCoefficients = this->mCoefficients.rows();
 	int numSamples = this->mSupportPoints.GetNumSupportPoints();
 	if(numSamples - numCoefficients < 1)
 	{
@@ -1606,10 +1606,10 @@ bool NuTo::MultipleLinearRegression::PerformGeneralRegressionSignificanceTest(co
 	// get test coefficients
 	std::vector<bool> coefficientFlag(numCoefficients, true);
 	int numTestCoefficients=0;
-	for(int coefficient = 0; coefficient < rTestCoefficients.GetNumRows(); coefficient++)
+	for(int coefficient = 0; coefficient < rTestCoefficients.rows(); coefficient++)
 	{
 		int testCoefficient = rTestCoefficients(coefficient,0);
-		if(testCoefficient < 1 || testCoefficient >= this->mCoefficients.GetNumRows())
+		if(testCoefficient < 1 || testCoefficient >= this->mCoefficients.rows())
 		{
 			throw NuTo::MetamodelException("[NuTo::MultipleLinearRegression::PerformGeneralRegressionSignificanceTest] invalid coefficient for significance test.");
 		}
@@ -1651,7 +1651,7 @@ bool NuTo::MultipleLinearRegression::PerformGeneralRegressionSignificanceTest(co
 		// extract reduced support point input
 		const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& fullSupportPointInput = this->mSupportPoints.GetTransformedSupportPointsInput();
 		NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> reducedSupportPointInput(0, this->mSupportPoints.GetNumSupportPoints());
-		for(int coefficient = 1; coefficient < this->mCoefficients.GetNumRows(); coefficient++)
+		for(int coefficient = 1; coefficient < this->mCoefficients.rows(); coefficient++)
 		{
 			if(coefficientFlag[coefficient] == true)
 			{
@@ -1660,7 +1660,7 @@ bool NuTo::MultipleLinearRegression::PerformGeneralRegressionSignificanceTest(co
 		}
 		// create reduced model
 		NuTo::MultipleLinearRegression reducedModel;
-		reducedModel.SetSupportPoints(reducedSupportPointInput.GetNumRows(), 1, reducedSupportPointInput, this->mSupportPoints.GetTransformedSupportPointsOutput());
+		reducedModel.SetSupportPoints(reducedSupportPointInput.rows(), 1, reducedSupportPointInput, this->mSupportPoints.GetTransformedSupportPointsOutput());
 		reducedModel.BuildTransformation();
 		reducedModel.Build();
 

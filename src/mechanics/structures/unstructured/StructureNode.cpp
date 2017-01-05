@@ -160,7 +160,7 @@ void NuTo::Structure::NodeInfo(int rVerboseLevel)const
 //! creates a node at coordinate's origin
 int NuTo::Structure::NodeCreate()
 {
-	NuTo::FullVector<double,Eigen::Dynamic> coordinates(this->GetDimension());
+	Eigen::VectorXd coordinates(this->GetDimension());
 	coordinates.setZero();
 
 	//return int identifier of the new node
@@ -168,7 +168,7 @@ int NuTo::Structure::NodeCreate()
 }
 
 //! creates a node
-int NuTo::Structure::NodeCreate(NuTo::FullVector<double,Eigen::Dynamic> rCoordinates)
+int NuTo::Structure::NodeCreate(Eigen::VectorXd rCoordinates)
 {
 
     //find unused integer id
@@ -186,7 +186,7 @@ int NuTo::Structure::NodeCreate(NuTo::FullVector<double,Eigen::Dynamic> rCoordin
 }
 
 //! creates a node with rDofs degrees of freedom
-int NuTo::Structure::NodeCreate(NuTo::FullVector<double,Eigen::Dynamic> rCoordinates, std::set<NuTo::Node::eDof> rDofs)
+int NuTo::Structure::NodeCreate(Eigen::VectorXd rCoordinates, std::set<NuTo::Node::eDof> rDofs)
 {
 
     //find unused integer id
@@ -264,10 +264,10 @@ int NuTo::Structure::GetDofDimension(Node::eDof rDof)
     throw MechanicsException(__PRETTY_FUNCTION__, "Dimensions of the required DOF " + Node::DofToString(rDof) + " not defined.");
 }
 
-NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates)
+NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, Eigen::VectorXd rCoordinates)
 {
 
-    if (rCoordinates.GetNumRows() != mDimension)
+    if (rCoordinates.rows() != mDimension)
         throw MechanicsException(__PRETTY_FUNCTION__, "Dimension of the coordinate vector does not fit the dimension of the structure");
 
     NodeBase* nodePtr = nullptr;
@@ -298,7 +298,7 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
     return nodePtr;
 }
 
-void NuTo::Structure::NodeCreate(int rNodeNumber, NuTo::FullVector<double,Eigen::Dynamic> rCoordinates)
+void NuTo::Structure::NodeCreate(int rNodeNumber, Eigen::VectorXd rCoordinates)
 {
 	// check node number
 	boost::ptr_map<int,NodeBase>::iterator it = this->mNodeMap.find(rNodeNumber);
@@ -325,14 +325,14 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, NuTo::FullVector<double,Eigen:
 //! @return node number
 int NuTo::Structure::NodeCreateDOFs(std::string rDOFs)
 {
-    NuTo::FullVector<double,Eigen::Dynamic> coordinates(this->GetDimension());
+    Eigen::VectorXd coordinates(this->GetDimension());
     coordinates.setZero();
 
     //return int identifier of the new node
     return NodeCreateDOFs(rDOFs, coordinates);
 }
 
-int NuTo::Structure::NodeCreateDOFs(std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic> rCoordinates)
+int NuTo::Structure::NodeCreateDOFs(std::string rDOFs, Eigen::VectorXd rCoordinates)
 {
     //find unused integer id
     int id(mNodeMap.size());
@@ -352,7 +352,7 @@ int NuTo::Structure::NodeCreateDOFs(std::string rDOFs, NuTo::FullVector<double,E
 //! @param node number
 //! @param rDOFs ... space separated string containing the node dofs (e.g. displacements, rotations, temperatures)
 //! @param rCoordinates ...  node coordinates
-void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic> rCoordinates)
+void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::string rDOFs, Eigen::VectorXd rCoordinates)
 {
 
     // check node number
@@ -401,7 +401,7 @@ void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::string rDOFs, NuTo::F
 //! @return node number
 int NuTo::Structure::NodeCreateDOFs(std::set<NuTo::Node::eDof> rDOFs)
 {
-    NuTo::FullVector<double,Eigen::Dynamic> coordinates(this->GetDimension());
+    Eigen::VectorXd coordinates(this->GetDimension());
     coordinates.setZero();
 
     //return int identifier of the new node
@@ -413,7 +413,7 @@ int NuTo::Structure::NodeCreateDOFs(std::set<NuTo::Node::eDof> rDOFs)
 //! @param rDOFs ... set containing the node dof enums (e.g. displacements, rotations, temperatures)
 //! @param rCoordinates ...  node coordinates
 //! @return node number
-int NuTo::Structure::NodeCreateDOFs(std::set<NuTo::Node::eDof> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates)
+int NuTo::Structure::NodeCreateDOFs(std::set<NuTo::Node::eDof> rDOFs, Eigen::VectorXd rCoordinates)
 {
     //find unused integer id
     int id(mNodeMap.size());
@@ -434,7 +434,7 @@ int NuTo::Structure::NodeCreateDOFs(std::set<NuTo::Node::eDof> rDOFs, NuTo::Full
 //! @param node number
 //! @param rDOFs ... set containing the node dof enums (e.g. displacements, rotations, temperatures)
 //! @param rCoordinates ...  node coordinates
-void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::set<NuTo::Node::eDof> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates)
+void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::set<NuTo::Node::eDof> rDOFs, Eigen::VectorXd rCoordinates)
 {
     // check node number
     boost::ptr_map<int,NodeBase>::iterator it = this->mNodeMap.find(rNodeNumber);
@@ -462,9 +462,9 @@ NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::NodesCreate(NuTo::FullMatr
 {
 	std::vector<int> idVec;
 	/// go through the nodes
-	for(size_t i=0 ; i<(size_t)rCoordinates.GetNumColumns(); ++i)
+	for(size_t i=0 ; i<(size_t)rCoordinates.cols(); ++i)
 	{
-		NuTo::FullVector<double,Eigen::Dynamic> coordinate(rCoordinates.GetColumn(i));
+		Eigen::VectorXd coordinate(rCoordinates.GetColumn(i));
 		idVec.push_back(NodeCreate(coordinate));
 	}
 
@@ -715,10 +715,10 @@ void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockF
 
     for (auto dofType : DofTypesGetActive())
     {
-        if (rActiveDofValues[dofType].GetNumRows() != GetNumActiveDofs(dofType))
+        if (rActiveDofValues[dofType].rows() != GetNumActiveDofs(dofType))
             throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] invalid dimension of active dof vector for " + Node::DofToString(dofType));
 
-        if (rDependentDofValues[dofType].GetNumRows() != GetNumDependentDofs(dofType))
+        if (rDependentDofValues[dofType].rows() != GetNumDependentDofs(dofType))
             throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] invalid dimension of dependent dof vector for " + Node::DofToString(dofType));
 
         // write dof values to the nodes

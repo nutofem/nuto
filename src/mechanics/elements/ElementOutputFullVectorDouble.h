@@ -32,12 +32,12 @@ public:
     	return new ElementOutputFullVectorDouble(*this);
     }
 
-    NuTo::FullVector<double,Eigen::Dynamic>& GetFullVectorDouble() override
+    Eigen::VectorXd& GetFullVectorDouble() override
 	{
         return mVector;
 	}
 private:
-    FullVector<double,Eigen::Dynamic> mVector;
+    Eigen::VectorXd mVector;
 };
 }
 #ifdef ENABLE_SERIALIZATION

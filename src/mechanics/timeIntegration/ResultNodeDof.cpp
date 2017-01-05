@@ -23,11 +23,11 @@ void NuTo::ResultNodeDof::CalculateAndAddValues(const StructureBase& rStructure,
 	assert(rTimeStepPlot>=0);
 	FullMatrix<double,1,Eigen::Dynamic> dofValues(1,this->GetNumData(rStructure));
 	this->CalculateValues(rStructure,dofValues);
-	if (rTimeStepPlot>=mData.GetNumRows())
+	if (rTimeStepPlot>=mData.rows())
 	{
 		this->Resize(rStructure, 2*(rTimeStepPlot+1),false);
 	}
-	if (dofValues.GetNumColumns()!=mData.GetNumColumns())
+	if (dofValues.cols()!=mData.cols())
 		throw MechanicsException("[NuTo::ResultNodeDof::CalculateAndAddValues] the allocated number of columns is wrong.");
 	mData.SetRow(rTimeStepPlot,dofValues);
 }

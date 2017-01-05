@@ -125,7 +125,7 @@ public:
 
     //!@brief extrapolate static data except of mPrevSigma and mPrevStrain
     //!@brief mPrevSigma and mPrevStrain should be calculated after finding the equilibrium with the extrapolated static data
-    void FatigueExtrapolateStaticData(NuTo::FullVector<double,Eigen::Dynamic> rNumber)
+    void FatigueExtrapolateStaticData(Eigen::VectorXd rNumber)
 	{
         EngineeringStrain3D DeltaEpsilonP, DeltaEpsilonVp;
         double DeltaKappaInelastic, DeltaOmegaCompr, DeltaPrevHardening;

@@ -541,7 +541,7 @@ NuTo::BlockFullVector<double> NuTo::StructureBase::ConstraintGetRHSBeforeGaussEl
 
         int numLinearConstraints = ConstraintGetNumLinearConstraints(dof);
 
-        rhsBeforeGaussElimination[dof].Resize(numLinearConstraints);
+        rhsBeforeGaussElimination[dof].resize(numLinearConstraints);
 
         //calculate the rhs vector of the constraint equations before the Gauss elimination
         int curConstraintEquations = 0;
@@ -582,14 +582,14 @@ void NuTo::StructureBase::ConstraintUpdateRHSAfterGaussElimination()
 {
     if (mNodeNumberingRequired)
     {
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] build global numbering first");
+        throw MechanicsException(__PRETTY_FUNCTION__, "build global numbering first");
     }
 
     BlockFullVector<double> rhsBeforeGaussElimination = ConstraintGetRHSBeforeGaussElimination();
 
     if (mConstraintMappingRHS.GetNumColumns()!=rhsBeforeGaussElimination.GetNumRows())
     {
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] here is something wrong in the implementation.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "here is something wrong in the implementation.");
     }
 
     //calculate the rhs vector of the constraint equations after the Gauss elimination using the mapping matrix
@@ -605,7 +605,7 @@ void NuTo::StructureBase::ConstraintSetRHS(int rConstraintEquation, double rRHS)
     auto  it = mConstraintMap.find(rConstraintEquation);
 
     if (it == mConstraintMap.end())
-        throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] Constraint equation does not exist.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "Constraint equation does not exist.");
 
     it->second->SetRHS(rRHS);
 
@@ -621,7 +621,7 @@ double NuTo::StructureBase::ConstraintGetRHS(int rConstraintEquation)const
     boost::ptr_map<int,ConstraintBase>::const_iterator it = mConstraintMap.find(rConstraintEquation);
     if (it==mConstraintMap.end())
     {
-    	throw MechanicsException("[NuTo::StructureBase::ConstraintSetRHS] Constraint equation does not exist.");
+    	throw MechanicsException(__PRETTY_FUNCTION__, "Constraint equation does not exist.");
     }
     return it->second->GetRHS();
 }
@@ -674,7 +674,7 @@ void NuTo::StructureBase::ConstraintLinearEquationCreate(int rConstraint, int rN
     // check if constraint equation already exists
     if(this->mConstraintMap.find(rConstraint) != this->mConstraintMap.end())
     {
-        throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationCreate] constraint equation already exist.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "constraint equation already exist.");
     }
 
     try
@@ -959,7 +959,7 @@ void NuTo::StructureBase::ConstraintLinearEquationAddTerm(int rConstraint, int r
     boost::ptr_map<int,ConstraintBase>::iterator it = this->mConstraintMap.find(rConstraint);
     if(it == this->mConstraintMap.end())
     {
-        throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationCreate] constraint equation does not exist.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "constraint equation does not exist.");
     }
     try
     {
@@ -991,7 +991,7 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
     {
         if(this->mDimension < 2)
         {
-            throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationGetDofInformationFromString] y-displacement dofs are only available in 2D or 3D structures.");
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "y-displacement dofs are only available in 2D or 3D structures.");
         }
         rDofType = NuTo::Node::eDof::DISPLACEMENTS;
         rDofComponent = 1;
@@ -1000,7 +1000,7 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
     {
         if(this->mDimension < 3)
         {
-            throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationGetDofInformationFromString] z-displacement dofs are only available in 3D structures.");
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "z-displacement dofs are only available in 3D structures.");
         }
         rDofType = NuTo::Node::eDof::DISPLACEMENTS;
         rDofComponent = 2;
@@ -1009,7 +1009,7 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
     {
         if(this->mDimension < 3)
         {
-            throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationGetDofInformationFromString] x-rotation dofs are only available in 3D structures.");
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "x-rotation dofs are only available in 3D structures.");
         }
         rDofType = NuTo::Node::eDof::ROTATIONS;
         rDofComponent = 0;
@@ -1018,7 +1018,7 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
     {
         if(this->mDimension < 3)
         {
-            throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationGetDofInformationFromString] y-rotation dofs are only available in 3D structures.");
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "y-rotation dofs are only available in 3D structures.");
         }
         rDofType = NuTo::Node::eDof::ROTATIONS;
         rDofComponent = 1;
@@ -1036,7 +1036,7 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
         }
         else
         {
-            throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationGetDofInformationFromString] z-rotation dofs are only available in 2D and 3D structures.");
+            throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "z-rotation dofs are only available in 2D and 3D structures.");
         }
     }
     else if(dofString == "TEMPERATURE")
@@ -1051,7 +1051,7 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
     }
     else
     {
-        throw NuTo::MechanicsException("[NuTo::StructureBase::ConstraintEquationGetDofInformationFromString] invalid dof string.");
+        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "invalid dof string.");
     }
 }
 //! @brief ... set periodic boundary conditions according to a prescibed angle of a localization zone
@@ -1118,7 +1118,7 @@ int NuTo::StructureBase::ConstraintLinearDisplacementsSetPeriodic2D(double rAngl
     try
     {
         // create new constraint equation term
-        if (rStrain.GetNumRows()!=3 || rStrain.GetNumColumns()!=1)
+        if (rStrain.rows()!=3 || rStrain.cols()!=1)
             throw MechanicsException("[NuTo::ConstraintNodeDisplacementsPeriodic2D::ConstraintNodeDisplacementsPeriodic2D] the strain is matrix (3,1) with (e_xx, e_yy, gamma_xy)");
 
         EngineeringStrain<2> engineeringStrain;

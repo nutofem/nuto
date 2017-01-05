@@ -54,19 +54,19 @@ public:
     //! @brief get number of support points
     inline int GetNumSupportPoints()const
 	{
-        return mSPOrigInput.GetNumColumns();
+        return mSPOrigInput.cols();
 	}
 
     //! @brief get input dimension of support points (input)
     inline int GetDimInput()const                              
 	{
-        return mSPOrigInput.GetNumRows();
+        return mSPOrigInput.rows();
 	}
 
     //! @brief get output dimension of support points (input)
     inline int GetDimOutput()const
 	{
-        return mSPOrigOutput.GetNumRows();
+        return mSPOrigOutput.rows();
 	}
 
     //! @brief returns the input of the support points in a matrix

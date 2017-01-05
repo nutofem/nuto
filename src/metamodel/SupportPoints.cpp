@@ -83,7 +83,7 @@ void NuTo::SupportPoints::AppendTransformationOutput(Transformation* rTransforma
 
 void NuTo::SupportPoints::SetSupportPoints(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSPOrigInput, const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSPOrigOutput)
 {
-    if (rSPOrigInput.GetNumColumns()!=rSPOrigOutput.GetNumColumns())
+    if (rSPOrigInput.cols()!=rSPOrigOutput.cols())
     {
         throw MetamodelException("[NuTo::SupportPoints::SetSupportPoints] Number of columns for input and output must be identical (=number of samples).");   
     }
@@ -279,8 +279,8 @@ void NuTo::SupportPoints::GetPearsonCorrelationMatrixConfidenceIntervalsTransfor
  */
 void NuTo::SupportPoints::CalculateMeanValues(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rData, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMean) const
 {
-	int numRows = rData.GetNumRows();
-	int numSamples = rData.GetNumColumns();
+	int numRows = rData.rows();
+	int numSamples = rData.cols();
 	if(numSamples < 1)
 	{
 		throw MetamodelException("[NuTo::SupportPoints::CalculateMeanValues] number of samples must be larger than zero.");
@@ -314,8 +314,8 @@ void NuTo::SupportPoints::CalculateMeanValues(const FullMatrix<double, Eigen::Dy
  */
 void NuTo::SupportPoints::CalculateVariance(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rData, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rVariance) const
 {
-	int numRows = rData.GetNumRows();
-	int numSamples = rData.GetNumColumns();
+	int numRows = rData.rows();
+	int numSamples = rData.cols();
 	if(numSamples < 2)
 	{
 		throw MetamodelException("[NuTo::SupportPoints::CalculateVariance] number of samples must be larger than one.");
@@ -368,10 +368,10 @@ void NuTo::SupportPoints::CalculateVariance(const FullMatrix<double, Eigen::Dyna
 void NuTo::SupportPoints::CalculateCovarianceMatrix(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputData, const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputData, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCovarianceMatrix) const
 {
 	// get data
-	int numInputData = rInputData.GetNumRows();
-	int numOutputData = rOutputData.GetNumRows();
-	int numSamples = rInputData.GetNumColumns();
-	if(numSamples != rOutputData.GetNumColumns())
+	int numInputData = rInputData.rows();
+	int numOutputData = rOutputData.rows();
+	int numSamples = rInputData.cols();
+	if(numSamples != rOutputData.cols())
 	{
 		throw MetamodelException("[NuTo::SupportPoints::CalculateCovarianceMatrix] number of samples in input data and number of samples in output data must be equal.");
 	}
@@ -484,10 +484,10 @@ void NuTo::SupportPoints::CalculatePearsonCorrelationMatrix(const FullMatrix<dou
 	this->CalculateCovarianceMatrix(rInputData, rOutputData, rCorrelationMatrix);
 
 	// calculate standard deviation of diagonal values
-	int dim = rCorrelationMatrix.GetNumRows();
+	int dim = rCorrelationMatrix.rows();
 	std::vector<double> stddev(dim);
-	assert(dim == rCorrelationMatrix.GetNumColumns());
-	assert(dim == rInputData.GetNumRows() + rOutputData.GetNumRows());
+	assert(dim == rCorrelationMatrix.cols());
+	assert(dim == rInputData.rows() + rOutputData.rows());
 	for(int dimCount = 0; dimCount < dim; dimCount++)
 	{
 		assert(rCorrelationMatrix.GetValue(dimCount,dimCount) > 0.0);

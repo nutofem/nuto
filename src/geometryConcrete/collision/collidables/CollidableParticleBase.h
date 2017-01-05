@@ -24,8 +24,8 @@ public:
 	//! @param rVelocity ... velocity
 	//! @param rIndex ... index, multiple particles with same index are allowed
 	CollidableParticleBase(
-			FullVector<double,Eigen::Dynamic> rPosition,
-			FullVector<double,Eigen::Dynamic> rVelocity,
+			Eigen::VectorXd rPosition,
+			Eigen::VectorXd rVelocity,
 			const int rIndex);
 
 	//! @brief ... getter for the particle volume

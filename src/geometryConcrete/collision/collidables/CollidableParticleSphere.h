@@ -38,8 +38,8 @@ public:
 	//! @param rGrowthRate ... sphere growth rate > 0
 	//! @param rIndex ... name
 	CollidableParticleSphere(
-			NuTo::FullVector<double, Eigen::Dynamic> rPosition,
-			NuTo::FullVector<double, Eigen::Dynamic> rVelocity,
+			Eigen::VectorXd rPosition,
+			Eigen::VectorXd rVelocity,
 			double rRadius,
 			double rGrowthRate,
 			const int rIndex);
@@ -109,7 +109,7 @@ public:
 	void SetGrowthRate(const double rGrowthRateFactor, const double rTime);
 
 	//! @brief ... getter for sphere position
-	const NuTo::FullVector<double, Eigen::Dynamic> GetPosition() const;
+	const Eigen::VectorXd GetPosition() const;
 
 	//! @brief ... getter for sphere radius
 	const double GetRadius() const;

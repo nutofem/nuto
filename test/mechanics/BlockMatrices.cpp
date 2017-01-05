@@ -161,9 +161,6 @@ void BlockFullVectorTest()
         std::cout << imported.Export();
         throw NuTo::MechanicsException("[BVT:Import] failed.");
     }
-
-
-
 }
 
 

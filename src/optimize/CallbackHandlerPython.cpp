@@ -50,14 +50,14 @@ namespace NuTo
     {    
         //printf("CallbackHandlerPython::SetParameterscall SetParameters routine %p\n",mCallbackSetParameters);
 		
-		if (rParameters.GetNumColumns()!=1)
+		if (rParameters.cols()!=1)
             throw(OptimizeException("[CallbackHandlerPython::SetParameters] Number of columns of Parameter matrix not equal to one."));
 
         // create python tuple as wrapper - this is not the optimal solution, better to wrap the FullMatrix directly
         PyObject *pyList, *item;
 
-		pyList = PyList_New(rParameters.GetNumRows());
-		for (int i=0; i<rParameters.GetNumRows(); i++) 
+		pyList = PyList_New(rParameters.rows());
+		for (int i=0; i<rParameters.rows(); i++) 
 		{
 			item = PyFloat_FromDouble(rParameters(i,0));
 			PyList_SET_ITEM(pyList, i, item);
@@ -112,7 +112,7 @@ namespace NuTo
         rGradient.Resize(PyList_GET_SIZE(result),1);
 
         // write the lsit back
-		for (int i=0; i<rGradient.GetNumRows(); i++) 
+		for (int i=0; i<rGradient.rows(); i++) 
 		{
 			rGradient(i,0) = PyFloat_AsDouble(PyList_GET_ITEM(result, i));
 		}

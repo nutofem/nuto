@@ -113,8 +113,8 @@ public:
 
     inline int GetNumParameters()
     {
-        if(mvParameters.GetNumRows())
-        	return mvParameters.GetNumRows();
+        if(mvParameters.rows())
+        	return mvParameters.rows();
         else
         	return mParameters.size();
     }
@@ -145,7 +145,7 @@ public:
     //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
 	virtual void InfoBase()const
 	{
-		std::cout << "Number of parameters             :" << mvParameters.GetNumRows() << std::endl;
+		std::cout << "Number of parameters             :" << mvParameters.rows() << std::endl;
 		std::cout << "Number of equality constraints   :" << mvEqualConstraints.size() << std::endl;
 		std::cout << "Number of inequality constraints :" << mvInEqualConstraints.size() << std::endl;
 		std::cout << "Build                            :" << isBuild << std::endl;

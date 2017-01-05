@@ -218,12 +218,12 @@ void NuTo::StructureBase::ConstitutiveLawSetParameterDouble(int rIdent, const st
     ConstitutiveLawSetParameterDouble(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier), rValue);
 }
 
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGetParameterFullVectorDouble(int rIdent, const std::string &rIdentifier) const
+Eigen::VectorXd NuTo::StructureBase::ConstitutiveLawGetParameterFullVectorDouble(int rIdent, const std::string &rIdentifier) const
 {
     return ConstitutiveLawGetParameterFullVectorDouble(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier));
 }
 
-void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(int rIdent, const std::string &rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
+void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(int rIdent, const std::string &rIdentifier, Eigen::VectorXd rValue)
 {
     ConstitutiveLawSetParameterFullVectorDouble(rIdent, Constitutive::ConstitutiveParameterToEnum(rIdentifier), rValue);
 }
@@ -281,7 +281,7 @@ void NuTo::StructureBase::ConstitutiveLawSetParameterDouble(int rIdent, NuTo::Co
     }
 }
 
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGetParameterFullVectorDouble(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+Eigen::VectorXd NuTo::StructureBase::ConstitutiveLawGetParameterFullVectorDouble(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     try
     {
@@ -293,7 +293,7 @@ NuTo::FullVector<double, Eigen::Dynamic> NuTo::StructureBase::ConstitutiveLawGet
         throw;
     }
 }
-void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
+void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue)
 {
     try
     {
@@ -329,7 +329,7 @@ void NuTo::StructureBase::ConstitutiveLawSetDamageLaw(int rIdent, std::string rD
 
 //****************************
 
-double NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity, NuTo::FullVector<double, Eigen::Dynamic> rCoeffs) const
+double NuTo::StructureBase::ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity, Eigen::VectorXd rCoeffs) const
 {
     double EquilibriumWaterVolumeFraction = 0.0;
     try

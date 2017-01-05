@@ -146,7 +146,7 @@ private:
 
         if (internalGradient.J.CalculateNormL2()[NuTo::Node::eDof::DISPLACEMENTS] > 1e-8)
         {
-            internalGradient.J[NuTo::Node::eDof::DISPLACEMENTS].Info();
+            std::cout << internalGradient.J[NuTo::Node::eDof::DISPLACEMENTS];
             throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "residual force vector is not zero.");
         }
     }

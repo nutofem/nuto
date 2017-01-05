@@ -36,7 +36,7 @@ public:
     //! @param rConstraintMatrix (the first row where a constraint equation is
     //!     added is given by curConstraintEquation)
     virtual void GetRHS(int& rCurConstraintEquation,
-            NuTo::FullVector<double,Eigen::Dynamic>& rRHS) const override;
+            Eigen::VectorXd& rRHS) const override;
 
     //! @brief Print information about the object.
     //! @param rVerboseLevel Verbosity of the information

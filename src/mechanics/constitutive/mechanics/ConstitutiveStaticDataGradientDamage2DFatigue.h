@@ -154,7 +154,7 @@ public:
     // ... rNumber[2] is the weighting coefficient of the explicit term
     // ... rNumber[3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
     // the first three components are mandatory
-    void FatigueExtrapolateStaticData(NuTo::FullVector<double,Eigen::Dynamic> rNumber)
+    void FatigueExtrapolateStaticData(Eigen::VectorXd rNumber)
 	{
     	// the kappa should be extrapolated, damage should be calculated from kappa in the IP->Evaluate
     	double DeltaKappaExplicit, DeltaOmegaExplicit;

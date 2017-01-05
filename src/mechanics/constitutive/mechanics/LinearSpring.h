@@ -72,12 +72,12 @@ public:
     //! @brief ... gets a variable of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested variable
     //! @return ... value of the requested variable
-    virtual NuTo::FullVector<double, Eigen::Dynamic> GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const override;
+    virtual Eigen::VectorXd GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const override;
 
     //! @brief ... sets a variable of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested variable
     //! @param rValue ... new value for requested variable
-    virtual void SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue) override;
+    virtual void SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue) override;
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -112,7 +112,7 @@ private:
     double mSpringStiffness;
 
     //! @brief ... spring direction
-    NuTo::FullVector<double, Eigen::Dynamic> mSpringDirection;
+    Eigen::VectorXd mSpringDirection;
 
 };
 

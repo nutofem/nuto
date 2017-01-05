@@ -308,7 +308,7 @@ double NuTo::ParticleHandler::GetAbsoluteMininimalDistance(Specimen& rSpecimen)
 
 void NuTo::ParticleHandler::CreateParticlesFromMatrix(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSpheres, const double rVelocityRange, const double rRelativeGrowthRate, const double rAbsoluteGrowthRate)
 {
-    int numRows = rSpheres.GetNumRows();
+    int numRows = rSpheres.rows();
     mParticles.reserve(numRows);
 
     double particleIndex = 100000;
@@ -328,7 +328,7 @@ void NuTo::ParticleHandler::CreateParticlesFromMatrix(const FullMatrix<double, E
     }
 }
 
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::ParticleHandler::GetRandomVector(const double rStart, const double rEnd)
+Eigen::VectorXd NuTo::ParticleHandler::GetRandomVector(const double rStart, const double rEnd)
 {
 	NuTo::FullVector<double, 3> randomVector;
 	for (int i = 0; i < 3; ++i)
@@ -347,17 +347,17 @@ void NuTo::ParticleHandler::ResetVelocities()
 		particle->ResetVelocity();
 }
 
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::ParticleHandler::GetRandomVector(
+Eigen::VectorXd NuTo::ParticleHandler::GetRandomVector(
 		const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBounds)
 {
-	int vectorSize = rBounds.GetNumRows();
-	NuTo::FullVector<double, Eigen::Dynamic> randomVector(vectorSize);
+	int vectorSize = rBounds.rows();
+	Eigen::VectorXd randomVector(vectorSize);
 	for (int i = 0; i < vectorSize; ++i)
 	{
 		double rnd = static_cast<double>(rand()) / static_cast<double>(RAND_MAX);
 		rnd *= rBounds.GetValue(i, 1) - rBounds.GetValue(i, 0);   // correct range
 		rnd += rBounds.GetValue(i, 0);			// correct starting point
-		randomVector.SetValue(i, rnd);
+		randomVector[i] = rnd;
 	}
 	return randomVector;
 }
@@ -390,7 +390,7 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleHandler::
 
     auto spheres = GetParticles(false);
 
-    for (int countSphere = 0; countSphere < spheres.GetNumRows();
+    for (int countSphere = 0; countSphere < spheres.rows();
             countSphere++)
     {
         double delta = spheres(countSphere, 2) - rZCoord;
@@ -400,7 +400,7 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::ParticleHandler::
             if (radius > rMinRadius)
             {
                 //add circle
-                if (numCircles == circles.GetNumRows())
+                if (numCircles == circles.rows())
                 {
                     circles.ConservativeResizeRows(numCircles + 1000);
                 }
@@ -638,7 +638,7 @@ void NuTo::ParticleHandler::ExportParticlesToGmsh2D(std::string rOutputFile,
 
     auto circles = GetParticles2D(rZCoord, rMinRadius);
 
-    if (circles.GetNumRows() == 0)
+    if (circles.rows() == 0)
         throw NuTo::Exception("[NuTo::ParticleHandler::ExportParticlesToGmsh2D] Found no aggregates for visualization. Change the z-Slice or increase rMin.");
 
     int objectCounter = 0;

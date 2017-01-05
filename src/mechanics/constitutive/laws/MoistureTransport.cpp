@@ -544,7 +544,8 @@ void NuTo::MoistureTransport::CalculateSorptionCurveCoefficients(
                 iteration++;
             }
 
-            NuTo::FullVector<double, Eigen::Dynamic> newSorptionCoeff {{ITDofs(2), ITDofs(1), ITDofs(0)}};
+            Eigen::VectorXd newSorptionCoeff;
+            newSorptionCoeff << ITDofs(2), ITDofs(1), ITDofs(0);
             staticData.SetCurrentSorptionCoeff(newSorptionCoeff);
             staticData.SetCurrentJunctionPoint(ITDofs(3));
 
@@ -624,7 +625,8 @@ void NuTo::MoistureTransport::CalculateSorptionCurveCoefficients(
                 iteration++;
             }
             
-            NuTo::FullVector<double, Eigen::Dynamic> newSorptionCoeff {{ITDofs(2), ITDofs(1), ITDofs(0)}};
+            Eigen::VectorXd newSorptionCoeff;
+            newSorptionCoeff << ITDofs(2), ITDofs(1), ITDofs(0);
             staticData.SetCurrentSorptionCoeff(newSorptionCoeff);
             staticData.SetCurrentJunctionPoint(ITDofs(3));
 
@@ -648,13 +650,13 @@ void NuTo::MoistureTransport::CheckValuePositive(std::string rCallingFunction, d
         throw NuTo::MechanicsException(rCallingFunction,"Value(" + std::to_string(rValue) + ") not positive");
 }
 
-void NuTo::MoistureTransport::CheckSorptionCoefficients(std::string rCallingFunction, NuTo::FullVector<double, Eigen::Dynamic> rSorptionCoefficients) const
+void NuTo::MoistureTransport::CheckSorptionCoefficients(std::string rCallingFunction, Eigen::VectorXd rSorptionCoefficients) const
 {
-    if (rSorptionCoefficients.GetNumRows() < 3 || rSorptionCoefficients.GetNumRows() > 4)
+    if (rSorptionCoefficients.rows() < 3 || rSorptionCoefficients.rows() > 4)
         throw NuTo::MechanicsException(rCallingFunction,"The vector for the desorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
-    if (rSorptionCoefficients.GetNumRows() == 4 && rSorptionCoefficients(0)!=0.0)
+    if (rSorptionCoefficients.rows() == 4 && rSorptionCoefficients(0)!=0.0)
         throw NuTo::MechanicsException(rCallingFunction,"The first desorption coefficients (constant term) has to be zero");
-    for(int i =0; i<rSorptionCoefficients.GetNumRows(); ++i)
+    for(int i =0; i<rSorptionCoefficients.rows(); ++i)
     {
         if(rSorptionCoefficients(i)!=0)
             return;
@@ -1026,7 +1028,7 @@ void NuTo::MoistureTransport::SetParameterDouble(NuTo::Constitutive::eConstituti
 //! @brief ... gets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::MoistureTransport::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+Eigen::VectorXd NuTo::MoistureTransport::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     switch(rIdentifier)
     {
@@ -1044,14 +1046,14 @@ NuTo::FullVector<double, Eigen::Dynamic> NuTo::MoistureTransport::GetParameterFu
 //! @brief ... sets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
-void NuTo::MoistureTransport::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
+void NuTo::MoistureTransport::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue)
 {
     switch(rIdentifier)
     {
         case Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_ADSORPTION:
         {
             CheckAdsorptionCoefficients(rValue);
-            switch (rValue.GetNumRows())
+            switch (rValue.rows())
             {
                 case 3:
                 {
@@ -1060,7 +1062,7 @@ void NuTo::MoistureTransport::SetParameterFullVectorDouble(NuTo::Constitutive::e
                 }
                 case 4:
                 {
-                    mAdsorptionCoeff.Resize(3);
+                    mAdsorptionCoeff.resize(3);
                     for(int i=0; i<3; i++)
                     {
                         mAdsorptionCoeff(i) = rValue(i+1);
@@ -1076,7 +1078,7 @@ void NuTo::MoistureTransport::SetParameterFullVectorDouble(NuTo::Constitutive::e
         case Constitutive::eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION:
         {
             CheckDesorptionCoefficients(rValue);
-            switch (rValue.GetNumRows())
+            switch (rValue.rows())
             {
                 case 3:
                 {
@@ -1085,7 +1087,7 @@ void NuTo::MoistureTransport::SetParameterFullVectorDouble(NuTo::Constitutive::e
                 }
                 case 4:
                 {
-                    mDesorptionCoeff.Resize(3);
+                    mDesorptionCoeff.resize(3);
                     for(int i=0; i<3; i++)
                     {
                         mDesorptionCoeff(i) = rValue(i+1);
@@ -1114,14 +1116,14 @@ void NuTo::MoistureTransport::SetParameterFullVectorDouble(NuTo::Constitutive::e
 //! @param rCoeffs ... polynomial coefficients of the sorption curve
 //! @return ... equilibrium water volume fraction
 double                                      NuTo::MoistureTransport::GetEquilibriumWaterVolumeFraction                           (double rRelativeHumidity,
-                                                                                                                                  NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const
+                                                                                                                                  Eigen::VectorXd rCoeffs) const
 {
 
-    if (rCoeffs.GetNumRows() < 3 || rCoeffs.GetNumRows() > 4)
+    if (rCoeffs.rows() < 3 || rCoeffs.rows() > 4)
     {
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__,"The vector for the sorption coefficients must have 3 or 4 rows. --- Polynom of 3th degree --- in case of 4 coefficients the constant term will be deleted");
     }
-    if (rCoeffs.GetNumRows() == 3)
+    if (rCoeffs.rows() == 3)
     {
         return rCoeffs(0) * rRelativeHumidity +
                rCoeffs(1) * rRelativeHumidity * rRelativeHumidity +
