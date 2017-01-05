@@ -32,7 +32,8 @@ enum class eConstitutiveType
     SHRINKAGE_CAPILLARY_STRAIN_BASED,                       //!< strain based drying shrinkage - capillary term
     SHRINKAGE_CAPILLARY_STRESS_BASED,                       //!< stress based drying shrinkage - capillary term
     STRAIN_GRADIENT_DAMAGE_PLASTICITY_ENGINEERING_STRESS,   //!< strain gradient damage plasticity model (damage and plasticity are function of nonlocal total strain)
-    THERMAL_STRAINS                                         //!< strain induced by temperature change
+    THERMAL_STRAINS,                                        //!< strain induced by temperature change
+    CONTACT_CONSTITUTIVE_LAW                                //!< (nonlinear) penalty contact
 };
 
 const std::map<eConstitutiveType, std::string> GetConstitutiveTypeMap();
@@ -139,8 +140,9 @@ enum class eConstitutiveParameter
     VISCOPLASTIC_YIELD_SURFACE_OFFSET,          //!<
     VISCOSITY,                                  //!<
     VISCOSITY_EXPONENT,                         //!<
-    YOUNGS_MODULUS                              //!<
-
+    YOUNGS_MODULUS,                             //!<
+    CONSTITUTIVE_LAW_FUNCTION,
+    CONSTITUTIVE_LAW_DERIVATIVE_FUNCTION
 };
 
 const std::map<eConstitutiveParameter, std::string> GetConstitutiveParameterMap();
@@ -265,6 +267,7 @@ enum class eOutput
     SLIP,
     ELASTIC_ENERGY_DAMAGED_PART,
     D_ELASTIC_ENERGY_DAMAGED_PART_D_ENGINEERING_STRAIN,
+    PENALTY_FORCE
 };
 
 

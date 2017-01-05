@@ -1039,8 +1039,8 @@ int NuTo::Structure::ContactElementsCreate(int rElementsGroupIDSlave,
                                             const Eigen::Matrix<std::pair<int, int>,
                                             Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID,
                                             eIntegrationType rIntegrationType,
-                                            double rPenalty,
-                                            int rContactAlgorithm)
+                                            int rContactAlgorithm,
+                                            int rConstitutiveLaw)
 {
     Eigen::Matrix<std::pair<const ContinuumElementIGA<TDimMaster>*, int>, Eigen::Dynamic, Eigen::Dynamic> masterElements = ContactElementsCreateMaster<TDimMaster>(rMasterElementsID);
 
@@ -1060,6 +1060,10 @@ int NuTo::Structure::ContactElementsCreate(int rElementsGroupIDSlave,
     if (itGroupBoundaryNodes->second->GetType() != NuTo::eGroupId::Nodes)
         throw MechanicsException("[NuTo::Structure::BoundaryElementsCreate] Group is not a node group.");
 
+    boost::ptr_map<int, ConstitutiveBase>::iterator itConstitutive = mConstitutiveLawMap.find(rConstitutiveLaw);
+    if (itConstitutive == this->mConstitutiveLawMap.end())
+        throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law not found.");
+
     Group<NodeBase>&    nodeGroup       = *(itGroupBoundaryNodes->second->AsGroupNode());
 
     // since the search is done via the id's, the surface nodes are ptr, so make another set with the node ptrs
@@ -1068,6 +1072,7 @@ int NuTo::Structure::ContactElementsCreate(int rElementsGroupIDSlave,
     {
         nodePtrSet.insert(itNode.second);
     }
+
 
     std::vector<int> newBoundaryElementIds;
     int groupBoundaryContactElements  = GroupCreate("Elements");
@@ -1120,7 +1125,7 @@ int NuTo::Structure::ContactElementsCreate(int rElementsGroupIDSlave,
                     {
                     case 2:
                     {
-                        boundaryElement = new ContinuumContactElement<2, TDimMaster>(&elementPtrSlave->AsContinuumElement2D(), surfaceId, masterElements, rPenalty, rContactAlgorithm);
+                        boundaryElement = new ContinuumContactElement<2, TDimMaster>(&elementPtrSlave->AsContinuumElement2D(), surfaceId, masterElements, itConstitutive->second, rContactAlgorithm);
                         break;
                     }
                     default:
@@ -1133,12 +1138,12 @@ int NuTo::Structure::ContactElementsCreate(int rElementsGroupIDSlave,
                     {
                     case 1:
                     {
-                        boundaryElement = new ContinuumContactElement<1, TDimMaster>(&elementPtrSlave->AsContinuumElementIGA1D(), surfaceId, masterElements, rPenalty, rContactAlgorithm);
+                        boundaryElement = new ContinuumContactElement<1, TDimMaster>(&elementPtrSlave->AsContinuumElementIGA1D(), surfaceId, masterElements, itConstitutive->second, rContactAlgorithm);
                         break;
                     }
                     case 2:
                     {
-                        boundaryElement = new ContinuumContactElement<2, TDimMaster>(&elementPtrSlave->AsContinuumElementIGA2D(), surfaceId, masterElements, rPenalty, rContactAlgorithm);
+                        boundaryElement = new ContinuumContactElement<2, TDimMaster>(&elementPtrSlave->AsContinuumElementIGA2D(), surfaceId, masterElements, itConstitutive->second, rContactAlgorithm);
                         break;
                     }
                     default:
@@ -1175,11 +1180,11 @@ int NuTo::Structure::ContactElementsCreate(int rElementsGroupIDSlave,
     return groupBoundaryContactElements;
 }
 
-template int NuTo::Structure::ContactElementsCreate<3,2>(int rElementsGroupIDSlave,  int rNodeGroupSlaveId, const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID, eIntegrationType rIntegrationType, double rPenalty,int rContactAlgorithm);
-template int NuTo::Structure::ContactElementsCreate<2,2>(int rElementsGroupIDSlave,  int rNodeGroupSlaveId, const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID, eIntegrationType rIntegrationType, double rPenalty,int rContactAlgorithm);
-template int NuTo::Structure::ContactElementsCreate<2,1>(int rElementsGroupIDSlave,  int rNodeGroupSlaveId, const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID, eIntegrationType rIntegrationType, double rPenalty,int rContactAlgorithm);
-template int NuTo::Structure::ContactElementsCreate<1,2>(int rElementsGroupIDSlave,  int rNodeGroupSlaveId, const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID, eIntegrationType rIntegrationType, double rPenalty,int rContactAlgorithm);
-template int NuTo::Structure::ContactElementsCreate<1,1>(int rElementsGroupIDSlave,  int rNodeGroupSlaveId, const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID, eIntegrationType rIntegrationType, double rPenalty,int rContactAlgorithm);
+template int NuTo::Structure::ContactElementsCreate<3,2>(int rElementsGroupIDSlave,  int rNodeGroupSlaveId, const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID, eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw);
+template int NuTo::Structure::ContactElementsCreate<2,2>(int rElementsGroupIDSlave,  int rNodeGroupSlaveId, const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID, eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw);
+template int NuTo::Structure::ContactElementsCreate<2,1>(int rElementsGroupIDSlave,  int rNodeGroupSlaveId, const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID, eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw);
+template int NuTo::Structure::ContactElementsCreate<1,2>(int rElementsGroupIDSlave,  int rNodeGroupSlaveId, const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID, eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw);
+template int NuTo::Structure::ContactElementsCreate<1,1>(int rElementsGroupIDSlave,  int rNodeGroupSlaveId, const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID, eIntegrationType rIntegrationType, int rContactAlgorithm, int rConstitutiveLaw);
 
 
 //! @brief creates boundary elements and add them to an element group

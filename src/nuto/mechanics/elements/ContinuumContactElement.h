@@ -18,10 +18,9 @@ protected:
     ContinuumContactElement() = default;
 #endif // ENABLE_SERIALIZATION
 public:
-    ContinuumContactElement(const ContinuumElement<TDimSlave> *rSlaveElement,
-                            int rSurfaceId,
+    ContinuumContactElement(const ContinuumElement<TDimSlave> *rSlaveElement, int rSurfaceId,
                             Eigen::Matrix<std::pair<const ContinuumElementIGA<TDimMaster> *, int>, Eigen::Dynamic, Eigen::Dynamic> &rElementsMaster,
-                            double rPenalty, int rContactAlgorithm);
+                            const ConstitutiveBase* rConstitutiveContactLaw, int rContactAlgorithm);
 
     virtual ~ContinuumContactElement() = default;
 
@@ -63,7 +62,6 @@ public:
 
     const Eigen::Vector3d GetGlobalIntegrationPointCoordinates(int rIpNum) const override;
 
-
 protected:
 
     //! @brief ... Master elements in the right ordering. For pure IGA structure and contact only 2D elements possible, with the surface id of the contacting surface
@@ -77,7 +75,7 @@ protected:
 
     int mNumDofs;
 
-    double penaltyP;
+    const ConstitutiveBase* mConstitutiveContactLaw;
 
     int mContactType;
 

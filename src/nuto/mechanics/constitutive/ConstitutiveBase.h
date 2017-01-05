@@ -59,7 +59,7 @@ class ConstitutiveBase
 #endif // ENABLE_SERIALIZATION
 public:
     //! @brief ... constructor
-    ConstitutiveBase(): mParametersValid(false){};
+    ConstitutiveBase(): mParametersValid(false){}
 
     //! @brief ... constructor
     virtual ~ConstitutiveBase()
@@ -130,8 +130,15 @@ public:
             const ConstitutiveInputMap& rConstitutiveInput,
             const ConstitutiveOutputMap& rConstitutiveOutput) = 0;
 
+    //! @brief ... evaluate the constitutive relation
+    //! @param rGap ... the gap
+    //! @return the force araising by the gap (linear case: gap*ContactConstitutiveLaw)
+    virtual double GetContactForce(double rGap) const;
 
-
+    //! @brief ... evaluate the constitutive relation
+    //! @param rGap ... the gap
+    //! @return the force derivative araising by the gap (linear case: ContactConstitutiveLaw)
+    virtual double GetContactForceDerivative(double rGap) const;
 
     // parameters /////////////////////////////////////////////////////////////
 
@@ -161,6 +168,8 @@ public:
     virtual void SetParameterDouble(Constitutive::eConstitutiveParameter rIdentifier, double rValue);
 
     virtual void SetParameterFunction(std::function<std::array<double, 2>(double)>);
+
+    virtual void SetParameterFunction(Constitutive::eConstitutiveParameter rIdentifier, const std::function<double(double)> &rFunction);
 
     //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter

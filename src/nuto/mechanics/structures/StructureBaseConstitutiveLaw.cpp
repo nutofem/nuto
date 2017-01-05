@@ -15,6 +15,7 @@
 #include "nuto/mechanics/constitutive/laws/ShrinkageCapillaryStressBased.h"
 #include "nuto/mechanics/constitutive/laws/ThermalStrains.h"
 #include "nuto/mechanics/constitutive/laws/LocalDamageModel.h"
+#include "nuto/mechanics/constitutive/laws/ContactConstitutiveLaw.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 
 // create a new constitutive law
@@ -105,6 +106,10 @@ void NuTo::StructureBase::ConstitutiveLawCreate(int rIdent, Constitutive::eConst
 
         case eConstitutiveType::THERMAL_STRAINS:
             ConstitutiveLawPtr = new NuTo::ThermalStrains();
+            break;
+
+        case eConstitutiveType::CONTACT_CONSTITUTIVE_LAW:
+            ConstitutiveLawPtr = new NuTo::ContactConstitutiveLaw();
             break;
 
          default:
@@ -365,6 +370,23 @@ void NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble(int rIdent
     {
         ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
         ConstitutiveLawPtr->SetParameterFullVectorDouble(rIdentifier, rValue);
+    } catch (NuTo::MechanicsException& e)
+    {
+        e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble] error setting requested value.");
+        throw e;
+    }
+}
+
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
+//! @param rIdent ... constitutive law identifier
+//! @param rIdentifier ... Enum to identify the requested parameter
+//! @param rValue ... new value for requested variable
+void NuTo::StructureBase::ConstitutiveLawSetParameterFunction(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier, const std::function<double(double)> &rFunction)
+{
+    try
+    {
+        ConstitutiveBase* ConstitutiveLawPtr = this->ConstitutiveLawGetConstitutiveLawPtr(rIdent);
+        ConstitutiveLawPtr->SetParameterFunction(rIdentifier, rFunction);
     } catch (NuTo::MechanicsException& e)
     {
         e.AddMessage("[NuTo::StructureBase::ConstitutiveLawSetParameterFullVectorDouble] error setting requested value.");

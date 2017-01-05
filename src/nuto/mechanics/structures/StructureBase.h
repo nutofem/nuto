@@ -1237,6 +1237,8 @@ public:
     //! @param rValue ... new value for requested variable
     void ConstitutiveLawSetParameterFullVectorDouble(int rIdent, const std::string& rIdentifier, NuTo::FullVector<double, Eigen::Dynamic>  rValue);
 
+    //! @param rValue ... new value for requested variable
+    void ConstitutiveLawSetParameterFunction(int rIdent, NuTo::Constitutive::eConstitutiveParameter rIdentifier, const std::function<double(double)> &rFunction);
 
 #ifndef SWIG
 

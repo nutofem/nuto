@@ -31,12 +31,10 @@
 #include "nuto/mechanics/elements/ElementBase.h"
 
 template <int TDimSlave, int TDimMaster>
-NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::ContinuumContactElement(const ContinuumElement<TDimSlave> *rSlaveElement,
-                                                                              int rSurfaceId,
+NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::ContinuumContactElement(const ContinuumElement<TDimSlave> *rSlaveElement, int rSurfaceId,
                                                                               Eigen::Matrix<std::pair<const ContinuumElementIGA<TDimMaster> *, int>, Eigen::Dynamic, Eigen::Dynamic> &rElementsMaster,
-                                                                              double rPenalty,
-                                                                              int rContactAlgorithm)
-    : ContinuumBoundaryElement<TDimSlave>(rSlaveElement, rSurfaceId), mElementsMaster(rElementsMaster), mNumDofs(0), penaltyP(rPenalty), mContactType(rContactAlgorithm)
+                                                                              const ConstitutiveBase *rConstitutiveContactLaw, int rContactAlgorithm)
+    : ContinuumBoundaryElement<TDimSlave>(rSlaveElement, rSurfaceId), mElementsMaster(rElementsMaster), mNumDofs(0), mConstitutiveContactLaw(rConstitutiveContactLaw), mContactType(rContactAlgorithm)
 {
     if(TDimMaster != ((rSurfaceId == -1) ? TDimSlave : TDimSlave - 1))
         throw MechanicsException(__PRETTY_FUNCTION__, "The dimension of master side interpolation is not correct.");
@@ -168,6 +166,7 @@ NuTo::eError NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::Evaluate(cons
         this->CalculateConstitutiveInputs(constitutiveInput, data);
 
         eError error = this->NuTo::ElementBase::EvaluateConstitutiveLaw<TDimSlave>(constitutiveInput, constitutiveOutput, theIP);
+
         if (error != eError::SUCCESSFUL)
             return error;
 
@@ -285,7 +284,6 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
     Eigen::VectorXd coordinatesIPSlave;
     Eigen::VectorXd ipCoordsNaturalSlave;
     GetGlobalIntegrationPointCoordinatesAndParameters(rTheIP, coordinatesIPSlave, ipCoordsNaturalSlave);
-
 
     // TODO mind the iga jacobian matrix (in case of iga layer- iga layer contact)
     auto jacobianSurface = this->mBaseElement->CalculateJacobianSurface(ipCoordsNaturalSlave, this->ExtractNodeValues(0, Node::eDof::COORDINATES), this->mSurfaceId);
@@ -440,42 +438,14 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
     NContact.block(numSlaveFunsNormal, 0, numMasterFunsNormal, shapeFunsSlave.rows()) = shapeFunsMasterNormal * shapeFunsSlave.transpose();
     NContact *= jacobianbyWeight;
 
-//    Eigen::VectorXd positions;
-//    positions.resize(numSlaveFunsNormal + numMasterFunsNormal);
-//    Eigen::VectorXd coordinates = this->ExtractNodeValues(0, Node::eDof::COORDINATES);
-//    Eigen::VectorXd displacements = this->ExtractNodeValues(0, Node::eDof::DISPLACEMENTS);
-//    positions.block(0, 0, numSlaveFunsNormal, 1) = coordinates + displacements;
-//    positions.block(numSlaveFunsNormal, 0, numMasterFunsNormal, 1) = masterElement->ExtractNodeValues(0, Node::eDof::COORDINATES) + masterElement->ExtractNodeValues(0, Node::eDof::DISPLACEMENTS);
-
-
-
-//    // *** mortar matrix ***
-//    Eigen::VectorXd shapeFunsTimesNormal(numSlaveFunsNormal + numMasterFunsNormal);
-//    shapeFunsTimesNormal.block(0, 0, numSlaveFunsNormal, 1) = shapeFunsSlaveNormal;
-//    shapeFunsTimesNormal.block(numSlaveFunsNormal, 0, numMasterFunsNormal, 1) = -shapeFunsMasterNormal;
-
-//    Eigen::MatrixXd matrixNMaster = interpolationTypeCoordsMaster.CalculateMatrixN(parameterMinMaster);
-//    Eigen::MatrixXd matrixNSlave  = this->mBaseElement->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS).CalculateMatrixN(ipCoordsNaturalSlave);
-
-//    std::cout << "slave:" << matrixNSlave*positions.block(0, 0, numSlaveFunsNormal, 1) << "times normal: " << (matrixNSlave*positions.block(0, 0, numSlaveFunsNormal, 1)).dot(normal) << std::endl;
-//    std::cout << "master:" << matrixNMaster*positions.block(numSlaveFunsNormal, 0, numMasterFunsNormal, 1) << "times normal: " << (matrixNMaster*positions.block(numSlaveFunsNormal, 0, numMasterFunsNormal, 1)).dot(normal) << std::endl;
-
-//    std::cout << "slave Old:" <<  positions.block(0, 0, numSlaveFunsNormal, 1).dot(shapeFunsSlaveNormal) << std::endl;
-//    std::cout << "master Old:" << positions.block(numSlaveFunsNormal, 0, numMasterFunsNormal, 1).dot(shapeFunsMasterNormal) << std::endl;
-
-//    double gapOld = positions.dot(shapeFunsTimesNormal);
-
     double gap = r.dot(normal);
+//    if(gap < 0)
+//        std::cout << gap << std::endl;
 
-//    std::cout << "GapOld - Gap: " << gapOld - gap << std::endl;
-    double force = 0.;
-    if(gap <= 0)
-    {
-        force = penaltyP;
-    }
+    double derivativeContactForce = mConstitutiveContactLaw->GetContactForceDerivative(gap);
 
     rData.mMortarGapMatrix.block(0, 0, numSlaveFunsNormal, shapeFunsSlave.rows())        += NContact.block(0, 0, numSlaveFunsNormal, shapeFunsSlave.rows());
-    rData.mMortarGapMatrixPenalty.block(0, 0, numSlaveFunsNormal, shapeFunsSlave.rows()) += NContact.block(0, 0, numSlaveFunsNormal, shapeFunsSlave.rows())*force;
+    rData.mMortarGapMatrixPenalty.block(0, 0, numSlaveFunsNormal, shapeFunsSlave.rows()) += NContact.block(0, 0, numSlaveFunsNormal, shapeFunsSlave.rows())*derivativeContactForce;
 
     const int numNodes = interpolationTypeCoordsMaster.GetNumNodes();
     unsigned int numDofsPerType = masterElement->GetNode(interpolationTypeCoordsMaster.GetNodeIndex(0))->GetNum(Node::eDof::DISPLACEMENTS);
@@ -489,7 +459,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
         {
             int index = mMappingGlobal2LocalDof[nodePtr->GetDof(Node::eDof::DISPLACEMENTS, iDof)];
             rData.mMortarGapMatrix.row(index) += NContact.row(count + numSlaveFunsNormal);
-            rData.mMortarGapMatrixPenalty.row(index) += (NContact.row(count + numSlaveFunsNormal)*force);
+            rData.mMortarGapMatrixPenalty.row(index) += (NContact.row(count + numSlaveFunsNormal)*derivativeContactForce);
             count++;
         }
     }
@@ -498,14 +468,11 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
     if(mContactType == 0)
     {
         //rData.mMortarGapVector += NContact.transpose()*positions;
-        throw MechanicsException(__PRETTY_FUNCTION__, "Implement mortar type contact.");
+        rData.mMortarGapVector += shapeFunsSlave*gap*jacobianbyWeight;
     }
     else if(mContactType == 1)
     {
-        if(gap < 0)
-        {
-            rData.mMortarGapVector += shapeFunsSlave*gap*penaltyP*jacobianbyWeight;
-        }
+        rData.mMortarGapVector += shapeFunsSlave*gap*derivativeContactForce*jacobianbyWeight;
     }
 }
 
@@ -561,7 +528,9 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
                     if (rData.mMortarGapVector(i) >= 0.)
                         penaltyForce(i) = 0.;
                     else if (rData.mMortarGapVector(i) < 0.)
-                        penaltyForce(i) = -penaltyP*rData.mMortarGapVector(i);
+                    {
+                        penaltyForce(i) = mConstitutiveContactLaw->GetContactForce(rData.mMortarGapVector(i));
+                    }
                 }
 
                 rInternalGradient[dofRow] = rData.mMortarGapMatrix*penaltyForce;
@@ -593,8 +562,8 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
             case Node::CombineDofs(Node::eDof::DISPLACEMENTS, Node::eDof::DISPLACEMENTS):
             {
                 rGapMatrix(dofRow, dofCol) = rData.mMortarGapMatrix*rData.mMortarGapMatrixPenalty.transpose();
-                if(rGapMatrix(dofRow, dofCol).norm() > 1.e-8)
-                    std::cout << "CCE: " << rGapMatrix(dofRow, dofCol).norm() << std::endl;
+//                if(rGapMatrix(dofRow, dofCol).norm() > 1.e-8)
+//                    std::cout << "CCE: " << rGapMatrix(dofRow, dofCol).norm() << std::endl;
                 break;
             }
             default:

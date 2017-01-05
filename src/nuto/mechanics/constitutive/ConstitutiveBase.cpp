@@ -17,6 +17,16 @@
 #include "nuto/base/Logger.h"
 #include "nuto/mechanics/MechanicsException.h"
 
+double NuTo::ConstitutiveBase::GetContactForce(double rGap) const
+{
+    throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] Only for ContactConstitutiveLaw.");
+}
+
+double NuTo::ConstitutiveBase::GetContactForceDerivative(double rGap) const
+{
+    throw MechanicsException(std::string("[")+__PRETTY_FUNCTION__+"] Only for ContactConstitutiveLaw.");
+}
+
 //! @brief ... checks if the constitutive law has a specific parameter
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... true/false
@@ -61,6 +71,15 @@ void NuTo::ConstitutiveBase::SetParameterDouble(NuTo::Constitutive::eConstitutiv
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
 void NuTo::ConstitutiveBase::SetParameterFunction(std::function<std::array<double, 2>(double)>)
+{
+    throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "This constitutive law has no variables of type double.");
+}
+
+
+//! @brief ... sets a parameter of the constitutive law which is selected by an enum
+//! @param rIdentifier ... Enum to identify the requested parameter
+//! @param rValue ... new value for requested variable
+void NuTo::ConstitutiveBase::SetParameterFunction(Constitutive::eConstitutiveParameter rIdentifier, const std::function<double(double)> &rFunction)
 {
     throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "This constitutive law has no variables of type double.");
 }

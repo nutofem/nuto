@@ -534,8 +534,8 @@ public:
                               Eigen::Dynamic,
                               Eigen::Dynamic> &rMasterElementsID,
                               eIntegrationType rIntegrationType,
-                              double rPenalty,
-                              int rContactAlgorithm);
+                              int rContactAlgorithm,
+                              int rConstitutiveLaw);
 
     //! @brief Returns the internal enum (number) for the element types
     //! @param Element name in Nuto

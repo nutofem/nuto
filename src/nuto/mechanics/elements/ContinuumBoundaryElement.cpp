@@ -643,6 +643,7 @@ const Eigen::Vector3d NuTo::ContinuumBoundaryElement<TDim>::GetGlobalIntegration
             break;
         }
         default:
+            throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] the maximum dimension is 2.");
             break;
     }
 
