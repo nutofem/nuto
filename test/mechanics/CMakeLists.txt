@@ -56,34 +56,35 @@ if(ENABLE_C++_TESTS)
 
     # generate tests
     foreach(test
-        GradientDamage
-        NewmarkPlane2D4N
-        RungeKutta
-        ImplEx
-        EngineeringInvariants
-        SurfaceLoad
+        BlockMatrices
         CoefficientChecks
-        ElementUniaxialTruss1D
-        ElementUniaxialTriangle2D
-        ElementUniaxialQuad2D
+        ConstitutiveLawMoistureTransport
+        ConstraintsNodeToElement
+        CSDAInterface
         ElementUniaxialBrick3D
+        ElementUniaxialQuad2D
         ElementUniaxialTetrahedron3D
-        ThermoMechanics2D
-        LobattoIntegration
-        IPData
+        ElementUniaxialTriangle2D
+        ElementUniaxialTruss1D
+        EngineeringInvariants
+        GradientDamage
         IGA
+        ImplEx
+        InterfaceElements
+        IntegrationPointVoronoiCells
         InterpolationTypes
+        IPData
+        LobattoIntegration
+        MultipleConstitutiveLaws
+        NewmarkPlane2D4N
+        ParallelAssembly
+        RungeKutta
+        Shrinkage
+        SpringDamperCombination
+        SurfaceLoad
+        ThermoMechanics2D
         TrussIn2D
         TrussIn3D
-        InterfaceElements
-        BlockMatrices
-        ConstraintsNodeToElement
-        IntegrationPointVoronoiCells
-        ConstitutiveLawMoistureTransport
-        MultipleConstitutiveLaws
-        Shrinkage
-        CSDAInterface
-        SpringDamperCombination
         )
 
         add_executable(${test} ${test}.cpp)

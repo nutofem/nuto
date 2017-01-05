@@ -9,52 +9,56 @@
 
 #include "base/Timer.h"
 #include "mechanics/structures/unstructured/Structure.h"
-
+#include "mechanics/MechanicsEnums.h"
+#include "mechanics/structures/StructureOutputBlockMatrix.h"
+#include "mechanics/structures/StructureOutputBlockVector.h"
+#include "math/SparseMatrixCSRVector2.h"
 
 void SetupStructure(NuTo::Structure& rStructure, int rNumElementsPerDimension)
 {
     rStructure.SetShowTime(false);
     rStructure.SetVerboseLevel(0);
-    //create nodes
-    int numNodes = rNumElementsPerDimension+1;
+    // create nodes
+    int numNodes = rNumElementsPerDimension + 1;
 
     double deltaX = 2;
     double deltaY = 3;
     double deltaZ = 4;
 
     int nodeNum = 0;
-    for (int iZ=0; iZ<numNodes; iZ++)
-        for (int iY=0; iY<numNodes; iY++)
-            for (int iX=0; iX<numNodes; iX++)
+    for (int iZ = 0; iZ < numNodes; iZ++)
+        for (int iY = 0; iY < numNodes; iY++)
+            for (int iX = 0; iX < numNodes; iX++)
             {
-                NuTo::FullVector<double,Eigen::Dynamic> coordinates(3);
-                coordinates(0) = iX*deltaX;
-                coordinates(1) = iY*deltaY;
-                coordinates(2) = iZ*deltaZ;
+                NuTo::FullVector<double, Eigen::Dynamic> coordinates(3);
+                coordinates(0) = iX * deltaX;
+                coordinates(1) = iY * deltaY;
+                coordinates(2) = iZ * deltaZ;
                 rStructure.NodeCreate(nodeNum, coordinates);
                 nodeNum++;
             }
 
     int myInterpolationType = rStructure.InterpolationTypeCreate("Brick3D");
-    rStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    rStructure.InterpolationTypeAdd(myInterpolationType, NuTo::Node::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    rStructure.InterpolationTypeAdd(
+            myInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
+    rStructure.InterpolationTypeAdd(
+            myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
-    for (int iZ=0; iZ<rNumElementsPerDimension; iZ++)
-        for (int iY=0; iY<rNumElementsPerDimension; iY++)
-            for (int iX=0; iX<rNumElementsPerDimension; iX++)
+    for (int iZ = 0; iZ < rNumElementsPerDimension; iZ++)
+        for (int iY = 0; iY < rNumElementsPerDimension; iY++)
+            for (int iX = 0; iX < rNumElementsPerDimension; iX++)
             {
-                NuTo::FullVector<int,Eigen::Dynamic> nodes(8);
-                nodes(0) = iX   +  iY    * numNodes +  iZ    * numNodes * numNodes;
-                nodes(1) = iX+1 +  iY    * numNodes +  iZ    * numNodes * numNodes;
-                nodes(2) = iX+1 + (iY+1) * numNodes +  iZ    * numNodes * numNodes;
-                nodes(3) = iX   + (iY+1) * numNodes +  iZ    * numNodes * numNodes;
-                nodes(4) = iX   +  iY    * numNodes + (iZ+1) * numNodes * numNodes;
-                nodes(5) = iX+1 +  iY    * numNodes + (iZ+1) * numNodes * numNodes;
-                nodes(6) = iX+1 + (iY+1) * numNodes + (iZ+1) * numNodes * numNodes;
-                nodes(7) = iX   + (iY+1) * numNodes + (iZ+1) * numNodes * numNodes;
+                std::vector<int> nodes(8);
+                nodes[0] = iX + iY * numNodes + iZ * numNodes * numNodes;
+                nodes[1] = iX + 1 + iY * numNodes + iZ * numNodes * numNodes;
+                nodes[2] = iX + 1 + (iY + 1) * numNodes + iZ * numNodes * numNodes;
+                nodes[3] = iX + (iY + 1) * numNodes + iZ * numNodes * numNodes;
+                nodes[4] = iX + iY * numNodes + (iZ + 1) * numNodes * numNodes;
+                nodes[5] = iX + 1 + iY * numNodes + (iZ + 1) * numNodes * numNodes;
+                nodes[6] = iX + 1 + (iY + 1) * numNodes + (iZ + 1) * numNodes * numNodes;
+                nodes[7] = iX + (iY + 1) * numNodes + (iZ + 1) * numNodes * numNodes;
 
                 rStructure.ElementCreate(myInterpolationType, nodes);
-
             }
 
     int allElements = rStructure.GroupCreate("Elements");
@@ -65,10 +69,10 @@ void SetupStructure(NuTo::Structure& rStructure, int rNumElementsPerDimension)
     int mySection = rStructure.SectionCreate("VOLUME");
     rStructure.ElementTotalSetSection(mySection);
 
-    rStructure.ConstitutiveLawCreate(0, NuTo::Constitutive::LINEAR_ELASTIC_ENGINEERING_STRESS);
-    rStructure.ConstitutiveLawSetParameterDouble(0,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 10024);
-    rStructure.ConstitutiveLawSetParameterDouble(0,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO,.12);
-    rStructure.ConstitutiveLawSetParameterDouble(0,NuTo::Constitutive::eConstitutiveParameter::DENSITY, 125);
+    rStructure.ConstitutiveLawCreate(0, NuTo::Constitutive::eConstitutiveType::LINEAR_ELASTIC_ENGINEERING_STRESS);
+    rStructure.ConstitutiveLawSetParameterDouble(0, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 10024);
+    rStructure.ConstitutiveLawSetParameterDouble(0, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, .12);
+    rStructure.ConstitutiveLawSetParameterDouble(0, NuTo::Constitutive::eConstitutiveParameter::DENSITY, 125);
     rStructure.ElementTotalSetConstitutiveLaw(0);
 }
 
@@ -83,11 +87,10 @@ void CompareHessiansAndInternalGradients(NuTo::Structure& rStructure1, NuTo::Str
     hessian1.AddScal(hessian2, -1);
     intGrad1 -= intGrad2;
 
-    if (hessian1.JJ(NuTo::Node::DISPLACEMENTS, NuTo::Node::DISPLACEMENTS).AbsMax() > 1.e-10)
+    if (hessian1.JJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).AbsMax() > 1.e-10)
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "HESSIANS incorrect.");
 
-
-    if (intGrad1.J[NuTo::Node::DISPLACEMENTS].Norm() > 1.e-10)
+    if (intGrad1.J[NuTo::Node::eDof::DISPLACEMENTS].Norm() > 1.e-10)
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "INTERNAL GRADIENT incorrect.");
 }
 
@@ -100,7 +103,6 @@ double MeasureHessianAndInternalGradient(NuTo::Structure& rStructure)
 
     return timer.GetTimeDifference();
 }
-
 
 int main()
 {
@@ -121,18 +123,16 @@ int main()
     bigStructureSerial.SetNumProcessors(1);
     bigStructureParallel.SetNumProcessors(numProc);
 
+    SetupStructure(smallStructureSerial, 2);
+    SetupStructure(smallStructureParallel, 2);
 
-    SetupStructure(smallStructureSerial,    2);
-    SetupStructure(smallStructureParallel,  2);
-
-    SetupStructure(bigStructureSerial,     15);
-    SetupStructure(bigStructureParallel,   15);
+    SetupStructure(bigStructureSerial, 15);
+    SetupStructure(bigStructureParallel, 15);
 
     smallStructureSerial.CalculateMaximumIndependentSets();
     smallStructureParallel.CalculateMaximumIndependentSets();
     bigStructureSerial.CalculateMaximumIndependentSets();
     bigStructureParallel.CalculateMaximumIndependentSets();
-
 
     timer.Reset("Correctnes test");
     try
@@ -149,8 +149,6 @@ int main()
         std::cout << "Undefined exception..." << std::endl;
         return EXIT_FAILURE;
     }
-
-
 
     timer.Reset("Speedup test");
     double timeSerial = MeasureHessianAndInternalGradient(bigStructureSerial);
