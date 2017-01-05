@@ -7,7 +7,7 @@
 if(ENABLE_MECHANICS)
     add_test(examples::py::Brick8N ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Brick8N.py)
     add_test(examples::py::Brick8NCoupling ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Brick8NCoupling.py)
-    add_test(examples::py::damage_bar ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/damage_bar.py)
+    add_test(examples::py::damage_bar ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/damage_bar.py --no-plot)
     add_test(examples::py::SparseDirectSolverMUMPS ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/SparseDirectSolverMUMPS.py)
     add_test(examples::py::Truss1D2N ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Truss1D2N.py)
     add_test(examples::py::Truss1D2NCoupling ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Truss1D2NCoupling.py)

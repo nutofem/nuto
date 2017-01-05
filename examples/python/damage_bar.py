@@ -1,4 +1,6 @@
 import nuto
+import matplotlib.pyplot as plt
+import sys
 
 structure = nuto.Structure(1)
 structure.SetNumTimeDerivatives(0)
@@ -83,3 +85,8 @@ f = structure.BuildGlobalExternalLoadVector(0)
 sol = structure.SolveBlockSystem(hessian.JJ, f.J)
 
 nonlocaleqstrain = sol.Get("Nonlocaleqstrain")
+
+# don't plot during testing
+if len(sys.argv) != 2:
+    plt.plot(nonlocaleqstrain)
+    plt.show()
