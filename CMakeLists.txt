@@ -30,6 +30,7 @@ option(ENABLE_MPI "enables message passing interface" FALSE)
 # set module path for custom cmake scripts
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts ${CMAKE_MODULE_PATH})
 include(NuToMacros)
+configure_file(${CMAKE_SOURCE_DIR}/CMakeScripts/CTestCustom.cmake ${CMAKE_BINARY_DIR}/CTestCustom.cmake COPYONLY)
 
 add_subdirectory(external)
 include_directories(external/jsoncpp/dist/)
