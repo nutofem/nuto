@@ -1,6 +1,6 @@
 import nuto
-import matplotlib.pyplot as plt
 import sys
+import numpy as np
 
 structure = nuto.Structure(1)
 structure.SetNumTimeDerivatives(0)
@@ -10,8 +10,7 @@ structure.InterpolationTypeAdd(interpolationType, "Coordinates", "Equidistant1")
 structure.InterpolationTypeAdd(interpolationType, "DISPLACEMENTS", "EQUIDISTANT2")
 structure.InterpolationTypeAdd(interpolationType, "NONLOCALEQSTRAIN", "EQUIDISTANT1")
 
-coordinates = nuto.DoubleFullVector(1)
-coordinates.SetValue(0, 0.0)
+coordinates = np.zeros(1)
 
 length = 100.0
 weakened_zone_length = 10.0
@@ -29,10 +28,10 @@ structure.SectionSetArea(weakenedSection, (1.0 - alpha)*area)
 nodeIDs = nuto.IntVector(2)
 nodeIDs[0] = structure.NodeCreate(coordinates)
 for i in range(n_elements):
-    coordinates.SetValue(0, (i+1)*delta_l)
+    coordinates[0] = (i+1)*delta_l
     nodeIDs[1] = structure.NodeCreate(coordinates)
     element = structure.ElementCreate(interpolationType, nodeIDs)
-    if (coordinates.GetValue(0) < (length - weakened_zone_length)/2.0 or coordinates.GetValue(0) > (length + weakened_zone_length)/2.0):
+    if (coordinates[0] < (length - weakened_zone_length)/2.0 or coordinates[0] > (length + weakened_zone_length)/2.0):
         structure.ElementSetSection(element, totalSection)
     else:
         structure.ElementSetSection(element, weakenedSection)
@@ -88,5 +87,6 @@ nonlocaleqstrain = sol.Get("Nonlocaleqstrain")
 
 # don't plot during testing
 if len(sys.argv) != 2:
+    import matplotlib.pyplot as plt
     plt.plot(nonlocaleqstrain)
     plt.show()

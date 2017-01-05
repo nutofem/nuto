@@ -13,14 +13,13 @@ Material1 = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress
 myStructure.ConstitutiveLawSetParameterDouble(Material1,"Youngs_Modulus", 1)
 
 # create nodes
-nodeCoordinates = nuto.DoubleFullVector(1)
-nodeCoordinates.SetValue(0,0,0)
+nodeCoordinates = np.zeros(1)
 myStructure.NodeCreateDOFs(1, "displacements", nodeCoordinates)
-nodeCoordinates.SetValue(0,0,1)
+nodeCoordinates[0] = 1.0
 myStructure.NodeCreateDOFs(2, "displacements", nodeCoordinates)
-nodeCoordinates.SetValue(0,0,1)
+nodeCoordinates[0] = 1.0
 myStructure.NodeCreateDOFs(3, "displacements", nodeCoordinates)
-nodeCoordinates.SetValue(0,0,2)
+nodeCoordinates[0] = 2.0
 myStructure.NodeCreateDOFs(4, "displacements", nodeCoordinates)
 
 #create interpolation type

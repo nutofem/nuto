@@ -25,10 +25,10 @@ Material1 = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress
 myStructure.ConstitutiveLawSetParameterDouble(Material1,"Youngs_Modulus", YoungsModulus)
 
 # create nodes
-nodeCoordinates = nuto.DoubleFullVector(1)
+nodeCoordinates = np.zeros(1)
 for node in range(0, NumElements + 1):
     print "create node: " + str(node) + " coordinates: " + str(node * Length/NumElements)
-    nodeCoordinates.SetValue(0, 0, node * Length/NumElements)
+    nodeCoordinates[0] = node * Length/NumElements
     myStructure.NodeCreateDOFs(node, "displacements", nodeCoordinates)
 
 #create interpolation type

@@ -56,7 +56,7 @@
 
 %fragment("Eigen_Fragments", "header",  fragment="NumPy_Fragments")
 %{
-  template <typename T> int NumPyType() {return -1;};
+  template <typename T> int NumPyType() {return -1;}
 
   template <class Derived>
   bool ConvertFromNumpyToEigenMatrix(Eigen::MatrixBase<Derived>* out, PyObject* in)
@@ -126,7 +126,7 @@
         out->coeffRef(i,j) = data[i*cols+j];
 
     return true;
-  };
+  }
 
   // Copies values from Eigen type into an existing NumPy type
   template <class Derived>
@@ -197,7 +197,7 @@
     }
 
     return true;
-  };
+  }
 
   template <class Derived>
   bool ConvertFromEigenToNumPyMatrix(PyObject** out, Eigen::MatrixBase<Derived>* in)
@@ -211,10 +211,10 @@
       for (int j = 0; j != dims[1]; ++j)
         data[i*dims[1]+j] = in->coeff(i,j);
     return true;
-  };
+  }
 
-  template<> int NumPyType<double>() {return NPY_DOUBLE;};
-  template<> int NumPyType<int>() {return NPY_INT;};
+  template<> int NumPyType<double>() {return NPY_DOUBLE;}
+  template<> int NumPyType<int>() {return NPY_INT;}
 %}
 
 // ----------------------------------------------------------------------------

@@ -31,18 +31,18 @@ myStructure.ConstitutiveLawSetParameterDouble(Material1,"Poissons_Ratio", Poisso
 Section1 = myStructure.SectionCreate("Volume")
 
 # create nodes
-nodeCoordinates = nuto.DoubleFullVector(3)
+nodeCoordinates = np.zeros((3, 1))
 node = 0
 for zCount in range (0, NumElementsZ + 1):
-    nodeCoordinates.SetValue(2,0, zCount * Height/NumElementsZ)
+    nodeCoordinates[2] = zCount * Height/NumElementsZ
     for yCount in range (0, NumElementsY + 1):
-        nodeCoordinates.SetValue(1,0, yCount * Width/NumElementsY)
+        nodeCoordinates[1] = yCount * Width/NumElementsY
         for xCount in range(0, NumElementsX + 1):
-            nodeCoordinates.SetValue(0,0, xCount * Length/NumElementsX)
-            #print "node: " + str(node) + " coordinates: " + str(nodeCoordinates.GetValue(0,0)) + "," + str(nodeCoordinates.GetValue(1,0)) + "," + str(nodeCoordinates.GetValue(2,0))
+            nodeCoordinates[0] = xCount * Length/NumElementsX
             myStructure.NodeCreate(node, nodeCoordinates)
             node += 1
-#create interpolation type
+
+# create interpolation type
 myInterpolationType = myStructure.InterpolationTypeCreate("Brick3D")
 myStructure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistant1")
 myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant1")
@@ -62,8 +62,6 @@ for zCount in range (0, NumElementsZ):
             elementIncidence[5] = node1 + (NumElementsX + 1) * (NumElementsY + 1) + 1
             elementIncidence[6] = node1 + (NumElementsX + 1) * (NumElementsY + 1) + NumElementsX + 2
             elementIncidence[7] = node1 + (NumElementsX + 1) * (NumElementsY + 1) + NumElementsX + 1
-            #print "element: " + str(element) + " incidence: "
-            #elementIncidence.Info()
             myStructure.ElementCreate(myInterpolationType, elementIncidence)
 
 myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10)
@@ -77,13 +75,11 @@ direction = nuto.DoubleFullMatrix(3,1,(1,0,0))
 for zCount in range (0, NumElementsZ + 1):
     for yCount in range (0, NumElementsY + 1):
         node = zCount * (NumElementsX + 1) * (NumElementsY + 1) + yCount * (NumElementsX + 1)
-        #print "node: " + str(node)
         myStructure.ConstraintLinearSetDisplacementNode(node, direction, 0.0)
 
 direction = nuto.DoubleFullMatrix(3,1,(0,0,1))
 myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0)
 myStructure.ConstraintLinearSetDisplacementNode(NumElementsY * (NumElementsX + 1), direction, 0.0)
-#print "node: " + str(NumElementsY * (NumElementsX + 1))
 
 direction = nuto.DoubleFullMatrix(3,1,(0,1,0))
 myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0)
@@ -96,7 +92,6 @@ if EnableDisplacementControl:
     for zCount in range (0, NumElementsZ + 1):
         for yCount in range (0, NumElementsY + 1):
             node = zCount * (NumElementsX + 1) * (NumElementsY + 1) + yCount * (NumElementsX + 1) + NumElementsX
-            #print "node: " + str(node)
             myStructure.ConstraintLinearSetDisplacementNode(node, direction, BoundaryDisplacement)
 else:
     #load
@@ -110,14 +105,12 @@ else:
         else:
             nodeForce = Force / (2 *NumElementsY * NumElementsZ)
         node = zCount * (NumElementsX + 1) * (NumElementsY + 1) + NumElementsX
-        #print "apply force to node: " + str(node) + " force: " + str(nodeForce)
         myStructure.LoadCreateNodeForce(0,node, direction, nodeForce)
         for yCount in range(1, NumElementsY):
             node = zCount * (NumElementsX + 1) * (NumElementsY + 1) + yCount * (NumElementsX + 1) + NumElementsX
             print "apply force to node: " + str(node) + " force: " + str(2 * nodeForce)
             myStructure.LoadCreateNodeForce(0,node, direction, 2 * nodeForce)
         node = (zCount + 1) * (NumElementsX + 1) * (NumElementsY + 1) - 1
-        #print "apply force to node: " + str(node) + " force: " + str(nodeForce)
         myStructure.LoadCreateNodeForce(0,node, direction, nodeForce)
 
 # start analysis
@@ -128,7 +121,7 @@ oldTime = curTime
 curTime = time()
 print "time required for dof numbering: " + str(curTime - oldTime) + " s"
 
-#build maximum independent sets
+# build maximum independent sets
 myStructure.CalculateMaximumIndependentSets()
 oldTime = curTime
 curTime = time()
@@ -153,11 +146,11 @@ residual = intGradientJ + cmat.Get("Displacements", "Displacements").TransMult(i
 print "residual: " + str(np.linalg.norm(residual))
 
 # visualize results
-visualizationGroup = myStructure.GroupCreate("Elements");
+visualizationGroup = myStructure.GroupCreate("Elements")
 myStructure.GroupAddElementsTotal(visualizationGroup)
 
-myStructure.AddVisualizationComponent(visualizationGroup, "Displacements");
-myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStrain");
-myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStress");
+myStructure.AddVisualizationComponent(visualizationGroup, "Displacements")
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStrain")
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStress")
 
 myStructure.ExportVtkDataFileElements("Brick8N.vtk")

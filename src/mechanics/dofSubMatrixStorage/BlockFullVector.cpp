@@ -58,7 +58,7 @@ void NuTo::BlockFullVector<T>::AllocateSubvectors()
     mData.clear();
     for (auto dof : mDofStatus.GetDofTypes())
     {
-        mData[dof] = Eigen::Matrix<T, Eigen::Dynamic, 1>(0);
+        mData[dof] = Eigen::Matrix<T, Eigen::Dynamic, 1>();
     }
 }
 
