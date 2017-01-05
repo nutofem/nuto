@@ -253,6 +253,11 @@ public:
     //! @return  ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
     virtual NuTo::BlockFullVector<double> NodeCalculateDependentDofValues(const NuTo::BlockFullVector<double>& rActiveDofValues) const override;
 
+    Eigen::Matrix<double, 3,3> DoubleMatrix(const Eigen::Matrix<double, 3, 3>& matrix)
+    {
+        return 2.0*matrix;
+    }
+
 #ifndef SWIG
 
 

@@ -190,7 +190,7 @@ int main()
         output << "strain00\n";
         for (int element = 0; element < NumElements; element++)
         {
-            output << structure.ElementGetEngineeringStrain(element).GetRow(0) << "\n";
+            output << structure.ElementGetEngineeringStrain(element).row(0) << "\n";
         }
         output.close();
     }
@@ -207,7 +207,7 @@ int main()
         output << "stress00\n";
         for (int element = 0; element < NumElements; element++)
         {
-            output << structure.ElementGetEngineeringStress(element).GetRow(0) << "\n";
+            output << structure.ElementGetEngineeringStress(element).row(0) << "\n";
         }
         output.close();
     }

@@ -493,27 +493,27 @@ void NuTo::StructureBase::ElementSetInterpolationType(ElementBase* rElement, Int
 }
 
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::ElementGetStaticIPData(int rElementId, std::string rType)
+Eigen::MatrixXd NuTo::StructureBase::ElementGetStaticIPData(int rElementId, std::string rType)
 {
     return ElementGetStaticIPData(rElementId, IpData::IpStaticDataTypeToEnum(rType));
 }
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId)
+Eigen::MatrixXd NuTo::StructureBase::ElementGetEngineeringStrain(int rElementId)
 {
     return ElementGetStaticIPData(rElementId, IpData::eIpStaticDataType::ENGINEERING_STRAIN);
 }
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId)
+Eigen::MatrixXd NuTo::StructureBase::ElementGetEngineeringPlasticStrain(int rElementId)
 {
     return ElementGetStaticIPData(rElementId, IpData::eIpStaticDataType::ENGINEERING_PLASTIC_STRAIN);
 }
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::ElementGetEngineeringStress(int rElementId)
+Eigen::MatrixXd NuTo::StructureBase::ElementGetEngineeringStress(int rElementId)
 {
     return ElementGetStaticIPData(rElementId, IpData::eIpStaticDataType::ENGINEERING_STRESS);
 }
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::ElementGetDamage(int rElementId)
+Eigen::MatrixXd NuTo::StructureBase::ElementGetDamage(int rElementId)
 {
     return ElementGetStaticIPData(rElementId, IpData::eIpStaticDataType::DAMAGE);
 }

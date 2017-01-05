@@ -2,6 +2,7 @@
 
 # load nuto package
 import nuto
+import numpy as np
 
 # definitions
 YoungsModulus = 20000.
@@ -67,13 +68,13 @@ extGradient = myStructure.BuildGlobalExternalLoadVector(0)
 residual = intGradient.J.Get("Displacements") - extGradient.J.Get("Displacements")
 
 
-print "residual: " + str(residual.Norm())
+print "residual: " + str(np.linalg.norm(residual))
 
 ## visualize results
-visualizationGroup = myStructure.GroupCreate("Elements");
+visualizationGroup = myStructure.GroupCreate("Elements")
 myStructure.GroupAddElementsTotal(visualizationGroup)
 
-myStructure.AddVisualizationComponent(visualizationGroup, "Displacements");
-myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStrain");
-myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStress");
+myStructure.AddVisualizationComponent(visualizationGroup, "Displacements")
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStrain")
+myStructure.AddVisualizationComponent(visualizationGroup, "EngineeringStress")
 #myStructure.ExportVtkDataFileElements("Truss1D2N.vtk")

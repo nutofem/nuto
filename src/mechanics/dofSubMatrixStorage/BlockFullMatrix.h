@@ -89,9 +89,9 @@ public:
 
 #endif // SWIG
 
-    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> Export() const;
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> Export() const;
 
-    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> Get(std::string rDofRow, std::string rDofCol) const;
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> Get(std::string rDofRow, std::string rDofCol) const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief Returns the class name as a string

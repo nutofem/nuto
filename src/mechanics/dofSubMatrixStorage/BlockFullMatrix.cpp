@@ -183,7 +183,7 @@ int NuTo::BlockFullMatrix<T>::GetNumRowsDof(const std::set<Node::eDof>& rDofType
 }
 
 template<typename T>
-NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockFullMatrix<T>::Export() const
+Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockFullMatrix<T>::Export() const
 {
     CheckDimensions();
     const auto& activeDofTypes = mDofStatus.GetActiveDofTypes();
@@ -208,7 +208,7 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockFullMatrix<T>::Ex
 }
 
 template<typename T>
-NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockFullMatrix<T>::Get(std::string rDofRow, std::string rDofCol) const
+Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockFullMatrix<T>::Get(std::string rDofRow, std::string rDofCol) const
 {
     return (*this)(Node::DofToEnum(rDofRow), Node::DofToEnum(rDofCol));
 }

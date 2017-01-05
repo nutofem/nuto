@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -203,7 +201,8 @@ void NuTo::TimeIntegrationBase::CalculateStaticAndTimeDependentExternalLoad()
             mStructure->GetLogger() << "TIB Static \n";
             mLoadVectorStatic += tmp;
         }
-        mStructure->GetLogger() << "sum of loads for loadcase " << iLoadCase << " is " << tmp.J.Export().ColumnwiseSum() + tmp.K.Export().ColumnwiseSum() << "\n";
+        mStructure->GetLogger() << "sum of loads for loadcase " << iLoadCase << " is " << 
+            tmp.J.Export().colwise().sum() + tmp.K.Export().colwise().sum() << "\n";
     }
 }
 

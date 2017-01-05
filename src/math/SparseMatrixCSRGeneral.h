@@ -514,13 +514,13 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRGeneral
 }
 
 template <class T>
-NuTo::FullMatrix <T,Eigen::Dynamic,Eigen::Dynamic> NuTo::SparseMatrixCSRGeneral<T>::TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
+Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> NuTo::SparseMatrixCSRGeneral<T>::TransMult(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
 {
-	if (this->GetNumRows() != rMatrix.GetNumRows())
+	if (this->GetNumRows() != rMatrix.rows())
 	{
-		throw MathException("[SparseMatrixCSRGeneral::TransMult] invalid matrix dimensions.");
+		throw MathException(__PRETTY_FUNCTION__, "Invalid matrix dimensions.");
 	}
-	FullMatrix<T, Eigen::Dynamic,Eigen::Dynamic> result(this->GetNumColumns(),rMatrix.GetNumColumns());
+	FullMatrix<T, Eigen::Dynamic,Eigen::Dynamic> result(this->GetNumColumns(),rMatrix.cols());
 	if (this->HasOneBasedIndexing())
 	{
 		// loop over columns of transpose
@@ -531,7 +531,7 @@ NuTo::FullMatrix <T,Eigen::Dynamic,Eigen::Dynamic> NuTo::SparseMatrixCSRGeneral<
 			{
 				int row = this->mColumns[pos] - 1;
 				T value = this->mValues[pos];
-				for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+				for (int matrixCol = 0; matrixCol < rMatrix.cols(); matrixCol++)
 				{
 					result(row,matrixCol) += value * rMatrix(column,matrixCol);
 				}
@@ -548,7 +548,7 @@ NuTo::FullMatrix <T,Eigen::Dynamic,Eigen::Dynamic> NuTo::SparseMatrixCSRGeneral<
 			{
 				int row = this->mColumns[pos];
 				T value = this->mValues[pos];
-				for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+				for (int matrixCol = 0; matrixCol < rMatrix.cols(); matrixCol++)
 				{
 					result(row,matrixCol) += value * rMatrix(column,matrixCol);
 				}
@@ -560,11 +560,11 @@ NuTo::FullMatrix <T,Eigen::Dynamic,Eigen::Dynamic> NuTo::SparseMatrixCSRGeneral<
 
 
 template <class T>
-NuTo::FullVector <T,Eigen::Dynamic> NuTo::SparseMatrixCSRGeneral<T>::TransMult(const NuTo::FullVector<T, Eigen::Dynamic>& rVector) const
+Eigen::Matrix<T, Eigen::Dynamic, 1> NuTo::SparseMatrixCSRGeneral<T>::TransMult(const Eigen::Matrix<T, Eigen::Dynamic, 1>& rVector) const
 {
-	if (this->GetNumRows() != rVector.GetNumRows())
+	if (this->GetNumRows() != rVector.rows())
 	{
-		throw MathException("[SparseMatrixCSRGeneral::TransMult] invalid matrix dimensions.");
+		throw MathException(__PRETTY_FUNCTION__, "Invalid matrix dimensions.");
 	}
 
 	FullVector<T, Eigen::Dynamic> result(this->GetNumColumns());

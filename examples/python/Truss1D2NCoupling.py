@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import nuto
+import numpy as np
 
 myStructure = nuto.Structure(1)
 
@@ -45,7 +46,7 @@ direction = nuto.DoubleFullMatrix(1,1,(1,))
 myStructure.ConstraintLinearSetDisplacementNode(1, direction, 0.0)
 id = myStructure.ConstraintLinearEquationCreate(2, "x_displacement", 1, 0)
 myStructure.ConstraintLinearEquationAddTerm(id, 3, "x_displacement", -1)
-loadCase = 0;
+loadCase = 0
 myStructure.SetNumLoadCases(1)
 myStructure.LoadCreateNodeForce(loadCase, 4, direction, 1)
 
@@ -59,6 +60,6 @@ extGradient = myStructure.BuildGlobalExternalLoadVector(loadCase)
 residual = intGradient.J.Get("Displacements") - extGradient.J.Get("Displacements")
 
 
-print "residual: " + str(residual.Norm())
+print "residual: " + str(np.linalg.norm(residual))
 
 

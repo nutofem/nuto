@@ -660,27 +660,27 @@ public:
     //! @param rElemIdent  element number
     //! @param rType static ip data type
     //! @param rIPData matrix with (... x numIP), x varies depending on IPData type
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetStaticIPData(int rElementId, std::string rType);
+    Eigen::MatrixXd ElementGetStaticIPData(int rElementId, std::string rType);
 
     //! @brief calculates the engineering strain
     //! @param rElemIdent  element number
     //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetEngineeringStrain(int rElementId);
+    Eigen::MatrixXd ElementGetEngineeringStrain(int rElementId);
 
     //! @brief calculates the engineering plastic strain
     //! @param rElemIdent  element number
     //! @param rEngineerungStrain engineering plastic strain (return value, always 6xnumIp matrix)
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetEngineeringPlasticStrain(int rElementId);
+    Eigen::MatrixXd ElementGetEngineeringPlasticStrain(int rElementId);
 
     //! @brief calculates the engineering stress
     //! @param rElemIdent  element number
     //! @param rEingineeringStress Engineering Stress (return value, always 6xnumIp matrix)
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetEngineeringStress(int rElementId);
+    Eigen::MatrixXd ElementGetEngineeringStress(int rElementId);
 
     //! @brief calculates the damage
     //! @param rElemIdent  identifier for the element
     //! @param rDamage (return value, always 1xnumIp matrix)
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetDamage(int rElementId);
+    Eigen::MatrixXd ElementGetDamage(int rElementId);
 
     //! @brief calculates the global integration point coordinates
     //! @param rElemIdent  identifier for the element

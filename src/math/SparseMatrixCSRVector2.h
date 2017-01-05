@@ -400,9 +400,9 @@ public:
             const SparseMatrixCSRVector2& rD, T rScalar) = 0;
 
     //! @brief ... calculates this.Transpose
-    virtual NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>&) const
+    virtual Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> TransMult(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>&) const
     {
-        throw NuTo::MathException(std::string("[") + __PRETTY_FUNCTION__ + "] not implemented.");
+        throw NuTo::MathException(__PRETTY_FUNCTION__, "Not implemented.");
     }
 
     //! @brief inverts the matrix coefficient-wise

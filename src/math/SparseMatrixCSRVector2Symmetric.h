@@ -364,9 +364,9 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2
 }
 
 template<class T>
-NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2Symmetric<T>::TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
+Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2Symmetric<T>::TransMult(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
 {
-    throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] To be implemented.");
+    throw MathException(__PRETTY_FUNCTION__, "To be implemented.");
 /*  this is just copied from the general matrix (no symmtry)
 	if (this->GetNumRows() != rMatrix.GetNumRows())
 	{

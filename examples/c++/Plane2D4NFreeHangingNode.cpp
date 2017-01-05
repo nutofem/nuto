@@ -1,3 +1,4 @@
+#include "base/serializeStream/SerializeStreamOut.h"
 #include "math/MathException.h"
 #include "math/FullMatrix.h"
 #include "math/SparseDirectSolverMUMPS.h"
@@ -112,8 +113,10 @@ int main()
     auto hessianElement0 = myStructure.ElementBuildHessian0(0);
     auto hessianElement4 = myStructure.ElementBuildHessian0(4);
 
-    hessianElement0.Export().WriteToFile("stiffness", "   ");
-    hessianElement4.Export().WriteToFile("stiffnessCoarse", "   ");
+    NuTo::SerializeStreamOut stiffnessFile("stiffness", false);
+    stiffnessFile.SaveMatrix(hessianElement0.Export());
+    NuTo::SerializeStreamOut stiffnessCoarseFile("stiffnessCoarse", false);
+    stiffnessCoarseFile.SaveMatrix(hessianElement4.Export());
 
     // boundary conditions
     NuTo::FullVector<double, Eigen::Dynamic> direction(2);

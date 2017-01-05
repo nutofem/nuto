@@ -124,7 +124,7 @@ void BlockFullVectorTest()
     timer.Reset("BVT:ActiveDofTypes");
     s.SetActiveDofTypes({NuTo::Node::eDof::DISPLACEMENTS});
 
-    if (v1.Export().GetNumRows() != 3)      throw NuTo::MechanicsException("[BVT:ActiveDofTypes] Exported v1 has wrong size.");
+    if (v1.Export().rows() != 3)      throw NuTo::MechanicsException("[BVT:ActiveDofTypes] Exported v1 has wrong size.");
 
 
     if (v1[NuTo::Node::eDof::TEMPERATURE] != (v1+v1)[NuTo::Node::eDof::TEMPERATURE])
@@ -158,7 +158,7 @@ void BlockFullVectorTest()
         std::cout << "to Import: \n ";
         toImport.Info();
         std::cout << "imported: \n ";
-        imported.Export().Info();
+        std::cout << imported.Export();
         throw NuTo::MechanicsException("[BVT:Import] failed.");
     }
 

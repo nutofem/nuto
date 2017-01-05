@@ -706,13 +706,13 @@ void NuTo::SparseMatrixCSRVector2General<T>::Sub_TransA_B_Plus_C_D_Scal(
 }
 
 template<class T>
-NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2General<T>::TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
+Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2General<T>::TransMult(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
 {
-	if (this->GetNumRows() != rMatrix.GetNumRows())
+	if (this->GetNumRows() != rMatrix.rows())
 	{
-		throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
+		throw MathException(__PRETTY_FUNCTION__, "Invalid matrix dimensions.");
 	}
-	FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumColumns(),rMatrix.GetNumColumns());
+	FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumColumns(),rMatrix.cols());
 	if (this->HasOneBasedIndexing())
 	{
 		// loop over columns of transpose
@@ -725,7 +725,7 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2
 			{
 				int row = thisColumnVec[pos] - 1;
 				T value = thisValueVec[pos];
-				for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+				for (int matrixCol = 0; matrixCol < rMatrix.cols(); matrixCol++)
 				{
 					result(row,matrixCol) += value * rMatrix(column,matrixCol);
 				}
@@ -744,7 +744,7 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2
 			{
 				int row = thisColumnVec[pos];
 				T value = thisValueVec[pos];
-				for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+				for (int matrixCol = 0; matrixCol < rMatrix.cols(); matrixCol++)
 				{
 					result(row,matrixCol) += value * rMatrix(column,matrixCol);
 				}

@@ -15,6 +15,21 @@
 #include "math/SparseMatrixCSRVector2Symmetric.h"
 %}
 
+// typemaps.i is a built-in swig interface that lets us map c++ types to other
+// types python. We'll use it to map Eigen matrices to Numpy arrays.
+%include "typemaps.i"
+%include "eigen.i"
+%eigen_typemaps(Eigen::VectorXd)
+%eigen_typemaps(Eigen::MatrixXd)
+%eigen_typemaps(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>)
+%eigen_typemaps(Eigen::Matrix<double, Eigen::Dynamic, 1>)
+%eigen_typemaps(Eigen::Matrix<double, 1, 1>)
+%eigen_typemaps(Eigen::Matrix<double, 2, 2>)
+%eigen_typemaps(Eigen::Matrix<double, 3, 3>)
+%eigen_typemaps(Eigen::Matrix<double, 2, 1>)
+%eigen_typemaps(Eigen::Matrix<double, 3, 1>)
+%eigen_typemaps(Eigen::Matrix<double, 6, 1>)
+
 // convert python string to std::string
 %include "std_string.i"
 // convert python tuple to std::vector

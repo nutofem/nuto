@@ -131,7 +131,7 @@ NuTo::BlockFullVector<T>& NuTo::BlockFullVector<T>::operator /=(double rScalar)
 }
 
 template<typename T>
-NuTo::FullVector<T, Eigen::Dynamic> NuTo::BlockFullVector<T>::Export() const
+Eigen::Matrix<T, Eigen::Dynamic, 1> NuTo::BlockFullVector<T>::Export() const
 {
     FullVector<T, Eigen::Dynamic> result(GetNumActiveRows());
 

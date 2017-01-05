@@ -175,7 +175,7 @@ private:
         {
             int elementId = elementIds(iElement);
             auto stress = rStructure.ElementGetEngineeringStress(elementId);
-            for (int iIP = 0; iIP < stress.GetNumColumns(); ++iIP)
+            for (int iIP = 0; iIP < stress.cols(); ++iIP)
             {
                 double numericStress = stress(0,iIP);
                 if (DEBUG_PRINT)

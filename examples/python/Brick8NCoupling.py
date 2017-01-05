@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import nuto
+import numpy as np
 
 myStructure = nuto.Structure(3)
 
@@ -174,15 +175,12 @@ extGradient = myStructure.BuildGlobalExternalLoadVector(0)
 extGradientJ = extGradient.J.Get("Displacements")
 intGradientJ = intGradient.J.Get("Displacements")
 intGradientK = intGradient.K.Get("Displacements")
-# cast FullVector to FullMatrix, python does not get it...
-numRows = intGradientK.GetNumRows()
-intGradientKcast = nuto.DoubleFullMatrix(numRows,1)
-for i in range(numRows):
-    intGradientKcast.SetValue(i,0, -intGradientK.GetValue(i))
+
+intGradientKcast = - intGradientK
 cmat = myStructure.GetConstraintMatrix()
 
-residual = nuto.DoubleFullVector(intGradientJ + cmat.Get("Displacements", "Displacements").TransMult(intGradientKcast) - extGradientJ)
-print "residual: " + str(residual.Norm())
+residual = intGradientJ + cmat.Get("Displacements", "Displacements").TransMult(intGradientKcast) - extGradientJ
+print "residual: " + str(np.linalg.norm(residual))
 
 # visualize results
 visualizationGroup = myStructure.GroupCreate("Elements");
