@@ -29,4 +29,8 @@ if(ENABLE_C++_TESTS)
         add_test(c::math::Arpack ${CMAKE_CURRENT_BUILD_DIR}/Arpack)
     endif()
 
+    add_executable(EigenCompanion EigenCompanion.cpp ${CMAKE_SOURCE_DIR}/src/math/EigenCompanion.cpp)
+    target_link_libraries(EigenCompanion ${Boost_LIBRARIES})
+    add_test(c::unit::EigenCompanion ${CMAKE_CURRENT_BUILD_DIR}/EigenCompanion)
+
 endif()

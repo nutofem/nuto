@@ -1,5 +1,6 @@
 set(NuToMath_SOURCES
     CubicSplineInterpolation.cpp
+    EigenCompanion.cpp
     EigenSolverArpack.cpp
     FullMatrix.cpp
     Interpolation.cpp
