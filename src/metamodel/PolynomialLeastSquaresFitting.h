@@ -1,11 +1,8 @@
 #pragma once
 
-// parent
 #include "metamodel/Metamodel.h"
 
-
 #include <vector>
-#include "math/FullVector_Def.h"
 
 namespace NuTo
 {
@@ -39,7 +36,7 @@ public:
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
     //! @return    class name
-    std::string GetTypeId() const;
+    std::string GetTypeId() const override;
 
     //! @brief ... Sets the degree of the polynom
     //! @param rDegree ... degree of the polynom
@@ -48,7 +45,7 @@ public:
     //! @brief ... calculate approximation (in transformed space)
     //! @param rInputCoordinates ... matrix of input data points (transformed)
     //! @param rOutputCoordinates ... vector of output data (transformed)
-    void SolveTransformed(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputCoordinates, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinates)const;
+    void SolveTransformed(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates) const override;
 
 protected:
     Eigen::VectorXd       mPolynomialCoeffs;

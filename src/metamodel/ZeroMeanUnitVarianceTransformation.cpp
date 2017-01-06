@@ -1,4 +1,3 @@
-// $Id$
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -8,7 +7,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif //ENABLE_SERIALIZATION
 
-#include "math/FullMatrix.h"
 #include "metamodel/MetamodelException.h"
 #include "metamodel/ZeroMeanUnitVarianceTransformation.h"
 
@@ -31,7 +29,7 @@ NuTo::ZeroMeanUnitVarianceTransformation::ZeroMeanUnitVarianceTransformation(con
 
 
 // build transformation
-void NuTo::ZeroMeanUnitVarianceTransformation::Build(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)
+void NuTo::ZeroMeanUnitVarianceTransformation::Build(const Eigen::MatrixXd& rCoordinates)
 {
     // check input
     if (rCoordinates.cols() < 2)
@@ -71,7 +69,7 @@ void NuTo::ZeroMeanUnitVarianceTransformation::Build(const FullMatrix<double, Ei
 }
 
 // transformation
-void NuTo::ZeroMeanUnitVarianceTransformation::TransformForward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const
+void NuTo::ZeroMeanUnitVarianceTransformation::TransformForward(Eigen::MatrixXd& rCoordinates)const
 {
     // check input
     if (rCoordinates.cols() == 0)
@@ -93,7 +91,7 @@ void NuTo::ZeroMeanUnitVarianceTransformation::TransformForward(FullMatrix<doubl
 }
 
 // back transformation
-void NuTo::ZeroMeanUnitVarianceTransformation::TransformBackward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)  const
+void NuTo::ZeroMeanUnitVarianceTransformation::TransformBackward(Eigen::MatrixXd& rCoordinates)  const
 {
     // check input
     if (rCoordinates.cols() == 0)

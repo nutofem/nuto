@@ -1,5 +1,3 @@
-
-#include "math/FullVector.h"
 #include "metamodel/PolynomialLeastSquaresFitting.h"
 #include "math/SparseDirectSolverMUMPS.h"
 #include "math/SparseMatrixCSRGeneral.h"
@@ -52,7 +50,8 @@ void NuTo::PolynomialLeastSquaresFitting::BuildDerived()
 
         mPolynomialCoeffs.resize(mDegree+1);
         NuTo::SparseMatrixCSRGeneral<double> lhs(mDegree+1, mDegree+1);
-        NuTo::FullVector <double, Eigen::Dynamic> rhs(mDegree+1);
+        Eigen::VectorXd rhs(mDegree+1);
+        rhs.setZero();
 
         for(int k=0; k < N_SupportPoints; k++)
         {
@@ -128,7 +127,7 @@ void NuTo::PolynomialLeastSquaresFitting::SetDegree(int rDegree)
 //! @brief ... calculate approximation (in transformed space)
 //! @param rInputCoordinates ... matrix of input data points (transformed)
 //! @param rOutputCoordinates ... vector of output data (transformed)
-void NuTo::PolynomialLeastSquaresFitting::SolveTransformed(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputCoordinates, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinates)const
+void NuTo::PolynomialLeastSquaresFitting::SolveTransformed(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates)const
 {
     if(rInputCoordinates.rows() != 1)
     {
@@ -143,7 +142,8 @@ void NuTo::PolynomialLeastSquaresFitting::SolveTransformed(const FullMatrix<doub
     {
         // prepare output
         int numSamples = rInputCoordinates.cols();
-        rOutputCoordinates.Resize(1, numSamples);
+        rOutputCoordinates.resize(1, numSamples);
+        rOutputCoordinates.setZero();
 
         // calculate output
         for (int k = 0; k < numSamples; k++)

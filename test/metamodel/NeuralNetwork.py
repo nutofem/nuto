@@ -4,41 +4,36 @@ import math
 import tempfile
 import sys
 import os
+import numpy as np
 
-#if set to true, the result will be generated (for later use in the test routine)
-#otherwise, the current result will be compared to the stored result
-#createResult = True
+# if set to true, the result will be generated (for later use in the test routine)
+# otherwise, the current result will be compared to the stored result
 createResult = False
 
-#show the results on the screen
-printResult = False
+# show the results on the screen
+printResult = True
 
-#system name and processor
+# system name and processor
 system = sys.argv[1]+sys.argv[2]
 
-#path in the original source directory and current filename at the and
-pathToResultFiles = os.path.join(sys.argv[3],"results",system,os.path.basename(sys.argv[0]))
+# path in the original source directory and current filename at the and
+pathToResultFiles = os.path.join(
+        sys.argv[3], "results", system, os.path.basename(sys.argv[0]))
 
-#remove the extension
+# remove the extension
 fileExt = os.path.splitext(sys.argv[0])[1]
-pathToResultFiles = pathToResultFiles.replace(fileExt,'')
+pathToResultFiles = pathToResultFiles.replace(fileExt, '')
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#% no error in file, modified, if error is detected              %
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# no error in file, modified, if error is detected
 error = False
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#%  Random seed for training data generation and initial weights %
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Random seed for training data generation and initial weights
 randomSeed = 1234567
 random.seed(randomSeed)
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#%  Generate Training data in the range min max                  %
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Generate Training data in the range min max
 minCoordinate = -3
-maxCoordinate =  3
+maxCoordinate = 3
 meanNoise = 0
 sigmaNoise = 5e-1
 dimInput = 2
@@ -47,147 +42,138 @@ numSamples = 10
 numNeuronsHiddenLayer = 3
 verboseLevel = 0
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#% some auxiliary routines                                       %
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-def RandomSamplesUniform(minCoordinate,maxCoordinate,dim,numSamples):
-    sample = nuto.DoubleFullMatrix(dim,numSamples)
+
+# some auxiliary routines
+def RandomSamplesUniform(minCoordinate, maxCoordinate, dim, numSamples):
+    sample = np.zeros((dim, numSamples))
     for count1 in range(0, dim):
         for count2 in range(0, numSamples):
-            sample.SetValue(count1,count2,random.uniform(minCoordinate,maxCoordinate))
+            sample[count1, count2] = random.uniform(minCoordinate, maxCoordinate)
     return sample
 
-def RandomSamplesGauss(mean,sigma,dim,numSamples):
-    sample = nuto.DoubleFullMatrix(dim,numSamples)
+
+def RandomSamplesGauss(mean, sigma, dim, numSamples):
+    sample = np.zeros((dim, numSamples))
     for count1 in range(0, dim):
         for count2 in range(0, numSamples):
-            sample.SetValue(count1,count2,random.gauss(mean,sigma))
+            sample[count1, count2] = random.gauss(mean, sigma)
     return sample
+
 
 def ExactFunction(dimOutput, coordinates):
-    numSamples = coordinates.GetNumColumns()
-    sample = nuto.DoubleFullMatrix(dimOutput,numSamples)
+    _, numSamples = coordinates.shape
+    sample = np.zeros((dimOutput, numSamples))
     for countdim in range(0, dimOutput):
         for count in range(0, numSamples):
-            #sample.SetValue(countdim,count,(coordinates.GetValue(countdim,count)*coordinates.GetValue((countdim+1)%dimInput,count)))
-            sample.SetValue(countdim,count,(coordinates.GetValue((countdim+1)%dimInput,count)))
+            sample[countdim, count] = coordinates[(countdim+1) % dimInput, count]
     return sample
 
-def wait(str=None, prompt='Press return to continue...\n'):
-    raw_input(prompt)
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#% create support points                                         %
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-SupportPointsInput = RandomSamplesUniform(minCoordinate,maxCoordinate,dimInput,numSamples)
-SupportPointsOutputExact = ExactFunction(dimOutput,SupportPointsInput)
-SupportPointsOutputNoise = RandomSamplesGauss(meanNoise,sigmaNoise,dimOutput,numSamples)
+# create support points
+SupportPointsInput = RandomSamplesUniform(minCoordinate, maxCoordinate, dimInput, numSamples)
+SupportPointsOutputExact = ExactFunction(dimOutput, SupportPointsInput)
+SupportPointsOutputNoise = RandomSamplesGauss(meanNoise, sigmaNoise, dimOutput, numSamples)
 SupportPointsOutputWithNoise = SupportPointsOutputExact + SupportPointsOutputNoise
 
-#create network with certain number of neurons in each hiddenlayer
-hiddenLayerNumNeurons = nuto.IntFullMatrix(1,1)
-hiddenLayerNumNeurons.SetValue(0,0,numNeuronsHiddenLayer)
-myNetwork = nuto.NeuralNetwork(hiddenLayerNumNeurons)
+# create network with certain number of neurons in each hiddenlayer
+myNetwork = nuto.NeuralNetwork([numNeuronsHiddenLayer])
 myNetwork.InitRandomNumberGenerator(randomSeed)
-#myNetwork.UnsetBayesianTraining()
 myNetwork.SetBayesianTraining()
 myNetwork.SetInitAlpha(1e-5)
 myNetwork.SetAccuracyGradient(1e-5)
 myNetwork.SetMinDeltaObjectiveBetweenRestarts(1e-4)
 myNetwork.SetMinDeltaObjectiveBayesianIteration(1e-3)
 myNetwork.SetShowSteps(1)
-myNetwork.SetMaxFunctionCalls(0)  #this is not very practical, but only used for the test file
+# this is not very practical, but only used for the test file
+myNetwork.SetMaxFunctionCalls(0)
 myNetwork.SetVerboseLevel(verboseLevel)
 myNetwork.SetMaxBayesianIterations(1)
-#myNetwork.UseFullHessian()  #forpreconditioning in the conjugate gradient method
 myNetwork.UseDiagHessian()
 
-myNetwork.SetSupportPoints(dimInput,dimOutput,SupportPointsInput,SupportPointsOutputWithNoise)
+myNetwork.SetSupportPoints(dimInput, dimOutput, SupportPointsInput, SupportPointsOutputWithNoise)
 
-#set transformations for input/output
+# set transformations for input/output
 lowerBound = -1
 upperBound = 1
-myNetwork.AppendMinMaxTransformationInput(lowerBound,upperBound)
-myNetwork.AppendMinMaxTransformationOutput(lowerBound,upperBound)
+myNetwork.AppendMinMaxTransformationInput(lowerBound, upperBound)
+myNetwork.AppendMinMaxTransformationOutput(lowerBound, upperBound)
 myNetwork.BuildTransformation()
-#set transfer functions
-myNetwork.SetTransferFunction(0,nuto.NeuralNetwork.TanSig)
-myNetwork.SetTransferFunction(1,nuto.NeuralNetwork.PureLin)
+# set transfer functions
+myNetwork.SetTransferFunction(0, nuto.NeuralNetwork.TanSig)
+myNetwork.SetTransferFunction(1, nuto.NeuralNetwork.PureLin)
 
-#build/train the network
-#pdb.set_trace()
+# build/train the network
 myNetwork.Build()
 
 if (printResult):
-    Parameters = nuto.DoubleFullMatrix(1,1)
-    myNetwork.GetParameters(Parameters)
+    Parameters = myNetwork.GetParameters()
     print 'final set of parameters:'
-    Parameters.Trans().Info()
+    print Parameters
 
-#calculate error for the training samples including standard deviation of approximation
-SupportPointsApproximation = nuto.DoubleFullMatrix(1,1)
-SupportPointsApproximationMin = nuto.DoubleFullMatrix(1,1)
-SupportPointsApproximationMax = nuto.DoubleFullMatrix(1,1)
-myNetwork.SolveConfidenceInterval(SupportPointsInput,SupportPointsApproximation,SupportPointsApproximationMin,SupportPointsApproximationMax)
+# calculate error for the training samples including standard deviation of
+# approximation
+SupportPointsApproximation = np.zeros((dimOutput, numSamples))
+SupportPointsApproximationMin = np.zeros((dimOutput, numSamples))
+SupportPointsApproximationMax = np.zeros((dimOutput, numSamples))
+myNetwork.SolveConfidenceInterval(SupportPointsInput,
+                                  SupportPointsApproximation,
+                                  SupportPointsApproximationMin,
+                                  SupportPointsApproximationMax)
 
-#objective
 objective = myNetwork.Objective()
 if (printResult):
     print 'objective including regularization terms (transformed space):\n  ' + str(objective)
 if (createResult):
-    f = open(pathToResultFiles+'Objective.txt','w')
+    f = open(pathToResultFiles+'Objective.txt', 'w')
     f.write('#Correct Objective\n')
     f.write(str(objective))
     f.close()
 else:
-    f = open(pathToResultFiles+'Objective.txt','r')
+    f = open(pathToResultFiles+'Objective.txt', 'r')
     f.readline()
     objectiveExact = float(f.readline())
     f.close()
-    if (math.fabs(objective-objectiveExact)>1e-8):
-        print '[' + system,sys.argv[0] + '] : objective is not correct.(' + str(math.fabs(objective-objectiveExact)) + ')'
+    if (math.fabs(objective - objectiveExact) > 1e-8):
+        print '[' + system, sys.argv[0] + '] : objective is not correct.(' + str(math.fabs(objective - objectiveExact)) + ')'
         print 'objectiveExact including regularization terms (transformed space):\n  ' + str(objectiveExact)
-        error = True;
-	
-	
-#gradient
+        error = True
+
+# gradient
 NumParameters = myNetwork.GetNumParameters()
-gradient = nuto.DoubleFullMatrix(NumParameters,1)
+gradient = np.zeros((NumParameters, 1))
 myNetwork.Gradient(gradient)
+gradient = gradient.squeeze()
 if (printResult):
     print 'gradient:'
-    gradient.Trans().Info()
+    print gradient
 if (createResult):
-    gradient.WriteToFile(pathToResultFiles+"Gradient.txt"," ","#Correct gradient matrix","  ")
+    np.savetxt(pathToResultFiles+"Gradient.txt", gradient, header="#Correct gradient matrix")
 else:
-    gradientExact = nuto.DoubleFullMatrix(NumParameters,1)
-    gradientExact.ReadFromFile(pathToResultFiles+"Gradient.txt",1," ")
-    if ((gradientExact-gradient).Abs().Max()>1e-8):
-        print '[' + system,sys.argv[0] + '] : gradient is not correct.(' + str((gradientExact-gradient).Abs().Max()) + ')'
+    gradientExact = np.loadtxt(pathToResultFiles + "Gradient.txt", skiprows=1)
+    if (np.max(np.abs(gradientExact - gradient)) > 1e-8):
+        print '[' + system, sys.argv[0] + '] : gradient is not correct.(' + str(np.max(np.abs(gradientExact - gradient))) + ')'
         print 'gradientExact:'
-        gradientExact.Trans().Info()
-        error = True;
+        print gradientExact
+        error = True
 
-#hessian
-hessian = nuto.DoubleFullMatrix(NumParameters,NumParameters)
+# hessian
+hessian = np.zeros((NumParameters, NumParameters))
 myNetwork.HessianFull(hessian)
 if (printResult):
     print 'hessian:'
-    hessian.Info()
+    print hessian
 if (createResult):
-    hessian.WriteToFile(pathToResultFiles+"Hessian.txt"," ","#Correct hessian matrix","  ")
+    np.savetxt(pathToResultFiles+"Hessian.txt", hessian, header="#Correct hessian matrix")
 else:
-    hessianExact = nuto.DoubleFullMatrix(NumParameters,1)
-    hessianExact.ReadFromFile(pathToResultFiles+"Hessian.txt",1," ")
-    RelError = (hessianExact-hessian).ElementwiseDiv(hessianExact)
-    if (RelError.Abs().Max()>1e-8):
-        print '[' + system,sys.argv[0] + '] : hessian is not correct.(' + str(RelError.Abs().Max()) + ')'
+    hessianExact = np.loadtxt(pathToResultFiles+"Hessian.txt", skiprows=1)
+    RelError = (hessianExact - hessian) / hessianExact
+    if (np.max(np.abs(RelError)) > 1e-8):
+        print '[' + system, sys.argv[0] + '] : hessian is not correct.(' + str(np.max(np.abs(RelError))) + ')'
         print 'hessianExact:'
-        hessianExact.Info()
+        print hessianExact
         print 'relative Error:'
-        RelError.Info(12,3)
-        error = True;
-
+        print RelError
+        error = True
 
 plotResult = False
 
@@ -199,32 +185,20 @@ if plotResult:
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
-    x =[1,2,3,4,5,6,7,8,9,10]
-    y =[5,6,2,3,13,4,1,2,4,8]
-    z =[2,3,3,3,5,7,9,11,9,10]
-
-    #ax.scatter(x, y, z, c='r', marker='o')
+    x = [1, 2, 3, 4,  5, 6, 7,  8, 9, 10]
+    y = [5, 6, 2, 3, 13, 4, 1,  2, 4,  8]
+    z = [2, 3, 3, 3,  5, 7, 9, 11, 9, 10]
 
     ax.set_xlabel('X Label')
     ax.set_ylabel('Y Label')
     ax.set_zlabel('Z Label')
 
-    SupportPointsInputNumpy = numpy.empty([dimInput,numSamples],dtype='float64')
-    SupportPointsInput.convrtMatrixToNumpy(SupportPointsInputNumpy)
-
-    SupportPointsOutputExactNumpy = numpy.empty([dimOutput,numSamples],dtype='float64')
-    SupportPointsOutputExact.convrtMatrixToNumpy(SupportPointsOutputExactNumpy)
-
-    SupportPointsOutputWithNoiseNumpy = numpy.empty([dimOutput,numSamples],dtype='float64')
-    SupportPointsOutputWithNoise.convrtMatrixToNumpy(SupportPointsOutputWithNoiseNumpy)
-
-    SupportPointsApproximationNumpy = numpy.empty([dimOutput,numSamples],dtype='float64')
-    SupportPointsApproximation.convrtMatrixToNumpy(SupportPointsApproximationNumpy)
-
-    SupportPointsApproximation
-    ax.scatter(SupportPointsInputNumpy[0,:], SupportPointsInputNumpy[1,:], SupportPointsOutputExactNumpy[1,:] , c='r', marker='o')
-    ax.scatter(SupportPointsInputNumpy[0,:], SupportPointsInputNumpy[1,:], SupportPointsOutputWithNoiseNumpy[1,:] , c='g', marker='o')
-    ax.scatter(SupportPointsInputNumpy[0,:], SupportPointsInputNumpy[1,:], SupportPointsApproximationNumpy[1,:] , c='b', marker='o')
+    ax.scatter(SupportPointsInput[0, :], SupportPointsInput[1, :],
+               SupportPointsOutputExact[1, :], c='r', marker='o')
+    ax.scatter(SupportPointsInput[0, :], SupportPointsInput[1, :],
+               SupportPointsOutputWithNoise[1, :], c='g', marker='o')
+    ax.scatter(SupportPointsInput[0, :], SupportPointsInput[1, :],
+               SupportPointsApproximation[1, :], c='b', marker='o')
 
     plt.show()
 

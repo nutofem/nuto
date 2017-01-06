@@ -1,6 +1,5 @@
 set(NuToMetamodel_SOURCES
     Metamodel.cpp
-    MultipleLinearRegression.cpp
     NeuralNetwork.cpp
     TransferFunction.cpp
     Transformation.cpp

@@ -1,9 +1,3 @@
-// $Id$
-
-/*******************************************************************************
-Bauhaus-Universitaet Weimar
-Author: Joerg F. Unger,  Septermber 2009
-*******************************************************************************/
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -13,7 +7,6 @@ Author: Joerg F. Unger,  Septermber 2009
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "math/FullMatrix.h"
 #include "metamodel/MetamodelException.h"
 #include "metamodel/MinMaxTransformation.h"
 
@@ -39,7 +32,7 @@ NuTo::MinMaxTransformation::MinMaxTransformation(const MinMaxTransformation &rOt
 }
 
 
-void NuTo::MinMaxTransformation::Build(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)
+void NuTo::MinMaxTransformation::Build(const Eigen::MatrixXd& rCoordinates)
 {
     if ( rCoordinates.cols() == 0)
 	{
@@ -65,7 +58,7 @@ void NuTo::MinMaxTransformation::Build(const FullMatrix<double, Eigen::Dynamic, 
 	}
 }
 
-void NuTo::MinMaxTransformation::TransformForward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const
+void NuTo::MinMaxTransformation::TransformForward(Eigen::MatrixXd& rCoordinates)const
 {
     if ( rCoordinates.cols() == 0)
     {
@@ -95,7 +88,7 @@ void NuTo::MinMaxTransformation::TransformForward(FullMatrix<double, Eigen::Dyna
 	}
 }
 
-void NuTo::MinMaxTransformation::TransformBackward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)  const
+void NuTo::MinMaxTransformation::TransformBackward(Eigen::MatrixXd& rCoordinates)  const
 {
     if ( rCoordinates.cols() == 0)
     {
