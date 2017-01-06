@@ -329,10 +329,8 @@ std::string NuTo::SparseDirectSolverMUMPS::GetErrorString(int error) const
     {
     case -9:
         return "main work array too small";
-        break;
     case -10:
         return "numerically singular matrix";
-        break;
     default:
         return "unknown error code";
     }

@@ -18,6 +18,8 @@
 
 * @ref BuildWithClang
 
+* @ref FullMatrixToEigenRemarks
+
 ### NuTo related documentation
 
 * @ref ConstitutiveStaticData
