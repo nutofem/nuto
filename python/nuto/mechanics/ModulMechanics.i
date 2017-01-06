@@ -46,6 +46,7 @@ namespace std {
 %include "base/ModulNuToBase.i"
 %include "base/CallbackInterface.h"
 
+%include "math/FullMatrix.h"
 %include "mechanics/structures/StructureBase.h"
 %include "mechanics/structures/unstructured/Structure.h"
 %include "mechanics/elements/ElementEnum.h"

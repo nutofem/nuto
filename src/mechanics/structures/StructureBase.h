@@ -389,11 +389,6 @@ public:
     std::vector<int> NodeGetDofIds(const int rNodeId, Node::eDof rDof)const;
 #endif
 
-    //! @brief gets the displacement dofs of a node
-    //! @param rIdent node identifier
-    //! @param rDisplacements matrix (one column) with the displacements
-    void NodeGetDisplacementDofs(int rNode, FullVector<int,Eigen::Dynamic>& rDisplacementDofs)const;    
-
     //! @brief gets the rotations of a node
     //! @param rNode node identifier
     //! @param rRotation matrix (one column) with the rotations

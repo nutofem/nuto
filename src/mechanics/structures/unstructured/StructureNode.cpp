@@ -73,21 +73,6 @@ const boost::ptr_map<int, NuTo::NodeBase>& NuTo::Structure::NodeGetNodeMap() con
 }
 
 
-//! @brief ... return the global dof number of the displacement component of a node
-//! @param rNodeId (Input) 			... node id
-//! @param rDispDof 	... local disp dof (0,1 or 2 for x,y or z)
-//! @returnrglobal dof number
-int NuTo::Structure::NodeGetDofDisplacement(int rNodeId, int rDispDof)
-{
-	NodeBase* nodePtr = NodeGetNodePtr(rNodeId);
-    if (nodePtr->GetNum(Node::eDof::DISPLACEMENTS)>rDispDof)
-	{
-        return nodePtr->GetDof(Node::eDof::DISPLACEMENTS, rDispDof);
-	}
-	else
-	   throw MechanicsException("[NuTo::Structure::NodeGetDisplacementDofs] Node does have sufficient disp dofs.");
-}
-
 //! @brief ... store all element ids connected to this node in a vector
 //! @param rNode (Input) 			... node id
 //! @param rElementNumbers (Output) ... vector of element ids

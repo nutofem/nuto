@@ -158,12 +158,6 @@ public:
     const boost::ptr_map<int, NodeBase>& NodeGetNodeMap() const;
 #endif //SWIG
 
-    //! @brief ... return the global dof number of the displacement component of a node
-    //! @param rNodeId (Input) 			... node id
-    //! @param rDispDof 	... local disp dof (0,1 or 2 for x,y or z)
-    //! @returnrglobal dof number
-    int NodeGetDofDisplacement(int rNodeId, int rDispDof);
-
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNodeId (Input) 			... node id
     //! @param rElementNumbers (Output)	... vector of element ids
@@ -434,7 +428,7 @@ public:
     //! @brief import from gmsh, creates groups according to gmsh's physical entities and creates an interpolation types for each group
     //! @param rFileName .. file name
     //! @return .. Matrix [NumGroups x 2] with [: x 0] group ids and [ : x 1] corresponding interpolation type ids
-    FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ImportFromGmsh(const std::string& rFileName);
+    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ImportFromGmsh(const std::string& rFileName);
 
     //*************************************************
     //**      InterpolationType routines             **

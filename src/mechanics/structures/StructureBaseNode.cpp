@@ -283,36 +283,6 @@ void NuTo::StructureBase::NodeGetDisplacements(int rNode, int rTimeDerivative, E
 }
 
 
-//! @brief gets the displacement dofs of a node
-//! @param rIdent node identifier
-//! @param rDisplacements matrix (one column) with the displacements
-void NuTo::StructureBase::NodeGetDisplacementDofs(int rNode, FullVector<int,Eigen::Dynamic>& rDisplacementDofs)const
-{
-    NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());
-
-    const NodeBase* nodePtr = NodeGetNodePtr(rNode);
-
-    try
-    {
-        int numDofs = nodePtr->GetNum(Node::eDof::DISPLACEMENTS);
-        if (numDofs == 0)
-            throw MechanicsException(__PRETTY_FUNCTION__, "Node has no displacements.");
-        rDisplacementDofs.resize(numDofs);
-        for (int i = 0; i < numDofs; ++i)
-            rDisplacementDofs[i] = nodePtr->GetDof(Node::eDof::DISPLACEMENTS, i);
-
-    }
-    catch(NuTo::MechanicsException & b)
-    {
-        b.AddMessage(__PRETTY_FUNCTION__, "Error getting displacement dofs.");
-        throw;
-    }
-    catch(...)
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Error getting displacement dofs of node (unspecified exception).");
-    }
-}
-
 std::vector<int> NuTo::StructureBase::NodeGetDofIds(const int rNodeId, NuTo::Node::eDof rDof)const
 {
     NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());

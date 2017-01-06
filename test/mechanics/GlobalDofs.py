@@ -1,8 +1,7 @@
-import nuto
 import sys
 import os
-from math import sqrt
 import numpy as np
+import nuto
 
 # call of the test file, e.g.
 # /usr/local/bin/python ~/develop/nuto/test/mechanics/GlobalDofs.py Linux x86_64 ~/develop/nuto/test/mechanics
@@ -15,7 +14,7 @@ createResult = False
 printResult = True
 
 # system name and processor
-system = sys.argv[1]+sys.argv[2]
+system = sys.argv[1] + sys.argv[2]
 
 # path in the original source directory and current filename at the end
 pathToResultFiles = os.path.join(sys.argv[3], "results", system, os.path.basename(sys.argv[0]))
@@ -54,10 +53,10 @@ myStructure.ConstitutiveLawSetParameterDouble(myMatLin, "Youngs_Modulus", 10)
 myStructure.ConstitutiveLawSetParameterDouble(myMatLin, "Poissons_Ratio", 0.1)
 
 # add constraints for a single node
-Constraint1 = myStructure.ConstraintLinearSetDisplacementNode(myNode2, nuto.DoubleFullMatrix(3, 1, (1, 1, -1)), 0.5)
+Constraint1 = myStructure.ConstraintLinearSetDisplacementNode(myNode2, np.array([1.0, 1.0, -1.0]), 0.5)
 
 # add constraints for a group of nodes
-Constraint2 = myStructure.ConstraintLinearSetDisplacementNodeGroup(myNodeGroup, nuto.DoubleFullMatrix(3, 1, (1, 0, 0)), 2)
+Constraint2 = myStructure.ConstraintLinearSetDisplacementNodeGroup(myNodeGroup, np.array([1.0, 0.0, 0.0]), 2.0)
 numConstraints = myStructure.ConstraintGetNumLinearConstraints("Displacements")
 
 if (printResult):
@@ -83,33 +82,30 @@ constraintMatrixFull = myStructure.ConstraintGetConstraintMatrixBeforeGaussElimi
 
 
 # correct constraint matrix
-constraintMatrixFullCorrect = nuto.DoubleFullMatrix(3, 3)
-constraintMatrixFullCorrect.SetValue(0, 0, 1)
-constraintMatrixFullCorrect.SetValue(1, 1, 1)
-constraintMatrixFullCorrect.SetValue(2, 2, 1)
+constraintMatrixFullCorrect = np.eye(3)
 
 # correct rhs
 rhsCorrect = np.r_[0.5, 2.0, 2.0]
 
-if (printResult):
+if printResult:
     print "constraintMatrixCorrect"
-    constraintMatrixFullCorrect.Info()
+    print constraintMatrixFullCorrect
     print "constraintMatrix"
-    constraintMatrixFull.Info()
+    print constraintMatrixFull
     print "rhsCorrect"
     print rhsCorrect
     print "rhs"
     print rhs
 
-if ((constraintMatrixFull-constraintMatrixFullCorrect).Abs().Max() > 1e-8):
-        print '[' + system, sys.argv[0] + '] : constraint matrix is not correct.'
-        error = True
+if np.max(np.abs(constraintMatrixFull - constraintMatrixFullCorrect)) > 1e-8:
+    print '[' + system, sys.argv[0] + '] : constraint matrix is not correct.'
+    error = True
 
-if (np.max(np.abs(rhs - rhsCorrect)) > 1e-8):
+if np.max(np.abs(rhs - rhsCorrect)) > 1e-8:
     print '[' + system, sys.argv[0] + '] : right hand side is not correct.'
     error = True
 
-if (error):
+if error:
     sys.exit(-1)
 else:
     sys.exit(0)

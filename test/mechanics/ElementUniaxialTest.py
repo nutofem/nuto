@@ -38,8 +38,8 @@ def Run(rStructure, rType, rOrder):
 
     # set boundary conditions
     dimension = rStructure.GetDimension()
-    directionX = nuto.DoubleFullMatrix(dimension, 1)
-    directionX.SetValue(0, 0, 1.)
+    directionX = np.zeros((dimension, 1))
+    directionX[0, 0] = 1.0
 
     origin = np.zeros((dimension, 1))
     nodeGroupOrigin = rStructure.GroupCreate("Nodes")
@@ -50,10 +50,10 @@ def Run(rStructure, rType, rOrder):
         return
 
     # fix origin
-    nodeOrigin = rStructure.GroupGetMemberIds(nodeGroupOrigin).GetValue(0)
+    nodeOrigin = rStructure.GroupGetMemberIds(nodeGroupOrigin)[0]
     for dim in range(1, dimension):
-        direction = nuto.DoubleFullMatrix(dimension, 1)
-        direction.SetValue(dim, 0, 1.)
+        direction = np.zeros((dimension, 1))
+        direction[dim, 0] = 1.0
         rStructure.ConstraintLinearSetDisplacementNode(nodeOrigin, direction, 0.0)
 
     # fix x = 0 plane
@@ -85,8 +85,7 @@ def Run(rStructure, rType, rOrder):
     rStructure.GroupAddNodeCoordinateRange(allNodes, 0, -0.1, lX+0.1)
     rStructure.GroupAddElementsFromNodes(allElements, allNodes, True)
     elementIds = rStructure.GroupGetMemberIds(allElements)
-    for iElement in range(0, elementIds.GetNumRows()):
-        elementId = elementIds.GetValue(iElement)
+    for elementId in elementIds:
         stress = rStructure.ElementGetEngineeringStress(elementId)
         for iIP in range(0, stress.shape[1]):
             numericStress = stress[0, iIP]
@@ -99,8 +98,7 @@ def Run(rStructure, rType, rOrder):
     analyticForce = analyticStressX * lY * lZ
     numericForce = 0.
     nodeX0Indices = rStructure.GroupGetMemberIds(nodesX0)
-    for iNode in range(0, nodeX0Indices.GetNumRows()):
-        nodeId = nodeX0Indices.GetValue(iNode)
+    for nodeId in nodeX0Indices:
         force = np.zeros((dimension, 1))
         rStructure.NodeInternalForce(nodeId, force)
         numericForce += force[0]

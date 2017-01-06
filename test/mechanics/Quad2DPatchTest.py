@@ -73,8 +73,8 @@ def RunPatchTest(StressState):
     myStructure.GroupAddNode(LoadNodesYNeg, 0)
     myStructure.GroupAddNode(LoadNodesYNeg, 1)
 
-    directionX = nuto.DoubleFullMatrix(2, 1, (1, 0))
-    directionY = nuto.DoubleFullMatrix(2, 1, (0, 1))
+    directionX = np.array([1.0, 0.0])
+    directionY = np.array([0.0, 1.0])
 
     print "Displacement control with stress state ", StressState
 
