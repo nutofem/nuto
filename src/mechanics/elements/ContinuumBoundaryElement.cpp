@@ -5,7 +5,6 @@
  *      Author: vhirtham
  */
 #include "base/ErrorEnum.h"
-#include "math/FullMatrix.h"
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/elements/ContinuumBoundaryElement.h"
@@ -486,8 +485,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(Con
     {
         for (auto dofCol : mInterpolationType->GetActiveDofs())
         {
-            NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian0(dofRow, dofCol);
-            dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
+            Eigen::MatrixXd& dofSubMatrix = rHessian0(dofRow, dofCol);
+            dofSubMatrix.resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
             dofSubMatrix.setZero();
             if(!GetConstitutiveLaw(0).CheckDofCombinationComputable(dofRow,dofCol,0))
                 continue;
@@ -541,8 +540,8 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(Con
     {
         for (auto dofCol : mInterpolationType->GetActiveDofs())
         {
-            NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian0(dofRow, dofCol);
-            dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
+            Eigen::MatrixXd& dofSubMatrix = rHessian0(dofRow, dofCol);
+            dofSubMatrix.resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
             dofSubMatrix.setZero();
             if(!GetConstitutiveLaw(0).CheckDofCombinationComputable(dofRow,dofCol,1))
                 continue;

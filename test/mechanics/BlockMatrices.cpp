@@ -182,13 +182,13 @@ void BlockFullMatrixTest()
 
     m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS) = NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>::Random(numD, numD);
 
-    m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ).Resize(numD,numT);
+    m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ).resize(numD,numT);
     m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ) << 1, 2, 3, 1, 2, 3;
 
-    m(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::DISPLACEMENTS) = m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ).Trans();
+    m(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::DISPLACEMENTS) = m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ).transpose();
 
     auto& matrixTT = m(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::TEMPERATURE );
-    matrixTT.Resize(numT,numT);
+    matrixTT.resize(numT,numT);
 
     m.Info();
     m.CheckDimensions();

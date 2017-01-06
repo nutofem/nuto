@@ -202,7 +202,7 @@ NuTo::BlockFullMatrix<double> NuTo::StructureBase::ElementBuildHessian0_CDF(Elem
 //                 this->ElementTotalUpdateTmpStaticData();
 
                 // Calculate CDF
-                hessian0_CDF_dof.SetColumn(iCol, (ElementBuildInternalGradient(rElement)[dofRow]-internalGradient0[dofRow])/rDelta);
+                hessian0_CDF_dof.col(iCol) = (ElementBuildInternalGradient(rElement)[dofRow]-internalGradient0[dofRow])/rDelta;
 
                 // Restore the orignial dof values
                 if (index < numActiveDofs)

@@ -517,8 +517,8 @@ void NuTo::Element2DInterface::FillConstitutiveOutputMapHessian0(ConstitutiveOut
     {
         for (auto dofCol : mInterpolationType->GetActiveDofs())
         {
-            NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian0(dofRow, dofCol);
-            dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
+            Eigen::MatrixXd& dofSubMatrix = rHessian0(dofRow, dofCol);
+            dofSubMatrix.resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
             dofSubMatrix.setZero();
 
             switch (Node::CombineDofs(dofRow, dofCol))

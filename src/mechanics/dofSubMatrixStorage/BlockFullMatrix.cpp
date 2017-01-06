@@ -4,7 +4,6 @@
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "math/FullMatrix.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -45,7 +44,7 @@ NuTo::BlockFullMatrix<T>::BlockFullMatrix(NuTo::BlockFullMatrix<T>&& rOther)
 {}
 
 template<typename T>
-NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& NuTo::BlockFullMatrix<T>::operator ()(Node::eDof rDofRow, Node::eDof rDofCol)
+Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& NuTo::BlockFullMatrix<T>::operator ()(Node::eDof rDofRow, Node::eDof rDofCol)
 {
     auto data = mData.find(std::make_pair(rDofRow, rDofCol));
     assert (data != mData.end());
@@ -53,7 +52,7 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& NuTo::BlockFullMatrix<T>::o
 }
 
 template<typename T>
-const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& NuTo::BlockFullMatrix<T>::operator ()(Node::eDof rDofRow, Node::eDof rDofCol) const
+const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& NuTo::BlockFullMatrix<T>::operator ()(Node::eDof rDofRow, Node::eDof rDofCol) const
 {
     auto data = mData.find(std::make_pair(rDofRow, rDofCol));
     assert (data != mData.end());
@@ -187,7 +186,7 @@ Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockFullMatrix<T>::Expor
 {
     CheckDimensions();
     const auto& activeDofTypes = mDofStatus.GetActiveDofTypes();
-    FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> result (GetNumActiveRows(), GetNumActiveColumns());
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> result (GetNumActiveRows(), GetNumActiveColumns());
 
     int blockStartRow = 0;
     for (auto dofRow : activeDofTypes)
@@ -196,7 +195,7 @@ Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockFullMatrix<T>::Expor
         for (auto dofCol : activeDofTypes)
         {
             const auto& subMatrix = (*this)(dofRow, dofCol);
-            result.SetBlock(blockStartRow, blockStartCol, subMatrix);
+            result.block(blockStartRow, blockStartCol, subMatrix.rows(), subMatrix.cols()) = subMatrix;
 
             blockStartCol += subMatrix.cols();
         }

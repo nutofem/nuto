@@ -16,6 +16,7 @@
 | Max() | maxCoeff() |
 | Dot() | dot() |
 | matrix.ConservativeResizeRows(newNumRows) | matrix.conservativeResize(newNumRows, matrix.cols()) |
+| Trans() | transpose() |
 
 ## *PITFALLS*
 

@@ -262,7 +262,8 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian0(Constitutiv
 
             if (not (mInterpolationType->IsDof(dofRow) and mInterpolationType->IsDof(dofCol)))
             {
-                rHessian0(dofRow, dofCol).Resize(0, 0);
+                rHessian0(dofRow, dofCol).resize(0, 0);
+                rHessian0(dofRow, dofCol).setZero();
                 continue;
             }
 
@@ -353,7 +354,8 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian1(Constitutiv
 
             if (not (mInterpolationType->IsDof(dofRow) and mInterpolationType->IsDof(dofCol)))
             {
-                rHessian1(dofRow, dofCol).Resize(0, 0);
+                rHessian1(dofRow, dofCol).resize(0, 0);
+                rHessian1(dofRow, dofCol).setZero();
                 continue;
             }
 
@@ -405,7 +407,8 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian2(Constitutiv
 
             if (not (mInterpolationType->IsDof(dofRow) and mInterpolationType->IsDof(dofCol)))
             {
-                rHessian2(dofRow, dofCol).Resize(0, 0);
+                rHessian2(dofRow, dofCol).resize(0, 0);
+                rHessian2(dofRow, dofCol).setZero();
                 continue;
             }
 
