@@ -190,7 +190,7 @@ def Run3D(r3DShape, rTypeOrder):
     myStructure.InterpolationTypeAdd(myInterpolationType, "Displacements", rTypeOrder)
 
     # create elements
-    nodes = nuto.IntVector(8)
+    nodes = list(range(8))
     for countZ in range(0, numElementsZ):
         for countY in range(0, numElementsY):
             for countX in range(0, numElementsX):
@@ -205,12 +205,12 @@ def Run3D(r3DShape, rTypeOrder):
                 if (r3DShape == "Brick3D"):
                     myStructure.ElementCreate(myInterpolationType, nodes)
                 elif (r3DShape == "Tetrahedron3D"):
-                    myStructure.ElementCreate(myInterpolationType, nuto.IntVector([nodes[0], nodes[1], nodes[3], nodes[7]]))
-                    myStructure.ElementCreate(myInterpolationType, nuto.IntVector([nodes[0], nodes[1], nodes[7], nodes[4]]))
-                    myStructure.ElementCreate(myInterpolationType, nuto.IntVector([nodes[5], nodes[4], nodes[7], nodes[1]]))
-                    myStructure.ElementCreate(myInterpolationType, nuto.IntVector([nodes[6], nodes[5], nodes[7], nodes[1]]))
-                    myStructure.ElementCreate(myInterpolationType, nuto.IntVector([nodes[2], nodes[7], nodes[1], nodes[6]]))
-                    myStructure.ElementCreate(myInterpolationType, nuto.IntVector([nodes[2], nodes[3], nodes[1], nodes[7]]))
+                    myStructure.ElementCreate(myInterpolationType, [nodes[0], nodes[1], nodes[3], nodes[7]])
+                    myStructure.ElementCreate(myInterpolationType, [nodes[0], nodes[1], nodes[7], nodes[4]])
+                    myStructure.ElementCreate(myInterpolationType, [nodes[5], nodes[4], nodes[7], nodes[1]])
+                    myStructure.ElementCreate(myInterpolationType, [nodes[6], nodes[5], nodes[7], nodes[1]])
+                    myStructure.ElementCreate(myInterpolationType, [nodes[2], nodes[7], nodes[1], nodes[6]])
+                    myStructure.ElementCreate(myInterpolationType, [nodes[2], nodes[3], nodes[1], nodes[7]])
                 else:
                     error = True
                     errorMsg += "Element shape " + r3DShape + " is invalid. \n"
@@ -306,7 +306,7 @@ def Run1D(r1DShape, rTypeOrder):
     myStructure.InterpolationTypeAdd(myInterpolationType, "Displacements", rTypeOrder)
 
     # create elements
-    nodes = nuto.IntVector(2)
+    nodes = list(range(2))
     for countX in range(0, numElementsX):
         if (r1DShape == "Truss1D"):
             nodes[0] = countX

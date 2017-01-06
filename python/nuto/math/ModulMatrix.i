@@ -24,6 +24,10 @@
 %include "std_string.i"
 // convert python tuple to std::vector
 %include "std_vector.i"
+namespace std {
+   %template(IntVector) vector<int>;
+   %template(DoubleVector) vector<double>;
+}
 // use exceptions, but build no interface for NUTO::Exception
 %ignore Exception;
 %include "base/ModulNuToBase.i"
@@ -33,5 +37,3 @@
 %include "math/Matrix.h"
 %template(DoubleMatrix) NuTo::Matrix<double>;
 %template(IntMatrix) NuTo::Matrix<int>;
-%template(DoubleVector) std::vector<double>;
-%template(IntVector) std::vector<int>;

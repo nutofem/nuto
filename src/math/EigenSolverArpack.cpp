@@ -99,8 +99,8 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
 
     int ido=0; //return value for the reverse communication loop
     char bmat; //standard 'I' or general 'G' eigenvalue problem
-    int n = rK.rows();
-    if (n!=rK.cols())
+    int n = rK.GetNumRows();
+    if (n!=rK.GetNumColumns())
     	throw MathException(__PRETTY_FUNCTION__, "only square matrices are supported");
     //mWhichEigenValue[2];  //LA SA SM BE w
     int nev = rNumEigenValues;
@@ -174,7 +174,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
 		    	throw MathException(__PRETTY_FUNCTION__, "matrix type not implemented.");
 			};
 			//add diagonal shift
-			for (int count=0; count<solveMatrix->rows(); count++)
+            for (int count=0; count<solveMatrix->GetNumRows(); count++)
 			{
 				solveMatrix->AddValue(count,count,-mSigmaR);
 			}
@@ -368,7 +368,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
 		    	throw MathException(__PRETTY_FUNCTION__, "matrix type not implemented.");
 			};
 			//add diagonal shift
-			for (int count=0; count<solveMatrix->rows(); count++)
+            for (int count=0; count<solveMatrix->GetNumRows(); count++)
 			{
 				solveMatrix->AddValue(count,count,-mSigmaR);
 			}

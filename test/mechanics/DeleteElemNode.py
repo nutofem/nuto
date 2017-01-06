@@ -77,7 +77,7 @@ myStructure.InterpolationTypeAdd(interpolationType, "Displacements", "Equidistan
 
 
 # create elements
-elementIncidence = nuto.IntVector(8)
+elementIncidence = list(range(8))
 element = 0
 ElementGroup1 = myStructure.GroupCreate("Elements")
 for zCount in range (0, NumElementsZ):

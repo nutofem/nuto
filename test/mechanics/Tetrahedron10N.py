@@ -51,7 +51,7 @@ myStructure.InterpolationTypeAdd(myInterpolationType, "Displacements", "EQUIDIST
 
 # create element
 myElement1 = myStructure.ElementCreate(myInterpolationType,
-        nuto.IntVector([myNode1, myNode2, myNode3, myNode4, myNode5, myNode6, myNode7, myNode8, myNode9, myNode10]))
+        [myNode1, myNode2, myNode3, myNode4, myNode5, myNode6, myNode7, myNode8, myNode9, myNode10])
 myStructure.ElementTotalConvertToInterpolationType()
 
 # create constitutive law

@@ -265,7 +265,7 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     dmumps_c(&mSolver);
 
     //resize result matrix
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSchurComplementTranspose(rSchurIndices.cols(),rSchurIndices.rows());
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSchurComplementTranspose(rSchurIndices.rows(),rSchurIndices.rows());
 
     // define the problem
     mSolver.n   = matrixDimension;                       // dimension

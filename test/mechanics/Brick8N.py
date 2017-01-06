@@ -45,7 +45,7 @@ myStructure.InterpolationTypeAdd(myInterpolationType, "coordinates", "equidistan
 myStructure.InterpolationTypeAdd(myInterpolationType, "displacements", "equidistant1")
 
 # create element
-nodeIds = nuto.IntVector([myNode1, myNode2, myNode3, myNode4, myNode5, myNode6, myNode7, myNode8])
+nodeIds = [myNode1, myNode2, myNode3, myNode4, myNode5, myNode6, myNode7, myNode8]
 myElement1 = myStructure.ElementCreate(myInterpolationType, nodeIds)
 myStructure.ElementTotalConvertToInterpolationType()
 
