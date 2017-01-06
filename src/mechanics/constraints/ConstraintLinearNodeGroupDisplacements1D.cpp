@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -16,7 +14,6 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/constraints/ConstraintLinearNodeGroupDisplacements1D.h"
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 
 //! @brief constructor

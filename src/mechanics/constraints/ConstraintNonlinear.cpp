@@ -1,5 +1,3 @@
-// $Id: ConstraintNonlinear.cpp 328 2010-10-01 14:39:32Z unger3 $
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -9,7 +7,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include "math/FullVector.h"
 #include "mechanics/constraints/ConstraintNonlinear.h"
 #include "mechanics/MechanicsException.h"
 

@@ -1,5 +1,3 @@
-// $Id: ConstraintLinearNodeGroupRotations2D.cpp 530 2011-04-22 16:50:18Z unger3 $
-
 #include <iostream>
 
 #include "mechanics/MechanicsException.h"
@@ -7,7 +5,6 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/constraints/ConstraintLinearNodeGroupRotations2D.h"
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 
 //! @brief constructor

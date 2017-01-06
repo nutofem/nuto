@@ -3,7 +3,6 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "math/SparseMatrix.h"
-#include "math/FullVector.h"
 
 NuTo::ConstraintLinearNodeTemperature::ConstraintLinearNodeTemperature(const NodeBase* rNode, double rValue)
     :   ConstraintLinear(),

@@ -15,10 +15,9 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/constraints/ConstraintLagrangeNodeGroupDisplacements1D.h"
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRVector2Symmetric.h"
 
-NuTo::ConstraintLagrangeNodeGroupDisplacements1D::ConstraintLagrangeNodeGroupDisplacements1D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, NuTo::Constraint::eEquationSign rEquationSign, double rRHS) :
+NuTo::ConstraintLagrangeNodeGroupDisplacements1D::ConstraintLagrangeNodeGroupDisplacements1D(const Group<NodeBase>* rGroup, const Eigen::MatrixXd& rDirection, NuTo::Constraint::eEquationSign rEquationSign, double rRHS) :
         ConstraintNodeGroup(rGroup), ConstraintLagrange(rEquationSign)
 {
     if (rDirection.cols()!=1 || rDirection.rows()!=1)
@@ -48,9 +47,9 @@ void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetLagrangeMultiplier(Eig
 
 //! @brief returns the Lagrange Multiplier dofs
 //! first col Lagrangedofs
-void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetDofsLagrangeMultiplier(FullVector<int,Eigen::Dynamic>& rLagrangeMultiplier)const
+void NuTo::ConstraintLagrangeNodeGroupDisplacements1D::GetDofsLagrangeMultiplier(Eigen::VectorXi& rLagrangeMultiplier)const
 {
-    rLagrangeMultiplier.Resize(mGroup->GetNumMembers());
+    rLagrangeMultiplier.resize(mGroup->GetNumMembers());
     for (unsigned int count=0; count<mLagrangeDOF.size(); count++)
         rLagrangeMultiplier(count) = mLagrangeDOF[count];
 }

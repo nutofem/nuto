@@ -1,5 +1,3 @@
-// $Id: ConstraintLinearNodeGroupTemperature.cpp 596 2012-03-02 21:11:48Z unger3 $
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -16,7 +14,6 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/constraints/ConstraintLinearNodeGroupTemperature.h"
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 
 //! @brief constructor

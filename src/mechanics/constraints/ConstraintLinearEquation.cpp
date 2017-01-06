@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -12,7 +10,6 @@
 
 #include <iostream>
 
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/constraints/ConstraintEquationTerm.h"

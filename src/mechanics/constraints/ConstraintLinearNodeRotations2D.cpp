@@ -1,5 +1,3 @@
-// $Id: ConstraintLinearNodeRotations2D.cpp 530 2011-04-22 16:50:18Z unger3 $
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -15,7 +13,6 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/constraints/ConstraintLinearNodeRotations2D.h"
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 
 NuTo::ConstraintLinearNodeRotations2D::ConstraintLinearNodeRotations2D(const NodeBase* rNode, double rValue) :

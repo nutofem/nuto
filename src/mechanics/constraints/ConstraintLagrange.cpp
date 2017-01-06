@@ -1,5 +1,3 @@
-// $Id: ConstraintLagrange.cpp 328 2010-10-01 14:39:32Z unger3 $
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -11,7 +9,6 @@
 
 #include <iostream>
 
-#include "math/FullVector.h"
 #include "mechanics/constraints/ConstraintLagrange.h"
 #include "mechanics/MechanicsException.h"
 

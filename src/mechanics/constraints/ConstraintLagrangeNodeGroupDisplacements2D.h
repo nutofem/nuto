@@ -1,5 +1,3 @@
-// $Id: ConstraintLagrangeNodeDisplacements2D.h -1   $
-
 #pragma once
 
 #include "mechanics/constraints/ConstraintLagrange.h"
@@ -21,7 +19,7 @@ public:
     //! @brief constructor
     //! @param rDirection ... direction of the applied constraint
     //! @param rValue ... direction of the applied constraint
-    ConstraintLagrangeNodeGroupDisplacements2D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, NuTo::Constraint::eEquationSign rEquationSign, double rValue);
+    ConstraintLagrangeNodeGroupDisplacements2D(const Group<NodeBase>* rGroup, const Eigen::MatrixXd& rDirection, NuTo::Constraint::eEquationSign rEquationSign, double rValue);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
@@ -33,7 +31,7 @@ public:
 
     //! @brief returns the Lagrange Multiplier dofs
     //! first col Lagrangedofs
-    void GetDofsLagrangeMultiplier(FullVector<int,Eigen::Dynamic>& rLagrangeMultiplier)const;
+    void GetDofsLagrangeMultiplier(Eigen::VectorXi& rLagrangeMultiplier)const;
 
     //! @brief cast to Lagrange constraint - the corresponding dofs are eliminated in the global system
     NuTo::ConstraintLagrange* AsConstraintLagrange();

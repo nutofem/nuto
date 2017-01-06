@@ -1,11 +1,9 @@
-// $Id$
 #include <iostream>
 
 #include "mechanics/MechanicsException.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/constraints/ConstraintLinearNodeDisplacements1D.h"
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 
 // constructor
