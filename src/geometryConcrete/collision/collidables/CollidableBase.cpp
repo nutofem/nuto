@@ -5,12 +5,13 @@
  *      Author: ttitsche
  */
 
+#include <algorithm>
 
+#include "base/Exception.h"
 #include "geometryConcrete/collision/Event.h"
 #include "geometryConcrete/collision/collidables/CollidableBase.h"
 #include "geometryConcrete/collision/collidables/CollidableWallBase.h"
 #include "geometryConcrete/collision/collidables/CollidableParticleSphere.h"
-#include <algorithm>
 
 
 NuTo::CollidableBase::CollidableBase(const int rIndex)

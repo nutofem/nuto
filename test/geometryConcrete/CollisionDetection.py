@@ -4,7 +4,7 @@ import math
 # load nuto package
 import nuto
 import sys
-
+import numpy as np
 
 error = False
 
@@ -13,10 +13,10 @@ error = False
 # ==       Sphere-Sphere collision detection          ==
 # ======================================================
 
-sphere1 = nuto.CollidableParticleSphere(nuto.DoubleFullVector((0.,0.,0.)), nuto.DoubleFullVector((3.,0.,0.)), 2., 1., 10)
+sphere1 = nuto.CollidableParticleSphere(np.array([0.,0.,0.]), np.array([3.,0.,0.]), 2., 1., 10)
     # surface position after timeCollision = 2 seconds: x = 0 + 3*2 + 2 + 1*2 = 10
 
-sphere2 = nuto.CollidableParticleSphere(nuto.DoubleFullVector((19.,0.,0.)), nuto.DoubleFullVector((-2.,0.,0.)), 1., 2., 11)
+sphere2 = nuto.CollidableParticleSphere(np.array([19.,0.,0.]), np.array([-2.,0.,0.]), 1., 2., 11)
     # surface position after timeCollision = 2 seconds: x = 19 - 2*2 - 1 - 2*2 = 10
 
     
@@ -47,9 +47,9 @@ if timeCollision != -1 > 1e-14 :
 # ==  Sphere-Sphere collision detection, growth only  ==
 # ======================================================  
 
-sphere1 = nuto.CollidableParticleSphere(nuto.DoubleFullVector((0.,0.,0.)), nuto.DoubleFullVector((0.,0.,0.)), 2., 1., 10)
+sphere1 = nuto.CollidableParticleSphere(np.array([0.,0.,0.]), np.array([0.,0.,0.]), 2., 1., 10)
     # surface position after timeCollision = 1 second: x = 0 + 2 + 1*1 = 3
-sphere2 = nuto.CollidableParticleSphere(nuto.DoubleFullVector((6.,0.,0.)), nuto.DoubleFullVector((0.,0.,0.)), 1., 2., 11)
+sphere2 = nuto.CollidableParticleSphere(np.array([6.,0.,0.]), np.array([0.,0.,0.]), 1., 2., 11)
     # surface position after timeCollision = 1 second: x = 6 - 1 - 2*1 = 2
 sphere1.MoveAndGrow(.5)
 sphere2.MoveAndGrow(.2)
@@ -66,10 +66,10 @@ if abs(timeCollision - 1.) > 1e-14 :
 # ==        Wall-Sphere collision detection           ==
 # ======================================================
 
-sphere1 = nuto.CollidableParticleSphere(nuto.DoubleFullVector((0.,0.,0.)), nuto.DoubleFullVector((3.,0.,0.)), 2., 1., 10)
+sphere1 = nuto.CollidableParticleSphere(np.array([0.,0.,0.]), np.array([3.,0.,0.]), 2., 1., 10)
     # surface position after timeCollision = 2 seconds: x = 0 + 3*2 + 2 + 1*2 = 10
 
-wall = nuto.CollidableWallPhysical(nuto.DoubleFullVector((10.,0.,0.)), nuto.DoubleFullVector((-1.,0.,0.)), 0)
+wall = nuto.CollidableWallPhysical(np.array([10.,0.,0.]), np.array([-1.,0.,0.]), 0)
     
 print "[CollisionFrontalWall] synchronous"
 timeCollision, eventType = sphere1.PredictCollision(wall)
@@ -91,15 +91,17 @@ if timeCollision != -1 > 1e-14 :
 
 # build sphere matrix
 #rawSpheres = nuto.DoubleFullMatrix(3,4, [0.,0.,0.,4,           10.,0.,0.,4.,            5.,math.sqrt(75.),0.,4.])
-rawSpheres = nuto.DoubleFullMatrix(3,4, [0.,10.,5.,  0.,0.,math.sqrt(75.),   0.,0.,0., 5.,5.,5.])
-
+rawSpheres = np.array([[0.,10.,5.],[0.,0.,math.sqrt(75.)],[0.,0.,0.],[5.,5.,5.]])
 
 # build boundary matrix
-boundary = nuto.DoubleFullMatrix(3,2, [-1e10, -1e10, -1e10, 1e10, 1e10, 1e10])
+boundary = np.array([[-1e10, 1e10],
+                     [-1e10, 1e10],
+                     [-1e10, 1e10]])
 specimen = nuto.Specimen(boundary, 0);
 
 # build sub box division vector
-subBoxDivs = nuto.IntFullVector([1,1,1])
+subBoxDivs = np.array([1,1,1], dtype=float)
+print subBoxDivs.dtype
 
 # particle handler
 spheres = nuto.ParticleHandler(rawSpheres,0.,0.,1.)
@@ -118,8 +120,8 @@ dummy = events.SetTimeBarrier(1000.,subBoxes)
 # ====================================================== 
 
 
-sphere3 = nuto.CollidableParticleSphere(nuto.DoubleFullVector((0., 0.,0.)), nuto.DoubleFullVector((0.,0.,0.)), 0, 0, 1)
-sphere4 = nuto.CollidableParticleSphere(nuto.DoubleFullVector((0., 0.,0.)), nuto.DoubleFullVector((0.,0.,0.)), 0, 0, 1)
+sphere3 = nuto.CollidableParticleSphere(np.array([0., 0.,0.]), np.array([0.,0.,0.]), 0, 0, 1)
+sphere4 = nuto.CollidableParticleSphere(np.array([0., 0.,0.]), np.array([0.,0.,0.]), 0, 0, 1)
 
 events = nuto.EventListHandler()
 print ""
@@ -160,7 +162,7 @@ events.Clear()
  
 numParticles = 1000;
 bBoxLength = 40.
-bBox = nuto.DoubleFullMatrix(3,2,[-bBoxLength/2., -bBoxLength/2., -bBoxLength/2., bBoxLength/2., bBoxLength/2., bBoxLength/2.])
+bBox = np.array([[-bBoxLength/2., -bBoxLength/2., -bBoxLength/2.],[bBoxLength/2., bBoxLength/2., bBoxLength/2.]])
 
 specimen = nuto.Specimen(bBox, 0)
 
@@ -187,7 +189,7 @@ collisions = None
 
 
 bBoxLength = 40. * .7
-bBoxCylPos = nuto.DoubleFullMatrix(3,2,[-bBoxLength/2., -bBoxLength/2., -bBoxLength/2., bBoxLength/2., bBoxLength/2., bBoxLength/2.])
+bBoxCylPos = np.array([[-bBoxLength/2., -bBoxLength/2., -bBoxLength/2.],[bBoxLength/2., bBoxLength/2., bBoxLength/2.]])
 
 specimen = nuto.Specimen(bBox, 2)
 

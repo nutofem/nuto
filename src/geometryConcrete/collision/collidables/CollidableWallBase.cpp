@@ -5,7 +5,9 @@
  *      Author: ttitsche
  */
 
-#include "math/FullMatrix.h"
+#include <iomanip>
+#include <eigen3/Eigen/Dense> // for cross product
+
 #include "geometryConcrete/collision/Event.h"
 #include "geometryConcrete/collision/collidables/CollidableWallBase.h"
 #include "geometryConcrete/collision/collidables/CollidableParticleSphere.h"
@@ -22,7 +24,7 @@ NuTo::CollidableWallBase::CollidableWallBase(
 		  mInsideBox(nullptr),
 		  mOutsideBox(nullptr),
 		  mNonNullAxis(GetNonNullAxis()),
-		  mIsAxisAligned(std::abs(mDirection.Sum()) == 1)
+		  mIsAxisAligned(std::abs(mDirection.sum()) == 1)
 {
 	mDirection.normalize();
 }
@@ -77,36 +79,36 @@ void NuTo::CollidableWallBase::VisualizationStatic(
 	if (*mBoxes.begin() == mOutsideBox)
 		size = 2.;
 
-	NuTo::FullMatrix<double, 4, 3> corners;
+	Eigen::Matrix<double, 4, 3> corners;
 
 	// get some vector != mDirection
-	NuTo::FullVector<double, 3> random;
+	Eigen::Vector3d random;
 	random << 1, 0, 0;
-	if (std::abs(random.Dot(mDirection)) == 1)
+	if (std::abs(random.dot(mDirection)) == 1)
 	{
 		random << 0, 1, 0;
 	}
 
-	NuTo::FullVector<double, 3> transversal = random.cross(mDirection);
-	NuTo::FullVector<double, 3> transversal2 = transversal.cross(mDirection);
+	Eigen::Vector3d transversal = random.cross(mDirection);
+	Eigen::Vector3d transversal2 = transversal.cross(mDirection);
 
-	// normalize to size/2;
+//	 normalize to size/2;
 	transversal.normalize();
 	transversal2.normalize();
 
 	transversal *= size / 2;
 	transversal2 *= size / 2;
 
-	corners.SetRow(0, (mPosition + transversal + transversal2).transpose());
-	corners.SetRow(1, (mPosition + transversal - transversal2).transpose());
-	corners.SetRow(2, (mPosition - transversal - transversal2).transpose());
-	corners.SetRow(3, (mPosition - transversal + transversal2).transpose());
+	corners.row(0) = (mPosition + transversal + transversal2).transpose();
+	corners.row(1) = (mPosition + transversal - transversal2).transpose();
+	corners.row(2) = (mPosition - transversal - transversal2).transpose();
+	corners.row(3) = (mPosition - transversal + transversal2).transpose();
 
 
 	unsigned int cornerIndex[4];
 	for (int i = 0; i < 4; ++i)
 	{
-		cornerIndex[i] = rVisualizer.AddPoint(corners.GetRow(i).data());
+		cornerIndex[i] = rVisualizer.AddPoint(corners.row(i).data());
 	}
 	unsigned int insertIndex = rVisualizer.AddQuadCell(cornerIndex);
 
@@ -135,12 +137,11 @@ void NuTo::CollidableWallBase::MoveAndGrow(const double rTime)
 
 bool NuTo::CollidableWallBase::IsInside(const CollidableParticleSphere& rSphere) const
 {
-	const FullVector<double, 3>& dPosition = rSphere.mPosition - mPosition;
+	Eigen::Vector3d dPosition = rSphere.mPosition - mPosition;
 
 	double distanceToWall = mDirection.dot(dPosition);
 
 	return (distanceToWall + rSphere.mRadius >= 0);
-
 }
 
 const Eigen::VectorXd NuTo::CollidableWallBase::GetDirection() const

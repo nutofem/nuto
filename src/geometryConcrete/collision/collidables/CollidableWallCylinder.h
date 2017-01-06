@@ -24,9 +24,9 @@ public:
 	//! @param rRadius ... radius
 	//! @param rHeigth ... height
 	//! @param rIndex ... name
-	CollidableWallCylinder(FullVector<double, 3> rPosition,
-			FullVector<double, 3> rDirection, const double rRadius, const double rHeigth,
-			const int rIndex);
+	CollidableWallCylinder(Eigen::Vector3d rPosition,
+						   Eigen::Vector3d rDirection, const double rRadius, const double rHeigth,
+						   const int rIndex);
 
 	//! @brief ... collision between this and CollidableSphere
 	//! @param rSphere ... collision partner

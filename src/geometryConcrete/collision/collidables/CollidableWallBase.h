@@ -8,7 +8,7 @@
 #pragma once
 
 #include "geometryConcrete/collision/collidables/CollidableBase.h"
-#include "math/FullVector_Def.h"
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
@@ -95,10 +95,10 @@ public:
 protected:
 
 	//! @brief ... point of the point-and-normal-vector plane definition
-	FullVector<double, 3> mPosition;
+	Eigen::Vector3d mPosition;
 
 	//! @brief ... normal vector of the point-and-normal-vector plane definition
-	FullVector<double, 3> mDirection;
+	Eigen::Vector3d mDirection;
 
 	//! @brief ... box on the inner side of the wall
 	SubBox* mInsideBox;

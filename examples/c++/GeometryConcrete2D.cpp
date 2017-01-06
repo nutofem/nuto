@@ -103,14 +103,14 @@ int main(int argc, char* argv[])
     int gNodesWest = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
     int gNodesEast = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
 
-    int iNodeOrigin = myStructure.NodeGetIdAtCoordinate(NuTo::FullVector<double, 2>({0., 0.}), 1.e-6);
+    int iNodeOrigin = myStructure.NodeGetIdAtCoordinate(Eigen::Vector2d({0., 0.}), 1.e-6);
     myStructure.GroupAddNodeCoordinateRange(gNodesWest, 0, 0., 0.);
     myStructure.GroupAddNodeCoordinateRange(gNodesEast, 0, lX, lX);
 
-    myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesWest, NuTo::FullVector<double, 2>::UnitX(), 0.);
-    myStructure.ConstraintLinearSetDisplacementNode(iNodeOrigin, NuTo::FullVector<double, 2>::UnitY(), 0.);
+    myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesWest, Eigen::Vector2d::UnitX(), 0.);
+    myStructure.ConstraintLinearSetDisplacementNode(iNodeOrigin, Eigen::Vector2d::UnitY(), 0.);
 
-    int bc = myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesEast, NuTo::FullVector<double, 2>::UnitX(), 0);
+    int bc = myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesEast, Eigen::Vector2d::UnitX(), 0);
 
     // Visualisation
     myStructure.AddVisualizationComponent(gAggreg, NuTo::eVisualizeWhat::DISPLACEMENTS);

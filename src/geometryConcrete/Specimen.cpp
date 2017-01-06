@@ -5,10 +5,10 @@
  *      Author: ttitsche
  */
 
-#include "math/FullVector.h"
+#include "base/Exception.h"
 #include "geometryConcrete/Specimen.h"
 
-NuTo::Specimen::Specimen(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBoundingBox,
+NuTo::Specimen::Specimen(Eigen::MatrixXd rBoundingBox,
 		const eSpecimenType rTypeOfSpecimen)
 		:
 				mBoundingBox(rBoundingBox),
@@ -75,19 +75,19 @@ const double NuTo::Specimen::GetVolume() const
 
 void NuTo::Specimen::CalculateLength()
 {
-	mLength = Eigen::VectorXd(3);
+	mLength.resize(3);
 
 	int dimensionsToCheck = 3;
 
 	for (int i = 0; i < dimensionsToCheck; i++)
 	{
-		mLength[i] = mBoundingBox.GetValue(i, 1) - mBoundingBox.GetValue(i, 0);
+		mLength[i] = mBoundingBox(i, 1) - mBoundingBox(i, 0);
 		if (mLength[i] <= 0)
 			throw Exception(__PRETTY_FUNCTION__, "box dimensions should be not negative.");
 	}
 }
 
-const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& NuTo::Specimen::GetBoundingBox() const
+const Eigen::MatrixXd& NuTo::Specimen::GetBoundingBox() const
 {
 	return mBoundingBox;
 }

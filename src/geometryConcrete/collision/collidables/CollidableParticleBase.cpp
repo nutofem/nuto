@@ -5,8 +5,8 @@
  *      Author: ttitsche
  */
 
-#include "math/FullMatrix.h"
 #include "geometryConcrete/collision/collidables/CollidableParticleBase.h"
+#include "base/Exception.h"
 
 NuTo::CollidableParticleBase::CollidableParticleBase(
 		Eigen::VectorXd rPosition,
@@ -16,8 +16,8 @@ NuTo::CollidableParticleBase::CollidableParticleBase(
 {
 
 	if (mPosition.rows() != 3)
-		throw NuTo::Exception("[NuTo::CollidableParticleBase::CollidableParticleBase] position vector must have exactly 3 rows");
+		throw NuTo::Exception(__PRETTY_FUNCTION__, "position vector must have exactly 3 rows");
 
 	if (mVelocity.rows() != 3)
-		throw NuTo::Exception("[NuTo::CollidableParticleBase::CollidableParticleBase] velocity vector must have exactly 3 rows");
+		throw NuTo::Exception(__PRETTY_FUNCTION__, "velocity vector must have exactly 3 rows");
 }

@@ -5,7 +5,7 @@
  *      Author: ttitsche
  */
 
-#include "math/FullMatrix.h"
+
 #include "geometryConcrete/collision/Event.h"
 #include "geometryConcrete/collision/collidables/CollidableWallPhysical.h"
 #include "geometryConcrete/collision/collidables/CollidableParticleSphere.h"

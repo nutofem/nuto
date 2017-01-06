@@ -2,8 +2,6 @@
 %feature("autodoc","1");
 %{
 //Put headers and other declarations here to be added in the wrapper files
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
 #include "geometryConcrete/Specimen.h"
 #include "geometryConcrete/collision/collidables/CollidableBase.h"
 #include "geometryConcrete/collision/collidables/CollidableParticleBase.h"
@@ -25,7 +23,11 @@
 %include "typemaps.i"
 %include "eigen.i"
 %eigen_typemaps(Eigen::VectorXd)
+%eigen_typemaps(Eigen::VectorXi)
+%eigen_typemaps(Eigen::Matrix<int, Eigen::Dynamic, 1>)
 %eigen_typemaps(Eigen::Matrix<double, Eigen::Dynamic, 1>)
+%eigen_typemaps(Eigen::MatrixXd)
+%eigen_typemaps(Eigen::MatrixXi)
 
 
 %apply int& OUTPUT { int& rType };

@@ -7,8 +7,8 @@
 
 #pragma once
 
-//member
-#include "math/FullMatrix_Def.h"
+#include <string>
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
@@ -68,12 +68,12 @@ public:
 
     //! @brief ... sets the grading curve - self defined
     //! @param rGradingCurve ... user defined grading curve
-    void SetGradingCurve(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rGradingCurve);
+    void SetGradingCurve(const Eigen::MatrixXd& rGradingCurve);
 
 
-    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetParticles(bool rBeforeEDMD);
+    Eigen::MatrixXd GetParticles(bool rBeforeEDMD);
 
-    void SetParticles(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>);
+    void SetParticles(Eigen::MatrixXd);
 
     //! @brief sets the absolute grow rate, removes the relative growth rate
     void SetAbsoluteGrowthRate(double rAbsoluteGrowthRate);
@@ -107,7 +107,7 @@ private:
 
     Specimen* mSpecimen = nullptr;
     ParticleHandler* mParticleHandler = nullptr;
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> mGradingCurve;
+    Eigen::MatrixXd mGradingCurve;
 
     double mSeed = 42;
     double mParticleVolumeFraction = 0.5;

@@ -5,14 +5,14 @@
  *      Author: ttitsche
  */
 
+#include "base/Exception.h"
+
 #include "geometryConcrete/WallTime.h"
 #include "geometryConcrete/collision/Event.h"
 #include "geometryConcrete/collision/SubBox.h"
 #include "geometryConcrete/collision/collidables/CollidableParticleSphere.h"
 #include "geometryConcrete/collision/collidables/CollidableWallBase.h"
 #include "geometryConcrete/collision/handler/EventListHandler.h"
-#include <omp.h>
-#include <algorithm>
 
 NuTo::SubBox::SubBox(const int rIndex)
 		: mIndex(rIndex)

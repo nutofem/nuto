@@ -5,8 +5,9 @@
  *      Author: ttitsche
  */
 
-#include "math/FullMatrix.h"
+#include <iomanip>
 
+#include "base/Exception.h"
 #include "geometryConcrete/collision/Event.h"
 #include "geometryConcrete/collision/collidables/CollidableParticleSphere.h"
 #include "geometryConcrete/collision/collidables/CollidableBase.h"
@@ -71,14 +72,14 @@ void NuTo::CollidableParticleSphere::PerformCollision(CollidableBase& rCollidabl
 
 void NuTo::CollidableParticleSphere::PerformCollision(CollidableParticleSphere& rSphere)
 {
-	FullVector<double, 3> velocity1 = this->mVelocity;
-	FullVector<double, 3> velocity2 = rSphere.mVelocity;
+	Eigen::Vector3d velocity1 = this->mVelocity;
+	Eigen::Vector3d velocity2 = rSphere.mVelocity;
 
 	double mass1 = pow(this->mRadius, 3);
 	double mass2 = pow(rSphere.mRadius, 3);
 
 	// 1) Get normal direction
-	FullVector<double, 3> n = this->mPosition - rSphere.mPosition;
+	Eigen::Vector3d n = this->mPosition - rSphere.mPosition;
 	n.normalize();
 
 	// 2) Velocity split:
@@ -87,8 +88,8 @@ void NuTo::CollidableParticleSphere::PerformCollision(CollidableParticleSphere& 
 	double velocityNormal2 = n.dot(velocity2);
 
 	// 2.2) tangential velocity
-	FullVector<double, 3> velocityTransversal1 = velocity1 - n * velocityNormal1;
-	FullVector<double, 3> velocityTransversal2 = velocity2 - n * velocityNormal2;
+	Eigen::Vector3d velocityTransversal1 = velocity1 - n * velocityNormal1;
+	Eigen::Vector3d velocityTransversal2 = velocity2 - n * velocityNormal2;
 
 	// 3.1) 1D collision
 	double velocityNormalNew1 = SphereCollision1D(velocityNormal1, velocityNormal2, mass1, mass2);
@@ -149,8 +150,8 @@ const double NuTo::CollidableParticleSphere::PredictCollision(CollidableParticle
 	}
 	baseTime = s1->mTimeOfLastUpdate;
 
-	FullVector<double, 3> dP = s1->mPosition - (s2->mPosition + s2->mVelocity * (s1->mTimeOfLastUpdate - s2->mTimeOfLastUpdate));
-    FullVector<double, 3> dV = s1->mVelocity - s2->mVelocity;
+	Eigen::Vector3d dP = s1->mPosition - (s2->mPosition + s2->mVelocity * (s1->mTimeOfLastUpdate - s2->mTimeOfLastUpdate));
+	Eigen::Vector3d dV = s1->mVelocity - s2->mVelocity;
 
     double dR = s1->mRadius + s2->mRadius + s2->mGrowthRate * (s1->mTimeOfLastUpdate - s2->mTimeOfLastUpdate);
     double dG = s1->mGrowthRate + s2->mGrowthRate;
@@ -202,9 +203,9 @@ const double NuTo::CollidableParticleSphere::PredictCollision(CollidableWallBase
 	return rWall.PredictCollision(*this, rType);
 }
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::CollidableParticleSphere::ExportRow(bool rInitialRadius) const
+Eigen::MatrixXd NuTo::CollidableParticleSphere::ExportRow(bool rInitialRadius) const
 {
-	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> data(1, 4);
+	Eigen::MatrixXd data(1, 4);
 	double radius = rInitialRadius? mRadius0 : mRadius;
 	data << mPosition[0], mPosition[1], mPosition[2], radius;
 	return data;
