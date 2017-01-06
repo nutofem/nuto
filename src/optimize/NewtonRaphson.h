@@ -1,5 +1,3 @@
-// $Id$
-
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -24,22 +22,11 @@ public:
     //! @brief constructor
     NewtonRaphson();
 
-//    //! @brief sets the pointer to the analytic derivative of the residual function
-//    //! @param rParam ... parameters necessary to evaluate the residual
-//    //! @param rUnknown ... unknown vector
-//    void SetResidualDerivativeFunction(
-//    		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>(*rResidualDerivativeFunction)
-//			(const Eigen::VectorXd&,Eigen::VectorXd))
-//    {
-//    	mResidualDerivativeFunction = rResidualDerivativeFunction;
-//    }
-
     //! @brief sets the pointer to the analytic derivative of the residual function
     //! @param rParam ... parameters necessary to evaluate the residual
     //! @param rUnknown ... unknown vector
     void SetResidualDerivativeFunction(
-    		boost::function<NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>
-    		    	(const Eigen::VectorXd&,Eigen::VectorXd)> rResidualDerivativeFunction)
+            boost::function<Eigen::MatrixXd(const Eigen::VectorXd&, Eigen::VectorXd)> rResidualDerivativeFunction)
     {
     	mResidualDerivativeFunctionBoost = rResidualDerivativeFunction;
     	mAssignResidualResidualDerivative = true;
@@ -95,11 +82,9 @@ public:
 
 protected:
     //pointer to the analytical derivative of the residual function (analytic Jacobi matrix)
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> (*mResidualDerivativeFunction)
-    	(const Eigen::VectorXd&,Eigen::VectorXd);
+    Eigen::MatrixXd (*mResidualDerivativeFunction)(const Eigen::VectorXd&,Eigen::VectorXd);
 
-    boost::function<NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>
-    	(const Eigen::VectorXd&,Eigen::VectorXd)> mResidualDerivativeFunctionBoost;
+    boost::function<Eigen::MatrixXd(const Eigen::VectorXd&,Eigen::VectorXd)> mResidualDerivativeFunctionBoost;
 
     //a boolean variable which gets true if a jacobi function is assigned
     bool mAssignResidualResidualDerivative;

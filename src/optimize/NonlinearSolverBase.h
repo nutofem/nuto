@@ -1,21 +1,11 @@
-
 #pragma once
-
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-
-
-
-
-
-// parent
 #include "base/NuToObject.h"
-
-#include "math/FullVector_Def.h"
 
 #include <boost/function.hpp>
 #include <eigen3/Eigen/Core>
@@ -24,8 +14,6 @@ namespace NuTo
 {
 
 enum class eError;
-
-template<class T, int rows, int cols> class FullMatrix;
 
 //! @author Kindrachuk
 //! @date December 2015
@@ -50,26 +38,15 @@ public:
     //! @brief sets the pointer to the residual function
     //! @param rParam ... parameters necessary to evaluate the residual
     //! @param rUnknown ... unknown vector
-//    void SetResidualFunction(
-//    		Eigen::VectorXd (*rResidualFunction)(
-//    		const Eigen::VectorXd&,
-//    		Eigen::VectorXd))
-//    {
-//    	mResidualFunction = rResidualFunction;
-//    }
-
-    //! @brief sets the pointer to the residual function
-    //! @param rParam ... parameters necessary to evaluate the residual
-    //! @param rUnknown ... unknown vector
     void SetResidualFunction(
-    		boost::function<Eigen::VectorXd
-    (const Eigen::VectorXd&,Eigen::VectorXd)> rResidualFunction)
+            boost::function<Eigen::VectorXd(const Eigen::VectorXd&,Eigen::VectorXd)> rResidualFunction)
     {
     	mResidualFunctionBoost = rResidualFunction;
     	mAssignResidual = true;
     }
 
-    //! @brief sets the tolerance for the residual vector, (the components of the residual should be of the same magnitude of order)
+    //! @brief Sets the tolerance for the residual vector
+    //! @remark The components of the residual should be of the same magnitude of order
     void SetResidualTolerance(double rTolResidual)
     {
         mTolResidual = rTolResidual;
@@ -81,7 +58,8 @@ public:
     	return mTolResidual;
     }
 
-    //! @brief sets the tolerance for the solution vector, (the components of the rUnknown vector should be of the same magnitude of order)
+    //! @brief Sets the tolerance for the solution vector
+    //! @remark The components of the rUnknown vector should be of the same magnitude of order
     void SetSolutionTolerance(double rTolSolution)
     {
         mTolSolution = rTolSolution;
@@ -114,8 +92,7 @@ public:
     //! @brief ... numerical differentiation of the residual function mResidualFunction (numerical Jacobi matrix)
     //! @param rUnknown ... position at which the derivative is taken
     //! @param rFvec ... residual vector at the position rUnknown, rFvec = mResidualFunction(rParameter,rUnknown)
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualNum(Eigen::VectorXd rUnknown,
-    		Eigen::VectorXd &rFvec) const;
+    Eigen::MatrixXd DResidualNum(Eigen::VectorXd rUnknown, Eigen::VectorXd &rFvec) const;
 
     //! @brief ... calculates 0.5*rFvec^2 and updates rFvec = mResidualFunction(mParameter,rUnknown)
     double Fmin(Eigen::VectorXd rUnknown, Eigen::VectorXd &rFvec) const;
@@ -133,8 +110,7 @@ public:
 
 protected:
     //pointer to the residual function
-    Eigen::VectorXd (*mResidualFunction)
-	(const Eigen::VectorXd&,Eigen::VectorXd);
+    Eigen::VectorXd (*mResidualFunction)(const Eigen::VectorXd&,Eigen::VectorXd);
 
     boost::function<Eigen::VectorXd (const Eigen::VectorXd&,Eigen::VectorXd)> mResidualFunctionBoost;
 

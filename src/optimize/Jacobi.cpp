@@ -1,16 +1,5 @@
-// $Id $
-
-
-//! @author Andrea Keßler, ISM
-//! @brief ...jacobi method
-
-
+#include <iomanip>
 #include "optimize/Jacobi.h"
-#include "math/FullMatrix.h"
-#define machine_precision 1e-15
-//sqrt machine_precision
-
-#define tol 1e-8
 
 //! @brief ... Optimize routine - optimize displacement or error according to input
 //! @brief ... Optimize residual if $|r|\inequal 0$

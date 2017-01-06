@@ -1,5 +1,3 @@
-// $Id$
-#include "math/FullMatrix.h"
 #include "optimize/ConjugateGradientNonLinear.h"
 #define machine_precision 1e-15
 #define tol 1e-8  //sqrt machine_precision
@@ -42,8 +40,8 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
 
     bool BrentsMethodConverged;
 
-    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> gradientOrig;
-    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> hessianOrig;
+    Eigen::MatrixXd gradientOrig;
+    Eigen::MatrixXd hessianOrig;
     Eigen::VectorXd prevParameters;
     Eigen::VectorXd gradientScaled;
     Eigen::VectorXd scaleFactorsInv(GetNumParameters());
@@ -525,7 +523,7 @@ int NuTo::ConjugateGradientNonLinear::Optimize()
     return static_cast<int>(returnValue);
 }
 
-void NuTo::ConjugateGradientNonLinear::CalcScalingFactors(int& numHessianCalls, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& hessianOrig, Eigen::VectorXd& scaleFactorsInv)
+void NuTo::ConjugateGradientNonLinear::CalcScalingFactors(int& numHessianCalls, Eigen::MatrixXd& hessianOrig, Eigen::VectorXd& scaleFactorsInv)
 {
     //calculate hessian for preconditioning
     mpCallbackHandler->Hessian(hessianOrig);
@@ -597,12 +595,12 @@ void NuTo::ConjugateGradientNonLinear::Save ( const std::string &filename, std::
 		}
 		else
 		{
-			throw MathException ( "[FullMatrix::Save]File type not implemented." );
+			throw MathException (__PRETTY_FUNCTION__, "File type not implemented." );
 		}
 	}
 	catch ( boost::archive::archive_exception &e )
 	{
-		std::string s ( std::string ( "[FullMatrix::Save]File save exception in boost - " ) +std::string ( e.what() ) );
+		std::string s( __PRETTY_FUNCTION__ + "File save exception in boost - " + e.what());
 		std::cout << s << "\n";
 		throw MathException ( s );
 	}

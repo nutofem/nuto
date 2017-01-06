@@ -14,11 +14,11 @@
 # endif
 
 #include "base/ErrorEnum.h"
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
 
 #include "optimize/NewtonRaphson.h"
 #include "optimize/OptimizeException.h"
+
+#include <eigen3/Eigen/LU>
 
 //! @brief constructor
 NuTo::NewtonRaphson::NewtonRaphson() : NonlinearSolverBase()
@@ -74,7 +74,7 @@ NuTo::eError NuTo::NewtonRaphson::NewtonRaphsonIterator(Eigen::VectorXd &rX, boo
 	int its,n=rX.rows();
 	double den,f,fold,stpmax,test;
 	Eigen::VectorXd g(n),p(n),xold(n);
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> fjac(n,n);
+    Eigen::MatrixXd fjac(n,n);
 	Eigen::VectorXd fvec;
 
 	f = this->Fmin(rX, fvec);
