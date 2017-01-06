@@ -367,7 +367,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping1
 	    	const Eigen::VectorXd ParameterList(Parameter);
 
 	        // prepare starting Newton solver with respect to the "Unknown"
-//	        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> (GradientDamageEngineeringStressFatigue::*fdjacAn)
+//	        Eigen::MatrixXd (GradientDamageEngineeringStressFatigue::*fdjacAn)
 //	        	(const Eigen::VectorXd&,Eigen::VectorXd) const;
 //
 //	        Eigen::VectorXd (GradientDamageEngineeringStressFatigue::*residual)
@@ -382,7 +382,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping1
 	        boost::function<Eigen::VectorXd (const Eigen::VectorXd&,Eigen::VectorXd)> residualFunction;
 	        residualFunction = boost::bind( &GradientDamageEngineeringStressFatigue::Residual, this, _1, _2 );
 
-	        boost::function<NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>
+	        boost::function<Eigen::MatrixXd
 	        	(const Eigen::VectorXd&,Eigen::VectorXd)> jacobiFunction;
 	        jacobiFunction = boost::bind( &GradientDamageEngineeringStressFatigue::DResidualAn, this, _1, _2 );
 
@@ -419,7 +419,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping1
 
 	    	// calculate nonlocal eq tangent
 	        if (rNewTangentNonlocal!=0) {
-	        	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> matrixMultipl;
+	        	Eigen::MatrixXd matrixMultipl;
 
 	        	matrixMultipl  = ((GradientDamageEngineeringStressFatigue::DResidualAn(ParameterList,Unknown)).fullPivLu().
 	        			solve(GradientDamageEngineeringStressFatigue::DResidualDEpsNonlocalAn(ParameterList,Unknown))).eval();
@@ -567,7 +567,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::Evaluate2D(Ele
 		throw MechanicsException("[NuTo::GradientDamageEngineeringStressFatigue::Evaluate2D] Invalid type of 2D section behaviour found!!!");
 	}
 
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(3,3);
+	Eigen::MatrixXd ElasticStiffness(3,3);
 	ElasticStiffness << C11, C12,  0.,
 						C12, C11,  0.,
 						0.,  0.,  C33;
@@ -822,7 +822,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping2
     		throw MechanicsException("[NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping2D] Invalid type of 2D section behaviour found!!!");
     	}
 
-		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(3,3);
+		Eigen::MatrixXd ElasticStiffness(3,3);
 		ElasticStiffness << C11, C12,  0.,
 							C12, C11,  0.,
 							0.,  0.,  C33;
@@ -871,7 +871,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping2
 	    	const Eigen::VectorXd ParameterList(Parameter);
 
 	        // prepare starting Newton solver with respect to the "Unknown"
-//	        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> (GradientDamageEngineeringStressFatigue::*fdjacAn)
+//	        Eigen::MatrixXd (GradientDamageEngineeringStressFatigue::*fdjacAn)
 //	        	(const Eigen::VectorXd&,Eigen::VectorXd) const;
 //
 //	        Eigen::VectorXd (GradientDamageEngineeringStressFatigue::*residual)
@@ -887,7 +887,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping2
 	        boost::function<Eigen::VectorXd (const Eigen::VectorXd&,Eigen::VectorXd)> residualFunction;
 	        residualFunction = boost::bind( &GradientDamageEngineeringStressFatigue::Residual, this, _1, _2 );
 
-	        boost::function<NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>
+	        boost::function<Eigen::MatrixXd
 	        	(const Eigen::VectorXd&,Eigen::VectorXd)> jacobiFunction;
 	        jacobiFunction = boost::bind( &GradientDamageEngineeringStressFatigue::DResidualAn, this, _1, _2 );
 
@@ -924,7 +924,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping2
 
 	    	// calculate nonlocal eq tangent
 	        if (rNewTangentNonlocal!=0) {
-	        	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> matrixMultipl;
+	        	Eigen::MatrixXd matrixMultipl;
 
 	        	matrixMultipl  = ((GradientDamageEngineeringStressFatigue::DResidualAn(ParameterList,Unknown)).fullPivLu().
 	        			solve(GradientDamageEngineeringStressFatigue::DResidualDEpsNonlocalAn(ParameterList,Unknown))).eval();

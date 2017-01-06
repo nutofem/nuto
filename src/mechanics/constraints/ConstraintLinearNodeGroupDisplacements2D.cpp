@@ -19,10 +19,10 @@
 #include "math/SparseMatrixCSRGeneral.h"
 
 //! @brief constructor
-NuTo::ConstraintLinearNodeGroupDisplacements2D::ConstraintLinearNodeGroupDisplacements2D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue) :
+NuTo::ConstraintLinearNodeGroupDisplacements2D::ConstraintLinearNodeGroupDisplacements2D(const Group<NodeBase>* rGroup, const Eigen::VectorXd& rDirection, double rValue) :
         ConstraintNodeGroup(rGroup), ConstraintLinear()
 {
-    if (rDirection.cols()!=1 || rDirection.rows()!=2)
+    if (rDirection.rows()!=2)
         throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements2D::ConstraintLinearNodeGroupDisplacements2D] Dimension of the direction matrix must be equal to the dimension of the structure.");
 
     memcpy(mDirection,rDirection.data(),2*sizeof(double));

@@ -15,7 +15,6 @@
 #include <map>
 #endif // ENABLE_SERIALIZATION
 
-#include "math/FullVector_Def.h"
 #include "mechanics/groups/GroupBase.h"
 #include "mechanics/MechanicsException.h"
 
@@ -132,12 +131,12 @@ public:
 
     //! @brief returns the group members
     //! @return group members (id)
-    NuTo::FullVector<int,Eigen::Dynamic> GetMemberIds()const
+    std::vector<int> GetMemberIds() const override
     {
-        NuTo::FullVector<int,Eigen::Dynamic> members((int)this->size());
-        int count(0);
-        for (auto it = this->begin(); it!=this->end(); it++, count++)
-            members(count) = it->first;
+        std::vector<int> members;
+        members.reserve(this->size());
+        for (auto pair : *this)
+            members.push_back(pair.first);
         return members;
     }
 

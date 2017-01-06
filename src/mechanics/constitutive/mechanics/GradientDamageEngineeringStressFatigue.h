@@ -352,14 +352,14 @@ private:
 		}
 
     //! @brief ... calculates the analytical matrix:= derivative of the Residual by nonlocal eq strain
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualDEpsNonlocalAn(
+    Eigen::MatrixXd DResidualDEpsNonlocalAn(
     		const Eigen::VectorXd &rParameter,
     		Eigen::VectorXd rUnknown) const
 		{
 			if (rParameter.size()!=4) {
 				throw MechanicsException("[NuTo::GradientDamageEngineeringStressFatigue::DResidualDEpsNonlocalAn] the parameter vector expects 4 components.");
 			}
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(rUnknown.rows(),1);
+			Eigen::MatrixXd deriv(rUnknown.rows(),1);
 
 			double rPrevKappa, rPrevNonlocalEqStrain, rNonlocalEqStrain;
 			double rDeltaKappa;
@@ -385,7 +385,7 @@ private:
 		}
 
     //! @brief ... calculates the analytical Jacobi matrix:= derivative of the Residual
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualAn(
+    Eigen::MatrixXd DResidualAn(
     		const Eigen::VectorXd &rParameter,
     		Eigen::VectorXd rUnknown) const
 		{
@@ -393,7 +393,7 @@ private:
 				throw MechanicsException("[NuTo::GradientDamageEngineeringStressFatigue::DResidualAn] the parameter vector expects 4 components.");
 			}
 
-    		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(rUnknown.rows(),rUnknown.rows());
+    		Eigen::MatrixXd deriv(rUnknown.rows(),rUnknown.rows());
 
 			double rPrevKappa, rPrevNonlocalEqStrain, rNonlocalEqStrain;
 			double rDeltaKappa;

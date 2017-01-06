@@ -1,4 +1,5 @@
 // $Id$
+#include "base/Timer.h"
 
 #include <boost/foreach.hpp>
 #include "math/SparseMatrixCSRVector2.h"
@@ -31,22 +32,11 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "ANN/ANN.h"
 
-//! @brief adds a displacement constraint equation for a node
-//! @param rNode pointer to node
-//! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-//! @return integer id to delete or modify the constraint
-int NuTo::StructureBase::ConstraintLinearSetDisplacementNode(NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+int NuTo::StructureBase::ConstraintLinearSetDisplacementNode(NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue)
 {
 	this->mNodeNumberingRequired = true;
-	//find unused integer id
-    int id(0);
-    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
-    while (it!=mConstraintMap.end())
-    {
-        id++;
-        it = mConstraintMap.find(id);
-    }
+
+    int id = GetUnusedId(mConstraintMap);
 
     switch (mDimension)
     {
@@ -65,21 +55,12 @@ int NuTo::StructureBase::ConstraintLinearSetDisplacementNode(NodeBase* rNode, co
     return id;
 }
 
-//! @brief adds a rotation constraint equation for a node
-//! @param rNode pointer to node
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-//! @return integer id to delete or modify the constraint
+
 int NuTo::StructureBase::ConstraintLinearSetRotationNode(NodeBase* rNode, double rValue)
 {
 	this->mNodeNumberingRequired = true;
-	//find unused integer id
-    int id(0);
-    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
-    while (it!=mConstraintMap.end())
-    {
-        id++;
-        it = mConstraintMap.find(id);
-    }
+
+    int id = GetUnusedId(mConstraintMap);
 
     switch (mDimension)
     {
@@ -98,11 +79,7 @@ int NuTo::StructureBase::ConstraintLinearSetRotationNode(NodeBase* rNode, double
     return id;
 }
 
-//! @brief adds a displacement constraint equation for a node
-//! @param rIdent identifier for node
-//! @param rComponent e.g. the first (count from zero) displacement component
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-int  NuTo::StructureBase::ConstraintLinearSetDisplacementNode(int rIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+int  NuTo::StructureBase::ConstraintLinearSetDisplacementNode(int rIdent, const Eigen::VectorXd& rDirection, double rValue)
 {
 	this->mNodeNumberingRequired = true;
     NodeBase* nodePtr;
@@ -123,9 +100,6 @@ int  NuTo::StructureBase::ConstraintLinearSetDisplacementNode(int rIdent, const 
     return ConstraintLinearSetDisplacementNode(nodePtr,rDirection, rValue);
 }
 
-//! @brief adds a rotation constraint equation for a node
-//! @param rNode identifier for node
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
 int  NuTo::StructureBase::ConstraintLinearSetRotationNode(int rIdent, double rValue)
 {
 	this->mNodeNumberingRequired = true;
@@ -147,21 +121,10 @@ int  NuTo::StructureBase::ConstraintLinearSetRotationNode(int rIdent, double rVa
     return ConstraintLinearSetRotationNode(nodePtr, rValue);
 }
 
-//! @brief adds a relative humidity constraint equation for node
-//! @param rNode pointer to node
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-//! @return integer id to delete or modify the constraint
 int NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode(NodeBase* rNode, double rValue)
 {
     this->mNodeNumberingRequired = true;
-    //find unused integer id
-    int id(0);
-    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
-    while (it!=mConstraintMap.end())
-    {
-        id++;
-        it = mConstraintMap.find(id);
-    }
+    int id = GetUnusedId(mConstraintMap);
 
     switch (mDimension)
     {
@@ -176,10 +139,6 @@ int NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode(NodeBase* rNode
     return id;
 }
 
-//! @brief adds a relative humidity constraint for a node
-//! @param rIdent identifier for node
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-//! @return integer id to delete or modify the constraint
 int NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode(int rIdent, double rValue)
 {
     this->mNodeNumberingRequired = true;
@@ -205,14 +164,8 @@ int NuTo::StructureBase::ConstraintLinearSetRelativeHumidityNode(int rIdent, dou
 int NuTo::StructureBase::ConstraintLinearSetTemperatureNode(NodeBase* rNode, double rValue)
 {
     this->mNodeNumberingRequired = true;
-    //find unused integer id
-    int id(0);
-    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
-    while (it!=mConstraintMap.end())
-    {
-        id++;
-        it = mConstraintMap.find(id);
-    }
+
+    int id = GetUnusedId(mConstraintMap);
 
     switch (mDimension)
     {
@@ -249,21 +202,11 @@ int NuTo::StructureBase::ConstraintLinearSetTemperatureNode(int rIdent, double r
 }
 
 
-//! @brief adds a water volume fraction constraint for a node
-//! @param rNode pointer to node
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-//! @return integer id to delete or modify the constraint
 int NuTo::StructureBase::ConstraintLinearSetWaterVolumeFractionNode(NodeBase* rNode, double rValue)
 {
     this->mNodeNumberingRequired = true;
-    //find unused integer id
-    int id(0);
-    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
-    while (it!=mConstraintMap.end())
-    {
-        id++;
-        it = mConstraintMap.find(id);
-    }
+
+    int id = GetUnusedId(mConstraintMap);
 
     switch (mDimension)
     {
@@ -282,10 +225,6 @@ int NuTo::StructureBase::ConstraintLinearSetWaterVolumeFractionNode(NodeBase* rN
     return id;
 }
 
-//! @brief adds a water volume fraction constraint for a node
-//! @param rIdent identifier for node
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-//! @return integer id to delete or modify the constraint
 int NuTo::StructureBase::ConstraintLinearSetWaterVolumeFractionNode(int rIdent, double rValue)
 {
     this->mNodeNumberingRequired = true;
@@ -308,23 +247,11 @@ int NuTo::StructureBase::ConstraintLinearSetWaterVolumeFractionNode(int rIdent, 
 }
 
 
-//! @brief adds a displacement constraint equation for a group of node
-//! @param rNode pointer to group of nodes
-//! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-//! @return integer id to delete or modify the constraint
-int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const Eigen::VectorXd& rDirection, double rValue)
 {
 	this->mNodeNumberingRequired = true;
-    //find unused integer id
-    int id(0);
-    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
-    while (it!=mConstraintMap.end())
-    {
-        id++;
-        it = mConstraintMap.find(id);
-    }
-
+    int id = GetUnusedId(mConstraintMap);
+    
     switch (mDimension)
     {
     case 1:
@@ -342,22 +269,11 @@ int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase
     return id;
 }
 
-//! @brief adds a rotation constraint equation for a group of node
-//! @param rNode pointer to group of nodes
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-//! @return integer id to delete or modify the constraint
 int NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup(Group<NodeBase>* rGroup, double rValue)
 {
 	this->mNodeNumberingRequired = true;
-    //find unused integer id
-    int id(0);
-    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
-    while (it!=mConstraintMap.end())
-    {
-        id++;
-        it = mConstraintMap.find(id);
-    }
-
+    int id = GetUnusedId(mConstraintMap);
+    
     switch (mDimension)
     {
     case 1:
@@ -376,12 +292,7 @@ int NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup(Group<NodeBase>* r
 }
 
 
-//! @brief adds a constraint equation for a group of nodes
-//! @param rGroupIdent identifier for group of nodes
-//! @param rDof displacements, rotations, temperatures
-//! @param rComponent e.g. the first (count from zero) displacement component
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const Eigen::VectorXd& rDirection, double rValue)
 {
 	this->mNodeNumberingRequired = true;
     boost::ptr_map<int,GroupBase>::iterator itGroup = mGroupMap.find(rGroupIdent);
@@ -395,9 +306,6 @@ int NuTo::StructureBase::ConstraintLinearSetDisplacementNodeGroup(int rGroupIden
     return ConstraintLinearSetDisplacementNodeGroup(nodeGroup,rDirection, rValue);
 }
 
-//! @brief adds a constraint equation for a group of nodes
-//! @param rGroupIdent identifier for group of nodes
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
 int NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup(int rGroupIdent, double rValue)
 {
 	this->mNodeNumberingRequired = true;
@@ -412,9 +320,6 @@ int NuTo::StructureBase::ConstraintLinearSetRotationNodeGroup(int rGroupIdent, d
     return ConstraintLinearSetRotationNodeGroup(nodeGroup, rValue);
 }
 
-//! @brief adds a constraint equation for a group of nodes
-//! @param rGroupIdent identifier for group of nodes
-//! @param rValue prescribed value (e.g. zero to fix a temperature to zero)
 int NuTo::StructureBase::ConstraintLinearSetTemperatureNodeGroup(int rGroupIdent, double rValue)
 {
 	this->mNodeNumberingRequired = true;
@@ -430,29 +335,15 @@ int NuTo::StructureBase::ConstraintLinearSetTemperatureNodeGroup(int rGroupIdent
 }
 
 
-//! @brief adds a temperature constraint equation for a group of nodes
-//! @param rNode pointer to group of nodes
-//! @param rValue prescribed value (e.g. zero to fix a temperature to zero)
-//! @return integer id to delete or modify the constraint
 int NuTo::StructureBase::ConstraintLinearSetTemperatureNodeGroup(Group<NodeBase>* rGroup, double rValue)
 {
 	this->mNodeNumberingRequired = true;
-    //find unused integer id
-    int id(0);
-    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
-    while (it!=mConstraintMap.end())
-    {
-        id++;
-        it = mConstraintMap.find(id);
-    }
+    int id = GetUnusedId(mConstraintMap);
 
     mConstraintMap.insert(id, new NuTo::ConstraintLinearNodeGroupTemperature(rGroup,rValue));
     return id;
 }
 
-//! @brief returns the number of constraint equations for a specific dof type
-//! @return number of constraints
-//! @param rDofType  dof type
 int NuTo::StructureBase::ConstraintGetNumLinearConstraints(Node::eDof rDof) const
 {
     int numLinearConstraints = 0;
@@ -514,9 +405,6 @@ NuTo::BlockSparseMatrix NuTo::StructureBase::ConstraintGetConstraintMatrixBefore
     return constraintMatrix;
 }
 
-//! @brief returns the constraint vector after gauss elimination
-//! rConstraintMatrix*DOFS = RHS
-//! @return rhs
 const NuTo::BlockFullVector<double>& NuTo::StructureBase::ConstraintGetRHSAfterGaussElimination() const
 {
     if (mNodeNumberingRequired)
@@ -576,8 +464,6 @@ NuTo::BlockFullVector<double> NuTo::StructureBase::ConstraintGetRHSBeforeGaussEl
     return rhsBeforeGaussElimination;
 }
 
-//! @brief calculates the right hand side of the constraint equations based on the mapping matrix and the rhs before the gauss elimination
-//! the result is stored internally in mConstraintRHS
 void NuTo::StructureBase::ConstraintUpdateRHSAfterGaussElimination()
 {
     if (mNodeNumberingRequired)
@@ -597,9 +483,6 @@ void NuTo::StructureBase::ConstraintUpdateRHSAfterGaussElimination()
 }
 
 
-//!@brief sets/modifies the right hand side of the constraint equations
-//!@param rRHS new right hand side
-//!@param rRHS new right hand side
 void NuTo::StructureBase::ConstraintSetRHS(int rConstraintEquation, double rRHS)
 {
     auto  it = mConstraintMap.find(rConstraintEquation);
@@ -613,9 +496,6 @@ void NuTo::StructureBase::ConstraintSetRHS(int rConstraintEquation, double rRHS)
     ConstraintUpdateRHSAfterGaussElimination();
 }
 
-//!@brief gets the right hand side of the constraint equations
-//!@param rConstraintEquation constraint equation
-//!@return rRHS
 double NuTo::StructureBase::ConstraintGetRHS(int rConstraintEquation)const
 {
     boost::ptr_map<int,ConstraintBase>::const_iterator it = mConstraintMap.find(rConstraintEquation);
@@ -630,14 +510,7 @@ double NuTo::StructureBase::ConstraintGetRHS(int rConstraintEquation)const
 int NuTo::StructureBase::ConstraintLinearEquationCreate(int rNode, const std::string& rDof, double rCoefficient, double rRHS)
 {
 	this->mNodeNumberingRequired = true;
-    //find unused integer id
-    int id(0);
-    boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(id);
-    while (it != mConstraintMap.end())
-    {
-        id++;
-        it = mConstraintMap.find(id);
-    }
+    int id = GetUnusedId(mConstraintMap);
 
     // create constraint
     this->ConstraintLinearEquationCreate(id, rNode, rDof, rCoefficient, rRHS);
@@ -701,7 +574,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
 
     int nodeGroup = GroupCreate(eGroupId::Nodes);
     GroupAddNodesFromElements(nodeGroup, rElementGroup);
-    NuTo::FullVector<int, -1> nodeGroupIds = GroupGetMemberIds(nodeGroup);
+    std::vector<int> nodeGroupIds = GroupGetMemberIds(nodeGroup);
 
     const int dim = GetDimension();
 
@@ -723,16 +596,13 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
 
 //    std::cout << "GroupGetNumMembers(nodeGroup)" << GroupGetNumMembers(nodeGroup) << std::endl;
 
-
     for (int iNode = 0; iNode < GroupGetNumMembers(nodeGroup); ++iNode)
     {
-        Eigen::VectorXd tmpMatrix = NodeGetNodePtr(nodeGroupIds(iNode, 0))->Get(Node::eDof::COORDINATES);
+        Eigen::VectorXd tmpMatrix = NodeGetNodePtr(nodeGroupIds[iNode])->Get(Node::eDof::COORDINATES);
 
         for (int iDim = 0; iDim < dim; ++iDim)
-            dataPoints[iNode][iDim] = tmpMatrix(iDim,0);
-
+            dataPoints[iNode][iDim] = tmpMatrix(iDim, 0);
     }
-
 
 
 
@@ -1054,21 +924,12 @@ void NuTo::StructureBase::ConstraintEquationGetDofInformationFromString(const st
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "invalid dof string.");
     }
 }
-//! @brief ... set periodic boundary conditions according to a prescibed angle of a localization zone
-//! @param  rAngle... angle in deg
-//! @param  rStrain... average strain to be applied (epsilon_xx, epsilon_yy, gamma_xy)
-//! @param  rNodeGroupUpper... all nodes on the upper boundary
-//! @param  rNodeGrouplower... all nodes on the lower boundary
-//! @param  rNodeGroupLeft... all nodes on the left boundary
-//! @param  rNodeGroupRight...  all nodes on the right boundary
-int NuTo::StructureBase::ConstraintLinearDisplacementsSetPeriodic2D(double rAngle, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rStrain,
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rCrackOpening, double rRadiusToCrackWithoutConstraints,
+
+int NuTo::StructureBase::ConstraintLinearDisplacementsSetPeriodic2D(double rAngle, Eigen::MatrixXd rStrain,
+        double rRadiusToCrackWithoutConstraints,
         int rNodeGroupUpperId, int rNodeGroupLowerId, int rNodeGroupLeftId, int rNodeGroupRightId)
 {
-#ifdef SHOW_TIME
-    std::clock_t start,end;
-    start=clock();
-#endif
+    NuTo::Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
     //check dimension of the structure
     if (mDimension!=2)
         throw MechanicsException("[NuTo::StructureBase::ConstraintSetPeriodicBoundaryConditions2D] only implemented for 2D");
@@ -1123,7 +984,7 @@ int NuTo::StructureBase::ConstraintLinearDisplacementsSetPeriodic2D(double rAngl
 
         EngineeringStrain<2> engineeringStrain;
         engineeringStrain.AsVector() = rStrain;
-        ConstraintBase* constraintPtr = new NuTo::ConstraintLinearDisplacementsPeriodic2D(this, rAngle, engineeringStrain, rCrackOpening, rRadiusToCrackWithoutConstraints,
+        ConstraintBase* constraintPtr = new NuTo::ConstraintLinearDisplacementsPeriodic2D(this, rAngle, engineeringStrain, rRadiusToCrackWithoutConstraints,
                    nodeGroupUpperPtr, nodeGroupLowerPtr, nodeGroupLeftPtr, nodeGroupRightPtr);
 
         // insert constraint equation into map
@@ -1134,19 +995,10 @@ int NuTo::StructureBase::ConstraintLinearDisplacementsSetPeriodic2D(double rAngl
         e.AddMessage("[NuTo::StructureBase::ConstraintSetPeriodicBoundaryConditions2D] error creating periodic boundary conditions in 2D");
         throw;
     }
-#ifdef SHOW_TIME
-    end=clock();
-    if (mShowTime)
-        std::cout<<"[NuTo::StructureBase::ConstraintDisplacementsSetPeriodic2D] " << difftime(end,start)/CLOCKS_PER_SEC << "sec" << std::endl;
-#endif
-
-    // return integer id
     return id;
-
 }
 
 
-//! @brief info about the elements in the Structure
 void NuTo::StructureBase::ConstraintInfo(int rVerboseLevel)const
 {
     mLogger <<"number of constraints: " << mConstraintMap.size() << "\n";
@@ -1163,9 +1015,6 @@ void NuTo::StructureBase::ConstraintInfo(int rVerboseLevel)const
     }
 }
 
-//!@brief deletes a constraint equation
-//!@param rConstraintEquation id of the constraint equation
-//!@param rCrackOpening new crack opening (x,y)
 void NuTo::StructureBase::ConstraintDelete(int rConstraintId)
 {
     boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(rConstraintId);
@@ -1183,9 +1032,6 @@ int NuTo::StructureBase::ConstraintGetNumLinearConstraints(std::string rDof) con
     return ConstraintGetNumLinearConstraints(Node::DofToEnum(rDof));
 }
 
-//! @brief releases a constraint, (remove from the list but don't delete it)
-//!@param rConstraintEquation id of the constraint equation
-//! @return ptr to constraint
 NuTo::ConstraintBase* NuTo::StructureBase::ConstraintRelease(int rConstraintId)
 {
     boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(rConstraintId);
@@ -1199,26 +1045,15 @@ NuTo::ConstraintBase* NuTo::StructureBase::ConstraintRelease(int rConstraintId)
 }
 
 
-//! @brief adds a displacement constraint equation for a node
-//! @param rDOFType Type of the DOF that should be constrained (displacements, relativehumidity etc.)
-//! @param rNode pointer to node
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-//! @return integer id to delete or modify the constraint
 int NuTo::StructureBase::ConstraintLinearSetNode(NuTo::Node::eDof rDOFType, NuTo::NodeBase *rNode, double rValue)
 {
     NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> direction(1,1);
     return ConstraintLinearSetNode(rDOFType,rNode,direction,rValue);
 }
 
-//! @brief adds a displacement constraint equation for a node
-//! @param rDOFType Type of the DOF that should be constrained (displacements, relativehumidity etc.)
-//! @param rNode pointer to node
-//! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
-//! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-//! @return integer id to delete or modify the constraint
 int NuTo::StructureBase::ConstraintLinearSetNode(NuTo::Node::eDof rDOFType,
                                                  NuTo::NodeBase *rNode,
-                                                 const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> &rDirection,
+                                                 const Eigen::VectorXd& rDirection,
                                                  double rValue)
 {
     switch(rDOFType)
@@ -1237,9 +1072,6 @@ int NuTo::StructureBase::ConstraintLinearSetNode(NuTo::Node::eDof rDOFType,
     }
 }
 
-//! @brief adds a constraint to the map
-//! @param ConstraintId constraint id
-//! @param
 void NuTo::StructureBase::ConstraintAdd(int rConstraintId, NuTo::ConstraintBase* rConstraint)
 {
     boost::ptr_map<int,ConstraintBase>::iterator it = mConstraintMap.find(rConstraintId);

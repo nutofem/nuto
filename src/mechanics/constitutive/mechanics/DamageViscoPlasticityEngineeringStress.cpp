@@ -32,8 +32,6 @@
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/sections/SectionBase.h"
 #include "mechanics/sections/SectionEnum.h"
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
 
 #include <math.h>
 
@@ -482,7 +480,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityEngineeringStress::Evaluate3D(Ele
 // THIS IS TEST NEWTON
 //	Eigen::VectorXd x(3);
 //	bool check;
-//	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> (DamageViscoPlasticityEngineeringStress::*fdjacAn)
+//	Eigen::MatrixXd (DamageViscoPlasticityEngineeringStress::*fdjacAn)
 //			(Eigen::VectorXd) const;
 //	fdjacAn = &DamageViscoPlasticityEngineeringStress::DResidualAn;
 //	x[0] = -1., x[1] = 2., x[2] = 3.;
@@ -705,7 +703,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityEngineeringStress::ReturnMapping3
 
     // get elastic matrix
 	// calculate coefficients of the linear elastic material matrix
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
+	Eigen::MatrixXd ElasticStiffness(6, 6);
 	double C11, C12, C44;
 	this->CalculateCoefficients3D(C11, C12, C44);
 	ElasticStiffness << C11, C12, C12,  0., 0.,  0.,
@@ -771,7 +769,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityEngineeringStress::ReturnMapping3
 
         // prepare starting Newton solver with respect to the "Unknown"
         bool check;
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> (DamageViscoPlasticityEngineeringStress::*fdjacAn)
+        Eigen::MatrixXd (DamageViscoPlasticityEngineeringStress::*fdjacAn)
         	(const Eigen::VectorXd&,Eigen::VectorXd) const;
 
         // set Jacobi to analytical Jacobi
@@ -836,7 +834,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityEngineeringStress::ReturnMapping3
 
         // calculate algorithmic tangent
         if (rNewTangent!=0) {
-            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rMatrixMultipl;
+            Eigen::MatrixXd rMatrixMultipl;
 
             rMatrixMultipl = -((this->DResidualAn(Parameter,Unknown)).fullPivLu().solve(this->DResidualDEpsAn(Unknown))).eval();
             (*rNewTangent) = rMatrixMultipl.block<6,6>(0,0);

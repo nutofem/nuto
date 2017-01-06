@@ -1014,9 +1014,9 @@ std::pair<int,int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId,
     int groupElementsFibre = GroupCreate(NuTo::eGroupId::Elements);
 
     // loop over elements in element group
-    for (int i = 0; i < elementIds.size(); ++i)
+    for (int elementId : elementIds)
     {
-        auto nodeIds = ElementGetNodes(elementIds(i,0));
+        auto nodeIds = ElementGetNodes(elementId);
 
         assert( (nodeIds.size() == 2 or nodeIds.size() == 3) and "Only implemented for the 4 node and 6 node interface element");
 
@@ -1037,13 +1037,13 @@ std::pair<int,int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId,
             {
                 assert(GroupGetNumMembers(groupNodes) == 2 and "This group should have exactly two members. Check what went wrong!");
                 auto groupNodeMemberIds = GroupGetMemberIds(groupNodes);
-                if (groupNodeMemberIds(0,0) == nodeIds(k,0))
+                if (groupNodeMemberIds[0] == nodeIds(k,0))
                 {
-                    nodeIdsFibre[k] = groupNodeMemberIds(1,0);
+                    nodeIdsFibre[k] = groupNodeMemberIds[1];
 
                 } else
                 {
-                    nodeIdsFibre[k] = groupNodeMemberIds(0,0);
+                    nodeIdsFibre[k] = groupNodeMemberIds[0];
                 }
             }
             else
@@ -1077,17 +1077,12 @@ std::pair<int,int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId,
         GroupAddElement(groupElementsFibre, newElementFibre);
 
         // delete  old element
-        ElementDelete(elementIds(i,0));
+        ElementDelete(elementId);
 
     }
-
-
     return std::make_pair(groupElementsFibre, groupElementsInterface);
-
 }
 
-//! @brief Deletes a group of elements element
-//! @param rGroupNumber group number
 void NuTo::Structure::ElementGroupDelete(int rGroupNumber, bool deleteNodes)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());

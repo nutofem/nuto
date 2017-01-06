@@ -5,14 +5,13 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/loads/LoadNodeGroupForces3D.h"
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 
 //! @brief constructor
-NuTo::LoadNodeGroupForces3D::LoadNodeGroupForces3D(int rLoadCase, const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue) :
+NuTo::LoadNodeGroupForces3D::LoadNodeGroupForces3D(int rLoadCase, const Group<NodeBase>* rGroup, const Eigen::VectorXd& rDirection, double rValue) :
         LoadNodeGroup(rLoadCase,rGroup)
 {
-    if (rDirection.cols()!=1 || rDirection.rows()!=3)
+    if (rDirection.rows()!=3)
         throw MechanicsException("[NuTo::LoadNodeGroupForces3D::LoadNodeGroupForces3D] Dimension of the direction matrix must be equal to the dimension of the structure.");
 
     memcpy(mDirection,rDirection.data(),3*sizeof(double));

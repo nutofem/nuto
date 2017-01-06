@@ -204,12 +204,8 @@ void run2d()
             int groupConstraintNodes = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
             myStructure.GroupAddNodeFromElementGroupCoordinateRange(groupConstraintNodes, groupIdFiber, 0, iDomain * deltaLength, (iDomain+1) * deltaLength);
 
-            auto nodeIds = myStructure.GroupGetMemberIds(groupConstraintNodes);
-
-            for (int iNode = 0; iNode < nodeIds.rows(); ++iNode)
-            {
-                myStructure.ConstraintLinearEquationNodeToElementCreate(nodeIds(iNode, 0), groupMatrixElements, NuTo::Node::eDof::DISPLACEMENTS, numNearestNeighbours);
-            }
+            for (int nodeId : myStructure.GroupGetMemberIds(groupConstraintNodes))
+                myStructure.ConstraintLinearEquationNodeToElementCreate(nodeId, groupMatrixElements, NuTo::Node::eDof::DISPLACEMENTS, numNearestNeighbours);
         }
 
         std::cout << "***********************************" << std::endl;
@@ -436,12 +432,8 @@ void run3d()
         int groupConstraintNodes = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
         myStructure.GroupAddNodeFromElementGroupCoordinateRange(groupConstraintNodes, groupIdFiber, 0, iDomain * deltaLength, (iDomain+1) * deltaLength);
 
-        auto nodeIds = myStructure.GroupGetMemberIds(groupConstraintNodes);
-
-        for (int iNode = 0; iNode < nodeIds.rows(); ++iNode)
-        {
-            myStructure.ConstraintLinearEquationNodeToElementCreate(nodeIds(iNode, 0), groupMatrixElements, NuTo::Node::eDof::DISPLACEMENTS, numNearestNeighbours);
-        }
+        for (int nodeId : myStructure.GroupGetMemberIds(groupConstraintNodes))
+            myStructure.ConstraintLinearEquationNodeToElementCreate(nodeId, groupMatrixElements, NuTo::Node::eDof::DISPLACEMENTS, numNearestNeighbours);
     }
 
     std::cout << "***********************************" << std::endl;

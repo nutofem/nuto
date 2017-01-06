@@ -845,9 +845,9 @@ void NuTo::MisesPlasticityEngineeringStress::SetParameterDouble(eConstitutivePar
 }
 
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::MisesPlasticityEngineeringStress::GetYieldStrength() const
+Eigen::MatrixXd NuTo::MisesPlasticityEngineeringStress::GetYieldStrength() const
 {
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> returnMatrix(mSigma.size(),2);
+	Eigen::MatrixXd returnMatrix(mSigma.size(),2);
 	for (unsigned int count=0; count<mSigma.size(); count++)
 	{
 		returnMatrix(count,0) = mSigma[count].first;
@@ -877,14 +877,14 @@ void NuTo::MisesPlasticityEngineeringStress::AddYieldStrength(double rEpsilon, d
 			break;
 		}
 	}
-	mSigma.insert(it,1,std::pair<double,double>(rEpsilon,rSigma));
+	mSigma.insert(it,1, std::pair<double,double>(rEpsilon, rSigma));
     this->SetParametersValid();
 }
 
 
-NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::MisesPlasticityEngineeringStress::GetHardeningModulus() const
+Eigen::MatrixXd NuTo::MisesPlasticityEngineeringStress::GetHardeningModulus() const
 {
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> returnMatrix(mH.size(),2);
+	Eigen::MatrixXd returnMatrix(mH.size(),2);
 	for (unsigned int count=0; count<mH.size(); count++)
 	{
 		returnMatrix(count,0) = mH[count].first;
@@ -908,7 +908,7 @@ void NuTo::MisesPlasticityEngineeringStress::AddHardeningModulus(double rEpsilon
 			break;
 		}
 	}
-	mH.insert(it,1,std::pair<double,double>(rEpsilon,rH));
+	mH.insert(it, 1, std::pair<double,double>(rEpsilon, rH));
     this->SetParametersValid();
 }
 

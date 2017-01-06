@@ -119,10 +119,9 @@ void ApplyDofValues(NuTo::Structure& rStructure)
     rStructure.NodeBuildGlobalDofs();
 
     int gAllNodes = rStructure.GroupGetNodesTotal();
-    auto nodeIds = rStructure.GroupGetMemberIds(gAllNodes);
-    for (int i = 0; i < nodeIds.GetNumRows(); ++i)
+    for (int nodeId : rStructure.GroupGetMemberIds(gAllNodes))
     {
-        NuTo::NodeBase* node = rStructure.NodeGetNodePtr(nodeIds.GetValue(i));
+        NuTo::NodeBase* node = rStructure.NodeGetNodePtr(nodeId);
         Eigen::VectorXd disps = node->Get(NuTo::Node::eDof::COORDINATES) / 100. * boundaryDisplacement;
         node->Set(NuTo::Node::eDof::DISPLACEMENTS, disps);
 
@@ -409,10 +408,8 @@ void TestStructure3D(NuTo::Interpolation::eShapeType rShape, bool rUseRobinBound
 
 void GroupRemoveNodesWithoutDisplacements(NuTo::Structure& rStructure, int rGroupNodeId)
 {
-    auto ids = rStructure.GroupGetMemberIds(rGroupNodeId);
-    for (int i = 0; i < ids.GetNumRows(); ++i)
+    for (int nodeId : rStructure.GroupGetMemberIds(rGroupNodeId))
     {
-        int nodeId = ids.GetValue(i);
         NuTo::NodeBase* node = rStructure.NodeGetNodePtr(nodeId);
         if (node->GetNum(NuTo::Node::eDof::DISPLACEMENTS) == 0)
         {
@@ -599,19 +596,19 @@ void Check1D2D3D()
     GroupRemoveNodesWithoutDisplacements(s3D, leftNodes3D);
     GroupRemoveNodesWithoutDisplacements(s3D, rightNodes3D);
 
-    s1D.ConstraintLinearSetDisplacementNodeGroup(leftNodes1D, NuTo::FullVector<double, 1>::UnitX(), 0.0);
-    s2D.ConstraintLinearSetDisplacementNodeGroup(leftNodes2D, NuTo::FullVector<double, 2>::UnitX(), 0.0);
-    s3D.ConstraintLinearSetDisplacementNodeGroup(leftNodes3D, NuTo::FullVector<double, 3>::UnitX(), 0.0);
+    s1D.ConstraintLinearSetDisplacementNodeGroup(leftNodes1D, Eigen::Matrix<double, 1, 1>::UnitX(), 0.0);
+    s2D.ConstraintLinearSetDisplacementNodeGroup(leftNodes2D, Eigen::Matrix<double, 2, 1>::UnitX(), 0.0);
+    s3D.ConstraintLinearSetDisplacementNodeGroup(leftNodes3D, Eigen::Matrix<double, 3, 1>::UnitX(), 0.0);
 
-    int bc1D = s1D.ConstraintLinearSetDisplacementNodeGroup(rightNodes1D, NuTo::FullVector<double, 1>::UnitX(), 0.0);
-    int bc2D = s2D.ConstraintLinearSetDisplacementNodeGroup(rightNodes2D, NuTo::FullVector<double, 2>::UnitX(), 0.0);
-    int bc3D = s3D.ConstraintLinearSetDisplacementNodeGroup(rightNodes3D, NuTo::FullVector<double, 3>::UnitX(), 0.0);
+    int bc1D = s1D.ConstraintLinearSetDisplacementNodeGroup(rightNodes1D, Eigen::Matrix<double, 1, 1>::UnitX(), 0.0);
+    int bc2D = s2D.ConstraintLinearSetDisplacementNodeGroup(rightNodes2D, Eigen::Matrix<double, 2, 1>::UnitX(), 0.0);
+    int bc3D = s3D.ConstraintLinearSetDisplacementNodeGroup(rightNodes3D, Eigen::Matrix<double, 3, 1>::UnitX(), 0.0);
 
-    s2D.ConstraintLinearSetDisplacementNode(0, NuTo::FullVector<double, 2>::UnitY(), 0.);
-    s3D.ConstraintLinearSetDisplacementNode(0, NuTo::FullVector<double, 3>::UnitY(), 0.);
+    s2D.ConstraintLinearSetDisplacementNode(0, Eigen::Vector2d::UnitY(), 0.);
+    s3D.ConstraintLinearSetDisplacementNode(0, Eigen::Vector3d::UnitY(), 0.);
 
-    int nFixRotation = s3D.NodeGetIdAtCoordinate(NuTo::FullVector<double, 3>({0,0,lz}), 1.e-4);
-    s3D.ConstraintLinearSetDisplacementNode(nFixRotation, NuTo::FullVector<double, 3>::UnitY(), 0.);
+    int nFixRotation = s3D.NodeGetIdAtCoordinate(Eigen::Vector3d({0,0,lz}), 1.e-4);
+    s3D.ConstraintLinearSetDisplacementNode(nFixRotation, Eigen::Vector3d::UnitY(), 0.);
 
     Visualize(s1D, "tmp");
     Visualize(s2D, "tmp");

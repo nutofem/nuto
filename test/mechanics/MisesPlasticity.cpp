@@ -110,7 +110,7 @@ void Mises2D(const std::string& rDir)
 
     myIntegrationScheme.SetResultDirectory(rDir+"2D/", true);
     myIntegrationScheme.AddResultGroupNodeForce("Force", gNodesXplus);
-    myIntegrationScheme.AddResultNodeDisplacements("Displ", myStructure.GroupGetMemberIds(gNodesXplus).GetValue(0));
+    myIntegrationScheme.AddResultNodeDisplacements("Displ", myStructure.GroupGetMemberIds(gNodesXplus)[0]);
 
     double simulationTime = 1;
     double deltaD = 5;
@@ -226,7 +226,7 @@ void Mises3D(const std::string& rDir)
     NuTo::NewmarkDirect myIntegrationScheme(&myStructure);
 
     myIntegrationScheme.AddResultGroupNodeForce("Force", gNodesXplus);
-    myIntegrationScheme.AddResultNodeDisplacements("Displ", myStructure.GroupGetMemberIds(gNodesXplus).GetValue(0));
+    myIntegrationScheme.AddResultNodeDisplacements("Displ", myStructure.GroupGetMemberIds(gNodesXplus)[0]);
 
     double simulationTime = 1;
     double deltaD = 5;

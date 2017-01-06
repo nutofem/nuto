@@ -20,7 +20,7 @@ public:
     //! @brief constructor
     //! @param rDirection ... direction of the applied constraint
     //! @param rValue ... direction of the applied constraint
-    ConstraintLinearNodeDisplacements2D(const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    ConstraintLinearNodeDisplacements2D(const NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints

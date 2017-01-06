@@ -43,37 +43,37 @@ int NuTo::ConstraintBase::GetNumLagrangeMultipliers()const
 //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
 NuTo::ConstraintLinear* NuTo::ConstraintBase::AsConstraintLinear()
 {
-    throw MechanicsException("[NuTo::ConstraintBase::AsConstraintLinear] Constraint is not linear.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "Constraint is not linear.");
 }
 
 //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
 const NuTo::ConstraintLinear* NuTo::ConstraintBase::AsConstraintLinear()const
 {
-    throw MechanicsException("[NuTo::ConstraintBase::AsConstraintLinear] Constraint is not linear.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "Constraint is not linear.");
 }
 
 //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
 NuTo::ConstraintNonlinear* NuTo::ConstraintBase::AsConstraintNonlinear()
 {
-    throw MechanicsException("[NuTo::ConstraintBase::AsConstraintNonlinear] Constraint is not nonlinear.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "Constraint is not nonlinear.");
 }
 
 //! @brief cast to linear constraint - the corresponding dofs are eliminated in the global system
 const NuTo::ConstraintNonlinear* NuTo::ConstraintBase::AsConstraintNonlinear()const
 {
-    throw MechanicsException("[NuTo::ConstraintBase::AsConstraintNonlinear] Constraint is not nonlinear.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "Constraint is not nonlinear.");
 }
 
 //! @brief cast to linear constraint - Lagrange multipliers are added to the system of equations
 NuTo::ConstraintLagrange* NuTo::ConstraintBase::AsConstraintLagrange()
 {
-    throw MechanicsException("[NuTo::ConstraintBase::AsConstraintLagrange] Constraint has no Lagrange multipliers.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "Constraint has no Lagrange multipliers.");
 }
 
 //! @brief cast to linear constraint - Lagrange multipliers are added to the system of equations
 const NuTo::ConstraintLagrange* NuTo::ConstraintBase::AsConstraintLagrange()const
 {
-    throw MechanicsException("[NuTo::ConstraintBase::AsConstraintLagrange] Constraint has no Lagrange multipliers.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "Constraint has no Lagrange multipliers.");
 }
 
 #ifdef ENABLE_SERIALIZATION
@@ -103,35 +103,28 @@ BOOST_SERIALIZATION_ASSUME_ABSTRACT(NuTo::ConstraintBase)
 //!@param rRHS new right hand side
 void NuTo::ConstraintBase::SetRHS(double rRHS)
 {
-    throw MechanicsException("[NuTo::ConstraintBase] Set right hand side for this type of constraints not implemented.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "Set right hand side for this type of constraints not implemented.");
 }
 
 //!@brief returns the right hand side of the constraint equations
 //!@return rRHS
 double NuTo::ConstraintBase::GetRHS()const
 {
-    throw MechanicsException("[NuTo::ConstraintBase] Get right hand side for this type of constraints not implemented.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "Get right hand side for this type of constraints not implemented.");
 }
 
 //!@brief set the strain of the periodic boundary conditions
 //!@param rStrain strain (e_xx,e_yy,gamma_xy)
 void NuTo::ConstraintBase::SetStrain(const NuTo::EngineeringStrain<2>& rStrain)
 {
-    throw MechanicsException("[NuTo::ConstraintBase] Set strain for this type of constraints not implemented.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "Set strain for this type of constraints not implemented.");
 }
 
 //!@brief get the strain of the strain for a constrain equation
 //!@return rStrain strain (e_xx,e_yy,gamma_xy)
 const NuTo::EngineeringStrain<2>& NuTo::ConstraintBase::GetStrain()const
 {
-    throw MechanicsException("[NuTo::ConstraintBase] Get strain for this type of constraints not implemented.");
-}
-
-//!@brief set the crack opening of the periodic boundary conditions
-//!@param rCrackOpening (x,y)
-void NuTo::ConstraintBase::SetCrackOpening(const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCrackOpening)
-{
-    throw MechanicsException("[NuTo::ConstraintBase] Set crack opening for this type of constraints not implemented.");
+    throw MechanicsException(__PRETTY_FUNCTION__, "Get strain for this type of constraints not implemented.");
 }
 
 

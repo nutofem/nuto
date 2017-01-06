@@ -45,7 +45,7 @@ public:
 
     //! @brief returns the Lagrange Multiplier dofs
     //! first col Lagrangedofs
-    virtual void GetDofsLagrangeMultiplier(FullVector<int,Eigen::Dynamic>& rLagrangeMultiplier)const=0;
+    virtual void GetDofsLagrangeMultiplier(Eigen::VectorXd& rLagrangeMultiplier)const=0;
 
     //! @brief sets the global dofs
     //! @param rDOF current maximum DOF, this variable is increased within the routine

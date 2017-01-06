@@ -9,10 +9,10 @@
 #include "math/SparseMatrixCSRGeneral.h"
 
 //! @brief constructor
-NuTo::LoadNodeGroupForces2D::LoadNodeGroupForces2D(int rLoadCase, const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue) :
+NuTo::LoadNodeGroupForces2D::LoadNodeGroupForces2D(int rLoadCase, const Group<NodeBase>* rGroup, const Eigen::VectorXd& rDirection, double rValue) :
         LoadNodeGroup(rLoadCase,rGroup)
 {
-    if (rDirection.cols()!=1 || rDirection.rows()!=2)
+    if (rDirection.rows()!=2)
         throw MechanicsException("[NuTo::LoadNodeGroupForces2D::LoadNodeGroupForces2D] Dimension of the direction matrix must be equal to the dimension of the structure.");
 
     memcpy(mDirection,rDirection.data(),2*sizeof(double));

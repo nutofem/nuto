@@ -301,11 +301,11 @@ bool NuTo::BlockSparseMatrix::HasSymmetricActiveDofs() const
     return true;
 }
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockSparseMatrix::ExportToFullMatrix() const
+Eigen::MatrixXd NuTo::BlockSparseMatrix::ExportToFullMatrix() const
 {
     CheckDimensions();
     const auto& activeDofTypes = mDofStatus.GetActiveDofTypes();
-    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> result (GetNumActiveRows(), GetNumActiveColumns());
+    Eigen::MatrixXd result (GetNumActiveRows(), GetNumActiveColumns());
 
     int blockStartRow = 0;
     for (auto dofRow : activeDofTypes)

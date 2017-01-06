@@ -96,7 +96,7 @@ private:
         if (rStructure.GroupGetNumMembers(nodeGroupOrigin) != 1)
             throw NuTo::MechanicsException("[NuToTest::ElementUniaxialTest::SetBoundaryConditions] Node at origin (0,0,0) does not exist.");
 
-        int nodeOrigin = rStructure.GroupGetMemberIds(nodeGroupOrigin)(0);
+        int nodeOrigin = rStructure.GroupGetMemberIds(nodeGroupOrigin)[0];
         for (int iDim = 1; iDim < dimension; ++iDim)
             rStructure.ConstraintLinearSetDisplacementNode(nodeOrigin, directions.GetColumn(iDim), 0.0);
 
@@ -108,7 +108,7 @@ private:
             int nodeGroupOriginRot = rStructure.GroupCreate(NuTo::eGroupId::Nodes);
             rStructure.GroupAddNodeRadiusRange(nodeGroupOriginRot, originRot, 0, 1.e-5);
 
-            int nodeOriginRot = rStructure.GroupGetMemberIds(nodeGroupOriginRot)(0);
+            int nodeOriginRot = rStructure.GroupGetMemberIds(nodeGroupOriginRot)[0];
             rStructure.ConstraintLinearSetDisplacementNode(nodeOriginRot, directions.GetColumn(1), 0.0);
         }
 

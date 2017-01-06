@@ -20,7 +20,6 @@ template <class T> class SparseMatrixCSRVector2;
 template <class T> class SparseMatrixCSRVector2General;
 template <class T> class SparseMatrixCSR;
 template <class T> class SparseMatrixCSRVector2Symmetric;
-template <class T, int rows, int cols>class FullMatrix;
 
 //! @author Thomas Titscher, BAM
 //! @date January 2016
@@ -132,7 +131,7 @@ public:
     //! @brief adds the GetNumEntries() for all active dof types
     int GetNumActiveEntires() const;
 
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>  ExportToFullMatrix() const;
+    Eigen::MatrixXd                                           ExportToFullMatrix() const;
     NuTo::SparseMatrixCSRVector2General<double>               ExportToCSRVector2General() const;
     NuTo::SparseMatrixCSRGeneral<double>                      ExportToCSRGeneral() const;
     Eigen::SparseMatrix<double>                               ExportToEigenSparseMatrix() const;

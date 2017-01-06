@@ -664,10 +664,9 @@ void NuTo::StructureBase::ElementGroupAllocateAdditionalStaticData(int rElementG
     if (GroupGetGroupPtr(rElementGroupId)->GetType() != eGroupId::Elements)
         throw MechanicsException(__PRETTY_FUNCTION__, "Element group required.");
 
-    auto elementIds = GroupGetMemberIds(rElementGroupId);
-    for (int iElement = 0; iElement < elementIds.rows(); ++iElement)
+    for (int elementId : GroupGetMemberIds(rElementGroupId))
     {
-        ElementBase* element = ElementGetElementPtr(elementIds[iElement]);
+        ElementBase* element = ElementGetElementPtr(elementId);
         IPData& ipdata = element->GetIPData();
         for (int i = 0; i < element->GetNumIntegrationPoints(); ++i)
             ipdata.GetIPConstitutiveLaw(i).AllocateAdditional(rNumAdditionalStaticData);

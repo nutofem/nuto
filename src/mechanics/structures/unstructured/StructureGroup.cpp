@@ -113,10 +113,10 @@ void NuTo::Structure::GroupAddNodeFromElementGroupCoordinateRange(int rIdentNode
     auto elementsInGroup = GroupGetMemberIds(rSearchIdentElementGroup);
 
     std::set<int> nodesInGroup;
-    for (unsigned int iElement = 0; iElement < elementsInGroup.rows(); ++iElement)
+    for (auto elementId : elementsInGroup)
     {
 
-        auto nodesInElement = ElementGetNodes(elementsInGroup(iElement,0));
+        auto nodesInElement = ElementGetNodes(elementId);
 
         for (int iNode = 0; iNode < nodesInElement.rows(); ++iNode)
         {

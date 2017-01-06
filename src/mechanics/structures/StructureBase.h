@@ -21,7 +21,8 @@
 // class member
 #include <boost/ptr_container/ptr_map.hpp>
 #include "base/Logger.h"
-#include "math/FullVector_Def.h"
+#include "math/FullVector.h"
+#include "math/FullMatrix.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
@@ -58,8 +59,6 @@ template<typename T> class BlockFullMatrix;
 template<typename T> class BlockFullVector;
 template<typename IOEnum> class ConstitutiveIOMap;
 template<class T> class Group;
-template<class T, int rows, int cols> class FullMatrix;
-template<class T, int rows> class FullVector;
 template<class T> class SparseMatrixCSRSymmetric;
 template<class T> class SparseMatrixCSRGeneral;
 template<class T> class SparseMatrixCSRVector2General;
@@ -797,21 +796,21 @@ public:
     //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetNode(Node::eDof rDOFType,NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int ConstraintLinearSetNode(Node::eDof rDOFType,NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue);
 
     //! @brief adds a displacement constraint equation for a node
     //! @param rNode pointer to node
     //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetDisplacementNode(NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int ConstraintLinearSetDisplacementNode(NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue);
 #endif
 
     //! @brief adds a displacement constraint equation for a node
     //! @param rNode identifier for node
     //! @param rComponent e.g. the first (count from zero) displacement component
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int ConstraintLinearSetDisplacementNode(int rIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int ConstraintLinearSetDisplacementNode(int rIdent, const Eigen::VectorXd& rDirection, double rValue);
 
     //! @brief adds a relative humidity constraint equation for node
     //! @param rNode pointer to node
@@ -868,7 +867,7 @@ public:
     //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const Eigen::VectorXd& rDirection, double rValue);
 #endif
 
     //! @brief adds a constraint equation for a group of nodes
@@ -876,7 +875,7 @@ public:
     //! @param rDof displacements, rotations, temperatures
     //! @param rComponent e.g. the first (count from zero) displacement component
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const Eigen::VectorXd& rDirection, double rValue);
 
 #ifndef SWIG
     //! @brief adds a rotation constraint equation for a group of node
@@ -1004,8 +1003,8 @@ public:
     //! @param rNodeGrouplower... all nodes on the lower boundary
     //! @param rNodeGroupLeft... all nodes on the left boundary
     //! @param rNodeGroupRight...  all nodes on the right boundary
-    int ConstraintLinearDisplacementsSetPeriodic2D(double angle, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rStrain,
-            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rCrackOpening, double rRadiusToCrackWithoutConstraints,
+    int ConstraintLinearDisplacementsSetPeriodic2D(double angle, Eigen::MatrixXd rStrain,
+            double rRadiusToCrackWithoutConstraints,
             int rNodeGroupUpper, int rNodeGrouplower, int rNodeGroupLeft, int rNodeGroupRight);
 
 #ifndef SWIG
@@ -1525,7 +1524,7 @@ public:
     //! @brief ... Returns a vector with the members of a group
     //! @param rIdentGroup identifier for the group
     //! @return ... vector of members
-    NuTo::FullVector<int, Eigen::Dynamic> GroupGetMemberIds(int rIdentGroup)const;
+    std::vector<int> GroupGetMemberIds(int rIdentGroup)const;
 
     //! @brief ... checks for a member in a group
     //! @param rIdentGroup identifier for the group

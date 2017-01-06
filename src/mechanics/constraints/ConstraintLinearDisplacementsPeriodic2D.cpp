@@ -10,7 +10,6 @@
 #include <math.h>
 #include <iostream>
 
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/nodes/NodeDof.h"
@@ -28,15 +27,13 @@ int NuTo::ConstraintLinearDisplacementsPeriodic2D::GetNumLinearConstraints()cons
 
  //! @brief constructor
 NuTo::ConstraintLinearDisplacementsPeriodic2D::ConstraintLinearDisplacementsPeriodic2D(const StructureBase* rStructure, double rAngle,
-        const EngineeringStrain<2>& rStrain,NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rCrackOpening, double rRadiusToCrackWithoutConstraints,
+        const EngineeringStrain<2>& rStrain, double rRadiusToCrackWithoutConstraints,
         const Group<NodeBase>* rGroupTop,const Group<NodeBase>* rGroupBottom,
         const Group<NodeBase>* rGroupLeft, const Group<NodeBase>* rGroupRight) :  ConstraintLinear()
 {
     mStructure = rStructure,
 
     mRadiusToCrackWithoutConstraints = rRadiusToCrackWithoutConstraints;
-
-    SetCrackOpening(rCrackOpening);
 
     mStrain = rStrain;
 
@@ -143,15 +140,6 @@ void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetAngle(double rAngle)
    SetBoundaryVectors();
 }
 
-//!@brief sets/modifies the average strain applied to the boundary
-//!@param rAngle angle in deg
-void NuTo::ConstraintLinearDisplacementsPeriodic2D::SetCrackOpening(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCrackOpening)
-{
-    if (rCrackOpening.rows()!=2 || rCrackOpening.cols()!=1)
-        throw MechanicsException("[NuTo::ConstraintLinearDisplacementsPeriodic2D::SetCrackOpening] crack opening should be a (2,1) matrix.");
-    mCrackOpening[0] = rCrackOpening(0,0);
-    mCrackOpening[1] = rCrackOpening(1,0);
-}
 
 //!@brief set the strain of the periodic boundary conditions
 //!@param rStrain strain (e_xx,e_yy,gamma_xy)

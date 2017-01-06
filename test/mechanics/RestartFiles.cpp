@@ -32,7 +32,7 @@ void SetDummyStaticData(NuTo::Structure& rS, double rFactor)
     // set some static data values
     int gElementsTotal = rS.GroupGetElementsTotal();
     auto elementIds = rS.GroupGetMemberIds(gElementsTotal);
-    for (int i = 0; i < elementIds.rows(); ++i)
+    for (unsigned int i = 0; i < elementIds.size(); ++i)
     {
         auto& e = *rS.ElementGetElementPtr(elementIds[i]);
         for (int ip = 0; ip < e.GetNumIntegrationPoints(); ++ip)
@@ -73,7 +73,7 @@ void CreateTestStructure(NuTo::Structure& rS, bool rDummyValues)
 
     // set some node values
     auto nodeIds = rS.GroupGetMemberIds(rS.GroupGetNodesTotal());
-    for (int i = 0; i < nodeIds.rows(); ++i)
+    for (unsigned int i = 0; i < nodeIds.size(); ++i)
     {
         rS.NodeSetDisplacements(nodeIds[i], 0, Eigen::Vector2d({i+0.42e-7, i+0.6174}));
         rS.NodeSetDisplacements(nodeIds[i], 1, Eigen::Vector2d({i+0.42e-7, i+0.6174}));
@@ -93,7 +93,7 @@ void CheckStaticData(NuTo::Structure& rSA, NuTo::Structure& rSB)
     // set some static data values
     int gElementsTotal = rSA.GroupGetElementsTotal();
     auto elementIds = rSA.GroupGetMemberIds(gElementsTotal);
-    for (int i = 0; i < elementIds.rows(); ++i)
+    for (unsigned int i = 0; i < elementIds.size(); ++i)
     {
         auto& eA = *rSA.ElementGetElementPtr(elementIds[i]);
         auto& eB = *rSB.ElementGetElementPtr(elementIds[i]);

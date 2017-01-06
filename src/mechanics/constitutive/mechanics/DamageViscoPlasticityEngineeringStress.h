@@ -276,7 +276,7 @@ private:
 			rVviscoP = rUnknown[13];				// rUnknown(13) is the state variable associated with cumulative viscoplastic flow rate
 
 			// elastic stiffness
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
+			Eigen::MatrixXd ElasticStiffness(6, 6);
 			double C11, C12, C44;
 			this->CalculateCoefficients3D(C11, C12, C44);
 			ElasticStiffness << C11, C12, C12,  0., 0.,  0.,
@@ -322,10 +322,10 @@ private:
 		}
 
     //! @brief ... calculates the analytical matrix:= derivative of the Residual by dEngineeringStress3D
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualDEpsAn(Eigen::VectorXd rUnknown) const
+    Eigen::MatrixXd DResidualDEpsAn(Eigen::VectorXd rUnknown) const
 		{
-    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(rUnknown.rows(),6);
-    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
+    	Eigen::MatrixXd deriv(rUnknown.rows(),6);
+    	Eigen::MatrixXd ElasticStiffness(6, 6);
     	double C11, C12, C44;
     	this->CalculateCoefficients3D(C11, C12, C44);
     	ElasticStiffness << C11, C12, C12,  0., 0.,  0.,
@@ -352,11 +352,11 @@ private:
 
     //! @brief ... calculates the analytical Jacobi matrix:= derivative of the Residual
     //! @brief ... rElasticEngineeringStrain ... elastic engineering strain at the end of time increment
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualAn(
+    Eigen::MatrixXd DResidualAn(
     		const Eigen::VectorXd &rParameter,
     		Eigen::VectorXd rUnknown) const
 		{
-    		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(rUnknown.rows(),rUnknown.rows());
+    		Eigen::MatrixXd deriv(rUnknown.rows(),rUnknown.rows());
 
     		EngineeringStress3D rPrevStress;      // stress at the beginning of the time increment
     		EngineeringStrain3D rDeltaStrain;     // mechanical strain increment (strain increment without thermal component)
@@ -384,7 +384,7 @@ private:
     		rVviscoP = rUnknown[13];				// rUnknown(13) is the state variable associated with cumulative viscoplastic flow rate
 
     		// elastic stiffness
-    		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
+    		Eigen::MatrixXd ElasticStiffness(6, 6);
     		double C11, C12, C44;
     		this->CalculateCoefficients3D(C11, C12, C44);
     		ElasticStiffness << C11, C12, C12,  0., 0.,  0.,
@@ -484,12 +484,12 @@ private:
 
     //! @brief ... calculates the numerical Jacobi matrix:= derivative of the Residual
     //! @brief ... rElasticEngineeringStrain ... elastic engineering strain at the end of time increment
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualNum(const Eigen::VectorXd &rParameter,
+    Eigen::MatrixXd DResidualNum(const Eigen::VectorXd &rParameter,
     		Eigen::VectorXd rUnknown,
     		Eigen::VectorXd &fvec) const {
     	const double EPS = 1.0e-8;
     	int n=rUnknown.rows();
-    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(n,n);
+    	Eigen::MatrixXd deriv(n,n);
     	Eigen::VectorXd xh=rUnknown;
     	for (int j=0;j<n;j++) {
     		double temp=xh[j];
@@ -593,7 +593,7 @@ private:
     void Newton(const Eigen::VectorXd& rParameter,
     		Eigen::VectorXd &x, bool &check,
 //NR    		T &vecfunc,
-   		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>
+   		Eigen::MatrixXd
     	(DamageViscoPlasticityEngineeringStress::*fdjacAn)(const Eigen::VectorXd&,
     			Eigen::VectorXd) const = 0) const{
     	const int MAXITS=200;
@@ -602,7 +602,7 @@ private:
     	int its,n=x.rows();
     	double den,f,fold,stpmax,test;
     	Eigen::VectorXd g(n),p(n),xold(n);
-    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> fjac(n,n);
+    	Eigen::MatrixXd fjac(n,n);
 //NR    	NRfmin<T> fmin(vecfunc);
 //NR    	NRfdjac<T> fdjac(vecfunc);
 //NR    	Eigen::VectorXd &fvec=fmin.fvec;
@@ -703,13 +703,13 @@ private:
     //! @brief ... calculates the numerical algorithmic tangent:= derivative of stress by the strain
     //! @brief ... rParameter the list of parameters, containing rEngineeringStrain engineering strain at the end of time increment
     //! @brief ... rUnknown, state variables (unknowns), which correspond to rParameter. rUnknown contains stress at the end of the time increment
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DStressDEpsNum(const Eigen::VectorXd &rParameter,
+    Eigen::MatrixXd DStressDEpsNum(const Eigen::VectorXd &rParameter,
     		Eigen::VectorXd rUnknown, const int rDimension) const {
     	const double EPS = 1.0e-8;
     	int n=rDimension;  // 3D n = 6, 2D n = 4, 1D n = 1;
 		EngineeringStrain3D rDeltaStrain;   // mechanical strain increment (strain increment without thermal component)
 		EngineeringStress3D rDeltaStress;	// stress increment respective to rDeltaStrain
-    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(n,n);
+    	Eigen::MatrixXd deriv(n,n);
 
 		// initialization of rDeltaStrain and rDeltaStress from the vectors rParameter and rUnknown respectively
 		for (int i = 0; i < n; i++) {
@@ -731,7 +731,7 @@ private:
 
     	   	// prepare starting Newton
     	   	bool check;
-            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> (DamageViscoPlasticityEngineeringStress::*fdjacAn)
+            Eigen::MatrixXd (DamageViscoPlasticityEngineeringStress::*fdjacAn)
             	(const Eigen::VectorXd&,Eigen::VectorXd) const;
 
             // set Jacobi to analytical Jacobi

@@ -23,7 +23,7 @@ public:
     //! @brief constructor
     //! @param rDirection ... direction of the applied constraint
     //! @param rValue ... direction of the applied constraint
-    ConstraintLinearNodeGroupDisplacements3D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    ConstraintLinearNodeGroupDisplacements3D(const Group<NodeBase>* rGroup, const Eigen::VectorXd& rDirection, double rValue);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints

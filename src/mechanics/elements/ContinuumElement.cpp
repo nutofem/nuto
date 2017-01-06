@@ -1,8 +1,6 @@
 #include <typeinfo>
 #include "base/ErrorEnum.h"
 
-#include "math/FullMatrix.h"
-
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"

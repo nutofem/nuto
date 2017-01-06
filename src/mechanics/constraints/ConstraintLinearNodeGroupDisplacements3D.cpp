@@ -16,14 +16,13 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/constraints/ConstraintLinearNodeGroupDisplacements3D.h"
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 
 //! @brief constructor
-NuTo::ConstraintLinearNodeGroupDisplacements3D::ConstraintLinearNodeGroupDisplacements3D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue) :
+NuTo::ConstraintLinearNodeGroupDisplacements3D::ConstraintLinearNodeGroupDisplacements3D(const Group<NodeBase>* rGroup, const Eigen::VectorXd& rDirection, double rValue) :
         ConstraintNodeGroup(rGroup), ConstraintLinear()
 {
-    if (rDirection.cols()!=1 || rDirection.rows()!=3)
+    if (rDirection.rows()!=3)
         throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements3D::ConstraintLinearNodeGroupDisplacements3D] Dimension of the direction matrix must be equal to the dimension of the structure.");
 
     memcpy(mDirection,rDirection.data(),3*sizeof(double));

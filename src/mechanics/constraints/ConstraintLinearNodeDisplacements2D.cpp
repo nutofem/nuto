@@ -6,13 +6,12 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/constraints/ConstraintLinearNodeDisplacements2D.h"
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 
-NuTo::ConstraintLinearNodeDisplacements2D::ConstraintLinearNodeDisplacements2D(const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue) :
+NuTo::ConstraintLinearNodeDisplacements2D::ConstraintLinearNodeDisplacements2D(const NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue) :
         ConstraintNode(rNode), ConstraintLinear()
 {
-    if (rDirection.cols()!=1 || rDirection.rows()!=2)
+    if (rDirection.rows() != 2)
         throw MechanicsException("[NuTo::ConstraintLinearNodeDisplacements2D::ConstraintLinearNodeDisplacements2D] Dimension of the direction matrix must be equal to the dimension of the structure.");
 
     memcpy(mDirection,rDirection.data(),2*sizeof(double));

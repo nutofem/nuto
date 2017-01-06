@@ -25,8 +25,6 @@ class InterpolationType;
 class Logger;
 enum class eError;
 template<typename IOEnum> class ConstitutiveIOMap;
-template <class T, int rows> class FullVector;
-template <class T, int rows, int cols> class FullMatrix;
 
 namespace Element
 {

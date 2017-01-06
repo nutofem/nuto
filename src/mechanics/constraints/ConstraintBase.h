@@ -20,8 +20,6 @@ class ConstraintLinear;
 class ConstraintNonlinear;
 class ConstraintLagrange;
 template<int TDim> class EngineeringStrain;
-template <class T, int rows> class FullVector;
-template <class T, int rows, int cols> class FullMatrix;
 template<class T> class SparseMatrixCSRGeneral;
 
 
@@ -92,10 +90,6 @@ public:
     //!@brief get the strain of a constrain equation
     //!@param rStrain strain (e_xx,e_yy,gamma_xy)
     virtual const EngineeringStrain<2>& GetStrain()const;
-
-    //!@brief set the strain of the periodic boundary conditions
-    //!@param rStrain strain (e_xx,e_yy,gamma_xy)
-    virtual void SetCrackOpening(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rStrain);
 
     //! @brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
     //! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical

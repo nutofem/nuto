@@ -492,7 +492,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
 // THIS IS TEST NEWTON
 //	Eigen::VectorXd x(3);
 //	bool check;
-//	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> (DamageViscoPlasticityHardeningEngineeringStress::*fdjacAn)
+//	Eigen::MatrixXd (DamageViscoPlasticityHardeningEngineeringStress::*fdjacAn)
 //			(Eigen::VectorXd) const;
 //	fdjacAn = &DamageViscoPlasticityHardeningEngineeringStress::DResidualAn;
 //	x[0] = -1., x[1] = 2., x[2] = 3.;
@@ -655,7 +655,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
     	{
     	    // get elastic matrix
     		// calculate coefficients of the linear elastic material matrix
-    		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
+    		Eigen::MatrixXd ElasticStiffness(6, 6);
     		double C11, C12, C44;
     		this->CalculateCoefficients3D(C11, C12, C44);
     		ElasticStiffness << C11, C12, C12,  0., 0.,  0.,
@@ -684,7 +684,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
 
     	    // get elastic matrix
     		// calculate coefficients of the linear elastic material matrix
-    		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
+    		Eigen::MatrixXd ElasticStiffness(6, 6);
     		double C11, C12, C44;
     		this->CalculateCoefficients3D(C11, C12, C44);
     		ElasticStiffness << C11, C12, C12,  0., 0.,  0.,
@@ -821,7 +821,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
 
     // get elastic matrix
 	// calculate coefficients of the linear elastic material matrix
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
+	Eigen::MatrixXd ElasticStiffness(6, 6);
 	double C11, C12, C44;
 	this->CalculateCoefficients3D(C11, C12, C44);
 	ElasticStiffness << C11, C12, C12,  0., 0.,  0.,
@@ -906,7 +906,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
 
         // prepare starting Newton solver with respect to the "Unknown"
         bool check;
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> (DamageViscoPlasticityHardeningEngineeringStress::*fdjacAn)
+        Eigen::MatrixXd (DamageViscoPlasticityHardeningEngineeringStress::*fdjacAn)
         	(const Eigen::VectorXd&,Eigen::VectorXd) const;
 
         // set Jacobi to analytical Jacobi
@@ -991,7 +991,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
 
         // calculate algorithmic tangent
         if (rNewTangent!=0) {
-            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rMatrixMultipl;
+            Eigen::MatrixXd rMatrixMultipl;
 
             rMatrixMultipl = -((this->DResidualAn(Parameter,Unknown)).fullPivLu().solve(this->DResidualDEpsAn(Unknown))).eval();
             (*rNewTangent) = (1. - rNewStaticData->mOmegaCompr)*rMatrixMultipl.block<6,6>(0,0);				// use for analytic algorithmic tangent
