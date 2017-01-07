@@ -1034,7 +1034,7 @@ public:
     //! @param rDirection ... direction of the force
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
-    int LoadCreateNodeForce(int rLoadCase, int rNodeIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int LoadCreateNodeForce(int rLoadCase, int rNodeIdent, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief adds a force for a node group
     //! @param rGroupIdent ... identifier for node group
@@ -1116,7 +1116,7 @@ public:
     //! @param rDirection ... direction of the force
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
-    int LoadCreateNodeForce(int rLoadCase, const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int LoadCreateNodeForce(int rLoadCase, const NodeBase* rNode, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief Adds a heat flux to a node.
     //! @param rNode Pointer to node

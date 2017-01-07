@@ -306,6 +306,7 @@ Eigen::MatrixXd NuTo::BlockSparseMatrix::ExportToFullMatrix() const
     CheckDimensions();
     const auto& activeDofTypes = mDofStatus.GetActiveDofTypes();
     Eigen::MatrixXd result (GetNumActiveRows(), GetNumActiveColumns());
+    result.setZero();
 
     int blockStartRow = 0;
     for (auto dofRow : activeDofTypes)

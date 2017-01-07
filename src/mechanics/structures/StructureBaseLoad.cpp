@@ -18,7 +18,7 @@
 #include "mechanics/loads/LoadSurfacePressure3D.h"
 
 // adds a force for a node
-int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, int rNodeIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, int rNodeIdent, const Eigen::MatrixXd& rDirection, double rValue)
 {
     // find node
     NodeBase* nodePtr;
@@ -39,7 +39,7 @@ int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, int rNodeIdent, cons
     return this->LoadCreateNodeForce(rLoadCase,nodePtr,rDirection, rValue);
 }
 
-int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, const NodeBase* rNode, const Eigen::MatrixXd& rDirection, double rValue)
 {
     if (rLoadCase>=mNumLoadCases)
     	throw MechanicsException("[NuTo::StructureBase::LoadCreateNodeForce] Load case number larger than total number of load cases. Use myStructure.SetNumLoadCases(num) to set the maximum number");

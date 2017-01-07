@@ -151,7 +151,7 @@ myStructure.ConstraintLinearEquationAddTerm(id, 27, "z_displacement", 0.25)
 
 # forces
 myStructure.SetNumLoadCases(1)
-direction = nuto.DoubleFullMatrix(3,1,(1,0,0))
+direction = np.array([1.0, 0.0, 0.0])
 myStructure.LoadCreateNodeForce(0,28, direction, 1)
 myStructure.LoadCreateNodeForce(0,29, direction, 1)
 myStructure.LoadCreateNodeForce(0,30, direction, 1)

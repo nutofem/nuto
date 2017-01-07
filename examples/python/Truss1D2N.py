@@ -47,7 +47,7 @@ for element in range(0, NumElements):
     myStructure.ElementSetConstitutiveLaw(element, Material1)
 
 # set boundary conditions and loads
-direction = nuto.DoubleFullMatrix(1,1,(1,))
+direction = np.array([1.0])
 myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0)
 myStructure.SetNumLoadCases(1)
 if EnableDisplacementControl:

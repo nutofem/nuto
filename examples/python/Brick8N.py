@@ -71,17 +71,17 @@ myStructure.ElementTotalSetSection(Section1)
 
 
 # boundary conditions
-direction = nuto.DoubleFullMatrix(3,1,(1,0,0))
+direction = np.array([1.0, 0.0, 0.0])
 for zCount in range (0, NumElementsZ + 1):
     for yCount in range (0, NumElementsY + 1):
         node = zCount * (NumElementsX + 1) * (NumElementsY + 1) + yCount * (NumElementsX + 1)
         myStructure.ConstraintLinearSetDisplacementNode(node, direction, 0.0)
 
-direction = nuto.DoubleFullMatrix(3,1,(0,0,1))
+direction = np.array([0.0, 0.0, 1.0])
 myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0)
 myStructure.ConstraintLinearSetDisplacementNode(NumElementsY * (NumElementsX + 1), direction, 0.0)
 
-direction = nuto.DoubleFullMatrix(3,1,(0,1,0))
+direction = np.array([0.0, 1.0, 0.0])
 myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0)
 myStructure.SetNumLoadCases(1)
 
@@ -96,7 +96,7 @@ if EnableDisplacementControl:
 else:
     #load
     print "Load control"
-    direction = nuto.DoubleFullMatrix(3,1,(1,0,0))
+    direction = np.array([1.0, 0.0, 0.0])
 
     # apply load to nodes
     for zCount in range(0, NumElementsZ + 1):

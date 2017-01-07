@@ -114,10 +114,10 @@ def Run(rStructure, rType, rOrder):
     hessian2 = rStructure.BuildGlobalHessian2()
 
     numericMass = 0.
-    numericMass += hessian2.JJ.ExportToFullMatrix().Sum()
-    numericMass += hessian2.JK.ExportToFullMatrix().Sum()
-    numericMass += hessian2.KJ.ExportToFullMatrix().Sum()
-    numericMass += hessian2.KK.ExportToFullMatrix().Sum()
+    numericMass += np.sum(hessian2.JJ.ExportToFullMatrix())
+    numericMass += np.sum(hessian2.JK.ExportToFullMatrix())
+    numericMass += np.sum(hessian2.KJ.ExportToFullMatrix())
+    numericMass += np.sum(hessian2.KK.ExportToFullMatrix())
 
     # since the mass is added to nodes in every direction
     numericMass = numericMass / dimension
@@ -132,10 +132,10 @@ def Run(rStructure, rType, rOrder):
     hessian2 = rStructure.BuildGlobalHessian2Lumped()
 
     numericMass = 0.
-    numericMass += hessian2.JJ.ExportToFullMatrix().Sum()
-    numericMass += hessian2.JK.ExportToFullMatrix().Sum()
-    numericMass += hessian2.KJ.ExportToFullMatrix().Sum()
-    numericMass += hessian2.KK.ExportToFullMatrix().Sum()
+    numericMass += np.sum(hessian2.JJ.ExportToFullMatrix())
+    numericMass += np.sum(hessian2.JK.ExportToFullMatrix())
+    numericMass += np.sum(hessian2.KJ.ExportToFullMatrix())
+    numericMass += np.sum(hessian2.KK.ExportToFullMatrix())
 
     # since the mass is added to nodes in every direction
     numericMass = numericMass / dimension

@@ -62,8 +62,7 @@ structure.AddVisualizationComponent(visualizationGroup, "EngineeringStress")
 structure.AddVisualizationComponent(visualizationGroup, "PrincipalEngineeringStress")
 structure.AddVisualizationComponent(visualizationGroup, "NonlocalEqStrain")
 
-direction = nuto.DoubleFullMatrix(1, 1)
-direction.SetValue(0, 1.0)
+direction = np.array([1.0])
 structure.ConstraintLinearSetDisplacementNode(0, direction, 0.0)
 
 structure.LoadCreateNodeForce(0, nodeIDs[0], direction, 100.0)
