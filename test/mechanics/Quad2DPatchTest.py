@@ -2,6 +2,7 @@ import nuto
 import sys
 import os
 import numpy as np
+from ctypes import c_int
 
 # show the results on the screen
 printResult = False
@@ -41,7 +42,7 @@ def RunPatchTest(StressState):
         [3,4,5,7,7],
         [2,6,4,5,6],
         [0,0,2,3,4],
-        [1,2,3,1,5]])
+        [1,2,3,1,5]], dtype=c_int)
 
     interpolationType = myStructure.InterpolationTypeCreate("Quad2D")
     myStructure.InterpolationTypeAdd(interpolationType, "Coordinates", "Equidistant1")

@@ -215,7 +215,7 @@
   }
 
   template<> int NumPyType<double>() {return NPY_DOUBLE;}
-  template<> int NumPyType<int>() {return NPY_LONG;}
+  template<> int NumPyType<int>() {return NPY_INT;}
 %}
 
 // ----------------------------------------------------------------------------

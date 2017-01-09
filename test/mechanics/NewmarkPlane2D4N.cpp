@@ -290,6 +290,7 @@ try
     std::cout << "result_left \n" << result_left << std::endl;
 
     Eigen::Matrix2d result_leftRef;
+    result_leftRef.setZero();
     result_leftRef(0,0) = -1; //disp on fixed node
     result_leftRef(1,0) = -3.001682840791e+02;
 
@@ -311,6 +312,7 @@ try
     std::cout << "result_right \n" << result_right << std::endl;
 
     Eigen::Matrix2d result_rightRef;
+    result_rightRef.setZero();
     result_rightRef(1,0) = 3.016648179801e+02;
 
     if ((result_rightRef-result_right).cwiseAbs().maxCoeff()>1e-4)

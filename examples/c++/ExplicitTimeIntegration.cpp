@@ -6,10 +6,10 @@
 
 #ifdef _OPENMP
 #include <omp.h>
-#include <math/EigenCompanion.h>
 #endif //_OPENMP
 
 #include "base/Logger.h"
+#include <math/EigenCompanion.h>
 #include "math/SparseMatrixCSRVector2General.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/EigenSolverArpack.h"

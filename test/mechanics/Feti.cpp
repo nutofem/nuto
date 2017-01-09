@@ -50,8 +50,8 @@ constexpr   double      simulationTime              = 1.0;
 constexpr   double      loadFactor                  = -0.01;
 constexpr   double      maxInterations              = 10;
 
-const NuTo::FullVector<double, dimension> directionX    = NuTo::FullVector<double, dimension>::UnitX();
-const NuTo::FullVector<double, dimension> directionY    = NuTo::FullVector<double, dimension>::UnitY();
+const auto directionX = Eigen::Matrix<double, dimension, 1>::UnitX();
+const auto directionY = Eigen::Matrix<double, dimension, 1>::UnitY();
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
