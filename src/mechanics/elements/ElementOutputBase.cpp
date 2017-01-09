@@ -24,9 +24,9 @@ NuTo::ElementOutputBase::ElementOutputBase()
 NuTo::ElementOutputBase::~ElementOutputBase()
 {}
 
-NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& NuTo::ElementOutputBase::GetFullMatrixDouble()
+Eigen::MatrixXd& NuTo::ElementOutputBase::GetFullMatrixDouble()
 {
-    throw MechanicsException("[ElementOutputBase::GetFullMatrixDouble] element output matrix is not of type FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>");
+    throw MechanicsException("[ElementOutputBase::GetFullMatrixDouble] element output matrix is not of type Eigen::MatrixXd");
 }
 
 NuTo::BlockFullMatrix<double> &NuTo::ElementOutputBase::GetBlockFullMatrixDouble()
@@ -36,7 +36,7 @@ NuTo::BlockFullMatrix<double> &NuTo::ElementOutputBase::GetBlockFullMatrixDouble
 
 NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& NuTo::ElementOutputBase::GetFullMatrixInt()
 {
-    throw MechanicsException("[ElementOutputBase::GetFullMatrixInt] element output matrix is not of type FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>");
+    throw MechanicsException("[ElementOutputBase::GetFullMatrixInt] element output matrix is not of type Eigen::MatrixXd");
 }
 
 Eigen::VectorXd& NuTo::ElementOutputBase::GetFullVectorDouble()

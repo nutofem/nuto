@@ -1047,7 +1047,7 @@ NuTo::ConstraintBase* NuTo::StructureBase::ConstraintRelease(int rConstraintId)
 
 int NuTo::StructureBase::ConstraintLinearSetNode(NuTo::Node::eDof rDOFType, NuTo::NodeBase *rNode, double rValue)
 {
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> direction(1,1);
+    Eigen::MatrixXd direction(1,1);
     return ConstraintLinearSetNode(rDOFType,rNode,direction,rValue);
 }
 

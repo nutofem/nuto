@@ -849,7 +849,7 @@ bool NuTo::StructureBase::CheckHessian0_Submatrix(const BlockSparseMatrix& rHess
     {
         for (auto dofCol : GetDofStatus().GetActiveDofTypes())
         {
-            FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> hessian0_CDF_Full(rHessian0_CDF(dofRow, dofCol));
+            Eigen::MatrixXd hessian0_CDF_Full = rHessian0_CDF(dofRow, dofCol).ConvertToFullMatrixDouble();
 
             double scaling = 1./rHessian0_CDF(dofRow, dofCol).AbsMax();
 
@@ -862,15 +862,14 @@ bool NuTo::StructureBase::CheckHessian0_Submatrix(const BlockSparseMatrix& rHess
             {
                 GetLogger() << "[" << __FUNCTION__ << "] max error in (" << Node::DofToString(dofRow)<< "," << Node::DofToString(dofCol) << ") "
                         << error << " at entry (" << row << "," << col << ")\n";
-                GetLogger() << "hessian0(" << row << "," << col <<") = " << FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>(rHessian0(dofRow, dofCol))(row, col) << "\n";
+                GetLogger() << "hessian0(" << row << "," << col <<") = " << rHessian0(dofRow, dofCol).ConvertToFullMatrixDouble()(row, col) << "\n";
                 GetLogger() << "hessian0_CDF(" << row << "," << col <<") = " << hessian0_CDF_Full(row, col) << "\n";
                 isSubmatrixCorrect = false;
                 if (rPrintWrongMatrices)
                 {
-                    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> diffPrint(diff);
-                    diffPrint.SetSmallEntriesZero(1.e-10);
+                    Eigen::MatrixXd diffPrint = diff.ConvertToFullMatrixDouble();
                     GetLogger() << "####### relative difference\n" << diffPrint.format(fmt) << "\n";
-                    GetLogger() << "####### hessian0\n" << FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>(rHessian0(dofRow, dofCol)).format(fmt) << "\n";
+                    GetLogger() << "####### hessian0\n" << rHessian0(dofRow, dofCol).ConvertToFullMatrixDouble().format(fmt) << "\n";
                     GetLogger() << "####### hessian0_CDF\n" << hessian0_CDF_Full.format(fmt) << "\n";
                 }
             }

@@ -58,32 +58,34 @@ void HydrostaticPressureTriangle2D(NuTo::Interpolation::eTypeOrder rInterpolatio
     auto rotationMatrix = Eigen::Rotation2D<double>(angle);
     nodeCoordsRot = rotationMatrix.toRotationMatrix() * nodeCoords;
 
-    NuTo::FullMatrix<int, Eigen::Dynamic> nodeIds = myStructure.NodesCreate(nodeCoordsRot);
+    std::vector<int> nodeIds = myStructure.NodesCreate(nodeCoordsRot);
 
     NuTo::FullVector<int, 3> s; // surfaces
 
     s(0) = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s.GetValue(0), nodeIds.GetValue(0));
-    myStructure.GroupAddNode(s.GetValue(0), nodeIds.GetValue(1));
+    myStructure.GroupAddNode(s[0], nodeIds[0]);
+    myStructure.GroupAddNode(s[0], nodeIds[1]);
 
     s(1) = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s.GetValue(1), nodeIds.GetValue(1));
-    myStructure.GroupAddNode(s.GetValue(1), nodeIds.GetValue(2));
+    myStructure.GroupAddNode(s[1], nodeIds[1]);
+    myStructure.GroupAddNode(s[1], nodeIds[2]);
 
     s(2) = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s.GetValue(2), nodeIds.GetValue(2));
-    myStructure.GroupAddNode(s.GetValue(2), nodeIds.GetValue(0));
+    myStructure.GroupAddNode(s[2], nodeIds[2]);
+    myStructure.GroupAddNode(s[2], nodeIds[0]);
 
     myStructure.InterpolationTypeCreate(0, NuTo::Interpolation::eShapeType::TRIANGLE2D);
 
     myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::DISPLACEMENTS, rInterpolationDisp);
 
-    int elementGroup = myStructure.ElementsCreate(0,nodeIds);
+    int elementId = myStructure.ElementCreate(0, nodeIds);
+    int elementGroup = myStructure.GroupCreate("Elements");
+    myStructure.GroupAddElement(elementGroup, elementId);
     myStructure.ElementConvertToInterpolationType(elementGroup);
 
     for (int iSurface = 0; iSurface < 3; ++iSurface)
-        myStructure.LoadSurfacePressureCreate2D(0, elementGroup, s.GetValue(iSurface), pressure);
+        myStructure.LoadSurfacePressureCreate2D(0, elementGroup, s[iSurface], pressure);
 
     int section = myStructure.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
     myStructure.SectionSetThickness(section, 13.);
@@ -108,35 +110,37 @@ void HydrostaticPressureQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationDis
     auto rotationMatrix = Eigen::Rotation2D<double>(angle);
     nodeCoordsRot = rotationMatrix.toRotationMatrix() * nodeCoords;
 
-    NuTo::FullMatrix<int, Eigen::Dynamic> nodeIds = myStructure.NodesCreate(nodeCoordsRot);
+    std::vector<int> nodeIds = myStructure.NodesCreate(nodeCoordsRot);
 
     NuTo::FullVector<int, 4> s; // surfaces
 
     s(0) = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s.GetValue(0), nodeIds.GetValue(0));
-    myStructure.GroupAddNode(s.GetValue(0), nodeIds.GetValue(1));
+    myStructure.GroupAddNode(s[0], nodeIds[0]);
+    myStructure.GroupAddNode(s[0], nodeIds[1]);
 
     s(1) = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s.GetValue(1), nodeIds.GetValue(1));
-    myStructure.GroupAddNode(s.GetValue(1), nodeIds.GetValue(2));
+    myStructure.GroupAddNode(s[1], nodeIds[1]);
+    myStructure.GroupAddNode(s[1], nodeIds[2]);
 
     s(2) = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s.GetValue(2), nodeIds.GetValue(2));
-    myStructure.GroupAddNode(s.GetValue(2), nodeIds.GetValue(3));
+    myStructure.GroupAddNode(s[2], nodeIds[2]);
+    myStructure.GroupAddNode(s[2], nodeIds[3]);
 
     s(3) = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s.GetValue(3), nodeIds.GetValue(3));
-    myStructure.GroupAddNode(s.GetValue(3), nodeIds.GetValue(0));
+    myStructure.GroupAddNode(s[3], nodeIds[3]);
+    myStructure.GroupAddNode(s[3], nodeIds[0]);
 
     myStructure.InterpolationTypeCreate(0, NuTo::Interpolation::eShapeType::QUAD2D);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::DISPLACEMENTS, rInterpolationDisp);
 
-    int elementGroup = myStructure.ElementsCreate(0,nodeIds);
+    int elementId = myStructure.ElementCreate(0, nodeIds);
+    int elementGroup = myStructure.GroupCreate("Elements");
+    myStructure.GroupAddElement(elementGroup, elementId);
     myStructure.ElementConvertToInterpolationType(elementGroup);
 
     for (int iSurface = 0; iSurface < 4; ++iSurface)
-        myStructure.LoadSurfacePressureCreate2D(0, elementGroup, s.GetValue(iSurface), pressure);
+        myStructure.LoadSurfacePressureCreate2D(0, elementGroup, s[iSurface], pressure);
 
     int section = myStructure.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
     myStructure.SectionSetThickness(section, 13.);
@@ -164,42 +168,44 @@ void HydrostaticPressureTetrahedron3D(NuTo::Interpolation::eTypeOrder rInterpola
 
     nodeCoordsRot = rotationMatrix * nodeCoords;
 
-    NuTo::FullMatrix<int, Eigen::Dynamic> nodeIds = myStructure.NodesCreate(nodeCoordsRot);
+    std::vector<int> nodeIds = myStructure.NodesCreate(nodeCoordsRot);
 
     NuTo::FullVector<int, 4> s; // surfaces
 
     s(0) = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s.GetValue(0), nodeIds.GetValue(0));
-    myStructure.GroupAddNode(s.GetValue(0), nodeIds.GetValue(1));
-    myStructure.GroupAddNode(s.GetValue(0), nodeIds.GetValue(2));
+    myStructure.GroupAddNode(s[0], nodeIds[0]);
+    myStructure.GroupAddNode(s[0], nodeIds[1]);
+    myStructure.GroupAddNode(s[0], nodeIds[2]);
 
     s(1) = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s.GetValue(1), nodeIds.GetValue(0));
-    myStructure.GroupAddNode(s.GetValue(1), nodeIds.GetValue(1));
-    myStructure.GroupAddNode(s.GetValue(1), nodeIds.GetValue(3));
+    myStructure.GroupAddNode(s[1], nodeIds[0]);
+    myStructure.GroupAddNode(s[1], nodeIds[1]);
+    myStructure.GroupAddNode(s[1], nodeIds[3]);
 
 
     s(2) = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s.GetValue(2), nodeIds.GetValue(0));
-    myStructure.GroupAddNode(s.GetValue(2), nodeIds.GetValue(2));
-    myStructure.GroupAddNode(s.GetValue(2), nodeIds.GetValue(3));
+    myStructure.GroupAddNode(s[2], nodeIds[0]);
+    myStructure.GroupAddNode(s[2], nodeIds[2]);
+    myStructure.GroupAddNode(s[2], nodeIds[3]);
 
 
     s(3) = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s.GetValue(3), nodeIds.GetValue(1));
-    myStructure.GroupAddNode(s.GetValue(3), nodeIds.GetValue(2));
-    myStructure.GroupAddNode(s.GetValue(3), nodeIds.GetValue(3));
+    myStructure.GroupAddNode(s[3], nodeIds[1]);
+    myStructure.GroupAddNode(s[3], nodeIds[2]);
+    myStructure.GroupAddNode(s[3], nodeIds[3]);
 
 
     myStructure.InterpolationTypeCreate(0, NuTo::Interpolation::eShapeType::TETRAHEDRON3D);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::DISPLACEMENTS, rInterpolationDisp);
 
-    int elementGroup = myStructure.ElementsCreate(0,nodeIds);
+    int elementId = myStructure.ElementCreate(0, nodeIds);
+    int elementGroup = myStructure.GroupCreate("Elements");
+    myStructure.GroupAddElement(elementGroup, elementId);
     myStructure.ElementConvertToInterpolationType(elementGroup);
 
     for (int iSurface = 0; iSurface < 4; ++iSurface)
-        myStructure.LoadSurfacePressureCreate3D(0, elementGroup, s.GetValue(iSurface), pressure);
+        myStructure.LoadSurfacePressureCreate3D(0, elementGroup, s[iSurface], pressure);
 
     CheckHydrostaticPressure(myStructure);
     std::cout << "[SurfaceLoad::HydrostaticPressureTetrahedron3D] " + NuTo::Interpolation::TypeOrderToString(rInterpolationDisp) + " done." << std::endl;
@@ -224,45 +230,45 @@ void HydrostaticPressureBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationDi
 
     nodeCoordsRot = rotationMatrix * nodeCoords;
 
-    NuTo::FullMatrix<int, Eigen::Dynamic> nodeIds = myStructure.NodesCreate(nodeCoordsRot);
+    std::vector<int> nodeIds = myStructure.NodesCreate(nodeCoordsRot);
 
     NuTo::FullVector<int, 6> s; // surfaces
 
     s(0) = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s.GetValue(0), nodeIds.GetValue(0));
-    myStructure.GroupAddNode(s.GetValue(0), nodeIds.GetValue(1));
-    myStructure.GroupAddNode(s.GetValue(0), nodeIds.GetValue(2));
-    myStructure.GroupAddNode(s.GetValue(0), nodeIds.GetValue(3));
+    myStructure.GroupAddNode(s[0], nodeIds[0]);
+    myStructure.GroupAddNode(s[0], nodeIds[1]);
+    myStructure.GroupAddNode(s[0], nodeIds[2]);
+    myStructure.GroupAddNode(s[0], nodeIds[3]);
 
     s(1) = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s.GetValue(1), nodeIds.GetValue(4));
-    myStructure.GroupAddNode(s.GetValue(1), nodeIds.GetValue(5));
-    myStructure.GroupAddNode(s.GetValue(1), nodeIds.GetValue(6));
-    myStructure.GroupAddNode(s.GetValue(1), nodeIds.GetValue(7));
+    myStructure.GroupAddNode(s[1], nodeIds[4]);
+    myStructure.GroupAddNode(s[1], nodeIds[5]);
+    myStructure.GroupAddNode(s[1], nodeIds[6]);
+    myStructure.GroupAddNode(s[1], nodeIds[7]);
 
     s(2) = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s.GetValue(2), nodeIds.GetValue(0));
-    myStructure.GroupAddNode(s.GetValue(2), nodeIds.GetValue(1));
-    myStructure.GroupAddNode(s.GetValue(2), nodeIds.GetValue(5));
-    myStructure.GroupAddNode(s.GetValue(2), nodeIds.GetValue(4));
+    myStructure.GroupAddNode(s[2], nodeIds[0]);
+    myStructure.GroupAddNode(s[2], nodeIds[1]);
+    myStructure.GroupAddNode(s[2], nodeIds[5]);
+    myStructure.GroupAddNode(s[2], nodeIds[4]);
 
     s(3) = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s.GetValue(3), nodeIds.GetValue(2));
-    myStructure.GroupAddNode(s.GetValue(3), nodeIds.GetValue(3));
-    myStructure.GroupAddNode(s.GetValue(3), nodeIds.GetValue(7));
-    myStructure.GroupAddNode(s.GetValue(3), nodeIds.GetValue(6));
+    myStructure.GroupAddNode(s[3], nodeIds[2]);
+    myStructure.GroupAddNode(s[3], nodeIds[3]);
+    myStructure.GroupAddNode(s[3], nodeIds[7]);
+    myStructure.GroupAddNode(s[3], nodeIds[6]);
 
     s(4) = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s.GetValue(4), nodeIds.GetValue(1));
-    myStructure.GroupAddNode(s.GetValue(4), nodeIds.GetValue(2));
-    myStructure.GroupAddNode(s.GetValue(4), nodeIds.GetValue(6));
-    myStructure.GroupAddNode(s.GetValue(4), nodeIds.GetValue(5));
+    myStructure.GroupAddNode(s[4], nodeIds[1]);
+    myStructure.GroupAddNode(s[4], nodeIds[2]);
+    myStructure.GroupAddNode(s[4], nodeIds[6]);
+    myStructure.GroupAddNode(s[4], nodeIds[5]);
 
     s(5) = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s.GetValue(5), nodeIds.GetValue(0));
-    myStructure.GroupAddNode(s.GetValue(5), nodeIds.GetValue(3));
-    myStructure.GroupAddNode(s.GetValue(5), nodeIds.GetValue(7));
-    myStructure.GroupAddNode(s.GetValue(5), nodeIds.GetValue(4));
+    myStructure.GroupAddNode(s[5], nodeIds[0]);
+    myStructure.GroupAddNode(s[5], nodeIds[3]);
+    myStructure.GroupAddNode(s[5], nodeIds[7]);
+    myStructure.GroupAddNode(s[5], nodeIds[4]);
 
 
 
@@ -270,11 +276,13 @@ void HydrostaticPressureBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationDi
     myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::DISPLACEMENTS, rInterpolationDisp);
 
-    int elementGroup = myStructure.ElementsCreate(0,nodeIds);
+    int elementId = myStructure.ElementCreate(0, nodeIds);
+    int elementGroup = myStructure.GroupCreate("Elements");
+    myStructure.GroupAddElement(elementGroup, elementId);
     myStructure.ElementConvertToInterpolationType(elementGroup);
 
     for (int iSurface = 0; iSurface < 6; ++iSurface)
-        myStructure.LoadSurfacePressureCreate3D(0, elementGroup, s.GetValue(iSurface), pressure);
+        myStructure.LoadSurfacePressureCreate3D(0, elementGroup, s[iSurface], pressure);
 
 
     CheckHydrostaticPressure(myStructure);
@@ -328,11 +336,11 @@ void SurfaceLoadTriangle2D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
             0, lx, 0,
            -ly, 0,ly;
 
-    NuTo::FullMatrix<int, Eigen::Dynamic> nodeIds = myStructure.NodesCreate(nodeCoords);
+    std::vector<int> nodeIds = myStructure.NodesCreate(nodeCoords);
 
     int s = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s, nodeIds.GetValue(0));
-    myStructure.GroupAddNode(s, nodeIds.GetValue(1));
+    myStructure.GroupAddNode(s, nodeIds[0]);
+    myStructure.GroupAddNode(s, nodeIds[1]);
 
     double surfaceArea = thickness*std::sqrt(lx*lx + ly*ly);
 
@@ -340,7 +348,9 @@ void SurfaceLoadTriangle2D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
     myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::DISPLACEMENTS, rInterpolationDisp);
 
-    int elementGroup = myStructure.ElementsCreate(0,nodeIds);
+    int elementId = myStructure.ElementCreate(0, nodeIds);
+    int elementGroup = myStructure.GroupCreate("Elements");
+    myStructure.GroupAddElement(elementGroup, elementId);
     myStructure.ElementConvertToInterpolationType(elementGroup);
 
     int section = myStructure.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
@@ -372,11 +382,11 @@ void SurfaceLoadQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
             0, lx, 0, -lx,
            -ly, 0,ly, 0;
 
-    NuTo::FullMatrix<int, Eigen::Dynamic> nodeIds = myStructure.NodesCreate(nodeCoords);
+    std::vector<int> nodeIds = myStructure.NodesCreate(nodeCoords);
 
     int s = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s, nodeIds.GetValue(0));
-    myStructure.GroupAddNode(s, nodeIds.GetValue(1));
+    myStructure.GroupAddNode(s, nodeIds[0]);
+    myStructure.GroupAddNode(s, nodeIds[1]);
 
     double surfaceArea = thickness*std::sqrt(lx*lx + ly*ly);
 
@@ -384,7 +394,9 @@ void SurfaceLoadQuad2D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
     myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::DISPLACEMENTS, rInterpolationDisp);
 
-    int elementGroup = myStructure.ElementsCreate(0,nodeIds);
+    int elementId = myStructure.ElementCreate(0, nodeIds);
+    int elementGroup = myStructure.GroupCreate("Elements");
+    myStructure.GroupAddElement(elementGroup, elementId);
     myStructure.ElementConvertToInterpolationType(elementGroup);
 
     int section = myStructure.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
@@ -472,8 +484,8 @@ void SurfaceLoadQuad2DIGA(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
     load << 42.,-M_PI;
 
 //    int groupnode = myStructure.GroupCreate("Nodes");
-//    myStructure.GroupAddNode(myStructure, nodeIds.GetValue(0));
-//    myStructure.GroupAddNode(myStructure, nodeIds.GetValue(1));
+//    myStructure.GroupAddNode(myStructure, nodeIds[0]);
+//    myStructure.GroupAddNode(myStructure, nodeIds[1]);
 
 //    int groupelement = myStructure.GroupCreate("ELEMENTS");
 //    myStructure.LoadSurfaceConstDirectionCreate2D(0, groupelement, s, load);
@@ -503,12 +515,12 @@ void SurfaceLoadTetrahedron3D(NuTo::Interpolation::eTypeOrder rInterpolationDisp
 
     nodeCoordsRot = rotationMatrix * nodeCoords;
 
-    NuTo::FullMatrix<int, Eigen::Dynamic> nodeIds = myStructure.NodesCreate(nodeCoordsRot);
+    std::vector<int> nodeIds = myStructure.NodesCreate(nodeCoordsRot);
 
     int s = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s, nodeIds.GetValue(0));
-    myStructure.GroupAddNode(s, nodeIds.GetValue(1));
-    myStructure.GroupAddNode(s, nodeIds.GetValue(3));
+    myStructure.GroupAddNode(s, nodeIds[0]);
+    myStructure.GroupAddNode(s, nodeIds[1]);
+    myStructure.GroupAddNode(s, nodeIds[3]);
 
     double surfaceArea = .5*lx*lz;
 
@@ -516,7 +528,9 @@ void SurfaceLoadTetrahedron3D(NuTo::Interpolation::eTypeOrder rInterpolationDisp
     myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::DISPLACEMENTS, rInterpolationDisp);
 
-    int elementGroup = myStructure.ElementsCreate(0,nodeIds);
+    int elementId = myStructure.ElementCreate(0, nodeIds);
+    int elementGroup = myStructure.GroupCreate("Elements");
+    myStructure.GroupAddElement(elementGroup, elementId);
     myStructure.ElementConvertToInterpolationType(elementGroup);
 
     NuTo::FullVector<double, Eigen::Dynamic> load(3);
@@ -552,13 +566,13 @@ void SurfaceLoadBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
 
     nodeCoordsRot = rotationMatrix * nodeCoords;
 
-    NuTo::FullMatrix<int, Eigen::Dynamic> nodeIds = myStructure.NodesCreate(nodeCoordsRot);
+    std::vector<int> nodeIds = myStructure.NodesCreate(nodeCoordsRot);
 
     int s = myStructure.GroupCreate("Nodes");
-    myStructure.GroupAddNode(s, nodeIds.GetValue(0));
-    myStructure.GroupAddNode(s, nodeIds.GetValue(1));
-    myStructure.GroupAddNode(s, nodeIds.GetValue(5));
-    myStructure.GroupAddNode(s, nodeIds.GetValue(4));
+    myStructure.GroupAddNode(s, nodeIds[0]);
+    myStructure.GroupAddNode(s, nodeIds[1]);
+    myStructure.GroupAddNode(s, nodeIds[5]);
+    myStructure.GroupAddNode(s, nodeIds[4]);
 
     double surfaceArea = lx*lz;
 
@@ -566,7 +580,9 @@ void SurfaceLoadBrick3D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
     myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(0, NuTo::Node::eDof::DISPLACEMENTS, rInterpolationDisp);
 
-    int elementGroup = myStructure.ElementsCreate(0,nodeIds);
+    int elementId = myStructure.ElementCreate(0, nodeIds);
+    int elementGroup = myStructure.GroupCreate("Elements");
+    myStructure.GroupAddElement(elementGroup, elementId);
     myStructure.ElementConvertToInterpolationType(elementGroup);
 
     NuTo::FullVector<double, Eigen::Dynamic> load(3);

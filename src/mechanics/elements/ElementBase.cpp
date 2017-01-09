@@ -965,7 +965,7 @@ void NuTo::ElementBase::VisualizeExtrapolateToNodes(VisualizeUnstructuredGrid& r
     Evaluate(elementOutput);
 
     //assign the outputs
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringStrain(nullptr);
+    Eigen::MatrixXd* engineeringStrain(nullptr);
 
     for (auto itElementOutput=elementOutput.begin(); itElementOutput!=elementOutput.end(); itElementOutput++)
     {

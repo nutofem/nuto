@@ -27,10 +27,10 @@ void NuTo::ResultElementIpData::CalculateAndAddValues(const StructureBase& rStru
     }
     if (ipValues.cols()!=mData.cols())
         throw MechanicsException(std::string(__PRETTY_FUNCTION__) +"\t: The allocated number of columns is wrong.");
-    mData.SetRow(rTimeStepPlot,ipValues);
+    mData.row(rTimeStepPlot) = ipValues;
 }
 
-void NuTo::ResultElementIpData::CalculateValues(const StructureBase& rStructure, NuTo::FullMatrix<double, 1, Eigen::Dynamic>& rValues)const
+void NuTo::ResultElementIpData::CalculateValues(const StructureBase& rStructure, Eigen::Matrix<double, 1, Eigen::Dynamic>& rValues)const
 {
     const ElementBase* element(rStructure.ElementGetElementPtr(mElementId));
 
@@ -46,7 +46,7 @@ void NuTo::ResultElementIpData::CalculateValues(const StructureBase& rStructure,
     unsigned int numComponents = ipDataResult.rows();
     for (int iCol = 0; iCol < ipDataResult.cols(); ++iCol)
     {
-        rValues.SetBlock(0, iCol * numComponents, ipDataResult.GetColumn(iCol).Trans());
+        rValues.block(0, iCol * numComponents, 1, ipDataResult.cols()) = ipDataResult.col(iCol).transpose();
     }
 }
 

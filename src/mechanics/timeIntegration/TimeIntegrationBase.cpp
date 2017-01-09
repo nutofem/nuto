@@ -69,16 +69,16 @@ NuTo::TimeIntegrationBase::~TimeIntegrationBase()
 void NuTo::TimeIntegrationBase::ResetForNextLoad()
 {
     mTimeDependentConstraint = -1;
-    mTimeDependentConstraintFactor.Resize(0,0);
+    mTimeDependentConstraintFactor.resize(0,0);
     mTimeDependentLoadCase = -1;
-    mTimeDependentLoadFactor.Resize(0,0);
+    mTimeDependentLoadFactor.resize(0,0);
 }
 
 
 //! @brief Adds the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
 //! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
 //! @param rTimeDependentConstraintFactor ... first row time, rhs of the constraint (linear interpolation in between afterwards linear extrapolation)
-void NuTo::TimeIntegrationBase::AddTimeDependentConstraint(int rTimeDependentConstraint, const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> &rTimeDependentConstraintFactor)
+void NuTo::TimeIntegrationBase::AddTimeDependentConstraint(int rTimeDependentConstraint, const Eigen::MatrixXd &rTimeDependentConstraintFactor)
 {
     if (rTimeDependentConstraintFactor.cols()!=2)
         throw MechanicsException(__PRETTY_FUNCTION__, "number of columns must be 2, first column contains the time, second column contains the corresponding rhs.");
@@ -122,7 +122,7 @@ void NuTo::TimeIntegrationBase::UpdateConstraints(double rCurrentTime)
 
 //! @brief sets a scalar time dependent multiplication factor for the external loads
 //! @param rTimeDependentLoadFactor ... first row time, second row scalar factor to calculate the external load (linear interpolation in between, afterwards constant)
-void NuTo::TimeIntegrationBase::SetTimeDependentLoadCase(int rTimeDependentLoadCase, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rTimeDependentLoadFactor)
+void NuTo::TimeIntegrationBase::SetTimeDependentLoadCase(int rTimeDependentLoadCase, const Eigen::MatrixXd& rTimeDependentLoadFactor)
 {
     if (rTimeDependentLoadFactor.cols()!=2)
         throw MechanicsException(__PRETTY_FUNCTION__, "number of columns must be 2, first column contains the time, second column contains the corresponding value.");

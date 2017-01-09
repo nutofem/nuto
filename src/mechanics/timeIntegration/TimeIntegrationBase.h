@@ -60,7 +60,7 @@ public:
     //! @brief Adds the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
     //! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
     //! @param mTimeDependentConstraintFactor ... first row time, rhs of the constraint (linear interpolation in between afterwards linear extrapolation)
-    void AddTimeDependentConstraint(int rTimeDependentConstraint, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& mTimeDependentConstraintFactor);
+    void AddTimeDependentConstraint(int rTimeDependentConstraint, const Eigen::MatrixXd& mTimeDependentConstraintFactor);
 
     //! @brief Adds the delta rhs of the constrain equation whose RHS is incrementally increased in each load step / time step
     //! @param rTimeDependentConstraint ... constraint, whose rhs is increased as a function of time
@@ -84,7 +84,7 @@ public:
 
     //! @brief sets a scalar time dependent multiplication factor for the external loads
     //! @param rLoadRHSFactor ... first row time, second row scalar factor to calculate the external load (linear interpolation in between,  afterwards linear extrapolation)
-    void SetTimeDependentLoadCase(int rLoadCase, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rLoadRHSFactor);
+    void SetTimeDependentLoadCase(int rLoadCase, const Eigen::MatrixXd& rLoadRHSFactor);
 
     //! @brief apply calculate the new rhs of the constraints as a function of the current time delta
     virtual double CalculateTimeDependentConstraintFactor(double rTimeDelta);
@@ -303,7 +303,7 @@ protected:
         int mTimeDependentConstraint;
         //includes for each time step the rhs of the constraint mConstraintLoad
         //the time step is given by mTimeDelta/(mConstraintRHS.Rows()-1)
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mTimeDependentConstraintFactor;
+        Eigen::MatrixXd mTimeDependentConstraintFactor;
 
     // DEPRECATED BLOCK END
 
@@ -316,7 +316,7 @@ protected:
     int mTimeDependentLoadCase;
 	//includes for each time step the scalar factor for the load case
     //the time step is given relative to mTimeDelta
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mTimeDependentLoadFactor;
+	Eigen::MatrixXd mTimeDependentLoadFactor;
     //external load vectors (static and time dependent)
 	NuTo::StructureOutputBlockVector mLoadVectorStatic;
 	NuTo::StructureOutputBlockVector mLoadVectorTimeDependent;

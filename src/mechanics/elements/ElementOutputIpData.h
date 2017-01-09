@@ -24,7 +24,7 @@ public:
 
     ElementOutputIpData(IpData::eIpStaticDataType rIpDataType)
     {
-        mIpData[rIpDataType].Resize(0,0);
+        mIpData[rIpDataType].resize(0,0);
     }
 
 
@@ -41,7 +41,7 @@ public:
         return new ElementOutputIpData(*this);
     }
 
-    std::map<IpData::eIpStaticDataType, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>>& GetIpDataMap()
+    std::map<IpData::eIpStaticDataType, Eigen::MatrixXd>& GetIpDataMap()
     {
         return mIpData;
     }
@@ -52,7 +52,7 @@ public:
     }
 
 private:
-    std::map<IpData::eIpStaticDataType, FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>> mIpData;
+    std::map<IpData::eIpStaticDataType, Eigen::MatrixXd> mIpData;
 };
 }
 #ifdef ENABLE_SERIALIZATION

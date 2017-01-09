@@ -11,7 +11,7 @@ namespace NuTo
 class TimeDependencyMatrix : public TimeDependencyBase
 {
 public:
-    TimeDependencyMatrix(const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> &rTimeDependencyMatrix)
+    TimeDependencyMatrix(const Eigen::MatrixXd &rTimeDependencyMatrix)
         : TimeDependencyBase(),
           mTimeDependencyMatrix(rTimeDependencyMatrix)
     {}
@@ -42,7 +42,7 @@ public:
     }
 
 private:
-NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mTimeDependencyMatrix;
+Eigen::MatrixXd mTimeDependencyMatrix;
 };
 } // namespace NuTo
 

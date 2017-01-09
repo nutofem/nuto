@@ -28,6 +28,6 @@ void NuTo::ResultNodeDof::CalculateAndAddValues(const StructureBase& rStructure,
 		this->Resize(rStructure, 2*(rTimeStepPlot+1),false);
 	}
 	if (dofValues.cols()!=mData.cols())
-		throw MechanicsException("[NuTo::ResultNodeDof::CalculateAndAddValues] the allocated number of columns is wrong.");
-	mData.SetRow(rTimeStepPlot,dofValues);
+		throw MechanicsException(__PRETTY_FUNCTION__, "the allocated number of columns is wrong.");
+	mData.row(rTimeStepPlot) = dofValues;
 }

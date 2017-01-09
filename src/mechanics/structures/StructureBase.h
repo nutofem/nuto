@@ -368,7 +368,7 @@ public:
     //! @brief gets the coordinates of a group of nodes (be careful, the order of the nodes in a group might change between different runs)
     //! @param rNodeGroup node group identifier
     //! @param rCoordinates matrix (rows/nodes columns/coordinates)
-    void NodeGroupGetCoordinates(int rNodeGroup, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates);
+    void NodeGroupGetCoordinates(int rNodeGroup, Eigen::MatrixXd& rCoordinates);
 
     //! @brief gets the displacements of a node
     //! @param rNode node identifier
@@ -407,7 +407,7 @@ public:
     //! @brief gets the displacements of a group of nodes (be careful, the order of the nodes in a group might change between different runs)
     //! @param rNodeGroup node group identifier
     //! @param rDisplacements matrix (rows/nodes columns/rDisplacements)
-    void NodeGroupGetDisplacements(int rNodeGroup, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements);
+    void NodeGroupGetDisplacements(int rNodeGroup, Eigen::MatrixXd& rDisplacements);
 
     //! @brief Get the temperature at a node
     //! @param rNode Node identifier
@@ -646,7 +646,7 @@ public:
     //! @param rElemIdent  element number
     //! @param rType static ip data type
     //! @param rIPData matrix with (... x numIP), x varies depending on IPData type
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetStaticIPData(int rElementId, IpData::eIpStaticDataType rType);
+    Eigen::MatrixXd ElementGetStaticIPData(int rElementId, IpData::eIpStaticDataType rType);
 
 #endif //SWIG
 
@@ -679,7 +679,7 @@ public:
     //! @brief calculates the global integration point coordinates
     //! @param rElemIdent  identifier for the element
     //! @param rCoordinates integration point coordinates (return value, always 3xnumIp matrix)
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetIntegrationPointCoordinates(int rElementId);
+    Eigen::MatrixXd ElementGetIntegrationPointCoordinates(int rElementId);
 
 
     //! @brief calculates the maximum damage in all elements
@@ -715,27 +715,27 @@ public:
     //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
     //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
     //! @param rEngineeringStress  average stress (return value)
-    void ElementTotalGetAverageStress(double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStress);
+    void ElementTotalGetAverageStress(double rVolume, Eigen::MatrixXd& rEngineeringStress);
 
     //! @brief calculates the average stress
     //! @param rGroupId  group number
     //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
     //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
     //! @param rEngineeringStress  average stress (return value)
-    void ElementGroupGetAverageStress(int rGroupId, double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStress);
+    void ElementGroupGetAverageStress(int rGroupId, double rVolume, Eigen::MatrixXd& rEngineeringStress);
 
     //! @brief calculates the average strain
     //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
     //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
     //! @param rEngineeringStrain  average strain (return value)
-    void ElementTotalGetAverageStrain(double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStrain);
+    void ElementTotalGetAverageStrain(double rVolume, Eigen::MatrixXd& rEngineeringStrain);
 
     //! @brief calculates the average strain
     //! @param rGroupId  group number
     //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
     //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
     //! @param rEngineeringStrain  average strain (return value)
-    void ElementGroupGetAverageStrain(int rGroupId, double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStrain);
+    void ElementGroupGetAverageStrain(int rGroupId, double rVolume, Eigen::MatrixXd& rEngineeringStrain);
 
     //! @brief returns the element ids of an element group
     //! @param rGroupId  group number
@@ -1041,14 +1041,14 @@ public:
     //! @param rDirection ... direction of the force
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
-    int LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief Adds a heat flux to a node.
     //! @param rNodeIdent Identifier for node
     //! @param rDirection Direction of the flux
     //! @param rValue Value of the flux
     //! @return Integer id to delete or modify the load
-    int LoadCreateNodeHeatFlux(int rLoadCase, int rNodeIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int LoadCreateNodeHeatFlux(int rLoadCase, int rNodeIdent, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief adds a surface load to 2D plane elements (2D)
     //! @param rElementGroupId ... specifies the elements with surface loads
@@ -1123,14 +1123,14 @@ public:
     //! @param rDirection Direction of the heat flux
     //! @param rValue Value of the flux
     //! @return Integer id to delete or modify the load
-    int LoadCreateNodeHeatFlux(int rLoadCase, const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int LoadCreateNodeHeatFlux(int rLoadCase, const NodeBase* rNode, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief adds a force for a node grpup
     //! @param rNodeGroup ... pointer to node group
     //! @param rDirection ... direction of the force
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
-    int LoadCreateNodeGroupForce(int rLoadCase, const Group<NodeBase>* rNodeGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int LoadCreateNodeGroupForce(int rLoadCase, const Group<NodeBase>* rNodeGroup, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief ... get the pointer to a load from the load identifier
     //! @param rIdent ... load identifier

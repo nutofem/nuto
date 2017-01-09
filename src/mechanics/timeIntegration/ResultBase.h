@@ -85,7 +85,7 @@ public:
 
 protected:
     std::string mIdent;
-    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> mData;
+    Eigen::MatrixXd mData;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

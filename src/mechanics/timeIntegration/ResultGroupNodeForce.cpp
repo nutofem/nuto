@@ -34,11 +34,11 @@ NuTo::eTimeIntegrationResultType NuTo::ResultGroupNodeForce::GetResultType() con
 }
 
 
-void NuTo::ResultGroupNodeForce::CalculateValues(const StructureBase& rStructure, const Eigen::VectorXd& rResidual_j, const Eigen::VectorXd& rResidual_k, FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rResult) const
+void NuTo::ResultGroupNodeForce::CalculateValues(const StructureBase& rStructure, const Eigen::VectorXd& rResidual_j, const Eigen::VectorXd& rResidual_k, Eigen::MatrixXd& rResult) const
 {
     const Group<NodeBase>& nodeGroup = *rStructure.GroupGetGroupPtr(mGroupNodeId)->AsGroupNode();
 
-    rResult.Resize(1, rStructure.GetDimension());
+    rResult.resize(1, rStructure.GetDimension());
 
     for (auto& itNode : nodeGroup)
     {

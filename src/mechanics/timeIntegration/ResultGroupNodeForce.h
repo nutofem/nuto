@@ -35,7 +35,7 @@ public:
     void CalculateValues(const StructureBase& rStructure,
     		const Eigen::VectorXd& rResidual_j,
     		const Eigen::VectorXd& rResidual_k,
-    		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const;
+    		Eigen::MatrixXd& rResult)const;
 
     std::string GetTypeId() const
     {

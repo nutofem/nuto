@@ -6,7 +6,7 @@
 #include "math/SparseMatrixCSRGeneral.h"
 
 // constructor
-NuTo::LoadNodeForces2D::LoadNodeForces2D(int rLoadCase, const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue) :
+NuTo::LoadNodeForces2D::LoadNodeForces2D(int rLoadCase, const NodeBase* rNode, const Eigen::MatrixXd& rDirection, double rValue) :
         LoadNode(rLoadCase,rNode)
 {
     if (rDirection.cols()!=1 || rDirection.rows()!=2)

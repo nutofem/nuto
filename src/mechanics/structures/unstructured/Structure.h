@@ -179,8 +179,8 @@ public:
 
     //! @brief creates multiple nodes with coordinates only
     //! @param rCoordinates ...  nodal coordinates (column-wise storage of each nodal coordinate)
-    //! @return a NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> containing the node numbers
-    NuTo::FullVector<int, Eigen::Dynamic> NodesCreate(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates);
+    //! @return a std::vector<int> containing the node numbers
+    std::vector<int> NodesCreate(Eigen::MatrixXd& rCoordinates);
 
     //! @brief creates a node with specific dofs at coordinate's origin
     //! @param rDOFs ... space separated string containing the node dofs (e.g. displacements, rotations, temperatures)
@@ -508,14 +508,14 @@ public:
     //! @param rBoundingBox box for the spheres (3*2 matrix)
     //! @param rCircles (coordinates x,y and radius)
     //! @param rTriangles (triangles connecting the circle centers)
-    void MeshCreateLattice2D(int rTypeOfSpecimen, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCircles, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rTriangles);
+    void MeshCreateLattice2D(int rTypeOfSpecimen, Eigen::MatrixXd& rBoundingBox, Eigen::MatrixXd& rCircles, Eigen::MatrixXd& rTriangles);
 
     //! @brief creates a lattice mesh from the positions of the spheres and the bounding box
     //! @param rTypeOfSpecimen 0 box, 1 dogbone
     //! @param rBoundingBox box for the spheres (3*2 matrix)
     //! @param rBoundingBox (min and max for x and y)
     //! @param rSpheres (coordinates x,y,z and radius)
-    void MeshCreateLattice3D(int rTypeOfSpecimen, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheres, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rTetraeders);
+    void MeshCreateLattice3D(int rTypeOfSpecimen, Eigen::MatrixXd& rBoundingBox, Eigen::MatrixXd& rSpheres, Eigen::MatrixXd& rTetraeders);
 
 
 #ifndef SWIG

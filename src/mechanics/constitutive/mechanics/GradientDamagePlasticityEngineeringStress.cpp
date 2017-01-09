@@ -1061,13 +1061,13 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     //! @brief previous stress, either from previous equilibrium (static data) or if applied in steps, previous converged state
     EngineeringStress1D lastConvergedStress;
     //! @brief previous change of equivalent plastic strain, either from previous equilibrium (0) or if applied in steps, previous converged state
-    FullMatrix<double,2,1> lastDeltaKappa;
+    Eigen::Matrix<double,2,1> lastDeltaKappa;
     //! @brief plastic strain in the line search
     EngineeringStrain1D plasticStrainLS;
     //! @brief residual in the return mapping procedure
-    FullMatrix<double,1,1> residual;
+    Eigen::Matrix<double,1,1> residual;
     //! @brief residual in the return mapping procedure within linesearch
-    FullMatrix<double,1,1> residualLS;
+    Eigen::Matrix<double,1,1> residualLS;
     //! @brief full stress increment within one iteration of the return mapping, might be applied in steps in the succeeding line search
     EngineeringStress1D deltaStress;
     //! @brief total strain increment between strain from previous static data and new total strain
@@ -1087,29 +1087,29 @@ NuTo::Error::eError NuTo::GradientDamagePlasticityEngineeringStress::ReturnMappi
     //! @brief elastic strain in line search
     EngineeringStrain1D elasticStrainLS;
     //! @brief plastic multiplier
-    FullMatrix<double,2,1> deltaGamma;
+    Eigen::Matrix<double,2,1> deltaGamma;
     //! @brief plastic multiplier
-    FullMatrix<double,2,1> deltaGammaLS;
+    Eigen::Matrix<double,2,1> deltaGammaLS;
     //! @brief increment of plastic multiplier in return mapping procedure
-    FullMatrix<double,2,1> delta2Gamma;
+    Eigen::Matrix<double,2,1> delta2Gamma;
     //! @brief yield condition
-    FullMatrix<double,2,1> yieldCondition;
+    Eigen::Matrix<double,2,1> yieldCondition;
     //! @brief yield condition in line search
-    FullMatrix<double,2,1> yieldConditionLS;
+    Eigen::Matrix<double,2,1> yieldConditionLS;
     //! @brief yield condition at the first iteration
-    FullMatrix<double,2,1> initYieldCondition;
+    Eigen::Matrix<double,2,1> initYieldCondition;
     //! @brief (dF/dsigma)T * Hessian * dF/dsigma
-    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> matG;
+    Eigen::MatrixXd matG;
     //! @brief ((dF/dsigma)T * Hessian * dF/dsigma )^-1
-    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> matGInv;
+    Eigen::MatrixXd matGInv;
     //! @brief algorithmic modulus DElastInv+delta_gamm*d2F/d2Sigma
-    FullMatrix<double,1,1> hessian;
+    Eigen::Matrix<double,1,1> hessian;
     //! @brief first derivatives of the yield functions
-    FullMatrix<double,1,1> dF_dsigma1[2];
+    Eigen::Matrix<double,1,1> dF_dsigma1[2];
     //! @brief second derivatives of the yield functions
-    FullMatrix<double,1,1> d2F_d2Sigma1[2];
+    Eigen::Matrix<double,1,1> d2F_d2Sigma1[2];
     //! @brief algorithmic modulus * dF_dsigma
-    std::vector<FullMatrix<double,1,1> > vectorN;
+    std::vector<Eigen::Matrix<double,1,1> > vectorN;
     //! @brief number of active yield functions
     int numActiveYieldFunctions;
 

@@ -236,7 +236,7 @@ bool NuTo::StructureBase::ElementCheckHessian0(ElementBase& rElement, double rDe
                 continue;
 
             double scaling = hessianRef(dofRow, dofCol).cwiseAbs().maxCoeff();
-            FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>  differenceRelative = differenceAbsolute(dofRow, dofCol) / scaling;
+            Eigen::MatrixXd  differenceRelative = differenceAbsolute(dofRow, dofCol) / scaling;
             int row = 0, col = 0;
             double maxRelativeDifference = differenceRelative.cwiseAbs().maxCoeff(&row, &col);
             if (maxRelativeDifference > rRelativeTolerance)
@@ -246,7 +246,6 @@ bool NuTo::StructureBase::ElementCheckHessian0(ElementBase& rElement, double rDe
                 GetLogger() << "maxRelativeDifference " << maxRelativeDifference << " at entry (" << row << "," << col << ")\n";
                 if (rPrintWrongMatrices)
                 {
-                    differenceRelative.SetSmallEntriesZero(1.e-10);
                     GetLogger() << "####### relative difference\n" << differenceRelative.format(fmt) << "\n";
                     GetLogger() << "####### hessian0\n" << hessian(dofRow, dofCol).format(fmt) << "\n";
                     GetLogger() << "####### hessian0_CDF\n" << hessianRef(dofRow, dofCol).format(fmt) << "\n";
@@ -518,7 +517,7 @@ Eigen::MatrixXd NuTo::StructureBase::ElementGetDamage(int rElementId)
     return ElementGetStaticIPData(rElementId, IpData::eIpStaticDataType::DAMAGE);
 }
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::ElementGetStaticIPData(int rElementId, IpData::eIpStaticDataType rType)
+Eigen::MatrixXd NuTo::StructureBase::ElementGetStaticIPData(int rElementId, IpData::eIpStaticDataType rType)
 {
     Timer timer(std::string(__FUNCTION__) + ":" + IpData::IpStaticDataTypeToString(rType), GetShowTime(), GetLogger());
 
@@ -546,7 +545,7 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::StructureBase::El
 }
 
 
-NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::ElementGetIntegrationPointCoordinates(int rElementId)
+Eigen::MatrixXd NuTo::StructureBase::ElementGetIntegrationPointCoordinates(int rElementId)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
     // build global tmp static data
@@ -561,11 +560,11 @@ NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::StructureBase::Elem
     try
     {
 		//evaluate the coordinates
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> coordinates (3,elementPtr->GetNumIntegrationPoints());
+        Eigen::MatrixXd coordinates (3,elementPtr->GetNumIntegrationPoints());
     	for (int count=0; count<elementPtr->GetNumIntegrationPoints(); count++)
     	{
     	    Eigen::Vector3d coords = elementPtr->GetGlobalIntegrationPointCoordinates(count);
-    	    coordinates.SetBlock(0, count, coords);
+    	    coordinates.block<3,1>(0, count) = coords;
     	}
     	return coordinates;
     }
@@ -594,7 +593,7 @@ double NuTo::StructureBase::ElementTotalGetMaxDamage()
 
     double maxDamage = 0;
 
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rIPDamage;
+    Eigen::MatrixXd rIPDamage;
 
     for (auto element : elementVector)
     {
@@ -610,10 +609,8 @@ double NuTo::StructureBase::ElementTotalGetMaxDamage()
         {
             throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error getting damage for element " +std::to_string(ElementGetId(element)) + ".");
         }
-        maxDamage = std::max(maxDamage, rIPDamage.Max());
-
+        maxDamage = std::max(maxDamage, rIPDamage.maxCoeff());
     }
-
     return maxDamage;
 }
 
@@ -635,7 +632,7 @@ std::vector<double> NuTo::StructureBase::ElementTotalGetStaticDataExtrapolationE
     std::vector<double> errors(numIP);
 
 
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ipValues;
+    Eigen::MatrixXd ipValues;
     int iIP = 0;
     for (auto element : elementVector)
     {
@@ -915,12 +912,12 @@ void NuTo::StructureBase::ElementTotalExtrapolateStaticData()
 }
 
 
-void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStress)
+void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, Eigen::MatrixXd& rEngineeringStress)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> elementEngineeringStress;
-    rEngineeringStress.Resize(6,1);
+    Eigen::MatrixXd elementEngineeringStress;
+    rEngineeringStress.resize(6,1);
 
     std::vector<ElementBase*> elementVector;
     GetElementsTotal(elementVector);
@@ -950,7 +947,7 @@ void NuTo::StructureBase::ElementTotalGetAverageStress(double rVolume, NuTo::Ful
 
 }
 
-void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStress)
+void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVolume, Eigen::MatrixXd& rEngineeringStress)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
@@ -962,8 +959,8 @@ void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVol
     Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> elementEngineeringStress;
-    rEngineeringStress.Resize(6,1);
+    Eigen::MatrixXd elementEngineeringStress;
+    rEngineeringStress.resize(6,1);
 
     for (Group<ElementBase>::iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
     {
@@ -994,12 +991,12 @@ void NuTo::StructureBase::ElementGroupGetAverageStress(int rGroupId, double rVol
 }
 
 
-void NuTo::StructureBase::ElementTotalGetAverageStrain(double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStrain)
+void NuTo::StructureBase::ElementTotalGetAverageStrain(double rVolume, Eigen::MatrixXd& rEngineeringStrain)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> elementEngineeringStrain;
-    rEngineeringStrain.Resize(6,1);
+    Eigen::MatrixXd elementEngineeringStrain;
+    rEngineeringStrain.resize(6,1);
 
     std::vector<ElementBase*> elementVector;
     GetElementsTotal(elementVector);
@@ -1028,7 +1025,7 @@ void NuTo::StructureBase::ElementTotalGetAverageStrain(double rVolume, NuTo::Ful
     rEngineeringStrain*=1./rVolume;
 }
 
-void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStrain)
+void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVolume, Eigen::MatrixXd& rEngineeringStrain)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
@@ -1040,8 +1037,8 @@ void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVol
     Group<ElementBase> *elementGroup = dynamic_cast<Group<ElementBase>*>(itGroup->second);
     assert(elementGroup!=0);
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> elementEngineeringStrain;
-    rEngineeringStrain.Resize(6,1);
+    Eigen::MatrixXd elementEngineeringStrain;
+    rEngineeringStrain.resize(6,1);
 
     for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++)
     {

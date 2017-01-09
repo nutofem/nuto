@@ -435,35 +435,35 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveO
         switch (it.first)
         {
         case NuTo::IpData::eIpStaticDataType::DAMAGE:
-            it.second.Resize(1, GetNumIntegrationPoints());
+            it.second.resize(1, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::DAMAGE];
             break;
         case NuTo::IpData::eIpStaticDataType::ENGINEERING_PLASTIC_STRAIN:
-            it.second.Resize(6, GetNumIntegrationPoints());
+            it.second.resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_VISUALIZE];
             break;
         case NuTo::IpData::eIpStaticDataType::ENGINEERING_STRAIN:
-            it.second.Resize(6, GetNumIntegrationPoints());
+            it.second.resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE];
             break;
         case NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS:
-            it.second.Resize(6, GetNumIntegrationPoints());
+            it.second.resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE];
             break;
         case NuTo::IpData::eIpStaticDataType::EXTRAPOLATION_ERROR:
-            it.second.Resize(1, GetNumIntegrationPoints());
+            it.second.resize(1, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::EXTRAPOLATION_ERROR];
             break;
         case NuTo::IpData::eIpStaticDataType::LOCAL_EQ_STRAIN:
-            it.second.Resize(1, GetNumIntegrationPoints());
+            it.second.resize(1, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::LOCAL_EQ_STRAIN];
             break;
         case NuTo::IpData::eIpStaticDataType::SHRINKAGE_STRAIN:
-            it.second.Resize(6, GetNumIntegrationPoints());
+            it.second.resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::SHRINKAGE_STRAIN_VISUALIZE];
             break;
         case NuTo::IpData::eIpStaticDataType::THERMAL_STRAIN:
-            it.second.Resize(6, GetNumIntegrationPoints());
+            it.second.resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::THERMAL_STRAIN];
             break;
         default:

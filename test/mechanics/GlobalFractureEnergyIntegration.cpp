@@ -10,8 +10,8 @@
 BOOST_AUTO_TEST_CASE(IntegrateFunction)
 {
     int num = 10000;
-    NuTo::FullVector<double, Eigen::Dynamic> displ(num);
-    NuTo::FullVector<double, Eigen::Dynamic> force(num);
+    Eigen::VectorXd displ(num);
+    Eigen::VectorXd force(num);
     for (int i = 0; i < num; ++i)
     {
         double x = 2. / (num-1) * i;
@@ -32,8 +32,8 @@ BOOST_AUTO_TEST_CASE(IntegrateFunction)
 BOOST_AUTO_TEST_CASE(IntegrateFunctionNegative)
 {
     int num = 10000;
-    NuTo::FullVector<double, Eigen::Dynamic> displ(num);
-    NuTo::FullVector<double, Eigen::Dynamic> force(num);
+    Eigen::VectorXd displ(num);
+    Eigen::VectorXd force(num);
     for (int i = 0; i < num; ++i)
     {
         double x = 2. / (num-1) * i;

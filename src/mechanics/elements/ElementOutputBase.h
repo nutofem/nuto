@@ -36,7 +36,7 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
-    virtual FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixDouble();
+    virtual Eigen::MatrixXd& GetFullMatrixDouble();
 
     virtual BlockFullMatrix<double>& GetBlockFullMatrixDouble();
 

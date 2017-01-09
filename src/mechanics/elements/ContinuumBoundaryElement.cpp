@@ -580,7 +580,7 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian1(Con
 //    {
 //        for (auto dofCol : mInterpolationType->GetActiveDofs())
 //        {
-//            NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian2(dofRow, dofCol);
+//            Eigen::MatrixXd& dofSubMatrix = rHessian2(dofRow, dofCol);
 //            dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
 //            dofSubMatrix.setZero();
 //            if(!GetConstitutiveLaw(0)->CheckDofCombinationComputable(dofRow,dofCol,2))
@@ -606,23 +606,23 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapIpData(Const
         switch (it.first)
         {
         case NuTo::IpData::eIpStaticDataType::ENGINEERING_STRAIN:
-            it.second.Resize(6, GetNumIntegrationPoints());
+            it.second.resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[eOutput::ENGINEERING_STRAIN_VISUALIZE] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(eOutput::ENGINEERING_STRAIN_VISUALIZE);
             break;
         case NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS:
-            it.second.Resize(6, GetNumIntegrationPoints());
+            it.second.resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[eOutput::ENGINEERING_STRESS_VISUALIZE] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(eOutput::ENGINEERING_STRESS_VISUALIZE);
             break;
         case NuTo::IpData::eIpStaticDataType::ENGINEERING_PLASTIC_STRAIN:
-            it.second.Resize(6, GetNumIntegrationPoints());
+            it.second.resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[eOutput::ENGINEERING_PLASTIC_STRAIN_VISUALIZE] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(eOutput::ENGINEERING_PLASTIC_STRAIN_VISUALIZE);
             break;
         case NuTo::IpData::eIpStaticDataType::DAMAGE:
-            it.second.Resize(1, GetNumIntegrationPoints());
+            it.second.resize(1, GetNumIntegrationPoints());
             rConstitutiveOutput[eOutput::DAMAGE] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(eOutput::DAMAGE);
             break;
         case NuTo::IpData::eIpStaticDataType::LOCAL_EQ_STRAIN:
-            it.second.Resize(1, GetNumIntegrationPoints());
+            it.second.resize(1, GetNumIntegrationPoints());
             rConstitutiveOutput[eOutput::LOCAL_EQ_STRAIN] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(eOutput::LOCAL_EQ_STRAIN);
             break;
         default:

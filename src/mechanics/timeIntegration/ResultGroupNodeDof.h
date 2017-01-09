@@ -38,7 +38,7 @@ public:
 
     virtual void CalculateValues(const StructureBase& rStructure,
     		   const Eigen::VectorXd& rResidual_j, const Eigen::VectorXd& rResidual_k,
-    		   FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const=0;
+    		   Eigen::MatrixXd& rResult)const=0;
 
     void CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot,
     		const Eigen::VectorXd& rResidual_j,

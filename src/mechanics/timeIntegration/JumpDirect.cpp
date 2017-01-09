@@ -188,7 +188,7 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 //    	std::cout << "Number of Elements = " << mStructure->GetNumElements() << std::endl;
 
 //    	//Example get stress
-//    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rEngineeringStress;
+//    	Eigen::MatrixXd rEngineeringStress;
 //    	mStructure->ElementGetEngineeringStress(0, rEngineeringStress);
 //    	std::cout << "Return stress " << std::endl;
 //    	std::cout << rEngineeringStress << std::endl;

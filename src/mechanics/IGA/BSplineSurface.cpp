@@ -21,7 +21,7 @@ NuTo::BSplineSurface::BSplineSurface(const Eigen::Vector2i &rDegree,
 // TODO
 }
 
-void NuTo::BSplineSurface::ParametrizationChordLengthMethod(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rPoints,
+void NuTo::BSplineSurface::ParametrizationChordLengthMethod(const Eigen::MatrixXd& rPoints,
                                                             Eigen::VectorXd& rParametersX,
                                                             Eigen::VectorXd& rParametersY)
 {

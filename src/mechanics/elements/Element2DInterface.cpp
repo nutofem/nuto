@@ -871,7 +871,7 @@ void NuTo::Element2DInterface::FillConstitutiveOutputMapIpData(ConstitutiveOutpu
         switch (it.first)
         {
         case NuTo::IpData::eIpStaticDataType::BOND_STRESS:
-            it.second.Resize(6, GetNumIntegrationPoints());
+            it.second.resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::BOND_STRESS] = ConstitutiveIOBase::makeConstitutiveIO<2>(NuTo::Constitutive::eOutput::BOND_STRESS);
             break;
         default:

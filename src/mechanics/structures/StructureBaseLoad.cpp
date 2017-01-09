@@ -74,7 +74,7 @@ int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, const NodeBase* rNod
 }
 
 int NuTo::StructureBase::LoadCreateNodeHeatFlux(int rLoadCase, int rNodeIdent,
-        const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+        const Eigen::MatrixXd& rDirection, double rValue)
 {
     // find node
     NodeBase* nodePtr;
@@ -96,7 +96,7 @@ int NuTo::StructureBase::LoadCreateNodeHeatFlux(int rLoadCase, int rNodeIdent,
 }
 
 int NuTo::StructureBase::LoadCreateNodeHeatFlux(int rLoadCase, const NodeBase* rNode,
-        const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+        const Eigen::MatrixXd& rDirection, double rValue)
 {
     if (rLoadCase>=mNumLoadCases)
         throw MechanicsException(__PRETTY_FUNCTION__, "Load case number larger than total number of load cases. Use myStructure.SetNumLoadCases(num) to set the maximum number");
@@ -133,7 +133,7 @@ int NuTo::StructureBase::LoadCreateNodeHeatFlux(int rLoadCase, const NodeBase* r
 }
 
 // adds a force for a node group
-int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent, const Eigen::MatrixXd& rDirection, double rValue)
 {
     // find group in map
     boost::ptr_map<int,GroupBase>::iterator itGroup = this->mGroupMap.find(rGroupIdent);
@@ -152,7 +152,7 @@ int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent
     return this->LoadCreateNodeGroupForce(rLoadCase, nodeGroup,rDirection, rValue);
 }
 
-int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, const Group<NodeBase>* rNodeGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, const Group<NodeBase>* rNodeGroup, const Eigen::MatrixXd& rDirection, double rValue)
 {
     if (rLoadCase>=mNumLoadCases)
     	throw MechanicsException("[NuTo::StructureBase::LoadCreateNodeGroupForce] Load case number larger than total number of load cases. Use myStructure.SetNumLoadCases(num) to set the maximum number");

@@ -2,11 +2,11 @@
 // Created by Thomas Titscher on 10/28/16.
 //
 #pragma once
-#include "math/FullVector.h"
-#include "math/FullMatrix.h"
+#include <string>
+#include <eigen3/Eigen/Core>
 #include "mechanics/MechanicsException.h"
 #include "../../math/Interpolation.h"
-#include <string>
+#include "math/EigenCompanion.h"
 
 namespace NuTo
 {
@@ -36,13 +36,8 @@ public:
     //! @return obj
     GlobalFractureEnergyIntegrator(std::string rFileForces, std::string rFileDisplacements, int rColumn)
     {
-        NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> reader;
-
-        reader.ReadFromFile(rFileForces);
-        mForce = reader.GetColumn(rColumn).cwiseAbs();
-
-        reader.ReadFromFile(rFileDisplacements);
-        mDispl = reader.GetColumn(rColumn).cwiseAbs();
+        mForce = NuTo::EigenCompanion::ReadFromFile(rFileForces).col(rColumn).cwiseAbs();
+        mDispl = NuTo::EigenCompanion::ReadFromFile(rFileDisplacements).col(rColumn).cwiseAbs();
 
         CheckData();
     }

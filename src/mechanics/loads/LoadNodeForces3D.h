@@ -29,7 +29,7 @@ public:
     //! @brief constructor
     //! @param rDirection ... direction of the force
     //! @param rValue ... value of the force
-    LoadNodeForces3D(int rLoadCase, const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    LoadNodeForces3D(int rLoadCase, const NodeBase* rNode, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief adds the load to global sub-vectors
     //! @param rActiceDofsLoadVector ... global load vector which correspond to the active dofs

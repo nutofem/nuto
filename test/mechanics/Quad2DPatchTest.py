@@ -32,15 +32,8 @@ def RunPatchTest(StressState):
     myStructure.SectionSetThickness(mySection, 1)
 
     numNodes = 8
-    myStructure.NodesCreate(nuto.DoubleFullMatrix(2,numNodes,(
-             0 ,  0 ,
-            10 ,  0 ,
-             2 ,  2 ,
-             8 ,  3 ,
-             4 ,  7 ,
-             8 ,  7 ,
-             0 , 10 ,
-            10 , 10	)) )
+    myStructure.NodesCreate(np.array([[  0, 10,  2,  8,  4,  8,  0, 10],
+                                      [  0,  0,  2,  3,  7,  7, 10, 10]], dtype=float))
 
     elementIncidence = nuto.IntFullMatrix(4,5,(	
             3,2,0,1 ,
