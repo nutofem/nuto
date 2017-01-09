@@ -5,7 +5,7 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 
 #include <functional>
 #include <map>

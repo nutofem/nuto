@@ -14,7 +14,7 @@
 
 #include "mechanics/MechanicsException.h"
 
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 #include <map>
 #include <set>
 #include <vector>
@@ -26,8 +26,6 @@ namespace NuTo
 class VisualizeComponent;
 class VisualizeUnstructuredGrid;
 #endif // ENABLE_VISUALIZE
-
-template <class T, int rows> class FullVector;
 
 namespace Node
 {

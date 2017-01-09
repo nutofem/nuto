@@ -1,7 +1,6 @@
 #pragma once
 
 #include "mechanics/timeIntegration/TimeDependencyBase.h"
-#include "math/FullMatrix_Def.h"
 
 namespace NuTo
 {

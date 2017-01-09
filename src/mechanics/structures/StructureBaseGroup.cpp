@@ -179,17 +179,17 @@ void NuTo::StructureBase::GroupAddNodeFunction(int rIdentNewGroup, int rIdentOld
         throw MechanicsException("[NuTo::StructureBase::GroupAddNodeCoordinateRange] A node can be added only to a node group.");
 
 
-    NuTo::FullVector<int,Eigen::Dynamic> members;
+    std::vector<int> members;
     this->NodeGroupGetMembers(rIdentOldGroup,  members);
 
-    for (unsigned int countNode = 0; countNode < members.rows(); countNode++)
+    for (int memberId : members)
     {
-        NodeBase* nodePtr = this->NodeGetNodePtr(members(countNode));
+        NodeBase* nodePtr = this->NodeGetNodePtr(memberId);
         if (nodePtr->GetNum(Node::eDof::COORDINATES) < 1)
             continue;
 
         if (rFunction(nodePtr))
-            itGroupNew->second->AddMember(members(countNode), nodePtr);
+            itGroupNew->second->AddMember(memberId, nodePtr);
     }
 }
 
@@ -273,8 +273,8 @@ void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, Eigen
     {
         std::vector<std::pair<int, NodeBase*> > nodeVector;
         this->GetNodesTotal(nodeVector);
-        FullVector<double, 2> coordinates;
-        FullVector<double, 2> vecDelta;
+        Eigen::Vector2d coordinates;
+        Eigen::Vector2d vecDelta;
         double rMin2 = rMin * rMin;
         double rMax2 = rMax * rMax;
 
@@ -300,10 +300,10 @@ void NuTo::StructureBase::GroupAddNodeCylinderRadiusRange(int rIdentGroup, Eigen
     {
         std::vector<std::pair<int, NodeBase*> > nodeVector;
         this->GetNodesTotal(nodeVector);
-        FullVector<double, 3> coordinates;
-        FullVector<double, 3> vecPtrCenter;
-        FullVector<double, 3> vecPtrProjection;
-        FullVector<double, 3> vecDelta;
+        Eigen::Vector3d coordinates;
+        Eigen::Vector3d vecPtrCenter;
+        Eigen::Vector3d vecPtrProjection;
+        Eigen::Vector3d vecDelta;
         double rMin2 = rMin * rMin;
         double rMax2 = rMax * rMax;
 

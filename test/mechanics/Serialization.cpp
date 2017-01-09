@@ -8,7 +8,6 @@
 
 #include <eigen3/Eigen/Core>
 
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseDirectSolverMUMPS.h"

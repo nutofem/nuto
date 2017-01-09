@@ -1,6 +1,5 @@
 #include <boost/filesystem.hpp>
 
-#include "math/FullMatrix.h"
 #include "base/Timer.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/sections/SectionTruss.h"

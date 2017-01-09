@@ -1,5 +1,5 @@
 #include <iostream>
-#include "math/FullVector.h"
+
 #include "mechanics/MechanicsException.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"

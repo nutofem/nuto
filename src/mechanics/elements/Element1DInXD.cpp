@@ -17,7 +17,7 @@
 #include "mechanics/elements/ElementEnum.h"
 #include "mechanics/elements/EvaluateDataContinuum.h"
 
-#include "math/FullMatrix.h"
+
 
 #ifdef ENABLE_SERIALIZATION
 #include "math/CustomBoostSerializationExtensions.h"

@@ -1,5 +1,5 @@
 
-#include "math/FullVector.h"
+
 #include "mechanics/nodes/NodeDof.h"
 #include "mechanics/nodes/NodeEnum.h"
 

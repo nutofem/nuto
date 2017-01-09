@@ -4,7 +4,7 @@
 
 #include "base/Timer.h"
 
-#include "math/FullMatrix.h"
+
 #include "mechanics/elements/ElementOutputFullMatrixDouble.h"
 #include "mechanics/elements/ElementOutputFullVectorDouble.h"
 #include "mechanics/elements/ElementOutputBlockVectorDouble.h"
@@ -208,7 +208,7 @@ void NuTo::StructureBase::NodeSetTemperature(int rNode, int rTimeDerivative, dou
     nodePtr->Set(Node::eDof::TEMPERATURE, rTimeDerivative, rTemperature);
 }
 
-void NuTo::StructureBase::NodeGroupGetMembers(int rGroupId, NuTo::FullVector<int,Eigen::Dynamic>& rMembers)
+void NuTo::StructureBase::NodeGroupGetMembers(int rGroupId, std::vector<int>& rMembers)
 {
     NuTo::Timer(__FUNCTION__, GetShowTime(), GetLogger());
 
@@ -220,7 +220,7 @@ void NuTo::StructureBase::NodeGroupGetMembers(int rGroupId, NuTo::FullVector<int
     Group<NodeBase> *nodeGroup = itGroup->second->AsGroupNode();
     assert(nodeGroup!=0);
 
-    rMembers.Resize(nodeGroup->GetNumMembers());
+    rMembers.resize(nodeGroup->GetNumMembers());
     int countNode(0);
     for (Group<NodeBase>::const_iterator itNode=nodeGroup->begin(); itNode!=nodeGroup->end();itNode++,countNode++)
     {
@@ -594,7 +594,7 @@ void NuTo::StructureBase::NodeInternalForce(const NodeBase* rNodePtr, Eigen::Vec
     }
 }
 
-void NuTo::StructureBase::NodeGetElements(const int rNodeId, NuTo::FullVector<int,Eigen::Dynamic>& rElementNumbers)
+void NuTo::StructureBase::NodeGetElements(const int rNodeId, std::vector<int>& rElementNumbers)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not available for this structure type.");
 }

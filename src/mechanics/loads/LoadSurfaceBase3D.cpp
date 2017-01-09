@@ -1,7 +1,7 @@
 // $Id: LoadLoadSurfaceBase3D.cpp 178 2009-12-11 20:53:12Z eckardt4 $
 
 #include <set>
-#include "math/FullVector.h"
+
 #include "mechanics/groups/Group.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -183,9 +183,9 @@ void NuTo::LoadSurfaceBase3D::AddLoadToGlobalSubVectors(int rLoadCase, Eigen::Ve
 
         Eigen::MatrixXd nodeCoordinates = elementPtr->ExtractNodeValues(0, Node::eDof::COORDINATES);
 
-        Eigen::Matrix<double, 2, 1> ipCoordsSurface;
-        Eigen::Matrix<double, 3, 1> ipCoordsNatural;
-        NuTo::FullVector<double, 3> ipCoordsGlobal;
+        Eigen::Vector2d ipCoordsSurface;
+        Eigen::Vector3d ipCoordsNatural;
+        Eigen::Vector3d ipCoordsGlobal;
 
         Eigen::MatrixXd derivativeNaturalSurfaceCoordinates;
         Eigen::Vector3d dXdAlpha, dXdBeta;
@@ -218,9 +218,9 @@ void NuTo::LoadSurfaceBase3D::AddLoadToGlobalSubVectors(int rLoadCase, Eigen::Ve
             dXdAlpha = jacobian * derivativeNaturalSurfaceCoordinates.col(0);
             dXdBeta  = jacobian * derivativeNaturalSurfaceCoordinates.col(1);
 
-            NuTo::FullVector<double, 3> surfaceNormalVector = dXdAlpha.cross(dXdBeta); // = || [dX / dXi] * [dXi / dAlpha] ||
+            Eigen::Vector3d surfaceNormalVector = dXdAlpha.cross(dXdBeta); // = || [dX / dXi] * [dXi / dAlpha] ||
 
-            double detJacobian = surfaceNormalVector.Norm();
+            double detJacobian = surfaceNormalVector.norm();
 
             surfaceNormalVector.normalize();
 
@@ -231,7 +231,7 @@ void NuTo::LoadSurfaceBase3D::AddLoadToGlobalSubVectors(int rLoadCase, Eigen::Ve
 //            std::cout << "DetJacobian: " << detJacobian << std::endl;
 
             //calculate surface load
-            FullVector<double, 3> loadVector;
+            Eigen::Vector3d loadVector;
             CalculateSurfaceLoad(ipCoordsGlobal, surfaceNormalVector, loadVector);
             loadVector *= factor;
 

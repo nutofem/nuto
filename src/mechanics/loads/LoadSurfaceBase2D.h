@@ -13,6 +13,7 @@
 
 #include "mechanics/MechanicsException.h"
 #include "mechanics/loads/LoadBase.h"
+#include <vector>
 
 namespace NuTo
 {
@@ -46,8 +47,8 @@ public:
     //! @param rCoordinates ... global coordinates
     //! @param rNormal ... normal to the surface (pointing outwards)
     //! @param rLoadVector ... load vector
-    virtual void CalculateSurfaceLoad(NuTo::FullVector<double,2>& rCoordinates,NuTo::FullVector<double,2>& rNormal,
-    		NuTo::FullVector<double,2>& rLoadVector)const=0;
+    virtual void CalculateSurfaceLoad(Eigen::Vector2d& rCoordinates, Eigen::Vector2d& rNormal,
+                                      Eigen::Vector2d& rLoadVector)const=0;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief deserializes (load) the class

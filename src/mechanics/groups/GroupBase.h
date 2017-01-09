@@ -8,7 +8,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include <vector>
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 #include <string>
 
 namespace NuTo

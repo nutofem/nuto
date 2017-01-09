@@ -1069,7 +1069,7 @@ void NuTo::StructureBase::ElementGroupGetAverageStrain(int rGroupId, double rVol
 }
 
 
-void NuTo::StructureBase::ElementGroupGetMembers(int rGroupId, NuTo::FullVector<int,Eigen::Dynamic>& rMembers)
+void NuTo::StructureBase::ElementGroupGetMembers(int rGroupId, std::vector<int>& rMembers)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
@@ -1081,7 +1081,7 @@ void NuTo::StructureBase::ElementGroupGetMembers(int rGroupId, NuTo::FullVector<
     Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
     assert(elementGroup!=0);
 
-    rMembers.Resize(elementGroup->GetNumMembers());
+    rMembers.resize(elementGroup->GetNumMembers());
     int countElement(0);
     for (Group<ElementBase>::const_iterator itElement=elementGroup->begin(); itElement!=elementGroup->end();itElement++,countElement++)
     {

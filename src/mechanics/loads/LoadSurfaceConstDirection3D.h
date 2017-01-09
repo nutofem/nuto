@@ -34,8 +34,8 @@ public:
     //! @param rCoordinates ... global coordinates
     //! @param rNormal ... normal to the surface (pointing outwards)
     //! @param rLoadVector ... load vector
-    void CalculateSurfaceLoad(NuTo::FullVector<double,3>& rCoordinates,NuTo::FullVector<double,3>& rNormal,
-    		NuTo::FullVector<double,3>& rLoadVector)const;
+    void CalculateSurfaceLoad(Eigen::Vector3d& rCoordinates, Eigen::Vector3d& rNormal,
+                              Eigen::Vector3d& rLoadVector)const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

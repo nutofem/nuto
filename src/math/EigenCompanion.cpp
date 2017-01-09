@@ -89,7 +89,11 @@ std::vector<double> EigenCompanion::StringToDoubles(const std::string& rString, 
     std::vector<double> doubles;
     doubles.reserve(splitLine.size());
     for (const auto& split : splitLine)
-        doubles.push_back(std::stod(split));
+    {
+        double d;
+        std::istringstream(split)>>d;
+        doubles.push_back(d);  // std::stod throws [probably due to some result files that clash with the numeric_limits]
+    }
 
     return doubles;
 }

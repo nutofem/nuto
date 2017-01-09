@@ -1,6 +1,7 @@
 #pragma once
 
-#include "math/FullMatrix.h"
+#include <eigen3/Eigen/Dense>
+#include <vector>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/serialization/export.hpp>

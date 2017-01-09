@@ -14,8 +14,6 @@ namespace NuTo
 
 class StructureBase;
 
-template <class T, int rows, int cols> class  FullMatrix;
-
 namespace IpData
 {
     enum class eIpStaticDataType;

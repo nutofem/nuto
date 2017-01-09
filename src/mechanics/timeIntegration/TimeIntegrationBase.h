@@ -7,6 +7,7 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include <vector>
 #include <boost/ptr_container/ptr_map.hpp>
 
 
@@ -14,8 +15,6 @@
 #include "base/NuToObject.h"
 
 // member
-#include "math/FullMatrix_Def.h"
-#include "math/FullVector_Def.h"
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 
@@ -159,11 +158,10 @@ public:
     	return mMinTimeStepPlot;
     }
 
-    //! @brief sets the minimum time step for the time integration procedure
-    void SetPlotElementGroups(NuTo::FullVector<int,Eigen::Dynamic> rPlotElementGroups);
+    void SetPlotElementGroups(std::vector<int> rPlotElementGroups);
 
     //! @brief returns the g
-    const NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> GetVecGroupNodesReactionForces()const
+    std::vector<int> GetVecGroupNodesReactionForces()const
     {
     	return mVecGroupNodesReactionForces;
     }
@@ -362,13 +360,10 @@ protected:
     double mLastTimePlot;
 
     //groups of elements to be plotted separately
-    FullVector<int,Eigen::Dynamic> mPlotElementGroups;
+    std::vector<int> mPlotElementGroups;
 
     // vector of groups of nodes for which the residual (corresponding to the reaction forces induced by constraints) is given as output
-    NuTo::FullVector<int,Eigen::Dynamic> mVecGroupNodesReactionForces;
-    // vector of nodes for the output of the dofs
-    std::vector<NodeBase*> mVecOutputDispNodesPtr;
-    NuTo::FullVector<int,Eigen::Dynamic> mVecOutputDispNodesInt;
+    std::vector<int> mVecGroupNodesReactionForces;
 
     CallbackInterface* mCallback;
 

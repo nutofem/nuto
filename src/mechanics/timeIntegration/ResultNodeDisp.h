@@ -14,8 +14,6 @@
 namespace NuTo
 {
 
-template <class T, int rows, int cols> class  FullMatrix;
-
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard abstract class for all results
@@ -29,7 +27,7 @@ public:
     ResultNodeDisp(const std::string& rIdent, int rNodeId);
 
     //! @brief calculate the relevant nodal dofs
-    void CalculateValues(const StructureBase& rStructure, NuTo::FullMatrix<double, 1, Eigen::Dynamic>& rValues)const override;
+    void CalculateValues(const StructureBase& rStructure, Eigen::Matrix<double, 1, Eigen::Dynamic>& rValues)const override;
 
     //! @brief number of data points per time step (e.g. number of displacement components of a node
     int GetNumData(const StructureBase& rStructure)const override;

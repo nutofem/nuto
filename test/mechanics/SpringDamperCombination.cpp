@@ -1,4 +1,3 @@
-#include "math/FullMatrix.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/laws/AdditiveOutput.h"
 #include "mechanics/constitutive/laws/AdditiveInputImplicit.h"
@@ -112,10 +111,7 @@ int AddConstraint(NuTo::Structure& rS,
     int GRPNodesConstraint = rS.GroupCreate("Nodes");
     rS.GroupAddNodeFunction(GRPNodesConstraint,rGetNodeFunction);
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> direction(TDim,1);
-    direction.SetValue(rDirection, 0, 1.0);
-
-    return rS.ConstraintLinearSetDisplacementNodeGroup(GRPNodesConstraint, direction,rValue);
+    return rS.ConstraintLinearSetDisplacementNodeGroup(GRPNodesConstraint, Eigen::Matrix<double, TDim, 1>::UnitX(), rValue);
 
 
 }
@@ -134,12 +130,9 @@ void AddSurfaceLoad(NuTo::Structure& rS,
     int GRPNodesSurfaceLoad = rS.GroupCreate("Nodes");
     rS.GroupAddNodeFunction(GRPNodesSurfaceLoad,rGetNodeFunction);
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> direction(TDim,1);
-    direction.SetValue(0, 0, 1.0);
-
     rS.LoadCreateNodeGroupForce(0,
                                 GRPNodesSurfaceLoad,
-                                direction,
+                                Eigen::Matrix<double, TDim, 1>::UnitX(),
                                 SURFACELOAD);
 }
 

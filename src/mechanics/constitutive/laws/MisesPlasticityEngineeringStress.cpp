@@ -11,7 +11,7 @@
 #include <iostream>
 #include "base/ErrorEnum.h"
 #include "base/Logger.h"
-#include "math/FullMatrix.h"
+
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"

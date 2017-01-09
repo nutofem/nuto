@@ -1,6 +1,6 @@
 
 #include <boost/assign/ptr_map_inserter.hpp>
-#include "math/FullMatrix.h"
+
 #include "mechanics/timeIntegration/ResultElementIpData.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/elements/ElementEnum.h"
@@ -19,7 +19,7 @@ NuTo::ResultElementIpData::ResultElementIpData(const std::string& rIdent, int rE
 void NuTo::ResultElementIpData::CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot)
 {
     assert(rTimeStepPlot>=0);
-    FullMatrix<double,1,Eigen::Dynamic> ipValues(1,this->GetNumData(rStructure));
+    Eigen::Matrix<double, 1, Eigen::Dynamic> ipValues(1,this->GetNumData(rStructure));
     this->CalculateValues(rStructure,ipValues);
     if (rTimeStepPlot>=mData.rows())
     {

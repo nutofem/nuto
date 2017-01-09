@@ -2,7 +2,6 @@
 #include <sstream>
 #include "boost/filesystem.hpp"
 
-#include "math/FullMatrix.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 

@@ -1,4 +1,3 @@
-#include "math/FullMatrix.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/MechanicsException.h"

@@ -1,7 +1,7 @@
 // $Id$
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "math/FullMatrix.h"
+
 #include <iostream>
 
 #ifdef ENABLE_SERIALIZATION

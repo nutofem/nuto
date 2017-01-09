@@ -1,5 +1,5 @@
 // $Id: LoadLoadSurfaceBase3D.cpp 178 2009-12-11 20:53:12Z eckardt4 $
-#include "math/FullMatrix.h"
+
 #include "mechanics/loads/LoadSurfaceConstDirection2D.h"
 
 
@@ -15,9 +15,9 @@ NuTo::LoadSurfaceConstDirection2D::LoadSurfaceConstDirection2D(int rLoadCase, St
 //! @param rCoordinates ... global coordinates
 //! @param rNormal ... normal to the surface (pointing outwards)
 //! @param rLoadVector ... load vector
-void NuTo::LoadSurfaceConstDirection2D::CalculateSurfaceLoad(NuTo::FullVector<double,2>& rCoordinates,
-                                                             NuTo::FullVector<double,2>& rNormal,
-                                                             NuTo::FullVector<double,2>& rLoadVector) const
+void NuTo::LoadSurfaceConstDirection2D::CalculateSurfaceLoad(Eigen::Vector2d& rCoordinates,
+															 Eigen::Vector2d& rNormal,
+															 Eigen::Vector2d& rLoadVector) const
 {
     rLoadVector = mLoadVector;
 }

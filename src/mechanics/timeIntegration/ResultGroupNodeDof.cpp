@@ -4,7 +4,7 @@
  *  Created on: Dec 18, 2013
  *      Author: junger
  */
-#include "math/FullMatrix.h"
+
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/timeIntegration/ResultGroupNodeDof.h"
 #include "mechanics/nodes/NodeBase.h"

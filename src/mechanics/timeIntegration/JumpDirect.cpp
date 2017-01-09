@@ -27,7 +27,7 @@
 #include "mechanics/timeIntegration/JumpDirect.h"
 #include "mechanics/timeIntegration/ResultGroupNodeForce.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
-#include "math/FullMatrix.h"
+
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 

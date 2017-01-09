@@ -4,14 +4,12 @@
 #include <array>
 #include <functional>
 #include <vector>
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 
 //VHIRTHAMTODO Add dimensions to specific function names like "MeshCylinder" +"3D"
 namespace NuTo
 {
 class Structure;
-template <class T, int rows> class FullVector;
-
 class MeshGenerator
 {
     //! @brief constructor -> deleted, because class only uses static functions

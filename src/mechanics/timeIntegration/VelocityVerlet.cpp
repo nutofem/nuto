@@ -24,7 +24,7 @@
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/timeIntegration/VelocityVerlet.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
-#include "math/FullMatrix.h"
+
 #include "base/ErrorEnum.h"
 #include "base/Timer.h"
 

@@ -1,5 +1,5 @@
 
-#include "math/FullVector.h"
+
 #include "math/SparseMatrixCSRVector2.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"

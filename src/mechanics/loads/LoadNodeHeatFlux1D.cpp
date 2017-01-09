@@ -3,7 +3,7 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/loads/LoadNodeHeatFlux1D.h"
-#include "math/FullMatrix.h"
+
 
 // constructor
 NuTo::LoadNodeHeatFlux1D::LoadNodeHeatFlux1D(int rLoadCase, const NodeBase* rNode,

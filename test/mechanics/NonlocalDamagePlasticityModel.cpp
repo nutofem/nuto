@@ -1,5 +1,3 @@
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
 #include "mechanics/structures/unstructured/Structure.h"
 
 #include "math/SparseMatrixCSRGeneral.h"

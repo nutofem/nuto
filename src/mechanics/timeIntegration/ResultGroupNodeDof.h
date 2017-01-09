@@ -18,9 +18,6 @@ class Group;
 
 class NodeBase;
 
-template <class T, int rows, int cols> class  FullMatrix;
-template <class T, int rows> class  FullVector;
-
 class ResultGroupNodeDof : public ResultBase
 {
 #ifdef ENABLE_SERIALIZATION

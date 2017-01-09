@@ -9,7 +9,7 @@
 #endif  // ENABLE_SERIALIZATION
 
 
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 
 
 

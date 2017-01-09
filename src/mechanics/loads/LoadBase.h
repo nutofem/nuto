@@ -13,13 +13,12 @@
 #include <map>
 #endif  // ENABLE_SERIALIZATION
 
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 #include "mechanics/MechanicsException.h"
 
 namespace NuTo
 {
 template<class T> class SparseMatrixCSRGeneral;
-template <class T, int rows> class FullVector;
 class NodeBase;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009

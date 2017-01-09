@@ -161,7 +161,7 @@ public:
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNodeId (Input) 			... node id
     //! @param rElementNumbers (Output)	... vector of element ids
-    void NodeGetElements(const int rNodeId, NuTo::FullVector<int, Eigen::Dynamic>& rElementNumbers);
+    void NodeGetElements(const int rNodeId, std::vector<int>& rElementNumbers);
 
     //! @brief creates a node at coordinate's origin
     //! @return node number
@@ -306,7 +306,7 @@ public:
     //! @brief returns a vector with the node ids of an element
     //! @param identifier
     //! @return vector with node ids
-    NuTo::FullVector<int, Eigen::Dynamic> ElementGetNodes(int rId);
+    std::vector<int> ElementGetNodes(int rId);
 
     //! @brief info about the elements in the Structure
     void ElementInfo(int rVerboseLevel) const override;
@@ -357,8 +357,7 @@ public:
     //! @param rInterpolationTypeId interpolation type id
     //! @param rNodeIdents Identifier for the corresponding nodes (Incidences have to be stored column-wise)
     //! @return index to the new element group<<
-    int ElementsCreate(int rInterpolationTypeId,
-                       NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rNodeNumbers);
+    int ElementsCreate(int rInterpolationTypeId, Eigen::MatrixXi& rNodeNumbers);
 
     //! @brief changes the node structure to match the interpolation type for all elements
     //! the node merge distance and the box size are calculated from the element sizes
@@ -428,7 +427,7 @@ public:
     //! @brief import from gmsh, creates groups according to gmsh's physical entities and creates an interpolation types for each group
     //! @param rFileName .. file name
     //! @return .. Matrix [NumGroups x 2] with [: x 0] group ids and [ : x 1] corresponding interpolation type ids
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ImportFromGmsh(const std::string& rFileName);
+    Eigen::MatrixXi ImportFromGmsh(const std::string& rFileName);
 
     //*************************************************
     //**      InterpolationType routines             **
@@ -629,7 +628,7 @@ protected:
     //! @brief import from gmsh, creates groups according to gmsh's physical entities and creates an interpolation types for each group
     //! @param rFileName .. file name
     //! @return .. Matrix [NumGroups x 2] with [: x 0] group ids and [ : x 1] corresponding interpolation type ids
-    FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ImportFromGmshAux(const std::string& rFileName);
+    Eigen::MatrixXi ImportFromGmshAux(const std::string& rFileName);
 #endif //SWIG
 
     boost::ptr_map<int, NodeBase> mNodeMap;

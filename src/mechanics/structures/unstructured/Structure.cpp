@@ -20,7 +20,7 @@
 #include <boost/spirit/include/classic_core.hpp>
 
 #include "mechanics/structures/unstructured/Structure.h"
-#include "math/FullMatrix.h"
+
 #include "base/ErrorEnum.h"
 #include "base/Timer.h"
 #include "base/serializeStream/SerializeStreamIn.h"
@@ -57,20 +57,16 @@
 #include <ANN/ANN.h>
 #include <set>
 
-//! @brief constructor
-//! @param mDimension number of nodes
 NuTo::Structure::Structure(int rDimension) :
         StructureBase(rDimension)
 {
 }
 
-//! @brief destructor
 NuTo::Structure::~Structure()
 {
 	mElementMap.clear();
 }
 
-//! @brief ... Info routine that prints general information about the object (detail according to verbose level)
 void NuTo::Structure::Info() const
 {
     StructureBase::Info();
@@ -133,9 +129,6 @@ void NuTo::Structure::saveImplement(Archive & ar) const
 }
 
 
-//! @brief ... save the object to a file
-//! @param filename ... filename
-//! @param aType ... type of file, either BINARY, XML or TEXT
 void NuTo::Structure::Save (const std::string &filename, std::string rType ) const
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -370,9 +363,6 @@ void NuTo::Structure::loadImplement(Archive & ar)
 #endif
 }
 
-//! @brief ... restore the object from a file
-//! @param filename ... filename
-//! @param aType ... type of file, either BINARY, XML or TEXT
 void NuTo::Structure::Restore (const std::string &filename, std::string rType )
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -695,8 +685,6 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
 
 }
 
-//! @brief Builds the nonlocal data for integral type nonlocal constitutive models
-//! @param rConstitutiveId constitutive model for which the data is build
 void NuTo::Structure::BuildNonlocalData(int rConstitutiveId)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -720,8 +708,6 @@ void NuTo::Structure::BuildNonlocalData(int rConstitutiveId)
      */
 }
 
-//! @brief Builds the nonlocal data for integral type nonlocal constitutive models
-//! @param rConstitutiveId constitutive model for which the data is build
 void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented");
@@ -952,7 +938,7 @@ void NuTo::Structure::CalculateInitialValueRates(NuTo::TimeIntegrationBase& rTim
     }
 }
 
-NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFromGmsh(const std::string& rFileName)
+Eigen::MatrixXi NuTo::Structure::ImportFromGmsh(const std::string& rFileName)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
@@ -1001,9 +987,6 @@ public:
     std::vector<unsigned int> nodes;
 };
 
-//! @brief import from gmsh
-//! @param rFileName .. file name
-//! @param vector with the created groupes
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
@@ -1012,7 +995,7 @@ public:
 #include <iostream>
 #include <string>
 
-NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFromGmshAux(const std::string& rFileName)
+Eigen::MatrixXi NuTo::Structure::ImportFromGmshAux(const std::string& rFileName)
 {
     const unsigned int num_elm_nodes[24] =
     { 0, 2, 3, 4, 4, 8, 6, 5, 3, 6, 9, 10, 27, 18, 14, 1, 8, 20, 15, 13, 0, 10, 0, 15 };
@@ -1583,9 +1566,6 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
 }
 
 
-//! @brief copy and move the structure
-//! most of the data is kept, but e.g. nonlocal data and
-//! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
 void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());

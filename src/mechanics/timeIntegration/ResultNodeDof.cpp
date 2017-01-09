@@ -5,7 +5,7 @@
  *      Author: junger
  */
 
-#include "math/FullMatrix.h"
+
 #include "mechanics/timeIntegration/ResultNodeDof.h"
 #include "mechanics/nodes/NodeBase.h"
 
@@ -21,7 +21,7 @@ void NuTo::ResultNodeDof::Info() const
 void NuTo::ResultNodeDof::CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot)
 {
 	assert(rTimeStepPlot>=0);
-	FullMatrix<double,1,Eigen::Dynamic> dofValues(1,this->GetNumData(rStructure));
+	Eigen::Matrix<double,1,Eigen::Dynamic> dofValues(1,this->GetNumData(rStructure));
 	this->CalculateValues(rStructure,dofValues);
 	if (rTimeStepPlot>=mData.rows())
 	{

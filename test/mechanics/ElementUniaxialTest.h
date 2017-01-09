@@ -22,7 +22,6 @@
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "math/SparseDirectSolverMUMPS.h"
 #include <boost/filesystem.hpp>
-#include "math/FullMatrix.h"
 
 #ifdef ENABLE_VISUALIZE
 #include "visualize/VisualizeEnum.h"

@@ -24,7 +24,7 @@
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/timeIntegration/RungeKuttaBase.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
-#include "math/FullMatrix.h"
+
 #include "base/Timer.h"
 
 //! @brief constructor

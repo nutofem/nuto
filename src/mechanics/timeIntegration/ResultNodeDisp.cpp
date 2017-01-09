@@ -5,7 +5,7 @@
  *      Author: junger
  */
 
-#include "math/FullMatrix.h"
+
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/timeIntegration/ResultNodeDisp.h"
 #include "mechanics/nodes/NodeBase.h"
@@ -17,7 +17,7 @@ NuTo::ResultNodeDisp::ResultNodeDisp(const std::string& rIdent, int rNodeId) : R
 }
 
 //! @brief calculate the relevant nodal dofs
-void NuTo::ResultNodeDisp::CalculateValues(const StructureBase& rStructure, NuTo::FullMatrix<double, 1, Eigen::Dynamic>& rValues)const
+void NuTo::ResultNodeDisp::CalculateValues(const StructureBase& rStructure, Eigen::Matrix<double, 1, Eigen::Dynamic>& rValues)const
 {
     const NodeBase* node(rStructure.NodeGetNodePtr(mNodeId));
 

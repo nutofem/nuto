@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <sstream>
+#include <math/EigenCompanion.h>
 #include "boost/filesystem.hpp"
 
-#include "math/FullMatrix.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/groups/GroupEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -72,7 +72,7 @@ try
     {
         for (int countX=0; countX<numNodesX; countX++)
         {
-        	NuTo::FullVector<double,Eigen::Dynamic> coordinates(2);
+        	Eigen::VectorXd coordinates(2);
         	coordinates(0) = countX*deltaX;
         	coordinates(1) = countY*deltaY;
         	myStructure.NodeCreate(nodeNum,coordinates);
@@ -198,13 +198,9 @@ try
 
     //set constraints
 	//directionX
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DirectionX(2,1);
-    DirectionX.SetValue(0,0,1.0);
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DirectionY(2,1);
-    DirectionY.SetValue(1,0,1.0);
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DirectionXY(2,1);
-    DirectionXY.SetValue(0,0,1.0);
-    DirectionXY.SetValue(1,0,1.0);
+    Eigen::Vector2d DirectionX({1, 0});
+    Eigen::Vector2d DirectionY({0, 1});
+    Eigen::Vector2d DirectionXY({1, 1});
 
      //export the initial plot
 #ifdef ENABLE_VISUALIZE
@@ -250,16 +246,16 @@ try
 */
 	//set a sinusoidal quarter wave
     double period(5);
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> dispRHS(51,2);
-    for (int count=0; count<dispRHS.GetNumRows()-1; count++)
+    Eigen::MatrixXd dispRHS(51,2);
+    for (int count=0; count<dispRHS.rows()-1; count++)
     {
-    	double t = ((double)count)/((double)dispRHS.GetNumRows()-2.)*0.25*period ;
+    	double t = ((double)count)/((double)dispRHS.rows()-2.)*0.25*period ;
     	dispRHS(count,0) = t;
     	dispRHS(count,1) = 0.1*sin(t/period*2.*M_PI);
     	//loadRHSFactor(count,0) = 0;
     }
-	dispRHS(dispRHS.GetNumRows()-1,0) = dispRHS(dispRHS.GetNumRows()-2,0)+1;
-	dispRHS(dispRHS.GetNumRows()-1,1) = dispRHS(dispRHS.GetNumRows()-2,1);
+	dispRHS(dispRHS.rows()-1,0) = dispRHS(dispRHS.rows()-2,0)+1;
+	dispRHS(dispRHS.rows()-1,1) = dispRHS(dispRHS.rows()-2,1);
 
     myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_Left,DirectionX,0);
     int constraintRightDisp = myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_Right,DirectionX,0);
@@ -290,22 +286,18 @@ try
     boost::filesystem::path resultFile_left = resultDir;
     resultFile_left /= std::string("Forces_GroupNodes_Left.dat");
 
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_left;
-	result_left.ReadFromFile(resultFile_left.string());
-    std::cout << "result_left" << std::endl;
-    result_left.Info(15,12,true);
+	Eigen::MatrixXd result_left = NuTo::EigenCompanion::ReadFromFile(resultFile_left.string());
+    std::cout << "result_left \n" << result_left << std::endl;
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_leftRef(2,2);
+    Eigen::Matrix2d result_leftRef;
     result_leftRef(0,0) = -1; //disp on fixed node
     result_leftRef(1,0) = -3.001682840791e+02;
 
     if ((result_leftRef-result_left).cwiseAbs().maxCoeff()>1e-4)
     {
     	std::cout << "difference " << (result_leftRef-result_left).cwiseAbs().maxCoeff() << "\n";
-        std::cout<< "real result" << std::endl;
-        result_left.Info(10,3);
-        std::cout<< "ref result" << std::endl;
-        result_leftRef.Info(10,3);
+        std::cout<< "real result \n" << result_left << std::endl;
+        std::cout<< "ref result  \n" << result_leftRef << std::endl;
     	std::cout << "difference " << (result_leftRef-result_leftRef) << "\n";
         std::cout << "[NewmarkPlane2D4N] result for left displacements is not correct." << std::endl;
         return EXIT_FAILURE;
@@ -315,22 +307,18 @@ try
     boost::filesystem::path resultFile_right = resultDir;
     resultFile_right /= std::string("Forces_GroupNodes_Right.dat");
 
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_right;
-	result_right.ReadFromFile(resultFile_right.string());
-    std::cout << "result_right" << std::endl;
-    result_right.Info(15,12,true);
+	Eigen::MatrixXd result_right = NuTo::EigenCompanion::ReadFromFile(resultFile_right.string());
+    std::cout << "result_right \n" << result_right << std::endl;
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_rightRef(2,2);
+    Eigen::Matrix2d result_rightRef;
     result_rightRef(1,0) = 3.016648179801e+02;
 
     if ((result_rightRef-result_right).cwiseAbs().maxCoeff()>1e-4)
     {
     	std::cout << "difference " << (result_rightRef-result_right).cwiseAbs().maxCoeff() << "\n";
-        std::cout<< "real result" << std::endl;
-        result_right.Info(15,12);
-        std::cout<< "ref result" << std::endl;
-        result_rightRef.Info(15,12);
-    	std::cout << "difference " << (result_rightRef-result_rightRef) << "\n";
+        std::cout<< "real result \n" << result_right << std::endl;
+        std::cout<< "ref result \n" << result_rightRef << std::endl;
+        std::cout << "difference " << (result_rightRef-result_rightRef) << "\n";
         std::cout << "[NewmarkPlane2D4N] result for right displacements is not correct." << std::endl;
         return EXIT_FAILURE;
     }
@@ -339,21 +327,17 @@ try
     boost::filesystem::path resultFile_time = resultDir;
     resultFile_time /= std::string("Time.dat");
 
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_time;
-	result_time.ReadFromFile(resultFile_time.string());
-    std::cout << "result_time" << std::endl;
-    result_time.Info(15,12,true);
+	Eigen::MatrixXd result_time = NuTo::EigenCompanion::ReadFromFile(resultFile_time.string());
+    std::cout << "result_time \n" << result_time << std::endl;
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> result_timeRef(2,1);
+    Eigen::Vector2d result_timeRef;
     result_timeRef(1,0) = 10;
 
     if ((result_timeRef-result_time).cwiseAbs().maxCoeff()>1e-4)
     {
     	std::cout << "difference " << (result_timeRef-result_time).cwiseAbs().maxCoeff() << "\n";
-        std::cout<< "real result" << std::endl;
-        result_time.Info();
-        std::cout<< "ref result" << std::endl;
-        result_timeRef.Info();
+        std::cout<< "real result \n" << result_time << std::endl;
+        std::cout<< "ref result  \n" << result_timeRef << std::endl;
     	std::cout << "difference " << (result_timeRef-result_timeRef) << "\n";
         std::cout << "[NewmarkPlane2D4N] result for time is not correct." << std::endl;
         return EXIT_FAILURE;

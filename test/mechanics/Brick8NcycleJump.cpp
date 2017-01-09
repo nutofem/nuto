@@ -2,8 +2,6 @@
 
 #include <iostream>
 #include "base/Exception.h"
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrixCSRVector2General.h"
 #include "math/SparseDirectSolverMUMPS.h"

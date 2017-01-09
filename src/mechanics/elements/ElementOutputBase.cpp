@@ -12,7 +12,7 @@
 #include <boost/serialization/vector.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include "math/FullMatrix.h"
+
 #include "mechanics/MechanicsException.h"
 #include "mechanics/elements/ElementOutputBase.h"
 
@@ -34,7 +34,7 @@ NuTo::BlockFullMatrix<double> &NuTo::ElementOutputBase::GetBlockFullMatrixDouble
     throw MechanicsException(std::string("[")+ __PRETTY_FUNCTION__ +std::string("] element output matrix is not of type BlockFullMatrix<double>"));
 }
 
-NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& NuTo::ElementOutputBase::GetFullMatrixInt()
+Eigen::MatrixXi& NuTo::ElementOutputBase::GetFullMatrixInt()
 {
     throw MechanicsException("[ElementOutputBase::GetFullMatrixInt] element output matrix is not of type Eigen::MatrixXd");
 }
@@ -54,7 +54,7 @@ NuTo::BlockFullVector<int>& NuTo::ElementOutputBase::GetBlockFullVectorInt()
     throw MechanicsException(std::string("[")+ __PRETTY_FUNCTION__ +std::string("] element output vector is not of type BlockFullVector<int>"));
 }
 
-NuTo::FullVector<int,Eigen::Dynamic>& NuTo::ElementOutputBase::GetFullVectorInt()
+Eigen::VectorXi& NuTo::ElementOutputBase::GetFullVectorInt()
 {
 	throw MechanicsException("[ElementOutputBase::GetFullVectorInt] element output matrix is not of type Eigen::VectorXd");
 }

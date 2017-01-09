@@ -276,7 +276,7 @@ int NuTo::StructureBase::LoadSurfacePressureCreate2D(int rLoadCase, int rElement
 int NuTo::StructureBase::LoadSurfacePressureFunctionCreate2D(int rLoadCase,
                                                              int rElementGroupId,
                                                              int rNodeGroupId,
-                                                             const std::function<NuTo::FullVector<double,2>(NuTo::FullVector<double,2>)> &rLoadFunction)
+                                                             const std::function<Eigen::Vector2d(Eigen::Vector2d)> &rLoadFunction)
 {
     if (rLoadCase>=mNumLoadCases)
         throw MechanicsException("[NuTo::StructureBase::LoadSurfacePressureFunctionCreate2D] Load case number larger than total number of load cases. Use myStructure.SetNumLoadCases(num) to set the maximum number");

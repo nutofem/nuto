@@ -6,7 +6,7 @@
 
 #include <boost/filesystem.hpp>
 #include "math/EigenCompanion.h"
-#include "math/FullMatrix.h"
+
 #include "mechanics/timeIntegration/ResultBase.h"
 #include "mechanics/structures/StructureBase.h"
 //! @brief constructor

@@ -4,7 +4,6 @@
 
 #include <eigen3/Eigen/Core>
 
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseDirectSolverMUMPS.h"
@@ -76,7 +75,7 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
     // first node
     nodeCoordinates(0) = factor*nodeCoordinatesFirstElement(0);
     myStructure->NodeCreateDOFs(node, setOfDOFS, nodeCoordinates);
-    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) << std::endl;
+    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0,0) << std::endl;
     node++;
     // following nodes
     for(int i = 0; i < NumElements; i++)
@@ -84,7 +83,7 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
         for (int j = 1; j < nodeCoordinatesFirstElement.size(); j++)
         {
             nodeCoordinates(0) = factor*(nodeCoordinatesFirstElement(j) + elementBegin);
-            if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) << std::endl;
+            if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0,0) << std::endl;
             myStructure->NodeCreateDOFs(node, setOfDOFS, nodeCoordinates);
             node++;
         }
@@ -189,7 +188,7 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
     nodeCoordinates(1) = factorY*nodeCoordinatesFirstElement(0);
     //myStructure->NodeCreateDOFs(node, "Displacements", nodeCoordinates);
     myStructure->NodeCreate(node, nodeCoordinates);
-    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) <<", "<< nodeCoordinates.at(1,0) << std::endl;
+    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0,0) <<", "<< nodeCoordinates(1,0) << std::endl;
     node++;
 
     for(int y = 0; y < NumElementsY; y++)
@@ -202,7 +201,7 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
                 nodeCoordinates(1) = factorY*(nodeCoordinatesFirstElement(i) + elementBeginY);
                 //myStructure->NodeCreateDOFs(node, "Displacements", nodeCoordinates);
                 myStructure->NodeCreate(node, nodeCoordinates);
-                if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) <<", "<< nodeCoordinates.at(1,0)  << std::endl;
+                if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0,0) <<", "<< nodeCoordinates(1,0)  << std::endl;
                 node++;
             }
 
@@ -215,7 +214,7 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
                     nodeCoordinates(1) = factorY*(nodeCoordinatesFirstElement(i) + elementBeginY);
                     //myStructure->NodeCreateDOFs(node, "Displacements", nodeCoordinates);
                     myStructure->NodeCreate(node, nodeCoordinates);
-                    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) <<", "<< nodeCoordinates.at(1,0)  << std::endl;
+                    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0,0) <<", "<< nodeCoordinates(1,0)  << std::endl;
                     node++;
                 }
                 elementBeginX += elementSize;

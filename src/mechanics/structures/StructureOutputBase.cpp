@@ -1,4 +1,4 @@
-#include "math/FullMatrix.h"
+
 #include "mechanics/MechanicsException.h"
 #include "StructureOutputBase.h"
 

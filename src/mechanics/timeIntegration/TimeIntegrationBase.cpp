@@ -16,7 +16,7 @@
 
 
 #include "base/Timer.h"
-#include "math/FullMatrix.h"
+
 #include "mechanics/timeIntegration/TimeIntegrationBase.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/structures/StructureBase.h"
@@ -556,9 +556,9 @@ void NuTo::TimeIntegrationBase::SetResultDirectory(std::string rResultDir, bool 
 }
 
 //! @brief sets the minimum time step for the time integration procedure
-void NuTo::TimeIntegrationBase::SetPlotElementGroups(NuTo::FullVector<int,Eigen::Dynamic> rPlotElementGroups)
+void NuTo::TimeIntegrationBase::SetPlotElementGroups(std::vector<int> rPlotElementGroups)
 {
-    if (rPlotElementGroups.rows()<1)
+    if (rPlotElementGroups.empty())
         throw MechanicsException(__PRETTY_FUNCTION__, "vector must have at least a single row.");
     mPlotElementGroups = rPlotElementGroups;
 }

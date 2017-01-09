@@ -443,11 +443,11 @@ void NuTo::MoistureTransport::CalculateSorptionCurveCoefficients(
         double lastRelHum = staticData.GetLastRelHumValue();
         auto lastSorptionCoeff = staticData.GetLastSorptionCoeff();
 
-        NuTo::FullVector<double,4> ITDofs;
-        NuTo::FullVector<double,4> ITConstants;
-        NuTo::FullVector<double,4> ITRhs;
-        NuTo::FullVector<double,4> ITDelta;
-        NuTo::FullMatrix<double,4,4> Jacobi;
+        Eigen::Vector4d ITDofs;
+        Eigen::Vector4d ITConstants;
+        Eigen::Vector4d ITRhs;
+        Eigen::Vector4d ITDelta;
+        Eigen::Matrix4d Jacobi;
 
         // Initial Coeffs = Previous Coeffs
         staticData.SetCurrentSorptionCoeff(staticData.GetLastSorptionCoeff());
@@ -538,9 +538,9 @@ void NuTo::MoistureTransport::CalculateSorptionCurveCoefficients(
                            (ITDofs(1) - mAdsorptionCoeff(1)) * ITDofs(3) +
                             ITDofs(2) - ITConstants(3);
 
-                ITDelta = -Jacobi.Inverse() * ITRhs;
+                ITDelta = -Jacobi.inverse() * ITRhs;
                 ITDofs  += ITDelta;
-                residual = ITRhs.Abs().ColumnwiseMaxCoeff()(0,0);
+                residual = ITRhs.cwiseAbs().maxCoeff();
                 iteration++;
             }
 
@@ -619,9 +619,9 @@ void NuTo::MoistureTransport::CalculateSorptionCurveCoefficients(
                            (ITDofs(1) - mDesorptionCoeff(1)) * ITDofs(3) +
                             ITDofs(2) - ITConstants(3);
 
-                ITDelta = -Jacobi.Inverse() * ITRhs;
+                ITDelta = -Jacobi.inverse() * ITRhs;
                 ITDofs  += ITDelta;
-                residual = ITRhs.Abs().ColumnwiseMaxCoeff()(0,0);
+                residual = ITRhs.cwiseAbs().maxCoeff();
                 iteration++;
             }
             

@@ -12,9 +12,6 @@
 namespace NuTo
 {
 
-template <class T, int rows, int cols> class  FullMatrix;
-template <class T, int rows> class  FullVector;
-
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard abstract class for all results

@@ -762,13 +762,13 @@ NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian0_CDF(do
                 auto& colJ = column.J[dofRow];
                 auto& matrixJJ = hessian0_CDF.JJ(dofRow, dofCol);
                 for (int i = 0; i < colJ.rows(); ++i)
-                    matrixJJ.AddValue(i, iCol, colJ.at(i,0));
+                    matrixJJ.AddValue(i, iCol, colJ(i,0));
 
                 // set KJ entries
                 auto& colK = column.K[dofRow];
                 auto& matrixKJ = hessian0_CDF.KJ(dofRow, dofCol);
                 for (int i = 0; i < colK.rows(); ++i)
-                    matrixKJ.AddValue(i, iCol, colK.at(i,0));
+                    matrixKJ.AddValue(i, iCol, colK(i,0));
             }
             columnDofValues[iCol] -= rDelta;
         }
@@ -790,13 +790,13 @@ NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian0_CDF(do
                 auto& colJ = column.J[dofRow];
                 auto& matrixJK = hessian0_CDF.JK(dofRow, dofCol);
                 for (int i = 0; i < colJ.rows(); ++i)
-                    matrixJK.AddValue(i, iCol, colJ.at(i,0));
+                    matrixJK.AddValue(i, iCol, colJ(i,0));
 
                 // set KJ entries
                 auto& colK = column.K[dofRow];
                 auto& matrixKK = hessian0_CDF.KK(dofRow, dofCol);
                 for (int i = 0; i < colK.rows(); ++i)
-                    matrixKK.AddValue(i, iCol, colK.at(i,0));
+                    matrixKK.AddValue(i, iCol, colK(i,0));
             }
             rowDofValues[iCol] -= rDelta;
         }

@@ -21,8 +21,8 @@
 // class member
 #include <boost/ptr_container/ptr_map.hpp>
 #include "base/Logger.h"
-#include "math/FullVector.h"
-#include "math/FullMatrix.h"
+
+
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
@@ -304,7 +304,7 @@ public:
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNodeId (Input) 			... node id
     //! @param rElementNumbers (Output) ... vector of element ids
-    void NodeGetElements(const int rNodeId, NuTo::FullVector<int,Eigen::Dynamic>& rElementNumbers);
+    void NodeGetElements(const int rNodeId, std::vector<int>& rElementNumbers);
 
     //! @brief delete node
     //! @param rIdent ... node identifier
@@ -358,7 +358,7 @@ public:
     //! @brief returns the node ids of an node group
     //! @param rGroupId  group number
     //! @param rMembers  return vector with node ids
-    void NodeGroupGetMembers(int rGroupId, NuTo::FullVector<int,Eigen::Dynamic>& rMembers);
+    void NodeGroupGetMembers(int rGroupId, std::vector<int>& rMembers);
 
     //! @brief gets the coordinates of a node
     //! @param rNode node identifier
@@ -740,7 +740,7 @@ public:
     //! @brief returns the element ids of an element group
     //! @param rGroupId  group number
     //! @param rMembers  return vector with element ids
-    void ElementGroupGetMembers(int rGroupId, NuTo::FullVector<int,Eigen::Dynamic>& rMembers);
+    void ElementGroupGetMembers(int rGroupId, std::vector<int>& rMembers);
 
     //! @brief calculates the volume of the elements
     //! @param rGroupId  group number
@@ -1084,7 +1084,7 @@ public:
     int LoadSurfacePressureFunctionCreate2D(int rLoadCase,
                                             int rElementGroupId,
                                             int rNodeGroupId,
-                                            const std::function<NuTo::FullVector<double,2>(NuTo::FullVector<double,2>)> &rLoadFunction);
+                                            const std::function<Eigen::Vector2d(Eigen::Vector2d)> &rLoadFunction);
 
     //! @brief adds a surface load (pressure) to 3D solid elements
     //! @param rElementGroupId ... specifies the elements with surface loads

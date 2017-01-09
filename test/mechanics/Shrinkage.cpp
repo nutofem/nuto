@@ -120,14 +120,12 @@ struct MechanicsControl
     {
         assert(rValue <= TDim && "Direction isn't part of current dimension");
         int GRPNodesConstraint = mS.GroupCreate("Nodes");
-        mS.GroupAddNodeFunction(GRPNodesConstraint,rGetNodeFunction);
+        mS.GroupAddNodeFunction(GRPNodesConstraint, rGetNodeFunction);
 
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> direction(TDim,1);
-        direction.SetValue(rDirection, 0, 1.0);
+        Eigen::VectorXd direction = Eigen::VectorXd::Zero(TDim);
+        direction(rDirection) = 1.0;
 
-        return mS.ConstraintLinearSetDisplacementNodeGroup(GRPNodesConstraint, direction,rValue);
-
-
+        return mS.ConstraintLinearSetDisplacementNodeGroup(GRPNodesConstraint, direction, rValue);
     }
 
     template<int TDim>
@@ -279,8 +277,8 @@ public:
     bool            SorptionHistoryDesorption               =   true;
     double          GradientCorrectionDesorptionAdsorpion   =   0.26;
     double          GradientCorrectionAdsorpionDesorption   =   0.56;
-    NuTo::FullVector<double,4> AdsorptionCoeffs             = Eigen::MatrixXd::Constant(4, 1, 0.0);
-    NuTo::FullVector<double,4> DesorptionCoeffs             = Eigen::MatrixXd::Constant(4, 1, 0.0);
+    Eigen::Vector4d AdsorptionCoeffs                        =   Eigen::Vector4d::Zero();
+    Eigen::Vector4d DesorptionCoeffs                        =   Eigen::Vector4d::Zero();
 
 
     //references
@@ -319,13 +317,13 @@ void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
     int controlNodeConstraint = rS.ConstraintLinearSetRelativeHumidityNode(controlNodePtr,1.0);
 
     // Set Integration type - default not sufficient
-    NuTo::FullVector<int,Eigen::Dynamic> boundaryElementIDs;
+    std::vector<int> boundaryElementIDs;
     rS.ElementGroupGetMembers(groupBoundaryElements, boundaryElementIDs);
 
 
-    for(unsigned int i=0; i<boundaryElementIDs.rows();++i)
+    for(int elementId : boundaryElementIDs)
     {
-        NuTo::ElementBase* elementPtr =  rS.ElementGetElementPtr(boundaryElementIDs[i]);
+        NuTo::ElementBase* elementPtr =  rS.ElementGetElementPtr(elementId);
         switch(TDim)
         {
         case 1:

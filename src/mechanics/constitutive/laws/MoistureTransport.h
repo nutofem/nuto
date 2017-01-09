@@ -1,7 +1,7 @@
 #pragma once
 
 // TODO: Replace with std::array!
-#include "math/FullVector.h"
+
 
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/constitutive/staticData/IPConstitutiveLaw.h"

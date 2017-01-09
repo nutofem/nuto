@@ -3,7 +3,7 @@
 
 #include "base/Timer.h"
 
-#include "math/FullMatrix.h"
+
 #include "mechanics/constraints/ConstraintBase.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
@@ -62,15 +62,15 @@ const boost::ptr_map<int, NuTo::NodeBase>& NuTo::Structure::NodeGetNodeMap() con
 }
 
 
-void NuTo::Structure::NodeGetElements(const int rNodeId, NuTo::FullVector<int,Eigen::Dynamic>& rElementNumbers)
+void NuTo::Structure::NodeGetElements(const int rNodeId, std::vector<int>& rElementNumbers)
 {
 	const NuTo::NodeBase* nodePtr(NuTo::Structure::NodeGetNodePtr(rNodeId));
 	std::vector<NuTo::ElementBase*> elementPtrs;
 	this->NodeGetElements(nodePtr,elementPtrs);
-	rElementNumbers.Resize(elementPtrs.size());
+	rElementNumbers.resize(elementPtrs.size());
 	size_t i=0;
 	BOOST_FOREACH(NuTo::ElementBase* thisElPtr,elementPtrs)
-		rElementNumbers(++i,1)=thisElPtr->ElementGetId();
+		rElementNumbers[++i] = thisElPtr->ElementGetId();
 }
 
 void NuTo::Structure::NodeGetElements(const NuTo::NodeBase* rNodePtr, std::vector<NuTo::ElementBase*>& rElements)

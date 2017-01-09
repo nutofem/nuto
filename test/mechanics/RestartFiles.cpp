@@ -15,7 +15,6 @@
 #include "mechanics/tools/MeshGenerator.h"
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "mechanics/elements/ElementBase.h"
-#include "math/FullMatrix.h"
 
 // necessary to build with clang when boost has been compiled by gcc
 std::string boost::unit_test::ut_detail::normalize_test_case_name(const_string name)

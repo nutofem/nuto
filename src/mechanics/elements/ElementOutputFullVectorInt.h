@@ -1,8 +1,6 @@
 // $Id $
 #pragma once
 
-#include "math/FullVector_Def.h"
-
 #include "mechanics/elements/ElementOutputBase.h"
 
 namespace NuTo
@@ -31,13 +29,13 @@ public:
     	return new ElementOutputFullVectorInt(*this);
     }
 
-    FullVector<int,Eigen::Dynamic>& GetFullVectorInt() override
+    Eigen::VectorXi& GetFullVectorInt() override
 	{
         return mVector;
 	}
 
 private:
-    FullVector<int,Eigen::Dynamic> mVector;
+    Eigen::VectorXi mVector;
 };
 }
 #ifdef ENABLE_SERIALIZATION

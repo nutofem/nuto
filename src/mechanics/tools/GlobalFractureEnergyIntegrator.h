@@ -3,7 +3,7 @@
 //
 #pragma once
 #include <string>
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 #include "mechanics/MechanicsException.h"
 #include "../../math/Interpolation.h"
 #include "math/EigenCompanion.h"

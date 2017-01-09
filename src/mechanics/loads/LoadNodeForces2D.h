@@ -16,8 +16,6 @@
 
 namespace NuTo
 {
-template <class T, int rows, int cols> class FullMatrix;
-
 
 //! @author Daniel Arnold, ISM
 //! @date June 2010

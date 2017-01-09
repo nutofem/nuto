@@ -8,7 +8,7 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "math/FullVector.h"
+
 #include "mechanics/constitutive/ConstitutiveInputBase.h"
 
 namespace NuTo

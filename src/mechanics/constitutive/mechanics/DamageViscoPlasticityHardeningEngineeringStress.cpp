@@ -34,8 +34,8 @@
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/sections/SectionBase.h"
 #include "mechanics/sections/SectionEnum.h"
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
+
+
 
 #include <math.h>
 

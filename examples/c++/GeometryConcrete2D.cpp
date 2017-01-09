@@ -56,11 +56,11 @@ int main(int argc, char* argv[])
     assert(groupIndices.GetNumRows() == 2); // two physical groups
     assert(groupIndices.GetNumColumns() == 2); // 1st col: group, 2nd col: interpolation type
 
-    int gMatrix = groupIndices.GetValue(0, 0);
-    int gAggreg = groupIndices.GetValue(1, 0);
+    int gMatrix = groupIndices(0, 0);
+    int gAggreg = groupIndices(1, 0);
 
-    int interpolationMatrix = groupIndices.GetValue(0, 1);
-    int interpolationAggreg = groupIndices.GetValue(1, 1);
+    int interpolationMatrix = groupIndices(0, 1);
+    int interpolationAggreg = groupIndices(1, 1);
 
     myStructure.InterpolationTypeAdd(
             interpolationMatrix, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);

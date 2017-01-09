@@ -5,7 +5,6 @@
 #include <eigen3/Eigen/Sparse>
 
 
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRVector2General.h"
 
 

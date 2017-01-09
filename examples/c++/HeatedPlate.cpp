@@ -149,8 +149,8 @@ int main()
     structure.SectionSetThickness(section, thickness);
     structure.ElementTotalSetSection(section);
 
-    auto matrix_group = groupIndices.GetValue(0, 0);
-    auto aggregate_group = groupIndices.GetValue(1, 0);
+    auto matrix_group = groupIndices(0, 0);
+    auto aggregate_group = groupIndices(1, 0);
 
     // set constitutive laws
     //Properties concrete = {41071.0, 893e-6, 1.89, 2899.0, 17.3e-6};
@@ -163,8 +163,8 @@ int main()
     SetConstitutiveLaws(structure, aggregate_group, aggregate_properties, SandstoneExpansion);
 
     // set interpolation types
-    auto interpolationMatrix = groupIndices.GetValue(0,1);
-    auto interpolationAggreg = groupIndices.GetValue(1,1);
+    auto interpolationMatrix = groupIndices(0,1);
+    auto interpolationAggreg = groupIndices(1,1);
 
     SetInterpolation(structure, interpolationMatrix);
     SetInterpolation(structure, interpolationAggreg);
@@ -184,9 +184,9 @@ int main()
     structure.GroupAddNodeCoordinateRange(nodesNorth, 1, 16.0, 16.0);
 
     // displacement BC
-    structure.ConstraintLinearSetDisplacementNodeGroup(nodesWest, NuTo::FullVector<double,2>::UnitX(), 0.0);
-    structure.ConstraintLinearSetDisplacementNodeGroup(nodesSouth, NuTo::FullVector<double,2>::UnitY(), 0.0);
-    structure.ConstraintLinearSetDisplacementNodeGroup(nodesNorth, NuTo::FullVector<double,2>::UnitY(), 0.0);
+    structure.ConstraintLinearSetDisplacementNodeGroup(nodesWest, Eigen::Vector2d::UnitX(), 0.0);
+    structure.ConstraintLinearSetDisplacementNodeGroup(nodesSouth, Eigen::Vector2d::UnitY(), 0.0);
+    structure.ConstraintLinearSetDisplacementNodeGroup(nodesNorth, Eigen::Vector2d::UnitY(), 0.0);
 
     // temperature BC
     structure.SetNumLoadCases(1);

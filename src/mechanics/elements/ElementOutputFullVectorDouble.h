@@ -1,7 +1,6 @@
 // $Id $
 #pragma once
 
-#include "math/FullVector_Def.h"
 #include "mechanics/elements/ElementOutputBase.h"
 
 namespace NuTo

@@ -15,7 +15,6 @@ namespace NuTo
 {
 
 class StructureBase;
-template <class T, int rows, int cols> class  FullMatrix;
 
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -35,7 +34,7 @@ public:
     void CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot);
 
     //! @brief calculate the relevant nodal dofs
-    virtual void CalculateValues(const StructureBase& rStructure, NuTo::FullMatrix<double, 1, Eigen::Dynamic>& rValues)const=0;
+    virtual void CalculateValues(const StructureBase& rStructure, Eigen::Matrix<double, 1, Eigen::Dynamic>& rValues)const=0;
 
     ResultNodeDof* AsResultNodeDof()
     {

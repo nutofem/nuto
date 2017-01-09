@@ -10,7 +10,7 @@
 
 #include <list>
 #include <map>
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 #include "mechanics/MechanicsException.h"
 #include "mechanics/elements/IPData.h"
 #include <memory>

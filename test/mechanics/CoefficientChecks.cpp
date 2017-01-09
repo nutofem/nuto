@@ -1,4 +1,3 @@
-#include "math/FullMatrix.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -12,7 +11,7 @@ void CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder rType
     //create structure
     NuTo::Structure myStructure(2);
     //create nodes
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> nodeCoordinates(2, 8);
+    Eigen::MatrixXd nodeCoordinates(2, 8);
     nodeCoordinates <<
             0, 10, 2, 8, 4, 8, 0, 10,
             0, 0, 2, 3, 7, 7, 10, 10;
@@ -23,7 +22,7 @@ void CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder rType
     myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, rTypeOrder);
 
     //create element
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> nodeNumbers(3, 10);
+    Eigen::MatrixXi nodeNumbers(3, 10);
     nodeNumbers <<
             0, 0, 0, 1, 2, 2, 3, 3, 4, 5,
             1, 2, 3, 7, 4, 3, 5, 7, 5, 7,
@@ -50,10 +49,7 @@ void CoefficientCheckLinearElasticTriangle(NuTo::Interpolation::eTypeOrder rType
     myStructure.ElementTotalSetSection(mySection);
 
     // add a rather random constraint to get some dependent dofs
-    NuTo::FullVector<double, Eigen::Dynamic> direction(2);
-    direction(0) = 1;
-    direction(1) = 0;
-    myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
+    myStructure.ConstraintLinearSetDisplacementNode(0, Eigen::Vector2d::UnitX(), 0.0);
     myStructure.CalculateMaximumIndependentSets();
 
     bool isCorrectStiffnessStructure = myStructure.CheckHessian0(1.e-6, 1.e-4);

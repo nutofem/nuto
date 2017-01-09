@@ -1,7 +1,7 @@
 #include "MeshGenerator.h"
 
 
-#include "math/FullVector.h"
+
 #include "mechanics/structures/unstructured/Structure.h"
 #include "boost/progress.hpp"
 
