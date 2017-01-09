@@ -7,7 +7,6 @@ namespace NuTo
 {
 // forward declarations
 template<class T> class SparseMatrixCSR;
-template<class T, int rows> class FullVector;
 
 //! @author Stefan Eckardt, ISM
 //! @date October 2009

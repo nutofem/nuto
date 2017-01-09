@@ -160,11 +160,11 @@ void NuTo::SparseMatrixCSRSymmetric<T>::Info() const
 //! @brief ... write nonzero matrix entries into a matrix
 //! @param rFullMatrix ... the full matrix
 template <class T>
-void NuTo::SparseMatrixCSRSymmetric<T>::WriteEntriesToMatrix(Matrix<T>& rMatrix) const
+Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> NuTo::SparseMatrixCSRSymmetric<T>::ConvertToFullMatrix() const
 {
-	std::vector<int>::const_iterator columnIterator = this->mColumns.begin();
+    Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> m = Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>::Zero(this->GetNumRows(), this->GetNumColumns());
+    std::vector<int>::const_iterator columnIterator = this->mColumns.begin();
 	typename std::vector<T>::const_iterator valueIterator = this->mValues.begin();
-	rMatrix.Resize(this->GetNumRows(), this->GetNumColumns());
 	if (this->mOneBasedIndexing)
 	{
 		unsigned int row = 0;
@@ -172,9 +172,9 @@ void NuTo::SparseMatrixCSRSymmetric<T>::WriteEntriesToMatrix(Matrix<T>& rMatrix)
 		{
 			for (int entry_count = this->mRowIndex[row]; entry_count < this->mRowIndex[row+1]; entry_count++)
 			{
-				rMatrix.AddValue(row, (*columnIterator) - 1,*valueIterator);
+				m(row, (*columnIterator) - 1) = *valueIterator;
 				if (static_cast<int>(row)!=(*columnIterator) - 1)
-				    rMatrix.AddValue((*columnIterator) - 1, row, *valueIterator);
+				    m((*columnIterator) - 1) = row, *valueIterator;
 				columnIterator++;
 				valueIterator++;
 			}
@@ -189,11 +189,11 @@ void NuTo::SparseMatrixCSRSymmetric<T>::WriteEntriesToMatrix(Matrix<T>& rMatrix)
 			for (int entry_count = this->mRowIndex[row]; entry_count < this->mRowIndex[row+1]; entry_count++)
 			{
 				// set upper triangle and diagonal entries
-				rMatrix.AddValue(row, *columnIterator, *valueIterator);
+				m(row, *columnIterator) = *valueIterator;
 				// set lower triangle entries
 				if (static_cast<int>(row) != *columnIterator)
 				{
-					rMatrix.AddValue(*columnIterator, row, *valueIterator);
+					m(*columnIterator, row) = *valueIterator;
 				}
 				columnIterator++;
 				valueIterator++;
@@ -201,6 +201,7 @@ void NuTo::SparseMatrixCSRSymmetric<T>::WriteEntriesToMatrix(Matrix<T>& rMatrix)
 			row++;
 		}
 	}
+    return m;
 }
 
 //! @brief ... resize matrix

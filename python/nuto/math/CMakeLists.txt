@@ -1,19 +1,9 @@
 set(NuToMath_SWIG_MODULES
     NuToMath
     ModulMatrix
-    ModulFullMatrix
-    ModulFullVector
     ModulOperator
     ModulSparseMatrix
     ModulSparseSolver
-)
-
-set(SWIG_MODULE_ModulFullMatrix_EXTRA_DEPS
-    ${CMAKE_SOURCE_DIR}/src/math/FullMatrix_Def.h
-)
-
-set(SWIG_MODULE_ModulFullVectorx_EXTRA_DEPS
-    ${CMAKE_SOURCE_DIR}/src/math/FullVector_Def.h
 )
 
 set(SWIG_MODULE_ModulSparseMatrix_EXTRA_DEPS

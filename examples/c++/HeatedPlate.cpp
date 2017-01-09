@@ -9,7 +9,6 @@
 //!
 #include <iostream>
 #include <cmath>
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseDirectSolverMUMPS.h"
 #include "math/LinearInterpolation.h"

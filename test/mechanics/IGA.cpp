@@ -144,7 +144,7 @@ NuTo::Structure* constantStress(double& DisplacementCorrect, int refinements, co
     /** Boundary condition **/
 
     // Dirichlet
-    NuTo::FullVector<double,Eigen::Dynamic> direction(2);
+    Eigen::VectorXd direction(2);
 
     direction << 1, 0;
     for(int i = 0; i < surface.GetNumControlPoints(1); i++)
@@ -437,7 +437,7 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
     myStructure->NodeGroupGetMembers(groupNodesLower, members);
 
     int countDBC = 0;
-    NuTo::FullVector<double,Eigen::Dynamic> direction(2);
+    Eigen::VectorXd direction(2);
     direction << 0 ,1;
     for (int memberId : members)
     {
@@ -521,13 +521,13 @@ void solve(NuTo::Structure *myStructure, double solution, const std::string &res
 void Neumann(const std::string &resultDir, const std::string &path, const std::string &fileName, int BC)
 {
     NuTo::Structure myStructure(2);
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndices = myStructure.ImportFromGmsh(path + fileName);
+    Eigen::MatrixXi groupIndices = myStructure.ImportFromGmsh(path + fileName);
 
-    int interpolationType = groupIndices.GetValue(0, 1);
+    int interpolationType = groupIndices(0, 1);
     myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS,  NuTo::Interpolation::eTypeOrder::LOBATTO3);
 
     myStructure.SetVerboseLevel(10);
-    myStructure.ElementConvertToInterpolationType(groupIndices.GetValue(0, 0));
+    myStructure.ElementConvertToInterpolationType(groupIndices(0, 0));
 
 //    myStructure.InterpolationTypeSetIntegrationType(interpolationType, NuTo::IntegrationType::IntegrationType2D3NGauss3Ip, NuTo::IpData::NOIPDATA);
 

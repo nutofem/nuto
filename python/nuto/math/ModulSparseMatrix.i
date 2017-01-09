@@ -4,7 +4,6 @@
 #pragma SWIG nowarn=401
 %{
 //Put headers and other declarations here to be added in the wrapper files
-#include "math/FullMatrix.h"
 #include "math/Operator.h"
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSR.h"

@@ -5,7 +5,6 @@
 #include <iostream>
 #include <string>
 
-#include "math/FullMatrix.h"
 #include "math/Matrix.h"
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSR.h"
@@ -16,22 +15,22 @@ namespace NuTo
 {
 
 template<>
-SparseMatrixCSRGeneral<int>::SparseMatrixCSRGeneral(const FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance): SparseMatrixCSR<int>(0,0)
+SparseMatrixCSRGeneral<int>::SparseMatrixCSRGeneral(const Eigen::MatrixXi& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance): SparseMatrixCSR<int>(0,0)
 {
     throw MathException("[SparseMatrixCSRGeneral::SparseMatrixCSRGeneral] conversion from full matrix not implemented for integers.");
     mNumColumns = 0;
 }
 
 template<>
-SparseMatrixCSRGeneral<double>::SparseMatrixCSRGeneral(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance): SparseMatrixCSR<double>(0,0)
+SparseMatrixCSRGeneral<double>::SparseMatrixCSRGeneral(const Eigen::MatrixXd& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance): SparseMatrixCSR<double>(0,0)
 {
-    this->Resize(rFullMatrix.GetNumRows(),rFullMatrix.GetNumColumns());
+    this->Resize(rFullMatrix.rows(),rFullMatrix.cols());
     double tolerance = rAbsoluteTolerance;
     if (rRelativeTolerance > 1e-14)
     {
         double maxValue = 0;
         const double* values = rFullMatrix.data();
-        for (int count = 0; count < rFullMatrix.GetNumRows() * rFullMatrix.GetNumColumns(); count++)
+        for (int count = 0; count < rFullMatrix.rows() * rFullMatrix.cols(); count++)
         {
             if (std::abs(values[count]) > maxValue)
             {
@@ -42,9 +41,9 @@ SparseMatrixCSRGeneral<double>::SparseMatrixCSRGeneral(const FullMatrix<double, 
     }
     assert(this->mOneBasedIndexing == false);
     this->mRowIndex[0] = 0;
-    for (int row = 0; row < rFullMatrix.GetNumRows(); row++)
+    for (int row = 0; row < rFullMatrix.rows(); row++)
     {
-        for (int col = 0; col < rFullMatrix.GetNumColumns(); col++)
+        for (int col = 0; col < rFullMatrix.cols(); col++)
         {
             if (std::abs(rFullMatrix(row,col)) > tolerance)
             {
@@ -55,7 +54,7 @@ SparseMatrixCSRGeneral<double>::SparseMatrixCSRGeneral(const FullMatrix<double, 
         assert(this->mValues.size() == this->mColumns.size());
         this->mRowIndex[row + 1] = this->mValues.size();
     }
-    mNumColumns = rFullMatrix.GetNumColumns();
+    mNumColumns = rFullMatrix.cols();
 }
 
 //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
@@ -168,7 +167,7 @@ void SparseMatrixCSRGeneral<int>::ImportFromSLangText(const char* rFileName)
 }
 
 template<>
-void SparseMatrixCSRGeneral<int>::Gauss(FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rRhs, std::vector<int>& rMappingToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
+void SparseMatrixCSRGeneral<int>::Gauss(Eigen::MatrixXi& rRhs, std::vector<int>& rMappingToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
 {
     throw MathException("[SparseMatrixCSRGeneral::Gauss] not implemented for this data-type.");
 }
@@ -180,7 +179,7 @@ void SparseMatrixCSRGeneral<int>::Gauss(SparseMatrixCSRGeneral<int>& rRhs, std::
 }
 
 template<>
-void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
+void SparseMatrixCSRGeneral<double>::Gauss(Eigen::MatrixXd& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
 {
     // initialize help vectors for reordering
     rMappingNewToInitialOrdering.resize(this->GetNumColumns());
@@ -238,7 +237,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double, Eigen::Dynamic, Ei
         {
             this->mValues[pos] *= invPivot;
         }
-        for (int rhsCount = 0; rhsCount < rRhs.GetNumColumns(); rhsCount++)
+        for (int rhsCount = 0; rhsCount < rRhs.cols(); rhsCount++)
         {
             rRhs(row, rhsCount) *= invPivot;
         }
@@ -268,7 +267,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double, Eigen::Dynamic, Ei
                     {
                         this->mValues[pos] *= factor;
                     }
-                    for (int rhsCount = 0; rhsCount < rRhs.GetNumColumns(); rhsCount++)
+                    for (int rhsCount = 0; rhsCount < rRhs.cols(); rhsCount++)
                     {
                         rRhs(tmpRow, rhsCount) *= factor;
                     }
@@ -278,7 +277,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double, Eigen::Dynamic, Ei
                     {
                         this->AddValue(tmpRow, this->mColumns[rowPos], this->mValues[rowPos]);
                     }
-                    for (int rhsCount = 0; rhsCount < rRhs.GetNumColumns(); rhsCount++)
+                    for (int rhsCount = 0; rhsCount < rRhs.cols(); rhsCount++)
                     {
                         rRhs(tmpRow, rhsCount) += rRhs(row, rhsCount);
                     }
@@ -316,8 +315,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double, Eigen::Dynamic, Ei
                 std::cout << " row: " << row << " column: " << rMappingInitialToNewOrdering[this->mColumns[pos]] << " value: " << this->mValues[pos] << std::endl;
             }
         }
-        std::cout << "right-hand side after factorization" << std::endl;
-        rRhs.Info();
+        std::cout << "right-hand side after factorization \n" << rRhs << std::endl;
         std::cout << "### end factorization ###" << std::endl;
     }
 
@@ -345,7 +343,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double, Eigen::Dynamic, Ei
                     if (oldsize != mValues.size())
                         tmpPos++;
                 }
-                for (int rhsCount = 0; rhsCount < rRhs.GetNumColumns(); rhsCount++)
+                for (int rhsCount = 0; rhsCount < rRhs.cols(); rhsCount++)
                 {
                     rRhs(row, rhsCount) += factor * rRhs(column, rhsCount);
                 }
@@ -372,8 +370,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(FullMatrix<double, Eigen::Dynamic, Ei
                 std::cout << " row: " << row << " column: " << rMappingInitialToNewOrdering[this->mColumns[pos]] << " value: " << this->mValues[pos] << std::endl;
             }
         }
-        std::cout << "right-hand side after back substitution" << std::endl;
-        rRhs.Info();
+        std::cout << "right-hand side after back substitution \n" << rRhs << std::endl;
         std::cout << "### end back substitution ###" << std::endl;
     }
 
@@ -612,13 +609,13 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
 }
 
 template<>
-void SparseMatrixCSRGeneral<int>::GetMaximumEigenvalueAndEigenvector(NuTo::FullVector<int, Eigen::Dynamic> &rStart, int &maximumEigenvalue, double tol)
+void SparseMatrixCSRGeneral<int>::GetMaximumEigenvalueAndEigenvector(Eigen::VectorXi &rStart, int &maximumEigenvalue, double tol)
 {
 	throw MathException("[SparseMatrixCSRGeneral::importFromSLang] not implemented for this data-type.");
 }
 
 template<>
-void SparseMatrixCSRGeneral<double>::GetMaximumEigenvalueAndEigenvector(NuTo::FullVector<double, Eigen::Dynamic> &rStart, double &maximumEigenvalue, double tol)
+void SparseMatrixCSRGeneral<double>::GetMaximumEigenvalueAndEigenvector(Eigen::VectorXd &rStart, double &maximumEigenvalue, double tol)
 {
 	int numRows = this->GetNumRows();
 
@@ -626,13 +623,13 @@ void SparseMatrixCSRGeneral<double>::GetMaximumEigenvalueAndEigenvector(NuTo::Fu
 
 	if(rStart.rows() != numRows)
 	{
-		rStart.Resize(numRows);
+		rStart.resize(numRows);
 		rStart.fill(1./std::sqrt(numRows + 1));
 		rStart(numRows - 1) = std::sqrt(1 - (numRows - 1)/(numRows + 1));
 	}
 
-	NuTo::FullVector<double, Eigen::Dynamic> y_k_1_star(rStart.rows());
-	NuTo::FullVector<double, Eigen::Dynamic> y_k_1(rStart.rows());
+    Eigen::VectorXd y_k_1_star(rStart.rows());
+    Eigen::VectorXd y_k_1(rStart.rows());
 	double lambda_k_1 = 0., lambda_k_2 = 0.;
 	double error = 0.;
 	int i = 1;
@@ -640,7 +637,7 @@ void SparseMatrixCSRGeneral<double>::GetMaximumEigenvalueAndEigenvector(NuTo::Fu
 	{
 		y_k_1_star = this->operator*(rStart);
 		maximumEigenvalue = rStart.dot(y_k_1_star);
-		y_k_1 = y_k_1_star*(1./y_k_1_star.Norm());
+		y_k_1 = y_k_1_star*(1./y_k_1_star.norm());
 
 		rStart = y_k_1;
 

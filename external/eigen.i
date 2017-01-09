@@ -100,6 +100,7 @@
     {
       rows = array_size(in,0);
       cols = array_size(in,1);
+
       if ((Derived::RowsAtCompileTime != Eigen::Dynamic) && (Derived::RowsAtCompileTime != array_size(in,0)))
       {
         PyErr_SetString(PyExc_ValueError, "Row dimension mismatch between NumPy and Eigen objects (2D).");
@@ -214,7 +215,7 @@
   }
 
   template<> int NumPyType<double>() {return NPY_DOUBLE;}
-  template<> int NumPyType<int>() {return NPY_INT;}
+  template<> int NumPyType<int>() {return NPY_LONG;}
 %}
 
 // ----------------------------------------------------------------------------

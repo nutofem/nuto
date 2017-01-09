@@ -16,9 +16,8 @@ def symmetric_solve():
     A.SetOneBasedIndexing()
     print "symmetric matrix, sparse CSR storage"
     A.Info()
-    A_full = nuto.DoubleFullMatrix(A)
     print "\nsymmetric matrix, full storage"
-    A_full.Info(3)
+    print A.ConvertToFullMatrix()
 
     # right hand side vector
     rhs = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
@@ -54,8 +53,7 @@ def nonsymmetric_solve():
     print "\nnonsymmetric matrix, sparse CSR storage"
     A.Info()
     print "\nnonsymmetric matrix, full storage"
-    A_full = nuto.DoubleFullMatrix(A)
-    A_full.Info(3)
+    print A.ConvertToFullMatrix()
 
     # right hand side vector
     rhs = np.array([1.0, 2.0, 3.0, 4.0, 5.0])

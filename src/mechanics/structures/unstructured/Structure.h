@@ -357,7 +357,7 @@ public:
     //! @param rInterpolationTypeId interpolation type id
     //! @param rNodeIdents Identifier for the corresponding nodes (Incidences have to be stored column-wise)
     //! @return index to the new element group<<
-    int ElementsCreate(int rInterpolationTypeId, Eigen::MatrixXi& rNodeNumbers);
+    int ElementsCreate(int rInterpolationTypeId, const Eigen::MatrixXi& rNodeNumbers);
 
     //! @brief changes the node structure to match the interpolation type for all elements
     //! the node merge distance and the box size are calculated from the element sizes

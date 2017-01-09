@@ -84,10 +84,10 @@ private:
 
         int dimension = rStructure.GetDimension();
 
-        NuTo::FullMatrix<double, Eigen::Dynamic> directions = NuTo::FullMatrix<double, Eigen::Dynamic>::Identity(dimension, dimension);
+        Eigen::MatrixXd directions = Eigen::MatrixXd::Identity(dimension, dimension);
 
         // fix origin
-        NuTo::FullVector<double, Eigen::Dynamic> origin(dimension);
+        Eigen::VectorXd origin(dimension);
         origin.setZero();
         int nodeGroupOrigin = rStructure.GroupCreate("Nodes");
         rStructure.GroupAddNodeRadiusRange(nodeGroupOrigin, origin, 0, 1.e-5);
@@ -97,29 +97,29 @@ private:
 
         int nodeOrigin = rStructure.GroupGetMemberIds(nodeGroupOrigin)[0];
         for (int iDim = 1; iDim < dimension; ++iDim)
-            rStructure.ConstraintLinearSetDisplacementNode(nodeOrigin, directions.GetColumn(iDim), 0.0);
+            rStructure.ConstraintLinearSetDisplacementNode(nodeOrigin, directions.col(iDim), 0.0);
 
         if (dimension == 3)
         {
         // fix rotation
-            NuTo::FullVector<double, Eigen::Dynamic> originRot(3);
+            Eigen::VectorXd originRot(3);
             originRot << 0, 0, lZ;
             int nodeGroupOriginRot = rStructure.GroupCreate(NuTo::eGroupId::Nodes);
             rStructure.GroupAddNodeRadiusRange(nodeGroupOriginRot, originRot, 0, 1.e-5);
 
             int nodeOriginRot = rStructure.GroupGetMemberIds(nodeGroupOriginRot)[0];
-            rStructure.ConstraintLinearSetDisplacementNode(nodeOriginRot, directions.GetColumn(1), 0.0);
+            rStructure.ConstraintLinearSetDisplacementNode(nodeOriginRot, directions.col(1), 0.0);
         }
 
         // fix x = 0 plane
         int nodesX0 = rStructure.GroupCreate(NuTo::eGroupId::Nodes);
         rStructure.GroupAddNodeCoordinateRange(nodesX0, 0, -1.e-6, 1.e-6);
-        rStructure.ConstraintLinearSetDisplacementNodeGroup(nodesX0, directions.GetColumn(0), 0.);
+        rStructure.ConstraintLinearSetDisplacementNodeGroup(nodesX0, directions.col(0), 0.);
 
         // apply displacement on x = lX plane
         int nodesXlX = rStructure.GroupCreate(NuTo::eGroupId::Nodes);
         rStructure.GroupAddNodeCoordinateRange(nodesXlX, 0, lX-1.e-6, lX+1.e-6);
-        rStructure.ConstraintLinearSetDisplacementNodeGroup(nodesXlX, directions.GetColumn(0), deltaL);
+        rStructure.ConstraintLinearSetDisplacementNodeGroup(nodesXlX, directions.col(0), deltaL);
 
         if (DEBUG_PRINT)
         {
@@ -169,10 +169,8 @@ private:
         int allNodes    = rStructure.GroupCreate(NuTo::eGroupId::Nodes);
         rStructure.GroupAddNodeCoordinateRange(allNodes, 0, -0.1, lX+0.1);
         rStructure.GroupAddElementsFromNodes(allElements, allNodes, true);
-        NuTo::FullVector<int, Eigen::Dynamic> elementIds = rStructure.GroupGetMemberIds(allElements);
-        for (int iElement = 0; iElement < elementIds.GetNumRows(); ++iElement)
+        for (int elementId : rStructure.GroupGetMemberIds(allElements))
         {
-            int elementId = elementIds(iElement);
             auto stress = rStructure.ElementGetEngineeringStress(elementId);
             for (int iIP = 0; iIP < stress.cols(); ++iIP)
             {
@@ -193,12 +191,10 @@ private:
         double numericForce = 0;
         int nodesX0 = rStructure.GroupCreate(NuTo::eGroupId::Nodes);
         rStructure.GroupAddNodeCoordinateRange(nodesX0, 0, lX-1.e-6, lX+1.e-6);
-        NuTo::FullVector<int, Eigen::Dynamic> nodeX0Indices = rStructure.GroupGetMemberIds(nodesX0);
-        for (int iNodeX0 = 0; iNodeX0 < nodeX0Indices.GetNumRows(); ++iNodeX0)
+        for (int nodeId : rStructure.GroupGetMemberIds(nodesX0))
         {
-            int nodeX0Id = nodeX0Indices(iNodeX0);
-            NuTo::FullVector<double, Eigen::Dynamic> force;
-            rStructure.NodeInternalForce(nodeX0Id, force);
+            Eigen::VectorXd force;
+            rStructure.NodeInternalForce(nodeId, force);
             numericForce += force(0);
         }
 

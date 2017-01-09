@@ -16,8 +16,6 @@ namespace NuTo
 {
 // forward declarations
 template<class T> class SparseMatrixCSR;
-template <class T, int rows, int cols> class FullMatrix;
-template<class T, int rows> class FullVector;
 class EigenSolverArpack;
 
 //! @author Stefan Eckardt, ISM
@@ -51,7 +49,7 @@ public:
     //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)
     //! @param rSchurIndices ... vector storing the indices of the global matrix to be condensed to (zero based indexing)
     //! @param rSchurComplement ... Schur complement
-    void SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, Eigen::VectorXi rSchurIndices, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement);
+    void SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, Eigen::VectorXi rSchurIndices, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement);
 
     //! @brief ... prepare the solver, and perform all the steps up to the factorization of the matrix
     //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)

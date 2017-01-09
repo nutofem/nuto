@@ -21,6 +21,8 @@ set(SWIG_MODULE_ModulMechanics_EXTRA_DEPS
     ${CMAKE_SOURCE_DIR}/src/mechanics/structures/StructureOutputBase.h
     ${CMAKE_SOURCE_DIR}/src/mechanics/structures/StructureOutputBlockMatrix.h
     ${CMAKE_SOURCE_DIR}/src/mechanics/structures/StructureOutputBlockVector.h
+
+    ${CMAKE_SOURCE_DIR}/external/eigen.i
     )
 
 # build python modules

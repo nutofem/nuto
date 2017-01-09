@@ -50,6 +50,6 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
-    Eigen::VectorXd mLoadVector;
+    Eigen::Vector2d mLoadVector;
 };
 }//namespace NuTo

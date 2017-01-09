@@ -4,6 +4,7 @@ import nuto
 import math
 import sys
 import os
+import numpy as np
 
 
 
@@ -33,7 +34,7 @@ def RunSimulationFromInputFile (rInputFile, rWorkDir, rVisuFileName):
   specimen = nuto.Specimen(IN.GetBoundingBox(), IN.GetTypeOfSpecimen())
   
   creator = nuto.ParticleCreator(specimen, IN.GetShrinkage())
-  spheresBoundary = nuto.DoubleFullMatrix(0,4,[])
+  spheresBoundary = np.zeros((0,4))
   spheresMatrix = creator.CreateSpheresInSpecimen(
     IN.GetVolumeFraction(),
     IN.GetGradingCurve(),

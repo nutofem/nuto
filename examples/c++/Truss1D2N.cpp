@@ -1,5 +1,4 @@
 #include <iostream>
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseDirectSolverMUMPS.h"
 #include "mechanics/structures/unstructured/Structure.h"
@@ -33,7 +32,7 @@ int main()
             Material1, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, YoungsModulus);
 
     // create nodes
-    NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(1);
+    Eigen::VectorXd nodeCoordinates(1);
     for (int node = 0; node < NumElements + 1; node++)
     {
         std::cout << "create node: " << node << " coordinates: " << node * Length / NumElements << std::endl;
@@ -62,7 +61,7 @@ int main()
     structure.ElementTotalConvertToInterpolationType();
 
     // set boundary conditions and loads
-    NuTo::FullVector<double, Eigen::Dynamic> direction(1);
+    Eigen::VectorXd direction(1);
     direction(0) = 1;
     structure.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
     structure.SetNumLoadCases(1);

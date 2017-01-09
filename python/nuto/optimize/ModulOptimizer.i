@@ -2,7 +2,6 @@
 %feature("autodoc","1");
 %{
 //Put headers and other declarations here to be added in the wrapper files
-#include "math/FullMatrix.h"
 #include "optimize/Optimizer.h"
 #include "optimize/ConjugateGradientGrid.h"
 #include "optimize/ConjugateGradientNonLinear.h"

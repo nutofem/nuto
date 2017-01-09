@@ -91,26 +91,29 @@ if timeCollision != -1 > 1e-14 :
 
 # build sphere matrix
 #rawSpheres = nuto.DoubleFullMatrix(3,4, [0.,0.,0.,4,           10.,0.,0.,4.,            5.,math.sqrt(75.),0.,4.])
-rawSpheres = np.array([[0.,10.,5.],[0.,0.,math.sqrt(75.)],[0.,0.,0.],[5.,5.,5.]])
+# rawSpheres = np.array([[0.,10.,5.],[0.,0.,math.sqrt(75.)],[0.,0.,0.],[5.,5.,5.]])
+rawSpheres = np.array([[0.,0.,0.,4],
+                       [10.,0.,0.,4.],
+                       [5.,math.sqrt(75.),0.,4.]])
 
 # build boundary matrix
 boundary = np.array([[-1e10, 1e10],
                      [-1e10, 1e10],
                      [-1e10, 1e10]])
+
 specimen = nuto.Specimen(boundary, 0);
 
 # build sub box division vector
-subBoxDivs = np.array([1,1,1], dtype=float)
-print subBoxDivs.dtype
+subBoxDivs = np.array([1,1,1])
 
 # particle handler
 spheres = nuto.ParticleHandler(rawSpheres,0.,0.,1.)
 
 # sub box handler
-subBoxes = nuto.SubBoxHandler(spheres, specimen, subBoxDivs)
+# subBoxes = nuto.SubBoxHandler(spheres, specimen, subBoxDivs.T)
 
-events = nuto.EventListHandler()
-dummy = events.SetTimeBarrier(1000.,subBoxes)
+# events = nuto.EventListHandler()
+# dummy = events.SetTimeBarrier(1000.,subBoxes)
 
 #.........
  
@@ -162,7 +165,9 @@ events.Clear()
  
 numParticles = 1000;
 bBoxLength = 40.
-bBox = np.array([[-bBoxLength/2., -bBoxLength/2., -bBoxLength/2.],[bBoxLength/2., bBoxLength/2., bBoxLength/2.]])
+bBox = np.array([[-bBoxLength/2.,bBoxLength/2.],
+                 [-bBoxLength/2.,bBoxLength/2.],
+                 [-bBoxLength/2.,bBoxLength/2.]])
 
 specimen = nuto.Specimen(bBox, 0)
 
@@ -189,7 +194,9 @@ collisions = None
 
 
 bBoxLength = 40. * .7
-bBoxCylPos = np.array([[-bBoxLength/2., -bBoxLength/2., -bBoxLength/2.],[bBoxLength/2., bBoxLength/2., bBoxLength/2.]])
+bBoxCylPos = np.array([[-bBoxLength/2.,bBoxLength/2.],
+                       [-bBoxLength/2.,bBoxLength/2.],
+                       [-bBoxLength/2.,bBoxLength/2.]])
 
 specimen = nuto.Specimen(bBox, 2)
 

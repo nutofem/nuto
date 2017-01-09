@@ -39,11 +39,7 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
         for (int iY=0; iY<numNodesY; iY++)
             for (int iX=0; iX<numNodesX; iX++)
             {
-                NuTo::FullVector<double,Eigen::Dynamic> coordinates(3);
-                coordinates(0) = iX*deltaX;
-                coordinates(1) = iY*deltaY;
-                coordinates(2) = iZ*deltaZ;
-                myStructure.NodeCreate(nodeNum, coordinates);
+                myStructure.NodeCreate(nodeNum, Eigen::Vector3d(iX*deltaX, iY*deltaY, iZ*deltaZ));
                 nodeNum++;
             }
 

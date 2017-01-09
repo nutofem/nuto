@@ -1,7 +1,5 @@
 if(ENABLE_PYTHON)
     foreach(test
-            Matrix
-            NumpyFullMatrix
             SparseMatrixCSR
             )
 

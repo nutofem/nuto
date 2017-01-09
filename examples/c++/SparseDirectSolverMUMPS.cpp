@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include "math/MathException.h"
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseDirectSolverMUMPS.h"
@@ -24,8 +23,7 @@ int main()
         std::cout << "symmetric matrix, sparse CSR storage" << std::endl;
         A_sy.Info();
         std::cout << std::endl << "symmetric matrix, full storage" << std::endl;
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> A_sy_full(A_sy);
-        A_sy_full.Info(12,3);
+        std::cout << A_sy.ConvertToFullMatrix() << std::endl;
 
         // nonsymmetric coefficient matrix
         NuTo::SparseMatrixCSRGeneral<double> A_nosy(5,5,13);
@@ -47,8 +45,7 @@ int main()
         std::cout << std::endl << "nonsymmetric matrix, sparse CSR storage" << std::endl;
         A_nosy.Info();
         std::cout << std::endl << "nonsymmetric matrix, full storage" << std::endl;
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> A_nosy_full(A_nosy);
-        A_nosy_full.Info(12,3);
+        std::cout << A_nosy.ConvertToFullMatrix() << std::endl;
 
         // create right hand side vector
         Eigen::VectorXd rhs(5);
@@ -77,14 +74,15 @@ int main()
 
         // solve for Schur complement
         std::cout << std::endl << "solving the Schur complement of A with respect to indices 0 and 4" << std::endl;
-        NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> schur_Indices(2,1);
+        Eigen::Matrix<int,Eigen::Dynamic,Eigen::Dynamic> schur_Indices(2,1);
         //attention - zero based indexing for the indices
         schur_Indices(0,0) = 0;
         schur_Indices(1,0) = 4;
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> schur_complement(2,2);
+        Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> schur_complement(2,2);
         mumps.SchurComplement(A_nosy,schur_Indices,schur_complement);
-        schur_complement.Info(12,3); //correct solution is [0.6 3 ]
-                                     //                    [0   16]
+        std::cout << schur_complement << std::endl;
+        //correct solution is [0.6 3 ]
+        //                    [0   16]
 
     }
     catch (NuTo::MathException& e)

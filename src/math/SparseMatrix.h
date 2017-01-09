@@ -12,8 +12,8 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "math/FullMatrix.h"
 #include <eigen3/Eigen/Core>
+#include "math/Matrix.h"
 
 namespace NuTo
 {
@@ -138,7 +138,7 @@ public:
     //! @brief ... multiply sparse matrix with a full matrix
     //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
     //! @return ... full matrix
-    virtual NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const = 0;
+    virtual Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const = 0;
 
     //! @brief ... add sparse matrix
     //! @param rMatrix ... sparse matrix
@@ -156,10 +156,7 @@ public:
     	throw MathException("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRVector2Symmetric<T> rMatrix)] not implemented for this matrix type.");
 	}
 
-    virtual NuTo::FullMatrix<T,Eigen::Dynamic,Eigen::Dynamic> ConvertToFullMatrixDouble()
-    {
-        return NuTo::FullMatrix<T,Eigen::Dynamic,Eigen::Dynamic>(*this);
-    }
+    virtual Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> ConvertToFullMatrix() const = 0;
 
     virtual SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()
     {
@@ -182,11 +179,6 @@ public:
     }
 
 #ifndef SWIG
-
-    virtual NuTo::FullMatrix<T,Eigen::Dynamic,Eigen::Dynamic> ConvertToFullMatrixDouble() const
-    {
-        return NuTo::FullMatrix<T,Eigen::Dynamic,Eigen::Dynamic>(*this);
-    }
 
     virtual const SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()const
     {
@@ -232,10 +224,6 @@ public:
 #endif
     }
 #endif // ENABLE_SERIALIZATION
-
-    //! @brief ... write non-zero matrix entries into a matrix
-    //! @param rMatrix ... the matrix
-    virtual void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const = 0;
 
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed

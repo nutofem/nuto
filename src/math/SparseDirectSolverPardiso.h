@@ -7,7 +7,6 @@ namespace NuTo
 {
 // forward declarations
 template<class T> class SparseMatrixCSR;
-template<class T, int rows> class FullVector;
 
 //! @brief ... interface for the PARDISO sparse solver
 class SparseDirectSolverPardiso : public SparseDirectSolver
@@ -31,7 +30,7 @@ public:
     //! @param rMatrix ... sparse coefficient matrix, stored in compressed CSR format (input)
     //! @param rRhs ... matrix storing the right-hand-side vectors (input)
     //! @param rSolution ... matrix storing the corresponding solution vectors (output)
-    void Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double, Eigen::Dynamic> &rRhs, NuTo::FullVector<double, Eigen::Dynamic> &rSolution);
+    void Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const Eigen::VectorXd& rRhs, Eigen::VectorXd& rSolution);
 
     //! @brief ... use the nested dissection alogrithm from the METIS-package for for the fill-in reducing odering of the coefficient matrix
     //! @sa mOrderingType

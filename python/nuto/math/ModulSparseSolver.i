@@ -4,7 +4,6 @@
 #pragma SWIG nowarn=401
 %{
 //Put headers and other declarations here to be added in the wrapper files
-#include "math/FullVector.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRVector2General.h"
@@ -31,8 +30,6 @@
 
 %import "math/NuToMath.i"
 %import "math/ModulMatrix.i"
-%import "math/ModulFullMatrix.i"
-%import "math/ModulFullVector.i"
 %import "math/ModulSparseMatrix.i"
 
 /* solver */

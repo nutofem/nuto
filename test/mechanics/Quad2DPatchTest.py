@@ -35,18 +35,21 @@ def RunPatchTest(StressState):
     myStructure.NodesCreate(np.array([[  0, 10,  2,  8,  4,  8,  0, 10],
                                       [  0,  0,  2,  3,  7,  7, 10, 10]], dtype=float))
 
-    elementIncidence = nuto.IntFullMatrix(4,5,(	
-            3,2,0,1 ,
-            4,6,0,2 ,
-            5,4,2,3 ,
-            7,5,3,1 ,
-            7,6,4,5 ) )
+    myStructure.NodeInfo(10)
+
+    elementIncidence = np.array([
+        [3,4,5,7,7],
+        [2,6,4,5,6],
+        [0,0,2,3,4],
+        [1,2,3,1,5]])
 
     interpolationType = myStructure.InterpolationTypeCreate("Quad2D")
     myStructure.InterpolationTypeAdd(interpolationType, "Coordinates", "Equidistant1")
     myStructure.InterpolationTypeAdd(interpolationType, "Displacements", "Equidistant1")
 
+    print elementIncidence
     myStructure.ElementsCreate(interpolationType, elementIncidence)
+
     myStructure.ElementTotalConvertToInterpolationType()
     myStructure.ElementTotalSetConstitutiveLaw(myMatLin)
     myStructure.ElementTotalSetSection(mySection)

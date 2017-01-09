@@ -3,7 +3,6 @@
 #include <eigen3/Eigen/Core>
 #include "base/Timer.h"
 #include "math/MathException.h"
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSR.h"
 #include "math/SparseDirectSolver.h"
 #include "math/SparseDirectSolverMUMPS.h"
@@ -199,7 +198,7 @@ void NuTo::SparseDirectSolverMUMPS::CleanUp()
 #endif // HAVE_MUMPS
 }
 
-void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, Eigen::VectorXi rSchurIndices, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement)
+void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<double>& rMatrix, Eigen::VectorXi rSchurIndices, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSchurComplement)
 {
 #ifdef HAVE_MUMPS
     Timer timer(std::string("MUMPS ") + __FUNCTION__ + " reordering and symbolic factorization", GetShowTime());
@@ -265,7 +264,7 @@ void NuTo::SparseDirectSolverMUMPS::SchurComplement(const NuTo::SparseMatrixCSR<
     dmumps_c(&mSolver);
 
     //resize result matrix
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSchurComplementTranspose(rSchurIndices.rows(),rSchurIndices.rows());
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> rSchurComplementTranspose(rSchurIndices.rows(),rSchurIndices.rows());
 
     // define the problem
     mSolver.n   = matrixDimension;                       // dimension

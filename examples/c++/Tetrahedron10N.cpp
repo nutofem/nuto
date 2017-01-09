@@ -1,4 +1,3 @@
-#include "math/FullMatrix.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/MechanicsEnums.h"
@@ -15,7 +14,7 @@ int main()
             myInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
     // create nodes
-    NuTo::FullVector<double, Eigen::Dynamic> Coordinates(3);
+    Eigen::VectorXd Coordinates(3);
     std::vector<int> Incidence(10);
 
     // create nodes

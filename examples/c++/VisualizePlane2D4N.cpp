@@ -1,5 +1,4 @@
 #include "math/MathException.h"
-#include "math/FullMatrix.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/MechanicsEnums.h"
@@ -14,57 +13,56 @@ int main()
         myStructure.Info();
 
         // create nodes
-        NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> Coordinates(2, 9);
-        NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> Displacements(2, 9);
+        Eigen::MatrixXd coordinates(2, 9);
 
-        Coordinates(0, 0) = 0;
-        Coordinates(1, 0) = 0;
-        Coordinates(0, 1) = 1;
-        Coordinates(1, 1) = 0;
-        Coordinates(0, 2) = 2;
-        Coordinates(1, 2) = 0;
-        Coordinates(0, 3) = 0;
-        Coordinates(1, 3) = 1;
-        Coordinates(0, 4) = 1;
-        Coordinates(1, 4) = 1;
-        Coordinates(0, 5) = 2;
-        Coordinates(1, 5) = 1;
-        Coordinates(0, 6) = 0;
-        Coordinates(1, 6) = 2;
-        Coordinates(0, 7) = 1;
-        Coordinates(1, 7) = 2;
-        Coordinates(0, 8) = 2;
-        Coordinates(1, 8) = 2;
+        coordinates(0, 0) = 0;
+        coordinates(1, 0) = 0;
+        coordinates(0, 1) = 1;
+        coordinates(1, 1) = 0;
+        coordinates(0, 2) = 2;
+        coordinates(1, 2) = 0;
+        coordinates(0, 3) = 0;
+        coordinates(1, 3) = 1;
+        coordinates(0, 4) = 1;
+        coordinates(1, 4) = 1;
+        coordinates(0, 5) = 2;
+        coordinates(1, 5) = 1;
+        coordinates(0, 6) = 0;
+        coordinates(1, 6) = 2;
+        coordinates(0, 7) = 1;
+        coordinates(1, 7) = 2;
+        coordinates(0, 8) = 2;
+        coordinates(1, 8) = 2;
 
-        Coordinates.Info();
+        std::cout << coordinates << std::endl;
 
-        NuTo::FullVector<int, Eigen::Dynamic> Nodes = myStructure.NodesCreate(Coordinates);
+        std::vector<int> nodeIds = myStructure.NodesCreate(coordinates);
 
         // create elements
-        NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> Incidences(4, 4);
+        Eigen::MatrixXi elementIds(4, 4);
 
         // element1
-        Incidences(0, 0) = Nodes(0, 0);
-        Incidences(1, 0) = Nodes(1, 0);
-        Incidences(2, 0) = Nodes(4, 0);
-        Incidences(3, 0) = Nodes(3, 0);
+        elementIds(0, 0) = nodeIds[0];
+        elementIds(1, 0) = nodeIds[1];
+        elementIds(2, 0) = nodeIds[4];
+        elementIds(3, 0) = nodeIds[3];
         // element2
-        Incidences(0, 1) = Nodes(1, 0);
-        Incidences(1, 1) = Nodes(2, 0);
-        Incidences(2, 1) = Nodes(5, 0);
-        Incidences(3, 1) = Nodes(4, 0);
+        elementIds(0, 1) = nodeIds[1];
+        elementIds(1, 1) = nodeIds[2];
+        elementIds(2, 1) = nodeIds[5];
+        elementIds(3, 1) = nodeIds[4];
         // element3
-        Incidences(0, 2) = Nodes(3, 0);
-        Incidences(1, 2) = Nodes(4, 0);
-        Incidences(2, 2) = Nodes(7, 0);
-        Incidences(3, 2) = Nodes(6, 0);
+        elementIds(0, 2) = nodeIds[3];
+        elementIds(1, 2) = nodeIds[4];
+        elementIds(2, 2) = nodeIds[7];
+        elementIds(3, 2) = nodeIds[6];
         // element4
-        Incidences(0, 3) = Nodes(4, 0);
-        Incidences(1, 3) = Nodes(5, 0);
-        Incidences(2, 3) = Nodes(8, 0);
-        Incidences(3, 3) = Nodes(7, 0);
+        elementIds(0, 3) = nodeIds[4];
+        elementIds(1, 3) = nodeIds[5];
+        elementIds(2, 3) = nodeIds[8];
+        elementIds(3, 3) = nodeIds[7];
 
-        Coordinates.Info();
+        std::cout << elementIds << std::endl;
 
         int interpolationType = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
         myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::COORDINATES,
@@ -74,7 +72,7 @@ int main()
         myStructure.InterpolationTypeSetIntegrationType(interpolationType,
                 NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
 
-        NuTo::FullVector<int, Eigen::Dynamic> Elements = myStructure.ElementsCreate(interpolationType, Incidences);
+        myStructure.ElementsCreate(interpolationType, elementIds);
 
         myStructure.ElementTotalConvertToInterpolationType(1.e-6, 10);
 

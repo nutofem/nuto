@@ -5,11 +5,7 @@
 #include <iostream>
 #include <string>
 
-#include "math/Matrix.h"
-#include "math/FullMatrix.h"
-#include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSR.h"
-#include "math/SparseMatrixCSRSymmetric_Def.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/MathException.h"
@@ -313,25 +309,25 @@ void SparseMatrixCSRSymmetric<double>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(cons
 
 // multiply sparse matrix with full matrix
 template<>
-FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> SparseMatrixCSRSymmetric<int>::operator* (const FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
+Eigen::MatrixXi SparseMatrixCSRSymmetric<int>::operator* (const Eigen::MatrixXi& rMatrix) const
 {
     throw MathException("[SparseMatrixCSRSymmetric<int>::operator*] not implemented for this data type.");
 }
 
 // multiply sparse matrix with full matrix
 template<>
-FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> SparseMatrixCSRSymmetric<double>::operator* (const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
+Eigen::MatrixXd SparseMatrixCSRSymmetric<double>::operator* (const Eigen::MatrixXd& rMatrix) const
 {
-    if (this->GetNumColumns() != rMatrix.GetNumRows())
+    if (this->GetNumColumns() != rMatrix.rows())
     {
         throw MathException("[SparseMatrixCSRSymmetric<int>::operator*] invalid number of rows in input matrix.");
     }
-    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumRows(),rMatrix.GetNumColumns());
+    Eigen::MatrixXd result(this->GetNumRows(),rMatrix.cols());
 
-    for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+    for (int matrixCol = 0; matrixCol < rMatrix.cols(); matrixCol++)
     {
-        const double* matrixValues = rMatrix.data() + matrixCol * rMatrix.GetNumRows();
-        double* resultValues = result.data() + matrixCol * rMatrix.GetNumRows();
+        const double* matrixValues = rMatrix.data() + matrixCol * rMatrix.rows();
+        double* resultValues = result.data() + matrixCol * rMatrix.rows();
         for (int thisRow = 0; thisRow < this->GetNumRows(); thisRow++)
         {
             for (int thisPos = this->mRowIndex[thisRow]-mOneBasedIndexing; thisPos < this->mRowIndex[thisRow + 1]-mOneBasedIndexing; thisPos++)

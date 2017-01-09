@@ -2,6 +2,7 @@
 import sys
 import nuto
 import os
+import numpy as np
 
 #if set to true, the result will be generated (for later use in the test routine)
 #otherwise, the current result will be compared to the stored result
@@ -31,23 +32,23 @@ error = False
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # create a full matrix as reference ########################################
-A_full_ref = nuto.DoubleFullMatrix(5,5)
-A_full_ref.SetValue(0,0,1)
-A_full_ref.SetValue(1,0,-2)
-A_full_ref.SetValue(3,0,-4)
-A_full_ref.SetValue(0,1,-1)
-A_full_ref.SetValue(1,1,5)
-A_full_ref.SetValue(4,1,8)
-A_full_ref.SetValue(2,2,4)
-A_full_ref.SetValue(3,2,2)
-A_full_ref.SetValue(0,3,-3)
-A_full_ref.SetValue(2,3,6)
-A_full_ref.SetValue(3,3,7)
-A_full_ref.SetValue(2,4,4)
-A_full_ref.SetValue(4,4,-5)
+A_full_ref = np.zeros((5,5))
+A_full_ref[0,0] = 1.
+A_full_ref[1,0] = -2.
+A_full_ref[3,0] = -4.
+A_full_ref[0,1] = -1.
+A_full_ref[1,1] = 5.
+A_full_ref[4,1] = 8.
+A_full_ref[2,2] = 4.
+A_full_ref[3,2] = 2.
+A_full_ref[0,3] = -3.
+A_full_ref[2,3] = 6.
+A_full_ref[3,3] = 7.
+A_full_ref[2,4] = 4.
+A_full_ref[4,4] = -5.
 if (printResult):
     print "matrix A stored as full matrix (reference)"
-    A_full_ref.Info()
+    print A_full_ref
     print ""
 ############################################################################
 
@@ -72,13 +73,13 @@ if (printResult):
     print ""
 
 # convert A_sparse into full matrix
-A_full = nuto.DoubleFullMatrix(A_sparse)
+A_full = A_sparse.ConvertToFullMatrix()
 if (printResult):
     print "matrix A stored as full matrix"
-    A_full.Info()
+    print A_full
     print ""
 A_full -= A_full_ref
-if (A_full.Abs().Max() != 0.):
+if (np.max(np.abs(A_full)) != 0.):
     print '[' + system,sys.argv[0] + '] : error converting sparse matrix with zero indexing to full matrix.'
     error = True;
 
@@ -157,8 +158,7 @@ if (printResult):
     print "matrix B2, compressed storage, vector of vectors, one based indexing"
     B_sparse.Info()
     print "matrix B2, converted to full matrix"
-    B2_Full = nuto.DoubleFullMatrix(B2_sparse);
-    B2_Full.Info(12,3)
+    print B2_sparse.ConvertToFullMatrix()
     print ""
 
 C2_sparse = nuto.DoubleSparseMatrixCSRVector2General(4,1)
@@ -167,8 +167,7 @@ C2_sparse.AddValue(1,0,2)
 C2_sparse.AddValue(3,0,3)
 if (printResult):
     print "matrix C2, converted to full matrix"
-    C2_Full = nuto.DoubleFullMatrix(C2_sparse);
-    C2_Full.Info(12,3)
+    print C2_sparse.ConvertToFullMatrix()
     print ""
 
 D2_sparse = nuto.DoubleSparseMatrixCSRVector2General(1,5)
@@ -176,40 +175,39 @@ D2_sparse.AddValue(0,1,4)
 D2_sparse.AddValue(0,4,1)
 if (printResult):
     print "matrix D2, converted to full matrix"
-    D2_Full = nuto.DoubleFullMatrix(D2_sparse);
-    D2_Full.Info(12,3)
+    print D2_sparse.ConvertToFullMatrix()
     print ""
 
-B2_sparse.ConcatenateColumns(C2_sparse);
-B2_sparse.ConcatenateRows(D2_sparse);
-B2_Full = nuto.DoubleFullMatrix(B2_sparse);
+B2_sparse.ConcatenateColumns(C2_sparse)
+B2_sparse.ConcatenateRows(D2_sparse)
+B2_Full = B2_sparse.ConvertToFullMatrix()
 if (printResult):
     print "matrix B2, appended Columns of C2 and then append rows of D2"
-    B2_Full.Info(12,3)
+    print B2_Full
     print ""
-B2_FullRef = nuto.DoubleFullMatrix(5,5);
-B2_FullRef.AddValue(1,1,3)
-B2_FullRef.AddValue(0,1,8)
-B2_FullRef.AddValue(0,0,2)
-B2_FullRef.AddValue(1,3,3)
-B2_FullRef.AddValue(1,2,5)
-B2_FullRef.AddValue(3,2,1)
-B2_FullRef.AddValue(3,3,7)
-B2_FullRef.AddValue(3,0,9)
-B2_FullRef.AddValue(3,1,4)
-B2_FullRef.AddValue(0,4,4)
-B2_FullRef.AddValue(1,4,2)
-B2_FullRef.AddValue(3,4,3)
-B2_FullRef.AddValue(4,1,4)
-B2_FullRef.AddValue(4,4,1)
+B2_FullRef = np.zeros((5,5))
+B2_FullRef[1,1] = 3.
+B2_FullRef[0,1] = 8.
+B2_FullRef[0,0] = 2.
+B2_FullRef[1,3] = 3.
+B2_FullRef[1,2] = 5.
+B2_FullRef[3,2] = 1.
+B2_FullRef[3,3] = 7.
+B2_FullRef[3,0] = 9.
+B2_FullRef[3,1] = 4.
+B2_FullRef[0,4] = 4.
+B2_FullRef[1,4] = 2.
+B2_FullRef[3,4] = 3.
+B2_FullRef[4,1] = 4.
+B2_FullRef[4,4] = 1.
 if (printResult):
     print "matrix B2_ref"
-    B2_FullRef.Info(12,3)
+    print B2_FullRef
     print ""
 
-if ((B2_Full-B2_FullRef).Abs().Max()>1e-8):
+if (np.max(np.abs(B2_Full-B2_FullRef)) > 1e-8):
     print '[' + system,sys.argv[0] + '] : concatenation of B2 is not correct.'
-    error = True;
+    error = True
     
 if (error):
     sys.exit(-1)

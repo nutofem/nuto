@@ -482,7 +482,7 @@ void NuTo::SupportPoints::CalculatePearsonCorrelationMatrix(const Eigen::MatrixX
 	assert(dim == rInputData.rows() + rOutputData.rows());
 	for(int dimCount = 0; dimCount < dim; dimCount++)
 	{
-		assert(rCorrelationMatrix.GetValue(dimCount,dimCount) > 0.0);
+		assert(rCorrelationMatrix(dimCount,dimCount) > 0.0);
 		stddev[dimCount] = sqrt(rCorrelationMatrix(dimCount, dimCount));
 	}
 

@@ -3,12 +3,12 @@
 #pragma once
 
 #include "math/SparseDirectSolver.h"
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
 // forward declarations
 template<class T> class SparseMatrixCSR;
-template<class T, int rows> class FullVector;
 
 //! @author Stefan Eckardt, ISM
 //! @date October 2009
@@ -33,7 +33,7 @@ public:
     //! @param rMatrix ... sparse coefficient matrix stored in the CSR format
     //! @param rRhs ... matrix of right-hand-side vectors (full storage)
     //! @param rSolution ... matrix of solution vectors (full storage)
-    void Solve(const SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double, Eigen::Dynamic>& rRhs, NuTo::FullVector<double, Eigen::Dynamic>& rSolution);
+    void Solve(const SparseMatrixCSR<double>& rMatrix, const Eigen::VectorXd& rRhs, Eigen::VectorXd& rSolution);
 
 #ifdef HAVE_MKL_DSS
 

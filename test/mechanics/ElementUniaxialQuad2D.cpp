@@ -35,10 +35,7 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
     {
         for (int countX=0; countX<numNodesX; countX++)
         {
-            NuTo::FullVector<double,Eigen::Dynamic> coordinates(2);
-            coordinates(0) = countX*deltaX;
-            coordinates(1) = countY*deltaY;
-            myStructure.NodeCreate(nodeNum, coordinates);
+            myStructure.NodeCreate(nodeNum, Eigen::Vector2d({countX*deltaX, countY*deltaY}));
             nodeNum++;
         }
     }

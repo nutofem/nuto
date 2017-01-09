@@ -6,7 +6,7 @@
 #include <string>
 #include <assert.h>
 #include <iostream>
-#include <fstream>  //for file acces
+#include <fstream>
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -27,7 +27,6 @@
 
 namespace NuTo
 {
-template <class T, int rows, int cols> class FullMatrix;
 template <class T> class SparseMatrixCSRVector2General;
 
 //! @author Stefan Eckardt, ISM
@@ -210,10 +209,6 @@ public:
             this->mOneBasedIndexing = false;
         }
     }
-
-    //! @brief ... write non-zero matrix entries into a matrix
-    //! @param rFullMatrix ... the matrix
-    virtual void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const override = 0;
 
     //! @brief ... import matrix from slang object stored in  a text file
     //! @param rFileName ... file name

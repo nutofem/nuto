@@ -1,6 +1,5 @@
 #include <boost/filesystem.hpp>
 #include <fstream>
-#include "math/FullMatrix.h"
 
 #include "geometryConcrete/GeometryConcrete.h"
 #include "mechanics/structures/unstructured/Structure.h"
@@ -131,7 +130,7 @@ int main(int argc, char* argv[])
 
     double simulationTime = 1;
 
-    NuTo::FullMatrix<double, 2, 2> dispRHS;
+    Eigen::Matrix2d dispRHS;
     dispRHS << 0, 0, simulationTime, deltaD;
 
     myIntegrationScheme.AddTimeDependentConstraint(bc, dispRHS);

@@ -1,5 +1,4 @@
 #include "Benchmark.h"
-#include "math/FullVector.h"
 #include <eigen3/Eigen/Core>
 #include "mechanics/elements/ElementOutputBlockVectorDouble.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
@@ -8,7 +7,6 @@
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
 #include "mechanics/nodes/NodeDof.h"
 #include "mechanics/structures/unstructured/Structure.h"
-#include "math/FullMatrix.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
 #include "mechanics/elements/ElementBase.h"

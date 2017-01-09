@@ -1,7 +1,5 @@
 #include <iostream>
 #include "base/Exception.h"
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrixCSRVector2General.h"
 #include "math/SparseDirectSolverMUMPS.h"
@@ -39,7 +37,7 @@ int main()
     int mySection1 = myStructure.SectionCreate("VOLUME");
 
     // create nodes
-    NuTo::FullVector<double,Eigen::Dynamic> nodeCoordinates(3);
+    Eigen::VectorXd nodeCoordinates(3);
     int node = 0;
     for(int zCount = 0; zCount < NumElementsZ + 1; zCount++)
     {
@@ -93,7 +91,7 @@ int main()
     myStructure.ElementTotalConvertToInterpolationType();
 
     // boundary conditions
-    NuTo::FullVector<double,Eigen::Dynamic> direction(3);
+    Eigen::VectorXd direction(3);
     direction(0)= 1;
     direction(1)= 0;
     direction(2)= 0;

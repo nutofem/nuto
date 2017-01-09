@@ -19,7 +19,6 @@
 #include <boost/serialization/vector.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "math/FullVector_Def.h"
 #include "math/SparseMatrix.h"
 
 namespace NuTo
@@ -141,11 +140,6 @@ public:
             this->mOneBasedIndexing = false;
         }
     }
-
-
-    //! @brief ... write non-zero matrix entries into a matrix
-    //! @param rFullMatrix ... the full matrix
-    virtual void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const override = 0;
 
     //! @brief ... import matrix from slang object stored in  a text file
     //! @param rFileName ... file name
@@ -371,12 +365,12 @@ public:
     //! @brief ... add the scaled other diagonal matrix
     //! @param rOther ... other vector interpreted as diagonal matrix
     //! @param rFactor ... scalar factor
-    void AddScalDiag(const NuTo::FullVector<T, Eigen::Dynamic>& rOther, T rScalar)
+    void AddScalDiag(const Eigen::Matrix<T, Eigen::Dynamic, 1>& rOther, T rScalar)
     {
-        if ((this->GetNumColumns() != rOther.GetNumRows()) || (this->GetNumRows() != rOther.GetNumRows()))
+        if ((this->GetNumColumns() != rOther.rows()) || (this->GetNumRows() != rOther.rows()))
             throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
 
-        for (int row = 0; row < rOther.GetNumRows(); row++)
+        for (int row = 0; row < rOther.rows(); row++)
             this->AddValue(row, row, rScalar*rOther[row]);
     }
 

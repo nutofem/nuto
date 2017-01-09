@@ -647,7 +647,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
 
     int nearestElements =  GroupCreate(eGroupId::Elements);
     GroupAddElementsFromNodes(nearestElements, nodeGroup, false);
-    NuTo::FullVector<int, -1> elementGroupIds = GroupGetMemberIds(nearestElements);
+    std::vector<int> elementGroupIds = GroupGetMemberIds(nearestElements);
 
     int correctElementId = -1;
     switch (dim)
@@ -655,7 +655,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
         case 2:
         for (int iElement = 0; iElement < GroupGetNumMembers(nearestElements); ++iElement)
         {
-            const int iElementId              = elementGroupIds(iElement, 0);
+            const int iElementId              = elementGroupIds[iElement];
             Eigen::VectorXd elementNodeCoords = ElementGetElementPtr(iElementId)->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
             const int numNodes                = ElementGetElementPtr(iElementId)->GetNumNodes(Node::eDof::COORDINATES);
 
@@ -687,7 +687,7 @@ void NuTo::StructureBase::ConstraintLinearEquationNodeToElementCreate(int rNode,
         for (int iElement = 0; iElement < GroupGetNumMembers(nearestElements); ++iElement)
         {
 
-            int iElementId = elementGroupIds(iElement, 0);
+            int iElementId = elementGroupIds[iElement];
             Eigen::VectorXd elementNodeCoords = ElementGetElementPtr(iElementId)->ExtractNodeValues(NuTo::Node::eDof::COORDINATES);
             int numNodes = elementNodeCoords.rows()/mDimension;
 

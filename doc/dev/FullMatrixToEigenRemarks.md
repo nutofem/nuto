@@ -20,8 +20,11 @@
 
 ## *PITFALLS*
 
-- `Eigen::Matrix::resize(...)` **does not** perform a `SetZero` like `NuTo::FullMatrix::Resize(...)` did. Think about it. 
-
+- `Eigen::Matrix` **does not** perform a resize when calling
+    - `Eigen::Matrix::resize(...)`
+    - `Eigen::Matrix<..>(dimX, dimY)` (ctor)
+    
+    
 Example 1)
 ~~~cpp
 eigenVector.resize(3);
@@ -31,8 +34,8 @@ eigenVector << 1,2,3;
 
 Example 2)
 ~~~cpp
-eigenVector.resize(3);
+Eigen::VectorXd result(3);
 for (...)
-    eigenVector += someOtherVectors
+    result += someOtherVectors
 ~~~
 `setZero` required.

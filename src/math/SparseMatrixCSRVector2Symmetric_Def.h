@@ -32,7 +32,7 @@ public:
     //! @param rFullMatrix ... input matrix (full storage)
     //! @param rAbsoluteTolerance ... absolute tolerance
     //! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
-    SparseMatrixCSRVector2Symmetric(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance = 0, double rRelativeTolerance = 1e-14);
+    SparseMatrixCSRVector2Symmetric(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance = 0, double rRelativeTolerance = 1e-14);
 
     //! @brief ... create sparse matrix with vector of vector from standard CSR format
     //! @param rCSRMatrix ... input matrix (full storage)
@@ -71,8 +71,8 @@ public:
     void ImportFromSLangText(const char* rFileName) override;
 
     //! @brief ... write nonzero matrix entries into a matrix
-    //! @param rMatrix ... the full matrix
-    void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const override;
+    //! @return ... the matrix
+    virtual Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> ConvertToFullMatrix() const override;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief ... save the object to a file
@@ -129,7 +129,7 @@ public:
     //! @brief ... multiply sparse matrix with a full matrix
     //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
     //! @return ... full matrix
-    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const override;
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const override;
 
     Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> TransMult(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const override;
 

@@ -942,7 +942,7 @@ Eigen::MatrixXi NuTo::Structure::ImportFromGmsh(const std::string& rFileName)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ids;
+    Eigen::MatrixXi ids;
 
     try
     {
@@ -1368,10 +1368,10 @@ Eigen::MatrixXi NuTo::Structure::ImportFromGmshAux(const std::string& rFileName)
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT2;
             //ordering is different than in gmsh, fix this first
             {
-            NuTo::FullVector<int, Eigen::Dynamic> nodeNumbersCopy(nodeNumbers);
-            nodeNumbers[0]  = nodeNumbersCopy(0);
-            nodeNumbers[1]  = nodeNumbersCopy(2);
-            nodeNumbers[2]  = nodeNumbersCopy(1);
+            std::vector<int> nodeNumbersCopy = nodeNumbers;
+            nodeNumbers[0]  = nodeNumbersCopy[0];
+            nodeNumbers[1]  = nodeNumbersCopy[2];
+            nodeNumbers[2]  = nodeNumbersCopy[1];
             }
             break;
         case 9: // 6-node second order triangle (3 nodes associated with the vertices and 3 with the edges).
@@ -1394,34 +1394,34 @@ Eigen::MatrixXi NuTo::Structure::ImportFromGmshAux(const std::string& rFileName)
             shapeType = Interpolation::eShapeType::BRICK3D;
             typeOrder = Interpolation::eTypeOrder::LOBATTO2;
             //ordering is different than in gmsh, fix this first
-            NuTo::FullVector<int, Eigen::Dynamic> nodeNumbersGmsh(nodeNumbers);
-            nodeNumbers[0]  = nodeNumbersGmsh(4);
-            nodeNumbers[1]  = nodeNumbersGmsh(16);
-            nodeNumbers[2]  = nodeNumbersGmsh(5);
-            nodeNumbers[3]  = nodeNumbersGmsh(10);
-            nodeNumbers[4]  = nodeNumbersGmsh(21);
-            nodeNumbers[5]  = nodeNumbersGmsh(12);
-            nodeNumbers[6]  = nodeNumbersGmsh(0);
-            nodeNumbers[7]  = nodeNumbersGmsh(8);
-            nodeNumbers[8]  = nodeNumbersGmsh(1);
-            nodeNumbers[9]  = nodeNumbersGmsh(17);
-            nodeNumbers[10] = nodeNumbersGmsh(25);
-            nodeNumbers[11] = nodeNumbersGmsh(18);
-            nodeNumbers[12] = nodeNumbersGmsh(22);
-            nodeNumbers[13] = nodeNumbersGmsh(26);
-            nodeNumbers[14] = nodeNumbersGmsh(23);
-            nodeNumbers[15] = nodeNumbersGmsh(9);
-            nodeNumbers[16] = nodeNumbersGmsh(20);
-            nodeNumbers[17] = nodeNumbersGmsh(11);
-            nodeNumbers[18] = nodeNumbersGmsh(7);
-            nodeNumbers[19] = nodeNumbersGmsh(19);
-            nodeNumbers[20] = nodeNumbersGmsh(6);
-            nodeNumbers[21] = nodeNumbersGmsh(15);
-            nodeNumbers[22] = nodeNumbersGmsh(24);
-            nodeNumbers[23] = nodeNumbersGmsh(14);
-            nodeNumbers[24] = nodeNumbersGmsh(3);
-            nodeNumbers[25] = nodeNumbersGmsh(13);
-            nodeNumbers[26] = nodeNumbersGmsh(2);
+            std::vector<int> nodeNumbersGmsh = nodeNumbers;
+            nodeNumbers[0]  = nodeNumbersGmsh[4];
+            nodeNumbers[1]  = nodeNumbersGmsh[16];
+            nodeNumbers[2]  = nodeNumbersGmsh[5];
+            nodeNumbers[3]  = nodeNumbersGmsh[10];
+            nodeNumbers[4]  = nodeNumbersGmsh[21];
+            nodeNumbers[5]  = nodeNumbersGmsh[12];
+            nodeNumbers[6]  = nodeNumbersGmsh[0];
+            nodeNumbers[7]  = nodeNumbersGmsh[8];
+            nodeNumbers[8]  = nodeNumbersGmsh[1];
+            nodeNumbers[9]  = nodeNumbersGmsh[17];
+            nodeNumbers[10] = nodeNumbersGmsh[25];
+            nodeNumbers[11] = nodeNumbersGmsh[18];
+            nodeNumbers[12] = nodeNumbersGmsh[22];
+            nodeNumbers[13] = nodeNumbersGmsh[26];
+            nodeNumbers[14] = nodeNumbersGmsh[23];
+            nodeNumbers[15] = nodeNumbersGmsh[9];
+            nodeNumbers[16] = nodeNumbersGmsh[20];
+            nodeNumbers[17] = nodeNumbersGmsh[11];
+            nodeNumbers[18] = nodeNumbersGmsh[7];
+            nodeNumbers[19] = nodeNumbersGmsh[19];
+            nodeNumbers[20] = nodeNumbersGmsh[6];
+            nodeNumbers[21] = nodeNumbersGmsh[15];
+            nodeNumbers[22] = nodeNumbersGmsh[24];
+            nodeNumbers[23] = nodeNumbersGmsh[14];
+            nodeNumbers[24] = nodeNumbersGmsh[3];
+            nodeNumbers[25] = nodeNumbersGmsh[13];
+            nodeNumbers[26] = nodeNumbersGmsh[2];
             break;
     	}
 //    	case 13: // 18-node second order prism (6 nodes associated with the vertices, 9 with the edges and 3 with the quadrangular faces).
@@ -1546,7 +1546,7 @@ Eigen::MatrixXi NuTo::Structure::ImportFromGmshAux(const std::string& rFileName)
         numMaxInterpolationTypesPerGroup = std::max(numMaxInterpolationTypesPerGroup, size);
     }
 
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ids(numGroups, numMaxInterpolationTypesPerGroup+1); // +1 since first column is group id
+    Eigen::MatrixXi ids(numGroups, numMaxInterpolationTypesPerGroup+1); // +1 since first column is group id
     ids.fill(-1); // invalid value
     int iGroup = 0;
     for (auto groupInterpolationId : groupInterpolationIds)

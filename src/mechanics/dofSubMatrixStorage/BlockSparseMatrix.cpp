@@ -479,7 +479,7 @@ std::ostream& operator<<(std::ostream &rOut, const NuTo::BlockSparseMatrix &rBlo
         for (auto dof2 : rBlockSparseMatrix.mDofStatus.GetActiveDofTypes())
         {
             rOut << "[" << Node::DofToString(dof1) << " - " << Node::DofToString(dof2) << "]" << std::endl;
-            rOut << rBlockSparseMatrix(dof1,dof2).ConvertToFullMatrixDouble().format(cleanFormat) << std::endl;
+            rOut << rBlockSparseMatrix(dof1, dof2).ConvertToFullMatrix().format(cleanFormat) << std::endl;
         }
     }
     return rOut;

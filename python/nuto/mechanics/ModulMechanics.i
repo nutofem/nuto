@@ -2,8 +2,6 @@
 %feature("autodoc","1");
 %{
 //Put headers and other declarations here to be added in the wrapper files
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
@@ -33,6 +31,11 @@
 %eigen_typemaps(Eigen::Matrix<double, 2, 1>)
 %eigen_typemaps(Eigen::Matrix<double, 3, 1>)
 %eigen_typemaps(Eigen::Matrix<double, 6, 1>)
+
+%eigen_typemaps(Eigen::VectorXi)
+%eigen_typemaps(Eigen::MatrixXi)
+%eigen_typemaps(Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>)
+%eigen_typemaps(Eigen::Matrix<int, Eigen::Dynamic, 1>)
 // convert python string to std::string
 %include "std_string.i"
 // convert python tuple to std::vector
@@ -46,7 +49,6 @@ namespace std {
 %include "base/ModulNuToBase.i"
 %include "base/CallbackInterface.h"
 
-%include "math/FullMatrix.h"
 %include "mechanics/structures/StructureBase.h"
 %include "mechanics/structures/unstructured/Structure.h"
 %include "mechanics/elements/ElementEnum.h"

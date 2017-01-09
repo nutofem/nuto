@@ -1,6 +1,5 @@
 #include "base/serializeStream/SerializeStreamOut.h"
 #include "math/MathException.h"
-#include "math/FullMatrix.h"
 #include "math/SparseDirectSolverMUMPS.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
@@ -22,76 +21,73 @@ int main()
     myStructure.Info();
 
     // create nodes
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> Coordinates(2, 11);
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> Displacements(2, 11);
+    // create nodes
+    Eigen::MatrixXd coordinates(2, 11);
 
-    Coordinates(0, 0) = 0;
-    Coordinates(1, 0) = 0;
-    Coordinates(0, 1) = 1;
-    Coordinates(1, 1) = 0;
-    Coordinates(0, 2) = 2;
-    Coordinates(1, 2) = 0;
-    Coordinates(0, 3) = 0;
-    Coordinates(1, 3) = 1;
-    Coordinates(0, 4) = 1;
-    Coordinates(1, 4) = 1;
-    Coordinates(0, 5) = 2;
-    Coordinates(1, 5) = 1;
-    Coordinates(0, 6) = 0;
-    Coordinates(1, 6) = 2;
-    Coordinates(0, 7) = 1;
-    Coordinates(1, 7) = 2;
-    Coordinates(0, 8) = 2;
-    Coordinates(1, 8) = 2;
+    coordinates(0, 0) = 0;
+    coordinates(1, 0) = 0;
+    coordinates(0, 1) = 1;
+    coordinates(1, 1) = 0;
+    coordinates(0, 2) = 2;
+    coordinates(1, 2) = 0;
+    coordinates(0, 3) = 0;
+    coordinates(1, 3) = 1;
+    coordinates(0, 4) = 1;
+    coordinates(1, 4) = 1;
+    coordinates(0, 5) = 2;
+    coordinates(1, 5) = 1;
+    coordinates(0, 6) = 0;
+    coordinates(1, 6) = 2;
+    coordinates(0, 7) = 1;
+    coordinates(1, 7) = 2;
+    coordinates(0, 8) = 2;
+    coordinates(1, 8) = 2;
 
-    Coordinates(0, 9) = 4;
-    Coordinates(1, 9) = 0;
-    Coordinates(0, 10) = 4;
-    Coordinates(1, 10) = 2;
-    Coordinates.Info();
+    coordinates(0, 9) = 4;
+    coordinates(1, 9) = 0;
+    coordinates(0, 10) = 4;
+    coordinates(1, 10) = 2;
 
-    NuTo::FullVector<int, Eigen::Dynamic> Nodes = myStructure.NodesCreate(Coordinates);
+    std::cout << coordinates << std::endl;
 
-    // create elements
+    std::vector<int> nodeIds = myStructure.NodesCreate(coordinates);
+
     std::vector<int> Incidences(4);
-    NuTo::FullVector<int, Eigen::Dynamic> Elements(5);
 
     // element1
-    Incidences[0] = Nodes(0);
-    Incidences[1] = Nodes(1);
-    Incidences[2] = Nodes(4);
-    Incidences[3] = Nodes(3);
-    Elements[0] = myStructure.ElementCreate(myInterpolationType, Incidences);
+    Incidences[0] = nodeIds[0];
+    Incidences[1] = nodeIds[1];
+    Incidences[2] = nodeIds[4];
+    Incidences[3] = nodeIds[3];
+    myStructure.ElementCreate(myInterpolationType, Incidences);
 
     // element2
-    Incidences[0] = Nodes(1);
-    Incidences[1] = Nodes(2);
-    Incidences[2] = Nodes(5);
-    Incidences[3] = Nodes(4);
-    Elements[1] = myStructure.ElementCreate(myInterpolationType, Incidences);
+    Incidences[0] = nodeIds[1];
+    Incidences[1] = nodeIds[2];
+    Incidences[2] = nodeIds[5];
+    Incidences[3] = nodeIds[4];
+    myStructure.ElementCreate(myInterpolationType, Incidences);
 
     // element3
-    Incidences[0] = Nodes(3);
-    Incidences[1] = Nodes(4);
-    Incidences[2] = Nodes(7);
-    Incidences[3] = Nodes(6);
-    Elements[2] = myStructure.ElementCreate(myInterpolationType, Incidences);
+    Incidences[0] = nodeIds[3];
+    Incidences[1] = nodeIds[4];
+    Incidences[2] = nodeIds[7];
+    Incidences[3] = nodeIds[6];
+    myStructure.ElementCreate(myInterpolationType, Incidences);
 
     // element4
-    Incidences[0] = Nodes(4);
-    Incidences[1] = Nodes(5);
-    Incidences[2] = Nodes(8);
-    Incidences[3] = Nodes(7);
-    Elements[3] = myStructure.ElementCreate(myInterpolationType, Incidences);
+    Incidences[0] = nodeIds[4];
+    Incidences[1] = nodeIds[5];
+    Incidences[2] = nodeIds[8];
+    Incidences[3] = nodeIds[7];
+    myStructure.ElementCreate(myInterpolationType, Incidences);
 
     // element5
-    Incidences[0] = Nodes(2, 0);
-    Incidences[1] = Nodes(9, 0);
-    Incidences[2] = Nodes(10, 0);
-    Incidences[3] = Nodes(8, 0);
-    Elements[4] = myStructure.ElementCreate(myInterpolationType, Incidences);
-
-    Coordinates.Info();
+    Incidences[0] = nodeIds[2 ];
+    Incidences[1] = nodeIds[9 ];
+    Incidences[2] = nodeIds[10];
+    Incidences[3] = nodeIds[8 ];
+    myStructure.ElementCreate(myInterpolationType, Incidences);
 
     // create constitutive law
     int myMatLin =  myStructure.ConstitutiveLawCreate("LINEAR_ELASTIC_ENGINEERING_STRESS");
@@ -105,21 +101,21 @@ int main()
     myStructure.SectionSetThickness(mySection1, 0.01);
 
     // assign material, section and integration type
-    myStructure.ElementTotalConvertToInterpolationType(1.e-6, 3);
+    myStructure.ElementTotalConvertToInterpolationType();
     myStructure.ElementTotalSetConstitutiveLaw(myMatLin);
     myStructure.ElementTotalSetSection(mySection1);
 
     // build global stiffness matrix and equivalent load vector which correspond to prescribed boundary values
     auto hessianElement0 = myStructure.ElementBuildHessian0(0);
-    auto hessianElement4 = myStructure.ElementBuildHessian0(4);
+    auto hessianElement3 = myStructure.ElementBuildHessian0(4);
 
     NuTo::SerializeStreamOut stiffnessFile("stiffness", false);
     stiffnessFile.SaveMatrix(hessianElement0.Export());
     NuTo::SerializeStreamOut stiffnessCoarseFile("stiffnessCoarse", false);
-    stiffnessCoarseFile.SaveMatrix(hessianElement4.Export());
+    stiffnessCoarseFile.SaveMatrix(hessianElement3.Export());
 
     // boundary conditions
-    NuTo::FullVector<double, Eigen::Dynamic> direction(2);
+    Eigen::VectorXd direction(2);
     direction(0) = 1;
     direction(1) = 0;
     myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.0);

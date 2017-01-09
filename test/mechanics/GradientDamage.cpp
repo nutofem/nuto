@@ -210,7 +210,7 @@ void TestStructure1D(bool rUseRobinBoundaryElements)
     int numNodes = numElements + 1;
     double lengthElement = length / numElements;
 
-    NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(1);
+    Eigen::VectorXd nodeCoordinates(1);
     for (int iNode = 0; iNode < numNodes; ++iNode)
     {
         nodeCoordinates(0) = iNode * lengthElement;
@@ -287,10 +287,7 @@ void TestStructure2D(NuTo::Interpolation::eShapeType rShape, NuTo::eSectionType 
     {
         for (int countX = 0; countX < numNodesX; countX++)
         {
-            NuTo::FullVector<double, Eigen::Dynamic> coordinates(2);
-            coordinates(0) = countX * deltaX;
-            coordinates(1) = countY * deltaY;
-            s.NodeCreate(nodeNum, coordinates);
+            s.NodeCreate(nodeNum, Eigen::Vector2d({countX * deltaX, countY * deltaY}));
             nodeNum++;
         }
     }
@@ -355,14 +352,14 @@ void TestStructure3D(NuTo::Interpolation::eShapeType rShape, bool rUseRobinBound
 
     double lX = 3, lY = 4, lZ = 5;
     std::vector<int> nodeIds(8);
-    nodeIds[0] = s.NodeCreate(NuTo::FullVector<double, 3> ({ 0, 0, 0}));
-    nodeIds[1] = s.NodeCreate(NuTo::FullVector<double, 3> ({lX, 0, 0}));
-    nodeIds[2] = s.NodeCreate(NuTo::FullVector<double, 3> ({lX,lY, 0}));
-    nodeIds[3] = s.NodeCreate(NuTo::FullVector<double, 3> ({ 0,lY, 0}));
-    nodeIds[4] = s.NodeCreate(NuTo::FullVector<double, 3> ({ 0, 0,lZ}));
-    nodeIds[5] = s.NodeCreate(NuTo::FullVector<double, 3> ({lX, 0,lZ}));
-    nodeIds[6] = s.NodeCreate(NuTo::FullVector<double, 3> ({lX,lY,lZ}));
-    nodeIds[7] = s.NodeCreate(NuTo::FullVector<double, 3> ({ 0,lY,lZ}));
+    nodeIds[0] = s.NodeCreate(Eigen::Vector3d({ 0, 0, 0}));
+    nodeIds[1] = s.NodeCreate(Eigen::Vector3d({lX, 0, 0}));
+    nodeIds[2] = s.NodeCreate(Eigen::Vector3d({lX,lY, 0}));
+    nodeIds[3] = s.NodeCreate(Eigen::Vector3d({ 0,lY, 0}));
+    nodeIds[4] = s.NodeCreate(Eigen::Vector3d({ 0, 0,lZ}));
+    nodeIds[5] = s.NodeCreate(Eigen::Vector3d({lX, 0,lZ}));
+    nodeIds[6] = s.NodeCreate(Eigen::Vector3d({lX,lY,lZ}));
+    nodeIds[7] = s.NodeCreate(Eigen::Vector3d({ 0,lY,lZ}));
 
     int myInterpolationType = AddInterpolationType(s, rShape);
 
@@ -424,7 +421,7 @@ void SetupNewmark(NuTo::NewmarkDirect& rTimeIntegration, int rBC, std::string rD
     double dispEnd = 0.01;
     int numLoadSteps = 3;
 
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> timeDepDisp(2, 2);
+    Eigen::Matrix2d timeDepDisp;
     timeDepDisp << 0, 0, simulationTime, dispEnd;
 
     rTimeIntegration.AddTimeDependentConstraint(rBC, timeDepDisp);
@@ -471,7 +468,7 @@ void Check1D2D3D()
     s3D.InterpolationTypeSetIntegrationType(interpolationType3D, NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip);
 
 
-    NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(1);
+    Eigen::VectorXd nodeCoordinates(1);
     for (int iNode = 0; iNode < numNodesX; ++iNode)
     {
         nodeCoordinates(0) = iNode * lengthElementX; // two nodes per element
@@ -489,10 +486,7 @@ void Check1D2D3D()
     for (int countY = 0; countY < 2; countY++)
         for (int countX = 0; countX < numNodesX; countX++)
         {
-            NuTo::FullVector<double, Eigen::Dynamic> coordinates(2);
-            coordinates(0) = countX * lengthElementX;
-            coordinates(1) = countY * ly;
-            s2D.NodeCreate(nodeNum, coordinates);
+            s2D.NodeCreate(nodeNum, Eigen::Vector2d({countX * lengthElementX, countY * ly}));
             nodeNum++;
         }
 
@@ -512,11 +506,7 @@ void Check1D2D3D()
         for (int iY=0; iY<2; iY++)
             for (int iX=0; iX<numNodesX; iX++)
             {
-                NuTo::FullVector<double,Eigen::Dynamic> coordinates(3);
-                coordinates(0) = iX*lengthElementX;
-                coordinates(1) = iY*ly;
-                coordinates(2) = iZ*lz;
-                s3D.NodeCreate(nodeNum, coordinates);
+                s3D.NodeCreate(nodeNum, Eigen::Vector3d({iX*lengthElementX, iY*ly, iZ*lz}));
                 nodeNum++;
             }
 
