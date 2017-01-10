@@ -91,7 +91,7 @@ public:
 
 protected:
 
-    //! @brief ... knots (e.g. 2D \f$\begin{pmatrix}\xi_i & \xi_{i+1} \\ \mu_j & \mu_{j+1}\f$)
+    //! @brief ... knots (e.g. 2D \f$\begin{pmatrix}\xi_i & \xi_{i+1} \\ \mu_j & \mu_{j+1}\end{pmatrix}\f$)
     Eigen::MatrixXd mKnots;
 
     //! @brief ... knot ids
