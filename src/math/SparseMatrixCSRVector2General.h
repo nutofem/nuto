@@ -3,6 +3,7 @@
 #pragma once
 
 #include <algorithm>
+#include <numeric>
 
 #include "math/SparseMatrixCSRVector2General_Def.h"
 
@@ -166,13 +167,6 @@ NuTo::eSparseMatrixType NuTo::SparseMatrixCSRVector2General<T>::GetSparseMatrixT
     return NuTo::eSparseMatrixType::CSRVECTOR2GENERAL;
 }
 
-//! @brief ... import matrix from slang object stored in  a text file
-//! @param rFileName ... file name
-template<class T>
-void NuTo::SparseMatrixCSRVector2General<T>::ImportFromSLangText(const char* rFileName)
-{
-	throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] to be implemented.");
-}
 
 //! @brief ... write nonzero matrix entries into a matrix
 //! @param rFullMatrix ... the matrix
@@ -973,7 +967,7 @@ template<class T>
 NuTo::SparseMatrixCSRVector2General<T> NuTo::SparseMatrixCSRVector2General<T>::Random(int rNumRows, int rNumColumns, double rDensity, int rSeed)
 {
     SparseMatrixCSRVector2General<T> matrix(rNumRows, rNumColumns);
-    Matrix<T>::FillMatrixRandom(matrix, rDensity, rSeed);
+    SparseMatrix<T>::FillMatrixRandom(matrix, rDensity, rSeed);
     return std::move(matrix);
 }
 

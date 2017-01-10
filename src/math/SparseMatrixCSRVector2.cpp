@@ -1,7 +1,6 @@
 // $Id: SparseMatrixCSRVector2.cpp 207 2009-12-18 08:08:29Z eckardt4 $
 
 #include <string>
-#include "math/Matrix.h"
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSRVector2.h"
 #include "math/MathException.h"

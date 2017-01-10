@@ -1,7 +1,6 @@
 // $Id$
 
 #include <string>
-#include "math/Matrix.h"
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSR.h"
 #include "math/MathException.h"

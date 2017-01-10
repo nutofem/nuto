@@ -67,10 +67,6 @@ public:
     //! @param rValue ... value of the nonzero entry
     void AddValue(int rRow, int rColumn, const T& rValue) override;
 
-    //! @brief ... import matrix from slang object stored in  a text file
-    //! @param rFileName ... file name
-    void ImportFromSLangText(const char* rFileName) override;
-
     //! @brief ... return the matrix type
     NuTo::eSparseMatrixType GetSparseMatrixType()const override;
 

@@ -51,10 +51,6 @@ public:
     //! @brief ... print info about the object
     void Info() const override;
 
-    //! @brief ... import matrix from slang object stored in  a text file
-    //! @param rFileName ... file name
-    void ImportFromSLangText(const char* rFileName) override;
-
     //! @brief ... write nonzero matrix entries into a matrix
     //! @return ... the matrix
     virtual Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> ConvertToFullMatrix() const override;

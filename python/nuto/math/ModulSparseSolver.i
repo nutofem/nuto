@@ -13,24 +13,8 @@
 #include "math/SparseDirectSolverMUMPS.h"
 %}
 
-// typemaps.i is a built-in swig interface that lets us map c++ types to other
-// types python. We'll use it to map Eigen matrices to Numpy arrays.
-%include "typemaps.i"
-%include "eigen.i"
-%eigen_typemaps(Eigen::VectorXd)
-%eigen_typemaps(Eigen::Matrix<double, Eigen::Dynamic, 1>)
 
-// convert python string to std::string
-%include "std_string.i"
-// convert python tuple to std::vector
-%include "std_vector.i"
-// use exceptions, but build no interface for NUTO::Exception
-%ignore Exception;
-%include "base/ModulNuToBase.i"
-
-%import "math/NuToMath.i"
-%import "math/ModulMatrix.i"
-%import "math/ModulSparseMatrix.i"
+%include "math/ModulSparseMatrix.i"
 
 /* solver */
 %include "math/SparseDirectSolver.h"

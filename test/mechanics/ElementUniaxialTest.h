@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <iomanip>
+
 #include "math/SparseMatrixCSRVector2.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"

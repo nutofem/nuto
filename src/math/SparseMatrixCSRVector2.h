@@ -141,10 +141,6 @@ public:
         }
     }
 
-    //! @brief ... import matrix from slang object stored in  a text file
-    //! @param rFileName ... file name
-    virtual void ImportFromSLangText(const char* rFileName) = 0;
-
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
     //! @return    class name
@@ -171,32 +167,6 @@ public:
 #endif // SWIG
 #endif  // ENABLE_SERIALIZATION
 
-    //! @brief performs a monadic operator on all matrix entries
-    //! @param rMOperator        Monadic Operator
-    void Map(const NuTo::MonadicOperator<T>* rMOperator) override
-    {
-        for (unsigned int row_count = 0; row_count < this->mColumns.size(); row_count++)
-        {
-            for (unsigned int col_count = 0; col_count < this->mColumns[row_count].size(); col_count++)
-            {
-                mValues[row_count][col_count] = rMOperator->Evaluate(mValues[row_count][col_count]);
-            }
-        }
-    }
-
-    //! @brief performs a dyadic operator on all matrix entries with another given value
-    //! @param rDOperator        Dyadic Operator
-    //! @param rValue ... value
-    void Map(const NuTo::DyadicOperator<T>* rDOperator, const T& rValue) override
-    {
-        for (unsigned int row_count = 0; row_count < this->mColumns.size(); row_count++)
-        {
-            for (unsigned int col_count = 0; col_count < this->mColumns[row_count].size(); col_count++)
-            {
-                mValues[row_count][col_count] = rDOperator->Evaluate(mValues[row_count][col_count],rValue);
-            }
-        }
-    }
 
     //! @brief ... multiplies the matrix with an scalar value
     //! @param rOther ... scalar value

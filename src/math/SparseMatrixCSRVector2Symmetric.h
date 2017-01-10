@@ -158,14 +158,6 @@ NuTo::eSparseMatrixType NuTo::SparseMatrixCSRVector2Symmetric<T>::GetSparseMatri
     return NuTo::eSparseMatrixType::CSRVECTOR2SYMMETRIC;
 }
 
-//! @brief ... import matrix from slang object stored in  a text file
-//! @param rFileName ... file name
-template<class T>
-void NuTo::SparseMatrixCSRVector2Symmetric<T>::ImportFromSLangText(const char* rFileName)
-{
-	throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] to be implemented.");
-}
-
 //! @brief ... write nonzero matrix entries into a matrix
 //! @param rMatrix ... the matrix
 template<class T>
@@ -584,7 +576,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T> NuTo::SparseMatrixCSRVector2Symmetric<T
     SparseMatrixCSRVector2General<T> matrix(rDimension, rDimension);
 
     // numValues(symmetric) is approx 0.5*numValues(general) since only one triangle is stored
-    Matrix<T>::FillMatrixRandom(matrix, .5*rDensity, rSeed);
+    SparseMatrix<T>::FillMatrixRandom(matrix, .5*rDensity, rSeed);
     return std::move(matrix.SymmetricPart());
 }
 

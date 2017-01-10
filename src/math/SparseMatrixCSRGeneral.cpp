@@ -5,7 +5,6 @@
 #include <iostream>
 #include <string>
 
-#include "math/Matrix.h"
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSR.h"
 #include "math/SparseMatrixCSRGeneral.h"
@@ -73,97 +72,6 @@ template<>
 std::string SparseMatrixCSRGeneral<int>::GetTypeId()const
 {
     return std::string("SparseMatrixCSRGeneralInt");
-}
-
-template<>
-void SparseMatrixCSRGeneral<double>::ImportFromSLangText(const char* rFileName)
-{
-    using namespace boost::spirit::classic;
-
-    // open file
-    std::ifstream file(rFileName, std::ios::in);
-    if (file.is_open() == false)
-    {
-        throw MathException("[SparseMatrixCSRGeneral::importFromSLangText]error opening file.");
-    }
-
-    // read header
-    unsigned int SLangVersion(0), objectType(SLANG_NOTYPE), objectKind(SLANG_NOKIND), objectNumRows(0), objectNumColumns(0), objectNumEntries(0);
-    this->ImportFromSLangTextReadHeader(file, SLangVersion, objectType, objectKind, objectNumRows, objectNumColumns, objectNumEntries);
-
-    // check SLang version
-    if (SLangVersion != 511)
-    {
-        throw MathException("[SparseMatrixCSRGeneral::importFromSLangText]unsupported SLang version.");
-    }
-
-    // check object type and kind
-    if (objectType != SLANG_REAL)
-    {
-        throw MathException("[SparseMatrixCSRGeneral::importFromSLangText]object data must be of type DOUBLE.");
-    }
-    if (objectKind != SLANG_GENERAL_COMPACT_MATRIX)
-    {
-        throw MathException("[SparseMatrixCSRGeneral::importFromSLangText] SLang object must be a GENERAL_COMPACT_MATRIX.");
-    }
-    this->Resize(objectNumRows,objectNumColumns);
-    this->Reserve(objectNumEntries);
-
-    // switch to one based indexing
-    bool oldOneBasedIndexing = this->mOneBasedIndexing;
-    this->SetOneBasedIndexing();
-
-    // read nonzero entries
-    unsigned int row = 1;
-    this->mRowIndex[0] = 1;
-    for (unsigned int entryCount = 0; entryCount < objectNumEntries; entryCount++)
-    {
-        std::string line;
-        getline (file, line);
-        unsigned int curRow(0), curColumn(0);
-        double curValue(0);
-        if (parse(line.c_str(),(uint_p[assign_a(curRow)] >> real_p[assign_a(curColumn)] >> real_p[assign_a(curValue)]),space_p).full == false)
-        {
-            throw MathException("[SparseMatrixCSRGeneral::importFromSLangText]error reading nonzero matrix entries.");
-        }
-        if (curRow < row)
-        {
-            throw MathException("[SparseMatrixCSRGeneral::importFromSLangText]invalid sorting of compressed matrix.");
-        }
-        else
-        {
-            this->mColumns.push_back(curColumn);
-            this->mValues.push_back(curValue);
-            if (curRow > row)
-            {
-                while (row < curRow)
-                {
-                    this->mRowIndex[row] = entryCount + 1;
-                    row++;
-                }
-            }
-        }
-    }
-    while (row < this->mRowIndex.size())
-    {
-        this->mRowIndex[row] = objectNumEntries + 1;
-        row++;
-    }
-
-    // set to old indexing
-    if (!oldOneBasedIndexing)
-    {
-        this->SetZeroBasedIndexing();
-    }
-
-    // close file
-    file.close();
-}
-
-template<>
-void SparseMatrixCSRGeneral<int>::ImportFromSLangText(const char* rFileName)
-{
-    throw MathException("[SparseMatrixCSRGeneral::importFromSLang] not implemented for this data-type.");
 }
 
 template<>
@@ -611,7 +519,7 @@ void SparseMatrixCSRGeneral<double>::Gauss(SparseMatrixCSRGeneral<double>& rRhs,
 template<>
 void SparseMatrixCSRGeneral<int>::GetMaximumEigenvalueAndEigenvector(Eigen::VectorXi &rStart, int &maximumEigenvalue, double tol)
 {
-	throw MathException("[SparseMatrixCSRGeneral::importFromSLang] not implemented for this data-type.");
+	throw MathException(__PRETTY_FUNCTION__, "not implemented for this data-type.");
 }
 
 template<>

@@ -1,7 +1,6 @@
 set(NuToMath_SWIG_MODULES
     NuToMath
-    ModulMatrix
-    ModulOperator
+    ModulTestInterface
     ModulSparseMatrix
     ModulSparseSolver
 )
@@ -21,7 +20,6 @@ include(${SWIG_USE_FILE})
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
 set(CMAKE_SWIG_FLAGS "")
-set_source_files_properties(ModulFullMatrix.i PROPERTIES CPLUSPLUS ON)
 
 # build python modules
 configure_file(__init__.py ${CMAKE_CURRENT_BINARY_DIR}/__init__.py)

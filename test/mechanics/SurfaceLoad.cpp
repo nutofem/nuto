@@ -1,3 +1,5 @@
+#include <iomanip>
+
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/MechanicsException.h"
