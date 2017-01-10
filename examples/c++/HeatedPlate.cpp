@@ -148,8 +148,8 @@ int main()
     structure.SectionSetThickness(section, thickness);
     structure.ElementTotalSetSection(section);
 
-    auto matrix_group = groupIndices(0, 0);
-    auto aggregate_group = groupIndices(1, 0);
+    auto matrix_group = groupIndices[0].first;
+    auto aggregate_group = groupIndices[1].first;
 
     // set constitutive laws
     //Properties concrete = {41071.0, 893e-6, 1.89, 2899.0, 17.3e-6};
@@ -162,8 +162,8 @@ int main()
     SetConstitutiveLaws(structure, aggregate_group, aggregate_properties, SandstoneExpansion);
 
     // set interpolation types
-    auto interpolationMatrix = groupIndices(0,1);
-    auto interpolationAggreg = groupIndices(1,1);
+    auto interpolationMatrix = groupIndices[0].second;
+    auto interpolationAggreg = groupIndices[1].second;
 
     SetInterpolation(structure, interpolationMatrix);
     SetInterpolation(structure, interpolationAggreg);
