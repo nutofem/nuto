@@ -138,8 +138,8 @@ void run2d()
         std::cout << "**      Import Matrix Mesh       **" << std::endl;
         std::cout << "***********************************" << std::endl;
 
-        Eigen::MatrixXi createdGroupIdMatrix = myStructure.ImportFromGmsh(meshFilePathMatrix.string());
-        int groupIdMatrix = createdGroupIdMatrix(0, 0);
+        auto createdGroupIdMatrix = myStructure.ImportFromGmsh(meshFilePathMatrix.string());
+        int groupIdMatrix = createdGroupIdMatrix[0].first;
 
 
         myStructure.ElementGroupSetInterpolationType(groupIdMatrix, matrixInterpolationType);
@@ -152,8 +152,8 @@ void run2d()
         std::cout << "**      Import Fiber Mesh        **" << std::endl;
         std::cout << "***********************************" << std::endl;
 
-        Eigen::MatrixXi createdGroupIdFiber = myStructure.ImportFromGmsh(meshFilePathFiber.string());
-        int groupIdFiber = createdGroupIdFiber(0, 0);
+        auto createdGroupIdFiber = myStructure.ImportFromGmsh(meshFilePathFiber.string());
+        int groupIdFiber = createdGroupIdFiber[0].first;
 
         myStructure.ElementGroupSetInterpolationType(groupIdFiber, fibreInterpolationType);
         myStructure.InterpolationTypeSetIntegrationType(fibreInterpolationType, NuTo::eIntegrationType::IntegrationType1D2NGauss3Ip);
@@ -365,8 +365,8 @@ void run3d()
     std::cout << "**      Import Matrix Mesh       **" << std::endl;
     std::cout << "***********************************" << std::endl;
 
-    Eigen::MatrixXi createdGroupIdMatrix = myStructure.ImportFromGmsh(meshFilePathMatrix.string());
-    int groupIdMatrix = createdGroupIdMatrix(0, 0);
+    auto createdGroupIdMatrix = myStructure.ImportFromGmsh(meshFilePathMatrix.string());
+    int groupIdMatrix = createdGroupIdMatrix[0].first;
 
     myStructure.ElementGroupSetInterpolationType(groupIdMatrix, matrixInterpolationType);
     myStructure.InterpolationTypeSetIntegrationType(matrixInterpolationType, NuTo::eIntegrationType::IntegrationType3D4NGauss4Ip);
@@ -378,8 +378,8 @@ void run3d()
     std::cout << "**      Import Fiber Mesh        **" << std::endl;
     std::cout << "***********************************" << std::endl;
 
-    Eigen::MatrixXi createdGroupIdFiber = myStructure.ImportFromGmsh(meshFilePathFiber.string());
-    int groupIdFiber = createdGroupIdFiber(0, 0);
+    auto createdGroupIdFiber = myStructure.ImportFromGmsh(meshFilePathFiber.string());
+    int groupIdFiber = createdGroupIdFiber[0].first;
 
     myStructure.ElementGroupSetInterpolationType(groupIdFiber, fibreInterpolationType);
     myStructure.ElementGroupSetSection(groupIdFiber, fibreSection);
@@ -517,30 +517,11 @@ void run3d()
 
 int main()
 {
-    try
-    {
-        run2d();
-        run3d();
-
-    } catch (NuTo::MechanicsException& e)
-    {
-        std::cout << e.ErrorMessage() << std::endl;
-        return EXIT_FAILURE;
-
-    } catch (NuTo::MathException& e)
-    {
-        std::cout << e.ErrorMessage() << std::endl;
-        return EXIT_FAILURE;
-
-    } catch (...)
-    {
-        std::cout << "Something else went wrong :-(" << std::endl;
-        return EXIT_FAILURE;
-    }
+    run2d();
+    run3d();
 
     std::cout << "***********************************" << std::endl;
     std::cout << "**      End                      **" << std::endl;
     std::cout << "***********************************" << std::endl;
-
 }
 

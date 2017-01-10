@@ -424,10 +424,11 @@ public:
     //! @return returns a pair with the group ids of the new fiber and interface elements
     std::pair<int,int> InterfaceElementsCreate(int rElementGroupId, int rInterfaceInterpolationType, int rFibreInterpolationType);
 
-    //! @brief import from gmsh, creates groups according to gmsh's physical entities and creates an interpolation types for each group
-    //! @param rFileName .. file name
-    //! @return .. Matrix [NumGroups x 2] with [: x 0] group ids and [ : x 1] corresponding interpolation type ids
-    Eigen::MatrixXi ImportFromGmsh(const std::string& rFileName);
+    //! @brief Import from gmsh
+    //!        Creates groups according to gmsh's physical entities and creates an interpolation types for each group
+    //! @param rFileName File name
+    //! @return Vector of pair, with element.first containing the group id, and element.second the interpolation type id
+    std::vector<std::pair<int, int>> ImportFromGmsh(const std::string& rFileName);
 
     //*************************************************
     //**      InterpolationType routines             **
@@ -623,13 +624,6 @@ protected:
     //! @param rNodeNumber ... node number
     //! @param checkElements ... check the elements, if set to false, make sure that the node is not part of any element
     void NodeDelete(int rNodeNumber, bool checkElements);
-
-#ifndef SWIG
-    //! @brief import from gmsh, creates groups according to gmsh's physical entities and creates an interpolation types for each group
-    //! @param rFileName .. file name
-    //! @return .. Matrix [NumGroups x 2] with [: x 0] group ids and [ : x 1] corresponding interpolation type ids
-    Eigen::MatrixXi ImportFromGmshAux(const std::string& rFileName);
-#endif //SWIG
 
     boost::ptr_map<int, NodeBase> mNodeMap;
     boost::ptr_map<int, ElementBase> mElementMap;

@@ -521,13 +521,13 @@ void solve(NuTo::Structure *myStructure, double solution, const std::string &res
 void Neumann(const std::string &resultDir, const std::string &path, const std::string &fileName, int BC)
 {
     NuTo::Structure myStructure(2);
-    Eigen::MatrixXi groupIndices = myStructure.ImportFromGmsh(path + fileName);
+    auto groupIndices = myStructure.ImportFromGmsh(path + fileName);
 
-    int interpolationType = groupIndices(0, 1);
+    int interpolationType = groupIndices[0].second;
     myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS,  NuTo::Interpolation::eTypeOrder::LOBATTO3);
 
     myStructure.SetVerboseLevel(10);
-    myStructure.ElementConvertToInterpolationType(groupIndices(0, 0));
+    myStructure.ElementConvertToInterpolationType(groupIndices[0].first);
 
 //    myStructure.InterpolationTypeSetIntegrationType(interpolationType, NuTo::IntegrationType::IntegrationType2D3NGauss3Ip, NuTo::IpData::NOIPDATA);
 
@@ -674,13 +674,13 @@ void Neumann(const std::string &resultDir, const std::string &path, const std::s
 void Dirichlet(const std::string &resultDir, const std::string &path, const std::string &fileName)
 {
     NuTo::Structure myStructure(2);
-    Eigen::VectorXi groupIndices = myStructure.ImportFromGmsh(path + fileName);
+    auto groupIndices = myStructure.ImportFromGmsh(path + fileName);
 
-    int interpolationType = groupIndices(0, 1);
+    int interpolationType = groupIndices[0].second;
     myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::LOBATTO3);
 
     myStructure.SetVerboseLevel(10);
-    myStructure.ElementConvertToInterpolationType(groupIndices(0, 0));
+    myStructure.ElementConvertToInterpolationType(groupIndices[0].first);
 
 //    myStructure.InterpolationTypeSetIntegrationType(interpolationType, NuTo::IntegrationType::IntegrationType2D3NGauss3Ip, NuTo::IpData::NOIPDATA);
 

@@ -938,26 +938,6 @@ void NuTo::Structure::CalculateInitialValueRates(NuTo::TimeIntegrationBase& rTim
     }
 }
 
-Eigen::MatrixXi NuTo::Structure::ImportFromGmsh(const std::string& rFileName)
-{
-    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
-
-    Eigen::MatrixXi ids;
-
-    try
-    {
-        ids = ImportFromGmshAux(rFileName);
-    } catch (NuTo::MechanicsException &e)
-    {
-        e.AddMessage(__PRETTY_FUNCTION__, "Error importing from Gmsh.");
-        throw;
-    } catch (...)
-    {
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error importing from Gmsh.");
-    }
-    return ids;
-}
-
 class gmsh_node
 {
 public:
@@ -995,7 +975,7 @@ public:
 #include <iostream>
 #include <string>
 
-Eigen::MatrixXi NuTo::Structure::ImportFromGmshAux(const std::string& rFileName)
+std::vector<std::pair<int, int>> NuTo::Structure::ImportFromGmsh(const std::string& rFileName)
 {
     const unsigned int num_elm_nodes[24] =
     { 0, 2, 3, 4, 4, 8, 6, 5, 3, 6, 9, 10, 27, 18, 14, 1, 8, 20, 15, 13, 0, 10, 0, 15 };
@@ -1538,7 +1518,6 @@ Eigen::MatrixXi NuTo::Structure::ImportFromGmshAux(const std::string& rFileName)
     }
 
     // translate groupInterpolationIds to NuToIntMatrix
-    int numGroups = groupInterpolationIds.size();
     int numMaxInterpolationTypesPerGroup = 0;
     for (auto groupInterpolationId : groupInterpolationIds)
     {
@@ -1546,17 +1525,15 @@ Eigen::MatrixXi NuTo::Structure::ImportFromGmshAux(const std::string& rFileName)
         numMaxInterpolationTypesPerGroup = std::max(numMaxInterpolationTypesPerGroup, size);
     }
 
-    Eigen::MatrixXi ids(numGroups, numMaxInterpolationTypesPerGroup+1); // +1 since first column is group id
-    ids.fill(-1); // invalid value
+    std::vector<std::pair<int, int>> ids;
     int iGroup = 0;
     for (auto groupInterpolationId : groupInterpolationIds)
     {
-        ids(iGroup, 0) = groupInterpolationId.first; // group id
         std::set<int> groupInterpolationTypes = groupInterpolationId.second;
         int iIP = 1;
         for (int groupInterpolationType : groupInterpolationTypes)
         {
-            ids(iGroup, iIP) = groupInterpolationType;
+            ids.push_back(std::make_pair(groupInterpolationId.first, groupInterpolationType));
             iIP++;
         }
         iGroup++;

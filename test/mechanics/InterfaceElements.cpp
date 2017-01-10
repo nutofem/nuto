@@ -153,8 +153,8 @@ int main(int argc, char* argv[])
 
         auto createdGroupIdMatrix = myStructure.ImportFromGmsh(meshFile.string());
 
-        int groupIdFibre = createdGroupIdMatrix(0, 0);
-        int groupIdMatrix = createdGroupIdMatrix(1, 0);
+        int groupIdFibre = createdGroupIdMatrix[0].first;
+        int groupIdMatrix = createdGroupIdMatrix[1].first;
 
         std::cout << "***********************************" << std::endl;
         std::cout << "**      Matrix                   **" << std::endl;

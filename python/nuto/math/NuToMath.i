@@ -32,9 +32,12 @@
 %include "std_string.i"
 // convert python tuple to std::vector
 %include "std_vector.i"
+%include "std_pair.i"
 namespace std {
    %template(IntVector) vector<int>;
    %template(DoubleVector) vector<double>;
+   %template() std::pair<int, int>;
+   %template(PairVector) std::vector<std::pair<int, int>>;
 }
 
 // use exceptions, but build no interface for NUTO::Exception

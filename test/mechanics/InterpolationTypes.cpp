@@ -327,15 +327,15 @@ void CheckAPI()
 void ImportFromGmsh(std::string rMeshFile)
 {
     NuTo::Structure myStructure(2);
-    Eigen::MatrixXi groupIndices = myStructure.ImportFromGmsh(rMeshFile);
+    auto groupIndices = myStructure.ImportFromGmsh(rMeshFile);
 
     std::cout << groupIndices.size() << std::endl;
 
-    int interpolationType = groupIndices(0, 1);
+    int interpolationType = groupIndices[0].second;
     myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
 
     myStructure.SetVerboseLevel(10);
-    myStructure.ElementConvertToInterpolationType(groupIndices(0, 0));
+    myStructure.ElementConvertToInterpolationType(groupIndices[0].first);
 
     myStructure.InterpolationTypeSetIntegrationType(interpolationType, NuTo::eIntegrationType::IntegrationType2D3NGauss3Ip);
 
