@@ -473,15 +473,6 @@ void SurfaceLoadQuad2DIGA(NuTo::Interpolation::eTypeOrder rInterpolationDisp)
     int section = myStructure.SectionCreate(NuTo::eSectionType::PLANE_STRESS);
     myStructure.SectionSetThickness(section, thickness);
     myStructure.ElementTotalSetSection(section);
-
-    Eigen::Vector2d load({42., -M_PI});
-
-//    int groupnode = myStructure.GroupCreate("Nodes");
-//    myStructure.GroupAddNode(myStructure, nodeIds[0]);
-//    myStructure.GroupAddNode(myStructure, nodeIds[1]);
-//
-//    int groupelement = myStructure.GroupCreate("ELEMENTS");
-//    myStructure.LoadSurfaceConstDirectionCreate2D(0, groupelement, s, load);
 }
 
 void SurfaceLoadTetrahedron3D(NuTo::Interpolation::eTypeOrder rInterpolationDisp)

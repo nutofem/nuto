@@ -30,4 +30,5 @@ namespace std {
 %include "base/ModulNuToBase.i"
 
 %include "metamodel/Metamodel.h"
+%include "optimize/CallbackHandler.h"
 %include "metamodel/NeuralNetwork.h"

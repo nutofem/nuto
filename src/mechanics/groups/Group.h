@@ -124,7 +124,7 @@ public:
     
     //! @brief gives the number of group members
     //! @return number of group members
-    int GetNumMembers()const
+    int GetNumMembers() const override
     {
         return (int)this->size();
     }
@@ -142,7 +142,7 @@ public:
 
     //! @brief adds a group member
     //! @param rMember new member
-    void AddMember(int rId, T* rMember)
+    void AddMember(int rId, T* rMember) override
     {
     	if ((this->insert(std::pair<int,T*>(rId,rMember))).second==false)
             throw MechanicsException("[Group::AddMember] Group member already exists in the group.");
@@ -150,7 +150,7 @@ public:
 
     //! @brief removes a group member
     //! @param rMember member to be removed
-    void RemoveMember(int rId)
+    void RemoveMember(int rId) override
     {
         if (!this->erase(rId))
             throw MechanicsException("[Group::AddMember] Group member to be deleted is not within the group.");
@@ -159,7 +159,7 @@ public:
     //! @brief check if a group contains the entry
     //! @param rElementPtr Element pointer
     //! @return TRUE if rMember is in the group, FALSE otherwise
-    bool Contain(int rId)const
+    bool Contain(int rId) const override
     {
         if (this->find(rId)==this->end())
         	return false;
@@ -171,7 +171,7 @@ public:
     //! @brief replaces a ptr by another one
     //! @param rOldPtr
     //! @param rNewPtr
-    void ExchangePtr(int rId, T* rOldMember, T* rNewMember)
+    void ExchangePtr(int rId, T* rOldMember, T* rNewMember) override
     {
         typename std::map<int,T*>::iterator it(this->find(rId));
         if (it==this->end())
@@ -185,7 +185,7 @@ public:
 
     //! @brief joins two groups
     //! @return group
-    GroupBase* Unite (const NuTo::GroupBase* rOther)const
+    GroupBase* Unite (const NuTo::GroupBase* rOther) const override
     {
         NuTo::Group<T>* returnGroup = new NuTo::Group<T>();
 		const Group<T>* rOtherT = dynamic_cast<const Group<T>* >(rOther);
@@ -198,7 +198,7 @@ public:
 
     //! @brief returns a group with all members of current group, which are not presented in the second group
     //! @return group
-    GroupBase* Difference (const NuTo::GroupBase* rOther)const
+    GroupBase* Difference (const NuTo::GroupBase* rOther) const override
     {
         NuTo::Group<T>* returnGroup = new NuTo::Group<T>();
 		const Group<T>* rOtherT = dynamic_cast<const Group<T>* >(rOther);
@@ -211,7 +211,7 @@ public:
 
     //! @brief returns a group with all members which are elements of both groups
     //! @return group
-    GroupBase* Intersection (const NuTo::GroupBase* rOther)const
+    GroupBase* Intersection (const NuTo::GroupBase* rOther) const override
     {
         NuTo::Group<T>* returnGroup = new NuTo::Group<T>();
 		const Group<T>* rOtherT = dynamic_cast<const Group<T>* >(rOther);
@@ -224,7 +224,7 @@ public:
 
     //! @brief returns a group with the symmetric difference, i.e. all elements present in group 1 or in group 2 (but not in both)
     //! @return group
-    GroupBase* SymmetricDifference (const NuTo::GroupBase* rOther)const
+    GroupBase* SymmetricDifference (const NuTo::GroupBase* rOther) const override
     {
         NuTo::Group<T>* returnGroup = new NuTo::Group<T>();
 		const Group<T>* rOtherT = dynamic_cast<const Group<T>* >(rOther);
@@ -236,28 +236,28 @@ public:
     }
 
     //! @brief either casts the pointer to an element group or throws an exception for groups which are not element groups
-    Group<ElementBase>* AsGroupElement();
+    Group<ElementBase>* AsGroupElement() override;
 
     //! @brief either casts the pointer to an element group or throws an exception for groups which are not element groups
-    const Group<ElementBase>* AsGroupElement()const;
+    const Group<ElementBase>* AsGroupElement() const override;
 
     //! @brief either casts the pointer to a node group or throws an exception for groups which are not node groups
-    Group<NodeBase>* AsGroupNode();
+    Group<NodeBase>* AsGroupNode() override;
 
     //! @brief either casts the pointer to a node group or throws an exception for groups which are not node groups
-    const Group<NodeBase>* AsGroupNode()const;
+    const Group<NodeBase>* AsGroupNode() const override;
 
     //! @brief gives the group type
     //! @return group type
-    eGroupId GetType()const;
+    eGroupId GetType() const override;
 
     //! @brief gives the group type
     //! @return group type as string
-    std::string GetTypeString()const;
+    std::string GetTypeString() const override;
 
     //! @brief gives the group type
     //! @return group type
-    void Info(int rVerboseLevel, const NuTo::StructureBase* rStructure)const;
+    void Info(int rVerboseLevel, const NuTo::StructureBase* rStructure) const override;
 
 };
 }//namespace NuTo

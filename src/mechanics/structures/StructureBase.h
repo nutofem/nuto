@@ -93,8 +93,8 @@ namespace IpData
 }// namespace IpData
 
 
-using ConstitutiveInputMap = ConstitutiveIOMap<Constitutive::eInput>;
-using ConstitutiveOutputMap = ConstitutiveIOMap<Constitutive::eOutput>;
+typedef ConstitutiveIOMap<Constitutive::eInput> ConstitutiveInputMap;
+typedef ConstitutiveIOMap<Constitutive::eOutput> ConstitutiveOutputMap;
 
 
 //! @author Jörg F. Unger, ISM

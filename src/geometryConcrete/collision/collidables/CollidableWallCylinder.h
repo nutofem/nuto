@@ -30,14 +30,14 @@ public:
 
 	//! @brief ... collision between this and CollidableSphere
 	//! @param rSphere ... collision partner
-	void PerformCollision(CollidableParticleSphere& rSphere);
+    void PerformCollision(CollidableParticleSphere& rSphere) override;
 
 	//! @brief ... collision prediction between (this) and a sphere
 	//! @param rSphere ... collision partner
 	//! @return ... predicted time of collision
-	const double PredictCollision(CollidableParticleSphere& rSphere, int& rType);
+    const double PredictCollision(CollidableParticleSphere& rSphere, int& rType) override;
 
-	const bool IsPhysical() const;
+    const bool IsPhysical() const override;
 
 #ifdef ENABLE_VISUALIZE
 	//! @brief ... visualize all non-moving collidables

@@ -199,8 +199,6 @@ try
     //set constraints
 	//directionX
     Eigen::Vector2d DirectionX({1, 0});
-    Eigen::Vector2d DirectionY({0, 1});
-    Eigen::Vector2d DirectionXY({1, 1});
 
      //export the initial plot
 #ifdef ENABLE_VISUALIZE
@@ -221,7 +219,6 @@ try
 	//myStructure.NodeGroupSetVelocities(grpNodes_All,velocity);
 
 	//create a unit load on all the nodes on the left side
-//	myStructure.LoadCreateNodeGroupForce(grpNodes_Left,DirectionX , 1);
 	myStructure.LoadCreateNodeGroupForce(0,groupLeftBottomSupport,DirectionX, 1);
 
 	NuTo::NewmarkDirect myIntegrationScheme(&myStructure);
