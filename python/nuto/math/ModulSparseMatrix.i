@@ -1,11 +1,7 @@
 %module ModulSparseMatrix
 %feature("autodoc","1");
-//remove the warning for not exposing the base class features of eigen to python via swig
-#pragma SWIG nowarn=401
 %{
 //Put headers and other declarations here to be added in the wrapper files
-#include "math/FullMatrix.h"
-#include "math/Operator.h"
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSR.h"
 #include "math/SparseMatrixCSRGeneral.h"
@@ -15,16 +11,12 @@
 #include "math/SparseMatrixCSRVector2Symmetric.h"
 %}
 
-// convert python string to std::string
-%include "std_string.i"
-// convert python tuple to std::vector
-%include "std_vector.i"
+
 // use exceptions, but build no interface for NUTO::Exception
 %ignore Exception;
 %include "base/ModulNuToBase.i"
 
-%import "math/NuToMath.i"
-%import "math/ModulMatrix.i"
+%include "math/NuToMath.i" // defines typenames for std::vector and Eigen::Matrix
 
 %include "math/SparseMatrix.h"
 %include "math/SparseMatrixCSR.h"

@@ -1,5 +1,3 @@
-
-#include "math/FullVector.h"
 #include "metamodel/PolynomialLeastSquaresFitting.h"
 #include "math/SparseDirectSolverMUMPS.h"
 #include "math/SparseMatrixCSRGeneral.h"
@@ -50,9 +48,10 @@ void NuTo::PolynomialLeastSquaresFitting::BuildDerived()
     {
         int N_SupportPoints = this -> mSupportPoints.GetNumSupportPoints();
 
-        mPolynomialCoeffs.Resize(mDegree+1);
+        mPolynomialCoeffs.resize(mDegree+1);
         NuTo::SparseMatrixCSRGeneral<double> lhs(mDegree+1, mDegree+1);
-        NuTo::FullVector <double, Eigen::Dynamic> rhs(mDegree+1);
+        Eigen::VectorXd rhs(mDegree+1);
+        rhs.setZero();
 
         for(int k=0; k < N_SupportPoints; k++)
         {
@@ -103,7 +102,7 @@ double NuTo::PolynomialLeastSquaresFitting::GetDegree() const
 
 //! @brief ... Gets the calculated polynomial coefficients
 //! @return ... polynomial coefficients
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::PolynomialLeastSquaresFitting::GetPolynomialCoefficients() const
+Eigen::VectorXd NuTo::PolynomialLeastSquaresFitting::GetPolynomialCoefficients() const
 {
     return mPolynomialCoeffs;
 }
@@ -128,13 +127,13 @@ void NuTo::PolynomialLeastSquaresFitting::SetDegree(int rDegree)
 //! @brief ... calculate approximation (in transformed space)
 //! @param rInputCoordinates ... matrix of input data points (transformed)
 //! @param rOutputCoordinates ... vector of output data (transformed)
-void NuTo::PolynomialLeastSquaresFitting::SolveTransformed(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputCoordinates, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinates)const
+void NuTo::PolynomialLeastSquaresFitting::SolveTransformed(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates)const
 {
-    if(rInputCoordinates.GetNumRows() != 1)
+    if(rInputCoordinates.rows() != 1)
     {
         throw MetamodelException("[NuTo::PolynomialLeastSquaresFitting::SolveTransformed] Dimension of input (number of rows) has to be 1.");
     }
-    int numCoefficients = this->mPolynomialCoeffs.GetNumRows();
+    int numCoefficients = this->mPolynomialCoeffs.rows();
     if(numCoefficients != mDegree + 1)
     {
         throw MetamodelException("[NuTo::PolynomialLeastSquaresFitting::SolveTransformed] invalid number of polynomial coefficients. Build model first.");
@@ -142,8 +141,9 @@ void NuTo::PolynomialLeastSquaresFitting::SolveTransformed(const FullMatrix<doub
     try
     {
         // prepare output
-        int numSamples = rInputCoordinates.GetNumColumns();
-        rOutputCoordinates.Resize(1, numSamples);
+        int numSamples = rInputCoordinates.cols();
+        rOutputCoordinates.resize(1, numSamples);
+        rOutputCoordinates.setZero();
 
         // calculate output
         for (int k = 0; k < numSamples; k++)

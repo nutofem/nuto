@@ -5,7 +5,9 @@
  *      Author: ttitsche
  */
 
-#include "math/FullMatrix.h"
+#include <iostream>
+
+#include "base/Exception.h"
 
 #include "geometryConcrete/GeometryConcrete.h"
 #include "geometryConcrete/Specimen.h"
@@ -35,8 +37,8 @@ void NuTo::GeometryConcrete::MaximizeParticleDistance(double rParticleDistance)
         throw NuTo::Exception("[NuTo::GeometryConcrete::ExportGmsh2D] Call SetAbsoluteGrowthRate(rate) with rate > 0 first!");
 
     NuTo::ParticleCreator creator(*mSpecimen, 0);
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> spheresBoundary(0, 4);
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> spheres =
+    Eigen::MatrixXd spheresBoundary(0, 4);
+    Eigen::MatrixXd spheres =
             creator.CreateSpheresInSpecimen(mParticleVolumeFraction, mGradingCurve, 0., 0., mSeed, spheresBoundary);
 
     SetParticles(spheres);
@@ -81,8 +83,8 @@ void NuTo::GeometryConcrete::MaximizeParticleVolumeFraction(double rShrinkage)
         throw NuTo::Exception("[NuTo::GeometryConcrete::MaximizeParticleVolumeFraction] Call SetRelativeGrowthRate(rate) with rate > 0 first!");
 
     NuTo::ParticleCreator creator(*mSpecimen, rShrinkage);
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> spheresBoundary(0, 4);
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> spheres =
+    Eigen::MatrixXd spheresBoundary(0, 4);
+    Eigen::MatrixXd spheres =
             creator.CreateSpheresInSpecimen(mParticleVolumeFraction, mGradingCurve, 0., 0., mSeed, spheresBoundary);
 
     SetParticles(spheres);
@@ -146,21 +148,21 @@ void NuTo::GeometryConcrete::SetSpecimenBox(double rXs, double rXe, double rYs, 
     if (mSpecimen)
         delete mSpecimen;
 
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> bounds(3,2);
+    Eigen::MatrixXd bounds(3,2);
     bounds << rXs, rXe, rYs, rYe, rZs, rZe;
     mSpecimen = new NuTo::Specimen(bounds, NuTo::Specimen::Box);
 }
 
 void NuTo::GeometryConcrete::SetSpecimenCylinder(double rXs, double rXe, double rYs, double rYe, double rZs, double rZe)
 {
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> bounds(3,2);
+    Eigen::MatrixXd bounds(3,2);
     bounds << rXs, rXe, rYs, rYe, rZs, rZe;
     mSpecimen = new NuTo::Specimen(bounds, NuTo::Specimen::Cylinder);
 }
 
 void NuTo::GeometryConcrete::SetGradingCurve(eGradingCurve rGradingCurveEnum, int rNumClasses)
 {
-    NuTo::FullMatrix<double, Eigen::Dynamic, 3> fullGradingCurve(6,3);
+    Eigen::MatrixX3d fullGradingCurve(6,3);
     switch (rGradingCurveEnum)
     {
         case A16:
@@ -202,7 +204,7 @@ void NuTo::GeometryConcrete::SetGradingCurve(eGradingCurve rGradingCurveEnum, in
     std::cout << "[NuTo::GeometryConcrete::SetGradingCurve] Used grading curve: \n" << mGradingCurve << std::endl;
 }
 
-void NuTo::GeometryConcrete::SetGradingCurve(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rGradingCurve)
+void NuTo::GeometryConcrete::SetGradingCurve(const Eigen::MatrixXd& rGradingCurve)
 {
     mGradingCurve = rGradingCurve;
 }
@@ -219,7 +221,7 @@ void NuTo::GeometryConcrete::CheckParameters()
 
 }
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::GeometryConcrete::GetParticles(bool rBeforeEDMD)
+Eigen::MatrixXd NuTo::GeometryConcrete::GetParticles(bool rBeforeEDMD)
 {
     if (mParticleHandler == nullptr)
         throw NuTo::Exception("[NuTo::GeometryConcrete::GetSpheres] Run a simulation first!");
@@ -227,7 +229,7 @@ NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::GeometryConcrete:
     return mParticleHandler->GetParticles(rBeforeEDMD);
 }
 
-void NuTo::GeometryConcrete::SetParticles(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rParticles)
+void NuTo::GeometryConcrete::SetParticles(Eigen::MatrixXd rParticles)
 {
     mParticleHandler = new NuTo::ParticleHandler(rParticles, mRandomVelocityRange, mRelativeGrowthRate, mAbsoluteGrowthRate);
 }

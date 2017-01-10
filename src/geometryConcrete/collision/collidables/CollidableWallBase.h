@@ -8,7 +8,7 @@
 #pragma once
 
 #include "geometryConcrete/collision/collidables/CollidableBase.h"
-#include "math/FullVector_Def.h"
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
@@ -25,8 +25,8 @@ public:
 	//! @param rDirection ... normal vector pointing inside the domain, gets normalized.
 	//! @param rIndex ... name
 	CollidableWallBase(
-			NuTo::FullVector<double, Eigen::Dynamic> rPosition,
-			NuTo::FullVector<double, Eigen::Dynamic> rDirection,
+			Eigen::VectorXd rPosition,
+			Eigen::VectorXd rDirection,
 			const int rIndex);
 
 	//! @brief ... destructor, do nothing
@@ -87,18 +87,18 @@ public:
 	virtual bool IsInside(const CollidableParticleSphere& rSphere) const;
 
 	//! @brief getter for the wall direction
-	const NuTo::FullVector<double, Eigen::Dynamic> GetDirection() const;
+	const Eigen::VectorXd GetDirection() const;
 
 	//! @brief getter fot the wall position
-	const NuTo::FullVector<double, Eigen::Dynamic> GetPosition() const;
+	const Eigen::VectorXd GetPosition() const;
 
 protected:
 
 	//! @brief ... point of the point-and-normal-vector plane definition
-	FullVector<double, 3> mPosition;
+	Eigen::Vector3d mPosition;
 
 	//! @brief ... normal vector of the point-and-normal-vector plane definition
-	FullVector<double, 3> mDirection;
+	Eigen::Vector3d mDirection;
 
 	//! @brief ... box on the inner side of the wall
 	SubBox* mInsideBox;

@@ -11,7 +11,6 @@
  *
  */
 
-#include "math/FullMatrix.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -49,19 +48,24 @@ class ParametersGeometry3D
 public:
     static constexpr int mDimension = 3;
     static constexpr double mCrossSection = 0.1;
-    static const NuTo::FullVector<double, 3> mDirectionX;
-    static const NuTo::FullVector<double, 3> mDirectionY;
-    static const NuTo::FullVector<double, 3> mDirectionZ;
+    static const Eigen::Vector3d mDirectionX;
+    static const Eigen::Vector3d mDirectionY;
+    static const Eigen::Vector3d mDirectionZ;
 };
 
-const NuTo::FullVector<double, 3> ParametersGeometry3D::mDirectionX = NuTo::FullVector<double, 3>::UnitX();
-const NuTo::FullVector<double, 3> ParametersGeometry3D::mDirectionY = NuTo::FullVector<double, 3>::UnitY();
-const NuTo::FullVector<double, 3> ParametersGeometry3D::mDirectionZ = NuTo::FullVector<double, 3>::UnitZ();
+const Eigen::Vector3d ParametersGeometry3D::mDirectionX = Eigen::Vector3d::UnitX();
+const Eigen::Vector3d ParametersGeometry3D::mDirectionY = Eigen::Vector3d::UnitY();
+const Eigen::Vector3d ParametersGeometry3D::mDirectionZ = Eigen::Vector3d::UnitZ();
 
 // Input:   3 node vectors (quadratic truss element),
 //          1 direction vector that points in the direction of the truss (for the load)
 //          2 orthogonal direction vectors (for the BC)
-void Run3d(NuTo::FullVector<double, -1> rNodeCoords0, NuTo::FullVector<double, -1> rNodeCoords1, NuTo::FullVector<double, -1> rNodeCoords2, NuTo::FullVector<double, -1> rDirectionAligned, NuTo::FullVector<double, -1> rDirectionOrthogonal0, NuTo::FullVector<double, -1> rDirectionOrthogonal1)
+void Run3d(Eigen::VectorXd rNodeCoords0,
+           Eigen::VectorXd rNodeCoords1,
+           Eigen::VectorXd rNodeCoords2,
+           Eigen::VectorXd rDirectionAligned,
+           Eigen::VectorXd rDirectionOrthogonal0,
+           Eigen::VectorXd rDirectionOrthogonal1)
 {
     //**********************************************
     //          Structure
@@ -140,7 +144,7 @@ void Run3d(NuTo::FullVector<double, -1> rNodeCoords0, NuTo::FullVector<double, -
 
     int load = myStructure.LoadCreateNodeForce(0, node2, rDirectionAligned, 1);
 
-    NuTo::FullMatrix<double, 2, 2> timeDependentLoad;
+    Eigen::Matrix2d timeDependentLoad;
     timeDependentLoad(0, 0) = 0;
     timeDependentLoad(1, 0) = ParametersTimeIntegration::mSimulationTime;
     timeDependentLoad(0, 1) = 0;
@@ -157,7 +161,7 @@ void Run3d(NuTo::FullVector<double, -1> rNodeCoords0, NuTo::FullVector<double, -
 
     myIntegrationScheme.Solve(ParametersTimeIntegration::mSimulationTime);
 
-    NuTo::FullVector<double, -1> displacements;
+    Eigen::VectorXd displacements;
     boost::filesystem::remove_all(resultPath);
 
     myStructure.NodeGetDisplacements(node2, displacements);
@@ -169,14 +173,14 @@ void Run3d(NuTo::FullVector<double, -1> rNodeCoords0, NuTo::FullVector<double, -
 int main(int argc, char* argv[])
 {
     // node coordinates
-    NuTo::FullVector<double, ParametersGeometry3D::mDimension> nodeCoords0;
-    NuTo::FullVector<double, ParametersGeometry3D::mDimension> nodeCoords1;
-    NuTo::FullVector<double, ParametersGeometry3D::mDimension> nodeCoords2;
+    Eigen::Matrix<double, ParametersGeometry3D::mDimension, 1> nodeCoords0;
+    Eigen::Matrix<double, ParametersGeometry3D::mDimension, 1> nodeCoords1;
+    Eigen::Matrix<double, ParametersGeometry3D::mDimension, 1> nodeCoords2;
 
     // directions
-    NuTo::FullVector<double, ParametersGeometry3D::mDimension> directionAligned;
-    NuTo::FullVector<double, ParametersGeometry3D::mDimension> directionOrthogonal0;
-    NuTo::FullVector<double, ParametersGeometry3D::mDimension> directionOrthogonal1;
+    Eigen::Matrix<double, ParametersGeometry3D::mDimension, 1> directionAligned;
+    Eigen::Matrix<double, ParametersGeometry3D::mDimension, 1> directionOrthogonal0;
+    Eigen::Matrix<double, ParametersGeometry3D::mDimension, 1> directionOrthogonal1;
 
     try
     {

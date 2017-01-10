@@ -1,8 +1,6 @@
 #include <typeinfo>
 #include "base/ErrorEnum.h"
 
-#include "math/FullMatrix.h"
-
 #include "mechanics/elements/ContinuumElement.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -164,7 +162,8 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumElement<TDim>::GetConstitutiveOutputM
             if (activeDofs.size() > 1 && activeDofs.find(Node::eDof::DISPLACEMENTS) == activeDofs.end())
                 throw MechanicsException(__PRETTY_FUNCTION__, "Lumped Hessian2 is only implemented for displacements.");
             int numDofs = mInterpolationType->Get(Node::eDof::DISPLACEMENTS).GetNumDofs();
-            it.second->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS].Resize(numDofs);
+            it.second->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS].resize(numDofs);
+            it.second->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS].setZero();
             break;
         }
 
@@ -211,7 +210,8 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapInternalGradient(
 
         if (not (mInterpolationType->IsDof(dofRow)))
         {
-            rInternalGradient[dofRow].Resize(0);
+            rInternalGradient[dofRow].resize(0);
+            rInternalGradient[dofRow].setZero();
             continue;
         }
 
@@ -260,7 +260,8 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian0(Constitutiv
 
             if (not (mInterpolationType->IsDof(dofRow) and mInterpolationType->IsDof(dofCol)))
             {
-                rHessian0(dofRow, dofCol).Resize(0, 0);
+                rHessian0(dofRow, dofCol).resize(0, 0);
+                rHessian0(dofRow, dofCol).setZero();
                 continue;
             }
 
@@ -351,7 +352,8 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian1(Constitutiv
 
             if (not (mInterpolationType->IsDof(dofRow) and mInterpolationType->IsDof(dofCol)))
             {
-                rHessian1(dofRow, dofCol).Resize(0, 0);
+                rHessian1(dofRow, dofCol).resize(0, 0);
+                rHessian1(dofRow, dofCol).setZero();
                 continue;
             }
 
@@ -403,7 +405,8 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian2(Constitutiv
 
             if (not (mInterpolationType->IsDof(dofRow) and mInterpolationType->IsDof(dofCol)))
             {
-                rHessian2(dofRow, dofCol).Resize(0, 0);
+                rHessian2(dofRow, dofCol).resize(0, 0);
+                rHessian2(dofRow, dofCol).setZero();
                 continue;
             }
 
@@ -432,35 +435,35 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapIpData(ConstitutiveO
         switch (it.first)
         {
         case NuTo::IpData::eIpStaticDataType::DAMAGE:
-            it.second.Resize(1, GetNumIntegrationPoints());
+            it.second.resize(1, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::DAMAGE];
             break;
         case NuTo::IpData::eIpStaticDataType::ENGINEERING_PLASTIC_STRAIN:
-            it.second.Resize(6, GetNumIntegrationPoints());
+            it.second.resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::ENGINEERING_PLASTIC_STRAIN_VISUALIZE];
             break;
         case NuTo::IpData::eIpStaticDataType::ENGINEERING_STRAIN:
-            it.second.Resize(6, GetNumIntegrationPoints());
+            it.second.resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::ENGINEERING_STRAIN_VISUALIZE];
             break;
         case NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS:
-            it.second.Resize(6, GetNumIntegrationPoints());
+            it.second.resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE];
             break;
         case NuTo::IpData::eIpStaticDataType::EXTRAPOLATION_ERROR:
-            it.second.Resize(1, GetNumIntegrationPoints());
+            it.second.resize(1, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::EXTRAPOLATION_ERROR];
             break;
         case NuTo::IpData::eIpStaticDataType::LOCAL_EQ_STRAIN:
-            it.second.Resize(1, GetNumIntegrationPoints());
+            it.second.resize(1, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::LOCAL_EQ_STRAIN];
             break;
         case NuTo::IpData::eIpStaticDataType::SHRINKAGE_STRAIN:
-            it.second.Resize(6, GetNumIntegrationPoints());
+            it.second.resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::SHRINKAGE_STRAIN_VISUALIZE];
             break;
         case NuTo::IpData::eIpStaticDataType::THERMAL_STRAIN:
-            it.second.Resize(6, GetNumIntegrationPoints());
+            it.second.resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::THERMAL_STRAIN];
             break;
         default:
@@ -477,14 +480,14 @@ void NuTo::ContinuumElement<TDim>::CalculateGlobalRowDofs(BlockFullVector<int> &
 
         if (not (mInterpolationType->IsDof(dof)))
         {
-            rGlobalRowDofs[dof].Resize(0);
+            rGlobalRowDofs[dof].resize(0);
             continue;
         }
 
         const InterpolationBase& interpolationType = mInterpolationType->Get(dof);
         const int numNodes = interpolationType.GetNumNodes();
 
-        FullVector<int, Eigen::Dynamic>& dofWiseGlobalRowDofs = rGlobalRowDofs[dof];
+        Eigen::Matrix<int, Eigen::Dynamic, 1>& dofWiseGlobalRowDofs = rGlobalRowDofs[dof];
         dofWiseGlobalRowDofs.setZero(interpolationType.GetNumDofs());
 
 
@@ -660,6 +663,7 @@ Eigen::MatrixXd NuTo::ContinuumElement<TDim>::CalculateMatrixB(Node::eDof rDofTy
         assert (tmp.rows() == numRows);
 
         Bmat.resize(TDim, numRows*TDim);
+        Bmat.setZero();
         /*
          * transform to:
          *  N0,x   0    0    N1,x   0    0  ...
@@ -729,7 +733,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(
                     // calculate local mass matrix (the nonlocal terms are zero)
                     // don't forget to include determinant of the Jacobian and area
                     // detJ * area * density * HtH, :
-                    FullVector<double, Eigen::Dynamic>& result = it.second->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS];
+                    Eigen::Matrix<double, Eigen::Dynamic, 1>& result = it.second->GetBlockFullVectorDouble()[Node::eDof::DISPLACEMENTS];
                     double rho = GetConstitutiveLaw(rTheIP).GetParameterDouble(Constitutive::eConstitutiveParameter::DENSITY);
                     rData.mTotalMass += rData.mDetJxWeightIPxSection * rho;
                     const Eigen::VectorXd& shapeFunctions = mInterpolationType->Get(Node::eDof::DISPLACEMENTS).GetShapeFunctions(rTheIP);
@@ -741,7 +745,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputs(
                     if (rTheIP + 1 == GetNumIntegrationPoints())
                     {
                         //calculate sum of diagonal entries (is identical for all directions, that's why only x direction is calculated
-                        double sumDiagonal = result.Sum();
+                        double sumDiagonal = result.sum();
 
                         //scale so that the sum of the diagonals represents the full mass
                         double scaleFactor = rData.mTotalMass / sumDiagonal;

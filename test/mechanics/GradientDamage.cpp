@@ -1,6 +1,5 @@
 #include <boost/filesystem.hpp>
 
-#include "math/FullMatrix.h"
 #include "base/Timer.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/sections/SectionTruss.h"
@@ -119,10 +118,9 @@ void ApplyDofValues(NuTo::Structure& rStructure)
     rStructure.NodeBuildGlobalDofs();
 
     int gAllNodes = rStructure.GroupGetNodesTotal();
-    auto nodeIds = rStructure.GroupGetMemberIds(gAllNodes);
-    for (int i = 0; i < nodeIds.GetNumRows(); ++i)
+    for (int nodeId : rStructure.GroupGetMemberIds(gAllNodes))
     {
-        NuTo::NodeBase* node = rStructure.NodeGetNodePtr(nodeIds.GetValue(i));
+        NuTo::NodeBase* node = rStructure.NodeGetNodePtr(nodeId);
         Eigen::VectorXd disps = node->Get(NuTo::Node::eDof::COORDINATES) / 100. * boundaryDisplacement;
         node->Set(NuTo::Node::eDof::DISPLACEMENTS, disps);
 
@@ -212,7 +210,7 @@ void TestStructure1D(bool rUseRobinBoundaryElements)
     int numNodes = numElements + 1;
     double lengthElement = length / numElements;
 
-    NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(1);
+    Eigen::VectorXd nodeCoordinates(1);
     for (int iNode = 0; iNode < numNodes; ++iNode)
     {
         nodeCoordinates(0) = iNode * lengthElement;
@@ -289,10 +287,7 @@ void TestStructure2D(NuTo::Interpolation::eShapeType rShape, NuTo::eSectionType 
     {
         for (int countX = 0; countX < numNodesX; countX++)
         {
-            NuTo::FullVector<double, Eigen::Dynamic> coordinates(2);
-            coordinates(0) = countX * deltaX;
-            coordinates(1) = countY * deltaY;
-            s.NodeCreate(nodeNum, coordinates);
+            s.NodeCreate(nodeNum, Eigen::Vector2d({countX * deltaX, countY * deltaY}));
             nodeNum++;
         }
     }
@@ -357,14 +352,14 @@ void TestStructure3D(NuTo::Interpolation::eShapeType rShape, bool rUseRobinBound
 
     double lX = 3, lY = 4, lZ = 5;
     std::vector<int> nodeIds(8);
-    nodeIds[0] = s.NodeCreate(NuTo::FullVector<double, 3> ({ 0, 0, 0}));
-    nodeIds[1] = s.NodeCreate(NuTo::FullVector<double, 3> ({lX, 0, 0}));
-    nodeIds[2] = s.NodeCreate(NuTo::FullVector<double, 3> ({lX,lY, 0}));
-    nodeIds[3] = s.NodeCreate(NuTo::FullVector<double, 3> ({ 0,lY, 0}));
-    nodeIds[4] = s.NodeCreate(NuTo::FullVector<double, 3> ({ 0, 0,lZ}));
-    nodeIds[5] = s.NodeCreate(NuTo::FullVector<double, 3> ({lX, 0,lZ}));
-    nodeIds[6] = s.NodeCreate(NuTo::FullVector<double, 3> ({lX,lY,lZ}));
-    nodeIds[7] = s.NodeCreate(NuTo::FullVector<double, 3> ({ 0,lY,lZ}));
+    nodeIds[0] = s.NodeCreate(Eigen::Vector3d({ 0, 0, 0}));
+    nodeIds[1] = s.NodeCreate(Eigen::Vector3d({lX, 0, 0}));
+    nodeIds[2] = s.NodeCreate(Eigen::Vector3d({lX,lY, 0}));
+    nodeIds[3] = s.NodeCreate(Eigen::Vector3d({ 0,lY, 0}));
+    nodeIds[4] = s.NodeCreate(Eigen::Vector3d({ 0, 0,lZ}));
+    nodeIds[5] = s.NodeCreate(Eigen::Vector3d({lX, 0,lZ}));
+    nodeIds[6] = s.NodeCreate(Eigen::Vector3d({lX,lY,lZ}));
+    nodeIds[7] = s.NodeCreate(Eigen::Vector3d({ 0,lY,lZ}));
 
     int myInterpolationType = AddInterpolationType(s, rShape);
 
@@ -409,10 +404,8 @@ void TestStructure3D(NuTo::Interpolation::eShapeType rShape, bool rUseRobinBound
 
 void GroupRemoveNodesWithoutDisplacements(NuTo::Structure& rStructure, int rGroupNodeId)
 {
-    auto ids = rStructure.GroupGetMemberIds(rGroupNodeId);
-    for (int i = 0; i < ids.GetNumRows(); ++i)
+    for (int nodeId : rStructure.GroupGetMemberIds(rGroupNodeId))
     {
-        int nodeId = ids.GetValue(i);
         NuTo::NodeBase* node = rStructure.NodeGetNodePtr(nodeId);
         if (node->GetNum(NuTo::Node::eDof::DISPLACEMENTS) == 0)
         {
@@ -428,7 +421,7 @@ void SetupNewmark(NuTo::NewmarkDirect& rTimeIntegration, int rBC, std::string rD
     double dispEnd = 0.01;
     int numLoadSteps = 3;
 
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> timeDepDisp(2, 2);
+    Eigen::Matrix2d timeDepDisp;
     timeDepDisp << 0, 0, simulationTime, dispEnd;
 
     rTimeIntegration.AddTimeDependentConstraint(rBC, timeDepDisp);
@@ -475,7 +468,7 @@ void Check1D2D3D()
     s3D.InterpolationTypeSetIntegrationType(interpolationType3D, NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip);
 
 
-    NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(1);
+    Eigen::VectorXd nodeCoordinates(1);
     for (int iNode = 0; iNode < numNodesX; ++iNode)
     {
         nodeCoordinates(0) = iNode * lengthElementX; // two nodes per element
@@ -493,10 +486,7 @@ void Check1D2D3D()
     for (int countY = 0; countY < 2; countY++)
         for (int countX = 0; countX < numNodesX; countX++)
         {
-            NuTo::FullVector<double, Eigen::Dynamic> coordinates(2);
-            coordinates(0) = countX * lengthElementX;
-            coordinates(1) = countY * ly;
-            s2D.NodeCreate(nodeNum, coordinates);
+            s2D.NodeCreate(nodeNum, Eigen::Vector2d({countX * lengthElementX, countY * ly}));
             nodeNum++;
         }
 
@@ -516,11 +506,7 @@ void Check1D2D3D()
         for (int iY=0; iY<2; iY++)
             for (int iX=0; iX<numNodesX; iX++)
             {
-                NuTo::FullVector<double,Eigen::Dynamic> coordinates(3);
-                coordinates(0) = iX*lengthElementX;
-                coordinates(1) = iY*ly;
-                coordinates(2) = iZ*lz;
-                s3D.NodeCreate(nodeNum, coordinates);
+                s3D.NodeCreate(nodeNum, Eigen::Vector3d({iX*lengthElementX, iY*ly, iZ*lz}));
                 nodeNum++;
             }
 
@@ -599,19 +585,19 @@ void Check1D2D3D()
     GroupRemoveNodesWithoutDisplacements(s3D, leftNodes3D);
     GroupRemoveNodesWithoutDisplacements(s3D, rightNodes3D);
 
-    s1D.ConstraintLinearSetDisplacementNodeGroup(leftNodes1D, NuTo::FullVector<double, 1>::UnitX(), 0.0);
-    s2D.ConstraintLinearSetDisplacementNodeGroup(leftNodes2D, NuTo::FullVector<double, 2>::UnitX(), 0.0);
-    s3D.ConstraintLinearSetDisplacementNodeGroup(leftNodes3D, NuTo::FullVector<double, 3>::UnitX(), 0.0);
+    s1D.ConstraintLinearSetDisplacementNodeGroup(leftNodes1D, Eigen::Matrix<double, 1, 1>::UnitX(), 0.0);
+    s2D.ConstraintLinearSetDisplacementNodeGroup(leftNodes2D, Eigen::Matrix<double, 2, 1>::UnitX(), 0.0);
+    s3D.ConstraintLinearSetDisplacementNodeGroup(leftNodes3D, Eigen::Matrix<double, 3, 1>::UnitX(), 0.0);
 
-    int bc1D = s1D.ConstraintLinearSetDisplacementNodeGroup(rightNodes1D, NuTo::FullVector<double, 1>::UnitX(), 0.0);
-    int bc2D = s2D.ConstraintLinearSetDisplacementNodeGroup(rightNodes2D, NuTo::FullVector<double, 2>::UnitX(), 0.0);
-    int bc3D = s3D.ConstraintLinearSetDisplacementNodeGroup(rightNodes3D, NuTo::FullVector<double, 3>::UnitX(), 0.0);
+    int bc1D = s1D.ConstraintLinearSetDisplacementNodeGroup(rightNodes1D, Eigen::Matrix<double, 1, 1>::UnitX(), 0.0);
+    int bc2D = s2D.ConstraintLinearSetDisplacementNodeGroup(rightNodes2D, Eigen::Matrix<double, 2, 1>::UnitX(), 0.0);
+    int bc3D = s3D.ConstraintLinearSetDisplacementNodeGroup(rightNodes3D, Eigen::Matrix<double, 3, 1>::UnitX(), 0.0);
 
-    s2D.ConstraintLinearSetDisplacementNode(0, NuTo::FullVector<double, 2>::UnitY(), 0.);
-    s3D.ConstraintLinearSetDisplacementNode(0, NuTo::FullVector<double, 3>::UnitY(), 0.);
+    s2D.ConstraintLinearSetDisplacementNode(0, Eigen::Vector2d::UnitY(), 0.);
+    s3D.ConstraintLinearSetDisplacementNode(0, Eigen::Vector3d::UnitY(), 0.);
 
-    int nFixRotation = s3D.NodeGetIdAtCoordinate(NuTo::FullVector<double, 3>({0,0,lz}), 1.e-4);
-    s3D.ConstraintLinearSetDisplacementNode(nFixRotation, NuTo::FullVector<double, 3>::UnitY(), 0.);
+    int nFixRotation = s3D.NodeGetIdAtCoordinate(Eigen::Vector3d({0,0,lz}), 1.e-4);
+    s3D.ConstraintLinearSetDisplacementNode(nFixRotation, Eigen::Vector3d::UnitY(), 0.);
 
     Visualize(s1D, "tmp");
     Visualize(s2D, "tmp");

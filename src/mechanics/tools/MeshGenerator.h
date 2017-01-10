@@ -4,14 +4,12 @@
 #include <array>
 #include <functional>
 #include <vector>
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 
 //VHIRTHAMTODO Add dimensions to specific function names like "MeshCylinder" +"3D"
 namespace NuTo
 {
 class Structure;
-template <class T, int rows> class FullVector;
-
 class MeshGenerator
 {
     //! @brief constructor -> deleted, because class only uses static functions
@@ -37,7 +35,7 @@ private:
                                         int rConstitutiveLaw,
                                         int rInterpolationType,
                                         std::array<int, 1> rNumElements,
-                                        std::function<NuTo::FullVector<double,Eigen::Dynamic>(double)> rMappingFunction);
+                                        std::function<Eigen::VectorXd(double)> rMappingFunction);
 
 
     //! @brief Calculates the coordinates for a equidistant line segment [0,1] and maps them to new coordinates with help of a given function
@@ -45,7 +43,7 @@ private:
     //! @param rMappingFunction ... mapping function
     static std::vector<int> GetNodeCoordinatesLineSegmentMapped(NuTo::Structure &rStructure,
                                                                 std::array<int,1> rNumElements,
-                                                                std::function<NuTo::FullVector<double,Eigen::Dynamic>(double)> rMappingFunction);
+                                                                std::function<Eigen::VectorXd(double)> rMappingFunction);
 
 public:
 
@@ -81,7 +79,7 @@ private:
                                         int rConstitutiveLaw,
                                         int rInterpolationType,
                                         std::array<int, 2> rNumElements,
-                                        std::function<NuTo::FullVector<double,Eigen::Dynamic>(double, double)> rMappingFunction);
+                                        std::function<Eigen::VectorXd(double, double)> rMappingFunction);
 
 
     //! @brief Calculates the coordinates for a equidistant, square plane mesh [0,1] and maps them to new coordinates with help of a given function
@@ -89,7 +87,7 @@ private:
     //! @param rMappingFunction ... mapping function
     static std::vector<int> GetNodeCoordinatesSquarePlaneMapped(NuTo::Structure &rStructure,
                                                                 std::array<int,2> rNumElements,
-                                                                std::function<NuTo::FullVector<double,Eigen::Dynamic>(double, double)> rMappingFunction);
+                                                                std::function<Eigen::VectorXd(double, double)> rMappingFunction);
 public:
     //! @brief Creates a rectangular mesh
     //! @param rStructure ... reference to structure
@@ -123,7 +121,7 @@ private:
                                         int rConstitutiveLaw,
                                         int rInterpolationType,
                                         std::array<int, 3> rNumElements,
-                                        std::function<NuTo::FullVector<double, Eigen::Dynamic> (double, double, double)> rMappingFunction);
+                                        std::function<Eigen::VectorXd (double, double, double)> rMappingFunction);
 
 
     //! @brief Calculates the coordinates for a equidistant cuboid mesh
@@ -139,7 +137,7 @@ private:
     //! @param rMappingFunction ... mapping function
     static std::vector<int> GetNodeCoordinatesCuboidMapped(NuTo::Structure &rStructure,
                                                            std::array<int,3> rNumElements,
-                                                           std::function<NuTo::FullVector<double,Eigen::Dynamic>(double, double, double)> rMappingFunction);
+                                                           std::function<Eigen::VectorXd(double, double, double)> rMappingFunction);
 
 public:
 

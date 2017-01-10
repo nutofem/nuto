@@ -1,7 +1,7 @@
 #pragma once
 
 // TODO: Replace with std::array!
-#include "math/FullVector.h"
+
 
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/constitutive/staticData/IPConstitutiveLaw.h"
@@ -102,7 +102,7 @@ private:
     //! @brief ... Checks the sorption coefficients
     //! @param rCallingFunction ... name of the calling function
     //! @param rSorptionCoefficients ... Sorption coefficients
-    void CheckSorptionCoefficients(std::string rCallingFunction, NuTo::FullVector<double,Eigen::Dynamic> rSorptionCoefficients) const;
+    void CheckSorptionCoefficients(std::string rCallingFunction, Eigen::VectorXd rSorptionCoefficients) const;
 
 public:
 
@@ -116,14 +116,14 @@ public:
 
     //! @brief ... Checks the adsorption coefficients
     //! @param rAdsorptionCoefficients ... Adsorption coefficients
-    void CheckAdsorptionCoefficients(NuTo::FullVector<double,Eigen::Dynamic> rAdsorptionCoefficients) const
+    void CheckAdsorptionCoefficients(Eigen::VectorXd rAdsorptionCoefficients) const
     {
         CheckSorptionCoefficients(__PRETTY_FUNCTION__,rAdsorptionCoefficients);
     }
 
     //! @brief ... Checks the desorption coefficients
     //! @param rDesorptionCoefficients ... Desorption coefficients
-    void CheckDesorptionCoefficients(NuTo::FullVector<double,Eigen::Dynamic> rDesorptionCoefficients) const
+    void CheckDesorptionCoefficients(Eigen::VectorXd rDesorptionCoefficients) const
     {
         CheckSorptionCoefficients(__PRETTY_FUNCTION__,rDesorptionCoefficients);
     }
@@ -254,12 +254,12 @@ public:
     //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
-    virtual NuTo::FullVector<double,Eigen::Dynamic> GetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier) const override;
+    virtual Eigen::VectorXd GetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier) const override;
 
     //! @brief ... sets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
-    virtual void SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double,Eigen::Dynamic> rValue) override;
+    virtual void SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue) override;
 
 
     //VHIRTHAMTODO Check if static function better?
@@ -267,7 +267,7 @@ public:
     //! @param rRelativeHumidity ... relative humidity
     //! @param rCoeffs ... polynomial coefficients of the sorption curve
     //! @return ... equilibrium water volume fraction
-    virtual double GetEquilibriumWaterVolumeFraction(double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const override;
+    virtual double GetEquilibriumWaterVolumeFraction(double rRelativeHumidity, Eigen::VectorXd rCoeffs) const override;
 
 
     //! @brief ... determines the constitutive inputs needed to evaluate the constitutive outputs
@@ -293,10 +293,10 @@ public:
 protected:
 
     //! @brief Coefficients of the adsorption curve.
-    FullVector<double,Eigen::Dynamic>   mAdsorptionCoeff {{0.0, 0.0, 0.0}};
+    Eigen::VectorXd   mAdsorptionCoeff = Eigen::VectorXd::Zero(3);
 
     //! @brief Coefficients of the desorption curve.
-    FullVector<double,Eigen::Dynamic>   mDesorptionCoeff {{0.0, 0.0, 0.0}};
+    Eigen::VectorXd   mDesorptionCoeff = Eigen::VectorXd::Zero(3);
 
     //! @brief Controls if a modified tangential stiffness should be used during Newton iteration (less terms to calculate in Hessian_0).
     bool mEnableModifiedTangentialStiffness = false;

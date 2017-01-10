@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -16,7 +14,6 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/constraints/ConstraintLinearNodeGroupDisplacements1D.h"
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 
 //! @brief constructor
@@ -73,7 +70,7 @@ void NuTo::ConstraintLinearNodeGroupDisplacements1D::AddToConstraintMatrix(int& 
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void NuTo::ConstraintLinearNodeGroupDisplacements1D::GetRHS(int& curConstraintEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const
+void NuTo::ConstraintLinearNodeGroupDisplacements1D::GetRHS(int& curConstraintEquation,Eigen::VectorXd& rRHS)const
 {
     // loop over nodes
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)

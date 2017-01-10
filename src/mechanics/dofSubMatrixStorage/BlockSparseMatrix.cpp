@@ -77,7 +77,7 @@ void NuTo::BlockSparseMatrix::FixOffDiagonalDimensions()
             if (dofRow == dofCol)
                 continue;
             if ((*this)(dofRow, dofCol).GetNumEntries() != 0)
-                throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] You're about to resize a matrix with values inside. This should be wrong.");
+                throw MechanicsException(__PRETTY_FUNCTION__, "You're about to resize a matrix with values inside. This should be wrong.");
 
             int numRows = (*this)(dofRow, dofRow).GetNumRows();
             int numCols = (*this)(dofCol, dofCol).GetNumColumns();
@@ -132,7 +132,8 @@ NuTo::BlockFullVector<double> NuTo::BlockSparseMatrix::operator *(const BlockFul
 
     for (auto dofRow : activeDofTypes)
     {
-        result[dofRow].Resize((*this)(dofRow, dofRow).GetNumRows()); // automatically sets to zero
+        result[dofRow].resize((*this)(dofRow, dofRow).GetNumRows());
+        result[dofRow].setZero();
         for (auto dofSum : activeDofTypes)
         {
             result[dofRow] += (*this)(dofRow, dofSum).operator*(rRhs[dofSum]);
@@ -300,11 +301,12 @@ bool NuTo::BlockSparseMatrix::HasSymmetricActiveDofs() const
     return true;
 }
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockSparseMatrix::ExportToFullMatrix() const
+Eigen::MatrixXd NuTo::BlockSparseMatrix::ExportToFullMatrix() const
 {
     CheckDimensions();
     const auto& activeDofTypes = mDofStatus.GetActiveDofTypes();
-    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> result (GetNumActiveRows(), GetNumActiveColumns());
+    Eigen::MatrixXd result (GetNumActiveRows(), GetNumActiveColumns());
+    result.setZero();
 
     int blockStartRow = 0;
     for (auto dofRow : activeDofTypes)
@@ -477,7 +479,7 @@ std::ostream& operator<<(std::ostream &rOut, const NuTo::BlockSparseMatrix &rBlo
         for (auto dof2 : rBlockSparseMatrix.mDofStatus.GetActiveDofTypes())
         {
             rOut << "[" << Node::DofToString(dof1) << " - " << Node::DofToString(dof2) << "]" << std::endl;
-            rOut << rBlockSparseMatrix(dof1,dof2).ConvertToFullMatrixDouble().format(cleanFormat) << std::endl;
+            rOut << rBlockSparseMatrix(dof1, dof2).ConvertToFullMatrix().format(cleanFormat) << std::endl;
         }
     }
     return rOut;

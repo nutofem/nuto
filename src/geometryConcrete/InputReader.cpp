@@ -5,10 +5,11 @@
  *      Author: ttitsche
  */
 
-#include "math/FullVector.h"
+#include <eigen3/Eigen/Core>
 #include "geometryConcrete/InputReader.h"
 #include "base/Exception.h"
 #include <sstream>
+#include <vector>
 
 NuTo::InputReader::InputReader(std::string rFileName)
 {
@@ -19,7 +20,7 @@ void NuTo::InputReader::OpenFile(std::string rFileName)
 {
 	mFile.open(rFileName.c_str(), std::ios::in);
 	if (!mFile.is_open())
-		throw Exception("[NuTo::InputReader::OpenFile] File " "" + rFileName + "" " not found.");
+		throw Exception(__PRETTY_FUNCTION__, "File " "" + rFileName + "" " not found.");
 }
 
 void NuTo::InputReader::ReadFile()
@@ -52,14 +53,14 @@ void NuTo::InputReader::ReadSimulationParameters()
 void NuTo::InputReader::ReadBoundingBox()
 {
 	mTypeOfSpecimen = ReadNumber();
-	FullVector<double, Eigen::Dynamic> boxVector = ReadVector();
-	if (boxVector.GetNumRows() != 6)
+	Eigen::VectorXd boxVector = ReadVector();
+	if (boxVector.rows() != 6)
 	{
 		std::stringstream exceptionStream;
-		exceptionStream << "[NuTo::InputReader::ReadFile] boundingBox - " << boxVector.GetNumRows() << " components in input file, expected 6.";
+		exceptionStream << "[NuTo::InputReader::ReadFile] boundingBox - " << boxVector.rows() << " components in input file, expected 6.";
 		throw Exception(exceptionStream.str());
 	}
-	mBoundingBox = FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>(3, 2);
+	mBoundingBox = Eigen::MatrixXd(3, 2);
 	mBoundingBox << boxVector[0], boxVector[1], boxVector[2], boxVector[3], boxVector[4], boxVector[5];
 
 	mIs2D = ReadBool();
@@ -68,17 +69,17 @@ void NuTo::InputReader::ReadBoundingBox()
 void NuTo::InputReader::ReadGradingCurve()
 {
 	int nSieves = ReadNumber();
-	mGradingCurve = FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>(nSieves, 3);
+	mGradingCurve = Eigen::MatrixXd(nSieves, 3);
 	for (int i = 0; i < nSieves; ++i)
 	{
-		FullVector<double, Eigen::Dynamic> gradingCurveVector = ReadVector();
-		if (gradingCurveVector.GetNumRows() != 3)
+		Eigen::VectorXd gradingCurveVector = ReadVector();
+		if (gradingCurveVector.rows() != 3)
 		{
 			std::stringstream exceptionStream;
-			exceptionStream << "[NuTo::InputReader::ReadVector] gradingCurve - " << gradingCurveVector.GetNumRows() << " components in input file, expected 3.";
+			exceptionStream << "[NuTo::InputReader::ReadVector] gradingCurve - " << gradingCurveVector.rows() << " components in input file, expected 3.";
 			throw Exception(exceptionStream.str());
 		}
-		mGradingCurve.SetRow(i, gradingCurveVector.transpose());
+		mGradingCurve.row(i) = gradingCurveVector.transpose();
 	}
 	mVolumeFraction = ReadNumber();
 	mAbsoluteDistance = ReadNumber();
@@ -117,7 +118,7 @@ double NuTo::InputReader::ReadNumber()
 	return number;
 }
 
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::InputReader::ReadVector()
+Eigen::VectorXd NuTo::InputReader::ReadVector()
 {
 	SkipToNextData();
 
@@ -133,7 +134,7 @@ NuTo::FullVector<double, Eigen::Dynamic> NuTo::InputReader::ReadVector()
 		mFile.get(skipComma);
 	}
 
-	return readVector;
+	return Eigen::VectorXd::Map(readVector.data(), readVector.size());
 }
 
 std::string NuTo::InputReader::ReadString()
@@ -197,9 +198,9 @@ void NuTo::InputReader::PrintInput()
 	std::cout << "======================================" << std::endl;
 	std::cout << std::endl << "        BOUNDING BOX" << std::endl;
 	std::cout << "    box type:                " << mTypeOfSpecimen << std::endl;
-	std::cout << "    x-Range  " << mBoundingBox.GetValue(0, 0) << " to " << mBoundingBox.GetValue(0, 1) << std::endl;
-	std::cout << "    y-Range  " << mBoundingBox.GetValue(1, 0) << " to " << mBoundingBox.GetValue(1, 1) << std::endl;
-	std::cout << "    z-Range  " << mBoundingBox.GetValue(2, 0) << " to " << mBoundingBox.GetValue(2, 1) << std::endl;
+	std::cout << "    x-Range  " << mBoundingBox(0, 0) << " to " << mBoundingBox(0, 1) << std::endl;
+	std::cout << "    y-Range  " << mBoundingBox(1, 0) << " to " << mBoundingBox(1, 1) << std::endl;
+	std::cout << "    z-Range  " << mBoundingBox(2, 0) << " to " << mBoundingBox(2, 1) << std::endl;
 	std::cout << std::endl << "          PARTICLES   " << std::endl;
 	std::cout << "======================================" << std::endl;
 	std::cout << "The particles are defined by the following grading curve: " << std::endl;
@@ -214,7 +215,7 @@ double NuTo::InputReader::GetAbsoluteDistance() const
 	return mAbsoluteDistance;
 }
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::InputReader::GetBoundingBox() const
+Eigen::MatrixXd NuTo::InputReader::GetBoundingBox() const
 {
 	return mBoundingBox;
 }
@@ -224,7 +225,7 @@ int NuTo::InputReader::GetTypeOfSpecimen() const
 	return mTypeOfSpecimen;
 }
 
-NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> NuTo::InputReader::GetGradingCurve() const
+Eigen::MatrixXd NuTo::InputReader::GetGradingCurve() const
 {
 	return mGradingCurve;
 }

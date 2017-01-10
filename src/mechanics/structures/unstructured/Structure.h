@@ -158,16 +158,10 @@ public:
     const boost::ptr_map<int, NodeBase>& NodeGetNodeMap() const;
 #endif //SWIG
 
-    //! @brief ... return the global dof number of the displacement component of a node
-    //! @param rNodeId (Input) 			... node id
-    //! @param rDispDof 	... local disp dof (0,1 or 2 for x,y or z)
-    //! @returnrglobal dof number
-    int NodeGetDofDisplacement(int rNodeId, int rDispDof);
-
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNodeId (Input) 			... node id
     //! @param rElementNumbers (Output)	... vector of element ids
-    void NodeGetElements(const int rNodeId, NuTo::FullVector<int, Eigen::Dynamic>& rElementNumbers);
+    void NodeGetElements(const int rNodeId, std::vector<int>& rElementNumbers);
 
     //! @brief creates a node at coordinate's origin
     //! @return node number
@@ -176,17 +170,17 @@ public:
     //! @brief creates a node with coordinates only
     //! @param rCoordinates coordinates of the node
     //! @return node number
-    int NodeCreate(NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+    int NodeCreate(Eigen::VectorXd rCoordinates);
 
     //! @brief creates a node with coordinates only
     //! @param rNodeNumber ... node number
     //! @param rCoordinates ...  node coordinates
-    void NodeCreate(int rNodeNumber, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+    void NodeCreate(int rNodeNumber, Eigen::VectorXd rCoordinates);
 
     //! @brief creates multiple nodes with coordinates only
     //! @param rCoordinates ...  nodal coordinates (column-wise storage of each nodal coordinate)
-    //! @return a NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> containing the node numbers
-    NuTo::FullVector<int, Eigen::Dynamic> NodesCreate(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates);
+    //! @return a std::vector<int> containing the node numbers
+    std::vector<int> NodesCreate(Eigen::MatrixXd& rCoordinates);
 
     //! @brief creates a node with specific dofs at coordinate's origin
     //! @param rDOFs ... space separated string containing the node dofs (e.g. displacements, rotations, temperatures)
@@ -198,13 +192,13 @@ public:
     //! @param rDOFs ... space separated string containing the node dofs (e.g. displacements, rotations, temperatures)
     //! @param rCoordinates ...  node coordinates
     //! @return node number
-    int NodeCreateDOFs(std::string rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+    int NodeCreateDOFs(std::string rDOFs, Eigen::VectorXd rCoordinates);
 
     //! @brief creates a node with specific dofs
     //! @param node number
     //! @param rDOFs ... space separated string containing the node dofs (e.g. displacements, rotations, temperatures)
     //! @param rCoordinates ...  node coordinates
-    void NodeCreateDOFs(int rNodeNumber, std::string rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+    void NodeCreateDOFs(int rNodeNumber, std::string rDOFs, Eigen::VectorXd rCoordinates);
 
 #ifndef SWIG
     //! @brief creates a node with specific dofs at coordinate's origin
@@ -217,13 +211,13 @@ public:
     //! @param rDOFs ... set containing the node dof enums (e.g. displacements, rotations, temperatures)
     //! @param rCoordinates ...  node coordinates
     //! @return node number
-    int NodeCreateDOFs(std::set<Node::eDof> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+    int NodeCreateDOFs(std::set<Node::eDof> rDOFs, Eigen::VectorXd rCoordinates);
 
     //! @brief creates a node with specific dofs
     //! @param node number
     //! @param rDOFs ... set containing the node dof enums (e.g. displacements, rotations, temperatures)
     //! @param rCoordinates ...  node coordinates
-    void NodeCreateDOFs(int rNodeNumber, std::set<Node::eDof>rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+    void NodeCreateDOFs(int rNodeNumber, std::set<Node::eDof>rDOFs, Eigen::VectorXd rCoordinates);
 #endif //SWIG
 
     //! @brief deletes a node
@@ -253,6 +247,11 @@ public:
     //! @return  ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
     virtual NuTo::BlockFullVector<double> NodeCalculateDependentDofValues(const NuTo::BlockFullVector<double>& rActiveDofValues) const override;
 
+    Eigen::Matrix<double, 3,3> DoubleMatrix(const Eigen::Matrix<double, 3, 3>& matrix)
+    {
+        return 2.0*matrix;
+    }
+
 #ifndef SWIG
 
 
@@ -260,7 +259,7 @@ public:
     //! @param rCoordinates coordinates of the node
     //! @param rDofs degrees of freedom of the node
     //! @return node number
-    int NodeCreate(NuTo::FullVector<double,Eigen::Dynamic> rCoordinates, std::set<Node::eDof> rDofs);
+    int NodeCreate(Eigen::VectorXd rCoordinates, std::set<Node::eDof> rDofs);
 
 
     //! @brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
@@ -307,7 +306,7 @@ public:
     //! @brief returns a vector with the node ids of an element
     //! @param identifier
     //! @return vector with node ids
-    NuTo::FullVector<int, Eigen::Dynamic> ElementGetNodes(int rId);
+    std::vector<int> ElementGetNodes(int rId);
 
     //! @brief info about the elements in the Structure
     void ElementInfo(int rVerboseLevel) const override;
@@ -358,8 +357,7 @@ public:
     //! @param rInterpolationTypeId interpolation type id
     //! @param rNodeIdents Identifier for the corresponding nodes (Incidences have to be stored column-wise)
     //! @return index to the new element group<<
-    int ElementsCreate(int rInterpolationTypeId,
-                       NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rNodeNumbers);
+    int ElementsCreate(int rInterpolationTypeId, const Eigen::MatrixXi& rNodeNumbers);
 
     //! @brief changes the node structure to match the interpolation type for all elements
     //! the node merge distance and the box size are calculated from the element sizes
@@ -429,7 +427,7 @@ public:
     //! @brief import from gmsh, creates groups according to gmsh's physical entities and creates an interpolation types for each group
     //! @param rFileName .. file name
     //! @return .. Matrix [NumGroups x 2] with [: x 0] group ids and [ : x 1] corresponding interpolation type ids
-    FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ImportFromGmsh(const std::string& rFileName);
+    Eigen::MatrixXi ImportFromGmsh(const std::string& rFileName);
 
     //*************************************************
     //**      InterpolationType routines             **
@@ -509,14 +507,14 @@ public:
     //! @param rBoundingBox box for the spheres (3*2 matrix)
     //! @param rCircles (coordinates x,y and radius)
     //! @param rTriangles (triangles connecting the circle centers)
-    void MeshCreateLattice2D(int rTypeOfSpecimen, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCircles, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rTriangles);
+    void MeshCreateLattice2D(int rTypeOfSpecimen, Eigen::MatrixXd& rBoundingBox, Eigen::MatrixXd& rCircles, Eigen::MatrixXd& rTriangles);
 
     //! @brief creates a lattice mesh from the positions of the spheres and the bounding box
     //! @param rTypeOfSpecimen 0 box, 1 dogbone
     //! @param rBoundingBox box for the spheres (3*2 matrix)
     //! @param rBoundingBox (min and max for x and y)
     //! @param rSpheres (coordinates x,y,z and radius)
-    void MeshCreateLattice3D(int rTypeOfSpecimen, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rBoundingBox, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rSpheres, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rTetraeders);
+    void MeshCreateLattice3D(int rTypeOfSpecimen, Eigen::MatrixXd& rBoundingBox, Eigen::MatrixXd& rSpheres, Eigen::MatrixXd& rTetraeders);
 
 
 #ifndef SWIG
@@ -525,13 +523,13 @@ public:
     //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
     //! @param rOld2NewNodePointer ptrMap showing the new and old node pointers
     //! @param rOld2NewElementPointer ptrMap showing the new and old element pointers
-    void CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>& rOffset, std::map<NodeBase*, NodeBase*>& rOld2NewNodePointer, std::map<ElementBase*, ElementBase*>& rOld2NewElementPointer);
+    void CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBase*, NodeBase*>& rOld2NewNodePointer, std::map<ElementBase*, ElementBase*>& rOld2NewElementPointer);
 #endif //SWIG
 
     //! @brief copy and move the structure
     //! most of the data is kept, but e.g. nonlocal data and
     //! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
-    void CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>& rOffset);
+    void CopyAndTranslate(Eigen::VectorXd& rOffset);
 
     //! @brief ... Adds an element to an element group
     //! @param rIdentGroup identifier for the group
@@ -630,7 +628,7 @@ protected:
     //! @brief import from gmsh, creates groups according to gmsh's physical entities and creates an interpolation types for each group
     //! @param rFileName .. file name
     //! @return .. Matrix [NumGroups x 2] with [: x 0] group ids and [ : x 1] corresponding interpolation type ids
-    FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ImportFromGmshAux(const std::string& rFileName);
+    Eigen::MatrixXi ImportFromGmshAux(const std::string& rFileName);
 #endif //SWIG
 
     boost::ptr_map<int, NodeBase> mNodeMap;
@@ -642,7 +640,7 @@ protected:
     //! @param rDOFs
     //! @param rCoordinates coordinates of the node
     //! @return node pointer
-    NodeBase* NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates);
+    NodeBase* NodePtrCreate(std::set<Node::eDof> rDOFs, Eigen::VectorXd rCoordinates);
 
     //! @brief determines the dimensionality of a dof type
     //! @param rDof ... specific dof type

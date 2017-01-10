@@ -4,7 +4,6 @@
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
 #include "mechanics/nodes/NodeEnum.h"
-#include "math/FullMatrix.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -45,7 +44,7 @@ NuTo::BlockFullMatrix<T>::BlockFullMatrix(NuTo::BlockFullMatrix<T>&& rOther)
 {}
 
 template<typename T>
-NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& NuTo::BlockFullMatrix<T>::operator ()(Node::eDof rDofRow, Node::eDof rDofCol)
+Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& NuTo::BlockFullMatrix<T>::operator ()(Node::eDof rDofRow, Node::eDof rDofCol)
 {
     auto data = mData.find(std::make_pair(rDofRow, rDofCol));
     assert (data != mData.end());
@@ -53,7 +52,7 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& NuTo::BlockFullMatrix<T>::o
 }
 
 template<typename T>
-const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& NuTo::BlockFullMatrix<T>::operator ()(Node::eDof rDofRow, Node::eDof rDofCol) const
+const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& NuTo::BlockFullMatrix<T>::operator ()(Node::eDof rDofRow, Node::eDof rDofCol) const
 {
     auto data = mData.find(std::make_pair(rDofRow, rDofCol));
     assert (data != mData.end());
@@ -109,7 +108,7 @@ inline void NuTo::BlockFullMatrix<T>::Info() const
         const std::string& additionalBlanks = std::string(numAdditionalBlanks, ' ');
         const auto& matrix = pair.second;
 
-        std::cout << dofTypes << additionalBlanks << "(" << matrix.GetNumRows() << "x" << matrix.GetNumColumns() << ")" << std::endl;
+        std::cout << dofTypes << additionalBlanks << "(" << matrix.rows() << "x" << matrix.cols() << ")" << std::endl;
     }
 }
 
@@ -122,10 +121,10 @@ void NuTo::BlockFullMatrix<T>::CheckDimensions() const
      */
     for (auto dofRow : dofTypes)
     {
-        auto numRowsReference = (*this)(dofRow, dofRow).GetNumRows();
+        auto numRowsReference = (*this)(dofRow, dofRow).rows();
         for (auto dofCol : dofTypes)
         {
-            int numRows = (*this)(dofRow, dofCol).GetNumRows();
+            int numRows = (*this)(dofRow, dofCol).rows();
             if (numRows != numRowsReference)
             {
                 std::stringstream s;
@@ -142,10 +141,10 @@ void NuTo::BlockFullMatrix<T>::CheckDimensions() const
      */
     for (auto dofCol : dofTypes)
     {
-        auto numColsReference = (*this)(dofCol, dofCol).GetNumColumns();
+        auto numColsReference = (*this)(dofCol, dofCol).cols();
         for (auto dofRow : dofTypes)
         {
-            int numCols = (*this)(dofRow, dofCol).GetNumColumns();
+            int numCols = (*this)(dofRow, dofCol).cols();
             if (numCols != numColsReference)
             {
                 std::stringstream s;
@@ -164,7 +163,7 @@ int NuTo::BlockFullMatrix<T>::GetNumColumnsDof(const std::set<Node::eDof>& rDofT
     int numCols = 0;
     for (auto dof : rDofTypes)
     {
-        numCols += (*this)(dof, dof).GetNumColumns();
+        numCols += (*this)(dof, dof).cols();
     }
     return numCols;
 }
@@ -177,17 +176,17 @@ int NuTo::BlockFullMatrix<T>::GetNumRowsDof(const std::set<Node::eDof>& rDofType
     int numRows = 0;
     for (auto dof : rDofTypes)
     {
-        numRows += (*this)(dof, dof).GetNumRows();
+        numRows += (*this)(dof, dof).rows();
     }
     return numRows;
 }
 
 template<typename T>
-NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockFullMatrix<T>::Export() const
+Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockFullMatrix<T>::Export() const
 {
     CheckDimensions();
     const auto& activeDofTypes = mDofStatus.GetActiveDofTypes();
-    FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> result (GetNumActiveRows(), GetNumActiveColumns());
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> result (GetNumActiveRows(), GetNumActiveColumns());
 
     int blockStartRow = 0;
     for (auto dofRow : activeDofTypes)
@@ -196,19 +195,19 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockFullMatrix<T>::Ex
         for (auto dofCol : activeDofTypes)
         {
             const auto& subMatrix = (*this)(dofRow, dofCol);
-            result.SetBlock(blockStartRow, blockStartCol, subMatrix);
+            result.block(blockStartRow, blockStartCol, subMatrix.rows(), subMatrix.cols()) = subMatrix;
 
-            blockStartCol += subMatrix.GetNumColumns();
+            blockStartCol += subMatrix.cols();
         }
         // every submatrix in the row dofRow has the same number of rows (CheckDimension)
         // --> one is picked and added to blockStartRow
-        blockStartRow += (*this)(dofRow, dofRow).GetNumRows();
+        blockStartRow += (*this)(dofRow, dofRow).rows();
     }
     return result;
 }
 
 template<typename T>
-NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockFullMatrix<T>::Get(std::string rDofRow, std::string rDofCol) const
+Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::BlockFullMatrix<T>::Get(std::string rDofRow, std::string rDofCol) const
 {
     return (*this)(Node::DofToEnum(rDofRow), Node::DofToEnum(rDofCol));
 }

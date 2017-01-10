@@ -1,7 +1,6 @@
 #pragma once
 
 #include "mechanics/timeIntegration/TimeDependencyBase.h"
-#include "math/FullMatrix_Def.h"
 
 namespace NuTo
 {
@@ -11,7 +10,7 @@ namespace NuTo
 class TimeDependencyMatrix : public TimeDependencyBase
 {
 public:
-    TimeDependencyMatrix(const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> &rTimeDependencyMatrix)
+    TimeDependencyMatrix(const Eigen::MatrixXd &rTimeDependencyMatrix)
         : TimeDependencyBase(),
           mTimeDependencyMatrix(rTimeDependencyMatrix)
     {}
@@ -21,10 +20,10 @@ public:
     virtual double GetTimeDependentFactor(double rTime) override
     {
         //calculate the two corresponding time steps between which a linear interpolation is performed
-        if (mTimeDependencyMatrix.GetNumRows()!=0)
+        if (mTimeDependencyMatrix.rows()!=0)
         {
             int curStep(0);
-            while (mTimeDependencyMatrix(curStep,0)<rTime && curStep<mTimeDependencyMatrix.GetNumRows()-1)
+            while (mTimeDependencyMatrix(curStep,0)<rTime && curStep<mTimeDependencyMatrix.rows()-1)
                 curStep++;
             if (curStep==0)
                 curStep++;
@@ -42,7 +41,7 @@ public:
     }
 
 private:
-NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mTimeDependencyMatrix;
+Eigen::MatrixXd mTimeDependencyMatrix;
 };
 } // namespace NuTo
 

@@ -2,7 +2,6 @@
 #include <sstream>
 #include "boost/filesystem.hpp"
 
-#include "math/FullMatrix.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -77,8 +76,7 @@ void Run(NuTo::Structure& myStructure, NuTo::RungeKuttaBase& rTimeIntegrationSch
     myStructure.ElementTotalConvertToInterpolationType();
 
     //create node groups bottom boundary
-    int nOrigin = myStructure.NodeGetIdAtCoordinate(NuTo::FullVector<double, 2>(
-                    {   0.,0.}), 1.e-6);
+    int nOrigin = myStructure.NodeGetIdAtCoordinate(Eigen::Vector2d::Zero(), 1.e-6);
 
     //right boundary
     int grpNodes_Right = myStructure.GroupCreate("Nodes");
@@ -91,16 +89,10 @@ void Run(NuTo::Structure& myStructure, NuTo::RungeKuttaBase& rTimeIntegrationSch
     myStructure.CalculateMaximumIndependentSets();
 
     //set constraints
-    //directionX
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> directionX(2, 1);
-    directionX.SetValue(0, 0, 1.0);
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> directionY(2, 1);
-    directionY.SetValue(1, 0, 1.0);
+    myStructure.ConstraintLinearSetDisplacementNode(nOrigin, Eigen::Vector2d::UnitY(), 0);
+    myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_Left, Eigen::Vector2d::UnitX(), 0);
 
-    myStructure.ConstraintLinearSetDisplacementNode(nOrigin, directionY, 0);
-    myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_Left, directionX, 0);
-
-    myStructure.LoadCreateNodeGroupForce(0, grpNodes_Right, directionX, 1000);
+    myStructure.LoadCreateNodeGroupForce(0, grpNodes_Right, Eigen::Vector2d::UnitX(), 1000);
 
     myStructure.Info();
     NuTo::RungeKutta4 myIntegrationScheme(&myStructure);
@@ -109,16 +101,16 @@ void Run(NuTo::Structure& myStructure, NuTo::RungeKuttaBase& rTimeIntegrationSch
 
     //set a sinusoidal quarter wave
     double period(5);
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> forceRHS(101, 2);
-    for (int count = 0; count < forceRHS.GetNumRows() - 1; count++)
+    Eigen::MatrixXd forceRHS(101, 2);
+    for (int count = 0; count < forceRHS.rows() - 1; count++)
     {
-        double t = ((double) count) / ((double) forceRHS.GetNumRows() - 2.) * 0.25 * period;
+        double t = ((double) count) / ((double) forceRHS.rows() - 2.) * 0.25 * period;
         forceRHS(count, 0) = t;
         forceRHS(count, 1) = 0.1 * sin(t / period * 2. * M_PI);
         //loadRHSFactor(count,0) = 0;
     }
-    forceRHS(forceRHS.GetNumRows() - 1, 0) = forceRHS(forceRHS.GetNumRows() - 2, 0) + 1;
-    forceRHS(forceRHS.GetNumRows() - 1, 1) = forceRHS(forceRHS.GetNumRows() - 2, 1);
+    forceRHS(forceRHS.rows() - 1, 0) = forceRHS(forceRHS.rows() - 2, 0) + 1;
+    forceRHS(forceRHS.rows() - 1, 1) = forceRHS(forceRHS.rows() - 2, 1);
 
 //        forceRHS.Info();
 

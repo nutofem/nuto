@@ -5,30 +5,30 @@
  *      Author: ttitsche
  */
 
-#include "math/FullMatrix.h"
+#include <eigen3/Eigen/Dense> // for cross product
+
+#include "base/Exception.h"
 #include "geometryConcrete/collision/Event.h"
 #include "geometryConcrete/collision/collidables/CollidableWallCylinder.h"
 #include "geometryConcrete/collision/collidables/CollidableParticleSphere.h"
 #include "visualize/VisualizeUnstructuredGrid.h"
 
 NuTo::CollidableWallCylinder::CollidableWallCylinder(
-		FullVector<double, 3> rPosition,
-		FullVector<double, 3> rDirection,
-		const double rRadius,
-		const double rHeigth,
-		const int rIndex)
-		: CollidableWallBase(rPosition, rDirection, rIndex),
-				mRadius(rRadius),
-				mHeigth(rHeigth)
+	Eigen::Vector3d rPosition,
+	Eigen::Vector3d rDirection,
+	const double rRadius,
+	const double rHeigth,
+	const int rIndex)
+	: CollidableWallBase(rPosition, rDirection, rIndex), mRadius(rRadius), mHeigth(rHeigth)
 {
 }
 
 void NuTo::CollidableWallCylinder::PerformCollision(CollidableParticleSphere& rSphere)
 {
 	// get perpendicular from sphere centre to direction vector
-	FullVector<double, 3> dP = mPosition - rSphere.mPosition;
-	FullVector<double, 3> n = dP - dP.Dot(mDirection) * mDirection;
-	if (n.Dot(n) == 0)
+	Eigen::Vector3d dP = mPosition - rSphere.mPosition;
+	Eigen::Vector3d n = dP - dP.dot(mDirection) * mDirection;
+	if (n.dot(n) == 0)
 		throw NuTo::Exception("[NuTo::CollidableWallCylinder::PerformCollision] n = 0");
 
 	n.normalize();
@@ -47,10 +47,10 @@ const double NuTo::CollidableWallCylinder::PredictCollision(
 {
 	rType = Event::EventType::WallCollision;
 
-	FullVector<double, 3> dPos = rSphere.mPosition - mPosition;
+	Eigen::Vector3d dPos = rSphere.mPosition - mPosition;
 
-	FullVector<double, 3> dP = dPos - dPos.Dot(mDirection) * mDirection;
-	FullVector<double, 3> dV = rSphere.mVelocity - rSphere.mVelocity.Dot(mDirection) * mDirection;
+	Eigen::Vector3d dP = dPos - dPos.dot(mDirection) * mDirection;
+	Eigen::Vector3d dV = rSphere.mVelocity - rSphere.mVelocity.dot(mDirection) * mDirection;
 	long double dR = mRadius - rSphere.mRadius;
 	long double dG = -rSphere.mGrowthRate;
 
@@ -95,32 +95,32 @@ void NuTo::CollidableWallCylinder::VisualizationStatic(
 	// =========================================
 	const int nPoints = 40; // resolution of the circle;
 
-	FullVector<double, 3> n = mDirection; // rename
-	FullVector<double, 3> nonCoLin( { 1, 0, 0 });
+	Eigen::Vector3d n = mDirection; // rename
+	Eigen::Vector3d nonCoLin( { 1, 0, 0 });
 	if (nonCoLin == n)
 		nonCoLin << 0, 1, 0;
 
-	FullVector<double, 3> sVec = n.cross(nonCoLin); // random vector perpendicular to mDirection = n
+	Eigen::Vector3d sVec = n.cross(nonCoLin); // random vector perpendicular to mDirection = n
 	sVec.normalize();
 
-	FullMatrix<double, nPoints + 1, 3> pointCircle;	// store circle coordinates
+	Eigen::Matrix<double, nPoints + 1, 3> pointCircle;	// store circle coordinates
 	double dAlpha = 2. * M_PI / nPoints;
 	for (int i = 0; i < nPoints + 1; i++)
 	{
 		// calculate circle points and add them to points
 		// point at nPoints+1 closes the circle
 		double alpha = i * dAlpha;
-		FullVector<double, 3> rotVec = n * (n.dot(sVec))
+		Eigen::Vector3d rotVec = n * (n.dot(sVec))
 				+ std::cos(alpha) * n.cross(sVec).cross(n)
 				+ std::sin(alpha) * n.cross(sVec);
-		pointCircle.SetRow(i, (mRadius * rotVec).transpose());
+		pointCircle.row(i) = (mRadius * rotVec).transpose();
 	}
 
 	// =========================================
 	//   create and add top and bottom points
 	// =========================================
-	FullVector<double, 3> pointTop = mPosition + n * mHeigth / 2.;
-	FullVector<double, 3> pointBot = mPosition - n * mHeigth / 2.;
+	Eigen::Vector3d pointTop = mPosition + n * mHeigth / 2.;
+	Eigen::Vector3d pointBot = mPosition - n * mHeigth / 2.;
 	unsigned int indexTop = rVisualizer.AddPoint(pointTop.data());
 	unsigned int indexBot = rVisualizer.AddPoint(pointBot.data());
 
@@ -128,8 +128,8 @@ void NuTo::CollidableWallCylinder::VisualizationStatic(
 	unsigned int pointCircleIndexBot[nPoints + 1];
 	for (int i = 0; i < nPoints + 1; i++)
 	{
-		FullVector<double, 3> pointCircleTop = pointCircle.GetRow(i).transpose() + pointTop;
-		FullVector<double, 3> pointCircleBot = pointCircle.GetRow(i).transpose() + pointBot;
+		Eigen::Vector3d pointCircleTop = pointCircle.row(i).transpose() + pointTop;
+		Eigen::Vector3d pointCircleBot = pointCircle.row(i).transpose() + pointBot;
 		pointCircleIndexTop[i] = rVisualizer.AddPoint(pointCircleTop.data());
 		pointCircleIndexBot[i] = rVisualizer.AddPoint(pointCircleBot.data());
 	}
@@ -153,8 +153,8 @@ void NuTo::CollidableWallCylinder::VisualizationStatic(
 		unsigned int insertIndexTop = rVisualizer.AddTriangleCell(triangleIndexTop);
 		unsigned int insertIndexBot = rVisualizer.AddTriangleCell(triangleIndexBot);
 
-		FullVector<double, 3> dirTop = -n;
-		FullVector<double, 3> dirBot = n;
+		Eigen::Vector3d dirTop = -n;
+		Eigen::Vector3d dirBot = n;
 		rVisualizer.SetCellDataVector(insertIndexTop, "Direction", dirTop.data());
 		rVisualizer.SetCellDataVector(insertIndexBot, "Direction", dirBot.data());
 
@@ -171,8 +171,8 @@ void NuTo::CollidableWallCylinder::VisualizationStatic(
 		quadIndex[3] = pointCircleIndexTop[i];
 
 		unsigned int insertIndex = rVisualizer.AddQuadCell(quadIndex);
-		FullVector<double, 3> lineVector = pointCircle.GetRow(i).transpose() - pointCircle.GetRow(i + 1).transpose();
-		FullVector<double, 3> dir = lineVector.cross(n);
+		Eigen::Vector3d lineVector = pointCircle.row(i).transpose() - pointCircle.row(i + 1).transpose();
+		Eigen::Vector3d dir = lineVector.cross(n);
 		dir.normalize();
 		rVisualizer.SetCellDataVector(insertIndex, "Direction", dir.data());
 	}
@@ -182,8 +182,8 @@ void NuTo::CollidableWallCylinder::VisualizationStatic(
 bool NuTo::CollidableWallCylinder::IsInside(
 		const CollidableParticleSphere& rSphere) const
 		{
-	FullVector<double, 3> dPos = rSphere.mPosition - mPosition;
-	FullVector<double, 3> dP = dPos - dPos.Dot(mDirection) * mDirection;
+	Eigen::Vector3d dPos = rSphere.mPosition - mPosition;
+	Eigen::Vector3d dP = dPos - dPos.dot(mDirection) * mDirection;
 
 	return dP.dot(dP) < (mRadius - rSphere.mRadius) * (mRadius - rSphere.mRadius);
 }

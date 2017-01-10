@@ -3,6 +3,7 @@ Language: Cpp
 
 AlignAfterOpenBracket: DontAlign
 AlignTrailingComments: false
+AccessModifierOffset: -4
 BreakBeforeBraces: Allman
 ColumnLimit: 120
 ContinuationIndentWidth: 8

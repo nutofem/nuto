@@ -20,7 +20,7 @@
 #include <boost/spirit/include/classic_core.hpp>
 
 #include "mechanics/structures/unstructured/Structure.h"
-#include "math/FullMatrix.h"
+
 #include "base/ErrorEnum.h"
 #include "base/Timer.h"
 #include "base/serializeStream/SerializeStreamIn.h"
@@ -57,20 +57,16 @@
 #include <ANN/ANN.h>
 #include <set>
 
-//! @brief constructor
-//! @param mDimension number of nodes
 NuTo::Structure::Structure(int rDimension) :
         StructureBase(rDimension)
 {
 }
 
-//! @brief destructor
 NuTo::Structure::~Structure()
 {
 	mElementMap.clear();
 }
 
-//! @brief ... Info routine that prints general information about the object (detail according to verbose level)
 void NuTo::Structure::Info() const
 {
     StructureBase::Info();
@@ -133,9 +129,6 @@ void NuTo::Structure::saveImplement(Archive & ar) const
 }
 
 
-//! @brief ... save the object to a file
-//! @param filename ... filename
-//! @param aType ... type of file, either BINARY, XML or TEXT
 void NuTo::Structure::Save (const std::string &filename, std::string rType ) const
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -370,9 +363,6 @@ void NuTo::Structure::loadImplement(Archive & ar)
 #endif
 }
 
-//! @brief ... restore the object from a file
-//! @param filename ... filename
-//! @param aType ... type of file, either BINARY, XML or TEXT
 void NuTo::Structure::Restore (const std::string &filename, std::string rType )
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -695,8 +685,6 @@ void NuTo::Structure::Evaluate(const NuTo::ConstitutiveInputMap& rInput, std::ma
 
 }
 
-//! @brief Builds the nonlocal data for integral type nonlocal constitutive models
-//! @param rConstitutiveId constitutive model for which the data is build
 void NuTo::Structure::BuildNonlocalData(int rConstitutiveId)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -720,8 +708,6 @@ void NuTo::Structure::BuildNonlocalData(int rConstitutiveId)
      */
 }
 
-//! @brief Builds the nonlocal data for integral type nonlocal constitutive models
-//! @param rConstitutiveId constitutive model for which the data is build
 void NuTo::Structure::BuildNonlocalData(const ConstitutiveBase* rConstitutive)
 {
     throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented");
@@ -952,11 +938,11 @@ void NuTo::Structure::CalculateInitialValueRates(NuTo::TimeIntegrationBase& rTim
     }
 }
 
-NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFromGmsh(const std::string& rFileName)
+Eigen::MatrixXi NuTo::Structure::ImportFromGmsh(const std::string& rFileName)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ids;
+    Eigen::MatrixXi ids;
 
     try
     {
@@ -1001,9 +987,6 @@ public:
     std::vector<unsigned int> nodes;
 };
 
-//! @brief import from gmsh
-//! @param rFileName .. file name
-//! @param vector with the created groupes
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
@@ -1012,7 +995,7 @@ public:
 #include <iostream>
 #include <string>
 
-NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFromGmshAux(const std::string& rFileName)
+Eigen::MatrixXi NuTo::Structure::ImportFromGmshAux(const std::string& rFileName)
 {
     const unsigned int num_elm_nodes[24] =
     { 0, 2, 3, 4, 4, 8, 6, 5, 3, 6, 9, 10, 27, 18, 14, 1, 8, 20, 15, 13, 0, 10, 0, 15 };
@@ -1316,14 +1299,14 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
     }
 ///////////////end binary
     //create the nodes
-    NuTo::FullVector<double, Eigen::Dynamic> coordinates;
+    Eigen::VectorXd coordinates;
     switch (mDimension)
     {
     case 2:
-        coordinates.Resize(2);
+        coordinates.resize(2);
         break;
     case 3:
-        coordinates.Resize(3);
+        coordinates.resize(3);
         break;
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Only implemented for 2D and 3D.");
@@ -1385,10 +1368,10 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT2;
             //ordering is different than in gmsh, fix this first
             {
-            NuTo::FullVector<int, Eigen::Dynamic> nodeNumbersCopy(nodeNumbers);
-            nodeNumbers[0]  = nodeNumbersCopy(0);
-            nodeNumbers[1]  = nodeNumbersCopy(2);
-            nodeNumbers[2]  = nodeNumbersCopy(1);
+            std::vector<int> nodeNumbersCopy = nodeNumbers;
+            nodeNumbers[0]  = nodeNumbersCopy[0];
+            nodeNumbers[1]  = nodeNumbersCopy[2];
+            nodeNumbers[2]  = nodeNumbersCopy[1];
             }
             break;
         case 9: // 6-node second order triangle (3 nodes associated with the vertices and 3 with the edges).
@@ -1411,34 +1394,34 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
             shapeType = Interpolation::eShapeType::BRICK3D;
             typeOrder = Interpolation::eTypeOrder::LOBATTO2;
             //ordering is different than in gmsh, fix this first
-            NuTo::FullVector<int, Eigen::Dynamic> nodeNumbersGmsh(nodeNumbers);
-            nodeNumbers[0]  = nodeNumbersGmsh(4);
-            nodeNumbers[1]  = nodeNumbersGmsh(16);
-            nodeNumbers[2]  = nodeNumbersGmsh(5);
-            nodeNumbers[3]  = nodeNumbersGmsh(10);
-            nodeNumbers[4]  = nodeNumbersGmsh(21);
-            nodeNumbers[5]  = nodeNumbersGmsh(12);
-            nodeNumbers[6]  = nodeNumbersGmsh(0);
-            nodeNumbers[7]  = nodeNumbersGmsh(8);
-            nodeNumbers[8]  = nodeNumbersGmsh(1);
-            nodeNumbers[9]  = nodeNumbersGmsh(17);
-            nodeNumbers[10] = nodeNumbersGmsh(25);
-            nodeNumbers[11] = nodeNumbersGmsh(18);
-            nodeNumbers[12] = nodeNumbersGmsh(22);
-            nodeNumbers[13] = nodeNumbersGmsh(26);
-            nodeNumbers[14] = nodeNumbersGmsh(23);
-            nodeNumbers[15] = nodeNumbersGmsh(9);
-            nodeNumbers[16] = nodeNumbersGmsh(20);
-            nodeNumbers[17] = nodeNumbersGmsh(11);
-            nodeNumbers[18] = nodeNumbersGmsh(7);
-            nodeNumbers[19] = nodeNumbersGmsh(19);
-            nodeNumbers[20] = nodeNumbersGmsh(6);
-            nodeNumbers[21] = nodeNumbersGmsh(15);
-            nodeNumbers[22] = nodeNumbersGmsh(24);
-            nodeNumbers[23] = nodeNumbersGmsh(14);
-            nodeNumbers[24] = nodeNumbersGmsh(3);
-            nodeNumbers[25] = nodeNumbersGmsh(13);
-            nodeNumbers[26] = nodeNumbersGmsh(2);
+            std::vector<int> nodeNumbersGmsh = nodeNumbers;
+            nodeNumbers[0]  = nodeNumbersGmsh[4];
+            nodeNumbers[1]  = nodeNumbersGmsh[16];
+            nodeNumbers[2]  = nodeNumbersGmsh[5];
+            nodeNumbers[3]  = nodeNumbersGmsh[10];
+            nodeNumbers[4]  = nodeNumbersGmsh[21];
+            nodeNumbers[5]  = nodeNumbersGmsh[12];
+            nodeNumbers[6]  = nodeNumbersGmsh[0];
+            nodeNumbers[7]  = nodeNumbersGmsh[8];
+            nodeNumbers[8]  = nodeNumbersGmsh[1];
+            nodeNumbers[9]  = nodeNumbersGmsh[17];
+            nodeNumbers[10] = nodeNumbersGmsh[25];
+            nodeNumbers[11] = nodeNumbersGmsh[18];
+            nodeNumbers[12] = nodeNumbersGmsh[22];
+            nodeNumbers[13] = nodeNumbersGmsh[26];
+            nodeNumbers[14] = nodeNumbersGmsh[23];
+            nodeNumbers[15] = nodeNumbersGmsh[9];
+            nodeNumbers[16] = nodeNumbersGmsh[20];
+            nodeNumbers[17] = nodeNumbersGmsh[11];
+            nodeNumbers[18] = nodeNumbersGmsh[7];
+            nodeNumbers[19] = nodeNumbersGmsh[19];
+            nodeNumbers[20] = nodeNumbersGmsh[6];
+            nodeNumbers[21] = nodeNumbersGmsh[15];
+            nodeNumbers[22] = nodeNumbersGmsh[24];
+            nodeNumbers[23] = nodeNumbersGmsh[14];
+            nodeNumbers[24] = nodeNumbersGmsh[3];
+            nodeNumbers[25] = nodeNumbersGmsh[13];
+            nodeNumbers[26] = nodeNumbersGmsh[2];
             break;
     	}
 //    	case 13: // 18-node second order prism (6 nodes associated with the vertices, 9 with the edges and 3 with the quadrangular faces).
@@ -1563,7 +1546,7 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
         numMaxInterpolationTypesPerGroup = std::max(numMaxInterpolationTypesPerGroup, size);
     }
 
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> ids(numGroups, numMaxInterpolationTypesPerGroup+1); // +1 since first column is group id
+    Eigen::MatrixXi ids(numGroups, numMaxInterpolationTypesPerGroup+1); // +1 since first column is group id
     ids.fill(-1); // invalid value
     int iGroup = 0;
     for (auto groupInterpolationId : groupInterpolationIds)
@@ -1583,10 +1566,7 @@ NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> NuTo::Structure::ImportFro
 }
 
 
-//! @brief copy and move the structure
-//! most of the data is kept, but e.g. nonlocal data and
-//! @param rOffset offset (dimension x 1 has to be identical with structure dimension)
-void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>& rOffset)
+void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
@@ -1605,11 +1585,11 @@ void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>&
     }
 }
 
-void NuTo::Structure::CopyAndTranslate(NuTo::FullVector<double, Eigen::Dynamic>& rOffset, std::map<NodeBase*, NodeBase*>& rOld2NewNodePointer, std::map<ElementBase*, ElementBase*>& rOld2NewElementPointer)
+void NuTo::Structure::CopyAndTranslate(Eigen::VectorXd& rOffset, std::map<NodeBase*, NodeBase*>& rOld2NewNodePointer, std::map<ElementBase*, ElementBase*>& rOld2NewElementPointer)
 {
-    if (rOffset.GetNumRows() != mDimension)
+    if (rOffset.rows() != mDimension)
         throw MechanicsException(__PRETTY_FUNCTION__, "offset has to have the same dimension as the structure.");
-    if (rOffset.GetNumColumns() != 1)
+    if (rOffset.cols() != 1)
         throw MechanicsException(__PRETTY_FUNCTION__, "offset has to have a single column.");
 
     std::vector<NodeBase*> nodeVector;

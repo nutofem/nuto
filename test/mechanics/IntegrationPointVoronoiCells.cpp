@@ -1,4 +1,3 @@
-#include "math/FullMatrix.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/elements/IpDataEnum.h"
@@ -21,7 +20,7 @@ void CheckTriangle(NuTo::eIntegrationType rIntegrationType)
     //create structure
     NuTo::Structure myStructure(2);
     //create nodes
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> nodeCoordinates(2, 4);
+    Eigen::MatrixXd nodeCoordinates(2, 4);
     nodeCoordinates <<
             0, 10,  10,  0,
             0,  0,  10, 10;
@@ -34,7 +33,7 @@ void CheckTriangle(NuTo::eIntegrationType rIntegrationType)
 
 
     //create element
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> nodeNumbers(3, 2);
+    Eigen::MatrixXi nodeNumbers(3, 2);
     nodeNumbers << 0, 2,
                    1, 3,
                    2, 0;

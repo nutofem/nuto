@@ -8,7 +8,7 @@
 #include "mechanics/groups/GroupEnum.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/elements/IpDataEnum.h"
-#include "math/FullMatrix.h"
+
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/integrationtypes/IntegrationTypeBase.h"
@@ -81,10 +81,9 @@ void NuTo::Structure::InterpolationTypeSetIntegrationType(int rInterpolationType
     int elementGroupId = GroupCreate("Elements");
     GroupAddElementFromType(elementGroupId, rInterpolationTypeId);
 
-    NuTo::FullVector<int, Eigen::Dynamic> elementIds = GroupGetMemberIds(elementGroupId);
-    for (int iElement = 0; iElement < elementIds.GetNumRows(); ++iElement)
+    for (int elementId : GroupGetMemberIds(elementGroupId))
     {
-        ElementBase* element = ElementGetElementPtr(elementIds.GetValue(iElement));
+        ElementBase* element = ElementGetElementPtr(elementId);
         element->SetIntegrationType(*rIntegrationType);
     }
 
@@ -165,10 +164,9 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId,
     int elementGroupId = GroupCreate("Elements");
     GroupAddElementFromType(elementGroupId, rInterpolationTypeId);
 
-    NuTo::FullVector<int, Eigen::Dynamic> elementIds = GroupGetMemberIds(elementGroupId);
-    for (int iElement = 0; iElement < elementIds.GetNumRows(); ++iElement)
+    for (int elementId : GroupGetMemberIds(elementGroupId))
     {
-        ElementBase* element = ElementGetElementPtr(elementIds.GetValue(iElement));
+        ElementBase* element = ElementGetElementPtr(elementId);
         element->SetIntegrationType(integrationType);
     }
 
@@ -207,10 +205,9 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node:
     int elementGroupId = GroupCreate(eGroupId::Elements);
     GroupAddElementFromType(elementGroupId, rInterpolationTypeId);
 
-    NuTo::FullVector<int, Eigen::Dynamic> elementIds = GroupGetMemberIds(elementGroupId);
-    for (int iElement = 0; iElement < elementIds.GetNumRows(); ++iElement)
+    for (int elementId : GroupGetMemberIds(elementGroupId))
     {
-        ElementBase* element = ElementGetElementPtr(elementIds.GetValue(iElement));
+        ElementBase* element = ElementGetElementPtr(elementId);
         element->SetIntegrationType(integrationType);
     }
 

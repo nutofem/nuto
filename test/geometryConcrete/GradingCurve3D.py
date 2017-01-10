@@ -4,6 +4,7 @@ import nuto
 import math
 import sys
 import os
+import numpy as np
 
 # This test is designed to run without error.
 # If the c++ code exits with an unhandled exeption,
@@ -12,13 +13,15 @@ import os
 
 IN_shrinkage = 0.02
 IN_boxType = 0
-IN_boundingBox = nuto.DoubleFullMatrix(3,2, [0., 0., 0., 40., 40., 40.])
+IN_boundingBox = np.array([[0., 40.], [0., 40.], [0., 40.]])
 IN_volumeFraction = 0.5
-IN_gradingCurve = nuto.DoubleFullMatrix(3,3, [8.,4.,2.,16.,8.,4.,0.40,0.24,0.15])
+IN_gradingCurve = np.array([[8., 16., 0.40],
+                            [4.,  8., 0.24],
+                            [2.,  4., 0.15]])
 IN_relativeDistance = 0.0
 IN_absoluteDistance = 0.0
 IN_seed = 6174
-IN_spheresBoundary = nuto.DoubleFullMatrix(0,4,[])
+IN_spheresBoundary = np.zeros((0,4))
 
 IN_velocityRange = 0.1
 IN_relativeGrowthRate = 1.

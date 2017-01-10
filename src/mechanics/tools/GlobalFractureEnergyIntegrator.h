@@ -2,11 +2,11 @@
 // Created by Thomas Titscher on 10/28/16.
 //
 #pragma once
-#include "math/FullVector.h"
-#include "math/FullMatrix.h"
+#include <string>
+#include <eigen3/Eigen/Dense>
 #include "mechanics/MechanicsException.h"
 #include "../../math/Interpolation.h"
-#include <string>
+#include "math/EigenCompanion.h"
 
 namespace NuTo
 {
@@ -22,7 +22,7 @@ public:
     //! @param rForces vector containing forces
     //! @param rDisplacements vector container displacements
     //! @return obj
-    GlobalFractureEnergyIntegrator(const FullVector<double, Eigen::Dynamic>& rForces, const FullVector<double, Eigen::Dynamic>& rDisplacements)
+    GlobalFractureEnergyIntegrator(const Eigen::VectorXd& rForces, const Eigen::VectorXd& rDisplacements)
     {
         mForce = rForces.cwiseAbs();
         mDispl = rDisplacements.cwiseAbs();
@@ -36,13 +36,8 @@ public:
     //! @return obj
     GlobalFractureEnergyIntegrator(std::string rFileForces, std::string rFileDisplacements, int rColumn)
     {
-        NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> reader;
-
-        reader.ReadFromFile(rFileForces);
-        mForce = reader.GetColumn(rColumn).cwiseAbs();
-
-        reader.ReadFromFile(rFileDisplacements);
-        mDispl = reader.GetColumn(rColumn).cwiseAbs();
+        mForce = NuTo::EigenCompanion::ReadFromFile(rFileForces).col(rColumn).cwiseAbs();
+        mDispl = NuTo::EigenCompanion::ReadFromFile(rFileDisplacements).col(rColumn).cwiseAbs();
 
         CheckData();
     }
@@ -139,8 +134,8 @@ private:
 
     }
 
-    FullVector<double, Eigen::Dynamic> mForce;
-    FullVector<double, Eigen::Dynamic> mDispl;
+    Eigen::VectorXd mForce;
+    Eigen::VectorXd mDispl;
 };
 
 }   // namespace Tools

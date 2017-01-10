@@ -9,7 +9,6 @@
 #include "math/SparseMatrixCSRVector2General.h"
 
 
-#include "math/FullMatrix.h"
 //#include "math/SparseMatrixCSRSymmetric_Def.h"
 //#include "math/SparseMatrixCSRSymmetric.h"
 #include "math/MathException.h"
@@ -30,10 +29,10 @@ NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(int rN
 //! @param rAbsoluteTolerance ... absolute tolerance
 //! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
 template<class T>
-NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance):
-                             NuTo::SparseMatrixCSRVector2<T>(rFullMatrix.GetNumRows())
+NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance):
+                             NuTo::SparseMatrixCSRVector2<T>(rFullMatrix.rows())
 {
-	if (rFullMatrix.GetNumColumns()!=rFullMatrix.GetNumRows())
+	if (rFullMatrix.cols()!=rFullMatrix.rows())
         throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] Symmetric matrix must have same number of rows and columns.");
 
 	double tolerance = rAbsoluteTolerance;
@@ -49,9 +48,9 @@ NuTo::SparseMatrixCSRVector2Symmetric<T>::SparseMatrixCSRVector2Symmetric(const 
 
 	}
 
-	for (int row = 0; row < rFullMatrix.GetNumRows(); row++)
+	for (int row = 0; row < rFullMatrix.rows(); row++)
 	{
-		for (int col = row; col < rFullMatrix.GetNumColumns(); col++)
+		for (int col = row; col < rFullMatrix.cols(); col++)
 		{
 			if (std::abs(rFullMatrix(row,col)) > tolerance)
 			{
@@ -159,30 +158,22 @@ NuTo::eSparseMatrixType NuTo::SparseMatrixCSRVector2Symmetric<T>::GetSparseMatri
     return NuTo::eSparseMatrixType::CSRVECTOR2SYMMETRIC;
 }
 
-//! @brief ... import matrix from slang object stored in  a text file
-//! @param rFileName ... file name
-template<class T>
-void NuTo::SparseMatrixCSRVector2Symmetric<T>::ImportFromSLangText(const char* rFileName)
-{
-	throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] to be implemented.");
-}
-
 //! @brief ... write nonzero matrix entries into a matrix
 //! @param rMatrix ... the matrix
 template<class T>
-void NuTo::SparseMatrixCSRVector2Symmetric<T>::WriteEntriesToMatrix(Matrix<T>& rMatrix) const
+Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> NuTo::SparseMatrixCSRVector2Symmetric<T>::ConvertToFullMatrix() const
 {
-	rMatrix.Resize(this->GetNumRows(), this->GetNumColumns());
+    Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> m = Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>::Zero(this->GetNumRows(), this->GetNumColumns());
 	if (this->mOneBasedIndexing)
 	{
 		for (unsigned int row=0; row<this->mColumns.size(); row++)
 		{
 			for (unsigned int col_count=0; col_count<this->mColumns[row].size(); col_count++)
 			{
-				rMatrix.AddValue(row, this->mColumns[row][col_count]-1,this->mValues[row][col_count]);
+				m(row, this->mColumns[row][col_count]-1) = this->mValues[row][col_count];
 				if ((int)row!=this->mColumns[row][col_count]-1)
 				{
-				    rMatrix.AddValue(this->mColumns[row][col_count]-1, row, this->mValues[row][col_count]);
+				    m(this->mColumns[row][col_count]-1, row) = this->mValues[row][col_count];
 				}
 			}
 		}
@@ -193,14 +184,15 @@ void NuTo::SparseMatrixCSRVector2Symmetric<T>::WriteEntriesToMatrix(Matrix<T>& r
 		{
 			for (unsigned int col_count=0; col_count<this->mColumns[row].size(); col_count++)
 			{
-				rMatrix.AddValue(row, this->mColumns[row][col_count], this->mValues[row][col_count]);
+				m(row, this->mColumns[row][col_count]) = this->mValues[row][col_count];
                 if ((int)row!=this->mColumns[row][col_count])
                 {
-                    rMatrix.AddValue(this->mColumns[row][col_count], row, this->mValues[row][col_count]);
+                    m(this->mColumns[row][col_count], row) = this->mValues[row][col_count];
                 }
 			}
 		}
 	}
+    return m;
 }
 
 
@@ -296,14 +288,13 @@ NuTo::SparseMatrixCSRVector2Symmetric<T> NuTo::SparseMatrixCSRVector2Symmetric<T
 //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
 //! @return ... full matrix
 template<class T>
-NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2Symmetric<T>::operator* (const FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const
+Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2Symmetric<T>::operator* (const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const
 {
-	if (this->GetNumColumns() != rMatrix.GetNumRows())
+	if (this->GetNumColumns() != rMatrix.rows())
 	{
 		throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
 	}
-	FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumRows(),rMatrix.GetNumColumns());
-	result.setZero();
+	Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> result = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>::Zero(this->GetNumRows(),rMatrix.cols());
 	if (this->HasOneBasedIndexing())
 	{
 		// loop over rows
@@ -316,14 +307,14 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2
 			{
 				int column = thisColumnVec[pos] - 1;
 				T value = thisValueVec[pos];
-				for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+				for (int matrixCol = 0; matrixCol < rMatrix.cols(); matrixCol++)
 				{
 					result(row,matrixCol) += value * rMatrix(column,matrixCol);
 				}
 				if (column!=row)
 				{
 					//add the symmetric contribution
-					for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+					for (int matrixCol = 0; matrixCol < rMatrix.cols(); matrixCol++)
 					{
 						result(column,matrixCol) += value * rMatrix(row,matrixCol);
 					}
@@ -343,7 +334,7 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2
 			{
 				int column = thisColumnVec[pos];
 				T value = thisValueVec[pos];
-				for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+				for (int matrixCol = 0; matrixCol < rMatrix.cols(); matrixCol++)
 				{
 					result(row,matrixCol) += value * rMatrix(column,matrixCol);
 					//std::cout << "add at " <<row << " " << matrixCol << " value " << value << " * " << rMatrix(column,matrixCol) << std::endl;
@@ -351,7 +342,7 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2
 				if (column!=row)
 				{
 					//add the symmetric contribution
-					for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+					for (int matrixCol = 0; matrixCol < rMatrix.cols(); matrixCol++)
 					{
 						result(column,matrixCol) += value * rMatrix(row,matrixCol);
 						//std::cout << "add at symm " <<column << " " << matrixCol << " value " << value << " * " << rMatrix(row,matrixCol) << std::endl;
@@ -364,15 +355,15 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2
 }
 
 template<class T>
-NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2Symmetric<T>::TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
+Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2Symmetric<T>::TransMult(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
 {
-    throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] To be implemented.");
+    throw MathException(__PRETTY_FUNCTION__, "To be implemented.");
 /*  this is just copied from the general matrix (no symmtry)
 	if (this->GetNumRows() != rMatrix.GetNumRows())
 	{
 		throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
 	}
-	FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumColumns(),rMatrix.GetNumColumns());
+	Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumColumns(),rMatrix.GetNumColumns());
 	if (this->HasOneBasedIndexing())
 	{
 		// loop over columns of transpose
@@ -585,7 +576,7 @@ NuTo::SparseMatrixCSRVector2Symmetric<T> NuTo::SparseMatrixCSRVector2Symmetric<T
     SparseMatrixCSRVector2General<T> matrix(rDimension, rDimension);
 
     // numValues(symmetric) is approx 0.5*numValues(general) since only one triangle is stored
-    Matrix<T>::FillMatrixRandom(matrix, .5*rDensity, rSeed);
+    SparseMatrix<T>::FillMatrixRandom(matrix, .5*rDensity, rSeed);
     return std::move(matrix.SymmetricPart());
 }
 

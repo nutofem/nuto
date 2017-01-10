@@ -348,7 +348,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping1
 	    	// call Newton and calculate omega and kappa
 
 	    	// initialize the vector of unknowns
-	    	NuTo::FullVector<double,Eigen::Dynamic> Unknown(2);
+	    	Eigen::VectorXd Unknown(2);
 	    	double deltaOmega;
 
 	    	deltaOmega = CalculateDerivativeDamage(kappa) * pow(rNonlocalEqStrain/kappa,mViscosityExponent) * Plus(rNonlocalEqStrain - prevNonlocalEqStrain);
@@ -357,21 +357,21 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping1
 	    	Unknown[1] = deltaOmega/CalculateDerivativeDamage(kappa); 	// delta kappa
 
 	    	// compose vector of known Parameter, which are necessary for ResidualAn
-	    	NuTo::FullVector<double,Eigen::Dynamic> Parameter(4);
+	    	Eigen::VectorXd Parameter(4);
 
 	    	Parameter[0] = oldStaticData->mOmega;									// omega at the beginning of the time increment
 	    	Parameter[1] = std::max(oldStaticData->mKappa, e_0 + e_0*1.0e-5);		// kappa at the beginning of the time increment
 	    	Parameter[2] = prevNonlocalEqStrain;									// nonlocal eq strain at the beginning of the time increment
 	    	Parameter[3] = rNonlocalEqStrain;										// current nonlocal eq strain
 
-	    	const NuTo::FullVector<double,Eigen::Dynamic> ParameterList(Parameter);
+	    	const Eigen::VectorXd ParameterList(Parameter);
 
 	        // prepare starting Newton solver with respect to the "Unknown"
-//	        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> (GradientDamageEngineeringStressFatigue::*fdjacAn)
-//	        	(const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>) const;
+//	        Eigen::MatrixXd (GradientDamageEngineeringStressFatigue::*fdjacAn)
+//	        	(const Eigen::VectorXd&,Eigen::VectorXd) const;
 //
-//	        NuTo::FullVector<double,Eigen::Dynamic> (GradientDamageEngineeringStressFatigue::*residual)
-//	        		(const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>) const;
+//	        Eigen::VectorXd (GradientDamageEngineeringStressFatigue::*residual)
+//	        		(const Eigen::VectorXd&,Eigen::VectorXd) const;
 //
 //	        // set Jacobi to analytical Jacobi
 //	        fdjacAn = &GradientDamageEngineeringStressFatigue::DResidualAn;
@@ -379,11 +379,11 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping1
 //	        // set residual
 //	        residual = &GradientDamageEngineeringStressFatigue::Residual;
 
-	        boost::function<NuTo::FullVector<double,Eigen::Dynamic> (const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>)> residualFunction;
+	        boost::function<Eigen::VectorXd (const Eigen::VectorXd&,Eigen::VectorXd)> residualFunction;
 	        residualFunction = boost::bind( &GradientDamageEngineeringStressFatigue::Residual, this, _1, _2 );
 
-	        boost::function<NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>
-	        	(const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>)> jacobiFunction;
+	        boost::function<Eigen::MatrixXd
+	        	(const Eigen::VectorXd&,Eigen::VectorXd)> jacobiFunction;
 	        jacobiFunction = boost::bind( &GradientDamageEngineeringStressFatigue::DResidualAn, this, _1, _2 );
 
 	        // start Newton solver
@@ -419,7 +419,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping1
 
 	    	// calculate nonlocal eq tangent
 	        if (rNewTangentNonlocal!=0) {
-	        	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> matrixMultipl;
+	        	Eigen::MatrixXd matrixMultipl;
 
 	        	matrixMultipl  = ((GradientDamageEngineeringStressFatigue::DResidualAn(ParameterList,Unknown)).fullPivLu().
 	        			solve(GradientDamageEngineeringStressFatigue::DResidualDEpsNonlocalAn(ParameterList,Unknown))).eval();
@@ -567,7 +567,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::Evaluate2D(Ele
 		throw MechanicsException("[NuTo::GradientDamageEngineeringStressFatigue::Evaluate2D] Invalid type of 2D section behaviour found!!!");
 	}
 
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(3,3);
+	Eigen::MatrixXd ElasticStiffness(3,3);
 	ElasticStiffness << C11, C12,  0.,
 						C12, C11,  0.,
 						0.,  0.,  C33;
@@ -822,7 +822,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping2
     		throw MechanicsException("[NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping2D] Invalid type of 2D section behaviour found!!!");
     	}
 
-		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(3,3);
+		Eigen::MatrixXd ElasticStiffness(3,3);
 		ElasticStiffness << C11, C12,  0.,
 							C12, C11,  0.,
 							0.,  0.,  C33;
@@ -852,7 +852,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping2
 	    	// call Newton and calculate omega and kappa
 
 	    	// initialize the vector of unknowns
-	    	NuTo::FullVector<double,Eigen::Dynamic> Unknown(2);
+	    	Eigen::VectorXd Unknown(2);
 	    	double deltaOmega;
 
 	    	deltaOmega = CalculateDerivativeDamage(kappa) * pow(rNonlocalEqStrain/kappa,mViscosityExponent) * Plus(rNonlocalEqStrain - prevNonlocalEqStrain);
@@ -861,21 +861,21 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping2
 	    	Unknown[1] = deltaOmega/CalculateDerivativeDamage(kappa); 	// delta kappa
 
 	    	// compose vector of known Parameter, which are necessary for ResidualAn
-	    	NuTo::FullVector<double,Eigen::Dynamic> Parameter(4);
+	    	Eigen::VectorXd Parameter(4);
 
 	    	Parameter[0] = oldStaticData->mOmega;									// omega at the beginning of the time increment
 	    	Parameter[1] = std::max(oldStaticData->mKappa, e_0 + e_0*1.0e-5);		// kappa at the beginning of the time increment
 	    	Parameter[2] = prevNonlocalEqStrain;									// nonlocal eq strain at the beginning of the time increment
 	    	Parameter[3] = rNonlocalEqStrain;										// current nonlocal eq strain
 
-	    	const NuTo::FullVector<double,Eigen::Dynamic> ParameterList(Parameter);
+	    	const Eigen::VectorXd ParameterList(Parameter);
 
 	        // prepare starting Newton solver with respect to the "Unknown"
-//	        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> (GradientDamageEngineeringStressFatigue::*fdjacAn)
-//	        	(const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>) const;
+//	        Eigen::MatrixXd (GradientDamageEngineeringStressFatigue::*fdjacAn)
+//	        	(const Eigen::VectorXd&,Eigen::VectorXd) const;
 //
-//	        NuTo::FullVector<double,Eigen::Dynamic> (GradientDamageEngineeringStressFatigue::*residual)
-//	        		(const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>) const;
+//	        Eigen::VectorXd (GradientDamageEngineeringStressFatigue::*residual)
+//	        		(const Eigen::VectorXd&,Eigen::VectorXd) const;
 
 	        // set Jacobi to analytical Jacobi
 //	        fdjacAn = &GradientDamageEngineeringStressFatigue::DResidualAn;
@@ -884,11 +884,11 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping2
 //	        residual = &GradientDamageEngineeringStressFatigue::Residual;
 
 
-	        boost::function<NuTo::FullVector<double,Eigen::Dynamic> (const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>)> residualFunction;
+	        boost::function<Eigen::VectorXd (const Eigen::VectorXd&,Eigen::VectorXd)> residualFunction;
 	        residualFunction = boost::bind( &GradientDamageEngineeringStressFatigue::Residual, this, _1, _2 );
 
-	        boost::function<NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>
-	        	(const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>)> jacobiFunction;
+	        boost::function<Eigen::MatrixXd
+	        	(const Eigen::VectorXd&,Eigen::VectorXd)> jacobiFunction;
 	        jacobiFunction = boost::bind( &GradientDamageEngineeringStressFatigue::DResidualAn, this, _1, _2 );
 
 	        // start Newton solver
@@ -924,7 +924,7 @@ NuTo::Error::eError NuTo::GradientDamageEngineeringStressFatigue::ReturnMapping2
 
 	    	// calculate nonlocal eq tangent
 	        if (rNewTangentNonlocal!=0) {
-	        	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> matrixMultipl;
+	        	Eigen::MatrixXd matrixMultipl;
 
 	        	matrixMultipl  = ((GradientDamageEngineeringStressFatigue::DResidualAn(ParameterList,Unknown)).fullPivLu().
 	        			solve(GradientDamageEngineeringStressFatigue::DResidualDEpsNonlocalAn(ParameterList,Unknown))).eval();
@@ -1362,13 +1362,13 @@ void NuTo::GradientDamageEngineeringStressFatigue::SetParameterDouble(NuTo::Cons
 //! @brief ... gets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::GradientDamageEngineeringStressFatigue::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+Eigen::VectorXd NuTo::GradientDamageEngineeringStressFatigue::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     switch(rIdentifier)
     {
     case Constitutive::eConstitutiveParameter::DAMAGE_LAW:
     {
-        NuTo::FullVector<double, Eigen::Dynamic> damageLaw(mDamageLawParameters.rows() + 1);
+        Eigen::VectorXd damageLaw(mDamageLawParameters.rows() + 1);
 
         damageLaw[0] = static_cast<double>(mDamageLawType);
         damageLaw.SetBlock(1, 0, mDamageLawParameters);
@@ -1386,7 +1386,7 @@ NuTo::FullVector<double, Eigen::Dynamic> NuTo::GradientDamageEngineeringStressFa
 //! @brief ... sets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
-void NuTo::GradientDamageEngineeringStressFatigue::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
+void NuTo::GradientDamageEngineeringStressFatigue::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue)
 {
     switch(rIdentifier)
     {
@@ -1545,7 +1545,7 @@ void NuTo::GradientDamageEngineeringStressFatigue::CheckViscosityExponent(double
 
 //! @brief ... check damage law parameters
 //! @param rDamageLawParameters ... damage law parameters
-void NuTo::GradientDamageEngineeringStressFatigue::CheckDamageLaw(const NuTo::FullVector<double, Eigen::Dynamic>& rDamageLaw) const
+void NuTo::GradientDamageEngineeringStressFatigue::CheckDamageLaw(const Eigen::VectorXd& rDamageLaw) const
 {
     int damageLawType = static_cast<int>(rDamageLaw[0]);
     int numDamageLawParameters = rDamageLaw.rows() - 1;

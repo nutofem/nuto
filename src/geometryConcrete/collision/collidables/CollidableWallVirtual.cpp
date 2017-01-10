@@ -5,17 +5,17 @@
  *      Author: ttitsche
  */
 
-#include "math/FullMatrix.h"
+
 #include "geometryConcrete/collision/Event.h"
 #include "geometryConcrete/collision/collidables/CollidableWallVirtual.h"
 #include "geometryConcrete/collision/collidables/CollidableParticleSphere.h"
 #include "geometryConcrete/collision/SubBox.h"
 
 NuTo::CollidableWallVirtual::CollidableWallVirtual(
-		FullVector<double, 3> rPosition,
-		FullVector<double, 3> rDirection,
-		const int rIndex)
-		: CollidableWallBase(rPosition, rDirection, rIndex)
+	Eigen::Vector3d rPosition,
+	Eigen::Vector3d rDirection,
+	const int rIndex)
+	: CollidableWallBase(rPosition, rDirection, rIndex)
 {
 }
 

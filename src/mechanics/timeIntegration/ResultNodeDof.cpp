@@ -5,7 +5,7 @@
  *      Author: junger
  */
 
-#include "math/FullMatrix.h"
+
 #include "mechanics/timeIntegration/ResultNodeDof.h"
 #include "mechanics/nodes/NodeBase.h"
 
@@ -21,13 +21,13 @@ void NuTo::ResultNodeDof::Info() const
 void NuTo::ResultNodeDof::CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot)
 {
 	assert(rTimeStepPlot>=0);
-	FullMatrix<double,1,Eigen::Dynamic> dofValues(1,this->GetNumData(rStructure));
+	Eigen::Matrix<double,1,Eigen::Dynamic> dofValues(1,this->GetNumData(rStructure));
 	this->CalculateValues(rStructure,dofValues);
-	if (rTimeStepPlot>=mData.GetNumRows())
+	if (rTimeStepPlot>=mData.rows())
 	{
 		this->Resize(rStructure, 2*(rTimeStepPlot+1),false);
 	}
-	if (dofValues.GetNumColumns()!=mData.GetNumColumns())
-		throw MechanicsException("[NuTo::ResultNodeDof::CalculateAndAddValues] the allocated number of columns is wrong.");
-	mData.SetRow(rTimeStepPlot,dofValues);
+	if (dofValues.cols()!=mData.cols())
+		throw MechanicsException(__PRETTY_FUNCTION__, "the allocated number of columns is wrong.");
+	mData.row(rTimeStepPlot) = dofValues;
 }

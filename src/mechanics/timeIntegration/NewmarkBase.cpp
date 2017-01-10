@@ -23,7 +23,7 @@
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/timeIntegration/NewmarkBase.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
-#include "math/FullMatrix.h"
+
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"

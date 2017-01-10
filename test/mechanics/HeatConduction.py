@@ -1,4 +1,5 @@
 import nuto
+import numpy as np
 
 structure1D = nuto.Structure(1)
 structure2D = nuto.Structure(2)
@@ -23,31 +24,22 @@ structure2D.ConstitutiveLawSetParameterDouble(material2D, "Thermal_Conductivity"
 structure3D.ConstitutiveLawSetParameterDouble(material3D, "Thermal_Conductivity", conductivity)
 
 # create nodes
-node_coordinates = nuto.DoubleFullVector(1)
 node_id = 0
-for x in range(2):
-    node_coordinates.SetValue(0, x)
-    structure1D.NodeCreate(node_id, node_coordinates)
+for x in np.arange(2.0):
+    structure1D.NodeCreate(node_id, np.array([x]))
     node_id += 1
 
 node_id = 0
-node_coordinates = nuto.DoubleFullVector(2)
-for x in range(2):
-    for y in range(2):
-        node_coordinates.SetValue(0, x)
-        node_coordinates.SetValue(1, y)
-        structure2D.NodeCreate(node_id, node_coordinates)
+for x in np.arange(2.0):
+    for y in np.arange(2.0):
+        structure2D.NodeCreate(node_id, np.array([x, y]))
         node_id += 1
 
 node_id = 0
-node_coordinates = nuto.DoubleFullVector(3)
-for x in range(2):
-    for y in range(2):
-        for z in range(2):
-            node_coordinates.SetValue(0, x)
-            node_coordinates.SetValue(1, y)
-            node_coordinates.SetValue(2, z)
-            structure3D.NodeCreate(node_id, node_coordinates)
+for x in np.arange(2.0):
+    for y in np.arange(2.0):
+        for z in np.arange(2.0):
+            structure3D.NodeCreate(node_id, np.array([x, y, z]))
             node_id += 1
 
 # create interpolation type
@@ -64,33 +56,19 @@ structure3D.InterpolationTypeAdd(brick_iptype, "coordinates", "equidistant1")
 structure3D.InterpolationTypeAdd(brick_iptype, "temperature", "equidistant1")
 
 # create one truss element
-element_incidence = nuto.IntVector(2)
-element_incidence[0] = 0
-element_incidence[1] = 1
+element_incidence = [0, 1]
 structure1D.ElementCreate(truss_iptype, element_incidence)
 structure1D.ElementSetSection(0, section1D)
 structure1D.ElementSetConstitutiveLaw(0, material1D)
 
 # create one quad element
-element_incidence = nuto.IntVector(4)
-element_incidence[0] = 0
-element_incidence[1] = 1
-element_incidence[2] = 3
-element_incidence[3] = 2
+element_incidence = [0, 1, 3, 2]
 structure2D.ElementCreate(quad_iptype, element_incidence)
 structure2D.ElementSetSection(0, section2D)
 structure2D.ElementSetConstitutiveLaw(0, material2D)
 
 # create one brick element
-element_incidence = nuto.IntVector(8)
-element_incidence[0] = 0
-element_incidence[1] = 1
-element_incidence[2] = 3
-element_incidence[3] = 2
-element_incidence[4] = 4
-element_incidence[5] = 5
-element_incidence[6] = 7
-element_incidence[7] = 6
+element_incidence = [0, 1, 3, 2, 4, 5, 7, 6]
 structure3D.ElementCreate(brick_iptype, element_incidence)
 structure3D.ElementSetSection(0, section3D)
 structure3D.ElementSetConstitutiveLaw(0, material3D)
@@ -100,12 +78,8 @@ structure2D.ElementTotalConvertToInterpolationType()
 structure3D.ElementTotalConvertToInterpolationType()
 
 # check stiffness matrices
-delta = 1e-6;
-rel_tolerance = 1e-4;
+delta = 1e-6
+rel_tolerance = 1e-4
 structure1D.CheckHessian0(delta, rel_tolerance, True)
 structure2D.CheckHessian0(delta, rel_tolerance, True)
 structure3D.CheckHessian0(delta, rel_tolerance, True)
-
-
-
-

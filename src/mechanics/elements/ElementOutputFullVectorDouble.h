@@ -1,7 +1,6 @@
 // $Id $
 #pragma once
 
-#include "math/FullVector_Def.h"
 #include "mechanics/elements/ElementOutputBase.h"
 
 namespace NuTo
@@ -32,12 +31,12 @@ public:
     	return new ElementOutputFullVectorDouble(*this);
     }
 
-    NuTo::FullVector<double,Eigen::Dynamic>& GetFullVectorDouble() override
+    Eigen::VectorXd& GetFullVectorDouble() override
 	{
         return mVector;
 	}
 private:
-    FullVector<double,Eigen::Dynamic> mVector;
+    Eigen::VectorXd mVector;
 };
 }
 #ifdef ENABLE_SERIALIZATION

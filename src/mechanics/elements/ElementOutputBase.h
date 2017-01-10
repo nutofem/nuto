@@ -2,16 +2,13 @@
 #pragma once
 
 #include <vector>
-
-
+#include <eigen3/Eigen/Dense>
 
 namespace NuTo
 {
 class ElementOutputIpData;
 
 
-template <class T, int rows, int cols> class FullMatrix;
-template <class T, int rows> class FullVector;
 template <typename T> class BlockFullMatrix;
 template <typename T> class BlockFullVector;
 
@@ -36,19 +33,19 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif  // ENABLE_SERIALIZATION
 
-    virtual FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixDouble();
+    virtual Eigen::MatrixXd& GetFullMatrixDouble();
 
     virtual BlockFullMatrix<double>& GetBlockFullMatrixDouble();
 
-    virtual FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixInt();
+    virtual Eigen::MatrixXi& GetFullMatrixInt();
 
-    virtual FullVector<double,Eigen::Dynamic>& GetFullVectorDouble();
+    virtual Eigen::VectorXd& GetFullVectorDouble();
 
     virtual BlockFullVector<double>& GetBlockFullVectorDouble();
 
     virtual BlockFullVector<int>& GetBlockFullVectorInt();
 
-    virtual FullVector<int,Eigen::Dynamic>& GetFullVectorInt();
+    virtual Eigen::VectorXi& GetFullVectorInt();
 
     virtual std::vector<int>& GetVectorInt();
 

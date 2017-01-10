@@ -33,7 +33,7 @@ public:
     //! @param rFullMatrix ... input matrix (full storage)
     //! @param rAbsoluteTolerance ... absolute tolerance
     //! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
-    SparseMatrixCSRVector2General(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance = 0, double rRelativeTolerance = 1e-14);
+    SparseMatrixCSRVector2General(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance = 0, double rRelativeTolerance = 1e-14);
 
     //! @brief ... create sparse matrix with vector of vector from standard CSR format
     //! @param rCSRMatrix ... input matrix (full storage)
@@ -67,16 +67,12 @@ public:
     //! @param rValue ... value of the nonzero entry
     void AddValue(int rRow, int rColumn, const T& rValue) override;
 
-    //! @brief ... import matrix from slang object stored in  a text file
-    //! @param rFileName ... file name
-    void ImportFromSLangText(const char* rFileName) override;
-
     //! @brief ... return the matrix type
     NuTo::eSparseMatrixType GetSparseMatrixType()const override;
 
     //! @brief ... write nonzero matrix entries into a matrix
-    //! @param rMatrix ... the matrix
-    void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const override;
+    //! @return ... the matrix
+    virtual Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> ConvertToFullMatrix() const override;
 
     //! @brief ... returns the symmetric part of the matrix 0.5*(A+A^T)
     //! @return symmetric part
@@ -158,9 +154,9 @@ public:
     //! @brief ... multiply sparse matrix with a full matrix
     //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
     //! @return ... full matrix
-    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const override;
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const override;
 
-    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const override;
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> TransMult(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const override;
 
     //! @brief ... calculate the transpose of the matrix (transpose row and columns)
     //! @return ... transpose of this matrix (sparse csr storage)
@@ -209,7 +205,7 @@ public:
     //! @param rMappingNewToInitialOrdering ... mapping from new ordering to initial ordering (output object)
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to new ordering (output object)
     //! @param rRelativeTolerance ... relative tolerance for zero matrix entries
-    void Gauss(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance = 1e-14);
+    void Gauss(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance = 1e-14);
 
     //! @brief ... perform Gauss algorithm (matrix and right hand side are reordered and modified)
     //! @param rRhs ... right-hand side vector (input and output object)

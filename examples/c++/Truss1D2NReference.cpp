@@ -1,5 +1,4 @@
 #include <iostream>
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseDirectSolverMUMPS.h"
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
@@ -48,7 +47,7 @@ int main()
     }
 
     // create nodes
-    NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(1);
+    Eigen::VectorXd nodeCoordinates(1);
     nodeCoordinates(0) = 0.;
     output << nodeCoordinates(0) << "\n";
     structure.NodeCreate(0, nodeCoordinates);
@@ -123,7 +122,7 @@ int main()
     }
 
     // set boundary conditions and loads
-    NuTo::FullVector<double, Eigen::Dynamic> direction(1);
+    Eigen::VectorXd direction(1);
     direction(0) = 1;
     structure.ConstraintLinearSetDisplacementNode(0, direction, 0.0);
     if (EnableDisplacementControl)
@@ -142,7 +141,7 @@ int main()
 
     auto displacementVector = structure.NodeExtractDofValues(0);
 
-    NuTo::FullVector<double, Eigen::Dynamic> rDisplacements;
+    Eigen::VectorXd rDisplacements;
     filename = "Truss1D2NReference-disp";
     output.open(filename.c_str());
     if (output)
@@ -190,7 +189,7 @@ int main()
         output << "strain00\n";
         for (int element = 0; element < NumElements; element++)
         {
-            output << structure.ElementGetEngineeringStrain(element).GetRow(0) << "\n";
+            output << structure.ElementGetEngineeringStrain(element).row(0) << "\n";
         }
         output.close();
     }
@@ -207,7 +206,7 @@ int main()
         output << "stress00\n";
         for (int element = 0; element < NumElements; element++)
         {
-            output << structure.ElementGetEngineeringStress(element).GetRow(0) << "\n";
+            output << structure.ElementGetEngineeringStress(element).row(0) << "\n";
         }
         output.close();
     }

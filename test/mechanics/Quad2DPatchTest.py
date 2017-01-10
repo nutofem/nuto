@@ -1,20 +1,14 @@
 import nuto
 import sys
 import os
+import numpy as np
+from ctypes import c_int
 
-#show the results on the screen
+# show the results on the screen
 printResult = False
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#% no error in file, modified, if error is detected              %
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# no error in file, modified, if error is detected
 error = False
-
-import nuto
-import sys
-import os
-
-printResult = True
 
 # definitions
 E = 80000
@@ -22,181 +16,169 @@ v = 1./3.
 
 BoundaryDisplacement = 1.0
 
+
 def RunPatchTest(StressState):
-	global error
-	#create structure
-	myStructure = nuto.Structure(2)
-	myStructure.SetShowTime(False)
+    global error
+    # create structure
+    myStructure = nuto.Structure(2)
+    myStructure.SetShowTime(False)
 
-	# create material law
-	myMatLin = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress")
-        myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"Youngs_Modulus", E)
-        myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"Poissons_Ratio", v)
+    # create material law
+    myMatLin = myStructure.ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress")
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLin, "Youngs_Modulus", E)
+    myStructure.ConstitutiveLawSetParameterDouble(myMatLin, "Poissons_Ratio", v)
 
-	#create section
-	mySection = myStructure.SectionCreate("Plane_Stress")
-	myStructure.SectionSetThickness(mySection,1)
+    # create section
+    mySection = myStructure.SectionCreate("Plane_Stress")
+    myStructure.SectionSetThickness(mySection, 1)
 
-	numNodes=8
-	myStructure.NodesCreate(nuto.DoubleFullMatrix(2,numNodes,(
-		 0 ,  0 ,
-		10 ,  0 ,
-		 2 ,  2 ,
-		 8 ,  3 ,
-		 4 ,  7 ,
-		 8 ,  7 ,
-		 0 , 10 ,
-		10 , 10	)) )
+    numNodes = 8
+    myStructure.NodesCreate(np.array([[  0, 10,  2,  8,  4,  8,  0, 10],
+                                      [  0,  0,  2,  3,  7,  7, 10, 10]], dtype=float))
 
-	elementIncidence = nuto.IntFullMatrix(4,5,(	
-		3,2,0,1 ,
-		4,6,0,2 ,
-		5,4,2,3 ,
-		7,5,3,1 ,
-		7,6,4,5 ) )
+    myStructure.NodeInfo(10)
 
-	interpolationType = myStructure.InterpolationTypeCreate("Quad2D")
-	myStructure.InterpolationTypeAdd(interpolationType, "Coordinates", "Equidistant1");
-	myStructure.InterpolationTypeAdd(interpolationType, "Displacements", "Equidistant1");
+    elementIncidence = np.array([
+        [3,4,5,7,7],
+        [2,6,4,5,6],
+        [0,0,2,3,4],
+        [1,2,3,1,5]], dtype=c_int)
 
-	myStructure.ElementsCreate(interpolationType, elementIncidence)
-	myStructure.ElementTotalConvertToInterpolationType()
-	myStructure.ElementTotalSetConstitutiveLaw(myMatLin)
-	myStructure.ElementTotalSetSection(mySection)
+    interpolationType = myStructure.InterpolationTypeCreate("Quad2D")
+    myStructure.InterpolationTypeAdd(interpolationType, "Coordinates", "Equidistant1")
+    myStructure.InterpolationTypeAdd(interpolationType, "Displacements", "Equidistant1")
 
-	LoadNodesXPos=myStructure.GroupCreate("Nodes")
-	LoadNodesXNeg=myStructure.GroupCreate("Nodes")
-	LoadNodesYPos=myStructure.GroupCreate("Nodes")
-	LoadNodesYNeg=myStructure.GroupCreate("Nodes")
+    print elementIncidence
+    myStructure.ElementsCreate(interpolationType, elementIncidence)
 
-	myStructure.GroupAddNode(LoadNodesXPos,1)
-	myStructure.GroupAddNode(LoadNodesXPos,7)
-	myStructure.GroupAddNode(LoadNodesYPos,6)
-	myStructure.GroupAddNode(LoadNodesYPos,7)
-	
-	myStructure.GroupAddNode(LoadNodesXNeg,0)
-	myStructure.GroupAddNode(LoadNodesXNeg,6)
-	myStructure.GroupAddNode(LoadNodesYNeg,0)
-	myStructure.GroupAddNode(LoadNodesYNeg,1)
+    myStructure.ElementTotalConvertToInterpolationType()
+    myStructure.ElementTotalSetConstitutiveLaw(myMatLin)
+    myStructure.ElementTotalSetSection(mySection)
 
-	directionX = nuto.DoubleFullMatrix(2,1,(1,0))
-	directionY = nuto.DoubleFullMatrix(2,1,(0,1))
+    LoadNodesXPos = myStructure.GroupCreate("Nodes")
+    LoadNodesXNeg = myStructure.GroupCreate("Nodes")
+    LoadNodesYPos = myStructure.GroupCreate("Nodes")
+    LoadNodesYNeg = myStructure.GroupCreate("Nodes")
 
-	print "Displacement control with stress state ", StressState
+    myStructure.GroupAddNode(LoadNodesXPos, 1)
+    myStructure.GroupAddNode(LoadNodesXPos, 7)
+    myStructure.GroupAddNode(LoadNodesYPos, 6)
+    myStructure.GroupAddNode(LoadNodesYPos, 7)
 
-	if StressState == "XX":
-		myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXNeg, directionX, 0.0)
-		myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXPos, directionX, BoundaryDisplacement)
-		myStructure.ConstraintLinearSetDisplacementNode(0, directionY, 0)
-	elif StressState == "YY":
-		myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesYNeg, directionY, 0.0)
-		myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesYPos, directionY, BoundaryDisplacement)
-		myStructure.ConstraintLinearSetDisplacementNode(0, directionX, 0)
-	elif StressState == "XY":
-		myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXNeg, directionX, 0.0)
-		myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXNeg, directionY, 0.0)
-		myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXPos, directionY, BoundaryDisplacement)
-		myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXPos, directionX, 0)
-	else:
-		print 'Wrong stressstate given'
-		error = True;
-		sys.exit(-1)
+    myStructure.GroupAddNode(LoadNodesXNeg, 0)
+    myStructure.GroupAddNode(LoadNodesXNeg, 6)
+    myStructure.GroupAddNode(LoadNodesYNeg, 0)
+    myStructure.GroupAddNode(LoadNodesYNeg, 1)
 
-	# start analysis
-	# build global dof numbering
-	myStructure.NodeBuildGlobalDofs()
-	myStructure.CalculateMaximumIndependentSets()
-	
-	myStructure.SolveGlobalSystemStaticElastic()
+    directionX = np.array([1.0, 0.0])
+    directionY = np.array([0.0, 1.0])
 
-	# calculate residual
-	internalGradient = myStructure.BuildGlobalInternalGradient()
-	if (printResult):
-		residualVector = internalGradient.J.Export()*(-1.)
-		print "residual: " + str(residualVector.Norm())
-		
-	if ((internalGradient.J.Export()).Norm()>1e-8):
-			print 'Internal and external forces differs.'
-			error = True;
+    print "Displacement control with stress state ", StressState
 
+    if StressState == "XX":
+        myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXNeg, directionX, 0.0)
+        myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXPos, directionX, BoundaryDisplacement)
+        myStructure.ConstraintLinearSetDisplacementNode(0, directionY, 0)
+    elif StressState == "YY":
+        myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesYNeg, directionY, 0.0)
+        myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesYPos, directionY, BoundaryDisplacement)
+        myStructure.ConstraintLinearSetDisplacementNode(0, directionX, 0)
+    elif StressState == "XY":
+        myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXNeg, directionX, 0.0)
+        myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXNeg, directionY, 0.0)
+        myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXPos, directionY, BoundaryDisplacement)
+        myStructure.ConstraintLinearSetDisplacementNodeGroup(LoadNodesXPos, directionX, 0)
+    else:
+        print 'Wrong stressstate given'
+        error = True
+        sys.exit(-1)
 
+    # start analysis
+    # build global dof numbering
+    myStructure.NodeBuildGlobalDofs()
+    myStructure.CalculateMaximumIndependentSets()
 
-	#calculate internal force vector
-	Fi = myStructure.ElementBuildInternalGradient(2)
-	if (printResult):
-		print "Internal Force"
-		Fi.Info()
+    myStructure.SolveGlobalSystemStaticElastic()
 
-	#calculate engineering strain of 2 at all integration points
-	#the size the matrix is not important and reallocated within the procedure
-	EngineeringStrain = myStructure.ElementGetEngineeringStrain(2)
+    # calculate residual
+    internalGradient = myStructure.BuildGlobalInternalGradient()
+    if (printResult):
+        residualVector = internalGradient.J.Export()*(-1.)
+        print "residual: " + str(np.linalg.norm(residualVector))
 
+    if (np.linalg.norm(internalGradient.J.Export()) > 1e-8):
+        print 'Internal and external forces differs.'
+        error = True
 
-	#calculate engineering strain of 2 at all integration points
-	EngineeringStress = myStructure.ElementGetEngineeringStress(2)
-	#correct stress
-	EngineeringStressCorrect = nuto.DoubleFullMatrix(6,4)
-	for i in range(0,4):
-		if StressState == "XX":
-			sigma = E*BoundaryDisplacement / 10.
-			EngineeringStressCorrect.SetValue(0,i, sigma)
-		elif StressState == "YY":
-			sigma = E*BoundaryDisplacement / 10.
-			EngineeringStressCorrect.SetValue(1,i, sigma)
-		elif StressState == "XY":
-			sigma = E*BoundaryDisplacement / 10. / (2+2*v)
-			EngineeringStressCorrect.SetValue(5,i, sigma)
+    # calculate internal force vector
+    Fi = myStructure.ElementBuildInternalGradient(2)
+    if (printResult):
+        print "Internal Force"
+        print Fi
 
+    # calculate engineering strain of 2 at all integration points
+    # the size the matrix is not important and reallocated within the procedure
+    EngineeringStrain = myStructure.ElementGetEngineeringStrain(2)
 
+    # calculate engineering strain of 2 at all integration points
+    EngineeringStress = myStructure.ElementGetEngineeringStress(2)
+    # correct stress
+    EngineeringStressCorrect = np.zeros((6, 4))
+    for i in range(0, 4):
+        if StressState == "XX":
+            sigma = E*BoundaryDisplacement / 10.
+            EngineeringStressCorrect[0, i] = sigma
+        elif StressState == "YY":
+            sigma = E*BoundaryDisplacement / 10.
+            EngineeringStressCorrect[1, i] = sigma
+        elif StressState == "XY":
+            sigma = E*BoundaryDisplacement / 10. / (2+2*v)
+            EngineeringStressCorrect[5, i] = sigma
 
-	if (printResult):
-		print "EngineeringStressCorrect"
-		EngineeringStressCorrect.Info()
-		print "EngineeringStress"
-		EngineeringStress.Info()
+    if (printResult):
+        print "EngineeringStressCorrect"
+        print EngineeringStressCorrect
+        print "EngineeringStress"
+        print EngineeringStress
 
-	if ((EngineeringStress-EngineeringStressCorrect).Abs().Max()>1e-4):
-			print 'stress is not correct.'
-			error = True;
-			if (printResult):
-				print "(EngineeringStress-EngineeringStressCorrect).Abs().Max()="
-				print (EngineeringStress-EngineeringStressCorrect).Abs().Max()
+    if (np.max(np.abs(EngineeringStress - EngineeringStressCorrect)) > 1e-4):
+        print 'stress is not correct.'
+        error = True
+        if (printResult):
+            print "np.max(np.abs(EngineeringStress - EngineeringStressCorrect))"
+            print np.max(np.abs(EngineeringStress - EngineeringStressCorrect))
 
+    C1 = 1./E
+    C2 = -v/E
+    C3 = 2*(1+v)/E
 
-	C1 = 1./E
-	C2 = -v/E
-	C3 = 2*(1+v)/E
+    D = np.array([
+            [C1, C2, C2,  0,  0,  0],
+            [C2, C1, C2,  0,  0,  0],
+            [C2, C2, C1,  0,  0,  0],
+            [0,  0,  0,  C3,  0,  0],
+            [0,  0,  0,   0, C3,  0],
+            [0,  0,  0,   0,  0, C3]])
 
-	D = nuto.DoubleFullMatrix(6,6,(
-		C1, C2, C2,  0,  0,  0,
-		C2, C1, C2,  0,  0,  0,
-		C2, C2, C1,  0,  0,  0,
-		0,  0,  0, C3,  0,  0,
-		0,  0,  0,  0, C3,  0,
-		0,  0,  0,  0,  0, C3))
+    # correct strain
+    EngineeringStrainCorrect = D.dot(EngineeringStressCorrect)
 
-	#correct strain
-	EngineeringStrainCorrect = D*EngineeringStressCorrect
+    if (printResult):
+        print "EngineeringStrainCorrect"
+        print EngineeringStrainCorrect
+        print "EngineeringStrain"
+        print EngineeringStrain
 
-	if (printResult):
-		print "EngineeringStrainCorrect"
-		EngineeringStrainCorrect.Info()
-		print "EngineeringStrain"
-		EngineeringStrain.Info()
-
-	if ((EngineeringStrain-EngineeringStrainCorrect).Abs().Max()>1e-8):
-			print 'strain is not correct.'
-			error = True;
-
+    if (np.max(np.abs(EngineeringStrain - EngineeringStrainCorrect)) > 1e-8):
+        print 'strain is not correct.'
+        error = True
 
 
 RunPatchTest("XX")
 RunPatchTest("YY")
 RunPatchTest("XY")
 
-
 if (error):
-	sys.exit(-1)
+    sys.exit(-1)
 else:
     sys.exit(0)
-   

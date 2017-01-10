@@ -86,10 +86,10 @@ public:
         }
 
     	// calculate time and time step during the time dependent constraint (where the linear interpolation is performed)
-    	if (mTimeDependentConstraintFactor.GetNumRows()!=0 && mAutomaticTimeStepping)
+    	if (mTimeDependentConstraintFactor.rows()!=0 && mAutomaticTimeStepping)
     	{
     		int curStep(0);
-    		while (mTimeDependentConstraintFactor(curStep,0)<curTime && curStep<mTimeDependentConstraintFactor.GetNumRows()-1)
+    		while (mTimeDependentConstraintFactor(curStep,0)<curTime && curStep<mTimeDependentConstraintFactor.rows()-1)
     			curStep++;
     		if (curStep==0)
     			curStep++;

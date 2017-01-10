@@ -5,7 +5,7 @@
 
 using namespace NuTo::Constitutive::StaticData;
 
-NuTo::FullVector<double,Eigen::Dynamic> DataMoistureTransport::GetCurrentSorptionCoeff () const
+Eigen::VectorXd DataMoistureTransport::GetCurrentSorptionCoeff () const
 {
     return mCurrentSorptionCoeff;
 }
@@ -17,7 +17,7 @@ double DataMoistureTransport::GetLastRelHumValue() const
 }
 
 
-NuTo::FullVector<double,Eigen::Dynamic> DataMoistureTransport::GetLastSorptionCoeff() const
+Eigen::VectorXd DataMoistureTransport::GetLastSorptionCoeff() const
 {
     return mLastSorptionCoeff;
 }
@@ -29,9 +29,9 @@ bool DataMoistureTransport::IsDesorption() const
 }
 
 
-void DataMoistureTransport::SetCurrentSorptionCoeff(FullVector<double,Eigen::Dynamic> rCurrentSorptionCoeff)
+void DataMoistureTransport::SetCurrentSorptionCoeff(Eigen::VectorXd rCurrentSorptionCoeff)
 {
-    switch (rCurrentSorptionCoeff.GetNumRows())
+    switch (rCurrentSorptionCoeff.rows())
     {
     case 3:
     {
@@ -40,7 +40,7 @@ void DataMoistureTransport::SetCurrentSorptionCoeff(FullVector<double,Eigen::Dyn
     }
     case 4:
     {
-        mCurrentSorptionCoeff.Resize(3);
+        mCurrentSorptionCoeff.resize(3);
         for(int i=0; i<3; i++)
         {
             mCurrentSorptionCoeff(i) = rCurrentSorptionCoeff(i+1);
@@ -64,9 +64,9 @@ void DataMoistureTransport::SetLastRelHumValue(double rLastRelHumValue)
 }
 
 
-void DataMoistureTransport::SetLastSorptionCoeff(FullVector<double,Eigen::Dynamic> rLastSorptionCoeff)
+void DataMoistureTransport::SetLastSorptionCoeff(Eigen::VectorXd rLastSorptionCoeff)
 {
-    switch (rLastSorptionCoeff.GetNumRows())
+    switch (rLastSorptionCoeff.rows())
     {
     case 3:
     {
@@ -75,7 +75,7 @@ void DataMoistureTransport::SetLastSorptionCoeff(FullVector<double,Eigen::Dynami
     }
     case 4:
     {
-        mLastSorptionCoeff.Resize(3);
+        mLastSorptionCoeff.resize(3);
         for(int i=0; i<3; i++)
         {
             mLastSorptionCoeff(i) = rLastSorptionCoeff(i+1);

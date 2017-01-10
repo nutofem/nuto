@@ -5,11 +5,7 @@
 #include <iostream>
 #include <string>
 
-#include "math/Matrix.h"
-#include "math/FullMatrix.h"
-#include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSR.h"
-#include "math/SparseMatrixCSRSymmetric_Def.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/MathException.h"
@@ -35,122 +31,6 @@ std::string SparseMatrixCSRSymmetric<int>::GetTypeId()const
     return std::string("SparseMatrixCSRSymmetricInt");
 }
 
-template<>
-void SparseMatrixCSRSymmetric<double>::ImportFromSLangText(const char* rFileName)
-{
-    using namespace boost::spirit::classic;
-
-    // open file
-    std::ifstream file(rFileName, std::ios::in);
-    if (file.is_open() == false)
-    {
-        throw MathException("[SparseMatrixCSRSymmetric::importFromSLang]error opening file.");
-    }
-
-    // read header
-    unsigned int SLangVersion(0), objectType(SLANG_NOTYPE), objectKind(SLANG_NOKIND), objectNumRows(0), objectNumColumns(0), objectNumEntries(0);
-    this->ImportFromSLangTextReadHeader(file, SLangVersion, objectType, objectKind, objectNumRows, objectNumColumns, objectNumEntries);
-
-    // check SLang version
-    if (SLangVersion != 511)
-    {
-        throw MathException("[SparseMatrixCSRSymmetric::importFromSLang]unsupported SLang version.");
-    }
-
-    // check object type and kind
-    if (objectType != SLANG_REAL)
-    {
-        throw MathException("[SparseMatrixCSRSymmetric::importFromSLang]object data must be of type DOUBLE.");
-    }
-    if (objectKind != SLANG_COMPACT_MATRIX)
-    {
-        throw MathException("[SparseMatrixCSRSymmetric::importFromSLang]object must be a COMPACT_MATRIX.");
-    }
-    // set number of rows and number of entries
-    objectNumEntries = objectNumRows;
-    objectNumRows = objectNumColumns;
-    this->Resize(objectNumRows);
-    this->Reserve(objectNumEntries);
-
-    // switch to one based indexing
-//    bool oldOneBasedIndexing = this->oneBasedIndexing;
-//    this->setOneBasedIndexing();
-
-    // read nonzero entries which are stored in the lower triangle format
-    unsigned int row = 1;
-    std::vector<unsigned int> tmpRows;
-    std::vector<unsigned int> tmpColumns;
-    std::vector<double> tmpValues;
-    tmpRows.reserve(objectNumEntries);
-    tmpColumns.reserve(objectNumEntries);
-    tmpValues.reserve(objectNumEntries);
-    std::vector<int> tmpRowIndex(objectNumRows);
-    for (unsigned int entryCount = 0; entryCount < objectNumEntries; entryCount++)
-    {
-        std::string line;
-        getline (file, line);
-        if (parse(line.c_str(),(uint_p[push_back_a(tmpRows)] >> real_p[push_back_a(tmpColumns)] >> real_p[push_back_a(tmpValues)]),space_p).full == false)
-        {
-            throw MathException("[SparseMatrixCSRSymmetric::importFromSLang]error reading nonzero matrix entries.");
-        }
-        if (tmpRows[entryCount] > objectNumRows || tmpColumns[entryCount] > objectNumColumns)
-        {
-            throw MathException("[SparseMatrixCSRSymmetric::importFromSLang]row or column out of bounds.");
-        }
-        if (tmpRows[entryCount] < row)
-        {
-            throw MathException("[SparseMatrixCSRSymmetric::importFromSLang]invalid sorting of compressed matrix.");
-        }
-        if (tmpColumns[entryCount] > tmpRows[entryCount])
-        {
-            throw MathException("[SparseMatrixCSRSymmetric::importFromSLang]compressed matrix must be stored in lower triangle format.");
-        }
-        row = tmpRows[entryCount];
-        tmpRowIndex[tmpColumns[entryCount] - 1] += 1;
-    }
-
-    // store entries in upper triangle format
-    if (this->mOneBasedIndexing)
-    {
-        this->mRowIndex[0] = 1;
-    }
-    else
-    {
-        this->mRowIndex[0] = 0;
-        for (unsigned int entryCount = 0; entryCount < objectNumEntries; entryCount++)
-        {
-            tmpRows[entryCount] -= 1;
-        }
-    }
-    for (unsigned int rowCount = 0; rowCount < objectNumRows; rowCount++)
-    {
-        this->mRowIndex[rowCount + 1] = this->mRowIndex[rowCount] + tmpRowIndex[rowCount];
-    }
-    tmpRowIndex[0] = 0;
-    for (unsigned int rowCount = 1; rowCount < objectNumRows; rowCount++)
-    {
-        tmpRowIndex[rowCount] = this->mRowIndex[rowCount] - this->mRowIndex[0];
-    }
-    this->mColumns.resize(objectNumEntries);
-    this->mValues.resize(objectNumEntries);
-    for (unsigned int entryCount = 0; entryCount < objectNumEntries; entryCount++)
-    {
-        int curRow = tmpColumns[entryCount] - 1;
-        int pos = tmpRowIndex[curRow];
-        this->mColumns[pos] = tmpRows[entryCount];
-        this->mValues[pos] = tmpValues[entryCount];
-        tmpRowIndex[curRow] += 1;
-    }
-
-    // close file
-    file.close();
-}
-
-template<>
-void SparseMatrixCSRSymmetric<int>::ImportFromSLangText(const char* fileName)
-{
-    throw MathException("[SparseMatrixCSRSymmetric::importFromSLang] not implemented for this data-type.");
-}
 
 // adds the product of trans(A) * B * A to the matrix (A is a general matrix, and B is a symmetric matrix)
 template<>
@@ -313,25 +193,25 @@ void SparseMatrixCSRSymmetric<double>::Sub_TransA_Mult_TransB_Plus_B_Mult_A(cons
 
 // multiply sparse matrix with full matrix
 template<>
-FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> SparseMatrixCSRSymmetric<int>::operator* (const FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
+Eigen::MatrixXi SparseMatrixCSRSymmetric<int>::operator* (const Eigen::MatrixXi& rMatrix) const
 {
     throw MathException("[SparseMatrixCSRSymmetric<int>::operator*] not implemented for this data type.");
 }
 
 // multiply sparse matrix with full matrix
 template<>
-FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> SparseMatrixCSRSymmetric<double>::operator* (const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
+Eigen::MatrixXd SparseMatrixCSRSymmetric<double>::operator* (const Eigen::MatrixXd& rMatrix) const
 {
-    if (this->GetNumColumns() != rMatrix.GetNumRows())
+    if (this->GetNumColumns() != rMatrix.rows())
     {
         throw MathException("[SparseMatrixCSRSymmetric<int>::operator*] invalid number of rows in input matrix.");
     }
-    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumRows(),rMatrix.GetNumColumns());
+    Eigen::MatrixXd result(this->GetNumRows(),rMatrix.cols());
 
-    for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+    for (int matrixCol = 0; matrixCol < rMatrix.cols(); matrixCol++)
     {
-        const double* matrixValues = rMatrix.data() + matrixCol * rMatrix.GetNumRows();
-        double* resultValues = result.data() + matrixCol * rMatrix.GetNumRows();
+        const double* matrixValues = rMatrix.data() + matrixCol * rMatrix.rows();
+        double* resultValues = result.data() + matrixCol * rMatrix.rows();
         for (int thisRow = 0; thisRow < this->GetNumRows(); thisRow++)
         {
             for (int thisPos = this->mRowIndex[thisRow]-mOneBasedIndexing; thisPos < this->mRowIndex[thisRow + 1]-mOneBasedIndexing; thisPos++)

@@ -14,11 +14,11 @@
 # endif
 
 #include "base/ErrorEnum.h"
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
 
 #include "optimize/NewtonRaphson.h"
 #include "optimize/OptimizeException.h"
+
+#include <eigen3/Eigen/LU>
 
 //! @brief constructor
 NuTo::NewtonRaphson::NewtonRaphson() : NonlinearSolverBase()
@@ -52,7 +52,7 @@ NuTo::NewtonRaphson::NewtonRaphson() : NonlinearSolverBase()
 //#endif // ENABLE_SERIALIZATION
 
 
-NuTo::eError NuTo::NewtonRaphson::Solve(NuTo::FullVector<double,Eigen::Dynamic> &rUnknown)
+NuTo::eError NuTo::NewtonRaphson::Solve(Eigen::VectorXd &rUnknown)
 {
     NuTo::eError Error;
 
@@ -66,16 +66,16 @@ NuTo::eError NuTo::NewtonRaphson::Solve(NuTo::FullVector<double,Eigen::Dynamic> 
 }
 
 //! @brief ... the routine performs Newton-Raphson iterations
-NuTo::eError NuTo::NewtonRaphson::NewtonRaphsonIterator(NuTo::FullVector<double,Eigen::Dynamic> &rX, bool &rCheck) const
+NuTo::eError NuTo::NewtonRaphson::NewtonRaphsonIterator(Eigen::VectorXd &rX, bool &rCheck) const
 {
 	const int MAXITS(this->mMaxIterationsNumber);
 	const double TOLF = this->mTolResidual, TOLMIN=1.0e-12, STPMX=100.0;
 	const double TOLX = this->mTolSolution;
-	int its,n=rX.GetNumRows();
+	int its,n=rX.rows();
 	double den,f,fold,stpmax,test;
-	NuTo::FullVector<double,Eigen::Dynamic> g(n),p(n),xold(n);
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> fjac(n,n);
-	NuTo::FullVector<double,Eigen::Dynamic> fvec;
+	Eigen::VectorXd g(n),p(n),xold(n);
+    Eigen::MatrixXd fjac(n,n);
+	Eigen::VectorXd fvec;
 
 	f = this->Fmin(rX, fvec);
 
@@ -149,9 +149,9 @@ NuTo::eError NuTo::NewtonRaphson::NewtonRaphsonIterator(NuTo::FullVector<double,
 }
 
 //! @brief ... the routine performs line search correction of the Newton step
-void NuTo::NewtonRaphson::LineSearch(NuTo::FullVector<double,Eigen::Dynamic> &rXold, const double rFold, NuTo::FullVector<double,Eigen::Dynamic> &rG,
-		NuTo::FullVector<double,Eigen::Dynamic> &rP, NuTo::FullVector<double,Eigen::Dynamic> &rX, double &rF, const double rStpmax, bool &rCheck,
-		NuTo::FullVector<double,Eigen::Dynamic> &rFvec) const
+void NuTo::NewtonRaphson::LineSearch(Eigen::VectorXd &rXold, const double rFold, Eigen::VectorXd &rG,
+		Eigen::VectorXd &rP, Eigen::VectorXd &rX, double &rF, const double rStpmax, bool &rCheck,
+		Eigen::VectorXd &rFvec) const
 {
 	const double ALF=1.0e-4, TOLX = this->mTolSolution;
 	double a,alam,alam2=0.0,alamin,b,disc,f2=0.0;

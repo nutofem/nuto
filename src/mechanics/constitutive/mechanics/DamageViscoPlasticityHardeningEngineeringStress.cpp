@@ -34,8 +34,8 @@
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/sections/SectionBase.h"
 #include "mechanics/sections/SectionEnum.h"
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
+
+
 
 #include <math.h>
 
@@ -490,10 +490,10 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
 		std::map<NuTo::Constitutive::Output::eOutput, ConstitutiveOutputBase*>& rConstitutiveOutput)
 {
 // THIS IS TEST NEWTON
-//	NuTo::FullVector<double,Eigen::Dynamic> x(3);
+//	Eigen::VectorXd x(3);
 //	bool check;
-//	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> (DamageViscoPlasticityHardeningEngineeringStress::*fdjacAn)
-//			(NuTo::FullVector<double,Eigen::Dynamic>) const;
+//	Eigen::MatrixXd (DamageViscoPlasticityHardeningEngineeringStress::*fdjacAn)
+//			(Eigen::VectorXd) const;
 //	fdjacAn = &DamageViscoPlasticityHardeningEngineeringStress::DResidualAn;
 //	x[0] = -1., x[1] = 2., x[2] = 3.;
 //	std::cout << x.transpose() << std::endl;
@@ -655,7 +655,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
     	{
     	    // get elastic matrix
     		// calculate coefficients of the linear elastic material matrix
-    		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
+    		Eigen::MatrixXd ElasticStiffness(6, 6);
     		double C11, C12, C44;
     		this->CalculateCoefficients3D(C11, C12, C44);
     		ElasticStiffness << C11, C12, C12,  0., 0.,  0.,
@@ -684,7 +684,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Evalu
 
     	    // get elastic matrix
     		// calculate coefficients of the linear elastic material matrix
-    		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
+    		Eigen::MatrixXd ElasticStiffness(6, 6);
     		double C11, C12, C44;
     		this->CalculateCoefficients3D(C11, C12, C44);
     		ElasticStiffness << C11, C12, C12,  0., 0.,  0.,
@@ -821,7 +821,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
 
     // get elastic matrix
 	// calculate coefficients of the linear elastic material matrix
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> ElasticStiffness(6, 6);
+	Eigen::MatrixXd ElasticStiffness(6, 6);
 	double C11, C12, C44;
 	this->CalculateCoefficients3D(C11, C12, C44);
 	ElasticStiffness << C11, C12, C12,  0., 0.,  0.,
@@ -870,7 +870,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
     if (TrialStress.YieldSurfaceDruckerPrager3D(Beta, HVPhardening) > -toleranceYieldSurface && DeltaTime > mTOLF) {
 
     	// compound the vector of unknowns
-    	NuTo::FullVector<double,Eigen::Dynamic> Unknown(14);
+    	Eigen::VectorXd Unknown(14);
 
     	// initialize start values
     	Unknown.segment<6>(0) = ElasticStiffness*(rEngineeringStrain - prevStrain); 	// stress increment = Unknown(0:5)
@@ -885,7 +885,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
 
 
     	// compose vector of known Parameter, which are necessary for ResidualAn
-    	NuTo::FullVector<double,Eigen::Dynamic> Parameter(20);
+    	Eigen::VectorXd Parameter(20);
 
     	for (int i = 0; i < 6; i++) {
     		Parameter[i] = rEngineeringStrain[i] - prevStrain[i]; 	// Parameter(0:5) increment of mechanical strain
@@ -902,12 +902,12 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
     															   // equivalent inelastic strain at the beginning of the time increment
     	Parameter[19] = OldStaticData->mPrevHardening;			   // Parameter(19) hardening at the beginning of the time increment
 
-    	const NuTo::FullVector<double,Eigen::Dynamic> ParameterList(Parameter);
+    	const Eigen::VectorXd ParameterList(Parameter);
 
         // prepare starting Newton solver with respect to the "Unknown"
         bool check;
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> (DamageViscoPlasticityHardeningEngineeringStress::*fdjacAn)
-        	(const NuTo::FullVector<double,Eigen::Dynamic>&,NuTo::FullVector<double,Eigen::Dynamic>) const;
+        Eigen::MatrixXd (DamageViscoPlasticityHardeningEngineeringStress::*fdjacAn)
+        	(const Eigen::VectorXd&,Eigen::VectorXd) const;
 
         // set Jacobi to analytical Jacobi
         fdjacAn = &DamageViscoPlasticityHardeningEngineeringStress::DResidualAn;
@@ -991,7 +991,7 @@ NuTo::Error::eError NuTo::DamageViscoPlasticityHardeningEngineeringStress::Retur
 
         // calculate algorithmic tangent
         if (rNewTangent!=0) {
-            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rMatrixMultipl;
+            Eigen::MatrixXd rMatrixMultipl;
 
             rMatrixMultipl = -((this->DResidualAn(Parameter,Unknown)).fullPivLu().solve(this->DResidualDEpsAn(Unknown))).eval();
             (*rNewTangent) = (1. - rNewStaticData->mOmegaCompr)*rMatrixMultipl.block<6,6>(0,0);				// use for analytic algorithmic tangent

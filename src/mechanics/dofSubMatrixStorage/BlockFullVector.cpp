@@ -1,5 +1,5 @@
 #include <iostream>
-#include "math/FullVector.h"
+
 #include "mechanics/MechanicsException.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/dofSubMatrixStorage/BlockScalar.h"
@@ -22,7 +22,6 @@ template <typename T>
 NuTo::BlockFullVector<T>::BlockFullVector(const DofStatus& rDofStatus) : BlockStorageBase(rDofStatus)
 {
     AllocateSubvectors();
-
 }
 
 template <typename T>
@@ -42,7 +41,7 @@ NuTo::BlockFullVector<T>::BlockFullVector(NuTo::BlockFullVector<T>&& rOther)
 {}
 
 template <typename T>
-NuTo::BlockFullVector<T>::BlockFullVector(FullVector<T, Eigen::Dynamic> rData, const DofStatus& rDofStatus, bool rAreActiveDofValues) : BlockStorageBase(rDofStatus)
+NuTo::BlockFullVector<T>::BlockFullVector(const Eigen::Matrix<T, Eigen::Dynamic, 1>& rData, const DofStatus& rDofStatus, bool rAreActiveDofValues) : BlockStorageBase(rDofStatus)
 {
     AllocateSubvectors();
     if (rAreActiveDofValues)
@@ -51,7 +50,6 @@ NuTo::BlockFullVector<T>::BlockFullVector(FullVector<T, Eigen::Dynamic> rData, c
         Resize(rDofStatus.GetNumDependentDofsMap());
 
     Import(rData);
-
 }
 
 template<typename T>
@@ -60,7 +58,7 @@ void NuTo::BlockFullVector<T>::AllocateSubvectors()
     mData.clear();
     for (auto dof : mDofStatus.GetDofTypes())
     {
-        mData[dof] = FullVector<T>(0);
+        mData[dof] = Eigen::Matrix<T, Eigen::Dynamic, 1>();
     }
 }
 
@@ -80,7 +78,7 @@ NuTo::BlockFullVector<T>& NuTo::BlockFullVector<T>::operator=(NuTo::BlockFullVec
 }
 
 template <typename T>
-NuTo::FullVector<T, Eigen::Dynamic>& NuTo::BlockFullVector<T>::operator[](Node::eDof rDofRow)
+Eigen::Matrix<T, Eigen::Dynamic, 1>& NuTo::BlockFullVector<T>::operator[](Node::eDof rDofRow)
 {
     auto data = mData.find(rDofRow);
     assert (data != mData.end());
@@ -89,7 +87,7 @@ NuTo::FullVector<T, Eigen::Dynamic>& NuTo::BlockFullVector<T>::operator[](Node::
 
 
 template <typename T>
-const NuTo::FullVector<T, Eigen::Dynamic>& NuTo::BlockFullVector<T>::operator[](Node::eDof rDofRow) const
+const Eigen::Matrix<T, Eigen::Dynamic, 1>& NuTo::BlockFullVector<T>::operator[](Node::eDof rDofRow) const
 {
     auto data = mData.find(rDofRow);
     assert (data != mData.end());
@@ -131,14 +129,14 @@ NuTo::BlockFullVector<T>& NuTo::BlockFullVector<T>::operator /=(double rScalar)
 }
 
 template<typename T>
-NuTo::FullVector<T, Eigen::Dynamic> NuTo::BlockFullVector<T>::Export() const
+Eigen::Matrix<T, Eigen::Dynamic, 1> NuTo::BlockFullVector<T>::Export() const
 {
-    FullVector<T, Eigen::Dynamic> result(GetNumActiveRows());
+    Eigen::Matrix<T, Eigen::Dynamic, 1> result(GetNumActiveRows());
 
     int blockStartIndex = 0;
     for (auto dof : mDofStatus.GetActiveDofTypes())
     {
-        int numRows = (*this)[dof].GetNumRows();
+        int numRows = (*this)[dof].rows();
         result.block(blockStartIndex, 0, numRows, 1) = (*this)[dof];
         blockStartIndex += numRows;
     }
@@ -146,15 +144,15 @@ NuTo::FullVector<T, Eigen::Dynamic> NuTo::BlockFullVector<T>::Export() const
 }
 
 template<typename T>
-NuTo::FullVector<T, Eigen::Dynamic> NuTo::BlockFullVector<T>::Get(std::string rDofRow) const
+Eigen::Matrix<T, Eigen::Dynamic, 1> NuTo::BlockFullVector<T>::Get(std::string rDofRow) const
 {
     return (*this)[Node::DofToEnum(rDofRow)];
 }
 
 template<typename T>
-void NuTo::BlockFullVector<T>::Import(NuTo::FullVector<T, Eigen::Dynamic> rToImport)
+void NuTo::BlockFullVector<T>::Import(const Eigen::Matrix<T, Eigen::Dynamic, 1>& rToImport)
 {
-    if (GetNumActiveRows() != rToImport.GetNumRows())
+    if (GetNumActiveRows() != rToImport.rows())
     {
         this->Info();
         throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ + "] BlockFullVector must be sized to the right dimensions");
@@ -163,7 +161,7 @@ void NuTo::BlockFullVector<T>::Import(NuTo::FullVector<T, Eigen::Dynamic> rToImp
     int blockStartIndex = 0;
     for (auto dof : mDofStatus.GetActiveDofTypes())
     {
-        int numRows = (*this)[dof].GetNumRows();
+        int numRows = (*this)[dof].rows();
         (*this)[dof] = rToImport.block(blockStartIndex, 0, numRows, 1);
         blockStartIndex += numRows;
     }
@@ -182,7 +180,7 @@ void NuTo::BlockFullVector<T>::Info() const
         const std::string& additionalBlanks = std::string(numAdditionalBlanks, ' ');
         const auto& vector = pair.second;
 
-        std::cout << dofTypes << additionalBlanks << "(" << vector.GetNumRows() << "x" << vector.GetNumColumns() << ")" << std::endl;
+        std::cout << dofTypes << additionalBlanks << "(" << vector.rows() << "x" << vector.cols() << ")" << std::endl;
     }
 }
 
@@ -203,7 +201,7 @@ int NuTo::BlockFullVector<T>::GetNumRowsDof(const std::set<Node::eDof>& rDofType
     int numRows = 0;
     for (auto dof : rDofTypes)
     {
-        numRows += (*this)[dof].GetNumRows();
+        numRows += (*this)[dof].rows();
     }
     return numRows;
 }
@@ -213,7 +211,10 @@ void NuTo::BlockFullVector<T>::Resize(const std::map<Node::eDof, int>& rNumRowDo
 {
     const auto& dofTypes = mDofStatus.GetDofTypes();
     for (auto dofRow : dofTypes)
-        (*this)[dofRow].Resize(rNumRowDofsMap.at(dofRow));
+    {
+        (*this)[dofRow].resize(rNumRowDofsMap.at(dofRow));
+        (*this)[dofRow].setZero();
+    }
 }
 
 template<typename T>
@@ -230,7 +231,7 @@ NuTo::BlockScalar NuTo::BlockFullVector<T>::CalculateNormL2()
     BlockScalar dofWiseNorm(mDofStatus);
     for (auto dof : mDofStatus.GetActiveDofTypes())
     {
-        dofWiseNorm[dof] = mData[dof].Norm();
+        dofWiseNorm[dof] = mData[dof].norm();
     }
     return dofWiseNorm;
 }

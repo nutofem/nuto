@@ -1,6 +1,5 @@
 #include <boost/filesystem.hpp>
 #include <fstream>
-#include "math/FullMatrix.h"
 
 #include "geometryConcrete/GeometryConcrete.h"
 #include "mechanics/structures/unstructured/Structure.h"
@@ -56,11 +55,11 @@ int main(int argc, char* argv[])
     assert(groupIndices.GetNumRows() == 2); // two physical groups
     assert(groupIndices.GetNumColumns() == 2); // 1st col: group, 2nd col: interpolation type
 
-    int gMatrix = groupIndices.GetValue(0, 0);
-    int gAggreg = groupIndices.GetValue(1, 0);
+    int gMatrix = groupIndices(0, 0);
+    int gAggreg = groupIndices(1, 0);
 
-    int interpolationMatrix = groupIndices.GetValue(0, 1);
-    int interpolationAggreg = groupIndices.GetValue(1, 1);
+    int interpolationMatrix = groupIndices(0, 1);
+    int interpolationAggreg = groupIndices(1, 1);
 
     myStructure.InterpolationTypeAdd(
             interpolationMatrix, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
@@ -103,14 +102,14 @@ int main(int argc, char* argv[])
     int gNodesWest = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
     int gNodesEast = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
 
-    int iNodeOrigin = myStructure.NodeGetIdAtCoordinate(NuTo::FullVector<double, 2>({0., 0.}), 1.e-6);
+    int iNodeOrigin = myStructure.NodeGetIdAtCoordinate(Eigen::Vector2d({0., 0.}), 1.e-6);
     myStructure.GroupAddNodeCoordinateRange(gNodesWest, 0, 0., 0.);
     myStructure.GroupAddNodeCoordinateRange(gNodesEast, 0, lX, lX);
 
-    myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesWest, NuTo::FullVector<double, 2>::UnitX(), 0.);
-    myStructure.ConstraintLinearSetDisplacementNode(iNodeOrigin, NuTo::FullVector<double, 2>::UnitY(), 0.);
+    myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesWest, Eigen::Vector2d::UnitX(), 0.);
+    myStructure.ConstraintLinearSetDisplacementNode(iNodeOrigin, Eigen::Vector2d::UnitY(), 0.);
 
-    int bc = myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesEast, NuTo::FullVector<double, 2>::UnitX(), 0);
+    int bc = myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesEast, Eigen::Vector2d::UnitX(), 0);
 
     // Visualisation
     myStructure.AddVisualizationComponent(gAggreg, NuTo::eVisualizeWhat::DISPLACEMENTS);
@@ -131,7 +130,7 @@ int main(int argc, char* argv[])
 
     double simulationTime = 1;
 
-    NuTo::FullMatrix<double, 2, 2> dispRHS;
+    Eigen::Matrix2d dispRHS;
     dispRHS << 0, 0, simulationTime, deltaD;
 
     myIntegrationScheme.AddTimeDependentConstraint(bc, dispRHS);

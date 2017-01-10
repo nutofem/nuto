@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -12,7 +10,6 @@
 
 #include <iostream>
 
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/constraints/ConstraintEquationTerm.h"
@@ -68,7 +65,7 @@ void NuTo::ConstraintLinearEquation::AddToConstraintMatrix(int& rConstraintLinea
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void NuTo::ConstraintLinearEquation::GetRHS(int& rConstraintLinearEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const
+void NuTo::ConstraintLinearEquation::GetRHS(int& rConstraintLinearEquation, Eigen::VectorXd& rRHS)const
 {
     // set right hand side value
     rRHS(rConstraintLinearEquation) = this->mRhsValue;

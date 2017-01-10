@@ -3,7 +3,6 @@
 #include <iostream>
 
 #include "math/MathException.h"
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseDirectSolverMKLPardiso.h"
@@ -33,23 +32,18 @@ int main()
         A_sy.SetOneBasedIndexing();
         A_sy.Info();
         std::cout << std::endl << "symmetric matrix, full storage" << std::endl;
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> A_sy_full(A_sy);
-        A_sy_full.Info();
+        std::cout << A_sy.ConvertToFullMatrix() << std::endl;
 
         std::cout << "----------------------------------" << std::endl;
         std::cout << "* operator" << std::endl;
         NuTo::SparseMatrixCSRSymmetric<double> B_sy;
         B_sy = A_sy * 10.0;
         B_sy.Info();
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> B_sy_full(B_sy);
-        //~ B_sy_full.Info();
-        
+
         std::cout << "----------------------------------" << std::endl;
         std::cout << "*= operator" << std::endl;
 		A_sy *= 10.0;
-        A_sy.Info();
-		A_sy_full=A_sy;
-        //~ A_sy_full.Info();
+        std::cout << A_sy.ConvertToFullMatrix() << std::endl;
 
 
         std::cout << "==================================" << std::endl;
@@ -72,36 +66,24 @@ int main()
         A_ge.SetOneBasedIndexing();
         A_ge.Info();
         std::cout << std::endl << "general matrix, full storage" << std::endl;
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> A_ge_full(A_ge);
-        A_ge_full.Info();
+        std::cout << A_ge.ConvertToFullMatrix() << std::endl;
 
         std::cout << "----------------------------------" << std::endl;
         std::cout << "* operator" << std::endl;
         NuTo::SparseMatrixCSRGeneral<double> B_ge;
         B_ge = A_ge * 10.0;
         B_ge.Info();
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> B_ge_full(B_ge);
-        //~ B_ge_full.Info();
-        
+
         std::cout << "----------------------------------" << std::endl;
         std::cout << "*= operator" << std::endl;
 		A_ge *= 10.0;
         A_ge.Info();
-		A_ge_full=A_ge;
-        //~ A_ge_full.Info();
 
         std::cout << "==================================" << std::endl;
         std::cout << "multiply operators with full matrix" << std::endl;
         std::cout << "----------------------------------" << std::endl;
         std::cout << "* operator" << std::endl;
-        B_sy_full = A_sy * 0.1;
-        B_sy_full.Info();
-        
-        std::cout << "----------------------------------" << std::endl;
-        std::cout << "*= operator" << std::endl;
-		B_sy_full *= 10.0;
-        B_sy_full.Info();
-
+        std::cout << (A_sy * 0.1).ConvertToFullMatrix() << std::endl;
     }
     catch (NuTo::MathException& e)
     {

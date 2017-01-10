@@ -7,11 +7,12 @@
 
 #pragma once
 
-#include "math/FullMatrix_Def.h"
+
 
 
 #include <string>
 #include <fstream>
+#include <eigen3/Eigen/Core>
 
 /* Example File:
 
@@ -60,16 +61,15 @@ shrinkage = 0.10;              0.0 -> no EDMD
 
 namespace NuTo
 {
-template <class T, int rows> class FullVector;
 class InputReader
 {
 public:
 	InputReader(std::string rFileName);
 	void PrintInput();
 	double GetAbsoluteDistance() const;
-	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetBoundingBox() const;
+	Eigen::MatrixXd GetBoundingBox() const;
 	int GetTypeOfSpecimen() const;
-	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetGradingCurve() const;
+	Eigen::MatrixXd GetGradingCurve() const;
 	double GetRelativeGrowthRate() const;
 	double GetInitialTimeBarrier() const;
 	long GetNumEventsMax() const;
@@ -89,7 +89,7 @@ public:
 	void OpenFile(std::string rFileName);
 	void SkipToNextData();
 	double ReadNumber();
-	NuTo::FullVector<double, Eigen::Dynamic> ReadVector();
+	Eigen::VectorXd ReadVector();
 	bool ReadBool();
 	std::string ReadString();
 
@@ -117,10 +117,10 @@ private:
 	int mNumThreads;
 
 	int mTypeOfSpecimen;
-	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> mBoundingBox;
+	Eigen::MatrixXd mBoundingBox;
 	bool mIs2D;
 
-	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> mGradingCurve;
+	Eigen::MatrixXd mGradingCurve;
 	double mVolumeFraction;
 	double mAbsoluteDistance;
 

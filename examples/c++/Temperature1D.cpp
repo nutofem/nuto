@@ -14,7 +14,6 @@
  */
 
 #include <iostream>
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseDirectSolverMUMPS.h"
 #include "mechanics/structures/unstructured/Structure.h"
@@ -50,7 +49,7 @@ int main()
         NuTo::Constitutive::eConstitutiveParameter::THERMAL_CONDUCTIVITY, conductivity);
 
     // create nodes
-    NuTo::FullVector<double,Eigen::Dynamic> nodeCoordinates(1);
+    Eigen::VectorXd nodeCoordinates(1);
     for(int node = 0; node < num_elements + 1; node++)
     {
         nodeCoordinates(0) = node * length/num_elements;
@@ -78,7 +77,7 @@ int main()
     myStructure.ElementTotalConvertToInterpolationType();
 
     // set boundary conditions and loads
-    NuTo::FullVector<double,Eigen::Dynamic> direction(1);
+    Eigen::VectorXd direction(1);
     direction(0) = 1.0;
     myStructure.ConstraintLinearSetTemperatureNode(0, boundary_temperature);
     myStructure.SetNumLoadCases(1);

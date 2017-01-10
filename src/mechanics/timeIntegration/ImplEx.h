@@ -66,8 +66,6 @@ private:
 
     double mExtrapolationErrorThreshold;
 
-    bool mForceAcceptOfNextSolution = true;
-
 };
 
 } /* namespace NuTo */

@@ -2,8 +2,8 @@
 #include <sstream>
 #include <string>
 #include <math.h>
-
-#include "math/FullMatrix.h"
+#include <eigen3/Eigen/Core>
+#include "math/EigenCompanion.h"
 
 #include <ctime>
 # ifdef _OPENMP
@@ -76,7 +76,7 @@ int main()
         std::cout << tmpString;
     }
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> speedUp(omp_get_num_procs()*2-1,13);
+    Eigen::MatrixXd speedUp(omp_get_num_procs()*2-1,13);
 
 	std::cout << "serial execution " << std::endl;
 	int numInitParallelRegions(1);
@@ -167,7 +167,7 @@ int main()
 		}
     }
 
-    speedUp.WriteToFile("SpeedUp.txt"," ");
+    NuTo::EigenCompanion::WriteToFile(speedUp, "SpeedUp.txt"," ");
 #endif
     return 0;
 }

@@ -3,7 +3,7 @@
 
 #include "mechanics/dofSubMatrixStorage/BlockStorageBase.h"
 #include "mechanics/nodes/DofHash.h"
-#include "eigen3/Eigen/Core"
+#include "eigen3/Eigen/Dense"
 #include <ostream>
 #include <unordered_map>
 #include <map>
@@ -14,7 +14,6 @@ class BlockScalar;
 class SerializeStreamOut;
 class SerializeStreamIn;
 
-template <class T, int rows> class FullVector;
 //! @author Thomas Titscher, BAM
 //! @date January 2016
 //! @brief ... class for all block vectors with basic operators +,-,*(scalar)
@@ -45,10 +44,10 @@ public:
 #endif
 
     //! @brief import constructor
-    //! @param rData ... FullVector to import from
+    //! @param rData ... vector to import from
     //! @param rDofStatus ... reference to DofStatus for automatic matrix resizing
     //! @param rAreActiveDofValues ... true if the rData represents a vector of active dof values
-    BlockFullVector(FullVector<T, Eigen::Dynamic> rData, const DofStatus& rDofStatus, bool rAreActiveDofValues = true);
+    BlockFullVector(const Eigen::Matrix<T, Eigen::Dynamic, 1>& rData, const DofStatus& rDofStatus, bool rAreActiveDofValues = true);
 
     //! @brief allocates the subvectors based on the current dof configuration of the structure
     void AllocateSubvectors();
@@ -64,10 +63,10 @@ public:
     BlockFullVector& operator=(      BlockFullVector&& rOther);
 
     //! @brief non-const access
-          NuTo::FullVector<T, Eigen::Dynamic>& operator[](Node::eDof rDofRow);
+    Eigen::Matrix<T, Eigen::Dynamic, 1>& operator[](Node::eDof rDofRow);
 
     //! @brief const access
-    const NuTo::FullVector<T, Eigen::Dynamic>& operator[](Node::eDof rDofRow) const;
+    const Eigen::Matrix<T, Eigen::Dynamic, 1>& operator[](Node::eDof rDofRow) const;
 
 
     //! @brief operator +=
@@ -131,8 +130,8 @@ public:
     //! @brief comparision, checks !equality of all sub vectors
     inline bool operator!=(const BlockFullVector& rOther) { return !(*this == rOther); }
 
-    //! @brief Imports the active dof type values from a FullVector
-    void Import(FullVector<T, Eigen::Dynamic> rToImport);
+    //! @brief Imports the active dof type values from a vector
+    void Import(const Eigen::Matrix<T, Eigen::Dynamic, 1>& rToImport);
 
     //! @brief prints subvectors and their dimensions
     void Info() const override;
@@ -165,10 +164,12 @@ public:
     void SetZero();
 
 
-    //! @brief Exports the active dof type values to a FullVector
-    NuTo::FullVector<T, Eigen::Dynamic> Export() const;
+    //! @brief Exports the active dof type values to a vector
+    Eigen::Matrix<T, Eigen::Dynamic, 1> Export() const;
 
-    NuTo::FullVector<T, Eigen::Dynamic> Get(std::string rDofRow) const;
+    //! @brief Exports a specific dof type values to a vector
+    //! @param rDofRow specific dof type string
+    Eigen::Matrix<T, Eigen::Dynamic, 1> Get(std::string rDofRow) const;
 
 private:
 
@@ -177,7 +178,7 @@ private:
     template <typename TStream>
     void SerializeBlockFullVector(TStream &rStream);
 
-    std::unordered_map<Node::eDof, NuTo::FullVector<T, Eigen::Dynamic>, Node::eDofHash> mData;
+    std::unordered_map<Node::eDof, Eigen::Matrix<T, Eigen::Dynamic, 1>, Node::eDofHash> mData;
 
 };
 

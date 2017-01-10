@@ -1,7 +1,6 @@
 #include <boost/filesystem.hpp>
 
 #include "base/Timer.h"
-#include "math/FullMatrix.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/sections/SectionTruss.h"
 
@@ -116,7 +115,7 @@ void ImplEx()
     int numNodes = numElements + 1;
     double lengthElement = length / numElements;
 
-    NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(1);
+    Eigen::VectorXd nodeCoordinates(1);
     for (int iNode = 0; iNode < numNodes; ++iNode)
     {
         nodeCoordinates(0) = iNode * lengthElement;
@@ -164,13 +163,13 @@ void ImplEx()
 
     s.ElementGroupAllocateAdditionalStaticData(s.GroupGetElementsTotal(), 2);
 
-    s.ConstraintLinearSetDisplacementNode(0, NuTo::FullVector<double, 1>::UnitX(), 0.0);
+    s.ConstraintLinearSetDisplacementNode(0, Eigen::Matrix<double, 1, 1>::UnitX(), 0.0);
 
     int gNodeBC = s.GroupCreate(NuTo::eGroupId::Nodes);
     s.GroupAddNodeCoordinateRange(gNodeBC, 0, length, length);
     int iNodeBC = s.GroupGetMemberIds(gNodeBC)[0];
 
-    int bc = s.ConstraintLinearSetDisplacementNode(iNodeBC, NuTo::FullVector<double, 1>::UnitX(), 0.0);
+    int bc = s.ConstraintLinearSetDisplacementNode(iNodeBC, Eigen::Matrix<double, 1, 1>::UnitX(), 0.0);
 
     int visualizationGroup = s.GroupGetElementsTotal();
 
@@ -189,7 +188,7 @@ void ImplEx()
     double dispEnd = 0.1;
     int numLoadSteps = 10;
 
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> timeDepDisp(2, 2);
+    Eigen::Matrix2d timeDepDisp;
     timeDepDisp << 0, 0, simulationTime, dispEnd;
 
     myIntegrationScheme.AddTimeDependentConstraint(bc, timeDepDisp);

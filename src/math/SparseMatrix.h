@@ -12,8 +12,10 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include "math/FullMatrix.h"
+#include "base/NuToObject.h"
+#include <random>
 #include <eigen3/Eigen/Core>
+#include "math/MathException.h"
 
 namespace NuTo
 {
@@ -28,7 +30,7 @@ enum class eSparseMatrixType;
 //! @date July 2009
 //! @brief ... abstract base class for sparse matrices
 template <class T>
-class SparseMatrix : public Matrix<T>
+class SparseMatrix : public NuToObject
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -36,7 +38,7 @@ class SparseMatrix : public Matrix<T>
 
 public:
     //! @brief ... constructor
-    SparseMatrix() : Matrix<T>()
+    SparseMatrix()
     {
         this->mOneBasedIndexing=false;
         this->mPositiveDefinite=false;
@@ -138,7 +140,10 @@ public:
     //! @brief ... multiply sparse matrix with a full matrix
     //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
     //! @return ... full matrix
-    virtual NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const = 0;
+    virtual Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const = 0;
+
+    //! @brief ... print info about the object
+    virtual void Info() const = 0;
 
     //! @brief ... add sparse matrix
     //! @param rMatrix ... sparse matrix
@@ -156,10 +161,7 @@ public:
     	throw MathException("[NuTo::SparseMatrix<T>& operator += (const SparseMatrixCSRVector2Symmetric<T> rMatrix)] not implemented for this matrix type.");
 	}
 
-    virtual NuTo::FullMatrix<T,Eigen::Dynamic,Eigen::Dynamic> ConvertToFullMatrixDouble()
-    {
-        return NuTo::FullMatrix<T,Eigen::Dynamic,Eigen::Dynamic>(*this);
-    }
+    virtual Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> ConvertToFullMatrix() const = 0;
 
     virtual SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()
     {
@@ -182,11 +184,6 @@ public:
     }
 
 #ifndef SWIG
-
-    virtual NuTo::FullMatrix<T,Eigen::Dynamic,Eigen::Dynamic> ConvertToFullMatrixDouble() const
-    {
-        return NuTo::FullMatrix<T,Eigen::Dynamic,Eigen::Dynamic>(*this);
-    }
 
     virtual const SparseMatrixCSRGeneral<T>& AsSparseMatrixCSRGeneral()const
     {
@@ -232,10 +229,6 @@ public:
 #endif
     }
 #endif // ENABLE_SERIALIZATION
-
-    //! @brief ... write non-zero matrix entries into a matrix
-    //! @param rMatrix ... the matrix
-    virtual void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const = 0;
 
     //! @brief ... Return the name of the class, this is important for the serialize routines, since this is stored in the file
     //!            in case of restoring from a file with the wrong object type, the file id is printed
@@ -305,6 +298,30 @@ protected:
     bool mOneBasedIndexing;
     //! @brief ... definiteness of the matrix (true if positive definite / false if indefinite)
     bool mPositiveDefinite;
+
+    //! @brief ... resizes and fills the matrix rMatrix with rNumValues random values
+    //! @param rMatrix ... Matrix<T>
+    //! @param rDensity ... approximate density = numValues / (rNumRows*rNumColumns)
+    //! @param rSeed ... random seed
+    static void FillMatrixRandom(SparseMatrix& rMatrix, double rDensity, int rSeed)
+    {
+        std::mt19937 gen(rSeed);
+        std::uniform_real_distribution<double> value_distribution(0., 10.);
+        std::uniform_int_distribution<int> row_distribution(0, rMatrix.GetNumRows() - 1);
+        std::uniform_int_distribution<int> col_distribution(0, rMatrix.GetNumColumns() - 1);
+
+        int numValues = (int) (rDensity * rMatrix.GetNumRows() * rMatrix.GetNumColumns());
+
+        for (int i = 0; i < numValues; ++i)
+        {
+            int row = row_distribution(gen);
+            int col = col_distribution(gen);
+            double val = value_distribution(gen);
+            rMatrix.AddValue(row, col, val);
+        }
+    }
+
+
 };
 
 

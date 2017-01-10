@@ -1,7 +1,6 @@
 // $Id $
 #pragma once
 
-#include "math/FullMatrix_Def.h"
 #include "mechanics/elements/ElementOutputBase.h"
 
 namespace NuTo
@@ -34,7 +33,7 @@ public:
     	return new ElementOutputFullMatrixDouble(*this);
     }
 
-    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixDouble() override
+    Eigen::MatrixXd& GetFullMatrixDouble() override
 	{
         return mMatrix;
 	}
@@ -61,7 +60,7 @@ public:
 private:
     bool mConstant;
     bool mSymmetric;
-    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mMatrix;
+    Eigen::MatrixXd mMatrix;
 };
 }
 #ifdef ENABLE_SERIALIZATION

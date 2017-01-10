@@ -36,7 +36,7 @@ public:
     // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
     //! @param rCurConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-    virtual void                GetRHS                                          (int& rCurConstraintEquation, NuTo::FullVector<double,Eigen::Dynamic>& rRHS) const override;
+    virtual void                GetRHS                                          (int& rCurConstraintEquation, Eigen::VectorXd& rRHS) const override;
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information

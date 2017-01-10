@@ -14,7 +14,7 @@
 
 #include "mechanics/MechanicsException.h"
 
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 #include <map>
 #include <set>
 #include <vector>
@@ -26,8 +26,6 @@ namespace NuTo
 class VisualizeComponent;
 class VisualizeUnstructuredGrid;
 #endif // ENABLE_VISUALIZE
-
-template <class T, int rows> class FullVector;
 
 namespace Node
 {
@@ -70,7 +68,7 @@ public:
     //! @param rDofType ... specific dof type
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void SetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues)
+    virtual void SetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, const Eigen::VectorXd& rActiveDofValues, const Eigen::VectorXd& rDependentDofValues)
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
     }
@@ -80,7 +78,7 @@ public:
     //! @param rDofType ... specific dof type
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    virtual void GetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const
+    virtual void GetGlobalDofValues(int rTimeDerivative, Node::eDof rDofType, Eigen::VectorXd& rActiveDofValues, Eigen::VectorXd& rDependentDofValues) const
     {
         throw MechanicsException(__PRETTY_FUNCTION__, "Not implemented for node type " + GetNodeTypeStr() + ".");
     }

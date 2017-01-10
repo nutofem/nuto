@@ -1,5 +1,3 @@
-// $Id: ConstraintLagrangeNodeDisplacements2D.h -1   $
-
 #pragma once
 
 #include "mechanics/constraints/ConstraintLagrange.h"
@@ -21,7 +19,7 @@ public:
     //! @brief constructor
     //! @param rDirection ... direction of the applied constraint
     //! @param rValue ... direction of the applied constraint
-    ConstraintLagrangeNodeGroupDisplacements2D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, NuTo::Constraint::eEquationSign rEquationSign, double rValue);
+    ConstraintLagrangeNodeGroupDisplacements2D(const Group<NodeBase>* rGroup, const Eigen::MatrixXd& rDirection, NuTo::Constraint::eEquationSign rEquationSign, double rValue);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
@@ -29,11 +27,11 @@ public:
 
     //! @brief returns the Lagrange Multiplier
     //! first col Lagrange, second column slack variables
-    void GetLagrangeMultiplier(FullVector<double,Eigen::Dynamic>& rLagrangeMultiplier)const;
+    void GetLagrangeMultiplier(Eigen::VectorXd& rLagrangeMultiplier)const;
 
     //! @brief returns the Lagrange Multiplier dofs
     //! first col Lagrangedofs
-    void GetDofsLagrangeMultiplier(FullVector<int,Eigen::Dynamic>& rLagrangeMultiplier)const;
+    void GetDofsLagrangeMultiplier(Eigen::VectorXi& rLagrangeMultiplier)const;
 
     //! @brief cast to Lagrange constraint - the corresponding dofs are eliminated in the global system
     NuTo::ConstraintLagrange* AsConstraintLagrange();
@@ -52,12 +50,12 @@ public:
     //! @brief write dof values to constraints (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    void SetGlobalDofValues(const FullVector<double,Eigen::Dynamic>& rActiveDofValues, const FullVector<double,Eigen::Dynamic>& rDependentDofValues) ;
+    void SetGlobalDofValues(const Eigen::VectorXd& rActiveDofValues, const Eigen::VectorXd& rDependentDofValues) ;
 
     //! @brief extract dof values from the constraints (based on global dof number)
     //! @param rActiveDofValues ... active dof values
     //! @param rDependentDofValues ... dependent dof values
-    void GetGlobalDofValues(FullVector<double,Eigen::Dynamic>& rActiveDofValues, FullVector<double,Eigen::Dynamic>& rDependentDofValues) const;
+    void GetGlobalDofValues(Eigen::VectorXd& rActiveDofValues, Eigen::VectorXd& rDependentDofValues) const;
 
     //! @brief renumber the global dofs according to predefined ordering
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to the new ordering
@@ -72,7 +70,7 @@ public:
 
     //! @brief calculates the gradient of the internal potential
     //! for a mechanical problem, this corresponds to the internal force vector
-    void CalculateGradientInternalPotential(NuTo::FullVector<double,Eigen::Dynamic>& rResult,
+    void CalculateGradientInternalPotential(Eigen::VectorXd& rResult,
             std::vector<int>& rGlobalDofs)const;
 
     //! @brief calculates the internal potential

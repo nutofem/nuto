@@ -8,7 +8,7 @@
 #endif // ENABLE_SERIALIZATION
 
 
-#include "math/FullMatrix_Def.h"
+#include <eigen3/Eigen/Core>
 #include "mechanics/MechanicsException.h"
 
 namespace NuTo
@@ -50,23 +50,23 @@ public:
 
     virtual ResultNodeDof* AsResultNodeDof()
     {
-    	throw MechanicsException(std::string(__PRETTY_FUNCTION__) +"\t: object is not of this type.");
+    	throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
     }
 
     virtual ResultTime* AsResultTime()
     {
-    	throw MechanicsException(std::string(__PRETTY_FUNCTION__) +"\t: object is not of this type.");
+    	throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
     }
 
     virtual ResultGroupNodeDof* AsResultGroupNodeDof()
     {
-    	throw MechanicsException(std::string(__PRETTY_FUNCTION__) +"\t: object is not of this type.");
+    	throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
     }
 
 
     virtual ResultElementIpData* AsResultElementIpData()
     {
-        throw MechanicsException(std::string(__PRETTY_FUNCTION__) +"\t: object is not of this type.");
+        throw MechanicsException(__PRETTY_FUNCTION__, "object is not of this type.");
     }
 
 #ifdef ENABLE_SERIALIZATION
@@ -85,7 +85,7 @@ public:
 
 protected:
     std::string mIdent;
-    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> mData;
+    Eigen::MatrixXd mData;
 };
 } //namespace NuTo
 #ifdef ENABLE_SERIALIZATION

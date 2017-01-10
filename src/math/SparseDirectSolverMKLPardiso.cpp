@@ -8,8 +8,6 @@
 #endif // HAVE_MKL_PARDISO
 
 #include "math/MathException.h"
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
 #include "math/SparseMatrixCSR.h"
 #include "math/SparseDirectSolver.h"
 #include "math/SparseDirectSolverMKLPardiso.h"
@@ -29,7 +27,7 @@ NuTo::SparseDirectSolverMKLPardiso::SparseDirectSolverMKLPardiso() : SparseDirec
 }
 
 #ifdef HAVE_MKL_PARDISO
-void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double,Eigen::Dynamic>& rRhs, NuTo::FullVector<double,Eigen::Dynamic>& rSolution)
+void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const Eigen::VectorXd& rRhs, Eigen::VectorXd& rSolution)
 {
 #ifdef SHOW_TIME
     std::clock_t start,end;
@@ -69,16 +67,16 @@ void NuTo::SparseDirectSolverMKLPardiso::Solve(const NuTo::SparseMatrixCSR<doubl
     }
 
     // check right hand side
-    if (matrixDimension != rRhs.GetNumRows())
+    if (matrixDimension != rRhs.rows())
     {
         throw NuTo::MathException("[SparseDirectSolverMKLPardiso::solve] invalid dimension of right hand side vector.");
     }
-    int rhsNumColumns = rRhs.GetNumColumns();
-    const double *rhsValues = rRhs.GetEigenMatrix().data();
+    int rhsNumColumns = rRhs.cols();
+    const double *rhsValues = rRhs.data();
 
     // prepare solution matrix
     rSolution.Resize(matrixDimension,rhsNumColumns);
-    const double *solutionValues = rSolution.GetEigenMatrix().data();
+    const double *solutionValues = rSolution.data();
 
     // initialize solver data
     int parameters[64];

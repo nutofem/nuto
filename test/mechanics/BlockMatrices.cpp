@@ -5,7 +5,6 @@
 #include <eigen3/Eigen/Sparse>
 
 
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRVector2General.h"
 
 
@@ -58,22 +57,22 @@ void BlockFullVectorTest()
 
 
     NuTo::BlockFullVector<int> v1(s), v2(s);
-    v1[NuTo::Node::eDof::DISPLACEMENTS] = NuTo::FullVector<int, Eigen::Dynamic>({1,1,1});
-    v2[NuTo::Node::eDof::DISPLACEMENTS] = NuTo::FullVector<int, Eigen::Dynamic>({2,2,2});
+    v1[NuTo::Node::eDof::DISPLACEMENTS] = Eigen::Vector3i({1,1,1});
+    v2[NuTo::Node::eDof::DISPLACEMENTS] = Eigen::Vector3i({2,2,2});
 
-    v1[NuTo::Node::eDof::TEMPERATURE] = NuTo::FullVector<int, Eigen::Dynamic>({10,10});
-    v2[NuTo::Node::eDof::TEMPERATURE] = NuTo::FullVector<int, Eigen::Dynamic>({20,20});
+    v1[NuTo::Node::eDof::TEMPERATURE] = Eigen::Vector2i({10,10});
+    v2[NuTo::Node::eDof::TEMPERATURE] = Eigen::Vector2i({20,20});
 
     /*
      * Export
      */
     timer.Reset("BVT:Export");
-    NuTo::FullVector<int, Eigen::Dynamic> ev1 = v1.Export();
-    NuTo::FullVector<int, Eigen::Dynamic> ev2 = v2.Export();
+    Eigen::VectorXi ev1 = v1.Export();
+    Eigen::VectorXi ev2 = v2.Export();
 
-    if (ev1.GetNumRows() != 5)              throw NuTo::MechanicsException("[BVT:Export] Exported v1 has wrong size.");
-    if (ev1.Sum() != 23)                    throw NuTo::MechanicsException("[BVT:Export] Exported v1 has wrong sum.");
-    if (ev2.Sum() != 46)                    throw NuTo::MechanicsException("[BVT:Export] Exported v2 has wrong sum.");
+    if (ev1.rows() != 5)                    throw NuTo::MechanicsException("[BVT:Export] Exported v1 has wrong size.");
+    if (ev1.sum()  != 23)                   throw NuTo::MechanicsException("[BVT:Export] Exported v1 has wrong sum.");
+    if (ev2.sum()  != 46)                   throw NuTo::MechanicsException("[BVT:Export] Exported v2 has wrong sum.");
 
     /*
      * Addition
@@ -112,7 +111,7 @@ void BlockFullVectorTest()
     result2 -= v2;
     result2 += v2*42;
 
-    NuTo::FullVector<int, Eigen::Dynamic> eresult = ev1 * 3 + ev1 - ev2 - ev2 + ev2 * 42;
+    Eigen::VectorXi eresult = ev1 * 3 + ev1 - ev2 - ev2 + ev2 * 42;
 
     if (result1 != result2)                 throw NuTo::MechanicsException("[BVT:Chaining] went wrong ... ");
     if (result1.Export() != eresult)        throw NuTo::MechanicsException("[BVT:Chaining] went wrong ... ");
@@ -124,7 +123,7 @@ void BlockFullVectorTest()
     timer.Reset("BVT:ActiveDofTypes");
     s.SetActiveDofTypes({NuTo::Node::eDof::DISPLACEMENTS});
 
-    if (v1.Export().GetNumRows() != 3)      throw NuTo::MechanicsException("[BVT:ActiveDofTypes] Exported v1 has wrong size.");
+    if (v1.Export().rows() != 3)      throw NuTo::MechanicsException("[BVT:ActiveDofTypes] Exported v1 has wrong size.");
 
 
     if (v1[NuTo::Node::eDof::TEMPERATURE] != (v1+v1)[NuTo::Node::eDof::TEMPERATURE])
@@ -148,22 +147,18 @@ void BlockFullVectorTest()
     NuTo::BlockFullVector<int> imported(v1);
 
     // create new random vector with the global dimensions of v1
-    NuTo::FullVector<int, Eigen::Dynamic> toImport = NuTo::FullVector<int, Eigen::Dynamic>::Random(v1.GetNumRows());
+    Eigen::VectorXi toImport = Eigen::VectorXi::Random(v1.GetNumRows());
 
     // import and check if equal.
     imported.Import(toImport);
 
     if (toImport != imported.Export())
     {
-        std::cout << "to Import: \n ";
-        toImport.Info();
+        std::cout << "to Import: \n " << toImport << std::endl;
         std::cout << "imported: \n ";
-        imported.Export().Info();
+        std::cout << imported.Export();
         throw NuTo::MechanicsException("[BVT:Import] failed.");
     }
-
-
-
 }
 
 
@@ -183,15 +178,15 @@ void BlockFullMatrixTest()
     int numD = 3;
     int numT = 2;
 
-    m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS) = NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>::Random(numD, numD);
+    m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS) = Eigen::MatrixXd::Random(numD, numD);
 
-    m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ).Resize(numD,numT);
+    m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ).resize(numD,numT);
     m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ) << 1, 2, 3, 1, 2, 3;
 
-    m(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::DISPLACEMENTS) = m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ).Trans();
+    m(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::DISPLACEMENTS) = m(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::TEMPERATURE ).transpose();
 
     auto& matrixTT = m(NuTo::Node::eDof::TEMPERATURE,  NuTo::Node::eDof::TEMPERATURE );
-    matrixTT.Resize(numT,numT);
+    matrixTT.resize(numT,numT);
 
     m.Info();
     m.CheckDimensions();
@@ -224,32 +219,28 @@ void BlockSparseMatrixTest()
     timer.Reset("BMT - vector*matrix");
 
     NuTo::BlockFullVector<double> v(s);
-    v[NuTo::Node::eDof::DISPLACEMENTS] = NuTo::FullVector<double, Eigen::Dynamic>::Random(numD);
-    v[NuTo::Node::eDof::TEMPERATURE ] = NuTo::FullVector<double, Eigen::Dynamic>::Random(numT);
+    v[NuTo::Node::eDof::DISPLACEMENTS] = Eigen::VectorXd::Random(numD);
+    v[NuTo::Node::eDof::TEMPERATURE ] = Eigen::VectorXd::Random(numT);
 
     auto result = m*v*4 + m*v;
 
     timer.Reset("BMT - Export");
 
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> exportReference        (m.ExportToFullMatrix());
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> exportCSRVector2       (m.ExportToCSRVector2General());
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> exportCSR              (m.ExportToCSRGeneral());
+    Eigen::MatrixXd exportReference   = m.ExportToFullMatrix();
+    Eigen::MatrixXd exportCSRVector2  = m.ExportToCSRVector2General().ConvertToFullMatrix();
+    Eigen::MatrixXd exportCSR         = m.ExportToCSRGeneral().ConvertToFullMatrix();
 
     if ((exportCSRVector2 - exportReference).norm() > 1.e-8)
     {
-        std::cout << "Reference \n";
-        exportReference.Info();
-        std::cout << "Export to CSRVector2 \n";
-        exportCSRVector2.Info();
+        std::cout << "Reference \n" << exportReference << std::endl;
+        std::cout << "Export to CSRVector2 \n" << exportCSRVector2  << std::endl;
         throw NuTo::MechanicsException("[BlockSparseMatrixTest] Export to CSRVector2 failed.");
     }
 
     if ((exportCSR - exportReference).norm() > 1.e-8)
     {
-        std::cout << "Reference \n";
-        exportReference.Info();
-        std::cout << "Export to CSR \n";
-        exportCSR.Info();
+        std::cout << "Reference \n" << exportReference  << std::endl;
+        std::cout << "Export to CSR \n" << exportCSR  << std::endl;
         throw NuTo::MechanicsException("[BlockSparseMatrixTest] Export to CSR failed.");
     }
 
@@ -259,13 +250,11 @@ void BlockSparseMatrixTest()
     if (not CSR->IsSymmetric())
         throw NuTo::MechanicsException("[BlockSparseMatrixTest] Symmetric export to CSR failed.");
 
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> exportCSRSymm = CSR->ConvertToFullMatrixDouble();
+    Eigen::MatrixXd exportCSRSymm = CSR->ConvertToFullMatrix();
     if ((exportCSRSymm - m.ExportToFullMatrix()).norm() > 1.e-8)
     {
-        std::cout << "Reference \n";
-        exportReference.Info();
-        std::cout << "Export to CSRSymm \n";
-        exportCSRSymm.Info();
+        std::cout << "Reference \n" << exportReference  << std::endl;
+        std::cout << "Export to CSRSymm \n" << exportCSRSymm  << std::endl;
         throw NuTo::MechanicsException("[BlockSparseMatrixTest] Export to CSRSymm failed.");
     }
 
@@ -425,8 +414,7 @@ void StructureOutputBlockMatrixTestSymmetric(int rNumDAct, int rNumDDep, double 
     double diffMaxMin = diff.Max()-diff.Min();
     if (diffMaxMin > tolerance)
     {
-        std::cout << diffMaxMin << std::endl;
-        NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> (diff).Info();
+        std::cout << diffMaxMin << std::endl << diff.ConvertToFullMatrix()  << std::endl;
         throw NuTo::MechanicsException("[StructureOutputBlockMatrixTestSymmetric] ApplyCMatrix incorrect.");
     }
 }

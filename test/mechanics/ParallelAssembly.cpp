@@ -30,11 +30,7 @@ void SetupStructure(NuTo::Structure& rStructure, int rNumElementsPerDimension)
         for (int iY = 0; iY < numNodes; iY++)
             for (int iX = 0; iX < numNodes; iX++)
             {
-                NuTo::FullVector<double, Eigen::Dynamic> coordinates(3);
-                coordinates(0) = iX * deltaX;
-                coordinates(1) = iY * deltaY;
-                coordinates(2) = iZ * deltaZ;
-                rStructure.NodeCreate(nodeNum, coordinates);
+                rStructure.NodeCreate(nodeNum, Eigen::Vector3d{iX*deltaX, iY*deltaY, iZ*deltaZ});
                 nodeNum++;
             }
 
@@ -90,7 +86,7 @@ void CompareHessiansAndInternalGradients(NuTo::Structure& rStructure1, NuTo::Str
     if (hessian1.JJ(NuTo::Node::eDof::DISPLACEMENTS, NuTo::Node::eDof::DISPLACEMENTS).AbsMax() > 1.e-10)
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "HESSIANS incorrect.");
 
-    if (intGrad1.J[NuTo::Node::eDof::DISPLACEMENTS].Norm() > 1.e-10)
+    if (intGrad1.J[NuTo::Node::eDof::DISPLACEMENTS].norm() > 1.e-10)
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "INTERNAL GRADIENT incorrect.");
 }
 

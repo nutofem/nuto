@@ -3,10 +3,10 @@
 #pragma once
 
 #include <algorithm>
+#include <numeric>
 
 #include "math/SparseMatrixCSRVector2General_Def.h"
 
-#include "math/FullMatrix.h"
 //#include "math/SparseMatrixCSRGeneral_Def.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrixCSRVector2Symmetric.h"
@@ -27,10 +27,10 @@ NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(int rNumRo
 //! @param rAbsoluteTolerance ... absolute tolerance
 //! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
 template<class T>
-NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance):
-                             NuTo::SparseMatrixCSRVector2<T>(rFullMatrix.GetNumRows())
+NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance, double rRelativeTolerance):
+                             NuTo::SparseMatrixCSRVector2<T>(rFullMatrix.rows())
 {
-	this->mNumColumns = rFullMatrix.GetNumColumns();
+	this->mNumColumns = rFullMatrix.cols();
 
 	double tolerance = rAbsoluteTolerance;
 	if (rRelativeTolerance > 1e-14)
@@ -44,9 +44,9 @@ NuTo::SparseMatrixCSRVector2General<T>::SparseMatrixCSRVector2General(const NuTo
 
 	}
 
-	for (int row = 0; row < rFullMatrix.GetNumRows(); row++)
+	for (int row = 0; row < rFullMatrix.rows(); row++)
 	{
-		for (int col = 0; col < rFullMatrix.GetNumColumns(); col++)
+		for (int col = 0; col < rFullMatrix.cols(); col++)
 		{
 			if (std::abs(rFullMatrix(row,col)) > tolerance)
 			{
@@ -167,27 +167,20 @@ NuTo::eSparseMatrixType NuTo::SparseMatrixCSRVector2General<T>::GetSparseMatrixT
     return NuTo::eSparseMatrixType::CSRVECTOR2GENERAL;
 }
 
-//! @brief ... import matrix from slang object stored in  a text file
-//! @param rFileName ... file name
-template<class T>
-void NuTo::SparseMatrixCSRVector2General<T>::ImportFromSLangText(const char* rFileName)
-{
-	throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] to be implemented.");
-}
 
 //! @brief ... write nonzero matrix entries into a matrix
 //! @param rFullMatrix ... the matrix
 template<class T>
-void NuTo::SparseMatrixCSRVector2General<T>::WriteEntriesToMatrix(Matrix<T>& rMatrix) const
+Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> NuTo::SparseMatrixCSRVector2General<T>::ConvertToFullMatrix() const
 {
-	rMatrix.Resize(this->GetNumRows(), this->GetNumColumns());
+	Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> m = Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>::Zero(this->GetNumRows(), this->GetNumColumns());
 	if (this->mOneBasedIndexing)
 	{
 		for (unsigned int row=0; row<this->mColumns.size(); row++)
 		{
 			for (unsigned int col_count=0; col_count<this->mColumns[row].size(); col_count++)
 			{
-				rMatrix.AddValue(row, this->mColumns[row][col_count]-1, this->mValues[row][col_count]);
+				m(row, this->mColumns[row][col_count]-1) = this->mValues[row][col_count];
 			}
 		}
 	}
@@ -197,10 +190,11 @@ void NuTo::SparseMatrixCSRVector2General<T>::WriteEntriesToMatrix(Matrix<T>& rMa
 		{
 			for (unsigned int col_count=0; col_count<this->mColumns[row].size(); col_count++)
 			{
-				rMatrix.AddValue(row, this->mColumns[row][col_count], this->mValues[row][col_count]);
+				m(row, this->mColumns[row][col_count]) = this->mValues[row][col_count];
 			}
 		}
 	}
+    return m;
 }
 
 //! @brief ... returns the symmetric part of the matrix 0.5*(A+A^T)
@@ -388,14 +382,14 @@ NuTo::SparseMatrixCSRVector2General<T> NuTo::SparseMatrixCSRVector2General<T>::o
 //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
 //! @return ... full matrix
 template<class T>
-NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2General<T>::operator* (const FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const
+Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2General<T>::operator* (const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const
 {
-	if (this->GetNumColumns() != rMatrix.GetNumRows())
+	if (this->GetNumColumns() != rMatrix.rows())
 	{
-		std::cout << "this->GetNumColumns() " << this->GetNumColumns() << " rMatrix.GetNumRows() " << rMatrix.GetNumRows() << "\n";
+		std::cout << "this->GetNumColumns() " << this->GetNumColumns() << " rMatrix.GetNumRows() " << rMatrix.rows() << "\n";
 		throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
 	}
-	FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumRows(),rMatrix.GetNumColumns());
+	Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumRows(),rMatrix.cols());
 	if (this->HasOneBasedIndexing())
 	{
 		// loop over rows
@@ -405,7 +399,7 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2
         for (int row = 0; row < this->GetNumRows(); ++row)
 		{
 			// initialize result
-            for (int matrixCol = 0; matrixCol < result.GetNumColumns(); ++matrixCol)
+            for (int matrixCol = 0; matrixCol < result.cols(); ++matrixCol)
 			{
 				result(row,matrixCol) = 0.0;
 			}
@@ -416,7 +410,7 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2
 			{
 				int column = thisColumnVec[pos] - 1;
 				T value = thisValueVec[pos];
-                for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); ++matrixCol)
+                for (int matrixCol = 0; matrixCol < rMatrix.cols(); ++matrixCol)
 				{
 					result(row,matrixCol) += value * rMatrix(column,matrixCol);
 				}
@@ -432,7 +426,7 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2
         for (int row = 0; row < this->GetNumRows(); ++row)
 		{
 			// initialize result
-            for (int matrixCol = 0; matrixCol < result.GetNumColumns(); ++matrixCol)
+            for (int matrixCol = 0; matrixCol < result.cols(); ++matrixCol)
 			{
 				result(row,matrixCol) = 0.0;
 			}
@@ -443,7 +437,7 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2
 			{
 				int column = thisColumnVec[pos];
 				T value = thisValueVec[pos];
-                for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); ++matrixCol)
+                for (int matrixCol = 0; matrixCol < rMatrix.cols(); ++matrixCol)
 				{
 					result(row,matrixCol) += value * rMatrix(column,matrixCol);
 				}
@@ -706,13 +700,13 @@ void NuTo::SparseMatrixCSRVector2General<T>::Sub_TransA_B_Plus_C_D_Scal(
 }
 
 template<class T>
-NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2General<T>::TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
+Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2General<T>::TransMult(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const
 {
-	if (this->GetNumRows() != rMatrix.GetNumRows())
+	if (this->GetNumRows() != rMatrix.rows())
 	{
-		throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] invalid matrix dimensions.");
+		throw MathException(__PRETTY_FUNCTION__, "Invalid matrix dimensions.");
 	}
-	FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> result(this->GetNumColumns(),rMatrix.GetNumColumns());
+	Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> result = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>::Zero(this->GetNumColumns(),rMatrix.cols());
 	if (this->HasOneBasedIndexing())
 	{
 		// loop over columns of transpose
@@ -725,7 +719,7 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2
 			{
 				int row = thisColumnVec[pos] - 1;
 				T value = thisValueVec[pos];
-				for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+				for (int matrixCol = 0; matrixCol < rMatrix.cols(); matrixCol++)
 				{
 					result(row,matrixCol) += value * rMatrix(column,matrixCol);
 				}
@@ -744,7 +738,7 @@ NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> NuTo::SparseMatrixCSRVector2
 			{
 				int row = thisColumnVec[pos];
 				T value = thisValueVec[pos];
-				for (int matrixCol = 0; matrixCol < rMatrix.GetNumColumns(); matrixCol++)
+				for (int matrixCol = 0; matrixCol < rMatrix.cols(); matrixCol++)
 				{
 					result(row,matrixCol) += value * rMatrix(column,matrixCol);
 				}
@@ -798,7 +792,7 @@ T NuTo::SparseMatrixCSRVector2General<T>::Sum() const
 }
 
 template<class T>
-void NuTo::SparseMatrixCSRVector2General<T>::Gauss(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
+void NuTo::SparseMatrixCSRVector2General<T>::Gauss(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance)
 {
     throw MathException(std::string("[") + __PRETTY_FUNCTION__ + "] : to be implemented");
 }
@@ -973,7 +967,7 @@ template<class T>
 NuTo::SparseMatrixCSRVector2General<T> NuTo::SparseMatrixCSRVector2General<T>::Random(int rNumRows, int rNumColumns, double rDensity, int rSeed)
 {
     SparseMatrixCSRVector2General<T> matrix(rNumRows, rNumColumns);
-    Matrix<T>::FillMatrixRandom(matrix, rDensity, rSeed);
+    SparseMatrix<T>::FillMatrixRandom(matrix, rDensity, rSeed);
     return std::move(matrix);
 }
 

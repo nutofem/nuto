@@ -14,8 +14,6 @@ namespace NuTo
 
 class StructureBase;
 
-template <class T, int rows, int cols> class  FullMatrix;
-
 namespace IpData
 {
     enum class eIpStaticDataType;
@@ -40,7 +38,7 @@ public:
     void CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot);
 
     //! @brief calculates the relevant integration point data
-    void CalculateValues(const StructureBase& rStructure, NuTo::FullMatrix<double, 1, Eigen::Dynamic>& rValues)const;
+    void CalculateValues(const StructureBase& rStructure, Eigen::Matrix<double, 1, Eigen::Dynamic>& rValues) const;
 
     //! @brief number of data points per time step, e.g. number of stress components for an integration point
     int GetNumData(const StructureBase& rStructure) const;

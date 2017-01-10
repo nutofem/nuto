@@ -29,7 +29,7 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
     int nodeNum = 0;
     for (int countX=0; countX<numNodesX; countX++)
     {
-        NuTo::FullVector<double,Eigen::Dynamic> coordinates(1);
+        Eigen::VectorXd coordinates(1);
         coordinates(0) = countX*deltaX;
         myStructure.NodeCreate(nodeNum,coordinates);
         nodeNum++;
@@ -68,12 +68,12 @@ int main(int argc, char* argv[])
     try
     {
         Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-//        Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-//        Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT3);
-//        Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT4);
-//        Run(NuTo::Interpolation::eTypeOrder::LOBATTO2);
-//        Run(NuTo::Interpolation::eTypeOrder::LOBATTO3);
-//        Run(NuTo::Interpolation::eTypeOrder::LOBATTO4);
+        Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+        Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT3);
+        Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT4);
+        Run(NuTo::Interpolation::eTypeOrder::LOBATTO2);
+        Run(NuTo::Interpolation::eTypeOrder::LOBATTO3);
+        Run(NuTo::Interpolation::eTypeOrder::LOBATTO4);
     }
     catch (NuTo::Exception& e)
     {

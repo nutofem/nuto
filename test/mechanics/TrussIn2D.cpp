@@ -11,7 +11,6 @@
  *
  */
 
-#include "math/FullMatrix.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/elements/IpDataEnum.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
@@ -22,9 +21,6 @@
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 
 #include <boost/filesystem.hpp>
-#include <iostream>
-#include <fstream>
-#include <string>
 
 class ParametersMaterial
 {
@@ -44,16 +40,22 @@ public:
 class ParametersGeometry2D
 {
 public:
-    static constexpr int mDimension = 2;
-    static constexpr double mCrossSection = 0.1;
-    static const NuTo::FullVector<double, 2> mDirectionX;
-    static const NuTo::FullVector<double, 2> mDirectionY;
+    static const int mDimension;
+    static const double mCrossSection;
+    static const Eigen::Vector2d mDirectionX;
+    static const Eigen::Vector2d mDirectionY;
 };
 
-const NuTo::FullVector<double, 2> ParametersGeometry2D::mDirectionX = NuTo::FullVector<double, 2>::UnitX();
-const NuTo::FullVector<double, 2> ParametersGeometry2D::mDirectionY = NuTo::FullVector<double, 2>::UnitY();
+const int ParametersGeometry2D::mDimension = 2;
+const double ParametersGeometry2D::mCrossSection = 0.1;
+const Eigen::Vector2d ParametersGeometry2D::mDirectionX = Eigen::Vector2d::UnitX();
+const Eigen::Vector2d ParametersGeometry2D::mDirectionY = Eigen::Vector2d::UnitY();
 
-void Run2d(NuTo::FullVector<double, -1> rNodeCoords0, NuTo::FullVector<double, -1> rNodeCoords1, NuTo::FullVector<double, -1> rNodeCoords2, NuTo::FullVector<double, -1> rDirectionAligned, NuTo::FullVector<double, -1> rDirectionOrthogonal)
+void Run2d(Eigen::VectorXd rNodeCoords0,
+           Eigen::VectorXd rNodeCoords1,
+           Eigen::VectorXd rNodeCoords2,
+           Eigen::VectorXd rDirectionAligned,
+           Eigen::VectorXd rDirectionOrthogonal)
 {
     //**********************************************
     //          Structure
@@ -129,7 +131,7 @@ void Run2d(NuTo::FullVector<double, -1> rNodeCoords0, NuTo::FullVector<double, -
 
     int load = myStructure.LoadCreateNodeForce(0, node2, rDirectionAligned, 1);
 
-    NuTo::FullMatrix<double, 2, 2> timeDependentLoad;
+    Eigen::Matrix2d timeDependentLoad;
     timeDependentLoad(0, 0) = 0;
     timeDependentLoad(1, 0) = ParametersTimeIntegration::mSimulationTime;
     timeDependentLoad(0, 1) = 0;
@@ -146,7 +148,7 @@ void Run2d(NuTo::FullVector<double, -1> rNodeCoords0, NuTo::FullVector<double, -
 
     myIntegrationScheme.Solve(ParametersTimeIntegration::mSimulationTime);
 
-    NuTo::FullVector<double, -1> displacements;
+    Eigen::VectorXd displacements;
     boost::filesystem::remove_all(resultPath);
 
     myStructure.NodeGetDisplacements(node2, displacements);
@@ -159,13 +161,13 @@ int main(int argc, char* argv[])
 {
 
     // node coordinates
-    NuTo::FullVector<double, -1> nodeCoords0(ParametersGeometry2D::mDimension);
-    NuTo::FullVector<double, -1> nodeCoords1(ParametersGeometry2D::mDimension);
-    NuTo::FullVector<double, -1> nodeCoords2(ParametersGeometry2D::mDimension);
+    Eigen::VectorXd nodeCoords0(ParametersGeometry2D::mDimension);
+    Eigen::VectorXd nodeCoords1(ParametersGeometry2D::mDimension);
+    Eigen::VectorXd nodeCoords2(ParametersGeometry2D::mDimension);
 
     // directions
-    NuTo::FullVector<double, -1> directionAligned(ParametersGeometry2D::mDimension);
-    NuTo::FullVector<double, -1> directionOrthogonal(ParametersGeometry2D::mDimension);
+    Eigen::VectorXd directionAligned(ParametersGeometry2D::mDimension);
+    Eigen::VectorXd directionOrthogonal(ParametersGeometry2D::mDimension);
 
     try
     {

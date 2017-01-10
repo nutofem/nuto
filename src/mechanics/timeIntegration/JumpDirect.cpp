@@ -27,7 +27,7 @@
 #include "mechanics/timeIntegration/JumpDirect.h"
 #include "mechanics/timeIntegration/ResultGroupNodeForce.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
-#include "math/FullMatrix.h"
+
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 
@@ -119,9 +119,9 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
     	//extrapolation of the harmonic response
     	double BeginHarmonicExcitation;
     	if (mTimeDependentConstraint != -1) {
-    		BeginHarmonicExcitation = mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.GetNumRows()-1,0);
+    		BeginHarmonicExcitation = mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.rows()-1,0);
     	} else if (mTimeDependentLoadCase != -1) {
-    		BeginHarmonicExcitation = mTimeDependentLoadFactor(mTimeDependentLoadFactor.GetNumRows()-1,0);
+    		BeginHarmonicExcitation = mTimeDependentLoadFactor(mTimeDependentLoadFactor.rows()-1,0);
     	} else {
     		throw MechanicsException("[NuTo::JumpDirect::Solve] the harmonic excitation can be only applied to the time dependent constraint or load case.");
     	}
@@ -147,7 +147,7 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
         */
         NuTo::SparseMatrixCSRVector2General<double> Cmat(mStructure->ConstraintGetConstraintMatrixAfterGaussElimination());
         SparseMatrixCSRVector2General<double> CmatT (Cmat.Transpose());
-        FullVector<double,Eigen::Dynamic> bRHSprev, bRHSend;
+        Eigen::VectorXd bRHSprev, bRHSend;
 
         // allocate space for stiffness matrix
         SparseMatrixCSRVector2General<double> stiffMatrix_jj(mStructure->GetNumActiveDofs(), mStructure->GetNumActiveDofs());
@@ -164,19 +164,19 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 		massMatrix_kk.Resize(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs(),mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
         mStructure->BuildGlobalCoefficientSubMatricesGeneral(NuTo::StructureEnum::eMatrixType::MASS,massMatrix_jj,massMatrix_jk,massMatrix_kj,massMatrix_kk);
 
-        NuTo::FullVector<double,Eigen::Dynamic> extForce_j, extForce_k, prevExtForce_j, prevExtForce_k;
-        NuTo::FullVector<double,Eigen::Dynamic> cyclicPreJumpIntForce_j(mStructure->GetNumActiveDofs()), cyclicPreJumpIntForceNext_j(mStructure->GetNumActiveDofs()),
+        Eigen::VectorXd extForce_j, extForce_k, prevExtForce_j, prevExtForce_k;
+        Eigen::VectorXd cyclicPreJumpIntForce_j(mStructure->GetNumActiveDofs()), cyclicPreJumpIntForceNext_j(mStructure->GetNumActiveDofs()),
         		cyclicPreJumpIntForce_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs()), cyclicPreJumpIntForceNext_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-        NuTo::FullVector<double,Eigen::Dynamic> cyclicAfterJumpIntForce_j(mStructure->GetNumActiveDofs()),
+        Eigen::VectorXd cyclicAfterJumpIntForce_j(mStructure->GetNumActiveDofs()),
         		cyclicAfterJumpIntForce_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-        NuTo::FullVector<double,Eigen::Dynamic> cyclicPreJumpIntForce0_j(mStructure->GetNumActiveDofs()),
+        Eigen::VectorXd cyclicPreJumpIntForce0_j(mStructure->GetNumActiveDofs()),
         		cyclicPreJumpIntForce0_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-        NuTo::FullVector<double,Eigen::Dynamic> cyclicPreJumpIntForceMax_j(mStructure->GetNumActiveDofs()),
+        Eigen::VectorXd cyclicPreJumpIntForceMax_j(mStructure->GetNumActiveDofs()),
                 		cyclicPreJumpIntForceMax_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-        NuTo::FullVector<double,Eigen::Dynamic> residual_j, residual_k, residual_mod, prevResidual_j, prevResidual_k;
-        NuTo::FullVector<double,Eigen::Dynamic> vel_j, vel_k, acc_j, acc_k;
+        Eigen::VectorXd residual_j, residual_k, residual_mod, prevResidual_j, prevResidual_k;
+        Eigen::VectorXd vel_j, vel_k, acc_j, acc_k;
         //preJump values are stored for situation if the jump has to be repeated
-        NuTo::FullVector<double,Eigen::Dynamic> preJump_disp_Mean_j,preJump_disp_Mean_k, preJump_disp_Ampl_j, preJump_disp_Ampl_k, preJump_vel_j, preJump_vel_k,
+        Eigen::VectorXd preJump_disp_Mean_j,preJump_disp_Mean_k, preJump_disp_Ampl_j, preJump_disp_Ampl_k, preJump_vel_j, preJump_vel_k,
 				preJump_acc_j, preJump_acc_k;
 
         bool JumpCriterion;
@@ -188,7 +188,7 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 //    	std::cout << "Number of Elements = " << mStructure->GetNumElements() << std::endl;
 
 //    	//Example get stress
-//    	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rEngineeringStress;
+//    	Eigen::MatrixXd rEngineeringStress;
 //    	mStructure->ElementGetEngineeringStress(0, rEngineeringStress);
 //    	std::cout << "Return stress " << std::endl;
 //    	std::cout << rEngineeringStress << std::endl;
@@ -200,7 +200,7 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 //    	}
 
         //save static data, time and displacements after the 3th cycle for situation if the jump has to be repeated
-        NuTo::FullVector<double,Eigen::Dynamic> save_disp_j, save_disp_k, save_vel_j, save_vel_k, save_acc_j, save_acc_k;
+        Eigen::VectorXd save_disp_j, save_disp_k, save_vel_j, save_vel_k, save_acc_j, save_acc_k;
     	double SaveTime(mStructure->GetTime());
     	mStructure->ElementFatigueSaveStaticData();
 //    	std::cout << "Saved statevs =======================" <<std::endl;		// delete me
@@ -225,7 +225,7 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 	    }
 
 //      //save static data and time after the 3th cycle for situation if the jump has to be repeated
-//    	NuTo::FullVector<double,Eigen::Dynamic> save_disp_j, save_disp_k, delta_disp_j, delta_disp_k;;
+//    	Eigen::VectorXd save_disp_j, save_disp_k, delta_disp_j, delta_disp_k;;
 //    	double SaveTime(mStructure->GetTime());
 //    	mStructure->NodeExtractDofValues(0,save_disp_j, save_disp_k);
 //    	mStructure->ElementFatigueSaveStaticData();
@@ -259,7 +259,7 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 
     	// perform the 4th cycle
     	// initialize mean displacement and displacement amplitude
-    	NuTo::FullVector<double,Eigen::Dynamic> disp_Max_j, disp_Max_k, disp_Min_j, disp_Min_k;
+    	Eigen::VectorXd disp_Max_j, disp_Max_k, disp_Min_j, disp_Min_k;
 
     	Error = NuTo::NewmarkDirect::Solve(SaveTime + 0.25/mHarmonicFactor(0,1));
 //    	std::cout << "0.25 READY ==================" <<std::endl;		// delete me
@@ -278,7 +278,7 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
 //    	std::cout << "0.75 READY ==================" <<std::endl;		// delete me
     	mStructure->NodeExtractDofValues(0,disp_Min_j, disp_Min_k);
 
-    	NuTo::FullVector<double,Eigen::Dynamic> disp_Mean_j, disp_Mean_k, disp_Ampl_j, disp_Ampl_k;
+    	Eigen::VectorXd disp_Mean_j, disp_Mean_k, disp_Ampl_j, disp_Ampl_k;
 
     	Error = NuTo::NewmarkDirect::Solve(SaveTime + 1./mHarmonicFactor(0,1));
 //    	std::cout << "1 READY ==================" <<std::endl;		// delete me
@@ -461,7 +461,7 @@ NuTo::Error::eError NuTo::JumpDirect::Solve(double rTimeDelta)
     	int NumberOfIterations(0);
     	//initialize the number of cycles to be extrapolated
         int Njump(0);
-        NuTo::FullVector<double,Eigen::Dynamic> NjumpVector;
+        Eigen::VectorXd NjumpVector;
         // set the number of cycles to be extrapolated in the cycle jump routine
         // ... NjumpVector[0] is the number of extrapolated cycles itself Njump
         // ... NjumpVector[1] is the weighting coefficient of the implicit term
@@ -829,17 +829,17 @@ void NuTo::JumpDirect::CalculateGlobalModifiedStiffness(NuTo::SparseMatrixCSRVec
 
 //!@brief find equilibrium by calculating the Fourier coefficients (which are the displacement fields)
 //!@the structure is set to the updated mean displacements rDisp_Mean_j, and the RHS at the beginning of the cycle
-void NuTo::JumpDirect::CalculateFourierCoefficients(NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_k,
-		NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_k,
-		const NuTo::FullVector<double,Eigen::Dynamic>* rIntForce_Mean_j, const NuTo::FullVector<double,Eigen::Dynamic>* rIntForce_Mean_k,
-		const NuTo::FullVector<double,Eigen::Dynamic>* rIntForce_Max_j,  const NuTo::FullVector<double,Eigen::Dynamic>* rIntForce_Max_k)
+void NuTo::JumpDirect::CalculateFourierCoefficients(Eigen::VectorXd* rDisp_Mean_j, Eigen::VectorXd* rDisp_Mean_k,
+		Eigen::VectorXd* rDisp_Ampl_j, Eigen::VectorXd* rDisp_Ampl_k,
+		const Eigen::VectorXd* rIntForce_Mean_j, const Eigen::VectorXd* rIntForce_Mean_k,
+		const Eigen::VectorXd* rIntForce_Max_j,  const Eigen::VectorXd* rIntForce_Max_k)
 {
-    NuTo::FullVector<double,Eigen::Dynamic> extForce_j, extForce_k, extForceMax_j, extForceMax_k;
-    NuTo::FullVector<double,Eigen::Dynamic> intForce_j(mStructure->GetNumActiveDofs()), intForce_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs()),
+    Eigen::VectorXd extForce_j, extForce_k, extForceMax_j, extForceMax_k;
+    Eigen::VectorXd intForce_j(mStructure->GetNumActiveDofs()), intForce_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs()),
     		intForceMax_j(mStructure->GetNumActiveDofs()), intForceMax_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-    NuTo::FullVector<double,Eigen::Dynamic> residual_j, residual_k, residual_mod;
-	NuTo::FullVector<double,Eigen::Dynamic> delta_disp_j, delta_disp_k, zero_displ_j(mStructure->GetNumActiveDofs());
-    FullVector<double,Eigen::Dynamic> bRHS, bRHSmax;
+    Eigen::VectorXd residual_j, residual_k, residual_mod;
+	Eigen::VectorXd delta_disp_j, delta_disp_k, zero_displ_j(mStructure->GetNumActiveDofs());
+    Eigen::VectorXd bRHS, bRHSmax;
 
     //calculate constraint matrix
     /*
@@ -863,15 +863,15 @@ void NuTo::JumpDirect::CalculateFourierCoefficients(NuTo::FullVector<double,Eige
 
 	double BeginHarmonicExcitation;
 	if (mTimeDependentConstraint != -1) {
-		BeginHarmonicExcitation = mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.GetNumRows()-1,0);
+		BeginHarmonicExcitation = mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.rows()-1,0);
 	} else if (mTimeDependentLoadCase != -1) {
-		BeginHarmonicExcitation = mTimeDependentLoadFactor(mTimeDependentLoadFactor.GetNumRows()-1,0);
+		BeginHarmonicExcitation = mTimeDependentLoadFactor(mTimeDependentLoadFactor.rows()-1,0);
 	} else {
 		throw MechanicsException("[NuTo::JumpDirect::CalculateFourierCoefficients] the harmonic excitation can be only applied to the time dependent constraint or load case.");
 	}
 
 	//RemCom
-	NuTo::FullVector<double,Eigen::Dynamic> rIntForceX_Max_j, rIntForceX_Max_k, rIntForceX_Mean_j, rIntForceX_Mean_k,
+	Eigen::VectorXd rIntForceX_Max_j, rIntForceX_Max_k, rIntForceX_Mean_j, rIntForceX_Mean_k,
 		rDispX_Mean_j, rDispX_Mean_k, rDispX_Ampl_j, rDispX_Ampl_k;
 	rIntForceX_Max_j = *rIntForce_Max_j; rIntForceX_Max_k = *rIntForce_Max_k;
 	rIntForceX_Mean_j = *rIntForce_Mean_j; rIntForceX_Mean_k = *rIntForce_Mean_k;
@@ -907,10 +907,10 @@ void NuTo::JumpDirect::CalculateFourierCoefficients(NuTo::FullVector<double,Eige
 
     //calculate individual mass matrix
     NuTo::SparseMatrixCSRVector2General<double> massMatrix_jj,massMatrix_jk,massMatrix_kj,massMatrix_kk;
-    NuTo::FullVector<double, Eigen::Dynamic> lumped_massMatrix_j(mStructure->GetNumDofs()),
+    Eigen::VectorXd lumped_massMatrix_j(mStructure->GetNumDofs()),
     		                                 lumped_massMatrix_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
 	//store last converged velocities and accelerations
-	NuTo::FullVector<double,Eigen::Dynamic> lastConverged_vel_j, lastConverged_vel_k, lastConverged_acc_j, lastConverged_acc_k;
+	Eigen::VectorXd lastConverged_vel_j, lastConverged_vel_k, lastConverged_acc_j, lastConverged_acc_k;
 
 	bool FirstEqulibrium(false);
     if (mStructure->GetNumTimeDerivatives()>1 && FirstEqulibrium)
@@ -1115,7 +1115,7 @@ void NuTo::JumpDirect::CalculateFourierCoefficients(NuTo::FullVector<double,Eige
 
     //calculate individual mass matrix
 //    NuTo::SparseMatrixCSRVector2General<double> massMatrix_jj,massMatrix_jk,massMatrix_kj,massMatrix_kk;
-//    NuTo::FullVector<double, Eigen::Dynamic> lumped_massMatrix_j(mStructure->GetNumDofs()),
+//    Eigen::VectorXd lumped_massMatrix_j(mStructure->GetNumDofs()),
 //    		                                 lumped_massMatrix_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
 
 	if (mUseLumpedMass)
@@ -1265,8 +1265,8 @@ void NuTo::JumpDirect::CalculateFourierCoefficients(NuTo::FullVector<double,Eige
 // The CalculateFourierCoefficients routine determines the DISPLACEMENTS Dof only. For a coupled problem DISPLACEMENTS/DofType, the another DofType
 // has to be updated too. This routine updates the following list of Dofs:
 // NONLOCALEQSTRAIN
-void NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs(NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_k,
-		NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_k)
+void NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs(Eigen::VectorXd* rDisp_Mean_j, Eigen::VectorXd* rDisp_Mean_k,
+		Eigen::VectorXd* rDisp_Ampl_j, Eigen::VectorXd* rDisp_Ampl_k)
 {
 	std::map<NuTo::Node::eDof, bool> updatedDofs;
 	bool updateCoupledDofs(false);
@@ -1303,12 +1303,12 @@ void NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs(NuTo::FullVector<
 
 	// starting update the Dofs
 
-    NuTo::FullVector<double,Eigen::Dynamic> extForce_j, extForce_k, extForceMax_j, extForceMax_k;
-    NuTo::FullVector<double,Eigen::Dynamic> intForce_j(mStructure->GetNumActiveDofs()), intForce_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs()),
+    Eigen::VectorXd extForce_j, extForce_k, extForceMax_j, extForceMax_k;
+    Eigen::VectorXd intForce_j(mStructure->GetNumActiveDofs()), intForce_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs()),
     		intForceMax_j(mStructure->GetNumActiveDofs()), intForceMax_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-    NuTo::FullVector<double,Eigen::Dynamic> residual_j, residual_k, residual_mod;
-	NuTo::FullVector<double,Eigen::Dynamic> delta_disp_j, delta_disp_k, zero_displ_j(mStructure->GetNumActiveDofs());
-    FullVector<double,Eigen::Dynamic> bRHS, bRHSmax;
+    Eigen::VectorXd residual_j, residual_k, residual_mod;
+	Eigen::VectorXd delta_disp_j, delta_disp_k, zero_displ_j(mStructure->GetNumActiveDofs());
+    Eigen::VectorXd bRHS, bRHSmax;
 
     //calculate constraint matrix
     NuTo::SparseMatrixCSRVector2General<double> Cmat(mStructure->ConstraintGetConstraintMatrixAfterGaussElimination());
@@ -1324,9 +1324,9 @@ void NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs(NuTo::FullVector<
 
 	double BeginHarmonicExcitation;
 	if (mTimeDependentConstraint != -1) {
-		BeginHarmonicExcitation = mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.GetNumRows()-1,0);
+		BeginHarmonicExcitation = mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.rows()-1,0);
 	} else if (mTimeDependentLoadCase != -1) {
-		BeginHarmonicExcitation = mTimeDependentLoadFactor(mTimeDependentLoadFactor.GetNumRows()-1,0);
+		BeginHarmonicExcitation = mTimeDependentLoadFactor(mTimeDependentLoadFactor.rows()-1,0);
 	} else {
 		throw MechanicsException("[NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs] the harmonic excitation can be only applied to the time dependent constraint or load case.");
 	}
@@ -1460,8 +1460,8 @@ void NuTo::JumpDirect::CalculateFourierCoefficientsCoupledDofs(NuTo::FullVector<
 // rIncludePostProcess ...false, if no postprocessing should be done during integration
 // rIncludePostProcess ...true, postprocessing will be done
 // Postprocessing should be done if the jump is acceptable; in this case the IntegrateSinleCycle should be repeated with a true option
-void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_k,
-		NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_k, bool rIncludePostProcess)
+void NuTo::JumpDirect::IntegrateSingleCycle(Eigen::VectorXd* rDisp_Mean_j, Eigen::VectorXd* rDisp_Mean_k,
+		Eigen::VectorXd* rDisp_Ampl_j, Eigen::VectorXd* rDisp_Ampl_k, bool rIncludePostProcess)
 {
     //calculate constraint matrix
     /*
@@ -1474,7 +1474,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
     */
     NuTo::SparseMatrixCSRVector2General<double> Cmat(mStructure->ConstraintGetConstraintMatrixAfterGaussElimination());
     SparseMatrixCSRVector2General<double> CmatT (Cmat.Transpose());
-    FullVector<double,Eigen::Dynamic> bRHSprev, bRHShalf, bRHSend, bRHSdot, bRHSddot;
+    Eigen::VectorXd bRHSprev, bRHShalf, bRHSend, bRHSdot, bRHSddot;
 
     // allocate space for stiffness matrix
     SparseMatrixCSRVector2General<double> stiffMatrix_jj(mStructure->GetNumActiveDofs(), mStructure->GetNumActiveDofs());
@@ -1484,7 +1484,7 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
 
     //calculate individual mass matrix (I was lazy here and have just used general matrices, but symmetric is certainly better here)
     NuTo::SparseMatrixCSRVector2General<double> massMatrix_jj,massMatrix_jk,massMatrix_kj,massMatrix_kk;
-    NuTo::FullVector<double, Eigen::Dynamic> lumped_massMatrix_j(mStructure->GetNumDofs()),
+    Eigen::VectorXd lumped_massMatrix_j(mStructure->GetNumDofs()),
     		                                 lumped_massMatrix_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
 
     // check equilibrium
@@ -1507,15 +1507,15 @@ void NuTo::JumpDirect::IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynam
     }
 
     //extract displacements, velocities and accelerations
-    NuTo::FullVector<double,Eigen::Dynamic> disp_j,disp_k, vel_j, vel_k, acc_j, acc_k;
-    NuTo::FullVector<double,Eigen::Dynamic> trial_disp_j,trial_disp_k, trial_vel_j, trial_vel_k, trial_acc_j, trial_acc_k;
-    NuTo::FullVector<double,Eigen::Dynamic> extForce_j, extForce_k, prevExtForce_j, prevExtForce_k;
-    NuTo::FullVector<double,Eigen::Dynamic> intForce_j(mStructure->GetNumActiveDofs()), intForce_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs()),
+    Eigen::VectorXd disp_j,disp_k, vel_j, vel_k, acc_j, acc_k;
+    Eigen::VectorXd trial_disp_j,trial_disp_k, trial_vel_j, trial_vel_k, trial_acc_j, trial_acc_k;
+    Eigen::VectorXd extForce_j, extForce_k, prevExtForce_j, prevExtForce_k;
+    Eigen::VectorXd intForce_j(mStructure->GetNumActiveDofs()), intForce_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs()),
                              prevIntForce_j(mStructure->GetNumActiveDofs()), prevIntForce_k(mStructure->GetNumDofs() - mStructure->GetNumActiveDofs());
-    NuTo::FullVector<double,Eigen::Dynamic> residual_j, residual_k, residual_mod, prevResidual_j, prevResidual_k;
+    Eigen::VectorXd residual_j, residual_k, residual_mod, prevResidual_j, prevResidual_k;
 
     //store last converged displacements, velocities and accelerations
-    NuTo::FullVector<double,Eigen::Dynamic> lastConverged_disp_j,lastConverged_disp_k, lastConverged_vel_j, lastConverged_vel_k, lastConverged_acc_j, lastConverged_acc_k;
+    Eigen::VectorXd lastConverged_disp_j,lastConverged_disp_k, lastConverged_vel_j, lastConverged_vel_k, lastConverged_acc_j, lastConverged_acc_k;
 //  mStructure->NodeExtractDofValues(0,lastConverged_disp_j, lastConverged_disp_k);
 
     if (mStructure->GetNumTimeDerivatives()>1)

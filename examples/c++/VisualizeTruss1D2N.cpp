@@ -1,5 +1,4 @@
 #include "math/MathException.h"
-#include "math/FullMatrix.h"
 #include "mechanics/MechanicsException.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/MechanicsEnums.h"
@@ -11,8 +10,8 @@ int main()
     NuTo::Structure myStructure(1);
 
     // create nodes
-    NuTo::FullVector<double, Eigen::Dynamic> Coordinates(1);
-    NuTo::FullVector<double, Eigen::Dynamic> Displacements(1);
+    Eigen::VectorXd Coordinates(1);
+    Eigen::VectorXd Displacements(1);
 
     Coordinates(0) = 1;
     myStructure.NodeCreate(0, Coordinates);

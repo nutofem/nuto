@@ -4,16 +4,12 @@
 #include <boost/serialization/vector.hpp>
 #endif //ENABLE_SERIALIZATION
 
-
 #include <cfloat>
 #include <string>
+#include <eigen3/Eigen/Core>
 
-
-
-// parent
 #include "base/NuToObject.h"
 
-#include "math/FullMatrix_Def.h"
 #include "optimize/CallbackHandler.h"
 #include "optimize/CallbackHandlerGrid.h"
 #include "optimize/OptimizeException.h"
@@ -45,7 +41,7 @@ public:
     
     Optimizer(unsigned int rNumParameters,unsigned int rNumEqualConstraints,unsigned int rNumInEqualConstraints) : NuToObject()
     {
-        mvParameters.Resize(rNumParameters,1);
+        mvParameters.resize(rNumParameters,1);
         mvEqualConstraints.resize(rNumEqualConstraints);
         mvInEqualConstraints.resize(rNumInEqualConstraints);
         mMaxFunctionCalls = INT_MAX;
@@ -86,13 +82,13 @@ public:
 	
 	virtual int Optimize()=0;
 	
-    void SetParameters(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rParameters)
+    void SetParameters(const Eigen::MatrixXd& rParameters)
     {
         mvParameters = rParameters;
         isBuild = false;
     }
 
-    const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& GetParameters()const
+    const Eigen::MatrixXd& GetParameters()const
     {
         return mvParameters;    
     }
@@ -100,9 +96,6 @@ public:
     void SetParameters(std::vector<double>& rParameters)
     {
     	mParameters=rParameters;
-//		assert(mParameters.size()==rParameters.size());
-//		for(size_t i=0;i<mParameters.size();++i)
-//			mParameters[i]=rParameters[i];
         isBuild = false;
     }
 
@@ -113,8 +106,8 @@ public:
 
     inline int GetNumParameters()
     {
-        if(mvParameters.GetNumRows())
-        	return mvParameters.GetNumRows();
+        if(mvParameters.rows())
+        	return mvParameters.rows();
         else
         	return mParameters.size();
     }
@@ -138,14 +131,14 @@ public:
             if (mpCallbackHandler!=0)
                 return mpCallbackHandler->Objective();
             else
-                throw OptimizeException(std::string("[Optimizer::GetObjective]No callback functions defined."));
+                throw OptimizeException(__PRETTY_FUNCTION__, "No callback functions defined.");
         }
     }
     
-    //! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-	virtual void InfoBase()const
+    //! @brief Info routine that prints general information about the object (detail according to verbose level)
+    virtual void InfoBase() const
 	{
-		std::cout << "Number of parameters             :" << mvParameters.GetNumRows() << std::endl;
+		std::cout << "Number of parameters             :" << mvParameters.rows() << std::endl;
 		std::cout << "Number of equality constraints   :" << mvEqualConstraints.size() << std::endl;
 		std::cout << "Number of inequality constraints :" << mvInEqualConstraints.size() << std::endl;
 		std::cout << "Build                            :" << isBuild << std::endl;
@@ -157,7 +150,7 @@ protected:
     CallbackHandler *mpCallbackHandler;
     CallbackHandlerGrid *mpCallbackHandlerGrid;
     double objective;
-    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> mvParameters;
+    Eigen::MatrixXd mvParameters;
     std::vector<double> mParameters;
     std::vector<double> mvEqualConstraints;
     std::vector<double> mvInEqualConstraints;

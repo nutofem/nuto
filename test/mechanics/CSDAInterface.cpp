@@ -14,7 +14,6 @@
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/nodes/NodeBase.h"
-#include "math/FullVector.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/tools/GlobalFractureEnergyIntegrator.h"
 

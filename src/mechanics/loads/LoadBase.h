@@ -13,13 +13,12 @@
 #include <map>
 #endif  // ENABLE_SERIALIZATION
 
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 #include "mechanics/MechanicsException.h"
 
 namespace NuTo
 {
 template<class T> class SparseMatrixCSRGeneral;
-template <class T, int rows> class FullVector;
 class NodeBase;
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
@@ -44,7 +43,7 @@ public:
     //! @param rLoadCase number of the current load case
     //! @param rActiceDofsLoadVector ... global load vector which correspond to the active dofs
     //! @param rDependentDofsLoadVector ... global load vector which correspond to the dependent dofs
-    virtual void AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const=0;
+    virtual void AddLoadToGlobalSubVectors(int rLoadCase, Eigen::VectorXd& rActiceDofsLoadVector, Eigen::VectorXd& rDependentDofsLoadVector)const=0;
 
 
 #ifdef ENABLE_SERIALIZATION

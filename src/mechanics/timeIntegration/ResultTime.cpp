@@ -19,7 +19,7 @@ void NuTo::ResultTime::Info() const
 void NuTo::ResultTime::CalculateAndAddValues(const StructureBase& rStructure, int rTimeStepPlot, double rTime)
 {
 	assert(rTimeStepPlot>=0);
-	if (rTimeStepPlot>=mData.GetNumRows())
+	if (rTimeStepPlot>=mData.rows())
 	{
 		this->Resize(rStructure, 2*(rTimeStepPlot+1),false);
 	}

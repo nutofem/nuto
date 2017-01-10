@@ -1,7 +1,7 @@
 
 #include "base/ErrorEnum.h"
 
-#include "math/FullMatrix.h"
+
 
 #include "mechanics/elements/Element2DInterface.h"
 #include "mechanics/nodes/NodeBase.h"
@@ -263,9 +263,9 @@ void NuTo::Element2DInterface::CalculateGlobalRowDofs(BlockFullVector<int>& rGlo
      {
          const InterpolationBase& interpolationType = mInterpolationType->Get(dof);
          const int numNodes = interpolationType.GetNumNodes();
-         FullVector<int, Eigen::Dynamic>& dofWiseGlobalRowDofs = rGlobalRowDofs[dof];
+         Eigen::Matrix<int, Eigen::Dynamic, 1>& dofWiseGlobalRowDofs = rGlobalRowDofs[dof];
 
-         dofWiseGlobalRowDofs.Resize(interpolationType.GetNumDofs());
+         dofWiseGlobalRowDofs.resize(interpolationType.GetNumDofs());
          dofWiseGlobalRowDofs.setZero();
          switch (dof)
          {
@@ -517,8 +517,8 @@ void NuTo::Element2DInterface::FillConstitutiveOutputMapHessian0(ConstitutiveOut
     {
         for (auto dofCol : mInterpolationType->GetActiveDofs())
         {
-            NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& dofSubMatrix = rHessian0(dofRow, dofCol);
-            dofSubMatrix.Resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
+            Eigen::MatrixXd& dofSubMatrix = rHessian0(dofRow, dofCol);
+            dofSubMatrix.resize(mInterpolationType->Get(dofRow).GetNumDofs(), mInterpolationType->Get(dofCol).GetNumDofs());
             dofSubMatrix.setZero();
 
             switch (Node::CombineDofs(dofRow, dofCol))
@@ -871,7 +871,7 @@ void NuTo::Element2DInterface::FillConstitutiveOutputMapIpData(ConstitutiveOutpu
         switch (it.first)
         {
         case NuTo::IpData::eIpStaticDataType::BOND_STRESS:
-            it.second.Resize(6, GetNumIntegrationPoints());
+            it.second.resize(6, GetNumIntegrationPoints());
             rConstitutiveOutput[NuTo::Constitutive::eOutput::BOND_STRESS] = ConstitutiveIOBase::makeConstitutiveIO<2>(NuTo::Constitutive::eOutput::BOND_STRESS);
             break;
         default:

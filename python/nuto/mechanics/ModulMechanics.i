@@ -2,8 +2,6 @@
 %feature("autodoc","1");
 %{
 //Put headers and other declarations here to be added in the wrapper files
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
 #include "math/SparseMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
@@ -19,12 +17,8 @@
 #include "mechanics/timeIntegration/NewmarkDirect.h"
 %}
 
-// convert python string to std::string
-%include "std_string.i"
-// convert python tuple to std::vector
-%include "std_vector.i"
-%ignore Exception;
-%include "base/ModulNuToBase.i"
+
+%include "math/NuToMath.i" // defines typenames for std::vector and Eigen::Matrix
 %include "base/CallbackInterface.h"
 
 %include "mechanics/structures/StructureBase.h"

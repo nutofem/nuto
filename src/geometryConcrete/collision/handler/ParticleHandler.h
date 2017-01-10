@@ -8,6 +8,7 @@
 #pragma once
 
 #include "eigen3/Eigen/Core"
+
 #include <vector>
 
 namespace NuTo
@@ -17,8 +18,6 @@ class CollidableParticleBase;
 class CollidableParticleSphere;
 class VisualizeUnstructuredGrid;
 class Specimen;
-template <class T, int rows, int cols> class FullMatrix;
-template <class T, int rows> class FullVector;
 typedef std::vector<CollidableParticleSphere*> ParticleContainer;
 
 //! @brief ... handles the particle list
@@ -30,13 +29,13 @@ public:
     //! @brief ... constructor, builds rNumParticles equal particles
 	ParticleHandler(
 			const int rNumParticles,
-			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rParticleBoundingBox,
+			const Eigen::MatrixXd rParticleBoundingBox,
 			const double rVelocityRange,
 			const double rGrowthRate);
 
 	//! @brief ... constructor, uses rSpheres
 	ParticleHandler(
-			const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSpheres,
+			const Eigen::MatrixXd rSpheres,
 			const double rVelocityRange,
 			const double rRelativeGrowthRate,
 			const double rAbsoluteGrowthRate);
@@ -93,13 +92,13 @@ public:
 	void ResetVelocities();
 
 	//! @brief ... converts the particle list to a Nx4-matrix
-	NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetParticles(bool rInitialRadius = false) const;
+	Eigen::MatrixXd GetParticles(bool rInitialRadius = false) const;
 
     //! @brief ... cut spheres at a given z-coordinate to create circles (in 2D)
     //! @param rZCoord z coordinate (where to cut)
     //! @param rMinRadius minimal radius of the circle
     //! @return ... matrix with the circles (x,y,r)
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> GetParticles2D(
+    Eigen::MatrixXd GetParticles2D(
             double rZCoord, double rMinRadius) const;
 
     //! @brief ... exports the particle list to a file
@@ -118,7 +117,7 @@ public:
     void SetVisualizationFileName(const std::string& rVisualizationFileName);
 
 	//! @brief ... calculates approximate sub box length, based on box size and the number of particles per sub box
-	NuTo::FullVector<int,Eigen::Dynamic> GetSubBoxDivisions(Specimen& rSpecimen, const int rParticlesPerBox);
+	Eigen::VectorXi GetSubBoxDivisions(Specimen& rSpecimen, const int rParticlesPerBox);
 
 
 
@@ -129,13 +128,13 @@ private:
 	//! @brief ... returns a random vector with each component in a certain range
 	//! @param rStart ... start of value range
 	//! @param rEnd ... end of value range
-	NuTo::FullVector<double,Eigen::Dynamic> GetRandomVector(const double rStart, const double rEnd);
+	Eigen::VectorXd GetRandomVector(const double rStart, const double rEnd);
 
 	//! @brief ... returns a random vector with each component in a certain range
 	//! @param rBounds ... rBounds(:,0) start of value range, rBounds(:,1) end of value range
-	NuTo::FullVector<double,Eigen::Dynamic> GetRandomVector(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rBounds);
+	Eigen::VectorXd GetRandomVector(const Eigen::MatrixXd rBounds);
 
-    void CreateParticlesFromMatrix(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rSpheres, const double rVelocityRange, const double rRelativeGrowthRate, const double rAbsoluteGrowthRate);
+    void CreateParticlesFromMatrix(const Eigen::MatrixXd rSpheres, const double rVelocityRange, const double rRelativeGrowthRate, const double rAbsoluteGrowthRate);
 
 	std::string mVisualizationFileName;
 

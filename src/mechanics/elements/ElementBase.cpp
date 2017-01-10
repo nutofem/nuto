@@ -12,8 +12,6 @@
 #include <boost/foreach.hpp>
 #include <boost/assign/ptr_map_inserter.hpp>
 
-#include "math/FullMatrix.h"
-
 #include "mechanics/MechanicsException.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -967,7 +965,7 @@ void NuTo::ElementBase::VisualizeExtrapolateToNodes(VisualizeUnstructuredGrid& r
     Evaluate(elementOutput);
 
     //assign the outputs
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>* engineeringStrain(nullptr);
+    Eigen::MatrixXd* engineeringStrain(nullptr);
 
     for (auto itElementOutput=elementOutput.begin(); itElementOutput!=elementOutput.end(); itElementOutput++)
     {
@@ -1203,7 +1201,7 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(VisualizeUnstructuredGrid&
 #endif // ENABLE_VISUALIZE
 
 
-void NuTo::ElementBase::GetIntegratedStress(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rStress)
+void NuTo::ElementBase::GetIntegratedStress(Eigen::MatrixXd& rStress)
 {
     std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
     elementOutput[Element::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>(IpData::eIpStaticDataType::ENGINEERING_STRESS);
@@ -1213,14 +1211,15 @@ void NuTo::ElementBase::GetIntegratedStress(FullMatrix<double, Eigen::Dynamic, E
     const auto& ipStress = elementOutput.at(Element::eOutput::IP_DATA)->GetIpData().GetIpDataMap()[IpData::eIpStaticDataType::ENGINEERING_STRESS];
     Eigen::VectorXd ipVolume = this->GetIntegrationPointVolume();
 
-    rStress.Resize(ipStress.GetNumRows(), 1);
-    for (int countIP = 0; countIP < ipStress.GetNumColumns(); countIP++)
+    rStress.resize(ipStress.rows(), 1);
+    rStress.setZero();
+    for (int countIP = 0; countIP < ipStress.cols(); countIP++)
     {
         rStress += (ipStress.col(countIP) * (ipVolume[countIP]));
     }
 }
 
-void NuTo::ElementBase::GetIntegratedStrain(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rStrain)
+void NuTo::ElementBase::GetIntegratedStrain(Eigen::MatrixXd& rStrain)
 {
     std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> elementOutput;
     elementOutput[Element::eOutput::IP_DATA] = std::make_shared<ElementOutputIpData>(IpData::eIpStaticDataType::ENGINEERING_STRAIN);
@@ -1230,8 +1229,9 @@ void NuTo::ElementBase::GetIntegratedStrain(FullMatrix<double, Eigen::Dynamic, E
     const auto& ipStress = elementOutput.at(Element::eOutput::IP_DATA)->GetIpData().GetIpDataMap()[IpData::eIpStaticDataType::ENGINEERING_STRAIN];
     Eigen::VectorXd ipVolume = this->GetIntegrationPointVolume();
 
-    rStrain.Resize(ipStress.GetNumRows(), 1);
-    for (int countIP = 0; countIP < ipStress.GetNumColumns(); countIP++)
+    rStrain.resize(ipStress.rows(), 1);
+    rStrain.setZero();
+    for (int countIP = 0; countIP < ipStress.cols(); countIP++)
     {
         rStrain += (ipStress.col(countIP) * (ipVolume[countIP]));
     }

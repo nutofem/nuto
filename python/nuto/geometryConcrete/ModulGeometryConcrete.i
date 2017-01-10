@@ -2,8 +2,6 @@
 %feature("autodoc","1");
 %{
 //Put headers and other declarations here to be added in the wrapper files
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
 #include "geometryConcrete/Specimen.h"
 #include "geometryConcrete/collision/collidables/CollidableBase.h"
 #include "geometryConcrete/collision/collidables/CollidableParticleBase.h"
@@ -19,17 +17,14 @@
 #include "geometryConcrete/InputReader.h"
 %}
 
+
+%include "math/NuToMath.i" // defines typenames for std::vector and Eigen::Matrix
+
 %apply int& OUTPUT { int& rType };
 double NuTo::CollidableParticleSphere::PredictCollision(NuTo::CollidableParticleSphere& rSphere, int& rType);
 double NuTo::CollidableParticleSphere::PredictCollision(NuTo::CollidableWallPhysical& rWall, int& rType);
 
 
-// convert python string to std::string
-%include "std_string.i"
-// convert python tuple to std::vector
-%include "std_vector.i"
-%ignore Exception;
-%include "base/ModulNuToBase.i"
 
 %include "geometryConcrete/Specimen.h"
 %include "geometryConcrete/collision/Event.h"

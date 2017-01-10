@@ -9,7 +9,7 @@
 //
 //============================================================================
 
-#include "math/FullMatrix.h"
+#include "math/MathException.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/groups/GroupEnum.h"
 #include "mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -58,12 +58,12 @@ public:
     static constexpr double mSimulationTime = 1.0;
     static constexpr double mLoad = 10.0;
 
-    static const NuTo::FullVector<double, dimension> mDirectionX;
-    static const NuTo::FullVector<double, dimension> mDirectionY;
+    static const Eigen::Matrix<double, dimension, 1> mDirectionX;
+    static const Eigen::Matrix<double, dimension, 1> mDirectionY;
 };
 
-const NuTo::FullVector<double, dimension> Parameters::mDirectionX = NuTo::FullVector<double, dimension>::UnitX();
-const NuTo::FullVector<double, dimension> Parameters::mDirectionY = NuTo::FullVector<double, dimension>::UnitY();
+const Eigen::Matrix<double, dimension, 1> Parameters::mDirectionX = Eigen::Matrix<double, dimension, 1>::UnitX();
+const Eigen::Matrix<double, dimension, 1> Parameters::mDirectionY = Eigen::Matrix<double, dimension, 1>::UnitY();
 
 //////////////////////////////////////////////////////////
 //  MAIN
@@ -153,8 +153,8 @@ int main(int argc, char* argv[])
 
         auto createdGroupIdMatrix = myStructure.ImportFromGmsh(meshFile.string());
 
-        int groupIdFibre = createdGroupIdMatrix.GetValue(0, 0);
-        int groupIdMatrix = createdGroupIdMatrix.GetValue(1, 0);
+        int groupIdFibre = createdGroupIdMatrix(0, 0);
+        int groupIdMatrix = createdGroupIdMatrix(1, 0);
 
         std::cout << "***********************************" << std::endl;
         std::cout << "**      Matrix                   **" << std::endl;
@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
         myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodeBCLeft, Parameters::mDirectionX, 0);
 
 
-        NuTo::FullVector<double, dimension> nodeCoords;
+        Eigen::Matrix<double, dimension, 1> nodeCoords;
         nodeCoords[0] = 0.0;
         nodeCoords[1] = 5.0;
         int nodeLeft = myStructure.NodeGetIdAtCoordinate(nodeCoords, 1e-6);
@@ -231,7 +231,7 @@ int main(int argc, char* argv[])
         myStructure.NodeBuildGlobalDofs();
         myStructure.CalculateMaximumIndependentSets();
 
-        NuTo::FullMatrix<double, 5, 2> timeDependentLoad;
+        Eigen::Matrix<double, 5, 2> timeDependentLoad;
         timeDependentLoad(0, 0) = 0;
         timeDependentLoad(1, 0) = 0.25*Parameters::mSimulationTime;
         timeDependentLoad(2, 0) = 0.50*Parameters::mSimulationTime;

@@ -1172,9 +1172,9 @@ NuTo::Error::eError NuTo::StrainGradientDamagePlasticityEngineeringStress::Retur
     //! @brief yield condition at the first iteration
     FullMatrix<double,2,1> initYieldCondition;
     //! @brief (dF/dsigma)T * Hessian * dF/dsigma
-    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> matG;
+    Eigen::MatrixXd matG;
     //! @brief ((dF/dsigma)T * Hessian * dF/dsigma )^-1
-    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> matGInv;
+    Eigen::MatrixXd matGInv;
     //! @brief algorithmic modulus DElastInv+delta_gamm*d2F/d2Sigma
     FullMatrix<double,1,1> hessian;
     //! @brief first derivatives of the yield functions

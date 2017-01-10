@@ -45,8 +45,6 @@ namespace NuTo
 {
 // forward declarations
 template<class T> class SparseMatrix;
-template<class T, int rows> class FullVector;
-template <class T, int rows, int cols> class FullMatrix;
 
 namespace EIGEN_SOLVER_ARPACK
 {
@@ -86,10 +84,10 @@ public:
 
     //! @brief ... solve the eigenvalue problem of a single matrix
     void Solve(const NuTo::SparseMatrix<double>& rK,
-    		const NuTo::SparseMatrix<double>* rM,
-    		int rNumEigenValues,
-    		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEigenValues,
-    		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEigenVectors);
+               const NuTo::SparseMatrix<double>* rM,
+    		   int rNumEigenValues,
+    		   Eigen::MatrixXd& rEigenValues,
+               Eigen::MatrixXd& rEigenVectors);
 
     //! @brief ... set the mode
     void SetDriver(NuTo::EIGEN_SOLVER_ARPACK::eDriver rDriver)

@@ -13,15 +13,13 @@
 #include <fstream>
 #endif
 
-void ThrowIfNotEqual(const NuTo::SparseMatrix<double>& rSparse, const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rFull, double rTolerance = 1e-6)
+void ThrowIfNotEqual(const NuTo::SparseMatrix<double>& rSparse, const Eigen::MatrixXd& rFull, double rTolerance = 1e-6)
 {
-    const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> tmp(rSparse);
+    const Eigen::MatrixXd tmp = rSparse.ConvertToFullMatrix();
     if ((tmp-rFull).cwiseAbs().maxCoeff() > rTolerance)
     {
-        std::cout << "############ SPARSE ############" << std::endl;
-        tmp.Info();
-        std::cout << "############# FULL #############" << std::endl;
-        rFull.Info();
+        std::cout << "############ SPARSE ############ \n" << tmp << std::endl;
+        std::cout << "############# FULL ############# \n" << rFull << std::endl;
         throw NuTo::MathException("Matrices not equal");
     }
 
@@ -48,10 +46,10 @@ void SparseMatrixVector2GeneralSymmetricTests()
     const auto S1 = NuTo::SparseMatrixCSRVector2Symmetric<double>::Random(dim,.5, seedS1);
     const auto S2 = NuTo::SparseMatrixCSRVector2Symmetric<double>::Random(dim,.5, seedS2);
 
-    const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> fG1(G1);
-    const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> fG2(G2);
-    const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> fS1(S1);
-    const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> fS2(S2);
+    const Eigen::MatrixXd fG1 = G1.ConvertToFullMatrix();
+    const Eigen::MatrixXd fG2 = G2.ConvertToFullMatrix();
+    const Eigen::MatrixXd fS1 = S1.ConvertToFullMatrix();
+    const Eigen::MatrixXd fS2 = S2.ConvertToFullMatrix();
 
     /*
      * General
@@ -167,14 +165,14 @@ void SparseMatrixVector2Tests(int rNumActDofs, int rNumDepDofs, double rDensity,
         if (diffMaxMin > tolerance)
         {
             std::cout << diffMaxMin << std::endl;
-            NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> (diff).Info();
+            std::cout << diff.ConvertToFullMatrix() << std::endl;
             throw NuTo::MathException("[SparseMatrixVector2Tests - General] ApplyCMatrix incorrect.");
         }
 
         timer.Reset("SparseMatrixVector2Tests - General:: RJ + Cmat.Trans * RK");
 
-        NuTo::FullVector<double, Eigen::Dynamic> RJ = NuTo::FullVector<double, Eigen::Dynamic>::Random(rNumActDofs);
-        NuTo::FullVector<double, Eigen::Dynamic> RK = NuTo::FullVector<double, Eigen::Dynamic>::Random(rNumDepDofs);
+        Eigen::VectorXd RJ = Eigen::VectorXd::Random(rNumActDofs);
+        Eigen::VectorXd RK = Eigen::VectorXd::Random(rNumDepDofs);
 
         auto R1 = RJ;
         R1 += bCm.TransMult(RK);
@@ -182,12 +180,12 @@ void SparseMatrixVector2Tests(int rNumActDofs, int rNumDepDofs, double rDensity,
         auto R2 = RJ;
         R2 += Cm.Transpose() * RK;
 
-        NuTo::FullVector<double, Eigen::Dynamic> diffVec = R1 - R2;
-        double diffVecMaxMin = diffVec.Max()-diffVec.Min();
+        Eigen::VectorXd diffVec = R1 - R2;
+        double diffVecMaxMin = diffVec.maxCoeff()-diffVec.minCoeff();
         if (diffVecMaxMin > tolerance)
         {
             std::cout << diffVecMaxMin << std::endl;
-            NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> (diffVec).Info();
+            std::cout << diffVec << std::endl;
             throw NuTo::MathException("[SparseMatrixVector2Tests - General] RJ + Cmat.Trans * RK incorrect.");
         }
 
@@ -243,7 +241,7 @@ void SparseMatrixVector2Tests(int rNumActDofs, int rNumDepDofs, double rDensity,
         if (diffMaxMin > tolerance)
         {
             std::cout << diffMaxMin << std::endl;
-            NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> (diff).Info();
+            std::cout << diff.ConvertToFullMatrix() << std::endl;
             throw NuTo::MathException("[SparseMatrixVector2Tests - Symmetric] ApplyCMatrix incorrect.");
         }
     }
@@ -296,14 +294,14 @@ void GaussEliminationTests(int rNumActDofs, int rNumDepDofs, double rDensity)
     auto diffCMat = cMatVector2 - cMat;
     if (diffCMat.Max() - diffCMat.Min() > 1e-8)
     {
-        NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> (diffCMat).Info();
+        std::cout << diffCMat.ConvertToFullMatrix() << std::endl;
         throw NuTo::MathException("[GaussEliminationTests] wrong cMat");
     }
 
     auto diffRHS = RHSVector2 - RHS;
     if (diffRHS.Max() - diffRHS.Min() > 1e-8)
     {
-        NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> (diffRHS).Info();
+        std::cout << diffRHS.ConvertToFullMatrix() << std::endl;
         throw NuTo::MathException("[GaussEliminationTests] wrong diffRHS");
     }
 
@@ -325,7 +323,7 @@ void GaussEliminationTests(int rNumActDofs, int rNumDepDofs, double rDensity)
     diffCMat = cMatVector2 - cMat;
     if (diffCMat.Max() - diffCMat.Min() > 1e-8)
     {
-        NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> (diffCMat).Info();
+        std::cout << diffCMat.ConvertToFullMatrix() << std::endl;
         throw NuTo::MathException("[GaussEliminationTests] wrong cMat after renumbering.");
     }
 
@@ -344,7 +342,7 @@ void GaussEliminationTests(int rNumActDofs, int rNumDepDofs, double rDensity)
     diffCMat = cMatVector2 - cMat;
     if (diffCMat.Max() - diffCMat.Min() > 1e-8)
     {
-        NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> (diffCMat).Info();
+        std::cout << diffCMat.ConvertToFullMatrix() << std::endl;
         throw NuTo::MathException("[GaussEliminationTests] wrong cMat after removal of the last columns.");
     }
 }

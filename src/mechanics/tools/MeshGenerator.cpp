@@ -1,7 +1,7 @@
 #include "MeshGenerator.h"
 
 
-#include "math/FullVector.h"
+
 #include "mechanics/structures/unstructured/Structure.h"
 #include "boost/progress.hpp"
 
@@ -18,7 +18,7 @@ void NuTo::MeshGenerator::GenerateMesh1D(NuTo::Structure &rStructure,
                                          int rConstitutiveLaw,
                                          int rInterpolationType,
                                          std::array<int, 1> rNumElements,
-                                         std::function<NuTo::FullVector<double, Eigen::Dynamic> (double)> rMappingFunction)
+                                         std::function<Eigen::VectorXd (double)> rMappingFunction)
 {
     std::vector<int> NodeIDs = MeshGenerator::GetNodeCoordinatesLineSegmentMapped(rStructure,
                                                                                   rNumElements,
@@ -49,7 +49,7 @@ void NuTo::MeshGenerator::GenerateMesh1D(NuTo::Structure &rStructure,
 //! @param rMappingFunction ... mapping function
 std::vector<int> NuTo::MeshGenerator::GetNodeCoordinatesLineSegmentMapped(NuTo::Structure &rStructure,
                                                                           std::array<int,1> rNumElements,
-                                                                          std::function<NuTo::FullVector<double, Eigen::Dynamic> (double)> rMappingFunction)
+                                                                          std::function<Eigen::VectorXd (double)> rMappingFunction)
 {
     assert(rNumElements[0]>0);
 
@@ -69,7 +69,7 @@ std::vector<int> NuTo::MeshGenerator::GetNodeCoordinatesLineSegmentMapped(NuTo::
 
     int NodeNum = 0;
 
-    NuTo::FullVector<double, Eigen::Dynamic> Coordinates(1);
+    Eigen::VectorXd Coordinates(1);
 
 
         for(int x_count = 0; x_count < NumNodesX; x_count++)
@@ -104,9 +104,9 @@ void NuTo::MeshGenerator::MeshLineSegment(NuTo::Structure &rStructure,
 {
     assert(rLength[0]>0.0);
 
-    auto MappingFunction = [&rLength](double rX) -> NuTo::FullVector<double, Eigen::Dynamic>
+    auto MappingFunction = [&rLength](double rX) -> Eigen::VectorXd
                             {
-                                NuTo::FullVector<double,Eigen::Dynamic> CoordVec(1);
+                                Eigen::VectorXd CoordVec(1);
                                 CoordVec[0] = rX * rLength[0];
                                 return CoordVec;
                             };
@@ -137,7 +137,7 @@ void NuTo::MeshGenerator::GenerateMesh2D(NuTo::Structure &rStructure,
                                          int rConstitutiveLaw,
                                          int rInterpolationType,
                                          std::array<int, 2> rNumElements,
-                                         std::function<NuTo::FullVector<double, Eigen::Dynamic> (double, double)> rMappingFunction)
+                                         std::function<Eigen::VectorXd (double, double)> rMappingFunction)
 {
 
     std::vector<int> NodeIDs = MeshGenerator::GetNodeCoordinatesSquarePlaneMapped(rStructure,
@@ -173,7 +173,7 @@ void NuTo::MeshGenerator::GenerateMesh2D(NuTo::Structure &rStructure,
 //! @param rMappingFunction ... mapping function
 std::vector<int> NuTo::MeshGenerator::GetNodeCoordinatesSquarePlaneMapped(NuTo::Structure &rStructure,
                                                                           std::array<int, 2> rNumElements,
-                                                                          std::function<NuTo::FullVector<double, Eigen::Dynamic> (double, double)> rMappingFunction)
+                                                                          std::function<Eigen::VectorXd (double, double)> rMappingFunction)
 {
     assert(rNumElements[0]>0);
     assert(rNumElements[1]>0);
@@ -196,7 +196,7 @@ std::vector<int> NuTo::MeshGenerator::GetNodeCoordinatesSquarePlaneMapped(NuTo::
 
     int NodeNum = 0;
 
-    NuTo::FullVector<double, Eigen::Dynamic> Coordinates(2);
+    Eigen::VectorXd Coordinates(2);
 
 
     for(int y_count = 0; y_count < NumNodesY; y_count++)
@@ -235,10 +235,10 @@ void NuTo::MeshGenerator::MeshRectangularPlane(NuTo::Structure &rStructure,
     assert(rLength[0]>0.0);
     assert(rLength[1]>0.0);
 
-    auto MappingFunction = [&rLength](double rX, double rY) -> NuTo::FullVector<double, Eigen::Dynamic>
+    auto MappingFunction = [&rLength](double rX, double rY) -> Eigen::VectorXd
                             {
-                                NuTo::FullVector<double,Eigen::Dynamic> CoordVec(2);
-                                CoordVec = {{rX * rLength[0], rY * rLength[1]}};
+                                Eigen::VectorXd CoordVec(2);
+                                CoordVec <<  rX * rLength[0], rY * rLength[1];
                                 return CoordVec;
                             };
 
@@ -265,7 +265,7 @@ void NuTo::MeshGenerator::GenerateMesh3D(NuTo::Structure &rStructure,
                                          int rConstitutiveLaw,
                                          int rInterpolationType,
                                          std::array<int, 3> rNumElements,
-                                         std::function<NuTo::FullVector<double, Eigen::Dynamic> (double, double, double)> rMappingFunction)
+                                         std::function<Eigen::VectorXd (double, double, double)> rMappingFunction)
 {
     std::vector<int> NodeIDs = MeshGenerator::GetNodeCoordinatesCuboidMapped(rStructure,
                                                                              rNumElements,
@@ -314,7 +314,7 @@ void NuTo::MeshGenerator::GenerateMesh3D(NuTo::Structure &rStructure,
 //! @param rMappingFunction ... mapping function
 std::vector<int> NuTo::MeshGenerator::GetNodeCoordinatesCuboidMapped(NuTo::Structure &rStructure,
                                                                      std::array<int, 3> rNumElements,
-                                                                     std::function<NuTo::FullVector<double, Eigen::Dynamic> (double, double, double)> rMappingFunction)
+                                                                     std::function<Eigen::VectorXd (double, double, double)> rMappingFunction)
 {
     assert(rNumElements[0]>0);
     assert(rNumElements[1]>0);
@@ -340,7 +340,7 @@ std::vector<int> NuTo::MeshGenerator::GetNodeCoordinatesCuboidMapped(NuTo::Struc
 
     int NodeNum = 0;
 
-    NuTo::FullVector<double, Eigen::Dynamic> Coordinates(3);
+    Eigen::VectorXd Coordinates(3);
 
     for(int z_count = 0; z_count < NumNodesZ; z_count++)
     {
@@ -384,10 +384,10 @@ void NuTo::MeshGenerator::MeshCuboid(NuTo::Structure &rStructure,
     assert(rLength[1]>0.0);
     assert(rLength[2]>0.0);
 
-    auto MappingFunction = [&rLength](double rX, double rY, double rZ) -> NuTo::FullVector<double, Eigen::Dynamic>
+    auto MappingFunction = [&rLength](double rX, double rY, double rZ) -> Eigen::VectorXd
                             {
-                                NuTo::FullVector<double,Eigen::Dynamic> CoordVec(2);
-                                CoordVec = {{rX * rLength[0], rY * rLength[1], rZ * rLength[2]}};
+                                Eigen::VectorXd CoordVec(3);
+                                CoordVec << rX * rLength[0], rY * rLength[1], rZ * rLength[2];
                                 return CoordVec;
                             };
 
@@ -418,7 +418,7 @@ void NuTo::MeshGenerator::MeshCylinder(NuTo::Structure &rStructure,
     assert(rRadius>0.0);
     assert(rHeight>0.0);
 
-    auto MappingFunction = [&rRadius,rHeight](double rX, double rY, double rZ) -> NuTo::FullVector<double, Eigen::Dynamic>
+    auto MappingFunction = [&rRadius,rHeight](double rX, double rY, double rZ) -> Eigen::VectorXd
                             {
                                 rX = rX *2 -1;
                                 rY = rY *2 -1;
@@ -426,10 +426,10 @@ void NuTo::MeshGenerator::MeshCylinder(NuTo::Structure &rStructure,
                                 rX *= 1.+ (1.-std::abs(rX))/2.;
                                 rY *= 1.+ (1.-std::abs(rY))/2.;
                                 rZ *= 1.+ (1.-std::abs(rZ))/2.;
-                                NuTo::FullVector<double,Eigen::Dynamic> CoordVec(3);
-                                CoordVec = {{rX * sqrt(1 - (rY * rY) / 2.0 ) * rRadius / 2.0,
+                                Eigen::VectorXd CoordVec(3);
+                                CoordVec <<  rX * sqrt(1 - (rY * rY) / 2.0 ) * rRadius / 2.0,
                                              rY * sqrt(1 - (rX * rX) / 2.0 ) * rRadius / 2.0,
-                                             rZ * rHeight / 2.0}};
+                                             rZ * rHeight / 2.0;
 //                                double radius = sqrt(CoordVec[0]*CoordVec[0] + CoordVec[1]*CoordVec[1]);
 //                                double coordCorrectionRadius = 1.0 + (rRadius/2.0 - radius) / rRadius/2.0;
 //                                CoordVec[0]*=coordCorrectionRadius;

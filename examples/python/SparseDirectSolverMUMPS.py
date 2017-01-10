@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import nuto
+import numpy as np
 
 def symmetric_solve():
     A = nuto.DoubleSparseMatrixCSRSymmetric(5,9)
@@ -15,24 +16,23 @@ def symmetric_solve():
     A.SetOneBasedIndexing()
     print "symmetric matrix, sparse CSR storage"
     A.Info()
-    A_full = nuto.DoubleFullMatrix(A)
     print "\nsymmetric matrix, full storage"
-    A_full.Info(3)
+    print A.ConvertToFullMatrix()
 
     # right hand side vector
-    rhs = nuto.DoubleFullVector([1,2,3,4,5])
+    rhs = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
     print "\nright hand side vector"
-    rhs.Info()
+    print rhs
 
     # solver
     solver = nuto.SparseDirectSolverMUMPS()
     solver.SetVerboseLevel(3)
 
     print "\nsolving the symmetric problem"
-    sol = nuto.DoubleFullVector(5)
+    sol = np.zeros(5)
     solver.Solve(A,rhs,sol)
     print "\nsolution of the symmetric problem"
-    sol.Info()
+    print sol
 
 def nonsymmetric_solve():
     A = nuto.DoubleSparseMatrixCSRGeneral(5,5,13)
@@ -53,13 +53,12 @@ def nonsymmetric_solve():
     print "\nnonsymmetric matrix, sparse CSR storage"
     A.Info()
     print "\nnonsymmetric matrix, full storage"
-    A_full = nuto.DoubleFullMatrix(A)
-    A_full.Info(3)
+    print A.ConvertToFullMatrix()
 
     # right hand side vector
-    rhs = nuto.DoubleFullVector([1,2,3,4,5])
+    rhs = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
     print "\nright hand side vector"
-    rhs.Info()
+    print rhs
 
     # solver
     solver = nuto.SparseDirectSolverMUMPS()
@@ -67,10 +66,10 @@ def nonsymmetric_solve():
 
     # solve nonsymmetric problem
     print "\nsolving the nonsymmetric problem"
-    sol = nuto.DoubleFullVector(5)
+    sol = np.zeros(5)
     solver.Solve(A,rhs,sol)
     print "\nsolution of the nonsymmetric problem"
-    sol.Info()
+    print sol
 
 symmetric_solve()
 nonsymmetric_solve()

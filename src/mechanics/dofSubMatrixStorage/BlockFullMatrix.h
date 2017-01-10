@@ -9,7 +9,6 @@
 
 namespace NuTo
 {
-template <class T, int rows, int cols>class FullMatrix;
 template <typename T> class BlockFullVector;
 //! @author Thomas Titscher, BAM
 //! @date January 2016
@@ -40,10 +39,10 @@ public:
     BlockFullMatrix(BlockFullMatrix&& rOther);
 
     //! @brief non-const access
-          NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& operator()(Node::eDof rDofRow, Node::eDof rDofCol);
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& operator()(Node::eDof rDofRow, Node::eDof rDofCol);
 
     //! @brief const access
-    const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& operator()(Node::eDof rDofRow, Node::eDof rDofCol) const;
+    const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& operator()(Node::eDof rDofRow, Node::eDof rDofCol) const;
 
     //! @brief copy assignment
     BlockFullMatrix& operator =(const BlockFullMatrix& rOther);
@@ -89,9 +88,9 @@ public:
 
 #endif // SWIG
 
-    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> Export() const;
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> Export() const;
 
-    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> Get(std::string rDofRow, std::string rDofCol) const;
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> Get(std::string rDofRow, std::string rDofCol) const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief Returns the class name as a string
@@ -100,7 +99,7 @@ public:
 
 
 private:
-    std::unordered_map<std::pair<Node::eDof, Node::eDof>, NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>, Node::eDofPairHash> mData;
+    std::unordered_map<std::pair<Node::eDof, Node::eDof>, Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>, Node::eDofPairHash> mData;
 };
 
 

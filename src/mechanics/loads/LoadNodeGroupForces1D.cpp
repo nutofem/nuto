@@ -4,7 +4,7 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/loads/LoadNodeGroupForces1D.h"
-#include "math/FullMatrix.h"
+
 #include "math/SparseMatrixCSRGeneral.h"
 
 //! @brief constructor
@@ -23,26 +23,26 @@ NuTo::LoadNodeGroupForces1D::LoadNodeGroupForces1D(int rLoadCase, const Group<No
 }
 
 // adds the load to global sub-vectors
-void NuTo::LoadNodeGroupForces1D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const
+void NuTo::LoadNodeGroupForces1D::AddLoadToGlobalSubVectors(int rLoadCase, Eigen::VectorXd& rActiceDofsLoadVector, Eigen::VectorXd& rDependentDofsLoadVector)const
 {
     if (rLoadCase!=mLoadCase)
     	return;
-    assert(rActiceDofsLoadVector.GetNumColumns()==1);
-    assert(rDependentDofsLoadVector.GetNumColumns()==1);
+    assert(rActiceDofsLoadVector.cols()==1);
+    assert(rDependentDofsLoadVector.cols()==1);
     for (Group<NodeBase>::const_iterator itNode=this->mGroup->begin(); itNode!=this->mGroup->end(); itNode++)
     {
         try
         {
             int dof = itNode->second->GetDof(Node::eDof::DISPLACEMENTS, 0);
             assert(dof >= 0);
-            if (dof < rActiceDofsLoadVector.GetNumRows())
+            if (dof < rActiceDofsLoadVector.rows())
             {
                 rActiceDofsLoadVector(dof,0) += this->mDirection * this->mValue;
             }
             else
             {
-                dof -= rActiceDofsLoadVector.GetNumRows();
-                assert(dof < rDependentDofsLoadVector.GetNumRows());
+                dof -= rActiceDofsLoadVector.rows();
+                assert(dof < rDependentDofsLoadVector.rows());
                 rDependentDofsLoadVector(dof,0) += this->mDirection * this->mValue;
             }
         }

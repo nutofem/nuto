@@ -11,7 +11,6 @@
 #include "mechanics/tools/MeshGenerator.h"
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/MechanicsEnums.h"
-#include "math/FullMatrix.h"
 
 using namespace NuTo;
 

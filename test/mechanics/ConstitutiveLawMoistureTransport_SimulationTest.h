@@ -52,24 +52,24 @@ void CompareResultsToPaper(NuTo::Structure& rS,
     assert(NumActiveDimensions==1 && "Results are only valid for one dimensional flows");
 
     // values fitted from Johannesson and Nyman(2010)
-    NuTo::FullVector<double,Eigen::Dynamic> PaperValues(17);
-    PaperValues(0)  = 0.06;
-    PaperValues(1)  = 0.097;
-    PaperValues(2)  = 0.116;
-    PaperValues(3)  = 0.129;
-    PaperValues(4)  = 0.138;
-    PaperValues(5)  = 0.146;
-    PaperValues(6)  = 0.148;
-    PaperValues(7)  = 0.151;
-    PaperValues(8)  = 0.152;
-    PaperValues(9)  = PaperValues(7);
-    PaperValues(10) = PaperValues(6);
-    PaperValues(11) = PaperValues(5);
-    PaperValues(12) = PaperValues(4);
-    PaperValues(13) = PaperValues(3);
-    PaperValues(14) = PaperValues(2);
-    PaperValues(15) = PaperValues(1);
-    PaperValues(16) = PaperValues(0);
+    Eigen::VectorXd PaperValues(17);
+    PaperValues[0]  = 0.06;
+    PaperValues[1]  = 0.097;
+    PaperValues[2]  = 0.116;
+    PaperValues[3]  = 0.129;
+    PaperValues[4]  = 0.138;
+    PaperValues[5]  = 0.146;
+    PaperValues[6]  = 0.148;
+    PaperValues[7]  = 0.151;
+    PaperValues[8]  = 0.152;
+    PaperValues[9]  = PaperValues[7];
+    PaperValues[10] = PaperValues[6];
+    PaperValues[11] = PaperValues[5];
+    PaperValues[12] = PaperValues[4];
+    PaperValues[13] = PaperValues[3];
+    PaperValues[14] = PaperValues[2];
+    PaperValues[15] = PaperValues[1];
+    PaperValues[16] = PaperValues[0];
 
     typedef boost::ptr_map<int, NuTo::NodeBase> NodeMap;
 

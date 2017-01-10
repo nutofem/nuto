@@ -1,4 +1,3 @@
-// $Id$
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -15,14 +14,13 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/constraints/ConstraintLinearNodeGroupDisplacements2D.h"
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 
 //! @brief constructor
-NuTo::ConstraintLinearNodeGroupDisplacements2D::ConstraintLinearNodeGroupDisplacements2D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue) :
+NuTo::ConstraintLinearNodeGroupDisplacements2D::ConstraintLinearNodeGroupDisplacements2D(const Group<NodeBase>* rGroup, const Eigen::VectorXd& rDirection, double rValue) :
         ConstraintNodeGroup(rGroup), ConstraintLinear()
 {
-    if (rDirection.GetNumColumns()!=1 || rDirection.GetNumRows()!=2)
+    if (rDirection.rows()!=2)
         throw MechanicsException("[NuTo::ConstraintLinearNodeGroupDisplacements2D::ConstraintLinearNodeGroupDisplacements2D] Dimension of the direction matrix must be equal to the dimension of the structure.");
 
     memcpy(mDirection,rDirection.data(),2*sizeof(double));
@@ -82,7 +80,7 @@ void NuTo::ConstraintLinearNodeGroupDisplacements2D::AddToConstraintMatrix(int& 
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void NuTo::ConstraintLinearNodeGroupDisplacements2D::GetRHS(int& curConstraintEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const
+void NuTo::ConstraintLinearNodeGroupDisplacements2D::GetRHS(int& curConstraintEquation,Eigen::VectorXd& rRHS)const
 {
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {

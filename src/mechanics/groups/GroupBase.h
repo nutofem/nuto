@@ -7,7 +7,8 @@
 #include <map>
 #endif // ENABLE_SERIALIZATION
 
-#include <eigen3/Eigen/Core>
+#include <vector>
+#include <eigen3/Eigen/Dense>
 #include <string>
 
 namespace NuTo
@@ -16,7 +17,6 @@ class StructureBase;
 class ElementBase;
 class NodeBase;
 template <class T> class Group;
-template <class T, int rows> class FullVector;
 enum class eGroupId;
 
 //! @author Jörg F. Unger, ISM
@@ -64,35 +64,35 @@ public:
 
 	//! @brief gives the number of group members
 	//! @return number of group members
-	virtual int GetNumMembers()const=0;
+	virtual int GetNumMembers()const = 0;
 
 	//! @brief gives the group member ids
 	//! @return group members
-	virtual NuTo::FullVector<int,Eigen::Dynamic> GetMemberIds()const=0;
+	virtual std::vector<int> GetMemberIds()const = 0;
 
 	//! @brief gives the group type
 	//! @return group type
-    virtual eGroupId GetType()const=0;
+    virtual eGroupId GetType()const = 0;
 
 	//! @brief gives the group type as a string
 	//! @return group type
-	virtual std::string GetTypeString()const=0;
+	virtual std::string GetTypeString()const = 0;
 
 	//! @brief either casts the pointer to an element group or throws an exception for groups which are not element groups
 	virtual Group<ElementBase>* AsGroupElement()=0;
 
     //! @brief either casts the pointer to an element group or throws an exception for groups which are not element groups
-	virtual const Group<ElementBase>* AsGroupElement()const=0;
+	virtual const Group<ElementBase>* AsGroupElement()const = 0;
 
     //! @brief either casts the pointer to a node group or throws an exception for groups which are not node groups
 	virtual Group<NodeBase>* AsGroupNode()=0;
 
     //! @brief either casts the pointer to a node group or throws an exception for groups which are not node groups
-	virtual const Group<NodeBase>* AsGroupNode()const=0;
+	virtual const Group<NodeBase>* AsGroupNode()const = 0;
 
 	//! @brief gives the group type
 	//! @return group type
-	virtual void Info(int rVerboseLevel, const StructureBase* rStructure)const=0;
+	virtual void Info(int rVerboseLevel, const StructureBase* rStructure)const = 0;
 
 // *********************************************************************
 // * AddMember routine is to be implemented for all new group entities *
@@ -112,7 +112,7 @@ public:
 	//! @brief check if a group contains the entry
 	//! @param rId id of the entry
     //! @return TRUE if rMember is in the group, FALSE otherwise
-	virtual bool Contain(int rId)const=0;
+	virtual bool Contain(int rId)const = 0;
 
     //! @brief replaces a ptr by another one
     //! @param rOldPtr
@@ -127,22 +127,22 @@ public:
 	//! @brief Unites two groups
 	//! @param rOther other group
 	//! @return newly created united group
-	virtual GroupBase* Unite (const NuTo::GroupBase* rOther)const=0;
+	virtual GroupBase* Unite (const NuTo::GroupBase* rOther)const = 0;
 
 	//! @brief Difference of two groups
 	//! @param rOther other group
 	//! @return newly created united group
-	virtual GroupBase* Difference (const NuTo::GroupBase* rOther)const=0;
+	virtual GroupBase* Difference (const NuTo::GroupBase* rOther)const = 0;
 
 	//! @brief Intersection of two groups
 	//! @param rOther other group
 	//! @return newly created united group
-	virtual GroupBase* Intersection (const NuTo::GroupBase* rOther)const=0;
+	virtual GroupBase* Intersection (const NuTo::GroupBase* rOther)const = 0;
 
 	//! @brief Symmetric difference of two groups
 	//! @param rOther other group
 	//! @return newly created united group
-	virtual GroupBase* SymmetricDifference (const NuTo::GroupBase* rOther)const=0;
+	virtual GroupBase* SymmetricDifference (const NuTo::GroupBase* rOther)const = 0;
 
 protected:
     //! @brief ... name of the group

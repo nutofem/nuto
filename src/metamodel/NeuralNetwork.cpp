@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -13,7 +11,6 @@
 
 #include <stdio.h>
 #include <vector>
-#include "math/FullMatrix.h"
 #include "metamodel/NeuralNetwork.h"
 #include "optimize/ConjugateGradientNonLinear.h"
 #include "metamodel/TransferFunction.h"
@@ -23,7 +20,7 @@
 
 
 // constructor
-NuTo::NeuralNetwork::NeuralNetwork (const FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& rvNumNeurons) :
+NuTo::NeuralNetwork::NeuralNetwork(std::vector<int> rvNumNeurons) :
 	Metamodel(),
 	CallbackHandler(),
 	mBayesian(true),
@@ -37,12 +34,7 @@ NuTo::NeuralNetwork::NeuralNetwork (const FullMatrix<int,Eigen::Dynamic,Eigen::D
 	mShowSteps(100),
 	mMaxBayesianIterations(INT_MAX)
 {
-    if (rvNumNeurons.GetNumColumns()!=1 && rvNumNeurons.GetNumRows()!=0)
-    {
-        throw MetamodelException("NuTo::NeuralNetwork::NeuralNetwork - The matrix for the number of neurons per hidden layer should have only a single column.");
-    }
-    mvNumNeurons.resize(rvNumNeurons.GetNumRows());
-    memcpy(&(mvNumNeurons[0]),rvNumNeurons.data(),mvNumNeurons.size()*sizeof(int));
+    mvNumNeurons = rvNumNeurons;
 	mNumLayers = mvNumNeurons.size()+1;
 	mvNumNeurons.resize(mNumLayers);  //output layer is included
 	mvNumNeurons.insert(mvNumNeurons.begin(),0);         //input layer is included
@@ -152,10 +144,11 @@ double NuTo::NeuralNetwork::Objective()const
 }
 
 
-void NuTo::NeuralNetwork::Gradient(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rGradient)const
+void NuTo::NeuralNetwork::Gradient(Eigen::MatrixXd& rGradient)const
 {
     //printf("call gradient from NuTo::NeuralNetwork\n");
-    rGradient.Resize(mNumWeights+mNumBiases,1);  //store first the gradient wrt all the weights (starting from first hiddenlayer, and then the biases
+    rGradient.resize(mNumWeights+mNumBiases,1);  //store first the gradient wrt all the weights (starting from first hiddenlayer, and then the biases
+    rGradient.setZero();
 
     int dimInput = mSupportPoints.GetDimInput(),
                             dimOutput = mSupportPoints.GetDimOutput();
@@ -257,15 +250,14 @@ void NuTo::NeuralNetwork::Gradient(NuTo::FullMatrix<double, Eigen::Dynamic, Eige
     {
         Eigen::VectorXd alpha;
         GetAlphas(alpha);
-        FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>  curParameters;
-        //Get initialized parameters
-        GetParameters(curParameters);
+        // Get initialized parameters
+        auto curParameters = GetParameters();
         rGradient.array()+=curParameters.array()*alpha.array();
     }
 
 }
 
-void NuTo::NeuralNetwork::Hessian(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rHessian)const
+void NuTo::NeuralNetwork::Hessian(Eigen::MatrixXd& rHessian)const
 {
     if (mUseDiagHessian)
         HessianDiag(rHessian);
@@ -273,7 +265,7 @@ void NuTo::NeuralNetwork::Hessian(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen
         HessianFull(rHessian);
 }
 
-void NuTo::NeuralNetwork::HessianFull(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rHessian)const
+void NuTo::NeuralNetwork::HessianFull(Eigen::MatrixXd& rHessian)const
 {
     int NumParameters = mNumWeights + mNumBiases;
     Eigen::MatrixXd jacobian(NumParameters,mSupportPoints.GetDimOutput());
@@ -309,14 +301,15 @@ void NuTo::NeuralNetwork::HessianFull(NuTo::FullMatrix<double, Eigen::Dynamic, E
     }
 }
 
-void NuTo::NeuralNetwork::HessianDiag(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rHessian)const
+void NuTo::NeuralNetwork::HessianDiag(Eigen::MatrixXd& rHessian)const
 {
     int NumParameters = mNumWeights + mNumBiases;
     Eigen::MatrixXd jacobian(NumParameters,mSupportPoints.GetDimOutput());
 
     // initialize Hessian
     rHessian.setZero(NumParameters,NumParameters);
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> rHessian2(rHessian);
+    Eigen::MatrixXd rHessian2(rHessian);
+    rHessian2.setZero();
 
     int numNeurons = GetNumNeurons();
     std::vector<double> pA(numNeurons);                           //store the current value of each neuron before applying the transfer function
@@ -514,8 +507,10 @@ void NuTo::NeuralNetwork::BuildDerived()
         GetRefsPerAlpha (refsPerAlpha);
     }
 
-    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> hessian(numParameters,numParameters);
+    Eigen::MatrixXd hessian(numParameters,numParameters);
+    hessian.setZero();
     Eigen::MatrixXd invHessian(numParameters,numParameters);
+    invHessian.setZero();
 
     //allocate Optimizer
     ConjugateGradientNonLinear myOptimizer(numParameters);
@@ -530,10 +525,8 @@ void NuTo::NeuralNetwork::BuildDerived()
     myOptimizer.SetMaxFunctionCalls(mMaxFunctionCalls);
     myOptimizer.SetShowSteps(mShowSteps);
 
-
-    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>  curParameters;
     //Get initialized parameters
-    GetParameters(curParameters);
+    auto curParameters = GetParameters();
     myOptimizer.SetParameters(curParameters);
 
     // help arrays for forward/backward propagation
@@ -861,14 +854,14 @@ void NuTo::NeuralNetwork::SetTransferFunction(int rLayer, eTransferFunctions rTr
     }
 }
 
-void NuTo::NeuralNetwork::SetParameters(const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& Parameters)
+void NuTo::NeuralNetwork::SetParameters(const Eigen::MatrixXd& Parameters)
 {
-    if (Parameters.GetNumRows()!=mNumWeights+mNumBiases)
+    if (Parameters.rows()!=mNumWeights+mNumBiases)
     {
         throw MetamodelException("Metamodel::SetParameters - Weights and Biases not allocated - build first.");
     }
 
-    if (Parameters.GetNumColumns()!=1)
+    if (Parameters.cols()!=1)
     {
         throw MetamodelException("Metamodel::SetParameters - Number of Columns is not equal to one.");
     }
@@ -890,9 +883,11 @@ void NuTo::NeuralNetwork::SetParameters(const NuTo::FullMatrix<double, Eigen::Dy
     }
 }
 
-void NuTo::NeuralNetwork::GetParameters(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& Parameters)const
+Eigen::MatrixXd NuTo::NeuralNetwork::GetParameters() const
 {
-    Parameters.Resize(mNumWeights+mNumBiases,1);
+    Eigen::MatrixXd Parameters;
+    Parameters.resize(mNumWeights+mNumBiases,1);
+    Parameters.setZero();
 
     double *pCurParameter = Parameters.data();
     // progressively update for next layers, layer 0 is the input layer
@@ -907,9 +902,11 @@ void NuTo::NeuralNetwork::GetParameters(NuTo::FullMatrix<double, Eigen::Dynamic,
         memcpy(pCurParameter,&mvBias[cntCurrentLayer][0],mvNumNeurons[cntCurrentLayer+1]*sizeof(double));
         pCurParameter+=mvNumNeurons[cntCurrentLayer+1];
     }
+    
+    return Parameters;
 }
 
-void NuTo::NeuralNetwork::SolveTransformed(const FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rInputCoordinates, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinates)const
+void NuTo::NeuralNetwork::SolveTransformed(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates)const
 {
     int dimInput = mSupportPoints.GetDimInput(),
     dimOutput = mSupportPoints.GetDimOutput();
@@ -919,14 +916,15 @@ void NuTo::NeuralNetwork::SolveTransformed(const FullMatrix<double,Eigen::Dynami
     std::vector<double> pA(numNeurons);  //store the current value of each neuron before the transfer function
     std::vector<double> pO(numNeurons);  //store the current value of each neuron after the transfer function
 
-    if (rInputCoordinates.GetNumRows()!=dimInput)
+    if (rInputCoordinates.rows()!=dimInput)
     {
         throw MetamodelException("Metamodel::SolveTransformed - Dimension of input (number of rows) is not identical with metamodel.");
     }
 
-    rOutputCoordinates.Resize(dimOutput, rInputCoordinates.GetNumColumns());
+    rOutputCoordinates.resize(dimOutput, rInputCoordinates.cols());
+    rOutputCoordinates.setZero();
 
-    for (int cntSample=0; cntSample<rInputCoordinates.GetNumColumns(); cntSample++)
+    for (int cntSample=0; cntSample<rInputCoordinates.cols(); cntSample++)
     {
         // set input of input layer
         memcpy(&pO[0],&(rInputCoordinates.data()[cntSample*dimInput]),dimInput*sizeof(double));
@@ -937,8 +935,8 @@ void NuTo::NeuralNetwork::SolveTransformed(const FullMatrix<double,Eigen::Dynami
     }
 }
 
-void NuTo::NeuralNetwork::SolveConfidenceIntervalTransformed(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInputCoordinates, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinates,
-                                                             NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinatesMin, NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rOutputCoordinatesMax)const
+void NuTo::NeuralNetwork::SolveConfidenceIntervalTransformed(const Eigen::MatrixXd& rInputCoordinates, Eigen::MatrixXd& rOutputCoordinates,
+        Eigen::MatrixXd& rOutputCoordinatesMin, Eigen::MatrixXd& rOutputCoordinatesMax) const
 {
     if (!mBayesian)
     {
@@ -950,7 +948,8 @@ void NuTo::NeuralNetwork::SolveConfidenceIntervalTransformed(const FullMatrix<do
     int numNeurons = GetNumNeurons();
 
     int numParameters(mNumWeights+mNumBiases);
-    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> hessian(numParameters,numParameters);
+    Eigen::MatrixXd hessian(numParameters,numParameters);
+    hessian.setZero();
     Eigen::MatrixXd invHessian(numParameters,numParameters);
     HessianFull(hessian);
     invHessian = hessian.inverse();
@@ -958,23 +957,29 @@ void NuTo::NeuralNetwork::SolveConfidenceIntervalTransformed(const FullMatrix<do
     std::vector<double> pA(numNeurons);  //store the current value of each neuron before the transfer function
     std::vector<double> pO(numNeurons);  //store the current value of each neuron after the transfer function
     Eigen::MatrixXd pM(numNeurons,mSupportPoints.GetDimOutput()); //store the derivative of the output with respect to A of the current Neuron
+    pM.setZero();
     Eigen::MatrixXd tmpCovariance(dimOutput,dimOutput); //store the derivative of the output with respect to A of the current Neuron
+    tmpCovariance.setZero();
     Eigen::MatrixXd mvCovariance;
+    mvCovariance.setZero();
 
-    if (rInputCoordinates.GetNumRows()!=dimInput)
+    if (rInputCoordinates.rows()!=dimInput)
     {
         throw MetamodelException("Metamodel::SolveTransformed - Dimension of input (number of rows) is not identical with metamodel.");
     }
 
     mvCovariance = mvCovarianceInv.inverse();
 
-    rOutputCoordinates.Resize(dimOutput, rInputCoordinates.GetNumColumns());
-    rOutputCoordinatesMin.Resize(dimOutput, rInputCoordinates.GetNumColumns());
-    rOutputCoordinatesMax.Resize(dimOutput, rInputCoordinates.GetNumColumns());
+    rOutputCoordinates.resize(dimOutput, rInputCoordinates.cols());
+    rOutputCoordinates.setZero();
+    rOutputCoordinatesMin.resize(dimOutput, rInputCoordinates.cols());
+    rOutputCoordinatesMin.setZero();
+    rOutputCoordinatesMax.resize(dimOutput, rInputCoordinates.cols());
+    rOutputCoordinatesMax.setZero();
 
     Eigen::MatrixXd jacobian(numParameters,mSupportPoints.GetDimOutput());
 
-    for (int cntSample=0; cntSample<rInputCoordinates.GetNumColumns(); cntSample++)
+    for (int cntSample=0; cntSample<rInputCoordinates.cols(); cntSample++)
     {
         // set input of input layer
         memcpy(&pO[0],&(rInputCoordinates.data()[cntSample*dimInput]),dimInput*sizeof(double));
@@ -1139,25 +1144,10 @@ void NuTo::NeuralNetwork::dLnDetA_dBeta(Eigen::MatrixXd& rHessianInv, Eigen::Mat
                                   (totalJacobian.row(theSample*numOutputs+i).transpose()*(totalJacobian.row(theSample*numOutputs+j))+
                                    totalJacobian.row(theSample*numOutputs+j).transpose()*(totalJacobian.row(theSample*numOutputs+i)));
             }
-/*            std::cout<<"dHessian analytical for beta(" << i << "," << j << ")" <<std::endl;
-            MatrixOperations::print(dHessian_dbetaij.data(),numOutputs,numOutputs);
-
-            FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic exacthessian;
-            HessianFull(exacthessian);
-            double delta(mvCovarianceInv.trace()*1e-3);
-            const_cast<NeuralNetwork*>(this)->mvCovarianceInv(i,j)+=delta;
-            FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic newhessian;
-            HessianFull(newhessian);
-            FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic dHessian_dbetaijCD = (newhessian - exacthessian)*(1./delta);
-            std::cout<<"dHessian finite differences for beta(" << i << "," << j << ")" <<std::endl;
-            MatrixOperations::print(dHessian_dbetaijCD.data(),numOutputs,numOutputs);
-            const_cast<NeuralNetwork*>(this)->mvCovarianceInv(i,j)-=delta;
-            std::cout<<std::endl;
-*/
             rResult(i,j) = (rHessianInv*dHessian_dbetaij).trace();
         }
     }
-//exit(0);
+
     // copy upper triangular matrix
     for (int i=0; i<numOutputs; i++)
     {
@@ -1256,12 +1246,12 @@ void NuTo::NeuralNetwork::Save (const std::string &filename, std::string rType )
 		}
 		else
 		{
-			throw MathException ( "[FullMatrix::Save]File type not implemented." );
+			throw MathException(__PRETTY_FUNCTION__, "File type not implemented." );
 		}
 	}
 	catch ( boost::archive::archive_exception& e )
 	{
-		std::string s ( std::string ( "[FullMatrix::Save]File save exception in boost - " ) +std::string ( e.what() ) );
+		std::string s(__PRETTY_FUNCTION__ + "File save exception in boost - " + e.what());
 		std::cout << s << "\n";
 		throw MathException ( s );
 	}
@@ -1381,13 +1371,13 @@ std::string NuTo::NeuralNetwork::GetTypeId()const
 }
 
 // get inverse covariance matrix
-void NuTo::NeuralNetwork::GetInverseNoiseCovarianceMatrixTransformed(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rInverseCovariance)const
+void NuTo::NeuralNetwork::GetInverseNoiseCovarianceMatrixTransformed(Eigen::MatrixXd& rInverseCovariance)const
 {
     rInverseCovariance = this->mvCovarianceInv;
 }
 
 // get covariance matrix
-void NuTo::NeuralNetwork::GetNoiseCovarianceMatrixTransformed(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCovariance)const
+void NuTo::NeuralNetwork::GetNoiseCovarianceMatrixTransformed(Eigen::MatrixXd& rCovariance)const
 {
     Eigen::MatrixXd mvCovariance;
     mvCovariance = mvCovarianceInv.inverse();
@@ -1395,7 +1385,7 @@ void NuTo::NeuralNetwork::GetNoiseCovarianceMatrixTransformed(NuTo::FullMatrix<d
 }
 
 // get noise correlation matrix
-void NuTo::NeuralNetwork::GetNoiseCorrelationMatrix(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rNoiseCorrelation)const
+void NuTo::NeuralNetwork::GetNoiseCorrelationMatrix(Eigen::MatrixXd& rNoiseCorrelation)const
 {
     // calculate noise covariance matrix (transformed)
     Eigen::MatrixXd noiseCovarianceMatrix;
@@ -1405,22 +1395,22 @@ void NuTo::NeuralNetwork::GetNoiseCorrelationMatrix(NuTo::FullMatrix<double, Eig
     Eigen::VectorXd noiseStdDev = noiseCovarianceMatrix.diagonal().array().sqrt().matrix();
 
     // calculate correlation matrix
-    rNoiseCorrelation.Resize(this->mSupportPoints.GetDimOutput(),this->mSupportPoints.GetDimOutput());
+    rNoiseCorrelation.resize(this->mSupportPoints.GetDimOutput(),this->mSupportPoints.GetDimOutput());
     for(int col= 0; col < this->mSupportPoints.GetDimOutput(); col++)
     {
         for(int row= 0; row< this->mSupportPoints.GetDimOutput(); row++)
         {
-            rNoiseCorrelation.SetValue(row, col, noiseCovarianceMatrix(row,col) / (noiseStdDev[row] * noiseStdDev[col]));
+            rNoiseCorrelation(row, col) = noiseCovarianceMatrix(row,col) / (noiseStdDev[row] * noiseStdDev[col]);
         }
     }
 }
 
 // get precision parameters
-void NuTo::NeuralNetwork::GetPrecisionParametersTransformed(NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rPrecisionParameters)const
+void NuTo::NeuralNetwork::GetPrecisionParametersTransformed(Eigen::MatrixXd& rPrecisionParameters)const
 {
-    rPrecisionParameters.Resize(this->mvAlpha.size(), 1);
+    rPrecisionParameters.resize(this->mvAlpha.size(), 1);
     for(unsigned int count = 0; count < this->mvAlpha.size(); count++)
     {
-        rPrecisionParameters.SetValue(count,0, this->mvAlpha[count]);
+        rPrecisionParameters(count, 0) = this->mvAlpha[count];
     }
 }

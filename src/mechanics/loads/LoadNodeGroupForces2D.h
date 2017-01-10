@@ -30,12 +30,12 @@ public:
     //! @brief constructor
     //! @param rDirection ... direction of the force
     //! @param rValue ... value of the force
-    LoadNodeGroupForces2D(int rLoadCase, const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    LoadNodeGroupForces2D(int rLoadCase, const Group<NodeBase>* rGroup, const Eigen::VectorXd& rDirection, double rValue);
 
     //! @brief adds the load to global sub-vectors
     //! @param rActiceDofsLoadVector ... global load vector which correspond to the active dofs
     //! @param rDependentDofsLoadVector ... global load vector which correspond to the dependent dofs
-    void AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const;
+    void AddLoadToGlobalSubVectors(int rLoadCase, Eigen::VectorXd& rActiceDofsLoadVector, Eigen::VectorXd& rDependentDofsLoadVector)const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class

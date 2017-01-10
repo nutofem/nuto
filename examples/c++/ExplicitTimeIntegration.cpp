@@ -9,8 +9,7 @@
 #endif //_OPENMP
 
 #include "base/Logger.h"
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
+#include <math/EigenCompanion.h>
 #include "math/SparseMatrixCSRVector2General.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/EigenSolverArpack.h"
@@ -86,8 +85,8 @@ int Run(NuTo::Structure& myStructure, int timeIntegrationScheme)
 
     for (int countX = 0; countX < numNodesX; countX++)
     {
-        NuTo::FullVector<double, Eigen::Dynamic> coordinates(1);
-        coordinates(0) = countX * deltaX;
+        Eigen::VectorXd coordinates(1);
+        coordinates[0] = countX * deltaX;
         myStructure.NodeCreate(theNode, coordinates);
         theNode++;
     }
@@ -126,8 +125,11 @@ int Run(NuTo::Structure& myStructure, int timeIntegrationScheme)
     double min = 0. - 0.01 * (mL / numElements);
     double max = 0. + 0.01 * (mL / numElements);
     myStructure.GroupAddNodeCoordinateRange(grpNodes_Load, direction, min, max);
-    NuTo::FullVector<int, Eigen::Dynamic> Group1 = myStructure.GroupGetMemberIds(grpNodes_Load);
-    std::cout << "nodes in Group Load\n" << Group1.transpose() << std::endl;
+    std::vector<int> Group1 = myStructure.GroupGetMemberIds(grpNodes_Load);
+    std::cout << "nodes in Group Load\n";
+    for (int i : Group1) std::cout << i << '\t';
+    std::cout << std::endl;
+
 
     // locate results: Node x=mL
     int grpNodes_Disp = myStructure.GroupCreate("Nodes");
@@ -135,8 +137,10 @@ int Run(NuTo::Structure& myStructure, int timeIntegrationScheme)
     min = mL - 0.01 * (mL / numElements);
     max = mL + 0.01 * (mL / numElements);
     myStructure.GroupAddNodeCoordinateRange(grpNodes_Disp, direction, min, max);
-    NuTo::FullVector<int, Eigen::Dynamic> Group2 = myStructure.GroupGetMemberIds(grpNodes_Disp);
-    std::cout << "nodes in Group Disp\n" << Group2.transpose() << std::endl;
+    std::vector<int> Group2 = myStructure.GroupGetMemberIds(grpNodes_Disp);
+    for (int i : Group2) std::cout << i << '\t';
+    std::cout << std::endl;
+
 
     myStructure.CalculateMaximumIndependentSets();
 
@@ -189,13 +193,12 @@ int Run(NuTo::Structure& myStructure, int timeIntegrationScheme)
 
     // set unit load
     myStructure.SetNumLoadCases(1);
-    NuTo::FullVector<double, Eigen::Dynamic> directionL(1);
-    directionL(0) = 1;
+    Eigen::VectorXd directionL(1);
+    directionL[0] = 1;
     myStructure.LoadCreateNodeGroupForce(0, grpNodes_Load, directionL, 1);
 
     // set load
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> forceRHS;
-    forceRHS.Resize(4, 2);
+    Eigen::Matrix<double, 4, 2> forceRHS;
     forceRHS(0, 0) = 0;
     forceRHS(0, 1) = mAmplS;
     forceRHS(1, 0) = TSchlag;
@@ -209,7 +212,7 @@ int Run(NuTo::Structure& myStructure, int timeIntegrationScheme)
     myIntegrationScheme->SetTimeDependentLoadCase(0, forceRHS);
 
     // fixed displacement at origin
-    NuTo::FullVector<double, Eigen::Dynamic> directionD(1);
+    Eigen::VectorXd directionD(1);
     directionD(0) = 1;
     myStructure.ConstraintLinearSetDisplacementNodeGroup(grpNodes_Disp, directionD, 0.0);
 
@@ -218,8 +221,8 @@ int Run(NuTo::Structure& myStructure, int timeIntegrationScheme)
     myStructure.SetNumProcessors(1);
 
     myIntegrationScheme->AddResultTime("Time");
-    NuTo::FullVector<int, Eigen::Dynamic> GroupNodesLoad = myStructure.GroupGetMemberIds(grpNodes_Load);
-    int RightNode = GroupNodesLoad(0);
+    std::vector<int> GroupNodesLoad = myStructure.GroupGetMemberIds(grpNodes_Load);
+    int RightNode = GroupNodesLoad[0];
     myIntegrationScheme->AddResultNodeDisplacements("DisplacementsNodeRight", RightNode);
 
     // only plot at every 5%
@@ -241,9 +244,8 @@ int Run(NuTo::Structure& myStructure, int timeIntegrationScheme)
     boost::filesystem::path resultFile = resultDir;
     resultFile /= std::string("DisplacementsNodeRight.dat");
 
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> result;
-    result.ReadFromFile(resultFile.string());
-    int EndR = result.GetNumRows();
+    Eigen::MatrixXd result = NuTo::EigenCompanion::ReadFromFile(resultFile.string());
+    int EndR = result.rows();
     std::cout << "difference " << fabs(result(EndR - 1) - uanal) << "\n";
 
     if (fabs(result(EndR - 1) - uanal) > 1e-4)

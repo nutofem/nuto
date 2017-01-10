@@ -40,11 +40,7 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
         for (int iY=0; iY<numNodesY; iY++)
             for (int iX=0; iX<numNodesX; iX++)
             {
-                NuTo::FullVector<double,Eigen::Dynamic> coordinates(3);
-                coordinates(0) = iX*deltaX;
-                coordinates(1) = iY*deltaY;
-                coordinates(2) = iZ*deltaZ;
-                myStructure.NodeCreate(nodeNum, coordinates);
+                myStructure.NodeCreate(nodeNum, Eigen::Vector3d({iX*deltaX, iY*deltaY, iZ*deltaZ}));
                 nodeNum++;
             }
 
@@ -56,22 +52,22 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
         for (int iY=0; iY<numElementsY; iY++)
             for (int iX=0; iX<numElementsX; iX++)
             {
-                NuTo::FullVector<int,Eigen::Dynamic> nodes(8);
-                nodes(0) = iX   +  iY    * numNodesX +  iZ    * numNodesX * numNodesY;
-                nodes(1) = iX+1 +  iY    * numNodesX +  iZ    * numNodesX * numNodesY;
-                nodes(2) = iX+1 + (iY+1) * numNodesX +  iZ    * numNodesX * numNodesY;
-                nodes(3) = iX   + (iY+1) * numNodesX +  iZ    * numNodesX * numNodesY;
-                nodes(4) = iX   +  iY    * numNodesX + (iZ+1) * numNodesX * numNodesY;
-                nodes(5) = iX+1 +  iY    * numNodesX + (iZ+1) * numNodesX * numNodesY;
-                nodes(6) = iX+1 + (iY+1) * numNodesX + (iZ+1) * numNodesX * numNodesY;
-                nodes(7) = iX   + (iY+1) * numNodesX + (iZ+1) * numNodesX * numNodesY;
+                std::vector<int> nodes(8);
+                nodes[0] = iX   +  iY    * numNodesX +  iZ    * numNodesX * numNodesY;
+                nodes[1] = iX+1 +  iY    * numNodesX +  iZ    * numNodesX * numNodesY;
+                nodes[2] = iX+1 + (iY+1) * numNodesX +  iZ    * numNodesX * numNodesY;
+                nodes[3] = iX   + (iY+1) * numNodesX +  iZ    * numNodesX * numNodesY;
+                nodes[4] = iX   +  iY    * numNodesX + (iZ+1) * numNodesX * numNodesY;
+                nodes[5] = iX+1 +  iY    * numNodesX + (iZ+1) * numNodesX * numNodesY;
+                nodes[6] = iX+1 + (iY+1) * numNodesX + (iZ+1) * numNodesX * numNodesY;
+                nodes[7] = iX   + (iY+1) * numNodesX + (iZ+1) * numNodesX * numNodesY;
 
-                std::vector<int> nodesTet0({nodes(0), nodes(1), nodes(3), nodes(7)});
-                std::vector<int> nodesTet1({nodes(0), nodes(1), nodes(7), nodes(4)});
-                std::vector<int> nodesTet2({nodes(5), nodes(4), nodes(7), nodes(1)});
-                std::vector<int> nodesTet3({nodes(6), nodes(5), nodes(7), nodes(1)});
-                std::vector<int> nodesTet4({nodes(2), nodes(7), nodes(1), nodes(6)});
-                std::vector<int> nodesTet5({nodes(2), nodes(3), nodes(1), nodes(7)});
+                std::vector<int> nodesTet0({nodes[0], nodes[1], nodes[3], nodes[7]});
+                std::vector<int> nodesTet1({nodes[0], nodes[1], nodes[7], nodes[4]});
+                std::vector<int> nodesTet2({nodes[5], nodes[4], nodes[7], nodes[1]});
+                std::vector<int> nodesTet3({nodes[6], nodes[5], nodes[7], nodes[1]});
+                std::vector<int> nodesTet4({nodes[2], nodes[7], nodes[1], nodes[6]});
+                std::vector<int> nodesTet5({nodes[2], nodes[3], nodes[1], nodes[7]});
 
                 myStructure.ElementCreate(myInterpolationType, nodesTet0);
                 myStructure.ElementCreate(myInterpolationType, nodesTet1);

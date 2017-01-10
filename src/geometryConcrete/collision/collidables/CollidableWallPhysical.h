@@ -23,8 +23,8 @@ public:
 	//! @param rDirection ... normal vector pointing inside the domain, gets normalized.
 	//! @param rIndex ... name
 	CollidableWallPhysical(
-			NuTo::FullVector<double, Eigen::Dynamic> rPosition,
-			NuTo::FullVector<double, Eigen::Dynamic> rDirection,
+			Eigen::VectorXd rPosition,
+			Eigen::VectorXd rDirection,
 			const int rIndex);
 
 	//! @brief ... collision between CollidableWall and CollidableSphere

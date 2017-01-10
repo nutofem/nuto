@@ -24,7 +24,7 @@
 #include "mechanics/structures/StructureOutputBlockMatrix.h"
 #include "mechanics/timeIntegration/RungeKuttaBase.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
-#include "math/FullMatrix.h"
+
 #include "base/Timer.h"
 
 //! @brief constructor
@@ -209,7 +209,7 @@ NuTo::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
 			//PostProcessing
 			//**********************************************
             // outOfBalance_j is automatically zero
-            //outOfBalance_j.Resize(intForce_j.GetNumRows());
+            //outOfBalance_j.Resize(intForce_j.rows());
             //the acceleration of the dofs k is given by the acceleration of the rhs of the constraint equation
             //this is calculated using finite differencs
             //make sure to recalculate the internal force and external force (if time factor is not 1)

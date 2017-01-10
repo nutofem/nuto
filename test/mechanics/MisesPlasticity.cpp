@@ -8,7 +8,6 @@
 
 #include <boost/filesystem.hpp>
 #include <string>
-#include "math/FullMatrix.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/elements/IpDataEnum.h"
 #include "mechanics/groups/GroupEnum.h"
@@ -66,10 +65,10 @@ void Mises2D(const std::string& rDir)
     myStructure.SetVerboseLevel(10);
 
     std::vector<int> nodeIds(4);
-    nodeIds[0] = myStructure.NodeCreate(NuTo::FullVector<double, 2>({1,1}));
-    nodeIds[1] = myStructure.NodeCreate(NuTo::FullVector<double, 2>({0,1}));
-    nodeIds[2] = myStructure.NodeCreate(NuTo::FullVector<double, 2>({0,0}));
-    nodeIds[3] = myStructure.NodeCreate(NuTo::FullVector<double, 2>({1,0}));
+    nodeIds[0] = myStructure.NodeCreate(Eigen::Vector2d({1,1}));
+    nodeIds[1] = myStructure.NodeCreate(Eigen::Vector2d({0,1}));
+    nodeIds[2] = myStructure.NodeCreate(Eigen::Vector2d({0,0}));
+    nodeIds[3] = myStructure.NodeCreate(Eigen::Vector2d({1,0}));
 
     int interpol = myStructure.InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
     myStructure.InterpolationTypeAdd(interpol, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
@@ -86,7 +85,7 @@ void Mises2D(const std::string& rDir)
     myStructure.ElementTotalSetSection(section);
 
     // boundary conditions
-    int nOrigin = myStructure.NodeGetIdAtCoordinate(NuTo::FullVector<double, 2>({0,0}), 1.e-6);
+    int nOrigin = myStructure.NodeGetIdAtCoordinate(Eigen::Vector2d::Zero(), 1.e-6);
 
     int gNodesXminus = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
     int gNodesXplus  = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
@@ -94,13 +93,10 @@ void Mises2D(const std::string& rDir)
     myStructure.GroupAddNodeCoordinateRange(gNodesXminus, 0, 0, 0);
     myStructure.GroupAddNodeCoordinateRange(gNodesXplus,  0, 1, 1);
 
-    NuTo::FullVector<double, Eigen::Dynamic> dirX = NuTo::FullVector<double, 2>::UnitX();
-    NuTo::FullVector<double, Eigen::Dynamic> dirY = NuTo::FullVector<double, 2>::UnitY();
+    myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesXminus, Eigen::Vector2d::UnitX(), 0);
+    myStructure.ConstraintLinearSetDisplacementNode(nOrigin, Eigen::Vector2d::UnitY(), 0);
 
-    myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesXminus, dirX, 0);
-    myStructure.ConstraintLinearSetDisplacementNode(nOrigin, dirY, 0);
-
-    int bc = myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesXplus, dirX, 0);
+    int bc = myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesXplus, Eigen::Vector2d::UnitX(), 0);
 
     myStructure.NodeBuildGlobalDofs();
     myStructure.CalculateMaximumIndependentSets();
@@ -110,13 +106,13 @@ void Mises2D(const std::string& rDir)
 
     myIntegrationScheme.SetResultDirectory(rDir+"2D/", true);
     myIntegrationScheme.AddResultGroupNodeForce("Force", gNodesXplus);
-    myIntegrationScheme.AddResultNodeDisplacements("Displ", myStructure.GroupGetMemberIds(gNodesXplus).GetValue(0));
+    myIntegrationScheme.AddResultNodeDisplacements("Displ", myStructure.GroupGetMemberIds(gNodesXplus)[0]);
 
     double simulationTime = 1;
     double deltaD = 5;
 
 
-    NuTo::FullMatrix<double, 2, 2> dispRHS;
+    Eigen::Matrix2d dispRHS;
     dispRHS << 0, 0, simulationTime, deltaD;
 
 
@@ -158,17 +154,17 @@ void Mises3D(const std::string& rDir)
     NuTo::Structure myStructure(3);
     myStructure.SetVerboseLevel(10);
 
-    NuTo::FullVector<int, Eigen::Dynamic> nodeIds(8);
+    std::vector<int> nodeIds(8);
 
 
-    nodeIds[0] = myStructure.NodeCreate(NuTo::FullVector<double, 3>({1,1,1}));
-    nodeIds[1] = myStructure.NodeCreate(NuTo::FullVector<double, 3>({0,1,1}));
-    nodeIds[2] = myStructure.NodeCreate(NuTo::FullVector<double, 3>({0,0,1}));
-    nodeIds[3] = myStructure.NodeCreate(NuTo::FullVector<double, 3>({1,0,1}));
-    nodeIds[4] = myStructure.NodeCreate(NuTo::FullVector<double, 3>({1,1,0}));
-    nodeIds[5] = myStructure.NodeCreate(NuTo::FullVector<double, 3>({0,1,0}));
-    nodeIds[6] = myStructure.NodeCreate(NuTo::FullVector<double, 3>({0,0,0}));
-    nodeIds[7] = myStructure.NodeCreate(NuTo::FullVector<double, 3>({1,0,0}));
+    nodeIds[0] = myStructure.NodeCreate(Eigen::Vector3d({1,1,1}));
+    nodeIds[1] = myStructure.NodeCreate(Eigen::Vector3d({0,1,1}));
+    nodeIds[2] = myStructure.NodeCreate(Eigen::Vector3d({0,0,1}));
+    nodeIds[3] = myStructure.NodeCreate(Eigen::Vector3d({1,0,1}));
+    nodeIds[4] = myStructure.NodeCreate(Eigen::Vector3d({1,1,0}));
+    nodeIds[5] = myStructure.NodeCreate(Eigen::Vector3d({0,1,0}));
+    nodeIds[6] = myStructure.NodeCreate(Eigen::Vector3d({0,0,0}));
+    nodeIds[7] = myStructure.NodeCreate(Eigen::Vector3d({1,0,0}));
 
 
     std::vector<int> nodesTet0 = {nodeIds[0], nodeIds[1], nodeIds[3], nodeIds[7]};
@@ -202,7 +198,7 @@ void Mises3D(const std::string& rDir)
     myStructure.ElementTotalSetSection(myStructure.SectionCreate(NuTo::eSectionType::VOLUME));
 
     // boundary conditions
-    int nOrigin = myStructure.NodeGetIdAtCoordinate(NuTo::FullVector<double, 3>({0,0,0}), 1.e-6);
+    int nOrigin = myStructure.NodeGetIdAtCoordinate(Eigen::Vector3d::Zero(), 1.e-6);
 
     int gNodesXminus = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
     int gNodesXplus  = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
@@ -210,15 +206,11 @@ void Mises3D(const std::string& rDir)
     myStructure.GroupAddNodeCoordinateRange(gNodesXminus, 0, 0, 0);
     myStructure.GroupAddNodeCoordinateRange(gNodesXplus,  0, 1, 1);
 
-    NuTo::FullVector<double, Eigen::Dynamic> dirX = NuTo::FullVector<double, 3>::UnitX();
-    NuTo::FullVector<double, Eigen::Dynamic> dirY = NuTo::FullVector<double, 3>::UnitY();
-    NuTo::FullVector<double, Eigen::Dynamic> dirZ = NuTo::FullVector<double, 3>::UnitZ();
+    myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesXminus, Eigen::Vector3d::UnitX(), 0);
+    myStructure.ConstraintLinearSetDisplacementNode(nOrigin, Eigen::Vector3d::UnitY(), 0);
+    myStructure.ConstraintLinearSetDisplacementNode(nOrigin, Eigen::Vector3d::UnitZ(), 0);
 
-    myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesXminus, dirX, 0);
-    myStructure.ConstraintLinearSetDisplacementNode(nOrigin, dirY, 0);
-    myStructure.ConstraintLinearSetDisplacementNode(nOrigin, dirZ, 0);
-
-    int bc = myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesXplus, dirX, 0);
+    int bc = myStructure.ConstraintLinearSetDisplacementNodeGroup(gNodesXplus, Eigen::Vector3d::UnitX(), 0);
 
     myStructure.NodeBuildGlobalDofs();
     myStructure.CalculateMaximumIndependentSets();
@@ -226,13 +218,13 @@ void Mises3D(const std::string& rDir)
     NuTo::NewmarkDirect myIntegrationScheme(&myStructure);
 
     myIntegrationScheme.AddResultGroupNodeForce("Force", gNodesXplus);
-    myIntegrationScheme.AddResultNodeDisplacements("Displ", myStructure.GroupGetMemberIds(gNodesXplus).GetValue(0));
+    myIntegrationScheme.AddResultNodeDisplacements("Displ", myStructure.GroupGetMemberIds(gNodesXplus)[0]);
 
     double simulationTime = 1;
     double deltaD = 5;
 
 
-    NuTo::FullMatrix<double, 2, 2> dispRHS;
+    Eigen::Matrix2d dispRHS;
     dispRHS << 0, 0, simulationTime, deltaD;
 
 

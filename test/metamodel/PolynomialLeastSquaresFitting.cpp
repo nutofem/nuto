@@ -1,6 +1,5 @@
 #include "base/Exception.h"
 #include "metamodel/MetamodelException.h"
-#include "math/FullMatrix.h"
 
 #include "metamodel/PolynomialLeastSquaresFitting.h"
 
@@ -13,18 +12,17 @@ int main()
 
         NuTo::PolynomialLeastSquaresFitting PLSQF;
 
-        NuTo::FullVector<double,Eigen::Dynamic> xVec;
-        NuTo::FullVector<double,Eigen::Dynamic> yVec;
 
-        NuTo::FullVector<double,Eigen::Dynamic> FixedCoeffs({2, 9,-2,7,-4,5});
-        NuTo::FullVector<double,Eigen::Dynamic> CoeffGiven;
-        NuTo::FullVector<double,Eigen::Dynamic> CoeffCalc;
+        Eigen::VectorXd FixedCoeffs(6);
+        FixedCoeffs << 2, 9,-2,7,-4,5;
+        Eigen::VectorXd CoeffGiven;
+        Eigen::VectorXd CoeffCalc;
 
-        NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> Result;
+        Eigen::MatrixXd Result;
 
 
-        xVec.resize(NSupportPoints);
-        yVec.resize(NSupportPoints);
+        Eigen::VectorXd xVec(NSupportPoints);
+        Eigen::VectorXd yVec(NSupportPoints);
 
         for(int i=0; i<NSupportPoints; i++)
         {
@@ -39,21 +37,21 @@ int main()
 
 
         PLSQF.SetDegree(0);
-        PLSQF.SetSupportPoints(1,1,xVec.Trans(),yVec.Trans());
+        PLSQF.SetSupportPoints(1,1,xVec.transpose(),yVec.transpose());
         PLSQF.BuildDerived();
 
         CoeffCalc = PLSQF.GetPolynomialCoefficients();
-        PLSQF.SolveTransformed(xVec.Trans(),Result);
+        PLSQF.SolveTransformed(xVec.transpose(),Result);
 
         // Check coefficients
-        if (    CoeffCalc.GetNumRows()>1 ||
-                CoeffCalc.GetNumRows()<0 ||
+        if (    CoeffCalc.rows()>1 ||
+                CoeffCalc.rows()<0 ||
                 CoeffCalc(0) !=0.5)
         {
             throw NuTo::MetamodelException("[Testfile: PolynomialLeastSquaresFitting] Constant fit test: Calculated Coefficients are wrong");
         }
         //Check calues
-        for(int i=0; i<Result.GetNumColumns();i++)
+        for(int i=0; i<Result.cols();i++)
         {
             if (Result(i) != 0.5)
             {
@@ -72,7 +70,7 @@ int main()
 
             // Getting polynom coefficients
             CoeffGiven.resize(pdegree+1);
-            for(int i=0; i<CoeffGiven.GetNumRows(); i++)
+            for(int i=0; i<CoeffGiven.rows(); i++)
             {
                 CoeffGiven(i) = FixedCoeffs(i);
             }
@@ -81,20 +79,20 @@ int main()
             for(int i=0; i<NSupportPoints;i++)
             {
                 yVec(i) = 0;
-                for(int j=0; j<CoeffGiven.GetNumRows(); j++)
+                for(int j=0; j<CoeffGiven.rows(); j++)
                 {
                     yVec(i) += CoeffGiven(j) * pow(xVec(i),j);
                 }
             }
 
             PLSQF.SetDegree(pdegree);
-            PLSQF.SetSupportPoints(1,1,xVec.Trans(),yVec.Trans());
+            PLSQF.SetSupportPoints(1,1,xVec.transpose(),yVec.transpose());
             PLSQF.BuildDerived();
 
             CoeffCalc = PLSQF.GetPolynomialCoefficients();
             // Check coefficients
-            if (    CoeffCalc.GetNumRows()>pdegree+1 ||
-                    CoeffCalc.GetNumRows()<0)
+            if (    CoeffCalc.rows()>pdegree+1 ||
+                    CoeffCalc.rows()<0)
             {
                 throw NuTo::MetamodelException("[Testfile: PolynomialLeastSquaresFitting] test for degrees 1-5: Wrong number of coefficients");
             }
@@ -109,7 +107,7 @@ int main()
             }
 
 
-            PLSQF.SolveTransformed(xVec.Trans(),Result);
+            PLSQF.SolveTransformed(xVec.transpose(),Result);
 
 
             for(int i=0; i<NSupportPoints; i++)
@@ -135,7 +133,7 @@ int main()
         xVec(0) = 0;
         xVec(1) = 0.5;
         xVec(2) = 1.0;
-        PLSQF.SolveTransformed(xVec.Trans(),Result);
+        PLSQF.SolveTransformed(xVec.transpose(),Result);
         // Check values
         for(int i=0; i<3; i++)
         {

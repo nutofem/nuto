@@ -7,11 +7,12 @@
 
 #pragma once
 
+#include <eigen3/Eigen/Core>
 #include "geometryConcrete/collision/collidables/CollidableBase.h"
-#include "math/FullVector_Def.h"
 
 namespace NuTo
 {
+
 //! @brief ... base class for all particles
 //! TODO: Idea: implement an interface that somehow every particle
 //! knows how to interact with every wall without explicit coding
@@ -24,8 +25,8 @@ public:
 	//! @param rVelocity ... velocity
 	//! @param rIndex ... index, multiple particles with same index are allowed
 	CollidableParticleBase(
-			FullVector<double,Eigen::Dynamic> rPosition,
-			FullVector<double,Eigen::Dynamic> rVelocity,
+			Eigen::VectorXd rPosition,
+			Eigen::VectorXd rVelocity,
 			const int rIndex);
 
 	//! @brief ... getter for the particle volume
@@ -37,10 +38,10 @@ public:
 protected:
 
 	//! @brief particle position
-	FullVector<double, 3> mPosition;
+	Eigen::Vector3d mPosition;
 
 	//! @brief particle velocity
-	FullVector<double, 3> mVelocity;
+	Eigen::Vector3d mVelocity;
 
 };
 

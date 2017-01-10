@@ -21,7 +21,8 @@
 // class member
 #include <boost/ptr_container/ptr_map.hpp>
 #include "base/Logger.h"
-#include "math/FullVector_Def.h"
+
+
 #include "mechanics/dofSubMatrixStorage/BlockFullVector.h"
 #include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
 #include "mechanics/dofSubMatrixStorage/DofStatus.h"
@@ -58,8 +59,6 @@ template<typename T> class BlockFullMatrix;
 template<typename T> class BlockFullVector;
 template<typename IOEnum> class ConstitutiveIOMap;
 template<class T> class Group;
-template<class T, int rows, int cols> class FullMatrix;
-template<class T, int rows> class FullVector;
 template<class T> class SparseMatrixCSRSymmetric;
 template<class T> class SparseMatrixCSRGeneral;
 template<class T> class SparseMatrixCSRVector2General;
@@ -94,8 +93,8 @@ namespace IpData
 }// namespace IpData
 
 
-using ConstitutiveInputMap = ConstitutiveIOMap<Constitutive::eInput>;
-using ConstitutiveOutputMap = ConstitutiveIOMap<Constitutive::eOutput>;
+typedef ConstitutiveIOMap<Constitutive::eInput> ConstitutiveInputMap;
+typedef ConstitutiveIOMap<Constitutive::eOutput> ConstitutiveOutputMap;
 
 
 //! @author Jörg F. Unger, ISM
@@ -300,12 +299,12 @@ public:
     //! @param rCoordinates
     //! @param rRange
     //! @return ... node id
-    int NodeGetIdAtCoordinate(FullVector<double, Eigen::Dynamic> rCoordinates, double rRange);
+    int NodeGetIdAtCoordinate(Eigen::VectorXd rCoordinates, double rRange);
 
     //! @brief ... store all elements connected to this node in a vector
     //! @param rNodeId (Input) 			... node id
     //! @param rElementNumbers (Output) ... vector of element ids
-    void NodeGetElements(const int rNodeId, NuTo::FullVector<int,Eigen::Dynamic>& rElementNumbers);
+    void NodeGetElements(const int rNodeId, std::vector<int>& rElementNumbers);
 
     //! @brief delete node
     //! @param rIdent ... node identifier
@@ -321,29 +320,29 @@ public:
     //! @brief sets the displacements of a node
     //! @param rIdent node identifier
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeSetDisplacements(int rId,const NuTo::FullVector<double,Eigen::Dynamic>& rDisplacements);
+    void NodeSetDisplacements(int rId,const Eigen::VectorXd& rDisplacements);
 
     //! @brief sets the displacements of a node
     //! @param rIdent node identifier
     //! @param rTimeDerivative time derivative (0 disp, 1 vel, 2 acc)
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeSetDisplacements(int rId, int rTimeDerivative, const NuTo::FullVector<double,Eigen::Dynamic>& rDisplacements);
+    void NodeSetDisplacements(int rId, int rTimeDerivative, const Eigen::VectorXd& rDisplacements);
 
     //! @brief sets the displacements of a node
     //! @param rIdent node identifier
     //! @param rRotations matrix (one column) with the rotations
-    void NodeSetRotations(int rId,const NuTo::FullVector<double,Eigen::Dynamic>& rRotations);
+    void NodeSetRotations(int rId,const Eigen::VectorXd& rRotations);
 
     //! @brief sets the displacements of a group of nodes
     //! @param rIdent node group identifier
     //! @param rTimeDerivative time derivative (0 disp, 1 vel, 2 acc)
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeGroupSetDisplacements(int rIdent, int rTimeDerivative, const NuTo::FullVector<double,Eigen::Dynamic>& rDisplacements);
+    void NodeGroupSetDisplacements(int rIdent, int rTimeDerivative, const Eigen::VectorXd& rDisplacements);
 
     //! @brief sets the displacements of a group of nodes
     //! @param rIdent node group identifier
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeGroupSetDisplacements(int rIdent, const NuTo::FullVector<double,Eigen::Dynamic>& rDisplacements);
+    void NodeGroupSetDisplacements(int rIdent, const Eigen::VectorXd& rDisplacements);
 
     //! @brief Sets the temperature of a node
     //! @param rIdent Node identifier
@@ -359,28 +358,28 @@ public:
     //! @brief returns the node ids of an node group
     //! @param rGroupId  group number
     //! @param rMembers  return vector with node ids
-    void NodeGroupGetMembers(int rGroupId, NuTo::FullVector<int,Eigen::Dynamic>& rMembers);
+    void NodeGroupGetMembers(int rGroupId, std::vector<int>& rMembers);
 
     //! @brief gets the coordinates of a node
     //! @param rNode node identifier
     //! @param rCoordinates matrix (one column) with the coordinates
-    void NodeGetCoordinates(int rNode, NuTo::FullVector<double,Eigen::Dynamic>& rCoordinates)const;
+    void NodeGetCoordinates(int rNode, Eigen::VectorXd& rCoordinates)const;
 
     //! @brief gets the coordinates of a group of nodes (be careful, the order of the nodes in a group might change between different runs)
     //! @param rNodeGroup node group identifier
     //! @param rCoordinates matrix (rows/nodes columns/coordinates)
-    void NodeGroupGetCoordinates(int rNodeGroup, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates);
+    void NodeGroupGetCoordinates(int rNodeGroup, Eigen::MatrixXd& rCoordinates);
 
     //! @brief gets the displacements of a node
     //! @param rNode node identifier
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeGetDisplacements(int rNode, NuTo::FullVector<double,Eigen::Dynamic>& rDisplacements)const;
+    void NodeGetDisplacements(int rNode, Eigen::VectorXd& rDisplacements)const;
 
     //! @brief gets the displacements of a node
     //! @param rIdent node identifier
     //! @param rTimeDerivative time derivative (0 disp, 1 velocity,2 acceleration)
     //! @param rDisplacements matrix (one column) with the displacements
-    void NodeGetDisplacements(int rNode, int rTimeDerivative, FullVector<double,Eigen::Dynamic>& rDisplacements)const;
+    void NodeGetDisplacements(int rNode, int rTimeDerivative, Eigen::VectorXd& rDisplacements)const;
 
 #ifndef SWIG
     //! @brief gets the dof     identifiers of a node
@@ -390,30 +389,25 @@ public:
     std::vector<int> NodeGetDofIds(const int rNodeId, Node::eDof rDof)const;
 #endif
 
-    //! @brief gets the displacement dofs of a node
-    //! @param rIdent node identifier
-    //! @param rDisplacements matrix (one column) with the displacements
-    void NodeGetDisplacementDofs(int rNode, FullVector<int,Eigen::Dynamic>& rDisplacementDofs)const;    
-
     //! @brief gets the rotations of a node
     //! @param rNode node identifier
     //! @param rRotation matrix (one column) with the rotations
-    void NodeGetRotations(int rNode, NuTo::FullVector<double,Eigen::Dynamic>& rRotations)const;
+    void NodeGetRotations(int rNode, Eigen::VectorXd& rRotations)const;
 
     //! @brief gets the global nonlocal eq plastic strain variables of a node
     //! @param rNode node identifier
     //! @return global (nodal) nonlocal eq plastic strain
-    void NodeGetNonlocalEqPlasticStrain(int rNode, NuTo::FullVector<double,Eigen::Dynamic>& rNonlocalEqPlasticStrain)const;
+    void NodeGetNonlocalEqPlasticStrain(int rNode, Eigen::VectorXd& rNonlocalEqPlasticStrain)const;
 
     //! @brief gets the global nonlocal total strain variables of a node
     //! @param rNode node identifier
     //! @return global (nodal) nonlocal total strain
-    void NodeGetNonlocalTotalStrain(int rNode, NuTo::FullVector<double,Eigen::Dynamic>& rNonlocalTotalStrain)const;
+    void NodeGetNonlocalTotalStrain(int rNode, Eigen::VectorXd& rNonlocalTotalStrain)const;
 
     //! @brief gets the displacements of a group of nodes (be careful, the order of the nodes in a group might change between different runs)
     //! @param rNodeGroup node group identifier
     //! @param rDisplacements matrix (rows/nodes columns/rDisplacements)
-    void NodeGroupGetDisplacements(int rNodeGroup, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDisplacements);
+    void NodeGroupGetDisplacements(int rNodeGroup, Eigen::MatrixXd& rDisplacements);
 
     //! @brief Get the temperature at a node
     //! @param rNode Node identifier
@@ -462,18 +456,18 @@ public:
     //! @brief calculate the internal force vector for a node
     //! @param rId ... node id
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-    void NodeInternalForce(int rId, NuTo::FullVector<double,Eigen::Dynamic>& rNodeForce);
+    void NodeInternalForce(int rId, Eigen::VectorXd& rNodeForce);
 
     //! @brief calculate the internal force vector for a node group of nodes
     //! @param rIdent ... group id
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-    void NodeGroupInternalForce(int rIdent, NuTo::FullVector<double,Eigen::Dynamic>& rNodeForce);
+    void NodeGroupInternalForce(int rIdent, Eigen::VectorXd& rNodeForce);
 
 #ifndef SWIG
     //! @brief calculate the internal force vector for a node
     //! @param rNodePtr  node for which this has to be calculated
     //! @param rGradientInternalPotential ...vector for all the dofs the corresponding internal force (return value)
-    void NodeInternalForce(const NodeBase* rNodePtr, NuTo::FullVector<double,Eigen::Dynamic>& rNodeForce);
+    void NodeInternalForce(const NodeBase* rNodePtr, Eigen::VectorXd& rNodeForce);
 
     //! @brief ... adds all the elements in the vector to the data structure that is finally visualized
     void NodeTotalAddToVisualize(VisualizeUnstructuredGrid& rVisualize, const std::list<std::shared_ptr<NuTo::VisualizeComponent>>& rVisualizationList) const;
@@ -652,7 +646,7 @@ public:
     //! @param rElemIdent  element number
     //! @param rType static ip data type
     //! @param rIPData matrix with (... x numIP), x varies depending on IPData type
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetStaticIPData(int rElementId, IpData::eIpStaticDataType rType);
+    Eigen::MatrixXd ElementGetStaticIPData(int rElementId, IpData::eIpStaticDataType rType);
 
 #endif //SWIG
 
@@ -660,32 +654,32 @@ public:
     //! @param rElemIdent  element number
     //! @param rType static ip data type
     //! @param rIPData matrix with (... x numIP), x varies depending on IPData type
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetStaticIPData(int rElementId, std::string rType);
+    Eigen::MatrixXd ElementGetStaticIPData(int rElementId, std::string rType);
 
     //! @brief calculates the engineering strain
     //! @param rElemIdent  element number
     //! @param rEngineerungStrain engineering strain (return value, always 6xnumIp matrix)
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetEngineeringStrain(int rElementId);
+    Eigen::MatrixXd ElementGetEngineeringStrain(int rElementId);
 
     //! @brief calculates the engineering plastic strain
     //! @param rElemIdent  element number
     //! @param rEngineerungStrain engineering plastic strain (return value, always 6xnumIp matrix)
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetEngineeringPlasticStrain(int rElementId);
+    Eigen::MatrixXd ElementGetEngineeringPlasticStrain(int rElementId);
 
     //! @brief calculates the engineering stress
     //! @param rElemIdent  element number
     //! @param rEingineeringStress Engineering Stress (return value, always 6xnumIp matrix)
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetEngineeringStress(int rElementId);
+    Eigen::MatrixXd ElementGetEngineeringStress(int rElementId);
 
     //! @brief calculates the damage
     //! @param rElemIdent  identifier for the element
     //! @param rDamage (return value, always 1xnumIp matrix)
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetDamage(int rElementId);
+    Eigen::MatrixXd ElementGetDamage(int rElementId);
 
     //! @brief calculates the global integration point coordinates
     //! @param rElemIdent  identifier for the element
     //! @param rCoordinates integration point coordinates (return value, always 3xnumIp matrix)
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> ElementGetIntegrationPointCoordinates(int rElementId);
+    Eigen::MatrixXd ElementGetIntegrationPointCoordinates(int rElementId);
 
 
     //! @brief calculates the maximum damage in all elements
@@ -721,32 +715,32 @@ public:
     //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
     //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
     //! @param rEngineeringStress  average stress (return value)
-    void ElementTotalGetAverageStress(double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStress);
+    void ElementTotalGetAverageStress(double rVolume, Eigen::MatrixXd& rEngineeringStress);
 
     //! @brief calculates the average stress
     //! @param rGroupId  group number
     //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
     //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
     //! @param rEngineeringStress  average stress (return value)
-    void ElementGroupGetAverageStress(int rGroupId, double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStress);
+    void ElementGroupGetAverageStress(int rGroupId, double rVolume, Eigen::MatrixXd& rEngineeringStress);
 
     //! @brief calculates the average strain
     //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
     //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
     //! @param rEngineeringStrain  average strain (return value)
-    void ElementTotalGetAverageStrain(double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStrain);
+    void ElementTotalGetAverageStrain(double rVolume, Eigen::MatrixXd& rEngineeringStrain);
 
     //! @brief calculates the average strain
     //! @param rGroupId  group number
     //! @param rVolume  volume of the structure in 3D /area in 2D/ length in 1D
     //! this is a parameter of the model, since holes have to be considered (zero stress, but still nonzero area)
     //! @param rEngineeringStrain  average strain (return value)
-    void ElementGroupGetAverageStrain(int rGroupId, double rVolume, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEngineeringStrain);
+    void ElementGroupGetAverageStrain(int rGroupId, double rVolume, Eigen::MatrixXd& rEngineeringStrain);
 
     //! @brief returns the element ids of an element group
     //! @param rGroupId  group number
     //! @param rMembers  return vector with element ids
-    void ElementGroupGetMembers(int rGroupId, NuTo::FullVector<int,Eigen::Dynamic>& rMembers);
+    void ElementGroupGetMembers(int rGroupId, std::vector<int>& rMembers);
 
     //! @brief calculates the volume of the elements
     //! @param rGroupId  group number
@@ -797,21 +791,21 @@ public:
     //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetNode(Node::eDof rDOFType,NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int ConstraintLinearSetNode(Node::eDof rDOFType,NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue);
 
     //! @brief adds a displacement constraint equation for a node
     //! @param rNode pointer to node
     //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetDisplacementNode(NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int ConstraintLinearSetDisplacementNode(NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue);
 #endif
 
     //! @brief adds a displacement constraint equation for a node
     //! @param rNode identifier for node
     //! @param rComponent e.g. the first (count from zero) displacement component
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int ConstraintLinearSetDisplacementNode(int rIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int ConstraintLinearSetDisplacementNode(int rIdent, const Eigen::VectorXd& rDirection, double rValue);
 
     //! @brief adds a relative humidity constraint equation for node
     //! @param rNode pointer to node
@@ -868,7 +862,7 @@ public:
     //! @param rDirection direction of the constraint (in 2D a point with 2 entries, in 3D 3 entries, in 1D not used)
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
     //! @return integer id to delete or modify the constraint
-    int ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int ConstraintLinearSetDisplacementNodeGroup(Group<NodeBase>* rGroup, const Eigen::VectorXd& rDirection, double rValue);
 #endif
 
     //! @brief adds a constraint equation for a group of nodes
@@ -876,7 +870,7 @@ public:
     //! @param rDof displacements, rotations, temperatures
     //! @param rComponent e.g. the first (count from zero) displacement component
     //! @param rValue prescribed value (e.g. zero to fix a displacement to zero)
-    int ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int ConstraintLinearSetDisplacementNodeGroup(int rGroupIdent, const Eigen::VectorXd& rDirection, double rValue);
 
 #ifndef SWIG
     //! @brief adds a rotation constraint equation for a group of node
@@ -1004,8 +998,8 @@ public:
     //! @param rNodeGrouplower... all nodes on the lower boundary
     //! @param rNodeGroupLeft... all nodes on the left boundary
     //! @param rNodeGroupRight...  all nodes on the right boundary
-    int ConstraintLinearDisplacementsSetPeriodic2D(double angle, NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rStrain,
-            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> rCrackOpening, double rRadiusToCrackWithoutConstraints,
+    int ConstraintLinearDisplacementsSetPeriodic2D(double angle, Eigen::MatrixXd rStrain,
+            double rRadiusToCrackWithoutConstraints,
             int rNodeGroupUpper, int rNodeGrouplower, int rNodeGroupLeft, int rNodeGroupRight);
 
 #ifndef SWIG
@@ -1040,21 +1034,21 @@ public:
     //! @param rDirection ... direction of the force
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
-    int LoadCreateNodeForce(int rLoadCase, int rNodeIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int LoadCreateNodeForce(int rLoadCase, int rNodeIdent, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief adds a force for a node group
     //! @param rGroupIdent ... identifier for node group
     //! @param rDirection ... direction of the force
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
-    int LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief Adds a heat flux to a node.
     //! @param rNodeIdent Identifier for node
     //! @param rDirection Direction of the flux
     //! @param rValue Value of the flux
     //! @return Integer id to delete or modify the load
-    int LoadCreateNodeHeatFlux(int rLoadCase, int rNodeIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int LoadCreateNodeHeatFlux(int rLoadCase, int rNodeIdent, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief adds a surface load to 2D plane elements (2D)
     //! @param rElementGroupId ... specifies the elements with surface loads
@@ -1063,7 +1057,7 @@ public:
     //! @param rLoadVector ... constant load vector (independent of position and orientation of the loading surface
     //! @return integer id to delete or modify the load
     int LoadSurfaceConstDirectionCreate2D(int rLoadCase, int rElementGroupId, int rNodeGroupId,
-    		const NuTo::FullVector<double,Eigen::Dynamic>& rLoadVector);
+    		const Eigen::VectorXd& rLoadVector);
 
     //! @brief adds a surface load to 3D solid elements
     //! @param rElementGroupId ... specifies the elements with surface loads
@@ -1072,7 +1066,7 @@ public:
     //! @param rLoadVector ... constant load vector (independent of position and orientation of the loading surface
     //! @return integer id to delete or modify the load
     int LoadSurfaceConstDirectionCreate3D(int rLoadCase, int rElementGroupId, int rNodeGroupId,
-    		const NuTo::FullVector<double,Eigen::Dynamic>& rLoadVector);
+    		const Eigen::VectorXd& rLoadVector);
 
     //! @brief adds a surface load (pressure) to 3D solid elements
     //! @param rElementGroupId ... specifies the elements with surface loads
@@ -1090,7 +1084,7 @@ public:
     int LoadSurfacePressureFunctionCreate2D(int rLoadCase,
                                             int rElementGroupId,
                                             int rNodeGroupId,
-                                            const std::function<NuTo::FullVector<double,2>(NuTo::FullVector<double,2>)> &rLoadFunction);
+                                            const std::function<Eigen::Vector2d(Eigen::Vector2d)> &rLoadFunction);
 
     //! @brief adds a surface load (pressure) to 3D solid elements
     //! @param rElementGroupId ... specifies the elements with surface loads
@@ -1122,21 +1116,21 @@ public:
     //! @param rDirection ... direction of the force
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
-    int LoadCreateNodeForce(int rLoadCase, const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int LoadCreateNodeForce(int rLoadCase, const NodeBase* rNode, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief Adds a heat flux to a node.
     //! @param rNode Pointer to node
     //! @param rDirection Direction of the heat flux
     //! @param rValue Value of the flux
     //! @return Integer id to delete or modify the load
-    int LoadCreateNodeHeatFlux(int rLoadCase, const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int LoadCreateNodeHeatFlux(int rLoadCase, const NodeBase* rNode, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief adds a force for a node grpup
     //! @param rNodeGroup ... pointer to node group
     //! @param rDirection ... direction of the force
     //! @param rValue ... force
     //! @return integer id to delete or modify the load
-    int LoadCreateNodeGroupForce(int rLoadCase, const Group<NodeBase>* rNodeGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    int LoadCreateNodeGroupForce(int rLoadCase, const Group<NodeBase>* rNodeGroup, const Eigen::MatrixXd& rDirection, double rValue);
 
     //! @brief ... get the pointer to a load from the load identifier
     //! @param rIdent ... load identifier
@@ -1207,13 +1201,13 @@ public:
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... String to identify the requested variable
     //! @return ... value of the requested variable
-    NuTo::FullVector<double, Eigen::Dynamic> ConstitutiveLawGetParameterFullVectorDouble(int rIdent, const std::string& rIdentifier) const;
+    Eigen::VectorXd ConstitutiveLawGetParameterFullVectorDouble(int rIdent, const std::string& rIdentifier) const;
 
     //! @brief ... sets a variable of the constitutive law which is selected by a string
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... String to identify the requested variable
     //! @param rValue ... new value for requested variable
-    void ConstitutiveLawSetParameterFullVectorDouble(int rIdent, const std::string& rIdentifier, NuTo::FullVector<double, Eigen::Dynamic>  rValue);
+    void ConstitutiveLawSetParameterFullVectorDouble(int rIdent, const std::string& rIdentifier, Eigen::VectorXd  rValue);
 
 
 #ifndef SWIG
@@ -1246,13 +1240,13 @@ public:
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
-    NuTo::FullVector<double, Eigen::Dynamic> ConstitutiveLawGetParameterFullVectorDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier) const;
+    Eigen::VectorXd ConstitutiveLawGetParameterFullVectorDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier) const;
 
     //! @brief ... sets a parameter of the constitutive law which is selected by an enum
     //! @param rIdent ... constitutive law identifier
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
-    void ConstitutiveLawSetParameterFullVectorDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double, Eigen::Dynamic>  rValue);
+    void ConstitutiveLawSetParameterFullVectorDouble(int rIdent, Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd  rValue);
 
     //! @brief ... set damage law
     //! @param rDamageLaw ... damage law
@@ -1271,7 +1265,7 @@ public:
     //! @param rRelativeHumidity ... relative humidity
     //! @param rCoeffs ... polynomial coefficients of the sorption curve
     //! @return ... equilibrium water volume fraction
-    double ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const;
+    double ConstitutiveLawGetEquilibriumWaterVolumeFraction(int rIdent, double rRelativeHumidity, Eigen::VectorXd rCoeffs) const;
 
 //    //VHIRTHAMTODO Delete???
 //    //! @brief ... adds a constitutive law to a multi physics model
@@ -1506,7 +1500,7 @@ public:
     //! @param rCenter center of the selection circle
     //! @param rMin ... minimum radius
     //! @param rMax ... maximum radius
-    void GroupAddNodeRadiusRange(int rIdentGroup, NuTo::FullVector<double,Eigen::Dynamic> rCenter, double rMin, double rMax);
+    void GroupAddNodeRadiusRange(int rIdentGroup, Eigen::VectorXd rCenter, double rMin, double rMax);
 
     //! @brief ... Adds all nodes to a group whose coordinates are on a cylinder with the radius in the in the specified range
     //! @param rIdentGroup identifier for the group
@@ -1514,8 +1508,8 @@ public:
     //! @param rAxis axis of the cylinder
     //! @param rMin ... minimum radius
     //! @param rMax ... maximum radius
-    void GroupAddNodeCylinderRadiusRange(int rIdentGroup, NuTo::FullVector<double,Eigen::Dynamic> rCenter,
-    		 NuTo::FullVector<double,Eigen::Dynamic> rDirection, double rMin, double rMax);
+    void GroupAddNodeCylinderRadiusRange(int rIdentGroup, Eigen::VectorXd rCenter,
+    		 Eigen::VectorXd rDirection, double rMin, double rMax);
 
     //! @brief ... Returns the number of members in a group
     //! @param rIdentGroup identifier for the group
@@ -1525,7 +1519,7 @@ public:
     //! @brief ... Returns a vector with the members of a group
     //! @param rIdentGroup identifier for the group
     //! @return ... vector of members
-    NuTo::FullVector<int, Eigen::Dynamic> GroupGetMemberIds(int rIdentGroup)const;
+    std::vector<int> GroupGetMemberIds(int rIdentGroup)const;
 
     //! @brief ... checks for a member in a group
     //! @param rIdentGroup identifier for the group
@@ -1603,14 +1597,14 @@ public:
     //! @brief ... rNumber[1] is the weighting coefficient of the implicit term
     //! @brief ... rNumber[2] is the weighting coefficient of the explicit term
     //! @brief ... rNumber[3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
-    void SetNumExtrapolatedCycles(NuTo::FullVector<double,Eigen::Dynamic> rNumber);
+    void SetNumExtrapolatedCycles(Eigen::VectorXd rNumber);
 
     //! @brief get the number of cycles to be extrapolated in the cycle jump routine. Returns:
     //! @brief ... [0] is the number of extrapolated cycles itself Njump
     //! @brief ... [1] is the weighting coefficient of the implicit term
     //! @brief ... [2] is the weighting coefficient of the explicit term
     //! @brief ... [3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
-    NuTo::FullVector<double,Eigen::Dynamic> GetNumExtrapolatedCycles() const;
+    Eigen::VectorXd GetNumExtrapolatedCycles() const;
 
     //! @brief absolute tolerance for entries of the global stiffness matrix (coefficientMatrix0)
     //! values smaller than that one will not be added to the global matrix
@@ -1805,7 +1799,7 @@ protected:
     //! @brief ... [1] is the weighting coefficient of the implicit term A1
     //! @brief ... [2] is the weighting coefficient of the explicit term A2
     //! @brief ... [3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
-    NuTo::FullVector<double,Eigen::Dynamic> mNumExtrapolatedCycles;
+    Eigen::VectorXd mNumExtrapolatedCycles;
 
     //! @brief ... map storing the name and the pointer to the constitutive law
     //! @sa ConstitutiveBase

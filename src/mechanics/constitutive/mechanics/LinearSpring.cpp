@@ -121,7 +121,7 @@ void NuTo::LinearSpring::SetParameterDouble(NuTo::Constitutive::eConstitutivePar
 //! @brief ... gets a variable of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested variable
 //! @return ... value of the requested variable
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::LinearSpring::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+Eigen::VectorXd NuTo::LinearSpring::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
     CheckParameters();
 
@@ -141,7 +141,7 @@ NuTo::FullVector<double, Eigen::Dynamic> NuTo::LinearSpring::GetParameterFullVec
 //! @brief ... sets a variable of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested variable
 //! @param rValue ... new value for requested variable
-void NuTo::LinearSpring::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
+void NuTo::LinearSpring::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue)
 {
     switch (rIdentifier)
     {

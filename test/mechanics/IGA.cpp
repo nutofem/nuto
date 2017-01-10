@@ -4,7 +4,6 @@
 
 #include <eigen3/Eigen/Core>
 
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseDirectSolverMUMPS.h"
@@ -145,7 +144,7 @@ NuTo::Structure* constantStress(double& DisplacementCorrect, int refinements, co
     /** Boundary condition **/
 
     // Dirichlet
-    NuTo::FullVector<double,Eigen::Dynamic> direction(2);
+    Eigen::VectorXd direction(2);
 
     direction << 1, 0;
     for(int i = 0; i < surface.GetNumControlPoints(1); i++)
@@ -433,25 +432,25 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
 
     myStructure->GroupAddNodeFunction(groupNodesCorner, LambdaGetBoundaryNodesCorner);
 
-    NuTo::FullVector<int,Eigen::Dynamic> rMembers;
+    std::vector<int> members;
 
-    myStructure->NodeGroupGetMembers(groupNodesLower, rMembers);
+    myStructure->NodeGroupGetMembers(groupNodesLower, members);
 
     int countDBC = 0;
-    NuTo::FullVector<double,Eigen::Dynamic> direction(2);
+    Eigen::VectorXd direction(2);
     direction << 0 ,1;
-    for(int i = 0; i < rMembers.rows(); i++)
+    for (int memberId : members)
     {
-        countDBC = myStructure->ConstraintLinearSetDisplacementNode(rMembers(i), direction, 0.0);
+        countDBC = myStructure->ConstraintLinearSetDisplacementNode(memberId, direction, 0.0);
     }
 
 
-    myStructure->NodeGroupGetMembers(groupNodesRight, rMembers);
+    myStructure->NodeGroupGetMembers(groupNodesRight, members);
 
     direction << 1, 0;
-    for(int i = 0; i < rMembers.rows(); i++)
+    for (int memberId : members)
     {
-        countDBC = myStructure->ConstraintLinearSetDisplacementNode(rMembers(i), direction, 0.0);
+        countDBC = myStructure->ConstraintLinearSetDisplacementNode(memberId, direction, 0.0);
     }
 
 
@@ -473,12 +472,12 @@ NuTo::Structure* buildPlateWithHole2DNeumann(const std::string &resultDir, int r
 
     countDBC++;
 
-//    myStructure->NodeGroupGetMembers(groupNodesCorner, rMembers);
-//    std::cout << "Node Members group Corner: \n" << rMembers << std::endl;
+//    myStructure->NodeGroupGetMembers(groupNodesCorner, members);
+//    std::cout << "Node Members group Corner: \n" << members << std::endl;
 //    for(int dof = 0; dof < 1; dof++)
 //    {
-//        myStructure->ConstraintLinearEquationCreate (countDBC, rMembers(0), NuTo::Node::eDof::DISPLACEMENTS, dof, 1., 0.);
-//        myStructure->ConstraintLinearEquationAddTerm(countDBC, rMembers(1), NuTo::Node::eDof::DISPLACEMENTS, dof, -1.);
+//        myStructure->ConstraintLinearEquationCreate (countDBC, members(0), NuTo::Node::eDof::DISPLACEMENTS, dof, 1., 0.);
+//        myStructure->ConstraintLinearEquationAddTerm(countDBC, members(1), NuTo::Node::eDof::DISPLACEMENTS, dof, -1.);
 //        countDBC++;
 //    }
 
@@ -522,13 +521,13 @@ void solve(NuTo::Structure *myStructure, double solution, const std::string &res
 void Neumann(const std::string &resultDir, const std::string &path, const std::string &fileName, int BC)
 {
     NuTo::Structure myStructure(2);
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndices = myStructure.ImportFromGmsh(path + fileName);
+    Eigen::MatrixXi groupIndices = myStructure.ImportFromGmsh(path + fileName);
 
-    int interpolationType = groupIndices.GetValue(0, 1);
+    int interpolationType = groupIndices(0, 1);
     myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS,  NuTo::Interpolation::eTypeOrder::LOBATTO3);
 
     myStructure.SetVerboseLevel(10);
-    myStructure.ElementConvertToInterpolationType(groupIndices.GetValue(0, 0));
+    myStructure.ElementConvertToInterpolationType(groupIndices(0, 0));
 
 //    myStructure.InterpolationTypeSetIntegrationType(interpolationType, NuTo::IntegrationType::IntegrationType2D3NGauss3Ip, NuTo::IpData::NOIPDATA);
 
@@ -618,22 +617,18 @@ void Neumann(const std::string &resultDir, const std::string &path, const std::s
     myStructure.GroupAddNodeFunction(groupNodeBCRightSymmetry, LambdaGetBoundaryNodesRightSymmetry);
 
     // Dirichlet symmetry //
-    NuTo::FullVector<double,Eigen::Dynamic> direction(2);
-    NuTo::FullVector<int,Eigen::Dynamic> rMembers;
+    std::vector<int> members;
 
-    direction << 0 ,1;
-    myStructure.NodeGroupGetMembers(groupNodeBCLowerSymmetry, rMembers);
-    for(int i = 0; i < rMembers.rows(); i++)
+    myStructure.NodeGroupGetMembers(groupNodeBCLowerSymmetry, members);
+    for (int memberId : members)
     {
-        myStructure.ConstraintLinearSetDisplacementNode(rMembers(i), direction, 0.0);
+        myStructure.ConstraintLinearSetDisplacementNode(memberId, Eigen::Vector2d::UnitY(), 0.0);
     }
 
-    direction << 1, 0;
-
-    myStructure.NodeGroupGetMembers(groupNodeBCRightSymmetry, rMembers);
-    for(int i = 0; i < rMembers.rows(); i++)
+    myStructure.NodeGroupGetMembers(groupNodeBCRightSymmetry, members);
+    for (int memberId : members)
     {
-        myStructure.ConstraintLinearSetDisplacementNode(rMembers(i), direction, 0.0);
+        myStructure.ConstraintLinearSetDisplacementNode(memberId, Eigen::Vector2d::UnitX(), 0.0);
     }
 
     int groupelementBCLeft = myStructure.GroupCreate("ELEMENTS");
@@ -679,13 +674,13 @@ void Neumann(const std::string &resultDir, const std::string &path, const std::s
 void Dirichlet(const std::string &resultDir, const std::string &path, const std::string &fileName)
 {
     NuTo::Structure myStructure(2);
-    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndices = myStructure.ImportFromGmsh(path + fileName);
+    Eigen::VectorXi groupIndices = myStructure.ImportFromGmsh(path + fileName);
 
-    int interpolationType = groupIndices.GetValue(0, 1);
+    int interpolationType = groupIndices(0, 1);
     myStructure.InterpolationTypeAdd(interpolationType, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::LOBATTO3);
 
     myStructure.SetVerboseLevel(10);
-    myStructure.ElementConvertToInterpolationType(groupIndices.GetValue(0, 0));
+    myStructure.ElementConvertToInterpolationType(groupIndices(0, 0));
 
 //    myStructure.InterpolationTypeSetIntegrationType(interpolationType, NuTo::IntegrationType::IntegrationType2D3NGauss3Ip, NuTo::IpData::NOIPDATA);
 
@@ -740,14 +735,10 @@ void Dirichlet(const std::string &resultDir, const std::string &path, const std:
     myStructure.GroupAddNodeFunction(groupNodeBCRight, LambdaGetBoundaryNodesRight);
     myStructure.GroupAddNodeFunction(groupNodeBCLeft, LambdaGetBoundaryNodesLeft);
 
-    NuTo::FullVector<double,Eigen::Dynamic> direction(2);
-    direction << 1., 0.;
+    myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodeBCLeft,  Eigen::Vector2d::UnitX(), -0.01);
+    myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodeBCRight, Eigen::Vector2d::UnitX(),  0.01);
 
-    myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodeBCLeft,  direction, -0.01);
-    myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodeBCRight, direction,  0.01);
-
-    direction << 0., 1.;
-    myStructure.ConstraintLinearSetDisplacementNode(0, direction, 0.);
+    myStructure.ConstraintLinearSetDisplacementNode(0, Eigen::Vector2d::UnitY(), 0.);
 
     myStructure.CalculateMaximumIndependentSets();
     myStructure.NodeBuildGlobalDofs();

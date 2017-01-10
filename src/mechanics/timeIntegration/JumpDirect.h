@@ -84,7 +84,7 @@ public:
     // rHarmonicConstraintFactor[*,1] = frequency, positive
     // rHarmonicConstraintFactor[*,2] = number of cycles, at least 1
     // The harmonic excitations are applied to the mTimeDependentConstraint !
-    // Currently is only a monoharmonic constraint applied, that is rHarmonicFactor.GetNumRows()=1
+    // Currently is only a monoharmonic constraint applied, that is rHarmonicFactor.rows()=1
     void SetHarmonicExcitation(const NuTo::FullMatrix<double,Eigen::Dynamic,3>& rHarmonicFactor)
     {
     	if (mTimeDependentConstraint == -1 && mTimeDependentLoadCase == -1) {
@@ -95,11 +95,11 @@ public:
     		throw MechanicsException("[NuTo::JumpDirect::SetHarmonicExcitation] the harmonic excitation is currently implemented for either time dependent constraint or load case.");
 		}
 
-    	if (rHarmonicFactor.GetNumRows()>1)
+    	if (rHarmonicFactor.rows()>1)
     		throw MechanicsException("[NuTo::JumpDirect::SetHarmonicExcitation] currently a monoharmonic constraint is implemented, number of rows must be 1.");
 
     	//check, whether frequencies and number of cycles are positive
-    	for (int count=0; count<rHarmonicFactor.GetNumRows(); count++)
+    	for (int count=0; count<rHarmonicFactor.rows(); count++)
     	{
     		if (rHarmonicFactor(count,1)<=0.)
     			throw MechanicsException("[NuTo::JumpDirect::SetHarmonicExcitation] the frequency should always be positive.");
@@ -121,11 +121,11 @@ public:
     //! @brief the time dependent constraint is followed by a sine excitation
     double CalculateTimeDependentConstraintFactor(double curTime)
     {
-    	if (mTimeDependentConstraintFactor.GetNumRows()==0)
+    	if (mTimeDependentConstraintFactor.rows()==0)
     		throw MechanicsException("[NuTo::JumpDirect::CalculateTimeDependentConstraintFactor] the harmonic excitation can be only applied to the time dependent constraint.");
 
     	// calculate the end time of the time dependent constraint. After this time the constraint is harmonic
-    	double timeDependentConstraintTime(mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.GetNumRows()-1,0));
+    	double timeDependentConstraintTime(mTimeDependentConstraintFactor(mTimeDependentConstraintFactor.rows()-1,0));
 		double timeDependentConstraintFactor;
 
     	if (curTime <= timeDependentConstraintTime) {
@@ -137,7 +137,7 @@ public:
 			// calculate constraint at the end time of the time dependent constraint
 			timeDependentConstraintFactor = NewmarkDirect::CalculateTimeDependentConstraintFactor(timeDependentConstraintTime);
 
-			if (mHarmonicFactor.GetNumRows()==0) {
+			if (mHarmonicFactor.rows()==0) {
 				return timeDependentConstraintFactor;
 			}
 
@@ -152,7 +152,7 @@ public:
 
     //! @brief calculates the applied load cases in a single load vector as a function of the current time delta
     //! @brief the time dependent linear load is followed by a sine excitation
-    void CalculateExternalLoad(StructureBase& rStructure, double curTime, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_j, NuTo::FullVector<double,Eigen::Dynamic>& rLoad_k)
+    void CalculateExternalLoad(StructureBase& rStructure, double curTime, Eigen::VectorXd& rLoad_j, Eigen::VectorXd& rLoad_k)
     {
     	rLoad_j.Resize(rStructure.GetNumActiveDofs());
     	rLoad_k.Resize(rStructure.GetNumDofs()-rStructure.GetNumActiveDofs());
@@ -164,7 +164,7 @@ public:
 			// there is a time dependent load case defined
 
 			// check that the TimeDependentLoadFactor is set
-			if (mTimeDependentLoadFactor.GetNumRows()==0)
+			if (mTimeDependentLoadFactor.rows()==0)
 			{
 				throw MechanicsException("[NuTo::JumpDirect::CalculateExternalLoad] TimeDependentLoadFactor not set.");
 			}
@@ -174,7 +174,7 @@ public:
 			const double pi = boost::math::constants::pi<double>();
 
 			// calculate load amplitude
-			NuTo::FullVector<double,Eigen::Dynamic> LoadAmplitude_j,LoadAmplitude_k;
+			Eigen::VectorXd LoadAmplitude_j,LoadAmplitude_k;
 			LoadAmplitude_j.Resize(rStructure.GetNumActiveDofs());
 			LoadAmplitude_k.Resize(rStructure.GetNumDofs()-rStructure.GetNumActiveDofs());
 
@@ -183,14 +183,14 @@ public:
 			LoadAmplitude_k *= amplitude;
 
 	    	// calculate the end time of the time dependent load case. After this time the load is harmonic
-	    	double timeDependentLoadCaseTime(mTimeDependentLoadFactor(mTimeDependentLoadFactor.GetNumRows()-1,0));
+	    	double timeDependentLoadCaseTime(mTimeDependentLoadFactor(mTimeDependentLoadFactor.rows()-1,0));
 
 	    	if (curTime <= timeDependentLoadCaseTime) {
 	        	// calculate timeDependentLoadFactor during the linear time dependent load
 	    		NewmarkDirect::CalculateExternalLoad(rStructure,curTime,rLoad_j,rLoad_k);
 	    	} else {
 				// time dependent load case is continued by the harmonic excitation
-				double s(mTimeDependentLoadFactor(mTimeDependentLoadFactor.GetNumRows()-1,1));	// maximal linear load factor
+				double s(mTimeDependentLoadFactor(mTimeDependentLoadFactor.rows()-1,1));	// maximal linear load factor
 
 //				rLoad_j=mLoadVectorStatic_j+mLoadVectorTimeDependent_j*s + LoadAmplitude_j*sin(2*pi*frequency*(curTime - timeDependentLoadCaseTime));
 //				rLoad_k=mLoadVectorStatic_k+mLoadVectorTimeDependent_k*s + LoadAmplitude_k*sin(2*pi*frequency*(curTime - timeDependentLoadCaseTime));
@@ -211,10 +211,10 @@ public:
         }
 
     	// calculate time and time step during the time dependent constraint (where the linear interpolation is performed)
-    	if (mTimeDependentConstraintFactor.GetNumRows()!=0 && mAutomaticTimeStepping)
+    	if (mTimeDependentConstraintFactor.rows()!=0 && mAutomaticTimeStepping)
     	{
     		int curStep(0);
-    		while (mTimeDependentConstraintFactor(curStep,0)<curTime && curStep<mTimeDependentConstraintFactor.GetNumRows()-1)
+    		while (mTimeDependentConstraintFactor(curStep,0)<curTime && curStep<mTimeDependentConstraintFactor.rows()-1)
     			curStep++;
     		if (curStep==0)
     			curStep++;
@@ -249,10 +249,10 @@ public:
 		}
 
     	// calculate time and time step during the time dependent constraint (where the linear interpolation is performed)
-    	if (mTimeDependentLoadFactor.GetNumRows()!=0 && mAutomaticTimeStepping)
+    	if (mTimeDependentLoadFactor.rows()!=0 && mAutomaticTimeStepping)
     	{
     		int curStep(0);
-    		while (mTimeDependentLoadFactor(curStep,0)<curTime && curStep<mTimeDependentLoadFactor.GetNumRows()-1)
+    		while (mTimeDependentLoadFactor(curStep,0)<curTime && curStep<mTimeDependentLoadFactor.rows()-1)
     			curStep++;
     		if (curStep==0)
     			curStep++;
@@ -314,18 +314,18 @@ public:
     // rDisp_Mean_k ... mean displacement (dependent DOF, rFourier = 0)
     // rDisp_Ampl_j ... displacement amplitude (active DOF, rFourier = 1)
     // rDisp_Mean_k ... displacement amplitude (dependent DOF, rFourier = 1)
-    void CalculateFourierCoefficients(NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_k,
-    		NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_k,
-			const NuTo::FullVector<double,Eigen::Dynamic>* rIntForce_Mean_j, const NuTo::FullVector<double,Eigen::Dynamic>* rIntForce_Mean_k,
-			const NuTo::FullVector<double,Eigen::Dynamic>* rIntForce_Max_j,  const NuTo::FullVector<double,Eigen::Dynamic>* rIntForce_Max_k);
+    void CalculateFourierCoefficients(Eigen::VectorXd* rDisp_Mean_j, Eigen::VectorXd* rDisp_Mean_k,
+    		Eigen::VectorXd* rDisp_Ampl_j, Eigen::VectorXd* rDisp_Ampl_k,
+			const Eigen::VectorXd* rIntForce_Mean_j, const Eigen::VectorXd* rIntForce_Mean_k,
+			const Eigen::VectorXd* rIntForce_Max_j,  const Eigen::VectorXd* rIntForce_Max_k);
 
     //!@brief straight-forward integration of a single cycle with a prescribed Fourier coefficients
     // the displacement fields have the same meaning as above, see CalculateFourierCoefficients
     // rIncludePostProcess ...false, if no postprocessing should be done during integration
     // rIncludePostProcess ...true, postprocessing will be done
     // Postprocessing should be done if the jump is acceptable; in this case the IntegrateSinleCycle should be repeated with a true option
-    void IntegrateSingleCycle(NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_k,
-    		NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_k, bool rIncludePostProcess);
+    void IntegrateSingleCycle(Eigen::VectorXd* rDisp_Mean_j, Eigen::VectorXd* rDisp_Mean_k,
+    		Eigen::VectorXd* rDisp_Ampl_j, Eigen::VectorXd* rDisp_Ampl_k, bool rIncludePostProcess);
 
     //!@brief updates DofTypes after the CalculateFourierCoefficients routine
     // The CalculateFourierCoefficients routine determines the DISPLACEMENTS Dof only. For a coupled problem DISPLACEMENTS/DofType, the another DofType
@@ -335,8 +335,8 @@ public:
     // rDisp_Mean_k ... mean displacement (dependent DOF, rFourier = 0)
     // rDisp_Ampl_j ... displacement amplitude (active DOF, rFourier = 1)
     // rDisp_Mean_k ... displacement amplitude (dependent DOF, rFourier = 1)
-    void CalculateFourierCoefficientsCoupledDofs(NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Mean_k,
-    		NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_j, NuTo::FullVector<double,Eigen::Dynamic>* rDisp_Ampl_k);
+    void CalculateFourierCoefficientsCoupledDofs(Eigen::VectorXd* rDisp_Mean_j, Eigen::VectorXd* rDisp_Mean_k,
+    		Eigen::VectorXd* rDisp_Ampl_j, Eigen::VectorXd* rDisp_Ampl_k);
 #ifdef ENABLE_SERIALIZATION
 #ifndef SWIG
     //! @brief serializes the class

@@ -6,6 +6,7 @@
  */
 
 #include <iostream>
+#include <iomanip>
 
 #include "geometryConcrete/WallTime.h"
 #include "geometryConcrete/collision/Event.h"

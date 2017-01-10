@@ -13,6 +13,7 @@
 
 #include "mechanics/MechanicsException.h"
 #include "mechanics/loads/LoadBase.h"
+#include <vector>
 
 namespace NuTo
 {
@@ -40,14 +41,14 @@ public:
     //! @param rLoadCase number of the current load case
     //! @param rActiceDofsLoadVector ... global load vector which correspond to the active dofs
     //! @param rDependentDofsLoadVector ... global load vector which correspond to the dependent dofs
-    void AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double,Eigen::Dynamic>& rActiceDofsLoadVector, NuTo::FullVector<double,Eigen::Dynamic>& rDependentDofsLoadVector)const;
+    void AddLoadToGlobalSubVectors(int rLoadCase, Eigen::VectorXd& rActiceDofsLoadVector, Eigen::VectorXd& rDependentDofsLoadVector)const;
 
     //! @brief calculates the surface load as a function of the coordinates and the normal (for pressure)
     //! @param rCoordinates ... global coordinates
     //! @param rNormal ... normal to the surface (pointing outwards)
     //! @param rLoadVector ... load vector
-    virtual void CalculateSurfaceLoad(NuTo::FullVector<double,2>& rCoordinates,NuTo::FullVector<double,2>& rNormal,
-    		NuTo::FullVector<double,2>& rLoadVector)const=0;
+    virtual void CalculateSurfaceLoad(Eigen::Vector2d& rCoordinates, Eigen::Vector2d& rNormal,
+                                      Eigen::Vector2d& rLoadVector)const=0;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief deserializes (load) the class

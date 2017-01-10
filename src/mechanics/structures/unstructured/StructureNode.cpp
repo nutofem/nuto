@@ -3,7 +3,7 @@
 
 #include "base/Timer.h"
 
-#include "math/FullMatrix.h"
+
 #include "mechanics/constraints/ConstraintBase.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
@@ -14,16 +14,11 @@
 #include "mechanics/nodes/NodeDof.h"
 #include "mechanics/nodes/NodeEnum.h"
 
-//! @brief returns the number of nodes
-//! @return number of nodes
 int NuTo::Structure::GetNumNodes() const
 {
     return mNodeMap.size();
 }
 
-//! @brief a reference to a node
-//! @param identifier
-//! @return reference to a node
 NuTo::NodeBase* NuTo::Structure::NodeGetNodePtr(int rIdent)
 {
     boost::ptr_map<int,NodeBase>::iterator it = mNodeMap.find(rIdent);
@@ -37,9 +32,6 @@ NuTo::NodeBase* NuTo::Structure::NodeGetNodePtr(int rIdent)
     }
 }
 
-//! @brief a reference to a node
-//! @param identifier
-//! @return reference to a node
 const NuTo::NodeBase* NuTo::Structure::NodeGetNodePtr(int rIdent)const
 {
     boost::ptr_map<int,NodeBase>::const_iterator it = mNodeMap.find(rIdent);
@@ -53,9 +45,6 @@ const NuTo::NodeBase* NuTo::Structure::NodeGetNodePtr(int rIdent)const
     }
 }
 
-//! @brief gives the identifier of a node
-//! @param reference to a node
-//! @return identifier
 int NuTo::Structure::NodeGetId(const NodeBase* rNode)const
 {
     for (boost::ptr_map<int,NodeBase>::const_iterator
@@ -73,38 +62,17 @@ const boost::ptr_map<int, NuTo::NodeBase>& NuTo::Structure::NodeGetNodeMap() con
 }
 
 
-//! @brief ... return the global dof number of the displacement component of a node
-//! @param rNodeId (Input) 			... node id
-//! @param rDispDof 	... local disp dof (0,1 or 2 for x,y or z)
-//! @returnrglobal dof number
-int NuTo::Structure::NodeGetDofDisplacement(int rNodeId, int rDispDof)
-{
-	NodeBase* nodePtr = NodeGetNodePtr(rNodeId);
-    if (nodePtr->GetNum(Node::eDof::DISPLACEMENTS)>rDispDof)
-	{
-        return nodePtr->GetDof(Node::eDof::DISPLACEMENTS, rDispDof);
-	}
-	else
-	   throw MechanicsException("[NuTo::Structure::NodeGetDisplacementDofs] Node does have sufficient disp dofs.");
-}
-
-//! @brief ... store all element ids connected to this node in a vector
-//! @param rNode (Input) 			... node id
-//! @param rElementNumbers (Output) ... vector of element ids
-void NuTo::Structure::NodeGetElements(const int rNodeId, NuTo::FullVector<int,Eigen::Dynamic>& rElementNumbers)
+void NuTo::Structure::NodeGetElements(const int rNodeId, std::vector<int>& rElementNumbers)
 {
 	const NuTo::NodeBase* nodePtr(NuTo::Structure::NodeGetNodePtr(rNodeId));
 	std::vector<NuTo::ElementBase*> elementPtrs;
 	this->NodeGetElements(nodePtr,elementPtrs);
-	rElementNumbers.Resize(elementPtrs.size());
+	rElementNumbers.resize(elementPtrs.size());
 	size_t i=0;
 	BOOST_FOREACH(NuTo::ElementBase* thisElPtr,elementPtrs)
-		rElementNumbers(++i,1)=thisElPtr->ElementGetId();
+		rElementNumbers[++i] = thisElPtr->ElementGetId();
 }
 
-//! @brief ... store all elements connected to this node in a vector
-//! @param rNode (Input) 		... node pointer
-//! @param rElements (Output) 	... vector of element pointers
 void NuTo::Structure::NodeGetElements(const NuTo::NodeBase* rNodePtr, std::vector<NuTo::ElementBase*>& rElements)
 {
 	rElements.resize(0);
@@ -124,7 +92,6 @@ void NuTo::Structure::NodeGetElements(const NuTo::NodeBase* rNodePtr, std::vecto
 }
 
 
-//! @brief info about the elements in the Structure
 void NuTo::Structure::NodeInfo(int rVerboseLevel)const
 {
     mLogger <<"number of nodes   : " << mNodeMap.size() <<"\n";
@@ -157,18 +124,16 @@ void NuTo::Structure::NodeInfo(int rVerboseLevel)const
     }
 }
 
-//! creates a node at coordinate's origin
 int NuTo::Structure::NodeCreate()
 {
-	NuTo::FullVector<double,Eigen::Dynamic> coordinates(this->GetDimension());
+	Eigen::VectorXd coordinates(this->GetDimension());
 	coordinates.setZero();
 
 	//return int identifier of the new node
     return NodeCreate(coordinates);
 }
 
-//! creates a node
-int NuTo::Structure::NodeCreate(NuTo::FullVector<double,Eigen::Dynamic> rCoordinates)
+int NuTo::Structure::NodeCreate(Eigen::VectorXd rCoordinates)
 {
 
     //find unused integer id
@@ -185,8 +150,7 @@ int NuTo::Structure::NodeCreate(NuTo::FullVector<double,Eigen::Dynamic> rCoordin
     return id;
 }
 
-//! creates a node with rDofs degrees of freedom
-int NuTo::Structure::NodeCreate(NuTo::FullVector<double,Eigen::Dynamic> rCoordinates, std::set<NuTo::Node::eDof> rDofs)
+int NuTo::Structure::NodeCreate(Eigen::VectorXd rCoordinates, std::set<NuTo::Node::eDof> rDofs)
 {
 
     //find unused integer id
@@ -264,10 +228,10 @@ int NuTo::Structure::GetDofDimension(Node::eDof rDof)
     throw MechanicsException(__PRETTY_FUNCTION__, "Dimensions of the required DOF " + Node::DofToString(rDof) + " not defined.");
 }
 
-NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates)
+NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, Eigen::VectorXd rCoordinates)
 {
 
-    if (rCoordinates.GetNumRows() != mDimension)
+    if (rCoordinates.rows() != mDimension)
         throw MechanicsException(__PRETTY_FUNCTION__, "Dimension of the coordinate vector does not fit the dimension of the structure");
 
     NodeBase* nodePtr = nullptr;
@@ -298,7 +262,7 @@ NuTo::NodeBase* NuTo::Structure::NodePtrCreate(std::set<Node::eDof> rDOFs, NuTo:
     return nodePtr;
 }
 
-void NuTo::Structure::NodeCreate(int rNodeNumber, NuTo::FullVector<double,Eigen::Dynamic> rCoordinates)
+void NuTo::Structure::NodeCreate(int rNodeNumber, Eigen::VectorXd rCoordinates)
 {
 	// check node number
 	boost::ptr_map<int,NodeBase>::iterator it = this->mNodeMap.find(rNodeNumber);
@@ -319,20 +283,16 @@ void NuTo::Structure::NodeCreate(int rNodeNumber, NuTo::FullVector<double,Eigen:
     this->mNodeNumberingRequired  = true;
 }
 
-//! @brief creates a node with specific dofs at coordinate's origin
-//! @param rDOFs ... space separated string containing the node dofs (e.g. displacements, rotations, temperatures)
-//! @param rCoordinates ...  node coordinates
-//! @return node number
 int NuTo::Structure::NodeCreateDOFs(std::string rDOFs)
 {
-    NuTo::FullVector<double,Eigen::Dynamic> coordinates(this->GetDimension());
+    Eigen::VectorXd coordinates(this->GetDimension());
     coordinates.setZero();
 
     //return int identifier of the new node
     return NodeCreateDOFs(rDOFs, coordinates);
 }
 
-int NuTo::Structure::NodeCreateDOFs(std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic> rCoordinates)
+int NuTo::Structure::NodeCreateDOFs(std::string rDOFs, Eigen::VectorXd rCoordinates)
 {
     //find unused integer id
     int id(mNodeMap.size());
@@ -348,11 +308,7 @@ int NuTo::Structure::NodeCreateDOFs(std::string rDOFs, NuTo::FullVector<double,E
     return id;
 }
 
-//! @brief creates a node with specific dofs
-//! @param node number
-//! @param rDOFs ... space separated string containing the node dofs (e.g. displacements, rotations, temperatures)
-//! @param rCoordinates ...  node coordinates
-void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::string rDOFs, NuTo::FullVector<double,Eigen::Dynamic> rCoordinates)
+void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::string rDOFs, Eigen::VectorXd rCoordinates)
 {
 
     // check node number
@@ -395,13 +351,9 @@ void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::string rDOFs, NuTo::F
 }
 
 
-//! @brief creates a node with specific dofs at coordinate's origin
-//! @param rDOFs ... set containing the node dof enums (e.g. displacements, rotations, temperatures)
-//! @param rCoordinates ...  node coordinates
-//! @return node number
 int NuTo::Structure::NodeCreateDOFs(std::set<NuTo::Node::eDof> rDOFs)
 {
-    NuTo::FullVector<double,Eigen::Dynamic> coordinates(this->GetDimension());
+    Eigen::VectorXd coordinates(this->GetDimension());
     coordinates.setZero();
 
     //return int identifier of the new node
@@ -409,11 +361,7 @@ int NuTo::Structure::NodeCreateDOFs(std::set<NuTo::Node::eDof> rDOFs)
 }
 
 
-//! @brief creates a node with specific dofs
-//! @param rDOFs ... set containing the node dof enums (e.g. displacements, rotations, temperatures)
-//! @param rCoordinates ...  node coordinates
-//! @return node number
-int NuTo::Structure::NodeCreateDOFs(std::set<NuTo::Node::eDof> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates)
+int NuTo::Structure::NodeCreateDOFs(std::set<NuTo::Node::eDof> rDOFs, Eigen::VectorXd rCoordinates)
 {
     //find unused integer id
     int id(mNodeMap.size());
@@ -430,11 +378,7 @@ int NuTo::Structure::NodeCreateDOFs(std::set<NuTo::Node::eDof> rDOFs, NuTo::Full
 }
 
 
-//! @brief creates a node with specific dofs
-//! @param node number
-//! @param rDOFs ... set containing the node dof enums (e.g. displacements, rotations, temperatures)
-//! @param rCoordinates ...  node coordinates
-void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::set<NuTo::Node::eDof> rDOFs, NuTo::FullVector<double, Eigen::Dynamic> rCoordinates)
+void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::set<NuTo::Node::eDof> rDOFs, Eigen::VectorXd rCoordinates)
 {
     // check node number
     boost::ptr_map<int,NodeBase>::iterator it = this->mNodeMap.find(rNodeNumber);
@@ -455,23 +399,17 @@ void NuTo::Structure::NodeCreateDOFs(int rNodeNumber, std::set<NuTo::Node::eDof>
 }
 
 
-//! @brief create multiple nodes
-//! @param reference to a FullMatrix containing the node coordinates (row->coordinate; col->nodes)
-//! @return a FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> with the identifiers
-NuTo::FullVector<int,Eigen::Dynamic> NuTo::Structure::NodesCreate(NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCoordinates)
+std::vector<int> NuTo::Structure::NodesCreate(Eigen::MatrixXd& rCoordinates)
 {
 	std::vector<int> idVec;
 	/// go through the nodes
-	for(size_t i=0 ; i<(size_t)rCoordinates.GetNumColumns(); ++i)
+	for(size_t i=0 ; i<(size_t)rCoordinates.cols(); ++i)
 	{
-		NuTo::FullVector<double,Eigen::Dynamic> coordinate(rCoordinates.GetColumn(i));
+		Eigen::VectorXd coordinate = rCoordinates.col(i);
 		idVec.push_back(NodeCreate(coordinate));
 	}
 
-    //return int identifiers of the new nodes as FullMatrix
-	NuTo::FullVector<int,Eigen::Dynamic> ids(idVec);
-
-    return ids;
+    return idVec;
 }
 
 void NuTo::Structure::NodeDelete(int rNodeNumber)
@@ -479,8 +417,6 @@ void NuTo::Structure::NodeDelete(int rNodeNumber)
 	NodeDelete(rNodeNumber,true);
 }
 
-//! @brief Deletes a nodes
-//! @param rNodeNumber identifier for the node
 void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
 {
     boost::ptr_map<int,NodeBase>::iterator itNode = mNodeMap.find(rNodeNumber);
@@ -511,10 +447,7 @@ void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
 			}
     	}
 
-    	//! Search for node in groups
-        //! using a loop over all groups
-        //! remove the entry from all groups
-        for(boost::ptr_map<int,GroupBase>::iterator groupIt=mGroupMap.begin();groupIt!=mGroupMap.end(); ++groupIt){
+    	                        for(boost::ptr_map<int,GroupBase>::iterator groupIt=mGroupMap.begin();groupIt!=mGroupMap.end(); ++groupIt){
         	if(groupIt->second->GetType()==NuTo::eGroupId::Nodes){
         		if(groupIt->second->Contain(itNode->first))
         		{
@@ -531,7 +464,6 @@ void NuTo::Structure::NodeDelete(int rNodeNumber, bool checkElements)
 }
 
 
-//! @brief number the dofs in the structure
 void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
@@ -678,9 +610,6 @@ void NuTo::Structure::NodeBuildGlobalDofs(std::string rCallerName)
 
 
 
-//! @brief extract dof values (e.g. displacements, temperatures to the nodes)
-//! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
-//! @return ... StructureBlockVector containing the dofs (J and K)
 NuTo::StructureOutputBlockVector NuTo::Structure::NodeExtractDofValues(int rTimeDerivative) const
 {
     if (this->mNodeNumberingRequired)
@@ -704,10 +633,6 @@ NuTo::StructureOutputBlockVector NuTo::Structure::NodeExtractDofValues(int rTime
     return dofValues;
 }
 
-//! @brief write dof values (e.g. displacements, temperatures to the nodes)
-//! @param rTimeDerivative time derivative (0 disp 1 vel 2 acc)
-//! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
-//! @param rDependentDofValues ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
 void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockFullVector<double>& rActiveDofValues, const NuTo::BlockFullVector<double>& rDependentDofValues)
 {
     if (this->mNodeNumberingRequired)
@@ -715,10 +640,10 @@ void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockF
 
     for (auto dofType : DofTypesGetActive())
     {
-        if (rActiveDofValues[dofType].GetNumRows() != GetNumActiveDofs(dofType))
+        if (rActiveDofValues[dofType].rows() != GetNumActiveDofs(dofType))
             throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] invalid dimension of active dof vector for " + Node::DofToString(dofType));
 
-        if (rDependentDofValues[dofType].GetNumRows() != GetNumDependentDofs(dofType))
+        if (rDependentDofValues[dofType].rows() != GetNumDependentDofs(dofType))
             throw MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] invalid dimension of dependent dof vector for " + Node::DofToString(dofType));
 
         // write dof values to the nodes
@@ -739,9 +664,6 @@ void NuTo::Structure::NodeMergeDofValues(int rTimeDerivative, const NuTo::BlockF
 
 
 
-//! @brief calculate dependent dof values (for the zeroth time derivative)
-//! @param rActiveDofValues ... vector of independent dof values (ordering according to global dofs, size is number of active dofs)
-//! @return  ... vector of dependent  dof values (ordering according to global dofs, size is number of active dofs)
 NuTo::BlockFullVector<double> NuTo::Structure::NodeCalculateDependentDofValues(const NuTo::BlockFullVector<double>& rActiveDofValues) const
 {
     if (this->mNodeNumberingRequired)
@@ -803,12 +725,6 @@ void NuTo::Structure::GetNodesTotal(std::vector<std::pair<int,NodeBase*> >& rNod
     }
 }
 
-//! @brief exchanges the node ptr in the full data set (elements, groups, loads, constraints etc.)
-//! this routine is used, if e.g. the data type of a node has changed, but the restraints, elements etc. are still identical
-//! @param rId ... old node id
-//! @param rOldPtr ... old node ptr
-//! @param rNewPtr ... new node ptr
-//! @param rElements (optional) ... vector of all elements that contain the node - speedup!
 void NuTo::Structure::NodeExchangePtr(int rId, NuTo::NodeBase* rOldPtr, NuTo::NodeBase* rNewPtr, std::vector<ElementBase*> rElements)
 {
     //in node map

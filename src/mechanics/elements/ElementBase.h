@@ -10,7 +10,7 @@
 
 #include <list>
 #include <map>
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 #include "mechanics/MechanicsException.h"
 #include "mechanics/elements/IPData.h"
 #include <memory>
@@ -40,8 +40,6 @@ template <int TDim> class ContinuumElement;
 template <int TDim> class ContinuumElementIGA;
 template <int TDim> class ContinuumBoundaryElement;
 template <int TDim> class ContinuumContactElement;
-template <class T, int rows, int cols> class FullMatrix;
-template <class T, int rows> class FullVector;
 
 #ifdef ENABLE_VISUALIZE
 class VisualizeUnstructuredGrid;
@@ -245,11 +243,11 @@ public:
 
     //! @brief integrates the stress over the element
     //! @param rStress integrated stress
-    void GetIntegratedStress(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rStress);
+    void GetIntegratedStress(Eigen::MatrixXd& rStress);
 
     //! @brief integrates the strain over the element
     //! @param rStrain integrated strain
-    void GetIntegratedStrain(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rStress);
+    void GetIntegratedStrain(Eigen::MatrixXd& rStress);
 
     //! @brief Update the static data of an element
     //virtual eError UpdateStaticData(NuTo::Element::eUpdateType rUpdateType)=0;

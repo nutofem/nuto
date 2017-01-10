@@ -1,5 +1,3 @@
-// $Id: ConstraintLinearDerivativeNonlocalTotalStrain1D.cpp 625 2013-04-22 16:37:11Z unger3 $
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -17,7 +15,6 @@
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/elements/ElementEnum.h"
 #include "mechanics/constraints/ConstraintLinearDerivativeNonlocalTotalStrain1D.h"
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "mechanics/interpolationtypes/InterpolationBase.h"
 #include "mechanics/interpolationtypes/InterpolationType.h"
@@ -86,7 +83,7 @@ void NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D::AddToConstraintMatri
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D::GetRHS(int& curConstraintEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const
+void NuTo::ConstraintLinearDerivativeNonlocalTotalStrain1D::GetRHS(int& curConstraintEquation,Eigen::VectorXd& rRHS)const
 {
     // set right hand side value
     rRHS(curConstraintEquation) = 0;

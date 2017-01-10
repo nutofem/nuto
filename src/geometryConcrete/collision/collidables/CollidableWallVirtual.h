@@ -8,6 +8,7 @@
 #pragma once
 
 #include "geometryConcrete/collision/collidables/CollidableWallBase.h"
+
 namespace NuTo
 {
 class CollidableParticleSphere;
@@ -21,8 +22,8 @@ public:
 	//! @param rPosition ... point on the plane
 	//! @param rDirection ... normal vector pointing inside the domain, gets normalized.
 	//! @param rIndex ... name
-	CollidableWallVirtual(FullVector<double, 3> rPosition,
-			FullVector<double, 3> rDirection, const int rIndex);
+	CollidableWallVirtual(Eigen::Vector3d rPosition,
+						  Eigen::Vector3d rDirection, const int rIndex);
 
 	//! @brief ... collision between CollidableWall and CollidableSphere
 	//! Case 1) Sphere is NOT in outside box of this wall

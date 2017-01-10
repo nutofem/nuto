@@ -1,8 +1,7 @@
 if(ENABLE_PYTHON)
     foreach(test
-            Matrix
-            NumpyFullMatrix
             SparseMatrixCSR
+            Numpy
             )
 
         add_test(p::math::${test} ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${test}.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -28,5 +27,9 @@ if(ENABLE_C++_TESTS)
         target_link_libraries(Arpack NuToMath NuToBase)
         add_test(c::math::Arpack ${CMAKE_CURRENT_BUILD_DIR}/Arpack)
     endif()
+
+    add_executable(EigenCompanion EigenCompanion.cpp ${CMAKE_SOURCE_DIR}/src/math/EigenCompanion.cpp)
+    target_link_libraries(EigenCompanion ${Boost_LIBRARIES})
+    add_test(c::unit::EigenCompanion ${CMAKE_CURRENT_BUILD_DIR}/EigenCompanion)
 
 endif()

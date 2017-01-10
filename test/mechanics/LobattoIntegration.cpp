@@ -4,7 +4,6 @@
 
 #include <eigen3/Eigen/Core>
 
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseDirectSolverMUMPS.h"
@@ -34,7 +33,7 @@
 */
 NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
                                   int rNumNodesPerElement,
-                                  NuTo::FullVector<double, Eigen::Dynamic>& nodeCoordinatesFirstElement,
+                                  Eigen::VectorXd& nodeCoordinatesFirstElement,
                                   int NumElements,
                                   double& DisplacementCorrect)
 {
@@ -66,7 +65,7 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
     double elementLength = nodeCoordinatesFirstElement(rNumNodesPerElement-1) - nodeCoordinatesFirstElement(0);
     double factor = Length/(NumElements*elementLength);
     double elementBegin = 0.;
-    NuTo::FullVector<double,Eigen::Dynamic> nodeCoordinates(1);
+    Eigen::VectorXd nodeCoordinates(1);
 
     std::set<NuTo::Node::eDof> setOfDOFS;
     setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
@@ -76,7 +75,7 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
     // first node
     nodeCoordinates(0) = factor*nodeCoordinatesFirstElement(0);
     myStructure->NodeCreateDOFs(node, setOfDOFS, nodeCoordinates);
-    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) << std::endl;
+    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0,0) << std::endl;
     node++;
     // following nodes
     for(int i = 0; i < NumElements; i++)
@@ -84,7 +83,7 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
         for (int j = 1; j < nodeCoordinatesFirstElement.size(); j++)
         {
             nodeCoordinates(0) = factor*(nodeCoordinatesFirstElement(j) + elementBegin);
-            if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) << std::endl;
+            if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0,0) << std::endl;
             myStructure->NodeCreateDOFs(node, setOfDOFS, nodeCoordinates);
             node++;
         }
@@ -123,7 +122,7 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
     myStructure->ElementTotalSetConstitutiveLaw(Material);
 
     /** set boundary conditions and loads **/
-    NuTo::FullVector<double,Eigen::Dynamic> direction(1);
+    Eigen::VectorXd direction(1);
     direction(0) = 1;
     // first node is fixed
     myStructure->ConstraintLinearSetDisplacementNode(0, direction, 0.0);
@@ -152,8 +151,7 @@ NuTo::Structure* buildStructure1D(NuTo::Interpolation::eTypeOrder rElementTypeId
 */
 NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeIdent,
                      //NuTo::eIntegrationType rIntegrationTypeIdent,
-                     int rNumNodesPerElementInOneDir,
-                     NuTo::FullVector<double, Eigen::Dynamic>& nodeCoordinatesFirstElement,
+                     int rNumNodesPerElementInOneDir, Eigen::VectorXd& nodeCoordinatesFirstElement,
                      int NumElementsX, int NumElementsY, double& DisplacementCorrect)
 {
     /** parameters **/
@@ -180,7 +178,7 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
 #endif
 
     /** Nodes **/
-    NuTo::FullVector<double,Eigen::Dynamic> nodeCoordinates(2);
+    Eigen::VectorXd nodeCoordinates(2);
     int node = 0;
     double elementBeginX = 0.;
     double elementBeginY = 0.;
@@ -189,7 +187,7 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
     nodeCoordinates(1) = factorY*nodeCoordinatesFirstElement(0);
     //myStructure->NodeCreateDOFs(node, "Displacements", nodeCoordinates);
     myStructure->NodeCreate(node, nodeCoordinates);
-    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) <<", "<< nodeCoordinates.at(1,0) << std::endl;
+    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0,0) <<", "<< nodeCoordinates(1,0) << std::endl;
     node++;
 
     for(int y = 0; y < NumElementsY; y++)
@@ -202,7 +200,7 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
                 nodeCoordinates(1) = factorY*(nodeCoordinatesFirstElement(i) + elementBeginY);
                 //myStructure->NodeCreateDOFs(node, "Displacements", nodeCoordinates);
                 myStructure->NodeCreate(node, nodeCoordinates);
-                if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) <<", "<< nodeCoordinates.at(1,0)  << std::endl;
+                if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0,0) <<", "<< nodeCoordinates(1,0)  << std::endl;
                 node++;
             }
 
@@ -215,7 +213,7 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
                     nodeCoordinates(1) = factorY*(nodeCoordinatesFirstElement(i) + elementBeginY);
                     //myStructure->NodeCreateDOFs(node, "Displacements", nodeCoordinates);
                     myStructure->NodeCreate(node, nodeCoordinates);
-                    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates.at(0,0) <<", "<< nodeCoordinates.at(1,0)  << std::endl;
+                    if(PRINTRESULT) std::cout << "create node: " << node << " coordinates: " << nodeCoordinates(0,0) <<", "<< nodeCoordinates(1,0)  << std::endl;
                     node++;
                 }
                 elementBeginX += elementSize;
@@ -267,7 +265,7 @@ NuTo::Structure* buildStructure2D(NuTo::Interpolation::eTypeOrder rElementTypeId
     myStructure->ElementTotalSetSection(mySection);
 
     // Dirichlet
-    NuTo::FullVector<double,Eigen::Dynamic> direction(2);
+    Eigen::VectorXd direction(2);
 
     if (PRINTRESULT) std::cout <<  "Nodes fixed: "<< std::endl;
 
@@ -367,8 +365,8 @@ int main()
     double DisplacementCorrectSerialization2D;
 
     // 3 IP
-    NuTo::FullVector<double, Eigen::Dynamic> ones(3); ones.fill(1);
-    NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(3);
+    Eigen::VectorXd ones(3); ones.fill(1);
+    Eigen::VectorXd nodeCoordinates(3);
 
 
     {

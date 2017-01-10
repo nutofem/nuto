@@ -173,7 +173,7 @@ void IPAdditiveInputImplicit::CalculateGlobalOutputs(const NuTo::ConstitutiveInp
                                                                                                                               __PRETTY_FUNCTION__);
 #endif
                 const ConstitutiveVector<VoigtDim>& globalStrainRate = *static_cast<ConstitutiveVector<VoigtDim>*>(rConstitutiveInput.find(Constitutive::eInput::ENGINEERING_STRAIN_DT1)->second.get());
-                FullVector<double,Eigen::Dynamic> rhsVec(numTotalUnknowns);
+                Eigen::VectorXd rhsVec(numTotalUnknowns);
                 rhsVec.setZero();
 
 
@@ -281,7 +281,7 @@ void IPAdditiveInputImplicit::CalculateGlobalOutputs(const NuTo::ConstitutiveInp
                                                                                                                           __PRETTY_FUNCTION__);
 #endif
                 const ConstitutiveVector<VoigtDim>& globalStrain = *static_cast<ConstitutiveVector<VoigtDim>*>(rConstitutiveInput.find(Constitutive::eInput::ENGINEERING_STRAIN)->second.get());
-                FullVector<double,Eigen::Dynamic> rhsVec(numTotalUnknowns);
+                Eigen::VectorXd rhsVec(numTotalUnknowns);
                 rhsVec.setZero();
 
                 for(unsigned int i=0; i<VoigtDim; ++i)

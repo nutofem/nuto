@@ -1,10 +1,3 @@
-// $Id$
-
-/*******************************************************************************
-Bauhaus-Universitaet Weimar
-Author: Joerg F. Unger,  Septermber 2009
-*******************************************************************************/
-
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -17,7 +10,6 @@ Author: Joerg F. Unger,  Septermber 2009
 namespace NuTo
 {
 
-template <class T, int rows, int cols> class FullMatrix;
 //! @author Joerg F. Unger, ISM
 //! @date September 2009
 //! @brief abstract base class for the Transformations
@@ -37,13 +29,13 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
     //! @brief build the transformation using the given Points
-	virtual void Build(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)=0;
+	virtual void Build(const Eigen::MatrixXd& rCoordinates)=0;
 
     //! @brief transform the given points 
-    virtual void TransformForward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const=0;
+    virtual void TransformForward(Eigen::MatrixXd& rCoordinates)const=0;
 
     //! @brief transform the given points 
-    virtual void TransformBackward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const=0;
+    virtual void TransformBackward(Eigen::MatrixXd& rCoordinates)const=0;
 
 protected:
 

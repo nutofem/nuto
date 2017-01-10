@@ -3,8 +3,6 @@
 #include <ctime>
 
 #include "math/MathException.h"
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
 #include "math/SparseMatrixCSR.h"
 #include "math/SparseDirectSolver.h"
 #include "math/SparseDirectSolverMKLDSS.h"
@@ -23,7 +21,7 @@ NuTo::SparseDirectSolverMKLDSS::SparseDirectSolverMKLDSS() : SparseDirectSolver(
 }
 
 #ifdef HAVE_MKL_DSS
-void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double,Eigen::Dynamic>& rRhs, NuTo::FullVector<double,Eigen::Dynamic>& rSolution)
+void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const Eigen::VectorXd& rRhs, Eigen::VectorXd& rSolution)
 {
     // timing
     clock_t startTime = clock();
@@ -275,7 +273,7 @@ void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& 
     }
 }
 #else// HAVE_MKL_DSS
-void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const NuTo::FullVector<double,Eigen::Dynamic>& rRhs, NuTo::FullVector<double,Eigen::Dynamic>& rSolution)
+void NuTo::SparseDirectSolverMKLDSS::Solve(const NuTo::SparseMatrixCSR<double>& rMatrix, const Eigen::VectorXd& rRhs, Eigen::VectorXd& rSolution)
 {
 	throw NuTo::MathException("[SparseDirectSolverMKLDSS::solve]MKLDSS not implemented.");
 }

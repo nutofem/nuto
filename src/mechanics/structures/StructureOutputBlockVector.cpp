@@ -1,5 +1,5 @@
 
-#include "math/FullVector.h"
+
 #include "math/SparseMatrixCSRVector2.h"
 #include "mechanics/structures/StructureOutputBlockVector.h"
 #include "mechanics/dofSubMatrixStorage/BlockSparseMatrix.h"
@@ -40,12 +40,12 @@ void NuTo::StructureOutputBlockVector::AddElementVector(
 
         int numActiveDofsRow = numActiveDofTypeMap.at(dofRow);
 
-        assert(elementVector.GetNumRows() == globalRowDofs.GetNumRows());
+        assert(elementVector.rows() == globalRowDofs.rows());
 
         auto& activeRow = J[dofRow];
         auto& dependentRow = K[dofRow];
 
-        for (int iRow = 0; iRow < globalRowDofs.GetNumRows(); ++iRow)
+        for (int iRow = 0; iRow < globalRowDofs.rows(); ++iRow)
         {
             int globalRowDof = globalRowDofs[iRow];
             if (globalRowDof < numActiveDofsRow)

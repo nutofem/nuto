@@ -20,7 +20,7 @@
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/timeIntegration/RungeKuttaCashKarp.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
-#include "math/FullMatrix.h"
+
 
 #define orderCashKarp 5
 

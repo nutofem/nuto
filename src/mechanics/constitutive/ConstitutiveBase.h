@@ -5,7 +5,7 @@
 #include <boost/serialization/export.hpp>
 #endif // ENABLE_SERIALIZATION
 
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 
 #include <functional>
 #include <map>
@@ -25,8 +25,6 @@ class InterpolationType;
 class Logger;
 enum class eError;
 template<typename IOEnum> class ConstitutiveIOMap;
-template <class T, int rows> class FullVector;
-template <class T, int rows, int cols> class FullMatrix;
 
 namespace Element
 {
@@ -116,12 +114,12 @@ public:
     //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
-    virtual NuTo::FullVector<double,Eigen::Dynamic> GetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier) const;
+    virtual Eigen::VectorXd GetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier) const;
 
     //! @brief ... sets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
-    virtual void SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double,Eigen::Dynamic> rValue);
+    virtual void SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue);
 
 
     //! @brief checks parameters, throws if the check failed
@@ -130,7 +128,7 @@ public:
     //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
     //! @param rRelativeHumidity ... relative humidity
     //! @return ... equilibrium water volume fraction
-    virtual double GetEquilibriumWaterVolumeFraction(double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const;
+    virtual double GetEquilibriumWaterVolumeFraction(double rRelativeHumidity, Eigen::VectorXd rCoeffs) const;
 
     //! @brief ... checks if a constitutive law has an specific output
     //! @return ... true/false

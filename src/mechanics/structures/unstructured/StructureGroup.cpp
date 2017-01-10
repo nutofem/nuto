@@ -1,5 +1,5 @@
 #include "mechanics/structures/unstructured/Structure.h"
-#include "math/FullVector.h"
+
 #include "base/Timer.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/groups/Group.h"
@@ -7,7 +7,7 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 
 void NuTo::Structure::GroupAddElementFromType(int rIdentGroup, int rInterpolationType)
 {
@@ -113,20 +113,12 @@ void NuTo::Structure::GroupAddNodeFromElementGroupCoordinateRange(int rIdentNode
     auto elementsInGroup = GroupGetMemberIds(rSearchIdentElementGroup);
 
     std::set<int> nodesInGroup;
-    for (unsigned int iElement = 0; iElement < elementsInGroup.rows(); ++iElement)
-    {
-
-        auto nodesInElement = ElementGetNodes(elementsInGroup(iElement,0));
-
-        for (int iNode = 0; iNode < nodesInElement.rows(); ++iNode)
-        {
-            int nodeId = nodesInElement(iNode,0);
+    for (auto elementId : elementsInGroup)
+        for (int nodeId : ElementGetNodes(elementId))
             nodesInGroup.insert(nodeId);
-        }
-    }
 
 
-    for (auto const & iNodeId : nodesInGroup)
+    for (int iNodeId : nodesInGroup)
     {
         auto nodePtr = NodeGetNodePtr(iNodeId);
         double coordinate = nodePtr->Get(Node::eDof::COORDINATES)[rDirection];

@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import nuto
-import math
 import sys
 import os
-import subprocess
+import numpy as np
 
 # Get path to work dir as cmake_current_binary_dir
 pathToWorkDir = sys.argv[1]
@@ -28,17 +27,18 @@ print "   |--->  Print result files to"
 print "   |---> ",workDir
 print
 
-
-
 # create a box specimen
-specimen = nuto.Specimen(nuto.DoubleFullMatrix(3,2, [-10., -10., -5., 10., 10., 5.]), 0)
+specimen = nuto.Specimen(np.array([[-10., 10.], [-10., 10.], [-5., 5.]]), 0)
 
 # create some spheres
-sphereMatrix = nuto.DoubleFullMatrix(4,4,[-4,-4, 4, 4, -4, 4, -4, 4, 0,0,0,0,2,2,2,2])
+sphereMatrix = np.array([[-4., -4., 0., 2.],
+                         [-4.,  4., 0., 2.],
+                         [ 4.,  4., 0., 2.],
+                         [ 4., -4., 0., 2.]])
 spheres = nuto.ParticleHandler(sphereMatrix, 0,0,0)
 
 
-meshSize = 3
+meshSize = 4
 
 # define files
 
@@ -58,8 +58,8 @@ spheres.ExportParticlesToGmsh3D(geoFile3D,specimen, meshSize)
 # do the meshing
 # redirect the stderr ("2>") to the error file (errors and warnings)
 # -v 1 sets the verbose level to stderr only (as far as I know)
-os.system(gmsh + ' ' + geoFile2D + ' -2 -order 2 -v 1 -o '+mshFile2D +' 2> ' + errFile2D)
-os.system(gmsh + " " + geoFile3D + ' -3 -order 2 -v 1 -o '+mshFile3D +' 2> ' + errFile3D)
+os.system(gmsh + ' ' + geoFile2D + ' -2 -order 1 -v 1 -o '+mshFile2D +' 2> ' + errFile2D)
+os.system(gmsh + " " + geoFile3D + ' -3 -order 1 -v 1 -o '+mshFile3D +' 2> ' + errFile3D)
 
 # check the emptyness of the error files
 if (os.stat(errFile2D).st_size >0):

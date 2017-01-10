@@ -103,7 +103,7 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
     mPrevTime = 0.;
     mTime = 0.;
     mNodeNumberingRequired = true;
-    mNumExtrapolatedCycles = 0;
+    mNumExtrapolatedCycles.setZero();
 
     mMappingIntEnum2String.resize(static_cast<unsigned int>(NuTo::eIntegrationType::NumIntegrationTypes));
     mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss1Ip)]=
@@ -304,7 +304,7 @@ double NuTo::StructureBase::GetTime() const
 //! @brief ... rNumber[1] is the weighting coefficient of the implicit term
 //! @brief ... rNumber[2] is the weighting coefficient of the explicit term
 //! @brief ... rNumber[3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
-void NuTo::StructureBase::SetNumExtrapolatedCycles(NuTo::FullVector<double,Eigen::Dynamic> rNumber)
+void NuTo::StructureBase::SetNumExtrapolatedCycles(Eigen::VectorXd rNumber)
 {
 	if (rNumber.size()<3)
 	        throw NuTo::MechanicsException("[NuTo::StructureBase::SetNumExtrapolatedCycles] at least number of extrapolation cycles and weighting coefficient for explicit and implicit terms are required.");
@@ -326,7 +326,7 @@ void NuTo::StructureBase::SetNumExtrapolatedCycles(NuTo::FullVector<double,Eigen
 //! @brief ... [1] is the weighting coefficient of the implicit term
 //! @brief ... [2] is the weighting coefficient of the explicit term
 //! @brief ... [3] and higher are the weighting coefficients of the terms for a higher-order extrapolation
-NuTo::FullVector<double,Eigen::Dynamic> NuTo::StructureBase::GetNumExtrapolatedCycles() const
+Eigen::VectorXd NuTo::StructureBase::GetNumExtrapolatedCycles() const
 {
 	return mNumExtrapolatedCycles;
 }
@@ -762,13 +762,13 @@ NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian0_CDF(do
                 auto& colJ = column.J[dofRow];
                 auto& matrixJJ = hessian0_CDF.JJ(dofRow, dofCol);
                 for (int i = 0; i < colJ.rows(); ++i)
-                    matrixJJ.AddValue(i, iCol, colJ.at(i,0));
+                    matrixJJ.AddValue(i, iCol, colJ(i,0));
 
                 // set KJ entries
                 auto& colK = column.K[dofRow];
                 auto& matrixKJ = hessian0_CDF.KJ(dofRow, dofCol);
                 for (int i = 0; i < colK.rows(); ++i)
-                    matrixKJ.AddValue(i, iCol, colK.at(i,0));
+                    matrixKJ.AddValue(i, iCol, colK(i,0));
             }
             columnDofValues[iCol] -= rDelta;
         }
@@ -790,13 +790,13 @@ NuTo::StructureOutputBlockMatrix NuTo::StructureBase::BuildGlobalHessian0_CDF(do
                 auto& colJ = column.J[dofRow];
                 auto& matrixJK = hessian0_CDF.JK(dofRow, dofCol);
                 for (int i = 0; i < colJ.rows(); ++i)
-                    matrixJK.AddValue(i, iCol, colJ.at(i,0));
+                    matrixJK.AddValue(i, iCol, colJ(i,0));
 
                 // set KJ entries
                 auto& colK = column.K[dofRow];
                 auto& matrixKK = hessian0_CDF.KK(dofRow, dofCol);
                 for (int i = 0; i < colK.rows(); ++i)
-                    matrixKK.AddValue(i, iCol, colK.at(i,0));
+                    matrixKK.AddValue(i, iCol, colK(i,0));
             }
             rowDofValues[iCol] -= rDelta;
         }
@@ -849,7 +849,7 @@ bool NuTo::StructureBase::CheckHessian0_Submatrix(const BlockSparseMatrix& rHess
     {
         for (auto dofCol : GetDofStatus().GetActiveDofTypes())
         {
-            FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> hessian0_CDF_Full(rHessian0_CDF(dofRow, dofCol));
+            Eigen::MatrixXd hessian0_CDF_Full = rHessian0_CDF(dofRow, dofCol).ConvertToFullMatrix();
 
             double scaling = 1./rHessian0_CDF(dofRow, dofCol).AbsMax();
 
@@ -862,15 +862,15 @@ bool NuTo::StructureBase::CheckHessian0_Submatrix(const BlockSparseMatrix& rHess
             {
                 GetLogger() << "[" << __FUNCTION__ << "] max error in (" << Node::DofToString(dofRow)<< "," << Node::DofToString(dofCol) << ") "
                         << error << " at entry (" << row << "," << col << ")\n";
-                GetLogger() << "hessian0(" << row << "," << col <<") = " << FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>(rHessian0(dofRow, dofCol))(row, col) << "\n";
+                GetLogger() << "hessian0(" << row << "," << col <<") = " << rHessian0(dofRow,
+                                                                                      dofCol).ConvertToFullMatrix()(row, col) << "\n";
                 GetLogger() << "hessian0_CDF(" << row << "," << col <<") = " << hessian0_CDF_Full(row, col) << "\n";
                 isSubmatrixCorrect = false;
                 if (rPrintWrongMatrices)
                 {
-                    FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> diffPrint(diff);
-                    diffPrint.SetSmallEntriesZero(1.e-10);
+                    Eigen::MatrixXd diffPrint = diff.ConvertToFullMatrix();
                     GetLogger() << "####### relative difference\n" << diffPrint.format(fmt) << "\n";
-                    GetLogger() << "####### hessian0\n" << FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>(rHessian0(dofRow, dofCol)).format(fmt) << "\n";
+                    GetLogger() << "####### hessian0\n" << rHessian0(dofRow, dofCol).ConvertToFullMatrix().format(fmt) << "\n";
                     GetLogger() << "####### hessian0_CDF\n" << hessian0_CDF_Full.format(fmt) << "\n";
                 }
             }
@@ -917,7 +917,7 @@ void NuTo::StructureBase::Contact(const std::vector<int> &rElementGroups)
 
 NuTo::BlockFullVector<double> NuTo::StructureBase::SolveBlockSystem(const BlockSparseMatrix& rMatrix, const BlockFullVector<double>& rVector) const
 {
-    NuTo::FullVector<double, Eigen::Dynamic> resultForSolver;
+    Eigen::VectorXd resultForSolver;
     std::unique_ptr<NuTo::SparseMatrixCSR<double>> matrixForSolver = rMatrix.ExportToCSR();
     matrixForSolver->SetOneBasedIndexing();
 

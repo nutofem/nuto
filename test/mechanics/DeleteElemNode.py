@@ -1,6 +1,7 @@
 import nuto
 import sys
 import os
+import numpy as np
 
 #call of the test file, e.g.
 #/usr/local/bin/python ~/develop/nuto/test/mechanics/DeleteElemNode.py Linux x86_64 ~/develop/nuto/test/mechanics
@@ -55,16 +56,16 @@ myStructure.ConstitutiveLawSetParameterDouble(myMatLin,"Poissons_Ratio",Poissons
 mySection = myStructure.SectionCreate("Volume")
 
 # create nodes
-nodeCoordinates = nuto.DoubleFullVector(3)
+nodeCoordinates = np.zeros((3,1))
 #create group of nodes at right boundary
 NodeGroup1 = myStructure.GroupCreate("Nodes")
 node = 0
 for zCount in range (0, NumElementsZ + 1):
-    nodeCoordinates.SetValue(2,0, zCount * Height/NumElementsZ)
+    nodeCoordinates[2] = zCount * Height/NumElementsZ
     for yCount in range (0, NumElementsY + 1):
-        nodeCoordinates.SetValue(1,0, yCount * Width/NumElementsY)
+        nodeCoordinates[1] = yCount * Width/NumElementsY
         for xCount in range(0, NumElementsX + 1):
-            nodeCoordinates.SetValue(0,0, xCount * Length/NumElementsX)
+            nodeCoordinates[0] = xCount * Length/NumElementsX
             #print "node: " + str(node) + " coordinates: " + str(nodeCoordinates.GetValue(0,0)) + "," + str(nodeCoordinates.GetValue(1,0)) + "," + str(nodeCoordinates.GetValue(2,0))
             myStructure.NodeCreate(node,nodeCoordinates)
             myStructure.GroupAddNode(NodeGroup1,node)
@@ -76,7 +77,7 @@ myStructure.InterpolationTypeAdd(interpolationType, "Displacements", "Equidistan
 
 
 # create elements
-elementIncidence = nuto.IntVector(8)
+elementIncidence = list(range(8))
 element = 0
 ElementGroup1 = myStructure.GroupCreate("Elements")
 for zCount in range (0, NumElementsZ):

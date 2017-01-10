@@ -4,7 +4,7 @@
 
 #include "base/Timer.h"
 
-#include "math/FullMatrix.h"
+
 
 #include "mechanics/structures/unstructured/Structure.h"
 #include "mechanics/elements/IpDataEnum.h"
@@ -28,7 +28,7 @@
 #include "mechanics/groups/Group.h"
 #include "mechanics/groups/GroupEnum.h"
 
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 
 //! @brief returns the number of nodes
 //! @return number of nodes
@@ -81,12 +81,12 @@ int NuTo::Structure::ElementGetId(const ElementBase* rElement) const
 //! @brief returns a vector with the node ids of an element
 //! @param identifier
 //! @return vector with node ids
-NuTo::FullVector<int, Eigen::Dynamic> NuTo::Structure::ElementGetNodes(int rId)
+std::vector<int> NuTo::Structure::ElementGetNodes(int rId)
 {
     NuTo::ElementBase* elementPtr = ElementGetElementPtr(rId);
-    NuTo::FullVector<int, Eigen::Dynamic> nodeVector(elementPtr->GetNumNodes());
+    std::vector<int> nodeVector(elementPtr->GetNumNodes());
     for (int count = 0; count < elementPtr->GetNumNodes(); count++)
-        nodeVector(count) = this->NodeGetId(elementPtr->GetNode(count));
+        nodeVector[count] = this->NodeGetId(elementPtr->GetNode(count));
     return nodeVector;
 }
 
@@ -188,8 +188,8 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
     Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
     assert(elementGroup != 0);
 
-    NuTo::FullVector<int, Eigen::Dynamic> elementIndices = elementGroup->GetMemberIds();
-    int numElements = elementIndices.GetNumRows();
+    std::vector<int> elementIndices = elementGroup->GetMemberIds();
+    int numElements = elementIndices.size();
 
     // calculate and store the 'size' of each element
     // = volume in 3D
@@ -293,8 +293,8 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
     Group<ElementBase> *elementGroup = itGroup->second->AsGroupElement();
     assert(elementGroup != 0);
 
-    NuTo::FullVector<int, Eigen::Dynamic> elementIndices = elementGroup->GetMemberIds();
-    int numElements = elementIndices.GetNumRows();
+    std::vector<int> elementIndices = elementGroup->GetMemberIds();
+    int numElements = elementIndices.size();
 
 //    const InterpolationType* interpolationType = this->ElementGetElementPtr(elementIndices.at(0,0))->GetInterpolationType();
 
@@ -459,7 +459,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
                     nodeDofs.insert(dof);
             }
 
-            NuTo::FullVector<double, Eigen::Dynamic> nodeCoordinates(tmpNode.coords);
+            Eigen::VectorXd nodeCoordinates(tmpNode.coords);
 
             if (nodeDofs.find(Node::eDof::COORDINATES) != nodeDofs.end())
             {
@@ -717,14 +717,17 @@ void NuTo::Structure::ElementCreate(int rElementNumber,
 
 
 int NuTo::Structure::ElementsCreate(int rInterpolationTypeId, 
-                                    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic>& rNodeNumbers)
+                                    const Eigen::MatrixXi& rNodeNumbers)
 {
+    std::cout << rNodeNumbers << std::endl;
     std::vector<int> newElementIds;
     // go through the elements
-    for (int iNode = 0; iNode < rNodeNumbers.GetNumColumns(); ++iNode)
+    for (int iNode = 0; iNode < rNodeNumbers.cols(); ++iNode)
     {
-        auto column = rNodeNumbers.GetColumn(iNode);
+        std::cout << rNodeNumbers.col(iNode) << std::endl;
+        auto column = rNodeNumbers.col(iNode);
         std::vector<int> incidence(column.data(), column.data() + column.size());
+        for (int i : incidence) std::cout << i << std::endl;
         int newElementId = ElementCreate(rInterpolationTypeId, incidence);
         newElementIds.push_back(newElementId);
     }
@@ -1014,9 +1017,9 @@ std::pair<int,int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId,
     int groupElementsFibre = GroupCreate(NuTo::eGroupId::Elements);
 
     // loop over elements in element group
-    for (int i = 0; i < elementIds.size(); ++i)
+    for (int elementId : elementIds)
     {
-        auto nodeIds = ElementGetNodes(elementIds(i,0));
+        auto nodeIds = ElementGetNodes(elementId);
 
         assert( (nodeIds.size() == 2 or nodeIds.size() == 3) and "Only implemented for the 4 node and 6 node interface element");
 
@@ -1024,10 +1027,10 @@ std::pair<int,int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId,
         std::vector<int> nodeIdsMatrix(nodeIds.size());
 
         // loop over nodes of element
-        for (int k = 0; k < nodeIds.size(); ++k)
+        for (unsigned int k = 0; k < nodeIds.size(); ++k)
         {
-            FullVector<double, Eigen::Dynamic> nodeCoordinates;
-            NodeGetCoordinates(nodeIds(k,0), nodeCoordinates);
+            Eigen::VectorXd nodeCoordinates;
+            NodeGetCoordinates(nodeIds[k], nodeCoordinates);
 
             int groupNodes = GroupCreate(NuTo::eGroupId::Nodes);
             GroupAddNodeRadiusRange(groupNodes, nodeCoordinates, 0.0, 1e-6);
@@ -1037,13 +1040,13 @@ std::pair<int,int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId,
             {
                 assert(GroupGetNumMembers(groupNodes) == 2 and "This group should have exactly two members. Check what went wrong!");
                 auto groupNodeMemberIds = GroupGetMemberIds(groupNodes);
-                if (groupNodeMemberIds(0,0) == nodeIds(k,0))
+                if (groupNodeMemberIds[0] == nodeIds[k])
                 {
-                    nodeIdsFibre[k] = groupNodeMemberIds(1,0);
+                    nodeIdsFibre[k] = groupNodeMemberIds[1];
 
                 } else
                 {
-                    nodeIdsFibre[k] = groupNodeMemberIds(0,0);
+                    nodeIdsFibre[k] = groupNodeMemberIds[0];
                 }
             }
             else
@@ -1057,13 +1060,13 @@ std::pair<int,int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId,
 
             }
 
-            nodeIdsMatrix[k] = nodeIds(k,0);
+            nodeIdsMatrix[k] = nodeIds[k];
 
         }
 
         // create interface element
         std::vector<int> nodeIndicesInterface(2 * nodeIds.size());
-        for (int iIndex = 0; iIndex < nodeIds.size(); ++iIndex)
+        for (unsigned int iIndex = 0; iIndex < nodeIds.size(); ++iIndex)
         {
             nodeIndicesInterface[iIndex] = nodeIdsMatrix[iIndex];
             nodeIndicesInterface[nodeIndicesInterface.size() - iIndex - 1] = nodeIdsFibre[iIndex];
@@ -1077,17 +1080,12 @@ std::pair<int,int> NuTo::Structure::InterfaceElementsCreate(int rElementGroupId,
         GroupAddElement(groupElementsFibre, newElementFibre);
 
         // delete  old element
-        ElementDelete(elementIds(i,0));
+        ElementDelete(elementId);
 
     }
-
-
     return std::make_pair(groupElementsFibre, groupElementsInterface);
-
 }
 
-//! @brief Deletes a group of elements element
-//! @param rGroupNumber group number
 void NuTo::Structure::ElementGroupDelete(int rGroupNumber, bool deleteNodes)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());

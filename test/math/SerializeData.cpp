@@ -8,8 +8,6 @@
 
 #include "base/Timer.h"
 
-#include "math/FullVector.h"
-
 #include "base/serializeStream/SerializeStreamOut.h"
 #include "base/serializeStream/SerializeStreamIn.h"
 
@@ -92,12 +90,12 @@ BOOST_AUTO_TEST_CASE(SerializeEigen)
 BOOST_AUTO_TEST_CASE(SerializeNuTo)
 {
     {
-        NuTo::FullVector<double, Eigen::Dynamic> m = Eigen::VectorXd::Random(2);
+        Eigen::VectorXd m = Eigen::VectorXd::Random(2);
         BOOST_CHECK_CLOSE(m.norm(), WriteReadMatrix("NuToVectorDynamicText.dat", false, m).norm(), 1.e-10);
         BOOST_CHECK_CLOSE(m.norm(), WriteReadMatrix("NuToVectorDynamicBinary.dat", true, m).norm(), 1.e-10);
     }
     {
-        NuTo::FullMatrix<double, 2,2> m = Eigen::Matrix2d::Random();
+        Eigen::Matrix2d m = Eigen::Matrix2d::Random();
         BOOST_CHECK_CLOSE(m.norm(), WriteReadMatrix("NuToMatrixFixedText.dat", false, m).norm(), 1.e-10);
         BOOST_CHECK_CLOSE(m.norm(), WriteReadMatrix("NuToMatrixFixedBinary.dat", true, m).norm(), 1.e-10);
     }
@@ -127,7 +125,7 @@ class CompoundData : public CompoundDataBase
 public:
 
     Eigen::Vector3d mVector;
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> mMatrix;
+    Eigen::MatrixXd mMatrix;
 
     void SetRandom(int rRows, int rCols)
     {

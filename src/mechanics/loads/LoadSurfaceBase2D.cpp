@@ -1,6 +1,6 @@
 // $Id: LoadLoadSurfaceBase2D.cpp 178 2009-12-11 20:53:12Z eckardt4 $
 #include <set>
-#include "math/FullVector.h"
+
 #include "mechanics/groups/Group.h"
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
@@ -109,7 +109,7 @@ NuTo::LoadSurfaceBase2D::LoadSurfaceBase2D(int rLoadCase, StructureBase* rStruct
 //! @brief adds the load to global sub-vectors
 //! @param rActiveDofsLoadVector ... global load vector which correspond to the active dofs
 //! @param rDependentDofsLoadVector ... global load vector which correspond to the dependent dofs
-void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::FullVector<double, Eigen::Dynamic>& rActiveDofsLoadVector, NuTo::FullVector<double, Eigen::Dynamic>& rDependentDofsLoadVector) const
+void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, Eigen::VectorXd& rActiveDofsLoadVector, Eigen::VectorXd& rDependentDofsLoadVector) const
 {
     if (rLoadCase != mLoadCase)
         return;
@@ -177,8 +177,8 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
         Eigen::VectorXd nodeCoordinates = elementPtr->ExtractNodeValues(0, Node::eDof::COORDINATES);
 
         Eigen::Matrix<double, 1, 1> ipCoordsSurface;
-        Eigen::Matrix<double, 2, 1> ipCoordsNatural;
-        NuTo::FullVector<double, 2> ipCoordsGlobal;
+        Eigen::Vector2d ipCoordsNatural;
+        Eigen::Vector2d ipCoordsGlobal;
 
         Eigen::MatrixXd derivativeNaturalSurfaceCoordinates;
         Eigen::MatrixXd derivativeShapeFunctionsNatural;
@@ -228,7 +228,7 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             // dXdAlpha :  [2 x NumNodes*2] * [NumNodes*2 x 1] * [2 x 1] = [2 x 1]
             Eigen::Vector2d surfaceTangentVector = jacobianStd * derivativeNaturalSurfaceCoordinates;
             surfaceTangentVector.normalize();
-            NuTo::FullVector<double, 2> surfaceNormalVector;
+            Eigen::Vector2d surfaceNormalVector;
             surfaceNormalVector(0) = surfaceTangentVector(1, 0);
             surfaceNormalVector(1) = -surfaceTangentVector(0, 0);
 
@@ -240,7 +240,7 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
             double factor = thickness * (integrationType->GetIntegrationPointWeight(theIp)) * detJacobian;
 
             //calculate surface load
-            FullVector<double, 2> loadVector;
+            Eigen::Vector2d loadVector;
             CalculateSurfaceLoad(ipCoordsGlobal, surfaceNormalVector, loadVector);
             loadVector *= factor;
 
@@ -253,13 +253,13 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, NuTo::Ful
                 {
                     int theDof = node->GetDof(Node::eDof::DISPLACEMENTS, iDispDof);
                     double theLoad = shapeFunctions[iNode] * loadVector(iDispDof);
-                    if (theDof < rActiveDofsLoadVector.GetNumRows())
+                    if (theDof < rActiveDofsLoadVector.rows())
                     {
                         rActiveDofsLoadVector(theDof) += theLoad;
                     }
                     else
                     {
-                        rDependentDofsLoadVector(theDof - rActiveDofsLoadVector.GetNumRows()) += theLoad;
+                        rDependentDofsLoadVector(theDof - rActiveDofsLoadVector.rows()) += theLoad;
                     }
                 }
             }

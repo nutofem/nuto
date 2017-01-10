@@ -132,12 +132,12 @@ public:
     //! @brief ... gets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @return ... value of the requested variable
-    virtual NuTo::FullVector<double,Eigen::Dynamic> GetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier) const;
+    virtual Eigen::VectorXd GetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier) const;
 
     //! @brief ... sets a parameter of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested parameter
     //! @param rValue ... new value for requested variable
-    virtual void SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double,Eigen::Dynamic> rValue);
+    virtual void SetParameterFullVectorDouble(Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue);
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -261,7 +261,7 @@ protected:
     int mDamageLawType;
 
     //! @brief ... damage law parameters
-    FullVector<double, Eigen::Dynamic> mDamageLawParameters;
+    Eigen::VectorXd mDamageLawParameters;
 
     //! @brief ... check if density is non negative
     //! @param rRho ... Young's modulus
@@ -306,7 +306,7 @@ protected:
 
     //! @brief ... check damage law
     //! @param rDamageLaw ... damage law
-    void CheckDamageLaw(const NuTo::FullVector<double, Eigen::Dynamic>& rDamageLaw) const;
+    void CheckDamageLaw(const Eigen::VectorXd& rDamageLaw) const;
 
 private:
 #define Plus(rVP) ((rVP >= 0.)?rVP:0.)				// define McCauley brackets
@@ -315,15 +315,15 @@ private:
 //#define mTOLF 1.0e-12								// define tolerance for Newton
 
     //! @brief ... calculates the residual vector of an incremental formulation
-    NuTo::FullVector<double,Eigen::Dynamic> Residual(
-    		const NuTo::FullVector<double,Eigen::Dynamic> &rParameter,
-    		NuTo::FullVector<double,Eigen::Dynamic> rUnknown) const
+    Eigen::VectorXd Residual(
+    		const Eigen::VectorXd &rParameter,
+    		Eigen::VectorXd rUnknown) const
 		{
     		if (rParameter.size()!=4) {
     			throw MechanicsException("[NuTo::GradientDamageEngineeringStressFatigue::Residual] the parameter vector expects 4 components.");
     		}
 
-			NuTo::FullVector<double,Eigen::Dynamic> residual(rUnknown.GetNumRows());
+			Eigen::VectorXd residual(rUnknown.rows());
 
 			double rPrevOmega, rPrevKappa, rPrevNonlocalEqStrain, rNonlocalEqStrain;
 			double rDeltaOmega, rDeltaKappa;
@@ -352,14 +352,14 @@ private:
 		}
 
     //! @brief ... calculates the analytical matrix:= derivative of the Residual by nonlocal eq strain
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualDEpsNonlocalAn(
-    		const NuTo::FullVector<double,Eigen::Dynamic> &rParameter,
-    		NuTo::FullVector<double,Eigen::Dynamic> rUnknown) const
+    Eigen::MatrixXd DResidualDEpsNonlocalAn(
+    		const Eigen::VectorXd &rParameter,
+    		Eigen::VectorXd rUnknown) const
 		{
 			if (rParameter.size()!=4) {
 				throw MechanicsException("[NuTo::GradientDamageEngineeringStressFatigue::DResidualDEpsNonlocalAn] the parameter vector expects 4 components.");
 			}
-			NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(rUnknown.GetNumRows(),1);
+			Eigen::MatrixXd deriv(rUnknown.rows(),1);
 
 			double rPrevKappa, rPrevNonlocalEqStrain, rNonlocalEqStrain;
 			double rDeltaKappa;
@@ -385,15 +385,15 @@ private:
 		}
 
     //! @brief ... calculates the analytical Jacobi matrix:= derivative of the Residual
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> DResidualAn(
-    		const NuTo::FullVector<double,Eigen::Dynamic> &rParameter,
-    		NuTo::FullVector<double,Eigen::Dynamic> rUnknown) const
+    Eigen::MatrixXd DResidualAn(
+    		const Eigen::VectorXd &rParameter,
+    		Eigen::VectorXd rUnknown) const
 		{
 			if (rParameter.size()!=4) {
 				throw MechanicsException("[NuTo::GradientDamageEngineeringStressFatigue::DResidualAn] the parameter vector expects 4 components.");
 			}
 
-    		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(rUnknown.GetNumRows(),rUnknown.GetNumRows());
+    		Eigen::MatrixXd deriv(rUnknown.rows(),rUnknown.rows());
 
 			double rPrevKappa, rPrevNonlocalEqStrain, rNonlocalEqStrain;
 			double rDeltaKappa;

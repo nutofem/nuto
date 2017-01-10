@@ -1,7 +1,6 @@
 // $Id $
 #pragma once
 
-#include "math/FullMatrix_Def.h"
 
 #include "mechanics/elements/ElementOutputBase.h"
 
@@ -31,13 +30,13 @@ public:
     	return new ElementOutputFullMatrixInt(*this);
     }
 
-    FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic>& GetFullMatrixInt()override
+    Eigen::MatrixXi& GetFullMatrixInt()override
 	{
         return mMatrix;
 	}
 
 private:
-    FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> mMatrix;
+    Eigen::MatrixXi mMatrix;
 };
 }
 #ifdef ENABLE_SERIALIZATION

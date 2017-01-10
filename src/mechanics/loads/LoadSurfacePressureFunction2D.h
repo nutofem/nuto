@@ -11,7 +11,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-#include "mechanics/MechanicsException.h"
 #include "mechanics/loads/LoadSurfaceBase2D.h"
 
 namespace NuTo
@@ -33,15 +32,15 @@ public:
                                   StructureBase* rStructure,
                                   int rElementGroupId,
                                   int rNodeGroupId,
-                                  const std::function<NuTo::FullVector<double,2>(NuTo::FullVector<double,2>)> &rLoadFunction);
+                                  const std::function<Eigen::Vector2d(Eigen::Vector2d)>& rLoadFunction);
 
     //! @brief calculates the surface load as a function of the coordinates
     //! @param rCoordinates ... global coordinates
     //! @param rNormal ... normal to the surface (pointing outwards)
     //! @param rLoadVector ... load vector
-    void CalculateSurfaceLoad(NuTo::FullVector<double,2>& rCoordinates,
-                              NuTo::FullVector<double,2>& rNormal,
-                              NuTo::FullVector<double,2>& rLoadVector) const;
+    void CalculateSurfaceLoad(Eigen::Vector2d& rCoordinates,
+                              Eigen::Vector2d& rNormal,
+                              Eigen::Vector2d& rLoadVector) const;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -65,7 +64,7 @@ public:
 #endif // ENABLE_SERIALIZATION
 
 protected:
-    std::function<NuTo::FullVector<double,2>(NuTo::FullVector<double,2>)> mLoadFunction;
+    std::function<Eigen::Vector2d(Eigen::Vector2d)> mLoadFunction;
 
 private:
     //! @brief just for serialization

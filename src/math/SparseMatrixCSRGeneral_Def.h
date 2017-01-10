@@ -7,8 +7,6 @@
 
 namespace NuTo
 {
-template <class T, int rows, int cols> class FullMatrix;
-template <class T, int rows> class FullVector;
 template <class T> class SparseMatrixCSRVector2General;
 
 //! @author Stefan Eckardt, ISM
@@ -32,7 +30,7 @@ public:
     //! @param rFullMatrix ... input matrix (full storage)
     //! @param rAbsoluteTolerance ... absolute tolerance
     //! @param rRelative tolerance ... relative tolerance (tolerance = rAbsoluteTolerance + rRelativeTolerance * max(abs(rMatrixEntry))
-    SparseMatrixCSRGeneral(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance = 0, double rRelativeTolerance = 1e-14);
+    SparseMatrixCSRGeneral(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rFullMatrix, double rAbsoluteTolerance = 0, double rRelativeTolerance = 1e-14);
 
     //! @brief ... create sparse matrix from full matrix (considers only matrix entries which absolute value exceeds a predefined tolerance)
     //! @param rFullMatrix ... input matrix (full storage)
@@ -70,13 +68,9 @@ public:
     //! @brief ... print info about the object
     void Info() const override;
 
-    //! @brief ... import matrix from slang object stored in  a text file
-    //! @param rFileName ... file name
-    void ImportFromSLangText(const char* rFileName) override;
-
-    //! @brief ... write nonzero matrix entries into another
-    //! @param rMatrix ... the matrix
-    void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const override;
+    //! @brief ... write nonzero matrix entries into a matrix
+    //! @return ... the matrix
+    virtual Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> ConvertToFullMatrix() const override;
 
     //! @brief ... add two matrices
     //! @param rOther ... general sparse matrix stored in the CSR format
@@ -112,11 +106,9 @@ public:
     //! @brief ... multiply sparse matrix with a full matrix
     //! @param rFullMatrix ... full matrix which is multiplied with the sparse matrix
     //! @return ... full matrix
-    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const override;
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &rMatrix) const override;
 
-    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> TransMult(const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const;
-
-    NuTo::FullVector<T, Eigen::Dynamic> TransMult(const NuTo::FullVector<T, Eigen::Dynamic>& rVector) const;
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> TransMult(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const;
 
     //! @brief ... calculate the transpose of the matrix (transpose row and columns)
     //! @return ... transpose of this matrix (sparse csr storage)
@@ -136,7 +128,7 @@ public:
     //! @param rMappingNewToInitialOrdering ... mapping from new ordering to initial ordering (output object)
     //! @param rMappingInitialToNewOrdering ... mapping from initial ordering to new ordering (output object)
     //! @param rRelativeTolerance ... relative tolerance for zero matrix entries
-    void Gauss(NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance = 1e-14);
+    void Gauss(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rRhs, std::vector<int>& rMappingNewToInitialOrdering, std::vector<int>& rMappingInitialToNewOrdering, double rRelativeTolerance = 1e-14);
 
     //! @brief ... perform Gauss algorithm (matrix and right hand side are reordered and modified)
     //! @param rRhs ... right-hand side matrix (input and output object, kind of multiple rhs)
@@ -149,7 +141,7 @@ public:
     //! @param rStart ... starting vector for the iteration should be ||rStart|| = 1
     //! @param tol ... relative error for the iteration
     //! @return the maximum eigenvalue, rStart will become the eigenvector to the maximum eigenvalue
-    void GetMaximumEigenvalueAndEigenvector(NuTo::FullVector<T, Eigen::Dynamic> &rStart, T &maximumEigenvalue, double tol=1.e-6);
+    void GetMaximumEigenvalueAndEigenvector(Eigen::Matrix<T, Eigen::Dynamic, 1> &rStart, T &maximumEigenvalue, double tol=1.e-6);
 
     //! @brief ... reorder columns of the matrix
     //! @param rMappingInitialToNewOrdering ... mapping fron initial to new ordering

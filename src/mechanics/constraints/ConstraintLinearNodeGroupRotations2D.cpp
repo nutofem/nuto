@@ -1,5 +1,3 @@
-// $Id: ConstraintLinearNodeGroupRotations2D.cpp 530 2011-04-22 16:50:18Z unger3 $
-
 #include <iostream>
 
 #include "mechanics/MechanicsException.h"
@@ -7,7 +5,6 @@
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/groups/Group.h"
 #include "mechanics/constraints/ConstraintLinearNodeGroupRotations2D.h"
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 
 //! @brief constructor
@@ -52,7 +49,7 @@ void NuTo::ConstraintLinearNodeGroupRotations2D::AddToConstraintMatrix(int& curC
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void NuTo::ConstraintLinearNodeGroupRotations2D::GetRHS(int& curConstraintEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const
+void NuTo::ConstraintLinearNodeGroupRotations2D::GetRHS(int& curConstraintEquation,Eigen::VectorXd& rRHS)const
 {
     for (Group<NodeBase>::const_iterator itNode=mGroup->begin(); itNode!=mGroup->end(); itNode++)
     {

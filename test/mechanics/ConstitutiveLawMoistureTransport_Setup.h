@@ -1,7 +1,6 @@
 #pragma once
 
 #include "mechanics/sections/SectionEnum.h"
-#include "math/FullVector.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/elements/IpDataEnum.h"
@@ -95,8 +94,8 @@ struct MoistureTransportControl
     bool            SorptionHistoryDesorption               =   true;
     double          GradientCorrectionDesorptionAdsorpion   =   0.26;
     double          GradientCorrectionAdsorpionDesorption   =   0.56;
-    NuTo::FullVector<double,4> AdsorptionCoeffs             = Eigen::MatrixXd::Constant(4, 1, 0.0);
-    NuTo::FullVector<double,4> DesorptionCoeffs             = Eigen::MatrixXd::Constant(4, 1, 0.0);
+    Eigen::Vector4d AdsorptionCoeffs                        =   Eigen::Vector4d::Zero();
+    Eigen::Vector4d DesorptionCoeffs                        =   Eigen::Vector4d::Zero();
 
     int             ConstitutiveLawID                       = 0;
     NuTo::Structure&    mS;
@@ -236,13 +235,13 @@ void SetupConstrainedNodeBoundaryElements(NuTo::Structure& rS,
     int controlNodeConstraint = rS.ConstraintLinearSetRelativeHumidityNode(controlNodePtr,1.0);
 
     // Set Integration type - default not sufficient
-    NuTo::FullVector<int,Eigen::Dynamic> boundaryElementIDs;
+    std::vector<int> boundaryElementIDs;
     rS.ElementGroupGetMembers(groupBoundaryElements, boundaryElementIDs);
 
 
-    for(unsigned int i=0; i<boundaryElementIDs.rows();++i)
+    for(int elementId : boundaryElementIDs)
     {
-        NuTo::ElementBase* elementPtr =  rS.ElementGetElementPtr(boundaryElementIDs[i]);
+        NuTo::ElementBase* elementPtr =  rS.ElementGetElementPtr(elementId);
         switch(TDim)
         {
         case 1:

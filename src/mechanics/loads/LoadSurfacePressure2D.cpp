@@ -1,5 +1,5 @@
 // $Id: LoadLoadSurfaceBase3D.cpp 178 2009-12-11 20:53:12Z eckardt4 $
-#include "math/FullMatrix.h"
+
 #include "mechanics/loads/LoadSurfacePressure2D.h"
 
 
@@ -15,11 +15,11 @@ NuTo::LoadSurfacePressure2D::LoadSurfacePressure2D(int rLoadCase, StructureBase*
 //! @param rCoordinates ... global coordinates
 //! @param rNormal ... normal to the surface (pointing outwards)
 //! @param rLoadVector ... load vector
-void NuTo::LoadSurfacePressure2D::CalculateSurfaceLoad(NuTo::FullVector<double,2>& rCoordinates,
-                                                       NuTo::FullVector<double,2>& rNormal,
-                                                       NuTo::FullVector<double,2>& rLoadVector)const
+void NuTo::LoadSurfacePressure2D::CalculateSurfaceLoad(Eigen::Vector2d& rCoordinates,
+													   Eigen::Vector2d& rNormal,
+													   Eigen::Vector2d& rLoadVector)const
 {
-	assert(std::abs(rNormal.Norm()-1.)<1e-5);
+	assert(std::abs(rNormal.norm()-1.)<1e-5);
 	rLoadVector = rNormal*(-mPressure);
 }
 

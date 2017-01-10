@@ -6,7 +6,7 @@
 #include "mechanics/nodes/NodeBase.h"
 
 #include "mechanics/MechanicsException.h"
-#include "math/FullMatrix.h"
+
 
 
 #include "math/SparseMatrixCSR.h"

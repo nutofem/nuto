@@ -5,19 +5,19 @@
  *      Author: ttitsche
  */
 
-#include "math/FullMatrix.h"
 #include "geometryConcrete/collision/collidables/CollidableParticleBase.h"
+#include "base/Exception.h"
 
 NuTo::CollidableParticleBase::CollidableParticleBase(
-		FullVector<double, Eigen::Dynamic> rPosition,
-		FullVector<double, Eigen::Dynamic> rVelocity,
+		Eigen::VectorXd rPosition,
+		Eigen::VectorXd rVelocity,
 		const int rIndex)
 		: CollidableBase(rIndex), mPosition(rPosition), mVelocity(rVelocity)
 {
 
-	if (mPosition.GetNumRows() != 3)
-		throw NuTo::Exception("[NuTo::CollidableParticleBase::CollidableParticleBase] position vector must have exactly 3 rows");
+	if (mPosition.rows() != 3)
+		throw NuTo::Exception(__PRETTY_FUNCTION__, "position vector must have exactly 3 rows");
 
-	if (mVelocity.GetNumRows() != 3)
-		throw NuTo::Exception("[NuTo::CollidableParticleBase::CollidableParticleBase] velocity vector must have exactly 3 rows");
+	if (mVelocity.rows() != 3)
+		throw NuTo::Exception(__PRETTY_FUNCTION__, "velocity vector must have exactly 3 rows");
 }

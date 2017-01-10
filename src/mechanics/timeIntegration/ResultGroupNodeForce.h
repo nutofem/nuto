@@ -12,9 +12,6 @@
 namespace NuTo
 {
 
-template <class T, int rows, int cols> class  FullMatrix;
-template <class T, int rows> class  FullVector;
-
 //! @author Jörg F. Unger, ISM
 //! @date October 2009
 //! @brief ... standard abstract class for all results
@@ -33,9 +30,9 @@ public:
     NuTo::eTimeIntegrationResultType GetResultType()const;
 
     void CalculateValues(const StructureBase& rStructure,
-    		const FullVector<double,Eigen::Dynamic>& rResidual_j,
-    		const FullVector<double,Eigen::Dynamic>& rResidual_k,
-    		FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rResult)const;
+    		const Eigen::VectorXd& rResidual_j,
+    		const Eigen::VectorXd& rResidual_k,
+    		Eigen::MatrixXd& rResult)const;
 
     std::string GetTypeId() const
     {

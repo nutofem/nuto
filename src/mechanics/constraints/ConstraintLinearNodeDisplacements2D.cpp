@@ -6,13 +6,12 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "mechanics/constraints/ConstraintLinearNodeDisplacements2D.h"
-#include "math/FullMatrix.h"
 #include "math/SparseMatrixCSRGeneral.h"
 
-NuTo::ConstraintLinearNodeDisplacements2D::ConstraintLinearNodeDisplacements2D(const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue) :
+NuTo::ConstraintLinearNodeDisplacements2D::ConstraintLinearNodeDisplacements2D(const NodeBase* rNode, const Eigen::VectorXd& rDirection, double rValue) :
         ConstraintNode(rNode), ConstraintLinear()
 {
-    if (rDirection.GetNumColumns()!=1 || rDirection.GetNumRows()!=2)
+    if (rDirection.rows() != 2)
         throw MechanicsException("[NuTo::ConstraintLinearNodeDisplacements2D::ConstraintLinearNodeDisplacements2D] Dimension of the direction matrix must be equal to the dimension of the structure.");
 
     memcpy(mDirection,rDirection.data(),2*sizeof(double));
@@ -62,7 +61,7 @@ void NuTo::ConstraintLinearNodeDisplacements2D::AddToConstraintMatrix(int& curCo
 // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
 //! @param curConstraintEquation (is incremented during the function call)
 //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-void NuTo::ConstraintLinearNodeDisplacements2D::GetRHS(int& curConstraintEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const
+void NuTo::ConstraintLinearNodeDisplacements2D::GetRHS(int& curConstraintEquation,Eigen::VectorXd& rRHS)const
 {
     if (mNode->GetNum(Node::eDof::DISPLACEMENTS)!=2)
         throw MechanicsException("[NuTo::ConstraintLinearNodeDisplacements2D::ConstraintBase] Node does not have displacements or has more than one displacement component.");

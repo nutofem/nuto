@@ -1,7 +1,6 @@
 #include <limits>       // std::numeric_limits
 #include "math/EigenSolverArpack.h"
 #include "math/EigenSolverArpackEnum.h"
-#include "math/FullMatrix.h"
 #include "math/SparseDirectSolverMUMPS.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRGeneral.h"
@@ -25,8 +24,8 @@ NuTo::EigenSolverArpack::EigenSolverArpack() : NuToObject()
 void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
 		const NuTo::SparseMatrix<double>* rM,
 		int rNumEigenValues,
-		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEigenValues,
-		NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rEigenVectors)
+        Eigen::MatrixXd& rEigenValues,
+        Eigen::MatrixXd& rEigenVectors)
 {
 #ifdef HAVE_ARPACK
     NuTo::Timer(__FUNCTION__, GetShowTime());
@@ -137,7 +136,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
 
     bool solverRequired(false);
     std::unique_ptr<NuTo::SparseMatrixCSR<double>> solveMatrix = nullptr;
-    FullVector<double, Eigen::Dynamic> solution;
+    Eigen::VectorXd solution;
 
     SparseDirectSolverMUMPS solver;
     solver.SetShowTime(GetShowTime());
@@ -174,7 +173,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
 		    	throw MathException(__PRETTY_FUNCTION__, "matrix type not implemented.");
 			};
 			//add diagonal shift
-			for (int count=0; count<solveMatrix->GetNumRows(); count++)
+            for (int count=0; count<solveMatrix->GetNumRows(); count++)
 			{
 				solveMatrix->AddValue(count,count,-mSigmaR);
 			}
@@ -368,7 +367,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
 		    	throw MathException(__PRETTY_FUNCTION__, "matrix type not implemented.");
 			};
 			//add diagonal shift
-			for (int count=0; count<solveMatrix->GetNumRows(); count++)
+            for (int count=0; count<solveMatrix->GetNumRows(); count++)
 			{
 				solveMatrix->AddValue(count,count,-mSigmaR);
 			}
@@ -644,8 +643,8 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
 
 std::pair<double, Eigen::VectorXd> NuTo::EigenSolverArpack::GetLargest(const SparseMatrix<double>& rM)
 {
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenValues;
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenVectors;
+    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenValues;
+    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenVectors;
 
     if (rM.IsSymmetric())
     {
@@ -663,8 +662,8 @@ std::pair<double, Eigen::VectorXd> NuTo::EigenSolverArpack::GetLargest(const Spa
 
 std::pair<double, Eigen::VectorXd> NuTo::EigenSolverArpack::GetSmallest(const SparseMatrix<double>& rM)
 {
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenValues;
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenVectors;
+    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenValues;
+    Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenVectors;
 
     if (rM.IsSymmetric())
     {

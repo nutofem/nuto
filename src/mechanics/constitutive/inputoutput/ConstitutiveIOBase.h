@@ -8,7 +8,7 @@
 
 #include "mechanics/MechanicsException.h"
 #include <memory>
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 
 namespace NuTo
 {

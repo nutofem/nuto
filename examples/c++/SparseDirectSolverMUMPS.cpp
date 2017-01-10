@@ -1,8 +1,6 @@
 #include <iostream>
 
 #include "math/MathException.h"
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
 #include "math/SparseMatrixCSRSymmetric.h"
 #include "math/SparseMatrixCSRGeneral.h"
 #include "math/SparseDirectSolverMUMPS.h"
@@ -25,8 +23,7 @@ int main()
         std::cout << "symmetric matrix, sparse CSR storage" << std::endl;
         A_sy.Info();
         std::cout << std::endl << "symmetric matrix, full storage" << std::endl;
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> A_sy_full(A_sy);
-        A_sy_full.Info(12,3);
+        std::cout << A_sy.ConvertToFullMatrix() << std::endl;
 
         // nonsymmetric coefficient matrix
         NuTo::SparseMatrixCSRGeneral<double> A_nosy(5,5,13);
@@ -48,18 +45,16 @@ int main()
         std::cout << std::endl << "nonsymmetric matrix, sparse CSR storage" << std::endl;
         A_nosy.Info();
         std::cout << std::endl << "nonsymmetric matrix, full storage" << std::endl;
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> A_nosy_full(A_nosy);
-        A_nosy_full.Info(12,3);
+        std::cout << A_nosy.ConvertToFullMatrix() << std::endl;
 
         // create right hand side vector
-        NuTo::FullVector<double,Eigen::Dynamic> rhs(5);
-        rhs.SetValue(0,1);
-        rhs.SetValue(1,2);
-        rhs.SetValue(2,3);
-        rhs.SetValue(3,4);
-        rhs.SetValue(4,5);
-        std::cout << std::endl << "right hand side vector" << std::endl;
-        rhs.Info(12,3);
+        Eigen::VectorXd rhs(5);
+        rhs[0] = 1;
+        rhs[1] = 2;
+        rhs[2] = 3;
+        rhs[3] = 4;
+        rhs[4] = 5;
+        std::cout << std::endl << "right hand side vector \n" << rhs << std::endl;
 
         // create solver
         NuTo::SparseDirectSolverMUMPS mumps;
@@ -67,28 +62,27 @@ int main()
 
         // solve symmetric problem
         std::cout << std::endl << "solving the symmetric problem" << std::endl;
-        NuTo::FullVector<double,Eigen::Dynamic> sol_sy(5);
+        Eigen::VectorXd sol_sy(5);
         mumps.Solve(A_sy,rhs,sol_sy);
-        std::cout << std::endl << "solution of the symmetric problem" << std::endl;
-        sol_sy.Info(12,3);
+        std::cout << std::endl << "solution of the symmetric problem \n" << sol_sy << std::endl;
 
         // solve nonsymmetric problem
         std::cout << std::endl << "solving the nonsymmetric problem" << std::endl;
-        NuTo::FullVector<double,Eigen::Dynamic> sol_nosy(5);
+        Eigen::VectorXd sol_nosy(5);
         mumps.Solve(A_nosy,rhs,sol_nosy);
-        std::cout << std::endl << "solution of the nonsymmetric problem" << std::endl;
-        sol_nosy.Info(12,3);
+        std::cout << std::endl << "solution of the nonsymmetric problem \n" << sol_nosy << std::endl;
 
         // solve for Schur complement
         std::cout << std::endl << "solving the Schur complement of A with respect to indices 0 and 4" << std::endl;
-        NuTo::FullMatrix<int,Eigen::Dynamic,Eigen::Dynamic> schur_Indices(2,1);
+        Eigen::Matrix<int,Eigen::Dynamic,Eigen::Dynamic> schur_Indices(2,1);
         //attention - zero based indexing for the indices
         schur_Indices(0,0) = 0;
         schur_Indices(1,0) = 4;
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> schur_complement(2,2);
+        Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> schur_complement(2,2);
         mumps.SchurComplement(A_nosy,schur_Indices,schur_complement);
-        schur_complement.Info(12,3); //correct solution is [0.6 3 ]
-                                     //                    [0   16]
+        std::cout << schur_complement << std::endl;
+        //correct solution is [0.6 3 ]
+        //                    [0   16]
 
     }
     catch (NuTo::MathException& e)

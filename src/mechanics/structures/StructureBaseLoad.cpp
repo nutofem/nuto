@@ -18,7 +18,7 @@
 #include "mechanics/loads/LoadSurfacePressure3D.h"
 
 // adds a force for a node
-int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, int rNodeIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, int rNodeIdent, const Eigen::MatrixXd& rDirection, double rValue)
 {
     // find node
     NodeBase* nodePtr;
@@ -39,7 +39,7 @@ int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, int rNodeIdent, cons
     return this->LoadCreateNodeForce(rLoadCase,nodePtr,rDirection, rValue);
 }
 
-int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, const NodeBase* rNode, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, const NodeBase* rNode, const Eigen::MatrixXd& rDirection, double rValue)
 {
     if (rLoadCase>=mNumLoadCases)
     	throw MechanicsException("[NuTo::StructureBase::LoadCreateNodeForce] Load case number larger than total number of load cases. Use myStructure.SetNumLoadCases(num) to set the maximum number");
@@ -74,7 +74,7 @@ int NuTo::StructureBase::LoadCreateNodeForce(int rLoadCase, const NodeBase* rNod
 }
 
 int NuTo::StructureBase::LoadCreateNodeHeatFlux(int rLoadCase, int rNodeIdent,
-        const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+        const Eigen::MatrixXd& rDirection, double rValue)
 {
     // find node
     NodeBase* nodePtr;
@@ -96,7 +96,7 @@ int NuTo::StructureBase::LoadCreateNodeHeatFlux(int rLoadCase, int rNodeIdent,
 }
 
 int NuTo::StructureBase::LoadCreateNodeHeatFlux(int rLoadCase, const NodeBase* rNode,
-        const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+        const Eigen::MatrixXd& rDirection, double rValue)
 {
     if (rLoadCase>=mNumLoadCases)
         throw MechanicsException(__PRETTY_FUNCTION__, "Load case number larger than total number of load cases. Use myStructure.SetNumLoadCases(num) to set the maximum number");
@@ -133,7 +133,7 @@ int NuTo::StructureBase::LoadCreateNodeHeatFlux(int rLoadCase, const NodeBase* r
 }
 
 // adds a force for a node group
-int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent, const Eigen::MatrixXd& rDirection, double rValue)
 {
     // find group in map
     boost::ptr_map<int,GroupBase>::iterator itGroup = this->mGroupMap.find(rGroupIdent);
@@ -152,7 +152,7 @@ int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, int rGroupIdent
     return this->LoadCreateNodeGroupForce(rLoadCase, nodeGroup,rDirection, rValue);
 }
 
-int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, const Group<NodeBase>* rNodeGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue)
+int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, const Group<NodeBase>* rNodeGroup, const Eigen::MatrixXd& rDirection, double rValue)
 {
     if (rLoadCase>=mNumLoadCases)
     	throw MechanicsException("[NuTo::StructureBase::LoadCreateNodeGroupForce] Load case number larger than total number of load cases. Use myStructure.SetNumLoadCases(num) to set the maximum number");
@@ -187,7 +187,7 @@ int NuTo::StructureBase::LoadCreateNodeGroupForce(int rLoadCase, const Group<Nod
     return id;
 }
 
-int NuTo::StructureBase::LoadSurfaceConstDirectionCreate3D(int rLoadCase, int rElementGroupId, int rNodeGroupId, const NuTo::FullVector<double,Eigen::Dynamic>& rLoadVector)
+int NuTo::StructureBase::LoadSurfaceConstDirectionCreate3D(int rLoadCase, int rElementGroupId, int rNodeGroupId, const Eigen::VectorXd& rLoadVector)
 {
     //find unused integer id
     int id(0);
@@ -207,7 +207,7 @@ int NuTo::StructureBase::LoadSurfaceConstDirectionCreate3D(int rLoadCase, int rE
     return id;
 }
 
-int NuTo::StructureBase::LoadSurfaceConstDirectionCreate2D(int rLoadCase, int rElementGroupId, int rNodeGroupId, const NuTo::FullVector<double,Eigen::Dynamic>& rLoadVector)
+int NuTo::StructureBase::LoadSurfaceConstDirectionCreate2D(int rLoadCase, int rElementGroupId, int rNodeGroupId, const Eigen::VectorXd& rLoadVector)
 {
     if (rLoadCase>=mNumLoadCases)
     	throw MechanicsException("[NuTo::StructureBase::LoadSurfaceConstDirectionCreate2D] Load case number larger than total number of load cases. Use myStructure.SetNumLoadCases(num) to set the maximum number");
@@ -276,7 +276,7 @@ int NuTo::StructureBase::LoadSurfacePressureCreate2D(int rLoadCase, int rElement
 int NuTo::StructureBase::LoadSurfacePressureFunctionCreate2D(int rLoadCase,
                                                              int rElementGroupId,
                                                              int rNodeGroupId,
-                                                             const std::function<NuTo::FullVector<double,2>(NuTo::FullVector<double,2>)> &rLoadFunction)
+                                                             const std::function<Eigen::Vector2d(Eigen::Vector2d)> &rLoadFunction)
 {
     if (rLoadCase>=mNumLoadCases)
         throw MechanicsException("[NuTo::StructureBase::LoadSurfacePressureFunctionCreate2D] Load case number larger than total number of load cases. Use myStructure.SetNumLoadCases(num) to set the maximum number");

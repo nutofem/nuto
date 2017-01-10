@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "math/FullVector_Def.h"
+#include <eigen3/Eigen/Core>
 
 namespace NuTo
 {
@@ -28,7 +28,7 @@ public:
 	//! @param rBoundingBox ... bounding box of the specimen
 	//! @param rTypeOfSpecimen ... element of enum Specimen::Type
 	Specimen(
-			NuTo::FullMatrix<double,Eigen::Dynamic, Eigen::Dynamic> rBoundingBox,
+			Eigen::MatrixXd rBoundingBox,
             const eSpecimenType rTypeOfSpecimen);
 
 	//! @brief ... copy constructor
@@ -37,10 +37,10 @@ public:
 	const bool IsBox() const;
 
 	//! @brief ... getter for mBoundingBox
-	const NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& GetBoundingBox() const;
+	const Eigen::MatrixXd& GetBoundingBox() const;
 
 	//! @brief ... getter for mLength
-	const NuTo::FullVector<double, Eigen::Dynamic>& GetLength() const;
+	const Eigen::VectorXd& GetLength() const;
 
 	//! @brief ... getter for specific element mLength[rIndex]
 	const double GetLength(const int rIndex) const;
@@ -52,8 +52,8 @@ public:
 	const double GetVolume() const;
 
 private:
-	NuTo::FullMatrix<double,Eigen::Dynamic, Eigen::Dynamic> mBoundingBox;
-	NuTo::FullVector<double,Eigen::Dynamic> mLength;
+	Eigen::MatrixXd mBoundingBox;
+	Eigen::VectorXd mLength;
 	const eSpecimenType mTypeOfSpecimen;
 
 	//! @brief ... calculates the length of the bounding box

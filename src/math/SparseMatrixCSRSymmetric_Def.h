@@ -51,13 +51,9 @@ public:
     //! @brief ... print info about the object
     void Info() const override;
 
-    //! @brief ... import matrix from slang object stored in  a text file
-    //! @param rFileName ... file name
-    void ImportFromSLangText(const char* rFileName) override;
-
     //! @brief ... write nonzero matrix entries into a matrix
-    //! @param rFullMatrix ... the full matrix
-    void WriteEntriesToMatrix(NuTo::Matrix<T>& rMatrix) const override;
+    //! @return ... the matrix
+    virtual Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> ConvertToFullMatrix() const override;
 
     //! @brief ... adds \f$(\boldsymbol{A}^T\,\boldsymbol{B}\,\boldsymbol{A})\f$ to the matrix
     //! @param rMatrixA ... matrix A (general sparse matrix in csr storage)
@@ -72,7 +68,7 @@ public:
     //! @brief ... multiply sparse matrix with full matrix
     //! @param rMatrix ... full matrix
     //! @return ... result matrix (full storage)
-    NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const NuTo::FullMatrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const override;
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> operator* (const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& rMatrix) const override;
     
     //! @brief ... multiplies the matrix with an scalar value
     //! @param rOther ... scalar value

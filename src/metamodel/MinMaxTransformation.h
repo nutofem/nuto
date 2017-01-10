@@ -1,11 +1,3 @@
-// $Id$
-
-/*******************************************************************************
-Bauhaus-Universit�t Weimar
-Author: Joerg F. Unger,  Septermber 2009
-*******************************************************************************/
-
-
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -13,7 +5,6 @@ Author: Joerg F. Unger,  Septermber 2009
 #include <boost/serialization/export.hpp>
 #endif  // ENABLE_SERIALIZATION
 
-// parent
 #include "metamodel/Transformation.h"
 
 namespace NuTo
@@ -53,15 +44,15 @@ public:
 
     //! @brief build the transformation using the given Points
     //! @param rCoordinates ... input point coordinates
-    virtual void Build(const FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates);
+    virtual void Build(const Eigen::MatrixXd& rCoordinates);
 
     //! @brief transform the given points in forward direction x = f(x) 
     //! @brief rCoordinates ... input point coordinates
-    virtual void TransformForward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const;
+    virtual void TransformForward(Eigen::MatrixXd& rCoordinates)const;
 
     //! @brief transform the given points in backward direction x = f^(-1)(x)
     //! @brief rCoordinates ... input point coordinates
-    virtual void TransformBackward(FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic>& rCoordinates)const;
+    virtual void TransformBackward(Eigen::MatrixXd& rCoordinates)const;
 
 protected:
     int  mCoordinate;     //!< coordinate within the point coordinates (0<=entry<dim

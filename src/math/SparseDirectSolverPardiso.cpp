@@ -5,8 +5,6 @@
 #include <omp.h>
 
 #include "math/MathException.h"
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
 #include "math/SparseMatrixCSR.h"
 #include "math/SparseDirectSolver.h"
 

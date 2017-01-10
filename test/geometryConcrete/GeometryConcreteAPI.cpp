@@ -6,7 +6,7 @@
  */
 #include "geometryConcrete/GeometryConcrete.h"
 #include <boost/filesystem.hpp>
-#include "math/FullMatrix.h"
+#include <iostream>
 
 
 void MaxDistanceMesh2D(std::string rGmshFile, double rLX, double rLY)
@@ -40,8 +40,8 @@ void MaxVolumeFraction3D(std::string rGmshFile, double rLX, double rLY, double r
 
     geometry.MaximizeParticleVolumeFraction(0.05);
 
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> particles = geometry.GetParticles(false);
-    std::cout << "Created " << particles.GetNumRows() << " particles. " << std::endl;
+    Eigen::MatrixXd particles = geometry.GetParticles(false);
+    std::cout << "Created " << particles.rows() << " particles. " << std::endl;
 
     geometry.ExportGmshGeo3D(rGmshFile, 0.75);
 }

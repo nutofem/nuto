@@ -31,7 +31,7 @@ public:
     //! @param rDirection ... direction of the applied constraint
     //! @param rValue ... direction of the applied constraint
     ConstraintLinearDisplacementsPeriodic2D(const StructureBase* rStructure, double rAngle, const EngineeringStrain<2>& rStrain,
-            NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> crackOpening, double rRadiusToCrackWithoutConstraints,
+            double rRadiusToCrackWithoutConstraints,
             const Group<NodeBase>* rGroupTop,const Group<NodeBase>* rGroupBottom,
             const Group<NodeBase>* rGroupLeft, const Group<NodeBase>* rGroupRight);
 
@@ -46,10 +46,6 @@ public:
     //!@brief sets/modifies the average strain applied to the boundary
     //!@param rAngle angle in deg
     void SetStrain(const EngineeringStrain<2>& rStrain) override;
-
-    //!@brief sets/modifies the average strain applied to the boundary
-    //!@param rAngle angle in deg
-    void SetCrackOpening(const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rCrackOpening) override;
 
     //!@brief calculate the border vectors in counterclockwise direction
     void SetBoundaryVectors();
@@ -66,7 +62,7 @@ public:
     // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-    void GetRHS(int& curConstraintEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const override;
+    void GetRHS(int& curConstraintEquation, Eigen::VectorXd& rRHS)const override;
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information

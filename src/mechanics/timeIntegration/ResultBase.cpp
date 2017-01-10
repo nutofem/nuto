@@ -5,7 +5,8 @@
 #endif // ENABLE_SERIALIZATION
 
 #include <boost/filesystem.hpp>
-#include "math/FullMatrix.h"
+#include "math/EigenCompanion.h"
+
 #include "mechanics/timeIntegration/ResultBase.h"
 #include "mechanics/structures/StructureBase.h"
 //! @brief constructor
@@ -33,17 +34,17 @@ void NuTo::ResultBase::WriteToFile(const std::string& rResultDir, int rTimeStepP
 {
 	boost::filesystem::path resultFileName(rResultDir);
 	resultFileName /= mIdent+".dat";
-	mData.GetBlock(0,0,rTimeStepPlot+1,mData.GetNumColumns()).WriteToFile(resultFileName.string(), "  ");
+	NuTo::EigenCompanion::WriteToFile(mData.block(0,0,rTimeStepPlot+1,mData.cols()), resultFileName.string(), "  ");
 }
 
 void NuTo::ResultBase::Resize(const StructureBase& rStructure, int rNumTimeSteps, bool rInitValues)
 {
 	if (rInitValues==true)
 	{
-		mData.Resize(rNumTimeSteps,this->GetNumData(rStructure));
+		mData.resize(rNumTimeSteps,this->GetNumData(rStructure));
 	}
 	else
 	{
-		mData.ConservativeResize(rNumTimeSteps,this->GetNumData(rStructure));
+		mData.conservativeResize(rNumTimeSteps,this->GetNumData(rStructure));
 	}
 }

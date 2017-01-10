@@ -24,20 +24,20 @@ public:
 	//! @param rRadius ... radius
 	//! @param rHeigth ... height
 	//! @param rIndex ... name
-	CollidableWallCylinder(FullVector<double, 3> rPosition,
-			FullVector<double, 3> rDirection, const double rRadius, const double rHeigth,
-			const int rIndex);
+	CollidableWallCylinder(Eigen::Vector3d rPosition,
+						   Eigen::Vector3d rDirection, const double rRadius, const double rHeigth,
+						   const int rIndex);
 
 	//! @brief ... collision between this and CollidableSphere
 	//! @param rSphere ... collision partner
-	void PerformCollision(CollidableParticleSphere& rSphere);
+    void PerformCollision(CollidableParticleSphere& rSphere) override;
 
 	//! @brief ... collision prediction between (this) and a sphere
 	//! @param rSphere ... collision partner
 	//! @return ... predicted time of collision
-	const double PredictCollision(CollidableParticleSphere& rSphere, int& rType);
+    const double PredictCollision(CollidableParticleSphere& rSphere, int& rType) override;
 
-	const bool IsPhysical() const;
+    const bool IsPhysical() const override;
 
 #ifdef ENABLE_VISUALIZE
 	//! @brief ... visualize all non-moving collidables

@@ -1,7 +1,7 @@
 // $Id$
 #include "mechanics/constitutive/ConstitutiveBase.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
-#include "math/FullMatrix.h"
+
 #include <iostream>
 
 #ifdef ENABLE_SERIALIZATION
@@ -68,17 +68,17 @@ void NuTo::ConstitutiveBase::SetParameterFunction(std::function<std::array<doubl
 //! @brief ... gets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @return ... value of the requested variable
-NuTo::FullVector<double, Eigen::Dynamic> NuTo::ConstitutiveBase::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
+Eigen::VectorXd NuTo::ConstitutiveBase::GetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier) const
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetParameterFullVectorDouble] This constitutive law has no variables of type NuTo::FullVector<double, Eigen::Dynamic>.");
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetParameterFullVectorDouble] This constitutive law has no variables of type Eigen::VectorXd.");
 }
 
 //! @brief ... sets a parameter of the constitutive law which is selected by an enum
 //! @param rIdentifier ... Enum to identify the requested parameter
 //! @param rValue ... new value for requested variable
-void NuTo::ConstitutiveBase::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, NuTo::FullVector<double, Eigen::Dynamic> rValue)
+void NuTo::ConstitutiveBase::SetParameterFullVectorDouble(NuTo::Constitutive::eConstitutiveParameter rIdentifier, Eigen::VectorXd rValue)
 {
-    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetParameterFullVectorDouble] This constitutive law has no variables of type NuTo::FullVector<double, Eigen::Dynamic>.");
+    throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::SetParameterFullVectorDouble] This constitutive law has no variables of type Eigen::VectorXd.");
 }
 
 //! @brief checks parameters, throws if the check failed
@@ -121,7 +121,7 @@ void NuTo::ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutivePar
 //! @brief ... gets the equilibrium water volume fraction depend on the relative humidity
 //! @param rRelativeHumidity ... relative humidity
 //! @return ... equilibrium water volume fraction
-double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double rRelativeHumidity, NuTo::FullVector<double,Eigen::Dynamic> rCoeffs) const
+double NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction(double rRelativeHumidity, Eigen::VectorXd rCoeffs) const
 {
     throw NuTo::MechanicsException("[NuTo::ConstitutiveBase::GetEquilibriumWaterVolumeFraction] The constitutive relationship does not have this parameter.");
 }

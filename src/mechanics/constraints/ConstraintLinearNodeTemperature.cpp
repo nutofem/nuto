@@ -3,7 +3,6 @@
 #include "mechanics/nodes/NodeBase.h"
 #include "mechanics/nodes/NodeEnum.h"
 #include "math/SparseMatrix.h"
-#include "math/FullVector.h"
 
 NuTo::ConstraintLinearNodeTemperature::ConstraintLinearNodeTemperature(const NodeBase* rNode, double rValue)
     :   ConstraintLinear(),
@@ -42,7 +41,7 @@ void NuTo::ConstraintLinearNodeTemperature::SetRHS(double rRHS)
 }
 
 void NuTo::ConstraintLinearNodeTemperature::GetRHS(int& rCurConstraintEquation,
-        NuTo::FullVector<double,Eigen::Dynamic>& rRHS) const
+        Eigen::VectorXd& rRHS) const
 {
     // add constraint to constrain matrix
     if (mNode->GetNum(Node::eDof::TEMPERATURE) != 1)

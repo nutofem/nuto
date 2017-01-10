@@ -20,7 +20,7 @@
 #include "mechanics/structures/StructureBase.h"
 #include "mechanics/timeIntegration/NystroemQinZhu.h"
 #include "mechanics/timeIntegration/TimeIntegrationEnum.h"
-#include "math/FullMatrix.h"
+
 
 //! @brief constructor
 //! @param mDimension number of nodes

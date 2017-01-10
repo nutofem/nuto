@@ -1,5 +1,3 @@
-// $Id$
-
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -12,73 +10,62 @@
 #include <boost/ptr_container/serialize_ptr_list.hpp>
 #endif // ENABLE_SERIALIZATION
 
-
 #include "optimize/NonlinearSolverBase.h"
 #include "optimize/OptimizeException.h"
-
-#include "math/FullVector.h"
-#include "math/FullMatrix.h"
 
 using namespace std;
 
 NuTo::NonlinearSolverBase::NonlinearSolverBase() : NuTo::NuToObject::NuToObject()
 {
-	mTolResidual = 1.0e-12;
-	mTolSolution = numeric_limits<double>::epsilon();
-	mMaxIterationsNumber = 100;
-	mResidualFunction = 0;
-	mAssignResidual = false;
+    mTolResidual = 1.0e-12;
+    mTolSolution = numeric_limits<double>::epsilon();
+    mMaxIterationsNumber = 100;
+    mResidualFunction = 0;
+    mAssignResidual = false;
 }
 
-//! @brief ... numerical differentiation of the residual function mResidualFunction (numerical Jacobi matrix)
-//! @param rParam ... parameters necessary to evaluate the residual
-//! @param rUnknown ... position at which the derivative is taken
-//! @param rFvec ... residual vector at the position rUnknown, rFvec = mResidualFunction(rParameter,rUnknown)
-NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> NuTo::NonlinearSolverBase::DResidualNum(NuTo::FullVector<double,Eigen::Dynamic> rUnknown,
-		NuTo::FullVector<double,Eigen::Dynamic> &rFvec) const
+Eigen::MatrixXd NuTo::NonlinearSolverBase::DResidualNum(Eigen::VectorXd rUnknown, Eigen::VectorXd& rFvec) const
 {
-	const double EPS = 1.0e-8;
-	int n=rUnknown.GetNumRows();
-	NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> deriv(n,n);
-	NuTo::FullVector<double,Eigen::Dynamic> xh=rUnknown;
+    const double EPS = 1.0e-8;
+    int n = rUnknown.rows();
+    Eigen::MatrixXd deriv(n, n);
+    Eigen::VectorXd xh = rUnknown;
 
-	if (mResidualFunction==0 && mAssignResidual==false) {
-		throw OptimizeException("[NuTo::NonLinearSolverBase::DResidualNum] the pointer to the residual function is required.");
-	}
+    if (mResidualFunction == 0 && mAssignResidual == false)
+    {
+        throw OptimizeException(__PRETTY_FUNCTION__, "The pointer to the residual function is required.");
+    }
 
-	for (int j=0;j<n;j++) {
-		double temp=xh[j];
-		double h=EPS*std::abs(temp);
-	   	if (h == 0.0) h=EPS;
-	   		xh[j]=temp+h;
-	   		h=xh[j]-temp;
-//  	   		NuTo::FullVector<double,Eigen::Dynamic> f=(*mResidualFunction)(this->mParameter,xh);
-  	   		NuTo::FullVector<double,Eigen::Dynamic> f=(mResidualFunctionBoost)(this->mParameter,xh);
-  	   		xh[j]=temp;
-  	   		for (int i=0;i<n;i++)
- 	   			deriv(i,j)=(f[i]-rFvec[i])/h;
-	}
-   	return deriv;
+    for (int j = 0; j < n; j++)
+    {
+        double temp = xh[j];
+        double h = EPS * std::abs(temp);
+        if (h == 0.0)
+            h = EPS;
+        xh[j] = temp + h;
+        h = xh[j] - temp;
+        Eigen::VectorXd f = (mResidualFunctionBoost)(this->mParameter, xh);
+        xh[j] = temp;
+        for (int i = 0; i < n; i++)
+            deriv(i, j) = (f[i] - rFvec[i]) / h;
+    }
+    return deriv;
 }
 
-//! @brief ... calculates 0.5*rFvec^2 and updates rFvec = mResidualFunction(rParameter,rUnknown)
-double NuTo::NonlinearSolverBase::Fmin(NuTo::FullVector<double,Eigen::Dynamic> rUnknown, NuTo::FullVector<double,Eigen::Dynamic> &rFvec) const
+double NuTo::NonlinearSolverBase::Fmin(Eigen::VectorXd rUnknown, Eigen::VectorXd& rFvec) const
 {
-	if (mResidualFunction==0 && mAssignResidual==false) {
-		throw OptimizeException("[NuTo::NonLinearSolverBase::DResidualNum] the pointer to the residual function is required.");
-	}
+    if (mResidualFunction == 0 && mAssignResidual == false)
+    {
+        throw OptimizeException(__PRETTY_FUNCTION__, "The pointer to the residual function is required.");
+    }
 
-//	rFvec = (*mResidualFunction)(this->mParameter,rUnknown);
-	rFvec = (mResidualFunctionBoost)(this->mParameter,rUnknown);
-	double sum=0;
-	sum = rFvec.dot(rFvec);
-	return 0.5*sum;
+    rFvec = (mResidualFunctionBoost)(this->mParameter, rUnknown);
+    double sum = 0;
+    sum = rFvec.dot(rFvec);
+    return 0.5 * sum;
 }
 
-//! @brief ... Info routine that prints general information about the object (detail according to verbose level)
-void NuTo::NonlinearSolverBase::Info()const
-{
-}
+void NuTo::NonlinearSolverBase::Info() const {}
 
 #ifdef ENABLE_SERIALIZATION
 template void NuTo::NonlinearSolverBase::serialize(boost::archive::binary_oarchive & ar, const unsigned int version);
@@ -104,4 +91,3 @@ void NuTo::NonlinearSolverBase::serialize(Archive & ar, const unsigned int versi
 #endif
 }
 #endif  // ENABLE_SERIALIZATION
-

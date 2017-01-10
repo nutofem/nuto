@@ -23,7 +23,7 @@ public:
     //! @brief constructor
     //! @param rDirection ... direction of the applied constraint
     //! @param rValue ... direction of the applied constraint
-    ConstraintLinearNodeGroupDisplacements3D(const Group<NodeBase>* rGroup, const NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic>& rDirection, double rValue);
+    ConstraintLinearNodeGroupDisplacements3D(const Group<NodeBase>* rGroup, const Eigen::VectorXd& rDirection, double rValue);
 
     //! @brief returns the number of constraint equations
     //! @return number of constraints
@@ -45,7 +45,7 @@ public:
     // (in case of more than one equation per constraint, curConstraintEquation is increased based on the number of constraint equations per constraint)
     //! @param curConstraintEquation (is incremented during the function call)
     //! @param rConstraintMatrix (the first row where a constraint equation is added is given by curConstraintEquation)
-    void GetRHS(int& curConstraintEquation,NuTo::FullVector<double,Eigen::Dynamic>& rRHS)const override;
+    void GetRHS(int& curConstraintEquation,Eigen::VectorXd& rRHS)const override;
 
     //! @brief ... print information about the object
     //! @param rVerboseLevel ... verbosity of the information
