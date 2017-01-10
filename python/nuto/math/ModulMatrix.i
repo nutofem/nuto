@@ -6,15 +6,30 @@
 //Put headers and other declarations here to be added in the wrapper files
 #include "math/Operator.h"
 #include "math/Matrix.h"
+#include "math/TestNumpy.h"
 %}
 
 //declare inputs of the functions to be used as output on python level
 %include "typemaps.i"
+// typemaps.i is a built-in swig interface that lets us map c++ types to other
+// types python. We'll use it to map Eigen matrices to Numpy arrays.
+%include "typemaps.i"
+%include "eigen.i"
+%eigen_typemaps(Eigen::VectorXd)
+%eigen_typemaps(Eigen::MatrixXd)
+%eigen_typemaps(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>)
+%eigen_typemaps(Eigen::Matrix<double, Eigen::Dynamic, 1>)
+%eigen_typemaps(Eigen::Matrix<double, 1, 1>)
+%eigen_typemaps(Eigen::Matrix<double, 2, 2>)
+%eigen_typemaps(Eigen::Matrix<double, 3, 3>)
+%eigen_typemaps(Eigen::Matrix<double, 2, 1>)
+%eigen_typemaps(Eigen::Matrix<double, 3, 1>)
+%eigen_typemaps(Eigen::Matrix<double, 6, 1>)
 
-// rename the full version including rows and columns
-%rename(MaxFull)Max(int& OUTPUT, int& OUTPUT,T& OUTPUT);
-%rename(MinFull)Min(int& OUTPUT, int& OUTPUT,T& OUTPUT);
-
+%eigen_typemaps(Eigen::VectorXi)
+%eigen_typemaps(Eigen::MatrixXi)
+%eigen_typemaps(Eigen::Matrix<int, Eigen::Dynamic, Eigen::Dynamic>)
+%eigen_typemaps(Eigen::Matrix<int, Eigen::Dynamic, 1>)
 //attention - first rename, and then apply
 %apply double *OUTPUT { double& rResultOutput};
 %apply int *OUTPUT { int& rRowOutput, int& rColumnOutput, int& rResultOutput};
@@ -33,6 +48,7 @@ namespace std {
 %include "base/ModulNuToBase.i"
 
 %import "math/NuToMath.i"
+%include "math/TestNumpy.h"
 
 %include "math/Matrix.h"
 %template(DoubleMatrix) NuTo::Matrix<double>;

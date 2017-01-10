@@ -1,6 +1,7 @@
 if(ENABLE_PYTHON)
     foreach(test
             SparseMatrixCSR
+            Numpy
             )
 
         add_test(p::math::${test} ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${test}.py ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} ${CMAKE_CURRENT_SOURCE_DIR})
