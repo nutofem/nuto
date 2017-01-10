@@ -36,7 +36,7 @@ void NuTo::CallbackInterface::serialize(Archive & ar, const unsigned int version
 BOOST_CLASS_EXPORT_IMPLEMENT(NuTo::CallbackInterface)
 #endif // ENABLE_SERIALIZATION
 
-bool NuTo::CallbackInterface::Exit(NuTo::StructureBase &) const
+bool NuTo::CallbackInterface::Exit(NuTo::StructureBase &)
 {
     throw Exception(__PRETTY_FUNCTION__, "not implemented for this callback.");
 }

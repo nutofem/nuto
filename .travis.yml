@@ -22,17 +22,17 @@ before_install:
     - echo "yes" | sudo add-apt-repository 'deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.9 main'
     - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
     - sudo apt-get -qq update
-    - sudo apt-get install -y g++-6 clang-3.9 libgfortran-6-dev libgcc-6-dev libiomp-dev swig3.0 doxygen python-dev python-instant libboost1.55-all-dev libeigen3-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev gfortran
+    - sudo apt-get install -y g++-6 clang-3.9 libgfortran-6-dev libgcc-6-dev libiomp-dev swig3.0 doxygen python-dev libboost1.55-all-dev libeigen3-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev gfortran
     - sudo apt-get install -y lcov curl
 before_script:
     - mkdir build
     - cd build
-    - if [[ "$CXX" == "g++" ]] && [[ "$RELEASE" == "false" ]]; then CXX=g++-6 cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=TRUE -DENABLE_MPI=TRUE ..; fi
-    - if [[ "$CXX" == "g++" ]] && [[ "$RELEASE" == "true" ]]; then CXX=g++-6 cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_EXAMPLES=TRUE ..; fi
-    - if [[ "$CXX" == "clang++" ]]; then CXX=clang++-3.9 cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_EXAMPLES=TRUE ..; fi
+    - if [[ "$CXX" == "g++" ]] && [[ "$RELEASE" == "false" ]]; then CXX=g++-6 cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=TRUE -DENABLE_MPI=TRUE -DENABLE_METAMODEL=TRUE -DENABLE_OPTIMIZE=TRUE ..; fi
+    - if [[ "$CXX" == "g++" ]] && [[ "$RELEASE" == "true" ]]; then CXX=g++-6 cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_EXAMPLES=TRUE -DENABLE_METAMODEL=TRUE -DENABLE_OPTIMIZE=TRUE ..; fi
+    - if [[ "$CXX" == "clang++" ]]; then CXX=clang++-3.9 cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_EXAMPLES=TRUE -DENABLE_METAMODEL=TRUE -DENABLE_OPTIMIZE=TRUE ..; fi
 script:
     - make -j2
     - ctest --output-on-failure
 after_success:
     - cd ..
-    - if [[ "$CXX" =~ ^g.* ]]; then coveralls -E '.*PYTHON.*' --gcov-options '\-lp'; fi
+    - if [[ "$CXX" == "g++" ]] && [[ "$RELEASE" == "false" ]]; then coveralls -E '.*PYTHON.*' --gcov-options '\-lp' > /dev/null; fi
