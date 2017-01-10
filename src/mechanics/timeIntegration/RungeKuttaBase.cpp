@@ -161,12 +161,13 @@ NuTo::eError NuTo::RungeKuttaBase::Solve(double rTimeDelta)
                     //to be implemented mStructure->SetCurrentTime(mTime);
 					//an update of the external load factor and the time dependent constraint is only
 					//necessary for a modified global time
-					if (mTimeDependentConstraint!=-1)
+					if (!(mMapTimeDependentConstraint.empty()))
     				{
-    					throw MechanicsException("[NuTo::RungeKuttaBase::Solve] solution with constraints not yet implemented.");
+    					//throw MechanicsException("[NuTo::RungeKuttaBase::Solve] solution with constraints not yet implemented.");
     					//double timeDependentConstraintFactor = this->CalculateTimeDependentConstraintFactor(curTime);
     					//mStructure->ConstraintSetRHS(mTimeDependentConstraint,timeDependentConstraintFactor);
     					//mStructure->ConstraintGetRHSAfterGaussElimination(bRHS);
+    					UpdateConstraints(mTime);
     				}
     				//calculate external force
 					extLoad = CalculateCurrentExternalLoad(curTime);
