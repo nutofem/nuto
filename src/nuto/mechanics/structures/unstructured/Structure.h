@@ -530,9 +530,7 @@ public:
     template<int TDimSlave, int TDimMaster>
     int ContactElementsCreate(int rElementsGroupIDSlave,
                               int rNodeGroupSlaveId,
-                              const Eigen::Matrix<std::pair<int, int>,
-                              Eigen::Dynamic,
-                              Eigen::Dynamic> &rMasterElementsID,
+                              const Eigen::Matrix<std::pair<int, int>,Eigen::Dynamic,Eigen::Dynamic> &rMasterElementsID,
                               eIntegrationType rIntegrationType,
                               int rContactAlgorithm,
                               int rConstitutiveLaw);

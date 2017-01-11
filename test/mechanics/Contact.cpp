@@ -62,6 +62,179 @@
 
 #define PRINTRESULT true
 
+
+void QuarterCircle(const std::string &path,
+                   const std::string &fileNameSlave,
+                   NuTo::Structure *myStructure,
+                   double rE_Slave,
+                   NuTo::Interpolation::eTypeOrder rElementTypeIdentDisps,
+                   NuTo::eIntegrationType rIntegrationTypeDisps)
+{
+#ifdef _OPENMP
+    int numThreads = 4;
+    myStructure->SetNumProcessors(numThreads);
+#endif
+    double nue = 0.0;
+    double rho = 1.;
+
+    ///////////////////////////////////////////////////////////////////////
+    // ====> create SLAVE mesh from gmsh (smth. impacting a rectangle)   //
+    ///////////////////////////////////////////////////////////////////////
+
+    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> groupIndicesSlave = myStructure->ImportFromGmsh(path + fileNameSlave,
+                                                                                                          NuTo::ElementData::eElementDataType::CONSTITUTIVELAWIP,
+                                                                                                          NuTo::IpData::eIpDataType::NOIPDATA);
+
+    int slaveInterpolationType = myStructure->InterpolationTypeCreate(NuTo::Interpolation::eShapeType::QUAD2D);
+    myStructure->InterpolationTypeAdd(slaveInterpolationType, NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::LOBATTO2);
+    myStructure->InterpolationTypeAdd(slaveInterpolationType, NuTo::Node::eDof::DISPLACEMENTS, rElementTypeIdentDisps);
+    int slaveElementsGroupId = groupIndicesSlave.GetValue(0, 0);
+    myStructure->ElementGroupSetInterpolationType(slaveElementsGroupId, slaveInterpolationType);
+    myStructure->ElementConvertToInterpolationType(slaveElementsGroupId);
+    myStructure->InterpolationTypeSetIntegrationType(slaveInterpolationType,rIntegrationTypeDisps,NuTo::IpData::eIpDataType::STATICDATA);
+
+    int slaveNodesGroupId = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure->GroupAddNodesFromElements(slaveNodesGroupId, slaveElementsGroupId,  NuTo::Node::eDof::DISPLACEMENTS);
+
+    // ===> build contact elements slave elements
+    auto LambdaGetSlaveNodesLower = [](NuTo::NodeBase* rNodePtr) -> bool
+    {
+        double Tol = 1.e-4;
+        //double angleincr = (15. * M_PI)/180.0;
+        //double anglemax = 3.*M_PI/2. + angleincr;
+        double radius = 1.;
+        if ( rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)>0 )
+        {
+            double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+            double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
+            double r = sqrt(x*x+y*y);
+            //double angle = std::atan2(y,x);
+            if (r <= radius + Tol && r >= radius - Tol && x >= -0.03 && x <= 0.03)//angle <= anglemax)
+            {
+                return true;
+            }
+        }
+        return false;
+    };  // LambdaGetSlaveNodesLower
+
+    myStructure->GroupGetNodesTotal();
+
+    int groupNodesSlaveLower = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure->GroupAddNodeFunction(groupNodesSlaveLower, slaveNodesGroupId, LambdaGetSlaveNodesLower);
+    NuTo::FullVector<int, Eigen::Dynamic> membersNodesSlaveLower = myStructure->GroupGetMemberIds(groupNodesSlaveLower);
+
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinatesSlaveC;
+    myStructure->NodeGroupGetCoordinates(groupNodesSlaveLower, coordinatesSlaveC);
+
+    int groupElementsSlaveLower = myStructure->GroupCreate(NuTo::eGroupId::Elements);
+    myStructure->GroupAddElementsFromNodes(groupElementsSlaveLower, groupNodesSlaveLower, false);
+    NuTo::FullVector<int, Eigen::Dynamic> members = myStructure->GroupGetMemberIds(groupElementsSlaveLower);
+
+    auto LambdaGetSlaveNodesUpper = [](NuTo::NodeBase* rNodePtr) -> bool
+    {
+        double Tol = 1.e-6;
+        if (rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)>0)
+        {
+            double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
+            if ((y >= 0. - Tol && y <= 0. + Tol))
+            {
+                return true;
+            }
+        }
+        return false;
+    };  // LambdaGetSlaveNodesUpper
+
+
+    int groupNodesSlaveUpper = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure->GroupAddNodeFunction(groupNodesSlaveUpper, slaveNodesGroupId, LambdaGetSlaveNodesUpper);
+    members = myStructure->GroupGetMemberIds(groupNodesSlaveUpper);
+
+    int groupElementsSlaveUpper = myStructure->GroupCreate(NuTo::eGroupId::Elements);
+    myStructure->GroupAddElementsFromNodes(groupElementsSlaveUpper, groupNodesSlaveUpper, false);
+    members = myStructure->GroupGetMemberIds(groupElementsSlaveUpper);
+
+    auto LambdaGetNodesLeft = [](NuTo::NodeBase* rNodePtr) -> bool
+    {
+        double Tol = 1.e-6;
+        if (rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS) > 0)
+        {
+            double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+            if (x >= -Tol && x <= Tol)
+            {
+                return true;
+            }
+        }
+        return false;
+    };  // LambdaGetNodesLeft
+
+    //     DBC for the left side
+    int groupNodesLeft = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure->GroupAddNodeFunction(groupNodesLeft, LambdaGetNodesLeft);
+
+    NuTo::FullVector<int,Eigen::Dynamic> rMembersLeft;
+    myStructure->NodeGroupGetMembers(groupNodesLeft, rMembersLeft);
+
+    NuTo::FullVector<double,Eigen::Dynamic> direction(2);
+
+    direction << 1, 0;
+    for(int i = 0; i < rMembersLeft.rows(); i++)
+    {
+        myStructure->ConstraintLinearSetDisplacementNode(rMembersLeft(i), direction, 0.0);
+    }
+
+    direction << 0, 1;
+    for(int i = 0; i < membersNodesSlaveLower.rows(); i++)
+    {
+        myStructure->ConstraintLinearSetDisplacementNode(membersNodesSlaveLower(i), direction, 0.0);
+    }
+
+      ///////////////////
+    // ===> material //
+    ///////////////////
+
+    double Thickness = 1.;
+    int section = myStructure->SectionCreate("PLANE_STRESS");
+    myStructure->SectionSetThickness(section, Thickness);
+    myStructure->ElementTotalSetSection(section);
+
+    int constitutiveLawSlave = myStructure->ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
+    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLawSlave, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, rE_Slave);
+    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLawSlave, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, nue);
+    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLawSlave, NuTo::Constitutive::eConstitutiveParameter::DENSITY, rho);
+
+    myStructure->ElementGroupSetConstitutiveLaw(slaveElementsGroupId, constitutiveLawSlave);
+
+    std::string resultDir = "./ResultsStaticQuarterCircle";
+    //set result directory
+    if (boost::filesystem::exists(resultDir))
+    {
+        if (boost::filesystem::is_directory(resultDir))
+        {
+            boost::filesystem::remove_all(resultDir);
+        }
+    }
+
+    // create result directory
+    boost::filesystem::create_directory(resultDir);
+
+    // ===> Neumann BCs
+    myStructure->SetNumLoadCases(1);
+    myStructure->LoadSurfacePressureCreate2D(0, groupElementsSlaveUpper, groupNodesSlaveUpper, 10.);
+
+    myStructure->CalculateMaximumIndependentSets();
+    myStructure->NodeBuildGlobalDofs();
+
+    myStructure->SolveGlobalSystemStaticElastic();
+
+    int visualizationGroup = myStructure->GroupGetElementsTotal();
+    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
+    myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
+
+    myStructure->ExportVtkDataFileElements(resultDir+"/Elements.vtu", true);
+
+}
+
 void ContactHertzQuarterCircle(const std::string &path,
                                const std::string &fileNameSlave,
                                const std::string &fileNameMaster,
@@ -69,9 +242,15 @@ void ContactHertzQuarterCircle(const std::string &path,
                                NuTo::Structure *myStructure,
                                double rPenalty,
                                double rGapMax,
+                               double rE_Slave,
+                               double rE_Master,
                                NuTo::eIntegrationType rIntegrationType,
                                NuTo::Interpolation::eTypeOrder rElementTypeIdentDisps,
                                NuTo::eIntegrationType rIntegrationTypeDisps,
+                               Eigen::MatrixXd &A,
+                               NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> &coordinatesAndIDs,
+                               NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> &coordinatesAndIDsLayer,
+                               bool rSymmetric,
                                int &groupElementsIGAlayer,
                                int &slaveElementsGroupId,
                                int &masterElementsGroupId,
@@ -86,9 +265,7 @@ void ContactHertzQuarterCircle(const std::string &path,
     int numThreads = 4;
     myStructure->SetNumProcessors(numThreads);
 #endif
-
-    double E = 1.e5;
-    double nue = 0.3;
+    double nue = 0.0;
     double rho = 1.;
 
     ///////////////////////////////////////////////////////////////////////
@@ -123,7 +300,7 @@ void ContactHertzQuarterCircle(const std::string &path,
             double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
             double r = sqrt(x*x+y*y);
             //double angle = std::atan2(y,x);
-            if (r <= radius + Tol && r >= radius - Tol && x >= 0.0 && x <= 0.125)//angle <= anglemax)
+            if (r <= radius + Tol && r >= radius - Tol && x >= -0.1 && x <= 0.1)//angle <= anglemax)
             {
                 return true;
             }
@@ -220,34 +397,68 @@ void ContactHertzQuarterCircle(const std::string &path,
     }
     direction << 1, 0;
     countDBC = myStructure->ConstraintLinearSetDisplacementNode(rMembersMasterDBC(0), direction, 0.0);
-
-    auto LambdaGetNodesLeft = [](NuTo::NodeBase* rNodePtr) -> bool
-    {
-        double Tol = 1.e-6;
-        if (rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS) > 0)
-        {
-            double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
-            if (x >= -Tol && x <= Tol)
-            {
-                return true;
-            }
-        }
-        return false;
-    };  // LambdaGetNodesLeft
-
-//     DBC for the left side
-    int groupNodesLeft = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
-    myStructure->GroupAddNodeFunction(groupNodesLeft, LambdaGetNodesLeft);
-
-    NuTo::FullVector<int,Eigen::Dynamic> rMembersLeft;
-    myStructure->NodeGroupGetMembers(groupNodesLeft, rMembersLeft);
-
-    direction << 1, 0;
-    for(int i = 0; i < rMembersLeft.rows(); i++)
-    {
-        countDBC = myStructure->ConstraintLinearSetDisplacementNode(rMembersLeft(i), direction, 0.0);
-    }
     countDBC++;
+
+    if(rSymmetric == true)
+    {
+        auto LambdaGetNodesLeft = [](NuTo::NodeBase* rNodePtr) -> bool
+        {
+            double Tol = 1.e-6;
+            if (rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS) > 0)
+            {
+                double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+                if (x >= -Tol && x <= Tol)
+                {
+                    return true;
+                }
+            }
+            return false;
+        };  // LambdaGetNodesLeft
+
+    //     DBC for the left side
+        int groupNodesLeft = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+        myStructure->GroupAddNodeFunction(groupNodesLeft, LambdaGetNodesLeft);
+
+        NuTo::FullVector<int,Eigen::Dynamic> rMembersLeft;
+        myStructure->NodeGroupGetMembers(groupNodesLeft, rMembersLeft);
+
+        direction << 1, 0;
+        for(int i = 0; i < rMembersLeft.rows(); i++)
+        {
+            countDBC = myStructure->ConstraintLinearSetDisplacementNode(rMembersLeft(i), direction, 0.0);
+        }
+        countDBC++;
+    }
+    else
+    {
+        auto LambdaGetNodesLeft = [](NuTo::NodeBase* rNodePtr) -> bool
+        {
+            double Tol = 1.e-6;
+            if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
+            {
+                double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+                if ((x >= -0.5-Tol && x <= -0.5+Tol))
+                {
+                    return true;
+                }
+            }
+            return false;
+        };  // LambdaGetNodesLeft
+
+    //     DBC for the left side
+        int groupNodesLeft = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+        myStructure->GroupAddNodeFunction(groupNodesLeft, LambdaGetNodesLeft);
+
+        NuTo::FullVector<int,Eigen::Dynamic> rMembersLeft;
+        myStructure->NodeGroupGetMembers(groupNodesLeft, rMembersLeft);
+
+        direction << 1, 0;
+        for(int i = 0; i < rMembersLeft.rows(); i++)
+        {
+            countDBC = myStructure->ConstraintLinearSetDisplacementNode(rMembersLeft(i), direction, 0.0);
+        }
+        countDBC++;
+    }
 
     //////////////////////////
     // ===> build iga layer //
@@ -260,7 +471,7 @@ void ContactHertzQuarterCircle(const std::string &path,
         {
             double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
             double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
-            if (y >= -1. - Tol && y <= -1. + Tol && x >= 0. - Tol && x <= 0.125 + Tol)
+            if (y >= -1. - Tol && y <= -1. + Tol && x >= -0.125 - Tol && x <= 0.125 + Tol)
             {
                 return true;
             }
@@ -279,7 +490,7 @@ void ContactHertzQuarterCircle(const std::string &path,
     NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinates;
     myStructure->NodeGroupGetCoordinates(groupNodesMasterUpper, coordinates);
 
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinatesAndIDs;
+    //NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinatesAndIDs;
     coordinatesAndIDs.resize(coordinates.rows(), coordinates.cols() + 1);
     coordinatesAndIDs.block(0,0,coordinates.rows(), coordinates.cols()) = coordinates;
 
@@ -292,7 +503,7 @@ void ContactHertzQuarterCircle(const std::string &path,
     // create IGA curve
     int degree = 3;
 
-    Eigen::MatrixXd A;
+    //Eigen::MatrixXd A;
 
     NuTo::NURBSCurve curve(degree, coordinatesAndIDs.block(0, 0, coordinates.rows(), coordinates.cols()), A);
 
@@ -317,13 +528,21 @@ void ContactHertzQuarterCircle(const std::string &path,
     double Thickness = 1.;
     int section = myStructure->SectionCreate("PLANE_STRESS");
     myStructure->SectionSetThickness(section, Thickness);
-
-    int constitutiveLaw = myStructure->ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
-    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, E);
-    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, nue);
-    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLaw, NuTo::Constitutive::eConstitutiveParameter::DENSITY, rho);
     myStructure->ElementTotalSetSection(section);
-    myStructure->ElementTotalSetConstitutiveLaw(constitutiveLaw);
+
+    int constitutiveLawSlave = myStructure->ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
+    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLawSlave, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, rE_Slave);
+    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLawSlave, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, nue);
+    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLawSlave, NuTo::Constitutive::eConstitutiveParameter::DENSITY, rho);
+
+    int constitutiveLawMaster = myStructure->ConstitutiveLawCreate("Linear_Elastic_Engineering_Stress");
+    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLawMaster, NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, rE_Master);
+    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLawMaster, NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, nue);
+    myStructure->ConstitutiveLawSetParameterDouble(constitutiveLawMaster, NuTo::Constitutive::eConstitutiveParameter::DENSITY, rho);
+
+    myStructure->ElementGroupSetConstitutiveLaw(slaveElementsGroupId, constitutiveLawSlave);
+    myStructure->ElementGroupSetConstitutiveLaw(masterElementsGroupId, constitutiveLawMaster);
+    myStructure->ElementGroupSetConstitutiveLaw(groupElementsIGAlayer, constitutiveLawMaster);
 
     ////////////////////////////
     // ===> CONTACT ELEMENTS  //
@@ -371,6 +590,9 @@ void ContactHertzQuarterCircle(const std::string &path,
     myStructure->ConstitutiveLawSetParameterFunction(constitutiveLawPC, NuTo::Constitutive::eConstitutiveParameter::CONSTITUTIVE_LAW_FUNCTION, constitutiveContactLaw);
     myStructure->ConstitutiveLawSetParameterFunction(constitutiveLawPC, NuTo::Constitutive::eConstitutiveParameter::CONSTITUTIVE_LAW_DERIVATIVE_FUNCTION, constitutiveContactLawDerivative);
 
+//    myStructure->ConstitutiveLawSetParameterFunction(constitutiveLawPC, NuTo::Constitutive::eConstitutiveParameter::CONSTITUTIVE_LAW_FUNCTION, constitutiveContactLawNLin);
+//    myStructure->ConstitutiveLawSetParameterFunction(constitutiveLawPC, NuTo::Constitutive::eConstitutiveParameter::CONSTITUTIVE_LAW_DERIVATIVE_FUNCTION, constitutiveContactLawDerivativeNLin);
+
     slaveContactElementsGroupId = myStructure->NuTo::Structure::ContactElementsCreate<2,1>(groupElementsSlaveLower,
                                                                                            groupNodesSlaveLower,
                                                                                            elementsMaster,
@@ -391,7 +613,7 @@ void ContactHertzQuarterCircle(const std::string &path,
     myStructure->NodeGroupGetMembers(groupNodesIGAlayer, rMembersMasterContactBoundaryLayer);
 
     // all together
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinatesAndIDsLayer;
+//    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinatesAndIDsLayer;
     coordinatesAndIDsLayer.resize(coordinatesLayer.rows(), coordinatesLayer.cols() + 1);
     coordinatesAndIDsLayer.block(0,0,coordinatesLayer.rows(), coordinatesLayer.cols()) = coordinatesLayer;
 
@@ -425,12 +647,27 @@ void ContactHertzQuarterCircle(const std::string &path,
         NuTo::IpData::eIpDataType ipDataType = elementPtr->GetIpDataType(0);
         elementPtr->SetIntegrationType(myStructure->GetPtrIntegrationType(rIntegrationType), ipDataType);
     }
+
+    // create boundary elements for visualizing the results
+    slaveContactElementsGroupId = myStructure->BoundaryElementsCreate(groupElementsSlaveLower, groupNodesSlaveLower, NULL);
+    NuTo::FullVector<int,Eigen::Dynamic> rMembersSlaveContactBoundaryVisualize;
+    myStructure->ElementGroupGetMembers(slaveContactElementsGroupId, rMembersSlaveContactBoundaryVisualize);
+    for(int i = 0; i < rMembersSlaveContactBoundaryVisualize.rows(); i++)
+    {
+        NuTo::ElementBase* elementPtr = myStructure->ElementGetElementPtr(rMembersSlaveContactBoundaryVisualize(i));
+        NuTo::IpData::eIpDataType ipDataType = elementPtr->GetIpDataType(0);
+        elementPtr->SetIntegrationType(myStructure->GetPtrIntegrationType(rIntegrationType), ipDataType);
+    }
 }
 
 
 void staticSolve(NuTo::Structure *myStructure,
                  const std::string &resultDir,
                  NuTo::eIntegrationType rIntegrationType,
+                 Eigen::MatrixXd &A,
+                 NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> &coordinatesAndIDs,
+                 NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> &coordinatesAndIDsLayer,
+                 double Stress,
                  int groupElementsIGAlayer,
                  int groupElementsSlave,
                  int groupElementsMaster,
@@ -455,10 +692,9 @@ void staticSolve(NuTo::Structure *myStructure,
 
     // ===> Neumann BCs
     myStructure->SetNumLoadCases(1);
-    double Stress = 10.;
     myStructure->LoadSurfacePressureCreate2D(0, groupElementsSlaveUpper, groupNodesSlaveUpper, Stress);
-
-    double disp = 0.;
+    double disp;
+    disp = 0.;
 
     // ===> DBCs
 //    double disp = - 0.0008;
@@ -474,7 +710,7 @@ void staticSolve(NuTo::Structure *myStructure,
 //    }
 
     // ===> initial values
-    disp = - 0.0005;
+    disp = - 0.0001;
     int slaveNodesGroupId = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
     myStructure->GroupAddNodesFromElements(slaveNodesGroupId, groupElementsSlave, NuTo::Node::eDof::DISPLACEMENTS);
     NuTo::FullVector<double,Eigen::Dynamic>  dispVec(2);
@@ -568,6 +804,42 @@ void staticSolve(NuTo::Structure *myStructure,
         IPIdsSlave.push_back(4);
         break;
     }
+    case NuTo::eIntegrationType::IntegrationType1D2NLobatto6Ip:
+    {
+        IPIdsMaster.clear();
+
+        IPIdsMaster.push_back(5);
+        IPIdsMaster.push_back(4);
+        IPIdsMaster.push_back(3);
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        IPIdsSlave.push_back(3);
+        IPIdsSlave.push_back(4);
+        IPIdsSlave.push_back(5);
+        break;
+    }
+    case NuTo::eIntegrationType::IntegrationType1D2NLobatto4Ip:
+    {
+        IPIdsMaster.clear();
+
+        IPIdsMaster.push_back(3);
+        IPIdsMaster.push_back(2);
+        IPIdsMaster.push_back(1);
+        IPIdsMaster.push_back(0);
+
+        IPIdsSlave.clear();
+        IPIdsSlave.push_back(0);
+        IPIdsSlave.push_back(1);
+        IPIdsSlave.push_back(2);
+        IPIdsSlave.push_back(3);
+        break;
+    }
     case NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip:
     {
         IPIdsMaster.clear();
@@ -603,6 +875,11 @@ void staticSolve(NuTo::Structure *myStructure,
         throw NuTo::MechanicsException("[NuTo::Test::Contact] No Integration Type Defined.");
     }
 
+//    NuTo::FullVector<int, Eigen::Dynamic> membersSlave = myStructure->GroupGetMemberIds(slaveContactElementsGroupId);
+//    int groupSlaveElementsViz = myStructure->GroupCreate(NuTo::eGroupId::Elements);
+//    myStructure->GroupAddElement(groupSlaveElementsViz, membersSlave(0));
+//    myStructure->GroupAddElement(groupSlaveElementsViz, membersSlave(2));
+
     myIntegrationScheme.AddResultElementGroupIpData("ContactStressMaster1",  masterContactElementsGroupId, 1, IPIdsMaster, NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
     myIntegrationScheme.AddResultElementGroupIpData("ContactStressSlave1",  slaveContactElementsGroupId, 1, IPIdsSlave, NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
 
@@ -614,6 +891,27 @@ void staticSolve(NuTo::Structure *myStructure,
     myIntegrationScheme.SetTimeStep(timeStep);
     myIntegrationScheme.SetPerformLineSearch(false);
     myIntegrationScheme.Solve(simulationTime);
+
+    std::cout << "Interpolation issue: \n";
+    int dim = coordinatesAndIDs.cols() - 1;
+    for(int nodeMaster = 0; nodeMaster < coordinatesAndIDs.rows(); nodeMaster++)
+    {
+        for(int dof = 0; dof < dim; dof++)
+        {
+            double nodeDispX = myStructure->NodeGetNodePtr(coordinatesAndIDs(nodeMaster, dim))->Get(NuTo::Node::eDof::DISPLACEMENTS)[0];
+            double nodeDispY = myStructure->NodeGetNodePtr(coordinatesAndIDs(nodeMaster, dim))->Get(NuTo::Node::eDof::DISPLACEMENTS)[1];
+            for(int controlPoint = 0; controlPoint < coordinatesAndIDsLayer.rows(); controlPoint++)
+            {
+                double nodeDispIGAX = myStructure->NodeGetNodePtr(coordinatesAndIDsLayer(controlPoint, dim))->Get(NuTo::Node::eDof::DISPLACEMENTS)[0];
+                double nodeDispIGAY = myStructure->NodeGetNodePtr(coordinatesAndIDsLayer(controlPoint, dim))->Get(NuTo::Node::eDof::DISPLACEMENTS)[1];
+                nodeDispX -= A(nodeMaster, controlPoint)*nodeDispIGAX;
+                nodeDispY -= A(nodeMaster, controlPoint)*nodeDispIGAY;
+            }
+            if(fabs(nodeDispX) > 1.e-18 || fabs(nodeDispY) > 1.e-18)
+                std::cout << "Node " << coordinatesAndIDs(nodeMaster, 2) << ": disp: " << nodeDispX << ", " << nodeDispY << std::endl;
+        }
+    }
+    std::cout << "====================================\n";
 
 #ifdef ENABLE_VISUALIZE
     myStructure->AddVisualizationComponent(groupElementsIGAlayer, NuTo::eVisualizeWhat::DISPLACEMENTS);
@@ -643,9 +941,21 @@ void staticSolve(NuTo::Structure *myStructure,
 #endif
 }
 
-void run(const std::string &resultDir, const std::string &path, const std::string &fileNameSlave, const std::string &fileNameMaster, double penalty, double gap, int contactAlgo, NuTo::eIntegrationType rIntegrationType,
+void run(const std::string &resultDir,
+         const std::string &path,
+         const std::string &fileNameSlave,
+         const std::string &fileNameMaster,
+         double penalty,
+         double gap,
+         double rE_Slave,
+         double rE_Master,
+         double Stress,
+         int contactAlgo,
+         NuTo::eIntegrationType rIntegrationType,
          NuTo::Interpolation::eTypeOrder rElementTypeIdentDisps,
-         NuTo::eIntegrationType rIntegrationTypeDisps)
+         NuTo::eIntegrationType rIntegrationTypeDisps,
+         NuTo::eIntegrationType rIntegrationTypeViz,
+         bool rSymmetric)
 {
     int groupElementsIGAlayer(0),
         groupElementsSlave(0),
@@ -657,6 +967,10 @@ void run(const std::string &resultDir, const std::string &path, const std::strin
         slaveContactElementsGroupId(0),
         masterContactElementsGroupId(0);
 
+    Eigen::MatrixXd A;
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinatesAndIDs;
+    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinatesAndIDsLayer;
+
     NuTo::Structure *myStructure = new NuTo::Structure(2);
     myStructure->SetNumTimeDerivatives(0);
     ContactHertzQuarterCircle(path,
@@ -666,9 +980,15 @@ void run(const std::string &resultDir, const std::string &path, const std::strin
                               myStructure,
                               penalty,
                               gap,
+                              rE_Slave,
+                              rE_Master,
                               rIntegrationType,
                               rElementTypeIdentDisps,
                               rIntegrationTypeDisps,
+                              A,
+                              coordinatesAndIDs,
+                              coordinatesAndIDsLayer,
+                              rSymmetric,
                               groupElementsIGAlayer,
                               groupElementsSlave,
                               groupElementsMaster,
@@ -680,7 +1000,11 @@ void run(const std::string &resultDir, const std::string &path, const std::strin
                               masterContactElementsGroupId);
 
     myStructure->SetNumTimeDerivatives(0);
-    staticSolve(myStructure, resultDir, rIntegrationType,
+    staticSolve(myStructure, resultDir, rIntegrationTypeViz,
+                A,
+                coordinatesAndIDs,
+                coordinatesAndIDsLayer,
+                Stress,
                 groupElementsIGAlayer,
                 groupElementsSlave,
                 groupElementsMaster,
@@ -702,66 +1026,217 @@ int main(int argc, char* argv[])
     std::string resultDir = "";
 
     double penalty;
-    double gap = -0.013;
-    int    contactAlgo = 1; //mortar = 0, non-mortar = 1
+    double gap = -0.00013;
+    int    contactAlgo = 0; //mortar = 0, non-mortar = 1
 
     path = "/home/potto1/mechanics/otto/gmsh/";
     fileNameSlave  = "CircleUnstructuredQudrilat.msh";
     fileNameMaster = "masterHalfspaceCombined.msh";
 
+//    NuTo::Structure *myStructure = new NuTo::Structure(2);
+//    myStructure->SetNumTimeDerivatives(0);
+    //QuarterCircle(path, fileNameSlave, myStructure, 1.e5, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2, NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
+
+//    delete myStructure;
+
+//    return 0;
+
     // ===> penalty parameter study <=== //
-    resultDir = "./ResultsContactStatic_1_10Lobatto2";
-    penalty = 1.e10;
-    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO2, NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip);
 
-    return 0;
+    contactAlgo = 1;
 
-    resultDir = "./ResultsContactStatic_1_10";
-    penalty = 1.e10;
-    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2, NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
+//    resultDir = "./ResultsContactStatic_1_10_12Ip_CA1";
+//    penalty = 1.e10;
+//    run(resultDir,
+//        path,
+//        fileNameSlave,
+//        fileNameMaster,
+//        penalty,
+//        gap,
+//        1.e5,
+//        1.e5,
+//        5,
+//        contactAlgo,
+//        NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
+//        NuTo::Interpolation::eTypeOrder::EQUIDISTANT2,
+//        NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip,
+//        NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
+//        true);
 
-    contactAlgo = 0;
+//    resultDir = "./ResultsContactStatic_5_10_12Ip_CA1";
+//    penalty = 5.e10;
+//    run(resultDir,
+//        path,
+//        fileNameSlave,
+//        fileNameMaster,
+//        penalty,
+//        gap,
+//        1.e5,
+//        1.e5,
+//        5,
+//        contactAlgo,
+//        NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
+//        NuTo::Interpolation::eTypeOrder::EQUIDISTANT2,
+//        NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip,
+//        NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
+//        true);
 
-    resultDir = "./ResultsContactStatic_1_10Lobatto2";
-    penalty = 1.e10;
-    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO2, NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip);
+//    resultDir = "./ResultsContactStatic_1_11_12Ip_CA1";
+//    penalty = 1.e11;
+//    run(resultDir,
+//        path,
+//        fileNameSlave,
+//        fileNameMaster,
+//        penalty,
+//        gap,
+//        1.e5,
+//        1.e5,
+//        5,
+//        contactAlgo,
+//        NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
+//        NuTo::Interpolation::eTypeOrder::EQUIDISTANT2,
+//        NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip,
+//        NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
+//        true);
 
-    resultDir = "./ResultsContactStatic_1_10";
-    penalty = 1.e10;
-    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2, NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
-
-    return 0;
-
-    resultDir = "./ResultsContactStatic_1_9";
-    penalty = 1.e9;
-    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2, NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
-
-
-
-    return 0;
-
-    resultDir = "./ResultsContactStatic_1_10_Order3";
-    penalty = 1.e10;
-    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO3, NuTo::eIntegrationType::IntegrationType2D4NLobatto16Ip);
-
-    resultDir = "./ResultsContactStatic_1_10_Order4";
-    penalty = 1.e10;
-    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO4, NuTo::eIntegrationType::IntegrationType2D4NLobatto25Ip);
-
-
-    resultDir = "./ResultsContactStatic_5_10";
-    penalty = 5.e10;
-    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO2, NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip);
-
-    resultDir = "./ResultsContactStatic_1_11";
-    penalty = 1.e11;
-    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO2, NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip);
-
-    resultDir = "./ResultsContactStatic_5_11";
+    resultDir = "./ResultsContactStatic_5_11_4Ip_CA1";
     penalty = 5.e11;
-    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO2, NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip);
+    run(resultDir,
+        path,
+        fileNameSlave,
+        fileNameMaster,
+        penalty,
+        gap,
+        1.e5,
+        1.e5,
+        5,
+        contactAlgo,
+        NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
+        NuTo::Interpolation::eTypeOrder::EQUIDISTANT1,
+        NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip,
+        NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
+        true);
 
-    // ===> integration order <=== //
+    return 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    resultDir = "./ResultsContactStatic_1_10_12Ip_e5";
+    penalty = 1.e10;
+    run(resultDir,
+        path,
+        fileNameSlave,
+        fileNameMaster,
+        penalty,
+        gap,
+        1.e5,
+        1.e5,
+        10,
+        contactAlgo,
+        NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
+        NuTo::Interpolation::eTypeOrder::EQUIDISTANT2,
+        NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip,
+        NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
+        true);
+
+    resultDir = "./ResultsContactStatic_1_10_12Ip_e10";
+    penalty = 1.e10;
+    run(resultDir,
+        path,
+        fileNameSlave,
+        fileNameMaster,
+        penalty,
+        gap,
+        1.e5,
+        1.e10,
+        10,
+        contactAlgo,
+        NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
+        NuTo::Interpolation::eTypeOrder::EQUIDISTANT2,
+        NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip,
+        NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
+        true);
+
+
+
+
+    resultDir = "./ResultsContactStatic_1_10_4Ip";
+    run(resultDir,
+        path,
+        fileNameSlave,
+        fileNameMaster,
+        penalty,
+        gap,
+        1.e5,
+        1.e5,
+        10,
+        contactAlgo,
+        NuTo::eIntegrationType::IntegrationType1D2NGauss4Ip,
+        NuTo::Interpolation::eTypeOrder::EQUIDISTANT2,
+        NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip,
+        NuTo::eIntegrationType::IntegrationType1D2NGauss4Ip,
+        true);
+
+    return 0;
+
+//    resultDir = "./ResultsContactStatic_1_10Lobatto2";
+//    penalty = 1.e10;
+//    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO2, NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip);
+
+//    contactAlgo = 0;
+
+//    resultDir = "./ResultsContactStatic_1_10Lobatto2";
+//    penalty = 1.e10;
+//    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO2, NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip);
+
+//    resultDir = "./ResultsContactStatic_1_10";
+//    penalty = 1.e10;
+//    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2, NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
+
+//    return 0;
+
+//    resultDir = "./ResultsContactStatic_1_9";
+//    penalty = 1.e9;
+//    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2, NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip);
+
+
+
+//    return 0;
+
+//    resultDir = "./ResultsContactStatic_1_10_Order3";
+//    penalty = 1.e10;
+//    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO3, NuTo::eIntegrationType::IntegrationType2D4NLobatto16Ip);
+
+//    resultDir = "./ResultsContactStatic_1_10_Order4";
+//    penalty = 1.e10;
+//    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO4, NuTo::eIntegrationType::IntegrationType2D4NLobatto25Ip);
+
+
+//    resultDir = "./ResultsContactStatic_5_10";
+//    penalty = 5.e10;
+//    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO2, NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip);
+
+//    resultDir = "./ResultsContactStatic_1_11";
+//    penalty = 1.e11;
+//    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO2, NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip);
+
+//    resultDir = "./ResultsContactStatic_5_11";
+//    penalty = 5.e11;
+//    run(resultDir, path, fileNameSlave, fileNameMaster, penalty, gap, contactAlgo,  NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, NuTo::Interpolation::eTypeOrder::LOBATTO2, NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip);
+
+//    // ===> integration order <=== //
 
 
     return 0;

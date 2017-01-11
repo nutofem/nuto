@@ -24,6 +24,7 @@
 #include "nuto/mechanics/sections/SectionPlane.h"
 #include "nuto/mechanics/structures/StructureBase.h"
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
+#include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveIOMap.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveScalar.h"
 #include "nuto/mechanics/constitutive/inputoutput/ConstitutiveVector.h"

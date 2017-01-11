@@ -1878,6 +1878,7 @@ namespace ShapeFunctionsIGA
 int FindSpan(double rParameter, int rDegree, const Eigen::VectorXd &rKnots)
 {
     int size = rKnots.rows();
+    int iterations = 0;
 
     if(rParameter < rKnots(0) || rParameter > rKnots(size - 1))
         throw MechanicsException(__PRETTY_FUNCTION__, "The parameter is out of the range of the knot vector.");
@@ -1895,6 +1896,9 @@ int FindSpan(double rParameter, int rDegree, const Eigen::VectorXd &rKnots)
         else                         low = mid;
 
         mid = (low + high)/2;
+        iterations++;
+        if(iterations > size)
+            throw MechanicsException(__PRETTY_FUNCTION__, "The maximum number of iterations for finding the span exceeded.");
     }
     return mid;
 }

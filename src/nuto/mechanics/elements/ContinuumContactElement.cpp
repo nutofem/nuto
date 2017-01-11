@@ -472,7 +472,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
     }
     else if(mContactType == 1)
     {
-        rData.mMortarGapVector += shapeFunsSlave*gap*derivativeContactForce*jacobianbyWeight;
+        rData.mMortarGapVector += shapeFunsSlave*(mConstitutiveContactLaw->GetContactForce(gap))*jacobianbyWeight;
     }
 }
 
@@ -525,9 +525,9 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
                 Eigen::VectorXd penaltyForce(rData.mMortarGapVector.rows());
                 for(int i = 0; i < penaltyForce.rows(); i++)
                 {
-                    if (rData.mMortarGapVector(i) >= 0.)
+                    if (rData.mMortarGapVector(i) > 0.)
                         penaltyForce(i) = 0.;
-                    else if (rData.mMortarGapVector(i) < 0.)
+                    else if (rData.mMortarGapVector(i) <= 0.)
                     {
                         penaltyForce(i) = mConstitutiveContactLaw->GetContactForce(rData.mMortarGapVector(i));
                     }

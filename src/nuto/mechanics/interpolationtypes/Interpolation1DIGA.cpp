@@ -189,6 +189,13 @@ Eigen::MatrixXd NuTo::Interpolation1DIGA::CalculateMatrixNDerivative(const Eigen
 //    return shapeFunctions.transpose();
 }
 
+Eigen::VectorXi NuTo::Interpolation1DIGA::GetSurfaceNodeIndices(int rSurface) const
+{
+    Eigen::VectorXi indices(CalculateNumNodes());
+    for(int i = 0; i < indices.rows(); i++) indices(i) = i;
+    return indices;
+}
+
 int NuTo::Interpolation1DIGA::CalculateNumNodes() const
 {
     return mDegree+1;

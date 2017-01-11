@@ -45,6 +45,7 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto3Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto4Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto5Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType1D2NLobatto6Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss13Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss16Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D3NGauss1Ip.h"
@@ -126,6 +127,8 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
         NuTo::IntegrationType1D2NLobatto4Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto5Ip)]=
         NuTo::IntegrationType1D2NLobatto5Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto6Ip)]=
+        NuTo::IntegrationType1D2NLobatto6Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss13Ip)]=
         NuTo::IntegrationType2D3NGauss13Ip::GetStrIdentifierStatic();
     mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss16Ip)]=

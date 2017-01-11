@@ -108,10 +108,7 @@ public:
     //       SURFACE PARAMETRIZATION
     //********************************************
 
-    Eigen::VectorXi GetSurfaceNodeIndices(int rSurface) const override
-    {
-        throw MechanicsException(__PRETTY_FUNCTION__, "Not needed in 1D!");
-    }
+    Eigen::VectorXi GetSurfaceNodeIndices(int rSurface) const override;
 
     //! @brief returns the natural coordinates of the nodes that span the surface
     //! @param rSurface ... index of the surface, see documentation of the specific InterpolationType

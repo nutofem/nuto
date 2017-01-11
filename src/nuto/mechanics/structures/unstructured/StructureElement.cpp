@@ -1035,12 +1035,11 @@ Eigen::Matrix<std::pair<const ContinuumElementIGA<2>*, int>, Eigen::Dynamic, Eig
 }
 template<int TDimSlave, int TDimMaster>
 int NuTo::Structure::ContactElementsCreate(int rElementsGroupIDSlave,
-                                            int rNodeGroupSlaveId,
-                                            const Eigen::Matrix<std::pair<int, int>,
-                                            Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID,
-                                            eIntegrationType rIntegrationType,
-                                            int rContactAlgorithm,
-                                            int rConstitutiveLaw)
+                                           int rNodeGroupSlaveId,
+                                           const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID,
+                                           eIntegrationType rIntegrationType,
+                                           int rContactAlgorithm,
+                                           int rConstitutiveLaw)
 {
     Eigen::Matrix<std::pair<const ContinuumElementIGA<TDimMaster>*, int>, Eigen::Dynamic, Eigen::Dynamic> masterElements = ContactElementsCreateMaster<TDimMaster>(rMasterElementsID);
 
@@ -1063,6 +1062,7 @@ int NuTo::Structure::ContactElementsCreate(int rElementsGroupIDSlave,
     boost::ptr_map<int, ConstitutiveBase>::iterator itConstitutive = mConstitutiveLawMap.find(rConstitutiveLaw);
     if (itConstitutive == this->mConstitutiveLawMap.end())
         throw MechanicsException(__PRETTY_FUNCTION__, "Constitutive law not found.");
+
 
     Group<NodeBase>&    nodeGroup       = *(itGroupBoundaryNodes->second->AsGroupNode());
 
@@ -1138,7 +1138,7 @@ int NuTo::Structure::ContactElementsCreate(int rElementsGroupIDSlave,
                     {
                     case 1:
                     {
-                        boundaryElement = new ContinuumContactElement<1, TDimMaster>(&elementPtrSlave->AsContinuumElementIGA1D(), surfaceId, masterElements, itConstitutive->second, rContactAlgorithm);
+                        boundaryElement = new ContinuumContactElement<1, TDimMaster>(&elementPtrSlave->AsContinuumElementIGA1D(), -1, masterElements, itConstitutive->second, rContactAlgorithm);
                         break;
                     }
                     case 2:
@@ -1173,6 +1173,7 @@ int NuTo::Structure::ContactElementsCreate(int rElementsGroupIDSlave,
                     throw MechanicsException(__PRETTY_FUNCTION__, "Could not automatically determine integration type of the boundary element.");
 
                 boundaryElement->SetIntegrationType(GetPtrIntegrationType(rIntegrationType), ipDataType);
+//                boundaryElement->SetConstitutiveLaw(itConstitutive->second);
                 boundaryElement->SetConstitutiveLaw(constitutiveLaw);
             }
         }
