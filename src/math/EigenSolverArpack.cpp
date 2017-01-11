@@ -21,11 +21,11 @@ NuTo::EigenSolverArpack::EigenSolverArpack() : NuToObject()
 #endif
 }
 
-void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
-		const NuTo::SparseMatrix<double>* rM,
-		int rNumEigenValues,
-        Eigen::MatrixXd& rEigenValues,
-        Eigen::MatrixXd& rEigenVectors)
+void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double> &rK,
+                                    const NuTo::SparseMatrix<double> *rM,
+                                    int rNumEigenValues,
+                                    Eigen::MatrixXd &rEigenValues,
+                                    Eigen::MatrixXd &rEigenVectors)
 {
 #ifdef HAVE_ARPACK
     NuTo::Timer(__FUNCTION__, GetShowTime());
@@ -129,7 +129,7 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
     int iPntr[14]; //output : Pointer to mark the starting locations in the WORKD and WORKL
                    //arrays for matrices/vectors used by the Arnoldi iteration.
 
-    FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> workd(n,3);
+    Eigen::MatrixXd workd(n,3);
     int lworkl;
 
     int info(0);
@@ -601,8 +601,8 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
     	char howmany('A');
     	if (rK.IsSymmetric())
     	{
-			rEigenValues.Resize(rNumEigenValues,1);
-			rEigenVectors.Resize(n,rNumEigenValues);
+			rEigenValues.resize(rNumEigenValues,1);
+			rEigenVectors.resize(n,rNumEigenValues);
 			int ldz(n);
             ARPACKWRAP::dseupd_ (&rVec, &howmany, &select[0], rEigenValues.col(0).data(),
                                  rEigenVectors.data(), &ldz,	&mSigmaR,
@@ -615,8 +615,8 @@ void NuTo::EigenSolverArpack::Solve(const NuTo::SparseMatrix<double>& rK,
    	    }
     	else
     	{
-			rEigenValues.Resize(rNumEigenValues,2);
-			rEigenVectors.Resize(n,rNumEigenValues);
+			rEigenValues.resize(rNumEigenValues,2);
+			rEigenVectors.resize(n,rNumEigenValues);
 			int ldz(n);
 			std::vector<double> workev(3*ncv);
             ARPACKWRAP::dneupd_ (&rVec, &howmany, &select[0], rEigenValues.col(0).data(), rEigenValues.col(1).data(),

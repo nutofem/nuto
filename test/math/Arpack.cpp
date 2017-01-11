@@ -5,9 +5,9 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 
+#include <eigen3/Eigen/Eigenvalues>
+
 #include "base/Timer.h"
-#include "math/FullMatrix.h"
-#include "math/FullVector.h"
 #include "math/SparseMatrixCSRVector2General.h"
 #include "math/EigenSolverArpack.h"
 #include "math/EigenSolverArpackEnum.h"
@@ -32,20 +32,24 @@ struct ArpackTestFixture
         auto A_Full = GetA();
         auto M_Full = GetM();
 
-        A_Full.EigenVectorsSymmetric(mEigenValuesStandard,mEigenVectorsStandard);
+        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> mySolverSymm(A_Full);
+        mEigenValuesStandard  = mySolverSymm.eigenvalues();
+        mEigenVectorsStandard = mySolverSymm.eigenvectors();
 
-        A_Full.GeneralizedEigenVectorsSymmetric(M_Full,mEigenValuesGeneral,mEigenVectorsGeneral);
+        Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> mySolverGeneral(A_Full, M_Full);
+        mEigenValuesGeneral  = mySolverGeneral.eigenvalues();
+        mEigenVectorsGeneral = mySolverGeneral.eigenvectors();
 
-        mEigenValuesStandardRef = mEigenValuesStandard.GetBlock(8 - mNumEigenValuesCompute, 0, mNumEigenValuesCompute, 1);
-        mEigenValuesGeneralRef  = mEigenValuesGeneral.GetBlock (8 - mNumEigenValuesCompute, 0, mNumEigenValuesCompute, 1);
+        mEigenValuesStandardRef = mEigenValuesStandard.block(8 - mNumEigenValuesCompute, 0, mNumEigenValuesCompute, 1);
+        mEigenValuesGeneralRef  = mEigenValuesGeneral.block (8 - mNumEigenValuesCompute, 0, mNumEigenValuesCompute, 1);
 
         mEigenSolver.SetShowTime(false);
 
     }
 
-    static NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> GetA()
+    static Eigen::MatrixXd GetA()
     {
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> a(8,8);
+        Eigen::MatrixXd a = Eigen::MatrixXd::Zero(8,8);
         a(0,0) = 8.;
         a(1,1) = 2.;
         a(2,2) = 4.;
@@ -65,9 +69,9 @@ struct ArpackTestFixture
         return a;
     }
 
-    static NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> GetM()
+    static Eigen::MatrixXd GetM()
     {
-        NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> m(8,8);
+        Eigen::MatrixXd m = Eigen::MatrixXd::Zero(8,8);
         m(0,0) = 1.;
         m(1,1) = 1.;
         m(2,2) = 1.;
@@ -83,31 +87,31 @@ struct ArpackTestFixture
     }
 
     //values for the standard eigenvalue problem
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mEigenVectorsStandard;
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mEigenValuesStandard;
+    Eigen::MatrixXd mEigenVectorsStandard;
+    Eigen::MatrixXd mEigenValuesStandard;
 
     //values for the generalized eigenvalue problem
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mEigenVectorsGeneral;
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mEigenValuesGeneral;
+    Eigen::MatrixXd mEigenVectorsGeneral;
+    Eigen::MatrixXd mEigenValuesGeneral;
 
     int mNumEigenValuesCompute = 3;
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mEigenValuesStandardRef;
+    Eigen::MatrixXd mEigenValuesStandardRef;
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mEigenValuesGeneralRef;
+    Eigen::MatrixXd mEigenValuesGeneralRef;
 
     NuTo::EigenSolverArpack mEigenSolver;
 
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mEigenVectors;
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> mEigenValues;
+    Eigen::MatrixXd mEigenVectors;
+    Eigen::MatrixXd mEigenValues;
 
 };
 
 BOOST_FIXTURE_TEST_CASE(Info, ArpackTestFixture)
 {
     std::cout << "FullMatrix\n" << GetA() << std::endl;
-    std::cout << "eigenvalues of standard eigenvalue problem.\n" << mEigenValuesStandard.Trans() << std::endl;
-    std::cout << "eigenvalues of generalized eigenvalue problem.\n" << mEigenValuesGeneral.Trans() << std::endl;
+    std::cout << "eigenvalues of standard eigenvalue problem.\n" << mEigenValuesStandard.transpose() << std::endl;
+    std::cout << "eigenvalues of generalized eigenvalue problem.\n" << mEigenValuesGeneral.transpose() << std::endl;
 }
 
 
@@ -121,7 +125,7 @@ BOOST_FIXTURE_TEST_CASE(DSDRV1, ArpackTestFixture)
     mEigenSolver.SetWhichEigenValues(NuTo::EIGEN_SOLVER_ARPACK::eWhich::LA);
     mEigenSolver.Solve(A_symmetric, nullptr, mNumEigenValuesCompute, mEigenValues, mEigenVectors);
 
-    std::cout << "largest eigenvalues of DSDRV1\n" << mEigenValues.Trans() << std::endl;
+    std::cout << "largest eigenvalues of DSDRV1\n" << mEigenValues.transpose() << std::endl;
     BOOST_CHECK_SMALL((mEigenValues-mEigenValuesStandardRef).norm() , 1e-5);
 }
 
@@ -140,7 +144,7 @@ BOOST_FIXTURE_TEST_CASE(DSDRV2, ArpackTestFixture)
     mEigenSolver.SetWhichEigenValues(NuTo::EIGEN_SOLVER_ARPACK::eWhich::SA);
     mEigenSolver.Solve(A_symmetric, nullptr, mNumEigenValuesCompute, mEigenValues, mEigenVectors);
 
-    std::cout << "largest eigenvalues of DSDRV2\n" << mEigenValues.Trans() << std::endl;
+    std::cout << "largest eigenvalues of DSDRV2\n" << mEigenValues.transpose() << std::endl;
     BOOST_CHECK_SMALL((mEigenValues-mEigenValuesStandardRef).norm() , 1e-5);
 }
 
@@ -155,7 +159,7 @@ BOOST_FIXTURE_TEST_CASE(DSDRV3, ArpackTestFixture)
     mEigenSolver.SetWhichEigenValues(NuTo::EIGEN_SOLVER_ARPACK::eWhich::LA);
     mEigenSolver.Solve(A_symmetric, &M_symmetric, mNumEigenValuesCompute, mEigenValues, mEigenVectors);
 
-    std::cout << "largest eigenvalues of DSDRV3\n" << mEigenValues.Trans() << std::endl;
+    std::cout << "largest eigenvalues of DSDRV3\n" << mEigenValues.transpose() << std::endl;
     BOOST_CHECK_SMALL((mEigenValues-mEigenValuesGeneralRef).norm() , 1e-5);
 }
 
@@ -173,7 +177,7 @@ BOOST_FIXTURE_TEST_CASE(DSDRV4, ArpackTestFixture)
     mEigenSolver.SetWhichEigenValues(NuTo::EIGEN_SOLVER_ARPACK::eWhich::SA);
     mEigenSolver.Solve(A_symmetric, &M_symmetric, mNumEigenValuesCompute, mEigenValues, mEigenVectors);
 
-    std::cout << "largest eigenvalues of DSDRV4\n" << mEigenValues.Trans() << std::endl;
+    std::cout << "largest eigenvalues of DSDRV4\n" << mEigenValues.transpose() << std::endl;
     BOOST_CHECK_SMALL((mEigenValues-mEigenValuesGeneralRef).norm() , 1e-5);
 }
 
@@ -187,7 +191,7 @@ BOOST_FIXTURE_TEST_CASE(DSDRV5, ArpackTestFixture)
 	mEigenSolver.SetWhichEigenValues(NuTo::EIGEN_SOLVER_ARPACK::eWhich::LA);
 	mEigenSolver.Solve(A_symmetric, &M_symmetric, mNumEigenValuesCompute, mEigenValues, mEigenVectors);
 
-    std::cout << "largest eigenvalues of DSDRV5\n" << mEigenValues.Trans() << std::endl;
+    std::cout << "largest eigenvalues of DSDRV5\n" << mEigenValues.transpose() << std::endl;
     BOOST_CHECK_SMALL((mEigenValues-mEigenValuesGeneralRef).norm() , 1e-5);
 }
 
@@ -201,12 +205,18 @@ BOOST_FIXTURE_TEST_CASE(DNDRV1, ArpackTestFixture)
     //largest real
     mEigenSolver.SetWhichEigenValues(NuTo::EIGEN_SOLVER_ARPACK::eWhich::LR);
     mEigenSolver.Solve(A_general, nullptr, mNumEigenValuesCompute, mEigenValues, mEigenVectors);
+
+    Eigen::VectorXd eigenValuesReal = mEigenValues.col(0);
+
+
     //sort the eigenvalues (I don't know why this is not done in ARPACK)
-    NuTo::FullMatrix<double,Eigen::Dynamic,Eigen::Dynamic> eigenValuesSorted = mEigenValues.SortRow(0).col(0);
+    std::sort(eigenValuesReal.data(), eigenValuesReal.data() + eigenValuesReal.size());
 
-    std::cout << "largest eigenvalues of DNDRV1\n" << eigenValuesSorted.Trans() << std::endl;
 
-    BOOST_CHECK_SMALL((eigenValuesSorted-mEigenValuesStandardRef).norm() , 1e-5);
+
+    std::cout << "largest eigenvalues of DNDRV1\n" << eigenValuesReal.transpose() << std::endl;
+
+    BOOST_CHECK_SMALL((eigenValuesReal-mEigenValuesStandardRef).norm() , 1e-5);
 }
 
 BOOST_FIXTURE_TEST_CASE(LargestEVSymmetric, ArpackTestFixture)

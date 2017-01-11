@@ -83,11 +83,11 @@ public:
     }
 
     //! @brief ... solve the eigenvalue problem of a single matrix
-    void Solve(const NuTo::SparseMatrix<double>& rK,
-               const NuTo::SparseMatrix<double>* rM,
-    		   int rNumEigenValues,
-    		   Eigen::MatrixXd& rEigenValues,
-               Eigen::MatrixXd& rEigenVectors);
+    void Solve(const NuTo::SparseMatrix<double> &rK,
+               const NuTo::SparseMatrix<double> *rM,
+               int rNumEigenValues,
+               Eigen::MatrixXd &rEigenValues,
+               Eigen::MatrixXd &rEigenVectors);
 
     //! @brief ... set the mode
     void SetDriver(NuTo::EIGEN_SOLVER_ARPACK::eDriver rDriver)
