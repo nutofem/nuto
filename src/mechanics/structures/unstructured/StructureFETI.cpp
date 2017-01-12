@@ -514,11 +514,10 @@ void NuTo::StructureFETI::ApplyConstraintsTotalFeti(const int nodeGroupId)
 {
     boost::mpi::communicator world;
 
-    Eigen::VectorXi boundaryNodes = GroupGetMemberIds(nodeGroupId);
+    std::vector<int> boundaryNodeIds = GroupGetMemberIds(nodeGroupId);
 
-    for (int i = 0; i < boundaryNodes.rows(); ++i)
+    for (const int nodeId : boundaryNodeIds)
     {
-        const int nodeId = boundaryNodes[i];
         std::vector<int> dofIds = NodeGetDofIds(nodeId, eDof::DISPLACEMENTS);
 
         for (const auto& id : dofIds)
