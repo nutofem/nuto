@@ -1,4 +1,6 @@
+
 project(NuTo CXX C Fortran) # C and Fortran are required to find LAPACK
+
 cmake_minimum_required(VERSION 3.0)
 
 option(BUILD_SHARED_LIBS "build NuTo libraries as shared libraries" TRUE)
@@ -37,13 +39,29 @@ include_directories(external/jsoncpp/dist/)
 include_directories(external/)
 
 if(ENABLE_MPI)
+
+    message(STATUS "Find MPI")
+
     find_package(MPI REQUIRED)
     include_directories(${MPI_INCLUDE_PATH})
-    message("MPI_INCLUDE_PATH:  " ${MPI_INCLUDE_PATH})
-    message("MPI_COMPILE_FLAGS: " ${MPI_COMPILE_FLAGS})
-    message("MPI_LINK_FLAGS:    " ${MPI_LINK_FLAGS})
-    message("MPI_LIBRARIES:     " ${MPI_LIBRARIES})
+
+    # These variables are set by FindMPI
+    message(STATUS "MPI_CXX_FOUND:              ${MPI_CXX_FOUND}" )
+    message(STATUS "MPI_CXX_COMPILER:           ${MPI_CXX_COMPILER}" )
+    message(STATUS "MPI_CXX_COMPILER_FLAGS:     ${MPI_CXX_COMPILER_FLAGS}" )
+    message(STATUS "MPI_CXX_INCLUDE_PATH:       ${MPI_CXX_INCLUDE_PATH}" )
+    message(STATUS "MPI_CXX_LINK_FLAGS:         ${MPI_CXX_LINK_FLAGS}" )
+    message(STATUS "MPI_CXX_LIBRARIES:          ${MPI_CXX_LIBRARIES}" )
+
+    # Additionally, FindMPI sets the following variables for running MPI programs from the command line:
+    message(STATUS "MPIEXEC:                    ${MPIEXEC}")
+    message(STATUS "MPIEXEC_NUMPROC_FLAG:       ${MPIEXEC_NUMPROC_FLAG}")
+    message(STATUS "MPIEXEC_PREFLAG:            ${MPIEXEC_PREFLAG}")
+    message(STATUS "MPIEXEC_POSTFLAG:           ${MPIEXEC_POSTFLAG}")
+
 endif()
+
+
 
 if(ENABLE_METAMODEL)
     set(ENABLE_OPTIMIZE TRUE)
@@ -156,7 +174,7 @@ endif()
 
 # boost
 message(STATUS "Checking for Boost...")
-set(Boost_ADDITIONAL_VERSIONS "1.61;1.60;1.59;1.57;1.56;1.55;1.41.0;1.41;1.42;1.43;1.44;1.45;1.46;1.46.1;1.47;1.50;1.51;1.54")
+set(Boost_ADDITIONAL_VERSIONS "1.62;1.61;1.60;1.59;1.57;1.56;1.55;1.41.0;1.41;1.42;1.43;1.44;1.45;1.46;1.46.1;1.47;1.50;1.51;1.54")
 if(ENABLE_STATIC_EXTERNALS)
     set(Boost_USE_STATIC_LIBS TRUE)
 endif()

@@ -108,11 +108,11 @@ void NuTo::Structure::NodeInfo(int rVerboseLevel)const
 
                 for (Node::eDof dofType: dofTypes)
                 {
-                    mLogger << "\t" << Node::DofToString(dofType);
+                    mLogger << " \t \t" << Node::DofToString(dofType);
                     int numDofs = node.GetNum(dofType);
                     for (unsigned short iDof = 0; iDof < numDofs; ++iDof)
                     {
-                        mLogger << "\t" << it->second->Get(dofType)[iDof];
+                        mLogger << " \t \t" << it->second->Get(dofType)[iDof];
                         if (it->second->IsDof(dofType))
                             mLogger << "("<< it->second->GetDof(dofType, iDof)<< ")" ;
                     }

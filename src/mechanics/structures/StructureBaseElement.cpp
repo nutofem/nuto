@@ -457,21 +457,7 @@ void NuTo::StructureBase::ElementGroupSetInterpolationType(int rGroupId, int rIn
     }
 }
 
-void NuTo::StructureBase::ElementTotalSetInterpolationType(const int rInterpolationTypeId)
-{
-    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
 
-    boost::ptr_map<int,InterpolationType>::iterator itInterpolationType = mInterpolationTypeMap.find(rInterpolationTypeId);
-    if (itInterpolationType==mInterpolationTypeMap.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation type with the given identifier does not exist.");
-
-    std::vector<ElementBase*> elementVector;
-    GetElementsTotal(elementVector);
-
-    for (const auto& element : elementVector)
-        ElementSetInterpolationType(element->ElementGetId(), rInterpolationTypeId);
-
-}
 
 void NuTo::StructureBase::ElementSetInterpolationType(ElementBase* rElement, InterpolationType* rInterpolationType)
 {

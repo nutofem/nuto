@@ -1079,6 +1079,13 @@ void NuTo::StructureBase::UpdateDofStatus()
     mDofStatus.SetHasInteractingConstraints(mConstraintMatrix.GetNumActiveEntires() != 0);
 }
 
+
+void NuTo::StructureBase::DofStatusSetHasInteractingConstraints(bool rHasInteractingConstraints)
+{
+    mDofStatus.SetHasInteractingConstraints(rHasInteractingConstraints);
+}
+
+
 int NuTo::StructureBase::GetNumTotalDofs() const
 {
     return GetNumTotalActiveDofs() + GetNumTotalDependentDofs();

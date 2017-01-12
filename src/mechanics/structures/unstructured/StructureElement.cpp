@@ -121,26 +121,37 @@ void NuTo::Structure::ElementInfo(const ElementBase* rElement, int rVerboseLevel
 //! @brief info about the elements in the Structure
 void NuTo::Structure::ElementInfo(int rVerboseLevel) const
 {
-    std::cout << "number of elements: " << mElementMap.size() << std::endl;
+    mLogger << "number of elements: " << mElementMap.size() << "\n";
     if (rVerboseLevel > 3)
     {
-        std::cout << "\t\telements :" << std::endl;
+        mLogger << "\t\telements :" << "\n";
         for (boost::ptr_map<int, ElementBase>::const_iterator it = mElementMap.begin(); it != mElementMap.end(); it++)
         {
-            std::cout << "\t\t" << it->first;
+            mLogger << "\t\t" << it->first;
             if (rVerboseLevel > 4)
             {
-                std::cout << "\t:";
+                mLogger << "\t:";
                 for (unsigned short iNode = 0; iNode < it->second->GetNumNodes(); ++iNode)
-                    std::cout << "\t" << this->NodeGetId(it->second->GetNode(iNode));
+                    mLogger << "\t" << this->NodeGetId(it->second->GetNode(iNode));
             }
-            std::cout << std::endl;
+            mLogger << "\n";
         }
     }
 }
 
-//! @brief changes the node structure to match the interpolation type
-//! the node merge distance and the box size are calculated from the element sizes
+
+void NuTo::Structure::ElementTotalSetInterpolationType(const int rInterpolationTypeId)
+{
+    Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
+
+    boost::ptr_map<int,InterpolationType>::iterator itInterpolationType = mInterpolationTypeMap.find(rInterpolationTypeId);
+    if (itInterpolationType==mInterpolationTypeMap.end())
+        throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation type with the given identifier does not exist.");
+
+    for (const auto& elementPair : mElementMap)
+        ElementSetInterpolationType(elementPair.first, rInterpolationTypeId);
+}
+
 void NuTo::Structure::ElementTotalConvertToInterpolationType()
 {
     // create a group with all elements
@@ -515,8 +526,7 @@ void NuTo::Structure::ElementConvertToInterpolationType(int rGroupNumberElements
     }
 }
 
-//! @brief Deletes an element
-//! @param rElementIdent identifier for the element
+
 void NuTo::Structure::ElementDelete(int rElementNumber)
 {
     Timer timer(__FUNCTION__, GetShowTime(), GetLogger());
