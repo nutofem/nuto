@@ -153,7 +153,7 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId,
 
     interpolationType->UpdateIntegrationType(integrationType);
     if (mVerboseLevel > 2)
-        mLogger << "[NuTo::Structure::InterpolationTypeAdd] Updated IntegrationType to " << IntegrationTypeToString(integrationType.GetEnumType()) << ".\n";
+        mLogger << "[NuTo::Structure::InterpolationTypeAdd] Updated IntegrationType to " << integrationType.GetStrIdentifier() << ".\n";
 
     // update all elements
     // disable show time
@@ -194,7 +194,7 @@ void NuTo::Structure::InterpolationTypeAdd(int rInterpolationTypeId, NuTo::Node:
 
     interpolationType->UpdateIntegrationType(integrationType);
     if (mVerboseLevel > 2)
-        mLogger << "[NuTo::Structure::InterpolationTypeAdd] Updated IntegrationType to " << IntegrationTypeToString(integrationType.GetEnumType()) << ".\n";
+        mLogger << "[NuTo::Structure::InterpolationTypeAdd] Updated IntegrationType to " << integrationType.GetStrIdentifier() << ".\n";
 
     // update all elements
     // disable show time

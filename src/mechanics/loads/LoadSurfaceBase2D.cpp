@@ -191,7 +191,9 @@ void NuTo::LoadSurfaceBase2D::AddLoadToGlobalSubVectors(int rLoadCase, Eigen::Ve
             // ##  Calculate IP coordinates in
             // ## surface CS, natural CS and global CS
             // #######################################
-            ipCoordsSurface = integrationType->GetLocalIntegrationPointCoordinates(theIp);
+            double tmp;
+            integrationType->GetLocalIntegrationPointCoordinates1D(theIp, tmp);
+            ipCoordsSurface(0) = tmp;
 
             if (interpolationTypeDisps.GetTypeOrder() == Interpolation::eTypeOrder::SPLINE)
                 ipCoordsNatural = interpolationTypeCoords.CalculateNaturalSurfaceCoordinates(ipCoordsSurface, surface, elementPtr->GetKnots());

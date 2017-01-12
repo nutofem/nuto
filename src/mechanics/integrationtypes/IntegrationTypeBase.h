@@ -7,8 +7,7 @@
 #endif // ENABLE_SERIALIZATION
 
 #include "mechanics/MechanicsException.h"
-#include "mechanics/integrationtypes/IntegrationTypeEnum.h"
-#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 #include  <vector>
 
 
@@ -65,11 +64,24 @@ public:
     }
 #endif // ENABLE_SERIALIZATION
 
+    //! @brief returns the dimension of the integration type
+    //! @return dimension = 1, 2 or 3
+    virtual int GetCoordinateDimension()const=0;
+
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
-    //! @return rCoordinates (result)
-    virtual Eigen::VectorXd GetLocalIntegrationPointCoordinates(int rIpNum) const = 0;
+    //! @param rCoordinates (result)
+    virtual void GetLocalIntegrationPointCoordinates1D(int rIpNum, double& rCoordinates)const;
 
+    //! @brief returns the local coordinates of an integration point
+    //! @param rIpNum integration point (counting from zero)
+    //! @param rCoordinates (result)
+    virtual void GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const;
+
+    //! @brief returns the local coordinates of an integration point
+    //! @param rIpNum integration point (counting from zero)
+    //! @param rCoordinates (result)
+    virtual void GetLocalIntegrationPointCoordinates3D(int rIpNum, double rCoordinates[3])const;
 
     virtual Eigen::MatrixXd GetNaturalIntegrationPointCoordinates() const
     {
@@ -78,16 +90,16 @@ public:
 
     //! @brief returns the total number of integration points for this integration type
     //! @return number of integration points
-    virtual int GetNumIntegrationPoints() const = 0;
+    virtual int GetNumIntegrationPoints()const=0;
 
     //! @brief returns the weight of an integration point
     //! @param rIpNum integration point (counting from zero)
     //! @return weight of integration points
-    virtual double GetIntegrationPointWeight(int rIpNum) const = 0;
+    virtual double GetIntegrationPointWeight(int rIpNum)const=0;
 
     //! @brief returns a string with the identifier of the integration type
     //! @return identifier
-    virtual eIntegrationType GetEnumType() const = 0;
+    virtual std::string GetStrIdentifier()const=0;
 
     //! @brief info about the integration type
     //! @param rVerboseLevel determines how detailed the information is

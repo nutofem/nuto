@@ -59,7 +59,7 @@ namespace NuTo
 	    // get the 1D integration point coordinates and weights
 	    for (int i = 0; i < T; i++)
 	    {
-			coordinates1D[i] = integrationType1D->GetLocalIntegrationPointCoordinates(i)[0];
+	    	integrationType1D->GetLocalIntegrationPointCoordinates1D(i, coordinates1D[i]);
 	        weights1D[i] = integrationType1D->GetIntegrationPointWeight(i);
 	    }
 
@@ -93,10 +93,12 @@ namespace NuTo
     //! @param rIpNum integration point (counting from zero)
     //! @param rCoordinates (result)
     template <int T>
-    Eigen::VectorXd IntegrationType3D8NLobatto<T>::GetLocalIntegrationPointCoordinates(int rIpNum) const
+    void IntegrationType3D8NLobatto<T>::GetLocalIntegrationPointCoordinates3D(int rIpNum, double rCoordinates[3])const
 	{
         assert(rIpNum>=0 && rIpNum<T*T*T);
-        return mCoordinates[rIpNum];
+        rCoordinates[0] = mCoordinates[rIpNum][0];
+        rCoordinates[1] = mCoordinates[rIpNum][1];
+        rCoordinates[2] = mCoordinates[rIpNum][2];
 	}
 
 
@@ -121,13 +123,33 @@ namespace NuTo
     //! @brief returns a string with the identifier of the integration type
     //! @return identifier
     template <int T>
-	eIntegrationType IntegrationType3D8NLobatto<T>::GetEnumType() const
+    std::string IntegrationType3D8NLobatto<T>::GetStrIdentifier()const
+	{
+    	return GetStrIdentifierStatic();
+	}
+
+    //! @brief returns a string with the identifier of the integration type
+    //! @return identifier
+    template <int T>
+    std::string IntegrationType3D8NLobatto<T>::GetStrIdentifierStatic()
     {
     	switch(T)
 		{
-	    case 3: return eIntegrationType::IntegrationType3D8NLobatto3x3x3Ip;
-	    case 4: return eIntegrationType::IntegrationType3D8NLobatto4x4x4Ip;
-	    case 5: return eIntegrationType::IntegrationType3D8NLobatto5x5x5Ip;
+	    case 3:
+	    {
+	    	return std::string("3D8NLobatto3x3x3IP");
+	    	break;
+	    }
+	    case 4:
+	    {
+	    	return std::string("3D8NLobatto4x4x4IP");
+	    	break;
+	    }
+	    case 5:
+	    {
+	    	return std::string("3D8NLobatto5x5x5IP");
+	    	break;
+	    }
 	    default:
 	    	throw MechanicsException("[IntegrationType3D8NLobatto<T>::IntegrationType3D8NLobatto] Only implemented for orders 3,4 and 5");
 		}

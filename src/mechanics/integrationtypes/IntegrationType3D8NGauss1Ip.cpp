@@ -15,10 +15,12 @@ NuTo::IntegrationType3D8NGauss1Ip::IntegrationType3D8NGauss1Ip()
 //! @brief returns the local coordinates of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @param rCoordinates (result)
-Eigen::VectorXd NuTo::IntegrationType3D8NGauss1Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
+void NuTo::IntegrationType3D8NGauss1Ip::GetLocalIntegrationPointCoordinates3D(int rIpNum, double rCoordinates[3])const
 {
     assert(rIpNum==0);
-    return Eigen::Vector3d::Zero();
+	rCoordinates[0] = 0.;
+	rCoordinates[1] = 0.;
+	rCoordinates[2] = 0.;
 }
 
 
@@ -35,6 +37,20 @@ int NuTo::IntegrationType3D8NGauss1Ip::GetNumIntegrationPoints()const
 double NuTo::IntegrationType3D8NGauss1Ip::GetIntegrationPointWeight(int rIpNum)const
 {
     return 8;
+}
+
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
+std::string NuTo::IntegrationType3D8NGauss1Ip::GetStrIdentifier()const
+{
+    return GetStrIdentifierStatic();
+}
+
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
+std::string NuTo::IntegrationType3D8NGauss1Ip::GetStrIdentifierStatic()
+{
+    return std::string("3D8NGAUSS1IP");
 }
 
 #ifdef ENABLE_VISUALIZE

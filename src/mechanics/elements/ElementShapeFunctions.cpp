@@ -28,7 +28,7 @@ Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussOrder1(int rNodeIndex)
         coords(0, 0) = 1.;
         break;
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..1)");
+        throw NuTo::MechanicsException("[NodeCoordinatesTrussOrder1] node index out of range (0..1)");
         break;
     }
     return coords;
@@ -67,7 +67,7 @@ Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussOrder2(int rNodeIndex)
         coords(0, 0) = 1.;
         break;
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..2)");
+        throw NuTo::MechanicsException("[NodeCoordinatesTrussOrder2] node index out of range (0..2)");
         break;
     }
     return coords;
@@ -111,7 +111,7 @@ Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussOrder3(int rNodeIndex)
         coords(0, 0) = 1.;
         break;
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..3)");
+        throw NuTo::MechanicsException("[NodeCoordinatesTrussOrder3] node index out of range (0..3)");
         break;
     }
     return coords;
@@ -166,7 +166,7 @@ Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussOrder4(int rNodeIndex)
         coords(0, 0) = 1.;
         break;
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..4)");
+        throw NuTo::MechanicsException("[NodeCoordinatesTrussOrder4] node index out of range (0..4)");
         break;
     }
     return coords;
@@ -221,7 +221,7 @@ Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussSpectralOrder3(int rNodeIndex)
         coords(0, 0) = 1.;
         break;
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..3)");
+        throw NuTo::MechanicsException("[NodeCoordinatesTrussSpectralOrder3] node index out of range (0..3)");
         break;
     }
     return coords;
@@ -275,7 +275,7 @@ Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussSpectralOrder4(int rNodeIndex)
         coords(0, 0) = 1.;
         break;
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..4)");
+        throw NuTo::MechanicsException("[NodeCoordinatesTrussSpectralOrder4] node index out of range (0..4)");
         break;
     }
     return coords;
@@ -331,7 +331,7 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesTriangleOrder1(int rNodeIndex)
         return Eigen::Matrix<double, 2, 1>(0.0, 1.0);
         break;
     default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..2)");
+        throw MechanicsException("[NodeCoordinatesTriangleOrder1] node index out of range (0..2)");
         break;
     }
 }
@@ -385,7 +385,7 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesTriangleOrder2(int rNodeIndex)
         return Eigen::Matrix<double, 2, 1>(0.0, 0.5);
         break;
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..5)");
+        throw NuTo::MechanicsException("[NodeCoordinatesTriangleOrder2] node index out of range (0..5)");
         break;
     }
 }
@@ -469,7 +469,7 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesTriangleOrder3(int rNodeIndex)
         return Eigen::Matrix<double, 2, 1>(0., 1.);
         break;
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..9)");
+        throw NuTo::MechanicsException("[NodeCoordinatesTriangleOrder3] node index out of range (0..9)");
         break;
     }
 }
@@ -585,7 +585,7 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesTriangleOrder4(int rNodeIndex)
         return Eigen::Matrix<double, 2, 1>(.00, 1.00);
         break;
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..14)");
+        throw NuTo::MechanicsException("[NodeCoordinatesTriangleOrder4] node index out of range (0..14)");
         break;
     }
 }
@@ -689,7 +689,7 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesQuadOrder1(int rNodeIndex)
         return Eigen::Matrix<double, 2, 1>(-1.0, 1.0);
         break;
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..3)");
+        throw NuTo::MechanicsException("[CoordinatesQuadOrder1] node index out of range (0..3)");
         break;
     }
 }
@@ -751,7 +751,7 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesQuadOrder2(int rNodeIndex)
         return Eigen::Matrix<double, 2, 1>(-1.0, 0.0);
         break;
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..7)");
+        throw NuTo::MechanicsException("[CoordinatesQuadOrder2] node index out of range (0..7)");
         break;
     }
 }
@@ -817,7 +817,7 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesQuadSpectralOrder2(int rNodeIndex)
     double cX = ShapeFunctions1D::NodeCoordinatesTrussOrder2(rNodeIndex % d)(0, 0);
     double cY = ShapeFunctions1D::NodeCoordinatesTrussOrder2(rNodeIndex / d)(0, 0);
 
-    return Eigen::Vector2d({cX, cY});
+    return Eigen::Vector2d(cX, cY);
 }
 
 Eigen::Matrix<double, 9, 1> ShapeFunctionsQuadSpectralOrder2(const Eigen::VectorXd& rCoordinates)
@@ -878,7 +878,7 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesQuadSpectralOrder3(int rNodeIndex)
     double cX = ShapeFunctions1D::NodeCoordinatesTrussSpectralOrder3(rNodeIndex % d)(0, 0);
     double cY = ShapeFunctions1D::NodeCoordinatesTrussSpectralOrder3(rNodeIndex / d)(0, 0);
 
-    return Eigen::Vector2d({cX, cY});
+    return Eigen::Vector2d(cX, cY);
 }
 
 Eigen::Matrix<double, 16, 1> ShapeFunctionsQuadSpectralOrder3(const Eigen::VectorXd& rCoordinates)
@@ -940,7 +940,7 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesQuadSpectralOrder4(int rNodeIndex)
     double cX = ShapeFunctions1D::NodeCoordinatesTrussSpectralOrder4(rNodeIndex % d)(0, 0);
     double cY = ShapeFunctions1D::NodeCoordinatesTrussSpectralOrder4(rNodeIndex / d)(0, 0);
 
-    return Eigen::Vector2d({cX, cY});
+    return Eigen::Vector2d(cX, cY);
 }
 
 Eigen::Matrix<double, 25, 1> ShapeFunctionsQuadSpectralOrder4(const Eigen::VectorXd& rCoordinates)
@@ -1010,7 +1010,7 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesTetrahedronOrder1(int rNodeIndex)
     case 3:
         return Eigen::Vector3d(0.0, 0.0, 1.0);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..4)");
+        throw NuTo::MechanicsException("[NodeCoordinatesTetrahedronOrder1] node index out of range (0..4)");
         break;
     }
 }
@@ -1073,7 +1073,7 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesTetrahedronOrder2(int rNodeIndex)
     case 9:
         return Eigen::Vector3d(0.5, 0.0, 0.5);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..9)");
+        throw NuTo::MechanicsException("[NodeCoordinatesTetrahedronOrder2] node index out of range (0..9)");
         break;
     }
 
@@ -1191,7 +1191,7 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickOrder1(int rNodeIndex)
     case 7:
         return Eigen::Vector3d(-1., 1., 1.);
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..7)");
+        throw NuTo::MechanicsException("[NodeCoordinatesBrickOrder1] node index out of range (0..7)");
         break;
     }
 }
@@ -1317,7 +1317,7 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickOrder2(int rNodeIndex)
         return Eigen::Vector3d(-1., 0., 1.);
 
     default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..19)");
+        throw NuTo::MechanicsException("[NodeCoordinatesBrickOrder2] node index out of range (0..19)");
         break;
     }
 }
@@ -1745,262 +1745,6 @@ Eigen::Matrix<double, 125, 3> DerivativeShapeFunctionsBrickSpectralOrder4(const 
      std::cout << "diff" << std::endl;
      std::cout << derivativeShapeFunctionsCDF-derivativeShapeFunctions << std::endl;
      */
-    return derivativeShapeFunctions;
-}
-
-
-Eigen::Matrix<double, 3, 1> NodeCoordinatesPrismOrder1(int rNodeIndex)
-{
-    switch (rNodeIndex)
-    {
-
-    case 0:
-        return Eigen::Vector3d( 0., 0., -1.);
-    case 1:
-        return Eigen::Vector3d( 1., 0., -1.);
-    case 2:
-        return Eigen::Vector3d( 0., 1., -1.);
-    case 3:
-        return Eigen::Vector3d( 0., 0.,  1.);
-    case 4:
-        return Eigen::Vector3d( 1., 0.,  1.);
-    case 5:
-        return Eigen::Vector3d( 0., 1.,  1.);
-    default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..5)");
-        break;
-    }
-}
-
-Eigen::Matrix<double, 6, 1> ShapeFunctionsPrismOrder1(const Eigen::VectorXd& rCoordinates)
-{
-    Eigen::Matrix<double, 6, 1> shapeFunctions;
-
-    double triangle0 = 1. - rCoordinates[0] - rCoordinates[1];
-    double triangle1 = rCoordinates[0];
-    double triangle2 = rCoordinates[1];
-
-    shapeFunctions[0] = 0.5 * triangle0 * (1. - rCoordinates[2]);
-    shapeFunctions[1] = 0.5 * triangle1 * (1. - rCoordinates[2]);
-    shapeFunctions[2] = 0.5 * triangle2 * (1. - rCoordinates[2]);
-    shapeFunctions[3] = 0.5 * triangle0 * (1. + rCoordinates[2]);
-    shapeFunctions[4] = 0.5 * triangle1 * (1. + rCoordinates[2]);
-    shapeFunctions[5] = 0.5 * triangle2 * (1. + rCoordinates[2]);
-    return shapeFunctions;
-}
-
-Eigen::Matrix<double, 6, 3> DerivativeShapeFunctionsPrismOrder1(const Eigen::VectorXd& rCoordinates)
-{
-    Eigen::Matrix<double, 6, 3> derivativeShapeFunctions;
-
-    derivativeShapeFunctions(0, 0) = -0.5 * (1. - rCoordinates[2]);
-    derivativeShapeFunctions(0, 1) = -0.5 * (1. - rCoordinates[2]);
-    derivativeShapeFunctions(0, 2) = -0.5 * (1. - rCoordinates[0] - rCoordinates[1]);
-
-    derivativeShapeFunctions(1, 0) =  0.5 * (1. - rCoordinates[2]);
-    derivativeShapeFunctions(1, 1) =  0.;
-    derivativeShapeFunctions(1, 2) = -0.5 * rCoordinates[0];
-
-    derivativeShapeFunctions(2, 0) =  0.;
-    derivativeShapeFunctions(2, 1) =  0.5 * (1. - rCoordinates[2]);
-    derivativeShapeFunctions(2, 2) = -0.5 * rCoordinates[1];
-
-    derivativeShapeFunctions(3, 0) = -0.5 * (1. + rCoordinates[2]);
-    derivativeShapeFunctions(3, 1) = -0.5 * (1. + rCoordinates[2]);
-    derivativeShapeFunctions(3, 2) =  0.5 * (1. - rCoordinates[0] - rCoordinates[1]);
-
-    derivativeShapeFunctions(4, 0) =  0.5 * (1. + rCoordinates[2]);
-    derivativeShapeFunctions(4, 1) =  0.;
-    derivativeShapeFunctions(4, 2) =  0.5 * rCoordinates[0];
-
-    derivativeShapeFunctions(5, 0) =  0.;
-    derivativeShapeFunctions(5, 1) =  0.5 * (1. + rCoordinates[2]);
-    derivativeShapeFunctions(5, 2) =  0.5 * rCoordinates[1];
-
-    return derivativeShapeFunctions;
-}
-
-Eigen::Matrix<double, 3, 1> NodeCoordinatesPrismOrder2(int rNodeIndex)
-{
-    switch (rNodeIndex)
-    {
-
-    case 0:
-        return Eigen::Vector3d( 0., 0., -1.);
-    case 1:
-        return Eigen::Vector3d( 1., 0., -1.);
-    case 2:
-        return Eigen::Vector3d( 0., 1., -1.);
-    case 3:
-        return Eigen::Vector3d( 0., 0.,  1.);
-    case 4:
-        return Eigen::Vector3d( 1., 0.,  1.);
-    case 5:
-        return Eigen::Vector3d( 0., 1.,  1.);
-
-    case 6:
-        return Eigen::Vector3d( .5, 0., -1.);
-    case 7:
-        return Eigen::Vector3d( 0., .5, -1.);
-    case 8:
-        return Eigen::Vector3d( 0., 0.,  0.);
-    case 9:
-        return Eigen::Vector3d( .5, .5, -1.);
-    case 10:
-        return Eigen::Vector3d( 1., 0.,  0.);
-    case 11:
-        return Eigen::Vector3d( 0,  1.,  0.);
-
-    case 12:
-        return Eigen::Vector3d( .5, 0.,  1.);
-    case 13:
-        return Eigen::Vector3d( 0., .5,  1.);
-    case 14:
-        return Eigen::Vector3d( .5, .5,  1.);
-
-    default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..14)");
-        break;
-    }
-}
-
-Eigen::Matrix<double, 15, 1> ShapeFunctionsPrismOrder2(const Eigen::VectorXd& rCoordinates)
-{
-    Eigen::Matrix<double, 15, 1> shapeFunctions;
-
-    double r = rCoordinates[0];
-    double s = rCoordinates[1];
-    double t = rCoordinates[2];
-
-    double plus_r = 1.0 + r;
-    double plus_s = 1.0 + s;
-    double plus_t = 1.0 + t;
-
-    double minus_r = 1.0 - r;
-    double minus_s = 1.0 - s;
-    double minus_t = 1.0 - t;
-
-    double mid_r = 1.0 - r * r;
-    double mid_s = 1.0 - s * s;
-    double mid_t = 1.0 - t * t;
-
-    shapeFunctions[0] = 0.125 * minus_r * minus_s * minus_t * (-r - s - t - 2);
-    shapeFunctions[1] = 0.125 * plus_r * minus_s * minus_t * (r - s - t - 2);
-    shapeFunctions[2] = 0.125 * plus_r * plus_s * minus_t * (r + s - t - 2);
-    shapeFunctions[3] = 0.125 * minus_r * plus_s * minus_t * (-r + s - t - 2);
-    shapeFunctions[4] = 0.125 * minus_r * minus_s * plus_t * (-r - s + t - 2);
-    shapeFunctions[5] = 0.125 * plus_r * minus_s * plus_t * (r - s + t - 2);
-    shapeFunctions[6] = 0.125 * plus_r * plus_s * plus_t * (r + s + t - 2);
-    shapeFunctions[7] = 0.125 * minus_r * plus_s * plus_t * (-r + s + t - 2);
-
-    shapeFunctions[8] = 0.25 * mid_r * minus_s * minus_t;
-    shapeFunctions[9] = 0.25 * plus_r * mid_s * minus_t;
-    shapeFunctions[10] = 0.25 * mid_r * plus_s * minus_t;
-    shapeFunctions[11] = 0.25 * minus_r * mid_s * minus_t;
-
-    shapeFunctions[12] = 0.25 * minus_r * minus_s * mid_t;
-    shapeFunctions[13] = 0.25 * plus_r * minus_s * mid_t;
-    shapeFunctions[14] = 0.25 * plus_r * plus_s * mid_t;
-
-    return shapeFunctions;
-}
-
-Eigen::Matrix<double, 15, 3> DerivativeShapeFunctionsPrismOrder2(const Eigen::VectorXd& rCoordinates)
-{
-
-    double r = rCoordinates[0];
-    double s = rCoordinates[1];
-    double t = rCoordinates[2];
-
-    double plus_r = 1.0 + r;
-    double plus_s = 1.0 + s;
-    double plus_t = 1.0 + t;
-
-    double minus_r = 1.0 - r;
-    double minus_s = 1.0 - s;
-    double minus_t = 1.0 - t;
-
-    double mid_r = 1.0 - r * r;
-    double mid_s = 1.0 - s * s;
-    double mid_t = 1.0 - t * t;
-
-    Eigen::Matrix<double, 15, 3> derivativeShapeFunctions;
-
-//    shapeFunctions[0] = 0.125 * minus_r * minus_s * minus_t * (-r-s-t-2);
-    derivativeShapeFunctions(0, 0) = 0.125 * minus_s * minus_t * (2 * r + s + t + 1);
-    derivativeShapeFunctions(0, 1) = 0.125 * minus_r * minus_t * (r + 2 * s + t + 1);
-    derivativeShapeFunctions(0, 2) = 0.125 * minus_r * minus_s * (r + s + 2 * t + 1);
-
-//    shapeFunctions[1] = 0.125 * plus_r  * minus_s * minus_t * ( r-s-t-2);
-    derivativeShapeFunctions(1, 0) = 0.125 * minus_s * minus_t * (2 * r - s - t - 1);
-    derivativeShapeFunctions(1, 1) = -0.125 * plus_r * minus_t * (r - 2 * s - t - 1);
-    derivativeShapeFunctions(1, 2) = -0.125 * plus_r * minus_s * (r - s - 2 * t - 1);
-
-//    shapeFunctions[2] = 0.125 * plus_r  * plus_s  * minus_t * ( r+s-t-2);
-    derivativeShapeFunctions(2, 0) = 0.125 * plus_s * minus_t * (2 * r + s - t - 1);
-    derivativeShapeFunctions(2, 1) = 0.125 * plus_r * minus_t * (r + 2 * s - t - 1);
-    derivativeShapeFunctions(2, 2) = -0.125 * plus_r * plus_s * (r + s - 2 * t - 1);
-
-//    shapeFunctions[3] = 0.125 * minus_r * plus_s  * minus_t * (-r+s-t-2);
-    derivativeShapeFunctions(3, 0) = 0.125 * plus_s * minus_t * (2 * r - s + t + 1);
-    derivativeShapeFunctions(3, 1) = -0.125 * minus_r * minus_t * (r - 2 * s + t + 1);
-    derivativeShapeFunctions(3, 2) = 0.125 * minus_r * plus_s * (r - s + 2 * t + 1);
-
-//    shapeFunctions[4] = 0.125 * minus_r * minus_s *  plus_t * (-r-s+t-2);
-    derivativeShapeFunctions(4, 0) = 0.125 * minus_s * plus_t * (2 * r + s - t + 1);
-    derivativeShapeFunctions(4, 1) = 0.125 * minus_r * plus_t * (r + 2 * s - t + 1);
-    derivativeShapeFunctions(4, 2) = -0.125 * minus_r * minus_s * (r + s - 2 * t + 1);
-
-//    shapeFunctions[5] = 0.125 * plus_r  * minus_s *  plus_t * ( r-s+t-2);
-    derivativeShapeFunctions(5, 0) = 0.125 * minus_s * plus_t * (2 * r - s + t - 1);
-    derivativeShapeFunctions(5, 1) = -0.125 * plus_r * plus_t * (r - 2 * s + t - 1);
-    derivativeShapeFunctions(5, 2) = 0.125 * plus_r * minus_s * (r - s + 2 * t - 1);
-
-//    shapeFunctions[6] = 0.125 * plus_r  * plus_s  *  plus_t * ( r+s+t-2);
-    derivativeShapeFunctions(6, 0) = 0.125 * plus_s * plus_t * (2 * r + s + t - 1);
-    derivativeShapeFunctions(6, 1) = 0.125 * plus_r * plus_t * (r + 2 * s + t - 1);
-    derivativeShapeFunctions(6, 2) = 0.125 * plus_r * plus_s * (r + s + 2 * t - 1);
-
-//    shapeFunctions[7] = 0.125 * minus_r * plus_s  *  plus_t * (-r+s+t-2);
-    derivativeShapeFunctions(7, 0) = 0.125 * plus_s * plus_t * (2 * r - s - t + 1);
-    derivativeShapeFunctions(7, 1) = -0.125 * minus_r * plus_t * (r - 2 * s - t + 1);
-    derivativeShapeFunctions(7, 2) = -0.125 * minus_r * plus_s * (r - s - 2 * t + 1);
-
-//    shapeFunctions[8] =  0.25 *   mid_r * minus_s * minus_t;
-    derivativeShapeFunctions(8, 0) = -0.5 * r * minus_s * minus_t;
-    derivativeShapeFunctions(8, 1) = -0.25 * mid_r * minus_t;
-    derivativeShapeFunctions(8, 2) = -0.25 * mid_r * minus_s;
-
-//    shapeFunctions[9] =  0.25 *  plus_r *   mid_s * minus_t;
-    derivativeShapeFunctions(9, 0) = +0.25 * mid_s * minus_t;
-    derivativeShapeFunctions(9, 1) = -0.5 * s * plus_r * minus_t;
-    derivativeShapeFunctions(9, 2) = -0.25 * plus_r * mid_s;
-
-//    shapeFunctions[10]=  0.25 *   mid_r *  plus_s * minus_t;
-    derivativeShapeFunctions(10, 0) = -0.5 * r * plus_s * minus_t;
-    derivativeShapeFunctions(10, 1) = 0.25 * mid_r * minus_t;
-    derivativeShapeFunctions(10, 2) = -0.25 * mid_r * plus_s;
-
-//    shapeFunctions[11]=  0.25 * minus_r *   mid_s * minus_t;
-    derivativeShapeFunctions(11, 0) = -0.25 * mid_s * minus_t;
-    derivativeShapeFunctions(11, 1) = -0.5 * s * minus_r * minus_t;
-    derivativeShapeFunctions(11, 2) = -0.25 * minus_r * mid_s;
-
-//    shapeFunctions[12]=  0.25 * minus_r * minus_s *   mid_t;
-    derivativeShapeFunctions(12, 0) = -0.25 * minus_s * mid_t;
-    derivativeShapeFunctions(12, 1) = -0.25 * minus_r * mid_t;
-    derivativeShapeFunctions(12, 2) = -0.5 * t * minus_r * minus_s;
-
-//    shapeFunctions[13]=  0.25 *  plus_r * minus_s *   mid_t;
-    derivativeShapeFunctions(13, 0) = 0.25 * minus_s * mid_t;
-    derivativeShapeFunctions(13, 1) = -0.25 * plus_r * mid_t;
-    derivativeShapeFunctions(13, 2) = -0.5 * t * plus_r * minus_s;
-
-//    shapeFunctions[14]=  0.25 *  plus_r *  plus_s *   mid_t;
-    derivativeShapeFunctions(14, 0) = 0.25 * plus_s * mid_t;
-    derivativeShapeFunctions(14, 1) = 0.25 * plus_r * mid_t;
-    derivativeShapeFunctions(14, 2) = -0.5 * t * plus_r * plus_s;
-
     return derivativeShapeFunctions;
 }
 

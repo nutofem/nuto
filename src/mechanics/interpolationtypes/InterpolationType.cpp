@@ -25,7 +25,6 @@
 #include "mechanics/interpolationtypes/Interpolation2DQuad.h"
 #include "mechanics/interpolationtypes/Interpolation3DTetrahedron.h"
 #include "mechanics/interpolationtypes/Interpolation3DBrick.h"
-#include "mechanics/interpolationtypes/Interpolation3DPrism.h"
 #include "mechanics/interpolationtypes/Interpolation1DTruss.h"
 #include "mechanics/interpolationtypes/Interpolation1DInterface.h"
 #include "mechanics/interpolationtypes/Interpolation1DIGA.h"
@@ -161,9 +160,6 @@ void NuTo::InterpolationType::AddDofInterpolation(Node::eDof rDofType, NuTo::Int
         break;
     case Interpolation::eShapeType::BRICK3D:
         newType = new Interpolation3DBrick(rDofType, rTypeOrder, mDimension);
-        break;
-    case Interpolation::eShapeType::PRISM3D:
-        newType = new Interpolation3DPrism(rDofType, rTypeOrder, mDimension);
         break;
     case Interpolation::eShapeType::INTERFACE:
         newType = new Interpolation1DInterface(rDofType, rTypeOrder, mDimension);
@@ -559,13 +555,6 @@ void NuTo::InterpolationType::UpdateNodeRenumberingIndices()
             x_i_prime[0] = x_i[1];
             x_i_prime[1] = x_i[0];
             break;
-        case Interpolation::eShapeType::PRISM3D:
-#warning This may not be correct...
-            // reflect at (0,0,0) n = (1,-1,0)
-            x_i_prime[0] = x_i[1];
-            x_i_prime[1] = x_i[0];
-            break;
-
         default:
             throw NuTo::MechanicsException("[NuTo::InterpolationType::UpdateNodeRenumberingIndices] not implemented for " + Interpolation::ShapeTypeToString(mShapeType));
         }

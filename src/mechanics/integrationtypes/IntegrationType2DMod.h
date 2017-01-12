@@ -1,14 +1,26 @@
-// $Id: IntegrationType2D4NLobatto9Ip.h 331 2010-10-06 09:32:11Z arnold2 $
+// $Id$
 #pragma once
 
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif //ENABLE_SERIALIZATION
+
+#include <boost/ptr_container/ptr_map.hpp>
 #include "mechanics/integrationtypes/IntegrationType2D.h"
 
 namespace NuTo
 {
-//! @author Jörg F. Unger, ISM
-//! @date November 2009
-//! @brief ... integration types in 1D with two nodes Gauss integration and 2 integration points
-class IntegrationType2D4NLobatto9Ip : public IntegrationType2D
+class IntegrationPointBase;
+
+//! @author Daniel Arnold, ISM
+//! @date February 2011
+//! @brief ... integration types in 2D with four nodes and modifiable integration points
+class IntegrationType2DMod : public IntegrationType2D
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -16,7 +28,11 @@ class IntegrationType2D4NLobatto9Ip : public IntegrationType2D
 
 public:
     //! @brief constructor
-    IntegrationType2D4NLobatto9Ip();
+    IntegrationType2DMod();
+    IntegrationType2DMod(std::string rName);
+
+    //! @brief destructor
+    ~IntegrationType2DMod();
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -29,7 +45,7 @@ public:
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
     //! @param rCoordinates (result)
-    void GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const;
+    void GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2]) const;
 
 
     //! @brief returns the total number of integration points for this integration type
@@ -59,15 +75,19 @@ public:
         std::vector<unsigned int>& VisualizationCellsIP) const;
 #endif // ENABLE_VISUALIZE
 
-private:
-    //! @brief ... integration points coordinates
-    double iPts[9][2];
+    //! @brief adds a new integration point
+    //! @param rIp (Input) integration point
+    void AddIntegrationPoint(const IntegrationPointBase & rIp);
 
-    //! @brief ... weights for the integration
-    double weights[9];
+    //! @brief deletes an integration point
+    //! @param rIpNum (Input) integration point (counting from zero)
+    void DeleteIntegrationPoint(const int rIpNum);
+
+
+protected:
+    std::string mName;
+    boost::ptr_map< int, IntegrationPointBase >	mIpMap;
+
 };
 }
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType2D4NLobatto9Ip)
-#endif // ENABLE_SERIALIZATION
 

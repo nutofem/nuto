@@ -20,10 +20,10 @@ NuTo::IntegrationType1D2NLobatto3Ip::IntegrationType1D2NLobatto3Ip():
 //! @brief returns the local coordinates of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @param rCoordinates (result)
-Eigen::VectorXd NuTo::IntegrationType1D2NLobatto3Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
+void NuTo::IntegrationType1D2NLobatto3Ip::GetLocalIntegrationPointCoordinates1D(int rIpNum, double& rCoordinates)const
 {
     if(rIpNum >= 0 && rIpNum < 3)
-        return Eigen::Matrix<double, 1, 1>(iPts[rIpNum]);
+        rCoordinates = iPts[rIpNum];
     else
         throw MechanicsException("[NuTo::IntegrationType1D2NLobatto3Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
 }
@@ -45,6 +45,19 @@ double NuTo::IntegrationType1D2NLobatto3Ip::GetIntegrationPointWeight(int rIpNum
     throw MechanicsException("[NuTo::IntegrationType1D2NLobatto3Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
 }
 
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
+std::string NuTo::IntegrationType1D2NLobatto3Ip::GetStrIdentifier()const
+{
+    return GetStrIdentifierStatic();
+}
+
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
+std::string NuTo::IntegrationType1D2NLobatto3Ip::GetStrIdentifierStatic()
+{
+    return std::string("1D2NLOBATTO3IP");
+}
 
 #ifdef ENABLE_VISUALIZE
 void NuTo::IntegrationType1D2NLobatto3Ip::GetVisualizationCells(

@@ -15,15 +15,31 @@ NuTo::IntegrationType3D4NGauss4Ip::IntegrationType3D4NGauss4Ip()
 //! @brief returns the local coordinates of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @param rCoordinates (result)
-Eigen::VectorXd NuTo::IntegrationType3D4NGauss4Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
+void NuTo::IntegrationType3D4NGauss4Ip::GetLocalIntegrationPointCoordinates3D(int rIpNum, double rCoordinates[3])const
 {
     assert(rIpNum>=0 && rIpNum<4);
     switch (rIpNum)
     {
-    case 0: return Eigen::Vector3d({0.13819660, 0.13819660, 0.13819660});
-    case 1: return Eigen::Vector3d({0.58541020, 0.13819660, 0.13819660});
-    case 2: return Eigen::Vector3d({0.13819660, 0.58541020, 0.13819660});
-    case 3: return Eigen::Vector3d({0.13819660, 0.13819660, 0.58541020});
+    case 0:
+        rCoordinates[0] = 0.13819660;
+        rCoordinates[1] = 0.13819660;
+        rCoordinates[2] = 0.13819660;
+        break;
+    case 1:
+        rCoordinates[0] = 0.58541020;
+        rCoordinates[1] = 0.13819660;
+        rCoordinates[2] = 0.13819660;
+        break;
+    case 2:
+        rCoordinates[0] = 0.13819660;
+        rCoordinates[1] = 0.58541020;
+        rCoordinates[2] = 0.13819660;
+        break;
+    case 3:
+        rCoordinates[0] = 0.13819660;
+        rCoordinates[1] = 0.13819660;
+        rCoordinates[2] = 0.58541020;
+        break;
     default:
     	throw MechanicsException("[NuTo::IntegrationType3D4NGauss4Ip::GetLocalIntegrationPointCoordinates3D] number of ip out of range.");
     }
@@ -43,6 +59,20 @@ int NuTo::IntegrationType3D4NGauss4Ip::GetNumIntegrationPoints()const
 double NuTo::IntegrationType3D4NGauss4Ip::GetIntegrationPointWeight(int rIpNum)const
 {
     return 1./24.;
+}
+
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
+std::string NuTo::IntegrationType3D4NGauss4Ip::GetStrIdentifier()const
+{
+    return GetStrIdentifierStatic();
+}
+
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
+std::string NuTo::IntegrationType3D4NGauss4Ip::GetStrIdentifierStatic()
+{
+    return std::string("3D4NGAUSS4IP");
 }
 
 #ifdef ENABLE_VISUALIZE

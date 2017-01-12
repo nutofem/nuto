@@ -90,6 +90,7 @@ set(NuToMechanicsIntegrationtypes_SOURCES
     integrationtypes/IntegrationType1D.cpp
     integrationtypes/IntegrationType1D2NBoundaryGauss3Ip.cpp
     integrationtypes/IntegrationType0DBoundary.cpp
+    integrationtypes/IntegrationType1D2NConstVariableIp.cpp
     integrationtypes/IntegrationType1D2NGauss1Ip.cpp
     integrationtypes/IntegrationType1D2NGauss2Ip.cpp
     integrationtypes/IntegrationType1D2NGauss3Ip.cpp
@@ -108,20 +109,22 @@ set(NuToMechanicsIntegrationtypes_SOURCES
     integrationtypes/IntegrationType2D3NGauss6Ip.cpp
     integrationtypes/IntegrationType2D3NGauss12Ip.cpp
     integrationtypes/IntegrationType2D3NGauss12IpDetail.cpp
+    integrationtypes/IntegrationType2D4NConstVariableIp.cpp
     integrationtypes/IntegrationType2D4NGauss1Ip.cpp
     integrationtypes/IntegrationType2D4NGauss4Ip.cpp
     integrationtypes/IntegrationType2D4NGauss9Ip.cpp
     integrationtypes/IntegrationType2D4NLobatto9Ip.cpp
     integrationtypes/IntegrationType2D4NLobatto16Ip.cpp
     integrationtypes/IntegrationType2D4NLobatto25Ip.cpp
+    integrationtypes/IntegrationType2D4NModTriangle.cpp
+    integrationtypes/IntegrationType2D4NModVariableIp.cpp
+    integrationtypes/IntegrationType2DMod.cpp
     integrationtypes/IntegrationType3D.cpp
     integrationtypes/IntegrationType3D4NGauss1Ip.cpp
     integrationtypes/IntegrationType3D4NGauss4Ip.cpp
-    integrationtypes/IntegrationType3D6NGauss2x3Ip
     integrationtypes/IntegrationType3D8NGauss1Ip.cpp
     integrationtypes/IntegrationType3D8NGauss2x2x2Ip.cpp
     integrationtypes/IntegrationTypeBase.cpp
-    integrationtypes/IntegrationTypeEnum.cpp
     )
 
 set(NuToMechanicsInterpolationtypes_SOURCE
@@ -139,7 +142,6 @@ set(NuToMechanicsInterpolationtypes_SOURCE
     interpolationtypes/Interpolation3D.cpp
     interpolationtypes/Interpolation3DTetrahedron.cpp
     interpolationtypes/Interpolation3DBrick.cpp
-    interpolationtypes/Interpolation3DPrism.cpp
     interpolationtypes/Interpolation1DIGA.cpp
     interpolationtypes/Interpolation2DIGA.cpp
     )

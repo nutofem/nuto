@@ -37,39 +37,6 @@
 
 const bool PRINTRESULT = true;
 
-//! @brief checks wheather B = dN/dxi around node 0
-void CheckDerivatives(NuTo::InterpolationType& rIT)
-{
-    auto& IT = rIT.Get(NuTo::Node::eDof::COORDINATES);
-
-    for (int i = 0; i < rIT.GetNumNodes(); ++i)
-    {
-        auto nodeCoordinates = rIT.GetNaturalNodeCoordinates(i);
-
-        auto B = IT.CalculateDerivativeShapeFunctionsNatural(nodeCoordinates);
-        auto N = IT.CalculateShapeFunctions(nodeCoordinates);
-
-        auto B_CDF = B;
-        B_CDF.setZero();
-
-        double delta = 1.e-6;
-        for (int iDim = 0; iDim < nodeCoordinates.rows(); ++iDim)
-        {
-            nodeCoordinates[iDim] += delta;
-            B_CDF.col(iDim) = (IT.CalculateShapeFunctions(nodeCoordinates) - N) / delta;
-            nodeCoordinates[iDim] -= delta;
-        }
-
-        if ((B - B_CDF).cwiseAbs().maxCoeff() > 1.e-4)
-        {
-            std::cout << "B\n" << B << std::endl;
-            std::cout << "B_CDF\n" << B_CDF << std::endl;
-            throw NuTo::MechanicsException("[CheckDerivatives] B != dN/dXi");
-        }
-    }
-    std::cout << "[CheckDerivatives] OK!" << std::endl;
-}
-
 //! @brief checks, whether or not the natural node coordinates match the shape functions
 //! This should be true: N_i(xi_j) == 1 for i == j    and      N_j(xi_i) == 0 for i != j
 void CheckShapeFunctionsAndNodePositions(NuTo::InterpolationType& rIT, int rNumNodesExpected)
@@ -81,7 +48,7 @@ void CheckShapeFunctionsAndNodePositions(NuTo::InterpolationType& rIT, int rNumN
     {
         std::cout << rIT.GetNumNodes() << std::endl;
         std::cout << rIT.Info() << std::endl;
-        throw NuTo::MechanicsException("[CheckShapeFunctionsAndNodePositions] Wrong node number");
+        throw NuTo::MechanicsException("[CheckTriangle] Wrong node number");
     }
 
     int numNodes = rIT.GetNumNodes();
@@ -104,13 +71,12 @@ void CheckShapeFunctionsAndNodePositions(NuTo::InterpolationType& rIT, int rNumN
             {
                 // should be 0
                 if (std::abs(shapeFunctions(iShapeFunctions)) > 1.e-10)
-                    std::cout << "[CheckShapeFunctionsAndNodePositions] OK!" << std::endl;            }
+                    throw NuTo::MechanicsException("[CheckShapeFunctionsAndNodePositions] shape functions and node positions do not match (should be 0).");
+            }
         }
     }
     std::cout << "[CheckShapeFunctionsAndNodePositions] OK!" << std::endl;
-    CheckDerivatives(rIT);
 }
-
 
 //! @brief the global index (0..mNumNodesTotal) of the node is compared to the
 //! dof index (0..mNumNodes(dof)) via the local node positions
@@ -296,21 +262,7 @@ void CheckBrick()
     myIT125.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::LOBATTO4);
     myIT125.UpdateIntegrationType(myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT125, 125);
-}
 
-void CheckPrism()
-{
-    NuTo::IntegrationType3D8NGauss2x2x2Ip myIntegrationType;
-
-    NuTo::InterpolationType myIT6(NuTo::Interpolation::eShapeType::PRISM3D, 3);
-    myIT6.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myIT6.UpdateIntegrationType(myIntegrationType);
-    CheckShapeFunctionsAndNodePositions(myIT6, 6);
-
-//    NuTo::InterpolationType myIT15(NuTo::Interpolation::eShapeType::PRISM3D, 3);
-//    myIT15.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-//    myIT15.UpdateIntegrationType(myIntegrationType);
-//    CheckShapeFunctionsAndNodePositions(myIT15, 15);
 }
 
 //! @brief API of the interpolation types
@@ -580,7 +532,7 @@ void NodeReordering()
 }
 
 
-//#define TRYCATCH
+#define TRYCATCH
 
 int main(int argc, char* argv[])
 {
@@ -598,7 +550,6 @@ int main(int argc, char* argv[])
     CheckQuad();
     CheckTetrahedron();
     CheckBrick();
-    CheckPrism();
     CheckTruss();
     CheckAPI();
     ImportFromGmsh(meshFile2D);

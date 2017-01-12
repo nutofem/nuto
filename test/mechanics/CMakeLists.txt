@@ -62,7 +62,6 @@ if(ENABLE_C++_TESTS)
         ConstraintsNodeToElement
         CSDAInterface
         ElementUniaxialBrick3D
-        ElementUniaxialPrism3D
         ElementUniaxialQuad2D
         ElementUniaxialTetrahedron3D
         ElementUniaxialTriangle2D

@@ -1,14 +1,22 @@
-// $Id: IntegrationType2D4NLobatto9Ip.h 331 2010-10-06 09:32:11Z arnold2 $
+// $Id$
 #pragma once
+#ifdef ENABLE_SERIALIZATION
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#endif //ENABLE_SERIALIZATION
 
-#include "mechanics/integrationtypes/IntegrationType2D.h"
+#include "mechanics/integrationtypes/IntegrationType1D.h"
 
 namespace NuTo
 {
 //! @author Jörg F. Unger, ISM
 //! @date November 2009
-//! @brief ... integration types in 1D with two nodes Gauss integration and 2 integration points
-class IntegrationType2D4NLobatto9Ip : public IntegrationType2D
+//! @brief ... integration types in 1D with two nodes and variable number of integration points
+class IntegrationType1D2NConstVariableIp : public IntegrationType1D
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -16,7 +24,7 @@ class IntegrationType2D4NLobatto9Ip : public IntegrationType2D
 
 public:
     //! @brief constructor
-    IntegrationType2D4NLobatto9Ip();
+    IntegrationType1D2NConstVariableIp(int rNumIp);
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -29,7 +37,7 @@ public:
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
     //! @param rCoordinates (result)
-    void GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const;
+    void GetLocalIntegrationPointCoordinates1D(int rIpNum, double& rCoordinates)const;
 
 
     //! @brief returns the total number of integration points for this integration type
@@ -45,10 +53,6 @@ public:
     //! @return identifier
     std::string GetStrIdentifier()const;
 
-    //! @brief returns a string with the identifier of the integration type
-    //! @return identifier
-    static std::string GetStrIdentifierStatic();
-
 #ifdef ENABLE_VISUALIZE
     void GetVisualizationCells(
         unsigned int& NumVisualizationPoints,
@@ -59,15 +63,10 @@ public:
         std::vector<unsigned int>& VisualizationCellsIP) const;
 #endif // ENABLE_VISUALIZE
 
-private:
-    //! @brief ... integration points coordinates
-    double iPts[9][2];
+protected:
+    int mNumIp;
 
-    //! @brief ... weights for the integration
-    double weights[9];
 };
 }
-#ifdef ENABLE_SERIALIZATION
-BOOST_CLASS_EXPORT_KEY(NuTo::IntegrationType2D4NLobatto9Ip)
-#endif // ENABLE_SERIALIZATION
+
 

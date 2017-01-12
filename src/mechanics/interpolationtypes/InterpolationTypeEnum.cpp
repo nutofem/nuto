@@ -13,7 +13,6 @@ const std::map<NuTo::Interpolation::eShapeType, std::string> NuTo::Interpolation
         {eShapeType::QUAD2D,        "QUAD2D"},
         {eShapeType::TETRAHEDRON3D, "TETRAHEDRON3D"},
         {eShapeType::BRICK3D,       "BRICK3D"},
-        {eShapeType::PRISM3D,       "PRISM3D"},
         {eShapeType::INTERFACE,     "INTERFACE"},
         {eShapeType::IGA1D,         "IGA1D"},
         {eShapeType::IGA2D,         "IGA2D"}};

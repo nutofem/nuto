@@ -105,6 +105,70 @@ NuTo::StructureBase::StructureBase(int rDimension)  : NuTo::NuToObject::NuToObje
     mNodeNumberingRequired = true;
     mNumExtrapolatedCycles.setZero();
 
+    mMappingIntEnum2String.resize(static_cast<unsigned int>(NuTo::eIntegrationType::NumIntegrationTypes));
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss1Ip)]=
+        NuTo::IntegrationType1D2NGauss1Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss2Ip)]=
+        NuTo::IntegrationType1D2NGauss2Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss3Ip)]=
+        NuTo::IntegrationType1D2NGauss3Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss4Ip)]=
+        NuTo::IntegrationType1D2NGauss4Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NGauss5Ip)]=
+        NuTo::IntegrationType1D2NGauss5Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto3Ip)]=
+        NuTo::IntegrationType1D2NLobatto3Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto4Ip)]=
+        NuTo::IntegrationType1D2NLobatto4Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NLobatto5Ip)]=
+        NuTo::IntegrationType1D2NLobatto5Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss13Ip)]=
+        NuTo::IntegrationType2D3NGauss13Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss16Ip)]=
+        NuTo::IntegrationType2D3NGauss16Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss1Ip)]=
+        NuTo::IntegrationType2D3NGauss1Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss3Ip)]=
+        NuTo::IntegrationType2D3NGauss3Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss4Ip)]=
+            NuTo::IntegrationType2D3NGauss4Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss6Ip)]=
+            NuTo::IntegrationType2D3NGauss6Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss12Ip)]=
+                NuTo::IntegrationType2D3NGauss12Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D3NGauss12IpDetail)]=
+                NuTo::IntegrationType2D3NGauss12IpDetail::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NGauss1Ip)]=
+        NuTo::IntegrationType2D4NGauss1Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip)]=
+        NuTo::IntegrationType2D4NGauss4Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NGauss9Ip)]=
+        NuTo::IntegrationType2D4NGauss9Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NLobatto9Ip)]=
+        NuTo::IntegrationType2D4NLobatto9Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NLobatto16Ip)]=
+        NuTo::IntegrationType2D4NLobatto16Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType2D4NLobatto25Ip)]=
+        NuTo::IntegrationType2D4NLobatto25Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D4NGauss1Ip)]=
+        NuTo::IntegrationType3D4NGauss1Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D4NGauss4Ip)]=
+        NuTo::IntegrationType3D4NGauss4Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NGauss1Ip)]=
+        NuTo::IntegrationType3D8NGauss1Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NGauss2x2x2Ip)]=
+        NuTo::IntegrationType3D8NGauss2x2x2Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NLobatto3x3x3Ip)]=
+        NuTo::IntegrationType3D8NLobatto<3>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NLobatto4x4x4Ip)]=
+        NuTo::IntegrationType3D8NLobatto<4>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType3D8NLobatto5x5x5Ip)]=
+        NuTo::IntegrationType3D8NLobatto<5>::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType1D2NBoundaryGauss3Ip)] =
+        NuTo::IntegrationType1D2NBoundaryGauss3Ip::GetStrIdentifierStatic();
+    mMappingIntEnum2String[static_cast<unsigned int>(NuTo::eIntegrationType::IntegrationType0DBoundary)] =
+        NuTo::IntegrationType0DBoundary::GetStrIdentifierStatic();
+
     mNumLoadCases = 1;
 
     mNumTimeDerivatives = 0;

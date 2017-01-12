@@ -25,20 +25,47 @@ NuTo::IntegrationType2D4NGauss9Ip::IntegrationType2D4NGauss9Ip()
 //! @brief returns the local coordinates of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @param rCoordinates (result)
-Eigen::VectorXd NuTo::IntegrationType2D4NGauss9Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
+void NuTo::IntegrationType2D4NGauss9Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const
 {
     assert(rIpNum>=0 && rIpNum<9);
     switch (rIpNum)
     {
-    case 0 : return Eigen::Vector2d({ -0.774596669241483, -0.774596669241483});
-    case 1 : return Eigen::Vector2d({  0.774596669241483, -0.774596669241483});
-    case 2 : return Eigen::Vector2d({  0.774596669241483,  0.774596669241483});
-    case 3 : return Eigen::Vector2d({ -0.774596669241483,  0.774596669241483});
-    case 4 : return Eigen::Vector2d({  0.0,               -0.774596669241483});
-    case 5 : return Eigen::Vector2d({  0.774596669241483,  0.0});
-    case 6 : return Eigen::Vector2d({  0.0,                0.774596669241483});
-    case 7 : return Eigen::Vector2d({ -0.774596669241483,  0.0});
-    case 8 : return Eigen::Vector2d({  0.0,                0.0});
+    case 0 :
+        rCoordinates[0] = -0.774596669241483;
+        rCoordinates[1] = -0.774596669241483;
+        break;
+    case 1 :
+        rCoordinates[0] = +0.774596669241483;
+        rCoordinates[1] = -0.774596669241483;
+        break;
+    case 2 :
+        rCoordinates[0] = +0.774596669241483;
+        rCoordinates[1] = +0.774596669241483;
+        break;
+    case 3 :
+        rCoordinates[0] = -0.774596669241483;
+        rCoordinates[1] = +0.774596669241483;
+        break;
+    case 4 :
+        rCoordinates[0] =  0.0;
+        rCoordinates[1] = -0.774596669241483;
+        break;
+    case 5 :
+        rCoordinates[0] = +0.774596669241483;
+        rCoordinates[1] =  0.0;
+        break;
+    case 6 :
+        rCoordinates[0] =  0.0;
+        rCoordinates[1] = +0.774596669241483;
+        break;
+    case 7 :
+        rCoordinates[0] = -0.774596669241483;
+        rCoordinates[1] =  0.0;
+        break;
+    case 8 :
+        rCoordinates[0] =  0.0;
+        rCoordinates[1] =  0.0;
+        break;
     default:
         throw MechanicsException("[NuTo::IntegrationType2D4NGauss9Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
     }
@@ -90,6 +117,20 @@ double NuTo::IntegrationType2D4NGauss9Ip::GetIntegrationPointWeight(int rIpNum)c
     default:
         throw MechanicsException("[NuTo::IntegrationType2D4NGauss9Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
     }
+}
+
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
+std::string NuTo::IntegrationType2D4NGauss9Ip::GetStrIdentifier()const
+{
+    return GetStrIdentifierStatic();
+}
+
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
+std::string NuTo::IntegrationType2D4NGauss9Ip::GetStrIdentifierStatic()
+{
+    return std::string("2D4NGAUSS9IP");
 }
 
 #ifdef ENABLE_VISUALIZE

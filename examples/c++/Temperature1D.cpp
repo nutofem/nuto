@@ -54,7 +54,7 @@ int main()
         NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     myStructure.InterpolationTypeAdd(InterpolationType, NuTo::Node::eDof::TEMPERATURE,
         NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-    myStructure.InterpolationTypeSetIntegrationType(InterpolationType, "IntegrationType1D2NGauss2Ip");
+    myStructure.InterpolationTypeSetIntegrationType(InterpolationType, "1D2NGauss2Ip");
 
     // create elements
     std::vector<int> elementIncidence(2);

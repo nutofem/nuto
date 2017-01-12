@@ -38,19 +38,26 @@ public:
 
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
-    //! @return rCoordinates (result)
-    Eigen::VectorXd GetLocalIntegrationPointCoordinates(int rIpNum) const override;
+    //! @param rCoordinates (result)
+    void GetLocalIntegrationPointCoordinates3D(int rIpNum, double rCoordinates[3])const;
+
 
     //! @brief returns the total number of integration points for this integration type
     //! @return number of integration points
-    int GetNumIntegrationPoints() const override;
+    int GetNumIntegrationPoints()const;
 
     //! @brief returns the weight of an integration point
     //! @param rIpNum integration point (counting from zero)
     //! @return weight of integration points
-    double GetIntegrationPointWeight(int rIpNum) const override;
+    double GetIntegrationPointWeight(int rIpNum)const;
 
-    eIntegrationType GetEnumType() const override;
+    //! @brief returns a string with the identifier of the integration type
+    //! @return identifier
+    std::string GetStrIdentifier()const;
+
+    //! @brief returns a string with the identifier of the integration type
+    //! @return identifier
+    static std::string GetStrIdentifierStatic();
 
 #ifdef ENABLE_VISUALIZE
     void GetVisualizationCells(
@@ -59,12 +66,12 @@ public:
         unsigned int& NumVisualizationCells,
         std::vector<NuTo::eCellTypes>& VisualizationCellType,
         std::vector<unsigned int>& VisualizationCellsIncidence,
-        std::vector<unsigned int>& VisualizationCellsIP) const override;
+        std::vector<unsigned int>& VisualizationCellsIP) const;
 #endif // ENABLE_VISUALIZE
 
 protected:
     //! @brief ... integration points coordinates
-    std::vector<Eigen::Vector3d> mCoordinates;
+    std::vector<std::array<double,3> > mCoordinates;
 
     //! @brief ... weights for the integration
     std::vector<double> mWeights;

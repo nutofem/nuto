@@ -638,7 +638,39 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapIpData(Const
 template <int TDim>
 const Eigen::Vector3d NuTo::ContinuumBoundaryElement<TDim>::GetGlobalIntegrationPointCoordinates(int rIpNum) const
 {
-    Eigen::VectorXd naturalSurfaceIpCoordinates = GetIntegrationType().GetLocalIntegrationPointCoordinates(rIpNum);
+    Eigen::VectorXd naturalSurfaceIpCoordinates;
+    switch (GetStructure()->GetDimension())
+    {
+        case 1:
+        {
+            double ipCoordinate;
+            GetIntegrationType().GetLocalIntegrationPointCoordinates1D(rIpNum, ipCoordinate);
+            naturalSurfaceIpCoordinates.resize(1);
+            naturalSurfaceIpCoordinates(0) = ipCoordinate;
+            break;
+        }
+        case 2:
+        {
+            double ipCoordinates[2];
+            GetIntegrationType().GetLocalIntegrationPointCoordinates2D(rIpNum, ipCoordinates);
+            naturalSurfaceIpCoordinates.resize(2);
+            naturalSurfaceIpCoordinates(0) = ipCoordinates[0];
+            naturalSurfaceIpCoordinates(1) = ipCoordinates[1];
+            break;
+        }
+        case 3:
+        {
+            double ipCoordinates[3];
+            GetIntegrationType().GetLocalIntegrationPointCoordinates3D(rIpNum, ipCoordinates);
+            naturalSurfaceIpCoordinates.resize(3);
+            naturalSurfaceIpCoordinates(0) = ipCoordinates[0];
+            naturalSurfaceIpCoordinates(1) = ipCoordinates[1];
+            naturalSurfaceIpCoordinates(2) = ipCoordinates[2];
+            break;
+        }
+        default:
+            break;
+    }
 
     Eigen::VectorXd naturalIpCoordinates = mInterpolationType->Get(Node::eDof::COORDINATES).CalculateNaturalSurfaceCoordinates(naturalSurfaceIpCoordinates, mSurfaceId);
 
@@ -758,13 +790,22 @@ Eigen::Matrix<double,0,1>  ContinuumBoundaryElement<1>::CalculateIPCoordinatesSu
 template<>
 Eigen::Matrix<double,1,1>  ContinuumBoundaryElement<2>::CalculateIPCoordinatesSurface(int rTheIP) const
 {
-    return GetIntegrationType().GetLocalIntegrationPointCoordinates(rTheIP);
+    double tmp;
+    GetIntegrationType().GetLocalIntegrationPointCoordinates1D(rTheIP, tmp);
+    Eigen::Matrix<double,1,1> ipCoordinatesSurface;
+    ipCoordinatesSurface(0) = tmp;
+    return ipCoordinatesSurface;
 }
 
 template<>
 Eigen::Matrix<double,2,1>  ContinuumBoundaryElement<3>::CalculateIPCoordinatesSurface(int rTheIP) const
 {
-    return GetIntegrationType().GetLocalIntegrationPointCoordinates(rTheIP);
+    double tmp[2];
+    GetIntegrationType().GetLocalIntegrationPointCoordinates2D(rTheIP, tmp);
+    Eigen::Matrix<double,2,1> ipCoordinatesSurface;
+    ipCoordinatesSurface(0) = tmp[0];
+    ipCoordinatesSurface(1) = tmp[1];
+    return ipCoordinatesSurface;
 }
 
 

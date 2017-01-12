@@ -22,26 +22,24 @@
 NuTo::IntegrationType2D4NLobatto16Ip::IntegrationType2D4NLobatto16Ip()
 {
     NuTo::IntegrationType1D2NLobatto4Ip Lobatto1D2N4Ip;
-    Eigen::VectorXd coordinates1D2N4Ip(4);
-    Eigen::VectorXd weights1D2N4Ip(4);
+    double coordinates1D2N4Ip[4];
+    double weights1D2N4Ip[4];
 
     // get the 1D integration point coordinates and weights
     for (int i = 0; i < 4; i++)
     {
-        coordinates1D2N4Ip[i] = Lobatto1D2N4Ip.GetLocalIntegrationPointCoordinates(i)[0];
+        Lobatto1D2N4Ip.GetLocalIntegrationPointCoordinates1D(i, coordinates1D2N4Ip[i]);
         weights1D2N4Ip[i] = Lobatto1D2N4Ip.GetIntegrationPointWeight(i);
     }
 
     // calculate the 2D integratration point coordinates and weights
-    mWeights.resize(GetNumIntegrationPoints());
-    mPts.resize(GetNumIntegrationPoints());
     int ipNum = 0;
     for (int i = 0; i < 4; i++)
         for (int j= 0; j < 4; j++)
         {
-            mWeights[ipNum] = weights1D2N4Ip[i]*weights1D2N4Ip[j];
-            mPts[ipNum][0] = coordinates1D2N4Ip[j];
-            mPts[ipNum][1] = coordinates1D2N4Ip[i];
+            weights[ipNum] = weights1D2N4Ip[i]*weights1D2N4Ip[j];
+            iPts[ipNum][0] = coordinates1D2N4Ip[j];
+            iPts[ipNum][1] = coordinates1D2N4Ip[i];
             ipNum++;
         }
 }
@@ -49,10 +47,13 @@ NuTo::IntegrationType2D4NLobatto16Ip::IntegrationType2D4NLobatto16Ip()
 //! @brief returns the local coordinates of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @param rCoordinates (result)
-Eigen::VectorXd NuTo::IntegrationType2D4NLobatto16Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
+void NuTo::IntegrationType2D4NLobatto16Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const
 {
     if (rIpNum>=0 && rIpNum<16)
-        return mPts[rIpNum];
+    {
+        rCoordinates[0] = iPts[rIpNum][0];
+        rCoordinates[1] = iPts[rIpNum][1];
+    }
     else
         throw MechanicsException("[NuTo::IntegrationType2D4NLobatto16Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
 }
@@ -70,8 +71,22 @@ int NuTo::IntegrationType2D4NLobatto16Ip::GetNumIntegrationPoints()const
 //! @return weight of integration points
 double NuTo::IntegrationType2D4NLobatto16Ip::GetIntegrationPointWeight(int rIpNum)const
 {
-    if (rIpNum>=0 && rIpNum<16) return mWeights[rIpNum];
+    if (rIpNum>=0 && rIpNum<16) return weights[rIpNum];
     throw MechanicsException("[NuTo::IntegrationType2D4NLobatto16Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
+}
+
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
+std::string NuTo::IntegrationType2D4NLobatto16Ip::GetStrIdentifier()const
+{
+    return GetStrIdentifierStatic();
+}
+
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
+std::string NuTo::IntegrationType2D4NLobatto16Ip::GetStrIdentifierStatic()
+{
+    return std::string("2D4NLOBATTO16IP");
 }
 
 #ifdef ENABLE_VISUALIZE

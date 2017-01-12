@@ -24,10 +24,11 @@ NuTo::IntegrationType2D4NGauss1Ip::IntegrationType2D4NGauss1Ip()
 //! @brief returns the local coordinates of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @param rCoordinates (result)
-Eigen::VectorXd NuTo::IntegrationType2D4NGauss1Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
+void NuTo::IntegrationType2D4NGauss1Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const
 {
     assert(rIpNum==0);
-	return Eigen::Vector2d({0., 0.});
+	rCoordinates[0] = 0.;
+	rCoordinates[1] = 0.;
 }
 
 
@@ -46,6 +47,19 @@ double NuTo::IntegrationType2D4NGauss1Ip::GetIntegrationPointWeight(int rIpNum)c
     return 4;
 }
 
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
+std::string NuTo::IntegrationType2D4NGauss1Ip::GetStrIdentifier()const
+{
+    return GetStrIdentifierStatic();
+}
+
+//! @brief returns a string with the identifier of the integration type
+//! @return identifier
+std::string NuTo::IntegrationType2D4NGauss1Ip::GetStrIdentifierStatic()
+{
+    return std::string("2D4NGAUSS1IP");
+}
 
 #ifdef ENABLE_VISUALIZE
 void NuTo::IntegrationType2D4NGauss1Ip::GetVisualizationCells(
