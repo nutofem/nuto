@@ -374,7 +374,7 @@ int main()
 
         NuTo::IntegrationType1D2NLobatto3Ip Lobatto1D2N3Ip;
 
-        for (int i = 0; i < 3; i++) Lobatto1D2N3Ip.GetLocalIntegrationPointCoordinates1D(i, nodeCoordinates(i));
+        for (int i = 0; i < 3; i++) nodeCoordinates(i) = Lobatto1D2N3Ip.GetLocalIntegrationPointCoordinates(i)[0];
         nodeCoordinates += ones;
 
         // 3Nodes 1D
@@ -418,7 +418,7 @@ int main()
         NuTo::Structure* myStructure;
 
         NuTo::IntegrationType1D2NLobatto4Ip Lobatto1D2N4Ip;
-        for (int i = 0; i < 4; i++) Lobatto1D2N4Ip.GetLocalIntegrationPointCoordinates1D(i, nodeCoordinates(i));
+        for (int i = 0; i < 4; i++) nodeCoordinates(i) = Lobatto1D2N4Ip.GetLocalIntegrationPointCoordinates(i)[0];
         nodeCoordinates+=ones;
 
 
@@ -463,7 +463,7 @@ int main()
         NuTo::Structure* myStructure;
 
         NuTo::IntegrationType1D2NLobatto5Ip Lobatto1D2N5Ip;
-        for (int i = 0; i < 5; i++) Lobatto1D2N5Ip.GetLocalIntegrationPointCoordinates1D(i, nodeCoordinates(i));
+        for (int i = 0; i < 5; i++) nodeCoordinates(i) = Lobatto1D2N5Ip.GetLocalIntegrationPointCoordinates(i)[0];
         nodeCoordinates+=ones;
 
 

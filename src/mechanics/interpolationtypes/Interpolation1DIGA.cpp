@@ -40,14 +40,8 @@ void NuTo::Interpolation1DIGA::UpdateIntegrationType(const IntegrationTypeBase& 
 
     mIPCoordinates.resize(numIPs);
 
-    assert(rIntegrationType.GetCoordinateDimension() == 1);
-
     for (int iIP = 0; iIP < numIPs; ++iIP)
-    {
-        double coordinate1D;
-        rIntegrationType.GetLocalIntegrationPointCoordinates1D(iIP, coordinate1D);
-        mIPCoordinates(iIP) = coordinate1D;
-    }
+        mIPCoordinates(iIP) = rIntegrationType.GetLocalIntegrationPointCoordinates(iIP)[0];
 
     mUpdateRequired = false;
 }

@@ -33,8 +33,8 @@ public:
 
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
-    //! @param rCoordinates (result)
-    void GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const override;
+    //! @return rCoordinates (result)
+    Eigen::VectorXd GetLocalIntegrationPointCoordinates(int rIpNum) const override;
 
     virtual Eigen::MatrixXd GetNaturalIntegrationPointCoordinates() const override;
 
@@ -48,13 +48,12 @@ public:
     //! @return weight of integration points
     double GetIntegrationPointWeight(int rIpNum)const override;
 
-    //! @brief returns a string with the identifier of the integration type
-    //! @return identifier
-    std::string GetStrIdentifier()const override;
-
-    //! @brief returns a string with the identifier of the integration type
-    //! @return identifier
-    static std::string GetStrIdentifierStatic();
+    //! @brief returns an enum with the type of the integration type
+    //! @return enum type
+    eIntegrationType GetEnumType() const override
+    {
+        return eIntegrationType::IntegrationType2D3NGauss3Ip;
+    }
 
 #ifdef ENABLE_VISUALIZE
     void GetVisualizationCells(

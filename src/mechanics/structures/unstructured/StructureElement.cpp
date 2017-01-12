@@ -698,6 +698,7 @@ void NuTo::Structure::ElementCreate(int rElementNumber,
                 break;
             case NuTo::Interpolation::eShapeType::TETRAHEDRON3D:
             case NuTo::Interpolation::eShapeType::BRICK3D:
+            case NuTo::Interpolation::eShapeType::PRISM3D:
                 ptrElement = new ContinuumElement<3>(this, rNodes, interpolationType);
                 ptrElement->CheckElement();
                 break;
@@ -871,10 +872,7 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId,
                                 boundaryElement = new ContinuumBoundaryElementConstrainedControlNode<2>(elementPtr->AsContinuumElement2D(), surfaceId,rControlNode);
                             }
                             // check for 2D types
-                            auto it = std::find(mMappingIntEnum2String.begin(), mMappingIntEnum2String.end(), interpolationType.GetCurrentIntegrationType().GetStrIdentifier());
-                            if (it == mMappingIntEnum2String.end()) break;
-
-                            switch ((eIntegrationType)std::distance(mMappingIntEnum2String.begin(), it)) // Oh my god. Someone please remove this "map" <--- Totally agree with Thomas (vhirtham)
+                            switch (interpolationType.GetCurrentIntegrationType().GetEnumType())
                             {
                             case eIntegrationType::IntegrationType2D3NGauss1Ip:
                             case eIntegrationType::IntegrationType2D4NGauss1Ip:
@@ -923,10 +921,7 @@ int NuTo::Structure::BoundaryElementsCreate(int rElementGroupId,
                             }
 
                             // check for 3D types
-                            auto it = std::find(mMappingIntEnum2String.begin(), mMappingIntEnum2String.end(), interpolationType.GetCurrentIntegrationType().GetStrIdentifier());
-                            if (it == mMappingIntEnum2String.end()) break;
-
-                            switch ((eIntegrationType)std::distance(mMappingIntEnum2String.begin(), it))
+                            switch (interpolationType.GetCurrentIntegrationType().GetEnumType())
                             {
                             case eIntegrationType::IntegrationType3D4NGauss1Ip:
                                 integrationType = eIntegrationType::IntegrationType2D3NGauss1Ip;

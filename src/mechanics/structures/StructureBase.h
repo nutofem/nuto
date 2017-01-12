@@ -1535,7 +1535,7 @@ public:
     //! @brief ... Returns a pointer to an integration type
     //! if the integration type does not exist in the map, an exception is thrown
     //! @param identIntegrationType Identifier for an integration type
-    NuTo::IntegrationTypeBase* GetPtrIntegrationType(const std::string& rIdentIntegrationType);
+    NuTo::IntegrationTypeBase* GetPtrIntegrationType(std::string rIdentIntegrationType);
 
     //! @brief ... Returns a pointer to an integration type
     //! if the integration type does not exist (in the map), the integration type is created
@@ -1835,9 +1835,6 @@ protected:
     //! @brief ... map storing the interpolation types
     //! @sa InterpolationType
     boost::ptr_map<int,InterpolationType> mInterpolationTypeMap;
-
-    //! @brief ... a mapping from the enums of the predefined integration types to their corresponding string name
-    std::vector<std::string> mMappingIntEnum2String;
 
     //! @brief ... map storing the components (displacements, strains, nonlocal weights etc) to be included in the output (VTK) file
     std::map<int, std::list<std::shared_ptr<VisualizeComponent>>> mGroupVisualizeComponentsMap;

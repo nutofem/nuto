@@ -156,29 +156,7 @@ void NuTo::ContinuumContactElement<TDim>::CalculateElementOutputGapMatrixMortar(
     // ===> Projection of the rTheIP on the master element => \xi^s_{IP}, \xi^m_*, n^m_*
 
     // ===> Get the position \xi^s_{IP}
-    Eigen::VectorXd coordinatedIPSlave;
-
-    double temp[2];
-    switch (TDim)
-    {
-    case 1:
-    {
-        mIntegrationType->GetLocalIntegrationPointCoordinates1D(rTheIP, temp[0]);
-        coordinatedIPSlave.resize(1);
-        coordinatedIPSlave(0) = temp[0];
-        break;
-    }
-    case 2:
-    {
-        mIntegrationType->GetLocalIntegrationPointCoordinates2D(rTheIP, temp);
-        coordinatedIPSlave.resize(2);
-        coordinatedIPSlave << temp[0], temp[1];
-        break;
-    }
-    default:
-        throw MechanicsException(__PRETTY_FUNCTION__, "Contact between 2D and 3D bodies implemented.");
-        break;
-    }
+    Eigen::VectorXd coordinatedIPSlave = mIntegrationType->GetLocalIntegrationPointCoordinates(rTheIP);
 
     // ===> Get the starting point for iteration
     double minDistance = std::numeric_limits<double>::infinity();

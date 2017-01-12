@@ -38,41 +38,12 @@ void NuTo::InterpolationBaseFEM::UpdateIntegrationType(const IntegrationTypeBase
     mMatrixN.resize(numIPs);
     mDerivativeShapeFunctionsNatural.resize(numIPs);
 
-    int dim = rIntegrationType.GetCoordinateDimension();
     for (int iIP = 0; iIP < numIPs; ++iIP)
     {
-        Eigen::VectorXd IPcoordinates;
-        switch (dim)
-        {
-        case 1:
-        {
-            double coordinate1D;
-            rIntegrationType.GetLocalIntegrationPointCoordinates1D(iIP, coordinate1D);
-            IPcoordinates.resize(1);
-            IPcoordinates(0) = coordinate1D;
-        }
-            break;
-        case 2:
-        {
-            double coordinate2D[2];
-            rIntegrationType.GetLocalIntegrationPointCoordinates2D(iIP, coordinate2D);
-            IPcoordinates = Eigen::Matrix<double, 2, 1>(coordinate2D);
-        }
-            break;
-        case 3:
-        {
-            double coordinate3D[3];
-            rIntegrationType.GetLocalIntegrationPointCoordinates3D(iIP, coordinate3D);
-            IPcoordinates = Eigen::Matrix<double, 3, 1>(coordinate3D);
-        }
-            break;
-        default:
-            throw MechanicsException(__PRETTY_FUNCTION__, "only implemented for dimension 1,2 and 3");
-        }
+        Eigen::VectorXd IPcoordinates = rIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
         mShapeFunctions[iIP] = CalculateShapeFunctions(IPcoordinates);
         mMatrixN[iIP] = CalculateMatrixN(IPcoordinates);
         mDerivativeShapeFunctionsNatural[iIP] = CalculateDerivativeShapeFunctionsNatural(IPcoordinates);
-
     }
     mUpdateRequired = false;
 }

@@ -310,6 +310,7 @@ void NuTo::ElementBase::Visualize(VisualizeUnstructuredGrid& rVisualize, const s
     GetVisualizationCells(NumVisualizationPoints, VisualizationPointLocalCoordinates, NumVisualizationCells, VisualizationCellType, VisualizationCellsIncidence, VisualizationCellsIP);
 
     // calculate global point coordinates and store point at the visualize object
+    if (NumVisualizationPoints == 0) return; // nothing to visualize
     int dimension(VisualizationPointLocalCoordinates.size() / NumVisualizationPoints);
     assert(VisualizationPointLocalCoordinates.size() == NumVisualizationPoints * dimension);
 
@@ -1063,8 +1064,7 @@ void NuTo::ElementBase::VisualizeIntegrationPointData(VisualizeUnstructuredGrid&
 
     for (unsigned int iIp = 0; iIp < NumVisualizationPoints; ++iIp)
     {
-        double naturalIpCoords[2];
-        GetInterpolationType().GetCurrentIntegrationType().GetLocalIntegrationPointCoordinates2D(iIp, naturalIpCoords);
+        auto naturalIpCoords = GetInterpolationType().GetCurrentIntegrationType().GetLocalIntegrationPointCoordinates(iIp);
 
         for (int iDim = 0; iDim < dimension; ++iDim)
         {

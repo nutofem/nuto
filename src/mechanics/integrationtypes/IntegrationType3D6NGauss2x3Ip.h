@@ -1,4 +1,3 @@
-// $Id$
 #pragma once
 
 #ifdef ENABLE_SERIALIZATION
@@ -10,14 +9,14 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif //ENABLE_SERIALIZATION
 
-#include "mechanics/integrationtypes/IntegrationType2D.h"
+#include "mechanics/integrationtypes/IntegrationType3D.h"
 
 namespace NuTo
 {
-//! @author Daniel Arnold, ISM
-//! @date February 2011
-//! @brief ... integration types in 2D with four nodes and variable number of integration points
-class IntegrationType2D4NConstVariableIp : public IntegrationType2D
+//! @author Thomas Titscher, ISM
+//! @date January 2017
+//! @brief ... integration types in 3D with 6 nodes Gauss integration and 2x3 integration points
+class IntegrationType3D6NGauss2x3Ip : public IntegrationType3D
 {
 #ifdef ENABLE_SERIALIZATION
     friend class boost::serialization::access;
@@ -25,38 +24,37 @@ class IntegrationType2D4NConstVariableIp : public IntegrationType2D
 
 public:
     //! @brief constructor
-    IntegrationType2D4NConstVariableIp(int rNumIp);
+    IntegrationType3D6NGauss2x3Ip();
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
     //! @param ar         archive
     //! @param version    version
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
+    void serialize(Archive & ar, const unsigned int version)
+    {}
 #endif // ENABLE_SERIALIZATION
+
+    //! @brief returns the local coordinates of an integration point
+    //! @param rIpNum integration point (counting from zero)
+    //! @return rCoordinates (result)
+    Eigen::VectorXd GetLocalIntegrationPointCoordinates(int rIpNum) const override;
 
     //! @brief returns the total number of integration points for this integration type
     //! @return number of integration points
-    int GetNumIntegrationPoints()const;
+    int GetNumIntegrationPoints() const override;
 
     //! @brief returns the weight of an integration point
     //! @param rIpNum integration point (counting from zero)
     //! @return weight of integration points
-    double GetIntegrationPointWeight(int rIpNum)const;
+    double GetIntegrationPointWeight(int rIpNum) const override;
 
-    //! @brief returns the local coordinates of an integration point
-    //! @param rIpNum integration point (counting from zero)
-    //! @param rCoordinates (result)
-    void GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const;
-
-
-    //! @brief returns a string with the identifier of the integration type
-    //! @return identifier
-    std::string GetStrIdentifier()const;
-
-    //! @brief returns a string with the identifier of the integration type
-    //! @return identifier
-    static std::string GetStrIdentifierStatic();
+    //! @brief returns an enum with the type of the integration type
+    //! @return enum type
+    eIntegrationType GetEnumType() const override
+    {
+        return eIntegrationType::IntegrationType3D6NGauss2x3Ip;
+    }
 
 #ifdef ENABLE_VISUALIZE
     void GetVisualizationCells(
@@ -65,11 +63,11 @@ public:
         unsigned int& NumVisualizationCells,
         std::vector<NuTo::eCellTypes>& VisualizationCellType,
         std::vector<unsigned int>& VisualizationCellsIncidence,
-        std::vector<unsigned int>& VisualizationCellsIP) const;
+        std::vector<unsigned int>& VisualizationCellsIP) const override;
 #endif // ENABLE_VISUALIZE
 
 protected:
-    int mNumIp;
+
 
 };
 }

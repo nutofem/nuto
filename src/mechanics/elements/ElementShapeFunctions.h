@@ -199,7 +199,26 @@ namespace ShapeFunctions3D
 	Eigen::Matrix<double, 125, 1> ShapeFunctionsBrickSpectralOrder4(const Eigen::VectorXd& rCoordinates);
 
 	Eigen::Matrix<double, 125, 3> DerivativeShapeFunctionsBrickSpectralOrder4(const Eigen::VectorXd& rCoordinates);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    Eigen::Matrix<double, 3, 1> NodeCoordinatesPrismOrder1(int rNodeIndex);
+
+    Eigen::Matrix<double, 6, 1> ShapeFunctionsPrismOrder1(const Eigen::VectorXd& rCoordinates);
+
+    Eigen::Matrix<double, 6, 3> DerivativeShapeFunctionsPrismOrder1(const Eigen::VectorXd& rCoordinates);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    Eigen::Matrix<double, 3, 1> NodeCoordinatesPrismOrder2(int rNodeIndex);
+
+    Eigen::Matrix<double, 15, 1> ShapeFunctionsPrismOrder2(const Eigen::VectorXd& rCoordinates);
+
+    Eigen::Matrix<double, 15, 3> DerivativeShapeFunctionsPrismOrder2(const Eigen::VectorXd& rCoordinates);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
+
 
 namespace ShapeFunctionsInterface2D
 {

@@ -31,17 +31,10 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
-    //! @brief returns the dimension of the integration type
-    //! @return dimension = 1, 2 or 3
-    int GetCoordinateDimension()const
-    {
-        return 2;
-    }
-
     //! @brief ... check compatibility between element type and integration type
     //! @param rElementType ... element type
     //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-    virtual bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const;
+    virtual bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const override;
 
 protected:
 

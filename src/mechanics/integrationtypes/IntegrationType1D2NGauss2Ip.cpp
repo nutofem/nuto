@@ -15,17 +15,13 @@ NuTo::IntegrationType1D2NGauss2Ip::IntegrationType1D2NGauss2Ip()
 //! @brief returns the local coordinates of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @param rCoordinates (result)
-void NuTo::IntegrationType1D2NGauss2Ip::GetLocalIntegrationPointCoordinates1D(int rIpNum, double& rCoordinates)const
+Eigen::VectorXd NuTo::IntegrationType1D2NGauss2Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
     assert(rIpNum==0 || rIpNum==1);
     switch (rIpNum)
     {
-    case 0 :
-        rCoordinates = -0.577350269189626;
-        break;
-    case 1 :
-        rCoordinates =  0.577350269189626;
-        break;
+    case 0 : return Eigen::Matrix<double, 1, 1>::Constant(-0.577350269189626);
+    case 1 : return Eigen::Matrix<double, 1, 1>::Constant( 0.577350269189626);
     default:
         throw MechanicsException("[NuTo::IntegrationType1D2NGauss2Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
     }
@@ -45,20 +41,6 @@ int NuTo::IntegrationType1D2NGauss2Ip::GetNumIntegrationPoints()const
 double NuTo::IntegrationType1D2NGauss2Ip::GetIntegrationPointWeight(int rIpNum)const
 {
     return 1;
-}
-
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
-std::string NuTo::IntegrationType1D2NGauss2Ip::GetStrIdentifier()const
-{
-    return GetStrIdentifierStatic();
-}
-
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
-std::string NuTo::IntegrationType1D2NGauss2Ip::GetStrIdentifierStatic()
-{
-    return std::string("1D2NGAUSS2IP");
 }
 
 #ifdef ENABLE_VISUALIZE

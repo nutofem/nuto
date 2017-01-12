@@ -52,14 +52,13 @@ int main(int argc, char* argv[])
     CreateMesoscaleGeometryMesh(gmshFile, lX, lY);
 
     auto groupIndices = myStructure.ImportFromGmsh(gmshFile + ".msh");
-    assert(groupIndices.GetNumRows() == 2); // two physical groups
-    assert(groupIndices.GetNumColumns() == 2); // 1st col: group, 2nd col: interpolation type
+    assert(groupIndices.size() == 2); // two physical groups
 
-    int gMatrix = groupIndices(0, 0);
-    int gAggreg = groupIndices(1, 0);
+    int gMatrix = groupIndices[0].first;
+    int gAggreg = groupIndices[1].first;
 
-    int interpolationMatrix = groupIndices(0, 1);
-    int interpolationAggreg = groupIndices(1, 1);
+    int interpolationMatrix = groupIndices[0].second;
+    int interpolationAggreg = groupIndices[1].second;
 
     myStructure.InterpolationTypeAdd(
             interpolationMatrix, NuTo::Node::eDof::DISPLACEMENTS, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);

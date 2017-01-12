@@ -25,7 +25,7 @@ class IntegrationType0DBoundary : public IntegrationTypeBase
 
 public:
     //! @brief constructor
-    IntegrationType0DBoundary();
+    IntegrationType0DBoundary() = default;
 
 #ifdef ENABLE_SERIALIZATION
     //! @brief serializes the class
@@ -44,26 +44,25 @@ public:
 
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
-    //! @param rCoordinates (result)
-    void GetLocalIntegrationPointCoordinates1D(int rIpNum, double& rCoordinates)const;
+    //! @return rCoordinates (result)
+    Eigen::VectorXd GetLocalIntegrationPointCoordinates(int rIpNum) const override;
 
 
     //! @brief returns the total number of integration points for this integration type
     //! @return number of integration points
-    int GetNumIntegrationPoints()const;
+    int GetNumIntegrationPoints() const override;
 
     //! @brief returns the weight of an integration point
     //! @param rIpNum integration point (counting from zero)
     //! @return weight of integration points
-    double GetIntegrationPointWeight(int rIpNum)const;
+    double GetIntegrationPointWeight(int rIpNum) const  override;
 
-    //! @brief returns a string with the identifier of the integration type
-    //! @return identifier
-    std::string GetStrIdentifier()const;
-
-    //! @brief returns a string with the identifier of the integration type
-    //! @return identifier
-    static std::string GetStrIdentifierStatic();
+    //! @brief returns an enum with the type of the integration type
+    //! @return enum type
+    eIntegrationType GetEnumType() const override
+    {
+        return eIntegrationType::IntegrationType0DBoundary;
+    }
 
     //! @brief ... check compatibility between element type and integration type
     //! @param rElementType ... element type (enum is defined in ElementBase, but forward declaration of enums not yet possible->int)

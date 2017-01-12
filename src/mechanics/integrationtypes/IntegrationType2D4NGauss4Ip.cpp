@@ -25,27 +25,15 @@ NuTo::IntegrationType2D4NGauss4Ip::IntegrationType2D4NGauss4Ip()
 //! @brief returns the local coordinates of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @param rCoordinates (result)
-void NuTo::IntegrationType2D4NGauss4Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2])const
+Eigen::VectorXd NuTo::IntegrationType2D4NGauss4Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
     assert(rIpNum>=0 && rIpNum<4);
     switch (rIpNum)
     {
-    case 0 :
-        rCoordinates[0] = -0.577350269189626;
-        rCoordinates[1] = -0.577350269189626;
-        break;
-    case 1 :
-        rCoordinates[0] = +0.577350269189626;
-        rCoordinates[1] = -0.577350269189626;
-        break;
-    case 2 :
-        rCoordinates[0] = +0.577350269189626;
-        rCoordinates[1] = +0.577350269189626;
-        break;
-    case 3 :
-        rCoordinates[0] = -0.577350269189626;
-        rCoordinates[1] = +0.577350269189626;
-        break;
+    case 0 : return Eigen::Vector2d({-0.577350269189626, -0.577350269189626});
+    case 1 : return Eigen::Vector2d({+0.577350269189626, -0.577350269189626});
+    case 2 : return Eigen::Vector2d({+0.577350269189626, +0.577350269189626});
+    case 3 : return Eigen::Vector2d({-0.577350269189626, +0.577350269189626});
     default:
         throw MechanicsException("[NuTo::IntegrationType2D4NGauss4Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
     }
@@ -65,20 +53,6 @@ int NuTo::IntegrationType2D4NGauss4Ip::GetNumIntegrationPoints()const
 double NuTo::IntegrationType2D4NGauss4Ip::GetIntegrationPointWeight(int rIpNum)const
 {
     return 1;
-}
-
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
-std::string NuTo::IntegrationType2D4NGauss4Ip::GetStrIdentifier()const
-{
-    return GetStrIdentifierStatic();
-}
-
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
-std::string NuTo::IntegrationType2D4NGauss4Ip::GetStrIdentifierStatic()
-{
-    return std::string("2D4NGAUSS4IP");
 }
 
 #ifdef ENABLE_VISUALIZE

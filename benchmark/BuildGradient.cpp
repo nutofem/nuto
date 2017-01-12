@@ -25,16 +25,12 @@ public:
     Eigen::VectorXd BuildInternalGradient() const
     {
         NuTo::IntegrationType2D4NGauss4Ip it;
-        Eigen::Vector2d ip;
-        double ipCoords[2];
 
         Eigen::VectorXd result = Eigen::VectorXd::Zero(16,1);
 
         for (int i = 0; i < it.GetNumIntegrationPoints(); ++i)
         {
-            it.GetLocalIntegrationPointCoordinates2D(i, ipCoords);
-            ip[0] = ipCoords[0];
-            ip[1] = ipCoords[1];
+            Eigen::Vector2d ip = it.GetLocalIntegrationPointCoordinates(i);
 
             auto derivativeShapeFunctions = NuTo::ShapeFunctions2D::DerivativeShapeFunctionsQuadOrder2(ip);
             auto J = GetJacobian(derivativeShapeFunctions);
@@ -119,16 +115,11 @@ public:
     Eigen::Matrix<double, 16, 1> BuildInternalGradient() const
     {
         NuTo::IntegrationType2D4NGauss4Ip it;
-        Eigen::Vector2d ip;
-        double ipCoords[2];
-
         Eigen::Matrix<double, 16, 1> result = Eigen::Matrix<double, 16, 1>::Zero();
 
         for (int i = 0; i < it.GetNumIntegrationPoints(); ++i)
         {
-            it.GetLocalIntegrationPointCoordinates2D(i, ipCoords);
-            ip[0] = ipCoords[0];
-            ip[1] = ipCoords[1];
+            Eigen::Vector2d ip = it.GetLocalIntegrationPointCoordinates(i);
 
             auto derivativeShapeFunctions = NuTo::ShapeFunctions2D::DerivativeShapeFunctionsQuadOrder2(ip);
             auto J = GetJacobian(derivativeShapeFunctions);

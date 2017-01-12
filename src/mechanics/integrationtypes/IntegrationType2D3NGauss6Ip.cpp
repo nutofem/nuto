@@ -24,7 +24,7 @@ NuTo::IntegrationType2D3NGauss6Ip::IntegrationType2D3NGauss6Ip()
 //! @brief returns the local coordinates of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @param rCoordinates (result)
-void NuTo::IntegrationType2D3NGauss6Ip::GetLocalIntegrationPointCoordinates2D(int rIpNum, double rCoordinates[2]) const
+Eigen::VectorXd NuTo::IntegrationType2D3NGauss6Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
     assert(rIpNum >= 0 && rIpNum < 6);
 
@@ -33,30 +33,12 @@ void NuTo::IntegrationType2D3NGauss6Ip::GetLocalIntegrationPointCoordinates2D(in
 
     switch (rIpNum)
     {
-    case 0:
-        rCoordinates[0] = a;
-        rCoordinates[1] = a;
-        break;
-    case 1:
-        rCoordinates[0] = 1 - 2 * a;
-        rCoordinates[1] = a;
-        break;
-    case 2:
-        rCoordinates[0] = a;
-        rCoordinates[1] = 1 - 2 * a;
-        break;
-    case 3:
-        rCoordinates[0] = b;
-        rCoordinates[1] = b;
-        break;
-    case 4:
-        rCoordinates[0] = 1 - 2 * b;
-        rCoordinates[1] = b;
-        break;
-    case 5:
-        rCoordinates[0] = b;
-        rCoordinates[1] = 1 - 2 * b;
-        break;
+    case 0: return Eigen::Vector2d({a, a});
+    case 1: return Eigen::Vector2d({1 - 2 * a, a});
+    case 2: return Eigen::Vector2d({a, 1 - 2 * a});
+    case 3: return Eigen::Vector2d({b, b});
+    case 4: return Eigen::Vector2d({1 - 2 * b, b});
+    case 5: return Eigen::Vector2d({b, 1 - 2 * b});
     default:
         throw MechanicsException("[NuTo::IntegrationType2D3NGauss6Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
     }
@@ -97,19 +79,6 @@ double NuTo::IntegrationType2D3NGauss6Ip::GetIntegrationPointWeight(int rIpNum) 
     }
 }
 
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
-std::string NuTo::IntegrationType2D3NGauss6Ip::GetStrIdentifier() const
-{
-    return GetStrIdentifierStatic();
-}
-
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
-std::string NuTo::IntegrationType2D3NGauss6Ip::GetStrIdentifierStatic()
-{
-    return std::string("2D3NGAUSS6IP");
-}
 
 #ifdef ENABLE_VISUALIZE
 void NuTo::IntegrationType2D3NGauss6Ip::GetVisualizationCells(unsigned int& NumVisualizationPoints, std::vector<double>& VisualizationPointLocalCoordinates, unsigned int& NumVisualizationCells, std::vector<NuTo::eCellTypes>& VisualizationCellType,
