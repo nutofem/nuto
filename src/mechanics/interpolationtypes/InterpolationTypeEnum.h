@@ -25,6 +25,7 @@ enum class eShapeType
     QUAD2D,
     TETRAHEDRON3D,
     BRICK3D,
+    PRISM3D,
     INTERFACE,
     IGA1D,
     IGA2D

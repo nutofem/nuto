@@ -15,51 +15,20 @@ NuTo::IntegrationType3D8NGauss2x2x2Ip::IntegrationType3D8NGauss2x2x2Ip()
 //! @brief returns the local coordinates of an integration point
 //! @param rIpNum integration point (counting from zero)
 //! @param rCoordinates (result)
-void NuTo::IntegrationType3D8NGauss2x2x2Ip::GetLocalIntegrationPointCoordinates3D(int rIpNum, double rCoordinates[3])const
+Eigen::VectorXd NuTo::IntegrationType3D8NGauss2x2x2Ip::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
     assert(rIpNum>=0 && rIpNum<=7);
+    double a = 0.577350269189626;
     switch (rIpNum)
     {
-    case 0 :
-        rCoordinates[0] = -0.577350269189626;
-        rCoordinates[1] = -0.577350269189626;
-        rCoordinates[2] = -0.577350269189626;
-        break;
-    case 1 :
-        rCoordinates[0] = +0.577350269189626;
-        rCoordinates[1] = -0.577350269189626;
-        rCoordinates[2] = -0.577350269189626;
-        break;
-    case 2 :
-        rCoordinates[0] = -0.577350269189626;
-        rCoordinates[1] = +0.577350269189626;
-        rCoordinates[2] = -0.577350269189626;
-        break;
-    case 3 :
-        rCoordinates[0] = +0.577350269189626;
-        rCoordinates[1] = +0.577350269189626;
-        rCoordinates[2] = -0.577350269189626;
-        break;
-    case 4 :
-        rCoordinates[0] = -0.577350269189626;
-        rCoordinates[1] = -0.577350269189626;
-        rCoordinates[2] = +0.577350269189626;
-        break;
-    case 5 :
-        rCoordinates[0] = +0.577350269189626;
-        rCoordinates[1] = -0.577350269189626;
-        rCoordinates[2] = +0.577350269189626;
-        break;
-    case 6 :
-        rCoordinates[0] = -0.577350269189626;
-        rCoordinates[1] = +0.577350269189626;
-        rCoordinates[2] = +0.577350269189626;
-        break;
-    case 7 :
-        rCoordinates[0] = +0.577350269189626;
-        rCoordinates[1] = +0.577350269189626;
-        rCoordinates[2] = +0.577350269189626;
-        break;
+    case 0 : return Eigen::Vector3d({ -a, -a, -a});
+    case 1 : return Eigen::Vector3d({  a, -a, -a});
+    case 2 : return Eigen::Vector3d({ -a,  a, -a});
+    case 3 : return Eigen::Vector3d({  a,  a, -a});
+    case 4 : return Eigen::Vector3d({ -a, -a,  a});
+    case 5 : return Eigen::Vector3d({  a, -a,  a});
+    case 6 : return Eigen::Vector3d({ -a,  a,  a});
+    case 7 : return Eigen::Vector3d({  a,  a,  a});
     default:
         throw MechanicsException("[NuTo::IntegrationType1D2NGauss2Ip::GetLocalIntegrationPointCoordinates] Ip number out of range.");
     }
@@ -81,19 +50,6 @@ double NuTo::IntegrationType3D8NGauss2x2x2Ip::GetIntegrationPointWeight(int rIpN
     return 1;
 }
 
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
-std::string NuTo::IntegrationType3D8NGauss2x2x2Ip::GetStrIdentifier()const
-{
-    return GetStrIdentifierStatic();
-}
-
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
-std::string NuTo::IntegrationType3D8NGauss2x2x2Ip::GetStrIdentifierStatic()
-{
-    return std::string("3D8NGAUSS2x2x2IP");
-}
 
 #ifdef ENABLE_VISUALIZE
 void NuTo::IntegrationType3D8NGauss2x2x2Ip::GetVisualizationCells(

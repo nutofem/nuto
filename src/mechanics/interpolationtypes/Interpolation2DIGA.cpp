@@ -348,19 +348,12 @@ int NuTo::Interpolation2DIGA::GetSurfaceDegree(int rSurface) const
 
 void NuTo::Interpolation2DIGA::UpdateIntegrationType(const IntegrationTypeBase& rIntegrationType)
 {
-    assert(rIntegrationType.GetCoordinateDimension() == 2);
-
     int numIPs = rIntegrationType.GetNumIntegrationPoints();
 
     mIPCoordinates.resize(numIPs, 2);
 
     for (int iIP = 0; iIP < numIPs; ++iIP)
-    {
-        double coordinate2D[2];
-        rIntegrationType.GetLocalIntegrationPointCoordinates2D(iIP, coordinate2D);
-        mIPCoordinates(iIP, 0) = coordinate2D[0];
-        mIPCoordinates(iIP, 1) = coordinate2D[1];
-    }
+        mIPCoordinates.row(iIP) = rIntegrationType.GetLocalIntegrationPointCoordinates(iIP);
 
     mUpdateRequired = false;
 }

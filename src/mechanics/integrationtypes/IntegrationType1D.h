@@ -44,17 +44,11 @@ public:
     }
 #endif // ENABLE_SERIALIZATION
 
-    //! @brief returns the dimension of the integration type
-    //! @return dimension = 1, 2 or 3
-    inline int GetCoordinateDimension()const
-    {
-        return 1;
-    }
 
     //! @brief ... check compatibility between element type and integration type
     //! @param rElementType ... element type (enum is defined in ElementBase, but forward declaration of enums not yet possible->int)
     //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-    virtual bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const;
+    virtual bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const override;
 
 protected:
 };

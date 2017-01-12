@@ -1,27 +1,11 @@
 
 #include "mechanics/elements/ElementEnum.h"
 #include "mechanics/integrationtypes/IntegrationType0DBoundary.h"
-#include <assert.h>
 
 
-// constructor
-NuTo::IntegrationType0DBoundary::IntegrationType0DBoundary()
+Eigen::VectorXd NuTo::IntegrationType0DBoundary::GetLocalIntegrationPointCoordinates(int rIpNum) const
 {
-}
-
-//! @brief returns the local coordinates of an integration point
-//! @param rIpNum integration point (counting from zero)
-//! @param rCoordinates (result)
-void NuTo::IntegrationType0DBoundary::GetLocalIntegrationPointCoordinates1D(int rIpNum, double& rCoordinates)const
-{
-//    switch (rIpNum)
-//    {
-//    case 0 :
-//        rCoordinates = -1; // this is the one located on the boundary of the real boundary element
-//        break;
-//    default:
         throw MechanicsException("[NuTo::IntegrationType0DBoundary::GetLocalIntegrationPointCoordinates] Ip number out of range.");
-//    }
 }
 
 
@@ -44,20 +28,6 @@ double NuTo::IntegrationType0DBoundary::GetIntegrationPointWeight(int rIpNum)con
     default:
         throw MechanicsException("[NuTo::IntegrationType0DBoundary::GetIntegrationPointWeight] Ip number out of range.");
     }
-}
-
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
-std::string NuTo::IntegrationType0DBoundary::GetStrIdentifier()const
-{
-    return GetStrIdentifierStatic();
-}
-
-//! @brief returns a string with the identifier of the integration type
-//! @return identifier
-std::string NuTo::IntegrationType0DBoundary::GetStrIdentifierStatic()
-{
-    return std::string("0DBOUNDARY");
 }
 
 #ifdef ENABLE_VISUALIZE
