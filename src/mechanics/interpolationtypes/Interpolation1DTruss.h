@@ -14,11 +14,7 @@ namespace NuTo
 
 /**
 @brief 2D quadrilateral element with the following natural coordinate system and its surface parametrization
-\f[\fbox{ \begin{tikzpicture}
-  \draw[dotted, |-latex] (0,0) -- (1.5,0) node[above]{$\xi$};
-  \draw[dashed, |-|] (-1,0) node[below]{$-1$} node[above] {$\alpha_0$}
-              --( 1,0) node[below]{$ 1$} node[above] {$\alpha_1$};
-\end{tikzpicture}   } \f]
+@image html Truss1D.png
 **/
 class Interpolation1DTruss: public Interpolation1D
 {

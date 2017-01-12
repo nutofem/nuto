@@ -14,19 +14,7 @@ namespace NuTo
 
 /**
 @brief 2D quadrilateral element with the following natural coordinate system and its surface parametrization
-\f[\fbox{ \begin{tikzpicture}
-  \draw[dotted, -latex] (0,0) -- (1.5,0) node[above]{$\xi$};
-  \draw[dotted,-latex] (0,0) -- (0,1.5) node[above]{$\eta$};
-  \draw[dashed] (-1,-1) node[below  left]{$(-1,-1)$}
-              --( 1,-1) node[below right]{$( 1,-1)$}
-              --( 1, 1) node[above right]{$( 1, 1)$}
-              --(-1, 1) node[above  left]{$(-1, 1)$} -- cycle;
-  \draw[|-latex] ( 0,-1) -- (.8,-1) node[midway, below] {$\alpha_0$};
-  \draw[|-latex] ( 1, 0) -- ( 1,.8) node[midway, above right] {$\alpha_1$};
-  \draw[|-latex] ( 0, 1) -- (-.8, 1) node[midway, below] {$\alpha_2$};
-  \draw[|-latex] (-1, 0) -- (-1,-.8) node[midway, left] {$\alpha_3$};
-  \node[rectangle, draw] at (1.5,2) {$\alpha_i = [-1,1]$};
-\end{tikzpicture}   } \f]
+@image html Quad2D.png
 **/
 class Interpolation2DQuad: public Interpolation2D
 {

@@ -4,6 +4,8 @@
 
 * @ref Doxygen
 
+* @ref TikzImages
+
 ### continuous integration
 
 * @ref Coverage
