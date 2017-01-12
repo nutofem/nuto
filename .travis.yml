@@ -21,7 +21,7 @@ before_install:
     - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
     - sudo apt-get -qq update
     - sudo apt-get install -y g++-6 clang-3.9 libeigen3-dev libgfortran-6-dev libgcc-6-dev libiomp-dev swig3.0 doxygen python-dev python-numpy libboost1.55-all-dev libopenblas-dev libmetis-dev libmumps-seq-dev libann-dev libarpack2-dev gfortran gmsh
-    - sudo apt-get install -y lcov curl
+    - sudo apt-get install -y lcov curl texlive-font-utils
 before_script:
     - mkdir build
     - cd build
@@ -35,3 +35,4 @@ script:
 after_success:
     - cd ..
     - if [[ "$COVERAGE" == "TRUE" ]]; then coveralls -E '.*PYTHON.*' --gcov-options '\-lp' > /dev/null; fi
+    - if [[ "$COVERAGE" == "TRUE" ]]; then ./scripts/deployGHPages.sh; fi
