@@ -43,27 +43,20 @@ public:
     void GapMatrixMortar(EvaluateDataContinuumBoundary<TDimSlave> &rData, int rTheIP);
 
     void CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> &rElementOutput,
-                                 EvaluateDataContinuumBoundary<TDimSlave>                       &rData,
-                                 const ConstitutiveInputMap                                     &constitutiveInput,
-                                 const ConstitutiveOutputMap                                    &constitutiveOutput) const;
+                                 EvaluateDataContinuumBoundary<TDimSlave>                       &rData) const;
 
 
     void CalculateElementOutputContactForce(BlockFullVector<double>& rInternalGradient,
-                                            EvaluateDataContinuumBoundary<TDimSlave> &rData,
-                                            const ConstitutiveInputMap& constitutiveInput,
-                                            const ConstitutiveOutputMap& constitutiveOutput) const;
+                                            EvaluateDataContinuumBoundary<TDimSlave> &rData) const;
 
     void CalculateElementOutputContactForceDerivative(BlockFullMatrix<double> &rGapMatrix,
-                                                      EvaluateDataContinuumBoundary<TDimSlave> &rData,
-                                                      const ConstitutiveInputMap &constitutiveInput,
-                                                      const ConstitutiveOutputMap &constitutiveOutput) const;
+                                                      EvaluateDataContinuumBoundary<TDimSlave> &rData) const;
 
     void GetGlobalIntegrationPointCoordinatesAndParameters(int rIpNum, Eigen::VectorXd &rCoordinatesIPSlave, Eigen::VectorXd &rParamsIPSlave) const;
 
-    const Eigen::Vector3d GetGlobalIntegrationPointCoordinates(int rIpNum) const override;
+//    const Eigen::Vector3d GetGlobalIntegrationPointCoordinates(int rIpNum) const override;
 
 protected:
-
     //! @brief ... Master elements in the right ordering. For pure IGA structure and contact only 2D elements possible, with the surface id of the contacting surface
     //! in the case of IGA layer ontop of the FEM mesh, there is no need for the surface id => -1
     Eigen::Matrix<std::pair<const ContinuumElementIGA<TDimMaster>*, int>, Eigen::Dynamic, Eigen::Dynamic> mElementsMaster;

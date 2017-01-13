@@ -22,6 +22,7 @@ bool NuTo::IntegrationType2D::CheckElementCompatibility(NuTo::Element::eElementT
     {
     case NuTo::Element::eElementType::CONTINUUMELEMENT:
     case NuTo::Element::eElementType::CONTINUUMELEMENTIGA:
+    case NuTo::Element::eElementType::CONTINUUMELEMENTIGALAYER:
     case NuTo::Element::eElementType::CONTINUUMCONTACTELEMENT:
     case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENT:
     case NuTo::Element::eElementType::CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE:

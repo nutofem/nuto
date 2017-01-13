@@ -146,9 +146,9 @@ NuTo::eError NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::Evaluate(cons
     // the global dof numbering is not done in the constructor, because the dof numbering may not be completed at that time
     FillMappingGlobalLocal();
 
-    auto constitutiveOutput = GetConstitutiveOutputMap(rElementOutput);
-    auto constitutiveInput  = this->GetConstitutiveInputMap(constitutiveOutput);
-    constitutiveInput.Merge(rInput);
+    GetConstitutiveOutputMap(rElementOutput);
+//    auto constitutiveInput  = this->GetConstitutiveInputMap(constitutiveOutput);
+//    constitutiveInput.Merge(rInput);
 
     const InterpolationBase& interpolationType = this->mBaseElement->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS);
     int numNodesSlave = interpolationType.GetNumNodes();
@@ -162,13 +162,13 @@ NuTo::eError NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::Evaluate(cons
 
     for (int theIP = 0; theIP < this->GetNumIntegrationPoints(); theIP++)
     {
-        this->CalculateNMatrixBMatrixDetJacobian(data, theIP);
-        this->CalculateConstitutiveInputs(constitutiveInput, data);
+//        this->CalculateNMatrixBMatrixDetJacobian(data, theIP);
+//        this->CalculateConstitutiveInputs(constitutiveInput, data);
 
-        eError error = this->NuTo::ElementBase::EvaluateConstitutiveLaw<TDimSlave>(constitutiveInput, constitutiveOutput, theIP);
+//        eError error = this->NuTo::ElementBase::EvaluateConstitutiveLaw<TDimSlave>(constitutiveInput, constitutiveOutput, theIP);
 
-        if (error != eError::SUCCESSFUL)
-            return error;
+//        if (error != eError::SUCCESSFUL)
+//            return error;
 
         for (auto it : rElementOutput)
         {
@@ -187,7 +187,7 @@ NuTo::eError NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::Evaluate(cons
             case Element::eOutput::UPDATE_TMP_STATIC_DATA:
                 break;
             case Element::eOutput::IP_DATA:
-                this->CalculateElementOutputIpData(it.second->GetIpData(), constitutiveOutput, theIP);
+//                this->CalculateElementOutputIpData(it.second->GetIpData(), constitutiveOutput, theIP);
                 break;
             default:
                 throw MechanicsException(__PRETTY_FUNCTION__, "element output not implemented.");
@@ -195,7 +195,7 @@ NuTo::eError NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::Evaluate(cons
         }
     }
 
-    CalculateElementOutputs(rElementOutput, data, constitutiveInput, constitutiveOutput);
+    CalculateElementOutputs(rElementOutput, data);
 
     return eError::SUCCESSFUL;
 }
@@ -230,7 +230,7 @@ NuTo::ConstitutiveOutputMap NuTo::ContinuumContactElement<TDimSlave, TDimMaster>
             constitutiveOutput[Constitutive::eOutput::UPDATE_TMP_STATIC_DATA] = 0;
             break;
         case Element::eOutput::IP_DATA:
-            this->FillConstitutiveOutputMapIpData(constitutiveOutput, it.second->GetIpData());
+//            this->FillConstitutiveOutputMapIpData(constitutiveOutput, it.second->GetIpData());
             break;
         case Element::eOutput::GLOBAL_ROW_DOF:
             CalculateGlobalRowDofs(it.second->GetBlockFullVectorInt());
@@ -285,7 +285,6 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
     Eigen::VectorXd ipCoordsNaturalSlave;
     GetGlobalIntegrationPointCoordinatesAndParameters(rTheIP, coordinatesIPSlave, ipCoordsNaturalSlave);
 
-    // TODO mind the iga jacobian matrix (in case of iga layer- iga layer contact)
     auto jacobianSurface = this->mBaseElement->CalculateJacobianSurface(ipCoordsNaturalSlave, this->ExtractNodeValues(0, Node::eDof::COORDINATES), this->mSurfaceId);
     double jacobianbyWeight = jacobianSurface.norm() * this->GetIntegrationPointWeight(rTheIP);
 
@@ -311,7 +310,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
 
     double minDistance = std::numeric_limits<double>::infinity();
     Eigen::VectorXd parameterMinMaster;
-    Eigen::Vector2d indexMasterElement;
+    Eigen::Vector2d indexMasterElement(0.,0.);
     for(int i = 0; i < mElementsMaster.rows(); i++)
     {
         for(int j = 0; j < mElementsMaster.cols(); j++)
@@ -348,13 +347,16 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
     int numIter = 0;
     Eigen::VectorXd r;
     Eigen::VectorXd coordinatesMaster;
+
+    int numPrimes = (this->mSurfaceId == -1) ? TDimSlave : TDimSlave - 1;
+
     while(error > tol && numIter < maxNumIter)
     {
         // ==> function (dprime)
         coordinatesMaster = masterElement->InterpolateDofGlobalSurfaceDerivative(0, parameterMinMaster, 0, 0);
         r = coordinatesIPSlave - coordinatesMaster;
-        Eigen::VectorXd dprime(TDimSlave - 1, 1);
-        dprime.setZero(TDimSlave - 1);
+        Eigen::VectorXd dprime(numPrimes, 1);
+        dprime.setZero(numPrimes);
         Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> prime = masterElement->InterpolateDofGlobalSurfaceDerivativeTotal(0, parameterMinMaster, 1);
         Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> primeprime = masterElement->InterpolateDofGlobalSurfaceDerivativeTotal(0, parameterMinMaster, 2);
 
@@ -362,8 +364,8 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
             dprime(j) += r.dot(prime(0,j));
 
         // ==> derivative
-        Eigen::MatrixXd dprimeprime(TDimSlave - 1, TDimSlave - 1);
-        dprimeprime.setZero(TDimSlave - 1, TDimSlave - 1);
+        Eigen::MatrixXd dprimeprime(numPrimes, numPrimes);
+        dprimeprime.setZero(numPrimes, numPrimes);
 
         for(int i = 0; i < prime.cols() ; i++)
         {
@@ -478,9 +480,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
 
 template <int TDimSlave, int TDimMaster>
 void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutputs(std::map<Element::eOutput, std::shared_ptr<ElementOutputBase>> &rElementOutput,
-                                                                                   EvaluateDataContinuumBoundary<TDimSlave>                       &rData,
-                                                                                   const ConstitutiveInputMap                                     &constitutiveInput,
-                                                                                   const ConstitutiveOutputMap                                    &constitutiveOutput) const
+                                                                                   EvaluateDataContinuumBoundary<TDimSlave>                       &rData) const
 {
 
     for (auto it : rElementOutput)
@@ -488,10 +488,10 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
         switch (it.first)
         {
         case Element::eOutput::INTERNAL_GRADIENT:
-            CalculateElementOutputContactForce(it.second->GetBlockFullVectorDouble(), rData, constitutiveInput, constitutiveOutput);
+            CalculateElementOutputContactForce(it.second->GetBlockFullVectorDouble(), rData);
             break;
         case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
-            CalculateElementOutputContactForceDerivative(it.second->GetBlockFullMatrixDouble(), rData, constitutiveInput, constitutiveOutput);
+            CalculateElementOutputContactForceDerivative(it.second->GetBlockFullMatrixDouble(), rData);
             break;
         case Element::eOutput::HESSIAN_1_TIME_DERIVATIVE: // already set to zero in GetConstitutiveOutputMap()...
         case Element::eOutput::HESSIAN_2_TIME_DERIVATIVE: // already set to zero in GetConstitutiveOutputMap()...
@@ -510,9 +510,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
 
 template <int TDimSlave, int TDimMaster>
 void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutputContactForce(BlockFullVector<double> &rInternalGradient,
-                                                                                              EvaluateDataContinuumBoundary<TDimSlave> &rData,
-                                                                                              const ConstitutiveInputMap &constitutiveInput,
-                                                                                              const ConstitutiveOutputMap &constitutiveOutput) const
+                                                                                              EvaluateDataContinuumBoundary<TDimSlave> &rData) const
 {
     for (auto dofRow : this->mInterpolationType->GetActiveDofs())
     {
@@ -549,9 +547,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutpu
 
 template <int TDimSlave, int TDimMaster>
 void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateElementOutputContactForceDerivative(BlockFullMatrix<double> &rGapMatrix,
-                                                                                                        EvaluateDataContinuumBoundary<TDimSlave> &rData,
-                                                                                                        const ConstitutiveInputMap &constitutiveInput,
-                                                                                                        const ConstitutiveOutputMap &constitutiveOutput) const
+                                                                                                        EvaluateDataContinuumBoundary<TDimSlave> &rData) const
 {
     for (auto dofRow : this->mInterpolationType->GetActiveDofs())
     {
@@ -609,44 +605,6 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GetGlobalIntegrationP
         rParamsIPSlave = interpolationTypeCoordsSlave.CalculateNaturalSurfaceCoordinates(naturalSurfaceIpCoordinates, this->mSurfaceId); // FEM
 
     rCoordinatesIPSlave  = this->mBaseElement->InterpolateDofGlobalCurrentConfiguration(0, rParamsIPSlave, Node::eDof::COORDINATES, Node::eDof::DISPLACEMENTS);
-}
-
-template <int TDimSlave, int TDimMaster>
-const Eigen::Vector3d NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GetGlobalIntegrationPointCoordinates(int rIpNum) const
-{
-    Eigen::VectorXd naturalSurfaceIpCoordinates;
-    switch (TDimMaster)
-    {
-        case 1:
-        {
-            double ipCoordinate;
-            this->GetIntegrationType()->GetLocalIntegrationPointCoordinates1D(rIpNum, ipCoordinate);
-            naturalSurfaceIpCoordinates.resize(1);
-            naturalSurfaceIpCoordinates(0) = ipCoordinate;
-            break;
-        }
-        case 2:
-        {
-            double ipCoordinates[2];
-            this->GetIntegrationType()->GetLocalIntegrationPointCoordinates2D(rIpNum, ipCoordinates);
-            naturalSurfaceIpCoordinates.resize(2);
-            naturalSurfaceIpCoordinates(0) = ipCoordinates[0];
-            naturalSurfaceIpCoordinates(1) = ipCoordinates[1];
-            break;
-        }
-        default:
-            break;
-    }
-
-    Eigen::VectorXd naturalIpCoordinates = this->mInterpolationType->Get(Node::eDof::COORDINATES).CalculateNaturalSurfaceCoordinates(naturalSurfaceIpCoordinates, this->mSurfaceId);
-
-    Eigen::MatrixXd matrixN = this->mInterpolationType->Get(Node::eDof::COORDINATES).CalculateMatrixN(naturalIpCoordinates);
-    Eigen::VectorXd nodeCoordinates = this->ExtractNodeValues(0, Node::eDof::COORDINATES);
-
-    Eigen::Vector3d globalIntegrationPointCoordinates = Eigen::Vector3d::Zero();
-    globalIntegrationPointCoordinates.segment(0, this->GetLocalDimension()) = matrixN * nodeCoordinates;
-
-    return globalIntegrationPointCoordinates;
 }
 
 template <int TDimSlave, int TDimMaster>

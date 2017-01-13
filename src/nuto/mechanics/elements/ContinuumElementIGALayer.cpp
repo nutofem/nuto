@@ -93,7 +93,7 @@ NuTo::Element::eElementType NuTo::ContinuumElementIGALayer<TDim>::GetEnumType() 
 }
 
 template<int TDim>
-Eigen::MatrixXd NuTo::ContinuumElementIGALayer<TDim>::CalculateJacobianSurface(const Eigen::MatrixXd& rDerivativeShapeFunctions, const Eigen::VectorXd& rNodeCoordinates) const
+Eigen::MatrixXd NuTo::ContinuumElementIGALayer<TDim>::CalculateJacobian(const Eigen::MatrixXd& rDerivativeShapeFunctions, const Eigen::VectorXd& rNodeCoordinates) const
 {
     int numCoordinateNodes = this->GetNumNodes(Node::eDof::COORDINATES);
     assert(rDerivativeShapeFunctions.rows() == numCoordinateNodes);
@@ -102,15 +102,31 @@ Eigen::MatrixXd NuTo::ContinuumElementIGALayer<TDim>::CalculateJacobianSurface(c
     // boundary layer or full iga element
     assert(rNodeCoordinates.rows() == (TDim+1)*this->GetNumNodes(Node::eDof::COORDINATES) );
 
-    Eigen::Matrix<double, TDim, Eigen::Dynamic> nodeBlockCoordinates(TDim, numCoordinateNodes);
+    Eigen::MatrixXd nodeBlockCoordinates(TDim+1, numCoordinateNodes);
     // convert the coordinates to a block structure
     // x0  x1  x1  x2 ...
     // y0  y1  y2  y3 ...
     // z0  z1  z2  z3 ...
     for (int i = 0; i < numCoordinateNodes; ++i)
-        nodeBlockCoordinates.col(i) = rNodeCoordinates.block<TDim, 1>(TDim * i, 0);
+        nodeBlockCoordinates.col(i) = rNodeCoordinates.block<TDim+1, 1>((TDim+1) * i, 0);
 
     return nodeBlockCoordinates.lazyProduct(rDerivativeShapeFunctions);
+}
+
+
+template<int TDim>
+Eigen::VectorXd NuTo::ContinuumElementIGALayer<TDim>::CalculateJacobianSurface(const Eigen::VectorXd &rParameter, const Eigen::VectorXd &rNodalCoordinates, int rSurfaceId) const
+{
+    const InterpolationBase&  interpolationTypeCoords =  this->mInterpolationType->Get(Node::eDof::COORDINATES);
+    Eigen::MatrixXd derivativeShapeFunctionsNaturalSlave =  interpolationTypeCoords.CalculateDerivativeShapeFunctionsNatural(rParameter);
+    const Eigen::MatrixXd jacobianStd = CalculateJacobian(derivativeShapeFunctionsNaturalSlave, rNodalCoordinates);// = [dX / dXi]
+    // in case of non IGA - just an identity matrix
+    const Eigen::MatrixXd jacobianIGA = CalculateJacobianParametricSpaceIGA();// = [dXi / d\tilde{Xi}]
+    Eigen::VectorXd ipCoordsSurface(1);
+    Eigen::MatrixXd derivativeNaturalSurfaceCoordinates =  interpolationTypeCoords.CalculateDerivativeNaturalSurfaceCoordinates(ipCoordsSurface, rSurfaceId); // = [dXi / dAlpha]
+
+    return jacobianStd * jacobianIGA * derivativeNaturalSurfaceCoordinates; // = || [dX / dXi] * [dXi / dAlpha] ||
+
 }
 
 template<int TDim>
@@ -233,6 +249,31 @@ Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> NuTo::ContinuumEl
 
     return derivative;
 }
+
+template<>
+const ContinuumElementIGALayer<1>& ContinuumElementIGALayer<1>::AsContinuumElementIGALayer1D() const
+{
+    return *this;
+}
+
+template<>
+const ContinuumElementIGALayer<2>& ContinuumElementIGALayer<2>::AsContinuumElementIGALayer2D() const
+{
+    return *this;
+}
+
+template<>
+ContinuumElementIGALayer<1>& ContinuumElementIGALayer<1>::AsContinuumElementIGALayer1D()
+{
+    return *this;
+}
+
+template<>
+ContinuumElementIGALayer<2>& ContinuumElementIGALayer<2>::AsContinuumElementIGALayer2D()
+{
+    return *this;
+}
+
 }  // namespace NuTo
 
 template class NuTo::ContinuumElementIGALayer<1>;

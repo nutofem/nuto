@@ -192,6 +192,7 @@ bool NuTo::ContactConstitutiveLaw::CheckElementCompatibility(NuTo::Element::eEle
     {
     case NuTo::Element::eElementType::CONTINUUMELEMENT:
     case NuTo::Element::eElementType::CONTINUUMELEMENTIGA:
+    case NuTo::Element::eElementType::CONTINUUMELEMENTIGALAYER:
     case NuTo::Element::eElementType::CONTINUUMCONTACTELEMENT:
         return true;
     default:

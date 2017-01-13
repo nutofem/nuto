@@ -40,6 +40,7 @@ enum class eError;
 template<typename IOEnum> class ConstitutiveIOMap;
 template <int TDim> class ContinuumElement;
 template <int TDim> class ContinuumElementIGA;
+template <int TDim> class ContinuumElementIGALayer;
 template <int TDim> class ContinuumBoundaryElement;
 template <int TDimSlave, int TDimMaster> class ContinuumContactElement;
 template <class T, int rows, int cols> class FullMatrix;
@@ -458,6 +459,17 @@ public:
     virtual ContinuumElementIGA<3>& AsContinuumElementIGA3D()
     {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElementIGA<3>.");}
 
+    virtual const ContinuumElementIGALayer<1>& AsContinuumElementIGALayer1D() const
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__ , "Element is not of type ContinuumElementIGALayer<1>.");}
+
+    virtual const ContinuumElementIGALayer<2>& AsContinuumElementIGALayer2D() const
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElementIGALayer<2>.");}
+
+    virtual ContinuumElementIGALayer<1>& AsContinuumElementIGALayer1D()
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElementIGALayer<1>.");}
+
+    virtual ContinuumElementIGALayer<2>& AsContinuumElementIGALayer2D()
+    {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumElementIGALayer<2>.");}
 
     virtual const ContinuumBoundaryElement<1>& AsContinuumBoundaryElement1D() const
     {throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Element is not of type ContinuumBoundaryElement<1>.");}

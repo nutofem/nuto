@@ -144,7 +144,17 @@ public:
     //! @return ... derivative of the surface parametrization
     Eigen::MatrixXd CalculateDerivativeNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface) const override
     {
-        throw MechanicsException(__PRETTY_FUNCTION__, "For 1D no functionality!");
+        assert(rNaturalSurfaceCoordinates.rows() == 1);
+        if(rSurface == -1)
+        {
+             Eigen::VectorXd parameter(1);
+             parameter(0) = 1.;
+             return parameter;
+        }
+        else
+        {
+            throw MechanicsException(__PRETTY_FUNCTION__, "For 1D no functionality!");
+        }
     }
 
     int GetSurfaceDegree(int rSurface) const override

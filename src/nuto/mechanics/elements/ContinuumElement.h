@@ -160,7 +160,6 @@ public:
     ContinuumElement<3>& AsContinuumElement3D() override
     {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElement<3>.");}
 
-
 protected:
 
     //! @todo boost ptr container?

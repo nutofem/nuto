@@ -17,6 +17,7 @@ enum class eElementType
     CONTINUUMBOUNDARYELEMENTCONSTRAINEDCONTROLNODE, //!< boundary of 2D element --> 1D surface with additional node as dependency
     CONTINUUMELEMENT,                               //!< continuum element, dimension should not matter
     CONTINUUMELEMENTIGA,                            //!< continuum element iga, dimension should not matter
+    CONTINUUMELEMENTIGALAYER,                       //!< continuum element iga, dimension should not matter
     ELEMENT1DINXD,                                  //!< one dimensional element in 2D or 3D
     ELEMENT1DSPRING,                                //!< one dimensional spring element
     ELEMENT2D,                                      //!< two dimensional element

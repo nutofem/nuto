@@ -303,14 +303,14 @@ void AddIGALayer(NuTo::Structure *myStructure,
 
     // build the FE - IGA coupling
     int dim = coordinatesAndIDs.cols() - 1;
-    for(int nodeMaster = 0; nodeMaster < coordinatesAndIDs.rows(); nodeMaster++)
+    for(int node = 0; node < coordinatesAndIDs.rows(); node++)
     {
         for(int dof = 0; dof < dim; dof++)
         {
-            myStructure->ConstraintLinearEquationCreate (countDBC, coordinatesAndIDs(nodeMaster, dim), NuTo::Node::eDof::DISPLACEMENTS, dof,  1., 0.);
+            myStructure->ConstraintLinearEquationCreate (countDBC, coordinatesAndIDs(node, dim), NuTo::Node::eDof::DISPLACEMENTS, dof,  1., 0.);
             for(int controlPoint = 0; controlPoint < coordinatesAndIDsLayer.rows(); controlPoint++)
             {
-                myStructure->ConstraintLinearEquationAddTerm(countDBC, coordinatesAndIDsLayer(controlPoint, dim), NuTo::Node::eDof::DISPLACEMENTS, dof, -A(nodeMaster, controlPoint));
+                myStructure->ConstraintLinearEquationAddTerm(countDBC, coordinatesAndIDsLayer(controlPoint, dim), NuTo::Node::eDof::DISPLACEMENTS, dof, -A(node, controlPoint));
             }
             countDBC++;
         }
@@ -341,7 +341,8 @@ void ContactHertzQuarterCircle(const std::string &path,
                                int &groupElementsSlaveLower,
                                int &groupElementsMasterUpper,
                                int &slaveContactElementsGroupId,
-                               int &masterContactElementsGroupId)
+                               int &masterContactElementsGroupId,
+                               int &groupElementsIGAlayerSlave)
 {
 #ifdef _OPENMP
     int numThreads = 4;
@@ -582,7 +583,7 @@ void ContactHertzQuarterCircle(const std::string &path,
     // ===> build iga layer slave //
     /////////////////////////////////
 
-    int groupElementsIGAlayerSlave  = myStructure->GroupCreate("Elements");
+    groupElementsIGAlayerSlave  = myStructure->GroupCreate("Elements");
     int groupNodesIGAlayerSlave = myStructure->GroupCreate("Nodes");
 
     Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> elementsSlave;
@@ -661,6 +662,13 @@ void ContactHertzQuarterCircle(const std::string &path,
                                                                                            rContactAlgo,
                                                                                            constitutiveLawPC);
 
+//    slaveContactElementsGroupId = myStructure->NuTo::Structure::ContactElementsCreate<2,1>(groupElementsSlaveLower,
+//                                                                                           groupNodesSlaveLower,
+//                                                                                           elementsMaster,
+//                                                                                           rIntegrationType,
+//                                                                                           rContactAlgo,
+//                                                                                           constitutiveLawPC);
+
     // create boundary elements for visualizing the results
     masterContactElementsGroupId = myStructure->BoundaryElementsCreate(groupElementsMasterUpper, groupNodesMasterUpper, NULL);
     NuTo::FullVector<int,Eigen::Dynamic> rMembersMasterContactBoundaryVisualize;
@@ -668,6 +676,17 @@ void ContactHertzQuarterCircle(const std::string &path,
     for(int i = 0; i < rMembersMasterContactBoundaryVisualize.rows(); i++)
     {
         NuTo::ElementBase* elementPtr = myStructure->ElementGetElementPtr(rMembersMasterContactBoundaryVisualize(i));
+        NuTo::IpData::eIpDataType ipDataType = elementPtr->GetIpDataType(0);
+        elementPtr->SetIntegrationType(myStructure->GetPtrIntegrationType(rIntegrationType), ipDataType);
+    }
+
+    // create boundary elements for visualizing the results
+    slaveContactElementsGroupId = myStructure->BoundaryElementsCreate(groupElementsSlaveLower, groupNodesSlaveLower, NULL);
+    NuTo::FullVector<int,Eigen::Dynamic> rMembersSlaveContactBoundaryVisualize;
+    myStructure->ElementGroupGetMembers(slaveContactElementsGroupId, rMembersSlaveContactBoundaryVisualize);
+    for(int i = 0; i < rMembersSlaveContactBoundaryVisualize.rows(); i++)
+    {
+        NuTo::ElementBase* elementPtr = myStructure->ElementGetElementPtr(rMembersSlaveContactBoundaryVisualize(i));
         NuTo::IpData::eIpDataType ipDataType = elementPtr->GetIpDataType(0);
         elementPtr->SetIntegrationType(myStructure->GetPtrIntegrationType(rIntegrationType), ipDataType);
     }
@@ -689,7 +708,8 @@ void staticSolve(NuTo::Structure *myStructure,
                  int groupElementsSlaveLower,
                  int groupElementsMasterUpper,
                  int slaveContactElementsGroupId,
-                 int masterContactElementsGroupId)
+                 int masterContactElementsGroupId,
+                 int groupElementsIGAlayerSlave)
 {
     //set result directory
     if (boost::filesystem::exists(resultDir))
@@ -723,13 +743,21 @@ void staticSolve(NuTo::Structure *myStructure,
 //    }
 
     // ===> initial values
-    disp = - 0.0001;
+    disp = - 0.00005;
     int slaveNodesGroupId = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
     myStructure->GroupAddNodesFromElements(slaveNodesGroupId, groupElementsSlave, NuTo::Node::eDof::DISPLACEMENTS);
+    NuTo::FullMatrix<int, Eigen::Dynamic, Eigen::Dynamic> members = myStructure->GroupGetMemberIds(slaveNodesGroupId);
+
+    int slaveNodesLayerGroupId = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure->GroupAddNodesFromElements(slaveNodesLayerGroupId, groupElementsIGAlayerSlave, NuTo::Node::eDof::DISPLACEMENTS);
+    members = myStructure->GroupGetMemberIds(slaveNodesLayerGroupId);
+
+    int dispGroupSlave = myStructure->GroupUnion(slaveNodesLayerGroupId, slaveNodesGroupId);
+
     NuTo::FullVector<double,Eigen::Dynamic>  dispVec(2);
     dispVec(0) =   0.;
     dispVec(1) = disp;
-    myStructure->NodeGroupSetDisplacements(slaveNodesGroupId, 0, dispVec);
+    myStructure->NodeGroupSetDisplacements(dispGroupSlave, 0, dispVec);
 
     myStructure->CalculateMaximumIndependentSets();
     myStructure->NodeBuildGlobalDofs();
@@ -894,7 +922,7 @@ void staticSolve(NuTo::Structure *myStructure,
     myStructure->GroupAddElement(groupSlaveElementsViz, membersSlave(2));
 
     myIntegrationScheme.AddResultElementGroupIpData("ContactStressMaster1",  masterContactElementsGroupId, 1, IPIdsMaster, NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
-    //myIntegrationScheme.AddResultElementGroupIpData("ContactStressSlave1",  slaveContactElementsGroupId, 1, IPIdsSlave, NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
+    myIntegrationScheme.AddResultElementGroupIpData("ContactStressSlave1",  slaveContactElementsGroupId, 1, IPIdsSlave, NuTo::IpData::eIpStaticDataType::ENGINEERING_STRESS);
 
     myIntegrationScheme.SetMinTimeStepPlot(1.);
     myIntegrationScheme.SetLastTimePlot(0.);
@@ -927,8 +955,11 @@ void staticSolve(NuTo::Structure *myStructure,
     std::cout << "====================================\n";
 
 #ifdef ENABLE_VISUALIZE
+    myStructure->AddVisualizationComponent(groupElementsIGAlayerSlave, NuTo::eVisualizeWhat::DISPLACEMENTS);
+    myStructure->ElementGroupExportVtkDataFile(groupElementsIGAlayerSlave, resultDir+"/ElementsLayerSlave.vtu", true);
+    // slave iga only
     myStructure->AddVisualizationComponent(groupElementsIGAlayer, NuTo::eVisualizeWhat::DISPLACEMENTS);
-    myStructure->ElementGroupExportVtkDataFile(groupElementsIGAlayer, resultDir+"/ElementsLayer.vtu", true);
+    myStructure->ElementGroupExportVtkDataFile(groupElementsIGAlayer, resultDir+"/ElementsLayerMaster.vtu", true);
     // master + slave fe only
     myStructure->AddVisualizationComponent(groupElementsSlave, NuTo::eVisualizeWhat::DISPLACEMENTS);
     myStructure->AddVisualizationComponent(groupElementsSlave, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
@@ -978,7 +1009,8 @@ void run(const std::string &resultDir,
         groupElementsSlaveLower(0),
         groupElementsMasterUpper(0),
         slaveContactElementsGroupId(0),
-        masterContactElementsGroupId(0);
+        masterContactElementsGroupId(0),
+        groupElementsIGAlayerSlave(0);
 
     Eigen::MatrixXd A;
     NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinatesAndIDs;
@@ -1010,7 +1042,8 @@ void run(const std::string &resultDir,
                               groupElementsSlaveLower,
                               groupElementsMasterUpper,
                               slaveContactElementsGroupId,
-                              masterContactElementsGroupId);
+                              masterContactElementsGroupId,
+                              groupElementsIGAlayerSlave);
 
     myStructure->SetNumTimeDerivatives(0);
     staticSolve(myStructure, resultDir, rIntegrationTypeViz,
@@ -1026,7 +1059,8 @@ void run(const std::string &resultDir,
                 groupElementsSlaveLower,
                 groupElementsMasterUpper,
                 slaveContactElementsGroupId,
-                masterContactElementsGroupId);
+                masterContactElementsGroupId,
+                groupElementsIGAlayerSlave);
 }
 
 
@@ -1049,7 +1083,7 @@ int main(int argc, char* argv[])
 
     contactAlgo = 1;
 
-    resultDir = "./ResultsContactStatic_5_11_4Ip_CA1";
+    resultDir = "./ResultsContactStaticDoubleIGA";
     penalty = 5.e11;
     run(resultDir,
         path,
@@ -1059,10 +1093,10 @@ int main(int argc, char* argv[])
         gap,
         1.e5,
         1.e5,
-        5,
+        10,
         contactAlgo,
         NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
-        NuTo::Interpolation::eTypeOrder::EQUIDISTANT1,
+        NuTo::Interpolation::eTypeOrder::EQUIDISTANT2,
         NuTo::eIntegrationType::IntegrationType2D4NGauss4Ip,
         NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip,
         true);

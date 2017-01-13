@@ -55,7 +55,9 @@ public:
     //! @return the jacobian
     Eigen::Matrix<double, TDim, TDim> CalculateJacobianParametricSpaceIGA() const override;
 
-    Eigen::MatrixXd CalculateJacobianSurface(const Eigen::MatrixXd& rDerivativeShapeFunctions, const Eigen::VectorXd& rNodeCoordinates) const;
+    Eigen::MatrixXd CalculateJacobian(const Eigen::MatrixXd& rDerivativeShapeFunctions, const Eigen::VectorXd& rNodeCoordinates) const;
+
+    Eigen::VectorXd CalculateJacobianSurface(const Eigen::VectorXd &rParameter, const Eigen::VectorXd &rNodalCoordinates, int rSurfaceId) const override;
 
     //! @brief calculates the volume of an integration point (weight * detJac)
     //! @return rVolume  vector for storage of the ip volumes (area in 2D, length in 1D)
@@ -99,6 +101,17 @@ public:
 
 //    Eigen::VectorXd InterpolateDofGlobalSurfaceNormal(const Eigen::VectorXd& rParameter) const override;
 
+    const ContinuumElementIGALayer<1>& AsContinuumElementIGALayer1D() const override
+    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElementIGALayer<1>.");}
+
+    const ContinuumElementIGALayer<2>& AsContinuumElementIGALayer2D() const override
+    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElementIGALayer<2>.");}
+
+    ContinuumElementIGALayer<1>& AsContinuumElementIGALayer1D() override
+    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElementIGALayer<1>.");}
+
+    ContinuumElementIGALayer<2>& AsContinuumElementIGALayer2D() override
+    {throw NuTo::MechanicsException(std::string("[") + __PRETTY_FUNCTION__ +"] Element is not of type ContinuumElementIGALayer<2>.");}
 
 protected:
 

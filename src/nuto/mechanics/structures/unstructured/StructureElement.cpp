@@ -1138,7 +1138,7 @@ int NuTo::Structure::ContactElementsCreate(int rElementsGroupIDSlave,
                     {
                     case 1:
                     {
-                        boundaryElement = new ContinuumContactElement<1, TDimMaster>(&elementPtrSlave->AsContinuumElementIGA1D(), -1, masterElements, itConstitutive->second, rContactAlgorithm);
+                        boundaryElement = new ContinuumContactElement<1, TDimMaster>(&elementPtrSlave->AsContinuumElementIGALayer1D(), -1, masterElements, itConstitutive->second, rContactAlgorithm);
                         break;
                     }
                     case 2:
@@ -1173,8 +1173,8 @@ int NuTo::Structure::ContactElementsCreate(int rElementsGroupIDSlave,
                     throw MechanicsException(__PRETTY_FUNCTION__, "Could not automatically determine integration type of the boundary element.");
 
                 boundaryElement->SetIntegrationType(GetPtrIntegrationType(rIntegrationType), ipDataType);
-//                boundaryElement->SetConstitutiveLaw(itConstitutive->second);
-                boundaryElement->SetConstitutiveLaw(constitutiveLaw);
+                boundaryElement->SetConstitutiveLaw(itConstitutive->second);
+//                boundaryElement->SetConstitutiveLaw(constitutiveLaw);
             }
         }
     }
