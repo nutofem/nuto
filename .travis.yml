@@ -27,7 +27,7 @@ before_install:
 before_script:
     - mkdir build
     - cd build
-    - if [[ "$CXX" == "g++" ]] && [[ "$RELEASE" == "false" ]]; then CXX=g++-6 cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=TRUE -DENABLE_MPI=TRUE -DENABLE_METAMODEL=TRUE -DENABLE_OPTIMIZE=TRUE ..; fi
+    - if [[ "$CXX" == "g++" ]] && [[ "$RELEASE" == "false" ]]; then CXX=g++-6 cmake -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=TRUE -DENABLE_METAMODEL=TRUE -DENABLE_OPTIMIZE=TRUE ..; fi
     - if [[ "$CXX" == "g++" ]] && [[ "$RELEASE" == "true" ]]; then CXX=g++-6 cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_EXAMPLES=TRUE -DENABLE_METAMODEL=TRUE -DENABLE_OPTIMIZE=TRUE ..; fi
     - if [[ "$CXX" == "clang++" ]]; then CXX=clang++-3.9 cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_EXAMPLES=TRUE -DENABLE_METAMODEL=TRUE -DENABLE_OPTIMIZE=TRUE ..; fi
 script:

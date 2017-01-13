@@ -1,4 +1,4 @@
-#include "/usr/lib/openmpi/include/mpi.h"
+#include <mpi.h>
 #include <boost/mpi.hpp>
 #include <boost/filesystem.hpp>
 
