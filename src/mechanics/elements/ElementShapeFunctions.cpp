@@ -18,59 +18,38 @@ namespace ShapeFunctions1D // interval -1 to 1
 
 Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussOrder1(int rNodeIndex)
 {
-    Eigen::Matrix<double, 1, 1> coords;
     switch (rNodeIndex)
     {
-    case 0:
-        coords(0, 0) = -1.;
-        break;
-    case 1:
-        coords(0, 0) = 1.;
-        break;
+    case 0: return Eigen::Matrix<double, 1, 1>::Constant(-1.);
+    case 1: return Eigen::Matrix<double, 1, 1>::Constant(1.);
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..1)");
-        break;
     }
-    return coords;
 }
 
 Eigen::Matrix<double, 2, 1> ShapeFunctionsTrussOrder1(const Eigen::VectorXd& rCoordinates)
 {
-    Eigen::Matrix<double, 2, 1> shapeFunctions;
-    shapeFunctions(0) = 0.5 * (1. - rCoordinates(0, 0));
-    shapeFunctions(1) = 0.5 * (1. + rCoordinates(0, 0));
-    return shapeFunctions;
+    return Eigen::Vector2d(0.5 * (1. - rCoordinates[0]),
+                           0.5 * (1. + rCoordinates[0]));
 }
 
 Eigen::Matrix<double, 2, 1> DerivativeShapeFunctionsTrussOrder1(const Eigen::VectorXd& rCoordinates)
 {
-    Eigen::Matrix<double, 2, 1> derivativeShapeFunctions;
-    derivativeShapeFunctions(0) = -0.5;
-    derivativeShapeFunctions(1) = 0.5;
-    return derivativeShapeFunctions;
+    return Eigen::Vector2d(-0.5, 0.5);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussOrder2(int rNodeIndex)
 {
-    Eigen::Matrix<double, 1, 1> coords;
     switch (rNodeIndex)
     {
-    case 0:
-        coords(0, 0) = -1.;
-        break;
-    case 1:
-        coords(0, 0) = 0.;
-        break;
-    case 2:
-        coords(0, 0) = 1.;
-        break;
+    case 0: return Eigen::Matrix<double, 1, 1>::Constant(-1.);
+    case 1: return Eigen::Matrix<double, 1, 1>::Constant(0.);
+    case 2: return Eigen::Matrix<double, 1, 1>::Constant(1.);
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..2)");
-        break;
     }
-    return coords;
 }
 
 Eigen::Matrix<double, 3, 1> ShapeFunctionsTrussOrder2(const Eigen::VectorXd& rCoordinates)
@@ -95,26 +74,15 @@ Eigen::Matrix<double, 3, 1> DerivativeShapeFunctionsTrussOrder2(const Eigen::Vec
 
 Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussOrder3(int rNodeIndex)
 {
-    Eigen::Matrix<double, 1, 1> coords;
     switch (rNodeIndex)
     {
-    case 0:
-        coords(0, 0) = -1.;
-        break;
-    case 1:
-        coords(0, 0) = -1. / 3.;
-        break;
-    case 2:
-        coords(0, 0) = 1. / 3.;
-        break;
-    case 3:
-        coords(0, 0) = 1.;
-        break;
+    case 0: return Eigen::Matrix<double, 1, 1>::Constant(-1.);
+    case 1: return Eigen::Matrix<double, 1, 1>::Constant(-1. / 3.);
+    case 2: return Eigen::Matrix<double, 1, 1>::Constant(1. / 3.);
+    case 3: return Eigen::Matrix<double, 1, 1>::Constant(1.);
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..3)");
-        break;
     }
-    return coords;
 }
 
 Eigen::Matrix<double, 4, 1> ShapeFunctionsTrussOrder3(const Eigen::VectorXd& rCoordinates)
@@ -134,7 +102,7 @@ Eigen::Matrix<double, 4, 1> ShapeFunctionsTrussOrder3(const Eigen::VectorXd& rCo
 Eigen::Matrix<double, 4, 1> DerivativeShapeFunctionsTrussOrder3(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 4, 1> derivativeShapeFunctions;
-    double r = rCoordinates(0, 0);
+    double r = rCoordinates[0];
     double r2 = r * r;
     derivativeShapeFunctions(0) = +0.0625 + 1.125 * r - 1.6875 * r2;
     derivativeShapeFunctions(1) = -1.6875 - 1.125 * r + 5.0625 * r2;
@@ -147,29 +115,16 @@ Eigen::Matrix<double, 4, 1> DerivativeShapeFunctionsTrussOrder3(const Eigen::Vec
 
 Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussOrder4(int rNodeIndex)
 {
-    Eigen::Matrix<double, 1, 1> coords;
     switch (rNodeIndex)
     {
-    case 0:
-        coords(0, 0) = -1.;
-        break;
-    case 1:
-        coords(0, 0) = -0.5;
-        break;
-    case 2:
-        coords(0, 0) = 0.;
-        break;
-    case 3:
-        coords(0, 0) = 0.5;
-        break;
-    case 4:
-        coords(0, 0) = 1.;
-        break;
+    case 0: return Eigen::Matrix<double, 1, 1>::Constant(-1.);
+    case 1: return Eigen::Matrix<double, 1, 1>::Constant(-0.5);
+    case 2: return Eigen::Matrix<double, 1, 1>::Constant(0.);
+    case 3: return Eigen::Matrix<double, 1, 1>::Constant(0.5);
+    case 4: return Eigen::Matrix<double, 1, 1>::Constant(1.);
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..4)");
-        break;
     }
-    return coords;
 }
 
 Eigen::Matrix<double, 5, 1> ShapeFunctionsTrussOrder4(const Eigen::VectorXd& rCoordinates)
@@ -205,26 +160,15 @@ Eigen::Matrix<double, 5, 1> DerivativeShapeFunctionsTrussOrder4(const Eigen::Vec
 
 Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussSpectralOrder3(int rNodeIndex)
 {
-    Eigen::Matrix<double, 1, 1> coords;
     switch (rNodeIndex)
     {
-    case 0:
-        coords(0, 0) = -1.;
-        break;
-    case 1:
-        coords(0, 0) = -0.447213595499957928;
-        break;
-    case 2:
-        coords(0, 0) = 0.447213595499957928;
-        break;
-    case 3:
-        coords(0, 0) = 1.;
-        break;
+    case 0: return Eigen::Matrix<double, 1, 1>::Constant(-1.);
+    case 1: return Eigen::Matrix<double, 1, 1>::Constant(-0.447213595499957928);
+    case 2: return Eigen::Matrix<double, 1, 1>::Constant(0.447213595499957928);
+    case 3: return Eigen::Matrix<double, 1, 1>::Constant(1.);
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..3)");
-        break;
     }
-    return coords;
 }
 
 Eigen::Matrix<double, 4, 1> ShapeFunctionsTrussSpectralOrder3(const Eigen::VectorXd& rCoordinates)
@@ -256,29 +200,16 @@ Eigen::Matrix<double, 4, 1> DerivativeShapeFunctionsTrussSpectralOrder3(const Ei
 
 Eigen::Matrix<double, 1, 1> NodeCoordinatesTrussSpectralOrder4(int rNodeIndex)
 {
-    Eigen::Matrix<double, 1, 1> coords;
     switch (rNodeIndex)
     {
-    case 0:
-        coords(0, 0) = -1.;
-        break;
-    case 1:
-        coords(0, 0) = -0.654653670707977087;
-        break;
-    case 2:
-        coords(0, 0) = 0.0;
-        break;
-    case 3:
-        coords(0, 0) = 0.654653670707977087;
-        break;
-    case 4:
-        coords(0, 0) = 1.;
-        break;
+    case 0: return Eigen::Matrix<double, 1, 1>::Constant(-1.);
+    case 1: return Eigen::Matrix<double, 1, 1>::Constant(-0.654653670707977087);
+    case 2: return Eigen::Matrix<double, 1, 1>::Constant(0.0);
+    case 3: return Eigen::Matrix<double, 1, 1>::Constant(0.654653670707977087);
+    case 4: return Eigen::Matrix<double, 1, 1>::Constant(1.);
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..4)");
-        break;
     }
-    return coords;
 }
 
 Eigen::Matrix<double, 5, 1> ShapeFunctionsTrussSpectralOrder4(const Eigen::VectorXd& rCoordinates)
@@ -321,18 +252,11 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesTriangleOrder1(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
-    case 0:
-        return Eigen::Matrix<double, 2, 1>(0.0, 0.0);
-        break;
-    case 1:
-        return Eigen::Matrix<double, 2, 1>(1.0, 0.0);
-        break;
-    case 2:
-        return Eigen::Matrix<double, 2, 1>(0.0, 1.0);
-        break;
+    case 0: return Eigen::Matrix<double, 2, 1>(0.0, 0.0);
+    case 1: return Eigen::Matrix<double, 2, 1>(1.0, 0.0);
+    case 2: return Eigen::Matrix<double, 2, 1>(0.0, 1.0);
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..2)");
-        break;
     }
 }
 
@@ -363,38 +287,24 @@ Eigen::Matrix<double, 3, 2> DerivativeShapeFunctionsTriangleOrder1(const Eigen::
 
 Eigen::Matrix<double, 2, 1> NodeCoordinatesTriangleOrder2(int rNodeIndex)
 {
-
     switch (rNodeIndex)
     {
-    case 0:
-        return Eigen::Matrix<double, 2, 1>(0.0, 0.0);
-        break;
-    case 1:
-        return Eigen::Matrix<double, 2, 1>(1.0, 0.0);
-        break;
-    case 2:
-        return Eigen::Matrix<double, 2, 1>(0.0, 1.0);
-        break;
-    case 3:
-        return Eigen::Matrix<double, 2, 1>(0.5, 0.0);
-        break;
-    case 4:
-        return Eigen::Matrix<double, 2, 1>(0.5, 0.5);
-        break;
-    case 5:
-        return Eigen::Matrix<double, 2, 1>(0.0, 0.5);
-        break;
+    case 0: return Eigen::Matrix<double, 2, 1>(0.0, 0.0);
+    case 1: return Eigen::Matrix<double, 2, 1>(1.0, 0.0);
+    case 2: return Eigen::Matrix<double, 2, 1>(0.0, 1.0);
+    case 3: return Eigen::Matrix<double, 2, 1>(0.5, 0.0);
+    case 4: return Eigen::Matrix<double, 2, 1>(0.5, 0.5);
+    case 5: return Eigen::Matrix<double, 2, 1>(0.0, 0.5);
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..5)");
-        break;
     }
 }
 
 Eigen::Matrix<double, 6, 1> ShapeFunctionsTriangleOrder2(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 6, 1> shapeFunctions;
-    double r(rCoordinates(0));
-    double s(rCoordinates(1));
+    double r = rCoordinates[0];
+    double s = rCoordinates[1];
 
     shapeFunctions(0) = 2. * (r * r + s * s) + 4. * r * s - 3. * (r + s) + 1.;
     shapeFunctions(1) = 2. * r * r - r;
@@ -408,8 +318,8 @@ Eigen::Matrix<double, 6, 1> ShapeFunctionsTriangleOrder2(const Eigen::VectorXd& 
 Eigen::Matrix<double, 6, 2> DerivativeShapeFunctionsTriangleOrder2(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 6, 2> derivativeShapeFunctions;
-    double r(rCoordinates(0));
-    double s(rCoordinates(1));
+    double r = rCoordinates[0];
+    double s = rCoordinates[1];
 
     derivativeShapeFunctions(0, 0) = 4. * (r + s) - 3.;
     derivativeShapeFunctions(0, 1) = 4. * (r + s) - 3.;
@@ -435,50 +345,28 @@ Eigen::Matrix<double, 6, 2> DerivativeShapeFunctionsTriangleOrder2(const Eigen::
 
 Eigen::Matrix<double, 2, 1> NodeCoordinatesTriangleOrder3(int rNodeIndex)
 {
-
     switch (rNodeIndex)
     {
-    case 0:
-        return Eigen::Matrix<double, 2, 1>(0.0, 0.0);
-        break;
-    case 1:
-        return Eigen::Matrix<double, 2, 1>(1. / 3., 0.0);
-        break;
-    case 2:
-        return Eigen::Matrix<double, 2, 1>(2. / 3., 0.0);
-        break;
-    case 3:
-        return Eigen::Matrix<double, 2, 1>(1.0, 0.0);
-        break;
-    case 4:
-        return Eigen::Matrix<double, 2, 1>(0.0, 1. / 3.);
-        break;
-    case 5:
-        return Eigen::Matrix<double, 2, 1>(1. / 3., 1. / 3.);
-        break;
-    case 6:
-        return Eigen::Matrix<double, 2, 1>(2. / 3., 1. / 3.);
-        break;
-    case 7:
-        return Eigen::Matrix<double, 2, 1>(0., 2. / 3.);
-        break;
-    case 8:
-        return Eigen::Matrix<double, 2, 1>(1. / 3., 2. / 3.);
-        break;
-    case 9:
-        return Eigen::Matrix<double, 2, 1>(0., 1.);
-        break;
+    case 0: return Eigen::Matrix<double, 2, 1>(0.0, 0.0);
+    case 1: return Eigen::Matrix<double, 2, 1>(1. / 3., 0.0);
+    case 2: return Eigen::Matrix<double, 2, 1>(2. / 3., 0.0);
+    case 3: return Eigen::Matrix<double, 2, 1>(1.0, 0.0);
+    case 4: return Eigen::Matrix<double, 2, 1>(0.0, 1. / 3.);
+    case 5: return Eigen::Matrix<double, 2, 1>(1. / 3., 1. / 3.);
+    case 6: return Eigen::Matrix<double, 2, 1>(2. / 3., 1. / 3.);
+    case 7: return Eigen::Matrix<double, 2, 1>(0., 2. / 3.);
+    case 8: return Eigen::Matrix<double, 2, 1>(1. / 3., 2. / 3.);
+    case 9: return Eigen::Matrix<double, 2, 1>(0., 1.);
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..9)");
-        break;
     }
 }
 
 Eigen::Matrix<double, 10, 1> ShapeFunctionsTriangleOrder3(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 10, 1> shapeFunctions;
-    double r(rCoordinates(0));
-    double s(rCoordinates(1));
+    double r = rCoordinates[0];
+    double s = rCoordinates[1];
 
     shapeFunctions(0) = +1.0 - 5.5 * r - 5.5 * s + 9.0 * r * r + 18.0 * r * s + 9.0 * s * s - 4.5 * r * r * r - 13.5 * r * r * s - 13.5 * r * s * s - 4.5 * s * s * s;
     shapeFunctions(1) = +9.0 * r - 22.5 * r * r - 22.5 * r * s + 13.5 * r * r * r + 27.0 * r * r * s + 13.5 * r * s * s;
@@ -497,8 +385,8 @@ Eigen::Matrix<double, 10, 1> ShapeFunctionsTriangleOrder3(const Eigen::VectorXd&
 Eigen::Matrix<double, 10, 2> DerivativeShapeFunctionsTriangleOrder3(const Eigen::VectorXd& rCoordinates)
 {
     Eigen::Matrix<double, 10, 2> derivativeShapeFunctions;
-    double r(rCoordinates(0));
-    double s(rCoordinates(1));
+    double r = rCoordinates[0];
+    double s = rCoordinates[1];
 
     derivativeShapeFunctions(0, 0) = -5.5 + 18.0 * r + 18.0 * s - 13.5 * r * r - 27.0 * r * s - 13.5 * s * s;
     derivativeShapeFunctions(0, 1) = -5.5 + 18.0 * r + 18.0 * s - 13.5 * r * r - 27.0 * r * s - 13.5 * s * s;
@@ -539,54 +427,23 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesTriangleOrder4(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
-    case 0:
-        return Eigen::Matrix<double, 2, 1>(.00, .00);
-        break;
-    case 1:
-        return Eigen::Matrix<double, 2, 1>(.25, .00);
-        break;
-    case 2:
-        return Eigen::Matrix<double, 2, 1>(.50, .00);
-        break;
-    case 3:
-        return Eigen::Matrix<double, 2, 1>(.75, .00);
-        break;
-    case 4:
-        return Eigen::Matrix<double, 2, 1>(1.00, .00);
-        break;
-    case 5:
-        return Eigen::Matrix<double, 2, 1>(.00, .25);
-        break;
-    case 6:
-        return Eigen::Matrix<double, 2, 1>(.25, .25);
-        break;
-    case 7:
-        return Eigen::Matrix<double, 2, 1>(.50, .25);
-        break;
-    case 8:
-        return Eigen::Matrix<double, 2, 1>(.75, .25);
-        break;
-    case 9:
-        return Eigen::Matrix<double, 2, 1>(.00, .50);
-        break;
-    case 10:
-        return Eigen::Matrix<double, 2, 1>(.25, .50);
-        break;
-    case 11:
-        return Eigen::Matrix<double, 2, 1>(.50, .50);
-        break;
-    case 12:
-        return Eigen::Matrix<double, 2, 1>(.00, .75);
-        break;
-    case 13:
-        return Eigen::Matrix<double, 2, 1>(.25, .75);
-        break;
-    case 14:
-        return Eigen::Matrix<double, 2, 1>(.00, 1.00);
-        break;
+    case 0:  return Eigen::Matrix<double, 2, 1>(.00, .00);
+    case 1:  return Eigen::Matrix<double, 2, 1>(.25, .00);
+    case 2:  return Eigen::Matrix<double, 2, 1>(.50, .00);
+    case 3:  return Eigen::Matrix<double, 2, 1>(.75, .00);
+    case 4:  return Eigen::Matrix<double, 2, 1>(1.00, .00);
+    case 5:  return Eigen::Matrix<double, 2, 1>(.00, .25);
+    case 6:  return Eigen::Matrix<double, 2, 1>(.25, .25);
+    case 7:  return Eigen::Matrix<double, 2, 1>(.50, .25);
+    case 8:  return Eigen::Matrix<double, 2, 1>(.75, .25);
+    case 9:  return Eigen::Matrix<double, 2, 1>(.00, .50);
+    case 10: return Eigen::Matrix<double, 2, 1>(.25, .50);
+    case 11: return Eigen::Matrix<double, 2, 1>(.50, .50);
+    case 12: return Eigen::Matrix<double, 2, 1>(.00, .75);
+    case 13: return Eigen::Matrix<double, 2, 1>(.25, .75);
+    case 14: return Eigen::Matrix<double, 2, 1>(.00, 1.00);
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..14)");
-        break;
     }
 }
 
@@ -676,21 +533,12 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesQuadOrder1(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
-    case 0:
-        return Eigen::Matrix<double, 2, 1>(-1.0, -1.0);
-        break;
-    case 1:
-        return Eigen::Matrix<double, 2, 1>(1.0, -1.0);
-        break;
-    case 2:
-        return Eigen::Matrix<double, 2, 1>(1.0, 1.0);
-        break;
-    case 3:
-        return Eigen::Matrix<double, 2, 1>(-1.0, 1.0);
-        break;
+    case 0: return Eigen::Matrix<double, 2, 1>(-1.0, -1.0);
+    case 1: return Eigen::Matrix<double, 2, 1>(1.0, -1.0);
+    case 2: return Eigen::Matrix<double, 2, 1>(1.0, 1.0);
+    case 3: return Eigen::Matrix<double, 2, 1>(-1.0, 1.0);
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..3)");
-        break;
     }
 }
 
@@ -726,33 +574,16 @@ Eigen::Matrix<double, 2, 1> NodeCoordinatesQuadOrder2(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
-    case 0:
-        return Eigen::Matrix<double, 2, 1>(-1.0, -1.0);
-        break;
-    case 1:
-        return Eigen::Matrix<double, 2, 1>(1.0, -1.0);
-        break;
-    case 2:
-        return Eigen::Matrix<double, 2, 1>(1.0, 1.0);
-        break;
-    case 3:
-        return Eigen::Matrix<double, 2, 1>(-1.0, 1.0);
-        break;
-    case 4:
-        return Eigen::Matrix<double, 2, 1>(0.0, -1.0);
-        break;
-    case 5:
-        return Eigen::Matrix<double, 2, 1>(1.0, 0.0);
-        break;
-    case 6:
-        return Eigen::Matrix<double, 2, 1>(0.0, 1.0);
-        break;
-    case 7:
-        return Eigen::Matrix<double, 2, 1>(-1.0, 0.0);
-        break;
+    case 0: return Eigen::Matrix<double, 2, 1>(-1.0, -1.0);
+    case 1: return Eigen::Matrix<double, 2, 1>(1.0, -1.0);
+    case 2: return Eigen::Matrix<double, 2, 1>(1.0, 1.0);
+    case 3: return Eigen::Matrix<double, 2, 1>(-1.0, 1.0);
+    case 4: return Eigen::Matrix<double, 2, 1>(0.0, -1.0);
+    case 5: return Eigen::Matrix<double, 2, 1>(1.0, 0.0);
+    case 6: return Eigen::Matrix<double, 2, 1>(0.0, 1.0);
+    case 7: return Eigen::Matrix<double, 2, 1>(-1.0, 0.0);
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..7)");
-        break;
     }
 }
 
@@ -1001,17 +832,12 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesTetrahedronOrder1(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
-    case 0:
-        return Eigen::Vector3d(0.0, 0.0, 0.0);
-    case 1:
-        return Eigen::Vector3d(1.0, 0.0, 0.0);
-    case 2:
-        return Eigen::Vector3d(0.0, 1.0, 0.0);
-    case 3:
-        return Eigen::Vector3d(0.0, 0.0, 1.0);
+    case 0: return Eigen::Vector3d(0.0, 0.0, 0.0);
+    case 1: return Eigen::Vector3d(1.0, 0.0, 0.0);
+    case 2: return Eigen::Vector3d(0.0, 1.0, 0.0);
+    case 3: return Eigen::Vector3d(0.0, 0.0, 1.0);
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..4)");
-        break;
     }
 }
 
@@ -1052,29 +878,18 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesTetrahedronOrder2(int rNodeIndex)
     switch (rNodeIndex)
     {
 
-    case 0:
-        return Eigen::Vector3d(0.0, 0.0, 0.0);
-    case 1:
-        return Eigen::Vector3d(1.0, 0.0, 0.0);
-    case 2:
-        return Eigen::Vector3d(0.0, 1.0, 0.0);
-    case 3:
-        return Eigen::Vector3d(0.0, 0.0, 1.0);
-    case 4:
-        return Eigen::Vector3d(0.5, 0.0, 0.0);
-    case 5:
-        return Eigen::Vector3d(0.5, 0.5, 0.0);
-    case 6:
-        return Eigen::Vector3d(0.0, 0.5, 0.0);
-    case 7:
-        return Eigen::Vector3d(0.0, 0.0, 0.5);
-    case 8:
-        return Eigen::Vector3d(0.0, 0.5, 0.5);
-    case 9:
-        return Eigen::Vector3d(0.5, 0.0, 0.5);
+    case 0: return Eigen::Vector3d(0.0, 0.0, 0.0);
+    case 1: return Eigen::Vector3d(1.0, 0.0, 0.0);
+    case 2: return Eigen::Vector3d(0.0, 1.0, 0.0);
+    case 3: return Eigen::Vector3d(0.0, 0.0, 1.0);
+    case 4: return Eigen::Vector3d(0.5, 0.0, 0.0);
+    case 5: return Eigen::Vector3d(0.5, 0.5, 0.0);
+    case 6: return Eigen::Vector3d(0.0, 0.5, 0.0);
+    case 7: return Eigen::Vector3d(0.0, 0.0, 0.5);
+    case 8: return Eigen::Vector3d(0.0, 0.5, 0.5);
+    case 9: return Eigen::Vector3d(0.5, 0.0, 0.5);
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..9)");
-        break;
     }
 
 }
@@ -1174,25 +989,16 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickOrder1(int rNodeIndex)
     switch (rNodeIndex)
     {
 
-    case 0:
-        return Eigen::Vector3d(-1., -1., -1.);
-    case 1:
-        return Eigen::Vector3d(1., -1., -1.);
-    case 2:
-        return Eigen::Vector3d(1., 1., -1.);
-    case 3:
-        return Eigen::Vector3d(-1., 1., -1.);
-    case 4:
-        return Eigen::Vector3d(-1., -1., 1.);
-    case 5:
-        return Eigen::Vector3d(1., -1., 1.);
-    case 6:
-        return Eigen::Vector3d(1., 1., 1.);
-    case 7:
-        return Eigen::Vector3d(-1., 1., 1.);
+    case 0: return Eigen::Vector3d(-1., -1., -1.);
+    case 1: return Eigen::Vector3d(1., -1., -1.);
+    case 2: return Eigen::Vector3d(1., 1., -1.);
+    case 3: return Eigen::Vector3d(-1., 1., -1.);
+    case 4: return Eigen::Vector3d(-1., -1., 1.);
+    case 5: return Eigen::Vector3d(1., -1., 1.);
+    case 6: return Eigen::Vector3d(1., 1., 1.);
+    case 7: return Eigen::Vector3d(-1., 1., 1.);
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..7)");
-        break;
     }
 }
 
@@ -1272,53 +1078,32 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesBrickOrder2(int rNodeIndex)
     switch (rNodeIndex)
     {
 
-    case 0:
-        return Eigen::Vector3d(-1., -1., -1.);
-    case 1:
-        return Eigen::Vector3d(1., -1., -1.);
-    case 2:
-        return Eigen::Vector3d(1., 1., -1.);
-    case 3:
-        return Eigen::Vector3d(-1., 1., -1.);
-    case 4:
-        return Eigen::Vector3d(-1., -1., 1.);
-    case 5:
-        return Eigen::Vector3d(1., -1., 1.);
-    case 6:
-        return Eigen::Vector3d(1., 1., 1.);
-    case 7:
-        return Eigen::Vector3d(-1., 1., 1.);
+    case 0: return Eigen::Vector3d(-1., -1., -1.);
+    case 1: return Eigen::Vector3d(1., -1., -1.);
+    case 2: return Eigen::Vector3d(1., 1., -1.);
+    case 3: return Eigen::Vector3d(-1., 1., -1.);
+    case 4: return Eigen::Vector3d(-1., -1., 1.);
+    case 5: return Eigen::Vector3d(1., -1., 1.);
+    case 6: return Eigen::Vector3d(1., 1., 1.);
+    case 7: return Eigen::Vector3d(-1., 1., 1.);
 
-    case 8:
-        return Eigen::Vector3d(0., -1., -1.);
-    case 9:
-        return Eigen::Vector3d(1., 0., -1.);
-    case 10:
-        return Eigen::Vector3d(0., 1., -1.);
-    case 11:
-        return Eigen::Vector3d(-1., 0., -1.);
+    case 8: return Eigen::Vector3d(0., -1., -1.);
+    case 9: return Eigen::Vector3d(1., 0., -1.);
+    case 10: return Eigen::Vector3d(0., 1., -1.);
+    case 11: return Eigen::Vector3d(-1., 0., -1.);
 
-    case 12:
-        return Eigen::Vector3d(-1., -1., 0.);
-    case 13:
-        return Eigen::Vector3d(1., -1., 0.);
-    case 14:
-        return Eigen::Vector3d(1., 1., 0.);
-    case 15:
-        return Eigen::Vector3d(-1., 1., 0.);
+    case 12: return Eigen::Vector3d(-1., -1., 0.);
+    case 13: return Eigen::Vector3d(1., -1., 0.);
+    case 14: return Eigen::Vector3d(1., 1., 0.);
+    case 15: return Eigen::Vector3d(-1., 1., 0.);
 
-    case 16:
-        return Eigen::Vector3d(0., -1., 1.);
-    case 17:
-        return Eigen::Vector3d(1., 0., 1.);
-    case 18:
-        return Eigen::Vector3d(0., 1., 1.);
-    case 19:
-        return Eigen::Vector3d(-1., 0., 1.);
+    case 16: return Eigen::Vector3d(0., -1., 1.);
+    case 17: return Eigen::Vector3d(1., 0., 1.);
+    case 18: return Eigen::Vector3d(0., 1., 1.);
+    case 19: return Eigen::Vector3d(-1., 0., 1.);
 
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..19)");
-        break;
     }
 }
 
@@ -1754,21 +1539,14 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesPrismOrder1(int rNodeIndex)
     switch (rNodeIndex)
     {
 
-    case 0:
-        return Eigen::Vector3d( 0., 0., -1.);
-    case 1:
-        return Eigen::Vector3d( 1., 0., -1.);
-    case 2:
-        return Eigen::Vector3d( 0., 1., -1.);
-    case 3:
-        return Eigen::Vector3d( 0., 0.,  1.);
-    case 4:
-        return Eigen::Vector3d( 1., 0.,  1.);
-    case 5:
-        return Eigen::Vector3d( 0., 1.,  1.);
+    case 0: return Eigen::Vector3d( 0., 0., -1.);
+    case 1: return Eigen::Vector3d( 1., 0., -1.);
+    case 2: return Eigen::Vector3d( 0., 1., -1.);
+    case 3: return Eigen::Vector3d( 0., 0.,  1.);
+    case 4: return Eigen::Vector3d( 1., 0.,  1.);
+    case 5: return Eigen::Vector3d( 0., 1.,  1.);
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..5)");
-        break;
     }
 }
 
@@ -1825,42 +1603,26 @@ Eigen::Matrix<double, 3, 1> NodeCoordinatesPrismOrder2(int rNodeIndex)
     switch (rNodeIndex)
     {
 
-    case 0:
-        return Eigen::Vector3d( 0., 0., -1.);
-    case 1:
-        return Eigen::Vector3d( 1., 0., -1.);
-    case 2:
-        return Eigen::Vector3d( 0., 1., -1.);
-    case 3:
-        return Eigen::Vector3d( 0., 0.,  1.);
-    case 4:
-        return Eigen::Vector3d( 1., 0.,  1.);
-    case 5:
-        return Eigen::Vector3d( 0., 1.,  1.);
+    case 0: return Eigen::Vector3d( 0., 0., -1.);
+    case 1: return Eigen::Vector3d( 1., 0., -1.);
+    case 2: return Eigen::Vector3d( 0., 1., -1.);
+    case 3: return Eigen::Vector3d( 0., 0.,  1.);
+    case 4: return Eigen::Vector3d( 1., 0.,  1.);
+    case 5: return Eigen::Vector3d( 0., 1.,  1.);
 
-    case 6:
-        return Eigen::Vector3d( .5, 0., -1.);
-    case 7:
-        return Eigen::Vector3d( 0., .5, -1.);
-    case 8:
-        return Eigen::Vector3d( 0., 0.,  0.);
-    case 9:
-        return Eigen::Vector3d( .5, .5, -1.);
-    case 10:
-        return Eigen::Vector3d( 1., 0.,  0.);
-    case 11:
-        return Eigen::Vector3d( 0,  1.,  0.);
+    case 6: return Eigen::Vector3d( .5, 0., -1.);
+    case 7: return Eigen::Vector3d( 0., .5, -1.);
+    case 8: return Eigen::Vector3d( 0., 0.,  0.);
+    case 9: return Eigen::Vector3d( .5, .5, -1.);
+    case 10: return Eigen::Vector3d( 1., 0.,  0.);
+    case 11: return Eigen::Vector3d( 0,  1.,  0.);
 
-    case 12:
-        return Eigen::Vector3d( .5, 0.,  1.);
-    case 13:
-        return Eigen::Vector3d( 0., .5,  1.);
-    case 14:
-        return Eigen::Vector3d( .5, .5,  1.);
+    case 12: return Eigen::Vector3d( .5, 0.,  1.);
+    case 13: return Eigen::Vector3d( 0., .5,  1.);
+    case 14: return Eigen::Vector3d( .5, .5,  1.);
 
     default:
         throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "node index out of range (0..14)");
-        break;
     }
 }
 
@@ -2015,17 +1777,12 @@ Eigen::MatrixXd NodeCoordinatesInterface2dOrder1(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
-    case 0:
-        return Eigen::Vector2d(-1, -1);
-    case 1:
-        return Eigen::Vector2d(+1, -1);
-    case 2:
-        return Eigen::Vector2d(+1, +1);
-    case 3:
-        return Eigen::Vector2d(-1, +1);
+    case 0: return Eigen::Vector2d(-1, -1);
+    case 1: return Eigen::Vector2d(+1, -1);
+    case 2: return Eigen::Vector2d(+1, +1);
+    case 3: return Eigen::Vector2d(-1, +1);
     default:
         throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t node index out of range (0..3)");
-        break;
     }
 }
 
@@ -2034,7 +1791,7 @@ Eigen::MatrixXd ShapeFunctionsInterface2dOrder1(const Eigen::VectorXd& rCoordina
     const double N00 = 0.5 * (1. - rCoordinates(0, 0));
     const double N01 = 0.5 * (1. + rCoordinates(0, 0));
 
-    return (Eigen::MatrixXd(4,1) << -N00, -N01, N01, N00).finished();
+    return Eigen::Vector4d(-N00, -N01, N01, N00);
 }
 
 Eigen::MatrixXd DerivativeShapeFunctionsInterface2dOrder1(const Eigen::VectorXd& rCoordinates)
@@ -2047,21 +1804,14 @@ Eigen::MatrixXd NodeCoordinatesInterface2dOrder2(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
-    case 0:
-        return Eigen::Vector2d(-1., -1.);
-    case 1:
-        return Eigen::Vector2d(+0., -1);
-    case 2:
-        return Eigen::Vector2d(+1, -1);
-    case 3:
-        return Eigen::Vector2d(+1, +1);
-    case 4:
-        return Eigen::Vector2d(0, +1);
-    case 5:
-        return Eigen::Vector2d(-1, +1);
+    case 0: return Eigen::Vector2d(-1., -1.);
+    case 1: return Eigen::Vector2d(+0., -1);
+    case 2: return Eigen::Vector2d(+1, -1);
+    case 3: return Eigen::Vector2d(+1, +1);
+    case 4: return Eigen::Vector2d(0, +1);
+    case 5: return Eigen::Vector2d(-1, +1);
     default:
         throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t node index out of range (0..5)");
-        break;
     }
 }
 
@@ -2093,17 +1843,12 @@ Eigen::MatrixXd NodeCoordinatesInterface3dOrder1(int rNodeIndex)
 {
     switch (rNodeIndex)
     {
-    case 0:
-        return Eigen::Vector3d(-1, -1, 0);
-    case 1:
-        return Eigen::Vector3d(+1, -1, 0);
-    case 2:
-        return Eigen::Vector3d(+1, +1, 0);
-    case 3:
-        return Eigen::Vector3d(-1, +1, 0);
+    case 0: return Eigen::Vector3d(-1, -1, 0);
+    case 1: return Eigen::Vector3d(+1, -1, 0);
+    case 2: return Eigen::Vector3d(+1, +1, 0);
+    case 3: return Eigen::Vector3d(-1, +1, 0);
     default:
         throw NuTo::MechanicsException(std::string(__PRETTY_FUNCTION__) + ":\t node index out of range (0..3)");
-        break;
     }
 }
 
@@ -2112,7 +1857,7 @@ Eigen::MatrixXd ShapeFunctionsInterface3dOrder1(const Eigen::VectorXd& rCoordina
     const double N00 = 0.5 * (1. - rCoordinates(0, 0));
     const double N01 = 0.5 * (1. + rCoordinates(0, 0));
 
-    return (Eigen::MatrixXd(4,1) << -N00, -N01, N01, N00).finished();
+    return Eigen::Vector4d(-N00, -N01, N01, N00);
 }
 
 Eigen::MatrixXd DerivativeShapeFunctionsInterface3dOrder1(const Eigen::VectorXd& rCoordinates)
