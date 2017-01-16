@@ -162,14 +162,6 @@ NuTo::eError NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::Evaluate(cons
 
     for (int theIP = 0; theIP < this->GetNumIntegrationPoints(); theIP++)
     {
-//        this->CalculateNMatrixBMatrixDetJacobian(data, theIP);
-//        this->CalculateConstitutiveInputs(constitutiveInput, data);
-
-//        eError error = this->NuTo::ElementBase::EvaluateConstitutiveLaw<TDimSlave>(constitutiveInput, constitutiveOutput, theIP);
-
-//        if (error != eError::SUCCESSFUL)
-//            return error;
-
         for (auto it : rElementOutput)
         {
             switch (it.first)
@@ -185,9 +177,7 @@ NuTo::eError NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::Evaluate(cons
             case Element::eOutput::GLOBAL_COLUMN_DOF:
             case Element::eOutput::UPDATE_STATIC_DATA:
             case Element::eOutput::UPDATE_TMP_STATIC_DATA:
-                break;
             case Element::eOutput::IP_DATA:
-//                this->CalculateElementOutputIpData(it.second->GetIpData(), constitutiveOutput, theIP);
                 break;
             default:
                 throw MechanicsException(__PRETTY_FUNCTION__, "element output not implemented.");

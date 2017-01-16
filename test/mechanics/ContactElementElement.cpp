@@ -223,7 +223,7 @@ void SetDBC(NuTo::Structure &myStructure, int groupNodesSlave, int groupNodesMas
     countDBC = myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodesSlaveUpper, direction, disp);
 
     // ===> slave master left <=== //
-    xValue = 0.25;
+    xValue = 1.;
     yValue = 1.;
     int groupNodesLeft = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
     myStructure.GroupAddNodeFunction(groupNodesLeft, groupNodesSlave, LambdaNodes);
@@ -241,6 +241,104 @@ void SetDBC(NuTo::Structure &myStructure, int groupNodesSlave, int groupNodesMas
     countDBC++;
 
 }
+
+
+void SetDBCPatchTest(NuTo::Structure &myStructure, int groupNodesSlave, int groupNodesMaster, int &countDBC)
+{
+    Eigen::Vector2d direction(0,0);
+    double xMin(0.), xMax(0.);
+    double yMin(0.), yMax(0.);
+    auto LambdaNodes = [&](NuTo::NodeBase* rNodePtr) -> bool
+    {
+        double Tol = 1.e-6;
+        if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
+        {
+            double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
+            double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
+            bool xR = false;
+            bool yR = false;
+
+            if (x >= xMin - Tol && x <= xMax + Tol) xR = true;
+            if (y >= yMin - Tol && y <= yMax + Tol) yR = true;
+
+            if (xR == true && yR == true) return true;
+        }
+        return false;
+    };
+
+    // ===> master bottom <=== //
+    xMin = 0.; xMax = std::numeric_limits<double>::infinity();
+    yMin = yMax = -1.;
+    int groupNodesMasterLower = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure.GroupAddNodeFunction(groupNodesMasterLower, LambdaNodes);
+    direction << 0.,1.;
+    countDBC = myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodesMasterLower, direction, 0.0);
+
+    NuTo::FullVector<int,Eigen::Dynamic> rMembersMasterBottom;
+    myStructure.NodeGroupGetMembers(groupNodesMasterLower, rMembersMasterBottom);
+    direction << 1.,0.;
+    countDBC = myStructure.ConstraintLinearSetDisplacementNode(rMembersMasterBottom(0), direction, 0.0);
+
+    // ===> initial values <=== //
+    NuTo::FullVector<double,Eigen::Dynamic>  dispVec(2);
+    dispVec(0) =   0.;
+    dispVec(1) = -0.000001;
+    myStructure.NodeGroupSetDisplacements(groupNodesSlave, 0, dispVec);
+
+    // ===> slave master left <=== //
+    xMin = 1.; xMax = 1.;
+    yMin = 1.; yMax = 1.;
+    int groupNodesLeft = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure.GroupAddNodeFunction(groupNodesLeft, groupNodesSlave, LambdaNodes);
+    direction << 1, 0;
+    countDBC = myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodesLeft, direction, 0.0);
+
+    // ===> slave master right <=== //
+//    xMin = 2.; xMax = 2.;
+//    yMin = 1.; yMax = 1.;
+//    int groupNodesRight = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+//    myStructure.GroupAddNodeFunction(groupNodesRight, groupNodesSlave, LambdaNodes);
+//    direction << 1, 0;
+//    countDBC = myStructure.ConstraintLinearSetDisplacementNodeGroup(groupNodesRight, direction, 0.0);
+
+    // ===> PATCH TEST BOUNDARY <=== //
+    double Stress = 10.;
+    myStructure.SetNumLoadCases(3);
+    // ===> slave top <=== //
+    xMin = 1.; xMax = 2.;
+    yMin = 1.; yMax = 1.;
+    int groupNodesSlaveUpper = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure.GroupAddNodeFunction(groupNodesSlaveUpper, LambdaNodes);
+    int groupElementsSlaveUpper = myStructure.GroupCreate(NuTo::eGroupId::Elements);
+    myStructure.GroupAddElementsFromNodes(groupElementsSlaveUpper, groupNodesSlaveUpper, false);
+    myStructure.LoadSurfacePressureCreate2D(0, groupElementsSlaveUpper, groupNodesSlaveUpper, Stress);
+
+    // ===> master top <=== //
+    NuTo::FullVector<int, Eigen::Dynamic> members;
+    // LEFT
+    xMin = 0.; xMax = 1.;
+    yMin = 0.; yMax = 0.;
+    int groupNodesMasterUpperLeft = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure.GroupAddNodeFunction(groupNodesMasterUpperLeft, groupNodesMaster, LambdaNodes);
+    members = myStructure.GroupGetMemberIds(groupNodesMasterUpperLeft);
+    int groupElementsMasterUpperLeft = myStructure.GroupCreate(NuTo::eGroupId::Elements);
+    myStructure.GroupAddElementsFromNodes(groupElementsMasterUpperLeft, groupNodesMasterUpperLeft, false);
+    myStructure.LoadSurfacePressureCreate2D(1, groupElementsMasterUpperLeft, groupNodesMasterUpperLeft, Stress);
+    members = myStructure.GroupGetMemberIds(groupElementsMasterUpperLeft);
+    // RIGHT
+    xMin = 2.0; xMax = 3.0;
+    yMin = 0.; yMax = 0.;
+    int groupNodesMasterUpperRight = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure.GroupAddNodeFunction(groupNodesMasterUpperRight, groupNodesMaster, LambdaNodes);
+    members = myStructure.GroupGetMemberIds(groupNodesMasterUpperRight);
+    int groupElementsMasterUpperRight = myStructure.GroupCreate(NuTo::eGroupId::Elements);
+    myStructure.GroupAddElementsFromNodes(groupElementsMasterUpperRight, groupNodesMasterUpperRight, false);
+    myStructure.LoadSurfacePressureCreate2D(2, groupElementsMasterUpperRight, groupNodesMasterUpperRight, Stress);
+    members = myStructure.GroupGetMemberIds(groupElementsMasterUpperRight);
+
+    countDBC++;
+}
+
 
 void AddIGALayer(NuTo::Structure *myStructure,
                 const std::function<bool(NuTo::NodeBase *)> &rFunction,
@@ -353,7 +451,7 @@ void ContactTest(const std::string &resultDir,
 
     int groupNodesSlave = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
     int groupElementsSlave = myStructure.GroupCreate(NuTo::eGroupId::Elements);
-    int node = buildStructure2D(rElementTypeIdent, rNumNodesPerElementInOneDir, nodeCoordinatesFirstElement, numElXSlave, numElYSlave, 1., 0.5, 0.25, 0., 0, &myStructure, groupNodesSlave, groupElementsSlave, setOfDOFSSlave);
+    int node = buildStructure2D(rElementTypeIdent, rNumNodesPerElementInOneDir, nodeCoordinatesFirstElement, numElXSlave, numElYSlave, 1., 1., 1., 0., 0, &myStructure, groupNodesSlave, groupElementsSlave, setOfDOFSSlave);
 
     // ===> build contact elements slave elements
     auto LambdaGetSlaveNodesLower = [startySlave](NuTo::NodeBase* rNodePtr) -> bool
@@ -386,10 +484,11 @@ void ContactTest(const std::string &resultDir,
 
     int groupNodesMaster = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
     int groupElementsMaster = myStructure.GroupCreate(NuTo::eGroupId::Elements);
-    buildStructure2D(rElementTypeIdent, rNumNodesPerElementInOneDir, nodeCoordinatesFirstElement, numElXMaster, numElYMaster, 1., 1., 0., -1., node, &myStructure, groupNodesMaster, groupElementsMaster, setOfDOFSMaster);
+    buildStructure2D(rElementTypeIdent, rNumNodesPerElementInOneDir, nodeCoordinatesFirstElement, numElXMaster, numElYMaster, 1., 3., 0., -1., node, &myStructure, groupNodesMaster, groupElementsMaster, setOfDOFSMaster);
 
     int countDBC;
-    SetDBC(myStructure, groupNodesSlave, groupNodesMaster,  countDBC);
+//    SetDBC(myStructure, groupNodesSlave, groupNodesMaster,  countDBC);
+    SetDBCPatchTest(myStructure, groupNodesSlave, groupNodesMaster,  countDBC);
 
     ////////////////////////////
     // ===> IGA coupling      //
@@ -401,22 +500,23 @@ void ContactTest(const std::string &resultDir,
     Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> elementsMaster;
     Eigen::MatrixXd A;
 
-    auto LambdaGetMasterNodesUpper = [](NuTo::NodeBase* rNodePtr) -> bool
+    auto LambdaGetMasterNodesUpperLayer = [](NuTo::NodeBase* rNodePtr) -> bool
     {
         double Tol = 1.e-6;
         if (rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)>0)
         {
+            double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
             double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
-            if (y >= -Tol && y <= Tol)
+            if (y >= -Tol && y <= Tol && x >= 0.5 - Tol && x <= 2.5 + Tol)
             {
                 return true;
             }
         }
         return false;
-    };  // LambdaGetMasterNodesUpper
+    };
 
     AddIGALayer(&myStructure,
-                LambdaGetMasterNodesUpper,
+                LambdaGetMasterNodesUpperLayer,
                 groupNodesMaster,
                 rDegree,
                 A,
@@ -637,6 +737,20 @@ void ContactTest(const std::string &resultDir,
         throw NuTo::MechanicsException("[NuTo::Test::Contact] No Integration Type Defined.");
     }
 
+    auto LambdaGetMasterNodesUpper = [](NuTo::NodeBase* rNodePtr) -> bool
+    {
+        double Tol = 1.e-6;
+        if (rNodePtr->GetNum(NuTo::Node::eDof::DISPLACEMENTS)>0)
+        {
+            double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
+            if (y >= -Tol && y <= Tol)
+            {
+                return true;
+            }
+        }
+        return false;
+    };  // LambdaGetMasterNodesUpper
+
     // create boundary elements for visualizing the results master
     int groupNodesMasterUpper = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
     myStructure.GroupAddNodeFunction(groupNodesMasterUpper, groupNodesMaster, LambdaGetMasterNodesUpper);
@@ -704,6 +818,9 @@ int main()
     nodeCoordinates(1) = 1;
     nodeCoordinates(2) = 2;
 
+    int factor = 10;
+    int contactAlgorithm = 1;
+
     resultDir = "./ResultsStaticElementElementLobatto2";
     degree = 2;
     ContactTest(resultDir,
@@ -712,9 +829,13 @@ int main()
                 nodeCoordinates,
                 degree,
                 1.e9,
-                NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, 1, 50, 50, 45, 45);
+                NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, contactAlgorithm, 1*factor, 1*factor, 3*factor, 1*factor);
 
     return 0;
+
+    nodeCoordinates.resize(2);
+    nodeCoordinates(0) = 0;
+    nodeCoordinates(1) = 2;
 
     degree = 1;
     resultDir = "./ResultsStaticElementElementGauss1";
@@ -724,8 +845,9 @@ int main()
                 nodeCoordinates,
                 degree,
                 1.e9,
-                NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, 1, 1, 1, 1, 1);
+                NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, 1, 50, 50, 45, 45);
 
+    return 0;
 
 
     nodeCoordinates.resize(4);
