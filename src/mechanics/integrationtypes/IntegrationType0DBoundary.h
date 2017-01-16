@@ -35,13 +35,6 @@ public:
     void serialize(Archive & ar, const unsigned int version);
 #endif // ENABLE_SERIALIZATION
 
-    //! @brief returns the dimension of the integration type
-    //! @return dimension
-    int GetCoordinateDimension()const
-    {
-        return 0;
-    }
-
     //! @brief returns the local coordinates of an integration point
     //! @param rIpNum integration point (counting from zero)
     //! @return rCoordinates (result)
@@ -67,7 +60,7 @@ public:
     //! @brief ... check compatibility between element type and integration type
     //! @param rElementType ... element type (enum is defined in ElementBase, but forward declaration of enums not yet possible->int)
     //! @return ... <B>true</B> if the element is compatible with the constitutive relationship, <B>false</B> otherwise.
-    bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const;
+    bool CheckElementCompatibility(NuTo::Element::eElementType rElementType) const override;
 
 #ifdef ENABLE_VISUALIZE
     void GetVisualizationCells(
@@ -76,7 +69,7 @@ public:
         unsigned int& NumVisualizationCells,
         std::vector<NuTo::eCellTypes>& VisualizationCellType,
         std::vector<unsigned int>& VisualizationCellsIncidence,
-        std::vector<unsigned int>& VisualizationCellsIP) const;
+        std::vector<unsigned int>& VisualizationCellsIP) const override;
 #endif // ENABLE_VISUALIZE
 };
 }

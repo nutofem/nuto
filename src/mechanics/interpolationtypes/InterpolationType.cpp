@@ -560,8 +560,7 @@ void NuTo::InterpolationType::UpdateNodeRenumberingIndices()
             x_i_prime[1] = x_i[0];
             break;
         case Interpolation::eShapeType::PRISM3D:
-#warning This may not be correct...
-            // reflect at (0,0,0) n = (1,-1,0)
+            // reflect at (0,0,0) n = (1,-1,0) as well...
             x_i_prime[0] = x_i[1];
             x_i_prime[1] = x_i[0];
             break;
