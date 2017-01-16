@@ -76,7 +76,7 @@ int NuTo::Interpolation3DPrism::CalculateNumNodes() const
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT1:
         return 6;
     case NuTo::Interpolation::eTypeOrder::EQUIDISTANT2:
-        return 15;
+        return 18;
     default:
         throw MechanicsException(__PRETTY_FUNCTION__, "Interpolation type and order " + Interpolation::TypeOrderToString(mTypeOrder) + " not implemented");
     }

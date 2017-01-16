@@ -56,60 +56,188 @@ void NuTo::IntegrationType3D6NGauss2x3Ip::GetVisualizationCells(
     std::vector<unsigned int>& VisualizationCellsIncidence,
     std::vector<unsigned int>& VisualizationCellsIP) const
 {
-    NumVisualizationPoints = 0;
+    NumVisualizationPoints = 21;
 
-//    // Point 0
-//    VisualizationPointLocalCoordinates.push_back(-1);
-//    VisualizationPointLocalCoordinates.push_back(-1);
-//    VisualizationPointLocalCoordinates.push_back(-1);
-//
-//    // Point 1
-//    VisualizationPointLocalCoordinates.push_back(+1);
-//    VisualizationPointLocalCoordinates.push_back(-1);
-//    VisualizationPointLocalCoordinates.push_back(-1);
-//
-//    // Point 2
-//    VisualizationPointLocalCoordinates.push_back(+1);
-//    VisualizationPointLocalCoordinates.push_back(+1);
-//    VisualizationPointLocalCoordinates.push_back(-1);
-//
-//    // Point 3
-//    VisualizationPointLocalCoordinates.push_back(-1);
-//    VisualizationPointLocalCoordinates.push_back(+1);
-//    VisualizationPointLocalCoordinates.push_back(-1);
-//
-//    // Point 4
-//    VisualizationPointLocalCoordinates.push_back(-1);
-//    VisualizationPointLocalCoordinates.push_back(-1);
-//    VisualizationPointLocalCoordinates.push_back(+1);
-//
-//    // Point 5
-//    VisualizationPointLocalCoordinates.push_back(+1);
-//    VisualizationPointLocalCoordinates.push_back(-1);
-//    VisualizationPointLocalCoordinates.push_back(+1);
-//
-//    // Point 6
-//    VisualizationPointLocalCoordinates.push_back(+1);
-//    VisualizationPointLocalCoordinates.push_back(+1);
-//    VisualizationPointLocalCoordinates.push_back(+1);
-//
-//    // Point 7
-//    VisualizationPointLocalCoordinates.push_back(-1);
-//    VisualizationPointLocalCoordinates.push_back(+1);
-//    VisualizationPointLocalCoordinates.push_back(+1);
+    // Point 0
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(-1);
 
-    NumVisualizationCells = 0;
+    // Point 1
+    VisualizationPointLocalCoordinates.push_back(0.5);
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(-1);
 
-//    // cell 0
-//    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
-//    VisualizationCellsIncidence.push_back(0);
-//    VisualizationCellsIncidence.push_back(1);
-//    VisualizationCellsIncidence.push_back(2);
-//    VisualizationCellsIncidence.push_back(3);
-//    VisualizationCellsIncidence.push_back(4);
-//    VisualizationCellsIncidence.push_back(5);
-//    VisualizationCellsIncidence.push_back(6);
-//    VisualizationCellsIncidence.push_back(7);
-//    VisualizationCellsIP.push_back(0);
+    // Point 2
+    VisualizationPointLocalCoordinates.push_back(1);
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(-1);
+
+    // Point 3
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(0.5);
+    VisualizationPointLocalCoordinates.push_back(-1);
+
+    // Point 4
+    VisualizationPointLocalCoordinates.push_back(1./3.);
+    VisualizationPointLocalCoordinates.push_back(1./3.);
+    VisualizationPointLocalCoordinates.push_back(-1);
+
+    // Point 5
+    VisualizationPointLocalCoordinates.push_back(0.5);
+    VisualizationPointLocalCoordinates.push_back(0.5);
+    VisualizationPointLocalCoordinates.push_back(-1);
+
+    // Point 6
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(1);
+    VisualizationPointLocalCoordinates.push_back(-1);
+
+    // Point 7
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(0);
+
+    // Point 8
+    VisualizationPointLocalCoordinates.push_back(0.5);
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(0);
+
+    // Point 9
+    VisualizationPointLocalCoordinates.push_back(1);
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(0);
+
+    // Point 10
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(0.5);
+    VisualizationPointLocalCoordinates.push_back(0);
+
+    // Point 11
+    VisualizationPointLocalCoordinates.push_back(1./3.);
+    VisualizationPointLocalCoordinates.push_back(1./3.);
+    VisualizationPointLocalCoordinates.push_back(0);
+
+    // Point 12
+    VisualizationPointLocalCoordinates.push_back(0.5);
+    VisualizationPointLocalCoordinates.push_back(0.5);
+    VisualizationPointLocalCoordinates.push_back(0);
+
+    // Point 13
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(1);
+    VisualizationPointLocalCoordinates.push_back(0);
+
+    // Point 14
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(1);
+
+    // Point 15
+    VisualizationPointLocalCoordinates.push_back(0.5);
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(1);
+
+    // Point 16
+    VisualizationPointLocalCoordinates.push_back(1);
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(1);
+
+    // Point 17
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(0.5);
+    VisualizationPointLocalCoordinates.push_back(1);
+
+    // Point 18
+    VisualizationPointLocalCoordinates.push_back(1./3.);
+    VisualizationPointLocalCoordinates.push_back(1./3.);
+    VisualizationPointLocalCoordinates.push_back(1);
+
+    // Point 19
+    VisualizationPointLocalCoordinates.push_back(0.5);
+    VisualizationPointLocalCoordinates.push_back(0.5);
+    VisualizationPointLocalCoordinates.push_back(1);
+
+    // Point 20
+    VisualizationPointLocalCoordinates.push_back(0);
+    VisualizationPointLocalCoordinates.push_back(1);
+    VisualizationPointLocalCoordinates.push_back(1);
+
+
+    NumVisualizationCells = 6;
+
+    // cell 1
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
+    VisualizationCellsIncidence.push_back(0);
+    VisualizationCellsIncidence.push_back(1);
+    VisualizationCellsIncidence.push_back(4);
+    VisualizationCellsIncidence.push_back(3);
+    VisualizationCellsIncidence.push_back(7);
+    VisualizationCellsIncidence.push_back(8);
+    VisualizationCellsIncidence.push_back(11);
+    VisualizationCellsIncidence.push_back(10);
+    VisualizationCellsIP.push_back(0);
+
+
+    // cell 2
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
+    VisualizationCellsIncidence.push_back(1);
+    VisualizationCellsIncidence.push_back(2);
+    VisualizationCellsIncidence.push_back(5);
+    VisualizationCellsIncidence.push_back(4);
+    VisualizationCellsIncidence.push_back(8);
+    VisualizationCellsIncidence.push_back(9);
+    VisualizationCellsIncidence.push_back(12);
+    VisualizationCellsIncidence.push_back(11);
+    VisualizationCellsIP.push_back(1);
+
+    // cell 3
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
+    VisualizationCellsIncidence.push_back(3);
+    VisualizationCellsIncidence.push_back(4);
+    VisualizationCellsIncidence.push_back(5);
+    VisualizationCellsIncidence.push_back(6);
+    VisualizationCellsIncidence.push_back(10);
+    VisualizationCellsIncidence.push_back(11);
+    VisualizationCellsIncidence.push_back(12);
+    VisualizationCellsIncidence.push_back(13);
+    VisualizationCellsIP.push_back(2);
+
+    // cell 4
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
+    VisualizationCellsIncidence.push_back(7);
+    VisualizationCellsIncidence.push_back(8);
+    VisualizationCellsIncidence.push_back(11);
+    VisualizationCellsIncidence.push_back(10);
+    VisualizationCellsIncidence.push_back(14);
+    VisualizationCellsIncidence.push_back(15);
+    VisualizationCellsIncidence.push_back(18);
+    VisualizationCellsIncidence.push_back(17);
+    VisualizationCellsIP.push_back(3);
+
+    // cell 5
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
+    VisualizationCellsIncidence.push_back(8);
+    VisualizationCellsIncidence.push_back(9);
+    VisualizationCellsIncidence.push_back(12);
+    VisualizationCellsIncidence.push_back(11);
+    VisualizationCellsIncidence.push_back(15);
+    VisualizationCellsIncidence.push_back(16);
+    VisualizationCellsIncidence.push_back(19);
+    VisualizationCellsIncidence.push_back(18);
+    VisualizationCellsIP.push_back(4);
+
+    // cell 6
+    VisualizationCellType.push_back(NuTo::eCellTypes::HEXAHEDRON);
+    VisualizationCellsIncidence.push_back(10);
+    VisualizationCellsIncidence.push_back(12);
+    VisualizationCellsIncidence.push_back(12);
+    VisualizationCellsIncidence.push_back(13);
+    VisualizationCellsIncidence.push_back(17);
+    VisualizationCellsIncidence.push_back(18);
+    VisualizationCellsIncidence.push_back(19);
+    VisualizationCellsIncidence.push_back(20);
+    VisualizationCellsIP.push_back(5);
+
 }
 #endif // ENABLE_VISUALIZE

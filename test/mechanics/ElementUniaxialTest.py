@@ -209,6 +209,9 @@ def Run3D(r3DShape, rTypeOrder):
                     myStructure.ElementCreate(myInterpolationType, [nodes[6], nodes[5], nodes[7], nodes[1]])
                     myStructure.ElementCreate(myInterpolationType, [nodes[2], nodes[7], nodes[1], nodes[6]])
                     myStructure.ElementCreate(myInterpolationType, [nodes[2], nodes[3], nodes[1], nodes[7]])
+                elif (r3DShape == "Prism3D"):
+                    myStructure.ElementCreate(myInterpolationType, [nodes[0], nodes[1], nodes[2], nodes[4], nodes[5], nodes[6]])
+                    myStructure.ElementCreate(myInterpolationType, [nodes[0], nodes[2], nodes[3], nodes[4], nodes[6], nodes[7]])
                 else:
                     error = True
                     errorMsg += "Element shape " + r3DShape + " is invalid. \n"
@@ -341,6 +344,9 @@ Run3D("Brick3D", "Equidistant2")
 
 Run3D("Tetrahedron3D", "Equidistant1")
 Run3D("Tetrahedron3D", "Equidistant2")
+
+Run3D("Prism3D", "Equidistant1")
+Run3D("Prism3D", "Equidistant2")
 
 Run2D("Quad2D", "Equidistant1")
 Run2D("Quad2D", "Equidistant2")

@@ -212,9 +212,9 @@ namespace ShapeFunctions3D
 
     Eigen::Matrix<double, 3, 1> NodeCoordinatesPrismOrder2(int rNodeIndex);
 
-    Eigen::Matrix<double, 15, 1> ShapeFunctionsPrismOrder2(const Eigen::VectorXd& rCoordinates);
+    Eigen::Matrix<double, 18, 1> ShapeFunctionsPrismOrder2(const Eigen::VectorXd& rCoordinates);
 
-    Eigen::Matrix<double, 15, 3> DerivativeShapeFunctionsPrismOrder2(const Eigen::VectorXd& rCoordinates);
+    Eigen::Matrix<double, 18, 3> DerivativeShapeFunctionsPrismOrder2(const Eigen::VectorXd& rCoordinates);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

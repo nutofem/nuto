@@ -69,14 +69,16 @@ void Run(NuTo::Interpolation::eTypeOrder rTypeOrder)
                 myStructure.ElementCreate(myInterpolationType, nodes);
             }
 
+
+    myStructure.SetVerboseLevel(10);
+    myStructure.SetShowTime(true);
+    myStructure.ElementTotalConvertToInterpolationType();
+
     int allElements = myStructure.GroupCreate("Elements");
     myStructure.GroupAddElementFromType(allElements, myInterpolationType);
     double volume = myStructure.ElementGroupGetVolume(allElements);
     std::cout << "######### VOLUME: " << volume << std::endl;
 
-    myStructure.SetVerboseLevel(10);
-    myStructure.SetShowTime(true);
-    myStructure.ElementTotalConvertToInterpolationType();
 
     int mySection = myStructure.SectionCreate("VOLUME");
     myStructure.ElementTotalSetSection(mySection);
@@ -93,7 +95,7 @@ int main(int argc, char* argv[])
     try
     {
         Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
-//        Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+        Run(NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
     }
     catch (NuTo::Exception& e)
     {

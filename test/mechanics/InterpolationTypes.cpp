@@ -24,6 +24,7 @@
 #include "mechanics/integrationtypes/IntegrationType2D4NGauss4Ip.h"
 #include "mechanics/integrationtypes/IntegrationType3D4NGauss4Ip.h"
 #include "mechanics/integrationtypes/IntegrationType3D8NGauss2x2x2Ip.h"
+#include "mechanics/integrationtypes/IntegrationType3D6NGauss2x3Ip.h"
 #include "mechanics/integrationtypes/IntegrationTypeEnum.h"
 
 #include "base/Exception.h"
@@ -99,12 +100,22 @@ void CheckShapeFunctionsAndNodePositions(NuTo::InterpolationType& rIT, int rNumN
             {
                 // should be 1
                 if (std::abs(shapeFunctions(iShapeFunctions) - 1) > 1.e-10)
-                    throw NuTo::MechanicsException("[CheckShapeFunctionsAndNodePositions] shape functions and node positions do not match (should be 1).");
-            } else
+                {
+                    std::cout << "Error at ShapeFunction " << iShapeFunctions << std::endl;
+                    throw NuTo::MechanicsException(
+                        "[CheckShapeFunctionsAndNodePositions] shape functions and node positions do not match (should be 1).");
+                }
+            }
+            else
             {
                 // should be 0
                 if (std::abs(shapeFunctions(iShapeFunctions)) > 1.e-10)
-                    std::cout << "[CheckShapeFunctionsAndNodePositions] OK!" << std::endl;            }
+                {
+                    std::cout << "Error at ShapeFunction " << iShapeFunctions << " and node " << iNode << std::endl;
+                    throw NuTo::MechanicsException(
+                        "[CheckShapeFunctionsAndNodePositions] shape functions and node positions do not match (should be 0).");
+                }
+            }
         }
     }
     std::cout << "[CheckShapeFunctionsAndNodePositions] OK!" << std::endl;
@@ -300,17 +311,17 @@ void CheckBrick()
 
 void CheckPrism()
 {
-    NuTo::IntegrationType3D8NGauss2x2x2Ip myIntegrationType;
+    NuTo::IntegrationType3D6NGauss2x3Ip myIntegrationType;
 
     NuTo::InterpolationType myIT6(NuTo::Interpolation::eShapeType::PRISM3D, 3);
     myIT6.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT1);
     myIT6.UpdateIntegrationType(myIntegrationType);
     CheckShapeFunctionsAndNodePositions(myIT6, 6);
 
-//    NuTo::InterpolationType myIT15(NuTo::Interpolation::eShapeType::PRISM3D, 3);
-//    myIT15.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
-//    myIT15.UpdateIntegrationType(myIntegrationType);
-//    CheckShapeFunctionsAndNodePositions(myIT15, 15);
+    NuTo::InterpolationType myIT15(NuTo::Interpolation::eShapeType::PRISM3D, 3);
+    myIT15.AddDofInterpolation(NuTo::Node::eDof::COORDINATES, NuTo::Interpolation::eTypeOrder::EQUIDISTANT2);
+    myIT15.UpdateIntegrationType(myIntegrationType);
+    CheckShapeFunctionsAndNodePositions(myIT15, 18);
 }
 
 //! @brief API of the interpolation types

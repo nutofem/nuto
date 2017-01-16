@@ -88,11 +88,13 @@ private:
 
         Eigen::MatrixXd directions = Eigen::MatrixXd::Identity(dimension, dimension);
 
+        double eps = 1.e-3;
+
         // fix origin
         Eigen::VectorXd origin(dimension);
         origin.setZero();
         int nodeGroupOrigin = rStructure.GroupCreate("Nodes");
-        rStructure.GroupAddNodeRadiusRange(nodeGroupOrigin, origin, 0, 1.e-5);
+        rStructure.GroupAddNodeRadiusRange(nodeGroupOrigin, origin, 0, eps);
 
         if (rStructure.GroupGetNumMembers(nodeGroupOrigin) != 1)
             throw NuTo::MechanicsException("[NuToTest::ElementUniaxialTest::SetBoundaryConditions] Node at origin (0,0,0) does not exist.");
@@ -107,7 +109,7 @@ private:
             Eigen::VectorXd originRot(3);
             originRot << 0, 0, lZ;
             int nodeGroupOriginRot = rStructure.GroupCreate(NuTo::eGroupId::Nodes);
-            rStructure.GroupAddNodeRadiusRange(nodeGroupOriginRot, originRot, 0, 1.e-5);
+            rStructure.GroupAddNodeRadiusRange(nodeGroupOriginRot, originRot, 0, eps);
 
             int nodeOriginRot = rStructure.GroupGetMemberIds(nodeGroupOriginRot)[0];
             rStructure.ConstraintLinearSetDisplacementNode(nodeOriginRot, directions.col(1), 0.0);
@@ -115,12 +117,12 @@ private:
 
         // fix x = 0 plane
         int nodesX0 = rStructure.GroupCreate(NuTo::eGroupId::Nodes);
-        rStructure.GroupAddNodeCoordinateRange(nodesX0, 0, -1.e-6, 1.e-6);
+        rStructure.GroupAddNodeCoordinateRange(nodesX0, 0, -eps, eps);
         rStructure.ConstraintLinearSetDisplacementNodeGroup(nodesX0, directions.col(0), 0.);
 
         // apply displacement on x = lX plane
         int nodesXlX = rStructure.GroupCreate(NuTo::eGroupId::Nodes);
-        rStructure.GroupAddNodeCoordinateRange(nodesXlX, 0, lX-1.e-6, lX+1.e-6);
+        rStructure.GroupAddNodeCoordinateRange(nodesXlX, 0, lX-eps, lX+eps);
         rStructure.ConstraintLinearSetDisplacementNodeGroup(nodesXlX, directions.col(0), deltaL);
 
         if (DEBUG_PRINT)
