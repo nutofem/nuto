@@ -684,7 +684,7 @@ public:
     double ElementTotalGetMaxDamage();
 
     //! @brief calculates some error in the static data, e.g. for IMPL-EX
-    std::vector<double> ElementTotalGetStaticDataExtrapolationError();
+    double ElementTotalGetStaticDataExtrapolationError();
 
     //! @brief allocates additional static data for an element group
     //! @param rElementGroupId ... element group id

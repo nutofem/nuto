@@ -118,7 +118,6 @@ const std::map<NuTo::Constitutive::eConstitutiveParameter, std::string> NuTo::Co
         {eConstitutiveParameter::MACROSCOPIC_BULK_MODULUS,                  "MACROSCOPIC_BULK_MODULUS"},
         {eConstitutiveParameter::MASS_EXCHANGE_RATE,                        "MASS_EXCHANGE_RATE"},
         {eConstitutiveParameter::NONLOCAL_RADIUS,                           "NONLOCAL_RADIUS"},
-        {eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER,                 "NONLOCAL_RADIUS_PARAMETER"},
         {eConstitutiveParameter::POISSONS_RATIO,                            "POISSONS_RATIO"},
         {eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_ADSORPTION,        "POLYNOMIAL_COEFFICIENTS_ADSORPTION"},
         {eConstitutiveParameter::POLYNOMIAL_COEFFICIENTS_DESORPTION,        "POLYNOMIAL_COEFFICIENTS_DESORPTION"},
@@ -241,7 +240,6 @@ std::string NuTo::Constitutive::OutputToString(const NuTo::Constitutive::eOutput
             (eOutput::LOCAL_EQ_STRAIN,"LOCAL_EQ_STRAIN")
             (eOutput::D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D,"D_LOCAL_EQ_PLASTIC_STRAIN_D_STRAIN_1D")
             (eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN,"D_LOCAL_EQ_STRAIN_D_STRAIN")
-            (eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN,"D_LOCAL_EQ_STRAIN_XI_D_STRAIN")
             (eOutput::ENGINEERING_STRESS_REAL_1D,"ENGINEERING_STRESS_REAL_1D")
             (eOutput::ENGINEERING_STRAIN_VIRT_1D,"ENGINEERING_STRAIN_VIRT_1D")
             (eOutput::D_ENGINEERING_STRESS_REAL_D_ENGINEERING_STRAIN_REAL_1D,"D_ENGINEERING_STRESS_REAL_D_ENGINEERING_STRAIN_REAL_1D")
@@ -266,8 +264,7 @@ std::string NuTo::Constitutive::OutputToString(const NuTo::Constitutive::eOutput
             (eOutput::D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0, "D_INTERNAL_GRADIENT_RH_D_RH_BOUNDARY_NN_H0")
             (eOutput::D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0, "D_INTERNAL_GRADIENT_WV_D_WV_BOUNDARY_NN_H0")
             (eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N,     "INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N")
-            (eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N, "INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N")
-            (eOutput::NONLOCAL_PARAMETER_XI, "NONLOCAL_PARAMETER_XI");
+            (eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N, "INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N");
     std::map< eOutput, std::string >::const_iterator it = lut.find( e );
     if ( lut.end() != it )
         return it->second;

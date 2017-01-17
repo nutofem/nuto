@@ -153,6 +153,8 @@ NuTo::eError NuTo::LinearElasticEngineeringStress::Evaluate<1>(
                     rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain1D().As3D(mNu);
                 break;
             }
+            case NuTo::Constitutive::eOutput::EXTRAPOLATION_ERROR:
+                break;
             case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
             case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
             {
@@ -270,6 +272,8 @@ NuTo::eError NuTo::LinearElasticEngineeringStress::Evaluate<2>(
                         .As3D(mNu, planeState.GetPlaneState());
             }
                 break;
+            case NuTo::Constitutive::eOutput::EXTRAPOLATION_ERROR:
+                break;
             case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
             case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
             {
@@ -354,6 +358,8 @@ NuTo::eError NuTo::LinearElasticEngineeringStress::Evaluate<3>(
                     rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
                 break;
             }
+            case NuTo::Constitutive::eOutput::EXTRAPOLATION_ERROR:
+                break;
             case NuTo::Constitutive::eOutput::UPDATE_TMP_STATIC_DATA:
             case NuTo::Constitutive::eOutput::UPDATE_STATIC_DATA:
             {

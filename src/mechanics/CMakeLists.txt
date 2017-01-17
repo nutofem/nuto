@@ -235,6 +235,7 @@ set(NuToMechanicsTimeIntegration_SOURCES
     timeIntegration/TimeIntegrationBase.cpp
     timeIntegration/ImplicitExplicitBase.cpp
     timeIntegration/ImplEx.cpp
+    timeIntegration/ImplExCallback.cpp
     timeIntegration/VelocityVerlet.cpp
     )
 

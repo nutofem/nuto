@@ -87,7 +87,6 @@ void NuTo::ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutivePar
     switch (rIdentifier)
     {
     case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS:
-    case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER:
     case Constitutive::eConstitutiveParameter::TENSILE_STRENGTH:
     case Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH:
     case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:

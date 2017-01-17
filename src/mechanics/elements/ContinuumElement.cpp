@@ -224,7 +224,6 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapInternalGradient(
             break;
         case Node::eDof::NONLOCALEQSTRAIN:
             rConstitutiveOutput[NuTo::Constitutive::eOutput::LOCAL_EQ_STRAIN];
-            rConstitutiveOutput[NuTo::Constitutive::eOutput::NONLOCAL_PARAMETER_XI];
             break;
         case Node::eDof::RELATIVEHUMIDITY:
             rConstitutiveOutput[NuTo::Constitutive::eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_B];
@@ -279,11 +278,9 @@ void NuTo::ContinuumElement<TDim>::FillConstitutiveOutputMapHessian0(Constitutiv
                 rConstitutiveOutput[NuTo::Constitutive::eOutput::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN];
                 break;
             case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::DISPLACEMENTS):
-                rConstitutiveOutput[NuTo::Constitutive::eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN];
-                rConstitutiveOutput[NuTo::Constitutive::eOutput::NONLOCAL_PARAMETER_XI];
+                rConstitutiveOutput[NuTo::Constitutive::eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN];
                 break;
             case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::NONLOCALEQSTRAIN):
-                rConstitutiveOutput[NuTo::Constitutive::eOutput::NONLOCAL_PARAMETER_XI];
                 break;
             case Node::CombineDofs(Node::eDof::TEMPERATURE, Node::eDof::TEMPERATURE):
                 rConstitutiveOutput[NuTo::Constitutive::eOutput::D_HEAT_FLUX_D_TEMPERATURE_GRADIENT];
@@ -803,10 +800,10 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputInternalGradient(
             const auto& B = rData.mB.at(dofRow);
             const auto& nonlocalEqStrain = *static_cast<ConstitutiveScalar*>(constitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN).get());
             const auto& localEqStrain = *static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::LOCAL_EQ_STRAIN).get());
-            const auto& nonlocalXi = *static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::NONLOCAL_PARAMETER_XI).get());
+            const double c = GetConstitutiveLaw(rTheIP).GetParameterDouble(Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS);
             rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection *
-                                      ( N.transpose() * (nonlocalEqStrain[0] - localEqStrain[0]) / nonlocalXi[0] +
-                                        B.transpose() * (B * rData.mNodalValues.at(Node::eDof::NONLOCALEQSTRAIN)));
+                                      ( N.transpose() * (nonlocalEqStrain[0] - localEqStrain[0]) +
+                                        B.transpose() * (c * B * rData.mNodalValues.at(Node::eDof::NONLOCALEQSTRAIN)));
             break;
         }
         case Node::eDof::RELATIVEHUMIDITY:
@@ -887,7 +884,7 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
             }
             case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::DISPLACEMENTS):
             {
-                const auto& tangentLocalEqStrainStrain = *static_cast<ConstitutiveVector<VoigtDim>*>(constitutiveOutput.at(Constitutive::eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN).get());
+                const auto& tangentLocalEqStrainStrain = *static_cast<ConstitutiveVector<VoigtDim>*>(constitutiveOutput.at(Constitutive::eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN).get());
                 hessian0 -= rData.mDetJxWeightIPxSection *  ((rData.GetNMatrix(dofRow))->transpose()) * tangentLocalEqStrainStrain.transpose() * (rData.mB.at(dofCol));
                 break;
             }
@@ -895,8 +892,8 @@ void NuTo::ContinuumElement<TDim>::CalculateElementOutputHessian0(BlockFullMatri
             {
                 const auto& N = *(rData.GetNMatrix(dofRow));
                 const auto& B = rData.mB.at(dofRow);
-                const auto& nonlocalXi = *static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::NONLOCAL_PARAMETER_XI).get());
-                hessian0 += rData.mDetJxWeightIPxSection * (N.transpose() * (1./nonlocalXi[0]) * N + B.transpose() * B);
+                const double c = GetConstitutiveLaw(rTheIP).GetParameterDouble(Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS);
+                hessian0 += rData.mDetJxWeightIPxSection * (N.transpose() * N + c * B.transpose() * B);
                 break;
             }
 

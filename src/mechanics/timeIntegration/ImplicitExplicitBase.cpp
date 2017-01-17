@@ -78,16 +78,18 @@ NuTo::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
         \*---------------------------------*/
 
         // Declare output maps
-        std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evalUpdateStaticData;
+//        std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evalUpdateStaticData;
         StructureOutputDummy dummy;
-        evalUpdateStaticData                [eStructureOutput::UPDATE_STATIC_DATA] = &dummy;
+//        evalUpdateStaticData                [eStructureOutput::UPDATE_STATIC_DATA] = &dummy;
 
         std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evalInternalGradient;
         evalInternalGradient                [eStructureOutput::INTERNAL_GRADIENT] = &intForce;
+        evalInternalGradient                [eStructureOutput::UPDATE_STATIC_DATA] = &dummy;
 
         std::map<NuTo::eStructureOutput, NuTo::StructureOutputBase*> evalInternalGradientAndHessian0;
         evalInternalGradientAndHessian0     [eStructureOutput::INTERNAL_GRADIENT] = &intForce;
         evalInternalGradientAndHessian0     [eStructureOutput::HESSIAN0] = &hessian0;
+        evalInternalGradientAndHessian0     [eStructureOutput::UPDATE_STATIC_DATA] = &dummy;
 
         /*---------------------------------*\
         |    Declare and fill Input map     |
@@ -109,12 +111,9 @@ NuTo::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 
         PostProcess(residual);
 
-        int numAcceptedIterations = 0;
-        int numRejectedIterations = 0;
-
         while (mTime < rTimeDelta)
         {
-            timerDebug.Reset("\033[1;31m Iteration " + std::to_string(numAcceptedIterations) + " at current time: " + std::to_string(mTime) + "\033[0m");
+            timerDebug.Reset("\033[1;31m Iteration " + std::to_string(mIterationCount) + " at current time: " + std::to_string(mTime) + "\033[0m");
 
             mStructure->DofTypeActivateAll();
 
@@ -123,9 +122,7 @@ NuTo::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
             auto bRHS = UpdateAndGetConstraintRHS(mTime);
             auto prevExtForce = CalculateCurrentExternalLoad(mTime);
 
-
             mTime += mTimeStep;
-
 
             auto deltaBRHS = UpdateAndGetConstraintRHS(mTime) - bRHS;
             auto extForce = CalculateCurrentExternalLoad(mTime);
@@ -134,7 +131,7 @@ NuTo::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
 
 
             // extrapolate the history variables
-            ExtrapolateStaticData(timeStep);
+//            ExtrapolateStaticData(timeStep);
 
 
             for (const auto& activeDofSet : mStepActiveDofs)
@@ -145,8 +142,8 @@ NuTo::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
                 // if a single active dof is in mDofsWithConstantHessian
                 bool usePreFactorizedHessian = activeDofSet.size() == 1 && mDofsWithConstantHessian.find(*activeDofSet.begin()) != mDofsWithConstantHessian.end();
 
-                calculateStaticData.SetCalculateStaticData(eCalculateStaticData::USE_PREVIOUS);
-                calculateStaticData.SetIndexOfPreviousStaticData(0);
+                calculateStaticData.SetCalculateStaticData(eCalculateStaticData::EULER_FORWARD);
+//                calculateStaticData.SetIndexOfPreviousStaticData(0);
 
                 if (usePreFactorizedHessian)
                 {
@@ -198,35 +195,34 @@ NuTo::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
                 // save the new implicit history variables
                 calculateStaticData.SetCalculateStaticData(eCalculateStaticData::EULER_BACKWARD);
                 calculateStaticData.SetIndexOfPreviousStaticData(1);
-                mStructure->Evaluate(input, evalUpdateStaticData);
+//                mStructure->Evaluate(input, evalUpdateStaticData);
+
+                mStructure->DofTypeActivateAll();
+//                calculateStaticData.SetIndexOfPreviousStaticData(0);
+//                calculateStaticData.SetCalculateStaticData(eCalculateStaticData::USE_PREVIOUS);
+                mStructure->Evaluate(input, evalInternalGradient);
+
 
                 if (mTime + mTimeStep > rTimeDelta)
                     mTimeStep = rTimeDelta - mTime;
 
-        //                std::cout << "Bfore SaveStaticData" << std::endl;
-        //                mCallback->Exit(*mStructure);
                 mStructure->ElementTotalShiftStaticDataToPast();   // shift static data by one to the past
                 timeStep.SetCurrentTimeStep(mTimeStep);     // shift time steps by one to the past
 
-        //                std::cout << "after SaveStaticData" << std::endl;
-        //                mCallback->Exit(*mStructure);
-
-                mStructure->DofTypeActivateAll();
-                lastConverged_dof_dt0 = dof_dt0;
 
 
-
-                calculateStaticData.SetCalculateStaticData(eCalculateStaticData::USE_PREVIOUS);
-                mStructure->Evaluate(input, evalInternalGradient);
                 residual = intForce - extForce;
                 PostProcess(residual);
 
-                numAcceptedIterations++;
+                lastConverged_dof_dt0 = dof_dt0;
+
+                ++mIterationCount;
             }
             else
             {
                 // do not save static data
                 // do not shift the time but set the new time step
+                mTime -= timeStep[0];
                 timeStep[0] = mTimeStep;
 
 
@@ -234,16 +230,11 @@ NuTo::eError NuTo::ImplicitExplicitBase::Solve(double rTimeDelta)
                 mStructure->DofTypeActivateAll();
                 dof_dt0 = lastConverged_dof_dt0;
                 mStructure->NodeMergeDofValues(dof_dt0);
-                mTime -= mTimeStep;
 
-                numRejectedIterations++;
+                ++mIterationCount;
             }
 
         } // end while
-
-
-        std::cout << "["<<__FUNCTION__<<"] Number of accepted iterations: " << numAcceptedIterations << std::endl;
-        std::cout << "["<<__FUNCTION__<<"] Number of rejected iterations: " << numRejectedIterations << std::endl;
 
         for (auto& itPair : preFactorizedHessians)
         {
@@ -283,6 +274,7 @@ void NuTo::ImplicitExplicitBase::FactorizeConstantHessians(std::map<Node::eDof, 
         hessian0_CSR.SetOneBasedIndexing();
 
         rPreFactorizedHessians[dof].Factorization(hessian0_CSR);
+        rPreFactorizedHessians[dof].SetShowTime(false);
         mStructure->DofTypeSetIsActive(dof, false);
     }
 }

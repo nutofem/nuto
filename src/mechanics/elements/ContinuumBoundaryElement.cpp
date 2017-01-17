@@ -54,9 +54,11 @@ NuTo::eError NuTo::ContinuumBoundaryElement<TDim>::Evaluate(const ConstitutiveIn
         CalculateNMatrixBMatrixDetJacobian(data, theIP);
         CalculateConstitutiveInputs(constitutiveInput, data);
 
+
         eError error = EvaluateConstitutiveLaw<TDim>(constitutiveInput, constitutiveOutput, theIP);
         if (error != eError::SUCCESSFUL)
             return error;
+
         CalculateElementOutputs(rElementOutput, data, theIP, constitutiveInput, constitutiveOutput);
     }
     return eError::SUCCESSFUL;
@@ -220,11 +222,6 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateConstitutiveInputs(const Con
         }
         case Constitutive::eInput::NONLOCAL_EQ_STRAIN:
         {
-            if (mAlphaUserDefined == -1) // just to put it somewhere...
-                rData.mAlpha = CalculateAlpha();
-            else
-                rData.mAlpha = mAlphaUserDefined;
-
             auto& nonLocalEqStrain = *static_cast<ConstitutiveScalar*>(it.second.get());
             nonLocalEqStrain.AsScalar() = rData.mN.at(Node::eDof::NONLOCALEQSTRAIN) * rData.mNodalValues.at(Node::eDof::NONLOCALEQSTRAIN);
             break;
@@ -273,10 +270,12 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputs(
         switch (it.first)
         {
         case Element::eOutput::INTERNAL_GRADIENT:
+            UpdateAlphaGradientDamage(rData, constitutiveInput, constitutiveOutput);
             CalculateElementOutputInternalGradient(it.second->GetBlockFullVectorDouble(), rData, constitutiveInput, constitutiveOutput,  rTheIP);
             break;
 
         case Element::eOutput::HESSIAN_0_TIME_DERIVATIVE:
+            UpdateAlphaGradientDamage(rData, constitutiveInput, constitutiveOutput);
             CalculateElementOutputHessian0(it.second->GetBlockFullMatrixDouble(), rData, constitutiveOutput, rTheIP);
             break;
 
@@ -304,6 +303,28 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputs(
     }
 }
 
+template <int TDim>
+void NuTo::ContinuumBoundaryElement<TDim>::UpdateAlphaGradientDamage(NuTo::EvaluateDataContinuumBoundary<TDim> &rData,
+                                                                    const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+                                                                    const NuTo::ConstitutiveOutputMap &rConstitutiveOutput) const
+{
+    if (this->mInterpolationType->GetActiveDofs().find(NuTo::Node::eDof::NONLOCALEQSTRAIN) != this->mInterpolationType->GetActiveDofs().end())
+        {
+            if (this->mAlphaUserDefined == -1) // just to put it somewhere...
+                rData.m1DivAlpha = 1./ this->CalculateAlpha();
+            else
+                rData.m1DivAlpha = 1./ this->mAlphaUserDefined;
+
+            const auto &localEqStrain =
+                *static_cast<NuTo::ConstitutiveScalar *>(rConstitutiveOutput.at(NuTo::Constitutive::eOutput::LOCAL_EQ_STRAIN).get());
+            const auto &nonlocalEqStrain =
+                *static_cast<NuTo::ConstitutiveScalar *>(rConstitutiveInput.at(NuTo::Constitutive::eInput::NONLOCAL_EQ_STRAIN).get());
+
+            double gradEeqN = localEqStrain[0] - nonlocalEqStrain[0];
+            if (gradEeqN > 0)
+                rData.m1DivAlpha = 0;
+        }
+}
 
 template<int TDim>
 void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputInternalGradient(
@@ -324,7 +345,11 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputInternalGradien
         {
             const auto& localEqStrain = *static_cast<ConstitutiveScalar*>(constitutiveOutput.at(Constitutive::eOutput::LOCAL_EQ_STRAIN).get());
             const auto& nonlocalEqStrain = *static_cast<ConstitutiveScalar*>(constitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN).get());
-            rInternalGradient[dofRow] += rData.mDetJxWeightIPxSection / rData.mAlpha * rData.mN.at(Node::eDof::NONLOCALEQSTRAIN).transpose() * (nonlocalEqStrain[0] - localEqStrain[0]);
+
+            rInternalGradient[dofRow] +=
+                    rData.mDetJxWeightIPxSection * rData.m1DivAlpha *
+                    rData.mN.at(Node::eDof::NONLOCALEQSTRAIN).transpose() *
+                    (nonlocalEqStrain[0] - localEqStrain[0]);
             break;
         }
 
@@ -372,13 +397,18 @@ void NuTo::ContinuumBoundaryElement<TDim>::CalculateElementOutputHessian0(BlockF
 
             case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::DISPLACEMENTS):
             {
-                const auto& tangentLocalEqStrainStrain = *static_cast<ConstitutiveVector<VoigtDim>*>(constitutiveOutput.at(Constitutive::eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN).get());
-                hessian0 -= rData.mDetJxWeightIPxSection * rData.mAlpha * rData.mN.at(dofRow).transpose() * tangentLocalEqStrainStrain.transpose() * rData.mB.at(dofCol);
+                const auto& tangentLocalEqStrainStrain = *static_cast<ConstitutiveVector<VoigtDim>*>(constitutiveOutput.at(Constitutive::eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN).get());
+                hessian0 -= rData.mDetJxWeightIPxSection * rData.m1DivAlpha *
+                            rData.mN.at(dofRow).transpose() *
+                            tangentLocalEqStrainStrain.transpose() *
+                            rData.mB.at(dofCol);
                 break;
             }
             case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::NONLOCALEQSTRAIN):
             {
-                hessian0 += rData.mN.at(dofRow).transpose() * rData.mN.at(dofRow) * rData.mDetJxWeightIPxSection / rData.mAlpha;
+                hessian0 += rData.mN.at(dofRow).transpose() *
+                            rData.mN.at(dofRow) * rData.mDetJxWeightIPxSection *
+                            rData.m1DivAlpha;
                 break;
             }
             case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::RELATIVEHUMIDITY):
@@ -499,10 +529,12 @@ void NuTo::ContinuumBoundaryElement<TDim>::FillConstitutiveOutputMapHessian0(Con
                 break;
 
             case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::DISPLACEMENTS):
-                rConstitutiveOutput[eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN);
+                rConstitutiveOutput[eOutput::LOCAL_EQ_STRAIN] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(Constitutive::eOutput::LOCAL_EQ_STRAIN);
+                rConstitutiveOutput[eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN);
                 break;
 
             case Node::CombineDofs(Node::eDof::NONLOCALEQSTRAIN, Node::eDof::NONLOCALEQSTRAIN):
+                rConstitutiveOutput[eOutput::LOCAL_EQ_STRAIN] = ConstitutiveIOBase::makeConstitutiveIO<TDim>(Constitutive::eOutput::LOCAL_EQ_STRAIN);
                 break;
 
             case Node::CombineDofs(Node::eDof::RELATIVEHUMIDITY, Node::eDof::RELATIVEHUMIDITY):
@@ -736,12 +768,9 @@ Eigen::VectorXd ContinuumBoundaryElement<TDim>::ExtractNodeValues(int rTimeDeriv
 }
 
 template <int TDim>
-double ContinuumBoundaryElement<TDim>::CalculateAlpha()
+double ContinuumBoundaryElement<TDim>::CalculateAlpha() const
 {
     unsigned int theIP = 0; // This is a bit of a hack... I am sorry.
-
-    if (GetConstitutiveLaw(theIP).GetParameterDouble(Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER) != 0)
-        throw MechanicsException(__PRETTY_FUNCTION__, "The case c != const is currently not supported. Set eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER to 0.");
 
     double c = GetConstitutiveLaw(theIP).GetParameterDouble(Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS);
     return std::sqrt(c);

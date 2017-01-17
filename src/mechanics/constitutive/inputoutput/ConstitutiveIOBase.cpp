@@ -46,7 +46,6 @@ std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitu
         case eOutput::INTERNAL_GRADIENT_RELATIVE_HUMIDITY_BOUNDARY_N:
         case eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_N:
         case eOutput::INTERNAL_GRADIENT_WATER_VOLUME_FRACTION_BOUNDARY_N:
-        case eOutput::NONLOCAL_PARAMETER_XI:
         case eOutput::LOCAL_EQ_STRAIN:
             return std::make_unique<ConstitutiveScalar>();
         // vectors dim
@@ -64,7 +63,6 @@ std::unique_ptr<NuTo::ConstitutiveIOBase> NuTo::ConstitutiveIOBase::makeConstitu
         case eOutput::D_ENGINEERING_STRESS_D_PHASE_FIELD:
         case eOutput::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
         case eOutput::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:
-        case eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN:
         case eOutput::D_ENGINEERING_STRESS_D_TEMPERATURE:
         case eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN:
         case eOutput::D_STRAIN_D_TEMPERATURE:

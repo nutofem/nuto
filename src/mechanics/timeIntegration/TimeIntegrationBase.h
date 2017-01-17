@@ -253,6 +253,11 @@ public:
         mCallback = rCallback;
     }
 
+    int GetIterationCount() const
+    {
+        return mIterationCount;
+    }
+
     //! @brief ... Adds a calculation step to each timestep
     //! param rActiveDofs ... active Dofs of the calculation step
     void AddCalculationStep(const std::set<Node::eDof> &rActiveDofs);
@@ -358,6 +363,8 @@ protected:
     double mMinTimeStepPlot;
     //last time when a vtk file was plotted
     double mLastTimePlot;
+    //iteration count
+    int mIterationCount;
 
     //groups of elements to be plotted separately
     std::vector<int> mPlotElementGroups;

@@ -103,10 +103,19 @@ BOOST_AUTO_TEST_CASE(check_d_stress_d_strain)
     EvaluateLocalDamageModelModel<2>({kappa,      eps,     0.}, localDamageModel , kappa);
     EvaluateLocalDamageModelModel<2>({kappa,       0.,    eps}, localDamageModel , kappa);
 
+    EvaluateLocalDamageModelModel<2>({kappa+eps, +eps,     0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<2>({kappa,      eps,    eps}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<2>({kappa+eps,   0.,    eps}, localDamageModel , kappa);
+
+
     // decrement = elastic unloading
     EvaluateLocalDamageModelModel<2>({kappa-eps,   0.,     0.}, localDamageModel , kappa);
     EvaluateLocalDamageModelModel<2>({kappa,     -eps,     0.}, localDamageModel , kappa);
     EvaluateLocalDamageModelModel<2>({kappa,       0.,   -eps}, localDamageModel , kappa);
+
+    EvaluateLocalDamageModelModel<2>({kappa-eps, -eps,     0.}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<2>({kappa,     -eps,   -eps}, localDamageModel , kappa);
+    EvaluateLocalDamageModelModel<2>({kappa-eps,   0.,   -eps}, localDamageModel , kappa);
 }
 
 

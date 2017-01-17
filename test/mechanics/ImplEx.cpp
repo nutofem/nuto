@@ -32,7 +32,6 @@ int SetConstitutiveLaw(NuTo::Structure& rStructure)
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, 30000);
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::POISSONS_RATIO, 0.0);
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS, 1);
-    rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER, 0.);
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::TENSILE_STRENGTH, 4.);
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::COMPRESSIVE_STRENGTH, 4. * 10);
     rStructure.ConstitutiveLawSetParameterDouble(lawId,NuTo::Constitutive::eConstitutiveParameter::FRACTURE_ENERGY, 0.021);
@@ -203,7 +202,7 @@ void ImplEx()
     myIntegrationScheme.AddResultGroupNodeForce("Force", gNodeBC);
     myIntegrationScheme.AddResultNodeDisplacements("Displ", iNodeBC);
 
-    myIntegrationScheme.SetExtrapolationErrorThreshold(kappa_i * 0.02);
+    myIntegrationScheme.SetExtrapolationErrorThreshold(1);
 
     std::string resultDir = "./ResultsImplex";
     boost::filesystem::create_directory(resultDir);

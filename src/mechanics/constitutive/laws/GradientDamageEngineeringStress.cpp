@@ -7,6 +7,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #endif // ENABLE_SERIALIZATION
 
+#include "mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 #include "mechanics/constitutive/ConstitutiveEnum.h"
 #include "mechanics/constitutive/laws/GradientDamageEngineeringStress.h"
 #include "mechanics/constitutive/laws/EngineeringStressHelper.h"
@@ -24,6 +25,8 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveCalculateStaticData.h"
 #include "mechanics/constitutive/inputoutput/ConstitutivePlaneState.h"
 
+#include "mechanics/timeIntegration/ImplExCallback.h"
+
 const double MAX_OMEGA = 0.999;
 
 NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress() :
@@ -32,12 +35,12 @@ NuTo::GradientDamageEngineeringStress::GradientDamageEngineeringStress() :
         mE(0.),
         mNu(0.),
         mNonlocalRadius(0.),
-        mNonlocalRadiusParameter(0.),
         mThermalExpansionCoefficient(0.),
         mTensileStrength(0.),
         mCompressiveStrength(0.),
         mFractureEnergy(0.),
-        mDamageLawType(Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING)
+        mDamageLawType(Constitutive::eDamageLawType::ISOTROPIC_EXPONENTIAL_SOFTENING),
+        mImplExCallback(new ImplExCallback())
 {}
 
 #ifdef ENABLE_SERIALIZATION
@@ -147,7 +150,6 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<1>(
     // get constitutive inputs
     const auto
         & engineeringStrain = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain1D();
-    const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN);
 
     double omega = CalculateDamage(rKappa);
 
@@ -194,7 +196,7 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<1>(
                     tangent.SetZero();
                     break;
                 }
-                tangent(0, 0) = -rKappaTangent * CalculateDerivativeDamage(nonlocalEqStrain[0]) * mE * engineeringStrain[0];
+                tangent(0, 0) = -rKappaTangent * CalculateDerivativeDamage(rKappa) * mE * engineeringStrain[0];
                 break;
             }
 
@@ -203,24 +205,6 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<1>(
                 ConstitutiveIOBase& tangent = *itOutput.second;
                 tangent.AssertIsVector<1>(itOutput.first, __PRETTY_FUNCTION__);
                 tangent[0] = eeq.GetDerivative()[0];
-                break;
-            }
-
-            case NuTo::Constitutive::eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN:
-            {
-                ConstitutiveIOBase& tangent = *itOutput.second;
-                tangent.AssertIsVector<1>(itOutput.first, __PRETTY_FUNCTION__);
-
-                tangent[0] =
-                    CalculateLocalEqStrainXiFactor(localEqStrain, nonlocalEqStrain[0]) * eeq.GetDerivative()[0];
-                break;
-            }
-            case NuTo::Constitutive::eOutput::NONLOCAL_PARAMETER_XI:
-            {
-                ConstitutiveIOBase& xi = *itOutput.second;
-                xi.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
-
-                xi[0] = CalculateXi(localEqStrain);
                 break;
             }
 
@@ -270,7 +254,6 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<2>(
     // get constitutive inputs
     const auto
         & engineeringStrain = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain2D();
-    const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN);
     const auto& planeState =
         *dynamic_cast<ConstitutivePlaneState*>(rConstitutiveInput.at(Constitutive::eInput::PLANE_STATE).get());
 
@@ -346,7 +329,7 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<2>(
                     tangent.SetZero();
                     break;
                 }
-                double damageDerivative = rKappaTangent * CalculateDerivativeDamage(nonlocalEqStrain[0]);
+                double damageDerivative = rKappaTangent * CalculateDerivativeDamage(rKappa);
                 tangent[0] = -damageDerivative * (C11 * engineeringStrain[0] + C12 * engineeringStrain[1]);
                 tangent[1] = -damageDerivative * (C11 * engineeringStrain[1] + C12 * engineeringStrain[0]);
                 tangent[2] = -damageDerivative * (C33 * engineeringStrain[2]);
@@ -362,24 +345,6 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<2>(
                 break;
             }
 
-            case NuTo::Constitutive::eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN:
-            {
-                ConstitutiveIOBase& tangent = *itOutput.second;
-                tangent.AssertIsVector<3>(itOutput.first, __PRETTY_FUNCTION__);
-
-                auto eeqDerivative = eeq.GetDerivative();
-                eeqDerivative *= CalculateLocalEqStrainXiFactor(localEqStrain, nonlocalEqStrain[0]);
-                tangent = eeqDerivative;
-                break;
-            }
-            case NuTo::Constitutive::eOutput::NONLOCAL_PARAMETER_XI:
-            {
-                ConstitutiveIOBase& xi = *itOutput.second;
-                xi.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
-
-                xi[0] = CalculateXi(localEqStrain);
-                break;
-            }
 
             case NuTo::Constitutive::eOutput::ENGINEERING_STRESS_VISUALIZE:
             {
@@ -444,7 +409,6 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<3>(
     // get constitutive inputs
     const auto
         & engineeringStrain = rConstitutiveInput.at(Constitutive::eInput::ENGINEERING_STRAIN)->AsEngineeringStrain3D();
-    const auto& nonlocalEqStrain = *rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN);
 
     double omega = CalculateDamage(rKappa);
 
@@ -525,7 +489,7 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<3>(
                     tangent.SetZero();
                     break;
                 }
-                double damageDerivative = rKappaTangent * CalculateDerivativeDamage(nonlocalEqStrain[0]);
+                double damageDerivative = rKappaTangent * CalculateDerivativeDamage(rKappa);
                 tangent[0] = -damageDerivative
                     * (C11 * engineeringStrain[0] + C12 * engineeringStrain[1] + C12 * engineeringStrain[2]);
                 tangent[1] = -damageDerivative
@@ -547,25 +511,6 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::EvaluateWithKappa<3>(
                 break;
             }
 
-            case NuTo::Constitutive::eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN:
-            {
-                ConstitutiveIOBase& tangent = *itOutput.second;
-                tangent.AssertIsVector<6>(itOutput.first, __PRETTY_FUNCTION__);
-
-                auto eeqDerivative = eeq.GetDerivative();
-                eeqDerivative *= CalculateLocalEqStrainXiFactor(localEqStrain, nonlocalEqStrain[0]);
-
-                tangent = eeqDerivative;
-                break;
-            }
-            case NuTo::Constitutive::eOutput::NONLOCAL_PARAMETER_XI:
-            {
-                ConstitutiveIOBase& xi = *itOutput.second;
-                xi.AssertIsScalar(itOutput.first, __PRETTY_FUNCTION__);
-
-                xi[0] = CalculateXi(localEqStrain);
-                break;
-            }
 
             case NuTo::Constitutive::eOutput::DAMAGE:
             {
@@ -644,16 +589,12 @@ double NuTo::GradientDamageEngineeringStress::CalculateStaticDataExtrapolationEr
     // static data 1 contains the implicit data \kappa_n-1
     // static data 2 contains the implicit data \kappa_n-2
 
-    auto itCalculateStaticData = rConstitutiveInput.find(Constitutive::eInput::CALCULATE_STATIC_DATA);
-    if (itCalculateStaticData == rConstitutiveInput.end())
-        throw MechanicsException(__PRETTY_FUNCTION__, "You need to specify the way the static data should be calculated (input list).");
-
     double eeq = (*rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN))[0];
     double k_n_t = rStaticData.GetData(0);
-    double k_n_1 = rStaticData.GetData(1);
+    double k_nn = rStaticData.GetData(1);
+    double k_n = std::max(eeq, k_nn); // calculate kappa implicitly
 
-    double k_n = std::max(eeq, k_n_1); // calculate kappa implicitly
-    return std::abs(k_n - k_n_t);
+    return mImplExCallback->GetError(k_n_t, k_n, k_nn);
 }
 
 
@@ -690,8 +631,6 @@ double NuTo::GradientDamageEngineeringStress::GetParameterDouble(NuTo::Constitut
         return mFractureEnergy;
     case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS:
         return mNonlocalRadius;
-    case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER:
-        return mNonlocalRadiusParameter;
     case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
         return mNu;
     case Constitutive::eConstitutiveParameter::TENSILE_STRENGTH:
@@ -722,9 +661,6 @@ void NuTo::GradientDamageEngineeringStress::SetParameterDouble(NuTo::Constitutiv
         break;
     case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS:
         mNonlocalRadius = rValue;
-        break;
-    case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER:
-        mNonlocalRadiusParameter = rValue;
         break;
     case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
         mNu = rValue;
@@ -784,7 +720,6 @@ void NuTo::GradientDamageEngineeringStress::Info(unsigned short rVerboseLevel, L
     rLogger << "    Poisson's ratio         : " << mNu << "\n";
     rLogger << "    thermal expansion coeff : " << mThermalExpansionCoefficient << "\n";
     rLogger << "    nonlocal radius         : " << mNonlocalRadius << "\n";
-    rLogger << "    nonlocal radius param   : " << mNonlocalRadiusParameter << "\n";
     rLogger << "    tensile strength        : " << mTensileStrength << "\n";
     rLogger << "    compressive strength    : " << mCompressiveStrength << "\n";
     rLogger << "    fracture energy         : " << mFractureEnergy << "\n";
@@ -797,7 +732,6 @@ void NuTo::GradientDamageEngineeringStress::CheckParameters() const
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::YOUNGS_MODULUS, mE);
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::POISSONS_RATIO, mNu);
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS, mNonlocalRadius);
-    ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER, mNonlocalRadiusParameter);
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::TENSILE_STRENGTH, mTensileStrength);
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::FRACTURE_ENERGY, mFractureEnergy);
     ConstitutiveBase::CheckParameterDouble(Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT, mThermalExpansionCoefficient);
@@ -939,39 +873,6 @@ double NuTo::GradientDamageEngineeringStress::CalculateDerivativeDamage(double r
 }
 
 
-double NuTo::GradientDamageEngineeringStress::CalculateLocalEqStrainXiFactor(double rLocalEqStrain, double rNonlocalEqStrain) const
-{
-    double xi = mNonlocalRadius;
-    double dXi = 0;
-
-    if (mNonlocalRadiusParameter != 0.)
-    {
-        double e_xi = mTensileStrength / mE * mNonlocalRadiusParameter;
-        if (rLocalEqStrain <= e_xi)
-        {
-            double c0 = mNonlocalRadius/100.;
-            xi = c0 + (mNonlocalRadius - c0) * (rLocalEqStrain / e_xi);
-            dXi = (mNonlocalRadius - c0) / e_xi;
-        }
-    }
-    return 1. / xi - (rLocalEqStrain - rNonlocalEqStrain) / (xi * xi) * dXi;
-}
-
-double NuTo::GradientDamageEngineeringStress::CalculateXi(double rLocalEqStrain) const
-{
-    double xi = mNonlocalRadius;
-    if (mNonlocalRadiusParameter != 0.)
-    {
-        double e_xi = mTensileStrength / mE * mNonlocalRadiusParameter;
-        if (rLocalEqStrain <= e_xi)
-        {
-            double c0 = mNonlocalRadius/100.;
-            xi = c0 + (mNonlocalRadius - c0) * (rLocalEqStrain / e_xi);
-        }
-    }
-    return xi;
-}
-
 template NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate<1>(const NuTo::ConstitutiveInputMap& rConstitutiveInput,
                                                                          const NuTo::ConstitutiveOutputMap& rConstitutiveOutput,
                                                                          NuTo::GradientDamageEngineeringStress::Data& rStaticData);
@@ -992,4 +893,11 @@ NuTo::eError NuTo::GradientDamageEngineeringStress::Evaluate(const NuTo::Constit
     double nonlocalEqStrain = rConstitutiveInput.at(Constitutive::eInput::NONLOCAL_EQ_STRAIN)->operator[](0);
     double kappaTangent = kappa == nonlocalEqStrain ? 1.0 : 0.0; // = 1 true, 0 false. perfect tangent.
     return EvaluateWithKappa<TDim>(rConstitutiveInput, rConstitutiveOutput, kappa, kappaTangent);
+}
+
+void NuTo::GradientDamageEngineeringStress::SetExtrapolation(NuTo::ImplExCallback *rCallback)
+{
+    if (mImplExCallback != nullptr)
+        delete mImplExCallback;
+    mImplExCallback = rCallback;
 }

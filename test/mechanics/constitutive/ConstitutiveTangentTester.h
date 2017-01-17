@@ -68,7 +68,7 @@ private:
             input[i] -= mDelta / 2; // back to normal
 
             for (int j = 0; j < tangent_cdf.rows(); ++j)
-                tangent_cdf(j, i) = ( (*valuePlus)[j] - (*valueMinus)[j] ) / mDelta;
+                tangent_cdf(i, j) = ( (*valuePlus)[j] - (*valueMinus)[j] ) / mDelta;
         }
         return tangent_cdf;
     }

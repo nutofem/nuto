@@ -144,7 +144,6 @@ NuTo::eError IPAdditiveOutput::AdditiveOutputEvaluate(
                     switch (output.first)
                     {
                     case eOutput::LOCAL_EQ_STRAIN:
-                    case eOutput::NONLOCAL_PARAMETER_XI:
                     case eOutput::DAMAGE:
                     case eOutput::EXTRAPOLATION_ERROR:
                     case eOutput::HEAT_CHANGE:
@@ -181,7 +180,6 @@ NuTo::eError IPAdditiveOutput::AdditiveOutputEvaluate(
                     case eOutput::D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN:
                     case eOutput::D_ENGINEERING_STRESS_D_RELATIVE_HUMIDITY:
                     case eOutput::D_ENGINEERING_STRESS_D_WATER_VOLUME_FRACTION:
-                    case eOutput::D_LOCAL_EQ_STRAIN_XI_D_STRAIN:
                     case eOutput::D_ENGINEERING_STRESS_D_TEMPERATURE:
                     case eOutput::D_LOCAL_EQ_STRAIN_D_STRAIN:
                         *static_cast<ConstitutiveVector<VoigtDim>*>(rConstitutiveOutput.at(output.first).get()) +=

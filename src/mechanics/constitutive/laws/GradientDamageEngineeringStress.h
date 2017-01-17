@@ -8,13 +8,18 @@
 
 namespace NuTo
 {
+
+
 namespace Constitutive
 {
     enum class eDamageLawType;
 
 }// namespace Constitutive
 
+
+class ImplExCallback;
 class Logger;
+
 //! @author Thomas Titscher
 //! @date Mar 14, 2015 // let's celebrate PI day!
 //! @brief ...
@@ -127,6 +132,7 @@ public:
     //! @return ... isotropic damage variable
     double CalculateDerivativeDamage(double rKappa) const;
 
+    void SetExtrapolation(ImplExCallback* rCallback);
 
 protected:
 
@@ -162,10 +168,7 @@ protected:
 
     //! @brief ... nonlocal radius
     double mNonlocalRadius;
-
-    //! @brief ... nonlocal radius parameter for non constant c-paramter
-    double mNonlocalRadiusParameter;
-
+    
     //! @brief ... thermal expansion coefficient \f$ \alpha \f$
     double mThermalExpansionCoefficient;
 
@@ -180,6 +183,8 @@ protected:
 
     //! @brief ... damage law type
     Constitutive::eDamageLawType mDamageLawType;
+
+    ImplExCallback* mImplExCallback;
 
 private:
 

@@ -13,7 +13,8 @@
 #include "mechanics/constitutive/inputoutput/ConstitutiveTimeStep.h"
 #include "mechanics/structures/StructureBaseEnum.h"
 #include "mechanics/structures/StructureOutputDummy.h"
-#include <algorithm>
+#include "base/serializeStream/SerializeStreamOut.h"
+#include "mechanics/timeIntegration/ImplExCallback.h"
 
 #ifdef ENABLE_SERIALIZATION
 #include <boost/archive/binary_oarchive.hpp>
@@ -27,6 +28,7 @@
 NuTo::ImplEx::ImplEx(StructureBase* rStructure) : ImplicitExplicitBase(rStructure)
 {
     mExtrapolationErrorThreshold = -1.;
+    mImplExCallback = new ImplExCallback();
 }
 
 NuTo::ImplEx::~ImplEx()
@@ -54,35 +56,18 @@ bool NuTo::ImplEx::CheckExtrapolationAndAdjustTimeStep()
     if (mExtrapolationErrorThreshold == -1.)
         throw MechanicsException(__PRETTY_FUNCTION__, "Define the extrapolation threshold first.");
 
-    auto errors = mStructure->ElementTotalGetStaticDataExtrapolationError();
+    double extrapolationError = mStructure->ElementTotalGetStaticDataExtrapolationError();
 
-    std::partial_sort(errors.begin(), errors.begin() + 5, errors.end(), std::greater<double>());
-    double extrapolationError = errors[4];
-    std::cout << errors[0] << '\t' << errors[1] << '\t' << errors[2] << std::endl;
-
-
-    double newTimeStep = std::sqrt(mExtrapolationErrorThreshold / extrapolationError ) * mTimeStep;
-
-    newTimeStep = std::min(newTimeStep, mTimeStep * 1.3);
-    newTimeStep = std::max(newTimeStep, mTimeStep / 1.3);
-    mTimeStep = newTimeStep;
-
-
-//    std::cout << "relative Extrapolation error (>1 is bad): " << extrapolationError / mExtrapolationErrorThreshold << std::endl;
-//    bool extrapolationIsOK = extrapolationError < mExtrapolationErrorThreshold;
-//    if (not extrapolationIsOK && not mForceAcceptOfNextSolution)
-//    {
-//        mForceAcceptOfNextSolution = true;
-//        return false;
-//    }
-//
-//    // accept solution, either the extrapolation is OK or this solution is forced to be accepted (somehow continue the time stepping)
-//
-//    mForceAcceptOfNextSolution = false;
-    return true;
+    mTimeStep = mImplExCallback->GetNewTimeStep(extrapolationError, mExtrapolationErrorThreshold, mTimeStep);
+    return mImplExCallback->AcceptSolution(extrapolationError, mExtrapolationErrorThreshold);
 }
 
-
+void NuTo::ImplEx::SetImplExCallback(NuTo::ImplExCallback* r)
+{
+    if (mImplExCallback != nullptr)
+        delete mImplExCallback;
+    mImplExCallback = r;
+}
 
 #ifdef ENABLE_SERIALIZATION
 // serializes the class

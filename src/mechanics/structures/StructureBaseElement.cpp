@@ -600,7 +600,7 @@ double NuTo::StructureBase::ElementTotalGetMaxDamage()
     return maxDamage;
 }
 
-std::vector<double> NuTo::StructureBase::ElementTotalGetStaticDataExtrapolationError()
+double NuTo::StructureBase::ElementTotalGetStaticDataExtrapolationError()
 {
     if (this->mHaveTmpStaticData && this->mUpdateTmpStaticDataRequired)
         throw MechanicsException(__PRETTY_FUNCTION__, "First update of tmp static data required.");
@@ -615,11 +615,9 @@ std::vector<double> NuTo::StructureBase::ElementTotalGetStaticDataExtrapolationE
     for (auto element : elementVector)
         numIP += element->GetNumIntegrationPoints();
 
-    std::vector<double> errors(numIP);
-
+    double maxError = 0;
 
     Eigen::MatrixXd ipValues;
-    int iIP = 0;
     for (auto element : elementVector)
     {
         try
@@ -634,11 +632,9 @@ std::vector<double> NuTo::StructureBase::ElementTotalGetStaticDataExtrapolationE
         {
             throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Error getting EXTRAPOLATION_ERROR for element " +std::to_string(ElementGetId(element)) + ".");
         }
-        for (int i = 0; i < ipValues.cols(); ++i)
-            errors[iIP+i] = ipValues(0,i);
-        iIP += ipValues.cols();
+        maxError = std::max(maxError, ipValues.maxCoeff());
     }
-    return errors;
+    return maxError;
 }
 
 

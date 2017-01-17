@@ -509,7 +509,7 @@ void NuTo::FibreMatrixBondStressSlip::serialize(Archive & ar, const unsigned int
     & BOOST_SERIALIZATION_NVP(mSlipAtMaxBondStress)
     & BOOST_SERIALIZATION_NVP(mSlipAtResidualBondStress)
     & BOOST_SERIALIZATION_NVP(mNormalStiffness)
-    & BOOST_SERIALIZATION_NVP(mAlpha);
+    & BOOST_SERIALIZATION_NVP(m1DivAlpha);
 #ifdef DEBUG_SERIALIZATION
     std::cout << "finish serialize FibreMatrixBondStressSlip" << std::endl;
 #endif

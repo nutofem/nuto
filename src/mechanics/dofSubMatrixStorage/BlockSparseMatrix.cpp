@@ -449,7 +449,9 @@ std::unique_ptr<NuTo::SparseMatrixCSR<double>> NuTo::BlockSparseMatrix::ExportTo
         // symmetric case
         auto& ref = (*this)(dof,dof);
         assert(ref.IsSymmetric());
-        return std::make_unique<SparseMatrixCSRSymmetric<double>>(ref.AsSparseMatrixCSRVector2Symmetric());
+        std::unique_ptr<NuTo::SparseMatrixCSR<double>> matrix = std::make_unique<SparseMatrixCSRSymmetric<double>>(ref.AsSparseMatrixCSRVector2Symmetric());
+        matrix->SetPositiveDefinite();
+        return matrix;
     }
     else
     {

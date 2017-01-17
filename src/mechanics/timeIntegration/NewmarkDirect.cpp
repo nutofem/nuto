@@ -9,7 +9,8 @@
 #include <boost/ptr_container/serialize_ptr_map.hpp>
 #endif // ENABLE_SERIALIZATION
 
-
+#include "mechanics/dofSubMatrixStorage/BlockFullMatrix.h"
+#include "math/EigenSolverArpack.h"
 #include "base/CallbackInterface.h"
 #include "base/ErrorEnum.h"
 #include "base/Timer.h"
@@ -27,6 +28,8 @@
 #include "mechanics/elements/ElementBase.h"
 #include "mechanics/structures/StructureBaseEnum.h"
 #include "mechanics/timeIntegration/NewmarkDirect.h"
+#include "math/SparseMatrix.h"
+#include "math/SparseMatrixCSR.h"
 
 //! @brief constructor
 //! @param mDimension number of nodes
@@ -221,7 +224,7 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
         // the minimal time step defined, which is equivalent to six cut-backs
         if (mAutomaticTimeStepping)
         {
-            SetMinTimeStep(mMinTimeStep > 0. ? mMinTimeStep : mTimeStep*pow(0.5,6.));
+            SetMinTimeStep(mMinTimeStep > 0. ? mMinTimeStep : mTimeStep*std::pow(0.5,6.));
         }
 
         while (curTime < rTimeDelta)
@@ -287,6 +290,7 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                 // ******************************************************
                 delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessian0, hessian1, hessian2, residual_mod, timeStep);
                 delta_dof_dt0.K = deltaBRHS - cmat*delta_dof_dt0.J;
+                ++mIterationCount;
                 // ******************************************************
 
                 //calculate trial state
@@ -321,6 +325,7 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                     // ******************************************************
                     delta_dof_dt0.J = BuildHessianModAndSolveSystem(hessian0, hessian1, hessian2, residual_mod, timeStep);
                     delta_dof_dt0.K = cmat*delta_dof_dt0.J*(-1.);
+                    ++mIterationCount;
                     // ******************************************************
 
 
@@ -399,7 +404,7 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                     mStructure->GetLogger() << "Convergence after " << iteration << " iterations at time " << mTime << " (timestep " << timeStep << ").\n";
                     mStructure->GetLogger() << "Residual: \t" << normResidual << "\n";
                     //perform Postprocessing
-                    if(!(staggeredStepNumber<mStepActiveDofs.size()))
+                    if(staggeredStepNumber >= mStepActiveDofs.size())
                     {
                         CalculateResidualKForPostprocessing(prevResidual, hessian2, dof_dt1, dof_dt2);
                         PostProcess(prevResidual);
@@ -428,6 +433,18 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                         curTime -= timeStep;
                         timeStep *= 0.5;
                         if (timeStep < mMinTimeStep) {
+
+                            hessian0.ApplyCMatrix(mStructure->GetConstraintMatrix());
+                            const BlockSparseMatrix& evMatrix = hessian0.JJ;
+
+                            std::unique_ptr<NuTo::SparseMatrixCSR<double>> matrixForSolver = evMatrix.ExportToCSR();
+                            EigenSolverArpack m;
+                            auto evs = m.GetSmallest(*matrixForSolver);
+                            auto evl = m.GetLargest(*matrixForSolver);
+                            std::cout << "EV smallest: " << evs.first << std::endl;
+                            std::cout << "EV largest:  " << evl.first << std::endl;
+                            std::cout << "EV Condition:   " << evl.first / evs.first << std::endl;
+
                             mStructure->GetLogger() << "The minimal time step achieved, the actual time step is " << timeStep << "\n";
                             throw MechanicsException(__PRETTY_FUNCTION__, "No convergence, the current time step is too short.");
                         }
@@ -436,9 +453,9 @@ NuTo::eError NuTo::NewmarkDirect::Solve(double rTimeDelta)
                     {
                         throw MechanicsException(__PRETTY_FUNCTION__, "No convergence with the current maximum number of iterations, either use automatic time stepping, reduce the time step or the minimal line search cut back factor.");
                     }
-                }
-            }
-        }
+                } // if tolerance
+            } // active dof loop
+        } // while time steps
     }
     catch (MechanicsException& e)
     {
@@ -658,6 +675,7 @@ NuTo::BlockFullVector<double> NuTo::NewmarkDirect::BuildHessianModAndSolveSystem
             rHessian_dt0.AddScal(rHessian_dt2, 1. / (mBeta * rTimeStep * rTimeStep));
 
         rHessian_dt0.ApplyCMatrix(mStructure->GetConstraintMatrix());
+
         auto result =  mStructure->SolveBlockSystem(rHessian_dt0.JJ, rResidualMod);
         mStructure->SetShowTime(structureShowTime);
         return result;

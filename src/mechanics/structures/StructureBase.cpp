@@ -24,6 +24,7 @@
 #include <sstream>
 #include <iostream>
 #include <string>
+#include "math/EigenSolverArpack.h"
 
 #include "mechanics/structures/StructureBase.h"
 #include "base/Timer.h"
@@ -855,6 +856,20 @@ NuTo::BlockFullVector<double> NuTo::StructureBase::SolveBlockSystem(const BlockS
 {
     Eigen::VectorXd resultForSolver;
     std::unique_ptr<NuTo::SparseMatrixCSR<double>> matrixForSolver = rMatrix.ExportToCSR();
+
+//    try
+//    {
+//        EigenSolverArpack m;
+//        auto evs = m.GetSmallest(*matrixForSolver);
+//        auto evl = m.GetLargest(*matrixForSolver);
+//        std::cout << "EV smallest: " << evs.first << std::endl;
+//        std::cout << "EV largest:  " << evl.first << std::endl;
+//        std::cout << "EV Condition:   " << evl.first / evs.first << std::endl;
+//    }catch(...)
+//    {
+//        std::cout << "Error calculating EVs" << std::endl;
+//    }
+
     matrixForSolver->SetOneBasedIndexing();
 
     //allocate solver
@@ -864,9 +879,8 @@ NuTo::BlockFullVector<double> NuTo::StructureBase::SolveBlockSystem(const BlockS
     NuTo::SparseDirectSolverMUMPS mySolver;
 #endif
 
-#ifdef SHOW_TIME
     mySolver.SetShowTime(GetShowTime());
-#endif
+
 
     mySolver.Solve(*matrixForSolver, rVector.Export(), resultForSolver);
 

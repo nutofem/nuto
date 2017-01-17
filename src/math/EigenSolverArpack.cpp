@@ -654,7 +654,7 @@ std::pair<double, Eigen::VectorXd> NuTo::EigenSolverArpack::GetLargest(const Spa
     else
     {
         mDriver = EIGEN_SOLVER_ARPACK::eDriver::DNDRV1;
-        mWhich = EIGEN_SOLVER_ARPACK::eWhich::LR;
+        mWhich = EIGEN_SOLVER_ARPACK::eWhich::LM;
     }
     Solve(rM, nullptr, 1, eigenValues, eigenVectors);
     return std::make_pair(eigenValues(0,0), eigenVectors.col(0));
@@ -669,12 +669,19 @@ std::pair<double, Eigen::VectorXd> NuTo::EigenSolverArpack::GetSmallest(const Sp
     {
         mDriver = EIGEN_SOLVER_ARPACK::eDriver::DSDRV2;
         mWhich = EIGEN_SOLVER_ARPACK::eWhich::LM;
+        Solve(rM, nullptr, 1, eigenValues, eigenVectors);
+        return std::make_pair(eigenValues(0,0), eigenVectors.col(0));
     }
     else
     {
+        // calculate smallest singular values instead
+        NuTo::SparseMatrixCSRGeneral<double> M = rM.AsSparseMatrixCSRVector2General();
+        NuTo::SparseMatrixCSRGeneral<double> MTM = M.Transpose() * M;
+
         mDriver = EIGEN_SOLVER_ARPACK::eDriver::DNDRV2;
-        mWhich = EIGEN_SOLVER_ARPACK::eWhich::LR;
+        mWhich = EIGEN_SOLVER_ARPACK::eWhich::LM;
+
+        Solve(MTM, nullptr, 1, eigenValues, eigenVectors);
+        return std::make_pair(std::sqrt(eigenValues(0,0)), eigenVectors.col(0));
     }
-    Solve(rM, nullptr, 2, eigenValues, eigenVectors);
-    return std::make_pair(eigenValues(0,0), eigenVectors.col(0));
 }

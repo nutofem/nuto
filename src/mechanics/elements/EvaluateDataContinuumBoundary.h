@@ -26,6 +26,6 @@ public:
     double mDetJxWeightIPxSection;
     double mDetJacobian = 0;
 
-    double mAlpha;
+    double m1DivAlpha;
 };
 } /* namespace NuTo */

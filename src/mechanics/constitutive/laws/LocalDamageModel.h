@@ -61,7 +61,8 @@ public:
                           const ConstitutiveOutputMap& rConstitutiveOutput,
                           Data& rStaticData);
 
-    double Evaluate2D(NuTo::ConstitutivePlaneState planeState, double oldKappa,
+
+    bool Evaluate2D(NuTo::ConstitutivePlaneState planeState, double rCurrentKappa,
             const ConstitutiveInputMap& rConstitutiveInput, const ConstitutiveOutputMap& rConstitutiveOutput);
 
     //! @brief Calculates the current static data based on the given CALCULATE_STATIC_DATA input.
@@ -69,6 +70,15 @@ public:
     //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
     //! @return Kappa value calculated from history data.
     double GetCurrentStaticData(Data& rStaticData, const ConstitutiveInputMap& rConstitutiveInput) const;
+
+    //! @brief Calculates the error of the extrapolation.
+    //! @param rStaticData History data.
+    //! @param rConstitutiveInput Input to the constitutive law (strain, temp gradient etc.).
+    //! @return Error of the extrapolation.
+    double CalculateStaticDataExtrapolationError(
+        Data& rStaticData,
+        const ConstitutiveInputMap& rConstitutiveInput) const;
+
 
     //! @brief ... gets a variable of the constitutive law which is selected by an enum
     //! @param rIdentifier ... Enum to identify the requested variable

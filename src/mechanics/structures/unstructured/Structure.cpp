@@ -995,6 +995,7 @@ std::vector<std::pair<int, int>> NuTo::Structure::ImportFromGmsh(const std::stri
     std::ifstream file(rFileName.c_str(), std::ios::in);
     if (file.is_open() == false)
     {
+        std::cout << rFileName << std::endl;
         throw MechanicsException(__PRETTY_FUNCTION__, "Error opening input file for read access.");
     }
 
@@ -1360,10 +1361,22 @@ std::vector<std::pair<int, int>> NuTo::Structure::ImportFromGmsh(const std::stri
             break;
 
         case 10: // 9-node second order quadrangle (4 nodes associated with the vertices, 4 with the edges and 1 with the face).
+        {
             shapeType = Interpolation::eShapeType::QUAD2D;
             typeOrder = Interpolation::eTypeOrder::LOBATTO2;
+            //ordering is different than in gmsh, fix this first
+            std::vector<int> nodeNumbersGmsh(nodeNumbers);
+            nodeNumbers[0] = nodeNumbersGmsh[0];
+            nodeNumbers[1] = nodeNumbersGmsh[4];
+            nodeNumbers[2] = nodeNumbersGmsh[1];
+            nodeNumbers[3] = nodeNumbersGmsh[7];
+            nodeNumbers[4] = nodeNumbersGmsh[8];
+            nodeNumbers[5] = nodeNumbersGmsh[5];
+            nodeNumbers[6] = nodeNumbersGmsh[3];
+            nodeNumbers[7] = nodeNumbersGmsh[6];
+            nodeNumbers[8] = nodeNumbersGmsh[2];
             break;
-
+        }
         case 11: // 10-node second order tetrahedron (4 nodes associated with the vertices and 6 with the edges).
             shapeType = Interpolation::eShapeType::TETRAHEDRON3D;
             typeOrder = Interpolation::eTypeOrder::EQUIDISTANT2;

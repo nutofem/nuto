@@ -17,6 +17,8 @@
 namespace NuTo
 {
 
+class ImplExCallback;
+
 class ImplEx: public ImplicitExplicitBase
 {
 #ifdef ENABLE_SERIALIZATION
@@ -52,6 +54,8 @@ public:
         mExtrapolationErrorThreshold = rExtrapolationErrorThreshold;
     }
 
+    void SetImplExCallback(ImplExCallback* r);
+
 protected:
 
     //! @brief ... assess the solution and return the new time step
@@ -65,6 +69,8 @@ protected:
 private:
 
     double mExtrapolationErrorThreshold;
+
+    ImplExCallback* mImplExCallback;
 
 };
 

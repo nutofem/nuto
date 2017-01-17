@@ -209,7 +209,11 @@ protected:
     double CalculateDetJxWeightIPxSection(double rDetJacobian, int rTheIP) const;
 
     //! @brief calculates the alpha parameter as alpha = sqrt(nonlocal radius)
-    double CalculateAlpha();
+    double CalculateAlpha() const;
+
+    void UpdateAlphaGradientDamage(NuTo::EvaluateDataContinuumBoundary<TDim> &rData,
+                                   const NuTo::ConstitutiveInputMap &rConstitutiveInput,
+                                   const NuTo::ConstitutiveOutputMap &rConstitutiveOutput) const;
 
     //! @brief ... reorder nodes such that the sign of the length/area/volume of the element changes
     void ReorderNodes() override

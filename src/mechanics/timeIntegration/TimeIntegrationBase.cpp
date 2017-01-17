@@ -60,6 +60,7 @@ NuTo::TimeIntegrationBase::TimeIntegrationBase(StructureBase* rStructure) :
     mCheckCoefficientMatrix = false;
     mCallback = nullptr;
     ResetForNextLoad();
+    mIterationCount = 0;
 }
 
 NuTo::TimeIntegrationBase::~TimeIntegrationBase()

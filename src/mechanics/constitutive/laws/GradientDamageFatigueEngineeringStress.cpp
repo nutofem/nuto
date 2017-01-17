@@ -11,7 +11,6 @@ double NuTo::GradientDamageFatigueEngineeringStress::GetParameterDouble(NuTo::Co
         case Constitutive::eConstitutiveParameter::DENSITY:
         case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
         case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS:
-        case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER:
         case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
         case Constitutive::eConstitutiveParameter::TENSILE_STRENGTH:
         case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:
@@ -35,7 +34,6 @@ void NuTo::GradientDamageFatigueEngineeringStress::SetParameterDouble(NuTo::Cons
         case Constitutive::eConstitutiveParameter::DENSITY:
         case Constitutive::eConstitutiveParameter::FRACTURE_ENERGY:
         case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS:
-        case Constitutive::eConstitutiveParameter::NONLOCAL_RADIUS_PARAMETER:
         case Constitutive::eConstitutiveParameter::POISSONS_RATIO:
         case Constitutive::eConstitutiveParameter::TENSILE_STRENGTH:
         case Constitutive::eConstitutiveParameter::THERMAL_EXPANSION_COEFFICIENT:

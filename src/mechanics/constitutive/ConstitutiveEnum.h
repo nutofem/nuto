@@ -122,7 +122,6 @@ enum class eConstitutiveParameter
     MASS_EXCHANGE_RATE,                         //!<
     MAX_BOND_STRESS,                            //!<
     NONLOCAL_RADIUS,                            //!<
-    NONLOCAL_RADIUS_PARAMETER,                  //!<
     NORMAL_STIFFNESS,                           //!<
     POISSONS_RATIO,                             //!<
     POLYNOMIAL_COEFFICIENTS_ADSORPTION,         //!<
@@ -209,8 +208,6 @@ enum class eOutput
 
     D_ENGINEERING_STRESS_D_NONLOCAL_EQ_STRAIN,
     D_LOCAL_EQ_STRAIN_D_STRAIN,
-    D_LOCAL_EQ_STRAIN_XI_D_STRAIN,
-
 	ENGINEERING_VISCOPLASTIC_STRAIN_3D,  	//!<
         ENGINEERING_TOTAL_INELASTIC_STRAIN_3D,  //!<
 	ENGINEERING_STRESS_ELASTIC_1D,	 //!<
@@ -268,7 +265,6 @@ enum class eOutput
 	FATIGUE_SAVE_STATIC_DATA,
 	FATIGUE_RESTORE_STATIC_DATA,
 	FATIGUE_EXTRAPOLATE_STATIC_DATA,
-	NONLOCAL_PARAMETER_XI,
     INTERFACE_CONSTITUTIVE_MATRIX,
     BOND_STRESS,
     SLIP,

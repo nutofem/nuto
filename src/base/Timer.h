@@ -70,20 +70,21 @@ public:
 #endif // _OPENMP
             double wallTimeDifference = GetTimeDifference();
 
-
-            int numAdditionalBlanks = std::max(0, mMinMsgLength - (int)mMsg.length());
-            const std::string& additionalBlanks = std::string(numAdditionalBlanks, '.');
-
-            std::ostringstream out;
-            out << "[" << mMsg << "] " << additionalBlanks << "W:" << std::scientific << std::setprecision(2) << wallTimeDifference << "s";
-
-
+            std::ostringstream timing;
+            timing << "W:" << std::scientific << std::setprecision(2) << wallTimeDifference << "s";
 #ifdef _OPENMP
-            out << "  C:" << cpuTimeDifference << "s";
-            out << "  S:" << std::fixed << cpuTimeDifference / wallTimeDifference;
+            timing << "  C:" << cpuTimeDifference << "s";
+            timing << "  S:" << std::fixed << cpuTimeDifference / wallTimeDifference;
 #endif // _OPENMP
-            out << "\n";
 
+
+            int lengthMsg= static_cast<int>(mMsg.length());
+            int lengthTime = static_cast<int>(timing.str().length());
+
+
+            int numAdditionalBlanks = std::max(0, mMinOutputLength - lengthMsg - lengthTime - 2); // -2 for []
+            std::ostringstream out;
+            out << "[" << mMsg << "]" << std::string(numAdditionalBlanks, '.') << timing.str() << '\n';
             if (mLogger == nullptr)
                 std::cout << out.str();
             else
@@ -137,9 +138,10 @@ public:
     double mCPUTimeInit;
 #endif // _OPENMP
 
+    const int mMinOutputLength = 90;
+
     std::chrono::time_point<std::chrono::system_clock> mWallTimeInit;
 
-    const int mMinMsgLength = 75;
 
 #endif // SHOW_TIME
 };
