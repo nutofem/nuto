@@ -1,7 +1,6 @@
 BasedOnStyle: LLVM
 Language: Cpp
 
-AccessModifierOffset: -4
 AlignAfterOpenBracket: DontAlign
 AlignTrailingComments: false
 AccessModifierOffset: -4

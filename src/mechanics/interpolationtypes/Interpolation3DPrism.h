@@ -11,10 +11,14 @@
 
 namespace NuTo
 {
-
+/**
+@brief 3D prism element with the following natural coordinate system and its surface parametrization
+@image html Prism3D.png
+**/
 class Interpolation3DPrism: public Interpolation3D
 {
 public:
+
     Interpolation3DPrism(NuTo::Node::eDof rDofType, NuTo::Interpolation::eTypeOrder rTypeOrder, int rDimension);
 
     //! @brief determines the standard integration type depending on shape, type and order
