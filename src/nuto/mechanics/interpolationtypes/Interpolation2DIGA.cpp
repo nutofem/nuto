@@ -243,8 +243,6 @@ Eigen::MatrixXd NuTo::Interpolation2DIGA::CalculateMatrixNDerivative(const Eigen
 
 Eigen::VectorXd NuTo::Interpolation2DIGA::CalculateNaturalSurfaceCoordinates(const Eigen::VectorXd& rNaturalSurfaceCoordinates, int rSurface, const Eigen::MatrixXd &rKnots) const
 {
-    assert(rNaturalSurfaceCoordinates.rows() == 1);
-
     switch (rSurface)
     {
     case -1:

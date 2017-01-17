@@ -527,10 +527,20 @@ public:
     template<int TDimMaster>
     Eigen::Matrix<std::pair<const ContinuumElementIGA<TDimMaster>*, int>, Eigen::Dynamic, Eigen::Dynamic> ContactElementsCreateMaster(const Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rMasterElementsID);
 
+    template<int TDimMaster>
+    Eigen::Matrix<std::pair<const ContinuumElementIGA<TDimMaster>*, int>, Eigen::Dynamic, Eigen::Dynamic> ContactElementsCreateMaster(int rGroupElementsMaster, int rGroupNodesMaster);
+
     template<int TDimSlave, int TDimMaster>
     int ContactElementsCreate(int rElementsGroupIDSlave,
                               int rNodeGroupSlaveId,
                               const Eigen::Matrix<std::pair<int, int>,Eigen::Dynamic,Eigen::Dynamic> &rMasterElementsID,
+                              eIntegrationType rIntegrationType,
+                              int rContactAlgorithm,
+                              int rConstitutiveLaw);
+
+    template<int TDimSlave, int TDimMaster>
+    int ContactElementsCreate(int rElementsGroupIDSlave, int rNodeGroupSlaveId,
+                              int rGroupElementsMaster, int rGroupNodesMaster,
                               eIntegrationType rIntegrationType,
                               int rContactAlgorithm,
                               int rConstitutiveLaw);

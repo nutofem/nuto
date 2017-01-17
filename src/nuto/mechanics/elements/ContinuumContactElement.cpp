@@ -36,8 +36,8 @@ NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::ContinuumContactElement(co
                                                                               const ConstitutiveBase *rConstitutiveContactLaw, int rContactAlgorithm)
     : ContinuumBoundaryElement<TDimSlave>(rSlaveElement, rSurfaceId), mElementsMaster(rElementsMaster), mNumDofs(0), mConstitutiveContactLaw(rConstitutiveContactLaw), mContactType(rContactAlgorithm)
 {
-    if(TDimMaster != ((rSurfaceId == -1) ? TDimSlave : TDimSlave - 1))
-        throw MechanicsException(__PRETTY_FUNCTION__, "The dimension of master side interpolation is not correct.");
+//    if(TDimMaster != ((rSurfaceId == -1) ? TDimSlave : TDimSlave - 1))
+//        throw MechanicsException(__PRETTY_FUNCTION__, "The dimension of master side interpolation is not correct.");
 
     mKnots.resize(TDimMaster);
 
@@ -53,8 +53,9 @@ NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::ContinuumContactElement(co
     mKnots[0](i) = mElementsMaster(0,i-1).first->GetKnots()(0,1);
 
     // initialize the knot values in y direction
-    if(TDimMaster == 2)
+    if(mElementsMaster.rows() > 1)
     {
+        mKnots[1].resize(mElementsMaster.rows() + 1);
         int i = 0;
         for(; i < mElementsMaster.rows(); i++) mKnots[1](i) = mElementsMaster(i,0).first->GetKnots()(1,0);
         mKnots[1](i) = mElementsMaster(0,i-1).first->GetKnots()(1,1);
@@ -83,7 +84,6 @@ NuTo::Element::eElementType NuTo::ContinuumContactElement<TDimSlave, TDimMaster>
 {
     return Element::eElementType::CONTINUUMCONTACTELEMENT;
 }
-
 
 template<int TDimSlave, int TDimMaster>
 void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::CalculateGlobalRowDofs(BlockFullVector<int> &rGlobalRowDofs) const
@@ -329,6 +329,7 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
     }
 
     const ContinuumElementIGA<TDimMaster> *masterElement = mElementsMaster(indexMasterElement(0),indexMasterElement(1)).first;
+    int masterSurfaceId = mElementsMaster(indexMasterElement(0),indexMasterElement(1)).second;
 
     // **** Newton iteration ****//
     double tol = 1.e-10;
@@ -347,8 +348,8 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
         r = coordinatesIPSlave - coordinatesMaster;
         Eigen::VectorXd dprime(numPrimes, 1);
         dprime.setZero(numPrimes);
-        Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> prime = masterElement->InterpolateDofGlobalSurfaceDerivativeTotal(0, parameterMinMaster, 1);
-        Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> primeprime = masterElement->InterpolateDofGlobalSurfaceDerivativeTotal(0, parameterMinMaster, 2);
+        Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> prime = masterElement->InterpolateDofGlobalSurfaceDerivativeTotal(0, parameterMinMaster, 1, masterSurfaceId);
+        Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> primeprime = masterElement->InterpolateDofGlobalSurfaceDerivativeTotal(0, parameterMinMaster, 2, masterSurfaceId);
 
         for(int j = 0; j < prime.cols(); j++)
             dprime(j) += r.dot(prime(0,j));
@@ -367,14 +368,17 @@ void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GapMatrixMortar(Evalu
 
         // iteration step
         Eigen::VectorXd increment = dprimeprime.colPivHouseholderQr().solve(-dprime);
-        parameterMinMaster += increment;
 
         // New parameter value (check in which element)
         // for the FindSpan function degree = 0, since no multiple knots at the beginning and end
-        if(TDimMaster == 1)
+        if(mKnots[1].rows() == 0)
+        {
+            parameterMinMaster(0) +=  increment(0);
             indexMasterElement(1) = ShapeFunctionsIGA::FindSpan(parameterMinMaster(0), 0, mKnots[0]);
+        }
         else
         {
+            parameterMinMaster += increment;
             indexMasterElement(0) = ShapeFunctionsIGA::FindSpan(parameterMinMaster(0), 0, mKnots[0]);
             indexMasterElement(1) = ShapeFunctionsIGA::FindSpan(parameterMinMaster(1), 0, mKnots[1]);
         }
@@ -563,28 +567,22 @@ template <int TDimSlave, int TDimMaster>
 void NuTo::ContinuumContactElement<TDimSlave, TDimMaster>::GetGlobalIntegrationPointCoordinatesAndParameters(int rIpNum, Eigen::VectorXd &rCoordinatesIPSlave, Eigen::VectorXd &rParamsIPSlave) const
 {
     Eigen::VectorXd naturalSurfaceIpCoordinates;
-    switch (TDimMaster)
+    if(mKnots[1].rows() == 0)
     {
-        case 1:
-        {
-            double ipCoordinate;
-            this->GetIntegrationType()->GetLocalIntegrationPointCoordinates1D(rIpNum, ipCoordinate);
-            naturalSurfaceIpCoordinates.resize(1);
-            naturalSurfaceIpCoordinates(0) = ipCoordinate;
-            break;
-        }
-        case 2:
-        {
-            double ipCoordinates[2];
-            this->GetIntegrationType()->GetLocalIntegrationPointCoordinates2D(rIpNum, ipCoordinates);
-            naturalSurfaceIpCoordinates.resize(2);
-            naturalSurfaceIpCoordinates(0) = ipCoordinates[0];
-            naturalSurfaceIpCoordinates(1) = ipCoordinates[1];
-            break;
-        }
-        default:
-            break;
+        double ipCoordinate;
+        this->GetIntegrationType()->GetLocalIntegrationPointCoordinates1D(rIpNum, ipCoordinate);
+        naturalSurfaceIpCoordinates.resize(1);
+        naturalSurfaceIpCoordinates(0) = ipCoordinate;
     }
+    else if (mKnots[1].rows() > 0)
+    {
+        double ipCoordinates[2];
+        this->GetIntegrationType()->GetLocalIntegrationPointCoordinates2D(rIpNum, ipCoordinates);
+        naturalSurfaceIpCoordinates.resize(2);
+        naturalSurfaceIpCoordinates(0) = ipCoordinates[0];
+        naturalSurfaceIpCoordinates(1) = ipCoordinates[1];
+    }
+
 
     // ===> Get the position \xi^s_{IP}
     const InterpolationBase& interpolationTypeCoordsSlave = this->mBaseElement->GetInterpolationType()->Get(Node::eDof::DISPLACEMENTS);

@@ -213,6 +213,31 @@ Eigen::VectorXd NuTo::ContinuumElementIGA<TDim>::InterpolateDofGlobalSurfaceDeri
     return matrixNDerivativeCoordinates * nodalInitial + matrixNDerivativeDisplacements * nodalDisplacements;
 }
 
+template<int TDim>
+Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> NuTo::ContinuumElementIGA<TDim>::InterpolateDofGlobalSurfaceDerivativeTotal(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative, int rSurface) const
+{
+    Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> derivative(1,1);
+
+    int direction = -1;
+    switch(rSurface)
+    {
+    case 0: direction = 0;
+        break;
+    case 1: direction = 1;
+        break;
+    case 2: direction = 0;
+        break;
+    case 3: direction = 1;
+        break;
+    default:
+        throw MechanicsException(__PRETTY_FUNCTION__, "IGA2D has exactly four surfaces, 0 to 3. You tried to access " + std::to_string(rSurface) + ".");
+    }
+
+    derivative(0,0) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, direction);
+
+    return derivative;
+}
+
 namespace NuTo // template specialization in *.cpp somehow requires the definition to be in the namespace...
 {
 
@@ -231,52 +256,42 @@ double NuTo::ContinuumElementIGA<2>::CalculateDetJxWeightIPxSection(double rDetJ
     return rDetJacobian * mElementData->GetIntegrationType()->GetIntegrationPointWeight(rTheIP) * mSection->GetThickness();
 }
 
-template<>
-Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> NuTo::ContinuumElementIGA<1>::InterpolateDofGlobalSurfaceDerivativeTotal(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative) const
-{
-    Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> derivative(1,1);
+//template<>
+//Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> NuTo::ContinuumElementIGA<2>::InterpolateDofGlobalSurfaceDerivativeTotal(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative) const
+//{
+//    // think of it somehow as of a tensor ....
+//    Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> derivative;
+//    switch (rDerivative)
+//    {
+//    case 0:
+//    {
+//        derivative.resize(1,1);
+//        derivative(0,0) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 0);
+//        break;
+//    }
+//    case 1:
+//    {
+//        derivative.resize(1,2);
+//        derivative(0,0) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 0);
+//        derivative(0,1) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 1);
+//        break;
+//    }
+//    case 2:
+//    {
+//        derivative.resize(2,2);
+//        derivative(0,0) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 0);
+//        derivative(0,1) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 2);
+//        derivative(1,0) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 1);
+//        derivative(1,1) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 2);
+//        break;
+//    }
+//    default:
+//        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Maximum derivative is of order 2!");
+//        break;
+//    }
 
-    derivative(0,0) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 0);
-
-    return derivative;
-}
-
-template<>
-Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> NuTo::ContinuumElementIGA<2>::InterpolateDofGlobalSurfaceDerivativeTotal(int rTimeDerivative, const Eigen::VectorXd& rParameter, int rDerivative) const
-{
-    // think of it somehow as of a tensor ....
-    Eigen::Matrix<Eigen::VectorXd, Eigen::Dynamic, Eigen::Dynamic> derivative;
-    switch (rDerivative)
-    {
-    case 0:
-    {
-        derivative.resize(1,1);
-        derivative(0,0) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 0);
-        break;
-    }
-    case 1:
-    {
-        derivative.resize(1,2);
-        derivative(0,0) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 0);
-        derivative(0,1) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 1);
-        break;
-    }
-    case 2:
-    {
-        derivative.resize(2,2);
-        derivative(0,0) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 0);
-        derivative(0,1) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 2);
-        derivative(1,0) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 1);
-        derivative(1,1) = InterpolateDofGlobalSurfaceDerivative(rTimeDerivative, rParameter, rDerivative, 2);
-        break;
-    }
-    default:
-        throw NuTo::MechanicsException(__PRETTY_FUNCTION__, "Maximum derivative is of order 2!");
-        break;
-    }
-
-    return derivative;
-}
+//    return derivative;
+//}
 
 template<>
 Eigen::VectorXd NuTo::ContinuumElementIGA<1>::InterpolateDofGlobalSurfaceNormal(const Eigen::VectorXd& rParameter) const

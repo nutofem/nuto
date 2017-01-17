@@ -16,6 +16,8 @@
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto9Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto16Ip.h"
 #include "nuto/mechanics/integrationtypes/IntegrationType2D4NLobatto25Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationType1D2NGauss12Ip.h"
+#include "nuto/mechanics/integrationtypes/IntegrationTypeEnum.h"
 
 #include "nuto/mechanics/constitutive/ConstitutiveEnum.h"
 #include "nuto/mechanics/interpolationtypes/InterpolationTypeEnum.h"
@@ -38,7 +40,7 @@
 #include "nuto/visualize/VisualizeEnum.h"
 #endif
 
-NuTo::NURBSSurface buildRect2D(double x0, double y0, double Height, double Length, int &groupElements, int &groupNodes)
+void buildRect2D(double x0, double y0, double Height, double Length, int &groupElements, int &groupNodes, NuTo::Structure *myStructure)
 {
     /** Knots and control points **/
     int numElementsX = 1;
@@ -258,84 +260,7 @@ void SetDBC(NuTo::Structure &myStructure, int groupNodesSlave, int groupNodesMas
 
 }
 
-void AddIGALayer(NuTo::Structure *myStructure,
-                const std::function<bool(NuTo::NodeBase *)> &rFunction,
-                int rNodesGroupId,
-                int &groupElementsIGAlayer,
-                int &groupNodesIGAlayer,
-                Eigen::Matrix<std::pair<int, int>, Eigen::Dynamic, Eigen::Dynamic> &rElements,
-                int &countDBC)
-{
-    // Nodes on the part to interpolate
-    int groupFENodes = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
-    myStructure->GroupAddNodeFunction(groupFENodes, rNodesGroupId, rFunction);
-    NuTo::FullVector<int,Eigen::Dynamic> idsFENodes;
-    myStructure->NodeGroupGetMembers(groupFENodes, idsFENodes);
-
-    // Corresponding elements
-    int groupFE = myStructure->GroupCreate(NuTo::eGroupId::Elements);
-    myStructure->GroupAddElementsFromNodes(groupFE, groupFENodes, false);
-
-    // Matrix containing the ids and coordinates of the FE nodes => 'coordinatesAndIDs'
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinates;
-    myStructure->NodeGroupGetCoordinates(groupFENodes, coordinates);
-
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinatesAndIDs;
-    coordinatesAndIDs.resize(coordinates.rows(), coordinates.cols() + 1);
-    coordinatesAndIDs.block(0,0,coordinates.rows(), coordinates.cols()) = coordinates;
-
-    for(int i = 0; i < coordinates.rows(); i++)
-        coordinatesAndIDs(i,coordinates.cols()) = idsFENodes(i);
-
-    coordinatesAndIDs.SortRow(0);
-
-    // Interpolations
-    NuTo::NURBSCurve curve(rDegree, coordinatesAndIDs.block(0, 0, coordinates.rows(), coordinates.cols()), A);
-
-    // Build the IGA layer
-    std::set<NuTo::Node::eDof> setOfDOFS;
-    setOfDOFS.insert(NuTo::Node::eDof::COORDINATES);
-    setOfDOFS.insert(NuTo::Node::eDof::DISPLACEMENTS);
-
-    groupNodesIGAlayer = myStructure->GroupCreate("Nodes");
-    groupElementsIGAlayer  = myStructure->GroupCreate("Elements");
-
-    rElements = curve.buildIGAStructure(*myStructure, setOfDOFS, groupElementsIGAlayer, groupNodesIGAlayer, "IGA1DLAYER");
-
-    // Matrix containing the ids and coordinates of the IGA layer control points (aka. nodes) => 'coordinatesAndIDsLayer'
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinatesLayer;
-    myStructure->NodeGroupGetCoordinates(groupNodesIGAlayer, coordinatesLayer);
-
-    NuTo::FullVector<int,Eigen::Dynamic> rMembersMasterContactBoundaryLayer;
-    myStructure->NodeGroupGetMembers(groupNodesIGAlayer, rMembersMasterContactBoundaryLayer);
-
-    // all together
-    NuTo::FullMatrix<double, Eigen::Dynamic, Eigen::Dynamic> coordinatesAndIDsLayer;
-    coordinatesAndIDsLayer.resize(coordinatesLayer.rows(), coordinatesLayer.cols() + 1);
-    coordinatesAndIDsLayer.block(0,0,coordinatesLayer.rows(), coordinatesLayer.cols()) = coordinatesLayer;
-
-    for(int i = 0; i < coordinatesLayer.rows(); i++)
-        coordinatesAndIDsLayer(i,coordinatesLayer.cols()) = rMembersMasterContactBoundaryLayer(i);
-
-    coordinatesAndIDsLayer.SortRow(0);
-
-    // build the FE - IGA coupling
-    int dim = coordinatesAndIDs.cols() - 1;
-    for(int node = 0; node < coordinatesAndIDs.rows(); node++)
-    {
-        for(int dof = 0; dof < dim; dof++)
-        {
-            myStructure->ConstraintLinearEquationCreate (countDBC, coordinatesAndIDs(node, dim), NuTo::Node::eDof::DISPLACEMENTS, dof,  1., 0.);
-            for(int controlPoint = 0; controlPoint < coordinatesAndIDsLayer.rows(); controlPoint++)
-            {
-                myStructure->ConstraintLinearEquationAddTerm(countDBC, coordinatesAndIDsLayer(controlPoint, dim), NuTo::Node::eDof::DISPLACEMENTS, dof, -A(node, controlPoint));
-            }
-            countDBC++;
-        }
-    }
-}
-
-void constantStress(const std::string &resultDir)
+void constantStress(const std::string &resultDir, double rPenalty, NuTo::eIntegrationType rIntegrationType, int rContactAlgo)
 {
     /** Structure 2D **/
     NuTo::Structure* myStructure = new NuTo::Structure(2);
@@ -346,21 +271,21 @@ void constantStress(const std::string &resultDir)
 #endif
 
     // ===> Slave <=== //
-    int groupNodesSlave = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
-    int groupElementsSlave = myStructure.GroupCreate(NuTo::eGroupId::Elements);
-    buildRect2D(1, 0, 1, 1, groupNodesSlave, groupElementsSlave);
+    int groupNodesSlave = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+    int groupElementsSlave = myStructure->GroupCreate(NuTo::eGroupId::Elements);
+    buildRect2D(1, 0, 1, 1, groupElementsSlave, groupNodesSlave, myStructure);
 
     // ===> Master <=== //
-    int groupNodesMaster = myStructure.GroupCreate(NuTo::eGroupId::Nodes);
-    int groupElementsMaster = myStructure.GroupCreate(NuTo::eGroupId::Elements);
-    buildRect2D(0, -1, 1, 3, groupNodesMaster, groupElementsMaster);
+    int groupNodesMaster = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+    int groupElementsMaster = myStructure->GroupCreate(NuTo::eGroupId::Elements);
+    buildRect2D(0, -1, 1, 3, groupElementsMaster, groupNodesMaster, myStructure);
 
     // ===> Boundary <=== //
     int countDBC;
-    SetDBC(myStructure, groupNodesSlave, groupNodesMaster,  countDBC);
+    SetDBC(*myStructure, groupNodesSlave, groupNodesMaster,  countDBC);
 
     // ===> Slave side <=== //
-    auto LambdaGetSlaveNodesLower = [startySlave](NuTo::NodeBase* rNodePtr) -> bool
+    auto LambdaGetSlaveNodesLower = [](NuTo::NodeBase* rNodePtr) -> bool
     {
         double Tol = 1.e-6;
         if (rNodePtr->GetNum(NuTo::Node::eDof::COORDINATES)>0)
@@ -381,7 +306,6 @@ void constantStress(const std::string &resultDir)
     myStructure->GroupAddElementsFromNodes(groupElementsSlaveLower, groupNodesSlaveLower, false);
 
     // ===> Master Side <=== //
-
     auto LambdaGetMasterNodesUpper = [](NuTo::NodeBase* rNodePtr) -> bool
     {
         double Tol = 1.e-6;
@@ -389,7 +313,7 @@ void constantStress(const std::string &resultDir)
         {
             double x = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[0];
             double y = rNodePtr->Get(NuTo::Node::eDof::COORDINATES)[1];
-            if (y >= -Tol && y <= Tol && x >= 0.5 - Tol && x <= 2.5 + Tol)
+            if (y >= -Tol && y <= Tol)
             {
                 return true;
             }
@@ -397,12 +321,13 @@ void constantStress(const std::string &resultDir)
         return false;
     };
 
-    int groupNodesMasterLower = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
-    myStructure->GroupAddNodeFunction(groupNodesMasterLower, groupNodesMaster, LambdaGetMasterNodesUpper);
+    int groupNodesMasterUpper = myStructure->GroupCreate(NuTo::eGroupId::Nodes);
+    myStructure->GroupAddNodeFunction(groupNodesMasterUpper, groupNodesMaster, LambdaGetMasterNodesUpper);
 
-    int groupElementsMasterLower = myStructure->GroupCreate(NuTo::eGroupId::Elements);
-    myStructure->GroupAddElementsFromNodes(groupElementsMasterLower, groupNodesMasterLower, false);
-
+    int groupElementsMasterUpper = myStructure->GroupCreate(NuTo::eGroupId::Elements);
+    myStructure->GroupAddElementsFromNodes(groupElementsMasterUpper, groupNodesMasterUpper, false);
+    NuTo::FullVector<int, Eigen::Dynamic> members = myStructure->GroupGetMemberIds(groupElementsMasterUpper);
+    members = myStructure->GroupGetMemberIds(groupNodesMasterUpper);
 
 
     // ===> Material <=== //
@@ -419,7 +344,7 @@ void constantStress(const std::string &resultDir)
     myStructure->ElementTotalSetSection(mySection);
 
     // ===> Contact element <=== //
-    int constitutiveLawPC = myStructure.ConstitutiveLawCreate("Contact_Constitutive_Law");
+    int constitutiveLawPC = myStructure->ConstitutiveLawCreate("Contact_Constitutive_Law");
     std::function<double(double)> constitutiveContactLaw  =
     [rPenalty](double rGap) -> double
     {
@@ -441,7 +366,7 @@ void constantStress(const std::string &resultDir)
     myStructure->ConstitutiveLawSetParameterFunction(constitutiveLawPC, NuTo::Constitutive::eConstitutiveParameter::CONSTITUTIVE_LAW_FUNCTION, constitutiveContactLaw);
     myStructure->ConstitutiveLawSetParameterFunction(constitutiveLawPC, NuTo::Constitutive::eConstitutiveParameter::CONSTITUTIVE_LAW_DERIVATIVE_FUNCTION, constitutiveContactLawDerivative);
 
-    myStructure->NuTo::Structure::ContactElementsCreate<2,2>(groupElementsSlaveLower, groupNodesSlaveLower, elementsMaster, rIntegrationType, rContactAlgo, constitutiveLawPC);
+    myStructure->NuTo::Structure::ContactElementsCreate<2,2>(groupElementsSlaveLower, groupNodesSlaveLower, groupElementsMasterUpper, groupNodesMasterUpper, rIntegrationType, rContactAlgo, constitutiveLawPC);
 
     // ===> Solution <=== //
 
@@ -475,7 +400,7 @@ void constantStress(const std::string &resultDir)
     myIntegrationScheme.Solve(simulationTime);
 
 #ifdef ENABLE_VISUALIZE
-    int visualizationGroup = groupElements;
+    int visualizationGroup = myStructure->GroupUnion(groupElementsSlave, groupElementsMaster);
     myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::DISPLACEMENTS);
     myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRAIN);
     myStructure->AddVisualizationComponent(visualizationGroup, NuTo::eVisualizeWhat::ENGINEERING_STRESS);
@@ -501,8 +426,8 @@ int main()
     // create result directory
     boost::filesystem::create_directory(resultDir);
 
-    double solution = 0.;
-
     // 2D constant stress
-    constantStress(solution, 1, resultDir);
+    double penalty = 1.e9;
+    int    contactAlgo = 1;
+    constantStress(resultDir, penalty, NuTo::eIntegrationType::IntegrationType1D2NGauss12Ip, contactAlgo);
 }
